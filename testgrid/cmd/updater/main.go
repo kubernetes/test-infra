@@ -22,6 +22,7 @@ import (
 	"context"
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"flag"
 	"fmt"
 	"hash/crc32"
@@ -387,14 +388,25 @@ func AppendColumn(headers []string, format NameConfig, grid *state.Grid, rows ma
 			continue
 		}
 		trunc := 0
+		var ah string
 		if h == "Commit" { // TODO(fejta): fix
 			h = "repo-commit"
 			trunc = 9
+			ah = "job-version"
 		}
 		v, ok := build.Metadata[h]
 		if !ok {
 			log.Printf("%s metadata missing %s", c.Build, h)
 			v = "missing"
+			// TODO(fejta): gross, remove hack
+			if ah != "" {
+				if av, ok := build.Metadata[ah]; ok {
+					parts := strings.SplitN(av, "+", 2)
+					v = parts[len(parts)-1]
+				} else {
+					log.Printf("%s metadata also missing %s", c.Build, ah)
+				}
+			}
 		}
 		if trunc > 0 && trunc < len(v) {
 			v = v[0:trunc]
@@ -559,22 +571,63 @@ func ReadBuild(build Build) (*Column, error) {
 		}
 		artifacts[a.Name] = meta
 	}
+	// With parallelism: 60s without: 220s
+	ctx, cancel := context.WithCancel(build.Context) // Abort reads after the first error
+	var wg sync.WaitGroup
+	var lock sync.Mutex
+	abort := make(chan error)
+	wg.Add(1)
 	for ap, meta := range artifacts {
-		ar, err := build.Bucket.Object(ap).NewReader(build.Context)
-		if err != nil {
-			return nil, fmt.Errorf("could not read %s: %v", ap, err)
-		}
-		if r := ar.Remain(); r > 50e6 {
-			return nil, fmt.Errorf("too large: %s is %d > 50M", ap, r)
-		}
-		buf, err := ioutil.ReadAll(ar)
-		if err != nil {
-			return nil, fmt.Errorf("failed to read all of %s: %v", ap, err)
-		}
+		wg.Add(1)
+		// Read each artifact in a new thread
+		go func() {
+			defer wg.Done()
+			err := func() error {
+				ar, err := build.Bucket.Object(ap).NewReader(ctx)
+				if err != nil {
+					return fmt.Errorf("could not read %s: %v", ap, err)
+				}
+				if r := ar.Remain(); r > 50e6 {
+					return fmt.Errorf("too large: %s is %d > 50M", ap, r)
+				}
+				buf, err := ioutil.ReadAll(ar)
+				if err != nil {
+					return fmt.Errorf("partial read of %s: %v", ap, err)
+				}
 
-		if err = extractRows(buf, br.Rows, meta); err != nil {
-			return nil, fmt.Errorf("failed to parse %s: %v", ap, err)
+				select {
+				case <-ctx.Done():
+					return errors.New("aborted artifact read")
+				default:
+					// TODO(fejta): consider sync.Map
+					defer lock.Unlock()
+					lock.Lock()
+					if err = extractRows(buf, br.Rows, meta); err != nil {
+						return fmt.Errorf("failed to parse %s: %v", ap, err)
+					}
+				}
+				return nil
+			}()
+			if err == nil {
+				return
+			}
+			select {
+			case <-ctx.Done():
+			case abort <- err:
+			}
+		}()
+	}
+	wg.Done()
+	go func() {
+		wg.Wait() // Wait for everyone to complete
+		select {
+		case <-ctx.Done(): // Someone wrote an error
+		case abort <- nil: // No one wrote an error
 		}
+	}()
+	if err := <-abort; err != nil {
+		cancel() // Stop further reading
+		return nil, err
 	}
 	return &br, nil
 }
