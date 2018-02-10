@@ -183,6 +183,17 @@ span.label:hover {
     opacity: 0.85;
 }
 
+/**
+ * Command help style sheet.
+ */
+#command-help.mdl-layout__content {
+    overflow: auto;
+}
+
+#command-help aside {
+    min-width: 500px;
+}
+
 .emphasis {
     font-weight: bold;
 }
@@ -194,10 +205,11 @@ span.label:hover {
     padding: 8px 8px;
 }
 
-.plugin-table {
-    margin: 8px;
+#command-table {
     display: none;
     font-family: "Roboto", "Arial", sans-serif;
+    margin: 8px;
+    min-width: 500px;
     width: calc(100% - 16px);
 }
 
@@ -240,6 +252,10 @@ span.label:hover {
 
 .dialog-section-title {
   font-weight: bold;
+}
+
+#usage-col {
+    min-width: 200px;
 }
 
 .fuzzy-search {
