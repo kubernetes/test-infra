@@ -6033,7 +6033,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180205-d99d9c246-master
       args:
       - --clean
       - --git-cache=/root/.cache/git
