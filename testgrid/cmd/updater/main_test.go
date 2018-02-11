@@ -311,7 +311,7 @@ func Test_ExtractRows(t *testing.T) {
 	for _, tc := range cases {
 		rows := map[string][]Row{}
 
-		err := extractRows([]byte(tc.content), rows, tc.metadata)
+		rows, err := extractRows([]byte(tc.content), tc.metadata)
 		switch {
 		case err == nil && tc.err:
 			t.Errorf("%s: failed to raise an error", tc.name)

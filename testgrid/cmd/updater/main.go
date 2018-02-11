@@ -156,6 +156,7 @@ type Finished struct {
 	Passed     bool     `json:"passed"`
 	JobVersion string   `json:"job-version"`
 	Metadata   Metadata `json:"metadata"`
+	running    bool
 }
 
 // infra-commit, repos, repo, repo-commit, others
@@ -228,7 +229,7 @@ func (jr JunitResult) RowResult() state.Row_Result {
 	return state.Row_PASS
 }
 
-func extractRows(buf []byte, rows map[string][]Row, meta map[string]string) error {
+func extractRows(buf []byte, meta map[string]string) (map[string][]Row, error) {
 	var suites JunitSuites
 	// Try to parse it as a <testsuites/> object
 	err := xml.Unmarshal(buf, &suites)
@@ -238,9 +239,10 @@ func extractRows(buf []byte, rows map[string][]Row, meta map[string]string) erro
 		ie := xml.Unmarshal(buf, &suites.Suites[0])
 		if ie != nil {
 			// Nope, it just doesn't parse
-			return fmt.Errorf("not valid testsuites: %v nor testsuite: %v", err, ie)
+			return nil, fmt.Errorf("not valid testsuites: %v nor testsuite: %v", err, ie)
 		}
 	}
+	rows := map[string][]Row{}
 	for _, suite := range suites.Suites {
 		for _, sr := range suite.Results {
 			if sr.Skipped != nil && len(*sr.Skipped) == 0 {
@@ -268,7 +270,7 @@ func extractRows(buf []byte, rows map[string][]Row, meta map[string]string) erro
 			rows[n] = append(rows[n], r)
 		}
 	}
-	return nil
+	return rows, nil
 }
 
 type ColumnMetadata map[string]string
@@ -504,131 +506,256 @@ func ValidateName(name string) map[string]string {
 }
 
 func ReadBuild(build Build) (*Column, error) {
-	br := Column{
-		Id: path.Base(build.Prefix),
-	}
-	s := build.Bucket.Object(build.Prefix + "started.json")
-	sr, err := s.NewReader(build.Context)
-	if err != nil {
-		return nil, fmt.Errorf("build has not started")
-	}
-	var started Started
-	if err = json.NewDecoder(sr).Decode(&started); err != nil {
-		return nil, fmt.Errorf("could not decode started.json: %v", err)
-	}
-	br.Started = started.Timestamp
-	br.Rows = map[string][]Row{}
+	var wg sync.WaitGroup                                             // Each subtask does wg.Add(1), then we wg.Wait() for them to finish
+	ctx, cancel := context.WithTimeout(build.Context, 20*time.Second) // Allows aborting after first error
+	ec := make(chan error)                                            // Receives errors from anyone
 
-	f := build.Bucket.Object(build.Prefix + "finished.json")
-	fr, err := f.NewReader(build.Context)
-	if err == storage.ErrObjectNotExist {
-		br.Rows["Overall"] = []Row{
-			{
-				Result: br.Overall(),
-				Metadata: map[string]string{
-					"Tests name": "Overall",
+	// Download started.json, send to sc
+	wg.Add(1)
+	sc := make(chan Started) // Receives started.json result
+	go func() {
+		defer wg.Done()
+		started, err := func() (Started, error) {
+			var started Started
+			s := build.Bucket.Object(build.Prefix + "started.json")
+			sr, err := s.NewReader(ctx)
+			if err != nil {
+				return started, fmt.Errorf("build has not started")
+			}
+			if err = json.NewDecoder(sr).Decode(&started); err != nil {
+				return started, fmt.Errorf("could not decode started.json: %v", err)
+			}
+			return started, nil
+		}()
+		if err != nil {
+			select {
+			case <-ctx.Done():
+			case ec <- err:
+			}
+			return
+		}
+		select {
+		case <-ctx.Done():
+		case sc <- started:
+		}
+	}()
+
+	// Download finished.json, send to fc
+	wg.Add(1)
+	fc := make(chan Finished) // Receives finished.json result
+	go func() {
+		defer wg.Done()
+		finished, err := func() (Finished, error) {
+			f := build.Bucket.Object(build.Prefix + "finished.json")
+			fr, err := f.NewReader(ctx)
+			var finished Finished
+			if err == storage.ErrObjectNotExist { // Job has not (yet) completed
+				finished.running = true
+			} else if err = json.NewDecoder(fr).Decode(&finished); err != nil {
+				return finished, fmt.Errorf("could not decode finished.json: %v", err)
+			}
+			return finished, nil
+		}()
+		if err != nil {
+			select {
+			case <-ctx.Done():
+			case ec <- err:
+			}
+			return
+		}
+		select {
+		case <-ctx.Done():
+		case fc <- finished:
+		}
+	}()
+
+	// List artifacts, send to ac channel
+	wg.Add(1)
+	ac := make(chan string) // Receives names of arifacts
+	go func() {
+		defer wg.Done()
+		defer close(ac) // No more artifacts
+		err := func() error {
+			pref := build.Prefix + "artifacts/"
+			ai := build.Bucket.Objects(ctx, &storage.Query{Prefix: pref})
+			for {
+				a, err := ai.Next()
+				if err == iterator.Done {
+					break
+				}
+				if err != nil {
+					return fmt.Errorf("failed to list %s: %v", pref, err)
+				}
+				select {
+				case <-ctx.Done():
+					return fmt.Errorf("interrupted listing %s", pref)
+				case ac <- a.Name: // Added
+				}
+			}
+			return nil
+		}()
+		if err != nil {
+			select {
+			case <-ctx.Done():
+			case ec <- err:
+			}
+		}
+	}()
+
+	// Download each artifact, send row map to rc
+	// With parallelism: 60s without: 220s
+	wg.Add(1)
+	rc := make(chan map[string][]Row)
+	go func() {
+		defer wg.Done()
+		defer close(rc) // No more rows
+		var awg sync.WaitGroup
+		for a := range ac {
+			select { // Should we stop?
+			case <-ctx.Done(): // Yes
+				return
+			default: // No, keep going
+			}
+			meta := ValidateName(a)
+			if meta == nil { // Not junit
+				continue
+			}
+			awg.Add(1)
+			// Read each artifact in a new thread
+			go func(ap string, meta map[string]string) {
+				defer awg.Done()
+				err := func() error {
+					ar, err := build.Bucket.Object(ap).NewReader(ctx)
+					if err != nil {
+						return fmt.Errorf("could not read %s: %v", ap, err)
+					}
+					if r := ar.Remain(); r > 50e6 {
+						return fmt.Errorf("too large: %s is %d > 50M", ap, r)
+					}
+					buf, err := ioutil.ReadAll(ar)
+					if err != nil {
+						return fmt.Errorf("partial read of %s: %v", ap, err)
+					}
+
+					select { // Keep going?
+					case <-ctx.Done(): // No, cancelled
+						return errors.New("aborted artifact read")
+					default: // Yes, acquire lock
+						// TODO(fejta): consider sync.Map
+						if rows, err := extractRows(buf, meta); err != nil {
+							return fmt.Errorf("failed to parse %s: %v", ap, err)
+						} else {
+							rc <- rows
+						}
+					}
+					return nil
+				}()
+				if err == nil {
+					return
+				}
+				select {
+				case <-ctx.Done():
+				case ec <- err:
+				}
+			}(a, meta)
+		}
+		awg.Wait()
+	}()
+
+	// Append each row into the column
+	rows := map[string][]Row{}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for rows := range rc {
+			select { // Should we continue
+			case <-ctx.Done(): // No, aborted
+				return
+			default: // Yes
+			}
+			for t, rs := range rows {
+				rows[t] = append(rows[t], rs...)
+			}
+		}
+	}()
+
+	// Wait for everyone to complete their work
+	go func() {
+		wg.Wait()
+		select {
+		case <-ctx.Done():
+			return
+		case ec <- nil:
+		}
+	}()
+	var finished *Finished
+	var started *Started
+	for { // Wait until we receive started and finished and/or an error
+		select {
+		case err := <-ec:
+			if err != nil {
+				cancel()
+				return nil, fmt.Errorf("failed to read %s: %v", build, err)
+			}
+			break
+		case s := <-sc:
+			started = &s
+		case f := <-fc:
+			finished = &f
+		}
+		if started != nil && finished != nil {
+			break
+		}
+	}
+	br := Column{
+		Id:      path.Base(build.Prefix),
+		Started: started.Timestamp,
+	}
+	// Has the build finished?
+	if finished.running { // No
+		cancel()
+		br.Rows = map[string][]Row{
+			"Overall": {
+				{
+					Result: br.Overall(),
+					Metadata: map[string]string{
+						"Tests name": "Overall",
+					},
 				},
 			},
 		}
 		return &br, nil
 	}
-
-	var finished Finished
-	if err = json.NewDecoder(fr).Decode(&finished); err != nil {
-		return nil, fmt.Errorf("could not decode finished.json: %v", err)
-	}
-
 	br.Finished = finished.Timestamp
 	br.Metadata = finished.Metadata.ColumnMetadata()
 	br.Passed = finished.Passed
-
-	br.Rows["Overall"] = []Row{
-		{
-			Result: br.Overall(),
-			Metrics: map[string]float64{
-				elapsedKey: float64(br.Finished - br.Started),
-			},
-			Metadata: map[string]string{
-				"Tests name": "Overall",
+	br.Rows = map[string][]Row{
+		"Overall": {
+			{
+				Result: br.Overall(),
+				Metrics: map[string]float64{
+					elapsedKey: float64(br.Finished - br.Started),
+				},
+				Metadata: map[string]string{
+					"Tests name": "Overall",
+				},
 			},
 		},
 	}
-
-	ai := build.Bucket.Objects(build.Context, &storage.Query{Prefix: build.Prefix + "artifacts/"})
-	artifacts := map[string]map[string]string{}
-	for {
-		a, err := ai.Next()
-		if err == iterator.Done {
-			break
-		}
+	select {
+	case <-ctx.Done():
+		return nil, fmt.Errorf("interrupted reading %s", build)
+	case err := <-ec:
 		if err != nil {
-			return nil, fmt.Errorf("failed to list artifacts: %v", err)
+			cancel()
+			return nil, fmt.Errorf("failed to read %s: %v", build, err)
 		}
+	}
 
-		meta := ValidateName(a.Name)
-		if meta == nil {
-			continue
-		}
-		artifacts[a.Name] = meta
+	for t, rs := range rows {
+		br.Rows[t] = append(br.Rows[t], rs...)
 	}
-	// With parallelism: 60s without: 220s
-	ctx, cancel := context.WithCancel(build.Context) // Abort reads after the first error
-	var wg sync.WaitGroup
-	var lock sync.Mutex
-	abort := make(chan error)
-	wg.Add(1)
-	for ap, meta := range artifacts {
-		wg.Add(1)
-		// Read each artifact in a new thread
-		go func() {
-			defer wg.Done()
-			err := func() error {
-				ar, err := build.Bucket.Object(ap).NewReader(ctx)
-				if err != nil {
-					return fmt.Errorf("could not read %s: %v", ap, err)
-				}
-				if r := ar.Remain(); r > 50e6 {
-					return fmt.Errorf("too large: %s is %d > 50M", ap, r)
-				}
-				buf, err := ioutil.ReadAll(ar)
-				if err != nil {
-					return fmt.Errorf("partial read of %s: %v", ap, err)
-				}
 
-				select {
-				case <-ctx.Done():
-					return errors.New("aborted artifact read")
-				default:
-					// TODO(fejta): consider sync.Map
-					defer lock.Unlock()
-					lock.Lock()
-					if err = extractRows(buf, br.Rows, meta); err != nil {
-						return fmt.Errorf("failed to parse %s: %v", ap, err)
-					}
-				}
-				return nil
-			}()
-			if err == nil {
-				return
-			}
-			select {
-			case <-ctx.Done():
-			case abort <- err:
-			}
-		}()
-	}
-	wg.Done()
-	go func() {
-		wg.Wait() // Wait for everyone to complete
-		select {
-		case <-ctx.Done(): // Someone wrote an error
-		case abort <- nil: // No one wrote an error
-		}
-	}()
-	if err := <-abort; err != nil {
-		cancel() // Stop further reading
-		return nil, err
-	}
 	return &br, nil
 }
 
