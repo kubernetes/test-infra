@@ -1663,14 +1663,27 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/kubeflow-presubmit
   num_columns_recent: 30
 - name: kubeflow-postsubmit
-  gcs_prefix: kubernetes-jenkins/logs/google_kubeflow/kubeflow-postsubmit
-- name: tf-k8s-periodic
-  gcs_prefix: kubernetes-jenkins/logs/tf-k8s-periodic
-- name: tf-k8s-presubmit
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/tf-k8s-presubmit
+  gcs_prefix: kubernetes-jenkins/logs/kubeflow_kubeflow/kubeflow-postsubmit
+- name: kubeflow-examples-presubmit
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/kubeflow-examples-presubmit
   num_columns_recent: 30
-- name: tf-k8s-postsubmit
-  gcs_prefix: kubernetes-jenkins/logs/tensorflow_k8s/tf-k8s-postsubmit
+- name: kubeflow-examples-postsubmit
+  gcs_prefix: kubernetes-jenkins/logs/kubeflow_kubeflow/kubeflow-examples-postsubmit
+- name: kubeflow-reporting-presubmit
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/kubeflow-reporting-presubmit
+  num_columns_recent: 30
+- name: kubeflow-reporting-postsubmit
+  gcs_prefix: kubernetes-jenkins/logs/kubeflow_reporting/kubeflow-reporting-postsubmit
+- name: kubeflow-testing-presubmit
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/kubeflow-testing-presubmit
+  num_columns_recent: 30
+- name: kubeflow-testing-postsubmit
+  gcs_prefix: kubernetes-jenkins/logs/kubeflow_testing/kubeflow-testing-postsubmit
+- name: kubeflow-tf-operator-presubmit
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/kubeflow-tf-operator-presubmit
+  num_columns_recent: 30
+- name: kubeflow-tf-operator-postsubmit
+  gcs_prefix: kubernetes-jenkins/logs/kubeflow_tf-operator/kubeflow-tf-operator-postsubmit
 - name: tf-minigo-periodic
   gcs_prefix: kubernetes-jenkins/logs/tf-minigo-periodic
 - name: tf-minigo-presubmit
@@ -3568,15 +3581,30 @@ dashboards:
   - name: kubeflow-presubmit
     description: Presubmit tests for Kubeflow.
     test_group_name: kubeflow-presubmit
-  - name: tf-k8s-periodic
-    description: Periodic builds and testing of TfJob CRD at head running on stable GKE.
-    test_group_name: tf-k8s-periodic
-  - name: tf-k8s-postsubmit
-    description: Postsubmit tests of TfJob CRD running on stable GKE.
-    test_group_name: tf-k8s-postsubmit
-  - name: tf-k8s-presubmit
-    description: Presubmit tests of TfJob CRD running on stable GKE.
-    test_group_name: tf-k8s-presubmit
+  - name: kubeflow-examples-postsubmit
+    description: Postsubmit kubeflow/examples.
+    test_group_name: kubeflow-examples-postsubmit
+  - name: kubeflow-examples-presubmit
+    description: Presubmits for kubeflow/examples.
+    test_group_name: kubeflow-examples-presubmit
+  - name: kubeflow-reporting-postsubmit
+    description: Postsubmit kubeflow/reporting.
+    test_group_name: kubeflow-reporting-postsubmit
+  - name: kubeflow-reporting-presubmit
+    description: Presubmits for kubeflow/reporting.
+    test_group_name: kubeflow-reporting-presubmit
+  - name: kubeflow-testing-postsubmit
+    description: Postsubmit kubeflow/testing.
+    test_group_name: kubeflow-testing-postsubmit
+  - name: kubeflow-testing-presubmit
+    description: Presubmits for kubeflow/testing.
+    test_group_name: kubeflow-testing-presubmit
+  - name: kubeflow-tf-operator-postsubmit
+    description: Postsubmit kubeflow/tf-operator.
+    test_group_name: kubeflow-tf-operator-postsubmit
+  - name: kubeflow-tf-operator-presubmit
+    description: Presubmits for kubeflow/tf-operator.
+    test_group_name: kubeflow-tf-operator-presubmit
   - name: spark-periodic-default-gke
     description: Periodic builds and testing of Apache Spark on default version of GKE.
     test_group_name: spark-periodic-default-gke
