@@ -2,6 +2,12 @@ body {
     line-height: 1.4;
     background: #f4f4f4;
     color: #444;
+    font-family: 'Roboto', sans-serif !important;
+    font-size: 16px !important;
+}
+
+a {
+    padding: 4px 8px;
 }
 
 a.current {
@@ -10,6 +16,12 @@ a.current {
 
 a:link {
     text-decoration: none;
+    color: #3F51B5;
+}
+
+.highlighted-link:hover {
+    background-color: #EEEEEE;
+    border-radius: 4px;
 }
 
 .header-title {
@@ -107,24 +119,29 @@ th {
     display: none;
 }
 
-.triggered, .pending, .success, .failure, .error, .aborted {
-    font-weight: bold;
+/**
+ * State style
+ */
+.state {
+    border-radius: 2px;
+    width: 12px;
+    height: 12px;
 }
 
-.triggered, .pending {
-    color: #ffa500;
+.state.triggered, .state.pending {
+    background-color: #FFCA28;
 }
 
-.success {
-    color: #28a745;
+.state.success {
+    background-color: #66BB6A;
 }
 
-.failure {
-    color: #dd2222;
+.state.failure {
+    background-color: #EF5350;
 }
 
-.error, .aborted {
-    color: #888888;
+state.error, .state.aborted {
+    background-color: #BDBDBD;
 }
 
 #rerun {
@@ -207,7 +224,6 @@ span.label:hover {
 
 #command-table {
     display: none;
-    font-family: "Roboto", "Arial", sans-serif;
     margin: 8px;
     min-width: 500px;
     width: calc(100% - 16px);
@@ -218,14 +234,14 @@ span.label:hover {
     border-radius: 2px;
     box-shadow: 1px 1px 2px #ededed;
     display: inline-block;
-    font-size: 14px;
+    font-size: 15px;
     margin: 4px 0;
     padding: 2px 8px;
 }
 
 .command-usage {
     color: #757575;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: bolder;
 }
 
@@ -242,7 +258,7 @@ span.label:hover {
 }
 
 .command-desc-text {
-    font-size: 14px;
+    font-size: 15px;
     overflow-wrap: break-word;
 }
 
@@ -301,7 +317,11 @@ span.label:hover {
 }
 
 .external-icon, .link-icon {
-    color: #78909C;
+    color: #607D8B;
+}
+
+.icon-button {
+    color: #757575;
 }
 
 /* Known GitHub Labels, can be overridden in extensions/style.css */
@@ -318,6 +338,7 @@ span.label:hover {
     background-color: #bfe5bf;
     color: #000000;
 }
+
 .label.needs-ok-to-test {
     background-color: #b60205;
     color: #ffffff;

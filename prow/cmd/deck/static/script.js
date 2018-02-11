@@ -467,9 +467,14 @@ function redraw() {
         var r = document.createElement("tr");
         r.appendChild(stateCell(build.state));
         if (build.pod_name) {
-            r.appendChild(
-                createLinkCell("\u2261", "log?job=" + build.job + "&id="
-                    + build.build_id, "Build log."));
+            const icon = createIcon("description", "Build log");
+            icon.addEventListener("click", () => {
+                window.location.href += "log?job=" + build.job + "&id="
+                    + build.build_id;
+            });
+            const cell = document.createElement("TD");
+            cell.appendChild(icon);
+            r.appendChild(cell);
         } else {
             r.appendChild(createTextCell(""));
         }
@@ -518,45 +523,41 @@ function createTextCell(text) {
 }
 
 function createLinkCell(text, url, title) {
-    var c = document.createElement("td");
-    var a = document.createElement("a");
+    const c = document.createElement("td");
+    const a = document.createElement("a");
     a.href = url;
     if (title !== "") {
         a.title = title;
     }
     a.appendChild(document.createTextNode(text));
+    a.classList.add("highlighted-link");
     c.appendChild(a);
     return c;
 }
 
 function createRerunCell(modal, rerun_command, prowjob) {
-    var url = "https://" + window.location.hostname + "/rerun?prowjob="
+    const url = "https://" + window.location.hostname + "/rerun?prowjob="
         + prowjob;
-    var c = document.createElement("td");
-    var a = document.createElement("a");
-    a.href = "#";
-    a.title = "Show instructions for rerunning this job.";
-    a.onclick = function () {
+    const c = document.createElement("td");
+    const icon = createIcon("refresh", "Show instructions for rerunning this job");
+    icon.onclick = function () {
         modal.style.display = "block";
         rerun_command.innerHTML = "kubectl create -f \"<a href='" + url + "'>"
             + url + "</a>\"";
     };
-    a.appendChild(document.createTextNode("\u27F3"));
-    c.appendChild(a);
+    c.appendChild(icon);
     return c;
 }
 
 function stateCell(state) {
-    var c = document.createElement("td");
+    const c = document.createElement("td");
     c.className = state;
-    if (state === "triggered" || state === "pending") {
-        c.appendChild(document.createTextNode("\u2022"));
-    } else if (state === "success") {
-        c.appendChild(document.createTextNode("\u2713"));
-    } else if (state === "failure" || state === "error" || state
-        === "aborted") {
-        c.appendChild(document.createTextNode("\u2717"));
-    }
+
+    const stateIndicator = document.createElement("DIV");
+    stateIndicator.classList.add(...["state", state]);
+    c.appendChild(stateIndicator);
+    c.title = state[0].toUpperCase() + state.slice(1) + " job";
+
     return c;
 }
 
@@ -605,4 +606,26 @@ function prRevisionCell(build) {
     al.text = build.author;
     c.appendChild(al);
     return c;
+}
+
+
+/**
+ * Returns an icon element.
+ * @param {string} iconString icon name
+ * @param {string} tooltip tooltip string
+ * @return {Element}
+ */
+function createIcon(iconString, tooltip = "") {
+    const icon = document.createElement("I");
+    icon.classList.add(...["icon-button", "material-icons"]);
+    icon.innerHTML = iconString;
+    if (tooltip !== "") {
+        icon.title = tooltip;
+    }
+
+    const container = document.createElement("BUTTON");
+    container.appendChild(icon);
+    container.classList.add(...["mdl-button", "mdl-js-button", "mdl-button--icon"]);
+
+    return container;
 }
