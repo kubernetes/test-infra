@@ -53,7 +53,8 @@ type options struct {
 	creds            string  // TODO(fejta): implement
 	confirm          bool    // TODO(fejta): implement
 	group            string
-	groupConcurrency uint
+	groupConcurrency int
+	buildConcurrency int
 }
 
 // validate ensures sane options
@@ -65,7 +66,10 @@ func (o *options) validate() error {
 		return fmt.Errorf("--config=%s cannot start with gs://k8s-testgrid", o.config)
 	}
 	if o.groupConcurrency == 0 {
-		o.groupConcurrency = uint(4 * runtime.NumCPU())
+		o.groupConcurrency = 4 * runtime.NumCPU()
+	}
+	if o.buildConcurrency == 0 {
+		o.buildConcurrency = 4 * runtime.NumCPU()
 	}
 
 	return nil
@@ -78,7 +82,8 @@ func gatherOptions() options {
 	flag.StringVar(&o.creds, "gcp-service-account", "", "/path/to/gcp/creds (use local creds if empty")
 	flag.BoolVar(&o.confirm, "confirm", false, "Upload data if set")
 	flag.StringVar(&o.group, "test-group", "", "Only update named group if set")
-	flag.UintVar(&o.groupConcurrency, "group-concurrency", 0, "Manually define the number of groups to concurrently update if non-zero")
+	flag.IntVar(&o.groupConcurrency, "group-concurrency", 0, "Manually define the number of groups to concurrently update if non-zero")
+	flag.IntVar(&o.buildConcurrency, "build-concurrency", 0, "Manually define the number of builds to concurrently read if non-zero")
 	flag.Parse()
 	return o
 }
@@ -141,6 +146,10 @@ type Build struct {
 	Context context.Context
 	Prefix  string
 	number  *int
+}
+
+func (b Build) String() string {
+	return b.Prefix
 }
 
 type Started struct {
@@ -391,22 +400,23 @@ func AppendColumn(headers []string, format NameConfig, grid *state.Grid, rows ma
 		}
 		trunc := 0
 		var ah string
-		if h == "Commit" { // TODO(fejta): fix
+		if h == "Commit" { // TODO(fejta): fix, jobs use explicit key, support truncation
 			h = "repo-commit"
 			trunc = 9
 			ah = "job-version"
 		}
 		v, ok := build.Metadata[h]
 		if !ok {
-			log.Printf("%s metadata missing %s", c.Build, h)
-			v = "missing"
-			// TODO(fejta): gross, remove hack
-			if ah != "" {
+			// TODO(fejta): fix, make jobs use one or the other
+			if ah == "" {
+				log.Printf("  %s metadata missing %s", c.Build, h)
+				v = "missing"
+			} else {
 				if av, ok := build.Metadata[ah]; ok {
 					parts := strings.SplitN(av, "+", 2)
 					v = parts[len(parts)-1]
 				} else {
-					log.Printf("%s metadata also missing %s", c.Build, ah)
+					log.Printf("  %s metadata missing both keys %s and alternate %s", c.Build, h, ah)
 				}
 			}
 		}
@@ -507,7 +517,7 @@ func ValidateName(name string) map[string]string {
 
 func ReadBuild(build Build) (*Column, error) {
 	var wg sync.WaitGroup                                             // Each subtask does wg.Add(1), then we wg.Wait() for them to finish
-	ctx, cancel := context.WithTimeout(build.Context, 20*time.Second) // Allows aborting after first error
+	ctx, cancel := context.WithTimeout(build.Context, 30*time.Second) // Allows aborting after first error
 	ec := make(chan error)                                            // Receives errors from anyone
 
 	// Download started.json, send to sc
@@ -551,7 +561,11 @@ func ReadBuild(build Build) (*Column, error) {
 			var finished Finished
 			if err == storage.ErrObjectNotExist { // Job has not (yet) completed
 				finished.running = true
-			} else if err = json.NewDecoder(fr).Decode(&finished); err != nil {
+				return finished, nil
+			} else if err != nil {
+				return finished, fmt.Errorf("could not open %s: %v", f, err)
+			}
+			if err = json.NewDecoder(fr).Decode(&finished); err != nil {
 				return finished, fmt.Errorf("could not decode finished.json: %v", err)
 			}
 			return finished, nil
@@ -667,13 +681,13 @@ func ReadBuild(build Build) (*Column, error) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		for rows := range rc {
+		for r := range rc {
 			select { // Should we continue
 			case <-ctx.Done(): // No, aborted
 				return
 			default: // Yes
 			}
-			for t, rs := range rows {
+			for t, rs := range r {
 				rows[t] = append(rows[t], rs...)
 			}
 		}
@@ -744,6 +758,7 @@ func ReadBuild(build Build) (*Column, error) {
 	}
 	select {
 	case <-ctx.Done():
+		cancel()
 		return nil, fmt.Errorf("interrupted reading %s", build)
 	case err := <-ec:
 		if err != nil {
@@ -756,6 +771,7 @@ func ReadBuild(build Build) (*Column, error) {
 		br.Rows[t] = append(br.Rows[t], rs...)
 	}
 
+	cancel()
 	return &br, nil
 }
 
@@ -768,7 +784,8 @@ func (b Builds) Less(i, j int) bool {
 }
 
 // listBuilds lists and sorts builds under path, sending them to the builds channel.
-func listBuilds(client *storage.Client, ctx context.Context, path gcsPath, builds chan Build) error {
+func listBuilds(client *storage.Client, ctx context.Context, path gcsPath) (Builds, error) {
+	log.Printf("LIST: %s", path)
 	p := path.object()
 	if p[len(p)-1] != '/' {
 		p += "/"
@@ -778,7 +795,6 @@ func listBuilds(client *storage.Client, ctx context.Context, path gcsPath, build
 		Delimiter: "/",
 		Prefix:    p,
 	})
-	fmt.Println("Looking in ", path.bucket(), p)
 	var all Builds
 	for {
 		objAttrs, err := it.Next()
@@ -786,13 +802,12 @@ func listBuilds(client *storage.Client, ctx context.Context, path gcsPath, build
 			break
 		}
 		if err != nil {
-			return fmt.Errorf("failed to list objects: %v", err)
+			return nil, fmt.Errorf("failed to list objects: %v", err)
 		}
 		if len(objAttrs.Prefix) == 0 {
 			continue
 		}
 
-		//fmt.Println("Found name:", objAttrs.Name, "prefix:", objAttrs.Prefix)
 		all = append(all, Build{
 			Bucket:  bkt,
 			Context: ctx,
@@ -801,12 +816,8 @@ func listBuilds(client *storage.Client, ctx context.Context, path gcsPath, build
 	}
 	// Expect builds to be in monotonically increasing order.
 	// So build9 should be followed by build10 or build888 but not build8
-	sort.Sort(all)
-	// Iterate backwards since the largest (and thus most recent) is at the end.
-	for i := len(all) - 1; i >= 0; i-- {
-		builds <- all[i]
-	}
-	return nil
+	sort.Sort(sort.Reverse(all))
+	return all, nil
 }
 
 func Headers(group config.TestGroup) []string {
@@ -825,40 +836,122 @@ func (r Rows) Less(i, j int) bool {
 	return sortorder.NaturalLess(r[i].Name, r[j].Name)
 }
 
-func ReadBuilds(group config.TestGroup, builds chan Build, max int, dur time.Duration) state.Grid {
-	i := 0
+func ReadBuilds(parent context.Context, group config.TestGroup, builds Builds, max int, dur time.Duration, concurrency int) (*state.Grid, error) {
+	// Spawn build readers
+	if concurrency == 0 {
+		return nil, fmt.Errorf("zero readers for %s", group.Name)
+	}
+	ctx, cancel := context.WithCancel(parent)
 	var stop time.Time
 	if dur != 0 {
 		stop = time.Now().Add(-dur)
 	}
+	lb := len(builds)
+	if lb > max {
+		log.Printf("  Truncating %d %s results to %d", lb, group.Name, max)
+		lb = max
+	}
+	cols := make([]*Column, lb)
+	log.Printf("UPDATE: %s since %s (%d)", group.Name, stop, stop.Unix())
+	ec := make(chan error)
+	old := make(chan int)
+	var wg sync.WaitGroup
+
+	// Send build indices to readers
+	indices := make(chan int)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		defer close(indices)
+		for i := range builds[:lb] {
+			select {
+			case <-ctx.Done():
+				return
+			case <-old:
+				return
+			case indices <- i:
+			}
+		}
+	}()
+
+	// Concurrently receive indicies and read builds
+	for i := 0; i < concurrency; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case i, open := <-indices:
+					if !open {
+						return
+					}
+					b := builds[i]
+					c, err := ReadBuild(b)
+					if err != nil {
+						ec <- err
+						return
+					}
+					cols[i] = c
+					if c.Started < stop.Unix() {
+						select {
+						case <-ctx.Done():
+						case old <- i:
+							log.Printf("STOP: %d %s started at %d < %d", i, b.Prefix, c.Started, stop.Unix())
+						default: // Someone else may have already reported an old result
+						}
+					}
+				}
+			}
+		}()
+	}
+
+	// Wait for everyone to finish
+	go func() {
+		wg.Wait()
+		select {
+		case <-ctx.Done():
+		case ec <- nil: // No error
+		}
+	}()
+
+	// Determine if we got an error
+	select {
+	case <-ctx.Done():
+		cancel()
+		return nil, fmt.Errorf("interrupted reading %s", group.Name)
+	case err := <-ec:
+		if err != nil {
+			cancel()
+			return nil, fmt.Errorf("error reading %s: %v", group.Name, err)
+		}
+	}
+
+	// Add the columns into a grid message
 	grid := &state.Grid{}
+	rows := map[string]*state.Row{} // For fast target => row lookup
 	h := Headers(group)
 	nc := MakeNameConfig(group.TestNameConfig)
-	rows := map[string]*state.Row{}
-	log.Printf("Reading builds after %s (%d)", stop, stop.Unix())
-	for b := range builds {
-		i++
-		if max > 0 && i > max {
-			log.Printf("Hit ceiling of %d results", max)
-			break
+	for _, c := range cols {
+		select {
+		case <-ctx.Done():
+			cancel()
+			return nil, fmt.Errorf("interrupted appending columns to %s", group.Name)
+		default:
 		}
-		br, err := ReadBuild(b)
-		if err != nil {
-			log.Printf("FAIL %s: %v", b.Prefix, err)
+		if c == nil {
 			continue
 		}
-		AppendColumn(h, nc, grid, rows, *br)
-		log.Printf("found: %s pass:%t %d-%d: %d results", br.Id, br.Passed, br.Started, br.Finished, len(br.Rows))
-		if br.Started < stop.Unix() {
-			log.Printf("Latest result before %s", stop)
-			break
+		AppendColumn(h, nc, grid, rows, *c)
+		if c.Started < stop.Unix() { // There may be concurrency results < stop.Unix()
+			log.Printf("  %s#%s before %s, stopping...", group.Name, c.Id, stop)
+			break // Just process the first result < stop.Unix()
 		}
 	}
-	log.Println("Finished reading builds.")
-	for range builds {
-	}
 	sort.Stable(Rows(grid.Rows))
-	return *grid
+	cancel()
+	return grid, nil
 }
 
 func Days(d float64) time.Duration {
@@ -910,16 +1003,17 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to read %s: %v", opt.config, err)
 	}
+	log.Printf("Found %d groups", len(cfg.TestGroups))
 
 	groups := make(chan config.TestGroup)
 	var wg sync.WaitGroup
 
-	for i := uint(0); i < opt.groupConcurrency; i++ {
+	for i := 0; i < opt.groupConcurrency; i++ {
 		wg.Add(1)
 		go func() {
 			for tg := range groups {
-				if err := updateGroup(client, ctx, tg, opt.config.testGroup(tg.Name), opt.confirm); err != nil {
-					log.Printf("Update failed: %v", err)
+				if err := updateGroup(client, ctx, tg, opt.config.testGroup(tg.Name), opt.buildConcurrency, opt.confirm); err != nil {
+					log.Printf("FAIL: %v", err)
 				}
 			}
 			wg.Done()
@@ -939,7 +1033,6 @@ func main() {
 		}
 	} else { // All groups
 		for _, tg := range cfg.TestGroups {
-			log.Println(tg)
 			groups <- *tg
 		}
 	}
@@ -947,14 +1040,13 @@ func main() {
 	wg.Wait()
 }
 
-func updateGroup(client *storage.Client, ctx context.Context, tg config.TestGroup, gridPath gcsPath, write bool) error {
+func updateGroup(client *storage.Client, ctx context.Context, tg config.TestGroup, gridPath gcsPath, concurrency int, write bool) error {
 	o := tg.Name
 
 	var tgPath gcsPath
 	if err := tgPath.Set("gs://" + tg.GcsPrefix); err != nil {
 		return fmt.Errorf("group %s has an invalid gcs_prefix %s: %v", o, tg.GcsPrefix, err)
 	}
-	log.Println(tgPath)
 
 	g := state.Grid{}
 	g.Columns = append(g.Columns, &state.Column{Build: "first", Started: 1})
@@ -968,19 +1060,18 @@ func updateGroup(client *storage.Client, ctx context.Context, tg config.TestGrou
 	}
 	buf, err := marshalGrid(*grid)
 	if err != nil {
-		return fmt.Errorf("failed to marhsal %s grid: %v", o, err)
+		return fmt.Errorf("failed to marshal %s grid: %v", o, err)
 	}
 	tgp := gridPath
 	if !write {
-		log.Printf("Grid: %d %s", len(grid.Columns), grid.String())
-		log.Printf("Not writing %s (%d bytes) to %s", o, len(buf), tgp)
+		log.Printf("  Not writing %s (%d bytes) to %s", o, len(buf), tgp)
 	} else {
 		log.Printf("  Writing %s (%d bytes) to %s", o, len(buf), tgp)
 		if err := uploadBytes(client, ctx, tgp, buf); err != nil {
 			return fmt.Errorf("upload %s to %s failed: %v", o, tgp, err)
 		}
 	}
-	log.Print("Success!")
+	log.Printf("WROTE: %s, %dx%d grid (%s, %d bytes)", tg.Name, len(grid.Columns), len(grid.Rows), tgp, len(buf))
 	return nil
 }
 
