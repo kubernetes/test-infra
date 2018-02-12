@@ -61,11 +61,18 @@ func exists(path string) bool {
 }
 
 // file path helper
-func ensureDir(dir string) {
+func ensureDir(dir string) error {
 	if exists(dir) {
-		return
+		return nil
 	}
-	log.WithError(os.MkdirAll(dir, os.FileMode(0744))).Infof("MkDirAll(%s)", dir)
+	return os.MkdirAll(dir, os.FileMode(0744))
+}
+
+func removeTemp(path string) {
+	err := os.Remove(path)
+	if err != nil {
+		log.WithError(err).Errorf("Failed to remove a temp file: %v", path)
+	}
 }
 
 // Put copies the content reader until the end into the cache at key
@@ -75,7 +82,10 @@ func (c *Cache) Put(key string, content io.Reader, contentSHA256 string) error {
 	// make sure directory exists
 	path := c.keyToPath(key)
 	dir := filepath.Dir(path)
-	ensureDir(dir)
+	err := ensureDir(dir)
+	if err != nil {
+		log.WithError(err).Errorf("error ensuring directory '%s' exists", dir)
+	}
 
 	// create a temp file to get the content on disk
 	temp, err := ioutil.TempFile(dir, "temp-put")
@@ -85,9 +95,9 @@ func (c *Cache) Put(key string, content io.Reader, contentSHA256 string) error {
 
 	// fast path copying when not hashing content,s
 	if contentSHA256 == "" {
-		io.Copy(temp, content)
+		_, err = io.Copy(temp, content)
 		if err != nil {
-			os.Remove(temp.Name())
+			removeTemp(temp.Name())
 			return fmt.Errorf("failed to copy into cache entry: %v", err)
 		}
 
@@ -95,12 +105,12 @@ func (c *Cache) Put(key string, content io.Reader, contentSHA256 string) error {
 		hasher := sha256.New()
 		_, err = io.Copy(io.MultiWriter(temp, hasher), content)
 		if err != nil {
-			os.Remove(temp.Name())
+			removeTemp(temp.Name())
 			return fmt.Errorf("failed to copy into cache entry: %v", err)
 		}
 		actualContentSHA256 := hex.EncodeToString(hasher.Sum(nil))
 		if actualContentSHA256 != contentSHA256 {
-			os.Remove(temp.Name())
+			removeTemp(temp.Name())
 			return fmt.Errorf(
 				"hashes did not match for '%s', given: '%s' actual: '%s",
 				key, contentSHA256, actualContentSHA256)
@@ -110,13 +120,13 @@ func (c *Cache) Put(key string, content io.Reader, contentSHA256 string) error {
 	// move the content to the key location
 	err = temp.Sync()
 	if err != nil {
-		os.Remove(temp.Name())
+		removeTemp(temp.Name())
 		return fmt.Errorf("failed to sync cache entry: %v", err)
 	}
 	temp.Close()
 	err = os.Rename(temp.Name(), path)
 	if err != nil {
-		os.Remove(temp.Name())
+		removeTemp(temp.Name())
 		return fmt.Errorf("failed to insert contents into cache: %v", err)
 	}
 	return nil

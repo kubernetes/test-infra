@@ -63,6 +63,7 @@ func main() {
 	http.Handle("/", cacheHandler(cache))
 
 	addr := fmt.Sprintf("%s:%d", *host, *port)
+	log.Infof("Listening on: %s", addr)
 	log.WithError(http.ListenAndServe(addr, nil)).Fatal("ListenAndServe returned.")
 }
 
@@ -121,7 +122,9 @@ func cacheHandler(cache *diskcache.Cache) http.Handler {
 			}
 			err := cache.Put(r.URL.Path, r.Body, hash)
 			if err != nil {
+				http.Error(w, "failed to put in cache", http.StatusInternalServerError)
 				log.WithError(err).Errorf("Failed to put: %v", r.URL.Path)
+				return
 			}
 
 		// handle unsupported methods...
