@@ -82,10 +82,10 @@ packages() {
   done) | sort -u
 }
 
-# Convert //foo //bar to foo/BUILD bar/BUILD
+# Convert //foo //bar to foo/BUILD.bazel bar/BUILD.bazel
 builds() {
   for i in "${@}"; do
-    echo ${i:2}/BUILD
+    echo ${i:2}/BUILD.bazel
   done
 }
 

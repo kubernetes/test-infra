@@ -80,6 +80,7 @@ func modifiedBazelFiles(ghc githubClient, org, repo string, number int, sha stri
 			continue
 		case change.Status == github.PullRequestFileRemoved || change.Status == github.PullRequestFileRenamed:
 			continue
+		// This also happens to match BUILD.bazel.
 		case strings.Contains(change.Filename, "BUILD"):
 			break
 		case strings.Contains(change.Filename, "WORKSPACE"):
