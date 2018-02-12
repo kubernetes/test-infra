@@ -53,8 +53,9 @@ hash_toolchains () {
 }
 
 get_workspace () {
-    if [[ -n "${REPO_NAME}" ]]; then
-        echo "${REPO_NAME}"
+    # get org/repo from prow, otherwise use $PWD
+    if [[ -n "${REPO_NAME}" ]] && [[ -n "${REPO_OWNER}" ]]; then
+        echo "${REPO_OWNER}/${REPO_NAME}"
     else
         echo "$(basename $(dirname $PWD))/$(basename $PWD)"
     fi

@@ -29,10 +29,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Key is a key in the cache, must be filesystem / URL safe
-// TODO(bentheelder): add method to restrict / validate key characters
-type Key = string
-
 // ReadHandler should be implemeted by cache users for use with Cache.Get
 type ReadHandler func(exists bool, contents io.ReadSeeker) error
 
@@ -49,7 +45,7 @@ func NewCache(diskRoot string) *Cache {
 	}
 }
 
-func (c *Cache) keyToPath(key Key) string {
+func (c *Cache) keyToPath(key string) string {
 	return filepath.Join(c.diskRoot, key)
 }
 
@@ -75,7 +71,7 @@ func ensureDir(dir string) {
 // Put copies the content reader until the end into the cache at key
 // if contentSHA256 is not "" then the contents will only be stored in the
 // cache if the content's hex string SHA256 matches
-func (c *Cache) Put(key Key, content io.Reader, contentSHA256 string) error {
+func (c *Cache) Put(key string, content io.Reader, contentSHA256 string) error {
 	// make sure directory exists
 	path := c.keyToPath(key)
 	dir := filepath.Dir(path)
@@ -127,7 +123,7 @@ func (c *Cache) Put(key Key, content io.Reader, contentSHA256 string) error {
 }
 
 // Get provides your readHandler with the contents at key
-func (c *Cache) Get(key Key, readHandler ReadHandler) error {
+func (c *Cache) Get(key string, readHandler ReadHandler) error {
 	path := c.keyToPath(key)
 	if !exists(path) {
 		return readHandler(false, nil)
