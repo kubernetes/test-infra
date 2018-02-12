@@ -35,6 +35,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -443,7 +444,7 @@ func main() {
 	}
 
 	// create temp file to write updated config
-	f, err := ioutil.TempFile("", "prow-config")
+	f, err := ioutil.TempFile(filepath.Dir(*configPath), "temp")
 	if err != nil {
 		log.Fatalf("Failed to create temp file: %v", err)
 	}
