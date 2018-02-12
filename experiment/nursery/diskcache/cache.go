@@ -135,11 +135,11 @@ func (c *Cache) Put(key string, content io.Reader, contentSHA256 string) error {
 // Get provides your readHandler with the contents at key
 func (c *Cache) Get(key string, readHandler ReadHandler) error {
 	path := c.keyToPath(key)
-	if !exists(path) {
-		return readHandler(false, nil)
-	}
 	f, err := os.Open(path)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return readHandler(false, nil)
+		}
 		return fmt.Errorf("failed to get key: %v", err)
 	}
 	return readHandler(true, f)
