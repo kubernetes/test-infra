@@ -475,6 +475,15 @@
       "sig-multicluster"
     ]
   },
+  "ci-federation-release": {
+    "args": [
+      "./hack/release.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-multicluster"
+    ]
+  },
   "ci-ingress-gce-downgrade-e2e": {
     "args": [
       "--check-leaked-resources",
