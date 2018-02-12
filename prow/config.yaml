@@ -4982,7 +4982,7 @@ presubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/minigo-testing/minigo-prow-harness:latest
+      - image: gcr.io/minigo-testing/minigo-prow-harness-v2:latest
         imagePullPolicy: Always
         args:
         - "--clean"
