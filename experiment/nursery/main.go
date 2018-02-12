@@ -63,8 +63,11 @@ func main() {
 	http.Handle("/", cacheHandler(cache))
 
 	addr := fmt.Sprintf("%s:%d", *host, *port)
-	log.Infof("Listening on: %s", addr)
-	log.WithError(http.ListenAndServe(addr, nil)).Fatal("ListenAndServe returned.")
+	logger := log.WithFields(log.Fields{
+		"component": "nursery",
+	})
+	logger.Infof("Listening on: %s", addr)
+	logger.WithError(http.ListenAndServe(addr, nil)).Fatal("ListenAndServe returned.")
 }
 
 // file not found error, used below
@@ -72,19 +75,24 @@ var errNotFound = errors.New("entry not found")
 
 func cacheHandler(cache *diskcache.Cache) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger := log.WithFields(log.Fields{
+			"component": "nursery",
+			"method":    r.Method,
+			"path":      r.URL.Path,
+		})
 		// parse and validate path
 		// the last segment should be a hash, and the
 		// the second to last segment should be "ac" or "cas"
 		parts := strings.Split(r.URL.Path, "/")
 		if len(parts) < 3 {
-			log.Warn("received an invalid request at path: %v", r.URL.Path)
+			logger.Warn("received an invalid request")
 			http.Error(w, "invalid location", http.StatusBadRequest)
 			return
 		}
 		hash := parts[len(parts)-1]
 		acOrCAS := parts[len(parts)-2]
 		if acOrCAS != "ac" && acOrCAS != "cas" {
-			log.Warn("received an invalid request at path: %v", r.URL.Path)
+			logger.Warn("received an invalid request at path")
 			http.Error(w, "invalid location", http.StatusBadRequest)
 			return
 		}
@@ -107,8 +115,8 @@ func cacheHandler(cache *diskcache.Cache) http.Handler {
 					return
 				}
 				// unknown error
-				log.WithError(err).Error("error getting key")
-				http.Error(w, err.Error(), http.StatusNotFound)
+				logger.WithError(err).Error("error getting key")
+				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 
@@ -122,15 +130,15 @@ func cacheHandler(cache *diskcache.Cache) http.Handler {
 			}
 			err := cache.Put(r.URL.Path, r.Body, hash)
 			if err != nil {
+				logger.WithError(err).Errorf("Failed to put: %v", r.URL.Path)
 				http.Error(w, "failed to put in cache", http.StatusInternalServerError)
-				log.WithError(err).Errorf("Failed to put: %v", r.URL.Path)
 				return
 			}
 
 		// handle unsupported methods...
 		default:
-			log.Warn("received an invalid request method: %v", r.Method)
-			http.Error(w, "unsupported method", http.StatusBadRequest)
+			logger.Warn("received an invalid request method")
+			http.Error(w, "unsupported method", http.StatusMethodNotAllowed)
 		}
 	})
 }
