@@ -552,7 +552,6 @@ presubmits:
   - name: pull-kube-deploy-test
     agent: kubernetes
     always_run: true
-    skip_report: true
     context: pull-kube-deploy-test
     rerun_command: "/test pull-kube-deploy-test"
     trigger: "/test( all| pull-kube-deploy-test)"
