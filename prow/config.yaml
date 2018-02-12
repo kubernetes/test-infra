@@ -4987,7 +4987,7 @@ presubmits:
         args:
         - "--clean"
         - "--job=$(JOB_NAME)"
-        - "--repo=tensorflow/minigo=$(PULL_REFS)"
+        - "--repo=github.com/tensorflow/minigo=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
 
@@ -5630,7 +5630,7 @@ postsubmits:
         args:
         - "--clean"
         - "--job=$(JOB_NAME)"
-        - "--repo=tensorflow/minigo=$(PULL_REFS)"
+        - "--repo=github.com/tensorflow/minigo=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/logs"
 
@@ -14190,6 +14190,6 @@ periodics:
       args:
       - "--clean"
       - "--job=$(JOB_NAME)"
-      - "--repo=tensorflow/minigo=master"
+      - "--repo=github.com/tensorflow/minigo=master"
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
