@@ -58,6 +58,9 @@ ENV IMAGE=${IMAGE_ARG}
 # preinstall this for kops tests xref kubetest prepareAws(...)
 RUN pip install awscli
 
+# preinstall graphviz package for graphing profiles
+RUN apt-get install -y graphviz
+
 ADD ["e2e-runner.sh", \
     "kops-e2e-runner.sh", \
     "kubetest", \
