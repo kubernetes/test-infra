@@ -135,7 +135,7 @@ Merge your PR and @k8s-ci-robot will deploy your change automatically.
 We use [Bazel](https://www.bazel.io/) to build and test the code in this repo.
 The commands `bazel build //...` and `bazel test //...` should be all you need
 for most cases. If you modify Go code, run `./hack/update-bazel.sh` to keep
-`BUILD` files up-to-date.
+`BUILD.bazel` files up-to-date.
 
 ## Contributing Test Results
 

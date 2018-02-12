@@ -194,6 +194,22 @@ func TestModifiedBazelFiles(t *testing.T) {
 			},
 		},
 		{
+			name: "modified files include BUILD.bazel",
+			gh: &ghc{
+				changes: []github.PullRequestChange{
+					{
+						Filename: "BUILD.bazel",
+					},
+					{
+						Filename: "foo.go",
+					},
+				},
+			},
+			expectedModifiedFiles: map[string]string{
+				"BUILD.bazel": "",
+			},
+		},
+		{
 			name: "modified files include WORKSPACE",
 			gh: &ghc{
 				changes: []github.PullRequestChange{
