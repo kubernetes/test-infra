@@ -224,6 +224,22 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
 
+  kubeflow/examples:
+  - name: kubeflow-examples-presubmit
+    context: kubeflow-examples-presubmit
+    agent: kubernetes
+    always_run: true         # Run for every PR, or only when requested.
+    rerun_command: "/test kubeflow-examples-presubmit"
+    trigger: "(?m)^/test( all| kubeflow-examples-presubmit),?(\\s+|$)"
+    branches:
+    - master
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
   kubeflow/kubeflow:
   - name: kubeflow-presubmit
     context: kubeflow-presubmit
@@ -238,6 +254,54 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/mlkube-testing/kubeflow-testing:latest
+        imagePullPolicy: Always
+
+  kubeflow/reporting:
+  - name: kubeflow-reporting-presubmit
+    context: kubeflow-reporting-presubmit
+    agent: kubernetes
+    always_run: true         # Run for every PR, or only when requested.
+    rerun_command: "/test kubeflow-reporting-presubmit"
+    trigger: "(?m)^/test( all| kubeflow-reporting-presubmit),?(\\s+|$)"
+    branches:
+    - master
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/testing:
+  - name: kubeflow-testing-presubmit
+    context: kubeflow-testing-presubmit
+    agent: kubernetes
+    always_run: true         # Run for every PR, or only when requested.
+    rerun_command: "/test kubeflow-testing-presubmit"
+    trigger: "(?m)^/test( all| kubeflow-testing-presubmit),?(\\s+|$)"
+    branches:
+    - master
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/tf-operator:
+  - name: kubeflow-tf-operator-presubmit
+    context: kubeflow-tf-operator-presubmit
+    agent: kubernetes
+    always_run: true         # Run for every PR, or only when requested.
+    rerun_command: "/test kubeflow-tf-operator-presubmit"
+    trigger: "(?m)^/test( all| kubeflow-tf-operator-presubmit),?(\\s+|$)"
+    branches:
+    - master
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
   kubernetes/charts:
@@ -4904,22 +4968,6 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
 
-  tensorflow/k8s:
-  - name: tf-k8s-presubmit
-    context: tf-k8s-presubmit
-    agent: kubernetes
-    always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test tf-k8s-presubmit"
-    trigger: "(?m)^/test( all| tf-k8s-presubmit),?(\\s+|$)"
-    branches:
-    - master
-    labels:
-      preset-service-account: true
-    spec:
-      containers:
-      # TODO(jlewi): Replace latest with a specific tag once the images stabilize.
-      - image: gcr.io/mlkube-testing/builder:latest
-        imagePullPolicy: Always
 
   tensorflow/minigo:
   - name: tf-minigo-presubmit
@@ -4938,6 +4986,18 @@ presubmits:
         imagePullPolicy: Always
 
 postsubmits:
+  kubeflow/examples:
+  - name: kubeflow-examples-postsubmit
+    agent: kubernetes
+    branches:
+    - master
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
   kubeflow/kubeflow:
   - name: kubeflow-postsubmit
     agent: kubernetes
@@ -4948,6 +5008,42 @@ postsubmits:
     spec:
       containers:
       - image: gcr.io/mlkube-testing/kubeflow-testing:latest
+        imagePullPolicy: Always
+
+  kubeflow/reporting:
+  - name: kubeflow-reporting-postsubmit
+    agent: kubernetes
+    branches:
+    - master
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/testing:
+  - name: kubeflow-testing-postsubmit
+    agent: kubernetes
+    branches:
+    - master
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/tf-operator:
+  - name: kubeflow-tf-operator-postsubmit
+    agent: kubernetes
+    branches:
+    - master
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
   kubernetes/ingress-gce:
@@ -5513,18 +5609,6 @@ postsubmits:
           requests:
             memory: "1Gi"
 
-  tensorflow/k8s:
-  - name: tf-k8s-postsubmit
-    agent: kubernetes
-    branches:
-    - master
-    labels:
-      preset-service-account: true
-    spec:
-      containers:
-      # TODO(jlewi): Replace latest with a specific tag once the images stabilize.
-      - image: gcr.io/mlkube-testing/builder:latest
-        imagePullPolicy: Always
 
   tensorflow/minigo:
   - name: tf-minigo-postsubmit
@@ -14158,17 +14242,6 @@ periodics:
     - name: docker-graph
       hostPath:
         path: /mnt/disks/ssd0/docker-graph
-
-- interval: 8h
-  agent: kubernetes
-  name: tf-k8s-periodic
-  labels:
-    preset-service-account: true
-  spec:
-    containers:
-    # TODO(jlewi): Replace latest with a specific tag once the images stabilize.
-    - image: gcr.io/mlkube-testing/builder:latest
-      imagePullPolicy: Always
 
 - name: tf-minigo-periodic
   interval: 8h

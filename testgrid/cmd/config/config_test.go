@@ -353,7 +353,11 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 	// Also check k/k presubmit, prow postsubmit and periodic jobs
 	for _, job := range prowConfig.AllPresubmits([]string{
 		"google/cadvisor",
+		"kubeflow/examples",
 		"kubeflow/kubeflow",
+		"kubeflow/reporting",
+		"kubeflow/testing",
+		"kubeflow/tf-operator",
 		"kubernetes/kubernetes",
 		"kubernetes/test-infra",
 		"kubernetes/cluster-registry",
@@ -362,7 +366,6 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 		"kubernetes/heapster",
 		"kubernetes/charts",
 		"kubernetes/kube-deploy",
-		"tensorflow/k8s",
 		"tensorflow/minigo",
 	}) {
 		jobs[job.Name] = false

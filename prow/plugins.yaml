@@ -134,7 +134,27 @@ plugins:
   google/cadvisor:
   - trigger
 
+  kubeflow/examples:
+  - lgtm
+  - size
+  - trigger
+
   kubeflow/kubeflow:
+  - lgtm
+  - size
+  - trigger
+
+  kubeflow/reporting:
+  - lgtm
+  - size
+  - trigger
+
+  kubeflow/testing:
+  - lgtm
+  - size
+  - trigger
+
+  kubeflow/tf-operator:
   - lgtm
   - size
   - trigger
