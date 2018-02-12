@@ -38,6 +38,7 @@ go_test(
     srcs = [
         "jobs_test.go",
         "main_test.go",
+        "tide_test.go",
     ],
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/cmd/deck",
@@ -47,6 +48,7 @@ go_test(
         "//prow/pluginhelp:go_default_library",
         "//prow/tide:go_default_library",
         "//vendor/github.com/ghodss/yaml:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/api/equality:go_default_library",
     ],
 )
 

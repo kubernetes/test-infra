@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -39,6 +40,10 @@ type tideAgent struct {
 	log          *logrus.Entry
 	path         string
 	updatePeriod func() time.Duration
+
+	// Config for hiding repos
+	hiddenRepos []string
+	hiddenOnly  bool
 
 	sync.Mutex
 	pools []tide.Pool
@@ -89,4 +94,54 @@ func (ta *tideAgent) update() error {
 	defer ta.Unlock()
 	ta.pools = pools
 	return nil
+}
+
+func (ta *tideAgent) filterHidden(tideQueries []config.TideQuery, pools []tide.Pool) ([]config.TideQuery, []tide.Pool) {
+	if len(ta.hiddenRepos) == 0 {
+		return tideQueries, pools
+	}
+
+	var filteredTideQueries []config.TideQuery
+	for _, qc := range tideQueries {
+		includesHidden := false
+		// This will exclude the query even if a single
+		// repo in the query is included in hiddenRepos.
+		for _, repo := range qc.Repos {
+			if matches(repo, ta.hiddenRepos) {
+				includesHidden = true
+				break
+			}
+		}
+		if (includesHidden && ta.hiddenOnly) ||
+			(!includesHidden && !ta.hiddenOnly) {
+			filteredTideQueries = append(filteredTideQueries, qc)
+		}
+	}
+
+	var filteredPools []tide.Pool
+	for _, pool := range pools {
+		needsHide := matches(pool.Org+"/"+pool.Repo, ta.hiddenRepos)
+		if (needsHide && ta.hiddenOnly) ||
+			(!needsHide && !ta.hiddenOnly) {
+			filteredPools = append(filteredPools, pool)
+		}
+	}
+
+	return filteredTideQueries, filteredPools
+}
+
+// matches returns whether the provided repo intersects
+// with repos. repo has always the "org/repo" format but
+// repos can include both orgs and repos.
+func matches(repo string, repos []string) bool {
+	org := strings.Split(repo, "/")[0]
+	for _, r := range repos {
+		if r == repo {
+			return true
+		}
+		if !strings.Contains(r, "/") && r == org {
+			return true
+		}
+	}
+	return false
 }
