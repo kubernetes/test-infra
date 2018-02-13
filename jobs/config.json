@@ -701,6 +701,24 @@
       "sig-release"
     ]
   },
+  "ci-kubernetes-e2e-autoscaling-vpa-recommender": {
+    "args": [
+      "--check-leaked-resources",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=ci/latest",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test=false",
+      "--test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh",
+      "--test-cmd-args=recommender",
+      "--timeout=60m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-autoscaling"
+    ]
+  },
   "ci-kubernetes-e2e-cos-docker-validation": {
     "args": [
       "--check-leaked-resources",
@@ -11254,24 +11272,6 @@
     "scenario": "execute",
     "sigOwners": [
       "sig-testing"
-    ]
-  },
-  "ci-kubernetes-e2e-autoscaling-vpa-recommender": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gce.env",
-      "--extract=ci/latest",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test=false",
-      "--test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh",
-      "--test-cmd-args=recommender",
-      "--timeout=60m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-autoscaling"
     ]
   },
   "spark-periodic-default-gke": {
