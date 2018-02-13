@@ -28,6 +28,7 @@ import (
 	"net/url"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/go-openapi/spec"
@@ -36,6 +37,7 @@ import (
 
 var (
 	openAPIFile = flag.String("openapi", "https://raw.githubusercontent.com/kubernetes/kubernetes/master/api/openapi-spec/swagger.json", "URL to openapi-spec of Kubernetes")
+	minCoverage = flag.Int("minimum-coverage", 0, "This command fails if the number of covered APIs is less than this option ratio(percent)")
 	restLog     = flag.String("restlog", "", "File path to REST API operation log of Kubernetes")
 	showAPIType = flag.String("apitype", "stable", "API type to show not-tested APIs. The options are stable, alpha, beta and all")
 )
@@ -228,6 +230,11 @@ func outputCoverage(apisOpenapi, apisTested apiArray) {
 	}
 	w := csv.NewWriter(os.Stdout)
 	w.WriteAll(records)
+
+	actualCoverage, _ := strconv.Atoi(coverageAll.Coverage)
+	if *minCoverage > int(actualCoverage) {
+		log.Fatalf("The API coverage(%d) is lower than the specified one(%d).", actualCoverage, *minCoverage)
+	}
 }
 
 func main() {
