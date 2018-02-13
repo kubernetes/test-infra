@@ -510,7 +510,7 @@
       "--extract=ci/latest",
       "--gcp-project-type=ingress-project",
       "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel",
+      "--ginkgo-parallel=1",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Feature:Ingress\\]",
       "--timeout=320m"
