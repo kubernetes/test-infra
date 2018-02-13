@@ -22,7 +22,7 @@
 # - planter will always `docker pull $IMAGE` before running it, see below
 #
 # To build kubernetes, first you checkout github.com/kubernetes/kubernetes
-# to $GOPATH/src/k8s.io/kubernetes and github.com/kubernetes/test-infra 
+# to $GOPATH/src/k8s.io/kubernetes and github.com/kubernetes/test-infra
 # to $GOPATH/src/k8s.io/test-infra.
 #
 # Then you can build with:
@@ -39,19 +39,14 @@ IMAGE="${IMAGE_NAME}:${TAG}"
 # - WORKSPACE is assumed to be in your current git repo, or alternatively $PWD
 REPO=$(git rev-parse --show-toplevel 2>/dev/null || true)
 REPO=${REPO:-${PWD}}
-# - the bazel cache is in $HOME/.cache/bazel
-#
-# - we could just mount $HOME/.cache/bazel, but unfortunately some rules
-# are still not terribly hermetic and actually need $HOME (rules_node)
-#
-# - $HOME/.docker shouldn't be mounted so we clobber it with a tmpfs.
-# You can have a $HOME/.docker/config.json for logging in to docker hub,
-# which on mac will actually store credentials in your keychain which
-# the container cannot access, this breaks rules_docker. (issues/5736)
+# Instead of mounting the full user ${HOME} which previously causes many issues like #5607 & #5736
+# We mount only the following folders:
+# - ${HOME}/.cache/bazel to share bazel cache across builds
+# - ${HOME}/.npm to share npm cache across builds
 #
 # - /tmp also needs to be a suitable tmpfs mounted with exec so that bazel
 # can use it when executing various things
-VOLUMES="-v ${REPO}:${REPO} -v ${HOME}:${HOME} --mount type=tmpfs,destination=${HOME}/.docker --tmpfs /tmp:exec,mode=777"
+VOLUMES="-v ${REPO}:${REPO} -v ${HOME}/.cache/bazel:/${HOME}/.cache/bazel -v ${HOME}/.npm:/${HOME}/.npm --tmpfs /tmp:exec,mode=777"
 # We want to run as the host user so they own the build outputs etc.
 # Part of this is handled in planter/entrypoint.sh
 GID="$(id -g ${USER})"
