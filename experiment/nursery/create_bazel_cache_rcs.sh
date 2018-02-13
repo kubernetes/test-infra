@@ -27,29 +27,29 @@ package_to_version () {
 
 # look up a binary with which and return the debian package it belongs to
 command_to_package () {
-    local BINARY_PATH=$(readlink -f $(which $1))
+    local binary_path=$(readlink -f $(which $1))
     # `dpkg -S $package` spits out lines with the format: "package: file"
-    dpkg -S $1 | grep "${BINARY_PATH}" | cut -d':' -f1
+    dpkg -S $1 | grep "${binary_path}" | cut -d':' -f1
 }
 
 # get the installed package version relating to a binary
 command_to_version () {
-    local PACKAGE=$(command_to_package $1)
-    package_to_version "${PACKAGE}"
+    local package=$(command_to_package $1)
+    package_to_version "${package}"
 }
 
 hash_toolchains () {
     # if $CC is set bazel will use this to detect c/c++ toolchains, otherwise gcc
     # https://blog.bazel.build/2016/03/31/autoconfiguration.html
-    local CC="${CC:-gcc}"
-    local CC_VERSION=$(command_to_version $CC)
+    local cc="${CC:-gcc}"
+    local cc_version=$(command_to_version $cc)
     # NOTE: IIRC some rules call python internally, this can't hurt
-    local PYTHON_VERSION=$(command_to_version python)
+    local python_version=$(command_to_version python)
     # combine all tool versions into a hash
     # NOTE(bentheelder): if we change the set of tools considered we should
     # consider prepending the hash with a """schema version""" for completeness
-    local TOOL_VERSIONS="CC:${CC_VERSION},PY:{PYTHON_VERSION}"
-    echo "${TOOL_VERSIONS}" | md5sum | cut -d" " -f1
+    local tool_versions="CC:${cc_version},PY:{python_version}"
+    echo "${tool_versions}" | md5sum | cut -d" " -f1
 }
 
 get_workspace () {
@@ -72,9 +72,9 @@ make_bazel_rc () {
     # point bazel at our http cache ...
     # NOTE our caches are versioned by all path segments up until the last two
     # IE PUT /foo/bar/baz/cas/asdf -> is in cache "/foo/bar/baz"
-    local CACHE_ID="$(get_workspace),$(hash_toolchains)"
-    local CACHE_URL="http://${CACHE_HOST}:${CACHE_PORT}/${CACHE_ID}"
-    echo "build --remote_http_cache=${CACHE_URL}"
+    local cache_id="$(get_workspace),$(hash_toolchains)"
+    local cache_url="http://${CACHE_HOST}:${CACHE_PORT}/${cache_id}"
+    echo "build --remote_http_cache=${cache_url}"
 }
 
 # https://docs.bazel.build/versions/master/user-manual.html#bazelrc

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// cache implements disk backed cache storage for use in nursery
+// Package diskcache implements disk backed cache storage for use in nursery
 package diskcache
 
 import (
