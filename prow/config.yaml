@@ -10530,7 +10530,7 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180212-83c830734-master
 
-- cron: '1 23 * * 0' # Run at 15:01PST (23:01UTC) on sunday
+- cron: "0 0 31 2 *" # manual job, set to Feb.31st so it will never be triggered
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-large-correctness
   labels:
@@ -10561,7 +10561,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
 
-- cron: '1 13 * * 0' # Run at 05:01PST (13:01UTC) on sunday
+- cron: '1 8 * * 0' # Run at 00:01PST (8:01 UTC) on sunday
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-large-performance
   tags:
@@ -10572,7 +10572,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=600
+      - --timeout=540
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180212-83c830734-master
       resources:
@@ -10698,7 +10698,7 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180212-83c830734-master
 
-- interval: 6h
+- cron: '1 17 * * 0' # Run at 9:01PST (17:01 UTC) on sunday
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-scale-correctness
   labels:
@@ -10707,7 +10707,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=1020
+      - --timeout=660
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180212-83c830734-master
       resources:
