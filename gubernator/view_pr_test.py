@@ -172,7 +172,7 @@ class TestDashboard(main_test.TestBase):
         make_pr(123, ['user'], {'attn': {'User': 'fix tests'}})
         resp = app.get('/pr/UseR')
         self.assertIn('123', resp)
-        self.assertIn('Needs Attention (1)', resp)
+        self.assertIn('data-badge="1"', resp)
 
     def test_milestone(self):
         "Milestone links filter by milestone."

@@ -5,26 +5,30 @@ body {
     scroll-behavior: smooth;
 }
 #header {
-    align-items: center;
     background-color: #3f51b5;
     color: white;
-    display: flex;
+    display: block;
     height: 72px;
     text-align: center;
     padding: 8px;
     box-shadow: 0px 0px 10px #666;
+    min-height: 100px;
 }
 #header a {
     color: white;
-    text-align: center;
-    align-self: center;
 }
 
 #header img {
-    width: 48px;
-    height: 48px;
-    margin: 0 8px;
+    width: 100px;
+    height: 100px;
+    float: left;
+    padding-left: 20px;
 }
+
+#help {
+    margin: 30px;
+ }
+
 #summary {
     text-align: center;
 }
@@ -154,7 +158,7 @@ table.pr-dash tbody tr:nth-child(odd) {
 table.pr-dash tbody tr:hover {
     background: #e3e9ff;
 }
-#prdash-nav, #milestone-nav {
+#prdash-nav {
     margin: 10px 0 0 40px;
 }
 
@@ -248,11 +252,14 @@ li.log {
 h5.pr-section {
     color: #616161;
     display: inline-block;
-    padding-right: 14px;
 }
 
 h6.pr-section {
     margin-top: 8px;
+}
+
+.ack-button {
+    color: #616161;
 }
 
 .icon {
@@ -268,16 +275,71 @@ h6.pr-section {
     opacity: 0.08;
 }
 
+.db-assignee {
+    width: 600px;
+}
+
+.db-author {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+    width: 120px;
+}
+
+.db-button {
+    width: 110px;
+}
+
+.db-number {
+    color: #3F51B5;
+    cursor: pointer;
+    width: 80px;
+}
+
+.db-repo {
+    width: 150px;
+}
+
+.db-size {
+    width: 60px;
+}
+
+.db-status {
+    width: 200px;
+}
+
+.db-update {
+    width: 100px;
+}
+
+.db-title {
+    min-width: 300px;
+}
+
+.pr-dashboard-table tbody tr:hover {
+    background-color: #E3F2FD;
+}
+
+.pr-dashboard-table th {
+    cursor: pointer;
+}
+
+.pr-dashboard-table th, .pr-dashboard-table tr, .pr-dashboard-table td {
+    height: 32px !important;
+    font-size: 14px;
+}
+
 .pr-dashboard-table {
     width: 100%;
 }
 
-.pr-dashboard-table tr {
-    cursor: pointer;
+.pr-dashboard-table tr.even {
+    background-color: #EEEEEE;
 }
 
-.pr-dashboard-table tr.even {
-    background-color: #F5F5F5;
+.pr-dashboard-table.mdl-data-table td, .pr-dashboard-table.mdl-data-table th {
+    padding: 2px 8px;
 }
 
 .pr-table-header {
@@ -291,11 +353,28 @@ h6.pr-section {
     text-decoration: none;
 }
 
+.pr-section.mdl-badge.mdl-badge--no-background[data-badge]:after {
+    box-shadow: none;
+}
+
+.wrap-cell {
+    overflow-wrap: break-word;
+    white-space: pre-wrap; /* css-3 */
+    white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
+    white-space: -o-pre-wrap; /* Opera 7 */
+    word-wrap: break-word; /* Internet Explorer 5.5+ */
+}
 /* weak mobile support */
 @media (max-device-width: 500px) {
     body { font-size: xx-large; }
     pre { font-size: x-small; }
     pre.cmd { display: none; }
     pre.error { font-size: medium; }
-    button { font-size: xx-large; }
+}
+
+@media (max-device-width: 768px) {
+    .db-assignee {
+        font-weight: bold;
+        width: 350px;
+    }
 }

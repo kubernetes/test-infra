@@ -45,7 +45,13 @@ Filter Milestone: {% if milestone %}<a href="?">Any</a>{% else %}<b>Any</b>{% en
 	% if title == 'Approvable' and not sub_prs
 		% continue
 	% endif
-	% set pr_section = 'pr-section mdl-badge mdl-badge--overlap pr-section' if sub_prs|length > 0 else 'pr-section'
+	% set pr_section = 'pr-section'
+    % if sub_prs|length > 0
+        % set pr_section = pr_section + ' mdl-badge'
+    % endif
+    % if sub_prs|length > 99
+        % set pr_section = pr_section + ' mdl-badge--no-background'
+    % endif
     <div class="pr-table-header">
     	<h5 class="{{pr_section}}" data-badge="{{sub_prs|length}}">
             <a class="header-link" id="section-{{title|slugify}}"></a>
@@ -65,38 +71,38 @@ Filter Milestone: {% if milestone %}<a href="?">Any</a>{% else %}<b>Any</b>{% en
         % endif
     </div>
 	% if sub_prs
-	<table class="mdl-data-table mdl-js-data-table mdl-shadow--1dp pr-dashboard-table">
+    <table class="pr-dashboard-table mdl-data-table mdl-js-data-table mdl-shadow--1dp">
         <thead>
             <tr>
-                <th class="mdl-data-table__cell--non-numeric">Repo</th>
-                <th class="mdl-data-table__cell--non-numeric">Number</th>
-                <th class="mdl-data-table__cell--non-numeric">Author</th>
-                <th class="mdl-data-table__cell--non-numeric">Status</th>
-                <th class="mdl-data-table__cell--non-numeric">Updated</th>
-                <th class="mdl-data-table__cell--non-numeric">Assignees</th>
-                <th class="mdl-data-table__cell--non-numeric">Size</th>
+                <th class="db-repo mdl-data-table__cell--non-numeric">Repo</th>
+                <th class="db-number">Number</th>
+                <th class="db-author mdl-data-table__cell--non-numeric">Author</th>
+                <th class="db-status mdl-data-table__cell--non-numeric">Status</th>
+                <th class="db-update mdl-data-table__cell--non-numeric">&#9660;Updated</th>
+                <th class="db-assignee mdl-data-table__cell--non-numeric">Assignees</th>
+                <th class="db-size">Size</th>
                 <th class="mdl-data-table__cell--non-numeric">Title</th>
-                <th class="mdl-data-table__cell--non-numeric"></th>
+                <th class="db-button mdl-data-table__cell--non-numeric"></th>
             </tr>
         </thead>
         <tbody>
         % for pr in sub_prs
             % set pl = pr.payload
             % set row_style = 'even' if loop.index % 2 == 0 else ''
-            <tr id="{{title|slugify}} {{pr.repo}} {{pr.number}}" class="{{row_style}}" onclick="window.open('https://github.com/{{pr.repo}}/pull/{{pr.number}}', '_blank')">
-                <td class="mdl-data-table__cell--non-numeric">{{pr.repo|ltrim('kubernetes/')}}</td>
-                <td class="mdl-data-table__cell--non-numeric">{{pr.number}}</td>
-                <td class="mdl-data-table__cell--non-numeric">{{pl['author']}}</td>
-                <td class="mdl-data-table__cell--non-numeric">{{pl|render_status(user)}}</td>
-                <td class="mdl-data-table__cell--non-numeric">{{pr.updated_at|dt_to_epoch|timestamp('humantimestamp', '%b %e')}}</td>
-                <td class="mdl-data-table__cell--non-numeric">{{pl['assignees']|join(", ")}}</td>
-                <td class="mdl-data-table__cell--non-numeric">{{pl|classify_size}}</td>
-                <td class="mdl-data-table__cell--non-numeric">{{pl['title']}}</td>
-                <td class="mdl-data-table__cell--non-numeric">
+            <tr id="{{title|slugify}} {{pr.repo}} {{pr.number}}" class="{{row_style}}">
+                <td class="db-repo mdl-data-table__cell--non-numeric">{{pr.repo|ltrim('kubernetes/')}}</td>
+                <td class="db-number" onclick="window.open('https://github.com/{{pr.repo}}/pull/{{pr.number}}', '_blank')"><strong>{{pr.number}}</strong></td>
+                <td class="db-author mdl-data-table__cell--non-numeric">{{pl['author']}}</td>
+                <td class="db-status mdl-data-table__cell--non-numeric">{{pl|render_status(user)}}</td>
+                <td class="db-update mdl-data-table__cell--non-numeric">{{pr.updated_at|dt_to_epoch|timestamp('humantimestamp', '%b %e')}}</td>
+                <td class="db-assignee wrap-cell mdl-data-table__cell--non-numeric">{{pl['assignees']|join(", ")}}</td>
+                <td class="db-size">{{pl|classify_size}}</td>
+                <td class="db-title wrap-cell mdl-data-table__cell--non-numeric">{{pl['title']}}</td>
+                <td class="db-button mdl-data-table__cell--non-numeric">
                 % if title == "Needs Attention" and acks is not none
                     % set latest = pl|get_latest(user)
                     % if latest
-                    <button class="mdl-button mdl-js-button mdl-js-ripple-effect" onclick="ack(event, '{{pr.repo}}', {{pr.number}}, {{latest}});">ACK</button>
+                    <button class="ack-button" onclick="ack(event, '{{pr.repo}}', {{pr.number}}, {{latest}});">ACK</button>
                     % endif
                 % endif
                 </td>
