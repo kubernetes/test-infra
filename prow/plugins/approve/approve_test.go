@@ -176,7 +176,7 @@ This pull-request has been approved by: *<a href="#" title="Author self-approved
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
-The pull request process is described [here](https://git.k8s.io/community/contributors/devel/owners.md#the-code-review-process)
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
 <details >
 Needs approval from an approver in each of these OWNERS Files:
@@ -209,7 +209,7 @@ Assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
-The pull request process is described [here](https://git.k8s.io/community/contributors/devel/owners.md#the-code-review-process)
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
 <details open>
 Needs approval from an approver in each of these OWNERS Files:
@@ -240,7 +240,7 @@ Associated issue requirement bypassed by: *<a href="" title="Approved">Alice</a>
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
-The pull request process is described [here](https://git.k8s.io/community/contributors/devel/owners.md#the-code-review-process)
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
 <details >
 Needs approval from an approver in each of these OWNERS Files:
@@ -272,7 +272,7 @@ Associated issue: *#42*
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
-The pull request process is described [here](https://git.k8s.io/community/contributors/devel/owners.md#the-code-review-process)
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
 <details >
 Needs approval from an approver in each of these OWNERS Files:
@@ -314,7 +314,7 @@ This pull-request has been approved by: *<a href="" title="Approved">ALIcE</a>*,
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
-The pull request process is described [here](https://git.k8s.io/community/contributors/devel/owners.md#the-code-review-process)
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
 <details >
 Needs approval from an approver in each of these OWNERS Files:
@@ -361,7 +361,7 @@ Assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when re
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
-The pull request process is described [here](https://git.k8s.io/community/contributors/devel/owners.md#the-code-review-process)
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
 <details open>
 Needs approval from an approver in each of these OWNERS Files:
@@ -436,7 +436,7 @@ Associated issue: *#1*
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
-The pull request process is described [here](https://git.k8s.io/community/contributors/devel/owners.md#the-code-review-process)
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
 <details >
 Needs approval from an approver in each of these OWNERS Files:
@@ -493,7 +493,7 @@ This pull-request has been approved by:
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
-The pull request process is described [here](https://git.k8s.io/community/contributors/devel/owners.md#the-code-review-process)
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
 <details >
 Needs approval from an approver in each of these OWNERS Files:

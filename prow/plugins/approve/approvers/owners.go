@@ -588,7 +588,7 @@ Associated issue requirement bypassed by: {{range $index, $approval := .ap.ListN
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
-The pull request process is described [here](https://git.k8s.io/community/contributors/devel/owners.md#the-code-review-process)
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
 <details {{if (and (not .ap.AreFilesApproved) (not (call .ap.ManuallyApproved))) }}open{{end}}>
 Needs approval from an approver in each of these OWNERS Files:
