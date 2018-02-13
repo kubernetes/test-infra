@@ -5088,6 +5088,37 @@ postsubmits:
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
 
+  GoogleCloudPlatform/k8s-multicluster-ingress:
+  - name: ci-kubemci-image-push
+    agent: kubernetes
+    branches:
+    - master
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180212-83c830734-master
+        args:
+        - "--root=/go/src/"
+        - "--clean"
+        - "--timeout=90"
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: docker-graph
+          mountPath: /docker-graph
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: docker-graph
+        hostPath:
+          path: /mnt/disks/ssd0/docker-graph
+
   kubernetes/federation:
   - agent: kubernetes
     name: ci-federation-release

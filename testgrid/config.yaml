@@ -162,6 +162,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kube-deploy-build
 - name: ci-kube-deploy-test
   gcs_prefix: kubernetes-jenkins/logs/ci-kube-deploy-test
+- name: ci-kubemci-image-push
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubemci-image-push
 - name: ci-kubernetes-build
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build
 - name: ci-kubernetes-build-stable1
@@ -3763,6 +3765,11 @@ dashboards:
   - name: release
     test_group_name: ci-federation-release
 
+- name: sig-multicluster-kubemci
+  dashboard_tab:
+  - name: kubemci-image-push
+    test_group_name: ci-kubemci-image-push
+
 - name: sig-instrumentation
   dashboard_tab:
   - name: gce
@@ -5191,6 +5198,7 @@ dashboard_groups:
   - sig-multicluster-cluster-registry
   - sig-multicluster-federation-gce-old
   - sig-multicluster-federation-gce
+  - sig-multicluster-kubemci
 
 - name: sig-network
   dashboard_names:
