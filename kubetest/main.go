@@ -808,7 +808,7 @@ func prepareAws(o *options) error {
 	if err := activateServiceAccount(o.gcpServiceAccount); err != nil {
 		return err
 	}
-	return control.FinishRunning(exec.Command("pip", "install", "awscli"))
+	return nil
 }
 
 // Activate GOOGLE_APPLICATION_CREDENTIALS if set or do nothing.

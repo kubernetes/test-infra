@@ -69,25 +69,6 @@ if [[ -z "${EXTERNAL_IP}" ]]; then
 fi
 e2e_args+=(--kops-admin-access="${EXTERNAL_IP}/32")
 
-# Define a custom instance lister for cluster/log-dump/log-dump.sh.
-function log_dump_custom_get_instances() {
-  local -r role=$1
-  local kops_regions
-  IFS=', ' read -r -a kops_regions <<< "${KOPS_REGIONS:-us-west-2}"
-  for region in "${kops_regions[@]}"; do
-    aws ec2 describe-instances \
-      --region "${region}" \
-      --filter \
-        "Name=tag:KubernetesCluster,Values=$(kubectl config current-context)" \
-        "Name=tag:k8s.io/role/${role},Values=1" \
-        "Name=instance-state-name,Values=running" \
-      --query "Reservations[].Instances[].PublicDnsName" \
-      --output text
-  done
-}
-pip install awscli # Only needed for log_dump_custom_get_instances
-export -f log_dump_custom_get_instances # Export to cluster/log-dump/log-dump.sh
-
 kubetest "${e2e_args[@]}" "${@}"
 
 if [[ -n "${KOPS_PUBLISH_GREEN_PATH:-}" ]]; then
