@@ -6703,6 +6703,20 @@ periodics:
       hostPath:
         path: /mnt/disks/ssd0/docker-graph
 
+- name: ci-kubernetes-e2e-autoscaling-vpa-recommender
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180205-d99d9c246-master
+      args:
+      - "--repo=k8s.io/autoscaler=master"
+      - "--root=/go/src"
+      - "--timeout=60"
+
 - interval: 1h
   agent: kubernetes
   name: ci-kubernetes-e2e-cos-docker-validation

@@ -218,6 +218,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-autoscaling
 - name: ci-kubernetes-e2e-gci-gce-autoscaling-migs
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-autoscaling-migs
+- name: ci-kubernetes-e2e-autoscaling-vpa-recommender
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-autoscaling-vpa-recommender
 - name: ci-kubernetes-e2e-gce-stackdriver
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stackdriver
 - name: ci-kubernetes-e2e-gce-large-correctness
@@ -3609,6 +3611,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-autoscaling
   - name: gke-ubuntustable1-k8sstable2-autoscaling
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-autoscaling
+  - name: autoscaling-vpa-recommender
+    test_group_name: ci-kubernetes-e2e-autoscaling-vpa-recommender
 
 - name: sig-cli-master
   dashboard_tab:
