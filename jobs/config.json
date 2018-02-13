@@ -597,6 +597,18 @@
       "sig-cluster-lifecycle"
     ]
   },
+  "ci-kubemci-image-push": {
+    "args": [
+      "make",
+      "-C",
+      "images/kubemci",
+      "push"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-multicluster"
+    ]
+  },
   "ci-kubernetes-bazel-build": {
     "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
     "args": [],
