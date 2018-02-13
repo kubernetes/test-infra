@@ -93,6 +93,9 @@ tide:
     kubernetes/website: squash
   target_url: https://prow.k8s.io/tide.html
 
+push_gateway:
+  endpoint: pushgateway
+
 presets:
 - labels:
     preset-service-account: true
