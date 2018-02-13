@@ -10533,7 +10533,7 @@ periodics:
           cpu: 6
           memory: "16Gi"
 
-- interval: 1h
+- cron: "0 0 31 2 *" # manual job, set to Feb.31st so it will never be triggered
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-large-deploy
   labels:
@@ -10684,7 +10684,7 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180212-83c830734-master
 
-- cron: "0 0 31 2 *" # manual (set to Feb 31 so it won't trigger) (TODO: automate this when possible)
+- interval: 6h
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-scale-correctness
   labels:
