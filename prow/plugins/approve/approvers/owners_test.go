@@ -47,12 +47,10 @@ func (f FakeRepo) LeafApprovers(path string) sets.String {
 }
 
 func (f FakeRepo) FindApproverOwnersForFile(path string) string {
-	dir, _ := filepath.Split(path)
-	for dir != "." {
+	for dir := path; dir != "."; dir = filepath.Dir(dir) {
 		if _, ok := f.leafApproversMap[dir]; ok {
 			return dir
 		}
-		dir = filepath.Dir(dir)
 	}
 	return ""
 }
