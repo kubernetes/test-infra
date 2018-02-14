@@ -39,20 +39,25 @@ IMAGE="${IMAGE_NAME}:${TAG}"
 # - WORKSPACE is assumed to be in your current git repo, or alternatively $PWD
 REPO=$(git rev-parse --show-toplevel 2>/dev/null || true)
 REPO=${REPO:-${PWD}}
+
+# Ensure the bazel cache directory exists, as otherwise docker will create it,
+# owned by root.
+BAZEL_CACHE="${HOME}/.cache/bazel"
+[[ -d "${BAZEL_CACHE}" ]] || mkdir -p "${BAZEL_CACHE}"
+
 # Instead of mounting the full user ${HOME} which previously causes many issues like #5607 & #5736
 # We mount only the following folders:
 # - ${HOME}/.cache/bazel to share bazel cache across builds
-# - ${HOME}/.npm to share npm cache across builds
-#
 # - /tmp also needs to be a suitable tmpfs mounted with exec so that bazel
 # can use it when executing various things
-VOLUMES="-v ${REPO}:${REPO} -v ${HOME}/.cache/bazel:/${HOME}/.cache/bazel -v ${HOME}/.npm:/${HOME}/.npm --tmpfs /tmp:exec,mode=777"
+VOLUMES="-v ${REPO}:${REPO} -v ${BAZEL_CACHE}:${BAZEL_CACHE} --tmpfs /tmp:exec,mode=777"
+
 # We want to run as the host user so they own the build outputs etc.
 # Part of this is handled in planter/entrypoint.sh
 GID="$(id -g ${USER})"
 ENV="-e USER=${USER} -e GID=${GID} -e UID=${UID} -e HOME=${HOME}"
 # construct the final docker command, with SELinux disabled for this container
-CMD="docker pull ${IMAGE} && docker run --security-opt label:disable --rm ${VOLUMES} --user ${UID} -w ${PWD} ${ENV} ${DOCKER_EXTRA:-} ${IMAGE} ${@}"
+CMD="docker pull ${IMAGE} && docker run --security-opt label:disable --rm ${VOLUMES} --user ${UID}:${GID} -w ${PWD} ${ENV} ${DOCKER_EXTRA:-} ${IMAGE} ${@}"
 if [ -n "${DRY_RUN+set}" ]; then
     echo "${CMD}"
 else
