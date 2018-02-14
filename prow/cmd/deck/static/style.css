@@ -184,13 +184,13 @@ span.label {
     margin: 0 .1em;
     text-align: center;
     color: white;
-    box-shadow: inset 0 -1px 0 rgba(27,31,35,0.12);
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 3px 1px -2px rgba(0,0,0,.2), 0 1px 5px 0 rgba(0,0,0,.12);
     background-color: #ededed;
     color: #333333;
     white-space: nowrap;
 }
 
-span.label:hover {
+span.label:not(.merge-table-label):hover {
     opacity: 0.85;
 }
 
@@ -385,4 +385,298 @@ Plugin Help style
     font-weight: bold;
     margin: 0 8px;
     padding: 8px 16px;
+}
+/*
+ * User dashboard style sheet
+ */
+#main-container {
+    display: flex;
+    flex-direction: column;
+}
+
+#merge-help-dialog > .mdl-dialog__content {
+    font-size: 15px;
+}
+
+#merge-help-dialog.mdl-dialog, #status-help-dialog.mdl-dialog {
+    width: 600px;
+}
+
+#query-dialog.mdl-dialog {
+    width: 1000px;
+}
+
+.arrow-icon {
+    margin-left: auto;
+}
+
+.help-icon-button .icon-button {
+    color: #607D8B;
+}
+
+.job-list a {
+    color: rgba(0, 0, 0, .87);
+}
+
+.job-list.mdl-list {
+    max-height: 240px;
+    padding: 0;
+    overflow-y: auto;
+}
+
+.job-list-item.mdl-list__item {
+    height: 32px;
+    min-height: 32px;
+    padding: 4px;
+}
+
+.job-list-item:hover {
+    background-color: #CFD8DC;
+}
+
+.merge-table {
+    box-shadow: none;
+    background-color: #F5F5F5;
+    user-select: none;
+}
+
+.merge-table tbody tr {
+    cursor: pointer;
+}
+
+.merge-table tbody td:not(.merge-table-icon) {
+    width: 47%;
+}
+
+.merge-table-icon {
+    padding: 0;
+    width: 6%;
+    text-align: center;
+}
+
+.merge-table thead td {
+    font-weight: bold;
+}
+
+.merge-table thead tr:last-child {
+    border-top: 2px solid #BDBDBD;
+    color: #424242;
+}
+
+.merge-table-label.label {
+    display: inline-block;
+    margin: 2px 2px;
+}
+
+.merge-table thead tr {
+    border-top: none;
+}
+
+.merge-table tr {
+    border: 1px solid #E0E0E0;
+    box-shadow: none;
+    height: 40px;
+    min-height: 40px;
+}
+
+.title-label {
+    font-size: 13px;
+    font-weight: bold;
+    border-radius: 4px;
+    margin-left: 8px;
+    padding: 4px 8px;
+}
+
+.title-label.failed {
+    background-color: #EF5350;
+    color: #ffffff;
+}
+
+.title-label.succeeded {
+    background-color: #43A047;
+    color: #ffffff;
+}
+.title-label.pending {
+    background-color: #FFD54F;
+}
+
+.title-label.batching, .title-label.passing {
+    background-color: #1E88E5;
+    color: #ffffff;
+}
+
+.title-label.merging {
+    background-color: #673AB7;
+    color: #ffffff;
+}
+
+.title-label.unknown {
+    background-color: #757575;
+    color: #ffffff;
+}
+
+.pr-card {
+    align-self: center;
+    flex-shrink: 0;
+    margin: 4px 0;
+}
+
+.pr-card.mdl-card {
+    border: 1px solid #e5e5e5;
+    max-width: 800px;
+    min-width: 500px;
+    width: 50%;
+}
+
+.pr-card > .mdl-card__supporting-text {
+    padding-top: 0;
+    width: auto;
+}
+
+.pr-card > .mdl-card__supporting-text h3 {
+    color: #616161;
+    margin: 0 0 12px 0;
+    font-size: 24px;
+}
+
+.pr-card > .mdl-card__title {
+    justify-content: space-between;
+}
+
+.pr-card > .mdl-card__title h4 {
+    color: #3F51B5;
+}
+
+.pr-card > .mdl-card__title a {
+    padding: 0;
+}
+
+.pr-title-text {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+}
+
+.pr-title-text > .mdl-card__subtitle-text {
+    padding-left: 8px;
+}
+
+.status {
+    align-items: center;
+    border-bottom: 1px solid #EFEBE9;
+    cursor: pointer;
+    background-color: #ffffff;
+    display: flex;
+    font-size: 16px;
+    font-weight: bold;
+    height: 24px;
+    line-height: 24px;
+    padding: 12px 16px 2px 16px;
+    user-select: none;
+}
+
+.status > .status-icon {
+    margin: 0 24px 4px 0;
+}
+
+.status-icon.failed {
+    color: #D32F2F;
+}
+
+.status-icon.succeeded {
+    color: #2E7D32;
+}
+
+.status-icon.pending {
+    color: #FFB300;
+}
+
+.status > .mdl-button--icon > .material-icons {
+    font-size: 20px;
+    user-select: none;
+}
+
+.status > .help-icon-button.mdl-button--icon {
+    margin: 0 0 2px 2px;
+}
+
+.status-container {
+    background-color:  #F5F5F5;
+    position: relative;
+    margin-top: 2px;
+}
+
+.state.mdl-list__item-icon {
+    width: 12px;
+    height: 12px;
+    margin-left: 8px;
+}
+
+.query-details-section {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.user-dashboard-dialog > .mdl-dialog__title {
+    font-size: 32px;
+}
+
+@media (max-device-width: 768px) {
+    .job-list-item.mdl-item {
+        font-size: 14px;
+    }
+
+    .pr-card.mdl-card {
+        margin: 0 0 8px 0;
+    }
+
+    .pr-card.mdl-card {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .pr-card > .mdl-card__title h4 {
+        font-size: 16px;
+    }
+
+    .pr-card > .mdl-card__supporting-text h3 {
+        font-size: 20px;
+        margin-bottom: 0;
+    }
+
+    .pr-title-text {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .pr-title-text > .mdl-card__subtitle-text {
+        padding-left: 0;
+    }
+
+    .title-label {
+        margin: 0;
+        font-size: 10px;
+    }
+
+    .status {
+        font-size: 14px;
+        padding: 4px 8px;
+    }
+
+    .merge-table-label {
+        font-size: 10px;
+    }
+
+    .status .material-icons, .status > .mdl-button--icon > .material-icons {
+        font-size: 16px;
+    }
+
+    .status-icon.material-icons {
+        margin: 0 4px 2px 0;
+    }
+
+    #merge-help-dialog.mdl-dialog, #query-dialog.mdl-dialog, #status-help-dialog.mdl-dialog {
+        width: 320px;
+    }
+
 }
