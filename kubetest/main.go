@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"encoding/xml"
 	"errors"
@@ -49,6 +50,9 @@ var (
 	verbose   = false
 	timeout   = time.Duration(0)
 	boskos    = client.NewClient(os.Getenv("JOB_NAME"), "http://boskos")
+
+	// kubetestContext is the Context that should be used for timeout / cancellation
+	kubetestContext context.Context
 )
 
 type options struct {
@@ -331,10 +335,28 @@ func complete(o *options) error {
 		<-interrupt.C // Drain value
 	}
 
+	ctx := context.Background()
+	var cancel context.CancelFunc
+
 	if timeout > 0 {
 		log.Printf("Limiting testing to %s", timeout)
 		interrupt.Reset(timeout)
+		ctx, cancel = context.WithTimeout(ctx, timeout)
+	} else {
+		ctx, cancel = context.WithCancel(ctx)
 	}
+
+	{
+		// Exit the kubetest context on a signal
+		sigChannel := make(chan os.Signal, 1)
+		signal.Notify(sigChannel, os.Interrupt)
+		go func() {
+			<-sigChannel
+			log.Println("got Interrupt signal; cancelling execution")
+			cancel()
+		}()
+	}
+	kubetestContext = ctx
 
 	if o.dump != "" {
 		defer writeMetadata(o.dump, o.metadataSources)
