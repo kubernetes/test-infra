@@ -549,7 +549,7 @@ def set_up_aws(workspace, args, mode, cluster, runner_args):
     mode.add_aws_runner()
 
 def read_gcs_path(gcs_path):
-    """reads a gcs path (gs://...) by GETing storage.googleapis.com"""
+    """reads a gcs path (gs://...) by HTTP GET to storage.googleapis.com"""
     link = gcs_path.replace('gs://', 'https://storage.googleapis.com/')
     loc = urllib2.urlopen(link).read()
     print >>sys.stderr, "Read GCS Path: %s" % loc
