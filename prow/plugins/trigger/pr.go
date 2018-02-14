@@ -20,9 +20,8 @@ import (
 	"fmt"
 	"strings"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -43,7 +42,7 @@ func handlePR(c client, trustedOrg, joinOrgURL string, pr github.PullRequestEven
 		}
 		if member {
 			c.Logger.Info("Starting all jobs for new PR.")
-			return buildAll(c, pr.PullRequest, pr.GUID)
+			return buildAll(c, &pr.PullRequest, pr.GUID)
 		} else {
 			c.Logger.Infof("Welcome message to PR author %q.", author)
 			if err := welcomeMsg(c.GitHubClient, pr.PullRequest, trustedOrg, joinOrgURL); err != nil {
@@ -68,7 +67,7 @@ func handlePR(c client, trustedOrg, joinOrgURL string, pr github.PullRequestEven
 			// Just try to remove "needs-ok-to-test" label if existing, we don't care about the result.
 			c.GitHubClient.RemoveLabel(trustedOrg, pr.PullRequest.Base.Repo.Name, pr.PullRequest.Number, needsOkToTest)
 			c.Logger.Info("Starting all jobs for updated PR.")
-			return buildAll(c, pr.PullRequest, pr.GUID)
+			return buildAll(c, &pr.PullRequest, pr.GUID)
 		}
 	case github.PullRequestActionSynchronize:
 		// When a PR is updated, check that the user is in the org or that an org
@@ -87,7 +86,7 @@ func handlePR(c client, trustedOrg, joinOrgURL string, pr github.PullRequestEven
 				c.Logger.Warnf("Failed to clear stale comments: %v.", err)
 			}
 			c.Logger.Info("Starting all jobs for updated PR.")
-			return buildAll(c, pr.PullRequest, pr.GUID)
+			return buildAll(c, &pr.PullRequest, pr.GUID)
 		}
 	case github.PullRequestActionLabeled:
 		comments, err := c.GitHubClient.ListIssueComments(pr.PullRequest.Base.Repo.Owner.Login, pr.PullRequest.Base.Repo.Name, pr.PullRequest.Number)
@@ -101,7 +100,7 @@ func handlePR(c client, trustedOrg, joinOrgURL string, pr github.PullRequestEven
 				return fmt.Errorf("could not validate PR: %s", err)
 			} else if !trusted {
 				c.Logger.Info("Starting all jobs for untrusted PR with LGTM.")
-				return buildAll(c, pr.PullRequest, pr.GUID)
+				return buildAll(c, &pr.PullRequest, pr.GUID)
 			}
 		}
 	}
@@ -173,74 +172,14 @@ func trustedPullRequest(ghc githubClient, pr github.PullRequest, trustedOrg stri
 	return false, nil
 }
 
-func buildAll(c client, pr github.PullRequest, eventGUID string) error {
-	org := pr.Base.Repo.Owner.Login
-	repo := pr.Base.Repo.Name
-	var ref string
-	var changes []string // lazily initialized
-
+func buildAll(c client, pr *github.PullRequest, eventGUID string) error {
+	var matchingJobs []config.Presubmit
 	for _, job := range c.Config.Presubmits[pr.Base.Repo.FullName] {
-		skip := false
-		if job.RunIfChanged != "" {
-			if changes == nil {
-				changesFull, err := c.GitHubClient.GetPullRequestChanges(org, repo, pr.Number)
-				if err != nil {
-					return err
-				}
-				// We only care about the filenames here
-				for _, change := range changesFull {
-					changes = append(changes, change.Filename)
-				}
-			}
-			skip = !job.RunsAgainstChanges(changes)
-		} else if !job.AlwaysRun {
-			continue
-		}
-
-		if (skip || !job.RunsAgainstBranch(pr.Base.Ref)) && !job.SkipReport {
-			if err := c.GitHubClient.CreateStatus(org, repo, pr.Head.SHA, github.Status{
-				State:       github.StatusSuccess,
-				Context:     job.Context,
-				Description: "Skipped",
-			}); err != nil {
-				return err
-			}
-			continue
-		}
-
-		// Only get master ref once.
-		if ref == "" {
-			r, err := c.GitHubClient.GetRef(org, repo, "heads/"+pr.Base.Ref)
-			if err != nil {
-				return err
-			}
-			ref = r
-		}
-		kr := kube.Refs{
-			Org:     org,
-			Repo:    repo,
-			BaseRef: pr.Base.Ref,
-			BaseSHA: ref,
-			Pulls: []kube.Pull{
-				{
-					Number: pr.Number,
-					Author: pr.User.Login,
-					SHA:    pr.Head.SHA,
-				},
-			},
-		}
-		labels := make(map[string]string)
-		for k, v := range job.Labels {
-			labels[k] = v
-		}
-		labels[github.EventGUID] = eventGUID
-		pj := pjutil.NewProwJob(pjutil.PresubmitSpec(job, kr), labels)
-		c.Logger.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
-		if _, err := c.KubeClient.CreateProwJob(pj); err != nil {
-			return err
+		if job.AlwaysRun || job.RunIfChanged != "" {
+			matchingJobs = append(matchingJobs, job)
 		}
 	}
-	return nil
+	return runOrSkipRequested(c, pr, matchingJobs, nil, "", eventGUID)
 }
 
 // clearStaleComments deletes old comments that are no longer applicable.
