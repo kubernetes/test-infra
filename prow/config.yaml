@@ -6268,6 +6268,20 @@ periodics:
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--clean"
 
+- interval: 60m
+  agent: kubernetes
+  name: ci-kubemci-ingress-conformance
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=110
+      - --bare
+      image: gcr.io/k8s-testimages/e2e-kubemci:latest
+      imagePullPolicy: Always
+
 - name: ci-kubernetes-bazel-build
   interval: 6h
   agent: kubernetes

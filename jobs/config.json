@@ -631,6 +631,23 @@
       "sig-multicluster"
     ]
   },
+  "ci-kubemci-ingress-conformance": {
+    "args": [
+      "--check-leaked-resources",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=ci/latest",
+      "--gcp-node-image=gci",
+      "--gcp-project-type=ingress-project",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Feature:kubemci\\] --minStartupPods=8",
+      "--timeout=90m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-multicluster"
+    ]
+  },
   "ci-kubernetes-bazel-build": {
     "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
     "args": [],
