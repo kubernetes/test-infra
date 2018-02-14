@@ -194,6 +194,7 @@ plugins:
   - approve
   - blunderbuss
   - blockade
+  - owners-label
   - require-sig
   - trigger
 

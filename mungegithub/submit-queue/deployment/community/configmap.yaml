@@ -2,7 +2,7 @@
 http-cache-dir: /cache/httpcache
 organization: kubernetes
 project: community
-pr-mungers: comment-deleter,lgtm-after-commit,owner-label
+pr-mungers: comment-deleter,lgtm-after-commit
 state: open
 token-file: /etc/secret-volume/token
 period: 5m
