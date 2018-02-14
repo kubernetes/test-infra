@@ -32,6 +32,16 @@ REQUIRED=(
   //vendor/github.com/client9/misspell/cmd/misspell:misspell
 )
 
+# darwin is great
+SED=sed
+if which gsed &>/dev/null; then
+  SED=gsed
+fi
+if ! ($SED --version 2>&1 | grep -q GNU); then
+  echo "!!! GNU sed is required.  If on OS X, use 'brew install gnu-sed'." >&2
+  exit 1
+fi
+
 unused-go-libraries() {
   # Find all the go_library rules in vendor except those that something outside
   # of vendor eventually depends on.
@@ -94,7 +104,7 @@ builds() {
 #   remove-all-srcs <targets-to-remove> <remove-from-packages>
 remove-all-srcs() {
   for b in $1; do
-    sed -i -e "\|${b}:all-srcs|d" $(builds $2)
+    $SED -i -e "\|${b}:all-srcs|d" $(builds $2)
   done
 }
 
