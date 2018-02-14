@@ -312,6 +312,8 @@ test_groups:
 - name: ci-kubernetes-e2e-gci-gce-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ingress
   alert_stale_results_hours: 24
+- name: ci-kubemci-ingress-conformance
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubemci-ingress-conformance
 - name: ci-kubernetes-e2e-gci-gce-ingress-manual-network
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ingress-manual-network
   alert_stale_results_hours: 24
@@ -3773,6 +3775,8 @@ dashboards:
   dashboard_tab:
   - name: kubemci-image-push
     test_group_name: ci-kubemci-image-push
+  - name: kubemci-ingress-conformance
+    test_group_name: ci-kubemci-ingress-conformance
 
 - name: sig-instrumentation
   dashboard_tab:
