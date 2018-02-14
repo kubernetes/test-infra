@@ -48,7 +48,7 @@ spec:
         - name: oauth-config
           mountPath: /ect/github
           readOnly: true
-        - name: cookie
+        - name: cookie-secret
           mountPath: /ect/cookie
           readOnly: true
         - mountPath: /etc/cluster
