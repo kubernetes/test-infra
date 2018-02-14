@@ -5,6 +5,10 @@ go_library(
     srcs = ["diskutil.go"],
     importpath = "k8s.io/test-infra/experiment/nursery/diskutil",
     visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/djherbis/atime:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+    ],
 )
 
 filegroup(
