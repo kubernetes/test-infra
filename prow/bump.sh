@@ -18,19 +18,19 @@ set -o errexit
 # See https://misc.flogisoft.com/bash/tip_colors_and_formatting
 
 color-image() {  # Bold blue
-  echo -e "\e[1;35m${@}\e[0m"
+  echo -e "\x1B[1;35m${@}\x1B[0m"
 }
 
 color-version() {  # Bold magenta
-  echo -e "\e[1;34m${@}\e[0m"
+  echo -e "\x1B[1;34m${@}\x1B[0m"
 }
 
 color-error() { # Light red
-  echo -e "\e[91m${@}\e[0m"
+  echo -e "\x1B[91m${@}\x1B[0m"
 }
 
 color-target() { # Bold cyan
-  echo -e "\e[1;33m${@}\e[0m"
+  echo -e "\x1B[1;33m${@}\x1B[0m"
 }
 
 # darwin is great
@@ -63,8 +63,8 @@ if [[ "${#images[@]}" == 0 ]]; then
 fi
 echo -e "\e[1;35m${images[@]}\e[0m" >&2
 
-echo -e "Pushing $(color-version ${new_version}) via $(color-target //prow:release-push)..." >&2
-bazel run //prow:release-push
+echo -e "Pushing $(color-version ${new_version}) via $(color-target //prow:release-push --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64)..." >&2
+bazel run //prow:release-push --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
 
 echo -e "Bumping: $(color-image ${images[@]}) to $(color-version ${new_version})..." >&2
 
@@ -74,4 +74,4 @@ for i in "${images[@]}"; do
 done
 
 echo "Deploy with:" >&2
-echo -e "  $(color-target bazel run //prow/cluster:production.apply)"
+echo -e "  $(color-target bazel run //prow/cluster:production.apply --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64)"
