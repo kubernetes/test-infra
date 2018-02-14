@@ -1,0 +1,44 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["userdashboard.go"],
+    importpath = "k8s.io/test-infra/prow/userdashboard",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//prow/config:go_default_library",
+        "//prow/github:go_default_library",
+        "//vendor/github.com/shurcooL/githubql:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/golang.org/x/oauth2:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["userdashboard_test.go"],
+    embed = [":go_default_library"],
+    deps = [
+        "//prow/config:go_default_library",
+        "//vendor/github.com/ghodss/yaml:go_default_library",
+        "//vendor/github.com/gorilla/sessions:go_default_library",
+        "//vendor/github.com/shurcooL/githubql:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/golang.org/x/oauth2:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/api/equality:go_default_library",
+    ],
+)

@@ -43,7 +43,14 @@ spec:
         - --tide-url=http://tide/
         - --hook-url=http://hook:8888/plugin-help
         - --redirect-http-to=prow.k8s.io
+        - --oauth-url=/user-dashboard
         volumeMounts:
+        - name: oauth-config
+          mountPath: /ect/github
+          readOnly: true
+        - name: cookie
+          mountPath: /ect/cookie
+          readOnly: true
         - mountPath: /etc/cluster
           name: cluster
           readOnly: true
@@ -51,6 +58,12 @@ spec:
           mountPath: /etc/config
           readOnly: true
       volumes:
+      - name: oauth-config
+        secret:
+          secretName: github-oauth-config
+      - name: cookie-secret
+        secret:
+          secretName: cookie
       - name: cluster
         secret:
           defaultMode: 420

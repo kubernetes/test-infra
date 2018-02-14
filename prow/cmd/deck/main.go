@@ -19,6 +19,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -34,19 +35,27 @@ import (
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/ghodss/yaml"
+	"github.com/gorilla/sessions"
 	"github.com/sirupsen/logrus"
 
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/github"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/githuboauth"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp"
+	"k8s.io/test-infra/prow/userdashboard"
 )
 
 var (
-	configPath   = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
-	buildCluster = flag.String("build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
-	tideURL      = flag.String("tide-url", "", "Path to tide. If empty, do not serve tide data.")
-	hookURL      = flag.String("hook-url", "", "Path to hook plugin help endpoint.")
+	configPath            = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
+	buildCluster          = flag.String("build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
+	tideURL               = flag.String("tide-url", "", "Path to tide. If empty, do not serve tide data.")
+	hookURL               = flag.String("hook-url", "", "Path to hook plugin help endpoint.")
+	oauthUrl              = flag.String("oauth-url", "", "Path to deck user dashboard endpoint.")
+	githubOAuthConfigFile = flag.String("github-oauth-config-file", "/etc/github/app", "Path to the file containing the Git App Client secret.")
+	cookieSecretFile      = flag.String("cookie-secret", "/etc/cookie/cookie-secret", "Path to the file containing the cookie secret key.")
 	// use when behind a load balancer
 	redirectHTTPTo = flag.String("redirect-http-to", "", "Host to redirect http->https to based on x-forwarded-proto == http.")
 	// use when behind an oauth proxy
@@ -145,6 +154,62 @@ func prodOnlyMain(logger *logrus.Entry, mux *http.ServeMux) {
 		mux.Handle("/tide.js", gziphandler.GzipHandler(handleTide(configAgent, ta)))
 	}
 
+	// Enable Git OAuth feature if oauthUrl is provided.
+	if *oauthUrl != "" {
+		githubOAuthConfigRaw, err := loadToken(*githubOAuthConfigFile)
+		if err != nil {
+			logger.WithError(err).Fatal("Could not read github oauth config file.")
+		}
+
+		cookieSecretRaw, err := loadToken(*cookieSecretFile)
+		if err != nil {
+			logger.WithError(err).Fatal("Could not read cookie secret file.")
+		}
+
+		mux.Handle("/user-data.js", handleUserData(*oauthUrl))
+
+		var githubOAuthConfig config.GithubOAuthConfig
+		if err := yaml.Unmarshal(githubOAuthConfigRaw, &githubOAuthConfig); err != nil {
+			logger.WithError(err).Fatal("Error unmarshalling github oauth config")
+		}
+		if !isValidatedGitOAuthConfig(&githubOAuthConfig) {
+			logger.Fatal("Error invalid github oauth config")
+		}
+		if err := githubOAuthConfig.Decode(); err != nil {
+			logger.WithError(err).Fatal("Error with decoding git oauth config")
+		}
+
+		var cookieSecret config.Cookie
+		if err := yaml.Unmarshal(cookieSecretRaw, &cookieSecret); err != nil {
+			logger.WithError(err).Fatal("Error unmarshalling cookie secret")
+		}
+		decodedSecret, err := hex.DecodeString(cookieSecret.Secret)
+		if err != nil {
+			logger.WithError(err).Fatal("Error decoding cookie secret")
+		}
+		if len(decodedSecret) == 0 {
+			logger.Fatal("Cookie secret should not be empty")
+		}
+		cookie := sessions.NewCookieStore(decodedSecret)
+		githubOAuthConfig.InitGithubOAuthConfig(cookie)
+
+		goa := githuboauth.NewGithubOAuthAgent(&githubOAuthConfig, logrus.WithField("client", "githuboauth"))
+		oauthClient := &oauth2.Config{
+			ClientID:     githubOAuthConfig.ClientID,
+			ClientSecret: githubOAuthConfig.ClientSecret,
+			RedirectURL:  githubOAuthConfig.RedirectURL,
+			Scopes:       githubOAuthConfig.Scopes,
+			Endpoint:     github.Endpoint,
+		}
+
+		userDashboardAgent := userdashboard.NewDashboardAgent(&githubOAuthConfig, logrus.WithField("client", "user-dashboard"))
+		mux.Handle("/user-dashboard", userDashboardAgent.HandleUserDashboard(userDashboardAgent))
+		// Handles login request.
+		mux.Handle("/user-dashboard/login", goa.HandleLogin(oauthClient))
+		// Handles redirect from Github OAuth server.
+		mux.Handle("/user-dashboard/redirect", goa.HandleRedirect(oauthClient))
+	}
+
 	// optionally inject http->https redirect handler when behind loadbalancer
 	if *redirectHTTPTo != "" {
 		redirectMux := http.NewServeMux()
@@ -169,12 +234,12 @@ func prodOnlyMain(logger *logrus.Entry, mux *http.ServeMux) {
 	}
 }
 
-func loadToken(file string) (string, error) {
+func loadToken(file string) ([]byte, error) {
 	raw, err := ioutil.ReadFile(file)
 	if err != nil {
-		return "", err
+		return []byte{}, err
 	}
-	return string(bytes.TrimSpace(raw)), nil
+	return bytes.TrimSpace(raw), nil
 }
 
 // copy a http.Request
@@ -319,6 +384,27 @@ func handlePluginHelp(ha *helpAgent) http.HandlerFunc {
 			fmt.Fprintf(w, "var %s = %s;", v, string(b))
 		} else {
 			fmt.Fprint(w, string(b))
+		}
+	}
+}
+
+func handleUserData(path string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		setHeadersNoCaching(w)
+		userData, err := getUserDashboardData(path)
+		if err != nil {
+			logrus.WithError(err).Error("Getting data from deck")
+			userData = userdashboard.UserData{}
+		}
+		marshalData, err := json.Marshal(userData)
+		if err != nil {
+			logrus.WithError(err).Error("Marshaling user data")
+			marshalData = []byte("[]")
+		}
+		if v := r.URL.Query().Get("var"); v != "" {
+			fmt.Fprintf(w, "var %s = %s;", v, string(marshalData))
+		} else {
+			fmt.Fprint(w, string(marshalData))
 		}
 	}
 }
@@ -492,4 +578,27 @@ func handleBranding(ca configAgent) http.HandlerFunc {
 			fmt.Fprint(w, string(b))
 		}
 	}
+}
+
+func isValidatedGitOAuthConfig(githubOAuthConfig *config.GithubOAuthConfig) bool {
+	return githubOAuthConfig.ClientID != "" && githubOAuthConfig.ClientSecret != "" &&
+		githubOAuthConfig.RedirectURL != "" &&
+		githubOAuthConfig.FinalRedirectURL != ""
+}
+
+func getUserDashboardData(path string) (userdashboard.UserData, error) {
+	resp, err := http.Get(path)
+	if err != nil {
+		return userdashboard.UserData{}, fmt.Errorf("error GETing user dashboard data: %v", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		return userdashboard.UserData{}, fmt.Errorf("response has status code %d", resp.StatusCode)
+	}
+	var data userdashboard.UserData
+	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+		return userdashboard.UserData{}, fmt.Errorf("error decoding json user dashboard data: %v", err)
+	}
+
+	return data, nil
 }
