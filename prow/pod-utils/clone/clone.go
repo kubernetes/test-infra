@@ -61,7 +61,11 @@ func Run(refs kube.Refs, dir string) Record {
 
 	for _, command := range commands {
 		formattedCommand, output, err := command()
-		record.Commands = append(record.Commands, Command{Command: formattedCommand, Output: output, Error: err.Error()})
+		message := ""
+		if err != nil {
+			message = err.Error()
+		}
+		record.Commands = append(record.Commands, Command{Command: formattedCommand, Output: output, Error: message})
 		if err != nil {
 			break
 		}
