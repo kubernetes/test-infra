@@ -18,6 +18,8 @@ package main
 
 import (
 	"bytes"
+	"crypto/tls"
+	"crypto/x509"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -48,6 +50,10 @@ var (
 	jenkinsUserName        = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
 	jenkinsTokenFile       = flag.String("jenkins-token-file", "", "Path to the file containing the Jenkins API token.")
 	jenkinsBearerTokenFile = flag.String("jenkins-bearer-token-file", "", "Path to the file containing the Jenkins API bearer token.")
+	certFile               = flag.String("cert-file", "", "Path to a PEM-encoded certificate file.")
+	keyFile                = flag.String("key-file", "", "Path to a PEM-encoded key file.")
+	caCertFile             = flag.String("ca-cert-file", "", "Path to a PEM-encoded CA certificate file.")
+	csrfProtect            = flag.Bool("csrf-protect", false, "Request a CSRF protection token from Jenkins that will be used in all subsequent requests to Jenkins.")
 
 	githubEndpoint  = flag.String("github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
 	githubTokenFile = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
@@ -73,7 +79,9 @@ func main() {
 		logger.WithError(err).Fatal("Error getting kube client.")
 	}
 
-	ac := &jenkins.AuthConfig{}
+	ac := &jenkins.AuthConfig{
+		CSRFProtect: *csrfProtect,
+	}
 	if *jenkinsTokenFile != "" {
 		token, err := loadToken(*jenkinsTokenFile)
 		if err != nil {
@@ -94,8 +102,19 @@ func main() {
 	} else {
 		logger.Fatal("An auth token for basic or bearer token auth must be supplied.")
 	}
+	var tlsConfig *tls.Config
+	if *certFile != "" && *keyFile != "" {
+		config, err := loadCerts(*certFile, *keyFile, *caCertFile)
+		if err != nil {
+			logger.WithError(err).Fatalf("Could not read certificate files.")
+		}
+		tlsConfig = config
+	}
 	metrics := jenkins.NewMetrics()
-	jc := jenkins.NewClient(*jenkinsURL, ac, logger, metrics.ClientMetrics)
+	jc, err := jenkins.NewClient(*jenkinsURL, tlsConfig, ac, logger, metrics.ClientMetrics)
+	if err != nil {
+		logger.WithError(err).Fatalf("Could not setup Jenkins client.")
+	}
 
 	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
 	if err != nil {
@@ -156,6 +175,30 @@ func loadToken(file string) (string, error) {
 		return "", err
 	}
 	return string(bytes.TrimSpace(raw)), nil
+}
+
+func loadCerts(certFile, keyFile, caCertFile string) (*tls.Config, error) {
+	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
+	if err != nil {
+		return nil, err
+	}
+
+	tlsConfig := &tls.Config{
+		Certificates: []tls.Certificate{cert},
+	}
+
+	if caCertFile != "" {
+		caCert, err := ioutil.ReadFile(caCertFile)
+		if err != nil {
+			return nil, err
+		}
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+		tlsConfig.RootCAs = caCertPool
+	}
+
+	tlsConfig.BuildNameToCertificate()
+	return tlsConfig, nil
 }
 
 // serve starts a http server and serves Jenkins logs

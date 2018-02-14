@@ -17,6 +17,7 @@ limitations under the License.
 package jenkins
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -33,9 +34,15 @@ import (
 )
 
 const (
+	// Maximum retries for a request to Jenkins.
+	// Retries on transport failures and 500s.
 	maxRetries = 5
+	// Backoff delay used after a request retry.
+	// Doubles on every retry.
 	retryDelay = 100 * time.Millisecond
-	buildID    = "buildId"
+	// Deprecated: Key for unique build number across Jenkins builds.
+	buildID = "buildId"
+	// Key for unique build number across Jenkins builds.
 	newBuildID = "BUILD_ID"
 )
 
@@ -133,8 +140,21 @@ type Client struct {
 // AuthConfig configures how we auth with Jenkins.
 // Only one of the fields will be non-nil.
 type AuthConfig struct {
-	Basic       *BasicAuthConfig
+	// Basic is used for doing basic auth with Jenkins.
+	Basic *BasicAuthConfig
+	// BearerToken is used for doing oauth-based authentication
+	// with Jenkins. Works ootb with the Openshift Jenkins image.
 	BearerToken *BearerTokenAuthConfig
+	// CSRFProtect ensures the client will acquire a CSRF protection
+	// token from Jenkins to use it in mutating requests. Required
+	// for masters that prevent cross site request forgery exploits.
+	CSRFProtect bool
+	// csrfToken is the token acquired from Jenkins for CSRF protection.
+	// Needs to be used as the header value in subsequent mutating requests.
+	csrfToken string
+	// csrfRequestField is a key acquired from Jenkins for CSRF protection.
+	// Needs to be used as the header key in subsequent mutating requests.
+	csrfRequestField string
 }
 
 type BasicAuthConfig struct {
@@ -146,11 +166,11 @@ type BearerTokenAuthConfig struct {
 	Token string
 }
 
-func NewClient(url string, authConfig *AuthConfig, logger *logrus.Entry, metrics *ClientMetrics) *Client {
+func NewClient(url string, tlsConfig *tls.Config, authConfig *AuthConfig, logger *logrus.Entry, metrics *ClientMetrics) (*Client, error) {
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
-	return &Client{
+	c := &Client{
 		logger:     logger.WithField("client", "jenkins"),
 		baseURL:    url,
 		authConfig: authConfig,
@@ -159,6 +179,39 @@ func NewClient(url string, authConfig *AuthConfig, logger *logrus.Entry, metrics
 		},
 		metrics: metrics,
 	}
+	if tlsConfig != nil {
+		c.client.Transport = &http.Transport{TLSClientConfig: tlsConfig}
+	}
+	if c.authConfig.CSRFProtect {
+		if err := c.CrumbRequest(); err != nil {
+			return nil, fmt.Errorf("cannot get Jenkins crumb: %v", err)
+		}
+	}
+	return c, nil
+}
+
+// CrumbRequest requests a CSRF protection token from Jenkins to
+// use it in subsequent requests. Required for Jenkins masters that
+// prevent cross site request forgery exploits.
+func (c *Client) CrumbRequest() error {
+	if c.authConfig.csrfToken != "" && c.authConfig.csrfRequestField != "" {
+		return nil
+	}
+	c.logger.Debug("CrumbRequest")
+	data, err := c.GetSkipMetrics("/crumbIssuer/api/json")
+	if err != nil {
+		return err
+	}
+	crumbResp := struct {
+		Crumb             string `json:"crumb"`
+		CrumbRequestField string `json:"crumbRequestField"`
+	}{}
+	if err := json.Unmarshal(data, &crumbResp); err != nil {
+		return fmt.Errorf("cannot unmarshal crumb response: %v", err)
+	}
+	c.authConfig.csrfToken = crumbResp.Crumb
+	c.authConfig.csrfRequestField = crumbResp.CrumbRequestField
+	return nil
 }
 
 // measure records metrics about the provided method, path, and code.
@@ -259,6 +312,9 @@ func (c *Client) doRequest(method, path string) (*http.Response, error) {
 		}
 		if c.authConfig.BearerToken != nil {
 			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.authConfig.BearerToken.Token))
+		}
+		if c.authConfig.CSRFProtect && c.authConfig.csrfRequestField != "" && c.authConfig.csrfToken != "" {
+			req.Header.Set(c.authConfig.csrfRequestField, c.authConfig.csrfToken)
 		}
 	}
 	return c.client.Do(req)
