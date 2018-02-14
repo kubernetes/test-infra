@@ -25,6 +25,10 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
+	"time"
+
+	"k8s.io/test-infra/experiment/nursery/diskutil"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -45,8 +49,15 @@ func NewCache(diskRoot string) *Cache {
 	}
 }
 
-func (c *Cache) keyToPath(key string) string {
+// KeyToPath converts a cache entry key to a path on disk
+func (c *Cache) KeyToPath(key string) string {
 	return filepath.Join(c.diskRoot, key)
+}
+
+// PathToKey converts a path on disk to a key, assuming the path is actually
+// under DiskRoot() ...
+func (c *Cache) PathToKey(key string) string {
+	return strings.TrimPrefix(key, c.diskRoot+string(os.PathSeparator))
 }
 
 // DiskRoot returns the root directory containing all on-disk cache entries
@@ -80,7 +91,7 @@ func removeTemp(path string) {
 // cache if the content's hex string SHA256 matches
 func (c *Cache) Put(key string, content io.Reader, contentSHA256 string) error {
 	// make sure directory exists
-	path := c.keyToPath(key)
+	path := c.KeyToPath(key)
 	dir := filepath.Dir(path)
 	err := ensureDir(dir)
 	if err != nil {
@@ -134,7 +145,7 @@ func (c *Cache) Put(key string, content io.Reader, contentSHA256 string) error {
 
 // Get provides your readHandler with the contents at key
 func (c *Cache) Get(key string, readHandler ReadHandler) error {
-	path := c.keyToPath(key)
+	path := c.KeyToPath(key)
 	f, err := os.Open(path)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -143,4 +154,35 @@ func (c *Cache) Get(key string, readHandler ReadHandler) error {
 		return fmt.Errorf("failed to get key: %v", err)
 	}
 	return readHandler(true, f)
+}
+
+// EntryInfo are returned when getting entries from the cache
+type EntryInfo struct {
+	Path       string
+	LastAccess time.Time
+}
+
+// GetEntries walks the cache dir and returns all paths that exist
+// In the future this *may* be made smarter
+func (c *Cache) GetEntries() []EntryInfo {
+	entries := []EntryInfo{}
+	// note we swallow errors because we just need to know what keys exist
+	// some keys missing is OK since this is used for eviction, but not returning
+	// any of the keys due to some error is NOT
+	_ = filepath.Walk(c.diskRoot, func(path string, f os.FileInfo, err error) error {
+		if !f.IsDir() {
+			atime := diskutil.GetATime(path, time.Now())
+			entries = append(entries, EntryInfo{
+				Path:       path,
+				LastAccess: atime,
+			})
+		}
+		return nil
+	})
+	return entries
+}
+
+// Delete deletes the file at key
+func (c *Cache) Delete(key string) error {
+	return os.Remove(c.KeyToPath(key))
 }

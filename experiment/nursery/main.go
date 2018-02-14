@@ -34,11 +34,12 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"os/exec"
+	"sort"
 	"strings"
 	"time"
 
 	"k8s.io/test-infra/experiment/nursery/diskcache"
+	"k8s.io/test-infra/experiment/nursery/diskutil"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -46,6 +47,14 @@ import (
 var dir = flag.String("dir", "", "location to store cache entries on disk")
 var host = flag.String("host", "", "host address to listen on")
 var port = flag.Int("port", 8080, "port to listen on")
+
+// eviction knobs
+var minPercentBlocksFree = flag.Float64("min-percent-blocks-free", 10,
+	"minimum percent of blocks free on --dir's disk before evicting entries")
+var minPercentFilesFree = flag.Float64("min-percent-files-free", 10,
+	"minimum percent of blocks free on --dir's disk before evicting entries")
+var diskCheckInterval = flag.Duration("disk-check-interval", time.Minute,
+	"interval between checking disk usage (and potentially evicting entries)")
 
 // NOTE: remount is a bit of a hack, unfortunately the kubernetes volumes
 // don't really support this and to cleanly track entry access times we
@@ -60,8 +69,7 @@ func init() {
 }
 
 func main() {
-	// TODO(bentheelder): bound cache size / convert to LRU
-	// TODO(bentheelder): improve logging
+	// TODO(bentheelder): add metrics
 	flag.Parse()
 	logger := log.WithFields(log.Fields{
 		"component": "nursery",
@@ -70,7 +78,7 @@ func main() {
 		logger.Fatal("--dir must be set!")
 	}
 	if *remount {
-		device, mount, err := findMountForPath(*dir)
+		device, mount, err := diskutil.FindMountForPath(*dir)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to find mountpoint for %s", *dir)
 		} else {
@@ -78,7 +86,7 @@ func main() {
 				"Attempting to remount %s on %s with 'strictatime,lazyatime'",
 				device, mount,
 			)
-			err = remountWithLazyAtime(device, mount)
+			err = diskutil.Remount(device, mount, "strictatime,lazytime")
 			if err != nil {
 				logger.WithError(err).Error("Failed to remount with lazyatime!")
 			}
@@ -87,6 +95,8 @@ func main() {
 
 	cache := diskcache.NewCache(*dir)
 	http.Handle("/", cacheHandler(cache))
+
+	go monitorDiskAndEvict(cache, *diskCheckInterval, *minPercentBlocksFree, *minPercentFilesFree)
 
 	addr := fmt.Sprintf("%s:%d", *host, *port)
 	logger.Infof("Listening on: %s", addr)
@@ -166,47 +176,41 @@ func cacheHandler(cache *diskcache.Cache) http.Handler {
 	})
 }
 
-/*
-	--remount related code below
-*/
-
-// exec command and returns lines of combined output
-func commandLines(cmd []string) (lines []string, err error) {
-	c := exec.Command(cmd[0], cmd[1:]...)
-	b, err := c.CombinedOutput()
-	if err != nil {
-		return nil, err
-	}
-	return strings.Split(string(b), "\n"), nil
-}
-
-// uses `mount -l` to find the device / mountpoint on which path is mounted
-func findMountForPath(path string) (device, mountPoint string, err error) {
-	mounts, err := commandLines([]string{"mount"})
-	if err != nil {
-		return "", "", err
-	}
-	// these lines are like:
-	// $fs on $mountpoint type $fs_type ($mountopts)
-	device, mountPoint = "", ""
-	for _, mount := range mounts {
-		parts := strings.Fields(mount)
-		if len(parts) >= 3 {
-			currDevice := parts[0]
-			currMount := parts[2]
-			// we want the longest matching mountpoint
-			if strings.HasPrefix(path, currMount) && len(currMount) > len(mountPoint) {
-				device, mountPoint = currDevice, currMount
+func monitorDiskAndEvict(cache *diskcache.Cache, interval time.Duration, minBlocksFree, minFilesFree float64) {
+	logger := log.WithFields(log.Fields{
+		"component": "nursery",
+	})
+	dir := cache.DiskRoot()
+	// forever check if usage is past thresholds and evict
+	for range time.Tick(interval) {
+		blocksFree, filesFree := diskutil.GetDiskUsage(dir)
+		// if we are past either threshold, evict until we are not
+		if blocksFree < minBlocksFree || filesFree < minFilesFree {
+			logger.WithFields(log.Fields{
+				"blocks-free": blocksFree,
+				"files-free":  filesFree,
+			}).Warn("Eviction triggered")
+			// get all cache entries and sort by lastaccess
+			// so we can pop entries until we have evicted enough
+			files := cache.GetEntries()
+			sort.Slice(files, func(i, j int) bool {
+				return files[i].LastAccess.After(files[j].LastAccess)
+			})
+			// actual eviction loop occurs here
+			for blocksFree < minBlocksFree || filesFree < minFilesFree {
+				if len(files) < 1 {
+					logger.Fatalf("Failed to find entries to evict!")
+				}
+				// pop entry and delete
+				var entry diskcache.EntryInfo
+				entry, files = files[0], files[1:]
+				err := cache.Delete(cache.PathToKey(entry.Path))
+				if err != nil {
+					logger.WithError(err).Error("Error deleting entry")
+				}
+				// get new disk usage
+				blocksFree, filesFree = diskutil.GetDiskUsage(dir)
 			}
 		}
 	}
-	return device, mountPoint, nil
-}
-
-// remounts with 'strictatime,lazyatime'
-func remountWithLazyAtime(device, mountPoint string) error {
-	_, err := commandLines([]string{
-		"mount", "-o", "remount,strictatime,lazytime", device, mountPoint,
-	})
-	return err
 }
