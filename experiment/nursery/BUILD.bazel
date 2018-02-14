@@ -38,6 +38,7 @@ filegroup(
 
 go_image(
     name = "image",
+    base = "@alpine-base//image",
     binary = ":nursery",
     visibility = ["//visibility:public"],
 )

@@ -34,6 +34,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -46,6 +47,13 @@ var dir = flag.String("dir", "", "location to store cache entries on disk")
 var host = flag.String("host", "", "host address to listen on")
 var port = flag.Int("port", 8080, "port to listen on")
 
+// NOTE: remount is a bit of a hack, unfortunately the kubernetes volumes
+// don't really support this and to cleanly track entry access times we
+// want to use a volume with lazyatime (and not noatime or relatime)
+// so that file access times *are* recorded but are lazily flushed to the disk
+var remount = flag.Bool("remount", false,
+	"attempt to remount --dir with strictatime,lazyatime to improve eviction")
+
 func init() {
 	log.SetFormatter(&log.TextFormatter{})
 	log.SetOutput(os.Stdout)
@@ -55,17 +63,32 @@ func main() {
 	// TODO(bentheelder): bound cache size / convert to LRU
 	// TODO(bentheelder): improve logging
 	flag.Parse()
+	logger := log.WithFields(log.Fields{
+		"component": "nursery",
+	})
 	if *dir == "" {
-		log.Fatal("--dir must be set!")
+		logger.Fatal("--dir must be set!")
+	}
+	if *remount {
+		device, mount, err := findMountForPath(*dir)
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to find mountpoint for %s", *dir)
+		} else {
+			logger.Warnf(
+				"Attempting to remount %s on %s with 'strictatime,lazyatime'",
+				device, mount,
+			)
+			err = remountWithLazyAtime(device, mount)
+			if err != nil {
+				logger.WithError(err).Error("Failed to remount with lazyatime!")
+			}
+		}
 	}
 
 	cache := diskcache.NewCache(*dir)
 	http.Handle("/", cacheHandler(cache))
 
 	addr := fmt.Sprintf("%s:%d", *host, *port)
-	logger := log.WithFields(log.Fields{
-		"component": "nursery",
-	})
 	logger.Infof("Listening on: %s", addr)
 	logger.WithError(http.ListenAndServe(addr, nil)).Fatal("ListenAndServe returned.")
 }
@@ -141,4 +164,49 @@ func cacheHandler(cache *diskcache.Cache) http.Handler {
 			http.Error(w, "unsupported method", http.StatusMethodNotAllowed)
 		}
 	})
+}
+
+/*
+	--remount related code below
+*/
+
+// exec command and returns lines of combined output
+func commandLines(cmd []string) (lines []string, err error) {
+	c := exec.Command(cmd[0], cmd[1:]...)
+	b, err := c.CombinedOutput()
+	if err != nil {
+		return nil, err
+	}
+	return strings.Split(string(b), "\n"), nil
+}
+
+// uses `mount -l` to find the device / mountpoint on which path is mounted
+func findMountForPath(path string) (device, mountPoint string, err error) {
+	mounts, err := commandLines([]string{"mount"})
+	if err != nil {
+		return "", "", err
+	}
+	// these lines are like:
+	// $fs on $mountpoint type $fs_type ($mountopts)
+	device, mountPoint = "", ""
+	for _, mount := range mounts {
+		parts := strings.Fields(mount)
+		if len(parts) >= 3 {
+			currDevice := parts[0]
+			currMount := parts[2]
+			// we want the longest matching mountpoint
+			if strings.HasPrefix(path, currMount) && len(currMount) > len(mountPoint) {
+				device, mountPoint = currDevice, currMount
+			}
+		}
+	}
+	return device, mountPoint, nil
+}
+
+// remounts with 'strictatime,lazyatime'
+func remountWithLazyAtime(device, mountPoint string) error {
+	_, err := commandLines([]string{
+		"mount", "-o", "remount,strictatime,lazytime", device, mountPoint,
+	})
+	return err
 }

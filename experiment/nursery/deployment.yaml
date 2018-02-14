@@ -34,10 +34,14 @@ spec:
           containerPort: 8080
         args:
         - --dir=/data
-      # mount the local ssd
+        - --remount
+        # mount the local ssd
         volumeMounts:
         - name: cache
           mountPath: /data
+        # --remount needs privileges to remount the disk *shrug*
+        securityContext:
+          privileged: true
       volumes:
       - name: cache
         hostPath:
