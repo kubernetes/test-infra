@@ -524,6 +524,7 @@ presubmits:
         - "--root=/go/src/"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
+        - "--timeout=110"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
@@ -2291,7 +2292,7 @@ presubmits:
         - "--repo=k8s.io/release"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=110"
+        - "--timeout=120"
         env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
         # - name: KUBEMARK_BAZEL_BUILD
@@ -2343,7 +2344,7 @@ presubmits:
         - "--repo=k8s.io/release"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=110"
+        - "--timeout=120"
         env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
         # - name: KUBEMARK_BAZEL_BUILD
@@ -2395,7 +2396,7 @@ presubmits:
         - "--repo=k8s.io/release"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=110"
+        - "--timeout=120"
         env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
         # - name: KUBEMARK_BAZEL_BUILD
@@ -4207,7 +4208,7 @@ presubmits:
         - --repo=k8s.io/release
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=110
+        - --timeout=120
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce-big
         env:
@@ -4258,7 +4259,7 @@ presubmits:
         - --repo=k8s.io/release
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=110
+        - --timeout=120
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce-big
         env:
@@ -4309,7 +4310,7 @@ presubmits:
         - --repo=k8s.io/release
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=110
+        - --timeout=120
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce-big
         env:
@@ -6028,7 +6029,7 @@ periodics:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
       - --repo=github.com/containerd/cri-containerd=master
-      - --timeout=120
+      - --timeout=140
       - --
       - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri-containerd"
       env:
@@ -6154,7 +6155,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180212-83c830734-master
       args:
-      - "--timeout=320"
+      - "--timeout=340"
       - "--bare"
 - name: ci-ingress-gce-e2e
   agent: kubernetes
@@ -6166,7 +6167,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180212-83c830734-master
       args:
-      - "--timeout=320"
+      - "--timeout=340"
       - "--bare"
 - name: ci-ingress-gce-e2e-scale
   agent: kubernetes
@@ -6190,7 +6191,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180212-83c830734-master
       args:
-      - "--timeout=320"
+      - "--timeout=340"
       - "--bare"
 - name: ci-ingress-ipvs-gce-e2e
   agent: kubernetes
@@ -6202,7 +6203,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180212-83c830734-master
       args:
-      - "--timeout=320"
+      - "--timeout=340"
       - "--bare"
 - interval: 30m
   name: ci-kops-build
@@ -6772,7 +6773,7 @@ periodics:
       args:
       - "--repo=k8s.io/autoscaler=master"
       - "--root=/go/src"
-      - "--timeout=60"
+      - "--timeout=80"
 
 - interval: 1h
   agent: kubernetes
@@ -13434,7 +13435,7 @@ periodics:
       - "--repo=k8s.io/kubernetes=master"
       - "--repo=k8s.io/perf-tests=master"
       - "--root=/go/src"
-      - "--timeout=60"
+      - "--timeout=80"
 
 - name: ci-perf-tests-kubemark-100-benchmark
   interval: 2h
