@@ -622,6 +622,7 @@
   "ci-kubemci-image-push": {
     "args": [
       "make",
+      "--",
       "-C",
       "images/kubemci",
       "push"
