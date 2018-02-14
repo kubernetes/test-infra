@@ -26,7 +26,7 @@ import (
 	"k8s.io/test-infra/prow/kube"
 )
 
-func Run(refs kube.Refs, dir string) Record {
+func Run(refs kube.Refs, dir, gitUserName, gitUserEmail string) Record {
 	repositoryURL := fmt.Sprintf("https://github.com/%s/%s.git", refs.Org, refs.Repo)
 	cloneDir := fmt.Sprintf("%s/src/github.com/%s/%s", dir, refs.Org, refs.Repo)
 	record := Record{Refs: refs}
@@ -37,6 +37,12 @@ func Run(refs kube.Refs, dir string) Record {
 		},
 	}
 
+	if gitUserName != "" {
+		commands = append(commands, shellCloneCommand(cloneDir, "git", "config", "user.name", gitUserName))
+	}
+	if gitUserEmail != "" {
+		commands = append(commands, shellCloneCommand(cloneDir, "git", "config", "user.email", gitUserEmail))
+	}
 	commands = append(commands, shellCloneCommand(cloneDir, "git", "init"))
 	commands = append(commands, shellCloneCommand(cloneDir, "git", "fetch", repositoryURL, refs.BaseRef))
 
