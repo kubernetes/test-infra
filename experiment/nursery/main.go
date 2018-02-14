@@ -64,7 +64,7 @@ var remount = flag.Bool("remount", false,
 	"attempt to remount --dir with strictatime,lazyatime to improve eviction")
 
 func init() {
-	log.SetFormatter(&log.TextFormatter{})
+	log.SetFormatter(&log.JSONFormatter{})
 	log.SetOutput(os.Stdout)
 }
 
@@ -90,6 +90,7 @@ func main() {
 			if err != nil {
 				logger.WithError(err).Error("Failed to remount with lazyatime!")
 			}
+			logger.Info("Remount complete")
 		}
 	}
 
