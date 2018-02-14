@@ -5099,6 +5099,7 @@ postsubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180212-83c830734-master
         args:
+        - "--repo=k8s.io/test-infra=master"
         - "--root=/go/src/"
         - "--clean"
         - "--timeout=90"
