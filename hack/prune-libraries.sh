@@ -82,10 +82,10 @@ packages() {
   done) | sort -u
 }
 
-# Convert //foo //bar to foo/BUILD.bazel bar/BUILD.bazel
+# Convert //foo //bar to foo/BUILD bar/BUILD.bazel (whichever exist)
 builds() {
   for i in "${@}"; do
-    echo ${i:2}/BUILD.bazel
+    echo $(ls ${i:2}/{BUILD,BUILD.bazel} 2>/dev/null)
   done
 }
 
