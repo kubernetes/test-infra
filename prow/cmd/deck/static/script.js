@@ -468,11 +468,9 @@ function redraw() {
         r.appendChild(stateCell(build.state));
         if (build.pod_name) {
             const icon = createIcon("description", "Build log");
-            icon.addEventListener("click", () => {
-                window.location.href += "log?job=" + build.job + "&id="
-                    + build.build_id;
-            });
+            icon.href = "log?job=" + build.job + "&id=" + build.build_id;
             const cell = document.createElement("TD");
+            cell.classList.add("icon-cell");
             cell.appendChild(icon);
             r.appendChild(cell);
         } else {
@@ -530,7 +528,6 @@ function createLinkCell(text, url, title) {
         a.title = title;
     }
     a.appendChild(document.createTextNode(text));
-    a.classList.add("highlighted-link");
     c.appendChild(a);
     return c;
 }
@@ -546,6 +543,7 @@ function createRerunCell(modal, rerun_command, prowjob) {
             + url + "</a>\"";
     };
     c.appendChild(icon);
+    c.classList.add("icon-cell");
     return c;
 }
 
@@ -553,10 +551,28 @@ function stateCell(state) {
     const c = document.createElement("td");
     c.className = state;
 
+    let displayState = "";
+    switch (state) {
+        case "pending":
+            displayState = "Pending";
+            break;
+        case "success":
+            displayState = "Successful";
+            break;
+        case "failure":
+            displayState = "Failed";
+            break;
+        case "aborted":
+            displayState = "Aborted";
+            break;
+        case "error":
+            displayState = "Error";
+            break;
+    }
     const stateIndicator = document.createElement("DIV");
     stateIndicator.classList.add(...["state", state]);
     c.appendChild(stateIndicator);
-    c.title = state[0].toUpperCase() + state.slice(1) + " job";
+    c.title = displayState + " job";
 
     return c;
 }
@@ -623,7 +639,7 @@ function createIcon(iconString, tooltip = "") {
         icon.title = tooltip;
     }
 
-    const container = document.createElement("BUTTON");
+    const container = document.createElement("A");
     container.appendChild(icon);
     container.classList.add(...["mdl-button", "mdl-js-button", "mdl-button--icon"]);
 
