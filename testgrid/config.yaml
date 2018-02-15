@@ -297,6 +297,8 @@ test_groups:
   num_failures_to_alert: 1
 - name: ci-kubernetes-e2e-gci-gce-ip-alias
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ip-alias
+- name: ci-kubernetes-e2e-gci-gce-ipvs
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ipvs
 - name: ci-kubernetes-e2e-gce-alpha-api
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-alpha-api
 - name: ci-kubernetes-e2e-gci-gce-serial
@@ -3913,6 +3915,12 @@ dashboards:
   - name: gci-gce-ip-alias
     test_group_name: ci-kubernetes-e2e-gci-gce-ip-alias
     base_options: 'include-filter-by-regex=\[sig-network\]'
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: gci-gce-ipvs
+    test_group_name: ci-kubernetes-e2e-gci-gce-ipvs
+    base_options: 'include-filter-by-regex=\[sig-network\]'
+    description: 'network gci-gce e2e tests in ipvs proxier mode'
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gce-alpha-api

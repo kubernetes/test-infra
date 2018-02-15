@@ -4651,6 +4651,27 @@
       "sig-network"
     ]
   },
+  "ci-kubernetes-e2e-gci-gce-ipvs": {
+    "args": [
+      "--check-leaked-resources",
+      "--env=KUBE_PROXY_MODE=ipvs",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=ci/latest",
+      "--gcp-master-image=gci",
+      "--gcp-node-image=ubuntu",
+      "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel=30",
+      "--image-family=ubuntu-gke-1604-lts",
+      "--image-project=ubuntu-os-gke-cloud",
+      "--provider=gce",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=50m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-network"
+    ]
+  },
   "ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds": {
     "args": [
       "--check-leaked-resources",

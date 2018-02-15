@@ -9347,6 +9347,19 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180212-83c830734-master
 
+- interval: 60m
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gci-gce-ipvs
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180212-83c830734-master
+
 - interval: 2h
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
