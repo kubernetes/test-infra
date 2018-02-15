@@ -6,10 +6,6 @@ body {
     font-size: 16px !important;
 }
 
-a {
-    padding: 4px 8px;
-}
-
 a.current {
     text-decoration: underline !important;
 }
@@ -17,11 +13,6 @@ a.current {
 a:link {
     text-decoration: none;
     color: #3F51B5;
-}
-
-.highlighted-link:hover {
-    background-color: #EEEEEE;
-    border-radius: 4px;
 }
 
 .header-title {
@@ -119,6 +110,9 @@ th {
     display: none;
 }
 
+.icon-cell {
+    width: 32px;
+}
 /**
  * State style
  */
