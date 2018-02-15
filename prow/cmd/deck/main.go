@@ -19,7 +19,7 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"encoding/hex"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -176,11 +176,7 @@ func prodOnlyMain(logger *logrus.Entry, mux *http.ServeMux) {
 			logger.Fatal("Error invalid github oauth config")
 		}
 
-		var cookieSecret config.Cookie
-		if err := yaml.Unmarshal(cookieSecretRaw, &cookieSecret); err != nil {
-			logger.WithError(err).Fatal("Error unmarshalling cookie secret")
-		}
-		decodedSecret, err := hex.DecodeString(cookieSecret.Secret)
+		decodedSecret, err := base64.StdEncoding.DecodeString(string(cookieSecretRaw))
 		if err != nil {
 			logger.WithError(err).Fatal("Error decoding cookie secret")
 		}
