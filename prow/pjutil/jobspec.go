@@ -22,7 +22,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
+	"path"
 	"strconv"
 	"time"
 
@@ -63,21 +65,30 @@ func NewJobSpec(spec kube.ProwJobSpec, buildId, prowJobId string) JobSpec {
 // to vend build identifier for the job
 func GetBuildID(name, totURL string) (string, error) {
 	var err error
-	url := totURL + "/vend/" + name
-	for retries := 0; retries < 60; retries++ {
+	url, err := url.Parse(totURL)
+	if err != nil {
+		return "", fmt.Errorf("invalid tot url: %v", err)
+	}
+	url.Path = path.Join(url.Path, "vend", name)
+	sleep := 100 * time.Millisecond
+	for retries := 0; retries < 10; retries++ {
 		if retries > 0 {
-			time.Sleep(2 * time.Second)
+			time.Sleep(sleep)
+			sleep = sleep * 2
 		}
 		var resp *http.Response
-		resp, err = http.Get(url)
+		resp, err = http.Get(url.String())
 		if err != nil {
 			continue
 		}
 		defer resp.Body.Close()
 		if resp.StatusCode != 200 {
+			err = fmt.Errorf("got unexpected response from tot: %v", resp.Status)
 			continue
 		}
-		if buf, err := ioutil.ReadAll(resp.Body); err == nil {
+		var buf []byte
+		buf, err = ioutil.ReadAll(resp.Body)
+		if err == nil {
 			return string(buf), nil
 		}
 		return "", err
