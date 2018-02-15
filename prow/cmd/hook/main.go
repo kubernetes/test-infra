@@ -34,6 +34,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/hook"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	pluginhelp "k8s.io/test-infra/prow/pluginhelp/hook"
 	"k8s.io/test-infra/prow/plugins"
@@ -60,12 +61,11 @@ var (
 
 func main() {
 	flag.Parse()
-	logrus.SetFormatter(&logrus.JSONFormatter{})
-	logger := logrus.WithField("component", "hook")
+	logrus.SetFormatter(logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "hook"}))
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(*configPath); err != nil {
-		logger.WithError(err).Fatal("Error starting config agent.")
+		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
 	// Ignore SIGTERM so that we don't drop hooks when the pod is removed.
@@ -75,13 +75,13 @@ func main() {
 
 	webhookSecretRaw, err := ioutil.ReadFile(*webhookSecretFile)
 	if err != nil {
-		logger.WithError(err).Fatal("Could not read webhook secret file.")
+		logrus.WithError(err).Fatal("Could not read webhook secret file.")
 	}
 	webhookSecret := bytes.TrimSpace(webhookSecretRaw)
 
 	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
 	if err != nil {
-		logger.WithError(err).Fatal("Could not read oauth secret file.")
+		logrus.WithError(err).Fatal("Could not read oauth secret file.")
 	}
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
@@ -89,14 +89,14 @@ func main() {
 	if *slackTokenFile != "" {
 		teamTokenRaw, err := ioutil.ReadFile(*slackTokenFile)
 		if err != nil {
-			logger.WithError(err).Fatal("Could not read slack token file.")
+			logrus.WithError(err).Fatal("Could not read slack token file.")
 		}
 		teamToken = string(bytes.TrimSpace(teamTokenRaw))
 	}
 
 	_, err = url.Parse(*githubEndpoint)
 	if err != nil {
-		logger.WithError(err).Fatal("Must specify a valid --github-endpoint URL.")
+		logrus.WithError(err).Fatal("Must specify a valid --github-endpoint URL.")
 	}
 
 	var githubClient *github.Client
@@ -109,29 +109,29 @@ func main() {
 		if *cluster == "" {
 			kubeClient, err = kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 			if err != nil {
-				logger.WithError(err).Fatal("Error getting kube client.")
+				logrus.WithError(err).Fatal("Error getting kube client.")
 			}
 		} else {
 			kubeClient, err = kube.NewClientFromFile(*cluster, configAgent.Config().ProwJobNamespace)
 			if err != nil {
-				logger.WithError(err).Fatal("Error getting kube client.")
+				logrus.WithError(err).Fatal("Error getting kube client.")
 			}
 		}
 	}
 
 	var slackClient *slack.Client
 	if !*dryRun && teamToken != "" {
-		logger.Info("Using real slack client.")
+		logrus.Info("Using real slack client.")
 		slackClient = slack.NewClient(teamToken)
 	}
 	if slackClient == nil {
-		logger.Info("Using fake slack client.")
+		logrus.Info("Using fake slack client.")
 		slackClient = slack.NewFakeClient()
 	}
 
 	gitClient, err := git.NewClient()
 	if err != nil {
-		logger.WithError(err).Fatal("Error getting git client.")
+		logrus.WithError(err).Fatal("Error getting git client.")
 	}
 
 	pluginAgent := &plugins.PluginAgent{}
@@ -142,10 +142,10 @@ func main() {
 		GitClient:    gitClient,
 		SlackClient:  slackClient,
 		OwnersClient: repoowners.NewClient(gitClient, githubClient, pluginAgent.MDYAMLEnabled),
-		Logger:       logger,
+		Logger:       logrus.WithField("agent", "plugin"),
 	}
 	if err := pluginAgent.Start(*pluginConfig); err != nil {
-		logger.WithError(err).Fatal("Error starting plugins.")
+		logrus.WithError(err).Fatal("Error starting plugins.")
 	}
 
 	promMetrics := hook.NewMetrics()
@@ -171,5 +171,5 @@ func main() {
 	// Serve plugin help information from /plugin-help.
 	http.Handle("/plugin-help", pluginhelp.NewHelpAgent(pluginAgent, githubClient))
 
-	logger.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
+	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
 }

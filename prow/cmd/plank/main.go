@@ -35,6 +35,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/plank"
 )
@@ -55,26 +56,27 @@ var (
 
 func main() {
 	flag.Parse()
-	logrus.SetFormatter(&logrus.JSONFormatter{})
-	logger := logrus.WithField("component", "plank")
+	logrus.SetFormatter(
+		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "plank"}),
+	)
 
 	if _, err := labels.Parse(*selector); err != nil {
-		logger.WithError(err).Fatal("Error parsing label selector.")
+		logrus.WithError(err).Fatal("Error parsing label selector.")
 	}
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(*configPath); err != nil {
-		logger.WithError(err).Fatal("Error starting config agent.")
+		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
 	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
 	if err != nil {
-		logger.WithError(err).Fatalf("Could not read oauth secret file.")
+		logrus.WithError(err).Fatalf("Could not read oauth secret file.")
 	}
 
 	_, err = url.Parse(*githubEndpoint)
 	if err != nil {
-		logger.WithError(err).Fatalf("Must specify a valid --github-endpoint URL.")
+		logrus.WithError(err).Fatalf("Must specify a valid --github-endpoint URL.")
 	}
 
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
@@ -91,31 +93,31 @@ func main() {
 		if *cluster == "" {
 			kc, err = kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 			if err != nil {
-				logger.WithError(err).Fatal("Error getting kube client.")
+				logrus.WithError(err).Fatal("Error getting kube client.")
 			}
 		} else {
 			kc, err = kube.NewClientFromFile(*cluster, configAgent.Config().ProwJobNamespace)
 			if err != nil {
-				logger.WithError(err).Fatal("Error getting kube client.")
+				logrus.WithError(err).Fatal("Error getting kube client.")
 			}
 		}
 		if *buildCluster == "" {
 			pkc, err := kube.NewClientInCluster(configAgent.Config().PodNamespace)
 			if err != nil {
-				logger.WithError(err).Fatal("Error getting kube client.")
+				logrus.WithError(err).Fatal("Error getting kube client.")
 			}
 			pkcs = map[string]*kube.Client{kube.DefaultClusterAlias: pkc}
 		} else {
 			pkcs, err = kube.ClientMapFromFile(*buildCluster, configAgent.Config().PodNamespace)
 			if err != nil {
-				logger.WithError(err).Fatal("Error getting kube client to build cluster.")
+				logrus.WithError(err).Fatal("Error getting kube client to build cluster.")
 			}
 		}
 	}
 
-	c, err := plank.NewController(kc, pkcs, ghc, logger, configAgent, *totURL, *selector)
+	c, err := plank.NewController(kc, pkcs, ghc, nil, configAgent, *totURL, *selector)
 	if err != nil {
-		logger.WithError(err).Fatal("Error creating plank controller.")
+		logrus.WithError(err).Fatal("Error creating plank controller.")
 	}
 
 	// Push metrics to the configured prometheus pushgateway endpoint.
@@ -126,7 +128,7 @@ func main() {
 	// serve prometheus metrics.
 	go serve()
 	// gather metrics for the jobs handled by plank.
-	go gather(c, logger)
+	go gather(c)
 
 	tick := time.Tick(30 * time.Second)
 	sig := make(chan os.Signal, 1)
@@ -137,11 +139,11 @@ func main() {
 		case <-tick:
 			start := time.Now()
 			if err := c.Sync(); err != nil {
-				logger.WithError(err).Error("Error syncing.")
+				logrus.WithError(err).Error("Error syncing.")
 			}
-			logger.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Synced")
+			logrus.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Synced")
 		case <-sig:
-			logger.Info("Plank is shutting down...")
+			logrus.Info("Plank is shutting down...")
 			return
 		}
 	}
@@ -156,7 +158,7 @@ func serve() {
 
 // gather metrics from plank.
 // Meant to be called inside a goroutine.
-func gather(c *plank.Controller, logger *logrus.Entry) {
+func gather(c *plank.Controller) {
 	tick := time.Tick(30 * time.Second)
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
@@ -166,9 +168,9 @@ func gather(c *plank.Controller, logger *logrus.Entry) {
 		case <-tick:
 			start := time.Now()
 			c.SyncMetrics()
-			logger.WithField("metrics-duration", fmt.Sprintf("%v", time.Since(start))).Debug("Metrics synced")
+			logrus.WithField("metrics-duration", fmt.Sprintf("%v", time.Since(start))).Debug("Metrics synced")
 		case <-sig:
-			logger.Debug("Plank gatherer is shutting down...")
+			logrus.Debug("Plank gatherer is shutting down...")
 			return
 		}
 	}

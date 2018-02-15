@@ -32,6 +32,7 @@ import (
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/tide"
 )
 
@@ -51,23 +52,24 @@ var (
 
 func main() {
 	flag.Parse()
-	logrus.SetFormatter(&logrus.JSONFormatter{})
-	logger := logrus.WithField("component", "tide")
+	logrus.SetFormatter(
+		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "tide"}),
+	)
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(*configPath); err != nil {
-		logger.WithError(err).Fatal("Error starting config agent.")
+		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
 	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
 	if err != nil {
-		logger.WithError(err).Fatalf("Could not read oauth secret file.")
+		logrus.WithError(err).Fatalf("Could not read oauth secret file.")
 	}
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
 	_, err = url.Parse(*githubEndpoint)
 	if err != nil {
-		logger.WithError(err).Fatalf("Must specify a valid --github-endpoint URL.")
+		logrus.WithError(err).Fatalf("Must specify a valid --github-endpoint URL.")
 	}
 
 	var ghcSync, ghcStatus *github.Client
@@ -82,12 +84,12 @@ func main() {
 		if *cluster == "" {
 			kc, err = kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 			if err != nil {
-				logger.WithError(err).Fatal("Error getting kube client.")
+				logrus.WithError(err).Fatal("Error getting kube client.")
 			}
 		} else {
 			kc, err = kube.NewClientFromFile(*cluster, configAgent.Config().ProwJobNamespace)
 			if err != nil {
-				logger.WithError(err).Fatal("Error getting kube client.")
+				logrus.WithError(err).Fatal("Error getting kube client.")
 			}
 		}
 	}
@@ -102,14 +104,14 @@ func main() {
 
 	gc, err := git.NewClient()
 	if err != nil {
-		logger.WithError(err).Fatal("Error getting git client.")
+		logrus.WithError(err).Fatal("Error getting git client.")
 	}
 	defer gc.Clean()
 
-	c := tide.NewController(ghcSync, ghcStatus, kc, configAgent, gc, logger)
+	c := tide.NewController(ghcSync, ghcStatus, kc, configAgent, gc, nil)
 
 	start := time.Now()
-	sync(logger, c)
+	sync(c)
 	if *runOnce {
 		return
 	}
@@ -117,16 +119,16 @@ func main() {
 		for {
 			time.Sleep(time.Until(start.Add(configAgent.Config().Tide.SyncPeriod)))
 			start = time.Now()
-			sync(logger, c)
+			sync(c)
 		}
 	}()
-	logger.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), c))
+	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), c))
 }
 
-func sync(logger *logrus.Entry, c *tide.Controller) {
+func sync(c *tide.Controller) {
 	start := time.Now()
 	if err := c.Sync(); err != nil {
 		logrus.WithError(err).Error("Error syncing.")
 	}
-	logger.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Synced")
+	logrus.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Synced")
 }

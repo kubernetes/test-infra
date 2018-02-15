@@ -25,6 +25,7 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
@@ -48,17 +49,18 @@ var (
 
 func main() {
 	flag.Parse()
-	logrus.SetFormatter(&logrus.JSONFormatter{})
-	logger := logrus.WithField("component", "sinker")
+	logrus.SetFormatter(
+		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "sinker"}),
+	)
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(*configPath); err != nil {
-		logger.WithError(err).Fatal("Error starting config agent.")
+		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
 	kc, err := kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 	if err != nil {
-		logger.WithError(err).Error("Error getting client.")
+		logrus.WithError(err).Error("Error getting client.")
 		return
 	}
 
@@ -70,7 +72,7 @@ func main() {
 	} else {
 		pkcs, err = kube.ClientMapFromFile(*buildCluster, configAgent.Config().PodNamespace)
 		if err != nil {
-			logger.WithError(err).Fatal("Error getting kube client(s).")
+			logrus.WithError(err).Fatal("Error getting kube client(s).")
 		}
 	}
 
@@ -79,7 +81,7 @@ func main() {
 		kubeClients[alias] = kubeClient(client)
 	}
 	c := controller{
-		logger:      logger,
+		logger:      logrus.NewEntry(logrus.StandardLogger()),
 		kc:          kc,
 		pkcs:        kubeClients,
 		configAgent: configAgent,
@@ -89,7 +91,7 @@ func main() {
 	for {
 		start := time.Now()
 		c.clean()
-		logger.Infof("Sync time: %v", time.Since(start))
+		logrus.Infof("Sync time: %v", time.Since(start))
 		if *runOnce {
 			break
 		}

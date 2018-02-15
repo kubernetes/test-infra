@@ -43,6 +43,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/githuboauth"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/userdashboard"
@@ -70,8 +71,9 @@ func main() {
 	// common setup
 	flag.Parse()
 
-	logrus.SetFormatter(&logrus.JSONFormatter{})
-	logger := logrus.WithField("component", "deck")
+	logrus.SetFormatter(
+		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "deck"}),
+	)
 
 	mux := http.NewServeMux()
 
@@ -85,24 +87,24 @@ func main() {
 		mux.Handle("/", staticHandlerFromDir("./static"))
 	} else {
 		mux.Handle("/", staticHandlerFromDir("/static"))
-		prodOnlyMain(logger, mux)
+		prodOnlyMain(mux)
 	}
 
 	// setup done, actually start the server
-	logger.WithError(http.ListenAndServe(":8080", mux)).Fatal("ListenAndServe returned.")
+	logrus.WithError(http.ListenAndServe(":8080", mux)).Fatal("ListenAndServe returned.")
 }
 
 // prodOnlyMain contains logic only used when running deployed, not locally
-func prodOnlyMain(logger *logrus.Entry, mux *http.ServeMux) {
+func prodOnlyMain(mux *http.ServeMux) {
 	// setup config agent, pod log clients etc.
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(*configPath); err != nil {
-		logger.WithError(err).Fatal("Error starting config agent.")
+		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
 	kc, err := kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 	if err != nil {
-		logger.WithError(err).Fatal("Error getting client.")
+		logrus.WithError(err).Fatal("Error getting client.")
 	}
 	kc.SetHiddenReposProvider(func() []string { return configAgent.Config().Deck.HiddenRepos }, *hiddenOnly)
 
@@ -112,7 +114,7 @@ func prodOnlyMain(logger *logrus.Entry, mux *http.ServeMux) {
 	} else {
 		pkcs, err = kube.ClientMapFromFile(*buildCluster, configAgent.Config().PodNamespace)
 		if err != nil {
-			logger.WithError(err).Fatal("Error getting kube client to build cluster.")
+			logrus.WithError(err).Fatal("Error getting kube client to build cluster.")
 		}
 	}
 	plClients := map[string]podLogClient{}
@@ -142,7 +144,7 @@ func prodOnlyMain(logger *logrus.Entry, mux *http.ServeMux) {
 
 	if *tideURL != "" {
 		ta := &tideAgent{
-			log:  logger.WithField("agent", "tide"),
+			log:  logrus.WithField("agent", "tide"),
 			path: *tideURL,
 			updatePeriod: func() time.Duration {
 				return configAgent.Config().Deck.TideUpdatePeriod
@@ -158,30 +160,30 @@ func prodOnlyMain(logger *logrus.Entry, mux *http.ServeMux) {
 	if *oauthUrl != "" {
 		githubOAuthConfigRaw, err := loadToken(*githubOAuthConfigFile)
 		if err != nil {
-			logger.WithError(err).Fatal("Could not read github oauth config file.")
+			logrus.WithError(err).Fatal("Could not read github oauth config file.")
 		}
 
 		cookieSecretRaw, err := loadToken(*cookieSecretFile)
 		if err != nil {
-			logger.WithError(err).Fatal("Could not read cookie secret file.")
+			logrus.WithError(err).Fatal("Could not read cookie secret file.")
 		}
 
 		mux.Handle("/user-data.js", handleUserData(*oauthUrl))
 
 		var githubOAuthConfig config.GithubOAuthConfig
 		if err := yaml.Unmarshal(githubOAuthConfigRaw, &githubOAuthConfig); err != nil {
-			logger.WithError(err).Fatal("Error unmarshalling github oauth config")
+			logrus.WithError(err).Fatal("Error unmarshalling github oauth config")
 		}
 		if !isValidatedGitOAuthConfig(&githubOAuthConfig) {
-			logger.Fatal("Error invalid github oauth config")
+			logrus.Fatal("Error invalid github oauth config")
 		}
 
 		decodedSecret, err := base64.StdEncoding.DecodeString(string(cookieSecretRaw))
 		if err != nil {
-			logger.WithError(err).Fatal("Error decoding cookie secret")
+			logrus.WithError(err).Fatal("Error decoding cookie secret")
 		}
 		if len(decodedSecret) == 0 {
-			logger.Fatal("Cookie secret should not be empty")
+			logrus.Fatal("Cookie secret should not be empty")
 		}
 		cookie := sessions.NewCookieStore(decodedSecret)
 		githubOAuthConfig.InitGithubOAuthConfig(cookie)
@@ -211,7 +213,7 @@ func prodOnlyMain(logger *logrus.Entry, mux *http.ServeMux) {
 				if r.Header.Get("x-forwarded-proto") == "http" {
 					redirectURL, err := url.Parse(r.URL.String())
 					if err != nil {
-						logger.Errorf("Failed to parse URL: %s.", r.URL.String())
+						logrus.Errorf("Failed to parse URL: %s.", r.URL.String())
 						http.Error(w, "Failed to perform https redirect.", http.StatusInternalServerError)
 						return
 					}
