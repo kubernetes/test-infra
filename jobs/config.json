@@ -4654,12 +4654,11 @@
   "ci-kubernetes-e2e-gci-gce-ipvs": {
     "args": [
       "--check-leaked-resources",
+      "--env=KUBE_PROXY_MODE=ipvs",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-ipvs.env",
       "--extract=ci/latest",
       "--gcp-master-image=gci",
       "--gcp-node-image=ubuntu",
-      "--gcp-project=k8s-jenkins-gce-gci-ipvs",
       "--gcp-zone=us-central1-f",
       "--ginkgo-parallel=30",
       "--image-family=ubuntu-gke-1604-lts",
