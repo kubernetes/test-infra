@@ -34,14 +34,13 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"sort"
 	"strings"
 	"time"
 
 	"k8s.io/test-infra/experiment/nursery/diskcache"
 	"k8s.io/test-infra/experiment/nursery/diskutil"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 var dir = flag.String("dir", "", "location to store cache entries on disk")
@@ -63,45 +62,63 @@ var diskCheckInterval = flag.Duration("disk-check-interval", time.Minute,
 var remount = flag.Bool("remount", false,
 	"attempt to remount --dir with strictatime,lazyatime to improve eviction")
 
+// DefaultFieldsFormatter wraps another logrus.Formatter, injecting
+// DefaultFields into each Format() call
+type DefaultFieldsFormatter struct {
+	WrappedFormatter logrus.Formatter
+	DefaultFields    logrus.Fields
+}
+
+// Format implements logrus.Formatter's Format
+func (d *DefaultFieldsFormatter) Format(entry *logrus.Entry) ([]byte, error) {
+	decorated := entry
+	if entry != nil {
+		decorated = entry.WithFields(d.DefaultFields)
+	}
+	return d.WrappedFormatter.Format(decorated)
+}
+
 func init() {
-	log.SetFormatter(&log.JSONFormatter{})
-	log.SetOutput(os.Stdout)
+	logrus.SetFormatter(&DefaultFieldsFormatter{
+		WrappedFormatter: &logrus.JSONFormatter{},
+		DefaultFields: logrus.Fields{
+			"component": "nursery",
+		},
+	})
+	logrus.SetOutput(os.Stdout)
 }
 
 func main() {
 	// TODO(bentheelder): add metrics
 	flag.Parse()
-	logger := log.WithFields(log.Fields{
-		"component": "nursery",
-	})
 	if *dir == "" {
-		logger.Fatal("--dir must be set!")
+		logrus.Fatal("--dir must be set!")
 	}
 	if *remount {
 		device, mount, err := diskutil.FindMountForPath(*dir)
 		if err != nil {
-			logger.WithError(err).Errorf("Failed to find mountpoint for %s", *dir)
+			logrus.WithError(err).Errorf("Failed to find mountpoint for %s", *dir)
 		} else {
-			logger.Warnf(
+			logrus.Warnf(
 				"Attempting to remount %s on %s with 'strictatime,lazyatime'",
 				device, mount,
 			)
 			err = diskutil.Remount(device, mount, "strictatime,lazytime")
 			if err != nil {
-				logger.WithError(err).Error("Failed to remount with lazyatime!")
+				logrus.WithError(err).Error("Failed to remount with lazyatime!")
+			} else {
+				logrus.Info("Remount complete")
 			}
-			logger.Info("Remount complete")
 		}
 	}
 
 	cache := diskcache.NewCache(*dir)
 	http.Handle("/", cacheHandler(cache))
-
-	go monitorDiskAndEvict(cache, *diskCheckInterval, *minPercentBlocksFree, *minPercentFilesFree)
+	go cache.MonitorDiskAndEvict(*diskCheckInterval, *minPercentBlocksFree, *minPercentFilesFree)
 
 	addr := fmt.Sprintf("%s:%d", *host, *port)
-	logger.Infof("Listening on: %s", addr)
-	logger.WithError(http.ListenAndServe(addr, nil)).Fatal("ListenAndServe returned.")
+	logrus.Infof("Listening on: %s", addr)
+	logrus.WithError(http.ListenAndServe(addr, nil)).Fatal("ListenAndServe returned.")
 }
 
 // file not found error, used below
@@ -109,10 +126,9 @@ var errNotFound = errors.New("entry not found")
 
 func cacheHandler(cache *diskcache.Cache) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger := log.WithFields(log.Fields{
-			"component": "nursery",
-			"method":    r.Method,
-			"path":      r.URL.Path,
+		logger := logrus.WithFields(logrus.Fields{
+			"method": r.Method,
+			"path":   r.URL.Path,
 		})
 		// parse and validate path
 		// the last segment should be a hash, and the
@@ -175,43 +191,4 @@ func cacheHandler(cache *diskcache.Cache) http.Handler {
 			http.Error(w, "unsupported method", http.StatusMethodNotAllowed)
 		}
 	})
-}
-
-func monitorDiskAndEvict(cache *diskcache.Cache, interval time.Duration, minBlocksFree, minFilesFree float64) {
-	logger := log.WithFields(log.Fields{
-		"component": "nursery",
-	})
-	dir := cache.DiskRoot()
-	// forever check if usage is past thresholds and evict
-	for range time.Tick(interval) {
-		blocksFree, filesFree := diskutil.GetDiskUsage(dir)
-		// if we are past either threshold, evict until we are not
-		if blocksFree < minBlocksFree || filesFree < minFilesFree {
-			logger.WithFields(log.Fields{
-				"blocks-free": blocksFree,
-				"files-free":  filesFree,
-			}).Warn("Eviction triggered")
-			// get all cache entries and sort by lastaccess
-			// so we can pop entries until we have evicted enough
-			files := cache.GetEntries()
-			sort.Slice(files, func(i, j int) bool {
-				return files[i].LastAccess.After(files[j].LastAccess)
-			})
-			// actual eviction loop occurs here
-			for blocksFree < minBlocksFree || filesFree < minFilesFree {
-				if len(files) < 1 {
-					logger.Fatalf("Failed to find entries to evict!")
-				}
-				// pop entry and delete
-				var entry diskcache.EntryInfo
-				entry, files = files[0], files[1:]
-				err := cache.Delete(cache.PathToKey(entry.Path))
-				if err != nil {
-					logger.WithError(err).Error("Error deleting entry")
-				}
-				// get new disk usage
-				blocksFree, filesFree = diskutil.GetDiskUsage(dir)
-			}
-		}
-	}
 }

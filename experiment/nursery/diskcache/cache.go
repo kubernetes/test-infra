@@ -25,12 +25,13 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
 	"k8s.io/test-infra/experiment/nursery/diskutil"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 // ReadHandler should be implemeted by cache users for use with Cache.Get
@@ -39,13 +40,14 @@ type ReadHandler func(exists bool, contents io.ReadSeeker) error
 // Cache implements disk backed cache storage
 type Cache struct {
 	diskRoot string
+	logger   *logrus.Entry
 }
 
 // NewCache returns a new Cache given the root directory that should be used
 // on disk for cache storage
 func NewCache(diskRoot string) *Cache {
 	return &Cache{
-		diskRoot,
+		diskRoot: strings.TrimSuffix(diskRoot, string(os.PathListSeparator)),
 	}
 }
 
@@ -82,7 +84,7 @@ func ensureDir(dir string) error {
 func removeTemp(path string) {
 	err := os.Remove(path)
 	if err != nil {
-		log.WithError(err).Errorf("Failed to remove a temp file: %v", path)
+		logrus.WithError(err).Errorf("Failed to remove a temp file: %v", path)
 	}
 }
 
@@ -95,7 +97,7 @@ func (c *Cache) Put(key string, content io.Reader, contentSHA256 string) error {
 	dir := filepath.Dir(path)
 	err := ensureDir(dir)
 	if err != nil {
-		log.WithError(err).Errorf("error ensuring directory '%s' exists", dir)
+		logrus.WithError(err).Errorf("error ensuring directory '%s' exists", dir)
 	}
 
 	// create a temp file to get the content on disk
@@ -185,4 +187,47 @@ func (c *Cache) GetEntries() []EntryInfo {
 // Delete deletes the file at key
 func (c *Cache) Delete(key string) error {
 	return os.Remove(c.KeyToPath(key))
+}
+
+// MonitorDiskAndEvict loops monitoring the disk, evicting cache entries
+// when the disk passes either minPercentBlocksFree or minPercentFilesFree
+func (c *Cache) MonitorDiskAndEvict(interval time.Duration, minPercentBlocksFree, minPercentFilesFree float64) {
+	// forever check if usage is past thresholds and evict
+	for range time.Tick(interval) {
+		blocksFree, filesFree := diskutil.GetDiskUsage(c.diskRoot)
+		logger := logrus.WithFields(logrus.Fields{
+			"blocks-free": blocksFree,
+			"files-free":  filesFree,
+		})
+		logger.Info("monitorDiskAndEvict tick")
+		// if we are past either threshold, evict until we are not
+		if blocksFree < minPercentBlocksFree || filesFree < minPercentFilesFree {
+			logger.Warn("Eviction triggered")
+			// get all cache entries and sort by lastaccess
+			// so we can pop entries until we have evicted enough
+			files := c.GetEntries()
+			sort.Slice(files, func(i, j int) bool {
+				return files[i].LastAccess.Before(files[j].LastAccess)
+			})
+			// actual eviction loop occurs here
+			for blocksFree < minPercentBlocksFree || filesFree < minPercentFilesFree {
+				logger = logrus.WithFields(logrus.Fields{
+					"blocks-free": blocksFree,
+					"files-free":  filesFree,
+				})
+				if len(files) < 1 {
+					logger.Fatalf("Failed to find entries to evict!")
+				}
+				// pop entry and delete
+				var entry EntryInfo
+				entry, files = files[0], files[1:]
+				err := c.Delete(c.PathToKey(entry.Path))
+				if err != nil {
+					logger.WithError(err).Error("Error deleting entry")
+				}
+				// get new disk usage
+				blocksFree, filesFree = diskutil.GetDiskUsage(c.diskRoot)
+			}
+		}
+	}
 }
