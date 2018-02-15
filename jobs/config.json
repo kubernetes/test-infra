@@ -625,7 +625,7 @@
       "--",
       "-C",
       "images/kubemci",
-      "push"
+      "push-latest"
     ],
     "scenario": "execute",
     "sigOwners": [
