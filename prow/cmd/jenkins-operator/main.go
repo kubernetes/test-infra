@@ -39,6 +39,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/logrusutil"
 	m "k8s.io/test-infra/prow/metrics"
 )
 
@@ -62,21 +63,22 @@ var (
 
 func main() {
 	flag.Parse()
-	logrus.SetFormatter(&logrus.JSONFormatter{})
-	logger := logrus.WithField("component", "jenkins-operator")
+	logrus.SetFormatter(
+		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "jenkins-operator"}),
+	)
 
 	if _, err := labels.Parse(*selector); err != nil {
-		logger.WithError(err).Fatal("Error parsing label selector.")
+		logrus.WithError(err).Fatal("Error parsing label selector.")
 	}
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(*configPath); err != nil {
-		logger.WithError(err).Fatal("Error starting config agent.")
+		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
 	kc, err := kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 	if err != nil {
-		logger.WithError(err).Fatal("Error getting kube client.")
+		logrus.WithError(err).Fatal("Error getting kube client.")
 	}
 
 	ac := &jenkins.AuthConfig{
@@ -85,7 +87,7 @@ func main() {
 	if *jenkinsTokenFile != "" {
 		token, err := loadToken(*jenkinsTokenFile)
 		if err != nil {
-			logger.WithError(err).Fatalf("Could not read token file.")
+			logrus.WithError(err).Fatalf("Could not read token file.")
 		}
 		ac.Basic = &jenkins.BasicAuthConfig{
 			User:  *jenkinsUserName,
@@ -94,37 +96,37 @@ func main() {
 	} else if *jenkinsBearerTokenFile != "" {
 		token, err := loadToken(*jenkinsBearerTokenFile)
 		if err != nil {
-			logger.WithError(err).Fatalf("Could not read bearer token file.")
+			logrus.WithError(err).Fatalf("Could not read bearer token file.")
 		}
 		ac.BearerToken = &jenkins.BearerTokenAuthConfig{
 			Token: token,
 		}
 	} else {
-		logger.Fatal("An auth token for basic or bearer token auth must be supplied.")
+		logrus.Fatal("An auth token for basic or bearer token auth must be supplied.")
 	}
 	var tlsConfig *tls.Config
 	if *certFile != "" && *keyFile != "" {
 		config, err := loadCerts(*certFile, *keyFile, *caCertFile)
 		if err != nil {
-			logger.WithError(err).Fatalf("Could not read certificate files.")
+			logrus.WithError(err).Fatalf("Could not read certificate files.")
 		}
 		tlsConfig = config
 	}
 	metrics := jenkins.NewMetrics()
-	jc, err := jenkins.NewClient(*jenkinsURL, tlsConfig, ac, logger, metrics.ClientMetrics)
+	jc, err := jenkins.NewClient(*jenkinsURL, tlsConfig, ac, nil, metrics.ClientMetrics)
 	if err != nil {
-		logger.WithError(err).Fatalf("Could not setup Jenkins client.")
+		logrus.WithError(err).Fatalf("Could not setup Jenkins client.")
 	}
 
 	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
 	if err != nil {
-		logger.WithError(err).Fatalf("Could not read Github oauth secret file.")
+		logrus.WithError(err).Fatalf("Could not read Github oauth secret file.")
 	}
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
 	_, err = url.Parse(*githubEndpoint)
 	if err != nil {
-		logger.WithError(err).Fatal("Must specify a valid --github-endpoint URL.")
+		logrus.WithError(err).Fatal("Must specify a valid --github-endpoint URL.")
 	}
 
 	var ghc *github.Client
@@ -134,7 +136,7 @@ func main() {
 		ghc = github.NewClient(oauthSecret, *githubEndpoint)
 	}
 
-	c := jenkins.NewController(kc, jc, ghc, logger, configAgent, *selector)
+	c := jenkins.NewController(kc, jc, ghc, nil, configAgent, *selector)
 
 	// Push metrics to the configured prometheus pushgateway endpoint.
 	pushGateway := configAgent.Config().PushGateway
@@ -146,7 +148,7 @@ func main() {
 	// serves prometheus metrics.
 	go serve(jc)
 	// gather metrics for the jobs handled by the jenkins controller.
-	go gather(c, logger)
+	go gather(c)
 
 	tick := time.Tick(30 * time.Second)
 	sig := make(chan os.Signal, 1)
@@ -157,13 +159,13 @@ func main() {
 		case <-tick:
 			start := time.Now()
 			if err := c.Sync(); err != nil {
-				logger.WithError(err).Error("Error syncing.")
+				logrus.WithError(err).Error("Error syncing.")
 			}
 			duration := time.Since(start)
-			logger.WithField("duration", fmt.Sprintf("%v", duration)).Info("Synced")
+			logrus.WithField("duration", fmt.Sprintf("%v", duration)).Info("Synced")
 			metrics.ResyncPeriod.Observe(duration.Seconds())
 		case <-sig:
-			logger.Info("Jenkins operator is shutting down...")
+			logrus.Info("Jenkins operator is shutting down...")
 			return
 		}
 	}
@@ -212,7 +214,7 @@ func serve(jc *jenkins.Client) {
 
 // gather metrics from the jenkins controller.
 // Meant to be called inside a goroutine.
-func gather(c *jenkins.Controller, logger *logrus.Entry) {
+func gather(c *jenkins.Controller) {
 	tick := time.Tick(30 * time.Second)
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
@@ -222,9 +224,9 @@ func gather(c *jenkins.Controller, logger *logrus.Entry) {
 		case <-tick:
 			start := time.Now()
 			c.SyncMetrics()
-			logger.WithField("metrics-duration", fmt.Sprintf("%v", time.Since(start))).Debug("Metrics synced")
+			logrus.WithField("metrics-duration", fmt.Sprintf("%v", time.Since(start))).Debug("Metrics synced")
 		case <-sig:
-			logger.Debug("Jenkins operator gatherer is shutting down...")
+			logrus.Debug("Jenkins operator gatherer is shutting down...")
 			return
 		}
 	}

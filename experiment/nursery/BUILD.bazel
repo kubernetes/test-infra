@@ -10,6 +10,7 @@ go_library(
     deps = [
         "//experiment/nursery/diskcache:go_default_library",
         "//experiment/nursery/diskutil:go_default_library",
+        "//prow/logrusutil:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )

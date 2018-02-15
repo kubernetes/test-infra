@@ -125,6 +125,9 @@ type Pool struct {
 
 // NewController makes a Controller out of the given clients.
 func NewController(ghcSync, ghcStatus *github.Client, kc *kube.Client, ca *config.Agent, gc *git.Client, logger *logrus.Entry) *Controller {
+	if logger == nil {
+		logger = logrus.NewEntry(logrus.StandardLogger())
+	}
 	sc := &statusController{
 		logger:         logger.WithField("controller", "status-update"),
 		ghc:            ghcStatus,

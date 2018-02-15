@@ -26,6 +26,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/cron"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
@@ -33,7 +34,9 @@ var configPath = flag.String("config-path", "/etc/config/config", "Path to confi
 
 func main() {
 	flag.Parse()
-	logrus.SetFormatter(&logrus.JSONFormatter{})
+	logrus.SetFormatter(
+		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "horologium"}),
+	)
 
 	configAgent := config.Agent{}
 	if err := configAgent.Start(*configPath); err != nil {

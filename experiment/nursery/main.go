@@ -39,6 +39,7 @@ import (
 
 	"k8s.io/test-infra/experiment/nursery/diskcache"
 	"k8s.io/test-infra/experiment/nursery/diskutil"
+	"k8s.io/test-infra/prow/logrusutil"
 
 	"github.com/sirupsen/logrus"
 )
@@ -64,29 +65,10 @@ var diskCheckInterval = flag.Duration("disk-check-interval", time.Minute,
 var remount = flag.Bool("remount", false,
 	"attempt to remount --dir with strictatime,lazyatime to improve eviction")
 
-// DefaultFieldsFormatter wraps another logrus.Formatter, injecting
-// DefaultFields into each Format() call
-type DefaultFieldsFormatter struct {
-	WrappedFormatter logrus.Formatter
-	DefaultFields    logrus.Fields
-}
-
-// Format implements logrus.Formatter's Format
-func (d *DefaultFieldsFormatter) Format(entry *logrus.Entry) ([]byte, error) {
-	decorated := entry
-	if entry != nil {
-		decorated = entry.WithFields(d.DefaultFields)
-	}
-	return d.WrappedFormatter.Format(decorated)
-}
-
 func init() {
-	logrus.SetFormatter(&DefaultFieldsFormatter{
-		WrappedFormatter: &logrus.JSONFormatter{},
-		DefaultFields: logrus.Fields{
-			"component": "nursery",
-		},
-	})
+	logrus.SetFormatter(
+		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "nursery"}),
+	)
 	logrus.SetOutput(os.Stdout)
 }
 
