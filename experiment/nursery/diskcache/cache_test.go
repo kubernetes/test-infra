@@ -24,7 +24,10 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
+
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 func hashBytes(b []byte) string {
@@ -42,7 +45,48 @@ func makeRandomBytes(n int) (b []byte, err error) {
 	return b, nil
 }
 
-func TestCache(t *testing.T) {
+// test cache.PathToKey and cache.KeyToPath
+func TestPathToKeyKeyToPath(t *testing.T) {
+	cache := NewCache("/some/dir")
+	testCases := []struct {
+		Key          string
+		ExpectedPath string
+	}{
+		{
+			Key:          "key",
+			ExpectedPath: filepath.Join("/some/dir", "key"),
+		},
+		{
+			Key:          "namespaced/key",
+			ExpectedPath: filepath.Join("/some/dir", "namespaced/key"),
+		},
+		{
+			Key:          "entry/nested/a/few/times",
+			ExpectedPath: filepath.Join("/some/dir", "entry/nested/a/few/times"),
+		},
+		{
+			Key:          "foobar/cas/asdf",
+			ExpectedPath: filepath.Join("/some/dir", "foobar/cas/asdf"),
+		},
+		{
+			Key:          "foobar/ac/asdf",
+			ExpectedPath: filepath.Join("/some/dir", "foobar/ac/asdf"),
+		},
+	}
+	for _, tc := range testCases {
+		path := cache.KeyToPath(tc.Key)
+		if path != tc.ExpectedPath {
+			t.Fatalf("expected KeyToPath(%s) to be %s", tc.Key, path)
+		}
+		backToKey := cache.PathToKey(path)
+		if backToKey != tc.Key {
+			t.Fatalf("cache.KeyToPath(cache.PathToKey(%s)) was not idempotent, got %s", tc.Key, backToKey)
+		}
+	}
+}
+
+// test stateful cache methods
+func TestCacheStorage(t *testing.T) {
 	// create a cache in a tempdir
 	dir, err := ioutil.TempDir("", "cache-tests")
 	if err != nil {
@@ -51,11 +95,10 @@ func TestCache(t *testing.T) {
 	defer os.RemoveAll(dir)
 	cache := NewCache(dir)
 
-	// sanity check
+	// sanity checks
 	if cache.DiskRoot() != dir {
 		t.Fatalf("Expected DiskRoot to be %v not %v", dir, cache.DiskRoot())
 	}
-
 	// we haven't put anything yet, so get should return exists == false
 	err = cache.Get("some/key", func(exists bool, contents io.ReadSeeker) error {
 		if exists {
@@ -67,6 +110,7 @@ func TestCache(t *testing.T) {
 		t.Fatalf("Got unexpected error testing non-existent key: %v", err)
 	}
 
+	// Test Put and Get together
 	// create 1 MB of random bytes
 	lotsOfRandomBytes, err := makeRandomBytes(1000000)
 	if err != nil {
@@ -108,12 +152,15 @@ func TestCache(t *testing.T) {
 			PutShouldError: false,
 		},
 	}
+	expectedKeys := sets.NewString()
 	for _, tc := range testCases {
 		err := cache.Put(tc.Key, bytes.NewReader(tc.Contents), tc.Hash)
 		if err != nil && !tc.PutShouldError {
 			t.Fatalf("Got error '%v' for test case '%s' and expected none.", err, tc.Name)
 		} else if err == nil && tc.PutShouldError {
 			t.Fatalf("Did not get error for test case '%s' and expected one.", tc.Name)
+		} else if err == nil {
+			expectedKeys.Insert(tc.Key)
 		}
 
 		err = cache.Get(tc.Key, func(exists bool, contents io.ReadSeeker) error {
@@ -138,4 +185,25 @@ func TestCache(t *testing.T) {
 		}
 	}
 
+	// test GetEntries
+	entries := cache.GetEntries()
+	receivedKeys := sets.NewString()
+	for _, entry := range entries {
+		receivedKeys.Insert(cache.PathToKey(entry.Path))
+	}
+	if !expectedKeys.Equal(receivedKeys) {
+		t.Fatalf("entries %v does not equal expected: %v", receivedKeys, expectedKeys)
+	}
+
+	// test deleting all keys
+	for _, key := range expectedKeys.List() {
+		err = cache.Delete(key)
+		if err != nil {
+			t.Fatalf("failed to delete key: %v", err)
+		}
+	}
+	entries = cache.GetEntries()
+	if len(entries) != 0 {
+		t.Fatalf("cache.GetEntries() should be empty after deleting all keys, got: %v", entries)
+	}
 }

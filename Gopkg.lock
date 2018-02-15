@@ -130,6 +130,12 @@
   revision = "9ce5d979ffdaca6385988d7ad1079a33ec942d20"
 
 [[projects]]
+  name = "github.com/djherbis/atime"
+  packages = ["."]
+  revision = "8e47e0e01d08df8b9f840d74299c8ab70a024a30"
+  version = "v1.0.0"
+
+[[projects]]
   name = "github.com/docker/distribution"
   packages = [
     "digestset",
@@ -752,6 +758,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "72dabeb79700dbfff9b8a833a3ae82c5085d42b305db04957caa7235fb7ec5f9"
+  inputs-digest = "b86dae268553febc5570e09d43e11ad454f04fde01da3d3b91995209423997c6"
   solver-name = "gps-cdcl"
   solver-version = 1

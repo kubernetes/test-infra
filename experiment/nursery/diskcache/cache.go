@@ -25,8 +25,13 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sort"
+	"strings"
+	"time"
 
-	log "github.com/sirupsen/logrus"
+	"k8s.io/test-infra/experiment/nursery/diskutil"
+
+	"github.com/sirupsen/logrus"
 )
 
 // ReadHandler should be implemeted by cache users for use with Cache.Get
@@ -35,18 +40,26 @@ type ReadHandler func(exists bool, contents io.ReadSeeker) error
 // Cache implements disk backed cache storage
 type Cache struct {
 	diskRoot string
+	logger   *logrus.Entry
 }
 
 // NewCache returns a new Cache given the root directory that should be used
 // on disk for cache storage
 func NewCache(diskRoot string) *Cache {
 	return &Cache{
-		diskRoot,
+		diskRoot: strings.TrimSuffix(diskRoot, string(os.PathListSeparator)),
 	}
 }
 
-func (c *Cache) keyToPath(key string) string {
+// KeyToPath converts a cache entry key to a path on disk
+func (c *Cache) KeyToPath(key string) string {
 	return filepath.Join(c.diskRoot, key)
+}
+
+// PathToKey converts a path on disk to a key, assuming the path is actually
+// under DiskRoot() ...
+func (c *Cache) PathToKey(key string) string {
+	return strings.TrimPrefix(key, c.diskRoot+string(os.PathSeparator))
 }
 
 // DiskRoot returns the root directory containing all on-disk cache entries
@@ -71,7 +84,7 @@ func ensureDir(dir string) error {
 func removeTemp(path string) {
 	err := os.Remove(path)
 	if err != nil {
-		log.WithError(err).Errorf("Failed to remove a temp file: %v", path)
+		logrus.WithError(err).Errorf("Failed to remove a temp file: %v", path)
 	}
 }
 
@@ -80,11 +93,11 @@ func removeTemp(path string) {
 // cache if the content's hex string SHA256 matches
 func (c *Cache) Put(key string, content io.Reader, contentSHA256 string) error {
 	// make sure directory exists
-	path := c.keyToPath(key)
+	path := c.KeyToPath(key)
 	dir := filepath.Dir(path)
 	err := ensureDir(dir)
 	if err != nil {
-		log.WithError(err).Errorf("error ensuring directory '%s' exists", dir)
+		logrus.WithError(err).Errorf("error ensuring directory '%s' exists", dir)
 	}
 
 	// create a temp file to get the content on disk
@@ -134,7 +147,7 @@ func (c *Cache) Put(key string, content io.Reader, contentSHA256 string) error {
 
 // Get provides your readHandler with the contents at key
 func (c *Cache) Get(key string, readHandler ReadHandler) error {
-	path := c.keyToPath(key)
+	path := c.KeyToPath(key)
 	f, err := os.Open(path)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -143,4 +156,86 @@ func (c *Cache) Get(key string, readHandler ReadHandler) error {
 		return fmt.Errorf("failed to get key: %v", err)
 	}
 	return readHandler(true, f)
+}
+
+// EntryInfo are returned when getting entries from the cache
+type EntryInfo struct {
+	Path       string
+	LastAccess time.Time
+}
+
+// GetEntries walks the cache dir and returns all paths that exist
+// In the future this *may* be made smarter
+func (c *Cache) GetEntries() []EntryInfo {
+	entries := []EntryInfo{}
+	// note we swallow errors because we just need to know what keys exist
+	// some keys missing is OK since this is used for eviction, but not returning
+	// any of the keys due to some error is NOT
+	_ = filepath.Walk(c.diskRoot, func(path string, f os.FileInfo, err error) error {
+		if !f.IsDir() {
+			atime := diskutil.GetATime(path, time.Now())
+			entries = append(entries, EntryInfo{
+				Path:       path,
+				LastAccess: atime,
+			})
+		}
+		return nil
+	})
+	return entries
+}
+
+// Delete deletes the file at key
+func (c *Cache) Delete(key string) error {
+	return os.Remove(c.KeyToPath(key))
+}
+
+// MonitorDiskAndEvict loops monitoring the disk, evicting cache entries
+// when the disk passes either minPercentBlocksFree or minPercentFilesFree
+func (c *Cache) MonitorDiskAndEvict(interval time.Duration, minPercentBlocksFree, minPercentFilesFree float64) {
+	// forever check if usage is past thresholds and evict
+	for range time.Tick(interval) {
+		blocksFree, filesFree, err := diskutil.GetDiskUsage(c.diskRoot)
+		if err != nil {
+			logrus.WithError(err).Error("Failed to get disk usage!")
+			continue
+		}
+		logger := logrus.WithFields(logrus.Fields{
+			"blocks-free": blocksFree,
+			"files-free":  filesFree,
+		})
+		logger.Info("monitorDiskAndEvict tick")
+		// if we are past either threshold, evict until we are not
+		if blocksFree < minPercentBlocksFree || filesFree < minPercentFilesFree {
+			logger.Warn("Eviction triggered")
+			// get all cache entries and sort by lastaccess
+			// so we can pop entries until we have evicted enough
+			files := c.GetEntries()
+			sort.Slice(files, func(i, j int) bool {
+				return files[i].LastAccess.Before(files[j].LastAccess)
+			})
+			// actual eviction loop occurs here
+			for blocksFree < minPercentBlocksFree || filesFree < minPercentFilesFree {
+				logger = logrus.WithFields(logrus.Fields{
+					"blocks-free": blocksFree,
+					"files-free":  filesFree,
+				})
+				if len(files) < 1 {
+					logger.Fatal("Failed to find entries to evict!")
+				}
+				// pop entry and delete
+				var entry EntryInfo
+				entry, files = files[0], files[1:]
+				err = c.Delete(c.PathToKey(entry.Path))
+				if err != nil {
+					logger.WithError(err).Errorf("Error deleting entry at path: %v", entry.Path)
+				}
+				// get new disk usage
+				blocksFree, filesFree, err = diskutil.GetDiskUsage(c.diskRoot)
+				if err != nil {
+					logrus.WithError(err).Error("Failed to get disk usage!")
+					continue
+				}
+			}
+		}
+	}
 }

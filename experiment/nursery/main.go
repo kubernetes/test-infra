@@ -38,36 +38,89 @@ import (
 	"time"
 
 	"k8s.io/test-infra/experiment/nursery/diskcache"
+	"k8s.io/test-infra/experiment/nursery/diskutil"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 var dir = flag.String("dir", "", "location to store cache entries on disk")
 var host = flag.String("host", "", "host address to listen on")
 var port = flag.Int("port", 8080, "port to listen on")
 
+// eviction knobs
+var minPercentBlocksFree = flag.Float64("min-percent-blocks-free", 10,
+	"minimum percent of blocks free on --dir's disk before evicting entries")
+var minPercentFilesFree = flag.Float64("min-percent-files-free", 10,
+	"minimum percent of files free on --dir's disk before evicting entries")
+var diskCheckInterval = flag.Duration("disk-check-interval", time.Minute,
+	"interval between checking disk usage (and potentially evicting entries)")
+
+// NOTE: remount is a bit of a hack, unfortunately the kubernetes volumes
+// don't really support this and to cleanly track entry access times we
+// want to use a volume with strictatime,lazytime (and not noatime or relatime)
+// so that file access times *are* recorded but are lazily flushed to the disk
+// https://lwn.net/Articles/621046/
+// https://unix.stackexchange.com/questions/276858/why-is-ext4-filesystem-mounted-with-both-relatime-and-lazytime
+var remount = flag.Bool("remount", false,
+	"attempt to remount --dir with strictatime,lazyatime to improve eviction")
+
+// DefaultFieldsFormatter wraps another logrus.Formatter, injecting
+// DefaultFields into each Format() call
+type DefaultFieldsFormatter struct {
+	WrappedFormatter logrus.Formatter
+	DefaultFields    logrus.Fields
+}
+
+// Format implements logrus.Formatter's Format
+func (d *DefaultFieldsFormatter) Format(entry *logrus.Entry) ([]byte, error) {
+	decorated := entry
+	if entry != nil {
+		decorated = entry.WithFields(d.DefaultFields)
+	}
+	return d.WrappedFormatter.Format(decorated)
+}
+
 func init() {
-	log.SetFormatter(&log.TextFormatter{})
-	log.SetOutput(os.Stdout)
+	logrus.SetFormatter(&DefaultFieldsFormatter{
+		WrappedFormatter: &logrus.JSONFormatter{},
+		DefaultFields: logrus.Fields{
+			"component": "nursery",
+		},
+	})
+	logrus.SetOutput(os.Stdout)
 }
 
 func main() {
-	// TODO(bentheelder): bound cache size / convert to LRU
-	// TODO(bentheelder): improve logging
+	// TODO(bentheelder): add metrics
 	flag.Parse()
 	if *dir == "" {
-		log.Fatal("--dir must be set!")
+		logrus.Fatal("--dir must be set!")
+	}
+	if *remount {
+		device, mount, err := diskutil.FindMountForPath(*dir)
+		if err != nil {
+			logrus.WithError(err).Errorf("Failed to find mountpoint for %s", *dir)
+		} else {
+			logrus.Warnf(
+				"Attempting to remount %s on %s with 'strictatime,lazyatime'",
+				device, mount,
+			)
+			err = diskutil.Remount(device, mount, "strictatime,lazytime")
+			if err != nil {
+				logrus.WithError(err).Error("Failed to remount with lazyatime!")
+			} else {
+				logrus.Info("Remount complete")
+			}
+		}
 	}
 
 	cache := diskcache.NewCache(*dir)
 	http.Handle("/", cacheHandler(cache))
+	go cache.MonitorDiskAndEvict(*diskCheckInterval, *minPercentBlocksFree, *minPercentFilesFree)
 
 	addr := fmt.Sprintf("%s:%d", *host, *port)
-	logger := log.WithFields(log.Fields{
-		"component": "nursery",
-	})
-	logger.Infof("Listening on: %s", addr)
-	logger.WithError(http.ListenAndServe(addr, nil)).Fatal("ListenAndServe returned.")
+	logrus.Infof("Listening on: %s", addr)
+	logrus.WithError(http.ListenAndServe(addr, nil)).Fatal("ListenAndServe returned.")
 }
 
 // file not found error, used below
@@ -75,10 +128,9 @@ var errNotFound = errors.New("entry not found")
 
 func cacheHandler(cache *diskcache.Cache) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger := log.WithFields(log.Fields{
-			"component": "nursery",
-			"method":    r.Method,
-			"path":      r.URL.Path,
+		logger := logrus.WithFields(logrus.Fields{
+			"method": r.Method,
+			"path":   r.URL.Path,
 		})
 		// parse and validate path
 		// the last segment should be a hash, and the
