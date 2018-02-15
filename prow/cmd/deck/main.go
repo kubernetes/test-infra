@@ -175,9 +175,6 @@ func prodOnlyMain(logger *logrus.Entry, mux *http.ServeMux) {
 		if !isValidatedGitOAuthConfig(&githubOAuthConfig) {
 			logger.Fatal("Error invalid github oauth config")
 		}
-		if err := githubOAuthConfig.Decode(); err != nil {
-			logger.WithError(err).Fatal("Error with decoding git oauth config")
-		}
 
 		var cookieSecret config.Cookie
 		if err := yaml.Unmarshal(cookieSecretRaw, &cookieSecret); err != nil {
