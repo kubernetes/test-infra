@@ -139,7 +139,7 @@ class JobTest(unittest.TestCase):
             for container in spec.get('containers'):
                 if 'args' in container:
                     for arg in container.get('args'):
-                        match = re.match(r'[\'"]?--timeout=(\d+)', arg)
+                        match = re.match(r'[\'\"]?--timeout=(\d+)', arg)
                         if match:
                             real_job['timeout'] = match.group(1)
         if 'pull-' not in name and name in self.realjobs and name not in self.prowjobs:
@@ -182,75 +182,22 @@ class JobTest(unittest.TestCase):
         self.assertIn(key, sorted(self.realjobs))  # sorted for clearer error message
         return self.realjobs.get(key)
 
-    def test_non_blocking_jenkins(self):
-        """All PR non-blocking jenkins jobs are always_run: false"""
-        # ref https://github.com/kubernetes/test-infra/issues/4637
-        if not self.presubmits:
-            self.load_prow_yaml(self.prow_config)
-        required_jobs = get_required_jobs()
-        # TODO(bentheelder): should we also include other repos?
-        # If we do, we need to check which ones have a deployment in get_required_jobs
-        # and ignore the ones without submit-queue deployments. This seems brittle
-        # and unnecessary for now though.
-        for job in self.presubmits.get('kubernetes/kubernetes', []):
-            if (job['agent'] == 'jenkins' and
-                    job['name'] not in required_jobs and
-                    job.get('always_run', False)):
-                self.fail(
-                    'Jenkins jobs should not be `always_run: true`'
-                    ' unless they are required! %s'
-                    % job['name'])
-
     def test_valid_timeout(self):
-        """All jobs set a timeout less than 120m or set DOCKER_TIMEOUT."""
-        default_timeout = 60
+        """All e2e jobs has 20min or more container timeout than kubetest timeout."""
         bad_jobs = set()
         with open(config_sort.test_infra('jobs/config.json')) as fp:
             config = json.loads(fp.read())
 
-        for job, job_path in self.jobs:
-            job_name = job.rsplit('.', 1)[0]
-            modern = config.get(job_name, {}).get('scenario') in [
-                'kubernetes_e2e',
-                'kubernetes_kops_aws',
-            ]
-            valids = [
-                'kubernetes-e2e-',
-                'kubernetes-kubemark-',
-                'kubernetes-soak-',
-                'kubernetes-federation-e2e-',
-                'kops-e2e-',
-            ]
-
-            if not re.search('|'.join(valids), job):
+        for job in config:
+            if config.get(job, {}).get('scenario') != 'kubernetes_e2e':
                 continue
-            with open(job_path) as fp:
-                lines = list(l for l in fp if not l.startswith('#'))
-            container_timeout = default_timeout
-            kubetest_timeout = None
-            for line in lines:  # Validate old pattern no longer used
-                if line.startswith('### Reporting'):
-                    bad_jobs.add(job)
-                if '{rc}' in line:
-                    bad_jobs.add(job)
-            self.assertFalse(job.endswith('.sh'), job)
-            self.assertTrue(modern, job)
-
             realjob = self.get_real_bootstrap_job(job)
             self.assertTrue(realjob)
             self.assertIn('timeout', realjob, job)
             container_timeout = int(realjob['timeout'])
-            for line in lines:
-                if 'DOCKER_TIMEOUT=' in line:
-                    self.fail('Set container timeout in prow and/or bootstrap yaml: %s' % job)
-                if 'KUBEKINS_TIMEOUT=' in line:
-                    self.fail(
-                        'Set kubetest --timeout in config.json, not KUBEKINS_TIMEOUT: %s'
-                        % job
-                    )
-            for arg in config[job_name]['args']:
-                if arg == '--timeout=None':
-                    bad_jobs.add(('Must specify a timeout', job, arg))
+
+            kubetest_timeout = None
+            for arg in config[job]['args']:
                 mat = re.match(r'--timeout=(\d+)m', arg)
                 if not mat:
                     continue
@@ -679,29 +626,10 @@ class JobTest(unittest.TestCase):
 
     def test_jobs_do_not_source_shell(self):
         for job, job_path in self.jobs:
-            if job.startswith('pull-'):
-                continue  # No clean way to determine version
             with open(job_path) as fp:
                 script = fp.read()
             self.assertFalse(re.search(r'\Wsource ', script), job)
             self.assertNotIn('\n. ', script, job)
-
-    def test_all_bash_jobs_have_errexit(self):
-        options = {
-            'errexit',
-            'nounset',
-            'pipefail',
-        }
-        for job, job_path in self.jobs:
-            if not job.endswith('.sh'):
-                continue
-            with open(job_path) as fp:
-                lines = list(fp)
-            for option in options:
-                expected = 'set -o %s\n' % option
-                self.assertIn(
-                    expected, lines,
-                    '%s not found in %s' % (expected, job_path))
 
     def _check_env(self, job, setting):
         if not re.match(r'[0-9A-Z_]+=[^\n]*', setting):
