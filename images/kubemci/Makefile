@@ -26,10 +26,12 @@ image-latest: image
 
 # Build and push the versioned image.
 push: image
+	gcloud beta auth configure-docker
 	docker push "$(IMG):$(VERSION)"
 
 # Build and push both the versioned and latest images.
 push-latest: push image-latest
+	gcloud beta auth configure-docker
 	docker push "$(IMG):latest"
 
 .PHONY: image image-latest push push-latest
