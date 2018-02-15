@@ -26,12 +26,18 @@ image-latest: image
 
 # Build and push the versioned image.
 push: image
-	gcloud beta auth configure-docker
-	docker push "$(IMG):$(VERSION)"
+	# TODO(krzyzacy): https://github.com/GoogleCloudPlatform/docker-credential-gcr/issues/21#issuecomment-365803776
+	# gcloud auth fails in CI, this image build file runs in CI only
+	# so use gcloud docker -- push for now until the above issue resolves.
+
+	# gcloud beta auth configure-docker
+	# docker push "$(IMG):$(VERSION)"
+	gcloud docker -- push "$(IMG):$(VERSION)"
 
 # Build and push both the versioned and latest images.
 push-latest: push image-latest
-	gcloud beta auth configure-docker
-	docker push "$(IMG):latest"
+	# gcloud beta auth configure-docker
+	# docker push "$(IMG):latest"
+	gcloud docker -- push "$(IMG):latest"
 
 .PHONY: image image-latest push push-latest
