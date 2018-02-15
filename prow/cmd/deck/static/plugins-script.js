@@ -204,14 +204,13 @@ function applicablePlugins(repoSel, repoPlugins) {
         plugins = plugins.concat(byOrg);
     }
     const pluginNames = repoPlugins[repoSel];
-    if (!pluginNames) {
-        return [];
+    if (pluginNames) {
+        pluginNames.forEach((pluginName) => {
+            if (!plugins.includes(pluginName)) {
+                plugins.push(pluginName);
+            }
+        });
     }
-    pluginNames.forEach((pluginNames) => {
-        if (!plugins.includes(pluginNames)) {
-            plugins.push(pluginNames);
-        }
-    });
     return plugins.sort();
 }
 
