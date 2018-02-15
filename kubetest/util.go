@@ -210,10 +210,10 @@ func finishRunning(cmd *exec.Cmd) error {
 			intLock.Lock()
 			interrupted = true
 			intLock.Unlock()
-			log.Printf("Interrupt after %s timeout during %s. Will terminate in another 15m", timeout, stepName)
+			log.Printf("Abort after %s timeout during %s. Will terminate in another 15m", timeout, stepName)
 			terminate.Reset(15 * time.Minute)
-			if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGINT); err != nil {
-				log.Printf("Failed to interrupt %s. Will terminate immediately: %v", stepName, err)
+			if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGABRT); err != nil {
+				log.Printf("Failed to abort %s. Will terminate immediately: %v", stepName, err)
 				syscall.Kill(-cmd.Process.Pid, syscall.SIGTERM)
 				cmd.Process.Kill()
 			}
@@ -287,9 +287,9 @@ func executeParallelCommand(cmd *exec.Cmd, resChan chan cmdExecResult, termChan,
 			}
 
 		case <-intChan:
-			log.Printf("Interrupt after %s timeout during %s. Will terminate in another 15m", timeout, strings.Join(cmd.Args, " "))
-			if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGINT); err != nil {
-				log.Printf("Failed to interrupt %s. Will terminate immediately: %v", strings.Join(cmd.Args, " "), err)
+			log.Printf("Abort after %s timeout during %s. Will terminate in another 15m", timeout, strings.Join(cmd.Args, " "))
+			if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGABRT); err != nil {
+				log.Printf("Failed to abort %s. Will terminate immediately: %v", strings.Join(cmd.Args, " "), err)
 				syscall.Kill(-cmd.Process.Pid, syscall.SIGTERM)
 				cmd.Process.Kill()
 			}
