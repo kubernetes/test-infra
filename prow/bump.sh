@@ -61,7 +61,7 @@ if [[ "${#images[@]}" == 0 ]]; then
   images=($(bazel query 'filter(".*:image", //prow/...)' | cut -d : -f 1 | xargs -n 1 basename))
   echo -n "images: " >&2
 fi
-echo -e "\e[1;35m${images[@]}\e[0m" >&2
+echo -e "\x1B[1;35m${images[@]}\x1B[0m" >&2
 
 echo -e "Pushing $(color-version ${new_version}) via $(color-target //prow:release-push --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64)..." >&2
 bazel run //prow:release-push --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64

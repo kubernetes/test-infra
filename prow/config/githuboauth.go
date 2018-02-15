@@ -17,7 +17,6 @@ limitations under the License.
 package config
 
 import (
-	"encoding/base64"
 	"encoding/gob"
 
 	"github.com/gorilla/sessions"
@@ -45,28 +44,4 @@ type GithubOAuthConfig struct {
 func (gac *GithubOAuthConfig) InitGithubOAuthConfig(cookie *sessions.CookieStore) {
 	gob.Register(&oauth2.Token{})
 	gac.CookieStore = cookie
-}
-
-func (gac *GithubOAuthConfig) Decode() error {
-	if err := decode(&gac.RedirectURL); err != nil {
-		return err
-	}
-	if err := decode(&gac.FinalRedirectURL); err != nil {
-		return err
-	}
-	for id := range gac.Scopes {
-		if err := decode(&gac.Scopes[id]); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func decode(s *string) error {
-	data, err := base64.StdEncoding.DecodeString(*s)
-	if err != nil {
-		return err
-	}
-	*s = string(data)
-	return nil
 }

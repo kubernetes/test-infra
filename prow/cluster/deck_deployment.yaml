@@ -33,7 +33,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:v20180214-c4c3426de
+        image: gcr.io/k8s-prow/deck:v20180215-320077ed9
         imagePullPolicy: Always
         ports:
           - name: http
@@ -46,10 +46,10 @@ spec:
         - --oauth-url=/user-dashboard
         volumeMounts:
         - name: oauth-config
-          mountPath: /ect/github
+          mountPath: /etc/github
           readOnly: true
         - name: cookie-secret
-          mountPath: /ect/cookie
+          mountPath: /etc/cookie
           readOnly: true
         - mountPath: /etc/cluster
           name: cluster

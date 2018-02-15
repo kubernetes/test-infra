@@ -19,7 +19,7 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"encoding/hex"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -54,8 +54,8 @@ var (
 	tideURL               = flag.String("tide-url", "", "Path to tide. If empty, do not serve tide data.")
 	hookURL               = flag.String("hook-url", "", "Path to hook plugin help endpoint.")
 	oauthUrl              = flag.String("oauth-url", "", "Path to deck user dashboard endpoint.")
-	githubOAuthConfigFile = flag.String("github-oauth-config-file", "/etc/github/app", "Path to the file containing the Git App Client secret.")
-	cookieSecretFile      = flag.String("cookie-secret", "/etc/cookie/cookie-secret", "Path to the file containing the cookie secret key.")
+	githubOAuthConfigFile = flag.String("github-oauth-config-file", "/etc/github/secret", "Path to the file containing the GitHub App Client secret.")
+	cookieSecretFile      = flag.String("cookie-secret", "/etc/cookie/secret", "Path to the file containing the cookie secret key.")
 	// use when behind a load balancer
 	redirectHTTPTo = flag.String("redirect-http-to", "", "Host to redirect http->https to based on x-forwarded-proto == http.")
 	// use when behind an oauth proxy
@@ -175,15 +175,8 @@ func prodOnlyMain(logger *logrus.Entry, mux *http.ServeMux) {
 		if !isValidatedGitOAuthConfig(&githubOAuthConfig) {
 			logger.Fatal("Error invalid github oauth config")
 		}
-		if err := githubOAuthConfig.Decode(); err != nil {
-			logger.WithError(err).Fatal("Error with decoding git oauth config")
-		}
 
-		var cookieSecret config.Cookie
-		if err := yaml.Unmarshal(cookieSecretRaw, &cookieSecret); err != nil {
-			logger.WithError(err).Fatal("Error unmarshalling cookie secret")
-		}
-		decodedSecret, err := hex.DecodeString(cookieSecret.Secret)
+		decodedSecret, err := base64.StdEncoding.DecodeString(string(cookieSecretRaw))
 		if err != nil {
 			logger.WithError(err).Fatal("Error decoding cookie secret")
 		}
