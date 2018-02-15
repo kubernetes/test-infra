@@ -5671,6 +5671,9 @@ postsubmits:
 
 periodics:
 - name: ci-benchmark-scheduler-master
+  tags:
+  - "perfDashPrefix: benchmark-scheduler"
+  - "perfDashJobType: benchmark"
   interval: 1h
   agent: kubernetes
   labels:
@@ -8306,6 +8309,7 @@ periodics:
   name: ci-kubernetes-e2e-gce-large-performance
   tags:
   - "perfDashPrefix: gce-2kNodes-master"
+  - "perfDashJobType: performance"
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
@@ -8538,6 +8542,7 @@ periodics:
   name: ci-kubernetes-e2e-gce-scale-performance
   tags:
   - "perfDashPrefix: gce-5kNodes-master"
+  - "perfDashJobType: performance"
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
@@ -9417,6 +9422,7 @@ periodics:
   name: ci-kubernetes-e2e-gci-gce-scalability
   tags:
   - "perfDashPrefix: gce-100Nodes-master"
+  - "perfDashJobType: performance"
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
@@ -9432,6 +9438,7 @@ periodics:
   name: ci-kubernetes-e2e-gci-gce-scalability-beta
   tags:
   - "perfDashPrefix: gce-100Nodes-1.9"
+  - "perfDashJobType: performance"
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
@@ -9448,6 +9455,7 @@ periodics:
   name: ci-kubernetes-e2e-gci-gce-scalability-release-1-7
   tags:
   - "perfDashPrefix: gce-100Nodes-1.7"
+  - "perfDashJobType: performance"
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
@@ -9463,6 +9471,7 @@ periodics:
   name: ci-kubernetes-e2e-gci-gce-scalability-stable1
   tags:
   - "perfDashPrefix: gce-100Nodes-1.8"
+  - "perfDashJobType: performance"
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
@@ -10637,6 +10646,7 @@ periodics:
   name: ci-kubernetes-e2e-gke-large-performance
   tags:
   - "perfDashPrefix: gke-2kNodes-master"
+  - "perfDashJobType: performance"
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
@@ -12840,6 +12850,7 @@ periodics:
 - name: ci-kubernetes-kubemark-100-gce
   tags:
   - "perfDashPrefix: kubemark-100Nodes-master"
+  - "perfDashJobType: performance"
   interval: 3h
   agent: kubernetes
   labels:
@@ -12952,6 +12963,7 @@ periodics:
 - name: ci-kubernetes-kubemark-500-gce
   tags:
   - "perfDashPrefix: kubemark-500Nodes-master"
+  - "perfDashJobType: performance"
   interval: 1h
   agent: kubernetes
   labels:
@@ -12984,6 +12996,7 @@ periodics:
 - name: ci-kubernetes-kubemark-gce-scale
   tags:
   - "perfDashPrefix: kubemark-5kNodes-master"
+  - "perfDashJobType: performance"
   interval: 12h
   agent: kubernetes
   labels:
@@ -13016,6 +13029,7 @@ periodics:
 - name: ci-kubernetes-kubemark-high-density-100-gce
   tags:
   - "perfDashPrefix: kubemark-100Nodes-master-hd"
+  - "perfDashJobType: performance"
   interval: 24h
   agent: kubernetes
   labels:
