@@ -53,10 +53,6 @@ approve:
   - kubernetes/test-infra
   implicit_self_approve: true
 - repos:
-  - kubernetes/website
-  issue_required: false
-  implicit_self_approve: false
-- repos:
   - kubernetes-sigs
   - kubernetes-sig-testing
   implicit_self_approve: true
