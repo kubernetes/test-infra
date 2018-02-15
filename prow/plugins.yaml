@@ -51,8 +51,11 @@ approve:
   - kubernetes/sig-release
   - kubernetes/steering
   - kubernetes/test-infra
-  - kubernetes/website
   implicit_self_approve: true
+- repos:
+  - kubernetes/website
+  issue_required: false
+  implicit_self_approve: false
 - repos:
   - kubernetes-sigs
   - kubernetes-sig-testing
