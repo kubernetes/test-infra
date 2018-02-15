@@ -46,6 +46,7 @@ import (
 var (
 	configPath = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
 	selector   = flag.String("label-selector", kube.EmptySelector, "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
+	totURL     = flag.String("tot-url", "", "Tot URL")
 
 	jenkinsURL             = flag.String("jenkins-url", "http://jenkins-proxy", "Jenkins URL")
 	jenkinsUserName        = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
@@ -136,7 +137,10 @@ func main() {
 		ghc = github.NewClient(oauthSecret, *githubEndpoint)
 	}
 
-	c := jenkins.NewController(kc, jc, ghc, nil, configAgent, *selector)
+	c, err := jenkins.NewController(kc, jc, ghc, nil, configAgent, *totURL, *selector)
+	if err != nil {
+		logrus.WithError(err).Fatal("Failed to instantiate Jenkins controller.")
+	}
 
 	// Push metrics to the configured prometheus pushgateway endpoint.
 	pushGateway := configAgent.Config().PushGateway

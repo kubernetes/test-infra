@@ -19,11 +19,8 @@ package plank
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/bwmarrin/snowflake"
 	"github.com/sirupsen/logrus"
@@ -488,27 +485,7 @@ func (c *Controller) getBuildID(name string) (string, error) {
 	if c.totURL == "" {
 		return c.node.Generate().String(), nil
 	}
-	var err error
-	url := c.totURL + "/vend/" + name
-	for retries := 0; retries < 60; retries++ {
-		if retries > 0 {
-			time.Sleep(2 * time.Second)
-		}
-		var resp *http.Response
-		resp, err = http.Get(url)
-		if err != nil {
-			continue
-		}
-		defer resp.Body.Close()
-		if resp.StatusCode != 200 {
-			continue
-		}
-		if buf, err := ioutil.ReadAll(resp.Body); err == nil {
-			return string(buf), nil
-		}
-		return "", err
-	}
-	return "", err
+	return pjutil.GetBuildID(name, c.totURL)
 }
 
 func getPodBuildID(pod *kube.Pod) string {

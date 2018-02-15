@@ -20,8 +20,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"k8s.io/test-infra/prow/kube"
 )
@@ -32,9 +35,10 @@ import (
 //  - the full spec, in serialized JSON in one variable
 //  - individual fields of the spec in their own variables
 type JobSpec struct {
-	Type    kube.ProwJobType `json:"type,omitempty"`
-	Job     string           `json:"job,omitempty"`
-	BuildId string           `json:"buildid,omitempty"`
+	Type      kube.ProwJobType `json:"type,omitempty"`
+	Job       string           `json:"job,omitempty"`
+	BuildId   string           `json:"buildid,omitempty"`
+	ProwJobId string           `json:"prowjobid,omitempty"`
 
 	Refs kube.Refs `json:"refs,omitempty"`
 
@@ -44,23 +48,51 @@ type JobSpec struct {
 	agent kube.ProwJobAgent
 }
 
-func NewJobSpec(spec kube.ProwJobSpec, buildId string) JobSpec {
+func NewJobSpec(spec kube.ProwJobSpec, buildId, prowJobId string) JobSpec {
 	return JobSpec{
-		Type:    spec.Type,
-		Job:     spec.Job,
-		BuildId: buildId,
-		Refs:    spec.Refs,
-		agent:   spec.Agent,
+		Type:      spec.Type,
+		Job:       spec.Job,
+		BuildId:   buildId,
+		ProwJobId: prowJobId,
+		Refs:      spec.Refs,
+		agent:     spec.Agent,
 	}
+}
+
+// GetBuildID calls out to `tot` in order
+// to vend build identifier for the job
+func GetBuildID(name, totURL string) (string, error) {
+	var err error
+	url := totURL + "/vend/" + name
+	for retries := 0; retries < 60; retries++ {
+		if retries > 0 {
+			time.Sleep(2 * time.Second)
+		}
+		var resp *http.Response
+		resp, err = http.Get(url)
+		if err != nil {
+			continue
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode != 200 {
+			continue
+		}
+		if buf, err := ioutil.ReadAll(resp.Body); err == nil {
+			return string(buf), nil
+		}
+		return "", err
+	}
+	return "", err
 }
 
 // EnvForSpec returns a mapping of environment variables
 // to their values that should be available for a job spec
 func EnvForSpec(spec JobSpec) (map[string]string, error) {
 	env := map[string]string{
-		"JOB_NAME": spec.Job,
-		"BUILD_ID": spec.BuildId,
-		"JOB_TYPE": string(spec.Type),
+		"JOB_NAME":    spec.Job,
+		"BUILD_ID":    spec.BuildId,
+		"PROW_JOB_ID": spec.ProwJobId,
+		"JOB_TYPE":    string(spec.Type),
 	}
 
 	// for backwards compatibility, we provide the build ID

@@ -44,6 +44,7 @@ const (
 	buildID = "buildId"
 	// Key for unique build number across Jenkins builds.
 	newBuildID = "BUILD_ID"
+	prowJobID  = "PROW_JOB_ID"
 )
 
 const (
@@ -110,20 +111,54 @@ func (jb *JenkinsBuild) IsEnqueued() bool {
 	return jb.enqueued
 }
 
+// ProwJobID extracts the ProwJob identifier for the
+// Jenkins build. We prefer the PROW_JOB_ID parameter
+// if present but fall back to legacy parameters if
+// not.
+func (jb *JenkinsBuild) ProwJobID() string {
+	for _, parameter := range []string{prowJobID, newBuildID, buildID} {
+		for _, action := range jb.Actions {
+			for _, p := range action.Parameters {
+				if p.Name == parameter {
+					value, ok := p.Value.(string)
+					if !ok {
+						logrus.Errorf("Cannot determine %s value for %#v", p.Name, jb)
+						continue
+					}
+					return value
+				}
+			}
+		}
+	}
+	return ""
+}
+
+// BuildID extracts the `tot` identifier for the
+// Jenkins build. We return an empty string if
+// we are dealing with a build that does not have
+// the ProwJobID set explicitly, as in that case
+// the build identifier is not from `tot`.
 func (jb *JenkinsBuild) BuildID() string {
+	var buildID string
+	hasProwJobID := false
 	for _, action := range jb.Actions {
 		for _, p := range action.Parameters {
-			if p.Name == buildID || p.Name == newBuildID {
+			hasProwJobID = hasProwJobID || p.Name == prowJobID
+			if p.Name == newBuildID {
 				value, ok := p.Value.(string)
 				if !ok {
 					logrus.Errorf("Cannot determine %s value for %#v", p.Name, jb)
 					continue
 				}
-				return value
+				buildID = value
 			}
 		}
 	}
-	return ""
+
+	if !hasProwJobID {
+		return ""
+	}
+	return buildID
 }
 
 type Client struct {
@@ -321,17 +356,17 @@ func (c *Client) doRequest(method, path string) (*http.Response, error) {
 }
 
 // Build triggers a Jenkins build for the provided ProwJob. The name of
-// the ProwJob is going to be used as the buildId parameter that will help
-// us track the build before it's scheduled by Jenkins.
-func (c *Client) Build(pj *kube.ProwJob) error {
+// the ProwJob is going to be used as the Prow Job ID parameter that will
+// help us track the build before it's scheduled by Jenkins.
+func (c *Client) Build(pj *kube.ProwJob, buildId string) error {
 	c.logger.WithFields(pjutil.ProwJobFields(pj)).Info("Build")
-	return c.BuildFromSpec(&pj.Spec, pj.ObjectMeta.Name)
+	return c.BuildFromSpec(&pj.Spec, buildId, pj.ObjectMeta.Name)
 }
 
 // BuildFromSpec triggers a Jenkins build for the provided ProwJobSpec.
-// buildId helps us track the build before it's scheduled by Jenkins.
-func (c *Client) BuildFromSpec(spec *kube.ProwJobSpec, buildId string) error {
-	env, err := pjutil.EnvForSpec(pjutil.NewJobSpec(*spec, buildId))
+// prowJobId helps us track the build before it's scheduled by Jenkins.
+func (c *Client) BuildFromSpec(spec *kube.ProwJobSpec, buildId, prowJobId string) error {
+	env, err := pjutil.EnvForSpec(pjutil.NewJobSpec(*spec, buildId, prowJobId))
 	if err != nil {
 		return err
 	}
@@ -415,9 +450,9 @@ func (c *Client) GetEnqueuedBuilds(jobs []string) (map[string]JenkinsBuild, erro
 	}
 	jenkinsBuilds := make(map[string]JenkinsBuild)
 	for _, jb := range page.QueuedBuilds {
-		buildID := jb.BuildID()
+		prowJobID := jb.ProwJobID()
 		// Ignore builds with missing buildId parameters.
-		if buildID == "" {
+		if prowJobID == "" {
 			continue
 		}
 		// Ignore builds for jobs we didn't ask for.
@@ -432,7 +467,7 @@ func (c *Client) GetEnqueuedBuilds(jobs []string) (map[string]JenkinsBuild, erro
 			continue
 		}
 		jb.enqueued = true
-		jenkinsBuilds[buildID] = jb
+		jenkinsBuilds[prowJobID] = jb
 	}
 	return jenkinsBuilds, nil
 }
@@ -460,12 +495,12 @@ func (c *Client) GetBuilds(job string) (map[string]JenkinsBuild, error) {
 	}
 	jenkinsBuilds := make(map[string]JenkinsBuild)
 	for _, jb := range page.Builds {
-		buildID := jb.BuildID()
+		prowJobID := jb.ProwJobID()
 		// Ignore builds with missing buildId parameters.
-		if buildID == "" {
+		if prowJobID == "" {
 			continue
 		}
-		jenkinsBuilds[buildID] = jb
+		jenkinsBuilds[prowJobID] = jb
 	}
 	return jenkinsBuilds, nil
 }

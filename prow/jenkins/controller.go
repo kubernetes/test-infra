@@ -22,6 +22,7 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/bwmarrin/snowflake"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
@@ -42,7 +43,7 @@ type kubeClient interface {
 }
 
 type jenkinsClient interface {
-	Build(*kube.ProwJob) error
+	Build(*kube.ProwJob, string) error
 	ListBuilds(jobs []string) (map[string]JenkinsBuild, error)
 	Abort(job string, build *JenkinsBuild) error
 }
@@ -65,11 +66,13 @@ type syncFn func(kube.ProwJob, chan<- kube.ProwJob, map[string]JenkinsBuild) err
 
 // Controller manages ProwJobs.
 type Controller struct {
-	kc  kubeClient
-	jc  jenkinsClient
-	ghc githubClient
-	log *logrus.Entry
-	ca  configAgent
+	kc     kubeClient
+	jc     jenkinsClient
+	ghc    githubClient
+	log    *logrus.Entry
+	ca     configAgent
+	node   *snowflake.Node
+	totURL string
 	// selector that will be applied on prowjobs.
 	selector string
 
@@ -84,7 +87,11 @@ type Controller struct {
 }
 
 // NewController creates a new Controller from the provided clients.
-func NewController(kc *kube.Client, jc *Client, ghc *github.Client, logger *logrus.Entry, ca *config.Agent, selector string) *Controller {
+func NewController(kc *kube.Client, jc *Client, ghc *github.Client, logger *logrus.Entry, ca *config.Agent, totURL, selector string) (*Controller, error) {
+	n, err := snowflake.NewNode(1)
+	if err != nil {
+		return nil, err
+	}
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
@@ -95,8 +102,10 @@ func NewController(kc *kube.Client, jc *Client, ghc *github.Client, logger *logr
 		log:         logger,
 		ca:          ca,
 		selector:    selector,
+		node:        n,
+		totURL:      totURL,
 		pendingJobs: make(map[string]int),
-	}
+	}, nil
 }
 
 func (c *Controller) config() config.Controller {
@@ -379,8 +388,9 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 			pj.Status.Description = "Jenkins job aborted."
 		}
 		// Construct the status URL that will be used in reports.
-		pj.Status.PodName = fmt.Sprintf("%s-%d", pj.Spec.Job, jb.Number)
-		pj.Status.BuildID = strconv.Itoa(jb.Number)
+		pj.Status.PodName = pj.ObjectMeta.Name
+		pj.Status.BuildID = jb.BuildID()
+		pj.Status.JenkinsBuildID = strconv.Itoa(jb.Number)
 		var b bytes.Buffer
 		if err := c.config().JobURLTemplate.Execute(&b, &pj); err != nil {
 			return fmt.Errorf("error executing URL template: %v", err)
@@ -407,8 +417,12 @@ func (c *Controller) syncTriggeredJob(pj kube.ProwJob, reports chan<- kube.ProwJ
 		if !c.canExecuteConcurrently(&pj) {
 			return nil
 		}
+		buildID, err := c.getBuildID(pj.Spec.Job)
+		if err != nil {
+			return fmt.Errorf("error getting build ID: %v", err)
+		}
 		// Start the Jenkins job.
-		if err := c.jc.Build(&pj); err != nil {
+		if err := c.jc.Build(&pj, buildID); err != nil {
 			c.log.WithError(err).WithFields(pjutil.ProwJobFields(&pj)).Warn("Cannot start Jenkins build")
 			pj.SetComplete()
 			pj.Status.State = kube.ErrorState
@@ -434,6 +448,13 @@ func (c *Controller) syncTriggeredJob(pj kube.ProwJob, reports chan<- kube.ProwJ
 	}
 	_, err := c.kc.ReplaceProwJob(pj.ObjectMeta.Name, pj)
 	return err
+}
+
+func (c *Controller) getBuildID(name string) (string, error) {
+	if c.totURL == "" {
+		return c.node.Generate().String(), nil
+	}
+	return pjutil.GetBuildID(name, c.totURL)
 }
 
 // RunAfterSuccessCanRun returns whether a child job (specified as run_after_success in the

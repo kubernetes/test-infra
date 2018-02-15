@@ -101,8 +101,24 @@ type ProwJobStatus struct {
 	State          ProwJobState `json:"state,omitempty"`
 	Description    string       `json:"description,omitempty"`
 	URL            string       `json:"url,omitempty"`
-	PodName        string       `json:"pod_name,omitempty"`
-	BuildID        string       `json:"build_id,omitempty"`
+
+	// PodName applies only to ProwJobs fulfilled by
+	// plank. This field should always be the same as
+	// the ProwJob.ObjectMeta.Name field.
+	PodName string `json:"pod_name,omitempty"`
+
+	// ProwJobID is the build identifier vended by `tot`
+	// for this job and used as a monotonically increasing
+	// identifier for grouping artifacts in GCS for views
+	// in TestGrid and Gubernator.
+	BuildID string `json:"build_id,omitempty"`
+
+	// JenkinsBuildID applies only to ProwJobs fulfilled
+	// by the jenkins-operator. This field is the build
+	// identifier that Jenkins gave to the build for this
+	// ProwJob and is not necessarily the same as the ProwJobID
+	// vended by `tot`.
+	JenkinsBuildID string `json:"jenkins_build_id,omitempty"`
 }
 
 func (j *ProwJob) Complete() bool {
