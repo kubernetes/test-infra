@@ -71,12 +71,15 @@ func Remount(device, mountPoint, options string) error {
 }
 
 // GetDiskUsage wraps syscall.Statfs
-func GetDiskUsage(path string) (percentBlocksFree, percentFilesFree float64) {
+func GetDiskUsage(path string) (percentBlocksFree, percentFilesFree float64, err error) {
 	var stat syscall.Statfs_t
-	syscall.Statfs(path, &stat)
+	err = syscall.Statfs(path, &stat)
+	if err != nil {
+		return 0, 0, err
+	}
 	percentBlocksFree = float64(stat.Bfree) / float64(stat.Blocks) * 100
 	percentFilesFree = float64(stat.Ffree) / float64(stat.Files) * 100
-	return percentBlocksFree, percentFilesFree
+	return percentBlocksFree, percentFilesFree, nil
 }
 
 // GetATime the atime for a file, logging errors instead of failing

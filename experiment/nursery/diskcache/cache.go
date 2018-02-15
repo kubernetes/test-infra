@@ -194,7 +194,11 @@ func (c *Cache) Delete(key string) error {
 func (c *Cache) MonitorDiskAndEvict(interval time.Duration, minPercentBlocksFree, minPercentFilesFree float64) {
 	// forever check if usage is past thresholds and evict
 	for range time.Tick(interval) {
-		blocksFree, filesFree := diskutil.GetDiskUsage(c.diskRoot)
+		blocksFree, filesFree, err := diskutil.GetDiskUsage(c.diskRoot)
+		if err != nil {
+			logrus.WithError(err).Error("Failed to get disk usage!")
+			continue
+		}
 		logger := logrus.WithFields(logrus.Fields{
 			"blocks-free": blocksFree,
 			"files-free":  filesFree,
@@ -216,17 +220,21 @@ func (c *Cache) MonitorDiskAndEvict(interval time.Duration, minPercentBlocksFree
 					"files-free":  filesFree,
 				})
 				if len(files) < 1 {
-					logger.Fatalf("Failed to find entries to evict!")
+					logger.Fatal("Failed to find entries to evict!")
 				}
 				// pop entry and delete
 				var entry EntryInfo
 				entry, files = files[0], files[1:]
-				err := c.Delete(c.PathToKey(entry.Path))
+				err = c.Delete(c.PathToKey(entry.Path))
 				if err != nil {
-					logger.WithError(err).Error("Error deleting entry")
+					logger.WithError(err).Errorf("Error deleting entry at path: %v", entry.Path)
 				}
 				// get new disk usage
-				blocksFree, filesFree = diskutil.GetDiskUsage(c.diskRoot)
+				blocksFree, filesFree, err = diskutil.GetDiskUsage(c.diskRoot)
+				if err != nil {
+					logrus.WithError(err).Error("Failed to get disk usage!")
+					continue
+				}
 			}
 		}
 	}
