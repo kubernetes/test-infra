@@ -13,10 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# THIS IS TEMPORARY (!)
-# Once this moves out of experiment/ we will create these files in the bazel
-# images instead (!)
-# TODO(bentheelder): verify that this works and move it into the images
 CACHE_HOST="bazel-cache.default"
 CACHE_PORT="8080"
 

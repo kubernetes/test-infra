@@ -135,9 +135,6 @@ def clean_file_in_dir(dirname, filename):
 def main(args):
     """Trigger a bazel build/test run, and upload results."""
     # pylint:disable=too-many-branches, too-many-statements, too-many-locals
-    if args.experimental_add_caching_configs:
-        check(test_infra('experiment', 'nursery', 'create_bazel_cache_rcs.sh'))
-
     if args.install:
         for install in args.install:
             if not os.path.isfile(install):
@@ -257,10 +254,6 @@ def create_parser():
         help='GCS path for where to push build')
     parser.add_argument(
         '--batch', action='store_true', help='run Bazel in batch mode')
-    # TODO(bentheelder): remove this
-    parser.add_argument(
-        '--experimental-add-caching-configs', action='store_true', help='experimental, do not use'
-    )
     return parser
 
 def parse_args(args=None):

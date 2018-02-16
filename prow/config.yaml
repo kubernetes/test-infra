@@ -1125,7 +1125,7 @@ presubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:latest-latest
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
         imagePullPolicy: Always
         args:
         - "--clean"
@@ -1137,8 +1137,9 @@ presubmits:
         - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/4311
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
-        - "--experimental-add-caching-configs"
         env:
+        - name: BAZEL_REMOTE_CACHE_ENABLED
+          value: "true"
         - name: TEST_TMPDIR
           value: /scratch/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
@@ -1340,7 +1341,7 @@ presubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:latest-latest
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
         imagePullPolicy: Always
         args:
         - "--clean"
@@ -1357,8 +1358,9 @@ presubmits:
         - "--test-args=--build_tag_filters=-e2e,-integration"
         - "--test-args=--test_tag_filters=-e2e,-integration"
         - "--test-args=--flaky_test_attempts=3"
-        - "--experimental-add-caching-configs"
         env:
+        - name: BAZEL_REMOTE_CACHE_ENABLED
+          value: "true"
         - name: TEST_TMPDIR
           value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
@@ -1388,7 +1390,7 @@ presubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+      - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -2642,7 +2644,7 @@ presubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+      - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
         args:
         - "--clean"
         - "--job=$(JOB_NAME)"
@@ -2723,7 +2725,7 @@ presubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+      - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
         args:
         - "--clean"
         - "--job=$(JOB_NAME)"
@@ -3111,10 +3113,12 @@ presubmits:
         - --batch
         - --build=//... -//vendor/...
         - --release=//build/release-tars
-        - --experimental-add-caching-configs
         - --gcs=gs://kubernetes-security-prow/ci/pull-security-kubernetes-bazel-build-canary
         - --gcs-shared=gs://kubernetes-security-prow/bazel
-        image: gcr.io/k8s-testimages/bazelbuild:latest-latest
+        env:
+        - name: BAZEL_REMOTE_CACHE_ENABLED
+          value: "true"
+        image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
         imagePullPolicy: Always
         name: ""
         resources:
@@ -3298,8 +3302,10 @@ presubmits:
         - --test-args=--build_tag_filters=-e2e,-integration
         - --test-args=--test_tag_filters=-e2e,-integration
         - --test-args=--flaky_test_attempts=3
-        - --experimental-add-caching-configs
-        image: gcr.io/k8s-testimages/bazelbuild:latest-latest
+        env:
+        - name: BAZEL_REMOTE_CACHE_ENABLED
+          value: "true"
+        image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
         imagePullPolicy: Always
         name: ""
         resources:
@@ -3340,7 +3346,7 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+        image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
         name: ""
         resources:
           requests:
@@ -4573,7 +4579,7 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+        image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
         name: ""
         resources:
           requests:
@@ -4662,7 +4668,7 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+        image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
         name: ""
         resources:
           requests:
@@ -4785,7 +4791,7 @@ presubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
         imagePullPolicy: Always
         args:
         - "--clean"
@@ -4798,8 +4804,9 @@ presubmits:
         - "--install=gubernator/test_requirements.txt"
         - "--test=//..."
         - "--test-args=--test_output=errors"
-        - "--experimental-add-caching-configs"
         env:
+        - name: BAZEL_REMOTE_CACHE_ENABLED
+          value: "true"
         - name: TEST_TMPDIR
           value: /scratch/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
@@ -5698,7 +5705,7 @@ periodics:
     preset-cadvisor-docker-credential: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - --clean
       - --repo=github.com/google/cadvisor
@@ -6066,7 +6073,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - --clean
       - --git-cache=/root/.cache/git
@@ -6512,7 +6519,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - --clean
       - --git-cache=/root/.cache/git
@@ -6553,7 +6560,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - --clean
       - --git-cache=/root/.cache/git
@@ -6593,7 +6600,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - --clean
       - --git-cache=/root/.cache/git
@@ -6634,7 +6641,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - --clean
       - --git-cache=/root/.cache/git
@@ -6675,7 +6682,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - --clean
       - --git-cache=/root/.cache/git
@@ -6730,7 +6737,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - --clean
       - --git-cache=/root/.cache/git
@@ -12630,7 +12637,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - --clean
       - --git-cache=/root/.cache/git
@@ -12671,7 +12678,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - --clean
       - --git-cache=/root/.cache/git
@@ -12712,7 +12719,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - "--clean"
       - "--repo=k8s.io/kubernetes"
@@ -12744,7 +12751,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - "--clean"
       - "--repo=k8s.io/kubernetes=release-1.9"
@@ -12776,7 +12783,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - "--clean"
       - "--repo=k8s.io/kubernetes=release-1.8"
@@ -12808,7 +12815,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - "--clean"
       - "--repo=k8s.io/kubernetes=release-1.7"
@@ -13344,7 +13351,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - "--clean"
       - "--repo=k8s.io/kubernetes"
@@ -13376,7 +13383,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - "--clean"
       - "--repo=k8s.io/kubernetes=release-1.9"
@@ -13408,7 +13415,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - "--clean"
       - "--repo=k8s.io/kubernetes=release-1.8"
@@ -13440,7 +13447,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - "--clean"
       - "--repo=k8s.io/kubernetes=release-1.7"
