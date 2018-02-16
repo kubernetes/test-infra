@@ -43,6 +43,65 @@ import (
 	"k8s.io/test-infra/prow/userdashboard"
 )
 
+func TestOptions_Validate(t *testing.T) {
+	var testCases = []struct {
+		name        string
+		input       options
+		expectedErr bool
+	}{
+		{
+			name: "minimal set ok",
+			input: options{
+				configPath: "test",
+			},
+			expectedErr: false,
+		},
+		{
+			name:        "missing configpath",
+			input:       options{},
+			expectedErr: true,
+		},
+		{
+			name: "ok with oauth",
+			input: options{
+				configPath:            "test",
+				oauthUrl:              "website",
+				githubOAuthConfigFile: "something",
+				cookieSecretFile:      "yum",
+			},
+			expectedErr: false,
+		},
+		{
+			name: "missing github config with oauth",
+			input: options{
+				configPath:       "test",
+				oauthUrl:         "website",
+				cookieSecretFile: "yum",
+			},
+			expectedErr: true,
+		},
+		{
+			name: "missing cookie with oauth",
+			input: options{
+				configPath:            "test",
+				oauthUrl:              "website",
+				githubOAuthConfigFile: "something",
+			},
+			expectedErr: true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		err := testCase.input.Validate()
+		if testCase.expectedErr && err == nil {
+			t.Errorf("%s: expected an error but got none", testCase.name)
+		}
+		if !testCase.expectedErr && err != nil {
+			t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
+		}
+	}
+}
+
 type flc int
 
 func (f flc) GetJobLog(job, id string) ([]byte, error) {

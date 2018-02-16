@@ -49,27 +49,60 @@ import (
 	"k8s.io/test-infra/prow/userdashboard"
 )
 
-var (
-	configPath            = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
-	buildCluster          = flag.String("build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
-	tideURL               = flag.String("tide-url", "", "Path to tide. If empty, do not serve tide data.")
-	hookURL               = flag.String("hook-url", "", "Path to hook plugin help endpoint.")
-	oauthUrl              = flag.String("oauth-url", "", "Path to deck user dashboard endpoint.")
-	githubOAuthConfigFile = flag.String("github-oauth-config-file", "/etc/github/secret", "Path to the file containing the GitHub App Client secret.")
-	cookieSecretFile      = flag.String("cookie-secret", "/etc/cookie/secret", "Path to the file containing the cookie secret key.")
+type options struct {
+	configPath            string
+	buildCluster          string
+	tideURL               string
+	hookURL               string
+	oauthUrl              string
+	githubOAuthConfigFile string
+	cookieSecretFile      string
+	redirectHTTPTo        string
+	hiddenOnly            bool
+	runLocal              bool
+}
+
+func (o *options) Validate() error {
+	if o.configPath == "" {
+		return errors.New("required flag --config-path was unset")
+	}
+	if o.oauthUrl != "" {
+		if o.githubOAuthConfigFile == "" {
+			return errors.New("an OAuth URL was provided but required flag --github-oauth-config-file was unset")
+		}
+		if o.cookieSecretFile == "" {
+			return errors.New("an OAuth URL was provided but required flag --cookie-secret was unset")
+		}
+	}
+	return nil
+}
+
+func gatherOptions() options {
+	o := options{}
+	flag.StringVar(&o.configPath, "config-path", "/etc/config/config", "Path to config.yaml.")
+	flag.StringVar(&o.buildCluster, "build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
+	flag.StringVar(&o.tideURL, "tide-url", "", "Path to tide. If empty, do not serve tide data.")
+	flag.StringVar(&o.hookURL, "hook-url", "", "Path to hook plugin help endpoint.")
+	flag.StringVar(&o.oauthUrl, "oauth-url", "", "Path to deck user dashboard endpoint.")
+	flag.StringVar(&o.githubOAuthConfigFile, "github-oauth-config-file", "/etc/github/secret", "Path to the file containing the GitHub App Client secret.")
+	flag.StringVar(&o.cookieSecretFile, "cookie-secret", "/etc/cookie/secret", "Path to the file containing the cookie secret key.")
 	// use when behind a load balancer
-	redirectHTTPTo = flag.String("redirect-http-to", "", "Host to redirect http->https to based on x-forwarded-proto == http.")
+	flag.StringVar(&o.redirectHTTPTo, "redirect-http-to", "", "Host to redirect http->https to based on x-forwarded-proto == http.")
 	// use when behind an oauth proxy
-	hiddenOnly = flag.Bool("hidden-only", false, "Show only hidden jobs. Useful for serving hidden jobs behind an oauth proxy.")
-	runLocal   = flag.Bool("run-local", false, "Serve a local copy of the UI, used by the prow/cmd/deck/runlocal script")
-)
+	flag.BoolVar(&o.hiddenOnly, "hidden-only", false, "Show only hidden jobs. Useful for serving hidden jobs behind an oauth proxy.")
+	flag.BoolVar(&o.runLocal, "run-local", false, "Serve a local copy of the UI, used by the prow/cmd/deck/runlocal script")
+	flag.Parse()
+	return o
+}
 
 // Matches letters, numbers, hyphens, and underscores.
 var objReg = regexp.MustCompile(`^[\w-]+$`)
 
 func main() {
-	// common setup
-	flag.Parse()
+	o := gatherOptions()
+	if err := o.Validate(); err != nil {
+		logrus.Fatalf("Invalid options: %v", err)
+	}
 
 	logrus.SetFormatter(
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "deck"}),
@@ -83,11 +116,11 @@ func main() {
 	}
 
 	// locally just serve from ./static, otherwise do the full main
-	if *runLocal {
+	if o.runLocal {
 		mux.Handle("/", staticHandlerFromDir("./static"))
 	} else {
 		mux.Handle("/", staticHandlerFromDir("/static"))
-		prodOnlyMain(mux)
+		prodOnlyMain(o, mux)
 	}
 
 	// setup done, actually start the server
@@ -95,10 +128,10 @@ func main() {
 }
 
 // prodOnlyMain contains logic only used when running deployed, not locally
-func prodOnlyMain(mux *http.ServeMux) {
+func prodOnlyMain(o options, mux *http.ServeMux) {
 	// setup config agent, pod log clients etc.
 	configAgent := &config.Agent{}
-	if err := configAgent.Start(*configPath); err != nil {
+	if err := configAgent.Start(o.configPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
@@ -106,13 +139,13 @@ func prodOnlyMain(mux *http.ServeMux) {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting client.")
 	}
-	kc.SetHiddenReposProvider(func() []string { return configAgent.Config().Deck.HiddenRepos }, *hiddenOnly)
+	kc.SetHiddenReposProvider(func() []string { return configAgent.Config().Deck.HiddenRepos }, o.hiddenOnly)
 
 	var pkcs map[string]*kube.Client
-	if *buildCluster == "" {
+	if o.buildCluster == "" {
 		pkcs = map[string]*kube.Client{kube.DefaultClusterAlias: kc.Namespace(configAgent.Config().PodNamespace)}
 	} else {
-		pkcs, err = kube.ClientMapFromFile(*buildCluster, configAgent.Config().PodNamespace)
+		pkcs, err = kube.ClientMapFromFile(o.buildCluster, configAgent.Config().PodNamespace)
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting kube client to build cluster.")
 		}
@@ -137,38 +170,38 @@ func prodOnlyMain(mux *http.ServeMux) {
 	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(configAgent)))
 	mux.Handle("/branding.js", gziphandler.GzipHandler(handleBranding(configAgent)))
 
-	if *hookURL != "" {
+	if o.hookURL != "" {
 		mux.Handle("/plugin-help.js",
-			gziphandler.GzipHandler(handlePluginHelp(newHelpAgent(*hookURL))))
+			gziphandler.GzipHandler(handlePluginHelp(newHelpAgent(o.hookURL))))
 	}
 
-	if *tideURL != "" {
+	if o.tideURL != "" {
 		ta := &tideAgent{
 			log:  logrus.WithField("agent", "tide"),
-			path: *tideURL,
+			path: o.tideURL,
 			updatePeriod: func() time.Duration {
 				return configAgent.Config().Deck.TideUpdatePeriod
 			},
 			hiddenRepos: configAgent.Config().Deck.HiddenRepos,
-			hiddenOnly:  *hiddenOnly,
+			hiddenOnly:  o.hiddenOnly,
 		}
 		ta.start()
 		mux.Handle("/tide.js", gziphandler.GzipHandler(handleTide(configAgent, ta)))
 	}
 
 	// Enable Git OAuth feature if oauthUrl is provided.
-	if *oauthUrl != "" {
-		githubOAuthConfigRaw, err := loadToken(*githubOAuthConfigFile)
+	if o.oauthUrl != "" {
+		githubOAuthConfigRaw, err := loadToken(o.githubOAuthConfigFile)
 		if err != nil {
 			logrus.WithError(err).Fatal("Could not read github oauth config file.")
 		}
 
-		cookieSecretRaw, err := loadToken(*cookieSecretFile)
+		cookieSecretRaw, err := loadToken(o.cookieSecretFile)
 		if err != nil {
 			logrus.WithError(err).Fatal("Could not read cookie secret file.")
 		}
 
-		mux.Handle("/user-data.js", handleUserData(*oauthUrl))
+		mux.Handle("/user-data.js", handleUserData(o.oauthUrl))
 
 		var githubOAuthConfig config.GithubOAuthConfig
 		if err := yaml.Unmarshal(githubOAuthConfigRaw, &githubOAuthConfig); err != nil {
@@ -206,7 +239,7 @@ func prodOnlyMain(mux *http.ServeMux) {
 	}
 
 	// optionally inject http->https redirect handler when behind loadbalancer
-	if *redirectHTTPTo != "" {
+	if o.redirectHTTPTo != "" {
 		redirectMux := http.NewServeMux()
 		redirectMux.Handle("/", func(oldMux *http.ServeMux, host string) http.HandlerFunc {
 			return func(w http.ResponseWriter, r *http.Request) {
@@ -224,7 +257,7 @@ func prodOnlyMain(mux *http.ServeMux) {
 					oldMux.ServeHTTP(w, r)
 				}
 			}
-		}(mux, *redirectHTTPTo))
+		}(mux, o.redirectHTTPTo))
 		mux = redirectMux
 	}
 }
