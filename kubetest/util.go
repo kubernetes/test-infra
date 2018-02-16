@@ -588,7 +588,7 @@ func getLatestGKEVersion(project, zone, releasePrefix string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	versions := strings.Split(string(res), ";")
+	versions := strings.Split(strings.TrimSpace(string(res)), ";")
 	latestValid := ""
 	for _, version := range versions {
 		if strings.HasPrefix(version, releasePrefix) {
