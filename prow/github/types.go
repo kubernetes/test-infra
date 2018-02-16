@@ -258,6 +258,8 @@ type IssueEvent struct {
 	Action IssueEventAction `json:"action"`
 	Issue  Issue            `json:"issue"`
 	Repo   Repo             `json:"repository"`
+	// Label is specified for IssueActionLabeled and IssueActionUnlabeled events.
+	Label Label `json:"label"`
 
 	// GUID is included in the header of the request received by Github.
 	GUID string
