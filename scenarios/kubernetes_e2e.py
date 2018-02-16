@@ -25,11 +25,8 @@ import os
 import random
 import re
 import shutil
-import signal
 import subprocess
 import sys
-import tempfile
-import traceback
 import urllib2
 import time
 
@@ -439,7 +436,6 @@ def main(args):
     if not os.path.isdir(artifacts):
         os.makedirs(artifacts)
 
-    container = '%s-%s' % (os.environ.get('JOB_NAME'), os.environ.get('BUILD_NUMBER'))
     mode = LocalMode(workspace, artifacts)
 
     for env_file in args.env_file:

@@ -19,9 +19,7 @@
 
 """Test for kubernetes_e2e.py"""
 
-import json
 import os
-import re
 import shutil
 import string
 import tempfile
