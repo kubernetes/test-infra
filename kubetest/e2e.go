@@ -349,6 +349,14 @@ func listNodes(dump string) error {
 	return ioutil.WriteFile(filepath.Join(dump, "nodes.yaml"), b, 0644)
 }
 
+func listKubemarkNodes(dump string) error {
+	b, err := output(exec.Command("./cluster/kubectl.sh", "--match-server-version=false", "--kubeconfig=./test/kubemark/resources/kubeconfig.kubemark", "get", "nodes", "-oyaml"))
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(filepath.Join(dump, "kubemark_nodes.yaml"), b, 0644)
+}
+
 func diffResources(before, clusterUp, clusterDown, after []byte, location string) error {
 	if location == "" {
 		var err error
@@ -589,6 +597,13 @@ func kubemarkTest(testArgs []string, dump, numNodes string) error {
 			})
 		}
 		return err
+	}
+
+	// Check kubemark apiserver reachability by listing all nodes.
+	if dump != "" {
+		xmlWrap("list kubemark nodes", func() error {
+			return listKubemarkNodes(dump)
+		})
 	}
 
 	// Run tests on the kubemark cluster.
