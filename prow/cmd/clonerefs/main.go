@@ -19,6 +19,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -29,6 +30,39 @@ import (
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pod-utils/clone"
 )
+
+type options struct {
+	srcRoot string
+	log     string
+
+	gitUserName  string
+	gitUserEmail string
+
+	refs gitRefs
+}
+
+func (o *options) Validate() error {
+	if o.srcRoot == "" {
+		return errors.New("no source root specified")
+	}
+
+	if o.log == "" {
+		return errors.New("no log file specified")
+	}
+
+	return nil
+}
+
+func gatherOptions() options {
+	o := options{}
+	flag.StringVar(&o.srcRoot, "src-root", "", "Where to root source checkouts")
+	flag.StringVar(&o.log, "log", "", "Where to write logs")
+	flag.StringVar(&o.gitUserName, "git-user-name", "ci-robot", "Username to set in git config")
+	flag.StringVar(&o.gitUserEmail, "git-user-email", "ci-robot@k8s.io", "Email to set in git config")
+	flag.Var(&o.refs, "repo", "Mapping of Git URI to refs to check out, can be provided more than once")
+	flag.Parse()
+	return o
+}
 
 type gitRefs struct {
 	gitRefs []kube.Refs
@@ -57,25 +91,10 @@ func (r *gitRefs) Set(value string) error {
 	return nil
 }
 
-var (
-	srcRoot = flag.String("src-root", "", "Where to root source checkouts")
-	log     = flag.String("log", "", "Where to write logs")
-
-	gitUserName  = flag.String("git-user-name", "ci-robot", "Username to set in git config")
-	gitUserEmail = flag.String("git-user-email", "ci-robot@k8s.io", "Email to set in git config")
-)
-
 func main() {
-	var gitRefs gitRefs
-	flag.Var(&gitRefs, "repo", "Mapping of Git URI to refs to check out, can be provided more than once")
-	flag.Parse()
-
-	if *srcRoot == "" {
-		logrus.Fatal("No source root specified")
-	}
-
-	if *log == "" {
-		logrus.Fatal("No log file specified")
+	o := gatherOptions()
+	if err := o.Validate(); err != nil {
+		logrus.Fatalf("Invalid options: %v", err)
 	}
 
 	jobRefs, err := pjutil.ResolveSpecFromEnv()
@@ -84,17 +103,17 @@ func main() {
 	}
 
 	results := []clone.Record{
-		clone.Run(jobRefs.Refs, *srcRoot, *gitUserName, *gitUserEmail),
+		clone.Run(jobRefs.Refs, o.srcRoot, o.gitUserName, o.gitUserEmail),
 	}
-	for _, gitRef := range gitRefs.gitRefs {
-		results = append(results, clone.Run(gitRef, *srcRoot, *gitUserName, *gitUserEmail))
+	for _, gitRef := range o.refs.gitRefs {
+		results = append(results, clone.Run(gitRef, o.srcRoot, o.gitUserName, o.gitUserEmail))
 	}
 
 	logData, err := json.Marshal(results)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to marshal clone records")
 	} else {
-		if err := ioutil.WriteFile(*log, logData, 0755); err != nil {
+		if err := ioutil.WriteFile(o.log, logData, 0755); err != nil {
 			logrus.WithError(err).Fatal("Failed to write clone records")
 		}
 	}
