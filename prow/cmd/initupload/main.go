@@ -25,6 +25,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -40,19 +41,63 @@ import (
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 )
 
-var (
-	cloneLog = flag.String("clone-log", "", "path to the output file for the cloning step")
+type options struct {
+	cloneLog string
 
-	subDir = flag.String("sub-dir", "", "Optional sub-directory of the job's path to which artifacts are uploaded")
+	subDir string
 
-	pathStrategy = flag.String("path-strategy", pathStrategyExplicit, "how to encode org and repo into GCS paths")
-	defaultOrg   = flag.String("default-org", "", "optional default org for GCS path encoding")
-	defaultRepo  = flag.String("default-repo", "", "optional default repo for GCS path encoding")
+	pathStrategy string
+	defaultOrg   string
+	defaultRepo  string
 
-	gcsBucket          = flag.String("gcs-bucket", "", "GCS bucket to upload into")
-	gceCredentialsFile = flag.String("gcs-credentials-file", "", "file where Google Cloud authentication credentials are stored")
-	dryRun             = flag.Bool("dry-run", true, "do not interact with GCS")
-)
+	gcsBucket          string
+	gceCredentialsFile string
+	dryRun             bool
+}
+
+func (o *options) Validate() error {
+	if !o.dryRun {
+		if o.gcsBucket == "" {
+			return errors.New("GCS upload was requested but required flag --gcs-bucket was unset")
+		}
+
+		if o.gceCredentialsFile == "" {
+			return errors.New("GCS upload was requested but required flag --gcs-credentials-file was unset")
+		}
+	}
+
+	if o.cloneLog == "" {
+		return errors.New("required flag --clone-logs was unset")
+	}
+
+	strategy := pathStrategyType(o.pathStrategy)
+	if strategy != pathStrategyLegacy && strategy != pathStrategyExplicit && strategy != pathStrategySingle {
+		return fmt.Errorf("path strategy must be one of %q, %q, or %q", pathStrategyLegacy, pathStrategyExplicit, pathStrategySingle)
+	}
+
+	if strategy != pathStrategyExplicit && (o.defaultOrg == "" || o.defaultRepo == "") {
+		return fmt.Errorf("default org and repo must be provided for strategy %q", strategy)
+	}
+
+	return nil
+}
+
+func gatherOptions() options {
+	o := options{}
+	flag.StringVar(&o.cloneLog, "clone-log", "", "path to the output file for the cloning step")
+
+	flag.StringVar(&o.subDir, "sub-dir", "", "Optional sub-directory of the job's path to which artifacts are uploaded")
+
+	flag.StringVar(&o.pathStrategy, "path-strategy", pathStrategyExplicit, "how to encode org and repo into GCS paths")
+	flag.StringVar(&o.defaultOrg, "default-org", "", "optional default org for GCS path encoding")
+	flag.StringVar(&o.defaultRepo, "default-repo", "", "optional default repo for GCS path encoding")
+
+	flag.StringVar(&o.gcsBucket, "gcs-bucket", "", "GCS bucket to upload into")
+	flag.StringVar(&o.gceCredentialsFile, "gcs-credentials-file", "", "file where Google Cloud authentication credentials are stored")
+	flag.BoolVar(&o.dryRun, "dry-run", true, "do not interact with GCS")
+	flag.Parse()
+	return o
+}
 
 type pathStrategyType string
 
@@ -63,34 +108,19 @@ const (
 )
 
 func main() {
-	flag.Parse()
-
-	if !*dryRun {
-		if *gcsBucket == "" {
-			logrus.Fatal("No GCS bucket specified")
-		}
-
-		if *gceCredentialsFile == "" {
-			logrus.Fatal("No GCE credentials specified")
-		}
-	}
-
-	if *cloneLog == "" {
-		logrus.Fatal("No JSON clone metadata provided")
-	}
-
-	if err := validatePathOptions(pathStrategy, defaultOrg, defaultRepo); err != nil {
-		logrus.Fatalf("Invalid path options: %v", err)
+	o := gatherOptions()
+	if err := o.Validate(); err != nil {
+		logrus.Fatalf("Invalid options: %v", err)
 	}
 
 	var builder gcs.RepoPathBuilder
-	switch pathStrategyType(*pathStrategy) {
+	switch pathStrategyType(o.pathStrategy) {
 	case pathStrategyExplicit:
 		builder = gcs.NewExplicitRepoPathBuilder()
 	case pathStrategyLegacy:
-		builder = gcs.NewLegacyRepoPathBuilder(*defaultOrg, *defaultRepo)
+		builder = gcs.NewLegacyRepoPathBuilder(o.defaultOrg, o.defaultRepo)
 	case pathStrategySingle:
-		builder = gcs.NewSingleDefaultRepoPathBuilder(*defaultOrg, *defaultRepo)
+		builder = gcs.NewSingleDefaultRepoPathBuilder(o.defaultOrg, o.defaultRepo)
 	}
 
 	spec, err := pjutil.ResolveSpecFromEnv()
@@ -99,12 +129,12 @@ func main() {
 	}
 
 	gcsPath := gcs.PathForSpec(spec, builder)
-	if *subDir != "" {
-		gcsPath = path.Join(gcsPath, *subDir)
+	if o.subDir != "" {
+		gcsPath = path.Join(gcsPath, o.subDir)
 	}
 
 	var cloneRecords []clone.Record
-	data, err := ioutil.ReadFile(*cloneLog)
+	data, err := ioutil.ReadFile(o.cloneLog)
 	if err != nil {
 		logrus.WithError(err).Fatal("Could not read clone log")
 	}
@@ -121,7 +151,7 @@ func main() {
 
 	uploadTargets := map[string]gcs.UploadFunc{
 		path.Join(gcsPath, "clone-log.txt"):      gcs.DataUpload(&buildLog),
-		path.Join(gcsPath, "clone-records.json"): gcs.FileUpload(*cloneLog),
+		path.Join(gcsPath, "clone-records.json"): gcs.FileUpload(o.cloneLog),
 	}
 
 	started := struct {
@@ -153,14 +183,14 @@ func main() {
 		}
 	}
 
-	if !*dryRun {
+	if !o.dryRun {
 		ctx := context.Background()
-		gcsClient, err := storage.NewClient(ctx, option.WithCredentialsFile(*gceCredentialsFile))
+		gcsClient, err := storage.NewClient(ctx, option.WithCredentialsFile(o.gceCredentialsFile))
 		if err != nil {
 			logrus.WithError(err).Fatal("Could not connect to GCS")
 		}
 
-		if err := gcs.Upload(gcsClient.Bucket(*gcsBucket), uploadTargets); err != nil {
+		if err := gcs.Upload(gcsClient.Bucket(o.gcsBucket), uploadTargets); err != nil {
 			logrus.WithError(err).Fatal("Failed to upload to GCS")
 		}
 	}
@@ -168,17 +198,4 @@ func main() {
 	if failed {
 		logrus.Fatal("Cloning the appropriate refs failed.")
 	}
-}
-
-func validatePathOptions(pathStrategy, defaultOrg, defaultRepo *string) error {
-	strategy := pathStrategyType(*pathStrategy)
-	if strategy != pathStrategyLegacy && strategy != pathStrategyExplicit && strategy != pathStrategySingle {
-		return fmt.Errorf("path strategy must be one of %q, %q, or %q", pathStrategyLegacy, pathStrategyExplicit, pathStrategySingle)
-	}
-
-	if strategy != pathStrategyExplicit && (*defaultOrg == "" || *defaultRepo == "") {
-		return fmt.Errorf("default org and repo must be provided for strategy %q", strategy)
-	}
-
-	return nil
 }

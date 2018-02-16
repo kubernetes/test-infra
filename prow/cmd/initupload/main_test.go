@@ -16,7 +16,76 @@ limitations under the License.
 
 package main
 
-import "testing"
+import (
+	"testing"
+)
+
+func TestOptions_Validate(t *testing.T) {
+	var testCases = []struct {
+		name        string
+		input       options
+		expectedErr bool
+	}{
+		{
+			name: "minimal set ok",
+			input: options{
+				cloneLog:     "testing",
+				dryRun:       true,
+				pathStrategy: pathStrategyExplicit,
+			},
+			expectedErr: false,
+		},
+		{
+			name: "missing clone log",
+			input: options{
+				dryRun:       true,
+				pathStrategy: pathStrategyExplicit,
+			},
+			expectedErr: true,
+		},
+		{
+			name: "push to GCS, ok",
+			input: options{
+				cloneLog:           "testing",
+				dryRun:             false,
+				gcsBucket:          "seal",
+				gceCredentialsFile: "secrets",
+				pathStrategy:       pathStrategyExplicit,
+			},
+			expectedErr: false,
+		},
+		{
+			name: "push to GCS, missing bucket",
+			input: options{
+				cloneLog:           "testing",
+				dryRun:             false,
+				gceCredentialsFile: "secrets",
+				pathStrategy:       pathStrategyExplicit,
+			},
+			expectedErr: true,
+		},
+		{
+			name: "push to GCS, missing credentials",
+			input: options{
+				cloneLog:     "testing",
+				dryRun:       false,
+				gcsBucket:    "seal",
+				pathStrategy: pathStrategyExplicit,
+			},
+			expectedErr: true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		err := testCase.input.Validate()
+		if testCase.expectedErr && err == nil {
+			t.Errorf("%s: expected an error but got none", testCase.name)
+		}
+		if !testCase.expectedErr && err != nil {
+			t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
+		}
+	}
+}
 
 func TestValidatePathOptions(t *testing.T) {
 	var testCases = []struct {
@@ -87,7 +156,14 @@ func TestValidatePathOptions(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		err := validatePathOptions(&testCase.strategy, &testCase.org, &testCase.repo)
+		o := options{
+			cloneLog:     "dummy",
+			dryRun:       true,
+			pathStrategy: testCase.strategy,
+			defaultOrg:   testCase.org,
+			defaultRepo:  testCase.repo,
+		}
+		err := o.Validate()
 		if err != nil && !testCase.expectedErr {
 			t.Errorf("%s: expected no err but got %v", testCase.name, err)
 		}
