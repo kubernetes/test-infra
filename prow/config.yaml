@@ -4746,7 +4746,7 @@ presubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180216-90c54ef53-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180216-306463dae-experimental
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -4882,7 +4882,7 @@ presubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180216-90c54ef53-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180216-306463dae-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -4917,7 +4917,7 @@ presubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180216-90c54ef53-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180216-306463dae-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -5572,7 +5572,7 @@ postsubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180216-90c54ef53-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180216-306463dae-experimental
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -5642,7 +5642,7 @@ postsubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.10.0
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180216-306463dae-experimental
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -13507,7 +13507,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180216-90c54ef53-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180216-306463dae-experimental
       args:
       - "--clean"
       - "--git-cache=/root/.cache/git"
