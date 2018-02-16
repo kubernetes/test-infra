@@ -1125,7 +1125,7 @@ presubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:latest-latest
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
         imagePullPolicy: Always
         args:
         - "--clean"
@@ -1341,7 +1341,7 @@ presubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:latest-latest
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
         imagePullPolicy: Always
         args:
         - "--clean"
@@ -3118,7 +3118,7 @@ presubmits:
         env:
         - name: BAZEL_REMOTE_CACHE_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/bazelbuild:latest-latest
+        image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
         imagePullPolicy: Always
         name: ""
         resources:
@@ -3305,7 +3305,7 @@ presubmits:
         env:
         - name: BAZEL_REMOTE_CACHE_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/bazelbuild:latest-latest
+        image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
         imagePullPolicy: Always
         name: ""
         resources:
@@ -4791,7 +4791,7 @@ presubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
         imagePullPolicy: Always
         args:
         - "--clean"
