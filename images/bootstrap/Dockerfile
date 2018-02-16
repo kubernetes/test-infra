@@ -126,7 +126,8 @@ ADD ["./barnacle/barnacle", "/usr/local/bin"]
 
 
 # note the runner is also responsible for making docker in docker function if
-# env DOCKER_IN_DOCKER_ENABLED is set
+# env DOCKER_IN_DOCKER_ENABLED is set and similarly responsible for generating
+# .bazelrc files if bazel remote caching is enabled 
 ADD ["runner", \
     "/workspace/"]
 
