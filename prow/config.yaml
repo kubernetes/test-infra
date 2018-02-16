@@ -6786,6 +6786,9 @@ periodics:
       volumeMounts:
       - name: docker-graph
         mountPath: /docker-graph
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
     volumes:
     - name: docker-graph
       emptyDir: {}
