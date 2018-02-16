@@ -18,6 +18,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"flag"
 	"io/ioutil"
 	"net/http"
@@ -42,29 +43,59 @@ import (
 	"k8s.io/test-infra/prow/slack"
 )
 
-var (
-	port = flag.Int("port", 8888, "Port to listen on.")
+type options struct {
+	port int
 
-	configPath   = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
-	cluster      = flag.String("cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
-	pluginConfig = flag.String("plugin-config", "/etc/plugins/plugins", "Path to plugin config file.")
+	configPath   string
+	cluster      string
+	pluginConfig string
 
-	dryRun  = flag.Bool("dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
-	deckURL = flag.String("deck-url", "", "Deck URL for read-only access to the cluster.")
+	dryRun  bool
+	deckURL string
 
-	githubEndpoint  = flag.String("github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
-	githubTokenFile = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
+	githubEndpoint  string
+	githubTokenFile string
 
-	webhookSecretFile = flag.String("hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
-	slackTokenFile    = flag.String("slack-token-file", "", "Path to the file containing the Slack token to use.")
-)
+	webhookSecretFile string
+	slackTokenFile    string
+}
+
+func (o *options) Validate() error {
+	if o.dryRun && o.deckURL == "" {
+		return errors.New("a dry-run was requested but required flag --deck-url was unset")
+	}
+	return nil
+}
+
+func gatherOptions() options {
+	o := options{}
+	flag.IntVar(&o.port, "port", 8888, "Port to listen on.")
+
+	flag.StringVar(&o.configPath, "config-path", "/etc/config/config", "Path to config.yaml.")
+	flag.StringVar(&o.cluster, "cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
+	flag.StringVar(&o.pluginConfig, "plugin-config", "/etc/plugins/plugins", "Path to plugin config file.")
+
+	flag.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
+	flag.StringVar(&o.deckURL, "deck-url", "", "Deck URL for read-only access to the cluster.")
+
+	flag.StringVar(&o.githubEndpoint, "github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
+	flag.StringVar(&o.githubTokenFile, "github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
+
+	flag.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
+	flag.StringVar(&o.slackTokenFile, "slack-token-file", "", "Path to the file containing the Slack token to use.")
+	flag.Parse()
+	return o
+}
 
 func main() {
-	flag.Parse()
+	o := gatherOptions()
+	if err := o.Validate(); err != nil {
+		logrus.Fatalf("Invalid options: %v", err)
+	}
 	logrus.SetFormatter(logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "hook"}))
 
 	configAgent := &config.Agent{}
-	if err := configAgent.Start(*configPath); err != nil {
+	if err := configAgent.Start(o.configPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
@@ -73,46 +104,46 @@ func main() {
 	// deadline.
 	signal.Ignore(syscall.SIGTERM)
 
-	webhookSecretRaw, err := ioutil.ReadFile(*webhookSecretFile)
+	webhookSecretRaw, err := ioutil.ReadFile(o.webhookSecretFile)
 	if err != nil {
 		logrus.WithError(err).Fatal("Could not read webhook secret file.")
 	}
 	webhookSecret := bytes.TrimSpace(webhookSecretRaw)
 
-	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
+	oauthSecretRaw, err := ioutil.ReadFile(o.githubTokenFile)
 	if err != nil {
 		logrus.WithError(err).Fatal("Could not read oauth secret file.")
 	}
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
 	var teamToken string
-	if *slackTokenFile != "" {
-		teamTokenRaw, err := ioutil.ReadFile(*slackTokenFile)
+	if o.slackTokenFile != "" {
+		teamTokenRaw, err := ioutil.ReadFile(o.slackTokenFile)
 		if err != nil {
 			logrus.WithError(err).Fatal("Could not read slack token file.")
 		}
 		teamToken = string(bytes.TrimSpace(teamTokenRaw))
 	}
 
-	_, err = url.Parse(*githubEndpoint)
+	_, err = url.Parse(o.githubEndpoint)
 	if err != nil {
 		logrus.WithError(err).Fatal("Must specify a valid --github-endpoint URL.")
 	}
 
 	var githubClient *github.Client
 	var kubeClient *kube.Client
-	if *dryRun {
-		githubClient = github.NewDryRunClient(oauthSecret, *githubEndpoint)
-		kubeClient = kube.NewFakeClient(*deckURL)
+	if o.dryRun {
+		githubClient = github.NewDryRunClient(oauthSecret, o.githubEndpoint)
+		kubeClient = kube.NewFakeClient(o.deckURL)
 	} else {
-		githubClient = github.NewClient(oauthSecret, *githubEndpoint)
-		if *cluster == "" {
+		githubClient = github.NewClient(oauthSecret, o.githubEndpoint)
+		if o.cluster == "" {
 			kubeClient, err = kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 			if err != nil {
 				logrus.WithError(err).Fatal("Error getting kube client.")
 			}
 		} else {
-			kubeClient, err = kube.NewClientFromFile(*cluster, configAgent.Config().ProwJobNamespace)
+			kubeClient, err = kube.NewClientFromFile(o.cluster, configAgent.Config().ProwJobNamespace)
 			if err != nil {
 				logrus.WithError(err).Fatal("Error getting kube client.")
 			}
@@ -120,7 +151,7 @@ func main() {
 	}
 
 	var slackClient *slack.Client
-	if !*dryRun && teamToken != "" {
+	if !o.dryRun && teamToken != "" {
 		logrus.Info("Using real slack client.")
 		slackClient = slack.NewClient(teamToken)
 	}
@@ -144,7 +175,7 @@ func main() {
 		OwnersClient: repoowners.NewClient(gitClient, githubClient, pluginAgent.MDYAMLEnabled),
 		Logger:       logrus.WithField("agent", "plugin"),
 	}
-	if err := pluginAgent.Start(*pluginConfig); err != nil {
+	if err := pluginAgent.Start(o.pluginConfig); err != nil {
 		logrus.WithError(err).Fatal("Error starting plugins.")
 	}
 
@@ -171,5 +202,5 @@ func main() {
 	// Serve plugin help information from /plugin-help.
 	http.Handle("/plugin-help", pluginhelp.NewHelpAgent(pluginAgent, githubClient))
 
-	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
+	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(o.port), nil))
 }
