@@ -30,16 +30,25 @@ import (
 	"k8s.io/test-infra/prow/pjutil"
 )
 
-var configPath = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
+type options struct {
+	configPath string
+}
+
+func gatherOptions() options {
+	o := options{}
+	flag.StringVar(&o.configPath, "config-path", "/etc/config/config", "Path to config.yaml.")
+	flag.Parse()
+	return o
+}
 
 func main() {
-	flag.Parse()
+	o := gatherOptions()
 	logrus.SetFormatter(
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "horologium"}),
 	)
 
 	configAgent := config.Agent{}
-	if err := configAgent.Start(*configPath); err != nil {
+	if err := configAgent.Start(o.configPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
