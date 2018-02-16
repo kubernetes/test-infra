@@ -6777,6 +6777,19 @@ periodics:
       - "--repo=k8s.io/autoscaler=master"
       - "--root=/go/src"
       - "--timeout=80"
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: docker-graph
+        mountPath: /docker-graph
+    volumes:
+    - name: docker-graph
+      emptyDir: {}
+
 
 - interval: 1h
   agent: kubernetes
