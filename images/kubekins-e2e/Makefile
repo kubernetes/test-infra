@@ -21,6 +21,12 @@ GO ?= 1.9.3
 BAZEL ?= 0.10.0
 CFSSL ?= R1.2
 
+ifeq ($(K8S), experimental)
+	GO = 1.9.4
+	BAZEL = 0.10.1
+	CFSSL = R1.2
+endif
+
 ifeq ($(K8S), 1.9)
 	GO = 1.9.2
 	BAZEL = 0.8.1
