@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package diskutil implements disk related utilities for nursery
+// Package diskutil implements disk related utilities for greenhouse
 package diskutil
 
 import (

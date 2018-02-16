@@ -30,7 +30,6 @@ filegroup(
         "//experiment/cherrypicker:all-srcs",
         "//experiment/coverage:all-srcs",
         "//experiment/manual-trigger:all-srcs",
-        "//experiment/nursery:all-srcs",
         "//experiment/refresh:all-srcs",
         "//experiment/tracer:all-srcs",
     ],

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// nursery implements a bazel remote cache service [1]
+// greenhouse implements a bazel remote cache service [1]
 // supporting arbitrarily many workspaces stored within the same
 // top level directory.
 //
@@ -37,8 +37,8 @@ import (
 	"strings"
 	"time"
 
-	"k8s.io/test-infra/experiment/nursery/diskcache"
-	"k8s.io/test-infra/experiment/nursery/diskutil"
+	"k8s.io/test-infra/greenhouse/diskcache"
+	"k8s.io/test-infra/greenhouse/diskutil"
 	"k8s.io/test-infra/prow/logrusutil"
 
 	"github.com/sirupsen/logrus"
@@ -67,7 +67,7 @@ var remount = flag.Bool("remount", false,
 
 func init() {
 	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "nursery"}),
+		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "greenhouse"}),
 	)
 	logrus.SetOutput(os.Stdout)
 }
