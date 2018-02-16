@@ -64,10 +64,6 @@ if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
     cleanup_dind
     printf '=%.0s' {1..80}; echo
     echo "Done setting up docker in docker."
-else
-# TODO(bentheelder): remove this once we are no longer using Jenkins
-# If not, make sure `docker` points to the old one compatible with our Jenkins
-    export PATH=/docker-no-dind-bin/:$PATH
 fi
 
 # disable error exit so we can run post-command cleanup
