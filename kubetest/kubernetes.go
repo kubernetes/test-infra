@@ -25,8 +25,11 @@ import (
 )
 
 // kubectlGetNodes lists nodes by executing kubectl get nodes, parsing the output into a nodeList object
-func kubectlGetNodes() (*nodeList, error) {
-	o, err := output(exec.Command("kubectl", "get", "nodes", "-ojson"))
+func kubectlGetNodes(cmd string) (*nodeList, error) {
+	if cmd == "" {
+		cmd = "kubectl"
+	}
+	o, err := output(exec.Command(cmd, "get", "nodes", "-ojson"))
 	if err != nil {
 		log.Printf("kubectl get nodes failed: %s\n%s", wrapError(err).Error(), string(o))
 		return nil, err
@@ -61,7 +64,7 @@ func waitForReadyNodes(desiredCount int, timeout time.Duration, requiredConsecut
 			break
 		}
 
-		nodes, err := kubectlGetNodes()
+		nodes, err := kubectlGetNodes("")
 		if err != nil {
 			log.Printf("kubectl get nodes failed, sleeping: %v", err)
 			consecutiveSuccesses = 0

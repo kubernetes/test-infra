@@ -28,6 +28,7 @@ go_library(
         "gke.go",
         "kops.go",
         "kubernetes.go",
+        "local.go",
         "main.go",
         "node.go",
         "none.go",

@@ -84,7 +84,7 @@ func newLogDumper(sshClientFactory sshClientFactory, artifactsDir string) (*logD
 func (d *logDumper) DumpAllNodes(ctx context.Context, additionalIPs []string) error {
 	var dumped []*node
 
-	nodes, err := kubectlGetNodes()
+	nodes, err := kubectlGetNodes("")
 	if err != nil {
 		log.Printf("Failed to get nodes for dumping via kubectl: %v", err)
 	} else {
