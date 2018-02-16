@@ -27,24 +27,32 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-var (
-	configPath   = flag.String("config-path", "", "Path to config file.")
-	pluginConfig = flag.String("plugin-config", "", "Path to plugin config file.")
-)
+type options struct {
+	configPath   string
+	pluginConfig string
+}
+
+func gatherOptions() options {
+	o := options{}
+	flag.StringVar(&o.configPath, "config-path", "", "Path to config file.")
+	flag.StringVar(&o.pluginConfig, "plugin-config", "", "Path to plugin config file.")
+	flag.Parse()
+	return o
+}
 
 func main() {
-	flag.Parse()
+	o := gatherOptions()
 	var foundError bool
-	if *pluginConfig != "" {
+	if o.pluginConfig != "" {
 		pa := &plugins.PluginAgent{}
-		if err := pa.Load(*pluginConfig); err != nil {
-			fmt.Fprintf(os.Stderr, "Error reading %s: %v.", *pluginConfig, err)
+		if err := pa.Load(o.pluginConfig); err != nil {
+			fmt.Fprintf(os.Stderr, "Error reading %s: %v.", o.pluginConfig, err)
 			foundError = true
 		}
 	}
-	if *configPath != "" {
-		if _, err := config.Load(*configPath); err != nil {
-			fmt.Fprintf(os.Stderr, "Error reading %s: %v.", *configPath, err)
+	if o.configPath != "" {
+		if _, err := config.Load(o.configPath); err != nil {
+			fmt.Fprintf(os.Stderr, "Error reading %s: %v.", o.configPath, err)
 			foundError = true
 		}
 	}
