@@ -66,14 +66,6 @@ RUN wget -q https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.ta
     gcloud components install alpha beta kubectl && \
     gcloud info | tee /workspace/gcloud-info.txt
 
-# TODO(bentheelder): remove this once we are no longer using Jenkins
-# Get docker client binary for use with our jenkins nodes, and put it in it's
-# own bin dir. The runner will add this to the path if dind mode is not enabled.
-# Note: 1.11+ changes the tarball format
-RUN mkdir /docker-no-dind-bin/ && \
-    curl -L "https://get.docker.com/builds/Linux/x86_64/docker-1.9.1.tgz" \
-    | tar -C /docker-no-dind-bin -xvzf- --strip-components=3 usr/local/bin/docker
-
 
 #
 # BEGIN: DOCKER IN DOCKER SETUP
