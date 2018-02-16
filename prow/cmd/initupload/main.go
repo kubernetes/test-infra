@@ -66,11 +66,11 @@ func main() {
 	flag.Parse()
 
 	if !*dryRun {
-		if *gcsBucket != "" {
+		if *gcsBucket == "" {
 			logrus.Fatal("No GCS bucket specified")
 		}
 
-		if *gceCredentialsFile != "" {
+		if *gceCredentialsFile == "" {
 			logrus.Fatal("No GCE credentials specified")
 		}
 	}

@@ -60,6 +60,9 @@ func (r *gitRefs) Set(value string) error {
 var (
 	srcRoot = flag.String("src-root", "", "Where to root source checkouts")
 	log     = flag.String("log", "", "Where to write logs")
+
+	gitUserName  = flag.String("git-user-name", "ci-robot", "Username to set in git config")
+	gitUserEmail = flag.String("git-user-email", "ci-robot@k8s.io", "Email to set in git config")
 )
 
 func main() {
@@ -81,10 +84,10 @@ func main() {
 	}
 
 	results := []clone.Record{
-		clone.Run(jobRefs.Refs, *srcRoot),
+		clone.Run(jobRefs.Refs, *srcRoot, *gitUserName, *gitUserEmail),
 	}
 	for _, gitRef := range gitRefs.gitRefs {
-		results = append(results, clone.Run(gitRef, *srcRoot))
+		results = append(results, clone.Run(gitRef, *srcRoot, *gitUserName, *gitUserEmail))
 	}
 
 	logData, err := json.Marshal(results)
