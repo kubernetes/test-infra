@@ -774,18 +774,6 @@ func prepareGcp(o *options) error {
 		return err
 	}
 
-	log.Printf("Checking presence of public key in %s", o.gcpProject)
-	if out, err := output(exec.Command("gcloud", "compute", "--project="+o.gcpProject, "project-info", "describe")); err != nil {
-		return err
-	} else if b, err := ioutil.ReadFile(pk); err != nil {
-		return err
-	} else if !strings.Contains(string(b), string(out)) {
-		log.Print("Uploading public ssh key to project metadata...")
-		if err = finishRunning(exec.Command("gcloud", "compute", "--project="+o.gcpProject, "config-ssh")); err != nil {
-			return err
-		}
-	}
-
 	// Install custom gcloud version if necessary
 	if o.gcpCloudSdk != "" {
 		for i := 0; i < 3; i++ {
