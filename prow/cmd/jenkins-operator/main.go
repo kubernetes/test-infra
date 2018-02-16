@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -43,37 +44,85 @@ import (
 	m "k8s.io/test-infra/prow/metrics"
 )
 
-var (
-	configPath = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
-	selector   = flag.String("label-selector", kube.EmptySelector, "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
-	totURL     = flag.String("tot-url", "", "Tot URL")
+type options struct {
+	configPath string
+	selector   string
+	totURL     string
 
-	jenkinsURL             = flag.String("jenkins-url", "http://jenkins-proxy", "Jenkins URL")
-	jenkinsUserName        = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
-	jenkinsTokenFile       = flag.String("jenkins-token-file", "", "Path to the file containing the Jenkins API token.")
-	jenkinsBearerTokenFile = flag.String("jenkins-bearer-token-file", "", "Path to the file containing the Jenkins API bearer token.")
-	certFile               = flag.String("cert-file", "", "Path to a PEM-encoded certificate file.")
-	keyFile                = flag.String("key-file", "", "Path to a PEM-encoded key file.")
-	caCertFile             = flag.String("ca-cert-file", "", "Path to a PEM-encoded CA certificate file.")
-	csrfProtect            = flag.Bool("csrf-protect", false, "Request a CSRF protection token from Jenkins that will be used in all subsequent requests to Jenkins.")
+	jenkinsURL             string
+	jenkinsUserName        string
+	jenkinsTokenFile       string
+	jenkinsBearerTokenFile string
+	certFile               string
+	keyFile                string
+	caCertFile             string
+	csrfProtect            bool
 
-	githubEndpoint  = flag.String("github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
-	githubTokenFile = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
-	dryRun          = flag.Bool("dry-run", true, "Whether or not to make mutating API calls to GitHub.")
-)
+	githubEndpoint  string
+	githubTokenFile string
+	dryRun          bool
+}
+
+func (o *options) Validate() error {
+	if o.jenkinsTokenFile == "" && o.jenkinsBearerTokenFile == "" {
+		return errors.New("either --jenkins-token-file or --jenkins-bearer-token-file must be set")
+	} else if o.jenkinsTokenFile != "" && o.jenkinsBearerTokenFile != "" {
+		return errors.New("only one of --jenkins-token-file or --jenkins-bearer-token-file can be set")
+	}
+
+	var transportSecretsProvided int
+	if o.certFile == "" {
+		transportSecretsProvided = transportSecretsProvided + 1
+	}
+	if o.keyFile == "" {
+		transportSecretsProvided = transportSecretsProvided + 1
+	}
+	if o.caCertFile == "" {
+		transportSecretsProvided = transportSecretsProvided + 1
+	}
+	if transportSecretsProvided != 0 && transportSecretsProvided != 3 {
+		return errors.New("either --cert-file, --key-file, and --ca-cert-file must all be provided or none of them must be provided")
+	}
+	return nil
+}
+
+func gatherOptions() options {
+	o := options{}
+	flag.StringVar(&o.configPath, "config-path", "/etc/config/config", "Path to config.yaml.")
+	flag.StringVar(&o.selector, "label-selector", kube.EmptySelector, "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
+	flag.StringVar(&o.totURL, "tot-url", "", "Tot URL")
+
+	flag.StringVar(&o.jenkinsURL, "jenkins-url", "http://jenkins-proxy", "Jenkins URL")
+	flag.StringVar(&o.jenkinsUserName, "jenkins-user", "jenkins-trigger", "Jenkins username")
+	flag.StringVar(&o.jenkinsTokenFile, "jenkins-token-file", "", "Path to the file containing the Jenkins API token.")
+	flag.StringVar(&o.jenkinsBearerTokenFile, "jenkins-bearer-token-file", "", "Path to the file containing the Jenkins API bearer token.")
+	flag.StringVar(&o.certFile, "cert-file", "", "Path to a PEM-encoded certificate file.")
+	flag.StringVar(&o.keyFile, "key-file", "", "Path to a PEM-encoded key file.")
+	flag.StringVar(&o.caCertFile, "ca-cert-file", "", "Path to a PEM-encoded CA certificate file.")
+	flag.BoolVar(&o.csrfProtect, "csrf-protect", false, "Request a CSRF protection token from Jenkins that will be used in all subsequent requests to Jenkins.")
+
+	flag.StringVar(&o.githubEndpoint, "github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
+	flag.StringVar(&o.githubTokenFile, "github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
+	flag.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
+	flag.Parse()
+	return o
+}
 
 func main() {
-	flag.Parse()
+	o := gatherOptions()
+	if err := o.Validate(); err != nil {
+		logrus.Fatalf("Invalid options: %v", err)
+	}
 	logrus.SetFormatter(
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "jenkins-operator"}),
 	)
 
-	if _, err := labels.Parse(*selector); err != nil {
+	if _, err := labels.Parse(o.selector); err != nil {
 		logrus.WithError(err).Fatal("Error parsing label selector.")
 	}
 
 	configAgent := &config.Agent{}
-	if err := configAgent.Start(*configPath); err != nil {
+	if err := configAgent.Start(o.configPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
@@ -83,61 +132,59 @@ func main() {
 	}
 
 	ac := &jenkins.AuthConfig{
-		CSRFProtect: *csrfProtect,
+		CSRFProtect: o.csrfProtect,
 	}
-	if *jenkinsTokenFile != "" {
-		token, err := loadToken(*jenkinsTokenFile)
+	if o.jenkinsTokenFile != "" {
+		token, err := loadToken(o.jenkinsTokenFile)
 		if err != nil {
 			logrus.WithError(err).Fatalf("Could not read token file.")
 		}
 		ac.Basic = &jenkins.BasicAuthConfig{
-			User:  *jenkinsUserName,
+			User:  o.jenkinsUserName,
 			Token: token,
 		}
-	} else if *jenkinsBearerTokenFile != "" {
-		token, err := loadToken(*jenkinsBearerTokenFile)
+	} else if o.jenkinsBearerTokenFile != "" {
+		token, err := loadToken(o.jenkinsBearerTokenFile)
 		if err != nil {
 			logrus.WithError(err).Fatalf("Could not read bearer token file.")
 		}
 		ac.BearerToken = &jenkins.BearerTokenAuthConfig{
 			Token: token,
 		}
-	} else {
-		logrus.Fatal("An auth token for basic or bearer token auth must be supplied.")
 	}
 	var tlsConfig *tls.Config
-	if *certFile != "" && *keyFile != "" {
-		config, err := loadCerts(*certFile, *keyFile, *caCertFile)
+	if o.certFile != "" && o.keyFile != "" {
+		config, err := loadCerts(o.certFile, o.keyFile, o.caCertFile)
 		if err != nil {
 			logrus.WithError(err).Fatalf("Could not read certificate files.")
 		}
 		tlsConfig = config
 	}
 	metrics := jenkins.NewMetrics()
-	jc, err := jenkins.NewClient(*jenkinsURL, tlsConfig, ac, nil, metrics.ClientMetrics)
+	jc, err := jenkins.NewClient(o.jenkinsURL, tlsConfig, ac, nil, metrics.ClientMetrics)
 	if err != nil {
 		logrus.WithError(err).Fatalf("Could not setup Jenkins client.")
 	}
 
-	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
+	oauthSecretRaw, err := ioutil.ReadFile(o.githubTokenFile)
 	if err != nil {
 		logrus.WithError(err).Fatalf("Could not read Github oauth secret file.")
 	}
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
-	_, err = url.Parse(*githubEndpoint)
+	_, err = url.Parse(o.githubEndpoint)
 	if err != nil {
 		logrus.WithError(err).Fatal("Must specify a valid --github-endpoint URL.")
 	}
 
 	var ghc *github.Client
-	if *dryRun {
-		ghc = github.NewDryRunClient(oauthSecret, *githubEndpoint)
+	if o.dryRun {
+		ghc = github.NewDryRunClient(oauthSecret, o.githubEndpoint)
 	} else {
-		ghc = github.NewClient(oauthSecret, *githubEndpoint)
+		ghc = github.NewClient(oauthSecret, o.githubEndpoint)
 	}
 
-	c, err := jenkins.NewController(kc, jc, ghc, nil, configAgent, *totURL, *selector)
+	c, err := jenkins.NewController(kc, jc, ghc, nil, configAgent, o.totURL, o.selector)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to instantiate Jenkins controller.")
 	}
