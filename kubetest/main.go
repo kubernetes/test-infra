@@ -779,7 +779,7 @@ func prepareGcp(o *options) error {
 		return err
 	} else if b, err := ioutil.ReadFile(pk); err != nil {
 		return err
-	} else if !strings.Contains(string(b), string(out)) {
+	} else if !strings.Contains(string(out), string(b)) {
 		log.Print("Uploading public ssh key to project metadata...")
 		if err = finishRunning(exec.Command("gcloud", "compute", "--project="+o.gcpProject, "config-ssh")); err != nil {
 			return err
