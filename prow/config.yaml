@@ -1390,7 +1390,7 @@ presubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+      - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -2644,7 +2644,7 @@ presubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+      - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
         args:
         - "--clean"
         - "--job=$(JOB_NAME)"
@@ -2725,7 +2725,7 @@ presubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+      - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
         args:
         - "--clean"
         - "--job=$(JOB_NAME)"
@@ -3346,7 +3346,7 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+        image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
         name: ""
         resources:
           requests:
@@ -4579,7 +4579,7 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+        image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
         name: ""
         resources:
           requests:
@@ -4668,7 +4668,7 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+        image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
         name: ""
         resources:
           requests:
@@ -5705,7 +5705,7 @@ periodics:
     preset-cadvisor-docker-credential: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - --clean
       - --repo=github.com/google/cadvisor
@@ -6073,7 +6073,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - --clean
       - --git-cache=/root/.cache/git
@@ -6519,7 +6519,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - --clean
       - --git-cache=/root/.cache/git
@@ -6560,7 +6560,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - --clean
       - --git-cache=/root/.cache/git
@@ -6600,7 +6600,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - --clean
       - --git-cache=/root/.cache/git
@@ -6641,7 +6641,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - --clean
       - --git-cache=/root/.cache/git
@@ -6682,7 +6682,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - --clean
       - --git-cache=/root/.cache/git
@@ -6737,7 +6737,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - --clean
       - --git-cache=/root/.cache/git
@@ -12621,7 +12621,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - --clean
       - --git-cache=/root/.cache/git
@@ -12662,7 +12662,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - --clean
       - --git-cache=/root/.cache/git
@@ -12703,7 +12703,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - "--clean"
       - "--repo=k8s.io/kubernetes"
@@ -12735,7 +12735,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - "--clean"
       - "--repo=k8s.io/kubernetes=release-1.9"
@@ -12767,7 +12767,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - "--clean"
       - "--repo=k8s.io/kubernetes=release-1.8"
@@ -12799,7 +12799,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - "--clean"
       - "--repo=k8s.io/kubernetes=release-1.7"
@@ -13335,7 +13335,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - "--clean"
       - "--repo=k8s.io/kubernetes"
@@ -13367,7 +13367,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - "--clean"
       - "--repo=k8s.io/kubernetes=release-1.9"
@@ -13399,7 +13399,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - "--clean"
       - "--repo=k8s.io/kubernetes=release-1.8"
@@ -13431,7 +13431,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - "--clean"
       - "--repo=k8s.io/kubernetes=release-1.7"
