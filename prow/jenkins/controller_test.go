@@ -19,6 +19,8 @@ package jenkins
 import (
 	"errors"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"reflect"
 	"sync"
 	"testing"
@@ -132,7 +134,7 @@ type fjc struct {
 	builds map[string]JenkinsBuild
 }
 
-func (f *fjc) Build(pj *kube.ProwJob) error {
+func (f *fjc) Build(pj *kube.ProwJob, buildId string) error {
 	f.Lock()
 	defer f.Unlock()
 	if f.err != nil {
@@ -290,6 +292,10 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		totServ := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprint(w, "42")
+		}))
+		defer totServ.Close()
 		t.Logf("scenario %q", tc.name)
 		fjc := &fjc{
 			err: tc.err,
@@ -303,6 +309,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			jc:          fjc,
 			log:         logrus.NewEntry(logrus.StandardLogger()),
 			ca:          newFakeConfigAgent(t, tc.maxConcurrency, nil),
+			totURL:      totServ.URL,
 			lock:        sync.RWMutex{},
 			pendingJobs: make(map[string]int),
 		}
@@ -402,7 +409,7 @@ func TestSyncPendingJobs(t *testing.T) {
 			builds: map[string]JenkinsBuild{
 				"boing": {enqueued: false, Number: 10},
 			},
-			expectedURL:      "test-job-10/pending",
+			expectedURL:      "boing/pending",
 			expectedState:    kube.PendingState,
 			expectedEnqueued: false,
 			expectedReport:   true,
@@ -423,7 +430,7 @@ func TestSyncPendingJobs(t *testing.T) {
 			builds: map[string]JenkinsBuild{
 				"firstoutthetrenches": {enqueued: false, Number: 10},
 			},
-			expectedURL:    "test-job-10/pending",
+			expectedURL:    "firstoutthetrenches/pending",
 			expectedState:  kube.PendingState,
 			expectedReport: true,
 		},
@@ -473,7 +480,7 @@ func TestSyncPendingJobs(t *testing.T) {
 			builds: map[string]JenkinsBuild{
 				"winwin": {Result: pState(Succeess), Number: 11},
 			},
-			expectedURL:      "test-job-11/success",
+			expectedURL:      "winwin/success",
 			expectedState:    kube.SuccessState,
 			expectedComplete: true,
 			expectedReport:   true,
@@ -494,7 +501,7 @@ func TestSyncPendingJobs(t *testing.T) {
 			builds: map[string]JenkinsBuild{
 				"whatapity": {Result: pState(Failure), Number: 12},
 			},
-			expectedURL:      "test-job-12/failure",
+			expectedURL:      "whatapity/failure",
 			expectedState:    kube.FailureState,
 			expectedComplete: true,
 			expectedReport:   true,
@@ -502,6 +509,10 @@ func TestSyncPendingJobs(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Logf("scenario %q", tc.name)
+		totServ := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprint(w, "42")
+		}))
+		defer totServ.Close()
 		fjc := &fjc{
 			err: tc.err,
 		}
@@ -514,6 +525,7 @@ func TestSyncPendingJobs(t *testing.T) {
 			jc:          fjc,
 			log:         logrus.NewEntry(logrus.StandardLogger()),
 			ca:          newFakeConfigAgent(t, 0, nil),
+			totURL:      totServ.URL,
 			lock:        sync.RWMutex{},
 			pendingJobs: make(map[string]int),
 		}
@@ -596,11 +608,16 @@ func TestBatch(t *testing.T) {
 			"known_name": { /* Running */ },
 		},
 	}
+	totServ := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, "42")
+	}))
+	defer totServ.Close()
 	c := Controller{
 		kc:          fc,
 		jc:          jc,
 		log:         logrus.NewEntry(logrus.StandardLogger()),
 		ca:          newFakeConfigAgent(t, 0, nil),
+		totURL:      totServ.URL,
 		pendingJobs: make(map[string]int),
 		lock:        sync.RWMutex{},
 	}
@@ -621,7 +638,7 @@ func TestBatch(t *testing.T) {
 	if fc.prowjobs[0].Status.Description != "Jenkins job running." {
 		t.Fatalf("Expected description %q, got %q.", "Jenkins job running.", fc.prowjobs[0].Status.Description)
 	}
-	if fc.prowjobs[0].Status.PodName != "pr-some-job-42" {
+	if fc.prowjobs[0].Status.PodName != "known_name" {
 		t.Fatalf("Wrong PodName: %s", fc.prowjobs[0].Status.PodName)
 	}
 	jc.builds["known_name"] = JenkinsBuild{Result: pState(Succeess)}
@@ -837,6 +854,10 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		totServ := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprint(w, "42")
+		}))
+		defer totServ.Close()
 		jobs := make(chan kube.ProwJob, len(test.pjs))
 		for _, pj := range test.pjs {
 			jobs <- pj
@@ -852,6 +873,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 			jc:          fjc,
 			log:         logrus.NewEntry(logrus.StandardLogger()),
 			ca:          newFakeConfigAgent(t, 0, nil),
+			totURL:      totServ.URL,
 			pendingJobs: test.pendingJobs,
 		}
 

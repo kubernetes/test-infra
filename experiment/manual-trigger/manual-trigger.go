@@ -178,9 +178,9 @@ func main() {
 		MaxConcurrency: 1,
 	}
 
-	if err = jc.BuildFromSpec(&spec, o.jobName); err != nil {
+	if err = jc.BuildFromSpec(&spec, "0", o.jobName); err != nil {
 		log.Println("Submitting the following to Jenkins:")
-		env, _ := pjutil.EnvForSpec(pjutil.NewJobSpec(spec, "0"))
+		env, _ := pjutil.EnvForSpec(pjutil.NewJobSpec(spec, "0", o.jobName))
 		for k, v := range env {
 			log.Printf("  %s=%s\n", k, v)
 		}

@@ -732,7 +732,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 				t.Errorf("for case %q, report.Status.URL: got %q, want %q", tc.name, got, want)
 			}
 			if got, want := r.Status.BuildID, tc.expectedBuildID; want != "" && got != want {
-				t.Errorf("for case %q, report.Status.BuildID: got %q, want %q", tc.name, got, want)
+				t.Errorf("for case %q, report.Status.ProwJobID: got %q, want %q", tc.name, got, want)
 			}
 		}
 	}
