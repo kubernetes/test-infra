@@ -1728,10 +1728,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel-build-canary
   days_of_results: 1
   num_columns_recent: 20
-- name: pull-kubernetes-e2e-kubeadm-gce-canary
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-kubeadm-gce-canary
-  days_of_results: 1
-  num_columns_recent: 20
 - name: pull-kubernetes-bazel-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel-test
   days_of_results: 1
@@ -4558,8 +4554,6 @@ dashboards:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: bazel-build-canary
     test_group_name: pull-kubernetes-bazel-build-canary
-  - name: kubeadm-canary
-    test_group_name: pull-kubernetes-e2e-kubeadm-gce-canary
   - name: bazel-test-canary
     test_group_name: pull-kubernetes-bazel-test-canary
   - name: pull-kubernetes-verify-prow

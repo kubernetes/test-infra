@@ -11044,26 +11044,6 @@
       "sig-cluster-lifecycle"
     ]
   },
-  "pull-kubernetes-e2e-kubeadm-gce-canary": {
-    "args": [
-      "--cluster=",
-      "--deployment=kubernetes-anywhere",
-      "--env-file=jobs/platform/gce.env",
-      "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel=30",
-      "--kubeadm=pull",
-      "--kubernetes-anywhere-dump-cluster-logs=true",
-      "--kubernetes-anywhere-kubernetes-version=ci/latest",
-      "--provider=kubernetes-anywhere",
-      "--test_args=--ginkgo.focus=\\[Conformance\\] --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\] --minStartupPods=8",
-      "--timeout=55m",
-      "--use-shared-build=bazel"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
   "pull-kubernetes-kubemark-e2e-gce": {
     "args": [
       "--build=bazel",
