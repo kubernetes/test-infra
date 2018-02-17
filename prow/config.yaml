@@ -13009,6 +13009,18 @@ periodics:
       hostPath:
         path: /mnt/disks/ssd0/docker-graph
 
+- name: ci-kubernetes-local-e2e
+  agent: kubernetes
+  interval: 60m
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180216-90c54ef53-master
+      args:
+      - "--timeout=140"
+      - "--bare"
 - name: ci-kubernetes-node-kubelet
   interval: 1h
   agent: kubernetes
