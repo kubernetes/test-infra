@@ -51,7 +51,6 @@ popd
 
 echo "TAG = ${TAG}"
 
-$SED -i "s/DEFAULT_KUBEKINS_TAG = '.*'/DEFAULT_KUBEKINS_TAG = '${TAG}-master'/" "${TREE}/scenarios/kubernetes_e2e.py"
 $SED -i "s/\/kubekins-e2e:.*$/\/kubekins-e2e:${TAG}-master/" "${TREE}/images/kubeadm/Dockerfile"
 $SED -i "s/\/kubekins-e2e:v.*$/\/kubekins-e2e:${TAG}-master/" "${TREE}/experiment/generate_tests.py"
 $SED -i "s/\/kubekins-e2e:v.*-\(.*\)$/\/kubekins-e2e:${TAG}-\1/" "${TREE}/experiment/test_config.yaml"
