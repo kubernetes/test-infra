@@ -68,16 +68,16 @@ func (l *extractStrategies) String() string {
 // Converts --extract=release/stable, etc into an extractStrategy{}
 func (l *extractStrategies) Set(value string) error {
 	var strategies = map[string]extractMode{
-		`^(local)`:                           local,
-		`^gke-(default|latest(-\d+.\d+)?)?$`: gke,
-		`^gci/([\w-]+)$`:                     gci,
-		`^gci/([\w-]+)/(.+)$`:                gciCi,
-		`^ci/(.+)$`:                          ci,
-		`^release/(latest.*)$`:               rc,
-		`^release/(stable.*)$`:               stable,
-		`^(v\d+\.\d+\.\d+[\w.\-+]*)$`:        version,
-		`^(gs://.*)$`:                        gcs,
-		`^(bazel/.*)$`:                       bazel,
+		`^(local)`:                            local,
+		`^gke-?(default|latest(-\d+.\d+)?)?$`: gke,
+		`^gci/([\w-]+)$`:                      gci,
+		`^gci/([\w-]+)/(.+)$`:                 gciCi,
+		`^ci/(.+)$`:                           ci,
+		`^release/(latest.*)$`:                rc,
+		`^release/(stable.*)$`:                stable,
+		`^(v\d+\.\d+\.\d+[\w.\-+]*)$`:         version,
+		`^(gs://.*)$`:                         gcs,
+		`^(bazel/.*)$`:                        bazel,
 	}
 
 	if len(*l) == 2 {
