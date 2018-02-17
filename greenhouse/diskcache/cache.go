@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package diskcache implements disk backed cache storage for use in nursery
+// Package diskcache implements disk backed cache storage for use in greenhouse
 package diskcache
 
 import (
@@ -29,7 +29,7 @@ import (
 	"strings"
 	"time"
 
-	"k8s.io/test-infra/experiment/nursery/diskutil"
+	"k8s.io/test-infra/greenhouse/diskutil"
 
 	"github.com/sirupsen/logrus"
 )

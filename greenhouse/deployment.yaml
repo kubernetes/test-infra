@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
       - name: bazel-cache
-        image: gcr.io/k8s-testimages/nursery:latest
+        image: gcr.io/k8s-testimages/greenhouse:latest
         imagePullPolicy: Always
         ports:
         - name: cache

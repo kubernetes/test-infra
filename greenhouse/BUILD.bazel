@@ -5,11 +5,11 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
-    importpath = "k8s.io/test-infra/experiment/nursery",
+    importpath = "k8s.io/test-infra/greenhouse",
     visibility = ["//visibility:private"],
     deps = [
-        "//experiment/nursery/diskcache:go_default_library",
-        "//experiment/nursery/diskutil:go_default_library",
+        "//greenhouse/diskcache:go_default_library",
+        "//greenhouse/diskutil:go_default_library",
         "//prow/logrusutil:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
@@ -32,8 +32,8 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
-        "//experiment/nursery/diskcache:all-srcs",
-        "//experiment/nursery/diskutil:all-srcs",
+        "//greenhouse/diskcache:all-srcs",
+        "//greenhouse/diskutil:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
@@ -50,8 +50,14 @@ k8s_object(
     name = "production",
     cluster = "{STABLE_BUILD_CLUSTER}",
     images = {
-        "gcr.io/k8s-testimages/nursery:latest": ":image",
+        "gcr.io/k8s-testimages/greenhouse:latest": ":image",
     },
     kind = "deployment",
     template = ":deployment.yaml",
+)
+
+go_binary(
+    name = "greenhouse",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
 )
