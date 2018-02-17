@@ -9918,6 +9918,20 @@
       "sig-scalability"
     ]
   },
+  "ci-kubernetes-local-e2e": {
+    "args": [
+      "--deployment=local",
+      "--extract=ci/latest",
+      "--ginkgo-parallel=1",
+      "--provider=local",
+      "--test_args=--ginkgo.focus=\\[Feature:Conformance\\]",
+      "--timeout=120m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "ci-kubernetes-node-kubelet": {
     "args": [
       "--deployment=node",
