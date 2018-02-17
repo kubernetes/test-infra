@@ -17,11 +17,11 @@ set -o errexit
 
 # See https://misc.flogisoft.com/bash/tip_colors_and_formatting
 
-color-image() {  # Bold blue
+color-image() { # Bold magenta
   echo -e "\x1B[1;35m${@}\x1B[0m"
 }
 
-color-version() {  # Bold magenta
+color-version() { # Bold blue
   echo -e "\x1B[1;34m${@}\x1B[0m"
 }
 
@@ -57,16 +57,16 @@ cd "$(dirname "${BASH_SOURCE}")"
 echo -n "images: " >&2
 images=("$@")
 if [[ "${#images[@]}" == 0 ]]; then
-  echo "querying bazel for $(color-target :image) targets under $(color-target //prow/...)..." >&2
+  echo "querying bazel for $(color-target :image) targets under $(color-target //prow/...) ..." >&2
   images=($(bazel query 'filter(".*:image", //prow/...)' | cut -d : -f 1 | xargs -n 1 basename))
   echo -n "images: " >&2
 fi
-echo -e "\x1B[1;35m${images[@]}\x1B[0m" >&2
+echo -e "$(color-image ${images[@]})" >&2
 
-echo -e "Pushing $(color-version ${new_version}) via $(color-target //prow:release-push --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64)..." >&2
+echo -e "Pushing $(color-version ${new_version}) via $(color-target //prow:release-push --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64) ..." >&2
 bazel run //prow:release-push --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
 
-echo -e "Bumping: $(color-image ${images[@]}) to $(color-version ${new_version})..." >&2
+echo -e "Bumping: $(color-image ${images[@]}) to $(color-version ${new_version}) ..." >&2
 
 for i in "${images[@]}"; do
   echo -e "  $(color-image $i): $(color-version $new_version)" >&2

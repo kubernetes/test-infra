@@ -18,7 +18,23 @@
 FROM gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
 LABEL maintainer "Sen Lu <senlu@google.com>"
 
+# hint to kubetest that it is in CI
 ENV KUBETEST_IN_DOCKER="true"
+
+# Go standard envs
+ENV GOPATH /go
+ENV PATH /usr/local/go/bin:$PATH
+ENV PATH $GOPATH/bin:$PATH
+
+# setup k8s repo symlink
+RUN mkdir -p /go/src/k8s.io/kubernetes \
+    && ln -s /go/src/k8s.io/kubernetes /workspace/kubernetes
+
+# preinstall graphviz package for graphing profiles
+RUN apt-get install -y graphviz
+# preinstall this for kops tests xref kubetest prepareAws(...)
+# TODO(bentheelder,krzyzacy,justisb,chrislovecnm): remove this
+RUN pip install awscli
 
 # install cfssl to prevent https://github.com/kubernetes/kubernetes/issues/55589
 # The invocation at the end is to prevent download failures downloads as in the bug.
@@ -37,14 +53,6 @@ RUN wget -q "https://storage.googleapis.com/golang/${GO_TARBALL}" && \
     tar xzf "${GO_TARBALL}" -C /usr/local && \
     rm "${GO_TARBALL}"
 
-ENV GOPATH /go
-ENV PATH /usr/local/go/bin:$PATH
-ENV PATH $GOPATH/bin:$PATH
-
-# setup k8s repo symlink
-RUN mkdir -p /go/src/k8s.io/kubernetes \
-    && ln -s /go/src/k8s.io/kubernetes /workspace/kubernetes
-
 # install bazel
 ARG BAZEL_VERSION
 RUN INSTALLER="bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh"; \
@@ -55,12 +63,7 @@ RUN INSTALLER="bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh"; \
 ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}
 
-# preinstall this for kops tests xref kubetest prepareAws(...)
-RUN pip install awscli
-
-# preinstall graphviz package for graphing profiles
-RUN apt-get install -y graphviz
-
+# everything below will be triggered on every new image tag ...
 ADD ["e2e-runner.sh", \
     "kops-e2e-runner.sh", \
     "kubetest", \
