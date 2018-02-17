@@ -1154,42 +1154,6 @@ presubmits:
       volumes:
       - name: bazel-scratch
         emtpyDir: {}
-    run_after_success:
-    - name: pull-kubernetes-e2e-kubeadm-gce-canary
-      agent: kubernetes
-      context: pull-kubernetes-e2e-kubeadm-gce-canary
-      max_concurrency: 8
-      skip_report: false
-      # use standard (pull-kubernetes-cross) regex we normally make sure
-      # to trigger on dummy / canary testing PRs
-      run_if_changed: '^(build\/|hack\/lib\/)|(Makefile)|(.*_(windows|linux|osx|unsupported)(_test)?\.go)$'
-      rerun_command: "/test pull-kubernetes-e2e-kubeadm-gce-canary"
-      trigger: "(?m)^/test pull-kubernetes-e2e-kubeadm-gce-canary,?(\\s+|$)"
-      labels:
-        preset-service-account: true
-        preset-k8s-ssh: true
-      spec:
-        containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180216-4b63e5c46
-          args:
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-          - "--upload=gs://kubernetes-jenkins/pr-logs"
-          - "--git-cache=/root/.cache/git"
-          - "--timeout=75"
-          - "--clean"
-          env:
-          - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
-            value: true
-          volumeMounts:
-          - name: cache-ssd
-            mountPath: /root/.cache
-          ports:
-          - containerPort: 9999
-            hostPort: 9999
-        volumes:
-        - name: cache-ssd
-          hostPath:
-            path: /mnt/disks/ssd0
 
   - name: pull-kubernetes-bazel-test
     agent: kubernetes
@@ -3060,44 +3024,6 @@ presubmits:
     max_concurrency: 0
     name: pull-security-kubernetes-bazel-build-canary
     rerun_command: /test pull-security-kubernetes-bazel-build-canary
-    run_after_success:
-    - agent: kubernetes
-      always_run: false
-      cluster: security
-      context: pull-security-kubernetes-e2e-kubeadm-gce-canary
-      labels:
-        preset-k8s-ssh: "true"
-        preset-service-account: "true"
-      max_concurrency: 8
-      name: pull-security-kubernetes-e2e-kubeadm-gce-canary
-      rerun_command: /test pull-security-kubernetes-e2e-kubeadm-gce-canary
-      run_if_changed: ^(build\/|hack\/lib\/)|(Makefile)|(.*_(windows|linux|osx|unsupported)(_test)?\.go)$
-      skip_report: false
-      spec:
-        containers:
-        - args:
-          - --ssh=/etc/ssh-security/ssh-security
-          - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-          - --upload=gs://kubernetes-security-prow/pr-logs
-          - --timeout=75
-          - --clean
-          - --
-          - --gcs-shared=gs://kubernetes-security-prow/bazel
-          env:
-          - name: SKIP_RELEASE_VALIDATION
-            value: "true"
-          image: gcr.io/k8s-testimages/e2e-kubeadm:v20180216-4b63e5c46
-          name: ""
-          resources: {}
-          volumeMounts:
-          - mountPath: /etc/ssh-security
-            name: ssh-security
-        volumes:
-        - name: ssh-security
-          secret:
-            defaultMode: 256
-            secretName: ssh-security
-      trigger: (?m)^/test pull-security-kubernetes-e2e-kubeadm-gce-canary,?(\s+|$)
     run_if_changed: ""
     skip_report: false
     spec:
