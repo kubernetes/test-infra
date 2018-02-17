@@ -9922,7 +9922,7 @@
     "args": [
       "--deployment=local",
       "--extract=ci/latest",
-      "--extract-sources",
+      "--extract-source",
       "--ginkgo-parallel=1",
       "--provider=local",
       "--test_args=--ginkgo.focus=\\[Feature:Conformance\\]",
