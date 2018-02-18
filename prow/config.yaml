@@ -13021,6 +13021,23 @@ periodics:
       args:
       - "--timeout=140"
       - "--bare"
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: docker-graph
+        mountPath: /docker-graph
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+    volumes:
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
+
 - name: ci-kubernetes-node-kubelet
   interval: 1h
   agent: kubernetes
