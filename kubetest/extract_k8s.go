@@ -183,7 +183,7 @@ func ensureKube() (string, error) {
 }
 
 // Download named binaries for kubernetes
-func getNamedBinaries(url, version, tarball string, retry int) error {
+func getNamedBinaries(url, version, tarball string, dir string, retry int) error {
 	f, err := os.Create(tarball)
 	if err != nil {
 		return err
@@ -210,8 +210,18 @@ func getNamedBinaries(url, version, tarball string, retry int) error {
 		return err
 	}
 	log.Printf("md5sum: %s", o)
-	if err = finishRunning(exec.Command("tar", "-xzf", f.Name())); err != nil {
-		return err
+
+	if dir != "" {
+		if err = os.MkdirAll(dir, 0755); err != nil {
+			return err
+		}
+		if err = finishRunning(exec.Command("tar", "-xzf", f.Name(), "-C", dir)); err != nil {
+			return err
+		}
+	} else {
+		if err = finishRunning(exec.Command("tar", "-xzf", f.Name())); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -244,7 +254,7 @@ var getKube = func(url, version string, getSrc bool) error {
 			return err
 		}
 
-		if err := getNamedBinaries(url, version, "kubernetes-src.tar.gz", 3); err != nil {
+		if err := getNamedBinaries(url, version, "kubernetes-src.tar.gz", "kubernetes", 3); err != nil {
 			return err
 		}
 	}
