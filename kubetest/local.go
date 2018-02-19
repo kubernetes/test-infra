@@ -24,6 +24,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"time"
 )
 
@@ -52,13 +53,32 @@ func newLocalCluster() *localCluster {
 	}
 }
 
+func (n localCluster) getScript(scriptPath string) (string, error) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+	path := filepath.Join(cwd, scriptPath)
+	if _, err := os.Stat(path); err == nil {
+		return path, nil
+	}
+	path = filepath.Join(cwd, "kubernetes", scriptPath)
+	if _, err := os.Stat(path); err == nil {
+		return path, nil
+	}
+	return "", fmt.Errorf("unable to find script : %v", scriptPath)
+}
+
 func (n localCluster) Up() error {
-	script := "./hack/local-up-cluster.sh"
+	script, err := n.getScript("hack/local-up-cluster.sh")
+	if err != nil {
+		return err
+	}
 	cmd := exec.Command(script)
 	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env, "ENABLE_DAEMON=true")
 	cmd.Env = append(cmd.Env, fmt.Sprintf("LOG_DIR=%s", n.tempDir))
-	err := finishRunning(cmd)
+	err = finishRunning(cmd)
 	if err != nil {
 		return err
 	}
@@ -76,7 +96,11 @@ func (n localCluster) IsUp() error {
 	}
 	stop := time.Now().Add(*localUpTimeout)
 	for {
-		nodes, err := kubectlGetNodes("cluster/kubectl.sh")
+		script, err := n.getScript("cluster/kubectl.sh")
+		if err != nil {
+			return err
+		}
+		nodes, err := kubectlGetNodes(script)
 		if err != nil {
 			return err
 		}
