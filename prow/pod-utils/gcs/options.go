@@ -24,6 +24,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
@@ -127,12 +128,22 @@ func (o *Options) Run(extra map[string]UploadFunc) error {
 		return fmt.Errorf("could not resolve job spec: %v", err)
 	}
 
-	gcsPath := PathForSpec(spec, builder)
-	if o.SubDir != "" {
-		gcsPath = path.Join(gcsPath, o.SubDir)
+	var gcsPath string
+	jobBasePath := PathForSpec(spec, builder)
+	if o.SubDir == "" {
+		gcsPath = jobBasePath
+	} else {
+		gcsPath = path.Join(jobBasePath, o.SubDir)
 	}
 
 	uploadTargets := map[string]UploadFunc{}
+
+	// ensure that an alias exists for any
+	// job we're uploading artifacts for
+	if alias := AliasForSpec(spec); alias != "" {
+		uploadTargets[alias] = DataUpload(strings.NewReader(jobBasePath))
+	}
+
 	for _, item := range o.Items {
 		info, err := os.Stat(item)
 		if err != nil {
