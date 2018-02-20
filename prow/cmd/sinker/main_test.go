@@ -77,6 +77,25 @@ func (c *fakeClient) DeleteProwJob(name string) error {
 	return fmt.Errorf("prowjob %s not found", name)
 }
 
+func (c *fakeClient) GetProwJob(name string) (kube.ProwJob, error) {
+	for _, pj := range c.ProwJobs {
+		if pj.ObjectMeta.Name == name {
+			return pj, nil
+		}
+	}
+	return kube.ProwJob{}, fmt.Errorf("did not find prowjob %s", name)
+}
+
+func (c *fakeClient) ReplaceProwJob(name string, job kube.ProwJob) (kube.ProwJob, error) {
+	for i := range c.ProwJobs {
+		if c.ProwJobs[i].ObjectMeta.Name == name {
+			c.ProwJobs[i] = job
+			return job, nil
+		}
+	}
+	return kube.ProwJob{}, fmt.Errorf("did not find prowjob %s", name)
+}
+
 func (c *fakeClient) DeletePod(name string) error {
 	for i, p := range c.Pods {
 		if p.ObjectMeta.Name == name {
@@ -150,6 +169,42 @@ func TestClean(t *testing.T) {
 		},
 		{
 			ObjectMeta: metav1.ObjectMeta{
+				Name: "old-pending-no-prowjob",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+			Status: kube.PodStatus{
+				Phase:     kube.PodPending,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "old-pending-presubmit",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+			Status: kube.PodStatus{
+				Phase:     kube.PodPending,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "old-pending-periodic",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+			Status: kube.PodStatus{
+				Phase:     kube.PodPending,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{
 				Name: "old-just-complete",
 				Labels: map[string]string{
 					kube.CreatedByProw: "true",
@@ -186,6 +241,18 @@ func TestClean(t *testing.T) {
 		},
 		{
 			ObjectMeta: metav1.ObjectMeta{
+				Name: "new-pending",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+			Status: kube.PodStatus{
+				Phase:     kube.PodPending,
+				StartTime: startTime(time.Now().Add(-10 * time.Second)),
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{
 				Name: "unrelated-failed",
 				Labels: map[string]string{
 					kube.CreatedByProw: "not really",
@@ -209,6 +276,8 @@ func TestClean(t *testing.T) {
 	deletedPods := []string{
 		"old-failed",
 		"old-succeeded",
+		"old-pending-no-prowjob",
+		"old-pending-periodic",
 	}
 	setComplete := func(d time.Duration) *metav1.Time {
 		completed := metav1.NewTime(time.Now().Add(d))
@@ -231,6 +300,28 @@ func TestClean(t *testing.T) {
 			Status: kube.ProwJobStatus{
 				StartTime:      metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Second)),
 				CompletionTime: setComplete(-time.Second),
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "old-pending-presubmit",
+			},
+			Status: kube.ProwJobStatus{
+				StartTime: metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Second)),
+			},
+			Spec: kube.ProwJobSpec{
+				Type: kube.PresubmitJob,
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "old-pending-periodic",
+			},
+			Status: kube.ProwJobStatus{
+				StartTime: metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Second)),
+			},
+			Spec: kube.ProwJobSpec{
+				Type: kube.PeriodicJob,
 			},
 		},
 		{
@@ -261,6 +352,14 @@ func TestClean(t *testing.T) {
 		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "new",
+			},
+			Status: kube.ProwJobStatus{
+				StartTime: metav1.NewTime(time.Now().Add(-time.Second)),
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "new-pending",
 			},
 			Status: kube.ProwJobStatus{
 				StartTime: metav1.NewTime(time.Now().Add(-time.Second)),
@@ -322,6 +421,9 @@ func TestClean(t *testing.T) {
 		"older-periodic",
 		"oldest-periodic",
 		"old-failed-trusted",
+	}
+	abortedProwJobs := []string{
+		"old-pending-periodic",
 	}
 	podsTrusted := []kube.Pod{
 		{
@@ -393,6 +495,24 @@ func TestClean(t *testing.T) {
 			}
 			if !found {
 				t.Errorf("Did not delete prowjob %s", n)
+			}
+		}
+		selector := fmt.Sprintf("%s = %s", kube.CreatedByProw, "true")
+		pjs, err := kc.ListProwJobs(selector)
+		if err != nil {
+			t.Errorf("Error list prowjobs - %v", err)
+		}
+
+		for _, n := range abortedProwJobs {
+			found := false
+			for _, pj := range pjs {
+				if pj.ObjectMeta.Name == n && pj.Status.State == kube.AbortedState {
+					found = true
+				}
+			}
+
+			if !found {
+				t.Errorf("Did not abort prowjob %s", n)
 			}
 		}
 	}

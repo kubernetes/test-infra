@@ -35,6 +35,8 @@ type kubeClient interface {
 
 	ListProwJobs(selector string) ([]kube.ProwJob, error)
 	DeleteProwJob(name string) error
+	GetProwJob(name string) (kube.ProwJob, error)
+	ReplaceProwJob(string, kube.ProwJob) (kube.ProwJob, error)
 }
 
 type configAgent interface {
@@ -126,7 +128,6 @@ func (c *controller) clean() {
 		if !prowJob.Complete() {
 			continue
 		}
-		isFinished[prowJob.ObjectMeta.Name] = true
 		if time.Since(prowJob.Status.StartTime.Time) <= maxProwJobAge {
 			continue
 		}
@@ -160,7 +161,6 @@ func (c *controller) clean() {
 		if !prowJob.Complete() {
 			continue
 		}
-		isFinished[prowJob.ObjectMeta.Name] = true
 		if time.Since(prowJob.Status.StartTime.Time) <= maxProwJobAge {
 			continue
 		}
@@ -181,12 +181,45 @@ func (c *controller) clean() {
 		}
 		maxPodAge := c.configAgent.Config().Sinker.MaxPodAge
 		for _, pod := range pods {
-			if _, ok := isFinished[pod.ObjectMeta.Name]; !ok {
+			// pod failed to be scheduled, or failed pulling image
+			// for non-presubmit cases, we want to abort prowjob and delete the pod
+			if pod.Status.Phase == kube.PodPending && time.Since(pod.Status.StartTime.Time) > maxPodAge {
+				killPod := true
+				if pj, err := c.kc.GetProwJob(pod.ObjectMeta.Name); err != nil {
+					c.logger.WithField("pod", pod.ObjectMeta.Name).Info("Failed to find prowjob.")
+				} else if pj.Spec.Type == kube.PresubmitJob {
+					// we don't want to abort a presubmit pj yet
+					// since the github context will be out of sync
+					killPod = false
+				} else {
+					pj.SetComplete()
+					pj.Status.State = kube.AbortedState
+					_, err := c.kc.ReplaceProwJob(pj.ObjectMeta.Name, pj)
+					if err != nil {
+						c.logger.WithField("pod", pod.ObjectMeta.Name).Info("Failed to abort pending prowjob.")
+					}
+					c.logger.WithField("pod", pod.ObjectMeta.Name).Info("Aborting pending prowjob.")
+				}
+
+				// delete the pending non-presubmit stale pod
+				if killPod {
+					if err := client.DeletePod(pod.ObjectMeta.Name); err != nil {
+						c.logger.WithError(err).WithField("pod", pod.ObjectMeta.Name).Warn("Cannot delete pod")
+					} else {
+						c.logger.WithError(err).WithField("pod", pod.ObjectMeta.Name).Warn("Deleted pending stale pod")
+					}
+				}
+			}
+
+			if _, ok := isFinished[pod.ObjectMeta.Name]; ok {
 				// prowjob is not marked as completed yet
 				// deleting the pod now will result in plank creating a brand new pod
 				continue
 			}
-			if (pod.Status.Phase == kube.PodSucceeded || pod.Status.Phase == kube.PodFailed) &&
+
+			// the prowjob either does not exist, or finished already
+			if (pod.Status.Phase == kube.PodSucceeded ||
+				pod.Status.Phase == kube.PodFailed) &&
 				time.Since(pod.Status.StartTime.Time) > maxPodAge {
 				// Delete old completed pods. Don't quit if we fail to delete one.
 				if err := client.DeletePod(pod.ObjectMeta.Name); err == nil {
