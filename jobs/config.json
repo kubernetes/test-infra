@@ -4969,6 +4969,27 @@
       "sig-autoscaling"
     ]
   },
+  "ci-kubernetes-e2e-gci-gke-autoscaling-regional": {
+    "args": [
+      "--check-leaked-resources",
+      "--deployment=gke",
+      "--extract=ci/latest",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=gci",
+      "--gcp-project=k8s-jkns-gci-autoscaling-regio",
+      "--gcp-region=us-central1",
+      "--gke-command-group=beta",
+      "--gke-environment=test",
+      "--gke-single-zone-node-instance-group=false",
+      "--provider=gke",
+      "--test_args=--gce-multizone=true --ginkgo.focus=\\[Feature:ClusterSizeAutoscalingScaleUp\\]|\\[Feature:ClusterSizeAutoscalingScaleDown\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
+      "--timeout=400m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-autoscaling"
+    ]
+  },
   "ci-kubernetes-e2e-gci-gke-flaky": {
     "args": [
       "--check-leaked-resources",
