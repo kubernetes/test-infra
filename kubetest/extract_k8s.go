@@ -210,6 +210,13 @@ func getNamedBinaries(url, version, tarball string, retry int) error {
 		return err
 	}
 	log.Printf("md5sum: %s", o)
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("unable to get current directory: %v", err)
+	}
+	log.Printf("Extracting tar file %v into directory %v", f.Name(), cwd)
+
 	if err = finishRunning(exec.Command("tar", "-xzf", f.Name())); err != nil {
 		return err
 	}
