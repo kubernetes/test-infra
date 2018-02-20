@@ -10,6 +10,7 @@ sinker:
 deck:
   hidden_repos:
   - kubernetes-security
+  - GoogleCloudPlatform/k8s-tpu-operator
 
 prowjob_namespace: default
 pod_namespace: test-pods
@@ -4928,6 +4929,46 @@ presubmits:
         - "--repo=github.com/tensorflow/minigo=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+
+  GoogleCloudPlatform/k8s-tpu-operator:
+  - name: pull-k8s-tpu-operator-unit
+    context: pull-k8s-tpu-operator-unit
+    agent: kubernetes
+    cluster: k8s-tpu-operator
+    always_run: true
+    rerun_command: /test pull-k8s-tpu-operator-unit
+    trigger: (?m)^/test( all| pull-k8s-tpu-operator-unit),?(\s+|$)
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+        args:
+        - --clean
+        - --job=$(JOB_NAME)
+        - --repo=github.com/GoogleCloudPlatform/$(REPO_NAME)=$(PULL_REFS)
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://k8s-tpu-operator-prow/pr-logs
+        - --timeout=60
+  - name: pull-k8s-tpu-operator-verify
+    context: pull-k8s-tpu-operator-verify
+    agent: kubernetes
+    cluster: k8s-tpu-operator
+    always_run: true
+    rerun_command: /test pull-k8s-tpu-operator-verify
+    trigger: (?m)^/test( all| pull-k8s-tpu-operator-verify),?(\s+|$)
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+        args:
+        - --clean
+        - --job=$(JOB_NAME)
+        - --repo=github.com/GoogleCloudPlatform/$(REPO_NAME)=$(PULL_REFS)
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://k8s-tpu-operator-prow/pr-logs
+        - --timeout=60
 
 postsubmits:
   kubeflow/examples:

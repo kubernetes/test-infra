@@ -13,6 +13,7 @@ triggers:
   - tensorflow/k8s
   - tensorflow/minigo
   - GoogleCloudPlatform/k8s-multicluster-ingress
+  - GoogleCloudPlatform/k8s-tpu-operator
   trusted_org: kubernetes
   join_org_url: "https://git.k8s.io/community/community-membership.md#member"
 - repos:
@@ -338,6 +339,13 @@ plugins:
   - trigger
 
   GoogleCloudPlatform/k8s-multicluster-ingress:
+  - trigger
+
+  GoogleCloudPlatform/k8s-tpu-operator:
+  - approve
+  - assign
+  - lgtm
+  - size
   - trigger
 
 external_plugins:

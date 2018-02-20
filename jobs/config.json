@@ -10823,6 +10823,26 @@
       "sig-network"
     ]
   },
+  "pull-k8s-tpu-operator-unit": {
+    "args": [
+      "make",
+      "test"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
+  "pull-k8s-tpu-operator-verify": {
+    "args": [
+      "make",
+      "verify"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
   "pull-kops-e2e-kubernetes-aws": {
     "args": [
       "--aws",
