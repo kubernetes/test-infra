@@ -4664,8 +4664,8 @@
       "--image-family=ubuntu-gke-1604-lts",
       "--image-project=ubuntu-os-gke-cloud",
       "--provider=gce",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=50m"
+      "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=150m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [

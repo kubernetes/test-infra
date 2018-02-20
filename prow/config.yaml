@@ -9312,7 +9312,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=70
+      - --timeout=170
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180217-a8631bf16-master
 
