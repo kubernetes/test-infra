@@ -300,7 +300,7 @@ func (c *Client) requestRetry(method, path, accept string, body interface{}) (*h
 	var err error
 	backoff := initialDelay
 	for retries := 0; retries < maxRetries; retries++ {
-		if retries > 0 {
+		if retries > 0 && resp != nil {
 			resp.Body.Close()
 		}
 		resp, err = c.doRequest(method, path, accept, body)
