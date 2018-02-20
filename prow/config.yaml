@@ -4659,6 +4659,35 @@ presubmits:
       - emptyDir: {}
         name: auto-generated-docker-graph-volume-mount
     trigger: (?m)^/test pull-security-kubernetes-verify-prow,?(\s+|$)
+  kubernetes-sig-testing/frameworks:
+  - name: pull-frameworks-test
+    context: pull-frameworks-test
+    agent: kubernetes
+    branches:
+    - master
+    always_run: false # for initial testing of new job
+    skip_report: true # for initial testing of new job
+    trigger: "/test pull-frameworks-test"
+    rerun_command: "/test pull-frameworks-test"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+        volumeMounts:
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+
   kubernetes/test-infra:
   - name: pull-test-infra-bazel
     agent: kubernetes

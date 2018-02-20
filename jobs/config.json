@@ -10786,6 +10786,15 @@
       "sig-multicluster"
     ]
   },
+  "pull-frameworks-test": {
+    "args": [
+      "./bin/test-on-prow.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "pull-heapster-e2e": {
     "scenario": "kubernetes_heapster",
     "sigOwners": [
