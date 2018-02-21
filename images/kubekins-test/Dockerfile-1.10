@@ -1,4 +1,4 @@
-# Copyright 2016 The Kubernetes Authors.
+# Copyright 2018 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 # This file creates a build environment for building and running kubernetes
 # unit and integration tests
 
-FROM golang:1.7.4
+FROM golang:1.9.3
 LABEL authors="Sen Lu <senlu@google.com>"
 
 # Setup workspace and symlink to gopath
@@ -48,12 +48,7 @@ RUN apt-get -o Acquire::Check-Valid-Until=false update && apt-get install -y \
 RUN curl -L "https://get.docker.com/builds/Linux/x86_64/docker-1.9.1.tgz" \
     | tar -C /usr/bin -xvzf- --strip-components=3 usr/local/bin/docker
 
-# Get dependency (tools) and golint
-ENV GO_TOOLS_COMMIT b66e054640c8249b6bc92cebffaec2bcf8b5efd0
-ENV GO_LINT_COMMIT 3390df4df2787994aea98de825b964ac7944b817
-RUN git clone https://github.com/golang/tools.git /go/src/golang.org/x/tools \
-	&& (cd /go/src/golang.org/x/tools && git checkout -q $GO_TOOLS_COMMIT) \
-    && git clone https://github.com/golang/lint.git /go/src/github.com/golang/lint \
-	&& (cd /go/src/github.com/golang/lint && git checkout -q $GO_LINT_COMMIT) \
-	&& go install -v github.com/golang/lint/golint \
-    && rm -rf /go/src/github.com/golang/{tools,lint}
+# Install any go packages
+# TODO(fejta): migrate this to a unit test image
+RUN go get \
+        github.com/golang/lint/golint
