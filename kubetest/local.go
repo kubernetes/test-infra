@@ -62,11 +62,7 @@ func (n localCluster) getScript(scriptPath string) (string, error) {
 	if _, err := os.Stat(path); err == nil {
 		return path, nil
 	}
-	path = filepath.Join(cwd, "kubernetes", scriptPath)
-	if _, err := os.Stat(path); err == nil {
-		return path, nil
-	}
-	return "", fmt.Errorf("unable to find script : %v", scriptPath)
+	return "", fmt.Errorf("unable to find script %v in directory %v", scriptPath, cwd)
 }
 
 func (n localCluster) Up() error {
