@@ -379,8 +379,11 @@ func complete(o *options) error {
 		return fmt.Errorf("failed to acquire federation binaries: %v", err)
 	}
 	if o.extract.Enabled() {
-		if err := os.Chdir("kubernetes"); err != nil {
-			return fmt.Errorf("failed to chdir to kubernetes dir: %v", err)
+		// If we specified `--extract-source` we will already be in the correct directory
+		if !o.extractSource {
+			if err := os.Chdir("kubernetes"); err != nil {
+				return fmt.Errorf("failed to chdir to kubernetes dir: %v", err)
+			}
 		}
 	}
 	if err := validWorkingDirectory(); err != nil {
