@@ -26,12 +26,14 @@ import subprocess
 import sys
 
 
+# BRANCH_VERSION converts a git branch name to the Kubernetes version to use
 BRANCH_VERSION = {
     '1.2': '1.4',
     '1.3': '1.4',
-    'master': '1.9',
+    'master': '1.10',
 }
 
+# VERSION_TAG defines what `kubekins-test` image to use for tests
 VERSION_TAG = {
     '1.4': '1.4-v20161130-8958f82',
     '1.5': '1.5-v20161205-d664d14',
@@ -39,6 +41,7 @@ VERSION_TAG = {
     '1.7': '1.7-v20170713-c28e0556',
     '1.8': '1.8-v20170906-3a1c5ae5',
     '1.9': '1.9-v20171018-6ddbad97',
+    '1.10': '1.10-v20180221-921ef654e',
 }
 
 
