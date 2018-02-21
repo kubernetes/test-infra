@@ -51,9 +51,13 @@ var port = flag.Int("port", 8080, "port to listen on")
 // eviction knobs
 var minPercentBlocksFree = flag.Float64("min-percent-blocks-free", 10,
 	"minimum percent of blocks free on --dir's disk before evicting entries")
+var evictUntilPercentBlocksFree = flag.Float64("evict-until-percent-blocks-free", 20,
+	"continue evicting from the cache until at least this percent of blocks are free")
 var minPercentFilesFree = flag.Float64("min-percent-files-free", 10,
 	"minimum percent of files free on --dir's disk before evicting entries")
-var diskCheckInterval = flag.Duration("disk-check-interval", time.Minute,
+var evictUntilPercentFilesFree = flag.Float64("evict-until-percent-files-free", 20,
+	"continue evicting from the cache until at least this percent of files are free")
+var diskCheckInterval = flag.Duration("disk-check-interval", time.Second*30,
 	"interval between checking disk usage (and potentially evicting entries)")
 
 // NOTE: remount is a bit of a hack, unfortunately the kubernetes volumes
@@ -98,7 +102,11 @@ func main() {
 
 	cache := diskcache.NewCache(*dir)
 	http.Handle("/", cacheHandler(cache))
-	go cache.MonitorDiskAndEvict(*diskCheckInterval, *minPercentBlocksFree, *minPercentFilesFree)
+	go cache.MonitorDiskAndEvict(
+		*diskCheckInterval,
+		*minPercentBlocksFree, *minPercentFilesFree,
+		*evictUntilPercentBlocksFree, *evictUntilPercentFilesFree,
+	)
 
 	addr := fmt.Sprintf("%s:%d", *host, *port)
 	logrus.Infof("Listening on: %s", addr)
