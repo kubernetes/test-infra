@@ -4669,6 +4669,8 @@ presubmits:
     skip_report: true # for initial testing of new job
     trigger: "/test pull-frameworks-test"
     rerun_command: "/test pull-frameworks-test"
+    labels:
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
@@ -4677,16 +4679,6 @@ presubmits:
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
 
   kubernetes/test-infra:
   - name: pull-test-infra-bazel
