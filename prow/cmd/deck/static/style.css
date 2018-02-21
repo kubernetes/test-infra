@@ -114,28 +114,28 @@ th {
     width: 32px;
 }
 /**
- * State style
+ * ProwJob State style
  */
-.state {
-    border-radius: 2px;
-    width: 12px;
-    height: 12px;
+i.state {
+    width: 24px;
+    height: 24px;
+    vertical-align: middle;
 }
 
 .state.triggered, .state.pending {
-    background-color: #FFCA28;
+    color: #FFCA28;
 }
 
 .state.success {
-    background-color: #66BB6A;
+    color: #66BB6A;
 }
 
 .state.failure {
-    background-color: #EF5350;
+    color: #EF5350;
 }
 
 state.error, .state.aborted {
-    background-color: #BDBDBD;
+    color: #BDBDBD;
 }
 
 #rerun {
