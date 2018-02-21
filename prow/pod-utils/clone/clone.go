@@ -70,6 +70,7 @@ func Run(refs kube.Refs, dir, gitUserName, gitUserEmail string) Record {
 		message := ""
 		if err != nil {
 			message = err.Error()
+			record.Failed = true
 		}
 		record.Commands = append(record.Commands, Command{Command: formattedCommand, Output: output, Error: message})
 		if err != nil {

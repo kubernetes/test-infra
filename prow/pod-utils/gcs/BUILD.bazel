@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "doc.go",
+        "options.go",
         "target.go",
         "upload.go",
     ],
@@ -14,6 +15,7 @@ go_library(
         "//prow/pjutil:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/google.golang.org/api/option:go_default_library",
     ],
 )
 
@@ -34,6 +36,7 @@ filegroup(
 go_test(
     name = "go_default_test",
     srcs = [
+        "options_test.go",
         "target_test.go",
         "upload_test.go",
     ],
