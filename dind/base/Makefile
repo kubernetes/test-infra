@@ -15,7 +15,7 @@
 .PHONY:	build push
 
 # TAG is the version to build and push to.
-PREFIX = gcr.io/qlee_dev
+PREFIX = gcr.io/qlee-dev
 NAME = dind-test-base
 ARCH = amd64
 TAG = 0.1
@@ -33,7 +33,7 @@ build:
 	# We explicitly add "--pull" flag to always fetch the latest version
 	# of the base image. This is necessary to avoid using cached local
 	# versions of image e.g. when updating insecure base images.
-	docker build --pull -t ${IMAGE} .
+	docker build --squash --pull -t ${IMAGE} .
 	rm -f dind
 	rm -f dockerd-entrypoint.sh
 
