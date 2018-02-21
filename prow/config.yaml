@@ -97,6 +97,7 @@ push_gateway:
   endpoint: pushgateway
 
 presets:
+# credential presets
 - labels:
     preset-service-account: true
   env:
@@ -189,6 +190,19 @@ presets:
   - name: cadvisor-cred
     mountPath: /etc/cadvisor-cred
     readOnly: true
+# storage / caching presets
+- labels:
+    preset-bazel-scratch-dir: true
+  env:
+  - name: TEST_TMPDIR
+    value: /bazel-scratch/.cache/bazel
+  volumes:
+  - name: bazel-scratch
+    emptyDir: {}
+  volumeMounts:
+  - name: bazel-scratch
+    mountPath: /bazel-scratch/.cache
+
 
 presubmits:
   google/cadvisor:
@@ -744,6 +758,7 @@ presubmits:
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180220-5b25c840d-master
@@ -753,21 +768,12 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        env:
-        - name: TEST_TMPDIR
-          value: /scratch/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: bazel-scratch
-          mountPath: /scratch/.cache
         resources:
           requests:
             memory: "2Gi"
-      volumes:
-      - name: bazel-scratch
-        emtpyDir: {}
   - name: pull-cluster-registry-verify-gosrc
     agent: kubernetes
     context: pull-cluster-registry-verify-gosrc
@@ -1123,6 +1129,7 @@ presubmits:
     - master
     labels:
       preset-service-account: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
@@ -1140,20 +1147,12 @@ presubmits:
         env:
         - name: BAZEL_REMOTE_CACHE_ENABLED
           value: "true"
-        - name: TEST_TMPDIR
-          value: /scratch/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: bazel-scratch
-          mountPath: /scratch/.cache
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: bazel-scratch
-        emtpyDir: {}
 
   - name: pull-kubernetes-bazel-test
     agent: kubernetes
@@ -3020,6 +3019,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-bazel-build-canary
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-bazel-build-canary
@@ -3053,12 +3053,9 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /scratch/.cache
-          name: bazel-scratch
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - name: bazel-scratch
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -4670,6 +4667,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-test-infra-bazel),?(\\s+|$)"
     labels:
       preset-service-account: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180220-5b25c840d-experimental
@@ -4688,8 +4686,6 @@ presubmits:
         env:
         - name: BAZEL_REMOTE_CACHE_ENABLED
           value: "true"
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -4717,6 +4713,7 @@ presubmits:
     trigger: "(?m)^/test pull-test-infra-bazel-canary,?(\\s+|$)"
     labels:
       preset-service-account: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
@@ -4735,20 +4732,13 @@ presubmits:
         env:
         - name: BAZEL_REMOTE_CACHE_ENABLED
           value: "true"
-        - name: TEST_TMPDIR
-          value: /scratch/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
         volumeMounts:
-        - name: bazel-scratch
-          mountPath: /scratch/.cache
         resources:
           requests:
             memory: "2Gi"
-      volumes:
-      - name: bazel-scratch
-        emptyDir: {}
 
   - name: pull-test-infra-gubernator
     agent: kubernetes
@@ -4808,6 +4798,7 @@ presubmits:
     run_if_changed: '^prow/config.yaml$'
     labels:
       preset-service-account: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180220-5b25c840d-experimental
@@ -4817,21 +4808,12 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
         - --service-account=/etc/service-account/service-account.json
-        env:
-        - name: TEST_TMPDIR
-          value: /scratch/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: bazel-scratch
-          mountPath: /scratch/.cache
         resources:
           requests:
             memory: "2Gi"
-      volumes:
-      - name: bazel-scratch
-        emptyDir: {}
 
   - name: pull-test-infra-verify-deps
     agent: kubernetes
@@ -4843,6 +4825,7 @@ presubmits:
     run_if_changed: '^(Gopkg\.|^vendor/).*$'
     labels:
       preset-service-account: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180220-5b25c840d-experimental
@@ -4852,21 +4835,12 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
         - --service-account=/etc/service-account/service-account.json
-        env:
-        - name: TEST_TMPDIR
-          value: /scratch/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: bazel-scratch
-          mountPath: /scratch/.cache
         resources:
           requests:
             memory: "2Gi"
-      volumes:
-      - name: bazel-scratch
-        emptyDir: {}
 
   - name: pull-test-infra-verify-gofmt
     agent: kubernetes
