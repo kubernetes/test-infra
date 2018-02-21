@@ -4945,6 +4945,15 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://k8s-tpu-operator-prow/pr-logs
         - --timeout=60
+        - --ssh=/etc/tpu-ssh/tpu-ssh
+        volumeMounts:
+        - mountPath: /etc/tpu-ssh
+          name: tpu-ssh
+      volumes:
+      - name: tpu-ssh
+        secret:
+          defaultMode: 0400
+          secretName: tpu-ssh
   - name: pull-k8s-tpu-operator-verify
     context: pull-k8s-tpu-operator-verify
     agent: kubernetes
@@ -4964,6 +4973,15 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://k8s-tpu-operator-prow/pr-logs
         - --timeout=60
+        - --ssh=/etc/tpu-ssh/tpu-ssh
+        volumeMounts:
+        - mountPath: /etc/tpu-ssh
+          name: tpu-ssh
+      volumes:
+      - name: tpu-ssh
+        secret:
+          defaultMode: 0400
+          secretName: tpu-ssh
 
 postsubmits:
   kubeflow/examples:
