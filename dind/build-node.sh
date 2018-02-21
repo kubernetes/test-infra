@@ -36,6 +36,9 @@ bazel build //build/debs:debs
 # Build the docker containers
 bazel build //build:docker-artifacts
 
+# Build the addons configs.
+bazel build //cluster/addons:addon-srcs
+
 cd -
 
 # Get debs needed for kubernetes node. Docker's build context rejects symlinks.
@@ -53,6 +56,11 @@ cp ${KUBE_ROOT}/bazel-bin/build//kube-apiserver.tar ${NODE_DIR}
 # Get version info in a file. Kubeadm version and docker tags might vary slightly.
 cat ${KUBE_ROOT}/bazel-out/stable-status.txt | grep STABLE_BUILD_SCM_REVISION | awk '{print $2}' > ${NODE_DIR}/source_version
 cat ${KUBE_ROOT}/bazel-out/stable-status.txt | grep STABLE_DOCKER_TAG | awk '{print $2}' > ${NODE_DIR}/docker_version
+
+# Get the metrics-server addon config. This is needed for HPA tests.
+mkdir -p ${NODE_DIR}/cluster/addons/metrics-server/
+cp ${KUBE_ROOT}/bazel-kubernetes/cluster/addons/metrics-server/* ${NODE_DIR}/cluster/addons/metrics-server/
+rm ${NODE_DIR}/cluster/addons/metrics-server/OWNERS
 
 # Get the startup scripts.
 cp ${TOOL_ROOT}/init-wrapper.sh ${NODE_DIR}

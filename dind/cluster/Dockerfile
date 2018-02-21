@@ -18,8 +18,6 @@ FROM gcr.io/qlee-dev/dind-test-base-amd64:0.1
 COPY init-wrapper.sh /init-wrapper.sh
 COPY start.sh /start.sh
 
-# Addon config changes infrequently, so get them next.
-
 # Get the debs
 COPY kubectl.deb /
 
@@ -32,9 +30,6 @@ COPY source_version /
 
 # kubeadm depends on kubelet depends on kubernetes-cni
 RUN dpkg -i kubectl.deb
-
-# Get the addon yamls.
-COPY cluster /
 
 # Get the dind-node image.
 COPY dind-node-bundle.tar /

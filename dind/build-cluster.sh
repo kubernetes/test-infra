@@ -35,9 +35,6 @@ bazel build //build/debs:kubectl
 bazel build //vendor/github.com/onsi/ginkgo/ginkgo:ginkgo
 bazel build //test/e2e:e2e.test
 
-# Build the addons configs.
-bazel build //cluster/addons:addon-srcs
-
 cd -
 
 # Copy artifacts into the tmpdir for Docker's context.
@@ -47,11 +44,6 @@ cp ${KUBE_ROOT}/bazel-bin/build/debs/kubectl.deb ${CLUSTER_DIR}
 # Tests are only run against one platform (linux/amd64), so no searching logic.
 cp ${KUBE_ROOT}/bazel-bin/vendor/github.com/onsi/ginkgo/ginkgo/linux_amd64_stripped/ginkgo ${CLUSTER_DIR}
 cp ${KUBE_ROOT}/bazel-bin/test/e2e/e2e.test ${CLUSTER_DIR}
-
-# Get the metrics-server addon config. This is needed for HPA tests.
-mkdir -p ${CLUSTER_DIR}/cluster/addons/metrics-server/
-cp ${KUBE_ROOT}/bazel-kubernetes/cluster/addons/metrics-server/* ${CLUSTER_DIR}/cluster/addons/metrics-server/
-rm ${CLUSTER_DIR}/cluster/addons/metrics-server/OWNERS
 
 # Get version info in a file. Kubeadm version and docker tags might vary slightly.
 cat ${KUBE_ROOT}/bazel-out/stable-status.txt | grep STABLE_BUILD_SCM_REVISION | awk '{print $2}' > ${CLUSTER_DIR}/source_version

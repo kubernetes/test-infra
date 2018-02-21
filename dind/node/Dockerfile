@@ -19,6 +19,7 @@ COPY init-wrapper.sh /init-wrapper.sh
 COPY start.sh /start.sh
 
 # Addon config changes infrequently, so get them next.
+COPY cluster /
 
 # Get the debs
 COPY kubectl.deb /
