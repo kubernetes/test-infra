@@ -349,9 +349,12 @@ plugins:
   GoogleCloudPlatform/k8s-tpu-operator:
   - approve
   - assign
+  - hold
+  - label
   - lgtm
   - size
   - trigger
+  - wip
 
 external_plugins:
   kubernetes/community:
