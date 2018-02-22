@@ -43,7 +43,7 @@ spec:
         - --tide-url=http://tide/
         - --hook-url=http://hook:8888/plugin-help
         - --redirect-http-to=prow.k8s.io
-        - --oauth-url=/user-dashboard
+        - --oauth-url=/github-login
         volumeMounts:
         - name: oauth-config
           mountPath: /etc/github
