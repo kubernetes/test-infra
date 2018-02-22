@@ -126,6 +126,11 @@ type Controller struct {
 // Plank is config for the plank controller.
 type Plank struct {
 	Controller `json:",inline"`
+	// PodPendingTimeoutString compiles into PodPendingTimeout at load time.
+	PodPendingTimeoutString string `json:"pod_pending_timeout,omitempty"`
+	// PodPendingTimeout is after how long the controller will perform a garbage
+	// collection on pending pods. Defaults to one day.
+	PodPendingTimeout time.Duration `json:"-"`
 }
 
 // JenkinsOperator is config for the jenkins-operator controller.
@@ -338,6 +343,16 @@ func parseConfig(c *Config) error {
 
 	if err := ValidateController(&c.Plank.Controller); err != nil {
 		return fmt.Errorf("validating plank config: %v", err)
+	}
+
+	if c.Plank.PodPendingTimeoutString == "" {
+		c.Plank.PodPendingTimeout = 24 * time.Hour
+	} else {
+		podPendingTimeout, err := time.ParseDuration(c.Plank.PodPendingTimeoutString)
+		if err != nil {
+			return fmt.Errorf("cannot parse duration for plank.pod_pending_timeout: %v", err)
+		}
+		c.Plank.PodPendingTimeout = podPendingTimeout
 	}
 
 	if c.JenkinsOperator != nil && len(c.JenkinsOperators) > 0 {

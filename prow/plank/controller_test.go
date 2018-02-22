@@ -42,6 +42,10 @@ type fca struct {
 	c *config.Config
 }
 
+const (
+	podPendingTimeout = time.Hour
+)
+
 func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
 	presubmits := []config.Presubmit{
 		{
@@ -80,6 +84,7 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
 					MaxConcurrency: maxConcurrency,
 					MaxGoroutines:  20,
 				},
+				PodPendingTimeout: podPendingTimeout,
 			},
 			Presubmits: presubmitMap,
 		},
@@ -738,6 +743,11 @@ func TestSyncTriggeredJobs(t *testing.T) {
 	}
 }
 
+func startTime(s time.Time) *metav1.Time {
+	start := metav1.NewTime(s)
+	return &start
+}
+
 func TestSyncPendingJob(t *testing.T) {
 	var testcases = []struct {
 		name string
@@ -968,6 +978,37 @@ func TestSyncPendingJob(t *testing.T) {
 			expectedComplete: true,
 			expectedReport:   true,
 			expectedURL:      "jose/error",
+		},
+		{
+			name: "stale pending prow job",
+			pj: kube.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "nightmare",
+				},
+				Spec: kube.ProwJobSpec{
+					RunAfterSuccess: []kube.ProwJobSpec{{}},
+				},
+				Status: kube.ProwJobStatus{
+					State:   kube.PendingState,
+					PodName: "nightmare",
+				},
+			},
+			pods: []kube.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "nightmare",
+					},
+					Status: kube.PodStatus{
+						Phase:     kube.PodPending,
+						StartTime: startTime(time.Now().Add(-podPendingTimeout)),
+					},
+				},
+			},
+			expectedState:    kube.AbortedState,
+			expectedNumPods:  1,
+			expectedComplete: true,
+			expectedReport:   true,
+			expectedURL:      "nightmare/aborted",
 		},
 	}
 	for _, tc := range testcases {

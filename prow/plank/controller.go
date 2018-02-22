@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/bwmarrin/snowflake"
 	"github.com/sirupsen/logrus"
@@ -379,6 +380,20 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 			pj.SetComplete()
 			pj.Status.State = kube.FailureState
 			pj.Status.Description = "Job failed."
+
+		case kube.PodPending:
+			maxPodPending := c.ca.Config().Plank.PodPendingTimeout
+			if time.Since(pod.Status.StartTime.Time) < maxPodPending {
+				// Pod is running. Do nothing.
+				c.incrementNumPendingJobs(pj.Spec.Job)
+				return nil
+			}
+
+			// Pod is stuck in pending state longer than maxPodPending
+			// abort the job, and talk to Github
+			pj.SetComplete()
+			pj.Status.State = kube.AbortedState
+			pj.Status.Description = "Job aborted."
 
 		default:
 			// Pod is running. Do nothing.
