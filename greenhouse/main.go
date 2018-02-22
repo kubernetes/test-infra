@@ -41,7 +41,6 @@ import (
 	"k8s.io/test-infra/greenhouse/diskutil"
 	"k8s.io/test-infra/prow/logrusutil"
 
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 )
@@ -70,54 +69,15 @@ var diskCheckInterval = flag.Duration("disk-check-interval", time.Second*30,
 var remount = flag.Bool("remount", false,
 	"attempt to remount --dir with strictatime,lazyatime to improve eviction")
 
-// prometheusMetrics are served by /prometheus on the metrics port
-type prometheusMetrics struct {
-	DiskStats  map[string]prometheus.Gauge
-	CacheStats map[string]prometheus.Counter
-}
-
-var (
-	promMetrics = prometheusMetrics{
-		DiskStats: map[string]prometheus.Gauge{
-			"free": prometheus.NewGauge(prometheus.GaugeOpts{
-				Name: "bazel_cache_disk_free",
-				Help: "Free gb on bazel cache disk",
-			}),
-			"used": prometheus.NewGauge(prometheus.GaugeOpts{
-				Name: "bazel_cache_disk_used",
-				Help: "Used gb on bazel cache disk",
-			}),
-			"total": prometheus.NewGauge(prometheus.GaugeOpts{
-				Name: "bazel_cache_disk_total",
-				Help: "Total gb on bazel cache disk",
-			}),
-		},
-		CacheStats: map[string]prometheus.Counter{
-			"hits": prometheus.NewCounter(prometheus.CounterOpts{
-				Name: "bazel_cache_hits",
-				Help: "Approximate number of cache hits since last server start",
-			}),
-			"misses": prometheus.NewCounter(prometheus.CounterOpts{
-				Name: "bazel_cache_misses",
-				Help: "Approximate number of cache misses since last server start",
-			}),
-		},
-	}
-)
+// global metrics object, see prometheus.go
+var promMetrics *prometheusMetrics
 
 func init() {
-	// register logger
 	logrus.SetFormatter(
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "greenhouse"}),
 	)
 	logrus.SetOutput(os.Stdout)
-	// register metrics
-	for _, stat := range promMetrics.DiskStats {
-		prometheus.MustRegister(stat)
-	}
-	for _, stat := range promMetrics.CacheStats {
-		prometheus.MustRegister(stat)
-	}
+	promMetrics = initMetrics()
 }
 
 func main() {
@@ -197,6 +157,7 @@ func cacheHandler(cache *diskcache.Cache) http.Handler {
 			http.Error(w, "invalid location", http.StatusBadRequest)
 			return
 		}
+		requestingAction := acOrCAS == "ac"
 
 		// actually handle request depending on method
 		switch m := r.Method; m {
@@ -204,16 +165,19 @@ func cacheHandler(cache *diskcache.Cache) http.Handler {
 		case http.MethodGet:
 			err := cache.Get(r.URL.Path, func(exists bool, contents io.ReadSeeker) error {
 				if !exists {
-					promMetrics.CacheStats["misses"].Inc()
 					return errNotFound
 				}
-				promMetrics.CacheStats["hits"].Inc()
 				http.ServeContent(w, r, "", time.Time{}, contents)
 				return nil
 			})
 			if err != nil {
 				// file not present
 				if err == errNotFound {
+					if requestingAction {
+						promMetrics.ActionCacheMisses.Inc()
+					} else {
+						promMetrics.CASMisses.Inc()
+					}
 					http.Error(w, err.Error(), http.StatusNotFound)
 					return
 				}
@@ -222,13 +186,19 @@ func cacheHandler(cache *diskcache.Cache) http.Handler {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
+			// success, log hit
+			if requestingAction {
+				promMetrics.ActionCacheHits.Inc()
+			} else {
+				promMetrics.CASHits.Inc()
+			}
 
 		// handle upload
 		case http.MethodPut:
 			// only hash CAS, not action cache
 			// the action cache is hash -> metadata
 			// the CAS is well, a CAS, which we can hash...
-			if acOrCAS != "cas" {
+			if requestingAction {
 				hash = ""
 			}
 			err := cache.Put(r.URL.Path, r.Body, hash)
@@ -256,9 +226,9 @@ func updateMetrics(interval time.Duration, diskRoot string) {
 		if err != nil {
 			logger.WithError(err).Error("Failed to get disk metrics")
 		} else {
-			promMetrics.DiskStats["free"].Set(float64(bytesFree) / 1e9)
-			promMetrics.DiskStats["used"].Set(float64(bytesUsed) / 1e9)
-			promMetrics.DiskStats["total"].Set(float64(bytesFree+bytesUsed) / 1e9)
+			promMetrics.DiskFree.Set(float64(bytesFree) / 1e9)
+			promMetrics.DiskUsed.Set(float64(bytesUsed) / 1e9)
+			promMetrics.DiskTotal.Set(float64(bytesFree+bytesUsed) / 1e9)
 		}
 	}
 }
