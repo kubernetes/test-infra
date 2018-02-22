@@ -162,6 +162,30 @@ func TestClean(t *testing.T) {
 		},
 		{
 			ObjectMeta: metav1.ObjectMeta{
+				Name: "old-pending",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+			Status: kube.PodStatus{
+				Phase:     kube.PodPending,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "old-pending-abort",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+			Status: kube.PodStatus{
+				Phase:     kube.PodPending,
+				StartTime: startTime(time.Now().Add(-maxPodAge).Add(-time.Second)),
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{
 				Name: "new-failed",
 				Labels: map[string]string{
 					kube.CreatedByProw: "true",
@@ -209,6 +233,7 @@ func TestClean(t *testing.T) {
 	deletedPods := []string{
 		"old-failed",
 		"old-succeeded",
+		"old-pending-abort",
 	}
 	setComplete := func(d time.Duration) *metav1.Time {
 		completed := metav1.NewTime(time.Now().Add(d))
@@ -256,6 +281,23 @@ func TestClean(t *testing.T) {
 			},
 			Status: kube.ProwJobStatus{
 				StartTime: metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Second)),
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "old-pending",
+			},
+			Status: kube.ProwJobStatus{
+				StartTime: metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Second)),
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "old-pending-abort",
+			},
+			Status: kube.ProwJobStatus{
+				StartTime:      metav1.NewTime(time.Now().Add(-maxProwJobAge).Add(-time.Second)),
+				CompletionTime: setComplete(-time.Second),
 			},
 		},
 		{
@@ -319,6 +361,7 @@ func TestClean(t *testing.T) {
 		"old-failed",
 		"old-succeeded",
 		"old-complete",
+		"old-pending-abort",
 		"older-periodic",
 		"oldest-periodic",
 		"old-failed-trusted",

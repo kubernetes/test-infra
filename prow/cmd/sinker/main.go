@@ -186,7 +186,9 @@ func (c *controller) clean() {
 				// deleting the pod now will result in plank creating a brand new pod
 				continue
 			}
-			if (pod.Status.Phase == kube.PodSucceeded || pod.Status.Phase == kube.PodFailed) &&
+			if (pod.Status.Phase == kube.PodSucceeded ||
+				pod.Status.Phase == kube.PodFailed ||
+				pod.Status.Phase == kube.PodPending) &&
 				time.Since(pod.Status.StartTime.Time) > maxPodAge {
 				// Delete old completed pods. Don't quit if we fail to delete one.
 				if err := client.DeletePod(pod.ObjectMeta.Name); err == nil {
