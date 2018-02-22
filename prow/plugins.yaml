@@ -300,6 +300,7 @@ plugins:
   - cat
   - cla
   - dog
+  - golint
   - heart
   - help
   - hold
@@ -309,6 +310,7 @@ plugins:
   - shrug
   - size
   - skip
+  - trigger
   - wip
   - yuks
 
