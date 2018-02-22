@@ -717,6 +717,9 @@ func prepareGcp(o *options) error {
 		os.Setenv("NODE_OS_DISTRIBUTION", nod)
 	}
 	if o.gcpProject == "" {
+		log.Print("--gcp-project is missing, trying to fetch a project from boskos.\n" +
+			"(for local runs please set --gcp-project to your dev project)")
+
 		var resType string
 		if o.gcpProjectType != "" {
 			resType = o.gcpProjectType
@@ -726,7 +729,7 @@ func prepareGcp(o *options) error {
 			resType = "gce-project"
 		}
 
-		log.Printf("provider %v, will acquire resource %v from boskos", o.provider, resType)
+		log.Printf("provider %v, will acquire project type %v from boskos", o.provider, resType)
 
 		p, err := boskos.Acquire(resType, "free", "busy")
 		if err != nil {
