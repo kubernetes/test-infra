@@ -197,7 +197,8 @@ func (c *Cache) MonitorDiskAndEvict(
 	minPercentBlocksFree, evictUntilPercentBlocksFree float64,
 ) {
 	// forever check if usage is past thresholds and evict
-	for range time.Tick(interval) {
+	ticker := time.NewTicker(interval)
+	for ; true; <-ticker.C {
 		blocksFree, _, _, err := diskutil.GetDiskUsage(c.diskRoot)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to get disk usage!")

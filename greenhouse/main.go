@@ -249,7 +249,9 @@ func cacheHandler(cache *diskcache.Cache) http.Handler {
 // helper to update disk metrics
 func updateMetrics(interval time.Duration, diskRoot string) {
 	logger := logrus.WithField("sync-loop", "updateMetrics")
-	for range time.Tick(interval) {
+	ticker := time.NewTicker(interval)
+	for ; true; <-ticker.C {
+		logger.Info("tick")
 		_, bytesFree, bytesUsed, err := diskutil.GetDiskUsage(diskRoot)
 		if err != nil {
 			logger.WithError(err).Error("Failed to get disk metrics")
