@@ -32,6 +32,8 @@ spec:
         ports:
         - name: cache
           containerPort: 8080
+        - name: metrics
+          containerPort: 9090
         args:
         - --dir=/data
         - --remount
