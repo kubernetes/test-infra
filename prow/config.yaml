@@ -4946,14 +4946,24 @@ presubmits:
         - --upload=gs://k8s-tpu-operator-prow/pr-logs
         - --timeout=60
         - --ssh=/etc/tpu-ssh/tpu-ssh
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
         volumeMounts:
         - mountPath: /etc/tpu-ssh
           name: tpu-ssh
+        - mountPath: /docker-graph
+          name: docker-graph
       volumes:
       - name: tpu-ssh
         secret:
           defaultMode: 0400
           secretName: tpu-ssh
+      - name: docker-graph
+        emptyDir: {}
   - name: pull-k8s-tpu-operator-verify
     context: pull-k8s-tpu-operator-verify
     agent: kubernetes
@@ -4974,14 +4984,24 @@ presubmits:
         - --upload=gs://k8s-tpu-operator-prow/pr-logs
         - --timeout=60
         - --ssh=/etc/tpu-ssh/tpu-ssh
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
         volumeMounts:
         - mountPath: /etc/tpu-ssh
           name: tpu-ssh
+        - mountPath: /docker-graph
+          name: docker-graph
       volumes:
       - name: tpu-ssh
         secret:
           defaultMode: 0400
           secretName: tpu-ssh
+      - name: docker-graph
+        emptyDir: {}
 
 postsubmits:
   kubeflow/examples:
