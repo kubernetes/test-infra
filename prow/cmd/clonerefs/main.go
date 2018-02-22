@@ -25,6 +25,7 @@ import (
 	"io/ioutil"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/logrusutil"
 
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
@@ -97,6 +98,10 @@ func main() {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
 
+	logrus.SetFormatter(
+		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "clonerefs"}),
+	)
+
 	jobRefs, err := pjutil.ResolveSpecFromEnv()
 	if err != nil {
 		logrus.WithError(err).Fatal("Could not determine job refs")
@@ -117,4 +122,6 @@ func main() {
 			logrus.WithError(err).Fatal("Failed to write clone records")
 		}
 	}
+
+	logrus.Info("Finished cloning refs")
 }
