@@ -41,6 +41,7 @@ approve:
   - kubernetes/dashboard
   - kubernetes/features
   - kubernetes/federation
+  - kubernetes/heapster
   - kubernetes/ingress-nginx
   - kubernetes/kops
   - kubernetes/kube-deploy
@@ -199,6 +200,8 @@ plugins:
   - approve
 
   kubernetes/heapster:
+  - approve
+  - blunderbuss
   - trigger
 
   kubernetes/kops:
