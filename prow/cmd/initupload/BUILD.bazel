@@ -14,6 +14,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/cmd/initupload",
     visibility = ["//visibility:private"],
     deps = [
+        "//prow/logrusutil:go_default_library",
         "//prow/pod-utils/clone:go_default_library",
         "//prow/pod-utils/gcs:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",

@@ -31,6 +31,8 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+
+	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pod-utils/clone"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 )
@@ -64,6 +66,10 @@ func main() {
 	if err := o.Validate(); err != nil {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
+
+	logrus.SetFormatter(
+		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "clonerefs"}),
+	)
 
 	var cloneRecords []clone.Record
 	data, err := ioutil.ReadFile(o.cloneLog)

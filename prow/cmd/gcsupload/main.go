@@ -24,6 +24,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 )
 
@@ -36,6 +37,10 @@ func main() {
 	if err := o.Validate(); err != nil {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
+
+	logrus.SetFormatter(
+		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "gcsupload"}),
+	)
 
 	if err := o.Run(map[string]gcs.UploadFunc{}); err != nil {
 		logrus.WithError(err).Fatal("Failed to upload to GCS")
