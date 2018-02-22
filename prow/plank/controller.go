@@ -383,7 +383,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 
 		case kube.PodPending:
 			maxPodPending := c.ca.Config().Plank.PodPendingTimeout
-			if time.Since(pod.Status.StartTime.Time) < maxPodPending {
+			if pod.Status.StartTime.IsZero() || time.Since(pod.Status.StartTime.Time) < maxPodPending {
 				// Pod is running. Do nothing.
 				c.incrementNumPendingJobs(pj.Spec.Job)
 				return nil
