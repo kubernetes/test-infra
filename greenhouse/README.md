@@ -27,3 +27,6 @@ We use this with [Prow](./../prow), to set it up we do the following:
    <!--TODO(bentheelder): make this easier to consume by other users?-->
    - NOTE: other uses will likely need to tweak this step to their needs
 
+
+Optional Setup:
+- tweak `metrics-service.yaml` and point prometheus at this service to collect metrics
