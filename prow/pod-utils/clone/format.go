@@ -26,7 +26,7 @@ import (
 func FormatRecord(record Record) string {
 	output := bytes.Buffer{}
 	if record.Failed {
-		fmt.Fprint(&output, "# FAILED!")
+		fmt.Fprintln(&output, "# FAILED!")
 	}
 	fmt.Fprintf(&output, "# Cloning %s/%s at %s", record.Refs.Org, record.Refs.Repo, record.Refs.BaseRef)
 	if record.Refs.BaseSHA != "" {
