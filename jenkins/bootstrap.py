@@ -782,14 +782,19 @@ def job_args(args):
     return [os.path.expandvars(a) for a in args]
 
 
-def job_script(job, extra_job_args):
+def job_script(job, scenario, extra_job_args):
     """Return path to script for job."""
     with open(test_infra('jobs/config.json')) as fp:
         config = json.loads(fp.read())
     if job.startswith('pull-security-kubernetes-'):
         job = job.replace('pull-security-kubernetes-', 'pull-kubernetes-', 1)
-    job_config = config[job]
-    cmd = test_infra('scenarios/%s.py' % job_config['scenario'])
+    if job not in config:
+        if not scenario:
+            raise ValueError('cannot find scenario for job', job)
+        cmd = test_infra('scenarios/%s.py' % scenario)
+    else:
+        job_config = config[job]
+        cmd = test_infra('scenarios/%s.py' % job_config['scenario'])
     return [cmd] + job_args(job_config.get('args', []) + extra_job_args)
 
 
@@ -971,7 +976,7 @@ def bootstrap(args):
             start(gsutil, paths, started, node(), version, repos)
         success = False
         try:
-            call(job_script(job, args.extra_job_args))
+            call(job_script(job, args.scenario, args.extra_job_args))
             logging.info('PASS: %s', job)
             success = True
         except subprocess.CalledProcessError:
@@ -1038,6 +1043,11 @@ def parse_args(arguments=None):
         '--clean',
         action='store_true',
         help='Clean the git repo before running tests.')
+    # TODO(krzyzacy): later we should merge prow+config.json
+    # and utilize this flag
+    parser.add_argument(
+        '--scenario',
+        help='Scenario to use, if not specified in config.json')
     # split out args after `--` as job arguments
     extra_job_args = []
     if '--' in arguments:
