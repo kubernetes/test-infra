@@ -251,6 +251,10 @@ func checkBazelPortContainer(c v1.Container, cache bool) error {
 	return nil
 }
 
+func volumeIsCacheSSD(v *kube.Volume) bool {
+	return v.HostPath != nil && strings.HasPrefix(v.HostPath.Path, "/mnt/disks/ssd0")
+}
+
 func checkBazelPortPresubmit(presubmits []Presubmit) error {
 	for _, presubmit := range presubmits {
 		if presubmit.Spec == nil {
@@ -258,8 +262,9 @@ func checkBazelPortPresubmit(presubmits []Presubmit) error {
 		}
 		hasCache := false
 		for _, volume := range presubmit.Spec.Volumes {
-			if volume.Name == "cache-ssd" || volume.Name == "docker-graph" {
+			if volumeIsCacheSSD(&volume) {
 				hasCache = true
+				break
 			}
 		}
 
@@ -281,9 +286,9 @@ func checkBazelPortPostsubmit(postsubmits []Postsubmit) error {
 	for _, postsubmit := range postsubmits {
 		hasCache := false
 		for _, volume := range postsubmit.Spec.Volumes {
-			// TODO(bentheelder): rewrite these tests and the entire caching layout...
-			if volume.Name == "cache-ssd" || volume.Name == "docker-graph" {
+			if volumeIsCacheSSD(&volume) {
 				hasCache = true
+				break
 			}
 		}
 
@@ -305,8 +310,9 @@ func checkBazelPortPeriodic(periodics []Periodic) error {
 	for _, periodic := range periodics {
 		hasCache := false
 		for _, volume := range periodic.Spec.Volumes {
-			if volume.Name == "cache-ssd" || volume.Name == "docker-graph" {
+			if volumeIsCacheSSD(&volume) {
 				hasCache = true
+				break
 			}
 		}
 
