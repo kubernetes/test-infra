@@ -16,16 +16,14 @@
 
 import datetime
 import unittest
+from webapp2_extras import securecookie
 
 # TODO(fejta): use non-relative imports
 # https://google.github.io/styleguide/pyguide.html?showone=Packages#Packages
 import gcs_async_test
-from github import models
 import main_test
 import view_pr
-
-from webapp2_extras import securecookie
-
+from github import models
 
 app = main_test.app
 write = gcs_async_test.write
@@ -60,10 +58,14 @@ class PathTest(unittest.TestCase):
 class PRTest(main_test.TestBase):
     BUILDS = {
         'build': [('12', {'version': 'bb', 'timestamp': 1467147654}, None),
-                  ('11', {'version': 'bb', 'timestamp': 1467146654}, {'result': 'PASSED'}),
-                  ('10', {'version': 'aa', 'timestamp': 1467136654}, {'result': 'FAILED'})],
-        'e2e': [('47', {'version': 'bb', 'timestamp': '1467147654'}, {'result': '[UNSET]'}),
-                ('46', {'version': 'aa', 'timestamp': '1467136700'}, {'result': '[UNSET]'})]
+                  ('11', {'version': 'bb', 'timestamp': 1467146654},
+                   {'result': 'PASSED', 'passed': True}),
+                  ('10', {'version': 'aa', 'timestamp': 1467136654},
+                   {'result': 'FAILED', 'passed': False})],
+        'e2e': [('47', {'version': 'bb', 'timestamp': '1467147654'},
+                 {'result': '[UNSET]', 'passed': False}),
+                ('46', {'version': 'aa', 'timestamp': '1467136700'},
+                 {'result': '[UNSET]', 'passed': False})]
     }
 
     def setUp(self):

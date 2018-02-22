@@ -335,7 +335,7 @@ class BuildTest(main_test.TestBase):
 
     def do_view_build_list_test(self, job_dir='/buck/some-job/', indirect=False):
         sta_result = {'timestamp': 12345}
-        fin_result = {'passed': True}
+        fin_result = {'passed': True, 'result': 'SUCCESS'}
         for n in xrange(120):
             write('%s%d/started.json' % (job_dir, n), sta_result)
             write('%s%d/finished.json' % (job_dir, n), fin_result)
