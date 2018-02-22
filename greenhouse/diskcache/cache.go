@@ -190,26 +190,26 @@ func (c *Cache) Delete(key string) error {
 }
 
 // MonitorDiskAndEvict loops monitoring the disk, evicting cache entries
-// when the disk passes either minPercentBlocksFree or minPercentFilesFree
+// when the disk passes either minPercentBlocksFree until the disk is above
+// evictUntilPercentBlocksFree
 func (c *Cache) MonitorDiskAndEvict(
 	interval time.Duration,
-	minPercentBlocksFree, minPercentFilesFree float64,
-	evictUntilPercentBlocksFree, evictUntilPercentFilesFree float64,
+	minPercentBlocksFree, evictUntilPercentBlocksFree float64,
 ) {
 	// forever check if usage is past thresholds and evict
 	for range time.Tick(interval) {
-		blocksFree, filesFree, err := diskutil.GetDiskUsage(c.diskRoot)
+		blocksFree, _, _, err := diskutil.GetDiskUsage(c.diskRoot)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to get disk usage!")
 			continue
 		}
 		logger := logrus.WithFields(logrus.Fields{
+			"sync-loop":   "MonitorDiskAndEvict",
 			"blocks-free": blocksFree,
-			"files-free":  filesFree,
 		})
-		logger.Info("monitorDiskAndEvict tick")
-		// if we are past either threshold, start evicting
-		if blocksFree < minPercentBlocksFree || filesFree < minPercentFilesFree {
+		logger.Info("tick")
+		// if we are past the threshold, start evicting
+		if blocksFree < minPercentBlocksFree {
 			logger.Warn("Eviction triggered")
 			// get all cache entries and sort by lastaccess
 			// so we can pop entries until we have evicted enough
@@ -218,7 +218,7 @@ func (c *Cache) MonitorDiskAndEvict(
 				return files[i].LastAccess.Before(files[j].LastAccess)
 			})
 			// evict until we pass the safe threshold so we don't thrash at the eviction trigger
-			for blocksFree < evictUntilPercentBlocksFree || filesFree < evictUntilPercentFilesFree {
+			for blocksFree < evictUntilPercentBlocksFree {
 				if len(files) < 1 {
 					logger.Fatal("Failed to find entries to evict!")
 				}
@@ -230,10 +230,10 @@ func (c *Cache) MonitorDiskAndEvict(
 					logger.WithError(err).Errorf("Error deleting entry at path: %v", entry.Path)
 				}
 				// get new disk usage
-				blocksFree, filesFree, err = diskutil.GetDiskUsage(c.diskRoot)
+				blocksFree, _, _, err = diskutil.GetDiskUsage(c.diskRoot)
 				logger = logrus.WithFields(logrus.Fields{
+					"sync-loop":   "MonitorDiskAndEvict",
 					"blocks-free": blocksFree,
-					"files-free":  filesFree,
 				})
 				if err != nil {
 					logrus.WithError(err).Error("Failed to get disk usage!")

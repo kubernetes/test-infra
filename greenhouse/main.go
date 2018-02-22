@@ -41,22 +41,23 @@ import (
 	"k8s.io/test-infra/greenhouse/diskutil"
 	"k8s.io/test-infra/prow/logrusutil"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 )
 
 var dir = flag.String("dir", "", "location to store cache entries on disk")
 var host = flag.String("host", "", "host address to listen on")
-var port = flag.Int("port", 8080, "port to listen on")
+var cachePort = flag.Int("cache-port", 8080, "port to listen on for cache requests")
+var metricsPort = flag.Int("metrics-port", 9090, "port to listen on for prometheus metrics scraping")
+var metricsUpdateInterval = flag.Duration("metrics-update-interval", time.Minute,
+	"interval between updating disk metrics")
 
 // eviction knobs
 var minPercentBlocksFree = flag.Float64("min-percent-blocks-free", 10,
 	"minimum percent of blocks free on --dir's disk before evicting entries")
 var evictUntilPercentBlocksFree = flag.Float64("evict-until-percent-blocks-free", 20,
 	"continue evicting from the cache until at least this percent of blocks are free")
-var minPercentFilesFree = flag.Float64("min-percent-files-free", 10,
-	"minimum percent of files free on --dir's disk before evicting entries")
-var evictUntilPercentFilesFree = flag.Float64("evict-until-percent-files-free", 20,
-	"continue evicting from the cache until at least this percent of files are free")
 var diskCheckInterval = flag.Duration("disk-check-interval", time.Second*30,
 	"interval between checking disk usage (and potentially evicting entries)")
 
@@ -69,15 +70,57 @@ var diskCheckInterval = flag.Duration("disk-check-interval", time.Second*30,
 var remount = flag.Bool("remount", false,
 	"attempt to remount --dir with strictatime,lazyatime to improve eviction")
 
+// prometheusMetrics are served by /prometheus on the metrics port
+type prometheusMetrics struct {
+	DiskStats  map[string]prometheus.Gauge
+	CacheStats map[string]prometheus.Counter
+}
+
+var (
+	promMetrics = prometheusMetrics{
+		DiskStats: map[string]prometheus.Gauge{
+			"free": prometheus.NewGauge(prometheus.GaugeOpts{
+				Name: "bazel_cache_disk_free",
+				Help: "Free bytes on bazel cache disk",
+			}),
+			"used": prometheus.NewGauge(prometheus.GaugeOpts{
+				Name: "bazel_cache_disk_used",
+				Help: "Used bytes on bazel cache disk",
+			}),
+			"total": prometheus.NewGauge(prometheus.GaugeOpts{
+				Name: "bazel_cache_disk_total",
+				Help: "Total bytes on bazel cache disk",
+			}),
+		},
+		CacheStats: map[string]prometheus.Counter{
+			"hits": prometheus.NewCounter(prometheus.CounterOpts{
+				Name: "bazel_cache_hits",
+				Help: "Approximate number of cache hits since last server start",
+			}),
+			"misses": prometheus.NewCounter(prometheus.CounterOpts{
+				Name: "bazel_cache_misses",
+				Help: "Approximate number of cache misses since last server start",
+			}),
+		},
+	}
+)
+
 func init() {
+	// register logger
 	logrus.SetFormatter(
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "greenhouse"}),
 	)
 	logrus.SetOutput(os.Stdout)
+	// register metrics
+	for _, stat := range promMetrics.DiskStats {
+		prometheus.MustRegister(stat)
+	}
+	for _, stat := range promMetrics.CacheStats {
+		prometheus.MustRegister(stat)
+	}
 }
 
 func main() {
-	// TODO(bentheelder): add metrics
 	flag.Parse()
 	if *dir == "" {
 		logrus.Fatal("--dir must be set!")
@@ -101,16 +144,32 @@ func main() {
 	}
 
 	cache := diskcache.NewCache(*dir)
-	http.Handle("/", cacheHandler(cache))
 	go cache.MonitorDiskAndEvict(
 		*diskCheckInterval,
-		*minPercentBlocksFree, *minPercentFilesFree,
-		*evictUntilPercentBlocksFree, *evictUntilPercentFilesFree,
+		*minPercentBlocksFree, *evictUntilPercentBlocksFree,
 	)
 
-	addr := fmt.Sprintf("%s:%d", *host, *port)
-	logrus.Infof("Listening on: %s", addr)
-	logrus.WithError(http.ListenAndServe(addr, nil)).Fatal("ListenAndServe returned.")
+	go updateMetrics(*metricsUpdateInterval, cache.DiskRoot())
+
+	// listen for prometheus scraping
+	metricsMux := http.NewServeMux()
+	metricsMux.Handle("/prometheus", promhttp.Handler())
+	metricsAddr := fmt.Sprintf("%s:%d", *host, *metricsPort)
+	go func() {
+		logrus.Infof("Metrics Listening on: %s", metricsAddr)
+		logrus.WithField("mux", "metrics").WithError(
+			http.ListenAndServe(metricsAddr, metricsMux),
+		).Fatal("ListenAndServe returned.")
+	}()
+
+	// listen for cache requests
+	cacheMux := http.NewServeMux()
+	cacheMux.Handle("/", cacheHandler(cache))
+	cacheAddr := fmt.Sprintf("%s:%d", *host, *cachePort)
+	logrus.Infof("Cache Listening on: %s", cacheAddr)
+	logrus.WithField("mux", "cache").WithError(
+		http.ListenAndServe(cacheAddr, cacheMux),
+	).Fatal("ListenAndServe returned.")
 }
 
 // file not found error, used below
@@ -145,8 +204,10 @@ func cacheHandler(cache *diskcache.Cache) http.Handler {
 		case http.MethodGet:
 			err := cache.Get(r.URL.Path, func(exists bool, contents io.ReadSeeker) error {
 				if !exists {
+					promMetrics.CacheStats["misses"].Inc()
 					return errNotFound
 				}
+				promMetrics.CacheStats["hits"].Inc()
 				http.ServeContent(w, r, "", time.Time{}, contents)
 				return nil
 			})
@@ -183,4 +244,19 @@ func cacheHandler(cache *diskcache.Cache) http.Handler {
 			http.Error(w, "unsupported method", http.StatusMethodNotAllowed)
 		}
 	})
+}
+
+// helper to update disk metrics
+func updateMetrics(interval time.Duration, diskRoot string) {
+	logger := logrus.WithField("sync-loop", "updateMetrics")
+	for range time.Tick(interval) {
+		_, bytesFree, bytesUsed, err := diskutil.GetDiskUsage(diskRoot)
+		if err != nil {
+			logger.WithError(err).Error("Failed to get disk metrics")
+		} else {
+			promMetrics.DiskStats["free"].Set(float64(bytesFree))
+			promMetrics.DiskStats["used"].Set(float64(bytesUsed))
+			promMetrics.DiskStats["total"].Set(float64(bytesFree + bytesUsed))
+		}
+	}
 }
