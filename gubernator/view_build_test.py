@@ -225,6 +225,7 @@ class BuildTest(main_test.TestBase):
         self.assertIn('Show 1 Passed Tests', response)
 
     def test_build_optional_log(self):
+        """Test that passing builds do not show logs by default but display them when requested"""
         write(self.BUILD_DIR + 'build-log.txt', 'error or timeout or something')
         response = self.get_build_page()
         self.assertIn('<a href="?log#log">', response)
