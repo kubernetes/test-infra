@@ -568,7 +568,7 @@ function stateCell(state) {
             break;
         case "aborted":
             displayState = "Aborted";
-            displayIcon = "clear";
+            displayIcon = "remove_circle";
             break;
         case "error":
             displayState = "Error";
