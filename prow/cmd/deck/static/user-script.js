@@ -217,7 +217,7 @@ function createJobStatus(builds) {
             statusText = "Tests are running";
             stateIcon = "watch_later";
     }
-    const arrowIcon = createIcon("keyboard_arrow_down");
+    const arrowIcon = createIcon("expand_more");
     arrowIcon.classList.add("arrow-icon");
     if (state === "unknown") {
         arrowIcon.classList.add("hidden");
@@ -244,8 +244,8 @@ function createJobStatus(builds) {
             failedJobsList.classList.add("hidden");
         }
         jobList.classList.toggle("hidden");
-        arrowIcon.textContent = arrowIcon.textContent === "keyboard_arrow_down"
-            ? "keyboard_arrow_up" : "keyboard_arrow_down";
+        arrowIcon.textContent = arrowIcon.textContent === "expand_more"
+            ? "expand_less" : "expand_more";
     });
 
     status.appendChild(arrowIcon);
@@ -398,7 +398,7 @@ function createMergeStatus(prLabels, queries) {
         p.textContent = "This repo may not be configured to use Tide.";
         status.appendChild(createStatusHelp("Tide query not found", [p]));
     }
-    const arrowIcon= createIcon("keyboard_arrow_up");
+    const arrowIcon= createIcon("expand_less");
     arrowIcon.classList.add("arrow-icon");
 
     status.classList.add("status");
@@ -407,7 +407,7 @@ function createMergeStatus(prLabels, queries) {
     const queriesTable = createQueriesTable(prLabels, queries);
     if (mergeAbility !== 0) {
         queriesTable.classList.add("hidden");
-        arrowIcon.textContent = "keyboard_arrow_down";
+        arrowIcon.textContent = "expand_more";
     }
     status.addEventListener("click", () => {
         queriesTable.classList.toggle("hidden");
@@ -418,8 +418,8 @@ function createMergeStatus(prLabels, queries) {
                 offLabel.classList.add("hidden");
             });
         }
-        arrowIcon.textContent = arrowIcon.textContent === "keyboard_arrow_down"
-            ? "keyboard_arrow_up" : "keyboard_arrow_down";
+        arrowIcon.textContent = arrowIcon.textContent === "expand_more"
+            ? "expand_less" : "expand_more";
     });
 
     statusContainer.appendChild(status);
