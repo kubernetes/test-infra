@@ -81,15 +81,15 @@ var (
 		DiskStats: map[string]prometheus.Gauge{
 			"free": prometheus.NewGauge(prometheus.GaugeOpts{
 				Name: "bazel_cache_disk_free",
-				Help: "Free bytes on bazel cache disk",
+				Help: "Free gb on bazel cache disk",
 			}),
 			"used": prometheus.NewGauge(prometheus.GaugeOpts{
 				Name: "bazel_cache_disk_used",
-				Help: "Used bytes on bazel cache disk",
+				Help: "Used gb on bazel cache disk",
 			}),
 			"total": prometheus.NewGauge(prometheus.GaugeOpts{
 				Name: "bazel_cache_disk_total",
-				Help: "Total bytes on bazel cache disk",
+				Help: "Total gb on bazel cache disk",
 			}),
 		},
 		CacheStats: map[string]prometheus.Counter{
@@ -256,9 +256,9 @@ func updateMetrics(interval time.Duration, diskRoot string) {
 		if err != nil {
 			logger.WithError(err).Error("Failed to get disk metrics")
 		} else {
-			promMetrics.DiskStats["free"].Set(float64(bytesFree))
-			promMetrics.DiskStats["used"].Set(float64(bytesUsed))
-			promMetrics.DiskStats["total"].Set(float64(bytesFree + bytesUsed))
+			promMetrics.DiskStats["free"].Set(float64(bytesFree) / 1e9)
+			promMetrics.DiskStats["used"].Set(float64(bytesUsed) / 1e9)
+			promMetrics.DiskStats["total"].Set(float64(bytesFree+bytesUsed) / 1e9)
 		}
 	}
 }
