@@ -90,6 +90,14 @@ tide:
     - do-not-merge/hold
     - do-not-merge/work-in-progress
     - needs-ok-to-test
+  - repos:
+    - GoogleCloudPlatform/k8s-tpu-operator
+    labels:
+    - lgtm
+    - approved
+    missingLabels:
+    - do-not-merge/hold
+    - do-not-merge/work-in-progress
   merge_method:
     kubernetes/charts: squash
     kubernetes/website: squash
