@@ -100,11 +100,13 @@ func main() {
 
 	if failed {
 		finished := struct {
-			Timestamp int64 `json:"timestamp"`
-			Passed    bool  `json:"passed"`
+			Timestamp int64  `json:"timestamp"`
+			Passed    bool   `json:"passed"`
+			Result    string `json:"result"`
 		}{
 			Timestamp: time.Now().Unix(),
 			Passed:    false,
+			Result:    "FAILURE",
 		}
 		finishedData, err := json.Marshal(&finished)
 		if err != nil {
