@@ -47,9 +47,7 @@ go_test(
         "//prow/kube:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/tide:go_default_library",
-        "//prow/userdashboard:go_default_library",
         "//vendor/github.com/ghodss/yaml:go_default_library",
-        "//vendor/github.com/shurcooL/githubql:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/equality:go_default_library",
     ],
 )
