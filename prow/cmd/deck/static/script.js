@@ -554,9 +554,13 @@ function stateCell(state) {
     let displayState = "";
     let displayIcon = "";
     switch (state) {
+        case "triggered":
+            displayState = "Triggered";
+            displayIcon = "schedule";
+            break
         case "pending":
             displayState = "Pending";
-            displayIcon = "access_time";
+            displayIcon = "watch_later";
             break;
         case "success":
             displayState = "Succeded";
