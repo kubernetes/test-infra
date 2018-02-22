@@ -186,7 +186,7 @@ func (c *controller) clean() {
 				// deleting the pod now will result in plank creating a brand new pod
 				continue
 			}
-			if time.Since(pod.Status.StartTime.Time) > maxPodAge {
+			if !pod.Status.StartTime.IsZero() && time.Since(pod.Status.StartTime.Time) > maxPodAge {
 				// Delete old completed pods. Don't quit if we fail to delete one.
 				if err := client.DeletePod(pod.ObjectMeta.Name); err == nil {
 					c.logger.WithField("pod", pod.ObjectMeta.Name).Info("Deleted old completed pod.")
