@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/shurcooL/githubql"
@@ -155,7 +156,13 @@ func (da *DashboardAgent) HandleUserDashboard(queryHandler PullRequestQueryHandl
 			da.log.WithError(err).Error("Error with marshalling user data.")
 		}
 
-		w.Write(marshaledData)
+		if v := r.URL.Query().Get("var"); v != "" {
+			fmt.Fprintf(w, "var %s = ", v)
+			w.Write(marshaledData)
+			io.WriteString(w, ";")
+		} else {
+			w.Write(marshaledData)
+		}
 	}
 }
 

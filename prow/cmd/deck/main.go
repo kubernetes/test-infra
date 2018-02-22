@@ -201,8 +201,6 @@ func prodOnlyMain(o options, mux *http.ServeMux) {
 			logrus.WithError(err).Fatal("Could not read cookie secret file.")
 		}
 
-		mux.Handle("/user-data.js", handleUserData(o.oauthUrl))
-
 		var githubOAuthConfig config.GithubOAuthConfig
 		if err := yaml.Unmarshal(githubOAuthConfigRaw, &githubOAuthConfig); err != nil {
 			logrus.WithError(err).Fatal("Error unmarshalling github oauth config")
@@ -231,11 +229,12 @@ func prodOnlyMain(o options, mux *http.ServeMux) {
 		}
 
 		userDashboardAgent := userdashboard.NewDashboardAgent(&githubOAuthConfig, logrus.WithField("client", "user-dashboard"))
-		mux.Handle("/user-dashboard", userDashboardAgent.HandleUserDashboard(userDashboardAgent))
+		mux.Handle("/user-data.js", handleNotCached(
+			userDashboardAgent.HandleUserDashboard(userDashboardAgent)))
 		// Handles login request.
-		mux.Handle("/user-dashboard/login", goa.HandleLogin(oauthClient))
+		mux.Handle("/github-login", goa.HandleLogin(oauthClient))
 		// Handles redirect from Github OAuth server.
-		mux.Handle("/user-dashboard/redirect", goa.HandleRedirect(oauthClient))
+		mux.Handle("/github-login/redirect", goa.HandleRedirect(oauthClient))
 	}
 
 	// optionally inject http->https redirect handler when behind loadbalancer
@@ -316,6 +315,13 @@ func setHeadersNoCaching(w http.ResponseWriter) {
 	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 	w.Header().Set("Pragma", "no-cache")
 	w.Header().Set("Expires", "0")
+}
+
+func handleNotCached(next http.Handler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		setHeadersNoCaching(w)
+		next.ServeHTTP(w, r)
+	}
 }
 
 func handleProwJobs(ja *JobAgent) http.HandlerFunc {
@@ -412,27 +418,6 @@ func handlePluginHelp(ha *helpAgent) http.HandlerFunc {
 			fmt.Fprintf(w, "var %s = %s;", v, string(b))
 		} else {
 			fmt.Fprint(w, string(b))
-		}
-	}
-}
-
-func handleUserData(path string) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		setHeadersNoCaching(w)
-		userData, err := getUserDashboardData(path)
-		if err != nil {
-			logrus.WithError(err).Error("Getting data from deck")
-			userData = userdashboard.UserData{}
-		}
-		marshalData, err := json.Marshal(userData)
-		if err != nil {
-			logrus.WithError(err).Error("Marshaling user data")
-			marshalData = []byte("[]")
-		}
-		if v := r.URL.Query().Get("var"); v != "" {
-			fmt.Fprintf(w, "var %s = %s;", v, string(marshalData))
-		} else {
-			fmt.Fprint(w, string(marshalData))
 		}
 	}
 }
@@ -612,21 +597,4 @@ func isValidatedGitOAuthConfig(githubOAuthConfig *config.GithubOAuthConfig) bool
 	return githubOAuthConfig.ClientID != "" && githubOAuthConfig.ClientSecret != "" &&
 		githubOAuthConfig.RedirectURL != "" &&
 		githubOAuthConfig.FinalRedirectURL != ""
-}
-
-func getUserDashboardData(path string) (userdashboard.UserData, error) {
-	resp, err := http.Get(path)
-	if err != nil {
-		return userdashboard.UserData{}, fmt.Errorf("error GETing user dashboard data: %v", err)
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return userdashboard.UserData{}, fmt.Errorf("response has status code %d", resp.StatusCode)
-	}
-	var data userdashboard.UserData
-	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		return userdashboard.UserData{}, fmt.Errorf("error decoding json user dashboard data: %v", err)
-	}
-
-	return data, nil
 }
