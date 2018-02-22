@@ -1,16 +1,19 @@
 # Greenhouse
 
-Greenhouse is our bazel [bazel remote caching](https://docs.bazel.build/versions/master/remote-caching.html) setup.
+Greenhouse is our [bazel remote caching](https://docs.bazel.build/versions/master/remote-caching.html) setup.
 We use this to provide faster build & test presubmits with a Globally shared cache (per repo).
+
+We have a dashboard with metrics at: [velodrome.k8s.io/dashboard/db/cache-monitoring](http://velodrome.k8s.io/dashboard/db/cache-monitoring?orgId=1)
 
 Most Bazel users should probably visit [the official docs](https://docs.bazel.build/versions/master/remote-caching.html) and select one of the options outlined there, with Prow/Kubernetes we are using a custom setup to explore:
 
 - better support for multiple repos / cache invalidation by changing the cache URL suffix
   (see also: `images/bootstrap/create_bazel_cache_rcs.sh`)
-- customized cache eviction logic
-- integration with our logging and metrics stacks [WIP]
+- customized cache eviction / management
+- integration with our logging and metrics stacks
 
-# Setup (on a Kubernetes Cluster)
+
+## Setup (on a Kubernetes Cluster)
 We use this with [Prow](./../prow), to set it up we do the following:
 
  - Install [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) and [bazel](https://bazel.build/) and Point `KUBECONFIG` at your cluster.
@@ -28,5 +31,5 @@ We use this with [Prow](./../prow), to set it up we do the following:
    - NOTE: other uses will likely need to tweak this step to their needs
 
 
-Optional Setup:
+## Optional Setup:
 - tweak `metrics-service.yaml` and point prometheus at this service to collect metrics
