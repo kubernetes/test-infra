@@ -23,10 +23,12 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/kube"
 )
 
 func Run(refs kube.Refs, dir, gitUserName, gitUserEmail string) Record {
+	logrus.WithFields(logrus.Fields{"refs": refs}).Infof("Cloning refs")
 	repositoryURL := fmt.Sprintf("https://github.com/%s/%s.git", refs.Org, refs.Repo)
 	cloneDir := fmt.Sprintf("%s/src/github.com/%s/%s", dir, refs.Org, refs.Repo)
 	record := Record{Refs: refs}
@@ -67,6 +69,7 @@ func Run(refs kube.Refs, dir, gitUserName, gitUserEmail string) Record {
 
 	for _, command := range commands {
 		formattedCommand, output, err := command()
+		logrus.WithFields(logrus.Fields{"command": formattedCommand, "output": output, "error": err}).Infof("Ran clone command")
 		message := ""
 		if err != nil {
 			message = err.Error()

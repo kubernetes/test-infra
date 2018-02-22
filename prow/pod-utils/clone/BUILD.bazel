@@ -10,7 +10,10 @@ go_library(
     ],
     importpath = "k8s.io/test-infra/prow/pod-utils/clone",
     visibility = ["//visibility:public"],
-    deps = ["//prow/kube:go_default_library"],
+    deps = [
+        "//prow/kube:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+    ],
 )
 
 filegroup(
