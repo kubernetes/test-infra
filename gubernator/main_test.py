@@ -51,7 +51,7 @@ def init_build(build_dir, started=True, finished=True,
                finished_has_version=False):
     """Create faked files for a build."""
     start_json = {'timestamp': 1406535800}
-    finish_json = {'result': 'SUCCESS', 'timestamp': 1406536800}
+    finish_json = {'passed': True, 'timestamp': 1406536800}
     (finish_json if finished_has_version else start_json)['version'] = 'v1+56'
     if started:
         write(build_dir + 'started.json', start_json)
