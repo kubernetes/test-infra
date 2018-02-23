@@ -25,7 +25,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 	"time"
 
@@ -187,61 +186,4 @@ func (c *Cache) GetEntries() []EntryInfo {
 // Delete deletes the file at key
 func (c *Cache) Delete(key string) error {
 	return os.Remove(c.KeyToPath(key))
-}
-
-// MonitorDiskAndEvict loops monitoring the disk, evicting cache entries
-// when the disk passes either minPercentBlocksFree until the disk is above
-// evictUntilPercentBlocksFree
-func (c *Cache) MonitorDiskAndEvict(
-	interval time.Duration,
-	minPercentBlocksFree, evictUntilPercentBlocksFree float64,
-) {
-	// forever check if usage is past thresholds and evict
-	ticker := time.NewTicker(interval)
-	for ; true; <-ticker.C {
-		blocksFree, _, _, err := diskutil.GetDiskUsage(c.diskRoot)
-		if err != nil {
-			logrus.WithError(err).Error("Failed to get disk usage!")
-			continue
-		}
-		logger := logrus.WithFields(logrus.Fields{
-			"sync-loop":   "MonitorDiskAndEvict",
-			"blocks-free": blocksFree,
-		})
-		logger.Info("tick")
-		// if we are past the threshold, start evicting
-		if blocksFree < minPercentBlocksFree {
-			logger.Warn("Eviction triggered")
-			// get all cache entries and sort by lastaccess
-			// so we can pop entries until we have evicted enough
-			files := c.GetEntries()
-			sort.Slice(files, func(i, j int) bool {
-				return files[i].LastAccess.Before(files[j].LastAccess)
-			})
-			// evict until we pass the safe threshold so we don't thrash at the eviction trigger
-			for blocksFree < evictUntilPercentBlocksFree {
-				if len(files) < 1 {
-					logger.Fatal("Failed to find entries to evict!")
-				}
-				// pop entry and delete
-				var entry EntryInfo
-				entry, files = files[0], files[1:]
-				err = c.Delete(c.PathToKey(entry.Path))
-				if err != nil {
-					logger.WithError(err).Errorf("Error deleting entry at path: %v", entry.Path)
-				}
-				// get new disk usage
-				blocksFree, _, _, err = diskutil.GetDiskUsage(c.diskRoot)
-				logger = logrus.WithFields(logrus.Fields{
-					"sync-loop":   "MonitorDiskAndEvict",
-					"blocks-free": blocksFree,
-				})
-				if err != nil {
-					logrus.WithError(err).Error("Failed to get disk usage!")
-					continue
-				}
-			}
-			logger.Info("Done evicting")
-		}
-	}
 }

@@ -25,6 +25,7 @@ type prometheusMetrics struct {
 	DiskFree          prometheus.Gauge
 	DiskUsed          prometheus.Gauge
 	DiskTotal         prometheus.Gauge
+	FilesEvicted      prometheus.Counter
 	ActionCacheHits   prometheus.Counter
 	CASHits           prometheus.Counter
 	ActionCacheMisses prometheus.Counter
@@ -44,6 +45,10 @@ func initMetrics() *prometheusMetrics {
 		DiskTotal: prometheus.NewGauge(prometheus.GaugeOpts{
 			Name: "bazel_cache_disk_total",
 			Help: "Total gb on bazel cache disk",
+		}),
+		FilesEvicted: prometheus.NewCounter(prometheus.CounterOpts{
+			Name: "bazel_cache_evicted_files",
+			Help: "number of files evicted since last server start",
 		}),
 		ActionCacheHits: prometheus.NewCounter(prometheus.CounterOpts{
 			Name: "bazel_cache_cas_hits",
@@ -65,6 +70,7 @@ func initMetrics() *prometheusMetrics {
 	prometheus.MustRegister(metrics.DiskFree)
 	prometheus.MustRegister(metrics.DiskUsed)
 	prometheus.MustRegister(metrics.DiskTotal)
+	prometheus.MustRegister(metrics.FilesEvicted)
 	prometheus.MustRegister(metrics.ActionCacheHits)
 	prometheus.MustRegister(metrics.CASHits)
 	prometheus.MustRegister(metrics.ActionCacheMisses)
