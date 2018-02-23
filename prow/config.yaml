@@ -49,6 +49,7 @@ tide:
     - kubernetes/dashboard
     - kubernetes/features
     - kubernetes/federation
+    - kubernetes/gengo
     - kubernetes/heapster
     - kubernetes/ingress-nginx
     - kubernetes/kops
