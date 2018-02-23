@@ -53,6 +53,7 @@ approve:
   - kubernetes/sig-release
   - kubernetes/steering
   - kubernetes/test-infra
+  - GoogleCloudPlatform/k8s-tpu-operator
   implicit_self_approve: true
 - repos:
   - kubernetes-sigs
@@ -349,9 +350,11 @@ plugins:
   GoogleCloudPlatform/k8s-tpu-operator:
   - approve
   - assign
+  - blunderbuss
   - hold
   - label
   - lgtm
+  - lifecycle
   - size
   - trigger
   - wip
