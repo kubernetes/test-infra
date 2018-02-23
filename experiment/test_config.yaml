@@ -1000,7 +1000,7 @@ testSuites:
     - --up=false
   stackdriver:
     args:
-    - --test_args=--ginkgo.focus=\[Feature:StackdriverMonitoring\]|\[Feature:StackdriverCustomMetrics\] --minStartupPods=8
+    - --test_args=--ginkgo.focus=\[Feature:StackdriverMonitoring\]|\[Feature:StackdriverCustomMetrics\]|\[Feature:StackdriverMetadataAgent\] --minStartupPods=8
     - --timeout=50m
   updown:
     args:
