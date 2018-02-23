@@ -566,7 +566,7 @@ function loadGithubLogin() {
     button.style.width = "160px";
     button.addEventListener("click", () => {
         const url = window.location;
-        window.location.href = url.origin + "/user-dashboard/login";
+        window.location.href = url.origin + "/github-login";
     });
     const intro = document.createElement("H3");
     intro.textContent = "User Dashboard needs you to login and grant it OAuth scopes";
