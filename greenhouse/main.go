@@ -104,8 +104,8 @@ func main() {
 	}
 
 	cache := diskcache.NewCache(*dir)
-	go cache.MonitorDiskAndEvict(
-		*diskCheckInterval,
+	go monitorDiskAndEvict(
+		cache, *diskCheckInterval,
 		*minPercentBlocksFree, *evictUntilPercentBlocksFree,
 	)
 
