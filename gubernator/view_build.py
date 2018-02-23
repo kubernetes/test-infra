@@ -125,7 +125,7 @@ def normalize_metadata(started_future, finished_future):
     finished = finished_future.get_result()
     if finished and not started:
         started = 'null'
-    if started and not finished:
+    elif started and not finished:
         finished = 'null'
     elif not (started and finished):
         return None, None
@@ -164,6 +164,9 @@ def build_details(build_dir):
         gcs_async.read(build_dir + '/started.json'),
         gcs_async.read(build_dir + '/finished.json')
     )
+
+    if started is None and finished is None:
+        return started, finished, None
 
     junit_paths = [f.filename for f in view_base.gcs_ls_recursive('%s/artifacts' % build_dir)
                    if f.filename.endswith('.xml')]

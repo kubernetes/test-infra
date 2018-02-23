@@ -16,14 +16,16 @@
 
 import datetime
 import unittest
-from webapp2_extras import securecookie
 
 # TODO(fejta): use non-relative imports
 # https://google.github.io/styleguide/pyguide.html?showone=Packages#Packages
 import gcs_async_test
+from github import models
 import main_test
 import view_pr
-from github import models
+
+from webapp2_extras import securecookie
+
 
 app = main_test.app
 write = gcs_async_test.write
