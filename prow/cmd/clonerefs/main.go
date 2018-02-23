@@ -102,14 +102,19 @@ func main() {
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "clonerefs"}),
 	)
 
+	var results []clone.Record
+
 	jobRefs, err := pjutil.ResolveSpecFromEnv()
 	if err != nil {
-		logrus.WithError(err).Fatal("Could not determine job refs")
+		logrus.WithError(err).Warn("Could not determine Prow job refs from environment")
+	} else {
+		if jobRefs.Type != kube.PeriodicJob {
+			// periodic jobs do not configure a set
+			// of refs to clone, so we ignore them
+			results = append(results, clone.Run(jobRefs.Refs, o.srcRoot, o.gitUserName, o.gitUserEmail))
+		}
 	}
 
-	results := []clone.Record{
-		clone.Run(jobRefs.Refs, o.srcRoot, o.gitUserName, o.gitUserEmail),
-	}
 	for _, gitRef := range o.refs.gitRefs {
 		results = append(results, clone.Run(gitRef, o.srcRoot, o.gitUserName, o.gitUserEmail))
 	}
