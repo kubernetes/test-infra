@@ -172,7 +172,24 @@ function createPRCardTitle(pr, tidePools, jobStatus, mergeAbility) {
 function createList(list, itemStyle = []) {
     const container = document.createElement("UL");
     container.classList.add("mdl-list", "job-list");
-
+    const getStateIcon = (state) => {
+        switch (state) {
+            case "success":
+                return "check_circle";
+            case "failure":
+                return "error";
+            case "pending":
+                return "watch_later";
+            case "triggered":
+                return "schedule";
+            case "aborted":
+                return "remove_circle";
+            case "error":
+                return "warning";
+            default:
+                return "";
+        }
+    };
     list.forEach(el => {
         const elCon = document.createElement("LI");
         elCon.classList.add("mdl-list__item", "job-list-item", ...itemStyle);
@@ -180,7 +197,8 @@ function createList(list, itemStyle = []) {
         item.classList.add("mdl-list__item-primary-content");
         item.href = el.url;
         const icon = document.createElement("I");
-        icon.classList.add("state", el.state, "mdl-list__item-icon");
+        icon.textContent = getStateIcon(el.state);
+        icon.classList.add("state", el.state, "material-icons", "mdl-list__item-icon");
         item.appendChild(icon);
         item.appendChild(document.createTextNode(el.context));
         elCon.appendChild(item);
@@ -235,6 +253,7 @@ function createJobStatus(builds) {
         status.appendChild(document.createTextNode(statusText));
     }
     status.classList.add("status");
+    statusContainer.appendChild(status);
     // Job list
     let failedJobsList;
     if (failedJobs.length > 0) {
@@ -253,7 +272,6 @@ function createJobStatus(builds) {
     });
 
     status.appendChild(arrowIcon);
-    statusContainer.appendChild(status);
     statusContainer.appendChild(jobList);
     return statusContainer;
 }

@@ -122,19 +122,21 @@ i.state {
     vertical-align: middle;
 }
 
-.state.triggered, .state.pending {
+.state.triggered, .state.pending, .state.triggered.mdl-list__item-icon.material-icons,
+.state.pending.mdl-list__item-icon.material-icons {
     color: #FFCA28;
 }
 
-.state.success {
+.state.success, .state.success.mdl-list__item-icon.material-icons {
     color: #66BB6A;
 }
 
-.state.failure {
+.state.failure, .state.failure.mdl-list__item-icon.material-icons {
     color: #EF5350;
 }
 
-state.error, .state.aborted {
+.state.error, .state.aborted, .state.error.mdl-list__item-icon.material-icons,
+.state.aborted.mdl-list__item-icon.material-icons {
     color: #BDBDBD;
 }
 
@@ -606,10 +608,11 @@ Plugin Help style
     margin-top: 2px;
 }
 
-.state.mdl-list__item-icon {
-    width: 12px;
-    height: 12px;
-    margin-left: 8px;
+.state.mdl-list__item-icon.material-icons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    margin-left: 16px;
 }
 
 .query-details-section {
@@ -672,7 +675,11 @@ Plugin Help style
     }
 
     .status-icon.material-icons {
-        margin: 0 4px 2px 0;
+        margin: 0 16px 2px 0;
+    }
+
+    .state.mdl-list__item-icon.material-icons {
+        margin-left: 4px;
     }
 
     #merge-help-dialog.mdl-dialog, #query-dialog.mdl-dialog, #status-help-dialog.mdl-dialog {
