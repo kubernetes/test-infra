@@ -22,14 +22,103 @@ import (
 	"k8s.io/test-infra/testgrid/state"
 )
 
+func Test_ValidateName(t *testing.T) {
+	cases := []struct {
+		name      string
+		input     string
+		context   string
+		timestamp string
+		thread    string
+		empty     bool
+	}{
+
+		{
+			name:  "not junit",
+			input: "./started.json",
+			empty: true,
+		},
+		{
+			name:  "forgot suffix",
+			input: "./junit",
+			empty: true,
+		},
+		{
+			name:  "basic",
+			input: "./junit.xml",
+		},
+		{
+			name:    "context",
+			input:   "./junit_hello world isn't-this exciting!.xml",
+			context: "hello world isn't-this exciting!",
+		},
+		{
+			name:    "numeric context",
+			input:   "./junit_12345.xml",
+			context: "12345",
+		},
+		{
+			name:    "context and thread",
+			input:   "./junit_context_12345.xml",
+			context: "context",
+			thread:  "12345",
+		},
+		{
+			name:      "context and timestamp",
+			input:     "./junit_context_20180102-1234.xml",
+			context:   "context",
+			timestamp: "20180102-1234",
+		},
+		{
+			name:      "context thread timestamp",
+			input:     "./junit_context_20180102-1234_5555.xml",
+			context:   "context",
+			timestamp: "20180102-1234",
+			thread:    "5555",
+		},
+	}
+
+	for _, tc := range cases {
+		actual := ValidateName(tc.input)
+		switch {
+		case actual == nil && !tc.empty:
+			t.Errorf("%s: unexpected nil map", tc.name)
+		case actual != nil && tc.empty:
+			t.Errorf("%s: should not have returned a map: %v", tc.name, actual)
+		case actual != nil:
+			for k, expected := range map[string]string{
+				"Context":   tc.context,
+				"Thread":    tc.thread,
+				"Timestamp": tc.timestamp,
+			} {
+				if a, ok := actual[k]; !ok {
+					t.Errorf("%s: missing key %s", tc.name, k)
+				} else if a != expected {
+					t.Errorf("%s: %s actual %s != expected %s", tc.name, k, a, expected)
+				}
+			}
+		}
+	}
+
+}
+
 func Test_ExtractRows(t *testing.T) {
 	cases := []struct {
-		name    string
-		content string
-		results map[string]state.Row_Result
-		metrics map[string]map[string]float64
-		err     bool
+		name     string
+		content  string
+		metadata map[string]string
+		rows     map[string][]Row
+		err      bool
 	}{
+		{
+			name:    "not xml",
+			content: `{"super": 123}`,
+			err:     true,
+		},
+		{
+			name:    "not junit",
+			content: `<amazing><content/></amazing>`,
+			err:     true,
+		},
 		{
 			name: "basic testsuite",
 			content: `
@@ -38,9 +127,23 @@ func Test_ExtractRows(t *testing.T) {
 			    <testcase name="bad"><failure/></testcase>
 			    <testcase name="skip"><skipped/></testcase>
 			  </testsuite>`,
-			results: map[string]state.Row_Result{
-				"good": state.Row_PASS,
-				"bad":  state.Row_FAIL,
+			rows: map[string][]Row{
+				"good": {
+					{
+						Result: state.Row_PASS,
+						Metadata: map[string]string{
+							"Tests name": "good",
+						},
+					},
+				},
+				"bad": {
+					{
+						Result: state.Row_FAIL,
+						Metadata: map[string]string{
+							"Tests name": "bad",
+						},
+					},
+				},
 			},
 		},
 		{
@@ -55,9 +158,66 @@ func Test_ExtractRows(t *testing.T) {
 			    <testcase name="skip"><skipped/></testcase>
 			  </testsuite>
 			  </testsuites>`,
-			results: map[string]state.Row_Result{
-				"good": state.Row_PASS,
-				"bad":  state.Row_FAIL,
+			rows: map[string][]Row{
+				"good": {
+					{
+						Result: state.Row_PASS,
+						Metadata: map[string]string{
+							"Tests name": "good",
+						},
+					},
+				},
+				"bad": {
+					{
+						Result: state.Row_FAIL,
+						Metadata: map[string]string{
+							"Tests name": "bad",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "suite name",
+			content: `
+			  <testsuite name="hello">
+			    <testcase name="world" />
+			  </testsuite>`,
+			rows: map[string][]Row{
+				"hello.world": {
+					{
+						Result: state.Row_PASS,
+						Metadata: map[string]string{
+							"Tests name": "hello.world",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "duplicate target names",
+			content: `
+			  <testsuite>
+			    <testcase name="multi">
+			      <failure>doh</failure>
+		            </testcase>
+			    <testcase name="multi" />
+			  </testsuite>`,
+			rows: map[string][]Row{
+				"multi": {
+					{
+						Result: state.Row_FAIL,
+						Metadata: map[string]string{
+							"Tests name": "multi",
+						},
+					},
+					{
+						Result: state.Row_PASS,
+						Metadata: map[string]string{
+							"Tests name": "multi",
+						},
+					},
+				},
 			},
 		},
 		{
@@ -71,55 +231,131 @@ func Test_ExtractRows(t *testing.T) {
 			    <testcase name="fast" time="0.0001" />
 			    <testcase name="nothing-elapsed" time="0" />
 			  </testsuite>`,
-			results: map[string]state.Row_Result{
-				"slow":            state.Row_PASS,
-				"slow-failure":    state.Row_FAIL,
-				"fast":            state.Row_PASS,
-				"nothing-elapsed": state.Row_PASS,
+			rows: map[string][]Row{
+				"slow": {
+					{
+						Result:  state.Row_PASS,
+						Metrics: map[string]float64{elapsedKey: 100.1},
+						Metadata: map[string]string{
+							"Tests name": "slow",
+						},
+					},
+				},
+				"slow-failure": {
+					{
+						Result:  state.Row_FAIL,
+						Metrics: map[string]float64{elapsedKey: 123456789},
+						Metadata: map[string]string{
+							"Tests name": "slow-failure",
+						},
+					},
+				},
+				"fast": {
+					{
+						Result:  state.Row_PASS,
+						Metrics: map[string]float64{elapsedKey: 0.0001},
+						Metadata: map[string]string{
+							"Tests name": "fast",
+						},
+					},
+				},
+				"nothing-elapsed": {
+					{
+						Result: state.Row_PASS,
+						Metadata: map[string]string{
+							"Tests name": "nothing-elapsed",
+						},
+					},
+				},
 			},
-			metrics: map[string]map[string]float64{
-				"slow":         {elapsedKey: 100.1},
-				"slow-failure": {elapsedKey: 123456789},
-				"fast":         {elapsedKey: 0.0001},
+		},
+		{
+			name: "add metadata",
+			content: `
+			  <testsuite>
+			    <testcase name="fancy" />
+			    <testcase name="ketchup" />
+			  </testsuite>`,
+			metadata: map[string]string{
+				"Context":   "debian",
+				"Timestamp": "1234",
+				"Thread":    "7",
+			},
+			rows: map[string][]Row{
+				"fancy": {
+					{
+						Result: state.Row_PASS,
+						Metadata: map[string]string{
+							"Tests name": "fancy",
+							"Context":    "debian",
+							"Timestamp":  "1234",
+							"Thread":     "7",
+						},
+					},
+				},
+				"ketchup": {
+					{
+						Result: state.Row_PASS,
+						Metadata: map[string]string{
+							"Tests name": "ketchup",
+							"Context":    "debian",
+							"Timestamp":  "1234",
+							"Thread":     "7",
+						},
+					},
+				},
 			},
 		},
 	}
 
 	for _, tc := range cases {
-		results := map[string]state.Row_Result{}
-		metrics := map[string]map[string]float64{}
+		rows := map[string][]Row{}
 
-		err := extractRows([]byte(tc.content), results, metrics)
+		err := extractRows([]byte(tc.content), rows, tc.metadata)
 		switch {
 		case err == nil && tc.err:
 			t.Errorf("%s: failed to raise an error", tc.name)
 		case err != nil && !tc.err:
 			t.Errorf("%s: unexpected err: %v", tc.name, err)
-		case len(results) > len(tc.results):
-			t.Errorf("%s: extra results: actual %v != expected %v", tc.name, results, tc.results)
-		case len(metrics) > len(tc.metrics):
-			t.Errorf("%s: extra metrics: actual %v != expected %v", tc.name, metrics, tc.metrics)
+		case len(rows) > len(tc.rows):
+			t.Errorf("%s: extra rows: actual %v != expected %v", tc.name, rows, tc.rows)
 		default:
-			for target, er := range tc.results {
-				if ar, ok := results[target]; !ok {
-					t.Errorf("%s: missing result: %s", tc.name, target)
-				} else if ar != er {
-					t.Errorf("%s: %s actual %s != expected %s", tc.name, target, ar, er)
+			for target, expectedRows := range tc.rows {
+				actualRows, ok := rows[target]
+				if !ok {
+					t.Errorf("%s: missing row %s", tc.name, target)
+					continue
+				} else if len(actualRows) != len(expectedRows) {
+					t.Errorf("%s: bad results for %s: actual %v != expected %v", tc.name, target, actualRows, expectedRows)
+					continue
 				}
-			}
-			for target, ems := range tc.metrics {
-				ams, ok := metrics[target]
-				switch {
-				case !ok:
-					t.Errorf("%s: missing metrics for %s", tc.name, target)
-				case len(ams) > len(ems):
-					t.Errorf("%s: extra metrics for %s: actual %v != expected %v", tc.name, target, ams, ems)
-				default:
-					for name, ev := range ems {
-						if av, ok := ams[name]; !ok {
-							t.Errorf("%s: missing %s in %s", tc.name, target, name)
-						} else if av != ev {
-							t.Errorf("%s: %s %s actual %f != expected %f", tc.name, target, name, av, ev)
+				for i, er := range expectedRows {
+					ar := actualRows[i]
+					if er.Result != ar.Result {
+						t.Errorf("%s: %s %d actual %v != expected %v", tc.name, target, i, ar.Result, er.Result)
+					}
+
+					if len(ar.Metrics) > len(er.Metrics) {
+						t.Errorf("%s: extra %s %d metrics: actual %v != expected %v", tc.name, target, i, ar.Metrics, er.Metrics)
+					} else {
+						for m, ev := range er.Metrics {
+							if av, ok := ar.Metrics[m]; !ok {
+								t.Errorf("%s: %s %d missing %s metric", tc.name, target, i, m)
+							} else if ev != av {
+								t.Errorf("%s: %s %d bad %s metric: actual %f != expected %f", tc.name, target, i, m, av, ev)
+							}
+						}
+					}
+
+					if len(ar.Metadata) > len(er.Metadata) {
+						t.Errorf("%s: extra %s %d metadata: actual %v != expected %v", tc.name, target, i, ar.Metadata, er.Metadata)
+					} else {
+						for m, ev := range er.Metadata {
+							if av, ok := ar.Metadata[m]; !ok {
+								t.Errorf("%s: %s %d missing %s metadata", tc.name, target, i, m)
+							} else if ev != av {
+								t.Errorf("%s: %s %d bad %s metadata: actual %s != expected %s", tc.name, target, i, m, av, ev)
+							}
 						}
 					}
 				}

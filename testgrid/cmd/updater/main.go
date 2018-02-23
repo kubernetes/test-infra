@@ -29,6 +29,7 @@ import (
 	"net/url"
 	"path"
 	"regexp"
+	"sort"
 	"time"
 
 	"k8s.io/test-infra/testgrid/config"
@@ -37,12 +38,15 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/api/iterator"
+
+	"vbom.ml/util/sortorder"
 )
 
 type Build struct {
 	Bucket  *storage.BucketHandle
 	Context context.Context
 	Prefix  string
+	number  *int
 }
 
 type Started struct {
@@ -83,6 +87,17 @@ func (m Metadata) Meta(name string) (*Metadata, bool) {
 	}
 }
 
+func (m Metadata) ColumnMetadata() ColumnMetadata {
+	bm := ColumnMetadata{}
+	for k, v := range m {
+		if s, ok := v.(string); ok {
+			bm[k] = s
+		}
+		// TODO(fejta): handle sub items
+	}
+	return bm
+}
+
 type JunitSuites struct {
 	XMLName xml.Name     `xml:"testsuites"`
 	Suites  []JunitSuite `xml:"testsuite"`
@@ -119,7 +134,7 @@ func (jr JunitResult) RowResult() state.Row_Result {
 	return state.Row_PASS
 }
 
-func extractRows(buf []byte, results map[string]state.Row_Result, metrics map[string]map[string]float64) error {
+func extractRows(buf []byte, rows map[string][]Row, meta map[string]string) error {
 	var suites JunitSuites
 	// Try to parse it as a <testsuites/> object
 	err := xml.Unmarshal(buf, &suites)
@@ -138,42 +153,48 @@ func extractRows(buf []byte, results map[string]state.Row_Result, metrics map[st
 				continue
 			}
 
-			prefix := sr.Name
+			n := sr.Name
 			if len(suite.Name) > 0 {
-				prefix = suite.Name + "." + prefix
+				n = suite.Name + "." + n
 			}
-			n := prefix
-			i := 0
-			for {
-				_, ok := results[n]
-				if !ok {
-					break
-				}
-				i++
-				n = fmt.Sprintf("%s [%d]", prefix, i)
+			r := Row{
+				Result:  sr.RowResult(),
+				Metrics: map[string]float64{},
+				Metadata: map[string]string{
+					"Tests name": n,
+				},
 			}
-			results[n] = sr.RowResult()
 			if sr.Time > 0 {
-				metrics[n] = map[string]float64{
-					elapsedKey: sr.Time,
-				}
+				r.Metrics[elapsedKey] = sr.Time
 			}
+			for k, v := range meta {
+				r.Metadata[k] = v
+			}
+			// TODO(fejta): set message from failure/skipped/system-out
+			rows[n] = append(rows[n], r)
 		}
 	}
 	return nil
 }
 
-type BuildResult struct {
+type ColumnMetadata map[string]string
+
+type Column struct {
 	Id       string
 	Started  int64
 	Finished int64
 	Passed   bool
-	Results  map[string]state.Row_Result
-	Metrics  map[string]map[string]float64
-	Metadata Metadata
+	Rows     map[string][]Row
+	Metadata ColumnMetadata
 }
 
-func (br BuildResult) Overall() state.Row_Result {
+type Row struct {
+	Result   state.Row_Result
+	Metrics  map[string]float64
+	Metadata map[string]string
+}
+
+func (br Column) Overall() state.Row_Result {
 	switch {
 	case br.Finished > 0:
 		// Completed
@@ -228,7 +249,41 @@ func AppendResult(row *state.Row, result state.Row_Result, count int) {
 	}
 }
 
-func AppendColumn(headers []string, grid *state.Grid, rows map[string]*state.Row, build BuildResult) {
+type NameConfig struct {
+	format string
+	parts  []string
+}
+
+func MakeNameConfig(tnc *config.TestNameConfig) NameConfig {
+	if tnc == nil {
+		return NameConfig{
+			format: "%s",
+			parts:  []string{"Tests name"},
+		}
+	}
+	nc := NameConfig{
+		format: tnc.NameFormat,
+		parts:  make([]string, len(tnc.NameElements)),
+	}
+	for i, e := range tnc.NameElements {
+		nc.parts[i] = e.TargetConfig
+	}
+	return nc
+}
+
+func (r Row) Format(config NameConfig, meta map[string]string) string {
+	parsed := make([]interface{}, len(config.parts))
+	for i, p := range config.parts {
+		if v, ok := r.Metadata[p]; ok {
+			parsed[i] = v
+			continue
+		}
+		parsed[i] = meta[p] // "" if missing
+	}
+	return fmt.Sprintf(config.format, parsed...)
+}
+
+func AppendColumn(headers []string, format NameConfig, grid *state.Grid, rows map[string]*state.Row, build Column) {
 	c := state.Column{
 		Build:   build.Id,
 		Started: float64(build.Started * 1000),
@@ -243,16 +298,10 @@ func AppendColumn(headers []string, grid *state.Grid, rows map[string]*state.Row
 			h = "repo-commit"
 			trunc = 9
 		}
-		var v string
-		p, ok := build.Metadata.String(h)
+		v, ok := build.Metadata[h]
 		if !ok {
 			log.Printf("%s metadata missing %s", c.Build, h)
 			v = "missing"
-		} else if p == nil {
-			log.Printf("%s metadata has malformed %s", c.Build, h)
-			v = "malformed"
-		} else {
-			v = *p
 		}
 		if trunc > 0 && trunc < len(v) {
 			v = v[0:trunc]
@@ -266,30 +315,49 @@ func AppendColumn(headers []string, grid *state.Grid, rows map[string]*state.Row
 		missing[name] = row
 	}
 
-	for name, result := range build.Results {
-		delete(missing, name)
-		r, ok := rows[name]
-		if !ok {
-			r = &state.Row{
-				Name: name,
-				Id:   name,
-			}
-			rows[name] = r
-			grid.Rows = append(grid.Rows, r)
-			if n := len(grid.Columns); n > 0 {
-				// Add missing entries for later builds
-				AppendResult(r, state.Row_NO_RESULT, n-1)
-			}
-		}
+	found := map[string]bool{}
 
-		AppendResult(r, result, 1)
-		for k, v := range build.Metrics[name] {
-			m := FindMetric(r, k)
-			if m == nil {
-				m = &state.Metric{Name: k}
-				r.Metrics = append(r.Metrics, m)
+	for target, results := range build.Rows {
+		for _, br := range results {
+			prefix := br.Format(format, build.Metadata)
+			name := prefix
+			// Ensure each name is unique
+			// If we have multiple results with the same name foo
+			// then append " [n]" to the name so we wind up with:
+			//   foo
+			//   foo [1]
+			//   foo [2]
+			//   etc
+			for idx := 1; found[name]; idx++ {
+				// found[name] exists, so try foo [n+1]
+				name = fmt.Sprintf("%s [%d]", prefix, idx)
 			}
-			AppendMetric(m, int32(len(r.Messages)), v)
+			// hooray, name not in found
+			found[name] = true
+			delete(missing, name)
+			r, ok := rows[name]
+			if !ok {
+				r = &state.Row{
+					Name: name,
+					Id:   target,
+				}
+				rows[name] = r
+				grid.Rows = append(grid.Rows, r)
+				if n := len(grid.Columns); n > 0 {
+					// Add missing entries for later builds
+					AppendResult(r, state.Row_NO_RESULT, n-1)
+				}
+			}
+
+			AppendResult(r, br.Result, 1)
+			for k, v := range br.Metrics {
+				m := FindMetric(r, k)
+				if m == nil {
+					m = &state.Metric{Name: k}
+					r.Metrics = append(r.Metrics, m)
+				}
+				AppendMetric(m, int32(len(r.Messages)), v)
+			}
 		}
 	}
 
@@ -300,8 +368,38 @@ func AppendColumn(headers []string, grid *state.Grid, rows map[string]*state.Row
 
 const elapsedKey = "seconds-elapsed"
 
-func ReadBuild(build Build) (*BuildResult, error) {
-	br := BuildResult{
+// junit_CONTEXT_TIMESTAMP_THREAD.xml
+var re = regexp.MustCompile(`.+/junit(_[^_]+)?(_\d+-\d+)?(_\d+)?\.xml$`)
+
+// dropPrefix removes the _ in _CONTEXT to help keep the regexp simple
+func dropPrefix(name string) string {
+	if len(name) == 0 {
+		return name
+	}
+	return name[1:]
+}
+
+func ValidateName(name string) map[string]string {
+	// Expected format: junit_context_20180102-1256-07
+	// Results in {
+	//   "Context": "context",
+	//   "Timestamp": "20180102-1256",
+	//   "Thread": "07",
+	// }
+	mat := re.FindStringSubmatch(name)
+	if mat == nil {
+		return nil
+	}
+	return map[string]string{
+		"Context":   dropPrefix(mat[1]),
+		"Timestamp": dropPrefix(mat[2]),
+		"Thread":    dropPrefix(mat[3]),
+	}
+
+}
+
+func ReadBuild(build Build) (*Column, error) {
+	br := Column{
 		Id: path.Base(build.Prefix),
 	}
 	s := build.Bucket.Object(build.Prefix + "started.json")
@@ -314,13 +412,19 @@ func ReadBuild(build Build) (*BuildResult, error) {
 		return nil, fmt.Errorf("could not decode started.json: %v", err)
 	}
 	br.Started = started.Timestamp
-	br.Results = map[string]state.Row_Result{}
-	br.Metrics = map[string]map[string]float64{}
+	br.Rows = map[string][]Row{}
 
 	f := build.Bucket.Object(build.Prefix + "finished.json")
 	fr, err := f.NewReader(build.Context)
 	if err == storage.ErrObjectNotExist {
-		br.Results["Overall"] = br.Overall()
+		br.Rows["Overall"] = []Row{
+			{
+				Result: br.Overall(),
+				Metadata: map[string]string{
+					"Tests name": "Overall",
+				},
+			},
+		}
 		return &br, nil
 	}
 
@@ -330,18 +434,23 @@ func ReadBuild(build Build) (*BuildResult, error) {
 	}
 
 	br.Finished = finished.Timestamp
-	br.Metadata = finished.Metadata
+	br.Metadata = finished.Metadata.ColumnMetadata()
 	br.Passed = finished.Passed
 
-	br.Results["Overall"] = br.Overall()
-	br.Metrics["Overall"] = map[string]float64{
-		elapsedKey: float64(br.Finished - br.Started),
+	br.Rows["Overall"] = []Row{
+		{
+			Result: br.Overall(),
+			Metrics: map[string]float64{
+				elapsedKey: float64(br.Finished - br.Started),
+			},
+			Metadata: map[string]string{
+				"Tests name": "Overall",
+			},
+		},
 	}
 
-	re := regexp.MustCompile(`.+/junit_.+\.xml$`)
-
 	ai := build.Bucket.Objects(build.Context, &storage.Query{Prefix: build.Prefix + "artifacts/"})
-	var artifacts []string
+	artifacts := map[string]map[string]string{}
 	for {
 		a, err := ai.Next()
 		if err == iterator.Done {
@@ -351,12 +460,13 @@ func ReadBuild(build Build) (*BuildResult, error) {
 			return nil, fmt.Errorf("failed to list artifacts: %v", err)
 		}
 
-		if !re.MatchString(a.Name) {
+		meta := ValidateName(a.Name)
+		if meta == nil {
 			continue
 		}
-		artifacts = append(artifacts, a.Name)
+		artifacts[a.Name] = meta
 	}
-	for _, ap := range artifacts {
+	for ap, meta := range artifacts {
 		ar, err := build.Bucket.Object(ap).NewReader(build.Context)
 		if err != nil {
 			return nil, fmt.Errorf("could not read %s: %v", ap, err)
@@ -369,11 +479,19 @@ func ReadBuild(build Build) (*BuildResult, error) {
 			return nil, fmt.Errorf("failed to read all of %s: %v", ap, err)
 		}
 
-		if err = extractRows(buf, br.Results, br.Metrics); err != nil {
+		if err = extractRows(buf, br.Rows, meta); err != nil {
 			return nil, fmt.Errorf("failed to parse %s: %v", ap, err)
 		}
 	}
 	return &br, nil
+}
+
+type Builds []Build
+
+func (b Builds) Len() int      { return len(b) }
+func (b Builds) Swap(i, j int) { b[i], b[j] = b[j], b[i] }
+func (b Builds) Less(i, j int) bool {
+	return sortorder.NaturalLess(b[i].Prefix, b[j].Prefix)
 }
 
 func ListBuilds(client *storage.Client, ctx context.Context, path string, builds chan Build) error {
@@ -401,7 +519,7 @@ func ListBuilds(client *storage.Client, ctx context.Context, path string, builds
 		Prefix:    p,
 	})
 	fmt.Println("Looking in ", u, b, p)
-	var backwards []Build
+	var all Builds
 	for {
 		objAttrs, err := it.Next()
 		if err == iterator.Done {
@@ -415,14 +533,18 @@ func ListBuilds(client *storage.Client, ctx context.Context, path string, builds
 		}
 
 		//fmt.Println("Found name:", objAttrs.Name, "prefix:", objAttrs.Prefix)
-		backwards = append(backwards, Build{
+		all = append(all, Build{
 			Bucket:  bkt,
 			Context: ctx,
 			Prefix:  objAttrs.Prefix,
 		})
 	}
-	for i := len(backwards) - 1; i >= 0; i-- {
-		builds <- backwards[i]
+	// Expect builds to be in monotonically increasing order.
+	// So build9 should be followed by build10 or build888 but not build8
+	sort.Sort(all)
+	// Iterate backwards since the largest (and thus most recent) is at the end.
+	for i := len(all) - 1; i >= 0; i-- {
+		builds <- all[i]
 	}
 	return nil
 }
@@ -435,6 +557,14 @@ func Headers(group config.TestGroup) []string {
 	return extra
 }
 
+type Rows []*state.Row
+
+func (r Rows) Len() int      { return len(r) }
+func (r Rows) Swap(i, j int) { r[i], r[j] = r[j], r[i] }
+func (r Rows) Less(i, j int) bool {
+	return sortorder.NaturalLess(r[i].Name, r[j].Name)
+}
+
 func ReadBuilds(group config.TestGroup, builds chan Build, max int, dur time.Duration) state.Grid {
 	i := 0
 	var stop time.Time
@@ -443,6 +573,7 @@ func ReadBuilds(group config.TestGroup, builds chan Build, max int, dur time.Dur
 	}
 	grid := &state.Grid{}
 	h := Headers(group)
+	nc := MakeNameConfig(group.TestNameConfig)
 	rows := map[string]*state.Row{}
 	log.Printf("Reading builds after %s (%d)", stop, stop.Unix())
 	for b := range builds {
@@ -456,8 +587,8 @@ func ReadBuilds(group config.TestGroup, builds chan Build, max int, dur time.Dur
 			log.Printf("FAIL %s: %v", b.Prefix, err)
 			continue
 		}
-		AppendColumn(h, grid, rows, *br)
-		log.Printf("found: %s pass:%t %d-%d: %d results", br.Id, br.Passed, br.Started, br.Finished, len(br.Results))
+		AppendColumn(h, nc, grid, rows, *br)
+		log.Printf("found: %s pass:%t %d-%d: %d results", br.Id, br.Passed, br.Started, br.Finished, len(br.Rows))
 		if br.Started < stop.Unix() {
 			log.Printf("Latest result before %s", stop)
 			break
@@ -466,6 +597,7 @@ func ReadBuilds(group config.TestGroup, builds chan Build, max int, dur time.Dur
 	log.Println("Finished reading builds.")
 	for range builds {
 	}
+	sort.Stable(Rows(grid.Rows))
 	return *grid
 }
 
@@ -501,6 +633,7 @@ func Group(cfg config.Configuration, name string) (*config.TestGroup, bool) {
 func main() {
 	b := "fejternetes"
 	o := "ci-kubernetes-test-go"
+	o = "ci-kubernetes-node-kubelet-stable3"
 
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
@@ -530,16 +663,17 @@ func main() {
 	builds := make(chan Build)
 	uPR := "gs://kubernetes-jenkins/pr-logs/pull-ingress-gce-e2e"
 	uCI := "gs://kubernetes-jenkins/logs/ci-kubernetes-test-go"
+	uCIN := "gs://kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-stable3"
 	_ = uCI
 	_ = uPR
-	u := uCI
+	u := uCIN
 	go func() {
 		if err = ListBuilds(client, ctx, u, builds); err != nil {
 			log.Fatalf("Failed to list builds: %v", err)
 		}
 		close(builds)
 	}()
-	grid := ReadBuilds(*tg, builds, 1000, Days(0.25))
+	grid := ReadBuilds(*tg, builds, 1000, Days(5))
 	log.Printf("Grid: %d %s", len(grid.Columns), grid.String())
 	buf, err := proto.Marshal(&grid)
 	if err != nil {

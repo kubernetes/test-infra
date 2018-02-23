@@ -164,6 +164,7 @@ filegroup(
         "//vendor/k8s.io/apiserver/pkg/util/flag:all-srcs",
         "//vendor/k8s.io/contrib/test-utils/utils:all-srcs",
         "//vendor/k8s.io/kube-openapi/pkg/common:all-srcs",
+        "//vendor/vbom.ml/util/sortorder:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
