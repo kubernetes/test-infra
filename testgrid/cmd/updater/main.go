@@ -223,19 +223,63 @@ type JunitResult struct {
 	Name      string  `xml:"name,attr"`
 	Time      float64 `xml:"time,attr"`
 	ClassName string  `xml:"classname,attr"`
-	Failure   *string `xml:"failure"`
-	Output    *string `xml:"system-out"`
-	Skipped   *string `xml:"skipped"`
+	Failure   *string `xml:"failure,omitempty"`
+	Output    *string `xml:"system-out,omitempty"`
+	Error     *string `xml:"system-err,omitempty"`
+	Skipped   *string `xml:"skipped,omitempty"`
 }
 
-func (jr JunitResult) RowResult() state.Row_Result {
+func (jr JunitResult) Message() string {
+	const max = 140
+	var msg string
+	switch {
+	case jr.Failure != nil && *jr.Failure != "":
+		msg = *jr.Failure
+	case jr.Skipped != nil && *jr.Skipped != "":
+		msg = *jr.Skipped
+	case jr.Output != nil && *jr.Output != "":
+		msg = *jr.Output
+	}
+	if l := len(msg); max == 0 || l <= max {
+		return msg
+	} else {
+		h := max / 2
+		return msg[:h] + "..." + msg[l-h-1:]
+	}
+}
+
+func (jr JunitResult) Row(suite string) (string, Row) {
+	n := jr.Name
+	if suite != "" {
+		n = suite + "." + n
+	}
+	r := Row{
+		Metrics: map[string]float64{},
+		Metadata: map[string]string{
+			"Tests name": n,
+		},
+	}
+	if jr.Time > 0 {
+		r.Metrics[elapsedKey] = jr.Time
+	}
+	if msg := jr.Message(); msg != "" {
+		r.Message = msg
+	}
 	switch {
 	case jr.Failure != nil:
-		return state.Row_FAIL
+		r.Result = state.Row_FAIL
+		if r.Message != "" {
+			r.Icon = "F"
+		}
 	case jr.Skipped != nil:
-		return state.Row_PASS_WITH_SKIPS
+		r.Result = state.Row_PASS_WITH_SKIPS
+		if r.Message != "" {
+			r.Icon = "S"
+		}
+	default:
+		r.Result = state.Row_PASS
 	}
-	return state.Row_PASS
+	return n, r
 }
 
 func extractRows(buf []byte, meta map[string]string) (map[string][]Row, error) {
@@ -258,24 +302,10 @@ func extractRows(buf []byte, meta map[string]string) (map[string][]Row, error) {
 				continue
 			}
 
-			n := sr.Name
-			if len(suite.Name) > 0 {
-				n = suite.Name + "." + n
-			}
-			r := Row{
-				Result:  sr.RowResult(),
-				Metrics: map[string]float64{},
-				Metadata: map[string]string{
-					"Tests name": n,
-				},
-			}
-			if sr.Time > 0 {
-				r.Metrics[elapsedKey] = sr.Time
-			}
+			n, r := sr.Row(suite.Name)
 			for k, v := range meta {
 				r.Metadata[k] = v
 			}
-			// TODO(fejta): set message from failure/skipped/system-out
 			rows[n] = append(rows[n], r)
 		}
 	}
@@ -297,25 +327,37 @@ type Row struct {
 	Result   state.Row_Result
 	Metrics  map[string]float64
 	Metadata map[string]string
+	Message  string
+	Icon     string
 }
 
-func (br Column) Overall() state.Row_Result {
+func (br Column) Overall() Row {
+	r := Row{
+		Metadata: map[string]string{"Tests name": "Overall"},
+	}
 	switch {
 	case br.Finished > 0:
-		// Completed
+		// Completed, did we pass?
 		if br.Passed {
-			return state.Row_PASS
+			r.Result = state.Row_PASS // Yep
+		} else {
+			r.Result = state.Row_FAIL
 		}
-		return state.Row_FAIL
+		r.Metrics = map[string]float64{
+			elapsedKey: float64(br.Finished - br.Started),
+		}
 	case time.Now().Add(-24*time.Hour).Unix() > br.Started:
 		// Timed out
-		return state.Row_FAIL
+		r.Result = state.Row_FAIL
+		r.Message = "Testing did not complete within 24 hours"
+		r.Icon = "T"
 	default:
-		return state.Row_RUNNING
+		r.Result = state.Row_RUNNING
+		r.Message = "Still running; has not finished..."
+		r.Icon = "R"
 	}
+	return r
 }
-
-var uniq int
 
 func AppendMetric(metric *state.Metric, idx int32, value float64) {
 	if l := int32(len(metric.Indices)); l == 0 || metric.Indices[l-2]+metric.Indices[l-1] != idx {
@@ -337,8 +379,10 @@ func FindMetric(row *state.Row, name string) *state.Metric {
 	return nil
 }
 
-func AppendResult(row *state.Row, result state.Row_Result, count int) {
-	latest := int32(result)
+var noResult = Row{Result: state.Row_NO_RESULT}
+
+func AppendResult(row *state.Row, rowResult Row, count int) {
+	latest := int32(rowResult.Result)
 	n := len(row.Results)
 	switch {
 	case n == 0, row.Results[n-2] != latest:
@@ -346,11 +390,18 @@ func AppendResult(row *state.Row, result state.Row_Result, count int) {
 	default:
 		row.Results[n-1] += int32(count)
 	}
-	for i := 0; i < count; i++ {
-		row.CellIds = append(row.CellIds, fmt.Sprintf("%d", uniq))
-		row.Messages = append(row.Messages, fmt.Sprintf("messsage %d", uniq))
-		row.Icons = append(row.Icons, string(int('A')+uniq%26))
-		uniq++
+
+	for i := 0; i < count; i++ { // TODO(fejta): update server to allow empty cellids
+		row.CellIds = append(row.CellIds, "")
+	}
+
+	// Javascript client expects no result cells to skip icons/messages
+	// TODO(fejta): reconsider this
+	if rowResult.Result != state.Row_NO_RESULT {
+		for i := 0; i < count; i++ {
+			row.Messages = append(row.Messages, rowResult.Message)
+			row.Icons = append(row.Icons, rowResult.Icon)
+		}
 	}
 }
 
@@ -452,21 +503,23 @@ func AppendColumn(headers []string, format NameConfig, grid *state.Grid, rows ma
 			// hooray, name not in found
 			found[name] = true
 			delete(missing, name)
+
+			// Does this row already exist?
 			r, ok := rows[name]
-			if !ok {
+			if !ok { // New row
 				r = &state.Row{
 					Name: name,
 					Id:   target,
 				}
 				rows[name] = r
 				grid.Rows = append(grid.Rows, r)
-				if n := len(grid.Columns); n > 0 {
-					// Add missing entries for later builds
-					AppendResult(r, state.Row_NO_RESULT, n-1)
+				if n := len(grid.Columns); n > 1 {
+					// Add missing entries for more recent builds (aka earlier columns)
+					AppendResult(r, noResult, n-1)
 				}
 			}
 
-			AppendResult(r, br.Result, 1)
+			AppendResult(r, br, 1)
 			for k, v := range br.Metrics {
 				m := FindMetric(r, k)
 				if m == nil {
@@ -479,7 +532,7 @@ func AppendColumn(headers []string, format NameConfig, grid *state.Grid, rows ma
 	}
 
 	for _, row := range missing {
-		AppendResult(row, state.Row_NO_RESULT, 1)
+		AppendResult(row, noResult, 1)
 	}
 }
 
@@ -729,32 +782,16 @@ func ReadBuild(build Build) (*Column, error) {
 	if finished.running { // No
 		cancel()
 		br.Rows = map[string][]Row{
-			"Overall": {
-				{
-					Result: br.Overall(),
-					Metadata: map[string]string{
-						"Tests name": "Overall",
-					},
-				},
-			},
+			"Overall": {br.Overall()},
 		}
 		return &br, nil
 	}
 	br.Finished = finished.Timestamp
 	br.Metadata = finished.Metadata.ColumnMetadata()
 	br.Passed = finished.Passed
+	or := br.Overall()
 	br.Rows = map[string][]Row{
-		"Overall": {
-			{
-				Result: br.Overall(),
-				Metrics: map[string]float64{
-					elapsedKey: float64(br.Finished - br.Started),
-				},
-				Metadata: map[string]string{
-					"Tests name": "Overall",
-				},
-			},
-		},
+		"Overall": {or},
 	}
 	select {
 	case <-ctx.Done():
@@ -769,6 +806,27 @@ func ReadBuild(build Build) (*Column, error) {
 
 	for t, rs := range rows {
 		br.Rows[t] = append(br.Rows[t], rs...)
+	}
+	if or.Result == state.Row_FAIL { // Ensure failing build has a failing row
+		ft := false
+		for n, rs := range br.Rows {
+			if n == "Overall" {
+				continue
+			}
+			for _, r := range rs {
+				if r.Result == state.Row_FAIL {
+					ft = true // Failing test, huzzah!
+					break
+				}
+			}
+			if ft {
+				break
+			}
+		}
+		if !ft { // Nope, add the F icon and an explanatory message
+			br.Rows["Overall"][0].Icon = "F"
+			br.Rows["Overall"][0].Message = "Build failed outside of test results"
+		}
 	}
 
 	cancel()
