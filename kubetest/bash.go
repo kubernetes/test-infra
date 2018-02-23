@@ -52,7 +52,7 @@ func (b *bashDeployer) Up() error {
 	cmd := exec.Command(script)
 	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env, fmt.Sprintf("CLUSTER_IP_RANGE=%s", b.clusterIPRange))
-	return finishRunning(cmd)
+	return control.FinishRunning(cmd)
 }
 
 func (b *bashDeployer) IsUp() error {
@@ -62,7 +62,7 @@ func (b *bashDeployer) IsUp() error {
 	} else {
 		cmd = "./hack/e2e-internal/e2e-status.sh"
 	}
-	return finishRunning(exec.Command(cmd))
+	return control.FinishRunning(exec.Command(cmd))
 }
 
 func (b *bashDeployer) DumpClusterLogs(localPath, gcsPath string) error {
@@ -80,11 +80,11 @@ func (b *bashDeployer) Down() error {
 	} else {
 		cmd = "./hack/e2e-internal/e2e-down.sh"
 	}
-	return finishRunning(exec.Command(cmd))
+	return control.FinishRunning(exec.Command(cmd))
 }
 
 func (b *bashDeployer) GetClusterCreated(gcpProject string) (time.Time, error) {
-	res, err := output(exec.Command(
+	res, err := control.Output(exec.Command(
 		"gcloud",
 		"compute",
 		"instance-groups",

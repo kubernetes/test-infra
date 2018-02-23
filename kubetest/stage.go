@@ -21,6 +21,8 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
+
+	"k8s.io/test-infra/kubetest/util"
 )
 
 type stageStrategy struct {
@@ -65,7 +67,7 @@ func (s *stageStrategy) Enabled() bool {
 // Stage the release build to GCS.
 // Essentially release/push-build.sh --bucket=B --ci? --gcs-suffix=S --federation? --noupdatelatest
 func (s *stageStrategy) Stage(fed bool) error {
-	name := k8s("release", "push-build.sh")
+	name := util.K8s("release", "push-build.sh")
 	b := s.bucket
 	if strings.HasPrefix(b, "gs://") {
 		b = b[len("gs://"):]
@@ -93,8 +95,8 @@ func (s *stageStrategy) Stage(fed bool) error {
 	}
 
 	cmd := exec.Command(name, args...)
-	cmd.Dir = k8s("kubernetes")
-	return finishRunning(cmd)
+	cmd.Dir = util.K8s("kubernetes")
+	return control.FinishRunning(cmd)
 }
 
 type stageFederationStrategy struct {
@@ -108,7 +110,7 @@ func (s *stageFederationStrategy) Type() string {
 // Stage the federation release build to GCS.
 // Essentially release/push-build.sh --bucket=B --ci? --gcs-suffix=S --noupdatelatest
 func (s *stageFederationStrategy) Stage() error {
-	name := k8s("release", "push-build.sh")
+	name := util.K8s("release", "push-build.sh")
 	b := s.bucket
 	if strings.HasPrefix(b, "gs://") {
 		b = b[len("gs://"):]
@@ -134,6 +136,6 @@ func (s *stageFederationStrategy) Stage() error {
 	}
 
 	cmd := exec.Command(name, args...)
-	cmd.Dir = k8s("federation")
-	return finishRunning(cmd)
+	cmd.Dir = util.K8s("federation")
+	return control.FinishRunning(cmd)
 }

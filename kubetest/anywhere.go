@@ -223,7 +223,7 @@ func bazelBuildPath(version string) string {
 var readGSFile = readGSFileImpl
 
 func readGSFileImpl(filepath string) (string, error) {
-	contents, err := output(exec.Command("gsutil", "cat", filepath))
+	contents, err := control.Output(exec.Command("gsutil", "cat", filepath))
 	if err != nil {
 		return "", err
 	}
@@ -255,7 +255,7 @@ func (k *kubernetesAnywhere) writeConfig(configTemplate string) error {
 
 func (k *kubernetesAnywhere) Up() error {
 	cmd := exec.Command("make", "-C", k.path, "WAIT_FOR_KUBECONFIG=y", "deploy")
-	if err := finishRunning(cmd); err != nil {
+	if err := control.FinishRunning(cmd); err != nil {
 		return err
 	}
 
@@ -279,7 +279,7 @@ func (k *kubernetesAnywhere) DumpClusterLogs(localPath, gcsPath string) error {
 }
 
 func (k *kubernetesAnywhere) TestSetup() error {
-	o, err := output(exec.Command("make", "--silent", "-C", k.path, "kubeconfig-path"))
+	o, err := control.Output(exec.Command("make", "--silent", "-C", k.path, "kubeconfig-path"))
 	if err != nil {
 		return fmt.Errorf("Could not get kubeconfig-path: %v", err)
 	}
@@ -292,12 +292,12 @@ func (k *kubernetesAnywhere) TestSetup() error {
 }
 
 func (k *kubernetesAnywhere) Down() error {
-	err := finishRunning(exec.Command("make", "-C", k.path, "kubeconfig-path"))
+	err := control.FinishRunning(exec.Command("make", "-C", k.path, "kubeconfig-path"))
 	if err != nil {
 		// This is expected if the cluster doesn't exist.
 		return nil
 	}
-	return finishRunning(exec.Command("make", "-C", k.path, "FORCE_DESTROY=y", "destroy"))
+	return control.FinishRunning(exec.Command("make", "-C", k.path, "FORCE_DESTROY=y", "destroy"))
 }
 
 func (k *kubernetesAnywhere) GetClusterCreated(gcpProject string) (time.Time, error) {
@@ -362,7 +362,7 @@ func (k *kubernetesAnywhereMultiCluster) Up() error {
 		cmds = append(cmds, cmd)
 	}
 
-	if err := finishRunningParallel(cmds...); err != nil {
+	if err := control.FinishRunningParallel(cmds...); err != nil {
 		return err
 	}
 
@@ -374,7 +374,7 @@ func (k *kubernetesAnywhereMultiCluster) TestSetup() error {
 	mergedKubeconfigPath := k.path + "/kubeconfig.json"
 	var kubecfg string
 	for _, cluster := range k.multiClusters.clusters {
-		o, err := output(exec.Command("make", "--silent", "-C", k.path, "CONFIG_FILE="+k.configFile[cluster], "kubeconfig-path"))
+		o, err := control.Output(exec.Command("make", "--silent", "-C", k.path, "CONFIG_FILE="+k.configFile[cluster], "kubeconfig-path"))
 		if err != nil {
 			return fmt.Errorf("could not get kubeconfig-path: %v", err)
 		}
@@ -391,7 +391,7 @@ func (k *kubernetesAnywhereMultiCluster) TestSetup() error {
 		return err
 	}
 
-	o, err := output(exec.Command("kubectl", "config", "view", "--flatten=true", "--raw=true"))
+	o, err := control.Output(exec.Command("kubectl", "config", "view", "--flatten=true", "--raw=true"))
 	if err != nil {
 		return fmt.Errorf("could not get kubeconfig-path: %v", err)
 	}
@@ -412,7 +412,7 @@ func (k *kubernetesAnywhereMultiCluster) IsUp() error {
 
 	for _, cluster := range k.multiClusters.clusters {
 		kubeContext := k.kubeContextMap[cluster]
-		o, err := output(exec.Command("kubectl", "--context="+kubeContext, "get", "nodes", "--no-headers"))
+		o, err := control.Output(exec.Command("kubectl", "--context="+kubeContext, "get", "nodes", "--no-headers"))
 		if err != nil {
 			log.Printf("kubectl get nodes failed for cluster %s: %s\n%s", cluster, wrapError(err).Error(), string(o))
 			return err
@@ -440,5 +440,5 @@ func (k *kubernetesAnywhereMultiCluster) Down() error {
 		cmd := exec.Command("make", "-C", k.path, "CONFIG_FILE="+k.configFile[cluster], "FORCE_DESTROY=y", "destroy")
 		cmds = append(cmds, cmd)
 	}
-	return finishRunningParallel(cmds...)
+	return control.FinishRunningParallel(cmds...)
 }
