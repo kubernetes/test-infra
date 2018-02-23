@@ -1,5 +1,6 @@
-bootstrap/** @bentheelder
 boskos/** @krzyzacy
+experiment/bootstrap/** @bentheelder
+greenhouse/** @bentheelder
 gubernator/** @rmmh
 images/** @bentheelder @krzyzacy
 images/bazelbuild/** @bentheelder @ixdy
