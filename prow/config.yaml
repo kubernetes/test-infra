@@ -13178,7 +13178,7 @@ periodics:
     preset-k8s-ssh: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180221-921ef654e-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180222-59a11a830-master
       args:
       - "--timeout=140"
       - "--bare"
