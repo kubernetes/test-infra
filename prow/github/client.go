@@ -1575,3 +1575,43 @@ func (c *Client) ClearMilestone(org, repo string, num int) error {
 	}, nil)
 	return err
 }
+
+// SetMilestone sets the milestone from the specified issue (if it is a valid milestone)
+func (c *Client) SetMilestone(org, repo string, issueNum, milestoneNum int) error {
+	c.log("SetMilestone", org, repo, issueNum, milestoneNum)
+
+	m := &Issue{Milestone: Milestone{Number: milestoneNum}}
+
+	_, err := c.request(&request{
+		method:      http.MethodPatch,
+		path:        fmt.Sprintf("%s/repos/%v/%v/issues/%d", c.base, org, repo, issueNum),
+		requestBody: &m,
+		exitCodes:   []int{200},
+	}, nil)
+	return err
+}
+
+// ListMilestones list all milestones in a repo
+// https://developer.github.com/v3/issues/milestones/#list-milestones-for-a-repository/
+func (c *Client) ListMilestones(org, repo string) ([]Milestone, error) {
+	c.log("ListMilestones", org)
+	if c.fake {
+		return nil, nil
+	}
+	path := fmt.Sprintf("/repos/%s/%s/milestones", org, repo)
+	var milestones []Milestone
+	err := c.readPaginatedResults(
+		path,
+		"",
+		func() interface{} {
+			return &[]Milestone{}
+		},
+		func(obj interface{}) {
+			milestones = append(milestones, *(obj.(*[]Milestone))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return milestones, nil
+}

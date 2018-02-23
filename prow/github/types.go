@@ -549,5 +549,6 @@ type GenericCommentEvent struct {
 
 // Milestone is a milestone defined on a github repository
 type Milestone struct {
-	Title string `json:"title"`
+	Title  string `json:"title"`
+	Number int    `json:"number"`
 }

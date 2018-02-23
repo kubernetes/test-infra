@@ -160,6 +160,7 @@ type Configuration struct {
 	Triggers        []Trigger       `json:"triggers,omitempty"`
 	Heart           Heart           `json:"heart,omitempty"`
 	MilestoneStatus MilestoneStatus `json:"milestonestatus,omitempty"`
+	Milestone       Milestone       `json:"milestone,omitempty"`
 	Slack           Slack           `json:"slack,omitempty"`
 	ConfigUpdater   ConfigUpdater   `json:"config_updater,omitempty"`
 	Blockades       []Blockade      `json:"blockades,omitempty"`
@@ -328,6 +329,16 @@ type MilestoneStatus struct {
 	// responsible for maintaining the milestones:
 	// curl -H "Authorization: token <token>" https://api.github.com/orgs/<org-name>/teams
 	MaintainersID int `json:"maintainers_id,omitempty"`
+}
+
+// MilestoneStatus contains the configuration options for the milestone plugin.
+type Milestone struct {
+	// ID of the github team for the milestone maintainers (used for setting status labels)
+	// You can curl the following endpoint in order to determine the github ID of your team
+	// responsible for maintaining the milestones:
+	// curl -H "Authorization: token <token>" https://api.github.com/orgs/<org-name>/teams
+	MaintainersID   int    `json:"maintainers_id,omitempty"`
+	MaintainersTeam string `json:"maintainers_team,omitempty"`
 }
 
 type Slack struct {
