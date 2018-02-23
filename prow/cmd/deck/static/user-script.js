@@ -42,7 +42,7 @@ function loadUserDashboard() {
     });
     const container = document.querySelector("#main-container");
     if (!userData.PullRequests || userData.PullRequests.length === 0) {
-        container.appendChild(document.createTextNode("You don't have any open PR"));
+        container.appendChild(document.createTextNode("No open PRs found"));
         return;
     }
     userData.PullRequests.forEach(pr => {
