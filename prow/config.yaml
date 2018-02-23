@@ -13759,7 +13759,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/mlkube-testing/kubeflow-testing:latest
+    - image: gcr.io/kubeflow-ci/test-worker:latest
       imagePullPolicy: Always
 
 - interval: 1h
