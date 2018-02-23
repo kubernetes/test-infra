@@ -41,6 +41,10 @@ function loadUserDashboard() {
         });
     });
     const container = document.querySelector("#main-container");
+    if (!userData.PullRequests || userData.PullRequests.length === 0) {
+        container.appendChild(document.createTextNode("No open PRs found"));
+        return;
+    }
     userData.PullRequests.forEach(pr => {
         const prKey = [pr.Repository.NameWithOwner, pr.BaseRef.Name, pr.Number,
             pr.HeadRefOID].join("_");
@@ -373,6 +377,7 @@ function createQueriesTable(prLabels, queries) {
  * @return {Element}
  */
 function createMergeStatus(prLabels, queries) {
+    prLabels = prLabels ? prLabels : [];
     const statusContainer = document.createElement("DIV");
     statusContainer.classList.add("status-container");
     const status = document.createElement("DIV");
@@ -461,7 +466,8 @@ function createPRCardBody(pr, builds, queries) {
     cardBody.classList.add("mdl-card__supporting-text");
     cardBody.appendChild(title);
     cardBody.appendChild(createJobStatus(builds));
-    cardBody.appendChild(createMergeStatus(pr.Labels.Nodes, queries));
+    const nodes = pr.Labels && pr.Labels.Nodes ? pr.Labels.Nodes : [];
+    cardBody.appendChild(createMergeStatus(nodes, queries));
 
     return cardBody;
 }
@@ -492,14 +498,19 @@ function compareJobFn(a, b) {
  * @return {Element}
  */
 function createPRCard(pr, builds = [], queries = [], tidePools = []) {
+    builds = builds ? builds : [];
+    queries = queries ? queries : [];
+    tidePools = tidePools ? tidePools : [];
     const prCard = document.createElement("DIV");
     // jobs need to be sorted from high priority (failure, error) to low
     // priority (success)
     builds.sort(compareJobFn);
     const prLabelsSet = new Set();
-    pr.Labels.Nodes.forEach(label => {
-        prLabelsSet.add(label.Label.Name);
-    });
+    if (pr.Labels && pr.Labels.Nodes) {
+        pr.Labels.Nodes.forEach(label => {
+            prLabelsSet.add(label.Label.Name);
+        });
+    }
     const processedQuery = [];
     queries.forEach(query => {
         let score = 0.0;
