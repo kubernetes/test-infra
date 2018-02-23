@@ -209,13 +209,18 @@ def random_sleep(attempt):
     """Sleep 2**attempt seconds with a random fractional offset."""
     time.sleep(random.random() + attempt ** 2)
 
+def auth_google_gerrit(git, call):
+    """authenticate to foo.googlesource.com"""
+    call([git, 'clone', 'https://gerrit.googlesource.com/gcompute-tools'])
+    call(['./gcompute-tools/git-cookie-authdaemon'])
+
 
 def checkout(call, repo, repo_path, branch, pull, ssh='', git_cache='', clean=False):
     """Fetch and checkout the repository at the specified branch/pull.
 
     Note that repo and repo_path should usually be the same, but repo_path can
     be set to a different relative path where repo should be checked out."""
-    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-locals,too-many-branches
     if bool(branch) == bool(pull):
         raise ValueError('Must specify one of --branch or --pull')
 
@@ -225,6 +230,13 @@ def checkout(call, repo, repo_path, branch, pull, ssh='', git_cache='', clean=Fa
         refs, checkouts = branch_ref(branch)
 
     git = 'git'
+
+    # auth to google gerrit instance
+    # TODO(krzyzacy): when migrate to init container we'll make a gerrit
+    # checkout image and move this logic there
+    if '.googlesource.com' in repo:
+        auth_google_gerrit(git, call)
+
     if git_cache:
         cache_dir = '%s/%s' % (git_cache, repo)
         try:
