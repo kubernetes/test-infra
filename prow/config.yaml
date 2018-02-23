@@ -5582,12 +5582,12 @@ postsubmits:
     - master
     labels:
       preset-service-account: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180221-921ef654e-experimental
         args:
         - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -5599,24 +5599,14 @@ postsubmits:
         - "--test=//..."
         - "--test-args=--test_output=errors"
         env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
+        - name: BAZEL_REMOTE_CACHE_ENABLED
+          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "2Gi"
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
 
   - name: maintenance-boskos-config-upload
     agent: kubernetes
@@ -13633,6 +13623,7 @@ periodics:
   agent: kubernetes
   labels:
     preset-service-account: true
+    preset-bazel-scratch-dir: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180221-921ef654e-experimental
@@ -13650,24 +13641,14 @@ periodics:
       - "--test=//..."
       - "--test-args=--test_output=errors"
       env:
-      - name: TEST_TMPDIR
-        value: /root/.cache/bazel
+      - name: BAZEL_REMOTE_CACHE_ENABLED
+        value: "true"
       # Bazel needs privileged mode in order to sandbox builds.
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: cache-ssd
-        mountPath: /root/.cache
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           memory: "2Gi"
-    volumes:
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
 
 - name: ci-test-infra-triage
   interval: 1h
