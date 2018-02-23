@@ -83,6 +83,11 @@ blockades:
   - ^docs/yaml/kubectl/kubectl_.*\.yaml$
   explanation: "Files under `docs/yaml` must be in the `kubectl` directory and match pattern `kubectl_*.yaml`."
 - repos:
+  - kubernetes/kubernetes
+  blockregexps:
+  - ^examples/
+  explanation: "examples/ has moved to https://github.com/kubernetes/examples/"
+- repos:
   - kubernetes/community
   blockregexps:
   - ^events/2016
