@@ -164,6 +164,12 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting git client.")
 	}
+	// Get the bot's name in order to set credentials for the git client.
+	botName, err := githubClient.BotName()
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting bot name.")
+	}
+	gitClient.SetCredentials(botName, oauthSecret)
 
 	pluginAgent := &plugins.PluginAgent{}
 
