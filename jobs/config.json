@@ -4897,6 +4897,7 @@
   "ci-kubernetes-e2e-gci-gce-serial": {
     "args": [
       "--check-leaked-resources",
+      "--env=NODE_LOCAL_SSDS_EXT=1,scsi,fs",
       "--env-file=jobs/platform/gce.env",
       "--extract=ci/latest",
       "--gcp-master-image=gci",
