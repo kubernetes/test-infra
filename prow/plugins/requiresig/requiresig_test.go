@@ -45,6 +45,7 @@ func TestHandle(t *testing.T) {
 		isPR           bool
 		body           string
 		initialLabels  []string
+		unrelatedLabel bool
 		expectComment  bool
 		expectedAdd    string
 		expectedRemove string
@@ -117,6 +118,26 @@ func TestHandle(t *testing.T) {
 			body:          "I am using a sig command.\n/sig testing",
 			initialLabels: []string{helpWanted},
 		},
+		// Ignoring label events for labels other than sig labels prevents the
+		// plugin from adding and then removing the needs-sig label when new
+		// issues are created and include multiple label commands including a
+		// `/sig` command. In this case a label event caused by adding a non-sig
+		// label may occur before the `/sig` command is processed and the sig
+		// label is added.
+		{
+			name:           "ignore non-sig label added events",
+			action:         github.IssueActionLabeled,
+			body:           "I am using a sig command.\n/kind bug\n/sig testing",
+			initialLabels:  []string{helpWanted},
+			unrelatedLabel: true,
+		},
+		{
+			name:           "ignore non-sig label removed events",
+			action:         github.IssueActionUnlabeled,
+			body:           "I am using a sig command.\n/kind bug\n/sig testing",
+			initialLabels:  []string{helpWanted},
+			unrelatedLabel: true,
+		},
 	}
 
 	mentionRe := regexp.MustCompile(`(?m)@kubernetes/sig-testing-misc`)
@@ -141,6 +162,13 @@ func TestHandle(t *testing.T) {
 				PullRequest: pr,
 				Body:        test.body,
 			},
+		}
+		if test.action == github.IssueActionUnlabeled || test.action == github.IssueActionLabeled {
+			if test.unrelatedLabel {
+				ie.Label.Name = "kind/bug"
+			} else {
+				ie.Label.Name = "sig/awesome"
+			}
 		}
 		if err := handle(logrus.WithField("plugin", "require-sig"), fghc, &fakePruner{}, ie, mentionRe); err != nil {
 			t.Fatalf("[%s] Unexpected error from handle: %v.", test.name, err)
