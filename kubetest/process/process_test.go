@@ -355,9 +355,9 @@ func TestFinishRunningParallel(t *testing.T) {
 }
 
 func TestOutputOutputs(t *testing.T) {
-	interrupt := time.NewTimer(time.Duration(0))
-	terminate := time.NewTimer(time.Duration(0))
-	c := NewControl(time.Duration(0), interrupt, terminate, false)
+	interrupt := time.NewTimer(time.Duration(1) * time.Second)
+	terminate := time.NewTimer(time.Duration(1) * time.Second)
+	c := NewControl(time.Duration(1)*time.Second, interrupt, terminate, false)
 
 	b, err := c.Output(exec.Command("echo", "hello world"))
 	txt := string(b)
