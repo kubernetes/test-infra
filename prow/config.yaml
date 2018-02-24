@@ -6499,6 +6499,38 @@ periodics:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
+
+- interval: 5m
+  name: ci-kubernetes-bazel-test
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-bazel-scratch-dir: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180223-74690e8dc-master
+      args:
+      - --clean
+      - --repo=k8s.io/kubernetes
+      - --root=/go/src
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--" # end bootstrap args, scenario args below
+      - "--test=//... -//build/... -//vendor/..."
+      - "--manual-test=//hack:verify-all"
+      - "--test-args=--config=unit"
+      - "--test-args=--build_tag_filters=-e2e,-integration"
+      - "--test-args=--test_tag_filters=-e2e,-integration"
+      - "--test-args=--flaky_test_attempts=3"
+      env:
+      - name: BAZEL_REMOTE_CACHE_ENABLED
+        value: "true"
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "6Gi"
+
 - interval: 5m
   name: ci-kubernetes-build
   agent: kubernetes
