@@ -17,6 +17,7 @@ import logging
 import zlib
 
 import google.appengine.ext.ndb as ndb
+from google.appengine.api import app_identity
 
 
 GCS_API_URL = 'https://storage.googleapis.com'
@@ -26,7 +27,19 @@ MAX_SIZE = 30 * 1024 ** 2  # 30MiB
 @ndb.tasklet
 def get(url):
     context = ndb.get_context()
-    headers = {'accept-encoding': 'gzip, *', 'x-goog-api-version': '2'}
+    
+    auth_token, _ = app_identity.get_access_token(
+            'https://www.googleapis.com/auth/cloud-platform')
+    logging.info(
+        'Using token {} to represent identity {}'.format(
+            auth_token, app_identity.get_service_account_name()))
+
+    logging.info('token: %s', 'Bearer {}'.format(auth_token))
+    headers = {
+        'accept-encoding': 'gzip, *',
+        'x-goog-api-version': '2',
+        'Authorization': 'Bearer {}'.format(auth_token)
+        }
     for retry in xrange(6):
         result = yield context.urlfetch(url, headers=headers)
         status = result.status_code
@@ -43,6 +56,7 @@ def get(url):
                                     len(content) / 1024,
                                     len(dec.unconsumed_tail) / 1024)
             raise ndb.Return(content)
+
         logging.error("unable to fetch '%s': status code %d", url, status)
         raise ndb.Return(None)
 
