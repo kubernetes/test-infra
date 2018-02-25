@@ -38,6 +38,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"golang.org/x/crypto/ssh"
+	"k8s.io/test-infra/kubetest/util"
 )
 
 var (
@@ -132,24 +133,24 @@ type kops struct {
 var _ deployer = kops{}
 
 func migrateKopsEnv() error {
-	return migrateOptions([]migratedOption{
+	return util.MigrateOptions([]util.MigratedOption{
 		{
-			env:      "KOPS_STATE_STORE",
-			option:   kopsState,
-			name:     "--kops-state",
-			skipPush: true,
+			Env:      "KOPS_STATE_STORE",
+			Option:   kopsState,
+			Name:     "--kops-state",
+			SkipPush: true,
 		},
 		{
-			env:      "AWS_SSH_KEY",
-			option:   kopsSSHKey,
-			name:     "--kops-ssh-key",
-			skipPush: true,
+			Env:      "AWS_SSH_KEY",
+			Option:   kopsSSHKey,
+			Name:     "--kops-ssh-key",
+			SkipPush: true,
 		},
 		{
-			env:      "PRIORITY_PATH",
-			option:   kopsPriorityPath,
-			name:     "--kops-priority-path",
-			skipPush: true,
+			Env:      "PRIORITY_PATH",
+			Option:   kopsPriorityPath,
+			Name:     "--kops-priority-path",
+			SkipPush: true,
 		},
 	})
 }
@@ -174,7 +175,7 @@ func newKops(provider, gcpProject, cluster string) (*kops, error) {
 		return nil, fmt.Errorf("--kops-state must be set to a valid S3 path for kops deployment")
 	}
 	if *kopsPriorityPath != "" {
-		if err := insertPath(*kopsPriorityPath); err != nil {
+		if err := util.InsertPath(*kopsPriorityPath); err != nil {
 			return nil, err
 		}
 	}
@@ -290,7 +291,7 @@ func newKops(provider, gcpProject, cluster string) (*kops, error) {
 		if err := httpRead(kopsBinURL, f); err != nil {
 			return nil, err
 		}
-		if err := ensureExecutable(kopsBin); err != nil {
+		if err := util.EnsureExecutable(kopsBin); err != nil {
 			return nil, err
 		}
 		*kopsPath = kopsBin
@@ -387,10 +388,10 @@ func (k kops) Up() error {
 	if len(featureFlags) != 0 {
 		os.Setenv("KOPS_FEATURE_FLAGS", strings.Join(featureFlags, ","))
 	}
-	if err := finishRunning(exec.Command(k.path, createArgs...)); err != nil {
+	if err := control.FinishRunning(exec.Command(k.path, createArgs...)); err != nil {
 		return fmt.Errorf("kops configuration failed: %v", err)
 	}
-	if err := finishRunning(exec.Command(k.path, "update", "cluster", k.cluster, "--yes")); err != nil {
+	if err := control.FinishRunning(exec.Command(k.path, "update", "cluster", k.cluster, "--yes")); err != nil {
 		return fmt.Errorf("kops bringup failed: %v", err)
 	}
 
@@ -500,7 +501,7 @@ func (k kops) TestSetup() error {
 		return nil
 	}
 
-	if err := finishRunning(exec.Command(k.path, "export", "kubecfg", k.cluster)); err != nil {
+	if err := control.FinishRunning(exec.Command(k.path, "export", "kubecfg", k.cluster)); err != nil {
 		return fmt.Errorf("failure from 'kops export kubecfg %s': %v", k.cluster, err)
 	}
 
@@ -520,12 +521,12 @@ func (k kops) Down() error {
 	// We do a "kops get" first so the exit status of "kops delete" is
 	// more sensical in the case of a non-existent cluster. ("kops
 	// delete" will exit with status 1 on a non-existent cluster)
-	err := finishRunning(exec.Command(k.path, "get", "clusters", k.cluster))
+	err := control.FinishRunning(exec.Command(k.path, "get", "clusters", k.cluster))
 	if err != nil {
 		// This is expected if the cluster doesn't exist.
 		return nil
 	}
-	return finishRunning(exec.Command(k.path, "delete", "cluster", k.cluster, "--yes"))
+	return control.FinishRunning(exec.Command(k.path, "delete", "cluster", k.cluster, "--yes"))
 }
 
 func (k kops) GetClusterCreated(gcpProject string) (time.Time, error) {
@@ -539,7 +540,7 @@ type kopsDump struct {
 
 // String implements fmt.Stringer
 func (o *kopsDump) String() string {
-	return jsonForDebug(o)
+	return util.JsonForDebug(o)
 }
 
 // kopsDumpInstance is the format of an instance (machine) in a kops dump
@@ -550,12 +551,12 @@ type kopsDumpInstance struct {
 
 // String implements fmt.Stringer
 func (o *kopsDumpInstance) String() string {
-	return jsonForDebug(o)
+	return util.JsonForDebug(o)
 }
 
 // runKopsDump runs a kops toolbox dump to dump the status of the cluster
 func (k *kops) runKopsDump() (*kopsDump, error) {
-	o, err := output(exec.Command(k.path, "toolbox", "dump", "--name", k.cluster, "-ojson"))
+	o, err := control.Output(exec.Command(k.path, "toolbox", "dump", "--name", k.cluster, "-ojson"))
 	if err != nil {
 		log.Printf("error running kops toolbox dump: %s\n%s", wrapError(err).Error(), string(o))
 		return nil, err
@@ -583,7 +584,7 @@ func (k kops) Publish() error {
 		return errors.New("kops-version not set; cannot publish")
 	}
 
-	return xmlWrap("Publish kops version", func() error {
+	return control.XmlWrap(&suite, "Publish kops version", func() error {
 		log.Printf("Set %s version to %s", k.kopsPublish, k.kopsVersion)
 		return gcsWrite(k.kopsPublish, []byte(k.kopsVersion))
 	})

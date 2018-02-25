@@ -29,7 +29,7 @@ func kubectlGetNodes(cmd string) (*nodeList, error) {
 	if cmd == "" {
 		cmd = "kubectl"
 	}
-	o, err := output(exec.Command(cmd, "get", "nodes", "-ojson"))
+	o, err := control.Output(exec.Command(cmd, "get", "nodes", "-ojson"))
 	if err != nil {
 		log.Printf("kubectl get nodes failed: %s\n%s", wrapError(err).Error(), string(o))
 		return nil, err

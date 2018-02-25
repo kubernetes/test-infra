@@ -25,6 +25,8 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+
+	"k8s.io/test-infra/kubetest/util"
 )
 
 func TestWriteMetadata(t *testing.T) {
@@ -125,12 +127,12 @@ func TestMigrateGcpEnvAndOptions(t *testing.T) {
 	}
 
 	// Preserve original ZONE, KUBE_GCE_ZONE state
-	if pz, err := pushEnv("ZONE", "unset"); err != nil {
+	if pz, err := util.PushEnv("ZONE", "unset"); err != nil {
 		t.Fatalf("Could not set ZONE: %v", err)
 	} else {
 		defer pz()
 	}
-	if pkgz, err := pushEnv("KUBE_GCE_ZONE", "unset"); err != nil {
+	if pkgz, err := util.PushEnv("KUBE_GCE_ZONE", "unset"); err != nil {
 		t.Fatalf("Could not set KUBE_GCE_ZONE: %v", err)
 	} else {
 		defer pkgz()
@@ -202,12 +204,12 @@ func TestPrepareParallelism(t *testing.T) {
 	}
 
 	// Preserve original GINKGO_PARALLEL and GINKGO_PARALLEL_NODES
-	if pre, err := pushEnv("GINKGO_PARALLEL", "unset"); err != nil {
+	if pre, err := util.PushEnv("GINKGO_PARALLEL", "unset"); err != nil {
 		t.Fatalf("Could not set GINKGO_PARALLEL: %v", err)
 	} else {
 		defer pre()
 	}
-	if pre, err := pushEnv("GINKGO_PARALLEL_NODES", "unset"); err != nil {
+	if pre, err := util.PushEnv("GINKGO_PARALLEL_NODES", "unset"); err != nil {
 		t.Fatalf("Could not set GINKGO_PARALLEL_NODES: %v", err)
 	} else {
 		defer pre()

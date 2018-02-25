@@ -74,7 +74,7 @@ func (n localCluster) Up() error {
 	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env, "ENABLE_DAEMON=true")
 	cmd.Env = append(cmd.Env, fmt.Sprintf("LOG_DIR=%s", n.tempDir))
-	err = finishRunning(cmd)
+	err = control.FinishRunning(cmd)
 	if err != nil {
 		return err
 	}
@@ -115,7 +115,7 @@ func (n localCluster) IsUp() error {
 
 func (n localCluster) DumpClusterLogs(localPath, gcsPath string) error {
 	cmd := exec.Command("sudo", "cp", "-r", n.tempDir, localPath)
-	return finishRunning(cmd)
+	return control.FinishRunning(cmd)
 }
 
 func (n localCluster) TestSetup() error {
@@ -123,15 +123,15 @@ func (n localCluster) TestSetup() error {
 }
 
 func (n localCluster) Down() error {
-	err := finishRunning(exec.Command("bash", "-c", "docker rm -f $(docker ps -a -q)"))
+	err := control.FinishRunning(exec.Command("bash", "-c", "docker rm -f $(docker ps -a -q)"))
 	if err != nil {
 		log.Printf("unable to cleanup containers in docker: %v", err)
 	}
-	err = finishRunning(exec.Command("pkill", "hyperkube"))
+	err = control.FinishRunning(exec.Command("pkill", "hyperkube"))
 	if err != nil {
 		log.Printf("unable to kill hyperkube processes: %v", err)
 	}
-	err = finishRunning(exec.Command("pkill", "etcd"))
+	err = control.FinishRunning(exec.Command("pkill", "etcd"))
 	if err != nil {
 		log.Printf("unable to kill etcd: %v", err)
 	}

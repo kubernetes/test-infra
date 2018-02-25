@@ -38,6 +38,8 @@ go_library(
     importpath = "k8s.io/test-infra/kubetest",
     deps = [
         "//boskos/client:go_default_library",
+        "//kubetest/process:go_default_library",
+        "//kubetest/util:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/session:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
@@ -55,7 +57,11 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//kubetest/process:all-srcs",
+        "//kubetest/util:all-srcs",
+    ],
     tags = ["automanaged"],
 )
 
@@ -72,4 +78,5 @@ go_test(
     ],
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/kubetest",
+    deps = ["//kubetest/util:go_default_library"],
 )
