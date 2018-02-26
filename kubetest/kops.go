@@ -23,9 +23,9 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"golang.org/x/crypto/ssh"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
 	"os/exec"
 	"os/user"
@@ -33,6 +33,12 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/ec2"
+	"golang.org/x/crypto/ssh"
+	"k8s.io/test-infra/kubetest/util"
 )
 
 var (
@@ -43,17 +49,41 @@ var (
 	kopsSSHUser      = flag.String("kops-ssh-user", os.Getenv("USER"), "(kops only) Username for SSH connections to nodes.)")
 	kopsSSHKey       = flag.String("kops-ssh-key", "", "(kops only) Path to ssh key-pair for each node (defaults '~/.ssh/kube_aws_rsa' if unset.)")
 	kopsKubeVersion  = flag.String("kops-kubernetes-version", "", "(kops only) If set, the version of Kubernetes to deploy (can be a URL to a GCS path where the release is stored) (Defaults to kops default, latest stable release.).")
-	kopsZones        = flag.String("kops-zones", "us-west-2a", "(kops only) zones for kops deployment, comma delimited.")
+	kopsZones        = flag.String("kops-zones", "", "(kops only) zones for kops deployment, comma delimited.")
 	kopsNodes        = flag.Int("kops-nodes", 2, "(kops only) Number of nodes to create.")
 	kopsUpTimeout    = flag.Duration("kops-up-timeout", 20*time.Minute, "(kops only) Time limit between 'kops config / kops update' and a response from the Kubernetes API.")
 	kopsAdminAccess  = flag.String("kops-admin-access", "", "(kops only) If set, restrict apiserver access to this CIDR range.")
 	kopsImage        = flag.String("kops-image", "", "(kops only) Image (AMI) for nodes to use. (Defaults to kops default, a Debian image with a custom kubernetes kernel.)")
 	kopsArgs         = flag.String("kops-args", "", "(kops only) Additional space-separated args to pass unvalidated to 'kops create cluster', e.g. '--kops-args=\"--dns private --node-size t2.micro\"'")
-	kopsPriorityPath = flag.String("kops-priority-path", "", "Insert into PATH if set")
-	kopsBaseURL      = flag.String("kops-base-url", "", "Base URL for a prebuilt version of kops")
-	kopsVersion      = flag.String("kops-version", "", "URL to a file containing a valid kops-base-url")
-	kopsDiskSize     = flag.Int("kops-disk-size", 48, "Disk size to use for nodes and masters")
-	kopsPublish      = flag.String("kops-publish", "", "Publish kops version to the specified gs:// path on success")
+	kopsPriorityPath = flag.String("kops-priority-path", "", "(kops only) Insert into PATH if set")
+	kopsBaseURL      = flag.String("kops-base-url", "", "(kops only) Base URL for a prebuilt version of kops")
+	kopsVersion      = flag.String("kops-version", "", "(kops only) URL to a file containing a valid kops-base-url")
+	kopsDiskSize     = flag.Int("kops-disk-size", 48, "(kops only) Disk size to use for nodes and masters")
+	kopsPublish      = flag.String("kops-publish", "", "(kops only) Publish kops version to the specified gs:// path on success")
+	kopsMasterSize   = flag.String("kops-master-size", "c4.large", "(kops only) master instance type")
+	kopsMasterCount  = flag.Int("kops-master-count", 1, "(kops only) Number of masters to run")
+	kopsEtcdVersion  = flag.String("kops-etcd-version", "", "(kops only) Etcd Version")
+
+	kopsMultipleZones = flag.Bool("kops-multiple-zones", false, "(kops only) run tests in multiple zones")
+
+	awsRegions = []string{
+		"ap-south-1",
+		"eu-west-2",
+		"eu-west-1",
+		"ap-northeast-2",
+		"ap-northeast-1",
+		"sa-east-1",
+		"ca-central-1",
+		"ap-southeast-1",
+		"ap-southeast-2",
+		"eu-central-1",
+		"us-east-1",
+		"us-east-2",
+		"us-west-1",
+		"us-west-2",
+		// not supporting Paris yet as AWS does not have all instance types available
+		//"eu-west-3",
+	}
 )
 
 type kops struct {
@@ -86,29 +116,41 @@ type kops struct {
 
 	// kopsPublish is the path where we will publish kopsVersion, after a successful test
 	kopsPublish string
+
+	// masterCount denotes how many masters to start
+	masterCount int
+
+	// etcdVersion is the etcd version to run
+	etcdVersion string
+
+	// masterSize is the EC2 instance type for the master
+	masterSize string
+
+	// multipleZones denotes using more than one zone
+	multipleZones bool
 }
 
 var _ deployer = kops{}
 
 func migrateKopsEnv() error {
-	return migrateOptions([]migratedOption{
+	return util.MigrateOptions([]util.MigratedOption{
 		{
-			env:      "KOPS_STATE_STORE",
-			option:   kopsState,
-			name:     "--kops-state",
-			skipPush: true,
+			Env:      "KOPS_STATE_STORE",
+			Option:   kopsState,
+			Name:     "--kops-state",
+			SkipPush: true,
 		},
 		{
-			env:      "AWS_SSH_KEY",
-			option:   kopsSSHKey,
-			name:     "--kops-ssh-key",
-			skipPush: true,
+			Env:      "AWS_SSH_KEY",
+			Option:   kopsSSHKey,
+			Name:     "--kops-ssh-key",
+			SkipPush: true,
 		},
 		{
-			env:      "PRIORITY_PATH",
-			option:   kopsPriorityPath,
-			name:     "--kops-priority-path",
-			skipPush: true,
+			Env:      "PRIORITY_PATH",
+			Option:   kopsPriorityPath,
+			Name:     "--kops-priority-path",
+			SkipPush: true,
 		},
 	})
 }
@@ -133,7 +175,7 @@ func newKops(provider, gcpProject, cluster string) (*kops, error) {
 		return nil, fmt.Errorf("--kops-state must be set to a valid S3 path for kops deployment")
 	}
 	if *kopsPriorityPath != "" {
-		if err := insertPath(*kopsPriorityPath); err != nil {
+		if err := util.InsertPath(*kopsPriorityPath); err != nil {
 			return nil, err
 		}
 	}
@@ -179,11 +221,32 @@ func newKops(provider, gcpProject, cluster string) (*kops, error) {
 	if err := os.Setenv("AWS_SSH_KEY", sshKey); err != nil {
 		return nil, err
 	}
-	// ZONE is required by the AWS e2e tests.
-	zones := strings.Split(*kopsZones, ",")
+
+	// zones are required by the kops e2e tests.
+	var zones []string
+
+	// if zones is set to zero and gcp project is not set then pick random aws zone
+	if *kopsZones == "" && provider == "aws" {
+		zones, err = getRandomAWSZones(*kopsMasterCount, *kopsMultipleZones)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		zones = strings.Split(*kopsZones, ",")
+	}
+
+	// set ZONES for e2e.go
 	if err := os.Setenv("ZONE", zones[0]); err != nil {
 		return nil, err
 	}
+
+	if len(zones) == 0 {
+		return nil, errors.New("no zones found")
+	} else if zones[0] == "" {
+		return nil, errors.New("zone cannot be a empty string")
+	}
+
+	log.Printf("executing kops with zones: %q", zones)
 
 	// Set kops-base-url from kops-version
 	if *kopsVersion != "" {
@@ -214,7 +277,7 @@ func newKops(provider, gcpProject, cluster string) (*kops, error) {
 	// Download kops from kopsBaseURL if kopsPath is not set
 	if *kopsPath == "" {
 		if *kopsBaseURL == "" {
-			return nil, fmt.Errorf("--kops or --kops-base-url must be set")
+			return nil, errors.New("--kops or --kops-base-url must be set")
 		}
 
 		kopsBinURL := *kopsBaseURL + "/linux/amd64/kops"
@@ -228,7 +291,7 @@ func newKops(provider, gcpProject, cluster string) (*kops, error) {
 		if err := httpRead(kopsBinURL, f); err != nil {
 			return nil, err
 		}
-		if err := ensureExecutable(kopsBin); err != nil {
+		if err := util.EnsureExecutable(kopsBin); err != nil {
 			return nil, err
 		}
 		*kopsPath = kopsBin
@@ -252,6 +315,9 @@ func newKops(provider, gcpProject, cluster string) (*kops, error) {
 		diskSize:      *kopsDiskSize,
 		kopsVersion:   *kopsBaseURL,
 		kopsPublish:   *kopsPublish,
+		masterCount:   *kopsMasterCount,
+		etcdVersion:   *kopsEtcdVersion,
+		masterSize:    *kopsMasterSize,
 	}, nil
 }
 
@@ -274,6 +340,7 @@ func (k kops) Up() error {
 	}
 
 	var featureFlags []string
+	var overrides []string
 
 	createArgs := []string{
 		"create", "cluster",
@@ -282,17 +349,18 @@ func (k kops) Up() error {
 		"--node-count", strconv.Itoa(k.nodes),
 		"--node-volume-size", strconv.Itoa(k.diskSize),
 		"--master-volume-size", strconv.Itoa(k.diskSize),
+		"--master-size", k.masterSize,
 		"--zones", strings.Join(k.zones, ","),
+		"--master-count", strconv.Itoa(k.masterCount),
 	}
+
 	if k.kubeVersion != "" {
 		createArgs = append(createArgs, "--kubernetes-version", k.kubeVersion)
 	}
 	if k.adminAccess != "" {
 		createArgs = append(createArgs, "--admin-access", k.adminAccess)
-
 		// Enable nodeport access from the same IP (we expect it to be the test IPs)
-		featureFlags = append(featureFlags, "SpecOverrideFlag")
-		createArgs = append(createArgs, "--override", "cluster.spec.nodePortAccess="+k.adminAccess)
+		overrides = append(overrides, "cluster.spec.nodePortAccess="+k.adminAccess)
 	}
 	if k.image != "" {
 		createArgs = append(createArgs, "--image", k.image)
@@ -310,15 +378,20 @@ func (k kops) Up() error {
 	if k.args != "" {
 		createArgs = append(createArgs, strings.Split(k.args, " ")...)
 	}
-
+	if k.etcdVersion != "" {
+		overrides = append(overrides, "cluster.spec.etcdClusters[*].version="+k.etcdVersion)
+	}
+	if len(overrides) != 0 {
+		featureFlags = append(featureFlags, "SpecOverrideFlag")
+		createArgs = append(createArgs, "--override", strings.Join(overrides, ","))
+	}
 	if len(featureFlags) != 0 {
 		os.Setenv("KOPS_FEATURE_FLAGS", strings.Join(featureFlags, ","))
 	}
-
-	if err := finishRunning(exec.Command(k.path, createArgs...)); err != nil {
+	if err := control.FinishRunning(exec.Command(k.path, createArgs...)); err != nil {
 		return fmt.Errorf("kops configuration failed: %v", err)
 	}
-	if err := finishRunning(exec.Command(k.path, "update", "cluster", k.cluster, "--yes")); err != nil {
+	if err := control.FinishRunning(exec.Command(k.path, "update", "cluster", k.cluster, "--yes")); err != nil {
 		return fmt.Errorf("kops bringup failed: %v", err)
 	}
 
@@ -428,7 +501,7 @@ func (k kops) TestSetup() error {
 		return nil
 	}
 
-	if err := finishRunning(exec.Command(k.path, "export", "kubecfg", k.cluster)); err != nil {
+	if err := control.FinishRunning(exec.Command(k.path, "export", "kubecfg", k.cluster)); err != nil {
 		return fmt.Errorf("failure from 'kops export kubecfg %s': %v", k.cluster, err)
 	}
 
@@ -448,12 +521,12 @@ func (k kops) Down() error {
 	// We do a "kops get" first so the exit status of "kops delete" is
 	// more sensical in the case of a non-existent cluster. ("kops
 	// delete" will exit with status 1 on a non-existent cluster)
-	err := finishRunning(exec.Command(k.path, "get", "clusters", k.cluster))
+	err := control.FinishRunning(exec.Command(k.path, "get", "clusters", k.cluster))
 	if err != nil {
 		// This is expected if the cluster doesn't exist.
 		return nil
 	}
-	return finishRunning(exec.Command(k.path, "delete", "cluster", k.cluster, "--yes"))
+	return control.FinishRunning(exec.Command(k.path, "delete", "cluster", k.cluster, "--yes"))
 }
 
 func (k kops) GetClusterCreated(gcpProject string) (time.Time, error) {
@@ -467,7 +540,7 @@ type kopsDump struct {
 
 // String implements fmt.Stringer
 func (o *kopsDump) String() string {
-	return jsonForDebug(o)
+	return util.JsonForDebug(o)
 }
 
 // kopsDumpInstance is the format of an instance (machine) in a kops dump
@@ -478,12 +551,12 @@ type kopsDumpInstance struct {
 
 // String implements fmt.Stringer
 func (o *kopsDumpInstance) String() string {
-	return jsonForDebug(o)
+	return util.JsonForDebug(o)
 }
 
 // runKopsDump runs a kops toolbox dump to dump the status of the cluster
 func (k *kops) runKopsDump() (*kopsDump, error) {
-	o, err := output(exec.Command(k.path, "toolbox", "dump", "--name", k.cluster, "-ojson"))
+	o, err := control.Output(exec.Command(k.path, "toolbox", "dump", "--name", k.cluster, "-ojson"))
 	if err != nil {
 		log.Printf("error running kops toolbox dump: %s\n%s", wrapError(err).Error(), string(o))
 		return nil, err
@@ -511,8 +584,61 @@ func (k kops) Publish() error {
 		return errors.New("kops-version not set; cannot publish")
 	}
 
-	return xmlWrap("Publish kops version", func() error {
+	return control.XmlWrap(&suite, "Publish kops version", func() error {
 		log.Printf("Set %s version to %s", k.kopsPublish, k.kopsVersion)
 		return gcsWrite(k.kopsPublish, []byte(k.kopsVersion))
 	})
+}
+
+// getRandomAWSZones looks up all regions, and the availability zones for those regions.  A random
+// region is then chosen and the AZ's for that region is returned. At least masterCount zones will be
+// returned, all in the same region.
+func getRandomAWSZones(masterCount int, multipleZones bool) ([]string, error) {
+
+	// TODO(chrislovecnm): get the number of ec2 instances in the region and ensure that there are not too many running
+	for _, i := range rand.Perm(len(awsRegions)) {
+		ec2Session, err := getAWSEC2Session(awsRegions[i])
+		if err != nil {
+			return nil, err
+		}
+
+		// az for a region. AWS Go API does not allow us to make a single call
+		zoneResults, err := ec2Session.DescribeAvailabilityZones(&ec2.DescribeAvailabilityZonesInput{})
+		if err != nil {
+			return nil, fmt.Errorf("unable to call aws api DescribeAvailabilityZones for %q: %v", awsRegions[i], err)
+		}
+
+		var selectedZones []string
+		if len(zoneResults.AvailabilityZones) >= masterCount && multipleZones {
+			for _, z := range zoneResults.AvailabilityZones {
+				selectedZones = append(selectedZones, *z.ZoneName)
+			}
+
+			log.Printf("Launching cluster in region: %q", awsRegions[i])
+			return selectedZones, nil
+		} else if !multipleZones {
+			z := zoneResults.AvailabilityZones[rand.Intn(len(zoneResults.AvailabilityZones))]
+			selectedZones = append(selectedZones, *z.ZoneName)
+			log.Printf("Launching cluster in region: %q", awsRegions[i])
+			return selectedZones, nil
+		}
+	}
+
+	return nil, fmt.Errorf("unable to find region with %d zones", masterCount)
+}
+
+// getAWSEC2Session creates an returns a EC2 API session.
+func getAWSEC2Session(region string) (*ec2.EC2, error) {
+	config := aws.NewConfig().WithRegion(region)
+
+	// This avoids a confusing error message when we fail to get credentials
+	config = config.WithCredentialsChainVerboseErrors(true)
+
+	s, err := session.NewSession(config)
+	if err != nil {
+		return nil, fmt.Errorf("unable to build aws API session with region: %q: %v", region, err)
+	}
+
+	return ec2.New(s, config), nil
+
 }

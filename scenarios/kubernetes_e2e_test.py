@@ -19,9 +19,7 @@
 
 """Test for kubernetes_e2e.py"""
 
-import json
 import os
-import re
 import shutil
 import string
 import tempfile
@@ -180,7 +178,6 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
     def test_local(self):
         """Make sure local mode is fine overall."""
         args = kubernetes_e2e.parse_args()
-        self.assertEqual(args.mode, 'local')
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             kubernetes_e2e.main(args)
 
@@ -239,21 +236,20 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
             '--deployment=yay',
             '--provider=gce',
         ]
-        args = kubernetes_e2e.parse_args(['--mode=docker']
-                                         + migrated
+        args = kubernetes_e2e.parse_args(migrated
                                          + explicit_passthrough_args
                                          + ['--test=false'])
         self.assertEquals(migrated, args.kubetest_args)
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             kubernetes_e2e.main(args)
-        lastcall = self.callstack[-2]
+        lastcall = self.callstack[-1]
         for arg in migrated:
             self.assertIn(arg, lastcall)
         for arg in explicit_passthrough_args:
             self.assertIn(arg, lastcall)
 
     def test_updown_default(self):
-        args = kubernetes_e2e.parse_args(['--mode=local'])
+        args = kubernetes_e2e.parse_args([])
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             kubernetes_e2e.main(args)
         lastcall = self.callstack[-1]
@@ -261,7 +257,7 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         self.assertIn('--down', lastcall)
 
     def test_updown_set(self):
-        args = kubernetes_e2e.parse_args(['--mode=local', '--up=false', '--down=true'])
+        args = kubernetes_e2e.parse_args(['--up=false', '--down=true'])
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             kubernetes_e2e.main(args)
         lastcall = self.callstack[-1]
@@ -271,8 +267,7 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
 
     def test_kubeadm_ci(self):
         """Make sure kubeadm ci mode is fine overall."""
-        args = kubernetes_e2e.parse_args(['--mode=local', '--kubeadm=ci'])
-        self.assertEqual(args.mode, 'local')
+        args = kubernetes_e2e.parse_args(['--kubeadm=ci'])
         self.assertEqual(args.kubeadm, 'ci')
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             with Stub(kubernetes_e2e, 'check_output', self.fake_output_work_status):
@@ -313,8 +308,7 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
 
     def test_kubeadm_periodic(self):
         """Make sure kubeadm periodic mode is fine overall."""
-        args = kubernetes_e2e.parse_args(['--mode=local', '--kubeadm=periodic'])
-        self.assertEqual(args.mode, 'local')
+        args = kubernetes_e2e.parse_args(['--kubeadm=periodic'])
         self.assertEqual(args.kubeadm, 'periodic')
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             with Stub(kubernetes_e2e, 'check_output', self.fake_output_work_status):
@@ -332,8 +326,7 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
 
     def test_kubeadm_periodic_v1_6(self):
         """Make sure kubeadm periodic mode has correct version on v1.6"""
-        args = kubernetes_e2e.parse_args(['--mode=local', '--kubeadm=periodic'])
-        self.assertEqual(args.mode, 'local')
+        args = kubernetes_e2e.parse_args(['--kubeadm=periodic'])
         self.assertEqual(args.kubeadm, 'periodic')
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             with Stub(kubernetes_e2e, 'check_output', self.fake_output_work_status_v1_6):
@@ -352,11 +345,9 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
     def test_kubeadm_pull(self):
         """Make sure kubeadm pull mode is fine overall."""
         args = kubernetes_e2e.parse_args([
-            '--mode=local',
             '--kubeadm=pull',
             '--use-shared-build=bazel'
         ])
-        self.assertEqual(args.mode, 'local')
         self.assertEqual(args.kubeadm, 'pull')
         self.assertEqual(args.use_shared_build, 'bazel')
 
@@ -382,50 +373,9 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
 
         self.assertEqual(sysexit.exception.code, 2)
 
-    def test_docker(self):
-        """Make sure docker mode is fine overall."""
-        args = kubernetes_e2e.parse_args(['--mode=docker'])
-        self.assertEqual(args.mode, 'docker')
-        with Stub(kubernetes_e2e, 'check_env', fake_bomb):
-            kubernetes_e2e.main(args)
-
-        self.assertEqual(self.envs, {})
-        call = self.callstack[-2]
-        self.assertTrue(call.startswith('docker'), call)
-
-    def test_default_tag(self):
-        """Ensure the default tag exists on gcr.io."""
-        args = kubernetes_e2e.parse_args()
-        match = re.match('gcr.io/([^:]+):(.+)', kubernetes_e2e.kubekins(args.tag))
-        self.assertIsNotNone(match)
-        url = 'https://gcr.io/v2/%s/manifests/%s' % (match.group(1),
-                                                     match.group(2))
-        req = urllib2.Request(url)
-        req.add_header('Accept', 'application/vnd.docker.distribution.manifest.v2+json')
-        data = json.loads(urllib2.urlopen(req).read())
-        self.assertNotIn('errors', data)
-        self.assertIn('config', data)
-        self.assertIn('digest', data.get('config'))
-
-    def test_docker_env(self):
-        """
-            Ensure that host variables (such as GOPATH) are excluded,
-            and OS envs are included.
-        """
-        mode = kubernetes_e2e.DockerMode(
-            'fake-container', '/host-workspace', False, 'fake-tag', [])
-        mode.add_environment(*('FOO=BAR', 'GOPATH=/something/else',
-                               'WORKSPACE=/new/workspace'))
-        mode.add_os_environment('USER=jenkins')
-        self.assertIn('FOO=BAR', mode.cmd)
-        self.assertIn('WORKSPACE=/workspace', mode.cmd)
-        self.assertNotIn('GOPATH=/something/else', mode.cmd)
-        self.assertIn('USER=jenkins', mode.cmd)
-
     def test_image_family(self):
         """Make sure --image-family fetches the latest image correctly."""
         args = kubernetes_e2e.parse_args([
-            '--mode=local',
             '--image-family=cos-stable',
             '--image-project=cos-cloud'])
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
@@ -440,11 +390,9 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
 
     def test_parse_args_order_agnostic(self):
         args = kubernetes_e2e.parse_args([
-            '--mode=local',
             '--some-kubetest-arg=foo',
             '--cluster=test'])
         self.assertEqual(args.kubetest_args, ['--some-kubetest-arg=foo'])
-        self.assertEqual(args.mode, 'local')
         self.assertEqual(args.cluster, 'test')
 
     def test_gcp_network(self):
@@ -465,15 +413,6 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
             kubernetes_e2e.main(args)
         self.assertIn(env, self.envs)
         self.assertEqual(self.envs[env], value)
-
-    def test_env_docker(self):
-        env = 'FOO=bar blatz'
-        args = kubernetes_e2e.parse_args([
-            '--mode=docker',
-            '--env=' + env,
-        ])
-        kubernetes_e2e.main(args)
-        self.assertIn('-e '+env, self.callstack[-2])
 
     def test_aws(self):
         temp = tempfile.NamedTemporaryFile()

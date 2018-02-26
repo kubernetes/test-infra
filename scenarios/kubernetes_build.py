@@ -21,6 +21,7 @@
 
 import argparse
 import os
+import re
 import subprocess
 import sys
 
@@ -30,8 +31,55 @@ def check(*cmd):
     print >>sys.stderr, 'Run:', cmd
     subprocess.check_call(cmd)
 
+def check_no_stdout(*cmd):
+    """Log and run the command, suppress stdout & stderr, raising on errors."""
+    print >>sys.stderr, 'Run:', cmd
+    null = open(os.devnull, 'w')
+    subprocess.check_call(cmd, stdout=null, stderr=null)
+
+def check_output(*cmd):
+    """Log and run the command, raising on errors, return output"""
+    print >>sys.stderr, 'Run:', cmd
+    return subprocess.check_output(cmd)
+
+def check_build_exists(gcs, suffix):
+    """ check if a k8s/federation build with same version
+        already exists in remote path
+    """
+    if not os.path.exists('hack/print-workspace-status.sh'):
+        print >>sys.stderr, 'hack/print-workspace-status.sh not found, continue'
+        return False
+
+    version = ''
+    try:
+        match = re.search(
+            r'gitVersion ([^\n]+)',
+            check_output('hack/print-workspace-status.sh')
+        )
+        if match:
+            version = match.group(1)
+    except subprocess.CalledProcessError as exc:
+        # fallback with doing a real build
+        print >>sys.stderr, 'Failed to get k8s version, continue: %s' % exc
+        return False
+
+    if version:
+        if not gcs:
+            gcs = 'gs://kubernetes-release-dev'
+        mode = 'ci'
+        if suffix:
+            mode += suffix
+        gcs = os.path.join(gcs, mode, version)
+        try:
+            check_no_stdout('gsutil', 'ls', gcs)
+            return True
+        except subprocess.CalledProcessError as exc:
+            print >>sys.stderr, 'gcs path %s does not exist yet, continue' % gcs
+    return False
+
 
 def main(args):
+    # pylint: disable=too-many-branches
     """Build and push kubernetes.
 
     This is a python port of the kubernetes/hack/jenkins/build.sh script.
@@ -41,6 +89,13 @@ def main(args):
         print >>sys.stderr, (
             'Scenario should only run from either kubernetes or federation directory!')
         sys.exit(1)
+
+    # pre-check if target build exists in gcs bucket or not
+    # if so, don't make duplicated builds
+    if check_build_exists(args.release, args.suffix):
+        print >>sys.stderr, 'build already exists, exit'
+        sys.exit(0)
+
     env = {
         # Skip gcloud update checking; do we still need this?
         'CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK': 'true',
@@ -65,6 +120,8 @@ def main(args):
         env['KUBE_BUILD_HYPERKUBE'] = 'y'
     if args.extra_publish_file:
         push_build_args.append('--extra-publish-file=%s' % args.extra_publish_file)
+    if args.allow_dup:
+        push_build_args.append('--allow-dup')
 
     for key, value in env.items():
         os.environ[key] = value
@@ -96,5 +153,7 @@ if __name__ == '__main__':
         '--hyperkube', action='store_true', help='Build hyperkube image')
     PARSER.add_argument(
         '--extra-publish-file', help='Additional version file uploads to')
+    PARSER.add_argument(
+        '--allow-dup', action='store_true', help='Allow overwriting if the build exists on gcs')
     ARGS = PARSER.parse_args()
     main(ARGS)

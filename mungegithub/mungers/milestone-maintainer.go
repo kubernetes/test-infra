@@ -660,6 +660,13 @@ func (m *MilestoneMaintainer) issueChangeConfig(obj *github.MungeObject) *issueC
 			return icc
 		}
 
+		if obj.IsPR() {
+			// Status and updates are not required for PRs, and
+			// non-blocking PRs should not be removed from the
+			// milestone.
+			return icc
+		}
+
 		if mode == milestoneModeFreeze && !isBlocker {
 			icc.removeNonBlocker()
 			return icc

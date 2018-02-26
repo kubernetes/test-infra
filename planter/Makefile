@@ -14,7 +14,7 @@
 
 # note: sync this with planter.sh!
 # this should be bazel version - planter sub version
-BAZEL_VERSION = 0.8.1
+BAZEL_VERSION = 0.10.0
 IMAGE_NAME = gcr.io/k8s-testimages/planter
 TAG = $(BAZEL_VERSION)
 
@@ -22,6 +22,6 @@ image:
 	docker build --build-arg BAZEL_VERSION=$(BAZEL_VERSION) -t "$(IMAGE_NAME):$(TAG)" . --pull
 
 push: image
-	gcloud docker -- push "$(IMAGE_NAME):$(TAG)"
+	docker push "$(IMAGE_NAME):$(TAG)"
 
 .PHONY: image push

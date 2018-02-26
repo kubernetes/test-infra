@@ -18,6 +18,9 @@ package main
 
 import (
 	"bytes"
+	"crypto/tls"
+	"crypto/x509"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -37,85 +40,154 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/logrusutil"
 	m "k8s.io/test-infra/prow/metrics"
 )
 
-var (
-	configPath = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
-	selector   = flag.String("label-selector", kube.EmptySelector, "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
+type options struct {
+	configPath string
+	selector   string
+	totURL     string
 
-	jenkinsURL             = flag.String("jenkins-url", "http://jenkins-proxy", "Jenkins URL")
-	jenkinsUserName        = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
-	jenkinsTokenFile       = flag.String("jenkins-token-file", "", "Path to the file containing the Jenkins API token.")
-	jenkinsBearerTokenFile = flag.String("jenkins-bearer-token-file", "", "Path to the file containing the Jenkins API bearer token.")
+	jenkinsURL             string
+	jenkinsUserName        string
+	jenkinsTokenFile       string
+	jenkinsBearerTokenFile string
+	certFile               string
+	keyFile                string
+	caCertFile             string
+	csrfProtect            bool
 
-	githubEndpoint  = flag.String("github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
-	githubTokenFile = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
-	dryRun          = flag.Bool("dry-run", true, "Whether or not to make mutating API calls to GitHub.")
-)
+	githubEndpoint  string
+	githubTokenFile string
+	dryRun          bool
+}
+
+func (o *options) Validate() error {
+	if o.jenkinsTokenFile == "" && o.jenkinsBearerTokenFile == "" {
+		return errors.New("either --jenkins-token-file or --jenkins-bearer-token-file must be set")
+	} else if o.jenkinsTokenFile != "" && o.jenkinsBearerTokenFile != "" {
+		return errors.New("only one of --jenkins-token-file or --jenkins-bearer-token-file can be set")
+	}
+
+	var transportSecretsProvided int
+	if o.certFile == "" {
+		transportSecretsProvided = transportSecretsProvided + 1
+	}
+	if o.keyFile == "" {
+		transportSecretsProvided = transportSecretsProvided + 1
+	}
+	if o.caCertFile == "" {
+		transportSecretsProvided = transportSecretsProvided + 1
+	}
+	if transportSecretsProvided != 0 && transportSecretsProvided != 3 {
+		return errors.New("either --cert-file, --key-file, and --ca-cert-file must all be provided or none of them must be provided")
+	}
+	return nil
+}
+
+func gatherOptions() options {
+	o := options{}
+	flag.StringVar(&o.configPath, "config-path", "/etc/config/config", "Path to config.yaml.")
+	flag.StringVar(&o.selector, "label-selector", kube.EmptySelector, "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
+	flag.StringVar(&o.totURL, "tot-url", "", "Tot URL")
+
+	flag.StringVar(&o.jenkinsURL, "jenkins-url", "http://jenkins-proxy", "Jenkins URL")
+	flag.StringVar(&o.jenkinsUserName, "jenkins-user", "jenkins-trigger", "Jenkins username")
+	flag.StringVar(&o.jenkinsTokenFile, "jenkins-token-file", "", "Path to the file containing the Jenkins API token.")
+	flag.StringVar(&o.jenkinsBearerTokenFile, "jenkins-bearer-token-file", "", "Path to the file containing the Jenkins API bearer token.")
+	flag.StringVar(&o.certFile, "cert-file", "", "Path to a PEM-encoded certificate file.")
+	flag.StringVar(&o.keyFile, "key-file", "", "Path to a PEM-encoded key file.")
+	flag.StringVar(&o.caCertFile, "ca-cert-file", "", "Path to a PEM-encoded CA certificate file.")
+	flag.BoolVar(&o.csrfProtect, "csrf-protect", false, "Request a CSRF protection token from Jenkins that will be used in all subsequent requests to Jenkins.")
+
+	flag.StringVar(&o.githubEndpoint, "github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
+	flag.StringVar(&o.githubTokenFile, "github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
+	flag.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
+	flag.Parse()
+	return o
+}
 
 func main() {
-	flag.Parse()
-	logrus.SetFormatter(&logrus.JSONFormatter{})
-	logger := logrus.WithField("component", "jenkins-operator")
+	o := gatherOptions()
+	if err := o.Validate(); err != nil {
+		logrus.Fatalf("Invalid options: %v", err)
+	}
+	logrus.SetFormatter(
+		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "jenkins-operator"}),
+	)
 
-	if _, err := labels.Parse(*selector); err != nil {
-		logger.WithError(err).Fatal("Error parsing label selector.")
+	if _, err := labels.Parse(o.selector); err != nil {
+		logrus.WithError(err).Fatal("Error parsing label selector.")
 	}
 
 	configAgent := &config.Agent{}
-	if err := configAgent.Start(*configPath); err != nil {
-		logger.WithError(err).Fatal("Error starting config agent.")
+	if err := configAgent.Start(o.configPath); err != nil {
+		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
 	kc, err := kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 	if err != nil {
-		logger.WithError(err).Fatal("Error getting kube client.")
+		logrus.WithError(err).Fatal("Error getting kube client.")
 	}
 
-	ac := &jenkins.AuthConfig{}
-	if *jenkinsTokenFile != "" {
-		token, err := loadToken(*jenkinsTokenFile)
+	ac := &jenkins.AuthConfig{
+		CSRFProtect: o.csrfProtect,
+	}
+	if o.jenkinsTokenFile != "" {
+		token, err := loadToken(o.jenkinsTokenFile)
 		if err != nil {
-			logger.WithError(err).Fatalf("Could not read token file.")
+			logrus.WithError(err).Fatalf("Could not read token file.")
 		}
 		ac.Basic = &jenkins.BasicAuthConfig{
-			User:  *jenkinsUserName,
+			User:  o.jenkinsUserName,
 			Token: token,
 		}
-	} else if *jenkinsBearerTokenFile != "" {
-		token, err := loadToken(*jenkinsBearerTokenFile)
+	} else if o.jenkinsBearerTokenFile != "" {
+		token, err := loadToken(o.jenkinsBearerTokenFile)
 		if err != nil {
-			logger.WithError(err).Fatalf("Could not read bearer token file.")
+			logrus.WithError(err).Fatalf("Could not read bearer token file.")
 		}
 		ac.BearerToken = &jenkins.BearerTokenAuthConfig{
 			Token: token,
 		}
-	} else {
-		logger.Fatal("An auth token for basic or bearer token auth must be supplied.")
+	}
+	var tlsConfig *tls.Config
+	if o.certFile != "" && o.keyFile != "" {
+		config, err := loadCerts(o.certFile, o.keyFile, o.caCertFile)
+		if err != nil {
+			logrus.WithError(err).Fatalf("Could not read certificate files.")
+		}
+		tlsConfig = config
 	}
 	metrics := jenkins.NewMetrics()
-	jc := jenkins.NewClient(*jenkinsURL, ac, logger, metrics.ClientMetrics)
-
-	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
+	jc, err := jenkins.NewClient(o.jenkinsURL, tlsConfig, ac, nil, metrics.ClientMetrics)
 	if err != nil {
-		logger.WithError(err).Fatalf("Could not read Github oauth secret file.")
+		logrus.WithError(err).Fatalf("Could not setup Jenkins client.")
+	}
+
+	oauthSecretRaw, err := ioutil.ReadFile(o.githubTokenFile)
+	if err != nil {
+		logrus.WithError(err).Fatalf("Could not read Github oauth secret file.")
 	}
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
-	_, err = url.Parse(*githubEndpoint)
+	_, err = url.Parse(o.githubEndpoint)
 	if err != nil {
-		logger.WithError(err).Fatal("Must specify a valid --github-endpoint URL.")
+		logrus.WithError(err).Fatal("Must specify a valid --github-endpoint URL.")
 	}
 
 	var ghc *github.Client
-	if *dryRun {
-		ghc = github.NewDryRunClient(oauthSecret, *githubEndpoint)
+	if o.dryRun {
+		ghc = github.NewDryRunClient(oauthSecret, o.githubEndpoint)
 	} else {
-		ghc = github.NewClient(oauthSecret, *githubEndpoint)
+		ghc = github.NewClient(oauthSecret, o.githubEndpoint)
 	}
 
-	c := jenkins.NewController(kc, jc, ghc, logger, configAgent, *selector)
+	c, err := jenkins.NewController(kc, jc, ghc, nil, configAgent, o.totURL, o.selector)
+	if err != nil {
+		logrus.WithError(err).Fatal("Failed to instantiate Jenkins controller.")
+	}
 
 	// Push metrics to the configured prometheus pushgateway endpoint.
 	pushGateway := configAgent.Config().PushGateway
@@ -127,7 +199,7 @@ func main() {
 	// serves prometheus metrics.
 	go serve(jc)
 	// gather metrics for the jobs handled by the jenkins controller.
-	go gather(c, logger)
+	go gather(c)
 
 	tick := time.Tick(30 * time.Second)
 	sig := make(chan os.Signal, 1)
@@ -138,13 +210,13 @@ func main() {
 		case <-tick:
 			start := time.Now()
 			if err := c.Sync(); err != nil {
-				logger.WithError(err).Error("Error syncing.")
+				logrus.WithError(err).Error("Error syncing.")
 			}
 			duration := time.Since(start)
-			logger.WithField("duration", fmt.Sprintf("%v", duration)).Info("Synced")
+			logrus.WithField("duration", fmt.Sprintf("%v", duration)).Info("Synced")
 			metrics.ResyncPeriod.Observe(duration.Seconds())
 		case <-sig:
-			logger.Info("Jenkins operator is shutting down...")
+			logrus.Info("Jenkins operator is shutting down...")
 			return
 		}
 	}
@@ -158,6 +230,30 @@ func loadToken(file string) (string, error) {
 	return string(bytes.TrimSpace(raw)), nil
 }
 
+func loadCerts(certFile, keyFile, caCertFile string) (*tls.Config, error) {
+	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
+	if err != nil {
+		return nil, err
+	}
+
+	tlsConfig := &tls.Config{
+		Certificates: []tls.Certificate{cert},
+	}
+
+	if caCertFile != "" {
+		caCert, err := ioutil.ReadFile(caCertFile)
+		if err != nil {
+			return nil, err
+		}
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+		tlsConfig.RootCAs = caCertPool
+	}
+
+	tlsConfig.BuildNameToCertificate()
+	return tlsConfig, nil
+}
+
 // serve starts a http server and serves Jenkins logs
 // and prometheus metrics. Meant to be called inside
 // a goroutine.
@@ -169,7 +265,7 @@ func serve(jc *jenkins.Client) {
 
 // gather metrics from the jenkins controller.
 // Meant to be called inside a goroutine.
-func gather(c *jenkins.Controller, logger *logrus.Entry) {
+func gather(c *jenkins.Controller) {
 	tick := time.Tick(30 * time.Second)
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
@@ -179,9 +275,9 @@ func gather(c *jenkins.Controller, logger *logrus.Entry) {
 		case <-tick:
 			start := time.Now()
 			c.SyncMetrics()
-			logger.WithField("metrics-duration", fmt.Sprintf("%v", time.Since(start))).Debug("Metrics synced")
+			logrus.WithField("metrics-duration", fmt.Sprintf("%v", time.Since(start))).Debug("Metrics synced")
 		case <-sig:
-			logger.Debug("Jenkins operator gatherer is shutting down...")
+			logrus.Debug("Jenkins operator gatherer is shutting down...")
 			return
 		}
 	}

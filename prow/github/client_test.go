@@ -1154,7 +1154,7 @@ func TestThrottle(t *testing.T) {
 		t.Errorf("Never throttled")
 	}
 	if err := ctx.Err(); err != context.Canceled {
-		t.Errorf("Expected context cancelation did not happen: %v", err)
+		t.Errorf("Expected context cancellation did not happen: %v", err)
 	}
 }
 

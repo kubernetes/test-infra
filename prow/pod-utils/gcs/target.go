@@ -49,7 +49,7 @@ func AliasForSpec(spec *pjutil.JobSpec) string {
 	case kube.PeriodicJob, kube.PostsubmitJob, kube.BatchJob:
 		return ""
 	case kube.PresubmitJob:
-		return path.Join("pr-logs", "directory", spec.Job, spec.BuildId)
+		return path.Join("pr-logs", "directory", spec.Job, fmt.Sprintf("%s.txt", spec.BuildId))
 	default:
 		logrus.Fatalf("unknown job spec type: %v", spec.Type)
 	}

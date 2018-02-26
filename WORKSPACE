@@ -6,7 +6,7 @@ git_repository(
 
 load("@bazel_skylib//:lib.bzl", "versions")
 
-versions.check(minimum_bazel_version = "0.8.0")
+versions.check(minimum_bazel_version = "0.10.0")
 
 git_repository(
     name = "io_bazel_rules_go",

@@ -38,6 +38,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     openssh-client \
     pkg-config \
     python \
+    python-dev \
     python-openssl \
     python-pip \
     rsync \
@@ -46,7 +47,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     xz-utils \
     zip \
     zlib1g-dev \
-    && apt-get clean
+    && apt-get clean \
+    && python -m pip install --upgrade pip setuptools wheel
 
 # Install gcloud
 
@@ -63,14 +65,6 @@ RUN wget -q https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.ta
         --usage-reporting=false && \
     gcloud components install alpha beta kubectl && \
     gcloud info | tee /workspace/gcloud-info.txt
-
-# TODO(bentheelder): remove this once we are no longer using Jenkins
-# Get docker client binary for use with our jenkins nodes, and put it in it's
-# own bin dir. The runner will add this to the path if dind mode is not enabled.
-# Note: 1.11+ changes the tarball format
-RUN mkdir /docker-no-dind-bin/ && \
-    curl -L "https://get.docker.com/builds/Linux/x86_64/docker-1.9.1.tgz" \
-    | tar -C /docker-no-dind-bin -xvzf- --strip-components=3 usr/local/bin/docker
 
 
 #
@@ -124,7 +118,8 @@ ADD ["./barnacle/barnacle", "/usr/local/bin"]
 
 
 # note the runner is also responsible for making docker in docker function if
-# env DOCKER_IN_DOCKER_ENABLED is set
+# env DOCKER_IN_DOCKER_ENABLED is set and similarly responsible for generating
+# .bazelrc files if bazel remote caching is enabled 
 ADD ["runner", \
     "/workspace/"]
 

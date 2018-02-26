@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <meta charset="UTF-8">
         <title>Prow Command Help</title>
         <link id="favicon" rel="icon" type="image/png" href="favicon.ico">
         <link rel="stylesheet" type="text/css" href="style.css">
@@ -28,11 +29,12 @@
                 <span class="mdl-layout-title">Prow Dashboard</span>
                 <nav class="mdl-navigation">
                     <a class="mdl-navigation__link" href="/">Prow Status</a>
-                    <a class="mdl-navigation__link mdl-navigation__link--current" href="/command-help.html">Command Help</a>
-                    <a class="mdl-navigation__link" href="/tide.html">Tide Status</a>
+                    <a class="mdl-navigation__link mdl-navigation__link--current" href="/command-help">Command Help</a>
+                    <a class="mdl-navigation__link" href="/tide">Tide Status</a>
+                    <a class="mdl-navigation__link" href="/plugins">Plugins</a>
                 </nav>
             </div>
-            <main class="mdl-layout__content">
+            <main id="command-help" class="mdl-layout__content">
                 <aside>
                     <div class="card-box">
                         <ul class="noBullets">
@@ -41,21 +43,23 @@
                         </ul>
                     </div>
                 </aside>
-                <table id="command-table" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp plugin-table">
-                    <thead>
-                    <tr>
-                        <th></th>
-                        <th class="mdl-data-table__cell--non-numeric">Command</th>
-                        <th class="mdl-data-table__cell--non-numeric">Example</th>
-                        <th class="mdl-data-table__cell--non-numeric">Description</th>
-                        <th class="mdl-data-table__cell--non-numeric">Who Can Use</th>
-                        <th class="mdl-data-table__cell--non-numeric">Plugin</th>
-                        <th></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
+                <div class="table-container">
+                    <table id="command-table" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+                        <thead>
+                        <tr>
+                            <th></th>
+                            <th class="mdl-data-table__cell--non-numeric">Command</th>
+                            <th class="mdl-data-table__cell--non-numeric">Example</th>
+                            <th class="mdl-data-table__cell--non-numeric">Description</th>
+                            <th id="usage-col" class="mdl-data-table__cell--non-numeric">Who Can Use</th>
+                            <th class="mdl-data-table__cell--non-numeric">Plugin</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
             </main>
         </div>
         <dialog id="dialog" class="mdl-dialog">

@@ -19,6 +19,7 @@ set -o pipefail
 
 TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
 TMP_GOPATH=$(mktemp -d)
+cd "${TESTINFRA_ROOT}"
 
 "${TESTINFRA_ROOT}/hack/go_install_from_commit.sh" \
   github.com/kubernetes/repo-infra/kazel \
@@ -30,10 +31,9 @@ TMP_GOPATH=$(mktemp -d)
   eaa1e87d2a3ca716780ca6650ef5b9b9663b8773 \
   "${TMP_GOPATH}"
 
-touch "${TESTINFRA_ROOT}/vendor/BUILD"
+touch "${TESTINFRA_ROOT}/vendor/BUILD.bazel"
 
 gazelle_diff=$("${TMP_GOPATH}/bin/gazelle" fix \
-  -build_file_name=BUILD,BUILD.bazel \
   -external=vendored \
   -mode=diff \
   -repo_root="${TESTINFRA_ROOT}")
@@ -44,9 +44,21 @@ kazel_diff=$("${TMP_GOPATH}/bin/kazel" \
   -root="${TESTINFRA_ROOT}")
 
 if [[ -n "${gazelle_diff}" || -n "${kazel_diff}" ]]; then
-  echo "${gazelle_diff}"
-  echo "${kazel_diff}"
-  echo
-  echo "Run ./hack/update-bazel.sh"
+  echo "${gazelle_diff}" >&2
+  echo "${kazel_diff}" >&2
+  echo >&2
+  echo "Run ./hack/update-bazel.sh" >&2
+  exit 1
+fi
+
+# Make sure there are no BUILD files outside vendor - we should only have
+# BUILD.bazel files.
+old_build_files=$(find . -name BUILD \( -type f -o -type l \) \
+  -not -path './vendor/*' | sort)
+if [[ -n "${old_build_files}" ]]; then
+  echo "One or more BUILD files found in the tree:" >&2
+  echo "${old_build_files}" >&2
+  echo >&2
+  echo "Only BUILD.bazel is allowed." >&2
   exit 1
 fi

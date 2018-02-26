@@ -24,7 +24,6 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
-	"strings"
 
 	"github.com/sirupsen/logrus"
 
@@ -34,7 +33,8 @@ import (
 )
 
 var (
-	match = regexp.MustCompile(`(?mi)^/(woof|bark)\s*$`)
+	match     = regexp.MustCompile(`(?mi)^/(woof|bark)\s*$`)
+	filetypes = regexp.MustCompile(`(?i)\.(jpg|gif|png)$`)
 )
 
 const (
@@ -105,8 +105,8 @@ func (u realPack) readDog() (string, error) {
 		return "", err
 	}
 	// GitHub doesn't support videos :(
-	if strings.HasSuffix(a.URL, ".mp4") {
-		return "", errors.New("unsupported doggo :( github doesn't support .mp4")
+	if !filetypes.MatchString(a.URL) {
+		return "", errors.New("unsupported doggo :( unknown filetype: " + a.URL)
 	}
 	return a.Format()
 }

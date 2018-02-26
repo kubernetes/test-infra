@@ -20,7 +20,7 @@ Then from `$GOPATH/src/k8s.io/kubernetes/` run:
 
 ## Options
 
-Planter repects the following environment variables:
+Planter respects the following environment variables:
 
  - `TAG`: The Planter image tag. This will default to the current stable
    version used to build Kubernetes, but you may override it with EG
@@ -36,7 +36,7 @@ Planter repects the following environment variables:
 
 Currently, SELinux is disabled for the container that runs the bazel
 environment, which allows for the rest of the host system to leave SELinux
-enabled. Automatic relabeling is not done to avoid inadvertantly causing issues
+enabled. Automatic relabeling is not done to avoid inadvertently causing issues
 with the host system.
 
 

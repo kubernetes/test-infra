@@ -30,11 +30,11 @@ do_build = \
 	echo tagged $(IMG) with latest-latest tag;
 
 do_push = \
-	gcloud docker -- push $(IMG):$(TAG)-$(VERSION);\
-	gcloud docker -- push $(IMG):latest-$(VERSION);\
+	docker push $(IMG):$(TAG)-$(VERSION);\
+	docker push $(IMG):latest-$(VERSION);\
 	echo Pushed $(IMG) with $(TAG)-$(VERSION) and latest-$(VERSION) tags;\
 	[ "$(VERSION)" == "$(LATEST_BAZEL_VERSION)" ] &&\
-	gcloud docker -- push $(IMG):latest-latest &&\
+	docker push $(IMG):latest-latest &&\
 	echo Pushed $(IMG) with latest-latest tag;
 
 build:

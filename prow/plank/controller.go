@@ -19,8 +19,6 @@ package plank
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"strings"
 	"sync"
 	"time"
@@ -383,6 +381,20 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 			pj.Status.State = kube.FailureState
 			pj.Status.Description = "Job failed."
 
+		case kube.PodPending:
+			maxPodPending := c.ca.Config().Plank.PodPendingTimeout
+			if pod.Status.StartTime.IsZero() || time.Since(pod.Status.StartTime.Time) < maxPodPending {
+				// Pod is running. Do nothing.
+				c.incrementNumPendingJobs(pj.Spec.Job)
+				return nil
+			}
+
+			// Pod is stuck in pending state longer than maxPodPending
+			// abort the job, and talk to Github
+			pj.SetComplete()
+			pj.Status.State = kube.AbortedState
+			pj.Status.Description = "Job aborted."
+
 		default:
 			// Pod is running. Do nothing.
 			c.incrementNumPendingJobs(pj.Spec.Job)
@@ -488,27 +500,7 @@ func (c *Controller) getBuildID(name string) (string, error) {
 	if c.totURL == "" {
 		return c.node.Generate().String(), nil
 	}
-	var err error
-	url := c.totURL + "/vend/" + name
-	for retries := 0; retries < 60; retries++ {
-		if retries > 0 {
-			time.Sleep(2 * time.Second)
-		}
-		var resp *http.Response
-		resp, err = http.Get(url)
-		if err != nil {
-			continue
-		}
-		defer resp.Body.Close()
-		if resp.StatusCode != 200 {
-			continue
-		}
-		if buf, err := ioutil.ReadAll(resp.Body); err == nil {
-			return string(buf), nil
-		}
-		return "", err
-	}
-	return "", err
+	return pjutil.GetBuildID(name, c.totURL)
 }
 
 func getPodBuildID(pod *kube.Pod) string {

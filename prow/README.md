@@ -37,6 +37,12 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *February 15, 2018* `jenkins-operator` can now accept the `--tot-url` flag
+   and will use the connection to `tot` to vend build identifiers as `plank`
+   does, giving control over where in GCS artifacts land to Prow and away from
+   Jenkins. Furthermore, the `$BUILD_ID` variable in Jenkins jobs will now
+   correctly point to the build identifier vended by `tot` and a new variable,
+   `$PROW_JOB_ID`, points to the identifier used to link ProwJobs to Jenkins builds.
  - *February 1, 2018* The `config_updater` section in `plugins.yaml`
  now uses a `maps` object instead of `config_file`, `plugin_file` strings.
  Please switch over before July.
@@ -251,6 +257,7 @@ Variable | Periodic | Postsubmit | Batch | Presubmit | Description | Example
 `JOB_TYPE` | ✓ | ✓ | ✓ | ✓ | Type of job. | `presubmit`
 `JOB_SPEC` | ✓ | ✓ | ✓ | ✓ | JSON-encoded job specification. | see below
 `BUILD_ID` | ✓ | ✓ | ✓ | ✓ | Unique build number for each run. | `12345`
+`PROW_JOB_ID` | ✓ | ✓ | ✓ | ✓ | Unique identifier for the owning Prow Job. | `1ce07fa2-0831-11e8-b07e-0a58ac101036`
 `BUILD_NUMBER` | ✓ | ✓ | ✓ | ✓ | Unique build number for each run. | `12345`
 `REPO_OWNER` | | ✓ | ✓ | ✓ | GitHub org that triggered the job. | `kubernetes`
 `REPO_NAME` | | ✓ | ✓ | ✓ | GitHub repo that triggered the job. | `test-infra`
@@ -270,22 +277,22 @@ job types:
 
 Periodic Job:
 ```json
-{"type":"periodic","job":"job-name","buildid":"0","refs":{}}
+{"type":"periodic","job":"job-name","buildid":"0","prowjobid":"uuid","refs":{}}
 ```
 
 Postsubmit Job:
 ```json
-{"type":"postsubmit","job":"job-name","buildid":"0","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha"}}
+{"type":"postsubmit","job":"job-name","buildid":"0","prowjobid":"uuid","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha"}}
 ```
 
 Presubmit Job:
 ```json
-{"type":"presubmit","job":"job-name","buildid":"0","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}]}}
+{"type":"presubmit","job":"job-name","buildid":"0","prowjobid":"uuid","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}]}}
 ```
 
 Batch Job:
 ```json
-{"type":"batch","job":"job-name","buildid":"0","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"},{"number":2,"author":"other-author-name","sha":"second-pull-sha"}]}}
+{"type":"batch","job":"job-name","buildid":"0","prowjobid":"uuid","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"},{"number":2,"author":"other-author-name","sha":"second-pull-sha"}]}}
 ```
 
 ## Bots home

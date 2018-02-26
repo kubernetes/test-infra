@@ -138,7 +138,10 @@ func main() {
 		log.Fatalf("no jenkins auth token provided")
 	}
 
-	jc := jenkins.NewClient(o.jenkinsURL, &ac, nil, nil)
+	jc, err := jenkins.NewClient(o.jenkinsURL, nil, &ac, nil, nil)
+	if err != nil {
+		log.Fatalf("cannot setup Jenkins client: %v", err)
+	}
 
 	token, err := loadToken(o.githubTokenFile)
 	if err != nil {
@@ -175,9 +178,9 @@ func main() {
 		MaxConcurrency: 1,
 	}
 
-	if err = jc.BuildFromSpec(&spec, o.jobName); err != nil {
+	if err = jc.BuildFromSpec(&spec, "0", o.jobName); err != nil {
 		log.Println("Submitting the following to Jenkins:")
-		env, _ := pjutil.EnvForSpec(pjutil.NewJobSpec(spec, "0"))
+		env, _ := pjutil.EnvForSpec(pjutil.NewJobSpec(spec, "0", o.jobName))
 		for k, v := range env {
 			log.Printf("  %s=%s\n", k, v)
 		}

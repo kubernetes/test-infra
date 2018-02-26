@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"regexp"
+	"strings"
 	"text/template"
 	"time"
 
@@ -125,6 +126,11 @@ type Controller struct {
 // Plank is config for the plank controller.
 type Plank struct {
 	Controller `json:",inline"`
+	// PodPendingTimeoutString compiles into PodPendingTimeout at load time.
+	PodPendingTimeoutString string `json:"pod_pending_timeout,omitempty"`
+	// PodPendingTimeout is after how long the controller will perform a garbage
+	// collection on pending pods. Defaults to one day.
+	PodPendingTimeout time.Duration `json:"-"`
 }
 
 // JenkinsOperator is config for the jenkins-operator controller.
@@ -339,6 +345,16 @@ func parseConfig(c *Config) error {
 		return fmt.Errorf("validating plank config: %v", err)
 	}
 
+	if c.Plank.PodPendingTimeoutString == "" {
+		c.Plank.PodPendingTimeout = 24 * time.Hour
+	} else {
+		podPendingTimeout, err := time.ParseDuration(c.Plank.PodPendingTimeoutString)
+		if err != nil {
+			return fmt.Errorf("cannot parse duration for plank.pod_pending_timeout: %v", err)
+		}
+		c.Plank.PodPendingTimeout = podPendingTimeout
+	}
+
 	if c.JenkinsOperator != nil && len(c.JenkinsOperators) > 0 {
 		return fmt.Errorf("invalid config: use one of jenkins_operator and jenkins_operators")
 	}
@@ -362,7 +378,10 @@ func parseConfig(c *Config) error {
 			return fmt.Errorf("invalid jenkins_operators.label_selector option: %v", err)
 		}
 		c.JenkinsOperators[i].LabelSelector = sel
-		// TODO: Invalidate overlapping selectors
+		// TODO: Invalidate overlapping selectors more
+		if len(c.JenkinsOperators) > 1 && c.JenkinsOperators[i].LabelSelectorString == "" {
+			return errors.New("selector overlap: cannot use an empty label_selector with multiple selectors")
+		}
 	}
 
 	for i, agentToTmpl := range c.Deck.ExternalAgentLogs {
@@ -439,12 +458,28 @@ func parseConfig(c *Config) error {
 		}
 		c.Tide.SyncPeriod = period
 	}
+	if c.Tide.StatusUpdatePeriodString == "" {
+		c.Tide.StatusUpdatePeriod = c.Tide.SyncPeriod
+	} else {
+		period, err := time.ParseDuration(c.Tide.StatusUpdatePeriodString)
+		if err != nil {
+			return fmt.Errorf("cannot parse duration for tide.status_update_period: %v", err)
+		}
+		c.Tide.StatusUpdatePeriod = period
+	}
 
 	if c.Tide.MaxGoroutines == 0 {
 		c.Tide.MaxGoroutines = 20
 	}
 	if c.Tide.MaxGoroutines <= 0 {
 		return fmt.Errorf("tide has invalid max_goroutines (%d), it needs to be a positive number", c.Tide.MaxGoroutines)
+	}
+	for i, q := range c.Tide.Queries {
+		for _, repo := range q.Repos {
+			if parts := strings.Split(repo, "/"); len(parts) != 2 {
+				return fmt.Errorf("invalid org/repo provided in tide.queries[%d].repos: %s", i, repo)
+			}
+		}
 	}
 
 	if c.ProwJobNamespace == "" {

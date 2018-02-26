@@ -18,6 +18,6 @@ image:
 	docker build -t "gcr.io/k8s-testimages/bigquery:$(VERSION)" .
 
 push: image
-	gcloud docker -- push "gcr.io/k8s-testimages/bigquery:$(VERSION)"
+	docker push "gcr.io/k8s-testimages/bigquery:$(VERSION)"
 
 .PHONY: image push

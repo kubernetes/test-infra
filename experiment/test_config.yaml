@@ -4,8 +4,8 @@
 # The name of the test job in this file must satisfy a predefined format, which
 # consists of several dimensions, such as cloud provider, OS image name,
 # Kubernetes version and test suites. The definition of each dimension is
-# provided separately from the job defintion. A tool can automatically generate
-# the test defintion and Prow configuration from the test name by pulling the
+# provided separately from the job definition. A tool can automatically generate
+# the test definition and Prow configuration from the test name by pulling the
 # configs of each dimension in the test name and assembling them together.
 #
 # E.g., for test "ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-serial", its
@@ -753,7 +753,7 @@ jobs:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
     - --env=KUBE_FEATURE_GATES=AllAlpha=true
-    - --test_args=--ginkgo.focus=\[Feature:(Audit|LocalPersistentVolumes|PodPreset|MountPropagation|PVCProtection|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8
+    - --test_args=--ginkgo.focus=\[Feature:(Audit|LocalPersistentVolumes|PodPreset|PVCProtection|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8
     sigOwners: ['sig-gcp']
 
   # stable1
@@ -795,7 +795,7 @@ jobs:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
     - --env=KUBE_FEATURE_GATES=AllAlpha=true
-    - --test_args=--ginkgo.focus=\[Feature:(Audit|LocalPersistentVolumes|PodPreset|MountPropagation|PVCProtection|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8
+    - --test_args=--ginkgo.focus=\[Feature:(Audit|LocalPersistentVolumes|PodPreset|PVCProtection|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8
     sigOwners: ['sig-gcp']
 
   # stable2
@@ -960,7 +960,7 @@ testSuites:
     - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\] --minStartupPods=8
   autoscaling:
     args:
-    - --timeout=300m
+    - --timeout=420m
     - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
   default:
     args:
@@ -1000,7 +1000,7 @@ testSuites:
     - --up=false
   stackdriver:
     args:
-    - --test_args=--ginkgo.focus=\[Feature:StackdriverMonitoring\]|\[Feature:StackdriverCustomMetrics\] --minStartupPods=8
+    - --test_args=--ginkgo.focus=\[Feature:StackdriverMonitoring\]|\[Feature:StackdriverCustomMetrics\]|\[Feature:StackdriverMetadataAgent\] --minStartupPods=8
     - --timeout=50m
   updown:
     args:
@@ -1050,23 +1050,23 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180205-d99d9c246-master
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180223-74690e8dc-master
   beta:
     args:
     - --repo=k8s.io/kubernetes=release-1.10
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180205-d99d9c246-1.10
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180223-74690e8dc-1.10
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.9
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180205-d99d9c246-1.9
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180223-74690e8dc-1.9
   stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.8
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180205-d99d9c246-1.8
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180223-74690e8dc-1.8
   stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.7
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180205-d99d9c246-1.7
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180223-74690e8dc-1.7
 
 nodeTestSuites:
   default:

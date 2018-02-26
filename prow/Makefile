@@ -44,6 +44,8 @@ TIDE_VERSION             ?= $(TAG)
 CLONEREFS_VERSION        ?= $(TAG)
 # INITUPLOAD_VERSION is the version of the initupload image
 INITUPLOAD_VERSION       ?= $(TAG)
+# GCSUPLOAD_VERSION is the version of the gcsupload image
+GCSUPLOAD_VERSION        ?= $(TAG)
 
 # These are the usual GKE variables.
 PROJECT       ?= k8s-prow
@@ -188,10 +190,10 @@ jenkins-operator-image: alpine-image
 jenkins-operator-deployment: get-cluster-credentials
 	kubectl apply -f cluster/jenkins_deployment.yaml
 
-push-gateway-deploy: get-cluster-credentials
-	kubectl apply -f cluster/push_gateway.yaml
+pushgateway-deploy: get-cluster-credentials
+	kubectl apply -f cluster/pushgateway_deployment.yaml
 
-.PHONY: jenkins-operator-image jenkins-operator-deployment push-gateway-deploy
+.PHONY: jenkins-operator-image jenkins-operator-deployment pushgateway-deploy
 
 tide-image: git-image
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/tide/tide k8s.io/test-infra/prow/cmd/tide
@@ -216,4 +218,9 @@ initupload-image: alpine-image
 	docker build -t "$(REGISTRY)/$(PROJECT)/initupload:$(INITUPLOAD_VERSION)" $(DOCKER_LABELS) cmd/initupload
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/initupload:$(INITUPLOAD_VERSION)"
 
-.PHONY: clonerefs-image initupload-image
+gcsupload-image: alpine-image
+	CGO_ENABLED=0 go build -o cmd/gcsupload/gcsupload k8s.io/test-infra/prow/cmd/gcsupload
+	docker build -t "$(REGISTRY)/$(PROJECT)/gcsupload:$(GCSUPLOAD_VERSION)" $(DOCKER_LABELS) cmd/gcsupload
+	$(PUSH) "$(REGISTRY)/$(PROJECT)/gcsupload:$(GCSUPLOAD_VERSION)"
+
+.PHONY: clonerefs-image initupload-image gcsupload-image

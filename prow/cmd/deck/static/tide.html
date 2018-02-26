@@ -27,8 +27,9 @@
                 <span class="mdl-layout-title">Prow Dashboard</span>
                 <nav class="mdl-navigation">
                     <a class="mdl-navigation__link" href="/">Prow Status</a>
-                    <a class="mdl-navigation__link" href="/command-help.html">Command Help</a>
-                    <a class="mdl-navigation__link mdl-navigation__link--current" href="/tide.html">Tide Status</a>
+                    <a class="mdl-navigation__link" href="/command-help">Command Help</a>
+                    <a class="mdl-navigation__link mdl-navigation__link--current" href="/tide">Tide Status</a>
+                    <a class="mdl-navigation__link" href="/plugins">Plugins</a>
                 </nav>
             </div>
             <main class="mdl-layout__content">
@@ -45,18 +46,20 @@
                     </div>
                 </article>
                 <article>
-                    <table id="pools">
-                        <thead>
-                        <th>Repo</th>
-                        <th>State</th>
-                        <th>Batch</th>
-                        <th>Passing</th>
-                        <th>Pending</th>
-                        <th>Failing or Untested</th>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
+                    <div class="table-container">
+                        <table id="pools">
+                            <thead>
+                            <th>Repo</th>
+                            <th>State</th>
+                            <th>Batch</th>
+                            <th>Passing</th>
+                            <th>Pending</th>
+                            <th>Failing or Untested</th>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
                 </article>
             </main>
         </div>

@@ -28,6 +28,7 @@ import (
 	"net/url"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/go-openapi/spec"
@@ -36,8 +37,8 @@ import (
 
 var (
 	openAPIFile = flag.String("openapi", "https://raw.githubusercontent.com/kubernetes/kubernetes/master/api/openapi-spec/swagger.json", "URL to openapi-spec of Kubernetes")
+	minCoverage = flag.Int("minimum-coverage", 0, "This command fails if the number of covered APIs is less than this option ratio(percent)")
 	restLog     = flag.String("restlog", "", "File path to REST API operation log of Kubernetes")
-	showAPIType = flag.String("apitype", "stable", "API type to show not-tested APIs. The options are stable, alpha, beta and all")
 )
 
 type apiData struct {
@@ -46,8 +47,6 @@ type apiData struct {
 }
 
 type apiArray []apiData
-
-var reOpenapi = regexp.MustCompile(`({\S+?})`)
 
 func parseOpenAPI(rawdata []byte) apiArray {
 	var swaggerSpec spec.Swagger
@@ -59,6 +58,9 @@ func parseOpenAPI(rawdata []byte) apiArray {
 	}
 
 	for path, pathItem := range swaggerSpec.Paths.Paths {
+		// Some paths contain "/" at the end of swagger spec, here removes "/" for comparing them easily later.
+		path = strings.TrimRight(path, "/")
+
 		// Standard HTTP methods: https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#path-item-object
 		methods := []string{"get", "put", "post", "delete", "options", "head", "patch"}
 		for _, method := range methods {
@@ -117,7 +119,7 @@ func parseAPILog(fp io.Reader) apiArray {
 		}
 		api := apiData{
 			Method: method,
-			URL:    "/" + parsedURL.Path,
+			URL:    parsedURL.Path,
 		}
 		apisLog = append(apisLog, api)
 	}
@@ -136,6 +138,8 @@ func getAPILog(restlog string) apiArray {
 
 	return parseAPILog(fp)
 }
+
+var reOpenapi = regexp.MustCompile(`({\S+?})`)
 
 func getTestedAPIs(apisOpenapi, apisLogs apiArray) apiArray {
 	var found bool
@@ -225,6 +229,11 @@ func outputCoverage(apisOpenapi, apisTested apiArray) {
 	}
 	w := csv.NewWriter(os.Stdout)
 	w.WriteAll(records)
+
+	actualCoverage, _ := strconv.Atoi(coverageAll.Coverage)
+	if *minCoverage > int(actualCoverage) {
+		log.Fatalf("The API coverage(%d) is lower than the specified one(%d).", actualCoverage, *minCoverage)
+	}
 }
 
 func main() {

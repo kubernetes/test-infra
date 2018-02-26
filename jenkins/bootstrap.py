@@ -209,13 +209,18 @@ def random_sleep(attempt):
     """Sleep 2**attempt seconds with a random fractional offset."""
     time.sleep(random.random() + attempt ** 2)
 
+def auth_google_gerrit(git, call):
+    """authenticate to foo.googlesource.com"""
+    call([git, 'clone', 'https://gerrit.googlesource.com/gcompute-tools'])
+    call(['./gcompute-tools/git-cookie-authdaemon'])
+
 
 def checkout(call, repo, repo_path, branch, pull, ssh='', git_cache='', clean=False):
     """Fetch and checkout the repository at the specified branch/pull.
 
     Note that repo and repo_path should usually be the same, but repo_path can
     be set to a different relative path where repo should be checked out."""
-    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-locals,too-many-branches
     if bool(branch) == bool(pull):
         raise ValueError('Must specify one of --branch or --pull')
 
@@ -225,6 +230,13 @@ def checkout(call, repo, repo_path, branch, pull, ssh='', git_cache='', clean=Fa
         refs, checkouts = branch_ref(branch)
 
     git = 'git'
+
+    # auth to google gerrit instance
+    # TODO(krzyzacy): when migrate to init container we'll make a gerrit
+    # checkout image and move this logic there
+    if '.googlesource.com' in repo:
+        auth_google_gerrit(git, call)
+
     if git_cache:
         cache_dir = '%s/%s' % (git_cache, repo)
         try:
@@ -782,14 +794,19 @@ def job_args(args):
     return [os.path.expandvars(a) for a in args]
 
 
-def job_script(job, extra_job_args):
+def job_script(job, scenario, extra_job_args):
     """Return path to script for job."""
     with open(test_infra('jobs/config.json')) as fp:
         config = json.loads(fp.read())
     if job.startswith('pull-security-kubernetes-'):
         job = job.replace('pull-security-kubernetes-', 'pull-kubernetes-', 1)
-    job_config = config[job]
-    cmd = test_infra('scenarios/%s.py' % job_config['scenario'])
+    if job not in config:
+        if not scenario:
+            raise ValueError('cannot find scenario for job', job)
+        cmd = test_infra('scenarios/%s.py' % scenario)
+    else:
+        job_config = config[job]
+        cmd = test_infra('scenarios/%s.py' % job_config['scenario'])
     return [cmd] + job_args(job_config.get('args', []) + extra_job_args)
 
 
@@ -971,7 +988,7 @@ def bootstrap(args):
             start(gsutil, paths, started, node(), version, repos)
         success = False
         try:
-            call(job_script(job, args.extra_job_args))
+            call(job_script(job, args.scenario, args.extra_job_args))
             logging.info('PASS: %s', job)
             success = True
         except subprocess.CalledProcessError:
@@ -1038,6 +1055,11 @@ def parse_args(arguments=None):
         '--clean',
         action='store_true',
         help='Clean the git repo before running tests.')
+    # TODO(krzyzacy): later we should merge prow+config.json
+    # and utilize this flag
+    parser.add_argument(
+        '--scenario',
+        help='Scenario to use, if not specified in config.json')
     # split out args after `--` as job arguments
     extra_job_args = []
     if '--' in arguments:

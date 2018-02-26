@@ -106,7 +106,7 @@ type PRMungeFunc func(*github.PullRequest) error
 func (c *Client) ForEachPR(owner, repo string, opts *github.PullRequestListOptions, continueOnError bool, mungePR PRMungeFunc) error {
 	var lastPage int
 	// Munge each page as we get it (or in other words, wait until we are ready to munge the next
-	// page of issues before geting it). We use depaginate to make the calls, but don't care about
+	// page of issues before getting it). We use depaginate to make the calls, but don't care about
 	// the slice it returns since we consume the pages as we go.
 	_, err := c.depaginate(
 		"processing PRs",

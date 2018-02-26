@@ -82,7 +82,7 @@ type httpClient interface {
 	Do(req *http.Request) (*http.Response, error)
 }
 
-// Inteface for how prow interacts with the graphql client, which we may throttle.
+// Interface for how prow interacts with the graphql client, which we may throttle.
 type gqlClient interface {
 	Query(ctx context.Context, q interface{}, vars map[string]interface{}) error
 }
@@ -300,7 +300,7 @@ func (c *Client) requestRetry(method, path, accept string, body interface{}) (*h
 	var err error
 	backoff := initialDelay
 	for retries := 0; retries < maxRetries; retries++ {
-		if retries > 0 {
+		if retries > 0 && resp != nil {
 			resp.Body.Close()
 		}
 		resp, err = c.doRequest(method, path, accept, body)

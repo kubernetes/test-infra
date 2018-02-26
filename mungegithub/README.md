@@ -110,7 +110,7 @@ The steps below make use of the mungegithub cluster which runs the existing subm
 ```
 APP=submit-queue TARGET=<TARGET> make push_secret
 ```
-* A kubernetes secret named `<TARGET>-github-secret` may be required if the submit-queue is configured to accept github webhooks.  If this is the case then create it by puting the webhook secret into the file `./hook-secret` before using the `push_secret` make target.
+* A kubernetes secret named `<TARGET>-github-secret` may be required if the submit-queue is configured to accept github webhooks.  If this is the case then create it by putting the webhook secret into the file `./hook-secret` before using the `push_secret` make target.
 * Create the service which is of type NodePort using `APP=submit-queue TARGET=<TARGET> make push_service`.
 * Finally, update the ingress.yaml with the new URL and the new service to point to.
 * Apply changes to the running ingress instance.

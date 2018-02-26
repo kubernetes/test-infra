@@ -34,10 +34,10 @@ func equalAPIArray(a, b apiArray) bool {
 	if len(a) != len(b) {
 		return false
 	}
-	for i := range a {
+	for _, i := range a {
 		found := false
-		for j := range b {
-			if i == j {
+		for _, j := range b {
+			if i.Method == j.Method && i.URL == j.URL {
 				found = true
 				break
 			}
@@ -71,12 +71,21 @@ func TestParseOpenAPI(t *testing.T) {
 			},
 		},
 		{
+			Rawdata: []byte(`{"paths": {"/api/v1/": {
+				"get": {"description": "verify the end of / is removed"},
+				"post": {"description": "ditto"}}}}`),
+			Expected: apiArray{
+				{Method: "GET", URL: "/api/v1"},
+				{Method: "POST", URL: "/api/v1"},
+			},
+		},
+		{
 			Rawdata: []byte(`{"paths": {
 			"/resources": {
 				"get": {"description": "get available resources"},
 				"post": {"description": "create resource"}},
 			"/foo": {
-				"get": {"description": "get avaiable foo"},
+				"get": {"description": "get available foo"},
 				"post": {"description": "create foo"},
 				"parameters": [{"type": "string", "description": "This should be ignored", "name": "bar", "in": "query"}]}}}`),
 			Expected: apiArray{
@@ -125,6 +134,40 @@ I0919 15:34:14.943642    6611 round_trippers.go:414] GET https://k8s-api/api/v1/
 	}
 	for _, test := range testCases {
 		res := parseAPILog(test.Rawdata)
+		if !equalAPIArray(res, test.Expected) {
+			t.Errorf("APILog did not match expected for test")
+			t.Errorf("Actual: %#v", res)
+			t.Errorf("Expected: %#v", test.Expected)
+		}
+	}
+}
+
+func TestGetTestedAPIs(t *testing.T) {
+	testCases := []struct {
+		apisOpenapi apiArray
+		apisLogs    apiArray
+		Expected    apiArray
+	}{
+		{
+			apisOpenapi: apiArray{
+				{Method: "GET", URL: "/api/v1/foo"},
+				{Method: "POST", URL: "/api/v1/foo"},
+				{Method: "GET", URL: "/api/v1/bar"},
+				{Method: "POST", URL: "/api/v1/bar"},
+			},
+			apisLogs: apiArray{
+				{Method: "GET", URL: "/api/v1/foo"},
+				{Method: "GET", URL: "/api/v1/bar"},
+				{Method: "GET", URL: "/api/v1/foo"},
+			},
+			Expected: apiArray{
+				{Method: "GET", URL: "/api/v1/foo"},
+				{Method: "GET", URL: "/api/v1/bar"},
+			},
+		},
+	}
+	for _, test := range testCases {
+		res := getTestedAPIs(test.apisOpenapi, test.apisLogs)
 		if !equalAPIArray(res, test.Expected) {
 			t.Errorf("APILog did not match expected for test")
 			t.Errorf("Actual: %#v", res)

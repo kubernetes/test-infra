@@ -136,7 +136,7 @@ func (t TokenHandler) Process() {
 			glog.Error("Failed to get CoreRate: ", err)
 			continue
 		}
-		// There is a bug in Github. They seem to reset the Remaining value before reseting the Reset value.
+		// There is a bug in Github. They seem to reset the Remaining value before resetting the Reset value.
 		if !newRate.Reset.Time.Equal(lastRate.Reset.Time) || newRate.Remaining > lastRate.Remaining {
 			if err := t.influxdb.Push(
 				"github_token_count",

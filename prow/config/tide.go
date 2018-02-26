@@ -21,8 +21,13 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/github"
 )
+
+const timeFormatISO8601 = "2006-01-02T15:04:05Z"
+
+type TideQueries []TideQuery
 
 // Tide is config for the tide pool.
 type Tide struct {
@@ -30,11 +35,16 @@ type Tide struct {
 	SyncPeriodString string `json:"sync_period,omitempty"`
 	// SyncPeriod specifies how often Tide will sync jobs with Github. Defaults to 1m.
 	SyncPeriod time.Duration `json:"-"`
+	// StatusUpdatePeriodString compiles into StatusUpdatePeriod at load time.
+	StatusUpdatePeriodString string `json:"status_update_period,omitempty"`
+	// StatusUpdatePeriod specifies how often Tide will update Github status contexts.
+	// Defaults to the value of SyncPeriod.
+	StatusUpdatePeriod time.Duration `json:"-"`
 	// Queries must not overlap. It must be impossible for any two queries to
 	// ever return the same PR.
 	// TODO: This will only be possible when we allow specifying orgs. At that
 	//       point, verify the above condition.
-	Queries []TideQuery `json:"queries,omitempty"`
+	Queries TideQueries `json:"queries,omitempty"`
 
 	// A key/value pair of an org/repo as the key and merge method to override
 	// the default method of merge. Valid options are squash, rebase, and merge.
@@ -98,11 +108,23 @@ func (tq *TideQuery) Query() string {
 	return strings.Join(toks, " ")
 }
 
-// AllPRs returns all open PRs in the repos covered by the query.
-func (tq *TideQuery) AllPRs() string {
+// AllPRsSince returns all open PRs in the repos covered by the query that
+// have changed since time t.
+func (tqs TideQueries) AllPRsSince(t time.Time) string {
 	toks := []string{"is:pr", "state:open"}
-	for _, r := range tq.Repos {
+
+	repos := sets.NewString()
+	for i := range tqs {
+		repos.Insert(tqs[i].Repos...)
+	}
+	for _, r := range repos.List() {
 		toks = append(toks, fmt.Sprintf("repo:\"%s\"", r))
+	}
+	// Github's GraphQL API silently fails if you provide it with an invalid time
+	// string.
+	// Dates before 1970 are considered invalid.
+	if t.Year() >= 1970 {
+		toks = append(toks, fmt.Sprintf("updated:>=%s", t.Format(timeFormatISO8601)))
 	}
 	return strings.Join(toks, " ")
 }

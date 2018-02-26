@@ -17,17 +17,17 @@ limitations under the License.
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
 
+	"path/filepath"
+
 	"github.com/ghodss/yaml"
 	prow_config "k8s.io/test-infra/prow/config"
 	config_pb "k8s.io/test-infra/testgrid/config"
-	"path/filepath"
 )
 
 type SQConfig struct {
@@ -85,7 +85,8 @@ func TestConfig(t *testing.T) {
 	for testgroupidx, testgroup := range cfg.TestGroups {
 		// All testgroup must have a name and a query
 		if testgroup.Name == "" || testgroup.GcsPrefix == "" {
-			t.Errorf("Testgroup %v: - Must have a name and query", testgroupidx)
+			t.Errorf("Testgroup #%v (Name: '%v', Query: '%v'): - Must have a name and query",
+				testgroupidx, testgroup.Name, testgroup.GcsPrefix)
 		}
 
 		// All testgroup must not have duplicated names
@@ -340,42 +341,9 @@ func TestConfig(t *testing.T) {
 }
 
 func TestJobsTestgridEntryMatch(t *testing.T) {
-	jenkinsPath := "../../../jenkins/job-configs"
 	prowPath := "../../../prow/config.yaml"
 
 	jobs := make(map[string]bool)
-	// TODO(krzyzacy): delete all the Jenkins stuff here after kill Jenkins
-	// workaround for special jenkins jobs does not follow job-name: pattern:
-	jobs["maintenance-all-hourly"] = false
-	jobs["maintenance-all-daily"] = false
-	jobs["kubernetes-update-jenkins-jobs"] = false
-
-	if fi, err := filepath.EvalSymlinks(jenkinsPath); err != nil {
-		t.Fatalf("Failed parsing Jenkins path %v", err)
-	} else {
-		jenkinsPath = fi
-	}
-
-	if err := filepath.Walk(jenkinsPath, func(path string, file os.FileInfo, err error) error {
-		if !file.IsDir() {
-			file, err := os.Open(path)
-			defer file.Close()
-
-			if err != nil {
-				return err
-			}
-			scanner := bufio.NewScanner(file)
-			for scanner.Scan() {
-				if strings.Contains(scanner.Text(), "job-name:") {
-					job := strings.TrimPrefix(strings.TrimSpace(scanner.Text()), "job-name: ")
-					jobs[job] = false
-				}
-			}
-		}
-		return nil
-	}); err != nil {
-		t.Fatalf("Failed parsing Jenkins config %v\n", err)
-	}
 
 	prowConfig, err := prow_config.Load(prowPath)
 	if err != nil {
@@ -385,7 +353,11 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 	// Also check k/k presubmit, prow postsubmit and periodic jobs
 	for _, job := range prowConfig.AllPresubmits([]string{
 		"google/cadvisor",
+		"kubeflow/examples",
 		"kubeflow/kubeflow",
+		"kubeflow/reporting",
+		"kubeflow/testing",
+		"kubeflow/tf-operator",
 		"kubernetes/kubernetes",
 		"kubernetes/test-infra",
 		"kubernetes/cluster-registry",
@@ -393,7 +365,8 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 		"kubernetes/kops",
 		"kubernetes/heapster",
 		"kubernetes/charts",
-		"tensorflow/k8s",
+		"kubernetes/kube-deploy",
+		"tensorflow/minigo",
 	}) {
 		jobs[job.Name] = false
 	}

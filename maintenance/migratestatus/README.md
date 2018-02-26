@@ -1,6 +1,10 @@
 # Status Context Migrator
 The migratestatus tool is a maintenance utility used to safely switch a repo from one status context to another.
-For example if there is a context named "CI tests" that needs to be moved by "CI tests v2" this tool can be used to copy every "CI tests" status into a "CI tests v2" status context and then mark every "CI tests" context as passing and retired. This ensures that no PRs are ever passing when they shouldn't be and doesn't block PRs that should be passing. The copy and retire phases can be run seperately or together at once in move mode.
+
+For example if there is a context named "CI tests" that needs to be moved by "CI tests v2" this tool can be used to copy every "CI tests" status into a "CI tests v2" status context and then mark every "CI tests" context as passing and retired. This ensures that no PRs are ever passing when they shouldn't be and doesn't block PRs that should be passing. The copy and retire phases can be run separately or together at once in move mode.
+
+By default, this tool runs in dry-run mode and doesn't make any modifications.
+Pass `--dry-run=false` to actually change statuses.
 
 ### Usage
 ###### Modes
@@ -15,6 +19,9 @@ This tool runs in one of three modes. Each mode is defined as a set of condition
 	- `$ ./migratestatus --move="CI tests" --dest="CI tests v2" --tokenfile=$TOKEN_FILE --org=$ORG --repo=$REPO`
 ###### Flags
 The migratestatus binary is run locally and can be built by running `go build` from this directory. The binary accepts the following parameters:
+- `--dry-run` Whether to perform modifying actions. Defaults to true.
+- `--logtostderr` Print logging to stderr. Recommended if you want to see what's
+  happening.
 - `--tokenfile` The file containing the github authentication token to use.
 - `--org` The organization that owns the repository to migrate contexts in. (Kubernetes)
 - `--repo` The repository to migrate contexts in.

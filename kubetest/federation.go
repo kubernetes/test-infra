@@ -21,6 +21,8 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+
+	"k8s.io/test-infra/kubetest/util"
 )
 
 /*
@@ -99,7 +101,7 @@ func fedUp() error {
 	} else {
 		cmd = "./federation/cluster/federation-up.sh"
 	}
-	return finishRunning(exec.Command(cmd))
+	return control.FinishRunning(exec.Command(cmd))
 }
 
 func federationTest(testArgs []string) error {
@@ -109,8 +111,8 @@ func federationTest(testArgs []string) error {
 	} else {
 		cmd = "./hack/federated-ginkgo-e2e.sh"
 	}
-	testArgs = setFieldDefault(testArgs, "--ginkgo.focus", "\\[Feature:Federation\\]")
-	return finishRunning(exec.Command(cmd, testArgs...))
+	testArgs = util.SetFieldDefault(testArgs, "--ginkgo.focus", "\\[Feature:Federation\\]")
+	return control.FinishRunning(exec.Command(cmd, testArgs...))
 }
 
 func fedDown() error {
@@ -120,5 +122,5 @@ func fedDown() error {
 	} else {
 		cmd = "./federation/cluster/federation-down.sh"
 	}
-	return finishRunning(exec.Command(cmd))
+	return control.FinishRunning(exec.Command(cmd))
 }

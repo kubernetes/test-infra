@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -30,19 +31,38 @@ import (
 	"k8s.io/test-infra/prow/pjutil"
 )
 
-var (
-	jobName    = flag.String("job", "", "Job to run.")
-	configPath = flag.String("config-path", "", "Path to config.yaml.")
-)
+type options struct {
+	jobName    string
+	configPath string
+}
 
-func main() {
-	flag.Parse()
-
-	if *jobName == "" {
-		logrus.Fatal("Must specify --job.")
+func (o *options) Validate() error {
+	if o.jobName == "" {
+		return errors.New("required flag --job was unset")
 	}
 
-	conf, err := config.Load(*configPath)
+	if o.configPath == "" {
+		return errors.New("required flag --config-path was unset")
+	}
+
+	return nil
+}
+
+func gatherOptions() options {
+	o := options{}
+	flag.StringVar(&o.jobName, "job", "", "Job to run.")
+	flag.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
+	flag.Parse()
+	return o
+}
+
+func main() {
+	o := gatherOptions()
+	if err := o.Validate(); err != nil {
+		logrus.Fatalf("Invalid options: %v", err)
+	}
+
+	conf, err := config.Load(o.configPath)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error loading config.")
 	}
@@ -58,7 +78,7 @@ func main() {
 			logrus.WithError(err).Fatal("Invalid repo name.")
 		}
 		for _, p := range ps {
-			if p.Name == *jobName {
+			if p.Name == o.jobName {
 				pjs = pjutil.PresubmitSpec(p, kube.Refs{
 					Org:   org,
 					Repo:  repo,
@@ -77,7 +97,7 @@ func main() {
 			logrus.WithError(err).Fatal("Invalid repo name.")
 		}
 		for _, p := range ps {
-			if p.Name == *jobName {
+			if p.Name == o.jobName {
 				pjs = pjutil.PostsubmitSpec(p, kube.Refs{
 					Org:  org,
 					Repo: repo,
@@ -89,14 +109,14 @@ func main() {
 		}
 	}
 	for _, p := range conf.Periodics {
-		if p.Name == *jobName {
+		if p.Name == o.jobName {
 			pjs = pjutil.PeriodicSpec(p)
 			labels = p.Labels
 			found = true
 		}
 	}
 	if !found {
-		logrus.Fatalf("Job %s not found.", *jobName)
+		logrus.Fatalf("Job %s not found.", o.jobName)
 	}
 	if needsBaseRef {
 		fmt.Fprint(os.Stderr, "Base ref (e.g. master): ")

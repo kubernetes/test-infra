@@ -93,14 +93,13 @@ function applicablePlugins(repoSel, repoPlugins) {
         plugins = plugins.concat(byOrg);
     }
     const pluginNames = repoPlugins[repoSel];
-    if (!pluginNames) {
-        return [];
+    if (pluginNames) {
+        pluginNames.forEach((pluginName) => {
+            if (!plugins.includes(pluginName)) {
+                plugins.push(pluginName);
+            }
+        });
     }
-    pluginNames.forEach((pluginNames) => {
-        if (!plugins.includes(pluginNames)) {
-            plugins.push(pluginNames);
-        }
-    });
     return plugins.sort();
 }
 
@@ -386,10 +385,10 @@ function redraw() {
     const repoSel = selectionText(document.getElementById("repo"));
     if (window.history && window.history.replaceState !== undefined) {
         if (repoSel !== "") {
-            history.replaceState(null, "", "/command-help.html?repo="
+            history.replaceState(null, "", "/command-help?repo="
                 + encodeURIComponent(repoSel));
         } else {
-            history.replaceState(null, "", "/command-help.html")
+            history.replaceState(null, "", "/command-help")
         }
     }
     redrawOptions();

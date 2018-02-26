@@ -18,8 +18,10 @@ package config
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"regexp"
 	"strings"
@@ -32,8 +34,31 @@ import (
 	"k8s.io/test-infra/prow/kube"
 )
 
+// config.json is the worst but contains useful information :-(
+type configJSON map[string]map[string]interface{}
+
+func (c configJSON) ScenarioForJob(jobName string) string {
+	if scenario, ok := c[jobName]["scenario"]; ok {
+		return scenario.(string)
+	}
+	return ""
+}
+func readConfigJSON(path string) (config configJSON, err error) {
+	raw, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	config = configJSON{}
+	err = json.Unmarshal(raw, &config)
+	if err != nil {
+		return nil, err
+	}
+	return config, nil
+}
+
 // Loaded at TestMain.
 var c *Config
+var cj configJSON
 
 func TestMain(m *testing.M) {
 	conf, err := Load("../config.yaml")
@@ -42,6 +67,13 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 	c = conf
+
+	cj, err = readConfigJSON("../../jobs/config.json")
+	if err != nil {
+		fmt.Printf("Could not load jobs config: %v", err)
+		os.Exit(1)
+	}
+
 	os.Exit(m.Run())
 }
 
@@ -219,6 +251,10 @@ func checkBazelPortContainer(c v1.Container, cache bool) error {
 	return nil
 }
 
+func volumeIsCacheSSD(v *kube.Volume) bool {
+	return v.HostPath != nil && strings.HasPrefix(v.HostPath.Path, "/mnt/disks/ssd0")
+}
+
 func checkBazelPortPresubmit(presubmits []Presubmit) error {
 	for _, presubmit := range presubmits {
 		if presubmit.Spec == nil {
@@ -226,8 +262,9 @@ func checkBazelPortPresubmit(presubmits []Presubmit) error {
 		}
 		hasCache := false
 		for _, volume := range presubmit.Spec.Volumes {
-			if volume.Name == "cache-ssd" || volume.Name == "docker-graph" {
+			if volumeIsCacheSSD(&volume) {
 				hasCache = true
+				break
 			}
 		}
 
@@ -249,9 +286,9 @@ func checkBazelPortPostsubmit(postsubmits []Postsubmit) error {
 	for _, postsubmit := range postsubmits {
 		hasCache := false
 		for _, volume := range postsubmit.Spec.Volumes {
-			// TODO(bentheelder): rewrite these tests and the entire caching layout...
-			if volume.Name == "cache-ssd" || volume.Name == "docker-graph" {
+			if volumeIsCacheSSD(&volume) {
 				hasCache = true
+				break
 			}
 		}
 
@@ -273,8 +310,9 @@ func checkBazelPortPeriodic(periodics []Periodic) error {
 	for _, periodic := range periodics {
 		hasCache := false
 		for _, volume := range periodic.Spec.Volumes {
-			if volume.Name == "cache-ssd" || volume.Name == "docker-graph" {
+			if volumeIsCacheSSD(&volume) {
 				hasCache = true
+				break
 			}
 		}
 
@@ -827,7 +865,7 @@ func TestLatestUsesImagePullPolicy(t *testing.T) {
 
 // checkKubekinsPresets returns an error if a spec references to kubekins-e2e|bootstrap image,
 // but doesn't use service preset or ssh preset
-func checkKubekinsPresets(spec *v1.PodSpec, labels, validLabels map[string]string) error {
+func checkKubekinsPresets(jobName string, spec *v1.PodSpec, labels, validLabels map[string]string) error {
 	service := true
 	ssh := true
 	for _, container := range spec.Containers {
@@ -840,7 +878,8 @@ func checkKubekinsPresets(spec *v1.PodSpec, labels, validLabels map[string]strin
 			}
 		}
 
-		if strings.Contains(container.Image, "kubekins-e2e") {
+		configJSONJobName := strings.Replace(jobName, "pull-kubernetes", "pull-security-kubernetes", -1)
+		if cj.ScenarioForJob(configJSONJobName) == "kubenetes_e2e" {
 			ssh = false
 			for key, val := range labels {
 				if (key == "preset-k8s-ssh" || key == "preset-aws-ssh") && val == "true" {
@@ -888,12 +927,10 @@ func TestValidPresets(t *testing.T) {
 		}
 	}
 
-	for _, pres := range c.Presubmits {
-		for _, presubmit := range pres {
-			if presubmit.Spec != nil {
-				if err := checkKubekinsPresets(presubmit.Spec, presubmit.Labels, validLabels); err != nil {
-					t.Errorf("Error in presubmit %q: %v", presubmit.Name, err)
-				}
+	for _, presubmit := range c.AllPresubmits(nil) {
+		if presubmit.Spec != nil {
+			if err := checkKubekinsPresets(presubmit.Name, presubmit.Spec, presubmit.Labels, validLabels); err != nil {
+				t.Errorf("Error in presubmit %q: %v", presubmit.Name, err)
 			}
 		}
 	}
@@ -901,7 +938,7 @@ func TestValidPresets(t *testing.T) {
 	for _, posts := range c.Postsubmits {
 		for _, postsubmit := range posts {
 			if postsubmit.Spec != nil {
-				if err := checkKubekinsPresets(postsubmit.Spec, postsubmit.Labels, validLabels); err != nil {
+				if err := checkKubekinsPresets(postsubmit.Name, postsubmit.Spec, postsubmit.Labels, validLabels); err != nil {
 					t.Errorf("Error in postsubmit %q: %v", postsubmit.Name, err)
 				}
 			}
@@ -910,22 +947,9 @@ func TestValidPresets(t *testing.T) {
 
 	for _, periodic := range c.Periodics {
 		if periodic.Spec != nil {
-			if err := checkKubekinsPresets(periodic.Spec, periodic.Labels, validLabels); err != nil {
+			if err := checkKubekinsPresets(periodic.Name, periodic.Spec, periodic.Labels, validLabels); err != nil {
 				t.Errorf("Error in periodic %q: %v", periodic.Name, err)
 			}
 		}
-	}
-}
-
-// TODO: Remove when k8s/test-infra stops using Jenkins.
-//       OR even better create a dummy config that uses
-//       jenkins_operators.
-func TestOperatorConfig(t *testing.T) {
-	if len(c.JenkinsOperators) != 1 {
-		t.Fatalf("expected config for a Jenkins operator")
-	}
-	if c.JenkinsOperators[0].JobURLTemplate == nil ||
-		c.JenkinsOperators[0].ReportTemplate == nil {
-		t.Fatalf("expected job URL and report templates to be non-nil")
 	}
 }

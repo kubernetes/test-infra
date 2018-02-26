@@ -23,88 +23,56 @@ package main
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
+	"errors"
 	"flag"
-	"fmt"
 	"io/ioutil"
-	"path"
+	"os"
 	"time"
 
-	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/api/option"
 
-	"k8s.io/test-infra/prow/pjutil"
+	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pod-utils/clone"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 )
 
-var (
-	cloneLog = flag.String("clone-log", "", "path to the output file for the cloning step")
+type options struct {
+	cloneLog string
 
-	subDir = flag.String("sub-dir", "", "Optional sub-directory of the job's path to which artifacts are uploaded")
+	gcsOptions *gcs.Options
+}
 
-	pathStrategy = flag.String("path-strategy", pathStrategyExplicit, "how to encode org and repo into GCS paths")
-	defaultOrg   = flag.String("default-org", "", "optional default org for GCS path encoding")
-	defaultRepo  = flag.String("default-repo", "", "optional default repo for GCS path encoding")
+func (o *options) Validate() error {
+	if o.cloneLog == "" {
+		return errors.New("required flag --clone-logs was unset")
+	}
 
-	gcsBucket          = flag.String("gcs-bucket", "", "GCS bucket to upload into")
-	gceCredentialsFile = flag.String("gcs-credentials-file", "", "file where Google Cloud authentication credentials are stored")
-	dryRun             = flag.Bool("dry-run", true, "do not interact with GCS")
-)
+	return o.gcsOptions.Validate()
+}
 
-type pathStrategyType string
-
-const (
-	pathStrategyLegacy   pathStrategyType = "legacy"
-	pathStrategyExplicit                  = "explicit"
-	pathStrategySingle                    = "single"
-)
+func gatherOptions() options {
+	o := options{}
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	fs.StringVar(&o.cloneLog, "clone-log", "", "path to the output file for the cloning step")
+	o.gcsOptions = gcs.BindOptions(fs)
+	fs.Parse(os.Args[1:])
+	o.gcsOptions.Complete(fs.Args())
+	return o
+}
 
 func main() {
-	flag.Parse()
-
-	if !*dryRun {
-		if *gcsBucket != "" {
-			logrus.Fatal("No GCS bucket specified")
-		}
-
-		if *gceCredentialsFile != "" {
-			logrus.Fatal("No GCE credentials specified")
-		}
+	o := gatherOptions()
+	if err := o.Validate(); err != nil {
+		logrus.Fatalf("Invalid options: %v", err)
 	}
 
-	if *cloneLog == "" {
-		logrus.Fatal("No JSON clone metadata provided")
-	}
-
-	if err := validatePathOptions(pathStrategy, defaultOrg, defaultRepo); err != nil {
-		logrus.Fatalf("Invalid path options: %v", err)
-	}
-
-	var builder gcs.RepoPathBuilder
-	switch pathStrategyType(*pathStrategy) {
-	case pathStrategyExplicit:
-		builder = gcs.NewExplicitRepoPathBuilder()
-	case pathStrategyLegacy:
-		builder = gcs.NewLegacyRepoPathBuilder(*defaultOrg, *defaultRepo)
-	case pathStrategySingle:
-		builder = gcs.NewSingleDefaultRepoPathBuilder(*defaultOrg, *defaultRepo)
-	}
-
-	spec, err := pjutil.ResolveSpecFromEnv()
-	if err != nil {
-		logrus.WithError(err).Fatal("Could not resolve job spec")
-	}
-
-	gcsPath := gcs.PathForSpec(spec, builder)
-	if *subDir != "" {
-		gcsPath = path.Join(gcsPath, *subDir)
-	}
+	logrus.SetFormatter(
+		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "clonerefs"}),
+	)
 
 	var cloneRecords []clone.Record
-	data, err := ioutil.ReadFile(*cloneLog)
+	data, err := ioutil.ReadFile(o.cloneLog)
 	if err != nil {
 		logrus.WithError(err).Fatal("Could not read clone log")
 	}
@@ -120,8 +88,8 @@ func main() {
 	}
 
 	uploadTargets := map[string]gcs.UploadFunc{
-		path.Join(gcsPath, "clone-log.txt"):      gcs.DataUpload(&buildLog),
-		path.Join(gcsPath, "clone-records.json"): gcs.FileUpload(*cloneLog),
+		"clone-log.txt":      gcs.DataUpload(&buildLog),
+		"clone-records.json": gcs.FileUpload(o.cloneLog),
 	}
 
 	started := struct {
@@ -133,52 +101,33 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Could not marshal starting data")
 	} else {
-		uploadTargets[path.Join(gcsPath, "started.json")] = gcs.DataUpload(bytes.NewBuffer(startedData))
+		uploadTargets["started.json"] = gcs.DataUpload(bytes.NewBuffer(startedData))
 	}
 
 	if failed {
 		finished := struct {
-			Timestamp int64 `json:"timestamp"`
-			Passed    bool  `json:"passed"`
+			Timestamp int64  `json:"timestamp"`
+			Passed    bool   `json:"passed"`
+			Result    string `json:"result"`
 		}{
 			Timestamp: time.Now().Unix(),
 			Passed:    false,
+			Result:    "FAILURE",
 		}
 		finishedData, err := json.Marshal(&finished)
 		if err != nil {
 			logrus.WithError(err).Fatal("Could not marshal finishing data")
 		} else {
-			uploadTargets[path.Join(gcsPath, "build-log.txt")] = gcs.DataUpload(&buildLog)
-			uploadTargets[path.Join(gcsPath, "finished.json")] = gcs.DataUpload(bytes.NewBuffer(finishedData))
+			uploadTargets["build-log.txt"] = gcs.DataUpload(&buildLog)
+			uploadTargets["finished.json"] = gcs.DataUpload(bytes.NewBuffer(finishedData))
 		}
 	}
 
-	if !*dryRun {
-		ctx := context.Background()
-		gcsClient, err := storage.NewClient(ctx, option.WithCredentialsFile(*gceCredentialsFile))
-		if err != nil {
-			logrus.WithError(err).Fatal("Could not connect to GCS")
-		}
-
-		if err := gcs.Upload(gcsClient.Bucket(*gcsBucket), uploadTargets); err != nil {
-			logrus.WithError(err).Fatal("Failed to upload to GCS")
-		}
+	if err := o.gcsOptions.Run(uploadTargets); err != nil {
+		logrus.WithError(err).Fatal("Failed to upload to GCS")
 	}
 
 	if failed {
 		logrus.Fatal("Cloning the appropriate refs failed.")
 	}
-}
-
-func validatePathOptions(pathStrategy, defaultOrg, defaultRepo *string) error {
-	strategy := pathStrategyType(*pathStrategy)
-	if strategy != pathStrategyLegacy && strategy != pathStrategyExplicit && strategy != pathStrategySingle {
-		return fmt.Errorf("path strategy must be one of %q, %q, or %q", pathStrategyLegacy, pathStrategyExplicit, pathStrategySingle)
-	}
-
-	if strategy != pathStrategyExplicit && (*defaultOrg == "" || *defaultRepo == "") {
-		return fmt.Errorf("default org and repo must be provided for strategy %q", strategy)
-	}
-
-	return nil
 }

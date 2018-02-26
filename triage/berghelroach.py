@@ -369,7 +369,7 @@ def computeRow(k, p, a, b,
                knownLeft, knownAbove, knownRight):
     assert abs(k) <= p
     assert p >= 0
-    # Compute our starting point using the recurrance.
+    # Compute our starting point using the recurrence.
     # That is, find the first row where the desired edit distance
     # appears in our diagonal.  This is at least one past
     # the highest row for

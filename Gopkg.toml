@@ -2,7 +2,8 @@
 
 # Updating this list likely also requires updating hack/prune-libraries.sh.
 required = [
-  "github.com/golang/dep/cmd/dep"
+  "github.com/golang/dep/cmd/dep",
+  "github.com/client9/misspell/cmd/misspell"
 ]
 
 [[constraint]]
@@ -34,3 +35,11 @@ required = [
 [[constraint]]
   name = "cloud.google.com/go"
   version = "0.17.0"
+
+[[constraint]]
+  name = "github.com/bazelbuild/buildtools"
+  revision = "0e53062d74ecbdd699b007d74c996b6c73039c7f"
+
+[[constraint]]
+  name = "github.com/client9/misspell"
+  revision = "9ce5d979ffdaca6385988d7ad1079a33ec942d20"

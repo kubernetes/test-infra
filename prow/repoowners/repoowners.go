@@ -279,7 +279,7 @@ func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 
 	// '.md' files may contain assignees at the top of the file in a yaml header
 	// Note that these assignees only apply to the file itself.
-	if o.enableMDYAML && filename != ownersFileName && strings.HasSuffix(filename, "md") {
+	if o.enableMDYAML && strings.HasSuffix(filename, ".md") {
 		// Parse the yaml header from the file if it exists and marshal into the config
 		simple := &simpleConfig{}
 		if err := decodeOwnersMdConfig(path, simple); err != nil {

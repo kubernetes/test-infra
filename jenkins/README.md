@@ -1,4 +1,4 @@
-# Jenkins is deprecated
+# Jenkins is ~~deprecated~~ DEAD
 
 Please add your job to [`prow`] instead.
 
