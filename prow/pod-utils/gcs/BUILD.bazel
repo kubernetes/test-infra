@@ -41,7 +41,6 @@ go_test(
         "upload_test.go",
     ],
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/prow/pod-utils/gcs",
     deps = [
         "//prow/kube:go_default_library",
         "//prow/pjutil:go_default_library",

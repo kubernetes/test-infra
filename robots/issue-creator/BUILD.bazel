@@ -65,6 +65,5 @@ filegroup(
 go_binary(
     name = "issue-creator",
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/robots/issue-creator",
     visibility = ["//visibility:public"],
 )
