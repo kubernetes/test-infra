@@ -228,7 +228,27 @@ func prodOnlyMain(o options, mux *http.ServeMux) {
 			Endpoint:     github.Endpoint,
 		}
 
-		userDashboardAgent := userdashboard.NewDashboardAgent(&githubOAuthConfig, logrus.WithField("client", "user-dashboard"))
+		repoSet := make(map[string]bool)
+		for r := range configAgent.Config().Presubmits {
+			repoSet[r] = true
+		}
+		for _, q := range configAgent.Config().Tide.Queries {
+			for _, v := range q.Repos {
+				repoSet[v] = true
+			}
+		}
+		var repos []string
+		for k, v := range repoSet {
+			if v {
+				repos = append(repos, k)
+			}
+		}
+
+		userDashboardAgent := userdashboard.NewDashboardAgent(
+			repos,
+			&githubOAuthConfig,
+			logrus.WithField("client", "user-dashboard"))
+
 		mux.Handle("/user-data.js", handleNotCached(
 			userDashboardAgent.HandleUserDashboard(userDashboardAgent)))
 		// Handles login request.
