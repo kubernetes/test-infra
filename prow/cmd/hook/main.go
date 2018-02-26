@@ -173,12 +173,15 @@ func main() {
 
 	pluginAgent := &plugins.PluginAgent{}
 
+	ownersClient := repoowners.NewClient(gitClient, githubClient, pluginAgent.MDYAMLEnabled)
+	ownersClient.DirBlackList = configAgent.Config().OwnersDirBlacklist
+
 	pluginAgent.PluginClient = plugins.PluginClient{
 		GitHubClient: githubClient,
 		KubeClient:   kubeClient,
 		GitClient:    gitClient,
 		SlackClient:  slackClient,
-		OwnersClient: repoowners.NewClient(gitClient, githubClient, pluginAgent.MDYAMLEnabled),
+		OwnersClient: ownersClient,
 		Logger:       logrus.WithField("agent", "plugin"),
 	}
 	if err := pluginAgent.Start(o.pluginConfig); err != nil {

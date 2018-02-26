@@ -21,6 +21,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -107,6 +108,32 @@ func getTestClient(files map[string][]byte, enableMdYaml, includeAliases bool) (
 			localGit.Clean()
 		},
 		nil
+}
+
+func TestOwnerDirBlacklist(t *testing.T) {
+	client, cleanup, err := getTestClient(testFiles, true, true)
+	if err != nil {
+		t.Fatalf("Error creating test client: %v.", err)
+	}
+	defer cleanup()
+
+	client.DirBlackList = []string{"src"}
+
+	ro, err := client.LoadRepoOwners("org", "repo")
+	if err != nil {
+		t.Fatalf("Unexpected error loading RepoOwners: %v.", err)
+	}
+
+	for dir, _ := range ro.approvers {
+		if strings.Contains(dir, "src") {
+			t.Errorf("Expected directory %s to be excluded from the approvers map", dir)
+		}
+	}
+	for dir, _ := range ro.reviewers {
+		if strings.Contains(dir, "src") {
+			t.Errorf("Expected directory %s to be excluded from the reviewers map", dir)
+		}
+	}
 }
 
 func TestOwnersRegexpFiltering(t *testing.T) {

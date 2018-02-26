@@ -40,7 +40,7 @@ const (
 	baseDirConvention = ""
 )
 
-var dirBlacklist = sets.NewString(".git", "_output")
+var defaultDirBlackList = sets.NewString(".git", "_output")
 
 type dirOptions struct {
 	NoParentOwners bool `json:"no_parent_owners,omitempty"`
@@ -78,6 +78,8 @@ type cacheEntry struct {
 }
 
 type Client struct {
+	DirBlackList []string
+
 	git    *git.Client
 	ghc    githubClient
 	logger *logrus.Entry
@@ -108,6 +110,8 @@ type RepoOwners struct {
 	reviewers map[string]map[*regexp.Regexp]sets.String
 	labels    map[string]map[*regexp.Regexp]sets.String
 	options   map[string]dirOptions
+
+	dirBlackList []string
 
 	baseDir      string
 	enableMDYAML bool
@@ -171,7 +175,7 @@ func (c *Client) LoadRepoOwners(org, repo string) (*RepoOwners, error) {
 			// aliases must be loaded
 			entry.aliases = loadAliasesFrom(gitRepo.Dir, log)
 		}
-		entry.owners, err = loadOwnersFrom(gitRepo.Dir, mdYaml, entry.aliases, log)
+		entry.owners, err = loadOwnersFrom(gitRepo.Dir, mdYaml, entry.aliases, c.DirBlackList, log)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load RepoOwners for %s: %v", fullName, err)
 		}
@@ -237,7 +241,7 @@ func loadAliasesFrom(baseDir string, log *logrus.Entry) RepoAliases {
 	return result
 }
 
-func loadOwnersFrom(baseDir string, mdYaml bool, aliases RepoAliases, log *logrus.Entry) (*RepoOwners, error) {
+func loadOwnersFrom(baseDir string, mdYaml bool, aliases RepoAliases, dirBlacklist []string, log *logrus.Entry) (*RepoOwners, error) {
 	o := &RepoOwners{
 		RepoAliases:  aliases,
 		baseDir:      baseDir,
@@ -248,6 +252,8 @@ func loadOwnersFrom(baseDir string, mdYaml bool, aliases RepoAliases, log *logru
 		reviewers: make(map[string]map[*regexp.Regexp]sets.String),
 		labels:    make(map[string]map[*regexp.Regexp]sets.String),
 		options:   make(map[string]dirOptions),
+
+		dirBlackList: dirBlacklist,
 	}
 
 	return o, filepath.Walk(o.baseDir, o.walkFunc)
@@ -270,7 +276,12 @@ func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 		return nil
 	}
 	filename := filepath.Base(path)
-	if info.Mode().IsDir() && dirBlacklist.Has(filename) {
+
+	dirBlackList := sets.NewString(o.dirBlackList...)
+	if len(dirBlackList) == 0 {
+		dirBlackList = defaultDirBlackList
+	}
+	if info.Mode().IsDir() && dirBlackList.Has(filename) {
 		return filepath.SkipDir
 	}
 	if !info.Mode().IsRegular() {

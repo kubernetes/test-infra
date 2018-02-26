@@ -78,6 +78,8 @@ type Config struct {
 
 	// PushGateway is a prometheus push gateway.
 	PushGateway PushGateway `json:"push_gateway,omitempty"`
+
+	OwnersDirBlacklist []string `json:"owners_dir_blacklist"`
 }
 
 // PushGateway is a prometheus push gateway.
