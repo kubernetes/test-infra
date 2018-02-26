@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// jenkins-config-updater watches for merged PRs which update a set of files
+// config-updater watches for merged PRs which update a set of files
 // and update the corresponding files in a given deployment
 package main
 

@@ -18,5 +18,5 @@ LABEL maintainer="dthau@redhat.com"
 ENV GIT_COMMITTER_NAME=developer \
     GIT_COMMITTER_EMAIL=developer@redhat.com
 
-COPY jenkins-config-updater /jenkins-config-updater
-ENTRYPOINT ["/jenkins-config-updater"]
+COPY config-updater /config-updater
+ENTRYPOINT ["/config-updater"]
