@@ -891,9 +891,10 @@ presubmits:
     - release-1.9 # need to cherry pick back https://github.com/kubernetes/kubernetes/pull/59251, possibly others
     labels:
       preset-service-account: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.10.0
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180223-74690e8dc-master
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -904,12 +905,10 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
-        env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
+        # TODO(bentheelder): eliminate the "git caching" junk
         volumeMounts:
         - name: cache-ssd
           mountPath: /root/.cache
@@ -1169,9 +1168,10 @@ presubmits:
     - release-1.9 # need to cherry pick back https://github.com/kubernetes/kubernetes/pull/59251, possibly others
     labels:
       preset-service-account: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.10.0
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180223-74690e8dc-master
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -1187,11 +1187,12 @@ presubmits:
         - "--test-args=--test_tag_filters=-e2e,-integration"
         - "--test-args=--flaky_test_attempts=3"
         env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
+        - name: BAZEL_REMOTE_CACHE_ENABLED
+          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
+        # TODO(bentheelder): eliminate the "git caching" junk
         volumeMounts:
         - name: cache-ssd
           mountPath: /root/.cache
@@ -2762,6 +2763,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-bazel-build
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-bazel-build
@@ -2830,7 +2832,7 @@ presubmits:
         - --release=//build/release-tars
         - --gcs=gs://kubernetes-security-prow/ci/pull-security-kubernetes-bazel-build
         - --gcs-shared=gs://kubernetes-security-prow/bazel
-        image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.10.0
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180223-74690e8dc-master
         name: ""
         resources:
           requests:
@@ -3068,6 +3070,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-bazel-test
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-bazel-test
@@ -3095,7 +3098,10 @@ presubmits:
         - --test-args=--build_tag_filters=-e2e,-integration
         - --test-args=--test_tag_filters=-e2e,-integration
         - --test-args=--flaky_test_attempts=3
-        image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.10.0
+        env:
+        - name: BAZEL_REMOTE_CACHE_ENABLED
+          value: "true"
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180223-74690e8dc-master
         name: ""
         resources:
           requests:
