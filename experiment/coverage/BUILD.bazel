@@ -14,7 +14,6 @@ go_library(
 go_binary(
     name = "coverage",
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/experiment/coverage",
     visibility = ["//visibility:public"],
 )
 
@@ -36,5 +35,4 @@ go_test(
     name = "go_default_test",
     srcs = ["apicoverage_test.go"],
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/experiment/coverage",
 )

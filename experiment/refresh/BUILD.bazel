@@ -25,7 +25,6 @@ go_library(
 go_binary(
     name = "refresh",
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/experiment/refresh",
     visibility = ["//visibility:public"],
 )
 

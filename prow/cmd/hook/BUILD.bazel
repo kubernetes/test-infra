@@ -15,7 +15,6 @@ go_binary(
         "//prow:configs",
     ],
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/prow/cmd/hook",
     pure = "on",
 )
 
@@ -26,7 +25,6 @@ go_test(
         "//prow:configs",
     ],
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/prow/cmd/hook",
     deps = ["//prow/plugins:go_default_library"],
 )
 
