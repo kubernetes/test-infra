@@ -56,6 +56,7 @@ func NewControl(timeout time.Duration, interrupt, terminate *time.Timer, verbose
 		Timeout:     timeout,
 		Interrupt:   interrupt,
 		Terminate:   terminate,
+		verbose:     verbose,
 	}
 }
 
