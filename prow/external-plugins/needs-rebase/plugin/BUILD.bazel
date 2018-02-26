@@ -18,7 +18,6 @@ go_test(
     name = "go_default_test",
     srcs = ["plugin_test.go"],
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin",
     deps = [
         "//prow/github:go_default_library",
         "//prow/plugins:go_default_library",

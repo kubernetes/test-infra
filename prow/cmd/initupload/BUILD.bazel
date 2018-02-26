@@ -24,7 +24,6 @@ go_library(
 go_binary(
     name = "initupload",
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/prow/cmd/initupload",
     visibility = ["//visibility:public"],
 )
 

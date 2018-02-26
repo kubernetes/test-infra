@@ -34,6 +34,5 @@ go_test(
     name = "go_default_test",
     srcs = ["parse_test.go"],
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/prow/pod-utils/clone",
     deps = ["//prow/kube:go_default_library"],
 )
