@@ -49,15 +49,15 @@ var dir = flag.String("dir", "", "location to store cache entries on disk")
 var host = flag.String("host", "", "host address to listen on")
 var cachePort = flag.Int("cache-port", 8080, "port to listen on for cache requests")
 var metricsPort = flag.Int("metrics-port", 9090, "port to listen on for prometheus metrics scraping")
-var metricsUpdateInterval = flag.Duration("metrics-update-interval", time.Minute,
+var metricsUpdateInterval = flag.Duration("metrics-update-interval", time.Second*10,
 	"interval between updating disk metrics")
 
 // eviction knobs
-var minPercentBlocksFree = flag.Float64("min-percent-blocks-free", 10,
+var minPercentBlocksFree = flag.Float64("min-percent-blocks-free", 5,
 	"minimum percent of blocks free on --dir's disk before evicting entries")
 var evictUntilPercentBlocksFree = flag.Float64("evict-until-percent-blocks-free", 20,
 	"continue evicting from the cache until at least this percent of blocks are free")
-var diskCheckInterval = flag.Duration("disk-check-interval", time.Second*30,
+var diskCheckInterval = flag.Duration("disk-check-interval", time.Second*10,
 	"interval between checking disk usage (and potentially evicting entries)")
 
 // NOTE: remount is a bit of a hack, unfortunately the kubernetes volumes
