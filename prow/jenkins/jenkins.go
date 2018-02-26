@@ -40,11 +40,12 @@ const (
 	// Backoff delay used after a request retry.
 	// Doubles on every retry.
 	retryDelay = 100 * time.Millisecond
-	// Deprecated: Key for unique build number across Jenkins builds.
-	buildID = "buildId"
 	// Key for unique build number across Jenkins builds.
-	newBuildID = "BUILD_ID"
-	prowJobID  = "PROW_JOB_ID"
+	// Used for allowing tools to group artifacts in GCS.
+	statusBuildID = "BUILD_ID"
+	// Key for unique build number across Jenkins builds.
+	// Used for correlating Jenkins builds to ProwJobs.
+	prowJobID = "PROW_JOB_ID"
 )
 
 const (
@@ -112,39 +113,41 @@ func (jb *JenkinsBuild) IsEnqueued() bool {
 }
 
 // ProwJobID extracts the ProwJob identifier for the
-// Jenkins build. We prefer the PROW_JOB_ID parameter
-// if present but fall back to legacy parameters if
-// not.
+// Jenkins build in order to correlate the build with
+// a ProwJob. If the build has an empty PROW_JOB_ID
+// it didn't start by prow.
 func (jb *JenkinsBuild) ProwJobID() string {
-	for _, parameter := range []string{prowJobID, newBuildID, buildID} {
-		for _, action := range jb.Actions {
-			for _, p := range action.Parameters {
-				if p.Name == parameter {
-					value, ok := p.Value.(string)
-					if !ok {
-						logrus.Errorf("Cannot determine %s value for %#v", p.Name, jb)
-						continue
-					}
-					return value
+	for _, action := range jb.Actions {
+		for _, p := range action.Parameters {
+			if p.Name == prowJobID {
+				value, ok := p.Value.(string)
+				if !ok {
+					logrus.Errorf("Cannot determine %s value for %#v", p.Name, jb)
+					continue
 				}
+				return value
 			}
 		}
 	}
 	return ""
 }
 
-// BuildID extracts the `tot` identifier for the
-// Jenkins build. We return an empty string if
-// we are dealing with a build that does not have
-// the ProwJobID set explicitly, as in that case
-// the build identifier is not from `tot`.
+// BuildID extracts the build identifier used for
+// placing and discovering build artifacts.
+// This identifier can either originate from tot
+// or the snowflake library, depending on how the
+// Jenkins operator is configured to run.
+// We return an empty string if we are dealing with
+// a build that does not have the ProwJobID set
+// explicitly, as in  that case the Jenkins build has
+// not started by prow.
 func (jb *JenkinsBuild) BuildID() string {
 	var buildID string
 	hasProwJobID := false
 	for _, action := range jb.Actions {
 		for _, p := range action.Parameters {
 			hasProwJobID = hasProwJobID || p.Name == prowJobID
-			if p.Name == newBuildID {
+			if p.Name == statusBuildID {
 				value, ok := p.Value.(string)
 				if !ok {
 					logrus.Errorf("Cannot determine %s value for %#v", p.Name, jb)

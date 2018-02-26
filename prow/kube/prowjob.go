@@ -107,17 +107,18 @@ type ProwJobStatus struct {
 	// the ProwJob.ObjectMeta.Name field.
 	PodName string `json:"pod_name,omitempty"`
 
-	// ProwJobID is the build identifier vended by `tot`
-	// for this job and used as a monotonically increasing
-	// identifier for grouping artifacts in GCS for views
-	// in TestGrid and Gubernator.
+	// BuildID is the build identifier vended either by tot
+	// or the snowflake library for this job and used as an
+	// identifier for grouping artifacts in GCS for views in
+	// TestGrid and Gubernator. Idenitifiers vended by tot
+	// are monotonically increasing whereas identifiers vended
+	// by the snowflake library are not.
 	BuildID string `json:"build_id,omitempty"`
 
 	// JenkinsBuildID applies only to ProwJobs fulfilled
 	// by the jenkins-operator. This field is the build
 	// identifier that Jenkins gave to the build for this
-	// ProwJob and is not necessarily the same as the ProwJobID
-	// vended by `tot`.
+	// ProwJob.
 	JenkinsBuildID string `json:"jenkins_build_id,omitempty"`
 }
 
