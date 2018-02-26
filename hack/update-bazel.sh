@@ -29,12 +29,12 @@ rm -f ${TESTINFRA_ROOT}/vendor/k8s.io/apimachinery/pkg/util/sets/{BUILD,BUILD.ba
 
 "${TESTINFRA_ROOT}/hack/go_install_from_commit.sh" \
   github.com/kubernetes/repo-infra/kazel \
-  2a736b4fba317cf3038e3cbd06899b544b875fae \
+  6eaf3d8444d87a8ebcddb62a7510a9f58e19d9cc \
   "${TMP_GOPATH}"
 
 "${TESTINFRA_ROOT}/hack/go_install_from_commit.sh" \
   github.com/bazelbuild/bazel-gazelle/cmd/gazelle \
-  eaa1e87d2a3ca716780ca6650ef5b9b9663b8773 \
+  a85b63b06c2e0c75931e57c4a1a18d4e566bb6f4 \
   "${TMP_GOPATH}"
 
 touch "${TESTINFRA_ROOT}/vendor/BUILD.bazel"
