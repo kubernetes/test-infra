@@ -25,18 +25,12 @@ import os
 import random
 import re
 import shutil
-import signal
 import subprocess
 import sys
-import tempfile
-import traceback
 import urllib2
 import time
 
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
-
-# Note: This variable is managed by experiment/bump_e2e_image.sh.
-DEFAULT_KUBEKINS_TAG = 'v20180205-d99d9c246-master'
 
 # The zones below are the zones available in the CNCF account (in theory, zones vary by account)
 # We comment out zones below because we want to stay proportional to the limits
@@ -289,146 +283,6 @@ class LocalMode(object):
         check_env(env, self.command, *args)
 
 
-class DockerMode(object):
-    """Runs e2e tests via docker run kubekins-e2e."""
-    def __init__(self, container, artifacts, sudo, tag, mount_paths):
-        self.tag = tag
-        try:  # Pull a newer version if one exists
-            check('docker', 'pull', kubekins(tag))
-        except subprocess.CalledProcessError:
-            pass
-
-        print 'Starting %s...' % container
-
-        self.workspace = '/workspace'
-        self.container = container
-        self.local_artifacts = artifacts
-        self.artifacts = os.path.join(self.workspace, '_artifacts')
-        self.cmd = [
-            'docker', 'run', '--rm',
-            '--name=%s' % container,
-            '-v', '%s:%s' % (artifacts, self.artifacts),
-            '-v', '/etc/localtime:/etc/localtime:ro',
-        ]
-        for path in mount_paths or []:
-            self.cmd.extend(['-v', path])
-
-        if sudo:
-            self.cmd.extend(['-v', '/var/run/docker.sock:/var/run/docker.sock'])
-        self.add_env('HOME=%s' % self.workspace)
-        self.add_env('WORKSPACE=%s' % self.workspace)
-        self.cmd.append(
-            '--entrypoint=/workspace/kubetest'
-        )
-
-    def add_environment(self, *envs):
-        """Adds FOO=BAR to the -e list for docker.
-
-        Host-specific environment variables are ignored."""
-        # TODO(krzyzacy) change this to a whitelist?
-        docker_env_ignore = [
-            'GOOGLE_APPLICATION_CREDENTIALS',
-            'GOPATH',
-            'GOROOT',
-            'HOME',
-            'PATH',
-            'PWD',
-            'WORKSPACE'
-        ]
-        for env in envs:
-            key, _value = parse_env(env)
-            if key in docker_env_ignore:
-                print >>sys.stderr, 'Skipping environment variable %s' % env
-            else:
-                self.add_env(env)
-
-    def add_os_environment(self, *envs):
-        """Adds os envs as FOO=BAR to the -e list for docker."""
-        self.add_environment(*envs)
-
-    def add_file(self, env_file):
-        """Adds the file to the --env-file list."""
-        self.cmd.extend(['--env-file', env_file])
-
-    def add_env(self, env):
-        """Adds a single environment variable to the -e list for docker.
-
-        Does not check against any blacklists."""
-        self.cmd.extend(['-e', env])
-
-    def add_k8s(self, k8s, *repos):
-        """Add the specified k8s.io repos into container."""
-        for repo in repos:
-            self.cmd.extend([
-                '-v', '%s/%s:/go/src/k8s.io/%s' % (k8s, repo, repo)])
-
-    def add_aws_cred(self, priv, pub, cred):
-        """Mounts aws keys/creds inside the container."""
-        aws_ssh = os.path.join(self.workspace, '.ssh', 'kube_aws_rsa')
-        aws_pub = '%s.pub' % aws_ssh
-        aws_cred = os.path.join(self.workspace, '.aws', 'credentials')
-
-        self.cmd.extend([
-          '-v', '%s:%s:ro' % (priv, aws_ssh),
-          '-v', '%s:%s:ro' % (pub, aws_pub),
-          '-v', '%s:%s:ro' % (cred, aws_cred),
-        ])
-
-    def add_aws_role(self, profile, arn):
-        with tempfile.NamedTemporaryFile(prefix='aws-config', delete=False) as cfg:
-            cfg.write(aws_role_config(profile, arn))
-            self.cmd.extend([
-                '-v', '%s:%s:ro' % (os.path.join(self.workspace, '.aws', 'config'), cfg.name),
-                '-e', 'AWS_SDK_LOAD_CONFIG=true',
-            ])
-        return 'jenkins-assumed-role'
-
-    def add_aws_runner(self):
-        """Run kops_aws_runner for kops-aws jobs."""
-        self.cmd.append(
-          '--entrypoint=%s/kops-e2e-runner.sh' % self.workspace
-        )
-
-    def add_gce_ssh(self, priv, pub):
-        """Mounts priv and pub inside the container."""
-        gce_ssh = os.path.join(self.workspace, '.ssh', 'google_compute_engine')
-        gce_pub = '%s.pub' % gce_ssh
-        self.cmd.extend([
-          '-v', '%s:%s:ro' % (priv, gce_ssh),
-          '-v', '%s:%s:ro' % (pub, gce_pub),
-          '-e', 'JENKINS_GCE_SSH_PRIVATE_KEY_FILE=%s' % gce_ssh,
-          '-e', 'JENKINS_GCE_SSH_PUBLIC_KEY_FILE=%s' % gce_pub])
-
-    def add_service_account(self, path):
-        """Mounts path at /service-account.json inside the container."""
-        service = '/service-account.json'
-        self.cmd.extend(['-v', '%s:%s:ro' % (path, service)])
-        return service
-
-    def start(self, args):
-        """Runs kubetest inside a docker container."""
-        print >>sys.stderr, 'starts with docker mode'
-        cmd = list(self.cmd)
-        cmd.append(kubekins(self.tag))
-        cmd.extend(args)
-        signal.signal(signal.SIGTERM, self.sig_handler)
-        signal.signal(signal.SIGINT, self.sig_handler)
-        try:
-            check(*cmd)
-        finally:  # Ensure docker files are readable by bootstrap
-            if not os.path.isdir(self.local_artifacts):  # May not exist
-                pass
-            try:
-                check('sudo', 'chmod', '-R', 'o+r', self.local_artifacts)
-            except subprocess.CalledProcessError:  # fails outside CI
-                traceback.print_exc()
-
-    def sig_handler(self, _signo, _frame):
-        """Stops container upon receive signal.SIGTERM and signal.SIGINT."""
-        print >>sys.stderr, 'docker stop (signo=%s, frame=%s)' % (_signo, _frame)
-        check('docker', 'stop', self.container)
-
-
 def cluster_name(cluster, build):
     """Return or select a cluster name."""
     if cluster:
@@ -549,7 +403,7 @@ def set_up_aws(workspace, args, mode, cluster, runner_args):
     mode.add_aws_runner()
 
 def read_gcs_path(gcs_path):
-    """reads a gcs path (gs://...) by GETing storage.googleapis.com"""
+    """reads a gcs path (gs://...) by HTTP GET to storage.googleapis.com"""
     link = gcs_path.replace('gs://', 'https://storage.googleapis.com/')
     loc = urllib2.urlopen(link).read()
     print >>sys.stderr, "Read GCS Path: %s" % loc
@@ -582,14 +436,7 @@ def main(args):
     if not os.path.isdir(artifacts):
         os.makedirs(artifacts)
 
-    container = '%s-%s' % (os.environ.get('JOB_NAME'), os.environ.get('BUILD_NUMBER'))
-    if args.mode == 'docker':
-        sudo = args.docker_in_docker or args.build is not None or args.build_federation is not None
-        mode = DockerMode(container, artifacts, sudo, args.tag, args.mount_paths)
-    elif args.mode == 'local':
-        mode = LocalMode(workspace, artifacts)  # pylint: disable=bad-option-value
-    else:
-        raise ValueError(args.mode)
+    mode = LocalMode(workspace, artifacts)
 
     for env_file in args.env_file:
         mode.add_file(test_infra(env_file))
@@ -744,8 +591,6 @@ def create_parser():
     """Create argparser."""
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--mode', default='local', choices=['local', 'docker'])
-    parser.add_argument(
         '--env-file', default=[], action="append",
         help='Job specific environment file')
     parser.add_argument(
@@ -771,10 +616,6 @@ def create_parser():
         default=os.environ.get('GOOGLE_APPLICATION_CREDENTIALS'),
         help='Path to service-account.json')
     parser.add_argument(
-        '--mount-paths',
-        action='append',
-        help='Paths that should be mounted within the docker container in the form local:remote')
-    parser.add_argument(
         '--build', nargs='?', default=None, const='',
         help='Build kubernetes binaries if set, optionally specifying strategy')
     parser.add_argument(
@@ -790,13 +631,9 @@ def create_parser():
     parser.add_argument(
         '--cluster', default='bootstrap-e2e', help='Name of the cluster')
     parser.add_argument(
-        '--docker-in-docker', action='store_true', help='Enable run docker within docker')
-    parser.add_argument(
         '--kubeadm', choices=['ci', 'periodic', 'pull', 'stable'])
     parser.add_argument(
         '--stage', default=None, help='Stage release to GCS path provided')
-    parser.add_argument(
-        '--tag', default=DEFAULT_KUBEKINS_TAG, help='Use a specific kubekins-e2e tag if set')
     parser.add_argument(
         '--test', default='true', help='If we need to run any actual test within kubetest')
     parser.add_argument(
@@ -872,9 +709,6 @@ def parse_args(args=None):
     args, extra = parser.parse_known_args(args)
     args.kubetest_args += extra
 
-    if (args.image_family or args.image_project) and args.mode == 'docker':
-        raise ValueError(
-            '--image-family / --image-project is not supported in docker mode')
     if bool(args.image_family) != bool(args.image_project):
         raise ValueError(
             '--image-family and --image-project must be both set or unset')

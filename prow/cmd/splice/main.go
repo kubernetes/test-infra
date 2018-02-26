@@ -27,12 +27,13 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
@@ -52,7 +53,7 @@ func call(binary string, args ...string) (string, error) {
 	for _, arg := range args {
 		cmdout += arg + " "
 	}
-	log.Info(cmdout)
+	logrus.Info(cmdout)
 
 	cmd := exec.Command(binary, args...)
 	output, err := cmd.CombinedOutput()
@@ -114,7 +115,7 @@ func makeSplicer() (*splicer, error) {
 		s.cleanup()
 		return nil, err
 	}
-	log.Infof("Splicer created in %s.", dir)
+	logrus.Infof("Splicer created in %s.", dir)
 	return s, nil
 }
 
@@ -128,7 +129,7 @@ func (s *splicer) gitCall(args ...string) error {
 	fullArgs := append([]string{"-C", s.dir}, args...)
 	output, err := call("git", fullArgs...)
 	if len(output) > 0 {
-		log.Info(output)
+		logrus.Info(output)
 	}
 	return err
 }
@@ -268,22 +269,24 @@ func neededPresubmits(presubmits []config.Presubmit, currentJobs []kube.ProwJob,
 
 func main() {
 	flag.Parse()
-	log.SetFormatter(&log.JSONFormatter{})
+	logrus.SetFormatter(
+		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "splice"}),
+	)
 
 	splicer, err := makeSplicer()
 	if err != nil {
-		log.WithError(err).Fatal("Could not make splicer.")
+		logrus.WithError(err).Fatal("Could not make splicer.")
 	}
 	defer splicer.cleanup()
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(*configPath); err != nil {
-		log.WithError(err).Fatal("Error starting config agent.")
+		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
 	kc, err := kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 	if err != nil {
-		log.WithError(err).Fatal("Error getting kube client.")
+		logrus.WithError(err).Fatal("Error getting kube client.")
 	}
 
 	// get overridden always_run jobs
@@ -296,7 +299,7 @@ func main() {
 		// List batch jobs, only start a new one if none are active.
 		currentJobs, err := kc.ListProwJobs(kube.EmptySelector)
 		if err != nil {
-			log.WithError(err).Error("Error listing prow jobs.")
+			logrus.WithError(err).Error("Error listing prow jobs.")
 			continue
 		}
 
@@ -310,7 +313,7 @@ func main() {
 			}
 		}
 		if len(running) > 0 {
-			log.Infof("Waiting on %d jobs: %v", len(running), running)
+			logrus.Infof("Waiting on %d jobs: %v", len(running), running)
 			continue
 		}
 
@@ -323,17 +326,17 @@ func main() {
 
 		queue, err := getQueuedPRs(*submitQueueURL)
 		if err != nil {
-			log.WithError(err).Warning("Error getting queued PRs. Is the submit queue down?")
+			logrus.WithError(err).Warning("Error getting queued PRs. Is the submit queue down?")
 			continue
 		}
 		// No need to check for mergeable PRs if none is in the queue.
 		if len(queue) == 0 {
 			continue
 		}
-		log.Infof("PRs in queue: %v", queue)
+		logrus.Infof("PRs in queue: %v", queue)
 		batchPRs, err := splicer.findMergeable(*remoteURL, queue)
 		if err != nil {
-			log.WithError(err).Error("Error computing mergeable PRs.")
+			logrus.WithError(err).Error("Error computing mergeable PRs.")
 			continue
 		}
 		// No need to start batches for single PRs
@@ -344,15 +347,15 @@ func main() {
 		if len(batchPRs) > *maxBatchSize {
 			batchPRs = batchPRs[:*maxBatchSize]
 		}
-		log.Infof("Starting a batch for the following PRs: %v", batchPRs)
+		logrus.Infof("Starting a batch for the following PRs: %v", batchPRs)
 		refs := splicer.makeBuildRefs(*orgName, *repoName, batchPRs)
 		presubmits := configAgent.Config().Presubmits[fmt.Sprintf("%s/%s", *orgName, *repoName)]
 		for _, job := range neededPresubmits(presubmits, currentJobs, refs, alwaysRunOverride) {
 			if _, err := kc.CreateProwJob(pjutil.NewProwJob(pjutil.BatchSpec(job, refs), job.Labels)); err != nil {
-				log.WithError(err).WithField("job", job.Name).Error("Error starting batch job.")
+				logrus.WithError(err).WithField("job", job.Name).Error("Error starting batch job.")
 			}
 		}
 		cooldown = 5
-		log.Infof("Sync time: %v", time.Since(start))
+		logrus.Infof("Sync time: %v", time.Since(start))
 	}
 }

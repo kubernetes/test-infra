@@ -19,6 +19,7 @@ package main
 import (
 	"bytes"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -31,6 +32,7 @@ import (
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/tide"
 )
 
@@ -50,53 +52,63 @@ var (
 
 func main() {
 	flag.Parse()
-	logrus.SetFormatter(&logrus.JSONFormatter{})
-	logger := logrus.WithField("component", "tide")
+	logrus.SetFormatter(
+		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "tide"}),
+	)
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(*configPath); err != nil {
-		logger.WithError(err).Fatal("Error starting config agent.")
+		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
 	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
 	if err != nil {
-		logger.WithError(err).Fatalf("Could not read oauth secret file.")
+		logrus.WithError(err).Fatalf("Could not read oauth secret file.")
 	}
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
 	_, err = url.Parse(*githubEndpoint)
 	if err != nil {
-		logger.WithError(err).Fatalf("Must specify a valid --github-endpoint URL.")
+		logrus.WithError(err).Fatalf("Must specify a valid --github-endpoint URL.")
 	}
 
-	var ghc *github.Client
+	var ghcSync, ghcStatus *github.Client
 	var kc *kube.Client
 	if *dryRun {
-		ghc = github.NewDryRunClient(oauthSecret, *githubEndpoint)
+		ghcSync = github.NewDryRunClient(oauthSecret, *githubEndpoint)
+		ghcStatus = github.NewDryRunClient(oauthSecret, *githubEndpoint)
 		kc = kube.NewFakeClient(*deckURL)
 	} else {
-		ghc = github.NewClient(oauthSecret, *githubEndpoint)
+		ghcSync = github.NewClient(oauthSecret, *githubEndpoint)
+		ghcStatus = github.NewClient(oauthSecret, *githubEndpoint)
 		if *cluster == "" {
 			kc, err = kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 			if err != nil {
-				logger.WithError(err).Fatal("Error getting kube client.")
+				logrus.WithError(err).Fatal("Error getting kube client.")
 			}
 		} else {
 			kc, err = kube.NewClientFromFile(*cluster, configAgent.Config().ProwJobNamespace)
 			if err != nil {
-				logger.WithError(err).Fatal("Error getting kube client.")
+				logrus.WithError(err).Fatal("Error getting kube client.")
 			}
 		}
 	}
-	ghc.Throttle(1000, 1000)
+	// The sync loop should be allowed more tokens than the status loop because
+	// it has to list all PRs in the pool every loop while the status loop only
+	// has to list changed PRs every loop.
+	// The sync loop should have a much lower burst allowance than the status
+	// loop which may need to update many statuses upon restarting Tide after
+	// changing the context format or starting Tide on a new repo.
+	ghcSync.Throttle(800, 20)
+	ghcStatus.Throttle(400, 200)
 
 	gc, err := git.NewClient()
 	if err != nil {
-		logger.WithError(err).Fatal("Error getting git client.")
+		logrus.WithError(err).Fatal("Error getting git client.")
 	}
 	defer gc.Clean()
 
-	c := tide.NewController(ghc, kc, configAgent, gc, logger)
+	c := tide.NewController(ghcSync, ghcStatus, kc, configAgent, gc, nil)
 
 	start := time.Now()
 	sync(c)
@@ -110,7 +122,7 @@ func main() {
 			sync(c)
 		}
 	}()
-	logger.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), c))
+	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), c))
 }
 
 func sync(c *tide.Controller) {
@@ -118,5 +130,5 @@ func sync(c *tide.Controller) {
 	if err := c.Sync(); err != nil {
 		logrus.WithError(err).Error("Error syncing.")
 	}
-	logrus.Infof("Sync time: %v", time.Since(start))
+	logrus.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Synced")
 }

@@ -212,7 +212,7 @@ def main(args):
                 res = exp.returncode
 
     # Coalesce test results into one file for upload.
-    check(test_infra('images/bazelbuild/coalesce.py'))
+    check(test_infra('hack/coalesce.py'))
 
     echo_result(res)
     if res != 0:
@@ -253,7 +253,7 @@ def create_parser():
         default='gs://kubernetes-release-dev/bazel',
         help='GCS path for where to push build')
     parser.add_argument(
-        '--batch', action='store_true', help=" run Bazel in batch mode")
+        '--batch', action='store_true', help='run Bazel in batch mode')
     return parser
 
 def parse_args(args=None):

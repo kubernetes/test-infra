@@ -30,7 +30,9 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/logrusutil"
+
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -91,7 +93,7 @@ func (s *store) vend(b string) int {
 
 	err := s.save()
 	if err != nil {
-		log.Error(err)
+		logrus.Error(err)
 	}
 
 	return n
@@ -110,7 +112,7 @@ func (s *store) set(b string, n int) {
 
 	err := s.save()
 	if err != nil {
-		log.Error(err)
+		logrus.Error(err)
 	}
 }
 
@@ -119,24 +121,24 @@ func (s *store) handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		n := s.vend(b)
-		log.Infof("Vending %s number %d to %s.", b, n, r.RemoteAddr)
+		logrus.Infof("Vending %s number %d to %s.", b, n, r.RemoteAddr)
 		fmt.Fprintf(w, "%d", n)
 	case "HEAD":
 		n := s.peek(b)
-		log.Infof("Peeking %s number %d to %s.", b, n, r.RemoteAddr)
+		logrus.Infof("Peeking %s number %d to %s.", b, n, r.RemoteAddr)
 		fmt.Fprintf(w, "%d", n)
 	case "POST":
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			log.WithError(err).Error("Unable to read body.")
+			logrus.WithError(err).Error("Unable to read body.")
 			return
 		}
 		n, err := strconv.Atoi(string(body))
 		if err != nil {
-			log.WithError(err).Error("Unable to parse number.")
+			logrus.WithError(err).Error("Unable to parse number.")
 			return
 		}
-		log.Infof("Setting %s to %d from %s.", b, n, r.RemoteAddr)
+		logrus.Infof("Setting %s to %d from %s.", b, n, r.RemoteAddr)
 		s.set(b, n)
 	}
 }
@@ -159,11 +161,11 @@ func (f fallbackHandler) get(b string) int {
 				if err == nil {
 					break
 				} else {
-					log.WithError(err).Error("Failed to read response body.")
+					logrus.WithError(err).Error("Failed to read response body.")
 				}
 			}
 		} else {
-			log.WithError(err).Errorf("Failed to GET %s.", url)
+			logrus.WithError(err).Errorf("Failed to GET %s.", url)
 		}
 		time.Sleep(2 * time.Second)
 	}
@@ -179,11 +181,13 @@ func (f fallbackHandler) get(b string) int {
 func main() {
 	flag.Parse()
 
-	log.SetFormatter(&log.JSONFormatter{})
+	logrus.SetFormatter(
+		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "tot"}),
+	)
 
 	s, err := newStore(*storagePath)
 	if err != nil {
-		log.WithError(err).Fatal("newStore failed")
+		logrus.WithError(err).Fatal("newStore failed")
 	}
 
 	if *useFallback {
@@ -192,5 +196,5 @@ func main() {
 
 	http.HandleFunc("/vend/", s.handle)
 
-	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
+	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
 }

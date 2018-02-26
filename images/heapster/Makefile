@@ -18,6 +18,6 @@ image:
 	docker build -t "gcr.io/k8s-testimages/heapster-test:$(VERSION)" .
 
 push:
-	gcloud docker -- push "gcr.io/k8s-testimages/heapster-test:$(VERSION)"
+	docker push "gcr.io/k8s-testimages/heapster-test:$(VERSION)"
 
 .PHONY: image push

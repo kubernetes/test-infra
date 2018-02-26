@@ -37,25 +37,25 @@ metrics:
 server-image:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o boskos k8s.io/test-infra/boskos/
 	docker build -t "gcr.io/k8s-testimages/boskos:$(TAG)" .
-	gcloud docker -- push "gcr.io/k8s-testimages/boskos:$(TAG)"
+	docker push "gcr.io/k8s-testimages/boskos:$(TAG)"
 	rm boskos
 
 reaper-image:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o reaper/reaper k8s.io/test-infra/boskos/reaper/
 	docker build -t "gcr.io/k8s-testimages/reaper:$(TAG)" reaper
-	gcloud docker -- push "gcr.io/k8s-testimages/reaper:$(TAG)"
+	docker push "gcr.io/k8s-testimages/reaper:$(TAG)"
 	rm reaper/reaper
 
 janitor-image:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o janitor/janitor k8s.io/test-infra/boskos/janitor/
 	docker build --no-cache -t "gcr.io/k8s-testimages/janitor:$(TAG)" janitor
-	gcloud docker -- push "gcr.io/k8s-testimages/janitor:$(TAG)"
+	docker push "gcr.io/k8s-testimages/janitor:$(TAG)"
 	rm janitor/janitor
 
 metrics-image:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o metrics/metrics k8s.io/test-infra/boskos/metrics/
 	docker build -t "gcr.io/k8s-testimages/metrics:$(TAG)" metrics
-	gcloud docker -- push "gcr.io/k8s-testimages/metrics:$(TAG)"
+	docker push "gcr.io/k8s-testimages/metrics:$(TAG)"
 	rm metrics/metrics
 
 server-deployment:

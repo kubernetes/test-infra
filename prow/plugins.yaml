@@ -9,9 +9,11 @@ triggers:
   - kubernetes-security
   - kubernetes-sigs
   - kubernetes-sig-testing
-  - google/cadvisor  
+  - google/cadvisor
   - tensorflow/k8s
+  - tensorflow/minigo
   - GoogleCloudPlatform/k8s-multicluster-ingress
+  - GoogleCloudPlatform/k8s-tpu-operator
   trusted_org: kubernetes
   join_org_url: "https://git.k8s.io/community/community-membership.md#member"
 - repos:
@@ -22,6 +24,10 @@ triggers:
   - kubeflow
   trusted_org: kubeflow
   join_org_url: https://github.com/kubeflow/kubeflow/blob/master/CONTRIBUTING.md
+- repos:
+  - tensorflow/minigo
+  trusted_org: tensorflow
+  join_org_url: https://github.com/tensorflow/minigo/blob/master/CONTRIBUTING.md
 owners:
   mdyamlrepos:
   - kubernetes/website
@@ -35,6 +41,8 @@ approve:
   - kubernetes/dashboard
   - kubernetes/features
   - kubernetes/federation
+  - kubernetes/gengo
+  - kubernetes/heapster
   - kubernetes/ingress-nginx
   - kubernetes/kops
   - kubernetes/kube-deploy
@@ -46,7 +54,7 @@ approve:
   - kubernetes/sig-release
   - kubernetes/steering
   - kubernetes/test-infra
-  - kubernetes/website
+  - GoogleCloudPlatform/k8s-tpu-operator
   implicit_self_approve: true
 - repos:
   - kubernetes-sigs
@@ -129,7 +137,27 @@ plugins:
   google/cadvisor:
   - trigger
 
+  kubeflow/examples:
+  - lgtm
+  - size
+  - trigger
+
   kubeflow/kubeflow:
+  - lgtm
+  - size
+  - trigger
+
+  kubeflow/reporting:
+  - lgtm
+  - size
+  - trigger
+
+  kubeflow/testing:
+  - lgtm
+  - size
+  - trigger
+
+  kubeflow/tf-operator:
   - lgtm
   - size
   - trigger
@@ -173,7 +201,12 @@ plugins:
   - trigger
   - approve
 
+  kubernetes/gengo:
+  - approve
+
   kubernetes/heapster:
+  - approve
+  - blunderbuss
   - trigger
 
   kubernetes/kops:
@@ -183,6 +216,7 @@ plugins:
   kubernetes/kube-deploy:
   - approve
   - blunderbuss
+  - trigger
 
   kubernetes/kubectl:
   - approve
@@ -274,6 +308,7 @@ plugins:
   - cat
   - cla
   - dog
+  - golint
   - heart
   - help
   - hold
@@ -283,6 +318,7 @@ plugins:
   - shrug
   - size
   - skip
+  - trigger
   - wip
   - yuks
 
@@ -301,6 +337,11 @@ plugins:
   tensorflow/k8s:
   - trigger
 
+  tensorflow/minigo:
+  - trigger
+  - lgtm
+  - size
+
   spxtr/envoy:
   - assign
   - lgtm
@@ -309,3 +350,37 @@ plugins:
 
   GoogleCloudPlatform/k8s-multicluster-ingress:
   - trigger
+
+  GoogleCloudPlatform/k8s-tpu-operator:
+  - approve
+  - assign
+  - blunderbuss
+  - hold
+  - label
+  - lgtm
+  - lifecycle
+  - size
+  - trigger
+  - wip
+
+external_plugins:
+  kubernetes/community:
+  - name: needs-rebase
+    events:
+      - pull_request
+  kubernetes/contrib:
+  - name: needs-rebase
+    events:
+      - pull_request
+  kubernetes/kops:
+  - name: needs-rebase
+    events:
+      - pull_request
+  kubernetes/kubernetes:
+  - name: needs-rebase
+    events:
+      - pull_request
+  kubernetes/test-infra:
+  - name: needs-rebase
+    events:
+      - pull_request

@@ -19,6 +19,8 @@ package main
 import (
 	"fmt"
 	"os/exec"
+
+	"k8s.io/test-infra/kubetest/util"
 )
 
 const (
@@ -82,7 +84,7 @@ func (b *buildStrategy) Build() error {
 	// TODO(fejta): FIX ME
 	// The build-release script needs stdin to ask the user whether
 	// it's OK to download the docker image.
-	return finishRunning(exec.Command("make", "-C", k8s("kubernetes"), target))
+	return control.FinishRunning(exec.Command("make", "-C", util.K8s("kubernetes"), target))
 }
 
 type buildFederationStrategy struct {
@@ -116,5 +118,5 @@ func (b *buildFederationStrategy) Build() error {
 		return fmt.Errorf("unknown federation build strategy: %v", b)
 	}
 
-	return finishRunning(exec.Command("make", "-C", k8s("federation"), target))
+	return control.FinishRunning(exec.Command("make", "-C", util.K8s("federation"), target))
 }

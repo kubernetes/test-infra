@@ -19,6 +19,16 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+# darwin is great
+SED=sed
+if which gsed &>/dev/null; then
+  SED=gsed
+fi
+if ! ($SED --version 2>&1 | grep -q GNU); then
+  echo "!!! GNU sed is required.  If on OS X, use 'brew install gnu-sed'." >&2
+  exit 1
+fi
+
 dirty="$(git status --porcelain)"
 if [[ -n ${dirty} ]]; then
   echo "Tree not clean:"
@@ -32,18 +42,18 @@ DATE="$(date +v%Y%m%d)"
 TAG="${DATE}-$(git describe --tags --always --dirty)"
 pushd "${TREE}/images/kubekins-e2e"
 make push
+K8S=experimental make push
+K8S=1.10 make push
 K8S=1.9 make push
 K8S=1.8 make push
 K8S=1.7 make push
-K8S=1.6 make push
 popd
 
 echo "TAG = ${TAG}"
 
-sed -i "s/DEFAULT_KUBEKINS_TAG = '.*'/DEFAULT_KUBEKINS_TAG = '${TAG}-master'/" "${TREE}/scenarios/kubernetes_e2e.py"
-sed -i "s/\/kubekins-e2e:.*$/\/kubekins-e2e:${TAG}-master/" "${TREE}/images/kubeadm/Dockerfile"
-sed -i "s/\/kubekins-e2e:v.*$/\/kubekins-e2e:${TAG}-master/" "${TREE}/experiment/generate_tests.py"
-sed -i "s/\/kubekins-e2e:v.*-\(.*\)$/\/kubekins-e2e:${TAG}-\1/" "${TREE}/experiment/test_config.yaml"
+$SED -i "s/\/kubekins-e2e:.*$/\/kubekins-e2e:${TAG}-master/" "${TREE}/images/kubeadm/Dockerfile"
+$SED -i "s/\/kubekins-e2e:v.*$/\/kubekins-e2e:${TAG}-master/" "${TREE}/experiment/generate_tests.py"
+$SED -i "s/\/kubekins-e2e:v.*-\(.*\)$/\/kubekins-e2e:${TAG}-\1/" "${TREE}/experiment/test_config.yaml"
 
 pushd "${TREE}"
 bazel run //experiment:generate_tests -- \
@@ -55,8 +65,8 @@ popd
 
 # Scan for kubekins-e2e:v.* as a rudimentary way to avoid
 # replacing :latest.
-sed -i "s/\/kubekins-e2e:v.*-\(.*\)$/\/kubekins-e2e:${TAG}-\1/" "${TREE}/prow/config.yaml"
-git commit -am "Bump to gcr.io/k8s-testimages/kubekins-e2e:${TAG}-(master|releases) (using generate_tests and manual)"
+$SED -i "s/\/kubekins-e2e:v.*-\(.*\)$/\/kubekins-e2e:${TAG}-\1/" "${TREE}/prow/config.yaml"
+git commit -am "Bump to gcr.io/k8s-testimages/kubekins-e2e:${TAG}-(master|experimental|releases) (using generate_tests and manual)"
 
 # Bump kubeadm image
 
@@ -65,5 +75,5 @@ pushd "${TREE}/images/kubeadm"
 make push TAG="${TAG}"
 popd
 
-sed -i "s/\/e2e-kubeadm:v.*$/\/e2e-kubeadm:${TAG}/" "${TREE}/prow/config.yaml"
+$SED -i "s/\/e2e-kubeadm:v.*$/\/e2e-kubeadm:${TAG}/" "${TREE}/prow/config.yaml"
 git commit -am "Bump to e2e-kubeadm:${TAG}"

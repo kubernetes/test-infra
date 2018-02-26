@@ -29,11 +29,13 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -75,7 +77,7 @@ func readConfigJSON(path string) (config configJSON, err error) {
 		return nil, err
 	}
 	config = configJSON{}
-	err = yaml.Unmarshal(raw, &config)
+	err = json.Unmarshal(raw, &config)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +100,7 @@ func readConfig(path string) (raw []byte, parsed *config.Config, err error) {
 // get the start/end byte indexes of the security repo presubmits
 // in the raw config.yaml bytes
 func getSecurityRepoJobsIndex(configBytes []byte) (start, end int, err error) {
-	// find security-repo config begining
+	// find security-repo config beginning
 	// first find presubmits
 	presubmitIdx := bytes.Index(configBytes, ([]byte)("presubmits:"))
 	// then find k-s/k:
@@ -442,7 +444,7 @@ func main() {
 	}
 
 	// create temp file to write updated config
-	f, err := ioutil.TempFile("", "prow-config")
+	f, err := ioutil.TempFile(filepath.Dir(*configPath), "temp")
 	if err != nil {
 		log.Fatalf("Failed to create temp file: %v", err)
 	}

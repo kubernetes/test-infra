@@ -36,7 +36,7 @@ class TestBigquery(unittest.TestCase):
         config_metrics = set()
         for path in bigquery.all_configs(search='**'):
             name = os.path.basename(path)
-            if name in ['BUILD', 'README.md']:
+            if name in ['BUILD', 'BUILD.bazel', 'README.md']:
                 continue
             if not path.endswith('.yaml'):
                 self.fail('Only .yaml files allowed: %s' % path)

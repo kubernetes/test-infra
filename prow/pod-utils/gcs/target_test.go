@@ -149,7 +149,7 @@ func TestAliasForSpec(t *testing.T) {
 				Job:     "job",
 				BuildId: "number",
 			},
-			expected: "pr-logs/directory/job/number",
+			expected: "pr-logs/directory/job/number.txt",
 		},
 	}
 

@@ -296,7 +296,7 @@ clicking on the test name (shown as a triangle on the left). Under **Options**:
     /test/dir2/target3
     ```
 
-    By specifing regular expression "\w+", the tests will be organized into:
+    By specifying regular expression "\w+", the tests will be organized into:
 
     ```text
     ▼test

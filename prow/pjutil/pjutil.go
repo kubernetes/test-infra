@@ -139,7 +139,7 @@ func BatchSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 
 // ProwJobToPod converts a ProwJob to a Pod that will run the tests.
 func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
-	env, err := EnvForSpec(NewJobSpec(pj.Spec, buildID))
+	env, err := EnvForSpec(NewJobSpec(pj.Spec, buildID, pj.Name))
 	if err != nil {
 		return nil, err
 	}

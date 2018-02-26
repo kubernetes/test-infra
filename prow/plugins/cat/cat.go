@@ -195,10 +195,20 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c
 	for i := 0; i < 3; i++ {
 		resp, err := c.readCat(category)
 		if err != nil {
-			log.WithError(err).Println("Failed to get cat img")
+			log.WithError(err).Error("Failed to get cat img")
 			continue
 		}
 		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
+	}
+
+	var msg string
+	if category != "" {
+		msg = "Bad category. Please see http://thecatapi.com/api/categories/list"
+	} else {
+		msg = "http://thecatapi.com appears to be down"
+	}
+	if err := gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg)); err != nil {
+		log.WithError(err).Error("Failed to leave comment")
 	}
 
 	return errors.New("could not find a valid cat image")

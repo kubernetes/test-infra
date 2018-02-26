@@ -17,8 +17,21 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+# get test-infra for latest bootstrap etc
+git clone https://github.com/kubernetes/test-infra
+
+
+# Check if the job has opted-in to bazel remote caching and if so generate 
+# .bazelrc entries pointing to the remote cache
+export BAZEL_REMOTE_CACHE_ENABLED=${BAZEL_REMOTE_CACHE_ENABLED:-false}
+if [[ "${BAZEL_REMOTE_CACHE_ENABLED}" == "true" ]]; then
+    echo "Bazel remote cache is enabled, generating .bazelrcs ..."
+    ./test-infra/images/bootstrap/create_bazel_cache_rcs.sh
+fi
+
+
+# runs custom docker data root cleanup binary and debugs remaining resources
 cleanup_dind() {
-    # run custom docker data root cleanup binary
     barnacle || true
     # list what images and volumes remain
     echo "Remaining docker images and volumes are:"
@@ -51,22 +64,18 @@ if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
     cleanup_dind
     printf '=%.0s' {1..80}; echo
     echo "Done setting up docker in docker."
-else
-# TODO(bentheelder): remove this once we are no longer using Jenkins
-# If not, make sure `docker` points to the old one compatible with our Jenkins
-    export PATH=/docker-no-dind-bin/:$PATH
 fi
 
 # disable error exit so we can run post-command cleanup
 set +o errexit
-# Clone test-infra and start bootstrap
-git clone https://github.com/kubernetes/test-infra
+# actually start bootstrap and the job
 ./test-infra/jenkins/bootstrap.py \
     --job=${JOB_NAME} \
     --service-account=${GOOGLE_APPLICATION_CREDENTIALS} \
     --upload='gs://kubernetes-jenkins/logs' \
     "$@"
 EXIT_VALUE=$?
+
 # cleanup after job
 if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
     echo "Cleaning up after docker in docker."
@@ -75,5 +84,6 @@ if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
     printf '=%.0s' {1..80}; echo
     echo "Done cleaning up after docker in docker."
 fi
+
 # preserve exit value from job / bootstrap
 exit ${EXIT_VALUE}

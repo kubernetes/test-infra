@@ -98,6 +98,14 @@
   version = "v1.12.53"
 
 [[projects]]
+  name = "github.com/bazelbuild/buildtools"
+  packages = [
+    "build",
+    "tables"
+  ]
+  revision = "0e53062d74ecbdd699b007d74c996b6c73039c7f"
+
+[[projects]]
   name = "github.com/beorn7/perks"
   packages = ["quantile"]
   revision = "3ac7bf7a47d159a033b107610db8a1b6575507a4"
@@ -112,6 +120,20 @@
   name = "github.com/bwmarrin/snowflake"
   packages = ["."]
   revision = "02cc386c183a1bf89dcac8c8008bb465f69d3340"
+
+[[projects]]
+  name = "github.com/client9/misspell"
+  packages = [
+    ".",
+    "cmd/misspell"
+  ]
+  revision = "9ce5d979ffdaca6385988d7ad1079a33ec942d20"
+
+[[projects]]
+  name = "github.com/djherbis/atime"
+  packages = ["."]
+  revision = "8e47e0e01d08df8b9f840d74299c8ab70a024a30"
+  version = "v1.0.0"
 
 [[projects]]
   name = "github.com/docker/distribution"
@@ -302,6 +324,24 @@
   packages = ["."]
   revision = "317e0006254c44a0ac427cc52a0e083ff0b9622f"
   version = "v2.0.0"
+
+[[projects]]
+  name = "github.com/gorilla/context"
+  packages = ["."]
+  revision = "1ea25387ff6f684839d82767c1733ff4d4d15d0a"
+  version = "v1.1"
+
+[[projects]]
+  name = "github.com/gorilla/securecookie"
+  packages = ["."]
+  revision = "667fe4e3466a040b780561fe9b51a83a3753eefc"
+  version = "v1.1"
+
+[[projects]]
+  name = "github.com/gorilla/sessions"
+  packages = ["."]
+  revision = "ca9ada44574153444b00d3fd9c8559e4cc95f896"
+  version = "v1.1"
 
 [[projects]]
   name = "github.com/gregjones/httpcache"
@@ -510,7 +550,8 @@
     "internal/timeseries",
     "lex/httplex",
     "proxy",
-    "trace"
+    "trace",
+    "xsrftoken"
   ]
   revision = "0ed95abb35c445290478a5348a7b38bb154135fd"
 
@@ -519,6 +560,7 @@
   name = "golang.org/x/oauth2"
   packages = [
     ".",
+    "github",
     "google",
     "internal",
     "jws",
@@ -669,6 +711,7 @@
   branch = "release-1.9"
   name = "k8s.io/apimachinery"
   packages = [
+    "pkg/api/equality",
     "pkg/api/resource",
     "pkg/apis/meta/v1",
     "pkg/conversion",
@@ -712,9 +755,15 @@
   packages = ["pkg/common"]
   revision = "a07b7bbb58e7fdc5144f8d7046331d29fc9ad3b3"
 
+[[projects]]
+  branch = "master"
+  name = "vbom.ml/util"
+  packages = ["sortorder"]
+  revision = "256737ac55c46798123f754ab7d2c784e2c71783"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "63d5f8d9680977e4c44ccd74e0395506ba6937a7e663eed3226ae3e3852fcda5"
+  inputs-digest = "b86dae268553febc5570e09d43e11ad454f04fde01da3d3b91995209423997c6"
   solver-name = "gps-cdcl"
   solver-version = 1

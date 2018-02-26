@@ -24,8 +24,8 @@ do_build = \
 
 do_push = \
 	$(eval VERSION := $(subst ./Dockerfile-,,$(v)))\
-	gcloud docker -- push $(IMG):$(VERSION)-$(TAG);\
-	gcloud docker -- push $(IMG):$(VERSION)-latest;\
+	docker push $(IMG):$(VERSION)-$(TAG);\
+	docker push $(IMG):$(VERSION)-latest;\
 	echo Pushed $(IMG):$(VERSION)-latest and $(IMG):$(VERSION)-$(TAG);
 
 .PHONY: all build push help

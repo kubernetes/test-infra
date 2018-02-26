@@ -223,8 +223,10 @@ func createComment(reportTemplate *template.Template, pj kube.ProwJob, entries [
 		plural = "s"
 	}
 	var b bytes.Buffer
-	if err := reportTemplate.Execute(&b, &pj); err != nil {
-		return "", err
+	if reportTemplate != nil {
+		if err := reportTemplate.Execute(&b, &pj); err != nil {
+			return "", err
+		}
 	}
 	lines := []string{
 		fmt.Sprintf("@%s: The following test%s **failed**, say `/retest` to rerun them all:", pj.Spec.Refs.Pulls[0].Author, plural),
@@ -233,9 +235,10 @@ func createComment(reportTemplate *template.Template, pj kube.ProwJob, entries [
 		"--- | --- | --- | ---",
 	}
 	lines = append(lines, entries...)
+	if reportTemplate != nil {
+		lines = append(lines, "", b.String())
+	}
 	lines = append(lines, []string{
-		"",
-		b.String(),
 		"",
 		"<details>",
 		"",

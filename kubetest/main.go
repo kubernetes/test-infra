@@ -18,12 +18,12 @@ package main
 
 import (
 	"encoding/json"
-	"encoding/xml"
 	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -34,6 +34,8 @@ import (
 	"time"
 
 	"k8s.io/test-infra/boskos/client"
+	"k8s.io/test-infra/kubetest/process"
+	"k8s.io/test-infra/kubetest/util"
 
 	"github.com/spf13/pflag"
 )
@@ -48,6 +50,7 @@ var (
 	verbose   = false
 	timeout   = time.Duration(0)
 	boskos    = client.NewClient(os.Getenv("JOB_NAME"), "http://boskos")
+	control   = process.NewControl(timeout, interrupt, terminate, verbose)
 )
 
 type options struct {
@@ -116,7 +119,7 @@ func defineFlags() *options {
 	flag.BoolVar(&o.checkLeaks, "check-leaked-resources", false, "Ensure project ends with the same resources")
 	flag.StringVar(&o.cluster, "cluster", "", "Cluster name. Must be set for --deployment=gke (TODO: other deployments).")
 	flag.StringVar(&o.clusterIPRange, "cluster-ip-range", "", "Specifies CLUSTER_IP_RANGE value during --up and --test (only relevant for --deployment=bash). Auto-calculated if empty.")
-	flag.StringVar(&o.deployment, "deployment", "bash", "Choices: none/bash/gke/kops/kubernetes-anywhere/node")
+	flag.StringVar(&o.deployment, "deployment", "bash", "Choices: none/bash/gke/kops/kubernetes-anywhere/node/local")
 	flag.BoolVar(&o.down, "down", false, "If true, tear down the cluster before exiting.")
 	flag.StringVar(&o.dump, "dump", "", "If set, dump cluster logs to this location on test or cluster-up failure")
 	flag.Var(&o.extract, "extract", "Extract k8s binaries from the specified release location")
@@ -172,24 +175,7 @@ func defineFlags() *options {
 	return &o
 }
 
-type testCase struct {
-	XMLName   xml.Name `xml:"testcase"`
-	ClassName string   `xml:"classname,attr"`
-	Name      string   `xml:"name,attr"`
-	Time      float64  `xml:"time,attr"`
-	Failure   string   `xml:"failure,omitempty"`
-	Skipped   string   `xml:"skipped,omitempty"`
-}
-
-type testSuite struct {
-	XMLName  xml.Name `xml:"testsuite"`
-	Failures int      `xml:"failures,attr"`
-	Tests    int      `xml:"tests,attr"`
-	Time     float64  `xml:"time,attr"`
-	Cases    []testCase
-}
-
-var suite testSuite
+var suite util.TestSuite
 
 func validWorkingDirectory() error {
 	cwd, err := os.Getwd()
@@ -205,39 +191,6 @@ func validWorkingDirectory() error {
 		return fmt.Errorf("must run from kubernetes directory root: %v", acwd)
 	}
 	return nil
-}
-
-func writeXML(dump string, start time.Time) {
-	// Note whether timeout occurred
-	c := testCase{
-		Name:      "Timeout",
-		ClassName: "e2e.go",
-		Time:      timeout.Seconds(),
-	}
-	if isInterrupted() {
-		c.Failure = "kubetest --timeout triggered"
-		suite.Failures++
-	}
-	suite.Cases = append(suite.Cases, c)
-	// Write xml
-	suite.Time = time.Since(start).Seconds()
-	out, err := xml.MarshalIndent(&suite, "", "    ")
-	if err != nil {
-		log.Fatalf("Could not marshal XML: %s", err)
-	}
-	path := filepath.Join(dump, "junit_runner.xml")
-	f, err := os.Create(path)
-	if err != nil {
-		log.Fatalf("Could not create file: %s", err)
-	}
-	defer f.Close()
-	if _, err := f.WriteString(xml.Header); err != nil {
-		log.Fatalf("Error writing XML header: %s", err)
-	}
-	if _, err := f.Write(out); err != nil {
-		log.Fatalf("Error writing XML data: %s", err)
-	}
-	log.Printf("Saved XML output to %s.", path)
 }
 
 type deployer interface {
@@ -272,6 +225,8 @@ func getDeployer(o *options) (deployer, error) {
 		return nodeDeploy{}, nil
 	case "none":
 		return noneDeploy{}, nil
+	case "local":
+		return newLocalCluster(), nil
 	default:
 		return nil, fmt.Errorf("unknown deployment strategy %q", o.deployment)
 	}
@@ -289,6 +244,10 @@ func validateFlags(o *options) error {
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
+	// Initialize global pseudo random generator. Intializing it to select random AWS Zones.
+	rand.Seed(time.Now().UnixNano())
+
 	pflag.CommandLine = pflag.NewFlagSet(os.Args[0], pflag.ContinueOnError)
 	o := defineFlags()
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
@@ -299,6 +258,8 @@ func main() {
 	if err := validateFlags(o); err != nil {
 		log.Fatalf("Flags validation failed. err: %v", err)
 	}
+
+	control = process.NewControl(timeout, interrupt, terminate, verbose)
 
 	// do things when we know we are running in the CI (see the kubetest image)
 	if os.Getenv("KUBETEST_IN_DOCKER") == "true" {
@@ -333,7 +294,7 @@ func complete(o *options) error {
 
 	if o.dump != "" {
 		defer writeMetadata(o.dump, o.metadataSources)
-		defer writeXML(o.dump, time.Now())
+		defer control.WriteXML(&suite, o.dump, time.Now())
 	}
 	if o.logexporterGCSPath != "" {
 		o.testArgs += fmt.Sprintf(" --logexporter-gcs-path=%s", o.logexporterGCSPath)
@@ -372,8 +333,11 @@ func complete(o *options) error {
 		return fmt.Errorf("failed to acquire federation binaries: %v", err)
 	}
 	if o.extract.Enabled() {
-		if err := os.Chdir("kubernetes"); err != nil {
-			return fmt.Errorf("failed to chdir to kubernetes dir: %v", err)
+		// If we specified `--extract-source` we will already be in the correct directory
+		if !o.extractSource {
+			if err := os.Chdir("kubernetes"); err != nil {
+				return fmt.Errorf("failed to chdir to kubernetes dir: %v", err)
+			}
 		}
 	}
 	if err := validWorkingDirectory(); err != nil {
@@ -419,9 +383,9 @@ func complete(o *options) error {
 func acquireKubernetes(o *options) error {
 	// Potentially build kubernetes
 	if o.build.Enabled() {
-		err := xmlWrap("Build", o.build.Build)
+		err := control.XmlWrap(&suite, "Build", o.build.Build)
 		if o.flushMemAfterBuild {
-			flushMem()
+			util.FlushMem()
 		}
 		if err != nil {
 			return err
@@ -430,7 +394,7 @@ func acquireKubernetes(o *options) error {
 
 	// Potentially stage build binaries somewhere on GCS
 	if o.stage.Enabled() {
-		if err := xmlWrap("Stage", func() error {
+		if err := control.XmlWrap(&suite, "Stage", func() error {
 			return o.stage.Stage(o.federation)
 		}); err != nil {
 			return err
@@ -439,7 +403,7 @@ func acquireKubernetes(o *options) error {
 
 	// Potentially download existing binaries and extract them.
 	if o.extract.Enabled() {
-		err := xmlWrap("Extract", func() error {
+		err := control.XmlWrap(&suite, "Extract", func() error {
 			// Should we restore a previous state?
 			// Restore if we are not upping the cluster or we are bringing up
 			// a federation control plane without the federated clusters.
@@ -474,9 +438,9 @@ func acquireKubernetes(o *options) error {
 func acquireFederation(o *options) error {
 	// Potentially build federation
 	if o.buildFederation.Enabled() {
-		err := xmlWrap("BuildFederation", o.buildFederation.Build)
+		err := control.XmlWrap(&suite, "BuildFederation", o.buildFederation.Build)
 		if o.flushMemAfterBuild {
-			flushMem()
+			util.FlushMem()
 		}
 		if err != nil {
 			return err
@@ -485,7 +449,7 @@ func acquireFederation(o *options) error {
 
 	// Potentially stage federation binaries somewhere on GCS
 	if o.stageFederation.Enabled() {
-		if err := xmlWrap("StageFederation", func() error {
+		if err := control.XmlWrap(&suite, "StageFederation", func() error {
 			return o.stageFederation.Stage()
 		}); err != nil {
 			return err
@@ -494,7 +458,7 @@ func acquireFederation(o *options) error {
 
 	// Potentially download existing federation binaries and extract them.
 	if o.extractFederation.Enabled() {
-		err := xmlWrap("ExtractFederation", func() error {
+		err := control.XmlWrap(&suite, "ExtractFederation", func() error {
 			return o.extractFederation.Extract(o.gcpProject, o.gcpZone)
 		})
 		return err
@@ -517,7 +481,7 @@ func findVersion() string {
 	if _, err := os.Stat("hack/lib/version.sh"); err == nil {
 		// TODO(fejta): do this in go. At least we removed the upload-to-gcs.sh dep.
 		gross := `. hack/lib/version.sh && KUBE_ROOT=. kube::version::get_version_vars && echo "${KUBE_GIT_VERSION-}"`
-		b, err := output(exec.Command("bash", "-c", gross))
+		b, err := control.Output(exec.Command("bash", "-c", gross))
 		if err == nil {
 			return strings.TrimSpace(string(b))
 		}
@@ -572,27 +536,27 @@ func installGcloud(tarball string, location string) error {
 		return err
 	}
 
-	if err := finishRunning(exec.Command("tar", "xzf", tarball, "-C", location)); err != nil {
+	if err := control.FinishRunning(exec.Command("tar", "xzf", tarball, "-C", location)); err != nil {
 		return err
 	}
 
-	if err := finishRunning(exec.Command(filepath.Join(location, "google-cloud-sdk", "install.sh"), "--disable-installation-options", "--bash-completion=false", "--path-update=false", "--usage-reporting=false")); err != nil {
+	if err := control.FinishRunning(exec.Command(filepath.Join(location, "google-cloud-sdk", "install.sh"), "--disable-installation-options", "--bash-completion=false", "--path-update=false", "--usage-reporting=false")); err != nil {
 		return err
 	}
 
-	if err := insertPath(filepath.Join(location, "google-cloud-sdk", "bin")); err != nil {
+	if err := util.InsertPath(filepath.Join(location, "google-cloud-sdk", "bin")); err != nil {
 		return err
 	}
 
-	if err := finishRunning(exec.Command("gcloud", "components", "install", "alpha")); err != nil {
+	if err := control.FinishRunning(exec.Command("gcloud", "components", "install", "alpha")); err != nil {
 		return err
 	}
 
-	if err := finishRunning(exec.Command("gcloud", "components", "install", "beta")); err != nil {
+	if err := control.FinishRunning(exec.Command("gcloud", "components", "install", "beta")); err != nil {
 		return err
 	}
 
-	if err := finishRunning(exec.Command("gcloud", "info")); err != nil {
+	if err := control.FinishRunning(exec.Command("gcloud", "info")); err != nil {
 		return err
 	}
 	return nil
@@ -609,52 +573,52 @@ func migrateGcpEnvAndOptions(o *options) error {
 		network = "KUBE_GCE_NETWORK"
 		zone = "KUBE_GCE_ZONE"
 	}
-	return migrateOptions([]migratedOption{
+	return util.MigrateOptions([]util.MigratedOption{
 		{
-			env:    "PROJECT",
-			option: &o.gcpProject,
-			name:   "--gcp-project",
+			Env:    "PROJECT",
+			Option: &o.gcpProject,
+			Name:   "--gcp-project",
 		},
 		{
-			env:    zone,
-			option: &o.gcpZone,
-			name:   "--gcp-zone",
+			Env:    zone,
+			Option: &o.gcpZone,
+			Name:   "--gcp-zone",
 		},
 		{
-			env:    "REGION",
-			option: &o.gcpRegion,
-			name:   "--gcp-region",
+			Env:    "REGION",
+			Option: &o.gcpRegion,
+			Name:   "--gcp-region",
 		},
 		{
-			env:    "GOOGLE_APPLICATION_CREDENTIALS",
-			option: &o.gcpServiceAccount,
-			name:   "--gcp-service-account",
+			Env:    "GOOGLE_APPLICATION_CREDENTIALS",
+			Option: &o.gcpServiceAccount,
+			Name:   "--gcp-service-account",
 		},
 		{
-			env:    network,
-			option: &o.gcpNetwork,
-			name:   "--gcp-network",
+			Env:    network,
+			Option: &o.gcpNetwork,
+			Name:   "--gcp-network",
 		},
 		{
-			env:    "KUBE_NODE_OS_DISTRIBUTION",
-			option: &o.gcpNodeImage,
-			name:   "--gcp-node-image",
+			Env:    "KUBE_NODE_OS_DISTRIBUTION",
+			Option: &o.gcpNodeImage,
+			Name:   "--gcp-node-image",
 		},
 		{
-			env:    "KUBE_MASTER_OS_DISTRIBUTION",
-			option: &o.gcpMasterImage,
-			name:   "--gcp-master-image",
+			Env:    "KUBE_MASTER_OS_DISTRIBUTION",
+			Option: &o.gcpMasterImage,
+			Name:   "--gcp-master-image",
 		},
 		{
-			env:    "NUM_NODES",
-			option: &o.gcpNodes,
-			name:   "--gcp-nodes",
+			Env:    "NUM_NODES",
+			Option: &o.gcpNodes,
+			Name:   "--gcp-nodes",
 		},
 		{
-			env:      "CLOUDSDK_BUCKET",
-			option:   &o.gcpCloudSdk,
-			name:     "--gcp-cloud-sdk",
-			skipPush: true,
+			Env:      "CLOUDSDK_BUCKET",
+			Option:   &o.gcpCloudSdk,
+			Name:     "--gcp-cloud-sdk",
+			SkipPush: true,
 		},
 	})
 }
@@ -707,6 +671,9 @@ func prepareGcp(o *options) error {
 		os.Setenv("NODE_OS_DISTRIBUTION", nod)
 	}
 	if o.gcpProject == "" {
+		log.Print("--gcp-project is missing, trying to fetch a project from boskos.\n" +
+			"(for local runs please set --gcp-project to your dev project)")
+
 		var resType string
 		if o.gcpProjectType != "" {
 			resType = o.gcpProjectType
@@ -716,7 +683,7 @@ func prepareGcp(o *options) error {
 			resType = "gce-project"
 		}
 
-		log.Printf("provider %v, will acquire resource %v from boskos", o.provider, resType)
+		log.Printf("provider %v, will acquire project type %v from boskos", o.provider, resType)
 
 		p, err := boskos.Acquire(resType, "free", "busy")
 		if err != nil {
@@ -741,7 +708,7 @@ func prepareGcp(o *options) error {
 		return fmt.Errorf("could not set CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1: %v", err)
 	}
 
-	if err := finishRunning(exec.Command("gcloud", "config", "set", "project", o.gcpProject)); err != nil {
+	if err := control.FinishRunning(exec.Command("gcloud", "config", "set", "project", o.gcpProject)); err != nil {
 		return fmt.Errorf("fail to set project %s : err %v", o.gcpProject, err)
 	}
 
@@ -758,7 +725,7 @@ func prepareGcp(o *options) error {
 
 	// Ensure ssh keys exist
 	log.Print("Checking existing of GCP ssh keys...")
-	k := filepath.Join(home(".ssh"), "google_compute_engine")
+	k := filepath.Join(util.Home(".ssh"), "google_compute_engine")
 	if _, err := os.Stat(k); err != nil {
 		return err
 	}
@@ -768,13 +735,13 @@ func prepareGcp(o *options) error {
 	}
 
 	log.Printf("Checking presence of public key in %s", o.gcpProject)
-	if out, err := output(exec.Command("gcloud", "compute", "--project="+o.gcpProject, "project-info", "describe")); err != nil {
+	if out, err := control.Output(exec.Command("gcloud", "compute", "--project="+o.gcpProject, "project-info", "describe")); err != nil {
 		return err
 	} else if b, err := ioutil.ReadFile(pk); err != nil {
 		return err
-	} else if !strings.Contains(string(b), string(out)) {
+	} else if !strings.Contains(string(out), string(b)) {
 		log.Print("Uploading public ssh key to project metadata...")
-		if err = finishRunning(exec.Command("gcloud", "compute", "--project="+o.gcpProject, "config-ssh")); err != nil {
+		if err = control.FinishRunning(exec.Command("gcloud", "compute", "--project="+o.gcpProject, "config-ssh")); err != nil {
 			return err
 		}
 	}
@@ -782,12 +749,12 @@ func prepareGcp(o *options) error {
 	// Install custom gcloud version if necessary
 	if o.gcpCloudSdk != "" {
 		for i := 0; i < 3; i++ {
-			if err := finishRunning(exec.Command("gsutil", "-mq", "cp", "-r", o.gcpCloudSdk, home())); err == nil {
+			if err := control.FinishRunning(exec.Command("gsutil", "-mq", "cp", "-r", o.gcpCloudSdk, util.Home())); err == nil {
 				break // Success!
 			}
 			time.Sleep(1 << uint(i) * time.Second)
 		}
-		for _, f := range []string{home(".gsutil"), home("repo"), home("cloudsdk")} {
+		for _, f := range []string{util.Home(".gsutil"), util.Home("repo"), util.Home("cloudsdk")} {
 			if _, err := os.Stat(f); err == nil || !os.IsNotExist(err) {
 				if err = os.RemoveAll(f); err != nil {
 					return err
@@ -795,23 +762,23 @@ func prepareGcp(o *options) error {
 			}
 		}
 
-		install := home("repo", "google-cloud-sdk.tar.gz")
+		install := util.Home("repo", "google-cloud-sdk.tar.gz")
 		if strings.HasSuffix(o.gcpCloudSdk, ".tar.gz") {
-			install = home(filepath.Base(o.gcpCloudSdk))
+			install = util.Home(filepath.Base(o.gcpCloudSdk))
 		} else {
-			if err := os.Rename(home(filepath.Base(o.gcpCloudSdk)), home("repo")); err != nil {
+			if err := os.Rename(util.Home(filepath.Base(o.gcpCloudSdk)), util.Home("repo")); err != nil {
 				return err
 			}
 
 			// Controls which gcloud components to install.
-			pop, err := pushEnv("CLOUDSDK_COMPONENT_MANAGER_SNAPSHOT_URL", "file://"+home("repo", "components-2.json"))
+			pop, err := util.PushEnv("CLOUDSDK_COMPONENT_MANAGER_SNAPSHOT_URL", "file://"+util.Home("repo", "components-2.json"))
 			if err != nil {
 				return err
 			}
 			defer pop()
 		}
 
-		if err := installGcloud(install, home("cloudsdk")); err != nil {
+		if err := installGcloud(install, util.Home("cloudsdk")); err != nil {
 			return err
 		}
 		// gcloud creds may have changed
@@ -824,10 +791,10 @@ func prepareGcp(o *options) error {
 		if p := os.Getenv("KUBEMARK_BAZEL_BUILD"); strings.ToLower(p) == "y" {
 			// we need docker-credential-gcr to get authed properly
 			// https://github.com/bazelbuild/rules_docker#authorization
-			if err := finishRunning(exec.Command("gcloud", "components", "install", "docker-credential-gcr")); err != nil {
+			if err := control.FinishRunning(exec.Command("gcloud", "components", "install", "docker-credential-gcr")); err != nil {
 				return err
 			}
-			if err := finishRunning(exec.Command("docker-credential-gcr", "configure-docker")); err != nil {
+			if err := control.FinishRunning(exec.Command("docker-credential-gcr", "configure-docker")); err != nil {
 				return err
 			}
 		}
@@ -841,7 +808,7 @@ func prepareAws(o *options) error {
 	if err := activateServiceAccount(o.gcpServiceAccount); err != nil {
 		return err
 	}
-	return finishRunning(exec.Command("pip", "install", "awscli"))
+	return control.FinishRunning(exec.Command("pip", "install", "awscli"))
 }
 
 // Activate GOOGLE_APPLICATION_CREDENTIALS if set or do nothing.
@@ -849,27 +816,27 @@ func activateServiceAccount(path string) error {
 	if path == "" {
 		return nil
 	}
-	return finishRunning(exec.Command("gcloud", "auth", "activate-service-account", "--key-file="+path))
+	return control.FinishRunning(exec.Command("gcloud", "auth", "activate-service-account", "--key-file="+path))
 }
 
 // Make all artifacts world readable.
 // The root user winds up owning the files when the container exists.
 // Ensure that other users can read these files at that time.
 func chmodArtifacts() error {
-	return finishRunning(exec.Command("chmod", "-R", "o+r", artifacts))
+	return control.FinishRunning(exec.Command("chmod", "-R", "o+r", artifacts))
 }
 
 func prepare(o *options) error {
-	if err := migrateOptions([]migratedOption{
+	if err := util.MigrateOptions([]util.MigratedOption{
 		{
-			env:    "KUBERNETES_PROVIDER",
-			option: &o.provider,
-			name:   "--provider",
+			Env:    "KUBERNETES_PROVIDER",
+			Option: &o.provider,
+			Name:   "--provider",
 		},
 		{
-			env:    "CLUSTER_NAME",
-			option: &o.cluster,
-			name:   "--cluster",
+			Env:    "CLUSTER_NAME",
+			Option: &o.cluster,
+			Name:   "--cluster",
 		},
 	}); err != nil {
 		return err
@@ -890,16 +857,16 @@ func prepare(o *options) error {
 	}
 
 	if o.kubemark {
-		if err := migrateOptions([]migratedOption{
+		if err := util.MigrateOptions([]util.MigratedOption{
 			{
-				env:    "KUBEMARK_NUM_NODES",
-				option: &o.kubemarkNodes,
-				name:   "--kubemark-nodes",
+				Env:    "KUBEMARK_NUM_NODES",
+				Option: &o.kubemarkNodes,
+				Name:   "--kubemark-nodes",
 			},
 			{
-				env:    "KUBEMARK_MASTER_SIZE",
-				option: &o.kubemarkMasterSize,
-				name:   "--kubemark-master-size",
+				Env:    "KUBEMARK_MASTER_SIZE",
+				Option: &o.kubemarkMasterSize,
+				Name:   "--kubemark-master-size",
 			},
 		}); err != nil {
 			return err

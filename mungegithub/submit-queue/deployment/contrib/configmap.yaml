@@ -2,7 +2,7 @@
 http-cache-dir: /cache/httpcache
 organization: kubernetes
 project: contrib
-pr-mungers: lgtm-after-commit,needs-rebase
+pr-mungers: lgtm-after-commit
 state: open
 token-file: /etc/secret-volume/token
 period: 2m

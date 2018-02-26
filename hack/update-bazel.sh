@@ -25,7 +25,7 @@ TMP_GOPATH=$(mktemp -d)
 # manually remove BUILD file for k8s.io/apimachinery/pkg/util/sets/BUILD if it
 # exists; there is a specific set-gen rule that breaks importing
 # ref: https://github.com/kubernetes/kubernetes/blob/4e2f5e2212b05a305435ef96f4b49dc0932e1264/staging/src/k8s.io/apimachinery/pkg/util/sets/BUILD#L23-L49
-rm -f ${TESTINFRA_ROOT}/vendor/k8s.io/apimachinery/pkg/util/sets/BUILD
+rm -f ${TESTINFRA_ROOT}/vendor/k8s.io/apimachinery/pkg/util/sets/{BUILD,BUILD.bazel}
 
 "${TESTINFRA_ROOT}/hack/go_install_from_commit.sh" \
   github.com/kubernetes/repo-infra/kazel \
@@ -37,10 +37,9 @@ rm -f ${TESTINFRA_ROOT}/vendor/k8s.io/apimachinery/pkg/util/sets/BUILD
   eaa1e87d2a3ca716780ca6650ef5b9b9663b8773 \
   "${TMP_GOPATH}"
 
-touch "${TESTINFRA_ROOT}/vendor/BUILD"
+touch "${TESTINFRA_ROOT}/vendor/BUILD.bazel"
 
 "${TMP_GOPATH}/bin/gazelle" fix \
-  -build_file_name=BUILD,BUILD.bazel \
   -external=vendored \
   -mode=fix \
   -repo_root="${TESTINFRA_ROOT}"

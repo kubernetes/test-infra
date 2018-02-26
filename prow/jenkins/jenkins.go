@@ -17,6 +17,7 @@ limitations under the License.
 package jenkins
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -33,10 +34,17 @@ import (
 )
 
 const (
+	// Maximum retries for a request to Jenkins.
+	// Retries on transport failures and 500s.
 	maxRetries = 5
+	// Backoff delay used after a request retry.
+	// Doubles on every retry.
 	retryDelay = 100 * time.Millisecond
-	buildID    = "buildId"
+	// Deprecated: Key for unique build number across Jenkins builds.
+	buildID = "buildId"
+	// Key for unique build number across Jenkins builds.
 	newBuildID = "BUILD_ID"
+	prowJobID  = "PROW_JOB_ID"
 )
 
 const (
@@ -103,20 +111,54 @@ func (jb *JenkinsBuild) IsEnqueued() bool {
 	return jb.enqueued
 }
 
+// ProwJobID extracts the ProwJob identifier for the
+// Jenkins build. We prefer the PROW_JOB_ID parameter
+// if present but fall back to legacy parameters if
+// not.
+func (jb *JenkinsBuild) ProwJobID() string {
+	for _, parameter := range []string{prowJobID, newBuildID, buildID} {
+		for _, action := range jb.Actions {
+			for _, p := range action.Parameters {
+				if p.Name == parameter {
+					value, ok := p.Value.(string)
+					if !ok {
+						logrus.Errorf("Cannot determine %s value for %#v", p.Name, jb)
+						continue
+					}
+					return value
+				}
+			}
+		}
+	}
+	return ""
+}
+
+// BuildID extracts the `tot` identifier for the
+// Jenkins build. We return an empty string if
+// we are dealing with a build that does not have
+// the ProwJobID set explicitly, as in that case
+// the build identifier is not from `tot`.
 func (jb *JenkinsBuild) BuildID() string {
+	var buildID string
+	hasProwJobID := false
 	for _, action := range jb.Actions {
 		for _, p := range action.Parameters {
-			if p.Name == buildID || p.Name == newBuildID {
+			hasProwJobID = hasProwJobID || p.Name == prowJobID
+			if p.Name == newBuildID {
 				value, ok := p.Value.(string)
 				if !ok {
 					logrus.Errorf("Cannot determine %s value for %#v", p.Name, jb)
 					continue
 				}
-				return value
+				buildID = value
 			}
 		}
 	}
-	return ""
+
+	if !hasProwJobID {
+		return ""
+	}
+	return buildID
 }
 
 type Client struct {
@@ -133,8 +175,21 @@ type Client struct {
 // AuthConfig configures how we auth with Jenkins.
 // Only one of the fields will be non-nil.
 type AuthConfig struct {
-	Basic       *BasicAuthConfig
+	// Basic is used for doing basic auth with Jenkins.
+	Basic *BasicAuthConfig
+	// BearerToken is used for doing oauth-based authentication
+	// with Jenkins. Works ootb with the Openshift Jenkins image.
 	BearerToken *BearerTokenAuthConfig
+	// CSRFProtect ensures the client will acquire a CSRF protection
+	// token from Jenkins to use it in mutating requests. Required
+	// for masters that prevent cross site request forgery exploits.
+	CSRFProtect bool
+	// csrfToken is the token acquired from Jenkins for CSRF protection.
+	// Needs to be used as the header value in subsequent mutating requests.
+	csrfToken string
+	// csrfRequestField is a key acquired from Jenkins for CSRF protection.
+	// Needs to be used as the header key in subsequent mutating requests.
+	csrfRequestField string
 }
 
 type BasicAuthConfig struct {
@@ -146,11 +201,11 @@ type BearerTokenAuthConfig struct {
 	Token string
 }
 
-func NewClient(url string, authConfig *AuthConfig, logger *logrus.Entry, metrics *ClientMetrics) *Client {
+func NewClient(url string, tlsConfig *tls.Config, authConfig *AuthConfig, logger *logrus.Entry, metrics *ClientMetrics) (*Client, error) {
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
-	return &Client{
+	c := &Client{
 		logger:     logger.WithField("client", "jenkins"),
 		baseURL:    url,
 		authConfig: authConfig,
@@ -159,6 +214,39 @@ func NewClient(url string, authConfig *AuthConfig, logger *logrus.Entry, metrics
 		},
 		metrics: metrics,
 	}
+	if tlsConfig != nil {
+		c.client.Transport = &http.Transport{TLSClientConfig: tlsConfig}
+	}
+	if c.authConfig.CSRFProtect {
+		if err := c.CrumbRequest(); err != nil {
+			return nil, fmt.Errorf("cannot get Jenkins crumb: %v", err)
+		}
+	}
+	return c, nil
+}
+
+// CrumbRequest requests a CSRF protection token from Jenkins to
+// use it in subsequent requests. Required for Jenkins masters that
+// prevent cross site request forgery exploits.
+func (c *Client) CrumbRequest() error {
+	if c.authConfig.csrfToken != "" && c.authConfig.csrfRequestField != "" {
+		return nil
+	}
+	c.logger.Debug("CrumbRequest")
+	data, err := c.GetSkipMetrics("/crumbIssuer/api/json")
+	if err != nil {
+		return err
+	}
+	crumbResp := struct {
+		Crumb             string `json:"crumb"`
+		CrumbRequestField string `json:"crumbRequestField"`
+	}{}
+	if err := json.Unmarshal(data, &crumbResp); err != nil {
+		return fmt.Errorf("cannot unmarshal crumb response: %v", err)
+	}
+	c.authConfig.csrfToken = crumbResp.Crumb
+	c.authConfig.csrfRequestField = crumbResp.CrumbRequestField
+	return nil
 }
 
 // measure records metrics about the provided method, path, and code.
@@ -260,22 +348,25 @@ func (c *Client) doRequest(method, path string) (*http.Response, error) {
 		if c.authConfig.BearerToken != nil {
 			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.authConfig.BearerToken.Token))
 		}
+		if c.authConfig.CSRFProtect && c.authConfig.csrfRequestField != "" && c.authConfig.csrfToken != "" {
+			req.Header.Set(c.authConfig.csrfRequestField, c.authConfig.csrfToken)
+		}
 	}
 	return c.client.Do(req)
 }
 
 // Build triggers a Jenkins build for the provided ProwJob. The name of
-// the ProwJob is going to be used as the buildId parameter that will help
-// us track the build before it's scheduled by Jenkins.
-func (c *Client) Build(pj *kube.ProwJob) error {
+// the ProwJob is going to be used as the Prow Job ID parameter that will
+// help us track the build before it's scheduled by Jenkins.
+func (c *Client) Build(pj *kube.ProwJob, buildId string) error {
 	c.logger.WithFields(pjutil.ProwJobFields(pj)).Info("Build")
-	return c.BuildFromSpec(&pj.Spec, pj.ObjectMeta.Name)
+	return c.BuildFromSpec(&pj.Spec, buildId, pj.ObjectMeta.Name)
 }
 
 // BuildFromSpec triggers a Jenkins build for the provided ProwJobSpec.
-// buildId helps us track the build before it's scheduled by Jenkins.
-func (c *Client) BuildFromSpec(spec *kube.ProwJobSpec, buildId string) error {
-	env, err := pjutil.EnvForSpec(pjutil.NewJobSpec(*spec, buildId))
+// prowJobId helps us track the build before it's scheduled by Jenkins.
+func (c *Client) BuildFromSpec(spec *kube.ProwJobSpec, buildId, prowJobId string) error {
+	env, err := pjutil.EnvForSpec(pjutil.NewJobSpec(*spec, buildId, prowJobId))
 	if err != nil {
 		return err
 	}
@@ -359,9 +450,9 @@ func (c *Client) GetEnqueuedBuilds(jobs []string) (map[string]JenkinsBuild, erro
 	}
 	jenkinsBuilds := make(map[string]JenkinsBuild)
 	for _, jb := range page.QueuedBuilds {
-		buildID := jb.BuildID()
+		prowJobID := jb.ProwJobID()
 		// Ignore builds with missing buildId parameters.
-		if buildID == "" {
+		if prowJobID == "" {
 			continue
 		}
 		// Ignore builds for jobs we didn't ask for.
@@ -376,7 +467,7 @@ func (c *Client) GetEnqueuedBuilds(jobs []string) (map[string]JenkinsBuild, erro
 			continue
 		}
 		jb.enqueued = true
-		jenkinsBuilds[buildID] = jb
+		jenkinsBuilds[prowJobID] = jb
 	}
 	return jenkinsBuilds, nil
 }
@@ -404,12 +495,12 @@ func (c *Client) GetBuilds(job string) (map[string]JenkinsBuild, error) {
 	}
 	jenkinsBuilds := make(map[string]JenkinsBuild)
 	for _, jb := range page.Builds {
-		buildID := jb.BuildID()
+		prowJobID := jb.ProwJobID()
 		// Ignore builds with missing buildId parameters.
-		if buildID == "" {
+		if prowJobID == "" {
 			continue
 		}
-		jenkinsBuilds[buildID] = jb
+		jenkinsBuilds[prowJobID] = jb
 	}
 	return jenkinsBuilds, nil
 }

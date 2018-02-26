@@ -1068,6 +1068,7 @@ class FakeArgs(object):
     timeout = 0
     upload = UPLOAD
     json = False
+    scenario = ''
 
     def __init__(self, **kw):
         self.branch = BRANCH
@@ -1425,7 +1426,7 @@ class IntegrationTest(unittest.TestCase):
                         root=self.root_workspace)
 
     def test_job_missing(self):
-        with self.assertRaises(KeyError):
+        with self.assertRaises(ValueError):
             test_bootstrap(
                 job='this-job-no-exists',
                 repo=self.REPO,

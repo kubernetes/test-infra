@@ -21,7 +21,7 @@ import google.appengine.ext.ndb as ndb
 
 GCS_API_URL = 'https://storage.googleapis.com'
 STORAGE_API_URL = 'https://www.googleapis.com/storage/v1/b'
-
+MAX_SIZE = 30 * 1024 ** 2  # 30MiB
 
 @ndb.tasklet
 def get(url):
@@ -36,7 +36,12 @@ def get(url):
         if status in (200, 206):
             content = result.content
             if result.headers.get('content-encoding') == 'gzip':
-                content = zlib.decompress(result.content, 15 | 16)
+                dec = zlib.decompressobj(15 | 16)
+                content = dec.decompress(result.content, MAX_SIZE)
+                if dec.unconsumed_tail:
+                    logging.warning('only decompressed %d KB, %d KB remain in buffer.',
+                                    len(content) / 1024,
+                                    len(dec.unconsumed_tail) / 1024)
             raise ndb.Return(content)
         logging.error("unable to fetch '%s': status code %d", url, status)
         raise ndb.Return(None)

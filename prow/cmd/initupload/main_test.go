@@ -16,83 +16,48 @@ limitations under the License.
 
 package main
 
-import "testing"
+import (
+	"testing"
 
-func TestValidatePathOptions(t *testing.T) {
+	"k8s.io/test-infra/prow/pod-utils/gcs"
+)
+
+func TestOptions_Validate(t *testing.T) {
 	var testCases = []struct {
 		name        string
-		strategy    string
-		org         string
-		repo        string
+		input       options
 		expectedErr bool
 	}{
 		{
-			name:        "invalid strategy",
-			strategy:    "whatever",
-			expectedErr: true,
-		},
-		{
-			name:        "explicit strategy, no defaults",
-			strategy:    "explicit",
+			name: "minimal set ok",
+			input: options{
+				cloneLog: "testing",
+				gcsOptions: &gcs.Options{
+					DryRun:       true,
+					PathStrategy: "explicit",
+				},
+			},
 			expectedErr: false,
 		},
 		{
-			name:        "legacy strategy, no defaults",
-			strategy:    "legacy",
+			name: "missing clone log",
+			input: options{
+				gcsOptions: &gcs.Options{
+					DryRun:       true,
+					PathStrategy: "explicit",
+				},
+			},
 			expectedErr: true,
-		},
-		{
-			name:        "legacy strategy, no default repo",
-			strategy:    "legacy",
-			org:         "org",
-			expectedErr: true,
-		},
-		{
-			name:        "legacy strategy, no default org",
-			strategy:    "legacy",
-			repo:        "repo",
-			expectedErr: true,
-		},
-		{
-			name:        "legacy strategy, with defaults",
-			strategy:    "legacy",
-			org:         "org",
-			repo:        "repo",
-			expectedErr: false,
-		},
-		{
-			name:        "single strategy, no defaults",
-			strategy:    "single",
-			expectedErr: true,
-		},
-		{
-			name:        "single strategy, no default repo",
-			strategy:    "single",
-			org:         "org",
-			expectedErr: true,
-		},
-		{
-			name:        "single strategy, no default org",
-			strategy:    "single",
-			repo:        "repo",
-			expectedErr: true,
-		},
-		{
-			name:        "single strategy, with defaults",
-			strategy:    "single",
-			org:         "org",
-			repo:        "repo",
-			expectedErr: false,
 		},
 	}
 
 	for _, testCase := range testCases {
-		err := validatePathOptions(&testCase.strategy, &testCase.org, &testCase.repo)
-		if err != nil && !testCase.expectedErr {
-			t.Errorf("%s: expected no err but got %v", testCase.name, err)
+		err := testCase.input.Validate()
+		if testCase.expectedErr && err == nil {
+			t.Errorf("%s: expected an error but got none", testCase.name)
 		}
-		if err == nil && testCase.expectedErr {
-			t.Errorf("%s: expected err but got none", testCase.name)
+		if !testCase.expectedErr && err != nil {
+			t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
 		}
 	}
 }
