@@ -3461,8 +3461,9 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-monitoring
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
-  - name: gke-device-plugin-gpu-cri-containerd
+  - name: gce-device-plugin-gpu-cri-containerd
     test_group_name: ci-cri-containerd-e2e-gce-device-plugin-gpu
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-gpu-1.7
