@@ -345,13 +345,26 @@ def set_up_kops_aws(workspace, args, mode, cluster, runner_args):
     if args.aws_role_arn:
         profile = mode.add_aws_role(profile, args.aws_role_arn)
 
-    zones = args.kops_zones or random.choice(DEFAULT_AWS_ZONES)
-    regions = ','.join([zone[:-1] for zone in zones.split(',')])
+    # kubetest for kops now support select random regions and zones.
+    # For initial testing we are not sending in zones when the
+    # --kops-multiple-zones flag is set.  If the flag is not set then
+    # we use the older functionality of passing in zones.
+    if args.kops_multiple_zones:
+        runner_args.extend(["--kops-multiple-zones"])
+    else:
+        # TODO(@chrislovecnm): once we have tested we can remove the zones
+        # and region logic from this code and have kubetest handle that
+        # logic
+        zones = args.kops_zones or random.choice(DEFAULT_AWS_ZONES)
+        regions = ','.join([zone[:-1] for zone in zones.split(',')])
+        runner_args.extend(['--kops-zones=%s' % zones])
+        mode.add_environment(
+          'KOPS_REGIONS=%s' % regions,
+        )
 
     mode.add_environment(
       'AWS_PROFILE=%s' % profile,
       'AWS_DEFAULT_PROFILE=%s' % profile,
-      'KOPS_REGIONS=%s' % regions,
     )
 
     if args.aws_cluster_domain:
@@ -359,7 +372,6 @@ def set_up_kops_aws(workspace, args, mode, cluster, runner_args):
 
     runner_args.extend([
         '--kops-cluster=%s' % cluster,
-        '--kops-zones=%s' % zones,
         '--kops-state=%s' % args.kops_state,
         '--kops-nodes=%s' % args.kops_nodes,
         '--kops-ssh-key=%s' % aws_ssh,
@@ -693,6 +705,9 @@ def create_parser():
         '--kops-zones', help='Comma-separated list of zones else random choice')
     parser.add_argument(
         '--kops-build', action='store_true', help='If we need to build kops locally')
+    parser.add_argument(
+        '--kops-multiple-zones', action='store_true', help='Use multiple zones')
+
 
     # kubetest flags that also trigger behaviour here
     parser.add_argument(
