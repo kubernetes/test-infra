@@ -42,7 +42,8 @@ function loadUserDashboard() {
     });
     const container = document.querySelector("#main-container");
     if (!userData.PullRequests || userData.PullRequests.length === 0) {
-        container.appendChild(document.createTextNode("No open PRs found"));
+        const msg = createMessage("No open PRs found", "");
+        container.appendChild(msg);
         return;
     }
     userData.PullRequests.forEach(pr => {
@@ -591,18 +592,11 @@ function loadGithubLogin() {
         const url = window.location;
         window.location.href = url.origin + "/github-login";
     });
-    const intro = document.createElement("H3");
-    intro.textContent = "User Dashboard needs you to login and grant it OAuth scopes";
-    intro.style.marginTop = "72px";
-    const smiley = document.createElement("i");
-    smiley.textContent = "tag_faces";
-    smiley.classList.add("material-icons");
-    smiley.style.marginLeft = "12px";
-    intro.appendChild(smiley);
-
+    const msg = createMessage(
+        "User Dashboard needs you to login and grant it OAuth scopes",
+        "sentiment_very_satisfied");
     const main = document.querySelector("#main-container");
-    main.style.textAlign = "center";
-    main.appendChild(intro);
+    main.appendChild(msg);
     main.appendChild(button);
 }
 
@@ -668,4 +662,24 @@ function createIcon(iconString, tooltip = "", styles = [], isButton = false) {
         ...styles);
 
     return container;
+}
+
+/**
+ * Create a simple message with an icon.
+ * @param msg
+ * @param icStr
+ * @return {HTMLElement}
+ */
+function createMessage(msg, icStr) {
+    const el = document.createElement("H3");
+    el.textContent = msg;
+    if (icStr !== "") {
+        const ic = createIcon(icStr, "", ["message-icon"]);
+        el.appendChild((ic));
+    }
+    const msgContainer = document.createElement("DIV");
+    msgContainer.appendChild(el);
+    msgContainer.classList.add("message");
+
+    return msgContainer;
 }

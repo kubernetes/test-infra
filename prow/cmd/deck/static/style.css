@@ -396,6 +396,11 @@ Plugin Help style
     flex-direction: column;
 }
 
+#main-container .message {
+    padding-top: 72px;
+    text-align: center;
+}
+
 #merge-help-dialog > .mdl-dialog__content {
     font-size: 15px;
 }
@@ -481,6 +486,12 @@ Plugin Help style
     box-shadow: none;
     height: 40px;
     min-height: 40px;
+}
+
+.message-icon.material-icons {
+    color: #444444;
+    font-size: 28px;
+    margin-left: 12px;
 }
 
 .no-status.status {
