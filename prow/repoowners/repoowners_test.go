@@ -126,12 +126,12 @@ func TestOwnerDirBlacklist(t *testing.T) {
 		t.Fatalf("Unexpected error loading RepoOwners: %v.", err)
 	}
 
-	for dir, _ := range ro.approvers {
+	for dir := range ro.approvers {
 		if strings.Contains(dir, "src") {
 			t.Errorf("Expected directory %s to be excluded from the approvers map", dir)
 		}
 	}
-	for dir, _ := range ro.reviewers {
+	for dir := range ro.reviewers {
 		if strings.Contains(dir, "src") {
 			t.Errorf("Expected directory %s to be excluded from the reviewers map", dir)
 		}
