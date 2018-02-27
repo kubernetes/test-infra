@@ -6361,6 +6361,12 @@ periodics:
       env:
       - name: TEST_TMPDIR
         value: /root/.cache/bazel
+      # so we can use the right cache id
+      # TODO(bentheelder): switch to kubernetes_execute_bazel and consider dropping this
+      - name: REPO_OWNER
+        value: kubernetes
+      - name: REPO_NAME
+        value: kubernetes
       # Bazel needs privileged mode in order to sandbox builds.
       securityContext:
         privileged: true
@@ -6585,6 +6591,11 @@ periodics:
       env:
       - name: BAZEL_REMOTE_CACHE_ENABLED
         value: "true"
+      # TODO(bentheelder): switch to kubernetes_execute_bazel and consider dropping this
+      - name: REPO_OWNER
+        value: kubernetes
+      - name: REPO_NAME
+        value: kubernetes
       securityContext:
         privileged: true
       resources:
