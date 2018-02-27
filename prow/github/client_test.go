@@ -391,6 +391,23 @@ func TestRemoveLabel(t *testing.T) {
 	}
 }
 
+func TestRemoveLabelNotFound(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, `{"message": "Label does not exist"}`, 404)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	err := c.RemoveLabel("any", "old", 3, "label")
+
+	if err == nil {
+		t.Fatalf("RemoveLabel expected an error, got none")
+	}
+
+	if _, ok := err.(*LabelNotFound); !ok {
+		t.Fatalf("RemoveLabel expected LabelNotFound error, got %v", err)
+	}
+}
+
 func TestAssignIssue(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
