@@ -248,6 +248,7 @@ function createJobStatus(builds) {
 
         status.appendChild(document.createTextNode(statusText));
         status.appendChild(createStatusHelp("No test found", [p]));
+        status.classList.add("no-status");
     } else {
         status.appendChild(createIcon(stateIcon, "", ["status-icon", state]));
         status.appendChild(document.createTextNode(statusText));
@@ -263,6 +264,9 @@ function createJobStatus(builds) {
     const jobList = createList(builds);
     jobList.classList.add("hidden");
     status.addEventListener("click", () => {
+        if (state === "unknown") {
+            return;
+        }
         if (failedJobsList) {
             failedJobsList.classList.add("hidden");
         }
@@ -417,6 +421,7 @@ function createMergeStatus(prLabels, queries) {
         status.appendChild(document.createTextNode("Meets merge requirements"));
     } else {
         status.appendChild(document.createTextNode("No Tide query found"));
+        status.classList.add("no-status");
         const p = document.createElement("P");
         p.textContent = "This repo may not be configured to use Tide.";
         status.appendChild(createStatusHelp("Tide query not found", [p]));
