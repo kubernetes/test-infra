@@ -1141,7 +1141,7 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=kubernetes_bazel_execute"
+        - "--scenario=kubernetes_execute_bazel"
         - "--" # end bootstrap args, scenario args below
         - "make"
         - "bazel-release"
@@ -1317,7 +1317,7 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=kubernetes_bazel_execute"
+        - "--scenario=kubernetes_execute_bazel"
         - "--" # end bootstrap args, scenario args below
         - "make"
         - "bazel-test"
@@ -3066,7 +3066,7 @@ presubmits:
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
-        - --scenario=kubernetes_bazel_execute
+        - --scenario=kubernetes_execute_bazel
         - --
         - make
         - bazel-release
@@ -3251,7 +3251,7 @@ presubmits:
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
-        - --scenario=kubernetes_bazel_execute
+        - --scenario=kubernetes_execute_bazel
         - --
         - make
         - bazel-test
