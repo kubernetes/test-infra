@@ -167,6 +167,13 @@ window.onload = function () {
         Object.keys(opts["jobs"]).sort());
     redrawOptions(opts);
     redraw();
+    var timeCells = document.querySelectorAll(".time-cell");
+    setInterval(() => {
+        timeCells.forEach(timeCell => {
+            var origin = parseInt(timeCell.getAttribute("data-time"));
+            timeCell.textContent = moment(origin).fromNow();
+        }, 60000) ;
+    });
 };
 
 document.addEventListener("DOMContentLoaded", function (event) {
@@ -469,7 +476,7 @@ function redraw() {
         } else {
             r.appendChild(createLinkCell(build.job, build.url, ""));
         }
-        r.appendChild(createTextCell(build.started));
+        r.appendChild(createTimeCell(i, parseInt(build.started)));
         r.appendChild(createTextCell(build.duration));
         builds.appendChild(r);
     }
@@ -478,6 +485,29 @@ function redraw() {
 function createTextCell(text) {
     var c = document.createElement("td");
     c.appendChild(document.createTextNode(text));
+    return c;
+}
+
+function createTimeCell(id, time) {
+    var momentTime = moment(time);
+    var tid = "time-cell-" + id;
+    var main = document.createElement("div");
+    var localTime = momentTime.fromNow();
+    main.textContent = localTime;
+    main.id = tid;
+    main.setAttribute("data-time", time);
+    main.classList.add("time-cell");
+
+    var utcTime = momentTime.toString();
+    var tooltip = document.createElement("div");
+    tooltip.textContent = utcTime;
+    tooltip.setAttribute("data-mdl-for", tid);
+    tooltip.classList.add("mdl-tooltip");
+
+    var c = document.createElement("td");
+    c.appendChild(main);
+    c.appendChild(tooltip);
+
     return c;
 }
 
