@@ -80,10 +80,17 @@ type statusController struct {
 	// newPoolPending is a size 1 chan that signals that the main Tide loop has
 	// updated the 'poolPRs' field with a freshly updated pool.
 	newPoolPending chan bool
+	// shutDown is used to signal to the main controller that the statusController
+	// has completed processing after newPoolPending is closed.
+	shutDown chan bool
 
-	// lastSyncStartTime is used to only list PRs that have changed since we last
-	// checked in order to make status context updates cheaper.
-	lastSyncStartTime time.Time
+	// lastSyncStart is used to ensure that the status update period is at least
+	// the minimum status update period.
+	lastSyncStart time.Time
+	// lastSuccessfulQueryStart is used to only list PRs that have changed since
+	// we last successfully listed PRs in order to make status context updates
+	// cheaper.
+	lastSuccessfulQueryStart time.Time
 
 	sync.Mutex
 	poolPRs []PullRequest
@@ -133,6 +140,7 @@ func NewController(ghcSync, ghcStatus *github.Client, kc *kube.Client, ca *confi
 		ghc:            ghcStatus,
 		ca:             ca,
 		newPoolPending: make(chan bool, 1),
+		shutDown:       make(chan bool),
 	}
 	go sc.run()
 	return &Controller{
@@ -143,6 +151,18 @@ func NewController(ghcSync, ghcStatus *github.Client, kc *kube.Client, ca *confi
 		gc:     gc,
 		sc:     sc,
 	}
+}
+
+// Shutdown signals the statusController to stop working and waits for it to
+// finish its last update loop before terminating.
+// Controller.Sync() should not be used after this function is called.
+func (c *Controller) Shutdown() {
+	c.sc.shutdown()
+}
+
+func (sc *statusController) shutdown() {
+	close(sc.newPoolPending)
+	<-sc.shutDown
 }
 
 func prKey(pr *PullRequest) string {
@@ -233,31 +253,53 @@ func (sc *statusController) setStatuses(all, pool []PullRequest) {
 }
 
 func (sc *statusController) run() {
-	lastStart := time.Time{} // Zero value so that we don't wait the first loop.
-	// wait for a new pool
-	for range sc.newPoolPending {
-		// wait for the min sync period time to elapse if needed.
-		time.Sleep(time.Until(lastStart.Add(sc.ca.Config().Tide.StatusUpdatePeriod)))
-		lastStart = time.Now()
+	for {
+		// wait for a new pool
+		if !<-sc.newPoolPending {
+			// chan was closed
+			break
+		}
+		sc.waitSync()
+	}
+	close(sc.shutDown)
+}
 
-		sc.Lock()
-		pool := sc.poolPRs
-		sc.Unlock()
-		sc.sync(pool)
+// waitSync waits until the minimum status update period has elapsed then syncs,
+// returning the sync start time.
+// If newPoolPending is closed while waiting (indicating a shutdown request)
+// this function returns immediately without syncing.
+func (sc *statusController) waitSync() {
+	// wait for the min sync period time to elapse if needed.
+	wait := time.After(time.Until(sc.lastSyncStart.Add(sc.ca.Config().Tide.StatusUpdatePeriod)))
+	for {
+		select {
+		case <-wait:
+			sc.Lock()
+			pool := sc.poolPRs
+			sc.Unlock()
+			sc.sync(pool)
+			return
+		case more := <-sc.newPoolPending:
+			if !more {
+				return
+			}
+		}
 	}
 }
 
 func (sc *statusController) sync(pool []PullRequest) {
-	ctx := context.Background()
-	syncStartTime := time.Now()
-	query := sc.ca.Config().Tide.Queries.AllPRsSince(sc.lastSyncStartTime)
-	allPRs, err := search(sc.ghc, sc.logger, ctx, query)
+	sc.lastSyncStart = time.Now()
+
+	sinceTime := sc.lastSuccessfulQueryStart.Add(-time.Second)
+	query := sc.ca.Config().Tide.Queries.AllPRsSince(sinceTime)
+	queryStartTime := time.Now()
+	allPRs, err := search(sc.ghc, sc.logger, context.Background(), query)
 	if err != nil {
 		sc.logger.WithError(err).Errorf("Searching for open PRs.")
 		return
 	}
-	// We were able to find all open PRs so update the last sync time.
-	sc.lastSyncStartTime = syncStartTime
+	// We were able to find all open PRs so update the last successful query time.
+	sc.lastSuccessfulQueryStart = queryStartTime
 	sc.setStatuses(allPRs, pool)
 }
 
