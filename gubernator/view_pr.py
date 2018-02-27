@@ -23,6 +23,7 @@ import gcs_async
 import github.models as ghm
 import pull_request
 import view_base
+import view_build
 
 
 @view_base.memcache_memoize('pr-details://', expires=60 * 3)
@@ -48,12 +49,7 @@ def pr_builds(path):
 
     jobs = {}
     for job, build, started_fut, finished_fut in futures:
-        started = started_fut.get_result()
-        finished = finished_fut.get_result()
-        if started is not None:
-            started = json.loads(started)
-        if finished is not None:
-            finished = json.loads(finished)
+        started, finished = view_build.normalize_metadata(started_fut, finished_fut)
         jobs.setdefault(job, []).append((build, started, finished))
 
     return jobs

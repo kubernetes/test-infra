@@ -183,7 +183,7 @@ class BuildTest(main_test.TestBase):
         write(self.BUILD_DIR + 'finished.json',
             {
                 'timestamp': 1406536800,
-                'result': 'SUCCESS',
+                'passed': True,
                 'metadata': {
                     'skew-version': 'm11'
                 }
@@ -201,7 +201,7 @@ class BuildTest(main_test.TestBase):
         """Test that builds that failed with no failures show the build log."""
         gcs.delete(self.BUILD_DIR + 'artifacts/junit_01.xml')
         write(self.BUILD_DIR + 'finished.json',
-              {'result': 'FAILURE', 'timestamp': 1406536800})
+              {'passed': False, 'timestamp': 1406536800})
 
         # Unable to fetch build-log.txt, still works.
         response = self.get_build_page()
@@ -225,6 +225,7 @@ class BuildTest(main_test.TestBase):
         self.assertIn('Show 1 Passed Tests', response)
 
     def test_build_optional_log(self):
+        """Test that passing builds do not show logs by default but display them when requested"""
         write(self.BUILD_DIR + 'build-log.txt', 'error or timeout or something')
         response = self.get_build_page()
         self.assertIn('<a href="?log#log">', response)
@@ -334,7 +335,7 @@ class BuildTest(main_test.TestBase):
 
     def do_view_build_list_test(self, job_dir='/buck/some-job/', indirect=False):
         sta_result = {'timestamp': 12345}
-        fin_result = {'result': 'SUCCESS'}
+        fin_result = {'passed': True, 'result': 'SUCCESS'}
         for n in xrange(120):
             write('%s%d/started.json' % (job_dir, n), sta_result)
             write('%s%d/finished.json' % (job_dir, n), fin_result)

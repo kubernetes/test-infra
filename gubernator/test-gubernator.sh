@@ -20,7 +20,8 @@ set -o xtrace
 
 cd "$(dirname "$0")"
 pip install -r test_requirements.txt
-./test.sh --nologcapture
+mkdir -p "${WORKSPACE}/_artifacts"
+./test.sh --nologcapture --with-xunit --xunit-file="${WORKSPACE}/_artifacts/junit_nosetests.xml"
 ./lint.sh
 mocha static/build_test.js
 ./verify_config.sh
