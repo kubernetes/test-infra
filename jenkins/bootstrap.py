@@ -803,7 +803,8 @@ def job_script(job, scenario, extra_job_args):
     config_json_args = []
     if job in config:
         job_config = config[job]
-        scenario = job_config['scenario']
+        if not scenario:
+            scenario = job_config['scenario']
         config_json_args = job_config.get('args', [])
     elif not scenario:
         raise ValueError('cannot find scenario for job', job)
