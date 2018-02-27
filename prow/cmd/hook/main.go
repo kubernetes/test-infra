@@ -174,7 +174,18 @@ func main() {
 	pluginAgent := &plugins.PluginAgent{}
 
 	ownersClient := repoowners.NewClient(gitClient, githubClient, pluginAgent.MDYAMLEnabled)
-	ownersClient.DirBlackList = configAgent.Config().OwnersDirBlacklist
+	ownersClient.DirBlacklist = func(org, repo string) []string {
+		conf := configAgent.Config().OwnersDirBlacklist
+
+		if list, ok := conf.Repos[org+"/"+repo]; ok {
+			return list
+		}
+		if list, ok := conf.Repos[org]; ok {
+			return list
+		}
+
+		return conf.Default
+	}
 
 	pluginAgent.PluginClient = plugins.PluginClient{
 		GitHubClient: githubClient,

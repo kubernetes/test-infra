@@ -40,7 +40,7 @@ const (
 	baseDirConvention = ""
 )
 
-var defaultDirBlackList = sets.NewString(".git", "_output")
+var defaultDirBlacklist = sets.NewString(".git", "_output")
 
 type dirOptions struct {
 	NoParentOwners bool `json:"no_parent_owners,omitempty"`
@@ -78,7 +78,7 @@ type cacheEntry struct {
 }
 
 type Client struct {
-	DirBlackList []string
+	DirBlacklist func(org, repo string) []string
 
 	git    *git.Client
 	ghc    githubClient
@@ -111,10 +111,9 @@ type RepoOwners struct {
 	labels    map[string]map[*regexp.Regexp]sets.String
 	options   map[string]dirOptions
 
-	dirBlackList []string
-
 	baseDir      string
 	enableMDYAML bool
+	dirBlacklist []string
 
 	log *logrus.Entry
 }
@@ -175,7 +174,12 @@ func (c *Client) LoadRepoOwners(org, repo string) (*RepoOwners, error) {
 			// aliases must be loaded
 			entry.aliases = loadAliasesFrom(gitRepo.Dir, log)
 		}
-		entry.owners, err = loadOwnersFrom(gitRepo.Dir, mdYaml, entry.aliases, c.DirBlackList, log)
+
+		var dirBlacklist []string
+		if getter := c.DirBlacklist; getter != nil {
+			dirBlacklist = getter(org, repo)
+		}
+		entry.owners, err = loadOwnersFrom(gitRepo.Dir, mdYaml, entry.aliases, dirBlacklist, log)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load RepoOwners for %s: %v", fullName, err)
 		}
@@ -253,7 +257,7 @@ func loadOwnersFrom(baseDir string, mdYaml bool, aliases RepoAliases, dirBlackli
 		labels:    make(map[string]map[*regexp.Regexp]sets.String),
 		options:   make(map[string]dirOptions),
 
-		dirBlackList: dirBlacklist,
+		dirBlacklist: dirBlacklist,
 	}
 
 	return o, filepath.Walk(o.baseDir, o.walkFunc)
@@ -277,11 +281,11 @@ func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 	}
 	filename := filepath.Base(path)
 
-	dirBlackList := sets.NewString(o.dirBlackList...)
-	if len(dirBlackList) == 0 {
-		dirBlackList = defaultDirBlackList
+	dirBlacklist := sets.NewString(o.dirBlacklist...)
+	if len(dirBlacklist) == 0 {
+		dirBlacklist = defaultDirBlacklist
 	}
-	if info.Mode().IsDir() && dirBlackList.Has(filename) {
+	if info.Mode().IsDir() && dirBlacklist.Has(filename) {
 		return filepath.SkipDir
 	}
 	if !info.Mode().IsRegular() {

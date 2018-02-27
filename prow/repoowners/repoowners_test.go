@@ -117,7 +117,9 @@ func TestOwnerDirBlacklist(t *testing.T) {
 	}
 	defer cleanup()
 
-	client.DirBlackList = []string{"src"}
+	client.DirBlacklist = func(org, repo string) []string {
+		return []string{"src"}
+	}
 
 	ro, err := client.LoadRepoOwners("org", "repo")
 	if err != nil {
@@ -133,6 +135,18 @@ func TestOwnerDirBlacklist(t *testing.T) {
 		if strings.Contains(dir, "src") {
 			t.Errorf("Expected directory %s to be excluded from the reviewers map", dir)
 		}
+	}
+}
+
+func TestOwnerDirBlacklistWithNoFunc(t *testing.T) {
+	client, cleanup, err := getTestClient(testFiles, true, true)
+	if err != nil {
+		t.Fatalf("Error creating test client: %v.", err)
+	}
+	defer cleanup()
+
+	if _, err := client.LoadRepoOwners("org", "repo"); err != nil {
+		t.Fatalf("Unexpected error loading RepoOwners: %v.", err)
 	}
 }
 
