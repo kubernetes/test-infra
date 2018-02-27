@@ -19,7 +19,7 @@ TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 # TODO(bentheelder): bump master/1.10 to latest go / bazel before 1.10 release
 K8S ?= master
 GO ?= 1.9.3
-BAZEL ?= 0.10.0
+BAZEL ?= 0.11.0
 CFSSL ?= R1.2
 
 # config for testing prior to rolling out to master / ongoing release
@@ -32,7 +32,7 @@ endif
 # kubernetes release-X branch configs
 ifeq ($(K8S), 1.10)
 	GO = 1.9.3
-	BAZEL = 0.10.0
+	BAZEL = 0.11.0
 	CFSSL = R1.2
 endif
 
