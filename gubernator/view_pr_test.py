@@ -194,6 +194,8 @@ class TestDashboard(main_test.TestBase):
 
     def test_pr_links_user(self):
         "Individual PR pages grab digest information"
+        gcs_async_test.install_handler(self.testbed.get_stub('urlfetch'),
+            {'12345/': []})
         make_pr(12345, ['human'], {'title': 'huge pr!'})
         resp = app.get('/pr/12345')
         self.assertIn('href="/pr/human"', resp)
