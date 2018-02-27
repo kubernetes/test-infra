@@ -165,7 +165,7 @@ func defineFlags() *options {
 	flag.StringVar(&o.testCmd, "test-cmd", "", "command to run against the cluster instead of Ginkgo e2e tests")
 	flag.StringVar(&o.testCmdName, "test-cmd-name", "", "name to log the test command as in xml results")
 	flag.DurationVar(&timeout, "timeout", time.Duration(0), "Terminate testing after the timeout duration (s/m/h)")
-	flag.BoolVar(&o.up, "up", false, "If true, start the the e2e cluster. If cluster is already up, recreate it.")
+	flag.BoolVar(&o.up, "up", false, "If true, start the e2e cluster. If cluster is already up, recreate it.")
 	flag.StringVar(&o.upgradeArgs, "upgrade_args", "", "If set, run upgrade tests before other tests")
 
 	flag.BoolVar(&verbose, "v", true, "If true, print all command output.")
