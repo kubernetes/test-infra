@@ -1128,8 +1128,6 @@ presubmits:
     always_run: false
     rerun_command: "/test pull-kubernetes-bazel-build-canary"
     trigger: "(?m)^/test pull-kubernetes-bazel-build-canary,?(\\s+|$)"
-    branches:
-    - master
     labels:
       preset-service-account: true
       preset-bazel-scratch-dir: true
@@ -1143,9 +1141,10 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--scenario=kubernetes_bazel_execute"
         - "--" # end bootstrap args, scenario args below
-        - "--build=//... -//vendor/..."
-        - "--release=//build/release-tars"
+        - "make"
+        - "bazel-release"
         env:
         - name: BAZEL_REMOTE_CACHE_ENABLED
           value: "true"
@@ -1306,6 +1305,7 @@ presubmits:
     trigger: "(?m)^/test pull-kubernetes-bazel-test-canary,?(\\s+|$)"
     labels:
       preset-service-account: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
@@ -1317,34 +1317,19 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--scenario=kubernetes_bazel_execute"
         - "--" # end bootstrap args, scenario args below
-        - "--test=//... -//build/... -//vendor/..."
-        - "--manual-test=//hack:verify-all"
-        - "--test-args=--config=unit"
-        - "--test-args=--build_tag_filters=-e2e,-integration"
-        - "--test-args=--test_tag_filters=-e2e,-integration"
-        - "--test-args=--flaky_test_attempts=3"
+        - "make"
+        - "bazel-test"
         env:
         - name: BAZEL_REMOTE_CACHE_ENABLED
           value: "true"
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
 
   - name: pull-kubernetes-bazel-test-integration-canary
     agent: kubernetes
@@ -3062,8 +3047,6 @@ presubmits:
     trigger: (?m)^/test( all| pull-security-kubernetes-bazel-build),?(\s+|$)
   - agent: kubernetes
     always_run: false
-    branches:
-    - master
     cluster: security
     context: pull-security-kubernetes-bazel-build-canary
     labels:
@@ -3083,11 +3066,10 @@ presubmits:
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
+        - --scenario=kubernetes_bazel_execute
         - --
-        - --build=//... -//vendor/...
-        - --release=//build/release-tars
-        - --gcs=gs://kubernetes-security-prow/ci/pull-security-kubernetes-bazel-build-canary
-        - --gcs-shared=gs://kubernetes-security-prow/bazel
+        - make
+        - bazel-release
         env:
         - name: BAZEL_REMOTE_CACHE_ENABLED
           value: "true"
@@ -3253,6 +3235,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-bazel-test-canary
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-bazel-test-canary
@@ -3268,13 +3251,10 @@ presubmits:
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
+        - --scenario=kubernetes_bazel_execute
         - --
-        - --test=//... -//build/... -//vendor/...
-        - --manual-test=//hack:verify-all
-        - --test-args=--config=unit
-        - --test-args=--build_tag_filters=-e2e,-integration
-        - --test-args=--test_tag_filters=-e2e,-integration
-        - --test-args=--flaky_test_attempts=3
+        - make
+        - bazel-test
         env:
         - name: BAZEL_REMOTE_CACHE_ENABLED
           value: "true"
