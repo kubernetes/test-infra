@@ -1143,7 +1143,6 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
-        - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/4311
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
         env:
@@ -1318,7 +1317,6 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
-        - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/4311
         - "--test=//... -//build/... -//vendor/..."
         - "--manual-test=//hack:verify-all"
         - "--test-args=--config=unit"
@@ -3041,7 +3039,6 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --
-        - --batch
         - --build=//... -//vendor/...
         - --release=//build/release-tars
         - --gcs=gs://kubernetes-security-prow/ci/pull-security-kubernetes-bazel-build-canary
@@ -3227,7 +3224,6 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --
-        - --batch
         - --test=//... -//build/... -//vendor/...
         - --manual-test=//hack:verify-all
         - --test-args=--config=unit
@@ -5571,7 +5567,6 @@ postsubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/logs"
         - "--" # end bootstrap args, scenario args below
-        - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/4311
         - "--build=//..."
         - "--install=gubernator/test_requirements.txt"
         - "--test=//..."
@@ -13649,7 +13644,6 @@ periodics:
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--" # end bootstrap args, scenario args below
-      - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/4311
       - "--build=//..."
       - "--install=gubernator/test_requirements.txt"
       - "--test=//..."
