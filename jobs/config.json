@@ -10979,6 +10979,14 @@
       "sig-testing"
     ]
   },
+  "pull-kubernetes-bazel-test-integration-canary": {
+    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
+    "args": [],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "pull-kubernetes-cross": {
     "args": [
       "--env=KUBE_RELEASE_RUN_TESTS=n",
