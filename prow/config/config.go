@@ -98,7 +98,7 @@ type Config struct {
 //     kubernetes-sig-testing:
 //     - bin
 type OwnersDirBlacklist struct {
-	// Repos configures a direcotry blacklist per repo (or org)
+	// Repos configures a directory blacklist per repo (or org)
 	Repos map[string][]string `json:"repos"`
 	// Default configures a default blacklist for repos (or orgs) not
 	// specifically configured
