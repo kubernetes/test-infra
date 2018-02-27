@@ -49,6 +49,7 @@ approve:
   - kubernetes/kubectl
   - kubernetes/kubernetes
   - kubernetes/kubernetes-template-project
+  - kubernetes/kube-state-metrics
   - kubernetes/minikube
   - kubernetes/repo-infra
   - kubernetes/sig-release
@@ -237,6 +238,10 @@ plugins:
 
   kubernetes/kubernetes-template-project:
   - approve
+
+  kubernetes/kube-state-metrics:
+  - approve
+  - blunderbuss
 
   kubernetes/minikube:
   - approve
