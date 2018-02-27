@@ -142,30 +142,22 @@ plugins:
   google/cadvisor:
   - trigger
 
-  kubeflow/examples:
-  - lgtm
-  - size
-  - trigger
-
-  kubeflow/kubeflow:
-  - lgtm
-  - size
-  - trigger
-
-  kubeflow/reporting:
-  - lgtm
-  - size
-  - trigger
-
-  kubeflow/testing:
-  - lgtm
-  - size
-  - trigger
-
-  kubeflow/tf-operator:
-  - lgtm
-  - size
-  - trigger
+  kubeflow:
+    # Enable /approve and /assign commands.
+    - approve
+    - assign
+    - help
+    - hold
+    - label
+    - lgtm
+    # Lets PRs & issues be flagged as stale
+    - lifecycle
+    - size
+    # Allows cleaning up stale commit statuses
+    - skip
+    # Applies a label to PRs with wip in the title to block merge
+    - wip
+    - trigger
 
   kubernetes/charts:
   - approve
