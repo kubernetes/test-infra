@@ -19,7 +19,6 @@ package main
 import (
 	"testing"
 
-	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -69,13 +68,5 @@ func TestOptions_Validate(t *testing.T) {
 		if !testCase.expectedErr && err != nil {
 			t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
 		}
-	}
-}
-
-func TestParseConfig(t *testing.T) {
-	cf := "../../config.yaml"
-	_, err := config.Load(cf)
-	if err != nil {
-		t.Fatalf("Could not load prow config: %v.", err)
 	}
 }
