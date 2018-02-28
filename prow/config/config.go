@@ -86,17 +86,6 @@ type Config struct {
 
 // OwnersDirBlacklist is used to configure which directories to ignore when
 // searching for OWNERS{,_ALIAS} files in a repo.
-//
-// owners_dir_blacklist:
-//   default:
-//   - .git
-//   - vendor
-//   - _output
-//   repos:
-//     kubernetes-sig-testing/frameworks:
-//     - assets
-//     kubernetes-sig-testing:
-//     - bin
 type OwnersDirBlacklist struct {
 	// Repos configures a directory blacklist per repo (or org)
 	Repos map[string][]string `json:"repos"`
