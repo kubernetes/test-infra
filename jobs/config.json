@@ -10100,7 +10100,7 @@
       "--extract-source",
       "--ginkgo-parallel=1",
       "--provider=local",
-      "--test_args=--ginkgo.focus=\\[Feature:Conformance\\]",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]",
       "--timeout=120m"
     ],
     "scenario": "kubernetes_e2e",
