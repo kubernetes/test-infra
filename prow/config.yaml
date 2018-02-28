@@ -5664,19 +5664,21 @@ postsubmits:
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--clean"
-          - "--git-cache=/root/.cache/git"
           - "--timeout=320"
           - "--upload=gs://kubernetes-jenkins/logs"
-          volumeMounts:
-          - name: cache-ssd
-            mountPath: /root/.cache
-          ports:
-          - containerPort: 9999
-            hostPort: 9999
-        volumes:
-        - name: cache-ssd
-          hostPath:
-            path: /mnt/disks/ssd0
+    - name: ci-kubernetes-e2e-kubeadm-gce-1-9
+      agent: kubernetes
+      labels:
+        preset-service-account: true
+        preset-k8s-ssh: true
+      spec:
+        containers:
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180226-208823aed
+          args:
+          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+          - "--clean"
+          - "--timeout=320"
+          - "--upload=gs://kubernetes-jenkins/logs"
 
   - name: ci-kubernetes-bazel-test-1-10
     agent: kubernetes
@@ -5709,6 +5711,33 @@ postsubmits:
         resources:
           requests:
             memory: "6Gi"
+    run_after_success:
+    - name: ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
+      agent: kubernetes
+      labels:
+        preset-service-account: true
+        preset-k8s-ssh: true
+      spec:
+        containers:
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180226-208823aed
+          args:
+          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+          - "--clean"
+          - "--timeout=320"
+          - "--upload=gs://kubernetes-jenkins/logs"
+    - name: ci-kubernetes-e2e-kubeadm-gce-1-10
+      agent: kubernetes
+      labels:
+        preset-service-account: true
+        preset-k8s-ssh: true
+      spec:
+        containers:
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180226-208823aed
+          args:
+          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+          - "--clean"
+          - "--timeout=320"
+          - "--upload=gs://kubernetes-jenkins/logs"
 
   kubernetes/test-infra:
   - name: ci-test-infra-bazel
@@ -14474,19 +14503,8 @@ periodics:
         args:
         - "--repo=k8s.io/kubernetes=release-1.9"
         - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--timeout=320"
         - "--upload=gs://kubernetes-jenkins/logs"
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
   - name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9
     agent: kubernetes
     labels:
@@ -14498,19 +14516,8 @@ periodics:
         args:
         - "--repo=k8s.io/kubernetes=release-1.9"
         - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--timeout=320"
         - "--upload=gs://kubernetes-jenkins/logs"
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
 
 - name: periodic-kubernetes-bazel-test-1-10
   interval: 6h
@@ -14548,6 +14555,34 @@ periodics:
       resources:
         requests:
           memory: "6Gi"
+  run_after_success:
+  - name: periodic-kubernetes-e2e-kubeadm-gce-1-10
+    agent: kubernetes
+    labels:
+      preset-service-account: true
+      preset-k8s-ssh: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180226-208823aed
+        args:
+        - "--repo=k8s.io/kubernetes=release-1.10"
+        - "--clean"
+        - "--timeout=320"
+        - "--upload=gs://kubernetes-jenkins/logs"
+
+  - name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
+    agent: kubernetes
+    labels:
+      preset-service-account: true
+      preset-k8s-ssh: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180226-208823aed
+        args:
+        - "--repo=k8s.io/kubernetes=release-1.10"
+        - "--clean"
+        - "--timeout=320"
+        - "--upload=gs://kubernetes-jenkins/logs"
 
 - interval: 24h
   agent: kubernetes
