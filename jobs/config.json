@@ -657,6 +657,14 @@
       "sig-testing"
     ]
   },
+  "ci-kubernetes-bazel-build-1-10": {
+    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
+    "args": [],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "ci-kubernetes-bazel-build-1-7": {
     "args": [
       "--build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/... //vendor/k8s.io/...",
@@ -686,6 +694,14 @@
     ]
   },
   "ci-kubernetes-bazel-test": {
+    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
+    "args": [],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
+  "ci-kubernetes-bazel-test-1-10": {
     "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
     "args": [],
     "scenario": "kubernetes_bazel",
@@ -727,6 +743,18 @@
     "args": [
       "--allow-dup",
       "--fast"
+    ],
+    "scenario": "kubernetes_build",
+    "sigOwners": [
+      "sig-release"
+    ]
+  },
+  "ci-kubernetes-build-beta": {
+    "args": [
+      "--allow-dup",
+      "--extra-publish-file=k8s-beta",
+      "--hyperkube",
+      "--registry=gcr.io/kubernetes-ci-images"
     ],
     "scenario": "kubernetes_build",
     "sigOwners": [
@@ -9784,6 +9812,17 @@
       "sig-multicluster"
     ]
   },
+  "ci-kubernetes-integration-beta": {
+    "args": [
+      "--branch=release-1.10",
+      "--force",
+      "--prow"
+    ],
+    "scenario": "kubernetes_verify",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "ci-kubernetes-integration-master": {
     "args": [
       "--branch=master",
@@ -10051,7 +10090,7 @@
       "--deployment=node",
       "--gcp-project=k8s-jkns-ci-node-e2e",
       "--gcp-zone=us-central1-f",
-      "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml",
+      "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-beta.yaml",
       "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
       "--node-tests=true",
       "--provider=gce",
@@ -10247,6 +10286,28 @@
       "sig-gcp"
     ]
   },
+  "ci-kubernetes-soak-gci-gce-beta": {
+    "args": [
+      "--down=false",
+      "--env=DOCKER_TEST_LOG_LEVEL=--log-level=warn",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=ci/k8s-beta",
+      "--gcp-master-image=gci",
+      "--gcp-node-image=gci",
+      "--gcp-project=k8s-jkns-gce-soak-1-6",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gci-gce-beta",
+      "--soak",
+      "--test_args=--ginkgo.skip=\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --clean-start=true --minStartupPods=8",
+      "--timeout=600m",
+      "--up=false"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-gcp"
+    ]
+  },
   "ci-kubernetes-soak-gci-gce-stable1": {
     "args": [
       "--down=false",
@@ -10332,6 +10393,17 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-gcp"
+    ]
+  },
+  "ci-kubernetes-verify-beta": {
+    "args": [
+      "--branch=release-1.10",
+      "--force",
+      "--script=./hack/jenkins/verify-dockerized.sh"
+    ],
+    "scenario": "kubernetes_verify",
+    "sigOwners": [
+      "sig-testing"
     ]
   },
   "ci-kubernetes-verify-master": {
@@ -10528,6 +10600,14 @@
       "sig-testing"
     ]
   },
+  "periodic-kubernetes-bazel-build-1-10": {
+    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
+    "args": [],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "periodic-kubernetes-bazel-build-1-7": {
     "args": [
       "--build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/... //vendor/k8s.io/...",
@@ -10549,6 +10629,14 @@
     ]
   },
   "periodic-kubernetes-bazel-build-1-9": {
+    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
+    "args": [],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
+  "periodic-kubernetes-bazel-test-1-10": {
     "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
     "args": [],
     "scenario": "kubernetes_bazel",

@@ -5295,6 +5295,34 @@ postsubmits:
           resources:
             requests:
               memory: "6Gi"
+  - name: ci-kubernetes-bazel-build-1-10
+    agent: kubernetes
+    branches:
+    - release-1.10
+    labels:
+      preset-service-account: true
+      preset-bazel-scratch-dir: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180226-a50c3d6d9-1.10
+        args:
+        - "--clean"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/logs"
+        - "--" # end bootstrap args, scenario args below
+        - "--build=//... -//vendor/..."
+        - "--release=//build/release-tars"
+        env:
+        - name: BAZEL_REMOTE_CACHE_ENABLED
+          value: "true"
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
 
   - name: ci-kubernetes-bazel-build-1-7
     agent: kubernetes
@@ -5616,6 +5644,37 @@ postsubmits:
           hostPath:
             path: /mnt/disks/ssd0
 
+  - name: ci-kubernetes-bazel-test-1-10
+    agent: kubernetes
+    branches:
+    - release-1.10
+    labels:
+      preset-service-account: true
+      preset-bazel-scratch-dir: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180226-a50c3d6d9-1.10
+        args:
+        - "--clean"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/logs"
+        - "--" # end bootstrap args, scenario args below
+        - "--test=//... -//build/... -//vendor/..."
+        - "--manual-test=//hack:verify-all"
+        - "--test-args=--config=unit"
+        - "--test-args=--build_tag_filters=-e2e,-integration"
+        - "--test-args=--test_tag_filters=-e2e,-integration"
+        - "--test-args=--flaky_test_attempts=3"
+        env:
+        - name: BAZEL_REMOTE_CACHE_ENABLED
+          value: "true"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
 
   kubernetes/test-infra:
   - name: ci-test-infra-bazel
@@ -6617,6 +6676,47 @@ periodics:
       - --repo=k8s.io/release
       - --root=/go/src
       - --timeout=30
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: cache-ssd
+        mountPath: /root/.cache
+      - name: docker-graph
+        mountPath: /docker-graph
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      resources:
+        requests:
+          cpu: 4
+          memory: "8Gi"
+    volumes:
+    - name: cache-ssd
+      hostPath:
+        path: /mnt/disks/ssd0
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
+
+- interval: 30m
+  name: ci-kubernetes-build-beta
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+      args:
+      - --clean
+      - --git-cache=/root/.cache/git
+      - --repo=k8s.io/kubernetes=release-1.10
+      - --repo=k8s.io/release
+      - --root=/go/src
+      - --timeout=120
       env:
       - name: DOCKER_IN_DOCKER_ENABLED
         value: true
@@ -12888,6 +12988,38 @@ periodics:
       hostPath:
         path: /mnt/disks/ssd0/docker-graph
 
+- interval: 2h
+  name: ci-kubernetes-integration-beta
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+      args:
+      - "--clean"
+      - "--repo=k8s.io/kubernetes=release-1.10"
+      - "--timeout=100"
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: docker-graph
+        mountPath: /docker-graph
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      resources:
+        requests:
+          cpu: 4
+    volumes:
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
+
 - interval: 1h
   name: ci-kubernetes-integration-master
   agent: kubernetes
@@ -13499,6 +13631,19 @@ periodics:
 
 - interval: 12h
   agent: kubernetes
+  name: ci-kubernetes-soak-gci-gce-beta
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=620
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180221-921ef654e-master
+
+- interval: 12h
+  agent: kubernetes
   name: ci-kubernetes-soak-gci-gce-stable1
   labels:
     preset-service-account: true
@@ -13548,6 +13693,38 @@ periodics:
       - --timeout=620
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180226-a50c3d6d9-master
+
+- interval: 2h
+  name: ci-kubernetes-verify-beta
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+      args:
+      - "--clean"
+      - "--repo=k8s.io/kubernetes=release-1.10"
+      - "--timeout=75"
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: docker-graph
+        mountPath: /docker-graph
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      resources:
+        requests:
+          cpu: 4
+    volumes:
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
 
 - interval: 1h
   name: ci-kubernetes-verify-master
@@ -13921,6 +14098,39 @@ periodics:
       secret:
         secretName: velodrome-influxdb
 
+- name: periodic-kubernetes-bazel-build-1-10
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-bazel-scratch-dir: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180226-a50c3d6d9-1.10
+      args:
+      - "--clean"
+      - "--job=$(JOB_NAME)"
+      - "--repo=k8s.io/kubernetes=release-1.10"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--" # end bootstrap args, scenario args below
+      - "--build=//... -//vendor/..."
+      - "--release=//build/release-tars"
+      env:
+      - name: BAZEL_REMOTE_CACHE_ENABLED
+        value: "true"
+      # TODO(bentheelder): switch to kubernetes_execute_bazel and consider dropping this
+      - name: REPO_OWNER
+        value: kubernetes
+      - name: REPO_NAME
+        value: kubernetes
+      # Bazel needs privileged mode in order to sandbox builds.
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "6Gi"
+
 - name: periodic-kubernetes-bazel-build-1-7
   interval: 12h
   agent: kubernetes
@@ -14146,8 +14356,6 @@ periodics:
 - name: periodic-kubernetes-bazel-build-1-9
   interval: 6h
   agent: kubernetes
-  branches:
-  - master
   labels:
     preset-service-account: true
   spec:
@@ -14269,6 +14477,43 @@ periodics:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
+
+- name: periodic-kubernetes-bazel-test-1-10
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-bazel-scratch-dir: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180226-a50c3d6d9-1.10
+      args:
+      - "--clean"
+      - --root=/go/src
+      - "--job=$(JOB_NAME)"
+      - "--repo=k8s.io/kubernetes=release-1.10"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--" # end bootstrap args, scenario args below
+      - "--test=//... -//build/... -//vendor/..."
+      - "--manual-test=//hack:verify-all"
+      - "--test-args=--config=unit"
+      - "--test-args=--build_tag_filters=-e2e,-integration"
+      - "--test-args=--test_tag_filters=-e2e,-integration"
+      - "--test-args=--flaky_test_attempts=3"
+      env:
+      - name: BAZEL_REMOTE_CACHE_ENABLED
+        value: "true"
+      # TODO(bentheelder): switch to kubernetes_execute_bazel and consider dropping this
+      - name: REPO_OWNER
+        value: kubernetes
+      - name: REPO_NAME
+        value: kubernetes
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "6Gi"
 
 - interval: 24h
   agent: kubernetes
