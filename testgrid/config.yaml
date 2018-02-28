@@ -1849,14 +1849,14 @@ test_groups:
   num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
-- name: pull-kubernetes-unit
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-unit
+- name: pull-kubernetes-integration
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-integration
   days_of_results: 1
   num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
-- name: pull-kubernetes-unit-prow
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-unit-prow
+- name: pull-kubernetes-integration-prow
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-integration-prow
   days_of_results: 1
   num_columns_recent: 20
   alert_stale_results_hours: 24
@@ -4683,8 +4683,8 @@ dashboards:
     test_group_name: pull-kubernetes-bazel-test-integration-canary
   - name: pull-kubernetes-verify-prow
     test_group_name: pull-kubernetes-verify-prow
-  - name: pull-kubernetes-unit-prow
-    test_group_name: pull-kubernetes-unit-prow
+  - name: pull-kubernetes-integration-prow
+    test_group_name: pull-kubernetes-integration-prow
   - name: pull-kubernetes-cross-prow
     test_group_name: pull-kubernetes-cross-prow
 
@@ -5125,8 +5125,8 @@ dashboards:
     base_options: 'width=10'
     alert_options:
       alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
-  - name: pull-kubernetes-unit
-    test_group_name: pull-kubernetes-unit
+  - name: pull-kubernetes-integration
+    test_group_name: pull-kubernetes-integration
     base_options: 'width=10'
     alert_options:
       alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
