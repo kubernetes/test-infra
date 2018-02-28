@@ -78,7 +78,8 @@ type cacheEntry struct {
 }
 
 type Client struct {
-	DirBlacklist func(org, repo string) []string
+	DirBlacklistByRepo  map[string]sets.String
+	DirBlacklistDefault sets.String
 
 	git    *git.Client
 	ghc    githubClient
@@ -113,7 +114,7 @@ type RepoOwners struct {
 
 	baseDir      string
 	enableMDYAML bool
-	dirBlacklist []string
+	dirBlacklist sets.String
 
 	log *logrus.Entry
 }
@@ -175,9 +176,12 @@ func (c *Client) LoadRepoOwners(org, repo string) (*RepoOwners, error) {
 			entry.aliases = loadAliasesFrom(gitRepo.Dir, log)
 		}
 
-		var dirBlacklist []string
-		if getter := c.DirBlacklist; getter != nil {
-			dirBlacklist = getter(org, repo)
+		dirBlacklist := defaultDirBlacklist.Union(c.DirBlacklistDefault)
+		if bl, ok := c.DirBlacklistByRepo[org]; ok {
+			dirBlacklist = dirBlacklist.Union(bl)
+		}
+		if bl, ok := c.DirBlacklistByRepo[org+"/"+repo]; ok {
+			dirBlacklist = dirBlacklist.Union(bl)
 		}
 		entry.owners, err = loadOwnersFrom(gitRepo.Dir, mdYaml, entry.aliases, dirBlacklist, log)
 		if err != nil {
@@ -245,7 +249,7 @@ func loadAliasesFrom(baseDir string, log *logrus.Entry) RepoAliases {
 	return result
 }
 
-func loadOwnersFrom(baseDir string, mdYaml bool, aliases RepoAliases, dirBlacklist []string, log *logrus.Entry) (*RepoOwners, error) {
+func loadOwnersFrom(baseDir string, mdYaml bool, aliases RepoAliases, dirBlacklist sets.String, log *logrus.Entry) (*RepoOwners, error) {
 	o := &RepoOwners{
 		RepoAliases:  aliases,
 		baseDir:      baseDir,
@@ -281,11 +285,7 @@ func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 	}
 	filename := filepath.Base(path)
 
-	dirBlacklist := sets.NewString(o.dirBlacklist...)
-	if len(dirBlacklist) == 0 {
-		dirBlacklist = defaultDirBlacklist
-	}
-	if info.Mode().IsDir() && dirBlacklist.Has(filename) {
+	if info.Mode().IsDir() && o.dirBlacklist.Has(filename) {
 		return filepath.SkipDir
 	}
 	if !info.Mode().IsRegular() {

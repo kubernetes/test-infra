@@ -110,43 +110,102 @@ func getTestClient(files map[string][]byte, enableMdYaml, includeAliases bool) (
 		nil
 }
 
-func TestOwnerDirBlacklist(t *testing.T) {
-	client, cleanup, err := getTestClient(testFiles, true, true)
-	if err != nil {
-		t.Fatalf("Error creating test client: %v.", err)
-	}
-	defer cleanup()
-
-	client.DirBlacklist = func(org, repo string) []string {
-		return []string{"src"}
-	}
-
-	ro, err := client.LoadRepoOwners("org", "repo")
-	if err != nil {
-		t.Fatalf("Unexpected error loading RepoOwners: %v.", err)
-	}
-
-	for dir := range ro.approvers {
-		if strings.Contains(dir, "src") {
-			t.Errorf("Expected directory %s to be excluded from the approvers map", dir)
+func TestOwnersDirBlacklist(t *testing.T) {
+	validatorExcluded := func(t *testing.T, ro *RepoOwners) {
+		for dir := range ro.approvers {
+			if strings.Contains(dir, "src") {
+				t.Errorf("Expected directory %s to be excluded from the approvers map", dir)
+			}
+		}
+		for dir := range ro.reviewers {
+			if strings.Contains(dir, "src") {
+				t.Errorf("Expected directory %s to be excluded from the reviewers map", dir)
+			}
 		}
 	}
-	for dir := range ro.reviewers {
-		if strings.Contains(dir, "src") {
-			t.Errorf("Expected directory %s to be excluded from the reviewers map", dir)
+
+	validatorIncluded := func(t *testing.T, ro *RepoOwners) {
+		approverFound := false
+		for dir := range ro.approvers {
+			if strings.Contains(dir, "src") {
+				approverFound = true
+				break
+			}
+		}
+		if !approverFound {
+			t.Errorf("Expected to find approvers for a path matching */src/*")
+		}
+
+		reviewerFound := false
+		for dir := range ro.reviewers {
+			if strings.Contains(dir, "src") {
+				reviewerFound = true
+				break
+			}
+		}
+		if !reviewerFound {
+			t.Errorf("Expected to find reviewers for a path matching */src/*")
 		}
 	}
-}
 
-func TestOwnerDirBlacklistWithNoFunc(t *testing.T) {
-	client, cleanup, err := getTestClient(testFiles, true, true)
-	if err != nil {
-		t.Fatalf("Error creating test client: %v.", err)
+	getRepoOwnersWithBlacklist := func(t *testing.T, defaults sets.String, byRepo map[string]sets.String) *RepoOwners {
+		client, cleanup, err := getTestClient(testFiles, true, true)
+		if err != nil {
+			t.Fatalf("Error creating test client: %v.", err)
+		}
+		defer cleanup()
+
+		client.DirBlacklistDefault = defaults
+		client.DirBlacklistByRepo = byRepo
+
+		ro, err := client.LoadRepoOwners("org", "repo")
+		if err != nil {
+			t.Fatalf("Unexpected error loading RepoOwners: %v.", err)
+		}
+
+		return ro
 	}
-	defer cleanup()
 
-	if _, err := client.LoadRepoOwners("org", "repo"); err != nil {
-		t.Fatalf("Unexpected error loading RepoOwners: %v.", err)
+	type testConf struct {
+		blackistDefault sets.String
+		blacklistByRepo map[string]sets.String
+		validator       func(t *testing.T, ro *RepoOwners)
+	}
+
+	tests := map[string]testConf{}
+
+	tests["blacklist by org"] = testConf{
+		blacklistByRepo: map[string]sets.String{
+			"org": sets.NewString("src"),
+		},
+		validator: validatorExcluded,
+	}
+	tests["blacklist by org/repo"] = testConf{
+		blacklistByRepo: map[string]sets.String{
+			"org/repo": sets.NewString("src"),
+		},
+		validator: validatorExcluded,
+	}
+	tests["blacklist by default"] = testConf{
+		blackistDefault: sets.NewString("src"),
+		validator:       validatorExcluded,
+	}
+	tests["no blacklist setup"] = testConf{
+		validator: validatorIncluded,
+	}
+	tests["blacklist setup but not matching this repo"] = testConf{
+		blacklistByRepo: map[string]sets.String{
+			"not_org/not_repo": sets.NewString("src"),
+			"not_org":          sets.NewString("src"),
+		},
+		validator: validatorIncluded,
+	}
+
+	for name, conf := range tests {
+		t.Run(name, func(t *testing.T) {
+			ro := getRepoOwnersWithBlacklist(t, conf.blackistDefault, conf.blacklistByRepo)
+			conf.validator(t, ro)
+		})
 	}
 }
 
