@@ -11362,6 +11362,26 @@
       "sig-cluster-lifecycle"
     ]
   },
+  "pull-kubernetes-integration": {
+    "args": [
+      "--branch=${PULL_BASE_REF}",
+      "--prow"
+    ],
+    "scenario": "kubernetes_verify",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
+  "pull-kubernetes-integration-prow": {
+    "args": [
+      "--branch=${PULL_BASE_REF}",
+      "--prow"
+    ],
+    "scenario": "kubernetes_verify",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "pull-kubernetes-kubemark-e2e-gce": {
     "args": [
       "--build=bazel",
@@ -11476,26 +11496,6 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-node"
-    ]
-  },
-  "pull-kubernetes-unit": {
-    "args": [
-      "--branch=${PULL_BASE_REF}",
-      "--prow"
-    ],
-    "scenario": "kubernetes_verify",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "pull-kubernetes-unit-prow": {
-    "args": [
-      "--branch=${PULL_BASE_REF}",
-      "--prow"
-    ],
-    "scenario": "kubernetes_verify",
-    "sigOwners": [
-      "sig-testing"
     ]
   },
   "pull-kubernetes-verify": {

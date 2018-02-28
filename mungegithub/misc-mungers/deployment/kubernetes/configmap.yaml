@@ -20,9 +20,9 @@ required-retest-contexts: "\
   pull-kubernetes-cross,\
   pull-kubernetes-e2e-gce,\
   pull-kubernetes-e2e-kops-aws,\
+  pull-kubernetes-integration,\
   pull-kubernetes-kubemark-e2e-gce,\
   pull-kubernetes-node-e2e,\
-  pull-kubernetes-unit,\
   pull-kubernetes-verify"
 
 # munger specific options.
