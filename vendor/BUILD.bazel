@@ -45,6 +45,7 @@ filegroup(
         "//vendor/github.com/docker/go-connections/tlsconfig:all-srcs",
         "//vendor/github.com/docker/go-units:all-srcs",
         "//vendor/github.com/emicklei/go-restful:all-srcs",
+        "//vendor/github.com/fsnotify/fsnotify:all-srcs",
         "//vendor/github.com/ghodss/yaml:all-srcs",
         "//vendor/github.com/go-ini/ini:all-srcs",
         "//vendor/github.com/go-openapi/jsonpointer:all-srcs",
