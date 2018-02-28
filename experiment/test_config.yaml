@@ -716,39 +716,39 @@ jobs:
   # release branch jobs - cos only (cvm is deprecated at 1.8)
   # beta release (inactive)
   ci-kubernetes-e2e-gce-cos-k8sbeta-reboot:
-    interval: 48h
+    interval: 1h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gce-cos-k8sbeta-ingress:
-    interval: 48h
+    interval: 1h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gce-cos-k8sbeta-default:
     args:
     - --env=ENABLE_POD_SECURITY_POLICY=true
-    interval: 48h
+    interval: 1h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gce-cos-k8sbeta-serial:
-    interval: 48h
+    interval: 1h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gce-cos-k8sbeta-slow:
-    interval: 48h
+    interval: 1h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cos-k8sbeta-ingress:
-    interval: 48h
+    interval: 1h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cos-k8sbeta-reboot:
-    interval: 48h
+    interval: 1h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cos-k8sbeta-default:
-    interval: 48h
+    interval: 1h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cos-k8sbeta-serial:
-    interval: 48h
+    interval: 1h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cos-k8sbeta-slow:
-    interval: 48h
+    interval: 1h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures:
-    interval: 48h
+    interval: 1h
     args:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
