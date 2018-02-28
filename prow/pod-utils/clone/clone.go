@@ -46,6 +46,7 @@ func Run(refs kube.Refs, dir, gitUserName, gitUserEmail string) Record {
 	if gitUserEmail != "" {
 		commands = append(commands, shellCloneCommand(cloneDir, "git", "config", "user.email", gitUserEmail))
 	}
+	commands = append(commands, shellCloneCommand(cloneDir, "git", "fetch", repositoryURL, "--tags", "--prune"))
 	commands = append(commands, shellCloneCommand(cloneDir, "git", "fetch", repositoryURL, refs.BaseRef))
 
 	var checkout string
