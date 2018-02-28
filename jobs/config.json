@@ -4531,6 +4531,7 @@
   "ci-kubernetes-e2e-gci-gce-autoscaling": {
     "args": [
       "--check-leaked-resources",
+      "--cluster=ca",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-autoscaling.env",
       "--extract=ci/latest",
@@ -4539,7 +4540,25 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--runtime-config=scheduling.k8s.io/v1alpha1=true",
-      "--test_args=--ginkgo.focus=\\[Feature:ClusterSizeAutoscalingScaleUp\\]|\\[Feature:ClusterSizeAutoscalingScaleDown\\]|\\[Feature:InitialResources\\]|\\[Feature:CustomMetricsAutoscaling\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:ClusterSizeAutoscalingScaleUp\\]|\\[Feature:ClusterSizeAutoscalingScaleDown\\]|\\[Feature:InitialResources\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
+      "--timeout=300m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-autoscaling"
+    ]
+  },
+  "ci-kubernetes-e2e-gci-gce-autoscaling-hpa": {
+    "args": [
+      "--check-leaked-resources",
+      "--cluster=hpa",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=ci/latest",
+      "--gcp-node-image=gci",
+      "--gcp-project=k8s-jkns-gci-autoscaling",
+      "--gcp-zone=us-central1-c",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Feature:CustomMetricsAutoscaling\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
       "--timeout=300m"
     ],
     "scenario": "kubernetes_e2e",
@@ -4550,6 +4569,7 @@
   "ci-kubernetes-e2e-gci-gce-autoscaling-migs": {
     "args": [
       "--check-leaked-resources",
+      "--cluster=ca",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-autoscaling-migs.env",
       "--extract=ci/latest",
@@ -4558,7 +4578,25 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--runtime-config=scheduling.k8s.io/v1alpha1=true",
-      "--test_args=--ginkgo.focus=\\[Feature:ClusterSizeAutoscalingScaleUp\\]|\\[Feature:ClusterSizeAutoscalingScaleDown\\]|\\[Feature:CustomMetricsAutoscaling\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:ClusterSizeAutoscalingScaleUp\\]|\\[Feature:ClusterSizeAutoscalingScaleDown\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
+      "--timeout=300m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-autoscaling"
+    ]
+  },
+  "ci-kubernetes-e2e-gci-gce-autoscaling-migs-hpa": {
+    "args": [
+      "--check-leaked-resources",
+      "--cluster=hpa",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=ci/latest",
+      "--gcp-node-image=gci",
+      "--gcp-project=k8s-jkns-gci-autoscaling-migs",
+      "--gcp-zone=us-central1-c",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Feature:CustomMetricsAutoscaling\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
       "--timeout=300m"
     ],
     "scenario": "kubernetes_e2e",
@@ -5007,7 +5045,7 @@
   "ci-kubernetes-e2e-gci-gke-autoscaling": {
     "args": [
       "--check-leaked-resources",
-      "--cluster=",
+      "--cluster=ca",
       "--deployment=gke",
       "--extract=ci/latest",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
@@ -5016,7 +5054,27 @@
       "--gcp-zone=us-central1-f",
       "--gke-environment=test",
       "--provider=gke",
-      "--test_args=--ginkgo.focus=\\[Feature:ClusterSizeAutoscalingScaleUp\\]|\\[Feature:ClusterSizeAutoscalingScaleDown\\]|\\[Feature:ClusterSizeAutoscalingScaleWithNAP\\]|\\[Feature:CustomMetricsAutoscaling\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:ClusterSizeAutoscalingScaleUp\\]|\\[Feature:ClusterSizeAutoscalingScaleDown\\]|\\[Feature:ClusterSizeAutoscalingScaleWithNAP\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
+      "--timeout=420m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-autoscaling"
+    ]
+  },
+  "ci-kubernetes-e2e-gci-gke-autoscaling-hpa": {
+    "args": [
+      "--check-leaked-resources",
+      "--cluster=hpa",
+      "--deployment=gke",
+      "--extract=ci/latest",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=gci",
+      "--gcp-project=k8s-e2e-gci-gke-autoscaling",
+      "--gcp-zone=us-central1-c",
+      "--gke-environment=test",
+      "--provider=gke",
+      "--test_args=--ginkgo.focus=\\[Feature:CustomMetricsAutoscaling\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
       "--timeout=420m"
     ],
     "scenario": "kubernetes_e2e",

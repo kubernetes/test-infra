@@ -577,6 +577,10 @@ class JobTest(unittest.TestCase):
             # ingress-GCE e2e jobs
             'pull-ingress-gce-e2e': 'e2e-ingress-gce',
             'ci-ingress-gce-e2e': 'e2e-ingress-gce',
+            # sig-autoscaling jobs intentionally share projetcs
+            'ci-kubernetes-e2e-gci-gce-autoscaling-hpa':'ci-kubernetes-e2e-gci-gce-autoscaling',
+            'ci-kubernetes-e2e-gci-gce-autoscaling-migs-hpa':'ci-kubernetes-e2e-gci-gce-autoscaling-migs',
+            'ci-kubernetes-e2e-gci-gke-autoscaling-hpa':'ci-kubernetes-e2e-gci-gke-autoscaling',
         }
         for soak_prefix in [
                 'ci-kubernetes-soak-gce-1.5',
