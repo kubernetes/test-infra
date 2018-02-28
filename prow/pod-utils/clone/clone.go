@@ -39,13 +39,13 @@ func Run(refs kube.Refs, dir, gitUserName, gitUserEmail string) Record {
 		},
 	}
 
+	commands = append(commands, shellCloneCommand(cloneDir, "git", "init"))
 	if gitUserName != "" {
 		commands = append(commands, shellCloneCommand(cloneDir, "git", "config", "user.name", gitUserName))
 	}
 	if gitUserEmail != "" {
 		commands = append(commands, shellCloneCommand(cloneDir, "git", "config", "user.email", gitUserEmail))
 	}
-	commands = append(commands, shellCloneCommand(cloneDir, "git", "init"))
 	commands = append(commands, shellCloneCommand(cloneDir, "git", "fetch", repositoryURL, refs.BaseRef))
 
 	var checkout string
