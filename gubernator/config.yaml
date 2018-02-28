@@ -39,4 +39,5 @@ jobs:
   - pull-kubernetes-integration
   - pull-kubernetes-kubemark-e2e-gce
   - pull-kubernetes-node-e2e
+  - pull-kubernetes-typecheck
   - pull-kubernetes-verify

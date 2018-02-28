@@ -11498,6 +11498,15 @@
       "sig-node"
     ]
   },
+  "pull-kubernetes-typecheck": {
+    "args": [
+      "hack/verify-typecheck.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "pull-kubernetes-verify": {
     "args": [
       "--branch=${PULL_BASE_REF}",
