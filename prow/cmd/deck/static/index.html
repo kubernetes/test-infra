@@ -37,21 +37,21 @@
             <main class="mdl-layout__content">
                 <div class="page-content">
                     <aside>
-                        <div class="card-box">
+                        <div id="filter-box" class="card-box">
                             <ul class="noBullets">
                                 <li>Filter</li>
-                                <li><select id="type" onchange="redraw();"><option>all job types</option></select></li>
-                                <li><select id="repo" onchange="redraw();"><option>all repositories</option></select></li>
+                                <li><select id="type"><option>all job types</option></select></li>
+                                <li><select id="repo"><option>all repositories</option></select></li>
                                 &gt;&gt;
-                                <li><select id="pull" onchange="redraw();"><option>all pull requests</option></select></li>
-                                <li><select id="author" onchange="redraw();"><option>all authors</option></select></li>
+                                <li><select id="pull"><option>all pull requests</option></select></li>
+                                <li><select id="author"><option>all authors</option></select></li>
                                 <li>
                                     <div class="fuzzy-search" id="job">
                                         <input class="fuzzy-search-input" placeholder="Search job name" type="text" id="job-input">
                                         <ul id="job-list" class="fuzzy-search-list"></ul>
                                     </div>
                                 </li>
-                                <li><select id="state" onchange="redraw();"><option>all states</option></select></li>
+                                <li><select id="state"><option>all states</option></select></li>
                             </ul>
                         </div>
                     </aside>

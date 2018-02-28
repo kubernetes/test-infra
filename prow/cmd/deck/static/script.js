@@ -43,7 +43,7 @@ function optionsForRepo(repo) {
     return opts;
 }
 
-function redrawOptions(opts) {
+function redrawOptions(fz, opts) {
     var ts = Object.keys(opts.types).sort();
     addOptions(ts, "type");
     var rs = Object.keys(opts.repos).filter(function (r) {
@@ -53,7 +53,7 @@ function redrawOptions(opts) {
     var js = Object.keys(opts.jobs).sort();
     var jobInput = document.getElementById("job-input");
     var jobList = document.getElementById("job-list");
-    addOptionFuzzySearch(js, "job", jobList, jobInput);
+    addOptionFuzzySearch(fz, js, "job", jobList, jobInput);
     var as = Object.keys(opts.authors).sort(function (a, b) {
         return a.toLowerCase().localeCompare(b.toLowerCase());
     });
@@ -97,7 +97,6 @@ function handleDownKey() {
     }
     if (selectedJobs.length === 0) {
         // If no job selected, selecte the first one that visible in the list.
-        var activeSearchRect = activeSearch.getBoundingClientRect();
         var jobs = Array.from(activeSearch.children)
             .filter(function (elChild) {
                 var childRect = elChild.getBoundingClientRect();
@@ -160,13 +159,21 @@ window.onload = function () {
     });
     // set dropdown based on options from query string
     var opts = optionsForRepo("");
-    initFuzzySearch(
+    var fz = initFuzzySearch(
         "job",
         "job-input",
         "job-list",
         Object.keys(opts["jobs"]).sort());
-    redrawOptions(opts);
-    redraw();
+    redrawOptions(fz, opts);
+    redraw(fz);
+    // Register on change functions
+    var filterBox = document.querySelector("#filter-box");
+    var options = filterBox.querySelectorAll("select");
+    options.forEach(opt => {
+        opt.addEventListener("change", () => {
+            redraw(fz);
+        });
+    });
 };
 
 document.addEventListener("DOMContentLoaded", function (event) {
@@ -197,11 +204,12 @@ function displayFuzzySearchResult(el, inputContainer) {
     el.style.top = inputContainer.height + "px";
     el.style.width = inputContainer.width + "px";
     el.style.height = 200 + "px";
+    el.style.zIndex = "9999"
 }
 
 function fuzzySearch(fz, id, list, input) {
     var inputValue = input.value.trim();
-    addOptionFuzzySearch(fz.search(inputValue), id, list, input, true);
+    addOptionFuzzySearch(fz, fz.search(inputValue), id, list, input, true);
 }
 
 function validToken(token) {
@@ -217,7 +225,7 @@ function validToken(token) {
     return token === 189 || token === 8;
 }
 
-function handleEnterKeyDown(list, input) {
+function handleEnterKeyDown(fz, list, input) {
     if (list.childElementCount === 0) {
         return;
     }
@@ -231,14 +239,14 @@ function handleEnterKeyDown(list, input) {
     input.value = job;
     input.blur();
     list.classList.remove("active-fuzzy-search");
-    redraw();
+    redraw(fz);
 }
 
 function registerFuzzySearchHandler(fz, id, list, input) {
     input.addEventListener("keydown", function (event) {
         if (event.keyCode === 13) {
             // If enter key is hit, selects the first job in the list.
-            handleEnterKeyDown(list, input);
+            handleEnterKeyDown(fz, list, input);
         } else if (validToken(event.keyCode)) {
             // Delay 1 frame that the input character is recorded before getting
             // input value
@@ -261,23 +269,17 @@ function initFuzzySearch(id, inputId, listId, data) {
         displayFuzzySearchResult(list, el.getBoundingClientRect());
     });
     input.addEventListener("blur", function () {
-        // Delay blur action so that the list can handle click action before
-        // blured out.
-        setTimeout(function () {
-            list.classList.remove("active-fuzzy-search");
-        }, 120);
-    });
-    input.addEventListener("keypress", function () {
-        var inputText = input.value;
+        list.classList.remove("active-fuzzy-search");
     });
 
     registerFuzzySearchHandler(fz, id, list, input);
+    return fz;
 }
 
-function registerJobResultEventHandler(li, input) {
-    li.addEventListener("click", function (event) {
+function registerJobResultEventHandler(fz, li, input) {
+    li.addEventListener("mousedown", function (event) {
         input.value = event.currentTarget.innerHTML;
-        redraw();
+        redraw(fz);
     });
     li.addEventListener("mouseover", function (event) {
         var selectedJobs = document.getElementsByClassName("job-selected");
@@ -295,17 +297,18 @@ function registerJobResultEventHandler(li, input) {
     });
 }
 
-function addOptionFuzzySearch(data, id, list, input, stopAutoFill) {
+function addOptionFuzzySearch(fz, data, id, list, input, stopAutoFill) {
     if (!stopAutoFill) {
         input.value = getParameterByName(id);
     }
     while (list.firstChild) {
         list.removeChild(list.firstChild);
     }
+    list.scrollTop = 0;
     for (var i = 0; i < data.length; i++) {
         var li = document.createElement("li");
         li.innerHTML = data[i];
-        registerJobResultEventHandler(li, input);
+        registerJobResultEventHandler(fz, li, input);
         list.appendChild(li);
     }
 }
@@ -338,7 +341,7 @@ function groupKey(build) {
     return build.repo + " " + build.number + " " + build.refs;
 }
 
-function redraw() {
+function redraw(fz) {
     var modal = document.getElementById('rerun');
     var rerun_command = document.getElementById('rerun-content');
     window.onclick = function (event) {
@@ -396,7 +399,8 @@ function redraw() {
             history.replaceState(null, "", "/")
         }
     }
-    redrawOptions(opts);
+    fz.setDict(Object.keys(opts.jobs).sort());
+    redrawOptions(fz, opts);
 
     var lastKey = '';
     for (var i = 0, emitted = 0; i < allBuilds.length && emitted < 500; i++) {
@@ -530,6 +534,10 @@ function createRerunCell(modal, rerun_command, prowjob) {
 
 function stateCell(state) {
     const c = document.createElement("td");
+    if (!state || state === "") {
+        c.appendChild(document.createTextNode(""));
+        return c;
+    }
     c.classList.add("icon-cell");
 
     let displayState = "";
