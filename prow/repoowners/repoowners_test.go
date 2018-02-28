@@ -71,7 +71,13 @@ func patternAll(values ...string) map[string]sets.String {
 	return map[string]sets.String{"": sets.NewString(values...)}
 }
 
-func getTestClient(files map[string][]byte, enableMdYaml, includeAliases bool) (*Client, func(), error) {
+func getTestClient(
+	files map[string][]byte,
+	enableMdYaml,
+	includeAliases bool,
+	ownersDirBlacklistDefault sets.String,
+	ownersDirBlacklistByRepo map[string]sets.String,
+) (*Client, func(), error) {
 	testAliasesFile := map[string][]byte{
 		"OWNERS_ALIASES": []byte("aliases:\n  Best-approvers:\n  - carl\n  - cjwagner\n  best-reviewers:\n  - Carl\n  - BOB"),
 	}
@@ -101,6 +107,9 @@ func getTestClient(files map[string][]byte, enableMdYaml, includeAliases bool) (
 			mdYAMLEnabled: func(org, repo string) bool {
 				return enableMdYaml
 			},
+
+			dirBlacklistDefault: ownersDirBlacklistDefault,
+			dirBlacklistByRepo:  ownersDirBlacklistByRepo,
 		},
 		// Clean up function
 		func() {
@@ -149,14 +158,11 @@ func TestOwnersDirBlacklist(t *testing.T) {
 	}
 
 	getRepoOwnersWithBlacklist := func(t *testing.T, defaults sets.String, byRepo map[string]sets.String) *RepoOwners {
-		client, cleanup, err := getTestClient(testFiles, true, true)
+		client, cleanup, err := getTestClient(testFiles, true, true, defaults, byRepo)
 		if err != nil {
 			t.Fatalf("Error creating test client: %v.", err)
 		}
 		defer cleanup()
-
-		client.DirBlacklistDefault = defaults
-		client.DirBlacklistByRepo = byRepo
 
 		ro, err := client.LoadRepoOwners("org", "repo")
 		if err != nil {
@@ -219,7 +225,7 @@ func TestOwnersRegexpFiltering(t *testing.T) {
 		"re/b/md.md":   sets.NewString("re/all"),
 	}
 
-	client, cleanup, err := getTestClient(testFilesRe, true, true)
+	client, cleanup, err := getTestClient(testFilesRe, true, true, nil, nil)
 	if err != nil {
 		t.Fatalf("Error creating test client: %v.", err)
 	}
@@ -321,7 +327,7 @@ func TestLoadRepoOwners(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		client, cleanup, err := getTestClient(testFiles, test.mdEnabled, test.aliasesFileExists)
+		client, cleanup, err := getTestClient(testFiles, test.mdEnabled, test.aliasesFileExists, nil, nil)
 		if err != nil {
 			t.Errorf("[%s] Error creating test client: %v.", test.name, err)
 			continue
@@ -393,7 +399,7 @@ func TestLoadRepoAliases(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		client, cleanup, err := getTestClient(testFiles, false, test.aliasFileExists)
+		client, cleanup, err := getTestClient(testFiles, false, test.aliasFileExists, nil, nil)
 		if err != nil {
 			t.Errorf("[%s] Error creating test client: %v.", test.name, err)
 			continue

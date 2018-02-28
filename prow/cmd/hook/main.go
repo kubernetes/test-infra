@@ -174,12 +174,16 @@ func main() {
 
 	pluginAgent := &plugins.PluginAgent{}
 
-	ownersClient := repoowners.NewClient(gitClient, githubClient, pluginAgent.MDYAMLEnabled)
 	ownersDirBlacklistConf := configAgent.Config().OwnersDirBlacklist
-	ownersClient.DirBlacklistDefault = sets.NewString(ownersDirBlacklistConf.Default...)
+	ownersDirBlacklistDefault := sets.NewString(ownersDirBlacklistConf.Default...)
+	ownersDirBlacklistByRepo := make(map[string]sets.String)
 	for orgRepo, blacklist := range ownersDirBlacklistConf.Repos {
-		ownersClient.DirBlacklistByRepo[orgRepo] = sets.NewString(blacklist...)
+		ownersDirBlacklistByRepo[orgRepo] = sets.NewString(blacklist...)
 	}
+	ownersClient := repoowners.NewClient(
+		gitClient, githubClient, pluginAgent.MDYAMLEnabled,
+		ownersDirBlacklistDefault, ownersDirBlacklistByRepo,
+	)
 
 	pluginAgent.PluginClient = plugins.PluginClient{
 		GitHubClient: githubClient,

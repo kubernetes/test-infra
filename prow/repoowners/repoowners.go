@@ -78,8 +78,8 @@ type cacheEntry struct {
 }
 
 type Client struct {
-	DirBlacklistByRepo  map[string]sets.String
-	DirBlacklistDefault sets.String
+	dirBlacklistByRepo  map[string]sets.String
+	dirBlacklistDefault sets.String
 
 	git    *git.Client
 	ghc    githubClient
@@ -91,7 +91,13 @@ type Client struct {
 	cache map[string]cacheEntry
 }
 
-func NewClient(gc *git.Client, ghc *github.Client, mdYAMLEnabled func(org, repo string) bool) *Client {
+func NewClient(
+	gc *git.Client,
+	ghc *github.Client,
+	mdYAMLEnabled func(org, repo string) bool,
+	blacklistDefault sets.String,
+	blacklistByRepo map[string]sets.String,
+) *Client {
 	return &Client{
 		git:    gc,
 		ghc:    ghc,
@@ -99,6 +105,9 @@ func NewClient(gc *git.Client, ghc *github.Client, mdYAMLEnabled func(org, repo 
 		cache:  make(map[string]cacheEntry),
 
 		mdYAMLEnabled: mdYAMLEnabled,
+
+		dirBlacklistDefault: blacklistDefault,
+		dirBlacklistByRepo:  blacklistByRepo,
 	}
 }
 
@@ -176,11 +185,11 @@ func (c *Client) LoadRepoOwners(org, repo string) (*RepoOwners, error) {
 			entry.aliases = loadAliasesFrom(gitRepo.Dir, log)
 		}
 
-		dirBlacklist := defaultDirBlacklist.Union(c.DirBlacklistDefault)
-		if bl, ok := c.DirBlacklistByRepo[org]; ok {
+		dirBlacklist := defaultDirBlacklist.Union(c.dirBlacklistDefault)
+		if bl, ok := c.dirBlacklistByRepo[org]; ok {
 			dirBlacklist = dirBlacklist.Union(bl)
 		}
-		if bl, ok := c.DirBlacklistByRepo[org+"/"+repo]; ok {
+		if bl, ok := c.dirBlacklistByRepo[org+"/"+repo]; ok {
 			dirBlacklist = dirBlacklist.Union(bl)
 		}
 		entry.owners, err = loadOwnersFrom(gitRepo.Dir, mdYaml, entry.aliases, dirBlacklist, log)
