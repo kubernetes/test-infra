@@ -2144,6 +2144,8 @@ presubmits:
         volumeMounts:
         - name: cache-ssd
           mountPath: /root/.cache
+        - name: docker-graph
+          mountPath: /docker-graph
         ports:
         - containerPort: 9999
           hostPort: 9999
@@ -2196,6 +2198,8 @@ presubmits:
         volumeMounts:
         - name: cache-ssd
           mountPath: /root/.cache
+        - name: docker-graph
+          mountPath: /docker-graph
         ports:
         - containerPort: 9999
           hostPort: 9999
@@ -2248,6 +2252,8 @@ presubmits:
         volumeMounts:
         - name: cache-ssd
           mountPath: /root/.cache
+        - name: docker-graph
+          mountPath: /docker-graph
         ports:
         - containerPort: 9999
           hostPort: 9999
@@ -2303,6 +2309,8 @@ presubmits:
         volumeMounts:
         - name: cache-ssd
           mountPath: /root/.cache
+        - name: docker-graph
+          mountPath: /docker-graph
         ports:
         - containerPort: 9999
           hostPort: 9999
@@ -2355,6 +2363,8 @@ presubmits:
         volumeMounts:
         - name: cache-ssd
           mountPath: /root/.cache
+        - name: docker-graph
+          mountPath: /docker-graph
         ports:
         - containerPort: 9999
           hostPort: 9999
@@ -2407,6 +2417,8 @@ presubmits:
         volumeMounts:
         - name: cache-ssd
           mountPath: /root/.cache
+        - name: docker-graph
+          mountPath: /docker-graph
         ports:
         - containerPort: 9999
           hostPort: 9999
@@ -2460,6 +2472,8 @@ presubmits:
         volumeMounts:
         - name: cache-ssd
           mountPath: /root/.cache
+        - name: docker-graph
+          mountPath: /docker-graph
         ports:
         - containerPort: 9999
           hostPort: 9999
