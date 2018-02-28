@@ -4769,16 +4769,13 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180226-a50c3d6d9-experimental
         args:
         - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--scenario=kubernetes_execute_bazel"
         - "--" # end bootstrap args, scenario args below
-        - "--build=//..."
-        - "--install=gubernator/test_requirements.txt"
-        - "--test=//..."
-        - "--test-args=--test_output=errors"
+        - "hack/build-then-unit.sh"
         env:
         - name: BAZEL_REMOTE_CACHE_ENABLED
           value: "true"
@@ -4788,16 +4785,9 @@ presubmits:
         volumeMounts:
         - name: cache-ssd
           mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "2Gi"
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
 
   - name: pull-test-infra-bazel-canary
     agent: kubernetes
@@ -4864,10 +4854,9 @@ presubmits:
   - name: pull-test-infra-lint
     agent: kubernetes
     context: pull-test-infra-lint
-    # TODO(bentheelder): set always_run once we've switched over to use --config=unit for the bazel job
-    always_run: false
+    always_run: true
     rerun_command: "/test pull-test-infra-lint"
-    trigger: "(?m)^/test pull-test-infra-lint,?(\\s+|$)"
+    trigger: "(?m)^/test( all| pull-test-infra-lint),?(\\s+|$)"
     labels:
       preset-service-account: true
       preset-bazel-scratch-dir: true

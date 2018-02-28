@@ -16,7 +16,7 @@
 # used in presubmits / CI testing
 # bazel build then unit test, exiting non-zero if either failed
 
-local res=0
+res=0
 
 bazel build //...
 if [[ $? -ne 0 ]]; then
