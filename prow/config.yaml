@@ -4782,9 +4782,6 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
         resources:
           requests:
             memory: "2Gi"
