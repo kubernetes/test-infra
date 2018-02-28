@@ -2724,6 +2724,29 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
+  - name: pull-kubernetes-typecheck
+    agent: kubernetes
+    always_run: true
+    skip_report: true
+    context: pull-kubernetes-typecheck
+    rerun_command: "/test pull-kubernetes-typecheck"
+    trigger: "(?m)^/test( all| pull-kubernetes-typecheck),?(\\s+|$)"
+    branches:
+    - master
+    - release-1.10
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180226-a50c3d6d9-master
+        args:
+        - "--clean"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=75"
+
   - name: pull-kubernetes-verify
     agent: kubernetes
     always_run: true
@@ -2799,7 +2822,6 @@ presubmits:
       - name: docker-graph
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
-
   kubernetes-security/kubernetes:
   - agent: kubernetes
     always_run: true
@@ -4656,6 +4678,42 @@ presubmits:
           defaultMode: 256
           secretName: ssh-security
     trigger: (?m)^/test pull-security-kubernetes-node-e2e-containerd,?(\s+|$)
+  - agent: kubernetes
+    always_run: true
+    branches:
+    - master
+    - release-1.10
+    cluster: security
+    context: pull-security-kubernetes-typecheck
+    labels:
+      preset-service-account: "true"
+    max_concurrency: 0
+    name: pull-security-kubernetes-typecheck
+    rerun_command: /test pull-security-kubernetes-typecheck
+    run_if_changed: ""
+    skip_report: true
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --clean
+        - --job=$(JOB_NAME)
+        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-security-prow/pr-logs
+        - --timeout=75
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180226-a50c3d6d9-master
+        name: ""
+        resources: {}
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test( all| pull-security-kubernetes-typecheck),?(\s+|$)
   - agent: kubernetes
     always_run: true
     cluster: security

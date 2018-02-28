@@ -1873,6 +1873,12 @@ test_groups:
   num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
+- name: pull-kubernetes-typecheck
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-typecheck
+  days_of_results: 1
+  num_columns_recent: 20
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 10
 - name: pull-test-infra-bazel
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-bazel
   days_of_results: 1
@@ -5158,6 +5164,9 @@ dashboards:
     base_options: 'width=10'
   - name: pull-kubernetes-kubemark-e2e-gce-scale
     test_group_name: pull-kubernetes-kubemark-e2e-gce-scale
+    base_options: 'width=10'
+  - name: pull-kubernetes-typecheck
+    test_group_name: pull-kubernetes-typecheck
     base_options: 'width=10'
 
 - name: presubmits-test-infra
