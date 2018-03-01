@@ -3127,9 +3127,6 @@ presubmits:
         - --release=//build/release-tars
         - --gcs=gs://kubernetes-security-prow/ci/pull-security-kubernetes-bazel-build-canary
         - --gcs-shared=gs://kubernetes-security-prow/bazel
-        env:
-        - name: BAZEL_REMOTE_CACHE_ENABLED
-          value: "true"
         image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
         imagePullPolicy: Always
         name: ""
@@ -3180,9 +3177,6 @@ presubmits:
         - --test-args=--build_tag_filters=-e2e,-integration
         - --test-args=--test_tag_filters=-e2e,-integration
         - --test-args=--flaky_test_attempts=3
-        env:
-        - name: BAZEL_REMOTE_CACHE_ENABLED
-          value: "true"
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180228-dabde9ed5-master
         name: ""
         resources:
@@ -3312,9 +3306,6 @@ presubmits:
         - --
         - make
         - bazel-test
-        env:
-        - name: BAZEL_REMOTE_CACHE_ENABLED
-          value: "true"
         image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
         imagePullPolicy: Always
         name: ""
@@ -3355,9 +3346,6 @@ presubmits:
         - --
         - --test=//test/integration/...
         - --test-args=--config=integration
-        env:
-        - name: BAZEL_REMOTE_CACHE_ENABLED
-          value: "true"
         image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
         imagePullPolicy: Always
         name: ""

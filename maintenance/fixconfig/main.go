@@ -139,8 +139,12 @@ func stripCache(j *config.Presubmit) {
 	// filter cache related env
 	filteredEnv := []kube.EnvVar{}
 	for _, env := range container.Env {
-		// don't keep bazel cache directory env
+		// don't keep bazel *local* cache directory env
+		// TODO(bentheelder): we can probably allow this env in certain cases
 		if env.Name == "TEST_TMPDIR" {
+			continue
+		}
+		if env.Name == "BAZEL_REMOTE_CACHE_ENABLED" {
 			continue
 		}
 		filteredEnv = append(filteredEnv, env)
