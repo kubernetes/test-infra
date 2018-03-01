@@ -46,6 +46,10 @@ CLONEREFS_VERSION        ?= $(TAG)
 INITUPLOAD_VERSION       ?= $(TAG)
 # GCSUPLOAD_VERSION is the version of the gcsupload image
 GCSUPLOAD_VERSION        ?= $(TAG)
+# ENTRYPOINT_VERSION is the version of the entrypoint image
+ENTRYPOINT_VERSION       ?= $(TAG)
+# SIDECAR_VERSION is the version of the sidecar image
+SIDECAR_VERSION          ?= $(TAG)
 
 # These are the usual GKE variables.
 PROJECT       ?= k8s-prow
@@ -223,4 +227,14 @@ gcsupload-image: alpine-image
 	docker build -t "$(REGISTRY)/$(PROJECT)/gcsupload:$(GCSUPLOAD_VERSION)" $(DOCKER_LABELS) cmd/gcsupload
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/gcsupload:$(GCSUPLOAD_VERSION)"
 
-.PHONY: clonerefs-image initupload-image gcsupload-image
+entrypoint-image: alpine-image
+	CGO_ENABLED=0 go build -o cmd/entrypoint/entrypoint k8s.io/test-infra/prow/cmd/entrypoint
+	docker build -t "$(REGISTRY)/$(PROJECT)/entrypoint:$(ENTRYPOINT_VERSION)" $(DOCKER_LABELS) cmd/entrypoint
+	$(PUSH) "$(REGISTRY)/$(PROJECT)/entrypoint:$(ENTRYPOINT_VERSION)"
+
+sidecar-image: alpine-image
+	CGO_ENABLED=0 go build -o cmd/sidecar/sidecar k8s.io/test-infra/prow/cmd/sidecar
+	docker build -t "$(REGISTRY)/$(PROJECT)/sidecar:$(SIDECAR_VERSION)" $(DOCKER_LABELS) cmd/sidecar
+	$(PUSH) "$(REGISTRY)/$(PROJECT)/sidecar:$(SIDECAR_VERSION)"
+
+.PHONY: clonerefs-image initupload-image gcsupload-image entrypoint-image sidecar-image
