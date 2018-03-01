@@ -2727,13 +2727,15 @@ presubmits:
   - name: pull-kubernetes-typecheck
     agent: kubernetes
     always_run: true
-    skip_report: true
+    skip_report: false
     context: pull-kubernetes-typecheck
     rerun_command: "/test pull-kubernetes-typecheck"
     trigger: "(?m)^/test( all| pull-kubernetes-typecheck),?(\\s+|$)"
-    branches:
-    - master
-    - release-1.10
+    skip_branches:
+    - release-1.6 # doesn't have typecheck
+    - release-1.7 # doesn't have typecheck
+    - release-1.8 # doesn't have typecheck
+    - release-1.9 # doesn't have typecheck
     labels:
       preset-service-account: true
     spec:
@@ -4681,9 +4683,6 @@ presubmits:
     trigger: (?m)^/test pull-security-kubernetes-node-e2e-containerd,?(\s+|$)
   - agent: kubernetes
     always_run: true
-    branches:
-    - master
-    - release-1.10
     cluster: security
     context: pull-security-kubernetes-typecheck
     labels:
@@ -4692,7 +4691,12 @@ presubmits:
     name: pull-security-kubernetes-typecheck
     rerun_command: /test pull-security-kubernetes-typecheck
     run_if_changed: ""
-    skip_report: true
+    skip_branches:
+    - release-1.6
+    - release-1.7
+    - release-1.8
+    - release-1.9
+    skip_report: false
     spec:
       containers:
       - args:
