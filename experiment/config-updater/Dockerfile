@@ -18,7 +18,7 @@ LABEL maintainer="dthau@redhat.com"
 ENV GIT_COMMITTER_NAME=developer \
     GIT_COMMITTER_EMAIL=developer@redhat.com
 
-RUN yum install make
+RUN yum install -y make
 
 COPY config-updater /config-updater
 ENTRYPOINT ["/config-updater"]
