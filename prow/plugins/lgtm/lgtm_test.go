@@ -228,3 +228,97 @@ func TestLGTMComment(t *testing.T) {
 		}
 	}
 }
+
+type githubUnlabeler struct {
+	err           error
+	labelsRemoved []string
+}
+
+func (c *githubUnlabeler) RemoveLabel(owner, repo string, pr int, label string) error {
+	c.labelsRemoved = append(c.labelsRemoved, label)
+	return c.err
+}
+
+func TestHandlePullRequest(t *testing.T) {
+	cases := []struct {
+		name           string
+		event          github.PullRequestEvent
+		removeLabelErr error
+
+		err           error
+		labelsRemoved []string
+	}{
+		{
+			name: "pr_synchronize, no RemoveLabel error",
+			event: github.PullRequestEvent{
+				Action: github.PullRequestActionSynchronize,
+				PullRequest: github.PullRequest{
+					Number: 101,
+					Base: github.PullRequestBranch{
+						Repo: github.Repo{
+							Owner: github.User{
+								Login: "kubernetes",
+							},
+							Name: "kubernetes",
+						},
+					},
+				},
+			},
+			labelsRemoved: []string{lgtmLabel},
+		},
+		{
+			name: "pr_assigned",
+			event: github.PullRequestEvent{
+				Action: "assigned",
+			},
+		},
+		{
+			name: "pr_synchronize, with RemoveLabel github.LabelNotFound error",
+			event: github.PullRequestEvent{
+				Action: github.PullRequestActionSynchronize,
+				PullRequest: github.PullRequest{
+					Number: 101,
+					Base: github.PullRequestBranch{
+						Repo: github.Repo{
+							Owner: github.User{
+								Login: "kubernetes",
+							},
+							Name: "kubernetes",
+						},
+					},
+				},
+			},
+			removeLabelErr: &github.LabelNotFound{
+				Owner:  "kubernetes",
+				Repo:   "kubernetes",
+				Number: 101,
+				Label:  lgtmLabel,
+			},
+			labelsRemoved: []string{lgtmLabel},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			fakeGitHub := &githubUnlabeler{}
+			err := handlePullRequest(fakeGitHub, c.event)
+
+			if err != nil && c.err == nil {
+				t.Fatalf("handlePullRequest error: %v", err)
+			}
+
+			if err == nil && c.err != nil {
+				t.Fatalf("handlePullRequest wanted error: %v, got nil", c.err)
+			}
+
+			if got, want := err, c.err; got != want {
+				t.Fatalf("handlePullRequest error mismatch: got %v, want %v", got, want)
+			}
+
+			if got, want := len(fakeGitHub.labelsRemoved), len(c.labelsRemoved); got != want {
+				t.Logf("labelsRemoved: got %v, want: %v", fakeGitHub.labelsRemoved, c.labelsRemoved)
+				t.Fatalf("labelsRemoved length mismatch: got %d, want %d", got, want)
+			}
+		})
+	}
+}

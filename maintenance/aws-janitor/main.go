@@ -453,11 +453,30 @@ func (internetGateways) MarkAndSweep(sess *session.Session, acct string, region 
 		return err
 	}
 
+	vpcResp, err := svc.DescribeVpcs(&ec2.DescribeVpcsInput{
+		Filters: []*ec2.Filter{
+			{
+				Name:   aws.String("isDefault"),
+				Values: []*string{aws.String("true")},
+			},
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	defaultVpc := vpcResp.Vpcs[0]
+
 	for _, ig := range resp.InternetGateways {
 		i := &internetGateway{Account: acct, Region: region, ID: *ig.InternetGatewayId}
 		if set.Mark(i) {
+			isDefault := false
 			glog.Warningf("%s: deleting %T: %v", i.ARN(), ig, ig)
 			for _, att := range ig.Attachments {
+				if att.VpcId == defaultVpc.VpcId {
+					isDefault = true
+					break
+				}
 				_, err := svc.DetachInternetGateway(&ec2.DetachInternetGatewayInput{
 					InternetGatewayId: ig.InternetGatewayId,
 					VpcId:             att.VpcId,
@@ -465,6 +484,10 @@ func (internetGateways) MarkAndSweep(sess *session.Session, acct string, region 
 				if err != nil {
 					glog.Warningf("%v: detach from %v failed: %v", i.ARN(), *att.VpcId, err)
 				}
+			}
+			if isDefault {
+				glog.Infof("%s: skipping delete as IGW is the default for the VPC %T: %v", i.ARN(), ig, ig)
+				continue
 			}
 			_, err := svc.DeleteInternetGateway(&ec2.DeleteInternetGatewayInput{InternetGatewayId: ig.InternetGatewayId})
 			if err != nil {

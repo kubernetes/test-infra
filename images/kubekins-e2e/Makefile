@@ -16,15 +16,14 @@ IMG = gcr.io/k8s-testimages/kubekins-e2e
 TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
 # kubernetes master branch config
-# TODO(bentheelder): bump master/1.10 to latest go / bazel before 1.10 release
 K8S ?= master
 GO ?= 1.9.3
-BAZEL ?= 0.10.0
+BAZEL ?= 0.11.0
 CFSSL ?= R1.2
 
 # config for testing prior to rolling out to master / ongoing release
 ifeq ($(K8S), experimental)
-	GO = 1.9.4
+	GO = 1.10
 	BAZEL = 0.11.0
 	CFSSL = R1.2
 endif
@@ -32,7 +31,7 @@ endif
 # kubernetes release-X branch configs
 ifeq ($(K8S), 1.10)
 	GO = 1.9.3
-	BAZEL = 0.10.0
+	BAZEL = 0.11.0
 	CFSSL = R1.2
 endif
 

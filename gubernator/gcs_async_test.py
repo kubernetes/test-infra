@@ -88,6 +88,7 @@ class GCSAsyncTest(unittest.TestCase):
         self.testbed.init_urlfetch_stub()
         self.testbed.init_blobstore_stub()
         self.testbed.init_datastore_v3_stub()
+        self.testbed.init_app_identity_stub()
         # redirect GCS calls to the local proxy
         gcs_async.GCS_API_URL = gcs.common.local_api_url()
 

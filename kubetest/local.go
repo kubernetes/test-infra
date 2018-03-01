@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -70,10 +71,44 @@ func (n localCluster) Up() error {
 	if err != nil {
 		return err
 	}
+
 	cmd := exec.Command(script)
 	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env, "ENABLE_DAEMON=true")
 	cmd.Env = append(cmd.Env, fmt.Sprintf("LOG_DIR=%s", n.tempDir))
+
+	// when we are running in a DIND scenario, we should use the ip address of
+	// the docker0 network interface, This ensures that when the pods come up
+	// the health checks (for example for kubedns) succeed. If there is no
+	// docker0, just use the defaults in local-up-cluster.sh
+	dockerIp := ""
+	docker0, err := net.InterfaceByName("docker0")
+	if err == nil {
+		addresses, err := docker0.Addrs()
+		if err == nil {
+			for _, address := range addresses {
+				if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+					if ipnet.IP.To4() != nil {
+						dockerIp = ipnet.IP.String()
+						break
+					}
+				}
+			}
+		} else {
+			log.Printf("unable to get addresses from docker0 interface : %v", err)
+		}
+	} else {
+		log.Printf("unable to find docker0 interface : %v", err)
+	}
+	if dockerIp != "" {
+		log.Printf("using %v for API_HOST_IP, HOSTNAME_OVERRIDE, KUBELET_HOST", dockerIp)
+		cmd.Env = append(cmd.Env, fmt.Sprintf("API_HOST_IP=%s", dockerIp))
+		cmd.Env = append(cmd.Env, fmt.Sprintf("HOSTNAME_OVERRIDE=%s", dockerIp))
+		cmd.Env = append(cmd.Env, fmt.Sprintf("KUBELET_HOST=%s", dockerIp))
+	} else {
+		log.Println("using local-up-cluster.sh's defaults for API_HOST_IP, HOSTNAME_OVERRIDE, KUBELET_HOST")
+	}
+
 	err = control.FinishRunning(cmd)
 	if err != nil {
 		return err
@@ -85,11 +120,17 @@ func (n localCluster) Up() error {
 
 func (n localCluster) IsUp() error {
 	if n.kubeConfig != "" {
-		err := os.Setenv("KUBECONFIG", n.kubeConfig)
-		if err != nil {
-			log.Fatal("unable to set KUBECONFIG environment variable")
+		if err := os.Setenv("KUBECONFIG", n.kubeConfig); err != nil {
+			return err
 		}
 	}
+	if err := os.Setenv("KUBERNETES_CONFORMANCE_TEST", "yes"); err != nil {
+		return err
+	}
+	if err := os.Setenv("KUBERNETES_PROVIDER", "local"); err != nil {
+		return err
+	}
+
 	stop := time.Now().Add(*localUpTimeout)
 	for {
 		script, err := n.getScript("cluster/kubectl.sh")

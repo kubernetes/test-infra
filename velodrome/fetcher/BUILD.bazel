@@ -10,7 +10,6 @@ load(
 go_binary(
     name = "fetcher",
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/velodrome/fetcher",
     pure = "on",
 )
 
@@ -24,7 +23,6 @@ go_test(
         "issues_test.go",
     ],
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/velodrome/fetcher",
     deps = [
         "//velodrome/sql:go_default_library",
         "//velodrome/sql/testing:go_default_library",

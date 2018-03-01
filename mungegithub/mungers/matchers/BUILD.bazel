@@ -18,7 +18,6 @@ go_test(
         "//mungegithub:configs",
     ],
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/mungegithub/mungers/matchers",
     deps = ["//vendor/github.com/google/go-github/github:go_default_library"],
 )
 

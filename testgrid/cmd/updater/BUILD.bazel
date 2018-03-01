@@ -19,7 +19,6 @@ go_library(
 go_binary(
     name = "updater",
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/testgrid/updater",
     pure = "on",
     tags = ["automanaged"],
     visibility = ["//visibility:public"],

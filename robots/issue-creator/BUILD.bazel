@@ -33,7 +33,6 @@ go_image(
     name = "issue-creator-image",
     base = "@distroless-base//image",
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/robots/issue-creator",
     visibility = ["//visibility:public"],
 )
 
@@ -65,6 +64,5 @@ filegroup(
 go_binary(
     name = "issue-creator",
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/robots/issue-creator",
     visibility = ["//visibility:public"],
 )

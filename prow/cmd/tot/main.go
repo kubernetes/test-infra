@@ -30,19 +30,33 @@ import (
 	"sync"
 	"time"
 
-	"k8s.io/test-infra/prow/logrusutil"
-
 	"github.com/sirupsen/logrus"
+
+	"k8s.io/test-infra/prow/logrusutil"
 )
 
-var (
-	port        = flag.Int("port", 8888, "port to listen on")
-	storagePath = flag.String("storage", "tot.json", "where to store the results")
+type options struct {
+	port        int
+	storagePath string
 
-	// TODO(rmmh): remove this once we have no jobs running on Jenkins
-	useFallback = flag.Bool("fallback", false, "fallback to GCS bucket for missing builds")
-	fallbackURI = "https://storage.googleapis.com/kubernetes-jenkins/logs/%s/latest-build.txt"
-)
+	useFallback bool
+	fallbackURI string
+}
+
+func gatherOptions() options {
+	o := options{}
+	flag.IntVar(&o.port, "port", 8888, "Port to listen on.")
+	flag.StringVar(&o.storagePath, "storage", "tot.json", "Where to store the results.")
+
+	flag.BoolVar(&o.useFallback, "fallback", false, "Fallback to GCS bucket for missing builds.")
+	flag.StringVar(&o.fallbackURI, "fallback-url-template",
+		"https://storage.googleapis.com/kubernetes-jenkins/logs/%s/latest-build.txt",
+		"URL template to fallback to for every job that lacks a last vended build number.",
+	)
+
+	flag.Parse()
+	return o
+}
 
 type store struct {
 	Number       map[string]int // job name -> last vended build number
@@ -80,16 +94,16 @@ func (s *store) save() error {
 	return os.Rename(s.storagePath+".tmp", s.storagePath)
 }
 
-func (s *store) vend(b string) int {
+func (s *store) vend(jobName string) int {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
-	n, ok := s.Number[b]
+	n, ok := s.Number[jobName]
 	if !ok && s.fallbackFunc != nil {
-		n = s.fallbackFunc(b)
+		n = s.fallbackFunc(jobName)
 	}
 	n++
 
-	s.Number[b] = n
+	s.Number[jobName] = n
 
 	err := s.save()
 	if err != nil {
@@ -99,16 +113,16 @@ func (s *store) vend(b string) int {
 	return n
 }
 
-func (s *store) peek(b string) int {
+func (s *store) peek(jobName string) int {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
-	return s.Number[b]
+	return s.Number[jobName]
 }
 
-func (s *store) set(b string, n int) {
+func (s *store) set(jobName string, n int) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
-	s.Number[b] = n
+	s.Number[jobName] = n
 
 	err := s.save()
 	if err != nil {
@@ -117,15 +131,15 @@ func (s *store) set(b string, n int) {
 }
 
 func (s *store) handle(w http.ResponseWriter, r *http.Request) {
-	b := r.URL.Path[len("/vend/"):]
+	jobName := r.URL.Path[len("/vend/"):]
 	switch r.Method {
 	case "GET":
-		n := s.vend(b)
-		logrus.Infof("Vending %s number %d to %s.", b, n, r.RemoteAddr)
+		n := s.vend(jobName)
+		logrus.Infof("Vending %s number %d to %s.", jobName, n, r.RemoteAddr)
 		fmt.Fprintf(w, "%d", n)
 	case "HEAD":
-		n := s.peek(b)
-		logrus.Infof("Peeking %s number %d to %s.", b, n, r.RemoteAddr)
+		n := s.peek(jobName)
+		logrus.Infof("Peeking %s number %d to %s.", jobName, n, r.RemoteAddr)
 		fmt.Fprintf(w, "%d", n)
 	case "POST":
 		body, err := ioutil.ReadAll(r.Body)
@@ -138,8 +152,8 @@ func (s *store) handle(w http.ResponseWriter, r *http.Request) {
 			logrus.WithError(err).Error("Unable to parse number.")
 			return
 		}
-		logrus.Infof("Setting %s to %d from %s.", b, n, r.RemoteAddr)
-		s.set(b, n)
+		logrus.Infof("Setting %s to %d from %s.", jobName, n, r.RemoteAddr)
+		s.set(jobName, n)
 	}
 }
 
@@ -147,8 +161,8 @@ type fallbackHandler struct {
 	template string
 }
 
-func (f fallbackHandler) get(b string) int {
-	url := fmt.Sprintf(f.template, b)
+func (f fallbackHandler) get(jobName string) int {
+	url := fmt.Sprintf(f.template, jobName)
 
 	var body []byte
 
@@ -179,22 +193,22 @@ func (f fallbackHandler) get(b string) int {
 }
 
 func main() {
-	flag.Parse()
+	o := gatherOptions()
 
 	logrus.SetFormatter(
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "tot"}),
 	)
 
-	s, err := newStore(*storagePath)
+	s, err := newStore(o.storagePath)
 	if err != nil {
 		logrus.WithError(err).Fatal("newStore failed")
 	}
 
-	if *useFallback {
-		s.fallbackFunc = fallbackHandler{fallbackURI}.get
+	if o.useFallback {
+		s.fallbackFunc = fallbackHandler{o.fallbackURI}.get
 	}
 
 	http.HandleFunc("/vend/", s.handle)
 
-	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
+	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(o.port), nil))
 }

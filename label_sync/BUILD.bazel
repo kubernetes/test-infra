@@ -37,7 +37,6 @@ go_image(
     name = "label_sync-image",
     base = "@distroless-base//image",
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/label_sync",
     pure = "on",
     tags = ["automanaged"],
 )
@@ -49,7 +48,6 @@ go_test(
         "//label_sync:test_examples",
     ],
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/label_sync",
     tags = ["automanaged"],
 )
 
@@ -87,5 +85,4 @@ filegroup(
 go_binary(
     name = "label_sync",
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/label_sync",
 )
