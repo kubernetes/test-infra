@@ -30,6 +30,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
@@ -173,12 +174,23 @@ func main() {
 
 	pluginAgent := &plugins.PluginAgent{}
 
+	ownersDirBlacklistConf := configAgent.Config().OwnersDirBlacklist
+	ownersDirBlacklistDefault := sets.NewString(ownersDirBlacklistConf.Default...)
+	ownersDirBlacklistByRepo := make(map[string]sets.String)
+	for orgRepo, blacklist := range ownersDirBlacklistConf.Repos {
+		ownersDirBlacklistByRepo[orgRepo] = sets.NewString(blacklist...)
+	}
+	ownersClient := repoowners.NewClient(
+		gitClient, githubClient, pluginAgent.MDYAMLEnabled,
+		ownersDirBlacklistDefault, ownersDirBlacklistByRepo,
+	)
+
 	pluginAgent.PluginClient = plugins.PluginClient{
 		GitHubClient: githubClient,
 		KubeClient:   kubeClient,
 		GitClient:    gitClient,
 		SlackClient:  slackClient,
-		OwnersClient: repoowners.NewClient(gitClient, githubClient, pluginAgent.MDYAMLEnabled),
+		OwnersClient: ownersClient,
 		Logger:       logrus.WithField("agent", "plugin"),
 	}
 	if err := pluginAgent.Start(o.pluginConfig); err != nil {
