@@ -1350,3 +1350,46 @@ func TestClearMilestone(t *testing.T) {
 		t.Errorf("Didn't expect error: %v", err)
 	}
 }
+
+func TestSetMilestone(t *testing.T) {
+	newMilestone := 42
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPatch {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/issues/5" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			t.Fatalf("Could not read request body: %v", err)
+		}
+		var issue Issue
+		if err := json.Unmarshal(b, &issue); err != nil {
+			t.Errorf("Could not unmarshal request: %v", err)
+		} else if issue.Milestone.Number != newMilestone {
+			t.Errorf("Milestone not set %d.  Instead set to: %d", newMilestone, issue.Milestone.Number)
+		}
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if err := c.SetMilestone("k8s", "kuber", 5, newMilestone); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	}
+}
+
+func TestListMilestones(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/milestones" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if err, _ := c.ListMilestones("k8s", "kuber"); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	}
+}

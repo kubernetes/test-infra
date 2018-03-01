@@ -37,6 +37,10 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *March 1, 2018* `MilestoneStatus` has been removed from the plugins Configuration
+   in favor of the `Milestone` which is shared between two plugins: 1) `milestonestatus`
+   and 2) `milestone`.  The milestonestatus plugin now uses the `Milestone` object to
+   get the maintainers team ID
  - *February 27, 2018* `jenkins-operator` does not use `$BUILD_ID` as a fallback
    to `$PROW_JOB_ID` anymore.
  - *February 15, 2018* `jenkins-operator` can now accept the `--tot-url` flag

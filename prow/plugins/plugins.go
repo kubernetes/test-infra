@@ -157,17 +157,17 @@ type Configuration struct {
 	Owners Owners `json:"owners,omitempty"`
 
 	// Built-in plugins specific configuration.
-	Triggers        []Trigger       `json:"triggers,omitempty"`
-	Heart           Heart           `json:"heart,omitempty"`
-	MilestoneStatus MilestoneStatus `json:"milestonestatus,omitempty"`
-	Slack           Slack           `json:"slack,omitempty"`
-	ConfigUpdater   ConfigUpdater   `json:"config_updater,omitempty"`
-	Blockades       []Blockade      `json:"blockades,omitempty"`
-	Approve         []Approve       `json:"approve,omitempty"`
-	Blunderbuss     Blunderbuss     `json:"blunderbuss,omitempty"`
-	RequireSIG      RequireSIG      `json:"requiresig,omitempty"`
-	SigMention      SigMention      `json:"sigmention,omitempty"`
-	Cat             Cat             `json:"cat,omitempty"`
+	Triggers      []Trigger     `json:"triggers,omitempty"`
+	Heart         Heart         `json:"heart,omitempty"`
+	Milestone     Milestone     `json:"milestone,omitempty"`
+	Slack         Slack         `json:"slack,omitempty"`
+	ConfigUpdater ConfigUpdater `json:"config_updater,omitempty"`
+	Blockades     []Blockade    `json:"blockades,omitempty"`
+	Approve       []Approve     `json:"approve,omitempty"`
+	Blunderbuss   Blunderbuss   `json:"blunderbuss,omitempty"`
+	RequireSIG    RequireSIG    `json:"requiresig,omitempty"`
+	SigMention    SigMention    `json:"sigmention,omitempty"`
+	Cat           Cat           `json:"cat,omitempty"`
 }
 
 // ExternalPlugin holds configuration for registering an external
@@ -321,13 +321,14 @@ type Heart struct {
 	Adorees []string `json:"adorees,omitempty"`
 }
 
-// MilestoneStatus contains the configuration options for the milestonestatus plugin.
-type MilestoneStatus struct {
+// MilestoneStatus contains the configuration options for the milestone plugin.
+type Milestone struct {
 	// ID of the github team for the milestone maintainers (used for setting status labels)
 	// You can curl the following endpoint in order to determine the github ID of your team
 	// responsible for maintaining the milestones:
 	// curl -H "Authorization: token <token>" https://api.github.com/orgs/<org-name>/teams
-	MaintainersID int `json:"maintainers_id,omitempty"`
+	MaintainersID   int    `json:"maintainers_id,omitempty"`
+	MaintainersTeam string `json:"maintainers_team,omitempty"`
 }
 
 type Slack struct {
