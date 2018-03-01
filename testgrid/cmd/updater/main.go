@@ -26,6 +26,7 @@ import (
 	"flag"
 	"fmt"
 	"hash/crc32"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/url"
@@ -282,14 +283,29 @@ func (jr JunitResult) Row(suite string) (string, Row) {
 	return n, r
 }
 
+func unmarshalXML(buf []byte, i interface{}) error {
+	reader := bytes.NewReader(buf)
+	dec := xml.NewDecoder(reader)
+	dec.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
+		switch charset {
+		case "UTF-8", "utf8", "":
+			// utf8 is not recognized by golang, but our coalesce.py writes a utf8 doc, which python accepts.
+			return input, nil
+		default:
+			return nil, fmt.Errorf("unknown charset: %s", charset)
+		}
+	}
+	return dec.Decode(i)
+}
+
 func extractRows(buf []byte, meta map[string]string) (map[string][]Row, error) {
 	var suites JunitSuites
 	// Try to parse it as a <testsuites/> object
-	err := xml.Unmarshal(buf, &suites)
+	err := unmarshalXML(buf, &suites)
 	if err != nil {
 		// Maybe it is a <testsuite/> object instead
 		suites.Suites = append([]JunitSuite(nil), JunitSuite{})
-		ie := xml.Unmarshal(buf, &suites.Suites[0])
+		ie := unmarshalXML(buf, &suites.Suites[0])
 		if ie != nil {
 			// Nope, it just doesn't parse
 			return nil, fmt.Errorf("not valid testsuites: %v nor testsuite: %v", err, ie)
