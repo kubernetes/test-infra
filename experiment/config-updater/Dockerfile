@@ -12,11 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/k8s-prow/git:0.1
+FROM docker.io/openshift/origin:latest
 LABEL maintainer="dthau@redhat.com"
 
 ENV GIT_COMMITTER_NAME=developer \
     GIT_COMMITTER_EMAIL=developer@redhat.com
+
+RUN yum install make
 
 COPY config-updater /config-updater
 ENTRYPOINT ["/config-updater"]
