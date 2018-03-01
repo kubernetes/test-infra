@@ -832,6 +832,24 @@
       "sig-release"
     ]
   },
+  "ci-kubernetes-e2e-autoscaling-vpa-actuation": {
+    "args": [
+      "--check-leaked-resources",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=ci/latest",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test=false",
+      "--test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh",
+      "--test-cmd-args=actuation",
+      "--timeout=60m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-autoscaling"
+    ]
+  },
   "ci-kubernetes-e2e-autoscaling-vpa-admission-controller": {
     "args": [
       "--check-leaked-resources",

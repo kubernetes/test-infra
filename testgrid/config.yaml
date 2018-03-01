@@ -228,6 +228,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-autoscaling-vpa-recommender
 - name: ci-kubernetes-e2e-autoscaling-vpa-updater
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-autoscaling-vpa-updater
+- name: ci-kubernetes-e2e-autoscaling-vpa-actuation
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-autoscaling-vpa-actuation
 - name: ci-kubernetes-e2e-autoscaling-vpa-admission-controller
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-autoscaling-vpa-admission-controller
 - name: ci-kubernetes-e2e-autoscaling-vpa-full
@@ -3727,6 +3729,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-autoscaling-vpa-recommender
   - name: autoscaling-vpa-updater
     test_group_name: ci-kubernetes-e2e-autoscaling-vpa-updater
+  - name: autoscaling-vpa-actuation
+    test_group_name: ci-kubernetes-e2e-autoscaling-vpa-actuation
   - name: autoscaling-vpa-admission-controller
     test_group_name: ci-kubernetes-e2e-autoscaling-vpa-admission-controller
   - name: autoscaling-vpa-full
