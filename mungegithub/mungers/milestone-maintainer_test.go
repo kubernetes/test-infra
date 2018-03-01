@@ -116,7 +116,7 @@ func TestMilestoneMaintainer(t *testing.T) {
 @user @kubernetes/sig-foo-misc
 
 
-**Action required**: This issue must have the ` + "`status/approved-for-milestone`" + ` label applied by a SIG maintainer. If the label is not applied within 2 days, the issue will be moved out of the v1.8 milestone.
+**Action required**: This issue must have the ` + "`status/approved-for-milestone`" + ` label applied by a SIG maintainer. If the label is not applied within 3 days, the issue will be moved out of the v1.8 milestone.
 <details>
 <summary>Issue Labels</summary>
 
@@ -205,7 +205,7 @@ _**sig owner**_: Must specify at least one label prefixed with ` + "`sig/`." + `
 			expectedSections: sets.NewString("warnIncompleteLabels"),
 			expectedState:    milestoneNeedsLabeling,
 			expectedBody: `
-**Action required**: This issue requires label changes. If the required changes are not made within 2 days, the issue will be moved out of the v1.8 milestone.
+**Action required**: This issue requires label changes. If the required changes are not made within 3 days, the issue will be moved out of the v1.8 milestone.
 ` + incompleteLabels,
 		},
 		"Incomplete labels outside of grace period": {
@@ -246,7 +246,7 @@ _**sig owner**_: Must specify at least one label prefixed with ` + "`sig/`." + `
 			expectedSections: sets.NewString("summarizeLabels", "warnUnapproved"),
 			expectedState:    milestoneNeedsApproval,
 			expectedBody: `
-**Action required**: This issue must have the ` + "`status/approved-for-milestone`" + ` label applied by a SIG maintainer. If the label is not applied within 6 days, the issue will be moved out of the v1.8 milestone.
+**Action required**: This issue must have the ` + "`status/approved-for-milestone`" + ` label applied by a SIG maintainer. If the label is not applied within 7 days, the issue will be moved out of the v1.8 milestone.
 <details>` + nonBlockerCompleteLabels,
 		},
 		"Complete labels, not approved, non-blocker, outside of grace period": {
