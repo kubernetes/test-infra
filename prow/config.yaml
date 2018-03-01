@@ -5350,6 +5350,9 @@ postsubmits:
         - "--" # end bootstrap args, scenario args below
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
+        - "--gcs=gs://kubernetes-release-dev/ci"
+        - "--version-suffix=-bazel"
+        - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel.txt"
         env:
         - name: BAZEL_REMOTE_CACHE_ENABLED
           value: "true"
@@ -5408,6 +5411,9 @@ postsubmits:
         - "--" # end bootstrap args, scenario args below
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
+        - "--gcs=gs://kubernetes-release-dev/ci"
+        - "--version-suffix=-bazel"
+        - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel-1.10.txt"
         env:
         - name: BAZEL_REMOTE_CACHE_ENABLED
           value: "true"
@@ -5434,6 +5440,9 @@ postsubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/logs"
+        - "--gcs=gs://kubernetes-release-dev/ci"
+        - "--version-suffix=-bazel"
+        - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel-1.7.txt"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -5531,6 +5540,9 @@ postsubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/logs"
+        - "--gcs=gs://kubernetes-release-dev/ci"
+        - "--version-suffix=-bazel"
+        - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel-1.8.txt"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -5655,6 +5667,9 @@ postsubmits:
         - "--" # end bootstrap args, scenario args below
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
+        - "--gcs=gs://kubernetes-release-dev/ci"
+        - "--version-suffix=-bazel"
+        - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel-1.9.txt"
         env:
         - name: TEST_TMPDIR
           value: /root/.cache/bazel
