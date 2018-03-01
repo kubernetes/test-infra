@@ -147,6 +147,7 @@ plugins:
     # Enable /approve and /assign commands.
     - approve
     - assign
+    - blunderbuss
     - help
     - hold
     - label

@@ -42,6 +42,21 @@ branch-protection:
 tide:
   queries:
   - repos:
+    - kubeflow/community
+    - kubeflow/examples
+    - kubeflow/kubeflow
+    - kubeflow/testing
+    - kubeflow/tf-operator
+    labels:
+    - lgtm
+    - approved
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/hold
+    - do-not-merge/work-in-progress
+    - needs-ok-to-test
+    - needs-rebase
+  - repos:
     - kubernetes/charts
     - kubernetes/cluster-registry
     - kubernetes/community
@@ -102,6 +117,7 @@ tide:
     - do-not-merge/hold
     - do-not-merge/work-in-progress
   merge_method:
+    kubeflow: squash
     kubernetes/charts: squash
     kubernetes/dashboard: squash
     kubernetes/website: squash
