@@ -78,8 +78,8 @@ func main() {
 		}
 		defer watcher.Close()
 
+		ticker := time.NewTicker(30 * time.Second)
 		group := sync.WaitGroup{}
-
 		group.Add(1)
 		go func() {
 			defer group.Done()
@@ -91,6 +91,10 @@ func main() {
 					}
 				case err := <-watcher.Errors:
 					logrus.WithError(err).Info("Encountered an error during fsnotify watch")
+				case <-ticker.C:
+					if _, err := os.Stat(o.wrapperOptions.MarkerFile); err == nil {
+						return
+					}
 				}
 			}
 		}()
@@ -100,6 +104,7 @@ func main() {
 			logrus.WithError(err).Fatal("Could not add to fsnotify watch")
 		}
 		group.Wait()
+		ticker.Stop()
 	}
 
 	passed := false
