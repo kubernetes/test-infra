@@ -753,7 +753,7 @@ jobs:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
     - --env=KUBE_FEATURE_GATES=AllAlpha=true
-    - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|PVCProtection|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8
+    - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8
     sigOwners: ['sig-gcp']
 
   # stable1
@@ -795,7 +795,7 @@ jobs:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
     - --env=KUBE_FEATURE_GATES=AllAlpha=true
-    - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|PVCProtection|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8
+    - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8
     sigOwners: ['sig-gcp']
 
   # stable2
