@@ -185,7 +185,6 @@ func (d *DindDeployer) ensureImage() error {
 		d.image = "k8s.gcr.io/dind-cluster-amd64:" + tag
 	}
 	return nil
-
 }
 
 // Up synchronously starts a cluster, or times out.
@@ -193,7 +192,6 @@ func (d *DindDeployer) Up() error {
 	if err := d.ensureImage(); err != nil {
 		return err
 	}
-
 	ctx := context.Background()
 
 	resp, err := d.docker.ContainerCreate(ctx, &container.Config{
@@ -202,7 +200,7 @@ func (d *DindDeployer) Up() error {
 	}, &container.HostConfig{
 		CapAdd: []string{"SYS_ADMIN"},
 		Mounts: []mount.Mount{
-			{
+			mount.Mount{
 				Source: "/lib/modules",
 				Target: "/lib/modules",
 				Type:   "bind",
@@ -210,7 +208,7 @@ func (d *DindDeployer) Up() error {
 					Propagation: mount.PropagationRShared,
 				},
 			},
-			{
+			mount.Mount{
 				Source: "/sys/fs/cgroup",
 				Target: "/sys/fs/cgroup",
 				Type:   "bind",
@@ -218,7 +216,7 @@ func (d *DindDeployer) Up() error {
 					Propagation: mount.PropagationRShared,
 				},
 			},
-			{
+			mount.Mount{
 				Source: d.tmpdir,
 				Target: "/var/kubernetes",
 				Type:   "bind",

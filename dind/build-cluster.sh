@@ -56,6 +56,8 @@ cp ${TOOL_ROOT}/start.sh ${CLUSTER_DIR}
 # Get the test execution script.
 cp ${TOOL_ROOT}/dind-test.sh ${CLUSTER_DIR}
 
+cp ${TOOL_ROOT}/../bazel-bin/dind/cluster-up/linux_amd64_stripped/cluster-up ${CLUSTER_DIR}
+
 cp ${TOOL_ROOT}/cluster/Dockerfile ${CLUSTER_DIR}/Dockerfile
 cp ${TOOL_ROOT}/cluster/Makefile ${CLUSTER_DIR}/Makefile
 
