@@ -20,6 +20,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -32,7 +33,10 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/pjutil"
+	"k8s.io/test-infra/prow/pod-utils/gcs"
 )
 
 type options struct {
@@ -41,6 +45,9 @@ type options struct {
 
 	useFallback bool
 	fallbackURI string
+
+	configPath     string
+	fallbackBucket string
 }
 
 func gatherOptions() options {
@@ -51,11 +58,26 @@ func gatherOptions() options {
 	flag.BoolVar(&o.useFallback, "fallback", false, "Fallback to GCS bucket for missing builds.")
 	flag.StringVar(&o.fallbackURI, "fallback-url-template",
 		"https://storage.googleapis.com/kubernetes-jenkins/logs/%s/latest-build.txt",
-		"URL template to fallback to for every job that lacks a last vended build number.",
+		"URL template to fallback to for jobs that lack a last vended build number.",
+	)
+
+	flag.StringVar(&o.configPath, "config-path", "", "Path to prow config.")
+	flag.StringVar(&o.fallbackBucket, "fallback-bucket", "",
+		"Fallback to top-level bucket for jobs that lack a last vended build number. The bucket layout is expected to follow https://github.com/kubernetes/test-infra/tree/master/gubernator#gcs-bucket-layout",
 	)
 
 	flag.Parse()
 	return o
+}
+
+func (o *options) Validate() error {
+	if o.configPath != "" && o.fallbackBucket == "" {
+		return errors.New("you need to provide a bucket to fallback to when the prow config is specified")
+	}
+	if o.configPath == "" && o.fallbackBucket != "" {
+		return errors.New("you need to provide the prow config when a fallback bucket is specified")
+	}
+	return nil
 }
 
 type store struct {
@@ -159,10 +181,16 @@ func (s *store) handle(w http.ResponseWriter, r *http.Request) {
 
 type fallbackHandler struct {
 	template string
+	// in case a config agent is provided, tot will
+	// determine the GCS path that it needs to use
+	// based on the configured jobs in prow and
+	// bucket.
+	configAgent *config.Agent
+	bucket      string
 }
 
 func (f fallbackHandler) get(jobName string) int {
-	url := fmt.Sprintf(f.template, jobName)
+	url := f.getURL(jobName)
 
 	var body []byte
 
@@ -192,9 +220,49 @@ func (f fallbackHandler) get(jobName string) int {
 	return n
 }
 
+func (f fallbackHandler) getURL(jobName string) string {
+	if f.configAgent == nil {
+		return fmt.Sprintf(f.template, jobName)
+	}
+
+	var spec *pjutil.JobSpec
+	cfg := f.configAgent.Config()
+
+	for _, pre := range cfg.AllPresubmits(nil) {
+		if jobName == pre.Name {
+			spec = pjutil.PresubmitToJobSpec(pre)
+			break
+		}
+	}
+	if spec == nil {
+		for _, post := range cfg.AllPostsubmits(nil) {
+			if jobName == post.Name {
+				spec = pjutil.PostsubmitToJobSpec(post)
+				break
+			}
+		}
+	}
+	if spec == nil {
+		for _, per := range cfg.AllPeriodics() {
+			if jobName == per.Name {
+				spec = pjutil.PeriodicToJobSpec(per)
+				break
+			}
+		}
+	}
+	// If spec is still nil, we know nothing about the requested job.
+	if spec == nil {
+		logrus.Errorf("requested job is unknown to prow: %s", jobName)
+		return ""
+	}
+	return fmt.Sprintf("%s/%s", strings.TrimSuffix(f.bucket, "/"), gcs.LatestBuildForSpec(spec))
+}
+
 func main() {
 	o := gatherOptions()
-
+	if err := o.Validate(); err != nil {
+		logrus.Fatalf("Invalid options: %v", err)
+	}
 	logrus.SetFormatter(
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "tot"}),
 	)
@@ -205,7 +273,19 @@ func main() {
 	}
 
 	if o.useFallback {
-		s.fallbackFunc = fallbackHandler{o.fallbackURI}.get
+		var configAgent *config.Agent
+		if o.configPath != "" {
+			configAgent = &config.Agent{}
+			if err := configAgent.Start(o.configPath); err != nil {
+				logrus.WithError(err).Fatal("Error starting config agent.")
+			}
+		}
+
+		s.fallbackFunc = fallbackHandler{
+			template:    o.fallbackURI,
+			configAgent: configAgent,
+			bucket:      o.fallbackBucket,
+		}.get
 	}
 
 	http.HandleFunc("/vend/", s.handle)

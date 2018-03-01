@@ -23,7 +23,9 @@ go_binary(
 go_test(
     name = "go_default_test",
     srcs = ["main_test.go"],
+    data = ["//prow:configs"],
     embed = [":go_default_library"],
+    deps = ["//prow/config:go_default_library"],
 )
 
 go_library(
@@ -31,7 +33,10 @@ go_library(
     srcs = ["main.go"],
     importpath = "k8s.io/test-infra/prow/cmd/tot",
     deps = [
+        "//prow/config:go_default_library",
         "//prow/logrusutil:go_default_library",
+        "//prow/pjutil:go_default_library",
+        "//prow/pod-utils/gcs:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
