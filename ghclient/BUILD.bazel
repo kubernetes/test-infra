@@ -13,7 +13,6 @@ go_test(
         "wrappers_test.go",
     ],
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/ghclient",
     tags = ["automanaged"],
     deps = ["//vendor/github.com/google/go-github/github:go_default_library"],
 )

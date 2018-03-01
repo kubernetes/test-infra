@@ -49,6 +49,7 @@ approve:
   - kubernetes/kubectl
   - kubernetes/kubernetes
   - kubernetes/kubernetes-template-project
+  - kubernetes/kube-state-metrics
   - kubernetes/minikube
   - kubernetes/repo-infra
   - kubernetes/sig-release
@@ -83,6 +84,11 @@ blockades:
   exceptionregexps:
   - ^docs/yaml/kubectl/kubectl_.*\.yaml$
   explanation: "Files under `docs/yaml` must be in the `kubectl` directory and match pattern `kubectl_*.yaml`."
+- repos:
+  - kubernetes/kubernetes
+  blockregexps:
+  - ^examples/
+  explanation: "examples/ has moved to https://github.com/kubernetes/examples/"
 - repos:
   - kubernetes/community
   blockregexps:
@@ -137,30 +143,22 @@ plugins:
   google/cadvisor:
   - trigger
 
-  kubeflow/examples:
-  - lgtm
-  - size
-  - trigger
-
-  kubeflow/kubeflow:
-  - lgtm
-  - size
-  - trigger
-
-  kubeflow/reporting:
-  - lgtm
-  - size
-  - trigger
-
-  kubeflow/testing:
-  - lgtm
-  - size
-  - trigger
-
-  kubeflow/tf-operator:
-  - lgtm
-  - size
-  - trigger
+  kubeflow:
+    # Enable /approve and /assign commands.
+    - approve
+    - assign
+    - help
+    - hold
+    - label
+    - lgtm
+    # Lets PRs & issues be flagged as stale
+    - lifecycle
+    - size
+    # Allows cleaning up stale commit statuses
+    - skip
+    # Applies a label to PRs with wip in the title to block merge
+    - wip
+    - trigger
 
   kubernetes/charts:
   - approve
@@ -232,6 +230,10 @@ plugins:
 
   kubernetes/kubernetes-template-project:
   - approve
+
+  kubernetes/kube-state-metrics:
+  - approve
+  - blunderbuss
 
   kubernetes/minikube:
   - approve

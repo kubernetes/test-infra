@@ -21,7 +21,6 @@ go_test(
         "//prow:configs",
     ],
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/prow/plugins/approve",
     deps = [
         "//prow/github:go_default_library",
         "//prow/github/fakegithub:go_default_library",

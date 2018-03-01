@@ -1189,9 +1189,10 @@ func TestSync(t *testing.T) {
 			ghc:            fgc,
 			ca:             ca,
 			newPoolPending: make(chan bool, 1),
+			shutDown:       make(chan bool),
 		}
 		go sc.run()
-		defer close(sc.newPoolPending)
+		defer sc.shutdown()
 		c := &Controller{
 			ca:     ca,
 			ghc:    fgc,

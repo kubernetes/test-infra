@@ -41,7 +41,7 @@ type MockQueryHandler struct {
 	prs []PullRequest
 }
 
-func (mh *MockQueryHandler) Query(ctx context.Context, ghc githubClient) ([]PullRequest, error) {
+func (mh *MockQueryHandler) QueryPullRequests(ctx context.Context, ghc githubClient, query string) ([]PullRequest, error) {
 	return mh.prs, nil
 }
 
@@ -51,27 +51,29 @@ func newMockQueryHandler(prs []PullRequest) *MockQueryHandler {
 	}
 }
 
-func createMockAgent(config *config.GithubOAuthConfig) *DashboardAgent {
+func createMockAgent(repos []string, config *config.GithubOAuthConfig) *DashboardAgent {
 	return &DashboardAgent{
-		goac: config,
-		log:  logrus.WithField("unit-test", "dashboard-agent"),
+		repos: repos,
+		goac:  config,
+		log:   logrus.WithField("unit-test", "dashboard-agent"),
 	}
 }
 
 func TestServeHTTPWithoutLogin(t *testing.T) {
+	repos := []string{"mock/repo", "kuberentes/test-infra", "foo/bar"}
 	mockCookieStore := sessions.NewCookieStore([]byte("secret-key"))
 	mockConfig := &config.GithubOAuthConfig{
 		CookieStore: mockCookieStore,
 	}
 
-	mockAgent := createMockAgent(mockConfig)
+	mockAgent := createMockAgent(repos, mockConfig)
 	mockData := UserData{
 		Login:        false,
 		PullRequests: nil,
 	}
 
 	rr := httptest.NewRecorder()
-	request := httptest.NewRequest(http.MethodGet, "/user-dashboard", nil)
+	request := httptest.NewRequest(http.MethodGet, "/user-data.js", nil)
 
 	udHandler := mockAgent.HandleUserDashboard(mockAgent)
 	udHandler.ServeHTTP(rr, request)
@@ -94,16 +96,17 @@ func TestServeHTTPWithoutLogin(t *testing.T) {
 }
 
 func TestServeHTTPWithLogin(t *testing.T) {
+	repos := []string{"mock/repo", "kuberentes/test-infra", "foo/bar"}
 	mockCookieStore := sessions.NewCookieStore([]byte("secret-key"))
 	mockConfig := &config.GithubOAuthConfig{
 		CookieStore: mockCookieStore,
 	}
 
-	mockAgent := createMockAgent(mockConfig)
+	mockAgent := createMockAgent(repos, mockConfig)
 	mockUserData := generateMockUserData()
 
 	rr := httptest.NewRecorder()
-	request := httptest.NewRequest(http.MethodGet, "/user-dashboard", nil)
+	request := httptest.NewRequest(http.MethodGet, "/user-data.js", nil)
 	mockSession, err := sessions.GetRegistry(request).Get(mockCookieStore, tokenSession)
 	if err != nil {
 		t.Errorf("Error with creating mock session: %v", err)
@@ -111,6 +114,7 @@ func TestServeHTTPWithLogin(t *testing.T) {
 	gob.Register(oauth2.Token{})
 	token := &oauth2.Token{AccessToken: "secret-token", Expiry: time.Now().Add(time.Duration(24*365) * time.Hour)}
 	mockSession.Values[tokenKey] = token
+	mockSession.Values[loginKey] = "random_user"
 
 	mockQueryHandler := newMockQueryHandler(mockUserData.PullRequests)
 	udHandler := mockAgent.HandleUserDashboard(mockQueryHandler)
@@ -196,6 +200,20 @@ func generateMockPullRequest(numPr int) PullRequest {
 			ID:     githubql.String("mockMilestoneID"),
 			Closed: githubql.Boolean(true),
 		},
+	}
+}
+
+func TestConstructSearchQuery(t *testing.T) {
+	repos := []string{"mock/repo", "kubernetes/test-infra", "foo/bar"}
+	mockCookieStore := sessions.NewCookieStore([]byte("secret-key"))
+	mockConfig := &config.GithubOAuthConfig{
+		CookieStore: mockCookieStore,
+	}
+	mockAgent := createMockAgent(repos, mockConfig)
+	query := mockAgent.ConstructSearchQuery("random_username")
+	mockQuery := "is:pr state:open author:random_username repo:\"mock/repo\" repo:\"kubernetes/test-infra\" repo:\"foo/bar\""
+	if query != mockQuery {
+		t.Errorf("Invalid query. Got: %v, expected %v", query, mockQuery)
 	}
 }
 

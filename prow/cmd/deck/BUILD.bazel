@@ -29,7 +29,6 @@ go_image(
 go_binary(
     name = "deck",
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/prow/cmd/deck",
     pure = "on",
 )
 
@@ -41,7 +40,6 @@ go_test(
         "tide_test.go",
     ],
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/prow/cmd/deck",
     deps = [
         "//prow/config:go_default_library",
         "//prow/kube:go_default_library",

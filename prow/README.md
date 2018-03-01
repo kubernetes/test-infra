@@ -37,12 +37,16 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *February 27, 2018* `jenkins-operator` does not use `$BUILD_ID` as a fallback
+   to `$PROW_JOB_ID` anymore.
  - *February 15, 2018* `jenkins-operator` can now accept the `--tot-url` flag
    and will use the connection to `tot` to vend build identifiers as `plank`
    does, giving control over where in GCS artifacts land to Prow and away from
    Jenkins. Furthermore, the `$BUILD_ID` variable in Jenkins jobs will now
    correctly point to the build identifier vended by `tot` and a new variable,
    `$PROW_JOB_ID`, points to the identifier used to link ProwJobs to Jenkins builds.
+   `$PROW_JOB_ID` fallbacks to `$BUILD_ID` for backwards-compatibility, ie. to
+   not break in-flight jobs during the time of the jenkins-operator update.
  - *February 1, 2018* The `config_updater` section in `plugins.yaml`
  now uses a `maps` object instead of `config_file`, `plugin_file` strings.
  Please switch over before July.

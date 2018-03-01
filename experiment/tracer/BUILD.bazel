@@ -20,7 +20,6 @@ go_library(
 go_binary(
     name = "tracer",
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/experiment/tracer",
     visibility = ["//visibility:public"],
 )
 
@@ -28,7 +27,6 @@ go_test(
     name = "go_default_test",
     srcs = ["trace_test.go"],
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/experiment/tracer",
 )
 
 filegroup(

@@ -14,9 +14,11 @@
 
 import json
 import logging
+import urlparse
 import zlib
 
 import google.appengine.ext.ndb as ndb
+from google.appengine.api import app_identity
 
 
 GCS_API_URL = 'https://storage.googleapis.com'
@@ -26,7 +28,19 @@ MAX_SIZE = 30 * 1024 ** 2  # 30MiB
 @ndb.tasklet
 def get(url):
     context = ndb.get_context()
-    headers = {'accept-encoding': 'gzip, *', 'x-goog-api-version': '2'}
+
+    headers = {
+        'accept-encoding': 'gzip, *',
+        'x-goog-api-version': '2',
+        }
+
+    url_result = urlparse.urlparse(url)
+    if url_result.netloc.endswith('.googleapis.com'):
+        auth_token, _ = app_identity.get_access_token(
+            'https://www.googleapis.com/auth/cloud-platform')
+        if auth_token:
+            headers['Authorization'] = 'OAuth %s' % auth_token
+
     for retry in xrange(6):
         result = yield context.urlfetch(url, headers=headers)
         status = result.status_code

@@ -51,7 +51,9 @@ function redrawOptions(opts) {
     }).sort();
     addOptions(rs, "repo");
     var js = Object.keys(opts.jobs).sort();
-    addOptionFuzzySearch(js, "job", "job-input", "job-list");
+    var jobInput = document.getElementById("job-input");
+    var jobList = document.getElementById("job-list");
+    addOptionFuzzySearch(js, "job", jobList, jobInput);
     var as = Object.keys(opts.authors).sort(function (a, b) {
         return a.toLowerCase().localeCompare(b.toLowerCase());
     });
@@ -165,6 +167,13 @@ window.onload = function () {
         Object.keys(opts["jobs"]).sort());
     redrawOptions(opts);
     redraw();
+    var timeCells = document.querySelectorAll(".time-cell");
+    setInterval(() => {
+        timeCells.forEach(timeCell => {
+            var origin = parseInt(timeCell.getAttribute("data-time"));
+            timeCell.textContent = moment(origin).fromNow();
+        }, 60000) ;
+    });
 };
 
 document.addEventListener("DOMContentLoaded", function (event) {
@@ -197,21 +206,9 @@ function displayFuzzySearchResult(el, inputContainer) {
     el.style.height = 200 + "px";
 }
 
-function fuzzySearch(id, inputId, listId, data, inputValue) {
-    var result = [];
-    inputValue = inputValue.trim();
-
-    if (inputValue === "") {
-        addOptionFuzzySearch(data, id, inputId, listId, true);
-        return;
-    }
-
-    for (var i = 0; i < data.length; i++) {
-        if (data[i].includes(inputValue)) {
-            result.push(data[i]);
-        }
-    }
-    addOptionFuzzySearch(result, id, inputId, listId, true);
+function fuzzySearch(fz, id, list, input) {
+    var inputValue = input.value.trim();
+    addOptionFuzzySearch(fz.search(inputValue), id, list, input, true);
 }
 
 function validToken(token) {
@@ -227,13 +224,7 @@ function validToken(token) {
     return token === 189 || token === 8;
 }
 
-function handleEnterKeyDown(inputId, listId) {
-    var input = document.getElementById(inputId);
-    var list = document.getElementById(listId);
-    if (!input || !list) {
-        return;
-    }
-
+function handleEnterKeyDown(list, input) {
     if (list.childElementCount === 0) {
         return;
     }
@@ -250,38 +241,30 @@ function handleEnterKeyDown(inputId, listId) {
     redraw();
 }
 
-function registerFuzzySearchHandler(id, inputId, listId, data) {
-    var input = document.getElementById(inputId);
-    if (!input) {
-        return;
-    }
-
+function registerFuzzySearchHandler(fz, id, list, input) {
     input.addEventListener("keydown", function (event) {
         if (event.keyCode === 13) {
             // If enter key is hit, selects the first job in the list.
-            handleEnterKeyDown(inputId, listId);
+            handleEnterKeyDown(list, input);
         } else if (validToken(event.keyCode)) {
             // Delay 1 frame that the input character is recorded before getting
             // input value
             setTimeout(function () {
-                fuzzySearch(id, inputId, listId, data, input.value);
+                fuzzySearch(fz, id, list, input);
             }, 32);
         }
     });
 }
 
 function initFuzzySearch(id, inputId, listId, data) {
+    var fz = new FuzzySearch(data);
     var el = document.getElementById(id);
     var input = document.getElementById(inputId);
     var list = document.getElementById(listId);
 
-    if (!input || !list || !el) {
-        return;
-    }
-
     list.classList.remove("active-fuzzy-search");
     input.addEventListener("focus", function () {
-        fuzzySearch(id, inputId, listId, data, input.value);
+        fuzzySearch(fz, id, list, input);
         displayFuzzySearchResult(list, el.getBoundingClientRect());
     });
     input.addEventListener("blur", function () {
@@ -295,15 +278,10 @@ function initFuzzySearch(id, inputId, listId, data) {
         var inputText = input.value;
     });
 
-    registerFuzzySearchHandler(id, inputId, listId, data);
+    registerFuzzySearchHandler(fz, id, list, input);
 }
 
-function registerJobResultEventHandler(li, inputId) {
-    var input = document.getElementById(inputId);
-    if (!input) {
-        return;
-    }
-
+function registerJobResultEventHandler(li, input) {
     li.addEventListener("click", function (event) {
         input.value = event.currentTarget.innerHTML;
         redraw();
@@ -324,13 +302,7 @@ function registerJobResultEventHandler(li, inputId) {
     });
 }
 
-function addOptionFuzzySearch(data, id, inputId, listId, stopAutoFill) {
-    var input = document.getElementById(inputId);
-    var list = document.getElementById(listId);
-
-    if (!input || !list) {
-        return;
-    }
+function addOptionFuzzySearch(data, id, list, input, stopAutoFill) {
     if (!stopAutoFill) {
         input.value = getParameterByName(id);
     }
@@ -340,7 +312,7 @@ function addOptionFuzzySearch(data, id, inputId, listId, stopAutoFill) {
     for (var i = 0; i < data.length; i++) {
         var li = document.createElement("li");
         li.innerHTML = data[i];
-        registerJobResultEventHandler(li, inputId);
+        registerJobResultEventHandler(li, input);
         list.appendChild(li);
     }
 }
@@ -402,10 +374,6 @@ function redraw() {
 
     function getSelectionFuzzySearch(id, inputId) {
         var input = document.getElementById(inputId);
-        if (!input) {
-            return;
-        }
-
         var inputText = input.value;
         if (inputText !== "" && opts && !opts[id + 's'][inputText]) {
             return "";
@@ -508,7 +476,7 @@ function redraw() {
         } else {
             r.appendChild(createLinkCell(build.job, build.url, ""));
         }
-        r.appendChild(createTextCell(build.started));
+        r.appendChild(createTimeCell(i, parseInt(build.started)));
         r.appendChild(createTextCell(build.duration));
         builds.appendChild(r);
     }
@@ -517,6 +485,29 @@ function redraw() {
 function createTextCell(text) {
     var c = document.createElement("td");
     c.appendChild(document.createTextNode(text));
+    return c;
+}
+
+function createTimeCell(id, time) {
+    var momentTime = moment(time);
+    var tid = "time-cell-" + id;
+    var main = document.createElement("div");
+    var localTime = momentTime.fromNow();
+    main.textContent = localTime;
+    main.id = tid;
+    main.setAttribute("data-time", time);
+    main.classList.add("time-cell");
+
+    var utcTime = momentTime.toString();
+    var tooltip = document.createElement("div");
+    tooltip.textContent = utcTime;
+    tooltip.setAttribute("data-mdl-for", tid);
+    tooltip.classList.add("mdl-tooltip");
+
+    var c = document.createElement("td");
+    c.appendChild(main);
+    c.appendChild(tooltip);
+
     return c;
 }
 

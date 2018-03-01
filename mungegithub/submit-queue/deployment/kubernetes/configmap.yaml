@@ -18,9 +18,9 @@ required-retest-contexts: "\
   pull-kubernetes-cross,\
   pull-kubernetes-e2e-gce,\
   pull-kubernetes-e2e-kops-aws,\
+  pull-kubernetes-integration,\
   pull-kubernetes-kubemark-e2e-gce,\
   pull-kubernetes-node-e2e,\
-  pull-kubernetes-unit,\
   pull-kubernetes-verify"
 
 # submit-queue options. Keep job lists sorted!
@@ -91,8 +91,8 @@ nonblocking-jobs: "\
   ci-kubernetes-soak-gke-test,\
   ci-kubernetes-integration-master,\
   ci-kubernetes-verify-master"
-do-not-merge-milestones: ""
-additional-required-labels: ""
+do-not-merge-milestones: "v1.11,v1.12,v1.13,next-candidate,NO-MILESTONE"
+additional-required-labels: "status/approved-for-milestone"
 admin-port: 9999
 chart-url: https://storage.googleapis.com/kubernetes-test-history/k8s-queue-health.svg
 history-url: https://storage.googleapis.com/kubernetes-test-history/static/index.html

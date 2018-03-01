@@ -1,3 +1,11 @@
 build --workspace_status_command=./print-workspace-status.sh
 run --workspace_status_command=./print-workspace-status.sh
 test --features=race --test_output=errors
+
+# you can run only lint tests with:
+# bazel test //... --config=lint
+test:lint --test_tag_filters=lint
+
+# you can run non-lint tests with:
+# bazel test //... --config=unit
+test:unit --test_tag_filters=-lint

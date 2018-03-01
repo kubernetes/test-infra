@@ -18,12 +18,16 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -109,6 +113,9 @@ func main() {
 	defer gc.Clean()
 
 	c := tide.NewController(ghcSync, ghcStatus, kc, configAgent, gc, nil)
+	defer c.Shutdown()
+
+	server := &http.Server{Addr: ":" + strconv.Itoa(*port), Handler: c}
 
 	start := time.Now()
 	sync(c)
@@ -116,13 +123,25 @@ func main() {
 		return
 	}
 	go func() {
+		sig := make(chan os.Signal, 1)
+		signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 		for {
-			time.Sleep(time.Until(start.Add(configAgent.Config().Tide.SyncPeriod)))
-			start = time.Now()
-			sync(c)
+			select {
+			case <-time.After(time.Until(start.Add(configAgent.Config().Tide.SyncPeriod))):
+				start = time.Now()
+				sync(c)
+			case <-sig:
+				logrus.Info("Tide is shutting down...")
+				// Shutdown the http server with a 10s timeout then return to execute
+				// defered c.Shutdown()
+				ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+				defer cancel() // frees ctx resources
+				server.Shutdown(ctx)
+				return
+			}
 		}
 	}()
-	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), c))
+	logrus.Fatal(server.ListenAndServe())
 }
 
 func sync(c *tide.Controller) {

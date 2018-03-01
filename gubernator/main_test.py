@@ -51,7 +51,7 @@ def init_build(build_dir, started=True, finished=True,
                finished_has_version=False):
     """Create faked files for a build."""
     start_json = {'timestamp': 1406535800}
-    finish_json = {'result': 'SUCCESS', 'timestamp': 1406536800}
+    finish_json = {'passed': True, 'result': 'SUCCESS', 'timestamp': 1406536800}
     (finish_json if finished_has_version else start_json)['version'] = 'v1+56'
     if started:
         write(build_dir + 'started.json', start_json)
@@ -68,6 +68,7 @@ class TestBase(unittest.TestCase):
         self.testbed.init_urlfetch_stub()
         self.testbed.init_blobstore_stub()
         self.testbed.init_datastore_v3_stub()
+        self.testbed.init_app_identity_stub()
         # redirect GCS calls to the local proxy
         gcs_async.GCS_API_URL = gcs.common.local_api_url()
 

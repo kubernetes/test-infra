@@ -15,7 +15,7 @@
 .PHONY:	build push
 
 # TAG is the version to build and push to.
-PREFIX = gcr.io/qlee-dev
+PREFIX = gcr.io/k8s-testimages
 NAME = dind-test-base
 ARCH = amd64
 TAG = 0.1

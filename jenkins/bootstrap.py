@@ -800,14 +800,16 @@ def job_script(job, scenario, extra_job_args):
         config = json.loads(fp.read())
     if job.startswith('pull-security-kubernetes-'):
         job = job.replace('pull-security-kubernetes-', 'pull-kubernetes-', 1)
-    if job not in config:
-        if not scenario:
-            raise ValueError('cannot find scenario for job', job)
-        cmd = test_infra('scenarios/%s.py' % scenario)
-    else:
+    config_json_args = []
+    if job in config:
         job_config = config[job]
-        cmd = test_infra('scenarios/%s.py' % job_config['scenario'])
-    return [cmd] + job_args(job_config.get('args', []) + extra_job_args)
+        if not scenario:
+            scenario = job_config['scenario']
+        config_json_args = job_config.get('args', [])
+    elif not scenario:
+        raise ValueError('cannot find scenario for job', job)
+    cmd = test_infra('scenarios/%s.py' % scenario)
+    return [cmd] + job_args(config_json_args + extra_job_args)
 
 
 def gubernator_uri(paths):

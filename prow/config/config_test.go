@@ -29,6 +29,7 @@ import (
 
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
@@ -75,6 +76,46 @@ func TestMain(m *testing.M) {
 	}
 
 	os.Exit(m.Run())
+}
+
+func volumesAndMountsMatch(mounts []v1.VolumeMount, volumes []v1.Volume) bool {
+	mountNames := sets.NewString()
+	volumeNames := sets.NewString()
+	for _, m := range mounts {
+		mountNames.Insert(m.Name)
+	}
+	for _, v := range volumes {
+		volumeNames.Insert(v.Name)
+	}
+	return volumeNames.Equal(mountNames)
+}
+
+func specHasMatchingVolumesAndMounts(spec *v1.PodSpec) bool {
+	for _, container := range spec.Containers {
+		if !volumesAndMountsMatch(container.VolumeMounts, spec.Volumes) {
+			return false
+		}
+	}
+	return true
+}
+
+// verify that all volume mounts reference volumes that exist
+func TestMountsHaveVolumes(t *testing.T) {
+	for _, job := range c.AllPresubmits(nil) {
+		if job.Spec != nil && !specHasMatchingVolumesAndMounts(job.Spec) {
+			t.Errorf("volumes and mounts do not match for: %v", job.Name)
+		}
+	}
+	for _, job := range c.AllPostsubmits(nil) {
+		if job.Spec != nil && !specHasMatchingVolumesAndMounts(job.Spec) {
+			t.Errorf("volumes and mounts do not match for: %v", job.Name)
+		}
+	}
+	for _, job := range c.AllPeriodics() {
+		if job.Spec != nil && !specHasMatchingVolumesAndMounts(job.Spec) {
+			t.Errorf("volumes and mounts do not match for: %v", job.Name)
+		}
+	}
 }
 
 func checkContext(t *testing.T, repo string, p Presubmit) {

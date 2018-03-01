@@ -171,6 +171,10 @@ func (c *Cache) GetEntries() []EntryInfo {
 	// some keys missing is OK since this is used for eviction, but not returning
 	// any of the keys due to some error is NOT
 	_ = filepath.Walk(c.diskRoot, func(path string, f os.FileInfo, err error) error {
+		if err != nil {
+			logrus.WithError(err).Error("error getting some entries")
+			return nil
+		}
 		if !f.IsDir() {
 			atime := diskutil.GetATime(path, time.Now())
 			entries = append(entries, EntryInfo{

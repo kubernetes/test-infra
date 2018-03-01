@@ -47,7 +47,6 @@ go_test(
         "pjutil_test.go",
     ],
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/prow/pjutil",
     tags = ["automanaged"],
     deps = [
         "//prow/kube:go_default_library",

@@ -17,7 +17,6 @@ go_library(
 go_binary(
     name = "fixconfig",
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/maintenance/fixconfig",
     visibility = ["//visibility:public"],
 )
 

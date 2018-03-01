@@ -20,12 +20,12 @@ go_test(
         "//scenarios",
     ],
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/prow/config",
     deps = [
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )
 

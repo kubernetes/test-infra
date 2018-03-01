@@ -17,7 +17,6 @@ go_image(
 go_binary(
     name = "tot",
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/prow/cmd/tot",
     pure = "on",
 )
 
@@ -25,7 +24,6 @@ go_test(
     name = "go_default_test",
     srcs = ["main_test.go"],
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/prow/cmd/tot",
 )
 
 go_library(
