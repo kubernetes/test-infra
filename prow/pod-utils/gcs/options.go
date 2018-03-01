@@ -182,6 +182,7 @@ func (o *Options) Run(extra map[string]UploadFunc) error {
 		}
 	}
 
+	logrus.Info("Finished upload to GCS")
 	return nil
 }
 
