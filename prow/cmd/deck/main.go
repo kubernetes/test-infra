@@ -46,7 +46,7 @@ import (
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp"
-	"k8s.io/test-infra/prow/userdashboard"
+	"k8s.io/test-infra/prow/prstatus"
 )
 
 type options struct {
@@ -244,13 +244,13 @@ func prodOnlyMain(o options, mux *http.ServeMux) {
 			}
 		}
 
-		userDashboardAgent := userdashboard.NewDashboardAgent(
+		prStatusAgent := prstatus.NewDashboardAgent(
 			repos,
 			&githubOAuthConfig,
-			logrus.WithField("client", "user-dashboard"))
+			logrus.WithField("client", "pr-status"))
 
-		mux.Handle("/user-data.js", handleNotCached(
-			userDashboardAgent.HandleUserDashboard(userDashboardAgent)))
+		mux.Handle("/pr-data.js", handleNotCached(
+			prStatusAgent.HandlePrStatus(prStatusAgent)))
 		// Handles login request.
 		mux.Handle("/github-login", goa.HandleLogin(oauthClient))
 		// Handles redirect from Github OAuth server.

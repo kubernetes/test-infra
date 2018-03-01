@@ -2,8 +2,8 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
-    srcs = ["userdashboard.go"],
-    importpath = "k8s.io/test-infra/prow/userdashboard",
+    srcs = ["prstatus.go"],
+    importpath = "k8s.io/test-infra/prow/prstatus",
     visibility = ["//visibility:public"],
     deps = [
         "//ghclient:go_default_library",
@@ -33,7 +33,7 @@ filegroup(
 
 go_test(
     name = "go_default_test",
-    srcs = ["userdashboard_test.go"],
+    srcs = ["prstatus_test.go"],
     embed = [":go_default_library"],
     deps = [
         "//prow/config:go_default_library",

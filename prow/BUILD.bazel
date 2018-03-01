@@ -87,11 +87,11 @@ filegroup(
         "//prow/pod-utils/clone:all-srcs",
         "//prow/pod-utils/gcs:all-srcs",
         "//prow/pod-utils/wrapper:all-srcs",
+        "//prow/prstatus:all-srcs",
         "//prow/repoowners:all-srcs",
         "//prow/report:all-srcs",
         "//prow/slack:all-srcs",
         "//prow/tide:all-srcs",
-        "//prow/userdashboard:all-srcs",
     ],
     tags = ["automanaged"],
 )

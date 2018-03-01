@@ -24,5 +24,5 @@ curl "$HOST/data.js?var=allBuilds" > data.js
 curl "$HOST/tide.js?var=tideData" > tide.js
 curl "$HOST/plugin-help.js?var=allHelp" > plugin-help.js
 curl "$HOST/branding.js?var=branding" > branding.js
-curl "$HOST/user-data.js?var=userData" > user-data.js
+curl "$HOST/pr-data.js?var=prData" > pr-data.js
 bazel run --run_under="cd $DIR && " //prow/cmd/deck:deck -- --run-local

@@ -6,6 +6,12 @@ body {
     font-size: 16px !important;
 }
 
+code {
+    background-color: #EEEEEE;
+    border-radius: 3px;
+    padding: 0 6px;
+}
+
 a.current {
     text-decoration: underline !important;
 }
@@ -391,6 +397,11 @@ Plugin Help style
 /*
  * User dashboard style sheet
  */
+#loading-progress {
+    margin: 0 8px;
+    width: calc(100% - 16px);
+}
+
 #main-container {
     display: flex;
     flex-direction: column;
@@ -401,16 +412,52 @@ Plugin Help style
     text-align: center;
 }
 
-#merge-help-dialog > .mdl-dialog__content {
-    font-size: 15px;
+.pr-status-dialog > .mdl-dialog__content p {
+    font-size: 16px;
 }
 
-#merge-help-dialog.mdl-dialog, #status-help-dialog.mdl-dialog {
+#merge-help-dialog.mdl-dialog, #status-help-dialog.mdl-dialog, #search-dialog.mdl-dialog {
     width: 600px;
 }
 
 #query-dialog.mdl-dialog {
     width: 1000px;
+}
+
+#search-action {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    margin-left: 8px;
+}
+
+#search-input-ctn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#search-card h6 {
+    color: #3F51B5;
+    margin: 0;
+}
+
+#search-card.mdl-card {
+    min-height: 0;
+    padding: 8px 24px;
+}
+
+#search-input {
+    align-self: center;
+    background-color: #FAFAFA;
+    border: 1px solid #E0E0E0;
+    border-radius: 4px;
+    line-height: 40px;
+    font-size: 15px;
+    overflow: hidden;
+    padding: 0 8px;
+    width: 100%;
 }
 
 .arrow-icon {
@@ -538,6 +585,7 @@ Plugin Help style
 .pr-card {
     align-self: center;
     flex-shrink: 0;
+    justify-content: center;
     margin: 4px 0;
 }
 
@@ -591,12 +639,12 @@ Plugin Help style
     font-weight: bold;
     height: 24px;
     line-height: 24px;
-    padding: 12px 16px 2px 16px;
+    padding: 12px 16px 2px 17px;
     user-select: none;
 }
 
 .status > .status-icon {
-    margin: 0 14px 4px 0;
+    margin: 0 12px 4px 0;
 }
 
 .status-icon.failed {
@@ -633,12 +681,26 @@ Plugin Help style
     margin-left: 16px;
 }
 
+.search-title {
+    align-items: center;
+    display: flex;
+    margin-top: 8px;
+}
+
+.search-title .mdl-button--icon {
+    margin-left: 2px;
+}
+
+.search-title .mdl-button--icon .material-icons {
+    font-size: 20px;
+}
+
 .query-details-section {
     font-size: 20px;
     font-weight: bold;
 }
 
-.user-dashboard-dialog > .mdl-dialog__title {
+.pr-status-dialog > .mdl-dialog__title {
     font-size: 32px;
 }
 
@@ -713,7 +775,8 @@ Plugin Help style
         margin-left: 4px;
     }
 
-    #merge-help-dialog.mdl-dialog, #query-dialog.mdl-dialog, #status-help-dialog.mdl-dialog {
+    #merge-help-dialog.mdl-dialog, #query-dialog.mdl-dialog, #status-help-dialog.mdl-dialog,
+    #search-dialog.mdl-dialog {
         width: 320px;
     }
 

@@ -1,5 +1,112 @@
 'use strict';
 
+/**
+ * Creates a XMLHTTP request to /pr-data.js.
+ * @param {function} fulfillFn
+ * @param {function} errorHandler
+ * @return {XMLHTTPRequest}
+ */
+function createXMLHTTPRequest(fulfillFn, errorHandler) {
+    const request = new XMLHttpRequest();
+    const url = "/pr-data.js";
+    request.onreadystatechange = () => {
+        if (request.readyState === 4 && request.status === 200) {
+            fulfillFn(request);
+        }
+    };
+    request.onerror = () => {
+        errorHandler();
+    };
+    request.withCredentials = true;
+    request.open("POST", url, true);
+    request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+    return request;
+}
+
+/**
+ * Makes sure the search query is looking for pull requests by dropping all
+ * is:issue and type:pr tokens and adds is:pr if does not exist.
+ * @param {string} q
+ * @return {string}
+ */
+function getPRQuery(q) {
+    const tokens = q.split(" ");
+    // Firstly, drop all pr/issue search tokens
+    let result = tokens.filter(tkn => {
+        tkn = tkn.trim();
+        return !(tkn === "is:issue" || tkn === "type:issue" || tkn === "is:pr"
+            || tkn === "type:pr");
+    }).join(" ");
+    // Returns the query with is:pr to the start of the query
+    result = "is:pr " + result;
+    return result;
+}
+
+/**
+ * Redraw the page
+ * @param {Object} prData
+ */
+function redraw(prData) {
+    const mainContainer = document.querySelector("#main-container");
+    while (mainContainer.firstChild) {
+        mainContainer.removeChild(mainContainer.firstChild);
+    }
+    if (prData && prData.Login) {
+        loadPrStatus(prData);
+    } else {
+        loadGithubLogin();
+    }
+}
+
+/**
+ * Enables/disables the progress bar.
+ * @param {boolean} isStarted
+ */
+function loadProgress(isStarted) {
+    const pg = document.querySelector("#loading-progress");
+    if (isStarted) {
+        pg.classList.remove("hidden");
+    } else {
+        pg.classList.add("hidden");
+    }
+}
+
+/**
+ * Handles the URL query on load event.
+ */
+function onLoadQuery() {
+    const query = window.location.search.substring(1);
+    const params = query.split("&");
+    if (!params[0]) {
+        return "";
+    }
+    const val = params[0].slice("query=".length);
+    if (val && val !== "") {
+        return decodeURIComponent(val.replace(/\+/g, ' '));
+    }
+    return "";
+}
+
+/**
+ * Gets cookie by its name.
+ * @param {string} name
+ */
+function getCookieByName(name) {
+    if (!document.cookie) {
+        return "";
+    }
+    const cookies = decodeURIComponent(document.cookie).split(";");
+    for (let i = 0; i < cookies.length; i++) {
+        const c = cookies[i].trim();
+        const pref = name + "=";
+        if (c.indexOf(pref) === 0) {
+            return c.slice(pref.length);
+        }
+    }
+    return "";
+}
+
 window.onload = () => {
     document.querySelectorAll("dialog").forEach((dialog) => {
         dialogPolyfill.registerDialog(dialog);
@@ -7,17 +114,93 @@ window.onload = () => {
             dialog.close();
         });
     });
-    if (!userData.Login) {
-        loadGithubLogin();
-    } else {
-        loadUserDashboard();
+    // Check URL, if the search is empty, adds search query by default format
+    // ?is:pr state:open query="author:<user_login>"
+    if (window.location.search === "") {
+        const login = getCookieByName("github_login");
+        const searchQuery = "is:pr state:open " + "author:" + login;
+        window.location.search = "?query=" + encodeURIComponent(searchQuery);
     }
+    const request = createXMLHTTPRequest((request) => {
+        const prData = JSON.parse(request.responseText);
+        redraw(prData);
+        loadProgress(false);
+    }, () => {
+        loadProgress(false);
+        const mainContainer = document.querySelector("#main-container");
+            mainContainer.appendChild(createMessage("Something wrongs! We could not fulfill your request"));
+    });
+    loadProgress(true);
+    request.send("query=" + onLoadQuery());
 };
 
+function createSearchCard() {
+    const searchCard = document.createElement("DIV");
+    searchCard.id = "search-card";
+    searchCard.classList.add("pr-card", "mdl-card");
+
+    // Input box
+    const input = document.createElement("TEXTAREA");
+    input.id = "search-input";
+    input.value = decodeURIComponent(window.location.search.slice("query=".length + 1));
+    input.rows = 1;
+    input.spellcheck = false;
+    input.addEventListener("keydown", (event) => {
+        const el = event.target;
+        el.style.height  = "auto";
+        el.style.height = event.target.scrollHeight + "px";
+    });
+    input.addEventListener("focus", (event) => {
+        const el = event.target;
+        el.style.height  = "auto";
+        el.style.height = event.target.scrollHeight + "px";
+    });
+    // Refresh button
+    const refBtn = createIcon("refresh", "Reload the query", ["search-button"], true);
+    refBtn.addEventListener("click", () => {
+        const query = getPRQuery(input.value);
+        input.value = query;
+        window.location.search = '?query=' + encodeURIComponent(query);
+    }, true);
+    const userBtn = createIcon("person", "Show my open pull requests", ["search-button"], true);
+    userBtn.addEventListener("click", () => {
+        const login = getCookieByName("github_login");
+        const searchQuery = "is:pr state:open " + "author:" + login;
+        window.location.search = "?query=" + encodeURIComponent(searchQuery);
+    });
+
+    const actionCtn = document.createElement("DIV");
+    actionCtn.id = "search-action";
+    actionCtn.appendChild(userBtn);
+    actionCtn.appendChild(refBtn);
+
+    const inputContainer = document.createElement("DIV");
+    inputContainer.id = "search-input-ctn";
+    inputContainer.appendChild(input);
+    inputContainer.appendChild(actionCtn);
+
+    const title = document.createElement("H6");
+    title.textContent = "Github search query";
+    const infoBtn = createIcon("info", "More information about the search query", ["search-info"], true);
+    const titleCtn = document.createElement("DIV");
+    titleCtn.appendChild(title);
+    titleCtn.appendChild(infoBtn);
+    titleCtn.classList.add("search-title");
+
+    const searchDialog = document.querySelector("#search-dialog");
+    infoBtn.addEventListener("click", () => {
+        searchDialog.showModal();
+    });
+
+    searchCard.appendChild(titleCtn);
+    searchCard.appendChild(inputContainer);
+    return searchCard;
+}
+
 /**
- * Loads User Dashboard
+ * Loads Pr Status
  */
-function loadUserDashboard() {
+function loadPrStatus(prData) {
     const buildRepoNumberRefMap = new Map();
     allBuilds.filter(build => {
         return build.type === "presubmit";
@@ -41,12 +224,13 @@ function loadUserDashboard() {
         });
     });
     const container = document.querySelector("#main-container");
-    if (!userData.PullRequests || userData.PullRequests.length === 0) {
+    container.appendChild(createSearchCard());
+    if (!prData.PullRequests || prData.PullRequests.length === 0) {
         const msg = createMessage("No open PRs found", "");
         container.appendChild(msg);
         return;
     }
-    userData.PullRequests.forEach(pr => {
+    prData.PullRequests.forEach(pr => {
         const prKey = [pr.Repository.NameWithOwner, pr.BaseRef.Name, pr.Number,
             pr.HeadRefOID].join("_");
         container.appendChild(createPRCard(pr, buildRepoNumberRefMap[prKey],
@@ -93,14 +277,18 @@ function createTidePoolLabel(pr, tidePool) {
  * Creates a label for the title. It will prioritise the merge status over the
  * job status. Saying that, if the pr has jobs failed and does not meet merge
  * requirements, it will show that the PR needs to resolve labels.
- * @param jobStatus
- * @param mergeAbility
+ * @param isMerge {boolean}
+ * @param jobStatus {string}
+ * @param mergeAbility {number}
  * @return {Element}
  */
-function createTitleLabel(jobStatus, mergeAbility) {
+function createTitleLabel(isMerge, jobStatus, mergeAbility) {
     const label = document.createElement("SPAN");
     label.classList.add("title-label", "mdl-shadow--2dp");
-    if (mergeAbility === -1) {
+    if (isMerge) {
+        label.textContent = "Merged";
+        label.classList.add("merging");
+    } else if (mergeAbility === -1) {
         label.textContent = "Unknown Merge Requirements";
         label.classList.add("unknown");
     } else if (mergeAbility === 0) {
@@ -157,7 +345,7 @@ function createPRCardTitle(pr, tidePools, jobStatus, mergeAbility) {
     });
     let tidePoolLabel = createTidePoolLabel(pr, pool[0]);
     if (!tidePoolLabel) {
-        tidePoolLabel = createTitleLabel(jobStatus, mergeAbility);
+        tidePoolLabel = createTitleLabel(pr.Merged, jobStatus, mergeAbility);
     }
     prTitle.appendChild(tidePoolLabel);
 
@@ -291,7 +479,7 @@ function createMergeLabelCell(labels, notMissingLabel = false) {
     const cell = document.createElement("TD");
     labels.forEach(label => {
         const labelEl = document.createElement("SPAN");
-        const name = label.name.replace(" ", "");
+        const name = label.name.split(" ").join("");
         labelEl.classList.add("merge-table-label", "mdl-shadow--2dp", "label",
             name);
         labelEl.textContent = label.name;
@@ -315,7 +503,7 @@ function appendLabelsToContainer(container, labels) {
     }
     labels.forEach(label => {
         const labelEl = document.createElement("SPAN");
-        const labelName = label.replace(" ", "");
+        const labelName = label.split(" ").join("");
         labelEl.classList.add("merge-table-label", "mdl-shadow--2dp", "label", labelName);
         labelEl.textContent = label;
         container.appendChild(labelEl);
@@ -593,7 +781,7 @@ function loadGithubLogin() {
         window.location.href = url.origin + "/github-login";
     });
     const msg = createMessage(
-        "User Dashboard needs you to login and grant it OAuth scopes",
+        "PR Status needs you to login and grant it OAuth scopes",
         "sentiment_very_satisfied");
     const main = document.querySelector("#main-container");
     main.appendChild(msg);

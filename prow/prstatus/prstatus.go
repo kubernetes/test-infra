@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package userdashboard
+package prstatus
 
 import (
 	"context"
@@ -71,7 +71,7 @@ type UserData struct {
 	PullRequests []PullRequest
 }
 
-// Dashboard Agent is responsible for handling request to /user-dashboard endpoint. It will serve
+// Dashboard Agent is responsible for handling request to /pr-status endpoint. It will serve
 // list of open pull requests owned by the user.
 type DashboardAgent struct {
 	repos []string
@@ -87,6 +87,7 @@ type Label struct {
 
 type PullRequest struct {
 	Number githubql.Int
+	Merged githubql.Boolean
 	Title  githubql.String
 	Author struct {
 		Login githubql.String
@@ -145,11 +146,11 @@ func NewDashboardAgent(repos []string, config *config.GithubOAuthConfig, log *lo
 	}
 }
 
-// HandleUserDashboard returns a http handler function that handles request to /user-dashboard
+// HandlePrStatus returns a http handler function that handles request to /pr-status
 // endpoint. The handler takes user access token stored in the cookie to query to Github on behalf
 // of the user and serve the data in return. The Query handler is passed to the method so as it
 // can be mocked in the unit test..
-func (da *DashboardAgent) HandleUserDashboard(queryHandler PullRequestQueryHandler) http.HandlerFunc {
+func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		serverError := func(action string, err error) {
 			da.log.WithError(err).Errorf("Error %s.", action)
@@ -176,7 +177,9 @@ func (da *DashboardAgent) HandleUserDashboard(queryHandler PullRequestQueryHandl
 				serverError("Error with getting user login", err)
 				return
 			}
-			// Saves login
+			// Saves login. We save the login under 2 cookies. One for the use of client to render the
+			// data and one encoded for server to verify the identity of the authenticated user.
+			http.SetCookie(w, &http.Cookie{Name: "github_login", Value: login})
 			session.Values[loginKey] = login
 			if err := session.Save(r, w); err != nil {
 				serverError("Save oauth session", err)
@@ -184,6 +187,18 @@ func (da *DashboardAgent) HandleUserDashboard(queryHandler PullRequestQueryHandl
 			}
 			// Construct query
 			query := da.ConstructSearchQuery(login)
+			if err := r.ParseForm(); err == nil {
+				if q := r.Form.Get("query"); q != "" {
+					query = q
+				}
+			}
+			// If neither repo nor org is specified in the search query. We limit the search to repos that
+			// are configured with either Prow or Tide.
+			if !queryConstrainsRepos(query) {
+				for _, v := range da.repos {
+					query += fmt.Sprintf(" repo:\"%s\"", v)
+				}
+			}
 			pullRequests, err := queryHandler.QueryPullRequests(context.Background(), ghc, query)
 			if err != nil {
 				serverError("Error with querying user data.", err)
@@ -242,6 +257,16 @@ func (da *DashboardAgent) ConstructSearchQuery(login string) string {
 		tokens = append(tokens, fmt.Sprintf("repo:\"%s\"", da.repos[i]))
 	}
 	return strings.Join(tokens, " ")
+}
+
+func queryConstrainsRepos(q string) bool {
+	tkns := strings.Split(q, " ")
+	for _, tkn := range tkns {
+		if strings.HasPrefix(tkn, "org:") || strings.HasPrefix(tkn, "repo:") {
+			return true
+		}
+	}
+	return false
 }
 
 func getUserLogin(session *sessions.Session, grc githubRestfulClient) (string, error) {
