@@ -41,7 +41,7 @@ const milestoneTestBotName = "test-bot"
 //
 // TODO(marun) Enable testing of comment deletion
 func TestMilestoneMaintainer(t *testing.T) {
-	activeMilestone := "v1.8"
+	activeMilestone := "v1.10"
 	milestone := &githubapi.Milestone{Title: &activeMilestone, Number: intPtr(1)}
 	m := MilestoneMaintainer{
 		milestoneModeMap:    map[string]string{activeMilestone: milestoneModeDev},
@@ -116,7 +116,7 @@ func TestMilestoneMaintainer(t *testing.T) {
 @user @kubernetes/sig-foo-misc
 
 
-**Action required**: This issue must have the ` + "`status/approved-for-milestone`" + ` label applied by a SIG maintainer. If the label is not applied within 3 days, the issue will be moved out of the v1.8 milestone.
+**Action required**: This issue must have the ` + "`status/approved-for-milestone`" + ` label applied by a SIG maintainer. If the label is not applied within 3 days, the issue will be moved out of the v1.10 milestone.
 <details>
 <summary>Issue Labels</summary>
 
