@@ -2742,6 +2742,7 @@ presubmits:
         args:
         - "--clean"
         - "--job=$(JOB_NAME)"
+        - "--root=/go/src"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -4698,6 +4699,7 @@ presubmits:
         - --ssh=/etc/ssh-security/ssh-security
         - --clean
         - --job=$(JOB_NAME)
+        - --root=/go/src
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
