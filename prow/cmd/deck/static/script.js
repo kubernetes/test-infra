@@ -171,8 +171,8 @@ window.onload = function () {
     setInterval(() => {
         timeCells.forEach(timeCell => {
             var origin = parseInt(timeCell.getAttribute("data-time"));
-            timeCell.textContent = moment(origin).fromNow();
-        }, 60000) ;
+            timeCell.textContent = moment.unix(origin).fromNow();
+        }, 60000);
     });
 };
 
@@ -181,7 +181,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 });
 
 function configure() {
-    if(!branding){
+    if (!branding) {
         return;
     }
     if (branding.logo) {
@@ -194,8 +194,8 @@ function configure() {
         document.body.style.background = branding.background_color;
     }
     if (branding.header_color) {
-      document.getElementsByTagName(
-          'header')[0].style.backgroundColor = branding.header_color;
+        document.getElementsByTagName(
+            'header')[0].style.backgroundColor = branding.header_color;
     }
 }
 
@@ -489,7 +489,7 @@ function createTextCell(text) {
 }
 
 function createTimeCell(id, time) {
-    var momentTime = moment(time);
+    var momentTime = moment.unix(time);
     var tid = "time-cell-" + id;
     var main = document.createElement("div");
     var localTime = momentTime.fromNow();
