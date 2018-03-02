@@ -32,9 +32,6 @@ RUN mkdir -p /go/src/k8s.io/kubernetes \
 
 # preinstall graphviz package for graphing profiles
 RUN apt-get install -y graphviz
-# preinstall this for kops tests xref kubetest prepareAws(...)
-# TODO(bentheelder,krzyzacy,justisb,chrislovecnm): remove this
-RUN pip install awscli
 
 # install cfssl to prevent https://github.com/kubernetes/kubernetes/issues/55589
 # The invocation at the end is to prevent download failures downloads as in the bug.
@@ -63,7 +60,6 @@ RUN INSTALLER="bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh"; \
 ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}
 
-# everything below will be triggered on every new image tag ...
 ADD ["e2e-runner.sh", \
     "kops-e2e-runner.sh", \
     "kubetest", \

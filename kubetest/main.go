@@ -805,10 +805,7 @@ func prepareGcp(o *options) error {
 
 func prepareAws(o *options) error {
 	// gcloud creds may have changed
-	if err := activateServiceAccount(o.gcpServiceAccount); err != nil {
-		return err
-	}
-	return control.FinishRunning(exec.Command("pip", "install", "awscli"))
+	return activateServiceAccount(o.gcpServiceAccount)
 }
 
 // Activate GOOGLE_APPLICATION_CREDENTIALS if set or do nothing.
