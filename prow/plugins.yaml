@@ -270,6 +270,7 @@ plugins:
   - label
   - lgtm
   - lifecycle
+  - milestone
   - milestonestatus
   - shrug
   - sigmention
