@@ -2172,6 +2172,14 @@ test_groups:
 - name: pull-kops-e2e-kubernetes-aws
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-e2e-kubernetes-aws
   num_columns_recent: 20
+- name: pull-kops-bazel-build
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-bazel-build
+  days_of_results: 1
+  num_columns_recent: 20
+- name: pull-kops-bazel-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-bazel-test
+  days_of_results: 1
+  num_columns_recent: 20
 - name: pull-kops-verify-bazel
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-verify-bazel
   days_of_results: 1
@@ -5287,6 +5295,10 @@ dashboards:
     test_group_name: pull-kops-e2e-kubernetes-aws
   - name: verify-bazel
     test_group_name: pull-kops-verify-bazel
+  - name: bazel-build
+    test_group_name: pull-kops-bazel-build
+  - name: bazel-test
+    test_group_name: pull-kops-bazel-test
   - name: verify-boilerplate
     test_group_name: pull-kops-verify-boilerplate
   - name: verify-govet

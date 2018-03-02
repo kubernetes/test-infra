@@ -11173,6 +11173,22 @@
       "sig-node"
     ]
   },
+  "pull-kops-bazel-build": {
+    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
+    "args": [],
+    "scenario": "kubernetes_execute_bazel",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
+  "pull-kops-bazel-test": {
+    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
+    "args": [],
+    "scenario": "kubernetes_execute_bazel",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
   "pull-kops-e2e-kubernetes-aws": {
     "args": [
       "--aws",
@@ -11656,7 +11672,7 @@
   "pull-test-infra-bazel": {
     "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
     "args": [],
-    "scenario": "kubernetes_bazel",
+    "scenario": "kubernetes_execute_bazel",
     "sigOwners": [
       "sig-testing"
     ]
@@ -11664,7 +11680,7 @@
   "pull-test-infra-bazel-canary": {
     "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
     "args": [],
-    "scenario": "kubernetes_bazel",
+    "scenario": "kubernetes_execute_bazel",
     "sigOwners": [
       "sig-testing"
     ]
