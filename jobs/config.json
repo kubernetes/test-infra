@@ -11625,7 +11625,7 @@
       "make",
       "verify",
       "WHAT=typecheck",
-      "KUBE_JUNIT_REPORT_DIR=${WORKSPACE}/artifacts"
+      "KUBE_JUNIT_REPORT_DIR=${WORKSPACE}/_artifacts"
     ],
     "scenario": "execute",
     "sigOwners": [
