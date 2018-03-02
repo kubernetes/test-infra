@@ -20,11 +20,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -138,91 +134,23 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 		}
 	}
 
-	baseRef, err := c.GitHubClient.GetRef(org, repo, "heads/"+pr.Base.Ref)
-	if err != nil {
-		return err
-	}
+	return runOrSkipRequested(c, pr, requestedJobs, forceRunContexts, ic.Comment.Body, ic.GUID)
+}
 
+func fileChangesGetter(ghc githubClient, org, repo string, num int) func() ([]string, error) {
 	var changedFiles []string
-	// shouldRun indicates if a job should actually run.
-	shouldRun := func(j config.Presubmit) (bool, error) {
-		if !j.RunsAgainstBranch(pr.Base.Ref) {
-			return false, nil
-		}
-		if forceRunContexts[j.Context] || j.TriggerMatches(ic.Comment.Body) || j.RunIfChanged == "" {
-			return true, nil
-		}
+	return func() ([]string, error) {
 		// Fetch the changed files from github at most once.
 		if changedFiles == nil {
-			changes, err := c.GitHubClient.GetPullRequestChanges(org, repo, number)
+			changes, err := ghc.GetPullRequestChanges(org, repo, num)
 			if err != nil {
-				return false, fmt.Errorf("error getting pull request changes: %v", err)
+				return nil, fmt.Errorf("error getting pull request changes: %v", err)
 			}
 			changedFiles = []string{}
 			for _, change := range changes {
 				changedFiles = append(changedFiles, change.Filename)
 			}
 		}
-		return j.RunsAgainstChanges(changedFiles), nil
+		return changedFiles, nil
 	}
-
-	// For each job determine if any sharded version of the job runs.
-	// This in turn determines which jobs to run and which contexts to mark as "Skipped".
-	var toRunJobs []config.Presubmit
-	toRun := sets.NewString()
-	toSkip := sets.NewString()
-	for _, job := range requestedJobs {
-		runs, err := shouldRun(job)
-		if err != nil {
-			return err
-		}
-		if runs {
-			toRunJobs = append(toRunJobs, job)
-			toRun.Insert(job.Context)
-		} else if !job.SkipReport {
-			toSkip.Insert(job.Context)
-		}
-	}
-	// 'Skip' any context that is required, but doesn't have a job shard run for it.
-	for _, context := range toSkip.Difference(toRun).List() {
-		if err := c.GitHubClient.CreateStatus(org, repo, pr.Head.SHA, github.Status{
-			State:       github.StatusSuccess,
-			Context:     context,
-			Description: "Skipped",
-		}); err != nil {
-			return err
-		}
-	}
-
-	var errors []error
-	for _, job := range toRunJobs {
-		c.Logger.Infof("Starting %s build.", job.Name)
-		kr := kube.Refs{
-			Org:     org,
-			Repo:    repo,
-			BaseRef: pr.Base.Ref,
-			BaseSHA: baseRef,
-			Pulls: []kube.Pull{
-				{
-					Number: number,
-					Author: pr.User.Login,
-					SHA:    pr.Head.SHA,
-				},
-			},
-		}
-		labels := make(map[string]string)
-		for k, v := range job.Labels {
-			labels[k] = v
-		}
-		labels[github.EventGUID] = ic.GUID
-		pj := pjutil.NewProwJob(pjutil.PresubmitSpec(job, kr), labels)
-		c.Logger.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
-		if _, err := c.KubeClient.CreateProwJob(pj); err != nil {
-			errors = append(errors, err)
-		}
-	}
-	if len(errors) > 0 {
-		return fmt.Errorf("errors starting jobs: %v", errors)
-	}
-	return nil
 }
