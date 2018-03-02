@@ -559,9 +559,10 @@ def main(args):
             '--kubernetes-anywhere-kubeadm-version=%s' % version,
         ])
 
-        if args.kubeadm == "pull":
-            # If this is a pull job; the kubelet version should equal
-            # the kubeadm version here: we should use debs from the PR build
+        if args.kubeadm == "pull" or args.kubeadm == "ci":
+            # If this is a pull or ci job; the kubelet version should equal
+            # the kubeadm version here: we should use debs from the PR or
+            # post-submit build
             runner_args.extend([
                 '--kubernetes-anywhere-kubelet-version=%s' % version,
             ])
