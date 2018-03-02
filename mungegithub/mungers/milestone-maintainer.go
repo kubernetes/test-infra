@@ -289,13 +289,8 @@ func dayPhrase(days int) string {
 	return fmt.Sprintf("%d %s", days, dayString)
 }
 
-func durationToMinDays(duration time.Duration) string {
-	days := int(math.Floor(duration.Hours() / 24))
-	return dayPhrase(days)
-}
-
 func durationToMaxDays(duration time.Duration) string {
-	days := int(math.Floor(duration.Hours() / 24))
+	days := int(math.Ceil(duration.Hours() / 24))
 	return dayPhrase(days)
 }
 
