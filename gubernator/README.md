@@ -85,13 +85,15 @@ the different types of jobs:
 
 ```
 .
-├── logs                 # periodic and postsubmit jobs live here
-│   └── other_job_name   # contains all the builds of a job
-│       └── build_number # contains job artifacts, as above
+├── logs                    # periodic and postsubmit jobs live here
+│   └── other_job_name      # contains all the builds of a job
+│      ├── build_number     # contains job artifacts, as above
+│      └── latest-build.txt # contains the latest build id of a job
 └── pr-logs
     ├── directory                # symlinks for builds live here
     │   └── job_name             # contains all symlinks for a job
-    │       └── build_number.txt # contains one line: location of artifacts for the build
+    │       ├── build_number.txt # contains one line: location of artifacts for the build
+    │       └── latest-build.txt # contains the latest build id of a job
     └── pull
         ├── batch                # batch jobs live here
         │   └── job_name         # contains all the builds of a job

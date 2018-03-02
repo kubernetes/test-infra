@@ -144,6 +144,10 @@ func (o *Options) Run(extra map[string]UploadFunc) error {
 		uploadTargets[alias] = DataUpload(strings.NewReader(jobBasePath))
 	}
 
+	if latestBuild := LatestBuildForSpec(spec); latestBuild != "" {
+		uploadTargets[latestBuild] = DataUpload(strings.NewReader(spec.BuildId))
+	}
+
 	for _, item := range o.Items {
 		info, err := os.Stat(item)
 		if err != nil {
