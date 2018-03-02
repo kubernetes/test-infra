@@ -321,7 +321,8 @@ type Heart struct {
 	Adorees []string `json:"adorees,omitempty"`
 }
 
-// MilestoneStatus contains the configuration options for the milestone plugin.
+// Milestone contains the configuration options for the milestone and
+// milestonestatus plugins.
 type Milestone struct {
 	// ID of the github team for the milestone maintainers (used for setting status labels)
 	// You can curl the following endpoint in order to determine the github ID of your team
