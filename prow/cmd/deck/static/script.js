@@ -171,7 +171,7 @@ window.onload = function () {
     setInterval(() => {
         timeCells.forEach(timeCell => {
             var origin = parseInt(timeCell.getAttribute("data-time"));
-            timeCell.textContent = moment.unix(origin).toString();
+            timeCell.textContent = moment.unix(origin).format('MMM DD YYYY, HH:MM:SS [GMT]ZZ');
         }, 60000);
     });
 };
@@ -493,7 +493,7 @@ function createTimeCell(id, time) {
     var tid = "time-cell-" + id;
     var main = document.createElement("div");
     var age = momentTime.fromNow();
-    var timeString = momentTime.toString();
+    var timeString = momentTime.format('MMM DD YYYY, HH:MM:SS [GMT]ZZ');
     main.textContent = timeString;
     main.id = tid;
     main.setAttribute("data-time", time);
