@@ -167,13 +167,6 @@ window.onload = function () {
         Object.keys(opts["jobs"]).sort());
     redrawOptions(opts);
     redraw();
-    var timeCells = document.querySelectorAll(".time-cell");
-    setInterval(() => {
-        timeCells.forEach(timeCell => {
-            var origin = parseInt(timeCell.getAttribute("data-time"));
-            timeCell.textContent = moment.unix(origin).format('MMM DD YYYY, HH:MM:SS [GMT]ZZ');
-        }, 60000);
-    });
 };
 
 document.addEventListener("DOMContentLoaded", function (event) {
@@ -492,17 +485,14 @@ function createTimeCell(id, time) {
     var momentTime = moment.unix(time);
     var tid = "time-cell-" + id;
     var main = document.createElement("div");
-    var age = momentTime.fromNow();
-    var timeString = momentTime.format('MMM DD YYYY, HH:MM:SS [GMT]ZZ');
-    main.textContent = timeString;
+    var isADayOld = momentTime.isBefore(moment().startOf('day'));
+    main.textContent = momentTime.format(isADayOld ? 'MMM DD HH:mm:ss' : 'HH:mm:ss');
     main.id = tid;
-    main.setAttribute("data-time", time);
-    main.classList.add("time-cell");
 
     var tooltip = document.createElement("div");
-    tooltip.textContent = age;
+    tooltip.textContent = momentTime.format('MMM DD YYYY, HH:mm:ss [UTC]ZZ');
     tooltip.setAttribute("data-mdl-for", tid);
-    tooltip.classList.add("mdl-tooltip");
+    tooltip.classList.add("mdl-tooltip", "mdl-tooltip--large");
 
     var c = document.createElement("td");
     c.appendChild(main);
