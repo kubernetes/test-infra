@@ -719,6 +719,102 @@ presubmits:
       - name: docker-graph
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
+
+  - name: pull-kops-verify-bazel
+    agent: kubernetes
+    context: pull-kops-verify-bazel
+    branches:
+    - master
+    rerun_command: "/test pull-kops-verify-bazel"
+    trigger: "(?m)^/test( all| pull-kops-verify-bazel),?(\\s+|$)"
+    always_run: true
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+
+  - name: pull-kops-verify-boilerplate
+    agent: kubernetes
+    context: pull-kops-verify-boilerplate
+    branches:
+    - master
+    rerun_command: "/test pull-kops-verify-boilerplate"
+    trigger: "(?m)^/test( all| pull-kops-verify-boilerplate),?(\\s+|$)"
+    always_run: true
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+
+  - name: pull-kops-verify-gofmt
+    agent: kubernetes
+    context: pull-kops-verify-gofmt
+    branches:
+    - master
+    rerun_command: "/test pull-kops-verify-gofmt"
+    trigger: "(?m)^/test( all| pull-kops-verify-gofmt),?(\\s+|$)"
+    always_run: true
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+
+  - name: pull-kops-verify-govet
+    agent: kubernetes
+    context: pull-kops-verify-govet
+    branches:
+    - master
+    rerun_command: "/test pull-kops-verify-govet"
+    trigger: "(?m)^/test( all| pull-kops-verify-govet),?(\\s+|$)"
+    always_run: true
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+
+  - name: pull-kops-verify-packages
+    agent: kubernetes
+    context: pull-kops-verify-packages
+    branches:
+    - master
+    rerun_command: "/test pull-kops-verify-packages"
+    trigger: "(?m)^/test( all| pull-kops-verify-packages),?(\\s+|$)"
+    always_run: true
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+
   kubernetes/cluster-registry:
   - name: pull-cluster-registry-bazel
     agent: kubernetes

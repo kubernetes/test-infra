@@ -11192,6 +11192,52 @@
       "sig-aws"
     ]
   },
+  "pull-kops-verify-bazel": {
+    "args": [
+      "./hack/verify-bazel.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
+  "pull-kops-verify-boilerplate": {
+    "args": [
+      "./hack/verify-boilerplate.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
+  "pull-kops-verify-gofmt": {
+    "args": [
+      "./hack/verify-gofmt.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
+  "pull-kops-verify-govet": {
+    "args": [
+      "make",
+      "govet"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
+  "pull-kops-verify-packages": {
+    "args": [
+      "./hack/verify-packages.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
   "pull-kube-deploy-build": {
     "args": [
       "./scripts/ci-build.sh"
