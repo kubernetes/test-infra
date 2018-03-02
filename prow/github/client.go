@@ -1580,12 +1580,14 @@ func (c *Client) ClearMilestone(org, repo string, num int) error {
 func (c *Client) SetMilestone(org, repo string, issueNum, milestoneNum int) error {
 	c.log("SetMilestone", org, repo, issueNum, milestoneNum)
 
-	m := &Issue{Milestone: Milestone{Number: milestoneNum}}
+	issue := &struct {
+		Milestone int `json:"milestone"`
+	}{Milestone: milestoneNum}
 
 	_, err := c.request(&request{
 		method:      http.MethodPatch,
 		path:        fmt.Sprintf("%s/repos/%v/%v/issues/%d", c.base, org, repo, issueNum),
-		requestBody: &m,
+		requestBody: &issue,
 		exitCodes:   []int{200},
 	}, nil)
 	return err

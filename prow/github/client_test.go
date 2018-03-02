@@ -1364,11 +1364,17 @@ func TestSetMilestone(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Could not read request body: %v", err)
 		}
-		var issue Issue
+		var issue struct {
+			Milestone *int `json:"milestone,omitempty"`
+		}
 		if err := json.Unmarshal(b, &issue); err != nil {
-			t.Errorf("Could not unmarshal request: %v", err)
-		} else if issue.Milestone.Number != newMilestone {
-			t.Errorf("Milestone not set %d.  Instead set to: %d", newMilestone, issue.Milestone.Number)
+			t.Fatalf("Could not unmarshal request: %v", err)
+		}
+		if issue.Milestone == nil {
+			t.Fatal("Milestone was not set.")
+		}
+		if *issue.Milestone != newMilestone {
+			t.Errorf("Expected milestone to be set to %d, but got %d.", newMilestone, *issue.Milestone)
 		}
 	}))
 	defer ts.Close()
