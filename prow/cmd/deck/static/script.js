@@ -171,7 +171,7 @@ window.onload = function () {
     setInterval(() => {
         timeCells.forEach(timeCell => {
             var origin = parseInt(timeCell.getAttribute("data-time"));
-            timeCell.textContent = moment.unix(origin).fromNow();
+            timeCell.textContent = moment.unix(origin).toString();
         }, 60000);
     });
 };
@@ -492,15 +492,15 @@ function createTimeCell(id, time) {
     var momentTime = moment.unix(time);
     var tid = "time-cell-" + id;
     var main = document.createElement("div");
-    var localTime = momentTime.fromNow();
-    main.textContent = localTime;
+    var age = momentTime.fromNow();
+    var timeString = momentTime.toString();
+    main.textContent = timeString;
     main.id = tid;
     main.setAttribute("data-time", time);
     main.classList.add("time-cell");
 
-    var utcTime = momentTime.toString();
     var tooltip = document.createElement("div");
-    tooltip.textContent = utcTime;
+    tooltip.textContent = age;
     tooltip.setAttribute("data-mdl-for", tid);
     tooltip.classList.add("mdl-tooltip");
 
