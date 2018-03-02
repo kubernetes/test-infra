@@ -64,7 +64,7 @@ function redrawOptions(opts) {
     addOptions(ps, "pull");
     var ss = Object.keys(opts.states).sort();
     addOptions(ss, "state");
-};
+}
 
 function adjustScroll(el) {
     var parent = el.parentElement;
@@ -97,7 +97,6 @@ function handleDownKey() {
     }
     if (selectedJobs.length === 0) {
         // If no job selected, selecte the first one that visible in the list.
-        var activeSearchRect = activeSearch.getBoundingClientRect();
         var jobs = Array.from(activeSearch.children)
             .filter(function (elChild) {
                 var childRect = elChild.getBoundingClientRect();
@@ -164,7 +163,7 @@ window.onload = function () {
         "job",
         "job-input",
         "job-list",
-        Object.keys(opts["jobs"]).sort());
+        Object.keys(opts.jobs));
     redrawOptions(opts);
     redraw();
     var timeCells = document.querySelectorAll(".time-cell");
@@ -257,32 +256,24 @@ function registerFuzzySearchHandler(fz, id, list, input) {
 }
 
 function initFuzzySearch(id, inputId, listId, data) {
-    var fz = new FuzzySearch(data);
+    var fz = FuzzySearch.getInstance(data);
     var el = document.getElementById(id);
     var input = document.getElementById(inputId);
     var list = document.getElementById(listId);
 
     list.classList.remove("active-fuzzy-search");
     input.addEventListener("focus", function () {
-        fuzzySearch(fz, id, list, input);
         displayFuzzySearchResult(list, el.getBoundingClientRect());
     });
     input.addEventListener("blur", function () {
-        // Delay blur action so that the list can handle click action before
-        // blured out.
-        setTimeout(function () {
-            list.classList.remove("active-fuzzy-search");
-        }, 120);
-    });
-    input.addEventListener("keypress", function () {
-        var inputText = input.value;
+        list.classList.remove("active-fuzzy-search");
     });
 
     registerFuzzySearchHandler(fz, id, list, input);
 }
 
 function registerJobResultEventHandler(li, input) {
-    li.addEventListener("click", function (event) {
+    li.addEventListener("mousedown", function (event) {
         input.value = event.currentTarget.innerHTML;
         redraw();
     });
@@ -309,6 +300,7 @@ function addOptionFuzzySearch(data, id, list, input, stopAutoFill) {
     while (list.firstChild) {
         list.removeChild(list.firstChild);
     }
+    list.scrollTop = 0;
     for (var i = 0; i < data.length; i++) {
         var li = document.createElement("li");
         li.innerHTML = data[i];
@@ -403,6 +395,7 @@ function redraw() {
             history.replaceState(null, "", "/")
         }
     }
+    FuzzySearch.getInstance().setDict(Object.keys(opts.jobs));
     redrawOptions(opts);
 
     var lastKey = '';
@@ -433,7 +426,11 @@ function redraw() {
         emitted++;
 
         var r = document.createElement("tr");
-        r.appendChild(stateCell(build.state));
+        if (build.state !== "") {
+          r.appendChild(stateCell(build.state));
+        } else {
+          r.appendChild(createTextCell(""));
+        }
         if (build.pod_name) {
             const icon = createIcon("description", "Build log");
             icon.href = "log?job=" + build.job + "&id=" + build.build_id;
