@@ -2172,6 +2172,26 @@ test_groups:
 - name: pull-kops-e2e-kubernetes-aws
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-e2e-kubernetes-aws
   num_columns_recent: 20
+- name: pull-kops-verify-bazel
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-verify-bazel
+  days_of_results: 1
+  num_columns_recent: 20
+- name: pull-kops-verify-boilerplate
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-verify-boilerplate
+  days_of_results: 1
+  num_columns_recent: 20
+- name: pull-kops-verify-govet
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-verify-govet
+  days_of_results: 1
+  num_columns_recent: 20
+- name: pull-kops-verify-gofmt
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-verify-gofmt
+  days_of_results: 1
+  num_columns_recent: 20
+- name: pull-kops-verify-packages
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-verify-packages
+  days_of_results: 1
+  num_columns_recent: 20
 - name: pull-heapster-e2e
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-heapster-e2e
   num_columns_recent: 20
@@ -5256,12 +5276,25 @@ dashboards:
   dashboard_tab:
   - name: heapster
     test_group_name: pull-heapster-e2e
-  - name: kops
-    test_group_name: pull-kops-e2e-kubernetes-aws
   - name: charts
     test_group_name: pull-charts-e2e
   - name: cadvisor
     test_group_name: pull-cadvisor-e2e
+
+- name: presubmits-kops
+  dashboard_tab:
+  - name: e2e
+    test_group_name: pull-kops-e2e-kubernetes-aws
+  - name: verify-bazel
+    test_group_name: pull-kops-verify-bazel
+  - name: verify-boilerplate
+    test_group_name: pull-kops-verify-boilerplate
+  - name: verify-govet
+    test_group_name: pull-kops-verify-govet
+  - name: verify-gofmt
+    test_group_name: pull-kops-verify-gofmt
+  - name: verify-packages
+    test_group_name: pull-kops-verify-packages
 
 - name: istio
   dashboard_tab:
@@ -5323,6 +5356,7 @@ dashboard_groups:
   - presubmits-kubernetes-blocking
   - presubmits-kubernetes-nonblocking
   - presubmits-test-infra
+  - presubmits-kops
   - presubmits-misc
 
 - name: sig-cli
