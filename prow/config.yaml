@@ -9,6 +9,7 @@ sinker:
   max_pod_age: 30m
 
 deck:
+  tide_update_period: 1s
   hidden_repos:
   - kubernetes-security
   - GoogleCloudPlatform/k8s-tpu-operator
