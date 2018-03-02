@@ -11576,7 +11576,9 @@
   },
   "pull-kubernetes-typecheck": {
     "args": [
-      "hack/verify-typecheck.sh"
+      "make",
+      "verify",
+      "WHAT=typecheck"
     ],
     "scenario": "execute",
     "sigOwners": [
