@@ -11624,7 +11624,8 @@
     "args": [
       "make",
       "verify",
-      "WHAT=typecheck"
+      "WHAT=typecheck",
+      "KUBE_JUNIT_REPORT_DIR=${WORKSPACE}/artifacts"
     ],
     "scenario": "execute",
     "sigOwners": [
