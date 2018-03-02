@@ -157,6 +157,24 @@ func isUserTrusted(ghc githubClient, user, trustedOrg, org string) (bool, error)
 	return orgMember, nil
 }
 
+func fileChangesGetter(ghc githubClient, org, repo string, num int) func() ([]string, error) {
+	var changedFiles []string
+	return func() ([]string, error) {
+		// Fetch the changed files from github at most once.
+		if changedFiles == nil {
+			changes, err := ghc.GetPullRequestChanges(org, repo, num)
+			if err != nil {
+				return nil, fmt.Errorf("error getting pull request changes: %v", err)
+			}
+			changedFiles = []string{}
+			for _, change := range changes {
+				changedFiles = append(changedFiles, change.Filename)
+			}
+		}
+		return changedFiles, nil
+	}
+}
+
 func runOrSkipRequested(c client, pr *github.PullRequest, requestedJobs []config.Presubmit, forceRunContexts map[string]bool, body, eventGUID string) error {
 	org := pr.Base.Repo.Owner.Login
 	repo := pr.Base.Repo.Name
@@ -167,6 +185,10 @@ func runOrSkipRequested(c client, pr *github.PullRequest, requestedJobs []config
 		return err
 	}
 
+	// Use a closure to lazily retrieve the file changes only if they are needed.
+	// We only have to fetch the changes if there is at least one RunIfChanged
+	// job that is not being force run (due to a `/retest` after a failure or
+	// because it is explicitly triggered with `/test foo`).
 	getChanges := fileChangesGetter(c.GitHubClient, org, repo, number)
 	// shouldRun indicates if a job should actually run.
 	shouldRun := func(j config.Presubmit) (bool, error) {

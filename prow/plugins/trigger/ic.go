@@ -136,21 +136,3 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 
 	return runOrSkipRequested(c, pr, requestedJobs, forceRunContexts, ic.Comment.Body, ic.GUID)
 }
-
-func fileChangesGetter(ghc githubClient, org, repo string, num int) func() ([]string, error) {
-	var changedFiles []string
-	return func() ([]string, error) {
-		// Fetch the changed files from github at most once.
-		if changedFiles == nil {
-			changes, err := ghc.GetPullRequestChanges(org, repo, num)
-			if err != nil {
-				return nil, fmt.Errorf("error getting pull request changes: %v", err)
-			}
-			changedFiles = []string{}
-			for _, change := range changes {
-				changedFiles = append(changedFiles, change.Filename)
-			}
-		}
-		return changedFiles, nil
-	}
-}
