@@ -30,9 +30,9 @@ git_repository(
 
 http_archive(
     name = "io_bazel_rules_docker",
-    sha256 = "c919051945ab388c8440ea92d7ceb429fdbbf0a53639e6e0159b231881ceed02",
-    strip_prefix = "rules_docker-3caf72f166f8b6b0e529442477a74871ad4d35e9",
-    urls = ["https://github.com/bazelbuild/rules_docker/archive/3caf72f166f8b6b0e529442477a74871ad4d35e9.tar.gz"],
+    sha256 = "e473e379a2a188d7d63b73a77c2fac593d297f710de9e7a8da6ed0bb7085cd98",
+    strip_prefix = "rules_docker-27c94dec66c3c9fdb478c33994471c5bfc15b6eb",
+    urls = ["https://github.com/bazelbuild/rules_docker/archive/27c94dec66c3c9fdb478c33994471c5bfc15b6eb.tar.gz"],
 )
 
 git_repository(
@@ -74,6 +74,14 @@ docker_pull(
     digest = "sha256:92423bd3b24b0274198bb90c00e91b70d81c32e1d6bd26af30c00ca9f5faeb74",
     registry = "gcr.io",
     repository = "k8s-prow/git",
+)
+
+docker_pull(
+    name = "python",
+    digest = "sha256:3f60d995e4aa7d7a5e4783c185e13d53e124ef0ad87bc1492f869cbeead331ee",
+    registry = "index.docker.io",
+    repository = "library/python",
+    tag = "2.7.14-alpine3.7",
 )
 
 git_repository(
