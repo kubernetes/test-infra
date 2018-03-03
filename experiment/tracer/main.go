@@ -32,6 +32,7 @@ import (
 var (
 	selector  = flag.String("label-selector", "", "Label selector to select prow pods for log tracing. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
 	namespace = flag.String("namespace", "", "Namespace where prow runs")
+	headless  = flag.Bool("headless", false, "Run on headless mode")
 )
 
 func main() {
@@ -48,9 +49,15 @@ func main() {
 		logger.WithError(err).Fatal("Error getting k8s client.")
 	}
 
+	mux := http.NewServeMux()
+	if !*headless {
+		mux.Handle("/", gziphandler.GzipHandler(http.FileServer(http.Dir("/static"))))
+	}
+	mux.Handle("/trace", gziphandler.GzipHandler(handleTrace(*selector, kc)))
+
 	server := &http.Server{
 		Addr:         ":8080",
-		Handler:      gziphandler.GzipHandler(handleTrace(*selector, kc)),
+		Handler:      mux,
 		ReadTimeout:  2 * time.Minute,
 		WriteTimeout: 2 * time.Minute,
 	}

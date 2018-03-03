@@ -8,7 +8,7 @@ var logger = {
   message: '',
   options: {
     request: {
-      endpoint: 'https://' + window.location.hostname + '?',
+      endpoint: 'https://' + window.location.hostname + '/trace?',
       params: '',
       config: {}
     },
