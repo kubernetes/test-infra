@@ -45,5 +45,6 @@ go_test(
         "//prow/kube:go_default_library",
         "//prow/pjutil:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/api/equality:go_default_library",
     ],
 )
