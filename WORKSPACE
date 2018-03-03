@@ -30,9 +30,9 @@ git_repository(
 
 http_archive(
     name = "io_bazel_rules_docker",
-    sha256 = "e473e379a2a188d7d63b73a77c2fac593d297f710de9e7a8da6ed0bb7085cd98",
-    strip_prefix = "rules_docker-27c94dec66c3c9fdb478c33994471c5bfc15b6eb",
-    urls = ["https://github.com/bazelbuild/rules_docker/archive/27c94dec66c3c9fdb478c33994471c5bfc15b6eb.tar.gz"],
+    sha256 = "cef4e7adfc1df999891e086bf42bed9092cfdf374adb902f18de2c1d6e1e0197",
+    strip_prefix = "rules_docker-198367210c55fba5dded22274adde1a289801dc4",
+    urls = ["https://github.com/bazelbuild/rules_docker/archive/198367210c55fba5dded22274adde1a289801dc4.tar.gz"],
 )
 
 git_repository(
@@ -78,10 +78,10 @@ docker_pull(
 
 docker_pull(
     name = "python",
-    digest = "sha256:3f60d995e4aa7d7a5e4783c185e13d53e124ef0ad87bc1492f869cbeead331ee",
+    digest = "sha256:8bfeec8f8ba3aaeea918a0198f4b1c7c9b2b39e26f399a7173229dfcef76fc1f",
     registry = "index.docker.io",
     repository = "library/python",
-    tag = "2.7.14-alpine3.7",
+    tag = "2.7.14-jessie",
 )
 
 git_repository(
