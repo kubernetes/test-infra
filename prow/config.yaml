@@ -685,7 +685,7 @@ presubmits:
     branches:
     - master
     always_run: true
-    skip_report: true
+    skip_report: false
     rerun_command: "/test pull-kops-bazel-build"
     trigger: "(?m)^/test( all| pull-kops-bazel-build),?(\\s+|$)"
     labels:
@@ -717,7 +717,7 @@ presubmits:
     branches:
     - master
     always_run: true
-    skip_report: true
+    skip_report: false
     rerun_command: "/test pull-kops-bazel-test"
     trigger: "(?m)^/test( all| pull-kops-bazel-test),?(\\s+|$)"
     labels:
