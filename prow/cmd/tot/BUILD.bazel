@@ -50,6 +50,9 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//prow/cmd/tot/fallbackcheck:all-srcs",
+    ],
     tags = ["automanaged"],
 )
