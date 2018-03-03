@@ -226,6 +226,8 @@ plugins:
   - blockade
   - blunderbuss
   - docs-no-retest
+  - milestone
+  - milestonestatus
   - release-note
   - require-sig
   - trigger
@@ -270,8 +272,6 @@ plugins:
   - label
   - lgtm
   - lifecycle
-  - milestone
-  - milestonestatus
   - shrug
   - sigmention
   - size
