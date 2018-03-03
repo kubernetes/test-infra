@@ -679,6 +679,73 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
   kubernetes/kops:
+  - name: pull-kops-bazel-build
+    agent: kubernetes
+    context: pull-kops-bazel-build
+    branches:
+    - master
+    always_run: true
+    skip_report: true
+    rerun_command: "/test pull-kops-bazel-build"
+    trigger: "(?m)^/test( all| pull-kops-bazel-build),?(\\s+|$)"
+    labels:
+      preset-service-account: true
+      preset-bazel-scratch-dir: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180301-32170552d-experimental
+        args:
+        - "--clean"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--scenario=kubernetes_execute_bazel"
+        - "--" # end bootstrap args, scenario args below
+        - "make"
+        - "bazel-build"
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "2Gi"
+
+  - name: pull-kops-bazel-test
+    agent: kubernetes
+    context: pull-kops-bazel-test
+    branches:
+    - master
+    always_run: true
+    skip_report: true
+    rerun_command: "/test pull-kops-bazel-test"
+    trigger: "(?m)^/test( all| pull-kops-bazel-test),?(\\s+|$)"
+    labels:
+      preset-service-account: true
+      preset-bazel-scratch-dir: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180301-32170552d-experimental
+        args:
+        - "--clean"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--scenario=kubernetes_execute_bazel"
+        - "--" # end bootstrap args, scenario args below
+        - "make"
+        - "bazel-test"
+        env:
+        - name: BAZEL_REMOTE_CACHE_ENABLED
+          value: "true"
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "2Gi"
+
   - name: pull-kops-e2e-kubernetes-aws
     agent: kubernetes
     always_run: true
