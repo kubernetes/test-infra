@@ -33,7 +33,7 @@
 set -o errexit
 set -o nounset
 IMAGE_NAME="gcr.io/k8s-testimages/planter"
-TAG="${TAG:-0.10.0}"
+TAG="${TAG:-0.11.0}"
 IMAGE="${IMAGE_NAME}:${TAG}"
 # We want to mount our bazel workspace and the bazel cache
 # - WORKSPACE is assumed to be in your current git repo, or alternatively $PWD
