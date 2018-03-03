@@ -6753,30 +6753,6 @@ periodics:
       hostPath:
         path: /mnt/disks/ssd0
   run_after_success:
-  - name: ci-kubernetes-e2e-kubeadm-gce
-    agent: kubernetes
-    labels:
-      preset-service-account: true
-      preset-k8s-ssh: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180301-d0a3e01be
-        args:
-        - "--repo=k8s.io/kubernetes=master"
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--timeout=320"
-        - "--upload=gs://kubernetes-jenkins/logs"
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
   - name: ci-kubernetes-e2e-kubeadm-gce-ipvs
     agent: kubernetes
     labels:
@@ -12600,6 +12576,21 @@ periodics:
       - --timeout=140
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180301-32170552d-master
+
+- interval: 2h
+  name: ci-kubernetes-e2e-kubeadm-gce
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180301-d0a3e01be
+      args:
+      - "--repo=k8s.io/kubernetes=master"
+      - "--clean"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
 
 - name: ci-kubernetes-e2e-node-canary
   interval: 1h
