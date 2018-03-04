@@ -11587,6 +11587,21 @@
       "sig-scalability"
     ]
   },
+  "pull-kubernetes-local-e2e": {
+    "args": [
+      "--build=bazel",
+      "--deployment=local",
+      "--ginkgo-parallel=1",
+      "--provider=local",
+      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-local-e2e",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]",
+      "--timeout=120m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "pull-kubernetes-multicluster-ingress-test": {
     "args": [
       "make",
