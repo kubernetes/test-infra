@@ -37,6 +37,7 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 		kubeproxyMode       string
 		osImage             string
 		KubeadmFeatureGates string
+		buildFolder         string
 	}{
 		{
 			name:   "kubeadm defaults",
@@ -109,6 +110,21 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 				".phase2.kubeadm.version=\"unstable\"",
 				".phase2.kubernetes_version=\"latest-1.6\"",
 				".phase2.kubelet_version=\"gs://kubernetes-release-dev/bazel/vbar/bin/linux/amd64/\"",
+				".phase3.cni=\"weave\"",
+			},
+		},
+		{
+			name:              "kubeadm with ci kubelet version and specified build path",
+			phase2:            "kubeadm",
+			kubeadmVersion:    "unstable",
+			kubeletCIVersion:  "latest",
+			kubernetesVersion: "latest-1.6",
+			buildFolder:       "ci",
+			expectConfigLines: []string{
+				".phase2.provider=\"kubeadm\"",
+				".phase2.kubeadm.version=\"unstable\"",
+				".phase2.kubernetes_version=\"latest-1.6\"",
+				".phase2.kubelet_version=\"gs://kubernetes-release-dev/ci/vbar/bin/linux/amd64/\"",
 				".phase3.cni=\"weave\"",
 			},
 		},
@@ -229,6 +245,11 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 			*kubernetesAnywhereOSImage = tc.osImage
 		}
 		*kubernetesAnywhereKubeadmFeatureGates = tc.KubeadmFeatureGates
+		if tc.buildFolder == "" {
+			*kubernetesAnywhereBuildFolder = defaultBuildFolder
+		} else {
+			*kubernetesAnywhereBuildFolder = tc.buildFolder
+		}
 
 		_, err = newKubernetesAnywhere("fake-project", "fake-zone")
 		if err != nil {
