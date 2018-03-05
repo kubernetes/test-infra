@@ -274,7 +274,7 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
                 kubernetes_e2e.main(args)
 
         self.assertNotIn('E2E_OPT', self.envs)
-        version = 'gs://kubernetes-release-dev/bazel/v1.7.0-alpha.0.1320+599539dc0b9997/bin/linux/amd64/'  # pylint: disable=line-too-long
+        version = 'gs://kubernetes-release-dev/ci/v1.7.0-alpha.0.1320+599539dc0b9997-bazel/bin/linux/amd64/'  # pylint: disable=line-too-long
         self.assertIn('--kubernetes-anywhere-kubeadm-version=%s' % version, self.callstack[-1])
         called = False
         for call in self.callstack:
@@ -315,25 +315,7 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
                 kubernetes_e2e.main(args)
 
         self.assertNotIn('E2E_OPT', self.envs)
-        version = 'gs://kubernetes-release-dev/bazel/v1.7.0-alpha.0.1320+599539dc0b9997/bin/linux/amd64/'  # pylint: disable=line-too-long
-        self.assertIn('--kubernetes-anywhere-kubeadm-version=%s' % version, self.callstack[-1])
-        called = False
-        for call in self.callstack:
-            self.assertFalse(call.startswith('docker'))
-            if call == 'hack/print-workspace-status.sh':
-                called = True
-        self.assertTrue(called)
-
-    def test_kubeadm_periodic_v1_6(self):
-        """Make sure kubeadm periodic mode has correct version on v1.6"""
-        args = kubernetes_e2e.parse_args(['--kubeadm=periodic'])
-        self.assertEqual(args.kubeadm, 'periodic')
-        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
-            with Stub(kubernetes_e2e, 'check_output', self.fake_output_work_status_v1_6):
-                kubernetes_e2e.main(args)
-
-        self.assertNotIn('E2E_OPT', self.envs)
-        version = 'gs://kubernetes-release-dev/bazel/v1.6.4-beta.0.18+84febd4537dd19/build/debs/'
+        version = 'gs://kubernetes-release-dev/ci/v1.7.0-alpha.0.1320+599539dc0b9997-bazel/bin/linux/amd64/'  # pylint: disable=line-too-long
         self.assertIn('--kubernetes-anywhere-kubeadm-version=%s' % version, self.callstack[-1])
         called = False
         for call in self.callstack:

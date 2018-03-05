@@ -137,7 +137,7 @@ def kubeadm_version(mode, shared_build_gcs_path):
         version = status.group(1)
 
         # The path given here should match ci-kubernetes-bazel-build
-        return 'gs://kubernetes-release-dev/%s-bazel/bin/linux/amd64/' % version
+        return 'gs://kubernetes-release-dev/ci/%s-bazel/bin/linux/amd64/' % version
 
     elif mode == 'pull':
         # The format of shared_build_gcs_path looks like:
