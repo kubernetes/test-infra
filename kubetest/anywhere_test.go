@@ -88,55 +88,27 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 			name:              "kubeadm with ci kubelet version",
 			phase2:            "kubeadm",
 			kubeadmVersion:    "unstable",
-			kubeletCIVersion:  "vfoo",
-			kubernetesVersion: "latest-1.6",
+			kubeletCIVersion:  "latest-bazel",
+			kubernetesVersion: "latest-bazel",
 			expectConfigLines: []string{
 				".phase2.provider=\"kubeadm\"",
 				".phase2.kubeadm.version=\"unstable\"",
-				".phase2.kubernetes_version=\"latest-1.6\"",
-				".phase2.kubelet_version=\"gs://kubernetes-release-dev/bazel/vfoo/bin/linux/amd64/\"",
+				".phase2.kubernetes_version=\"latest-bazel\"",
+				".phase2.kubelet_version=\"gs://kubernetes-release-dev/ci/v1.11.0-alpha.0.1031+d37460147ec956-bazel/bin/linux/amd64/\"",
 				".phase3.cni=\"weave\"",
 			},
 		},
 		{
-			name:              "kubeadm with ci kubelet version",
+			name:              "kubeadm with 1.9 ci kubelet version",
 			phase2:            "kubeadm",
 			kubeadmVersion:    "unstable",
-			kubeletCIVersion:  "latest",
-			kubernetesVersion: "latest-1.6",
+			kubeletCIVersion:  "latest-bazel-1.9",
+			kubernetesVersion: "latest-bazel-1.9",
 			expectConfigLines: []string{
 				".phase2.provider=\"kubeadm\"",
 				".phase2.kubeadm.version=\"unstable\"",
-				".phase2.kubernetes_version=\"latest-1.6\"",
-				".phase2.kubelet_version=\"gs://kubernetes-release-dev/bazel/vbar/bin/linux/amd64/\"",
-				".phase3.cni=\"weave\"",
-			},
-		},
-		{
-			name:              "kubeadm with 1.6 ci kubelet version",
-			phase2:            "kubeadm",
-			kubeadmVersion:    "unstable",
-			kubeletCIVersion:  "latest-1.6",
-			kubernetesVersion: "latest-1.6",
-			expectConfigLines: []string{
-				".phase2.provider=\"kubeadm\"",
-				".phase2.kubeadm.version=\"unstable\"",
-				".phase2.kubernetes_version=\"latest-1.6\"",
-				".phase2.kubelet_version=\"gs://kubernetes-release-dev/bazel/v1.6.12-beta.0.2+a03873b40780a3/build/debs/\"",
-				".phase3.cni=\"weave\"",
-			},
-		},
-		{
-			name:              "kubeadm with 1.7 ci kubelet version",
-			phase2:            "kubeadm",
-			kubeadmVersion:    "unstable",
-			kubeletCIVersion:  "latest-1.7",
-			kubernetesVersion: "latest-1.7",
-			expectConfigLines: []string{
-				".phase2.provider=\"kubeadm\"",
-				".phase2.kubeadm.version=\"unstable\"",
-				".phase2.kubernetes_version=\"latest-1.7\"",
-				".phase2.kubelet_version=\"gs://kubernetes-release-dev/bazel/v1.7.8-beta.0.22+9243a03f5fecc5/bin/linux/amd64/\"",
+				".phase2.kubernetes_version=\"latest-bazel-1.9\"",
+				".phase2.kubelet_version=\"gs://kubernetes-release-dev/ci/v1.9.4-beta.0.53+326c7c181909a8-bazel/bin/linux/amd64/\"",
 				".phase3.cni=\"weave\"",
 			},
 		},
@@ -192,8 +164,8 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 	}
 
 	mockGSFiles := map[string]string{
-		"gs://kubernetes-release-dev/ci/latest-1.6.txt": "v1.6.12-beta.0.2+a03873b40780a3",
-		"gs://kubernetes-release-dev/ci/latest-1.7.txt": "v1.7.8-beta.0.22+9243a03f5fecc5",
+		"gs://kubernetes-release-dev/ci/latest-bazel.txt":     "v1.11.0-alpha.0.1031+d37460147ec956-bazel",
+		"gs://kubernetes-release-dev/ci/latest-bazel-1.9.txt": "v1.9.4-beta.0.53+326c7c181909a8-bazel",
 	}
 
 	originalReadGSFile := readGSFile

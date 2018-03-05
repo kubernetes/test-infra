@@ -136,14 +136,8 @@ def kubeadm_version(mode, shared_build_gcs_path):
             raise ValueError('STABLE_BUILD_SCM_REVISION not found')
         version = status.group(1)
 
-        # Work-around for release-1.6 jobs, which still upload debs to an older
-        # location (without os/arch prefixes).
-        # TODO(pipejakob): remove this when we no longer support 1.6.x.
-        if version.startswith('v1.6.'):
-            return 'gs://kubernetes-release-dev/bazel/%s/build/debs/' % version
-
-        # The path given here should match jobs/ci-kubernetes-bazel-build.sh
-        return 'gs://kubernetes-release-dev/bazel/%s/bin/linux/amd64/' % version
+        # The path given here should match ci-kubernetes-bazel-build
+        return 'gs://kubernetes-release-dev/ci/%s-bazel/bin/linux/amd64/' % version
 
     elif mode == 'pull':
         # The format of shared_build_gcs_path looks like:

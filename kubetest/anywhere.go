@@ -143,11 +143,12 @@ func initializeKubernetesAnywhere(project, zone string) (*kubernetesAnywhere, er
 
 	kubeletVersion := *kubernetesAnywhereKubeletVersion
 	if *kubernetesAnywhereKubeletCIVersion != "" {
+		// resolvedVersion is EG v1.11.0-alpha.0.1031+d37460147ec956-bazel
 		resolvedVersion, err := resolveCIVersion(*kubernetesAnywhereKubeletCIVersion)
 		if err != nil {
 			return nil, err
 		}
-		kubeletVersion = bazelBuildPath(resolvedVersion)
+		kubeletVersion = fmt.Sprintf("gs://kubernetes-release-dev/ci/%v/bin/linux/amd64/", resolvedVersion)
 	}
 
 	// preserve backwards compatibility for e2e tests which never provided cni name
@@ -201,22 +202,8 @@ func newKubernetesAnywhere(project, zone string) (deployer, error) {
 }
 
 func resolveCIVersion(version string) (string, error) {
-	if strings.HasPrefix(version, "v") {
-		return version, nil
-	}
 	file := fmt.Sprintf("gs://kubernetes-release-dev/ci/%v.txt", version)
 	return readGSFile(file)
-}
-
-func bazelBuildPath(version string) string {
-	// This replicates the logic from scenarios/kubernetes_e2e.py, to
-	// accommodate the fact that bazel artifacts are stored in a different
-	// location for 1.6 builds.
-	if strings.HasPrefix(version, "v1.6.") {
-		return fmt.Sprintf("gs://kubernetes-release-dev/bazel/%v/build/debs/", version)
-	} else {
-		return fmt.Sprintf("gs://kubernetes-release-dev/bazel/%v/bin/linux/amd64/", version)
-	}
 }
 
 // Implemented as a function var for testing.
