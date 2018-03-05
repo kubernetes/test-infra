@@ -141,7 +141,8 @@ func (o *Options) Run(extra map[string]UploadFunc) error {
 	// ensure that an alias exists for any
 	// job we're uploading artifacts for
 	if alias := AliasForSpec(spec); alias != "" {
-		uploadTargets[alias] = DataUpload(strings.NewReader(jobBasePath))
+		fullBasePath := "gs://" + path.Join(o.GcsBucket, jobBasePath)
+		uploadTargets[alias] = DataUpload(strings.NewReader(fullBasePath))
 	}
 
 	if latestBuild := LatestBuildForSpec(spec); latestBuild != "" {
