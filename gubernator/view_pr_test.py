@@ -174,6 +174,17 @@ class TestDashboard(main_test.TestBase):
         self.assertIn('123', resp)
         self.assertIn('Needs Attention (1)', resp)
 
+    def test_milestone(self):
+        "Milestone links filter by milestone."
+        make_pr(123, ['user'], {'attn': {'User': 'fix tests'}})
+        make_pr(124, ['user'], {'attn': {'user': 'fix tests'}, 'milestone': 'v1.24'})
+        resp = app.get('/pr/user')
+        self.assertIn('v1.24', resp)
+        self.assertIn('123', resp)
+        self.assertIn('124', resp)
+        resp = app.get('/pr/user?milestone=v1.24')
+        self.assertNotIn('123', resp)
+        self.assertIn('124', resp)
 
     @staticmethod
     def make_session(**kwargs):

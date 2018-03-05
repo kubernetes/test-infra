@@ -209,8 +209,14 @@ class PRDashboard(view_base.BaseHandler):
                 cats = [('Open Kubernetes PRs', lambda x: True,
                     'is:open is:pr user:kubernetes')]
 
+            milestone = self.request.get('milestone')
+            milestones = {p.payload.get('milestone') for p in prs} - {None}
+            if milestone:
+                prs = [pr for pr in prs if pr.payload.get('milestone') == milestone]
+
             self.render('pr_dashboard.html', dict(
-                prs=prs, cats=cats, user=user, login=login, acks=acks))
+                prs=prs, cats=cats, user=user, login=login, acks=acks,
+                milestone=milestone, milestones=milestones))
         else:
             self.abort(406)
 
