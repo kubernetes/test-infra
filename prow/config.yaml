@@ -2764,7 +2764,7 @@ presubmits:
       preset-k8s-ssh: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180223-74690e8dc-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180301-32170552d-master
         args:
         - --root=/go/src
         - "--clean"
@@ -4760,7 +4760,7 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180223-74690e8dc-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180301-32170552d-master
         name: ""
         resources: {}
         securityContext:
