@@ -8882,6 +8882,7 @@
       "--extract=ci/latest-bazel",
       "--gcp-zone=us-central1-f",
       "--kubeadm=ci",
+      "--kubernetes-anywhere-build-folder=ci",
       "--kubernetes-anywhere-dump-cluster-logs=true",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel",
       "--kubernetes-anywhere-kubernetes-version=ci/latest-bazel",

@@ -32,6 +32,7 @@ import (
 )
 
 const defaultKubeadmCNI = "weave"
+const defaultBuildFolder = "bazel"
 
 var (
 	// kubernetes-anywhere specific flags.
@@ -47,6 +48,8 @@ var (
 		"(kubernetes-anywhere only) Version of Kubelet to use, if phase2-provider is kubeadm. May be \"stable\" or a gs:// link to a custom build.")
 	kubernetesAnywhereKubeletCIVersion = flag.String("kubernetes-anywhere-kubelet-ci-version", "",
 		"(kubernetes-anywhere only) If specified, the ci version for the kubelt to use. Overrides kubernetes-anywhere-kubelet-version.")
+	kubernetesAnywhereBuildFolder = flag.String("kubernetes-anywhere-build-folder", defaultBuildFolder,
+		"(kubernetes-anywhere only) Which folder under gs://kubernetes-release-dev/ to look for the built binaries for kubelet etc.")
 	kubernetesAnywhereCluster = flag.String("kubernetes-anywhere-cluster", "",
 		"(kubernetes-anywhere only) Cluster name. Must be set for kubernetes-anywhere.")
 	kubernetesAnywhereProxyMode = flag.String("kubernetes-anywhere-proxy-mode", "",
@@ -147,7 +150,7 @@ func initializeKubernetesAnywhere(project, zone string) (*kubernetesAnywhere, er
 		if err != nil {
 			return nil, err
 		}
-		kubeletVersion = bazelBuildPath(resolvedVersion)
+		kubeletVersion = bazelBuildPath(*kubernetesAnywhereBuildFolder, resolvedVersion)
 	}
 
 	// preserve backwards compatibility for e2e tests which never provided cni name
@@ -208,14 +211,14 @@ func resolveCIVersion(version string) (string, error) {
 	return readGSFile(file)
 }
 
-func bazelBuildPath(version string) string {
+func bazelBuildPath(buildFolder string, version string) string {
 	// This replicates the logic from scenarios/kubernetes_e2e.py, to
 	// accommodate the fact that bazel artifacts are stored in a different
 	// location for 1.6 builds.
 	if strings.HasPrefix(version, "v1.6.") {
-		return fmt.Sprintf("gs://kubernetes-release-dev/bazel/%v/build/debs/", version)
+		return fmt.Sprintf("gs://kubernetes-release-dev/%v/%v/build/debs/", buildFolder, version)
 	} else {
-		return fmt.Sprintf("gs://kubernetes-release-dev/bazel/%v/bin/linux/amd64/", version)
+		return fmt.Sprintf("gs://kubernetes-release-dev/%v/%v/bin/linux/amd64/", buildFolder, version)
 	}
 }
 
