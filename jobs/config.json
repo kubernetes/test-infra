@@ -11097,7 +11097,7 @@
   "pull-federation-e2e-gce": {
     "args": [
       "--build-federation",
-      "--cluster=jenkins-us-central1-f",
+      "--cluster=",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/pull-kubernetes-e2e.env",
       "--env-file=jobs/env/pull-federation-e2e-gce.env",
