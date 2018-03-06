@@ -64,10 +64,12 @@ you'll need to do the following:
   - Presubmit jobs run on unmerged code in PRs
   - Postsubmit jobs run after merging code
   - Periodic job run on a timed basis
-* (Deprecated!) Some old jobs still run on jenkins
-  - Please do not add new jobs to jenkins
-  - Jenkins configuration is defined at `jenkins/job-configs`
-  - More deprecated details at [jenkins/README.md](jenkins/README.md)
+
+The configs need to be sorted and kubernetes must be in sync with the security repo, or else presubmit will fail.
+You can run the script below to keep them valid:
+```
+hack/update-config.sh
+```
 
 NOTE: `kubernetes/kubernetes` and `kubernetes-security/kubernetes` must have matching presubmits.
 
@@ -108,7 +110,7 @@ We are moving towards making more jobs to fit into the generated config.
 
 Presubmit will tell you if you forget to do any of this correctly.
 
-Merge your PR and @k8s-ci-robot will deploy your change automatically.
+Merge your PR and [@k8s-ci-robot] will deploy your change automatically.
 
 ### Update an existing job
 
@@ -128,7 +130,7 @@ Update where the job appears on testgrid by changing [`testgrid/config.yaml`].
 The reverse of creating a new job: delete the appropriate entries in
 [`jobs/config.json`], [`prow/config.yaml`] and [`testgrid/config.yaml`].
 
-Merge your PR and @k8s-ci-robot will deploy your change automatically.
+Merge your PR and [@k8s-ci-robot] will deploy your change automatically.
 
 ## Building and testing the test-infra
 
@@ -152,3 +154,4 @@ how to contribute test results, see [Contributing Test Results](docs/contributin
 [`prow/config.yaml`]: /prow/config.yaml
 [`testgrid/config.yaml`]: /testgrid/config.yaml
 [test-infra oncall]: https://go.k8s.io/oncall
+[@k8s-ci-robot]: (https://github.com/k8s-ci-robot)
