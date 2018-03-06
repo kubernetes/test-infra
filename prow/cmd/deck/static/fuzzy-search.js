@@ -16,6 +16,7 @@ limitations under the License.
 
 (function(window) {
   var FuzzySearch = function(dict) {
+    dict.sort();
     /** {Array<string>} **/
     this.dict = dict;
     /**
@@ -156,6 +157,7 @@ limitations under the License.
    * @param {Array<string>} dict
    */
   FuzzySearch.prototype.setDict = function(dict) {
+    dict.sort();
     this.dict = dict;
   };
 
