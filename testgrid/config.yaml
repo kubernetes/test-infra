@@ -561,6 +561,13 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-deploy
 - name: ci-kubernetes-cross-build
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-cross-build
+- name: ci-kubernetes-node-kubelet-alpha
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-alpha
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
 - name: ci-kubernetes-node-kubelet-beta
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-beta
   test_name_config:
@@ -4496,6 +4503,8 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet-serial
   - name: kubelet-flaky-gce-e2e
     test_group_name: ci-kubernetes-node-kubelet-flaky
+  - name: kubelet-alpha
+    test_group_name: ci-kubernetes-node-kubelet-alpha
   - name: kubelet-conformance-gce-e2e
     test_group_name: ci-kubernetes-node-kubelet-conformance
   - name: kubelet-1.9

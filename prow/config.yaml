@@ -14053,6 +14053,23 @@ periodics:
       - name: GOPATH
         value: /go
 
+- name: ci-kubernetes-node-kubelet-alpha
+  interval: 1h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180305-98b9ccd6e-master
+      args:
+      - --repo=k8s.io/kubernetes=release-1.10
+      - --timeout=90
+      - --root=/go/src
+      env:
+      - name: GOPATH
+        value: /go
+
 - name: ci-kubernetes-node-kubelet-benchmark
   interval: 2h
   agent: kubernetes
