@@ -94,6 +94,8 @@ def do_testcmd(name):
             logging.error('Unexpected Go unit test name %r', name)
             return name
         return 'go test -v %s -run %s$' % (pkg, name)
+    elif name.startswith('istio.io/'):
+        return ''
     elif name.startswith('//'):
         return 'bazel test %s' % name
     else:

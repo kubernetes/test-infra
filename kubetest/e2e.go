@@ -27,6 +27,7 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/test-infra/kubetest/dind"
 	"k8s.io/test-infra/kubetest/util"
 )
 
@@ -143,7 +144,8 @@ func run(deploy deployer, o options) error {
 			}
 		}
 
-		if !o.nodeTests {
+		// The dind deployer checks that the control plane is healthy.
+		if !o.nodeTests && o.deployment != "dind" {
 			// Check that the api is reachable before proceeding with further steps.
 			errs = util.AppendError(errs, control.XmlWrap(&suite, "Check APIReachability", getKubectlVersion))
 			if dump != "" {
@@ -187,6 +189,19 @@ func run(deploy deployer, o options) error {
 			errs = util.AppendError(errs, control.XmlWrap(&suite, "Node Tests", func() error {
 				return nodeTest(nodeArgs, o.testArgs, o.nodeTestArgs, o.gcpProject, o.gcpZone)
 			}))
+		} else if o.deployment == "dind" {
+			if err := control.XmlWrap(&suite, "IsUp", deploy.IsUp); err != nil {
+				errs = util.AppendError(errs, err)
+			}
+			dep := deploy.(*dind.DindDeployer)
+			tester, err := dep.NewTester()
+			if err != nil {
+				return err
+			}
+			errs = util.AppendError(errs, control.XmlWrap(&suite, "Test", func() error {
+				return tester.Test()
+			}))
+
 		} else {
 			errs = util.AppendError(errs, control.XmlWrap(&suite, "kubectl version", getKubectlVersion))
 			if o.skew {

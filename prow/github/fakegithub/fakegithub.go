@@ -57,6 +57,10 @@ type FakeClient struct {
 	// org/repo#number:assignee
 	AssigneesAdded []string
 
+	// org/repo#number:milestone (represents the milestone for a specific issue)
+	Milestone    int
+	MilestoneMap map[string]int
+
 	// Fake remote git storage. File name are keys
 	// and values map SHA to content
 	RemoteFiles map[string]map[string]string
@@ -269,4 +273,25 @@ func (f *FakeClient) ListCollaborators(org, repo string) ([]github.User, error) 
 		result = append(result, github.User{Login: login})
 	}
 	return result, nil
+}
+
+func (f *FakeClient) ClearMilestone(org, repo string, issueNum int) error {
+	f.Milestone = 0
+	return nil
+}
+
+func (f *FakeClient) SetMilestone(org, repo string, issueNum, milestoneNum int) error {
+	if milestoneNum < 0 {
+		return fmt.Errorf("Milestone Numbers Cannot Be Negative")
+	}
+	f.Milestone = milestoneNum
+	return nil
+}
+
+func (f *FakeClient) ListMilestones(org, repo string) ([]github.Milestone, error) {
+	milestones := []github.Milestone{}
+	for k, v := range f.MilestoneMap {
+		milestones = append(milestones, github.Milestone{Title: k, Number: v})
+	}
+	return milestones, nil
 }

@@ -22,9 +22,12 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/apimachinery/pkg/util/sets"
+
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -152,4 +155,120 @@ func isUserTrusted(ghc githubClient, user, trustedOrg, org string) (bool, error)
 		}
 	}
 	return orgMember, nil
+}
+
+func fileChangesGetter(ghc githubClient, org, repo string, num int) func() ([]string, error) {
+	var changedFiles []string
+	return func() ([]string, error) {
+		// Fetch the changed files from github at most once.
+		if changedFiles == nil {
+			changes, err := ghc.GetPullRequestChanges(org, repo, num)
+			if err != nil {
+				return nil, fmt.Errorf("error getting pull request changes: %v", err)
+			}
+			changedFiles = []string{}
+			for _, change := range changes {
+				changedFiles = append(changedFiles, change.Filename)
+			}
+		}
+		return changedFiles, nil
+	}
+}
+
+func runOrSkipRequested(c client, pr *github.PullRequest, requestedJobs []config.Presubmit, forceRunContexts map[string]bool, body, eventGUID string) error {
+	org := pr.Base.Repo.Owner.Login
+	repo := pr.Base.Repo.Name
+	number := pr.Number
+
+	baseSHA, err := c.GitHubClient.GetRef(org, repo, "heads/"+pr.Base.Ref)
+	if err != nil {
+		return err
+	}
+
+	// Use a closure to lazily retrieve the file changes only if they are needed.
+	// We only have to fetch the changes if there is at least one RunIfChanged
+	// job that is not being force run (due to a `/retest` after a failure or
+	// because it is explicitly triggered with `/test foo`).
+	getChanges := fileChangesGetter(c.GitHubClient, org, repo, number)
+	// shouldRun indicates if a job should actually run.
+	shouldRun := func(j config.Presubmit) (bool, error) {
+		if !j.RunsAgainstBranch(pr.Base.Ref) {
+			return false, nil
+		}
+		if j.RunIfChanged == "" || forceRunContexts[j.Context] || j.TriggerMatches(body) {
+			return true, nil
+		}
+		changes, err := getChanges()
+		if err != nil {
+			return false, err
+		}
+		return j.RunsAgainstChanges(changes), nil
+	}
+
+	// For each job determine if any sharded version of the job runs.
+	// This in turn determines which jobs to run and which contexts to mark as "Skipped".
+	//
+	// Note: Job sharding is achieved with presubmit configurations that overlap on
+	// name, but run under disjoint circumstances. For example, a job 'foo' can be
+	// sharded to have different pod specs for different branches by
+	// creating 2 presubmit configurations with the name foo, but different pod
+	// specs, and specifying different branches for each job.
+	var toRunJobs []config.Presubmit
+	toRun := sets.NewString()
+	toSkip := sets.NewString()
+	for _, job := range requestedJobs {
+		runs, err := shouldRun(job)
+		if err != nil {
+			return err
+		}
+		if runs {
+			toRunJobs = append(toRunJobs, job)
+			toRun.Insert(job.Context)
+		} else if !job.SkipReport {
+			toSkip.Insert(job.Context)
+		}
+	}
+	// 'Skip' any context that is requested, but doesn't have any job shards that
+	// will run.
+	for _, context := range toSkip.Difference(toRun).List() {
+		if err := c.GitHubClient.CreateStatus(org, repo, pr.Head.SHA, github.Status{
+			State:       github.StatusSuccess,
+			Context:     context,
+			Description: "Skipped",
+		}); err != nil {
+			return err
+		}
+	}
+
+	var errors []error
+	for _, job := range toRunJobs {
+		c.Logger.Infof("Starting %s build.", job.Name)
+		kr := kube.Refs{
+			Org:     org,
+			Repo:    repo,
+			BaseRef: pr.Base.Ref,
+			BaseSHA: baseSHA,
+			Pulls: []kube.Pull{
+				{
+					Number: number,
+					Author: pr.User.Login,
+					SHA:    pr.Head.SHA,
+				},
+			},
+		}
+		labels := make(map[string]string)
+		for k, v := range job.Labels {
+			labels[k] = v
+		}
+		labels[github.EventGUID] = eventGUID
+		pj := pjutil.NewProwJob(pjutil.PresubmitSpec(job, kr), labels)
+		c.Logger.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
+		if _, err := c.KubeClient.CreateProwJob(pj); err != nil {
+			errors = append(errors, err)
+		}
+	}
+	if len(errors) > 0 {
+		return fmt.Errorf("errors starting jobs: %v", errors)
+	}
+	return nil
 }

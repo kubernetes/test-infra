@@ -25,6 +25,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"k8s.io/test-infra/prow/config"
 )
 
 func expectEqual(t *testing.T, msg string, have interface{}, want interface{}) {
@@ -138,7 +140,7 @@ func TestFallback(t *testing.T) {
 
 	store := makeStore(t)
 	defer os.Remove(store.storagePath)
-	store.fallbackFunc = fallbackHandler{serv.URL + "/logs/%s/latest-build.txt"}.get
+	store.fallbackFunc = fallbackHandler{template: serv.URL + "/logs/%s/latest-build.txt"}.get
 
 	expectEqual(t, "vend foo 1", store.vend("foo"), 201)
 	expectEqual(t, "vend foo 2", store.vend("foo"), 202)
@@ -146,4 +148,102 @@ func TestFallback(t *testing.T) {
 	expectEqual(t, "vend bar", store.vend("bar"), 301)
 	expectEqual(t, "vend baz", store.vend("baz"), 1)
 	expectEqual(t, "vend quux", store.vend("quux"), 1)
+}
+
+var c *config.Config
+
+func TestMain(m *testing.M) {
+	conf, err := config.Load("../../config.yaml")
+	if err != nil {
+		fmt.Printf("Could not load config: %v", err)
+		os.Exit(1)
+	}
+	c = conf
+	os.Exit(m.Run())
+}
+
+func TestGetURL(t *testing.T) {
+	tests := []struct {
+		name string
+
+		jobName  string
+		template string
+		c        *config.Config
+		bucket   string
+
+		expected string
+	}{
+		{
+			name: "fallback template",
+
+			jobName:  "pull-community-verify",
+			template: "https://storage.googleapis.com/kubernetes-jenkins/logs/%s/latest-build.txt",
+
+			expected: "https://storage.googleapis.com/kubernetes-jenkins/logs/pull-community-verify/latest-build.txt",
+		},
+		{
+			name: "fallback bucket - presubmit",
+
+			jobName: "pull-community-verify",
+			c:       c,
+			bucket:  "https://storage.googleapis.com/kubernetes-jenkins",
+
+			expected: "https://storage.googleapis.com/kubernetes-jenkins/pr-logs/directory/pull-community-verify/latest-build.txt",
+		},
+		{
+			name: "fallback bucket - postsubmit",
+
+			jobName: "ci-federation-release",
+			c:       c,
+			bucket:  "https://storage.googleapis.com/kubernetes-jenkins",
+
+			expected: "https://storage.googleapis.com/kubernetes-jenkins/logs/ci-federation-release/latest-build.txt",
+		},
+		{
+			name: "fallback bucket - periodic",
+
+			jobName: "ci-kubernetes-cross-build",
+			c:       c,
+			bucket:  "https://storage.googleapis.com/kubernetes-jenkins",
+
+			expected: "https://storage.googleapis.com/kubernetes-jenkins/logs/ci-kubernetes-cross-build/latest-build.txt",
+		},
+		{
+			name: "fallback bucket - unknown",
+
+			jobName: "a-name-that-is-what-it-is",
+			c:       c,
+			bucket:  "https://storage.googleapis.com/kubernetes-jenkins",
+
+			expected: "",
+		},
+		{
+			name: "fallback bucket with trailing slash",
+
+			jobName: "pull-community-verify",
+			c:       c,
+			bucket:  "https://storage.googleapis.com/kubernetes-jenkins/",
+
+			expected: "https://storage.googleapis.com/kubernetes-jenkins/pr-logs/directory/pull-community-verify/latest-build.txt",
+		},
+	}
+
+	for _, test := range tests {
+		t.Logf("running scenario %q", test.name)
+
+		var configAgent *config.Agent
+		if test.c != nil {
+			configAgent = new(config.Agent)
+			configAgent.Set(test.c)
+		}
+		f := fallbackHandler{
+			template:    test.template,
+			configAgent: configAgent,
+			bucket:      test.bucket,
+		}
+
+		if got := f.getURL(test.jobName); got != test.expected {
+			t.Errorf("unexpected URL:\n%s\nexpected:\n%s", got, test.expected)
+		}
+	}
 }

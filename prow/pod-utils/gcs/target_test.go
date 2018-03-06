@@ -160,6 +160,41 @@ func TestAliasForSpec(t *testing.T) {
 	}
 }
 
+func TestLatestBuildForSpec(t *testing.T) {
+	testCases := []struct {
+		name     string
+		spec     *pjutil.JobSpec
+		expected string
+	}{
+		{
+			name:     "presubmit",
+			spec:     &pjutil.JobSpec{Type: kube.PresubmitJob, Job: "pull-kubernetes-unit"},
+			expected: "pr-logs/directory/pull-kubernetes-unit/latest-build.txt",
+		},
+		{
+			name:     "batch",
+			spec:     &pjutil.JobSpec{Type: kube.BatchJob, Job: "pull-kubernetes-unit"},
+			expected: "pr-logs/directory/pull-kubernetes-unit/latest-build.txt",
+		},
+		{
+			name:     "postsubmit",
+			spec:     &pjutil.JobSpec{Type: kube.PostsubmitJob, Job: "ci-kubernetes-unit"},
+			expected: "logs/ci-kubernetes-unit/latest-build.txt",
+		},
+		{
+			name:     "periodic",
+			spec:     &pjutil.JobSpec{Type: kube.PeriodicJob, Job: "ci-kubernetes-periodic"},
+			expected: "logs/ci-kubernetes-periodic/latest-build.txt",
+		},
+	}
+
+	for _, test := range testCases {
+		if expected, actual := test.expected, LatestBuildForSpec(test.spec); expected != actual {
+			t.Errorf("%s: expected alias %q but got %q", test.name, expected, actual)
+		}
+	}
+}
+
 func TestNewLegacyRepoPathBuilder(t *testing.T) {
 	testCases := []struct {
 		name        string

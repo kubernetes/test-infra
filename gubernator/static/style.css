@@ -138,7 +138,7 @@ table.pr-dash tbody tr:nth-child(odd) {
 table.pr-dash tbody tr:hover {
     background: #e3e9ff;
 }
-#prdash-nav {
+#prdash-nav, #milestone-nav {
     margin: 10px 0 0 40px;
 }
 #userBox {

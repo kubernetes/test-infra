@@ -106,6 +106,7 @@ class CalculateTest(unittest.TestCase):
                         'head': {'sha': 'abcdef'},
                         'additions': 1,
                         'deletions': 1,
+                        'milestone': {'title': 'v1.10'},
                     }
                 }, 1),
                 make_comment_event(1, 'k8s-bot',
@@ -131,6 +132,7 @@ class CalculateTest(unittest.TestCase):
             'needs_rebase': False,
             'status': {'e2e': ['failure', None, 'stuff is broken']},
             'xrefs': ['/bucket/job/123'],
+            'milestone': 'v1.10',
         }))
 
     def test_distill(self):

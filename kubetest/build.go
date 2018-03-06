@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"os/exec"
 
+	"k8s.io/test-infra/kubetest/dind"
 	"k8s.io/test-infra/kubetest/util"
 )
 
@@ -45,11 +46,11 @@ func (b *buildStrategy) Set(value string) error {
 		value = buildDefault
 	}
 	switch value {
-	case "bazel", "host-go", "quick", "release":
+	case "bazel", "dind", "host-go", "quick", "release":
 		*b = buildStrategy(value)
 		return nil
 	}
-	return fmt.Errorf("Bad build strategy: %v (use: bazel, quick, release)", value)
+	return fmt.Errorf("bad build strategy: %v (use: bazel, dind, host-go, quick, release)", value)
 }
 
 func (b *buildStrategy) Type() string {
@@ -68,6 +69,8 @@ func (b *buildStrategy) Build() error {
 	switch *b {
 	case "bazel":
 		target = "bazel-release"
+	case "dind":
+		return dind.NewBuilder(util.K8s("kubernetes"), util.K8s("test-infra", "dind"), control).Build()
 	// you really should use "bazel" or "quick" in most cases, but in CI
 	// we are mimicking these in our job container without an extra level
 	// of sandboxing in some cases

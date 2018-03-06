@@ -34,6 +34,7 @@ import (
 	"time"
 
 	"k8s.io/test-infra/boskos/client"
+	"k8s.io/test-infra/kubetest/dind"
 	"k8s.io/test-infra/kubetest/process"
 	"k8s.io/test-infra/kubetest/util"
 
@@ -62,6 +63,7 @@ type options struct {
 	cluster             string
 	clusterIPRange      string
 	deployment          string
+	dindImage           string
 	down                bool
 	dump                string
 	extract             extractStrategies
@@ -80,6 +82,7 @@ type options struct {
 	gcpRegion           string
 	gcpZone             string
 	ginkgoParallel      ginkgoParallelValue
+	kubecfg             string
 	kubemark            bool
 	kubemarkMasterSize  string
 	kubemarkNodes       string // TODO(fejta): switch to int after migration
@@ -112,14 +115,15 @@ type options struct {
 
 func defineFlags() *options {
 	o := options{}
-	flag.Var(&o.build, "build", "Rebuild k8s binaries, optionally forcing (release|quick|bazel) strategy")
+	flag.Var(&o.build, "build", "Rebuild k8s binaries, optionally forcing (release|quick|bazel|dind) strategy")
 	flag.Var(&o.buildFederation, "build-federation", "Rebuild federation binaries, optionally forcing (release|quick|bazel) strategy")
 	flag.BoolVar(&o.charts, "charts", false, "If true, run charts tests")
 	flag.BoolVar(&o.checkSkew, "check-version-skew", true, "Verify client and server versions match")
 	flag.BoolVar(&o.checkLeaks, "check-leaked-resources", false, "Ensure project ends with the same resources")
 	flag.StringVar(&o.cluster, "cluster", "", "Cluster name. Must be set for --deployment=gke (TODO: other deployments).")
 	flag.StringVar(&o.clusterIPRange, "cluster-ip-range", "", "Specifies CLUSTER_IP_RANGE value during --up and --test (only relevant for --deployment=bash). Auto-calculated if empty.")
-	flag.StringVar(&o.deployment, "deployment", "bash", "Choices: none/bash/gke/kops/kubernetes-anywhere/node/local")
+	flag.StringVar(&o.deployment, "deployment", "bash", "Choices: none/bash/dind/gke/kops/kubernetes-anywhere/node/local")
+	flag.StringVar(&o.dindImage, "dind-image", "", "The dind image to use to start a cluster. Defaults to the docker tag produced by bazel.")
 	flag.BoolVar(&o.down, "down", false, "If true, tear down the cluster before exiting.")
 	flag.StringVar(&o.dump, "dump", "", "If set, dump cluster logs to this location on test or cluster-up failure")
 	flag.Var(&o.extract, "extract", "Extract k8s binaries from the specified release location")
@@ -138,6 +142,7 @@ func defineFlags() *options {
 	flag.StringVar(&o.gcpMasterImage, "gcp-master-image", "", "Master image type (cos|debian on GCE, n/a on GKE)")
 	flag.StringVar(&o.gcpNodeImage, "gcp-node-image", "", "Node image type (cos|container_vm on GKE, cos|debian on GCE)")
 	flag.StringVar(&o.gcpNodes, "gcp-nodes", "", "(--provider=gce only) Number of nodes to create.")
+	flag.StringVar(&o.kubecfg, "kubeconfig", "", "The location of a kubeconfig file.")
 	flag.BoolVar(&o.kubemark, "kubemark", false, "If true, run kubemark tests.")
 	flag.StringVar(&o.kubemarkMasterSize, "kubemark-master-size", "", "Kubemark master size (only relevant if --kubemark=true). Auto-calculated based on '--kubemark-nodes' if left empty.")
 	flag.StringVar(&o.kubemarkNodes, "kubemark-nodes", "5", "Number of kubemark nodes to start (only relevant if --kubemark=true).")
@@ -168,7 +173,14 @@ func defineFlags() *options {
 	flag.BoolVar(&o.up, "up", false, "If true, start the e2e cluster. If cluster is already up, recreate it.")
 	flag.StringVar(&o.upgradeArgs, "upgrade_args", "", "If set, run upgrade tests before other tests")
 
-	flag.BoolVar(&verbose, "v", true, "If true, print all command output.")
+	// The "-v" flag was also used by glog, which is used by k8s.io/client-go. Duplicate flags cause panics.
+	// 1. Even if we could convince glog to change, they have too many consumers to ever do so.
+	// 2. The glog lib parses flags during init. It is impossible to dynamically rewrite the args before they're parsed by glog.
+	// 3. The glog lib takes an int value, so "-v false" is an error.
+	// 4. It's possible, but unlikely, we could convince k8s.io/client-go to use a logging shim, because a library shouldn't force a logging implementation. This would take a major version release for the lib.
+	//
+	// The most reasonable solution is to accept that we shouldn't have made a single-letter global, and rename all references to this variable.
+	flag.BoolVar(&verbose, "verbose-commands", true, "If true, print all command output.")
 
 	// go flag does not support StringArrayVar
 	pflag.StringArrayVar(&o.testCmdArgs, "test-cmd-args", []string{}, "args for test-cmd")
@@ -212,6 +224,8 @@ func getDeployer(o *options) (deployer, error) {
 	switch o.deployment {
 	case "bash":
 		return newBash(&o.clusterIPRange), nil
+	case "dind":
+		return dind.NewDeployer(o.kubecfg, o.dindImage, &o.testArgs, control)
 	case "gke":
 		return newGKE(o.provider, o.gcpProject, o.gcpZone, o.gcpRegion, o.gcpNetwork, o.gcpNodeImage, o.cluster, &o.testArgs, &o.upgradeArgs)
 	case "kops":
@@ -394,6 +408,9 @@ func acquireKubernetes(o *options) error {
 
 	// Potentially stage build binaries somewhere on GCS
 	if o.stage.Enabled() {
+		if o.build == "dind" {
+			return fmt.Errorf("staging dind images isn't supported yet")
+		}
 		if err := control.XmlWrap(&suite, "Stage", func() error {
 			return o.stage.Stage(o.federation)
 		}); err != nil {

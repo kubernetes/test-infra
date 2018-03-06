@@ -43,3 +43,8 @@ required = [
 [[constraint]]
   name = "github.com/client9/misspell"
   revision = "9ce5d979ffdaca6385988d7ad1079a33ec942d20"
+
+[[constraint]]
+  name = "github.com/peterbourgon/diskv"
+  revision= "2973218375c3d13162e1d3afe1708aaee318ef3f"
+

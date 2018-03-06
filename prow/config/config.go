@@ -78,6 +78,20 @@ type Config struct {
 
 	// PushGateway is a prometheus push gateway.
 	PushGateway PushGateway `json:"push_gateway,omitempty"`
+
+	// OwnersDirBlacklist is used to configure which directories to ignore when
+	// searching for OWNERS{,_ALIAS} files in a repo.
+	OwnersDirBlacklist OwnersDirBlacklist `json:"owners_dir_blacklist,omitempty"`
+}
+
+// OwnersDirBlacklist is used to configure which directories to ignore when
+// searching for OWNERS{,_ALIAS} files in a repo.
+type OwnersDirBlacklist struct {
+	// Repos configures a directory blacklist per repo (or org)
+	Repos map[string][]string `json:"repos"`
+	// Default configures a default blacklist for repos (or orgs) not
+	// specifically configured
+	Default []string `json:"default"`
 }
 
 // PushGateway is a prometheus push gateway.

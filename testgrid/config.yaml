@@ -224,10 +224,16 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-autoscaling
 - name: ci-kubernetes-e2e-gci-gce-autoscaling-migs
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-autoscaling-migs
+- name: ci-kubernetes-e2e-gci-gce-autoscaling-hpa
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-autoscaling-hpa
+- name: ci-kubernetes-e2e-gci-gce-autoscaling-migs-hpa
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-autoscaling-migs-hpa
 - name: ci-kubernetes-e2e-autoscaling-vpa-recommender
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-autoscaling-vpa-recommender
 - name: ci-kubernetes-e2e-autoscaling-vpa-updater
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-autoscaling-vpa-updater
+- name: ci-kubernetes-e2e-autoscaling-vpa-actuation
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-autoscaling-vpa-actuation
 - name: ci-kubernetes-e2e-autoscaling-vpa-admission-controller
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-autoscaling-vpa-admission-controller
 - name: ci-kubernetes-e2e-autoscaling-vpa-full
@@ -377,6 +383,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-autoscaling
 - name: ci-kubernetes-e2e-gci-gke-autoscaling-regional
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-autoscaling-regional
+- name: ci-kubernetes-e2e-gci-gke-autoscaling-hpa
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-autoscaling-hpa
 - name: ci-kubernetes-e2e-gke-stackdriver
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stackdriver
 - name: ci-kubernetes-e2e-gke-sd-logging-gci-latest
@@ -1825,6 +1833,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-node-e2e-containerd
   days_of_results: 1
   num_columns_recent: 20
+- name: pull-kubernetes-local-e2e
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-local-e2e
+  days_of_results: 1
+  num_columns_recent: 20
 - name: pull-kubernetes-e2e-containerd-gce
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-containerd-gce
   days_of_results: 1
@@ -2163,6 +2175,34 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-cluster-new
 - name: pull-kops-e2e-kubernetes-aws
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-e2e-kubernetes-aws
+  num_columns_recent: 20
+- name: pull-kops-bazel-build
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-bazel-build
+  days_of_results: 1
+  num_columns_recent: 20
+- name: pull-kops-bazel-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-bazel-test
+  days_of_results: 1
+  num_columns_recent: 20
+- name: pull-kops-verify-bazel
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-verify-bazel
+  days_of_results: 1
+  num_columns_recent: 20
+- name: pull-kops-verify-boilerplate
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-verify-boilerplate
+  days_of_results: 1
+  num_columns_recent: 20
+- name: pull-kops-verify-govet
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-verify-govet
+  days_of_results: 1
+  num_columns_recent: 20
+- name: pull-kops-verify-gofmt
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-verify-gofmt
+  days_of_results: 1
+  num_columns_recent: 20
+- name: pull-kops-verify-packages
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-verify-packages
+  days_of_results: 1
   num_columns_recent: 20
 - name: pull-heapster-e2e
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-heapster-e2e
@@ -3494,54 +3534,67 @@ dashboards:
   dashboard_tab:
   - name: gce-device-plugin-gpu
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gce-device-plugin-gpu-1.10
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gce-device-plugin-gpu-1.9
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gce-gpu
     test_group_name: ci-kubernetes-e2e-gce-gpu
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gce-gpu-1.10
     test_group_name: ci-kubernetes-e2e-gce-gpu-beta
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gce-gpu-1.9
     test_group_name: ci-kubernetes-e2e-gce-gpu-stable1
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-device-plugin-gpu
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-device-plugin-gpu-1.10
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-device-plugin-gpu-1.9
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-device-plugin-gpu-p100
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-device-plugin-gpu-p100-1.9
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-staging-latest-device-plugin-gpu
     test_group_name: ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-device-plugin-gpu-monitoring
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-monitoring
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gce-device-plugin-gpu-cri-containerd
@@ -3551,6 +3604,7 @@ dashboards:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-gpu-1.7
     test_group_name: ci-kubernetes-e2e-gke-gpu-1-7
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: kubelet-serial-gce-e2e
@@ -3707,7 +3761,7 @@ dashboards:
     description: Presumbit tests for Minigo.
     test_group_name: tf-minigo-presubmit
 
-- name: sig-autoscaling
+- name: sig-autoscaling-cluster-autoscaler
   dashboard_tab:
   - name: gci-gce-autoscaling
     test_group_name: ci-kubernetes-e2e-gci-gce-autoscaling
@@ -3723,10 +3777,24 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-autoscaling
   - name: gke-ubuntustable1-k8sstable2-autoscaling
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-autoscaling
+
+- name: sig-autoscaling-hpa
+  dashboard_tab:
+  - name: gci-gce-autoscaling-hpa
+    test_group_name: ci-kubernetes-e2e-gci-gce-autoscaling-hpa
+  - name: gci-gce-autoscaling-migs-hpa
+    test_group_name: ci-kubernetes-e2e-gci-gce-autoscaling-migs-hpa
+  - name: gci-gke-autoscaling-hpa
+    test_group_name: ci-kubernetes-e2e-gci-gke-autoscaling-hpa
+
+- name: sig-autoscaling-vpa
+  dashboard_tab:
   - name: autoscaling-vpa-recommender
     test_group_name: ci-kubernetes-e2e-autoscaling-vpa-recommender
   - name: autoscaling-vpa-updater
     test_group_name: ci-kubernetes-e2e-autoscaling-vpa-updater
+  - name: autoscaling-vpa-actuation
+    test_group_name: ci-kubernetes-e2e-autoscaling-vpa-actuation
   - name: autoscaling-vpa-admission-controller
     test_group_name: ci-kubernetes-e2e-autoscaling-vpa-admission-controller
   - name: autoscaling-vpa-full
@@ -4618,6 +4686,11 @@ dashboards:
     test_group_name: ci-kubernetes-local-e2e
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: pull-kubernetes-local-e2e
+    description: Runs conformance tests using kubetest with local-up-cluster
+    test_group_name: pull-kubernetes-local-e2e
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: pull-janitor
     description: Deletes old GCP resources from presubmit jobs
     test_group_name: maintenance-pull-janitor
@@ -5234,12 +5307,29 @@ dashboards:
   dashboard_tab:
   - name: heapster
     test_group_name: pull-heapster-e2e
-  - name: kops
-    test_group_name: pull-kops-e2e-kubernetes-aws
   - name: charts
     test_group_name: pull-charts-e2e
   - name: cadvisor
     test_group_name: pull-cadvisor-e2e
+
+- name: presubmits-kops
+  dashboard_tab:
+  - name: e2e
+    test_group_name: pull-kops-e2e-kubernetes-aws
+  - name: verify-bazel
+    test_group_name: pull-kops-verify-bazel
+  - name: bazel-build
+    test_group_name: pull-kops-bazel-build
+  - name: bazel-test
+    test_group_name: pull-kops-bazel-test
+  - name: verify-boilerplate
+    test_group_name: pull-kops-verify-boilerplate
+  - name: verify-govet
+    test_group_name: pull-kops-verify-govet
+  - name: verify-gofmt
+    test_group_name: pull-kops-verify-gofmt
+  - name: verify-packages
+    test_group_name: pull-kops-verify-packages
 
 - name: istio
   dashboard_tab:
@@ -5301,6 +5391,7 @@ dashboard_groups:
   - presubmits-kubernetes-blocking
   - presubmits-kubernetes-nonblocking
   - presubmits-test-infra
+  - presubmits-kops
   - presubmits-misc
 
 - name: sig-cli
@@ -5374,3 +5465,9 @@ dashboard_groups:
   - sig-gcp-release-1.8
   - sig-gcp-release-1.7
   - sig-gcp-ubuntu
+
+- name: sig-autoscaling
+  dashboard_names:
+    - sig-autoscaling-cluster-autoscaler
+    - sig-autoscaling-hpa
+    - sig-autoscaling-vpa
