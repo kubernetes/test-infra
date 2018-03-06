@@ -40,15 +40,15 @@ import (
 	"k8s.io/test-infra/kubetest/util"
 )
 
-type DindBuilder struct {
+type Builder struct {
 	KubeRoot string
 	ToolRoot string
 	control  *process.Control
 }
 
 // NewBuilder returns an object capable of building the required k8s artifacts for dind.
-func NewBuilder(kubeRoot, toolRoot string, control *process.Control) *DindBuilder {
-	return &DindBuilder{
+func NewBuilder(kubeRoot, toolRoot string, control *process.Control) *Builder {
+	return &Builder{
 		KubeRoot: kubeRoot,
 		ToolRoot: toolRoot,
 		control:  control,
@@ -56,7 +56,7 @@ func NewBuilder(kubeRoot, toolRoot string, control *process.Control) *DindBuilde
 }
 
 // Build creates the k8s artifacts for dind.
-func (b *DindBuilder) Build() error {
+func (b *Builder) Build() error {
 	// Set environment variables for the build, and go to our make dir. Then put everything back.
 	k, err := util.PushEnv("KUBE_ROOT", b.KubeRoot)
 	if err != nil {
@@ -81,7 +81,7 @@ func (b *DindBuilder) Build() error {
 	return b.control.FinishRunning(cmd)
 }
 
-type DindTester struct {
+type Tester struct {
 	kubecfg   string
 	ginkgo    string
 	e2etest   string
@@ -93,7 +93,7 @@ type DindTester struct {
 
 // NewTester returns an object that knows how to test the cluster it deployed.
 //TODO(Q-Lee): the deployer interfact should have a NewTester or Test method.
-func (d *DindDeployer) NewTester() (*DindTester, error) {
+func (d *DindDeployer) NewTester() (*Tester, error) {
 	// Find the ginkgo and e2e.test artifacts we need. We'll cheat for now, and pull them from a known path.
 	// We only support dind from linux_amd64 anyway.
 	ginkgo := util.K8s("kubernetes", "bazel-bin", "vendor", "github.com", "onsi", "ginkgo", "ginkgo", "linux_amd64_stripped", "ginkgo")
@@ -105,7 +105,7 @@ func (d *DindDeployer) NewTester() (*DindTester, error) {
 		return nil, err
 	}
 
-	return &DindTester{
+	return &Tester{
 		kubecfg:   d.RealKubecfg,
 		control:   d.control,
 		apiserver: d.apiserver,
@@ -117,7 +117,7 @@ func (d *DindDeployer) NewTester() (*DindTester, error) {
 }
 
 // Test just execs ginkgo. This will take more parameters in the future.
-func (t *DindTester) Test() error {
+func (t *Tester) Test() error {
 	skipRegex := "--skip=\"(Feature)|(NFS)|(StatefulSet)\""
 	args := []string{"--seed=1436380640", "--nodes=10", skipRegex, t.e2etest,
 		"--", "--kubeconfig", t.kubecfg, "--ginkgo.flakeAttempts=2", "--num-nodes=4", "--systemd-services=docker,kubelet",

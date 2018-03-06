@@ -178,7 +178,7 @@ skew directory, potentially to upgrade/downgrade kubernetes to another version.
 A simple example is:<br>
 `kubetest --up --check-version-skew=false --extract=v1.8.0-beta.1 
 --extract=v1.7.5 --upgrade_args=--ginkgo.focus="Feature:SomeUpgrade" 
---gcp-project=google.com:some-project -v`
+--gcp-project=google.com:some-project`
 
 The command runs all (and only) upgrade tests tagged with `Feature:SomeUpgrade` 
 label on GCE. The command downloads `v1.7.5` and `v1.8.0-beta.1` releases,
@@ -203,7 +203,7 @@ manifests to gcs. The command is very similar:
 `kubetest --build --stage=gs://some/path/to/v1.8.0-beta.1  --check-version-skew=false 
 --extract=gs://some/path/to/v1.8.0-beta.1  --extract=v1.7.5 
 --upgrade_args=--ginkgo.focus="Feature:SomeUpgrade" 
---gcp-project=google.com:some-project -v`
+--gcp-project=google.com:some-project`
 
 If you already have release of a specific version, you do not need to fetch the 
 release again. For instance, if you have `v1.7.5` release and its directory is at the 
@@ -211,7 +211,7 @@ right path, the command below does the same as above:
 `kubetest --build --stage=gs://some/path/to/v1.8.0-beta.1  --check-version-skew=false 
 --extract=gs://some/path/to/v1.8.0-beta.1 
 --upgrade_args=--ginkgo.focus="Feature:SomeUpgrade" 
---gcp-project=google.com:some-project -v`
+--gcp-project=google.com:some-project`
 
 [bootstrap.py]: /jenkins/bootstrap.py
 [boskos]: /boskos
