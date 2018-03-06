@@ -5688,230 +5688,6 @@ postsubmits:
           requests:
             memory: "6Gi"
 
-  - name: ci-kubernetes-bazel-build-1-7
-    agent: kubernetes
-    branches:
-    - release-1.7
-    labels:
-      preset-service-account: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
-        args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/logs"
-        - "--gcs=gs://kubernetes-release-dev/ci"
-        - "--version-suffix=-bazel"
-        - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel-1.7.txt"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        env:
-        # Make Bazel use shared cache for its root
-        # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-        resources:
-          requests:
-            memory: "6Gi"
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
-    run_after_success:
-    - name: ci-kubernetes-bazel-test-1-7
-      agent: kubernetes
-      labels:
-        preset-service-account: true
-      spec:
-        containers:
-        - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
-          args:
-          - "--clean"
-          - "--git-cache=/root/.cache/git"
-          - "--job=$(JOB_NAME)"
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-          - "--service-account=/etc/service-account/service-account.json"
-          - "--upload=gs://kubernetes-jenkins/logs"
-          securityContext:
-            privileged: true
-          env:
-          # Make Bazel use shared cache for its root
-          # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
-          - name: TEST_TMPDIR
-            value: /root/.cache/bazel
-          volumeMounts:
-          - name: cache-ssd
-            mountPath: /root/.cache
-          ports:
-          - containerPort: 9999
-            hostPort: 9999
-          resources:
-            requests:
-              memory: "6Gi"
-        volumes:
-        - name: cache-ssd
-          hostPath:
-            path: /mnt/disks/ssd0
-    - name: ci-kubernetes-e2e-kubeadm-gce-1-7
-      agent: kubernetes
-      labels:
-        preset-service-account: true
-        preset-k8s-ssh: true
-      spec:
-        containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180305-211d7beff
-          args:
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-          - "--clean"
-          - "--git-cache=/root/.cache/git"
-          - "--timeout=320"
-          - "--upload=gs://kubernetes-jenkins/logs"
-          volumeMounts:
-          - name: cache-ssd
-            mountPath: /root/.cache
-          ports:
-          - containerPort: 9999
-            hostPort: 9999
-        volumes:
-        - name: cache-ssd
-          hostPath:
-            path: /mnt/disks/ssd0
-
-  - name: ci-kubernetes-bazel-build-1-8
-    agent: kubernetes
-    branches:
-    - release-1.8
-    labels:
-      preset-service-account: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
-        args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/logs"
-        - "--gcs=gs://kubernetes-release-dev/ci"
-        - "--version-suffix=-bazel"
-        - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel-1.8.txt"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        env:
-        # Make Bazel use shared cache for its root
-        # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-        resources:
-          requests:
-            memory: "6Gi"
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
-    run_after_success:
-    - name: ci-kubernetes-bazel-test-1-8
-      agent: kubernetes
-      labels:
-        preset-service-account: true
-      spec:
-        containers:
-        - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
-          args:
-          - "--clean"
-          - "--git-cache=/root/.cache/git"
-          - "--job=$(JOB_NAME)"
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-          - "--service-account=/etc/service-account/service-account.json"
-          - "--upload=gs://kubernetes-jenkins/logs"
-          securityContext:
-            privileged: true
-          env:
-          # Make Bazel use shared cache for its root
-          # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
-          - name: TEST_TMPDIR
-            value: /root/.cache/bazel
-          volumeMounts:
-          - name: cache-ssd
-            mountPath: /root/.cache
-          ports:
-          - containerPort: 9999
-            hostPort: 9999
-          resources:
-            requests:
-              memory: "6Gi"
-        volumes:
-        - name: cache-ssd
-          hostPath:
-            path: /mnt/disks/ssd0
-    - name: ci-kubernetes-e2e-kubeadm-gce-1-8
-      agent: kubernetes
-      labels:
-        preset-service-account: true
-        preset-k8s-ssh: true
-      spec:
-        containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180305-211d7beff
-          args:
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-          - "--clean"
-          - "--git-cache=/root/.cache/git"
-          - "--timeout=320"
-          - "--upload=gs://kubernetes-jenkins/logs"
-          volumeMounts:
-          - name: cache-ssd
-            mountPath: /root/.cache
-          ports:
-          - containerPort: 9999
-            hostPort: 9999
-        volumes:
-        - name: cache-ssd
-          hostPath:
-            path: /mnt/disks/ssd0
-    - name: ci-kubernetes-e2e-kubeadm-gce-1-7-on-1-8
-      agent: kubernetes
-      labels:
-        preset-service-account: true
-        preset-k8s-ssh: true
-      spec:
-        containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180305-211d7beff
-          args:
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-          - "--clean"
-          - "--git-cache=/root/.cache/git"
-          - "--timeout=320"
-          - "--upload=gs://kubernetes-jenkins/logs"
-          volumeMounts:
-          - name: cache-ssd
-            mountPath: /root/.cache
-          ports:
-          - containerPort: 9999
-            hostPort: 9999
-        volumes:
-        - name: cache-ssd
-          hostPath:
-            path: /mnt/disks/ssd0
-
   - name: ci-kubernetes-bazel-build-1-9
     agent: kubernetes
     branches:
@@ -6798,20 +6574,17 @@ periodics:
       imagePullPolicy: Always
 
 
-# TODO(bentheelder): kubeadm should not use run_after_success anymore
-# TODO(bentheelder): switch ci-kubernetes-bazel-build to 100% periodic,
-# like the other build job once we don't have run_after_success
 - name: ci-kubernetes-bazel-build
   interval: 6h
   agent: kubernetes
   labels:
     preset-service-account: true
+    preset-bazel-scratch-dir: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.10.0
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180305-98b9ccd6e-master
       args:
       - "--clean"
-      - "--git-cache=/root/.cache/git"
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes=master"
       - "--service-account=/etc/service-account/service-account.json"
@@ -6819,9 +6592,12 @@ periodics:
       - "--" # end bootstrap args, scenario args below
       - "--build=//... -//vendor/..."
       - "--release=//build/release-tars"
+      - "--gcs=gs://kubernetes-release-dev/ci"
+      - "--version-suffix=-bazel"
+      - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel.txt"
       env:
-      - name: TEST_TMPDIR
-        value: /root/.cache/bazel
+      - name: BAZEL_REMOTE_CACHE_ENABLED
+        value: "true"
       # so we can use the right cache id
       # TODO(bentheelder): switch to kubernetes_execute_bazel and consider dropping this
       - name: REPO_OWNER
@@ -6831,19 +6607,9 @@ periodics:
       # Bazel needs privileged mode in order to sandbox builds.
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: cache-ssd
-        mountPath: /root/.cache
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           memory: "6Gi"
-    volumes:
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
   run_after_success:
   - name: ci-kubernetes-e2e-kubeadm-gce-ipvs
     agent: kubernetes
@@ -7003,6 +6769,58 @@ periodics:
         hostPath:
           path: /mnt/disks/ssd0
 
+- name: ci-kubernetes-bazel-build-1-7
+  interval: 24h
+  agent: kubernetes
+  branches:
+  - release-1.7
+  labels:
+    preset-service-account: true
+    preset-bazel-scratch-dir: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
+      args:
+      - "--clean"
+      - "--job=$(JOB_NAME)"
+      - "--repo=k8s.io/kubernetes=release-1.7"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--gcs=gs://kubernetes-release-dev/ci"
+      - "--version-suffix=-bazel"
+      - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel-1.7.txt"
+      # Bazel needs privileged mode in order to sandbox builds.
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "6Gi"
+- name: ci-kubernetes-bazel-build-1-8
+  interval: 12h
+  agent: kubernetes
+  branches:
+  - release-1.8
+  labels:
+    preset-service-account: true
+    preset-bazel-scratch-dir: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
+      args:
+      - "--clean"
+      - "--job=$(JOB_NAME)"
+      - "--repo=k8s.io/kubernetes=release-1.8"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--gcs=gs://kubernetes-release-dev/ci"
+      - "--version-suffix=-bazel"
+      - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel-1.8.txt"
+      # Bazel needs privileged mode in order to sandbox builds.
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "6Gi"
 - interval: 5m
   name: ci-kubernetes-bazel-test
   agent: kubernetes
@@ -7039,6 +6857,46 @@ periodics:
         requests:
           memory: "6Gi"
 
+- name: ci-kubernetes-bazel-test-1-7
+  interval: 24h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-bazel-scratch-dir: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
+      args:
+      - "--clean"
+      - "--job=$(JOB_NAME)"
+      - "--repo=k8s.io/kubernetes=release-1.7"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "6Gi"
+- name: ci-kubernetes-bazel-test-1-8
+  interval: 12h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-bazel-scratch-dir: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
+      args:
+      - "--clean"
+      - "--job=$(JOB_NAME)"
+      - "--repo=k8s.io/kubernetes=release-1.8"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "6Gi"
 - interval: 5m
   name: ci-kubernetes-build
   agent: kubernetes
@@ -12684,6 +12542,52 @@ periodics:
       - "--timeout=320"
       - "--upload=gs://kubernetes-jenkins/logs"
 
+- name: ci-kubernetes-e2e-kubeadm-gce-1-7
+  interval: 12h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180305-211d7beff
+      args:
+      - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+      - "--clean"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
+
+- name: ci-kubernetes-e2e-kubeadm-gce-1-7-on-1-8
+  interval: 12h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180305-211d7beff
+      args:
+      - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
+
+# TODO(bentheelder): switch ci-kubernetes-bazel-build to 100% periodic,
+# like the other build job once we don't have run_after_success
+- name: ci-kubernetes-e2e-kubeadm-gce-1-8
+  interval: 12h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+    preset-bazel-scratch-dir: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180305-211d7beff
+      args:
+      - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+      - "--clean"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
 - name: ci-kubernetes-e2e-node-canary
   interval: 1h
   agent: kubernetes
@@ -14594,12 +14498,12 @@ periodics:
   agent: kubernetes
   labels:
     preset-service-account: true
+    preset-bazel-scratch-dir: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
       args:
       - "--clean"
-      - "--git-cache=/root/.cache/git"
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes=release-1.7"
       - "--service-account=/etc/service-account/service-account.json"
@@ -14607,98 +14511,21 @@ periodics:
       # Bazel needs privileged mode in order to sandbox builds.
       securityContext:
         privileged: true
-      env:
-      # Make Bazel use shared cache for its root
-      # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
-      - name: TEST_TMPDIR
-        value: /root/.cache/bazel
-      volumeMounts:
-      - name: cache-ssd
-        mountPath: /root/.cache
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           memory: "6Gi"
-    volumes:
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
-  run_after_success:
-  - name: periodic-kubernetes-bazel-test-1-7
-    agent: kubernetes
-    labels:
-      preset-service-account: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
-        args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/kubernetes=release-1.7"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/logs"
-        securityContext:
-          privileged: true
-        env:
-        # Make Bazel use shared cache for its root
-        # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-        resources:
-          requests:
-            memory: "6Gi"
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
-  - name: periodic-kubernetes-e2e-kubeadm-gce-1-7
-    agent: kubernetes
-    labels:
-      preset-service-account: true
-      preset-k8s-ssh: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180305-211d7beff
-        args:
-        - "--repo=k8s.io/kubernetes=release-1.7"
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--timeout=320"
-        - "--upload=gs://kubernetes-jenkins/logs"
-        env:
-        - name: REPO_NAME
-          value: kubernetes=release-1.7
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
 
 - name: periodic-kubernetes-bazel-build-1-8
   interval: 6h
   agent: kubernetes
   labels:
     preset-service-account: true
+    preset-bazel-scratch-dir: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
       args:
       - "--clean"
-      - "--git-cache=/root/.cache/git"
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes=release-1.8"
       - "--service-account=/etc/service-account/service-account.json"
@@ -14706,122 +14533,21 @@ periodics:
       # Bazel needs privileged mode in order to sandbox builds.
       securityContext:
         privileged: true
-      env:
-      # Make Bazel use shared cache for its root
-      # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
-      - name: TEST_TMPDIR
-        value: /root/.cache/bazel
-      volumeMounts:
-      - name: cache-ssd
-        mountPath: /root/.cache
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           memory: "6Gi"
-    volumes:
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
-  run_after_success:
-  - name: periodic-kubernetes-bazel-test-1-8
-    agent: kubernetes
-    labels:
-      preset-service-account: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
-        args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/kubernetes=release-1.8"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/logs"
-        securityContext:
-          privileged: true
-        env:
-        # Make Bazel use shared cache for its root
-        # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-        resources:
-          requests:
-            memory: "6Gi"
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
-  - name: periodic-kubernetes-e2e-kubeadm-gce-1-8
-    agent: kubernetes
-    labels:
-      preset-service-account: true
-      preset-k8s-ssh: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180305-211d7beff
-        args:
-        - "--repo=k8s.io/kubernetes=release-1.8"
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--timeout=320"
-        - "--upload=gs://kubernetes-jenkins/logs"
-        env:
-        - name: REPO_NAME
-          value: kubernetes=release-1.8
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
-  - name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
-    agent: kubernetes
-    labels:
-      preset-service-account: true
-      preset-k8s-ssh: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180305-211d7beff
-        args:
-        - "--repo=k8s.io/kubernetes=release-1.8"
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--timeout=320"
-        - "--upload=gs://kubernetes-jenkins/logs"
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
 
 - name: periodic-kubernetes-bazel-build-1-9
   interval: 6h
   agent: kubernetes
   labels:
     preset-service-account: true
+    preset-bazel-scratch-dir: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
       args:
       - "--clean"
-      - "--git-cache=/root/.cache/git"
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes=release-1.9"
       - "--service-account=/etc/service-account/service-account.json"
@@ -14829,91 +14555,12 @@ periodics:
       - "--" # end bootstrap args, scenario args below
       - "--build=//... -//vendor/..."
       - "--release=//build/release-tars"
-      env:
-      - name: TEST_TMPDIR
-        value: /root/.cache/bazel
       # Bazel needs privileged mode in order to sandbox builds.
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: cache-ssd
-        mountPath: /root/.cache
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           memory: "6Gi"
-    volumes:
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
-  run_after_success:
-  - name: periodic-kubernetes-bazel-test-1-9
-    agent: kubernetes
-    labels:
-      preset-service-account: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
-        args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/kubernetes=release-1.9"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/logs"
-        - "--" # end bootstrap args, scenario args below
-        - "--test=//... -//build/... -//vendor/..."
-        - "--manual-test=//hack:verify-all"
-        - "--test-args=--build_tag_filters=-e2e,-integration"
-        - "--test-args=--test_tag_filters=-e2e,-integration"
-        - "--test-args=--flaky_test_attempts=3"
-        env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-        resources:
-          requests:
-            memory: "6Gi"
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
-  - name: periodic-kubernetes-e2e-kubeadm-gce-1-9
-    agent: kubernetes
-    labels:
-      preset-service-account: true
-      preset-k8s-ssh: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180305-211d7beff
-        args:
-        - "--repo=k8s.io/kubernetes=release-1.9"
-        - "--clean"
-        - "--timeout=320"
-        - "--upload=gs://kubernetes-jenkins/logs"
-  - name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9
-    agent: kubernetes
-    labels:
-      preset-service-account: true
-      preset-k8s-ssh: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180305-211d7beff
-        args:
-        - "--repo=k8s.io/kubernetes=release-1.9"
-        - "--clean"
-        - "--timeout=320"
-        - "--upload=gs://kubernetes-jenkins/logs"
-
 - name: periodic-kubernetes-bazel-test-1-10
   interval: 6h
   agent: kubernetes
@@ -14950,34 +14597,75 @@ periodics:
       resources:
         requests:
           memory: "6Gi"
-  run_after_success:
-  - name: periodic-kubernetes-e2e-kubeadm-gce-1-10
-    agent: kubernetes
-    labels:
-      preset-service-account: true
-      preset-k8s-ssh: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180305-211d7beff
-        args:
-        - "--repo=k8s.io/kubernetes=release-1.10"
-        - "--clean"
-        - "--timeout=320"
-        - "--upload=gs://kubernetes-jenkins/logs"
 
-  - name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
-    agent: kubernetes
-    labels:
-      preset-service-account: true
-      preset-k8s-ssh: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180305-211d7beff
-        args:
-        - "--repo=k8s.io/kubernetes=release-1.10"
-        - "--clean"
-        - "--timeout=320"
-        - "--upload=gs://kubernetes-jenkins/logs"
+- name: periodic-kubernetes-bazel-test-1-7
+  interval: 12h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-bazel-scratch-dir: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
+      args:
+      - "--clean"
+      - "--job=$(JOB_NAME)"
+      - "--repo=k8s.io/kubernetes=release-1.7"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "6Gi"
+
+- name: periodic-kubernetes-bazel-test-1-8
+  interval: 12h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-bazel-scratch-dir: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
+      args:
+      - "--clean"
+      - "--job=$(JOB_NAME)"
+      - "--repo=k8s.io/kubernetes=release-1.8"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "6Gi"
+
+- name: periodic-kubernetes-bazel-test-1-9
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-bazel-scratch-dir: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
+      args:
+      - "--clean"
+      - "--job=$(JOB_NAME)"
+      - "--repo=k8s.io/kubernetes=release-1.9"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--" # end bootstrap args, scenario args below
+      - "--test=//... -//build/... -//vendor/..."
+      - "--manual-test=//hack:verify-all"
+      - "--test-args=--build_tag_filters=-e2e,-integration"
+      - "--test-args=--test_tag_filters=-e2e,-integration"
+      - "--test-args=--flaky_test_attempts=3"
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "6Gi"
 
 - interval: 24h
   agent: kubernetes
@@ -14992,6 +14680,117 @@ periodics:
       - --repo=k8s.io/kubeadm=master
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
+
+- name: periodic-kubernetes-e2e-kubeadm-gce-1-10
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180305-211d7beff
+      args:
+      - "--repo=k8s.io/kubernetes=release-1.10"
+      - "--clean"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
+
+- name: periodic-kubernetes-e2e-kubeadm-gce-1-7
+  interval: 12h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180305-211d7beff
+      args:
+      - "--repo=k8s.io/kubernetes=release-1.7"
+      - "--clean"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      env:
+      - name: REPO_NAME
+        value: kubernetes=release-1.7
+
+- name: periodic-kubernetes-e2e-kubeadm-gce-1-8
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180305-211d7beff
+      args:
+      - "--repo=k8s.io/kubernetes=release-1.8"
+      - "--clean"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      env:
+      - name: REPO_NAME
+        value: kubernetes=release-1.8
+
+- name: periodic-kubernetes-e2e-kubeadm-gce-1-9
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180305-211d7beff
+      args:
+      - "--repo=k8s.io/kubernetes=release-1.9"
+      - "--clean"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
+
+- name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180305-211d7beff
+      args:
+      - "--repo=k8s.io/kubernetes=release-1.8"
+      - "--clean"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
+
+- name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180305-211d7beff
+      args:
+      - "--repo=k8s.io/kubernetes=release-1.9"
+      - "--clean"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
+
+- name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180305-211d7beff
+      args:
+      - "--repo=k8s.io/kubernetes=release-1.10"
+      - "--clean"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
 
 - name: periodic-test-infra-close
   interval: 1h
