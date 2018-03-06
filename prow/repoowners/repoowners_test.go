@@ -21,6 +21,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -70,7 +71,13 @@ func patternAll(values ...string) map[string]sets.String {
 	return map[string]sets.String{"": sets.NewString(values...)}
 }
 
-func getTestClient(files map[string][]byte, enableMdYaml, includeAliases bool) (*Client, func(), error) {
+func getTestClient(
+	files map[string][]byte,
+	enableMdYaml,
+	includeAliases bool,
+	ownersDirBlacklistDefault sets.String,
+	ownersDirBlacklistByRepo map[string]sets.String,
+) (*Client, func(), error) {
 	testAliasesFile := map[string][]byte{
 		"OWNERS_ALIASES": []byte("aliases:\n  Best-approvers:\n  - carl\n  - cjwagner\n  best-reviewers:\n  - Carl\n  - BOB"),
 	}
@@ -100,6 +107,9 @@ func getTestClient(files map[string][]byte, enableMdYaml, includeAliases bool) (
 			mdYAMLEnabled: func(org, repo string) bool {
 				return enableMdYaml
 			},
+
+			dirBlacklistDefault: ownersDirBlacklistDefault,
+			dirBlacklistByRepo:  ownersDirBlacklistByRepo,
 		},
 		// Clean up function
 		func() {
@@ -107,6 +117,102 @@ func getTestClient(files map[string][]byte, enableMdYaml, includeAliases bool) (
 			localGit.Clean()
 		},
 		nil
+}
+
+func TestOwnersDirBlacklist(t *testing.T) {
+	validatorExcluded := func(t *testing.T, ro *RepoOwners) {
+		for dir := range ro.approvers {
+			if strings.Contains(dir, "src") {
+				t.Errorf("Expected directory %s to be excluded from the approvers map", dir)
+			}
+		}
+		for dir := range ro.reviewers {
+			if strings.Contains(dir, "src") {
+				t.Errorf("Expected directory %s to be excluded from the reviewers map", dir)
+			}
+		}
+	}
+
+	validatorIncluded := func(t *testing.T, ro *RepoOwners) {
+		approverFound := false
+		for dir := range ro.approvers {
+			if strings.Contains(dir, "src") {
+				approverFound = true
+				break
+			}
+		}
+		if !approverFound {
+			t.Errorf("Expected to find approvers for a path matching */src/*")
+		}
+
+		reviewerFound := false
+		for dir := range ro.reviewers {
+			if strings.Contains(dir, "src") {
+				reviewerFound = true
+				break
+			}
+		}
+		if !reviewerFound {
+			t.Errorf("Expected to find reviewers for a path matching */src/*")
+		}
+	}
+
+	getRepoOwnersWithBlacklist := func(t *testing.T, defaults sets.String, byRepo map[string]sets.String) *RepoOwners {
+		client, cleanup, err := getTestClient(testFiles, true, true, defaults, byRepo)
+		if err != nil {
+			t.Fatalf("Error creating test client: %v.", err)
+		}
+		defer cleanup()
+
+		ro, err := client.LoadRepoOwners("org", "repo")
+		if err != nil {
+			t.Fatalf("Unexpected error loading RepoOwners: %v.", err)
+		}
+
+		return ro
+	}
+
+	type testConf struct {
+		blackistDefault sets.String
+		blacklistByRepo map[string]sets.String
+		validator       func(t *testing.T, ro *RepoOwners)
+	}
+
+	tests := map[string]testConf{}
+
+	tests["blacklist by org"] = testConf{
+		blacklistByRepo: map[string]sets.String{
+			"org": sets.NewString("src"),
+		},
+		validator: validatorExcluded,
+	}
+	tests["blacklist by org/repo"] = testConf{
+		blacklistByRepo: map[string]sets.String{
+			"org/repo": sets.NewString("src"),
+		},
+		validator: validatorExcluded,
+	}
+	tests["blacklist by default"] = testConf{
+		blackistDefault: sets.NewString("src"),
+		validator:       validatorExcluded,
+	}
+	tests["no blacklist setup"] = testConf{
+		validator: validatorIncluded,
+	}
+	tests["blacklist setup but not matching this repo"] = testConf{
+		blacklistByRepo: map[string]sets.String{
+			"not_org/not_repo": sets.NewString("src"),
+			"not_org":          sets.NewString("src"),
+		},
+		validator: validatorIncluded,
+	}
+
+	for name, conf := range tests {
+		t.Run(name, func(t *testing.T) {
+			ro := getRepoOwnersWithBlacklist(t, conf.blackistDefault, conf.blacklistByRepo)
+			conf.validator(t, ro)
+		})
+	}
 }
 
 func TestOwnersRegexpFiltering(t *testing.T) {
@@ -119,7 +225,7 @@ func TestOwnersRegexpFiltering(t *testing.T) {
 		"re/b/md.md":   sets.NewString("re/all"),
 	}
 
-	client, cleanup, err := getTestClient(testFilesRe, true, true)
+	client, cleanup, err := getTestClient(testFilesRe, true, true, nil, nil)
 	if err != nil {
 		t.Fatalf("Error creating test client: %v.", err)
 	}
@@ -221,7 +327,7 @@ func TestLoadRepoOwners(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		client, cleanup, err := getTestClient(testFiles, test.mdEnabled, test.aliasesFileExists)
+		client, cleanup, err := getTestClient(testFiles, test.mdEnabled, test.aliasesFileExists, nil, nil)
 		if err != nil {
 			t.Errorf("[%s] Error creating test client: %v.", test.name, err)
 			continue
@@ -293,7 +399,7 @@ func TestLoadRepoAliases(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		client, cleanup, err := getTestClient(testFiles, false, test.aliasFileExists)
+		client, cleanup, err := getTestClient(testFiles, false, test.aliasFileExists, nil, nil)
 		if err != nil {
 			t.Errorf("[%s] Error creating test client: %v.", test.name, err)
 			continue

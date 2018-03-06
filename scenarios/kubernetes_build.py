@@ -65,7 +65,8 @@ def check_build_exists(gcs, suffix):
 
     if version:
         if not gcs:
-            gcs = 'gs://kubernetes-release-dev'
+            gcs = 'kubernetes-release-dev'
+        gcs = 'gs://' + gcs
         mode = 'ci'
         if suffix:
             mode += suffix
@@ -130,7 +131,7 @@ def main(args):
         check('make', 'quick-release')
     else:
         check('make', 'release')
-    check('../release/push-build.sh', *push_build_args)
+    check(args.push_build_script, *push_build_args)
 
 if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(
@@ -155,5 +156,7 @@ if __name__ == '__main__':
         '--extra-publish-file', help='Additional version file uploads to')
     PARSER.add_argument(
         '--allow-dup', action='store_true', help='Allow overwriting if the build exists on gcs')
+    PARSER.add_argument(
+        '--push-build-script', default='../release/push-build.sh', help='location of push-build.sh')
     ARGS = PARSER.parse_args()
     main(ARGS)

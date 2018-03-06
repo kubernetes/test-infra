@@ -28,6 +28,7 @@ import (
 	"strconv"
 	"time"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -58,6 +59,36 @@ func NewJobSpec(spec kube.ProwJobSpec, buildId, prowJobId string) JobSpec {
 		ProwJobId: prowJobId,
 		Refs:      spec.Refs,
 		agent:     spec.Agent,
+	}
+}
+
+// PresubmitToJobSpec generates a JobSpec out of a Presubmit.
+// Useful for figuring out GCS paths when parsing jobs out
+// of a prow config.
+func PresubmitToJobSpec(pre config.Presubmit) *JobSpec {
+	return &JobSpec{
+		Type: kube.PresubmitJob,
+		Job:  pre.Name,
+	}
+}
+
+// PostsubmitToJobSpec generates a JobSpec out of a Postsubmit.
+// Useful for figuring out GCS paths when parsing jobs out
+// of a prow config.
+func PostsubmitToJobSpec(post config.Postsubmit) *JobSpec {
+	return &JobSpec{
+		Type: kube.PostsubmitJob,
+		Job:  post.Name,
+	}
+}
+
+// PeriodicToJobSpec generates a JobSpec out of a Periodic.
+// Useful for figuring out GCS paths when parsing jobs out
+// of a prow config.
+func PeriodicToJobSpec(periodic config.Periodic) *JobSpec {
+	return &JobSpec{
+		Type: kube.PeriodicJob,
+		Job:  periodic.Name,
 	}
 }
 

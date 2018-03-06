@@ -56,7 +56,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The milestonestatus plugin allows members of the milestone maintainers Github team to specify the 'status/*' label that should apply to a pull request.",
 		Config: map[string]string{
-			"": fmt.Sprintf("The milestone maintainers team is the Github team with ID: %d.", config.MilestoneStatus.MaintainersID),
+			"": fmt.Sprintf("The milestone maintainers team is the Github team with ID: %d.", config.Milestone.MaintainersID),
 		},
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
@@ -70,7 +70,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 }
 
 func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
-	return handle(pc.GitHubClient, pc.Logger, &e, pc.PluginConfig.MilestoneStatus.MaintainersID)
+	return handle(pc.GitHubClient, pc.Logger, &e, pc.PluginConfig.Milestone.MaintainersID)
 }
 
 func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, maintainersID int) error {

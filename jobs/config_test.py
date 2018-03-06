@@ -328,14 +328,21 @@ class JobTest(unittest.TestCase):
                     extracts = [a for a in args if '--extract=' in a]
                     shared_builds = [a for a in args if '--use-shared-build' in a]
                     node_e2e = [a for a in args if '--deployment=node' in a]
+                    local_e2e = [a for a in args if '--deployment=local' in a]
+                    builds = [a for a in args if '--build' in a]
                     if shared_builds and extracts:
                         self.fail(('e2e jobs cannot have --use-shared-build'
                                    ' and --extract: %s %s') % (job, args))
                     elif not extracts and not shared_builds and not node_e2e:
-                        self.fail(('e2e job needs --extract or'
-                                   ' --use-shared-build: %s %s') % (job, args))
+                        # we should at least have --build and --stage
+                        if not builds:
+                            self.fail(('e2e job needs --extract or'
+                                       ' --use-shared-build or'
+                                       ' --build: %s %s') % (job, args))
 
                     if shared_builds or node_e2e:
+                        expected = 0
+                    elif builds and not extracts:
                         expected = 0
                     elif 'ingress' in job:
                         expected = 1
@@ -365,7 +372,7 @@ class JobTest(unittest.TestCase):
                         self.fail('--image-family and --image-project must be'
                                   'both set or unset: %s' % job)
 
-                    if job.startswith('pull-kubernetes-') and not node_e2e:
+                    if job.startswith('pull-kubernetes-') and not node_e2e and not local_e2e:
                         if 'gke' in job:
                             stage = 'gs://kubernetes-release-dev/ci'
                             suffix = True
@@ -577,6 +584,10 @@ class JobTest(unittest.TestCase):
             # ingress-GCE e2e jobs
             'pull-ingress-gce-e2e': 'e2e-ingress-gce',
             'ci-ingress-gce-e2e': 'e2e-ingress-gce',
+            # sig-autoscaling jobs intentionally share projetcs
+            'ci-kubernetes-e2e-gci-gce-autoscaling-hpa':'ci-kubernetes-e2e-gci-gce-autoscaling',
+            'ci-kubernetes-e2e-gci-gce-autoscaling-migs-hpa':'ci-kubernetes-e2e-gci-gce-autoscaling-migs',
+            'ci-kubernetes-e2e-gci-gke-autoscaling-hpa':'ci-kubernetes-e2e-gci-gke-autoscaling',
         }
         for soak_prefix in [
                 'ci-kubernetes-soak-gce-1.5',

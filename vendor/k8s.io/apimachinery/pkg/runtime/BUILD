@@ -52,6 +52,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//vendor/k8s.io/apimachinery/pkg/runtime/schema:all-srcs",
+        "//vendor/k8s.io/apimachinery/pkg/runtime/serializer:all-srcs",
     ],
     tags = ["automanaged"],
 )

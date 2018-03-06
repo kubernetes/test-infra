@@ -31,7 +31,9 @@ RUN mkdir -p /go/src/k8s.io/kubernetes \
     && ln -s /go/src/k8s.io/kubernetes /workspace/kubernetes
 
 # preinstall graphviz package for graphing profiles
-RUN apt-get install -y graphviz
+# also install bc for shell to junit
+RUN apt-get install -y bc \
+    graphviz
 # preinstall this for kops tests xref kubetest prepareAws(...)
 # TODO(bentheelder,krzyzacy,justisb,chrislovecnm): remove this
 RUN pip install awscli

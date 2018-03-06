@@ -982,10 +982,17 @@ func TestTakeAction(t *testing.T) {
 }
 
 func TestServeHTTP(t *testing.T) {
+	pr1 := PullRequest{}
+	pr1.Commits.Nodes = append(pr1.Commits.Nodes, struct{ Commit Commit }{})
+	pr1.Commits.Nodes[0].Commit.Status.Contexts = []Context{{
+		Context:     githubql.String("coverage/coveralls"),
+		Description: githubql.String("Coverage increased (+0.1%) to 27.599%"),
+	}}
 	c := &Controller{
 		pools: []Pool{
 			{
-				Action: Merge,
+				MissingPRs: []PullRequest{pr1},
+				Action:     Merge,
 			},
 		},
 	}
@@ -998,13 +1005,10 @@ func TestServeHTTP(t *testing.T) {
 	defer resp.Body.Close()
 	var pools []Pool
 	if err := json.NewDecoder(resp.Body).Decode(&pools); err != nil {
-		t.Errorf("JSON decoding error: %v", err)
+		t.Fatalf("JSON decoding error: %v", err)
 	}
-	if len(pools) != 1 {
-		t.Errorf("Wrong number of pools. Got %d, want 1.", len(pools))
-	}
-	if pools[0].Action != Merge {
-		t.Errorf("Wrong action. Got %v, want %v.", pools[0].Action, Merge)
+	if !reflect.DeepEqual(c.pools, pools) {
+		t.Errorf("Received pools %v do not match original pools %v.", pools, c.pools)
 	}
 }
 

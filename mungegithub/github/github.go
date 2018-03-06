@@ -62,7 +62,7 @@ const (
 )
 
 var (
-	releaseMilestoneRE = regexp.MustCompile(`^v[\d]+.[\d]$`)
+	releaseMilestoneRE = regexp.MustCompile(`^v[\d]+.[\d]+$`)
 	priorityLabelRE    = regexp.MustCompile(`priority/[pP]([\d]+)`)
 	fixesIssueRE       = regexp.MustCompile(`(?i)(?:close|closes|closed|fix|fixes|fixed|resolve|resolves|resolved)[\s]+#([\d]+)`)
 	reviewableFooterRE = regexp.MustCompile(`(?s)<!-- Reviewable:start -->.*<!-- Reviewable:end -->`)

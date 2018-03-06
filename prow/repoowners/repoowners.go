@@ -40,7 +40,7 @@ const (
 	baseDirConvention = ""
 )
 
-var dirBlacklist = sets.NewString(".git", "_output")
+var defaultDirBlacklist = sets.NewString(".git", "_output")
 
 type dirOptions struct {
 	NoParentOwners bool `json:"no_parent_owners,omitempty"`
@@ -78,6 +78,9 @@ type cacheEntry struct {
 }
 
 type Client struct {
+	dirBlacklistByRepo  map[string]sets.String
+	dirBlacklistDefault sets.String
+
 	git    *git.Client
 	ghc    githubClient
 	logger *logrus.Entry
@@ -88,7 +91,13 @@ type Client struct {
 	cache map[string]cacheEntry
 }
 
-func NewClient(gc *git.Client, ghc *github.Client, mdYAMLEnabled func(org, repo string) bool) *Client {
+func NewClient(
+	gc *git.Client,
+	ghc *github.Client,
+	mdYAMLEnabled func(org, repo string) bool,
+	blacklistDefault sets.String,
+	blacklistByRepo map[string]sets.String,
+) *Client {
 	return &Client{
 		git:    gc,
 		ghc:    ghc,
@@ -96,6 +105,9 @@ func NewClient(gc *git.Client, ghc *github.Client, mdYAMLEnabled func(org, repo 
 		cache:  make(map[string]cacheEntry),
 
 		mdYAMLEnabled: mdYAMLEnabled,
+
+		dirBlacklistDefault: blacklistDefault,
+		dirBlacklistByRepo:  blacklistByRepo,
 	}
 }
 
@@ -111,6 +123,7 @@ type RepoOwners struct {
 
 	baseDir      string
 	enableMDYAML bool
+	dirBlacklist sets.String
 
 	log *logrus.Entry
 }
@@ -171,7 +184,15 @@ func (c *Client) LoadRepoOwners(org, repo string) (*RepoOwners, error) {
 			// aliases must be loaded
 			entry.aliases = loadAliasesFrom(gitRepo.Dir, log)
 		}
-		entry.owners, err = loadOwnersFrom(gitRepo.Dir, mdYaml, entry.aliases, log)
+
+		dirBlacklist := defaultDirBlacklist.Union(c.dirBlacklistDefault)
+		if bl, ok := c.dirBlacklistByRepo[org]; ok {
+			dirBlacklist = dirBlacklist.Union(bl)
+		}
+		if bl, ok := c.dirBlacklistByRepo[org+"/"+repo]; ok {
+			dirBlacklist = dirBlacklist.Union(bl)
+		}
+		entry.owners, err = loadOwnersFrom(gitRepo.Dir, mdYaml, entry.aliases, dirBlacklist, log)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load RepoOwners for %s: %v", fullName, err)
 		}
@@ -237,7 +258,7 @@ func loadAliasesFrom(baseDir string, log *logrus.Entry) RepoAliases {
 	return result
 }
 
-func loadOwnersFrom(baseDir string, mdYaml bool, aliases RepoAliases, log *logrus.Entry) (*RepoOwners, error) {
+func loadOwnersFrom(baseDir string, mdYaml bool, aliases RepoAliases, dirBlacklist sets.String, log *logrus.Entry) (*RepoOwners, error) {
 	o := &RepoOwners{
 		RepoAliases:  aliases,
 		baseDir:      baseDir,
@@ -248,6 +269,8 @@ func loadOwnersFrom(baseDir string, mdYaml bool, aliases RepoAliases, log *logru
 		reviewers: make(map[string]map[*regexp.Regexp]sets.String),
 		labels:    make(map[string]map[*regexp.Regexp]sets.String),
 		options:   make(map[string]dirOptions),
+
+		dirBlacklist: dirBlacklist,
 	}
 
 	return o, filepath.Walk(o.baseDir, o.walkFunc)
@@ -270,7 +293,8 @@ func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 		return nil
 	}
 	filename := filepath.Base(path)
-	if info.Mode().IsDir() && dirBlacklist.Has(filename) {
+
+	if info.Mode().IsDir() && o.dirBlacklist.Has(filename) {
 		return filepath.SkipDir
 	}
 	if !info.Mode().IsRegular() {

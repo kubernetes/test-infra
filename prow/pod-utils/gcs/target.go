@@ -56,6 +56,20 @@ func AliasForSpec(spec *pjutil.JobSpec) string {
 	return ""
 }
 
+// LatestBuildForSpec determines the GCS path for storing the latest
+// build id for a job.
+func LatestBuildForSpec(spec *pjutil.JobSpec) string {
+	switch spec.Type {
+	case kube.PeriodicJob, kube.PostsubmitJob:
+		return path.Join("logs", spec.Job, "latest-build.txt")
+	case kube.PresubmitJob, kube.BatchJob:
+		return path.Join("pr-logs", "directory", spec.Job, "latest-build.txt")
+	default:
+		logrus.Errorf("unknown job spec type: %v", spec.Type)
+	}
+	return ""
+}
+
 // RepoPathBuilder builds GCS path segments and embeds defaulting behavior
 type RepoPathBuilder func(org, repo string) string
 

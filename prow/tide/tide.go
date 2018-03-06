@@ -380,10 +380,12 @@ func (c *Controller) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer c.m.Unlock()
 	b, err := json.Marshal(c.pools)
 	if err != nil {
-		c.logger.WithError(err).Error("Decoding JSON.")
+		c.logger.WithError(err).Error("Encoding JSON.")
 		b = []byte("[]")
 	}
-	fmt.Fprintf(w, string(b))
+	if _, err = w.Write(b); err != nil {
+		c.logger.WithError(err).Error("Writing JSON response.")
+	}
 }
 
 type simpleState string

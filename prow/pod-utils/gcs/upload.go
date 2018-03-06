@@ -40,12 +40,13 @@ func Upload(bucket *storage.BucketHandle, uploadTargets map[string]UploadFunc) e
 	for dest, upload := range uploadTargets {
 		obj := bucket.Object(dest)
 		logrus.WithField("dest", dest).Info("Queued for upload")
-		go func(f UploadFunc, obj *storage.ObjectHandle) {
+		go func(f UploadFunc, obj *storage.ObjectHandle, name string) {
 			defer group.Done()
 			if err := f(obj); err != nil {
 				errCh <- err
 			}
-		}(upload, obj)
+			logrus.WithField("dest", name).Info("Finished upload")
+		}(upload, obj, dest)
 	}
 	group.Wait()
 	close(errCh)

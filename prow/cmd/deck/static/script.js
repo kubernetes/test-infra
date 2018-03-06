@@ -167,13 +167,6 @@ window.onload = function () {
         Object.keys(opts["jobs"]).sort());
     redrawOptions(opts);
     redraw();
-    var timeCells = document.querySelectorAll(".time-cell");
-    setInterval(() => {
-        timeCells.forEach(timeCell => {
-            var origin = parseInt(timeCell.getAttribute("data-time"));
-            timeCell.textContent = moment(origin).fromNow();
-        }, 60000) ;
-    });
 };
 
 document.addEventListener("DOMContentLoaded", function (event) {
@@ -181,7 +174,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 });
 
 function configure() {
-    if(!branding){
+    if (!branding) {
         return;
     }
     if (branding.logo) {
@@ -194,8 +187,8 @@ function configure() {
         document.body.style.background = branding.background_color;
     }
     if (branding.header_color) {
-      document.getElementsByTagName(
-          'header')[0].style.backgroundColor = branding.header_color;
+        document.getElementsByTagName(
+            'header')[0].style.backgroundColor = branding.header_color;
     }
 }
 
@@ -489,20 +482,17 @@ function createTextCell(text) {
 }
 
 function createTimeCell(id, time) {
-    var momentTime = moment(time);
+    var momentTime = moment.unix(time);
     var tid = "time-cell-" + id;
     var main = document.createElement("div");
-    var localTime = momentTime.fromNow();
-    main.textContent = localTime;
+    var isADayOld = momentTime.isBefore(moment().startOf('day'));
+    main.textContent = momentTime.format(isADayOld ? 'MMM DD HH:mm:ss' : 'HH:mm:ss');
     main.id = tid;
-    main.setAttribute("data-time", time);
-    main.classList.add("time-cell");
 
-    var utcTime = momentTime.toString();
     var tooltip = document.createElement("div");
-    tooltip.textContent = utcTime;
+    tooltip.textContent = momentTime.format('MMM DD YYYY, HH:mm:ss [UTC]ZZ');
     tooltip.setAttribute("data-mdl-for", tid);
-    tooltip.classList.add("mdl-tooltip");
+    tooltip.classList.add("mdl-tooltip", "mdl-tooltip--large");
 
     var c = document.createElement("td");
     c.appendChild(main);

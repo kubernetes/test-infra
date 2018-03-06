@@ -127,11 +127,12 @@ slack:
     whitelist:
     - k8s-ci-robot
 
-milestonestatus:
+milestone:
   # You can curl the following endpoint in order to determine the github ID of your team
   # responsible for maintaining the milestones:
   # curl -H "Authorization: token <token>" https://api.github.com/orgs/<org-name>/teams
   maintainers_id: 2460384
+  maintainers_team: kubernetes-milestone-maintainers
 
 config_updater:
   maps:
@@ -147,6 +148,7 @@ plugins:
     # Enable /approve and /assign commands.
     - approve
     - assign
+    - blunderbuss
     - help
     - hold
     - label
@@ -224,6 +226,8 @@ plugins:
   - blockade
   - blunderbuss
   - docs-no-retest
+  - milestone
+  - milestonestatus
   - release-note
   - require-sig
   - trigger
@@ -268,7 +272,6 @@ plugins:
   - label
   - lgtm
   - lifecycle
-  - milestonestatus
   - shrug
   - sigmention
   - size
