@@ -230,7 +230,7 @@ def _classify_internal(merged, labels, comments, reviewers, distilled_events, st
     if status_fetcher and 'head' in payload:
         payload['status'] = status_fetcher(payload['head'])
 
-    if 'milestone' in merged:
+    if merged.get('milestone'):
         payload['milestone'] = merged['milestone']['title']
 
     payload['attn'] = calculate_attention(distilled_events, payload)

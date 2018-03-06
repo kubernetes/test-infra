@@ -17,6 +17,19 @@ View
 <button>Switch User</button>
 </form>
 
+% if milestones
+<div id="milestone-nav">
+Filter Milestone: {% if milestone %}<a href="?">Any</a>{% else %}<b>Any</b>{% endif %}
+% for ms in milestones
+	% if ms == milestone
+		<b>{{ms}}</b>
+	% else
+		<a href="?milestone={{ms}}">{{ms}}</a>
+	% endif
+% endfor
+</div>
+% endif
+
 % for title, pred, search in cats
 	% set sub_prs = prs | select(pred)
 	% if title == 'Approvable' and not sub_prs

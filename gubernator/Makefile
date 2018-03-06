@@ -20,7 +20,7 @@ PROJECT ?= k8s-gubernator
 .PHONY: migrate versions deploy cron all
 all: versions
 
-deploy: cron
+deploy:
 	gcloud app deploy --version="$(VERSION)" --project="$(PROJECT)" --no-promote --quiet
 	cd github && gcloud app deploy --version="$(VERSION)" --project="$(PROJECT)" --no-promote --quiet
 
