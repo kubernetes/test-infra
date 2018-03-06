@@ -40,6 +40,7 @@ import (
 	"k8s.io/test-infra/kubetest/util"
 )
 
+// Builder is capable of building the appropriate artifacts for the dind deployment.
 type Builder struct {
 	KubeRoot string
 	ToolRoot string
@@ -81,6 +82,7 @@ func (b *Builder) Build() error {
 	return b.control.FinishRunning(cmd)
 }
 
+// Tester is capable of running tests against a dind cluster.
 type Tester struct {
 	kubecfg   string
 	ginkgo    string
@@ -97,7 +99,13 @@ func (d *DindDeployer) NewTester() (*Tester, error) {
 	// Find the ginkgo and e2e.test artifacts we need. We'll cheat for now, and pull them from a known path.
 	// We only support dind from linux_amd64 anyway.
 	ginkgo := util.K8s("kubernetes", "bazel-bin", "vendor", "github.com", "onsi", "ginkgo", "ginkgo", "linux_amd64_stripped", "ginkgo")
+	if _, err := os.Stat(ginkgo); err != nil {
+		return nil, fmt.Errorf("ginko isn't available at %s: %v", ginkgo, err)
+	}
 	e2etest := util.K8s("kubernetes", "bazel-bin", "test", "e2e", "e2e.test")
+	if _, err := os.Stat(e2etest); err != nil {
+		return nil, fmt.Errorf("e2e.test isn't available at %s: %v", e2etest, err)
+	}
 	// Make a tmpdir for the test report.
 	// TODO(Q-Lee): perhaps there should be one tmpdir per cluster container, and all else can be subdirs?
 	tmpdir, err := ioutil.TempDir("/tmp", "dind-k8s-report-dir-")
@@ -242,7 +250,7 @@ RunningLoop:
 	for {
 		select {
 		case <-d.control.Interrupt.C:
-			return fmt.Errorf("Timed out waiting for container %s to start", d.containerID)
+			return fmt.Errorf("timed out waiting for container %s to start", d.containerID)
 		case <-pollCh:
 			resp, err := d.docker.ContainerInspect(ctx, d.containerID)
 			if err != nil {
