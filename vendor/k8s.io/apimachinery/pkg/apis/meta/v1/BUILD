@@ -57,7 +57,10 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1/unstructured:all-srcs",
+    ],
     tags = ["automanaged"],
 )
 
