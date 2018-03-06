@@ -12,6 +12,7 @@ go_library(
         "//prow/pjutil:go_default_library",
         "//prow/pod-utils/clone:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )
 
@@ -46,4 +47,5 @@ go_test(
     name = "go_default_test",
     srcs = ["main_test.go"],
     embed = [":go_default_library"],
+    deps = ["//prow/kube:go_default_library"],
 )
