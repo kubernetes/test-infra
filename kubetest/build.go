@@ -46,11 +46,11 @@ func (b *buildStrategy) Set(value string) error {
 		value = buildDefault
 	}
 	switch value {
-	case "bazel", "dind", "host-go", "quick", "release":
+	case "bazel", "dind", "e2e", "host-go", "quick", "release":
 		*b = buildStrategy(value)
 		return nil
 	}
-	return fmt.Errorf("bad build strategy: %v (use: bazel, dind, host-go, quick, release)", value)
+	return fmt.Errorf("bad build strategy: %v (use: bazel, dind, e2e, host-go, quick, release)", value)
 }
 
 func (b *buildStrategy) Type() string {
@@ -71,6 +71,9 @@ func (b *buildStrategy) Build() error {
 		target = "bazel-release"
 	case "dind":
 		return dind.NewBuilder(util.K8s("kubernetes"), util.K8s("test-infra", "dind"), control).Build()
+	case "e2e":
+		//TODO(Q-Lee): we should have a better way of build just the e2e tests
+		target = "bazel-release"
 	// you really should use "bazel" or "quick" in most cases, but in CI
 	// we are mimicking these in our job container without an extra level
 	// of sandboxing in some cases
