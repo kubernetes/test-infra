@@ -13912,7 +13912,7 @@ periodics:
         value: /go
 
 - name: ci-kubernetes-node-kubelet-beta
-  interval: 48h
+  interval: 1h
   agent: kubernetes
   labels:
     preset-service-account: true
