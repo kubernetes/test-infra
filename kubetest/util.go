@@ -89,7 +89,19 @@ func getLatestClusterUpTime(gcloudJSON string) (time.Time, error) {
 // Pass in releasePrefix to get latest valid version of a specific release.
 // Empty releasePrefix means use latest across all available releases.
 func getLatestGKEVersion(project, zone, releasePrefix string) (string, error) {
-	res, err := control.Output(exec.Command("gcloud", "container", "get-server-config", fmt.Sprintf("--project=%v", project), fmt.Sprintf("--zone=%v", zone), "--format=value(validMasterVersions)"))
+	cmd := []string{
+		"container",
+		"get-server-config",
+		fmt.Sprintf("--project=%v", project),
+		"--format=value(validMasterVersions)",
+	}
+
+	// zone can be empty for regional cluster
+	if zone != "" {
+		cmd = append(cmd, fmt.Sprintf("--zone=%v", zone))
+	}
+
+	res, err := control.Output(exec.Command("gcloud", cmd...))
 	if err != nil {
 		return "", err
 	}
