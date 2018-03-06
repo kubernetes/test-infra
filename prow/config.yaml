@@ -11556,6 +11556,19 @@ periodics:
 
 - interval: 2h
   agent: kubernetes
+  name: ci-kubernetes-e2e-gke-staging-1-7-1-8-upgrade-regional-cluster
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=920
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180301-32170552d-master
+
+- interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-cluster
   labels:
     preset-service-account: true
@@ -11583,6 +11596,19 @@ periodics:
 - interval: 2h
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-master
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=920
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180301-32170552d-master
+
+- interval: 2h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-regional-cluster
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
