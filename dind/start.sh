@@ -76,7 +76,7 @@ start_worker ()
   docker tag k8s.gcr.io/kube-proxy:$(cat /docker_version) k8s.gcr.io/kube-proxy-amd64:$(cat /docker_version)
 
   # Start kubeadm.
-  /usr/bin/kubeadm join --token=abcdef.abcdefghijklmnop --discovery-token-unsafe-skip-ca-verification=true --ignore-preflight-errors=all 172.18.0.2:6443 2>&1
+  /usr/bin/kubeadm join --token=abcdef.abcdefghijklmnop --discovery-token-unsafe-skip-ca-verification=true --ignore-preflight-errors=all 172.17.0.2:6443 2>&1
 }
 
 start_master ()
@@ -105,36 +105,20 @@ start_master ()
   # Apply a pod network.
   kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f https://docs.projectcalico.org/v3.0/getting-started/kubernetes/installation/hosted/kubeadm/1.7/calico.yaml
 
-  #export kubever=$(kubectl version | base64 | tr -d '\n')
-  #kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$kubever"
-
   # Install the metrics server, and the HPA.
   kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f /addons/metrics-server/
 }
 
 start_cluster ()
 {
-  # Start some workers.
-  echo "Creating testnet"
-  docker network create --subnet=172.18.0.0/16 testnet2
-  docker network ls
-  echo "Creating virtual nodes"
-  docker run -d --privileged --net testnet --ip 172.18.0.2 -p 443:6443 -v /lib/modules:/lib/modules -v /var/kubernetes:/etc/kubernetes k8s.gcr.io/dind-node-amd64:$(cat /docker_version) master $(hostname --ip-address)
-  docker run -d --privileged --net testnet --ip 172.18.0.3 -v /lib/modules:/lib/modules k8s.gcr.io/dind-node-amd64:$(cat /docker_version) worker
-  docker run -d --privileged --net testnet --ip 172.18.0.4 -v /lib/modules:/lib/modules k8s.gcr.io/dind-node-amd64:$(cat /docker_version) worker
-  docker run -d --privileged --net testnet --ip 172.18.0.5 -v /lib/modules:/lib/modules k8s.gcr.io/dind-node-amd64:$(cat /docker_version) worker
+  mount --make-rshared /
+  /cluster-up -logtostderr --run-tests=false -v=2 2>&1
 }
 
 start_host()
 {
   mount --make-rshared /lib/modules
-  mount --make-rshared /var/lib/docker
-  mount --make-rshared /var/lib/kubelet
   wait_for_docker
-
-  docker load -i /dind-node-bundle.tar
-  # Create a mount point for kubernetes credentials.
-  mkdir -p /var/kubernetes
 
   start_cluster
 }

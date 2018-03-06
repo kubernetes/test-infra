@@ -89,7 +89,7 @@ type Tester struct {
 	e2etest   string
 	control   *process.Control
 	apiserver *kubernetes.Clientset
-	testArgs  *string
+	testArgs  []string
 	reportdir string
 }
 
@@ -124,14 +124,29 @@ func (d *DindDeployer) NewTester() (*Tester, error) {
 	}, nil
 }
 
+func containsArg(e string, strs []string) bool {
+	for _, str := range strs {
+		if strings.HasPrefix(str, e) {
+			return true
+		}
+	}
+	return false
+}
+
 // Test just execs ginkgo. This will take more parameters in the future.
 func (t *Tester) Test() error {
 	skipRegex := "--skip=\"(Feature)|(NFS)|(StatefulSet)\""
 	focusRegex := "--focus=\".*\\[Conformance\\].*\""
-	args := []string{"--seed=1436380640", "--nodes=10", skipRegex, focusRegex, t.e2etest,
-		"--", "--kubeconfig", t.kubecfg, "--ginkgo.flakeAttempts=2", "--num-nodes=4", "--systemd-services=docker,kubelet",
-		"--report-dir", t.reportdir}
-	args = append(args, strings.Fields(*t.testArgs)...)
+	args := []string{"--seed=1436380640", "--nodes=10", t.e2etest, "--"}
+	// Try to keep behavior consistent with other kubetest deployments, but still provide a default.
+	if !containsArg("--skip=", t.testArgs) {
+		args = append(args, skipRegex)
+	}
+	if !containsArg("--focus=", t.testArgs) {
+		args = append(args, focusRegex)
+	}
+	args = append(args, "--kubeconfig", t.kubecfg, "--ginkgo.flakeAttempts=2", "--num-nodes=4", "--systemd-services=docker,kubelet", "--report-dir", t.reportdir)
+	args = append(args, t.testArgs...)
 	cmd := exec.Command(t.ginkgo, args...)
 	return t.control.FinishRunning(cmd)
 }
@@ -142,7 +157,7 @@ type DindDeployer struct {
 	containerID string
 	tmpdir      string
 	RealKubecfg string
-	testArgs    *string
+	testArgs    []string
 	docker      *client.Client
 	control     *process.Control
 	apiserver   *kubernetes.Clientset
@@ -171,7 +186,7 @@ func NewDeployer(kubecfg, image string, testArgs *string, control *process.Contr
 		tmpdir:   tmpdir,
 		docker:   docker,
 		control:  control,
-		testArgs: testArgs,
+		testArgs: strings.Fields(*testArgs),
 	}, nil
 }
 
@@ -200,7 +215,7 @@ func (d *DindDeployer) Up() error {
 	}, &container.HostConfig{
 		CapAdd: []string{"SYS_ADMIN"},
 		Mounts: []mount.Mount{
-			mount.Mount{
+			{
 				Source: "/lib/modules",
 				Target: "/lib/modules",
 				Type:   "bind",
@@ -208,7 +223,7 @@ func (d *DindDeployer) Up() error {
 					Propagation: mount.PropagationRShared,
 				},
 			},
-			mount.Mount{
+			{
 				Source: "/sys/fs/cgroup",
 				Target: "/sys/fs/cgroup",
 				Type:   "bind",
@@ -216,7 +231,7 @@ func (d *DindDeployer) Up() error {
 					Propagation: mount.PropagationRShared,
 				},
 			},
-			mount.Mount{
+			{
 				Source: d.tmpdir,
 				Target: "/var/kubernetes",
 				Type:   "bind",

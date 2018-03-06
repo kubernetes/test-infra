@@ -37,6 +37,10 @@ bazel build //test/e2e:e2e.test
 
 cd -
 
+cd ${TOOL_ROOT}
+bazel build //dind/cmd/cluster-up:cluster-up
+cd -
+
 # Copy artifacts into the tmpdir for Docker's context.
 
 cp ${KUBE_ROOT}/bazel-bin/build/debs/kubectl.deb ${CLUSTER_DIR}
@@ -49,14 +53,14 @@ cp ${KUBE_ROOT}/bazel-bin/test/e2e/e2e.test ${CLUSTER_DIR}
 cat ${KUBE_ROOT}/bazel-out/stable-status.txt | grep STABLE_BUILD_SCM_REVISION | awk '{print $2}' > ${CLUSTER_DIR}/source_version
 cat ${KUBE_ROOT}/bazel-out/stable-status.txt | grep STABLE_DOCKER_TAG | awk '{print $2}' > ${CLUSTER_DIR}/docker_version
 
-# Get systemd wrapper (needed until we have systemd run start.sh at startup).
+# Get systemd wrapper (needed until we put cluster-up into a systemd target).
 cp ${TOOL_ROOT}/init-wrapper.sh ${CLUSTER_DIR}
 # Get the cluster-up script.
 cp ${TOOL_ROOT}/start.sh ${CLUSTER_DIR}
 # Get the test execution script.
 cp ${TOOL_ROOT}/dind-test.sh ${CLUSTER_DIR}
 
-cp ${TOOL_ROOT}/../bazel-bin/dind/cluster-up/linux_amd64_stripped/cluster-up ${CLUSTER_DIR}
+cp ${TOOL_ROOT}/../bazel-bin/dind/cmd/cluster-up/linux_amd64_stripped/cluster-up ${CLUSTER_DIR}
 
 cp ${TOOL_ROOT}/cluster/Dockerfile ${CLUSTER_DIR}/Dockerfile
 cp ${TOOL_ROOT}/cluster/Makefile ${CLUSTER_DIR}/Makefile
