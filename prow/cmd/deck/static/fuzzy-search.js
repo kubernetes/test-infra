@@ -94,15 +94,19 @@ limitations under the License.
      * @return {number}
      */
     this.getMaxScore = function(pttn, str) {
+      // Rewards perfect match a value of Number.MAX_SAFE_INTEGER
       if (pttn === str) {
-        return 1000000000;
+        return Number.MAX_SAFE_INTEGER;
       }
       var i = 0;
       while (i < Math.min(pttn.length, str.length) && pttn[i] === str[i]) {
         i++;
       }
+      // If a string is match at least 5 characters, we consider it a significant match
+      // and give it a base score: Number.MAX_SAFE_INTEGER - len(pattern) and the number
+      // of matches will rank the string.
       if (i > 5) {
-        return 100000 + (i - 5);
+        return Number.MAX_SAFE_INTEGER - pttn.length + i;
       }
       var score = [];
       for (i = 0; i < 2; i++) {
@@ -114,7 +118,8 @@ limitations under the License.
       for (i = 0; i < pttn.length; i++) {
         var t = i % 2;
         for (j = 0; j < str.length; j++) {
-          var scoreVal = pttn[i].toLowerCase() === str[j].toLowerCase() ? this.calcScore(j, str) : -1000000;
+          var scoreVal = pttn[i].toLowerCase() === str[j].toLowerCase() ?
+            this.calcScore(j, str) : Number.MIN_SAFE_INTEGER;
           if (i === 0) {
             score[t][j] = scoreVal;
             if (j > 0) score[t][j] = Math.max(score[t][j], score[t][j-1]);
