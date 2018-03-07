@@ -1145,8 +1145,8 @@ test_groups:
 # kubeadm tests
 - name: ci-kubernetes-e2e-kubeadm-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce
-- name: periodic-kubernetes-e2e-kubeadm-gce-selfhosting
-  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-kubeadm-gce-selfhosting
+- name: ci-kubernetes-e2e-kubeadm-gce-selfhosting
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-selfhosting
 - name: ci-kubernetes-e2e-kubeadm-gce-ipvs
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-ipvs
 - name: ci-kubernetes-e2e-kubeadm-gce-cni-calico
@@ -1180,12 +1180,12 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
 - name: ci-kubernetes-e2e-gce-gci-latest-rollback-etcd
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-latest-rollback-etcd
-- name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
-  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
-- name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9
-  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9
-- name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
-  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
+- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
+- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9
+- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
 # charts tests
 - name: ci-kubernetes-charts-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-charts-gce
@@ -1200,14 +1200,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/issue-creator
 - name: metrics-bigquery
   gcs_prefix: kubernetes-jenkins/logs/metrics-bigquery
-- name: periodic-kubernetes-e2e-kubeadm-gce-1-7
-  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-kubeadm-gce-1-7
-- name: periodic-kubernetes-e2e-kubeadm-gce-1-8
-  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-kubeadm-gce-1-8
-- name: periodic-kubernetes-e2e-kubeadm-gce-1-9
-  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-kubeadm-gce-1-9
-- name: periodic-kubernetes-e2e-kubeadm-gce-1-10
-  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-kubeadm-gce-1-10
 - name: periodic-kubernetes-bazel-test-1-7
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-7
 - name: periodic-kubernetes-bazel-test-1-8
@@ -2933,7 +2925,7 @@ dashboards:
   - name: kubeadm-gce
     test_group_name: ci-kubernetes-e2e-kubeadm-gce
   - name: kubeadm-gce-selfhosting
-    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-selfhosting
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-selfhosting
 
 - name: sig-release-1.10-all
   dashboard_tab:
@@ -3027,10 +3019,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-beta
   - name: gce-kubeadm-1.9-on-1.10
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
-  - name: periodic-gce-kubeadm-1.10
-    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-1-10
+  - name: ci-gce-kubeadm-1.10
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-10
   - name: gce-kubeadm-upgrade-1.9-1.10
-    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
 
 - name: sig-release-1.10-blocking
   dashboard_tab:
@@ -3086,8 +3078,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-beta
   - name: gce-kubeadm-1.9-on-1.10
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
-  - name: periodic-gce-kubeadm-1.10
-    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-1-10
+  - name: ci-gce-kubeadm-1.10
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-10
 
 - name: sig-release-1.9-all
   dashboard_tab:
@@ -3107,10 +3099,10 @@ dashboards:
     test_group_name: periodic-kubernetes-bazel-test-1-9
   - name: gce-kubeadm-1.8-on-1.9
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8-on-1-9
-  - name: periodic-gce-kubeadm-1.9
-    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-1-9
-  - name: gce-kubeadm-upgrade-1.8-1.9
-    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9
+  - name: ci-gce-kubeadm-1.9
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-9
+  - name: ci-gce-kubeadm-upgrade-1.8-1.9
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9
   - name: periodic-kubernetes-e2e-debs-pushed
     test_group_name: periodic-kubernetes-e2e-debs-pushed
   - name: gci-gce-1.9
@@ -3202,8 +3194,8 @@ dashboards:
     test_group_name: periodic-kubernetes-bazel-test-1-9
   - name: gce-kubeadm-1.8-on-1.9
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8-on-1-9
-  - name: periodic-gce-kubeadm-1.9
-    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-1-9
+  - name: ci-gce-kubeadm-1.9
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-9
   - name: gci-gce-1.9
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-default
   - name: gci-gce-slow-1.9
@@ -3289,8 +3281,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster
   - name: gke-1.9-1.8-downgrade-cluster-parallel
     test_group_name: ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster-parallel
-  - name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1.7-1.8
-    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
+  - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1.7-1.8
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
 
 - name: sig-release-misc
   dashboard_tab:
@@ -3319,10 +3311,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8
   - name: gce-kubeadm-1.7-on-1.8
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-7-on-1-8
-  - name: periodic-gce-kubeadm-1.8
-    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-1-8
-  - name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1.7-1.8
-    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
+  - name: ci-gce-kubeadm-1.8
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8
+  - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1.7-1.8
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
   - name: federation-build-1.8
     test_group_name: ci-kubernetes-federation-build-1-8
   - name: federation-test-1.8
@@ -3375,8 +3367,8 @@ dashboards:
     test_group_name: ci-kubernetes-integration-stable2
   - name: gce-kubeadm-1.7-on-1.8
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-7-on-1-8
-  - name: periodic-gce-kubeadm-1.8
-    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-1-8
+  - name: ci-gce-kubeadm-1.8
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8
   - name: federation-build-1.8
     test_group_name: ci-kubernetes-federation-build-1-8
   - name: federation-test-1.8
@@ -3442,8 +3434,6 @@ dashboards:
     test_group_name: ci-kubernetes-bazel-build-1-7
   - name: ci-bazel-test-1.7
     test_group_name: ci-kubernetes-bazel-test-1-7
-  - name: periodic-gce-kubeadm-1.7
-    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-1-7
   - name: periodic-bazel-build-1.7
     test_group_name: periodic-kubernetes-bazel-build-1-7
   - name: periodic-bazel-test-1.7
@@ -3505,8 +3495,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-slow-release-1-7
   - name: gce-reboot-release-1.7
     test_group_name: ci-kubernetes-e2e-gce-reboot-release-1-7
-  - name: periodic-gce-kubeadm-1.7
-    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-1-7
+  - name: ci-gce-kubeadm-1.7
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-7
   - name: kubelet-1.7
     test_group_name: ci-kubernetes-node-kubelet-stable3
   - name: gci-gce-ingress-1.7
@@ -3892,32 +3882,24 @@ dashboards:
   dashboard_tab:
   - name: kubeadm-gce-1.7
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-7
-  - name: periodic-kubeadm-gce-1.7
-    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-1-7
   - name: kubeadm-gce-1.7-on-1.8
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-7-on-1-8
   - name: kubeadm-gce-upgrade-1.7-1.8
-    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
   - name: kubeadm-gce-1.8
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8
-  - name: periodic-kubeadm-gce-1.8
-    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-1-8
   - name: kubeadm-gce-1.8-on-1.9
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8-on-1-9
   - name: kubeadm-gce-upgrade-1.8-1.9
-    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9
   - name: kubeadm-gce-1.9
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-9
-  - name: periodic-kubeadm-gce-1.9
-    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-1-9
   - name: kubeadm-gce-1.9-on-1.10
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
   - name: kubeadm-gce-upgrade-1.9-1.10
-    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
   - name: kubeadm-gce-1.10
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-10
-  - name: periodic-kubeadm-gce-1.10
-    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-1-10
   - name: periodic-kubernetes-e2e-debs-pushed
     test_group_name: periodic-kubernetes-e2e-debs-pushed
   - name: kubeadm-gce-stable-on-master
@@ -3927,7 +3909,7 @@ dashboards:
   - name: kubeadm-gce
     test_group_name: ci-kubernetes-e2e-kubeadm-gce
   - name: kubeadm-gce-selfhosting
-    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-selfhosting
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-selfhosting
   - name: kubeadm-gce-cni-calico
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-cni-calico
   - name: kubeadm-gce-cni-flannel
