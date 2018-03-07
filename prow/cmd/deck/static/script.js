@@ -150,6 +150,26 @@ function handleUpKey() {
 }
 
 window.onload = function () {
+    var topNavigator = document.querySelector("#top-navigator");
+    var navigatorTimeOut;
+    var main = document.querySelector("main");
+    main.onscroll = () => {
+        topNavigator.classList.add("hidden");
+        if (navigatorTimeOut) {
+            clearTimeout(navigatorTimeOut);
+        }
+        navigatorTimeOut = setTimeout(() => {
+            if (main.scrollTop === 0) {
+                topNavigator.classList.add("hidden");
+            } else if (main.scrollTop > 100) {
+                topNavigator.classList.remove("hidden");
+            }
+        }, 100);
+    };
+    topNavigator.onclick = () => {
+      main.scrollTop = 0;
+    };
+
     document.addEventListener("keydown", function (event) {
         if (event.keyCode === 40) {
             handleDownKey();
