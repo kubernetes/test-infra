@@ -443,7 +443,7 @@ func acquireKubernetes(o *options) error {
 			}
 
 			// New deployment, extract new version
-			return o.extract.Extract(o.gcpProject, o.gcpZone, o.extractSource)
+			return o.extract.Extract(o.gcpProject, o.gcpZone, o.gcpRegion, o.extractSource)
 		})
 		if err != nil {
 			return err
