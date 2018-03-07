@@ -25,6 +25,7 @@ import (
 	"os/exec"
 	"strconv"
 	"syscall"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -32,7 +33,8 @@ import (
 )
 
 type options struct {
-	args []string
+	args    []string
+	timeout time.Duration
 
 	wrapperOptions *wrapper.Options
 }
@@ -53,6 +55,7 @@ func gatherOptions() options {
 	o := options{}
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	o.wrapperOptions = wrapper.BindOptions(fs)
+	fs.DurationVar(&o.timeout, "timeout", 5*time.Hour, "Timeout for the test command.")
 	fs.Parse(os.Args[1:])
 	o.Complete(fs.Args())
 	return o
@@ -90,7 +93,21 @@ func main() {
 		logrus.WithError(err).Fatal("Could not start the process")
 	}
 
-	commandErr := command.Wait()
+	var commandErr error
+	done := make(chan error)
+	go func() {
+		done <- command.Wait()
+	}()
+	select {
+	case err := <-done:
+		commandErr = err
+	case <-time.After(o.timeout):
+		logrus.Errorf("Process did not finish before %s timeout", o.timeout)
+		if err := command.Process.Kill(); err != nil {
+			logrus.WithError(err).Error("Could not kill process after timeout")
+		}
+		commandErr = errors.New("process timed out")
+	}
 
 	returnCode := "1"
 	if commandErr == nil {
