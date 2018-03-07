@@ -4662,7 +4662,7 @@
       "--ginkgo-parallel=1",
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=320m"
+      "--timeout=150m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
