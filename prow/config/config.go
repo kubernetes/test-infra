@@ -154,6 +154,7 @@ type Gerrit struct {
 	TickIntervalString string        `json:"tick_interval,omitempty"`
 	TickInterval       time.Duration `json:"-"`
 	// RateLimit defines how many changes to query per gerrit API call
+	// default is 5
 	RateLimit int `json:"ratelimit,omitempty"`
 }
 
@@ -387,6 +388,10 @@ func parseConfig(c *Config) error {
 			return fmt.Errorf("cannot parse duration for c.gerrit.tick_interval: %v", err)
 		}
 		c.Gerrit.TickInterval = tickInterval
+	}
+
+	if c.Gerrit.RateLimit == 0 {
+		c.Gerrit.RateLimit = 5
 	}
 
 	if c.JenkinsOperator != nil && len(c.JenkinsOperators) > 0 {

@@ -155,7 +155,7 @@ func (c *Controller) QueryChanges() (map[string]gerrit.ChangeInfo, error) {
 
 		for _, change := range *changes {
 			// if we already processed this change, then we stop the current sync loop
-			layout := "2006-01-02 15:04:05"
+			const layout = "2006-01-02 15:04:05"
 			updated, err := time.Parse(layout, change.Updated)
 			if err != nil {
 				logrus.WithError(err).Error("Parse time %v failed", change.Updated)
@@ -185,7 +185,7 @@ func (c *Controller) ProcessChange(change gerrit.ChangeInfo) error {
 
 	logger := logrus.WithField("gerrit change", change.Number)
 
-	for _, spec := range c.ca.Config().Presubmits[change.Project] {
+	for _, spec := range c.ca.Config().Presubmits[c.instance+"/"+change.Project] {
 		kr := kube.Refs{
 			Org:     c.instance,
 			Repo:    change.Project,
@@ -199,6 +199,8 @@ func (c *Controller) ProcessChange(change gerrit.ChangeInfo) error {
 				},
 			},
 		}
+
+		// TODO(krzyzacy): Support AlwaysRun and RunIfChanged
 		pj := pjutil.NewProwJob(pjutil.PresubmitSpec(spec, kr), map[string]string{})
 		logger.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob for.")
 		if _, err := c.kc.CreateProwJob(pj); err != nil {

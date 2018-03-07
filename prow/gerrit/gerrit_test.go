@@ -258,7 +258,7 @@ func TestProcessChange(t *testing.T) {
 		fca := &fca{
 			c: &config.Config{
 				Presubmits: map[string][]config.Presubmit{
-					"test-infra": {
+					"gerrit/test-infra": {
 						{
 							Name: "test-foo",
 						},
