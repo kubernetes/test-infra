@@ -226,17 +226,13 @@ function validToken(token) {
 }
 
 function handleEnterKeyDown(fz, list, input) {
-    if (list.childElementCount === 0) {
-        return;
-    }
-
     var selectedJobs = list.getElementsByClassName("job-selected");
-    var job = list.firstElementChild.innerHTML;
     if (selectedJobs && selectedJobs.length === 1) {
-        job = selectedJobs[0].innerHTML;
+        input.value = selectedJobs[0].innerHTML;
     }
-
-    input.value = job;
+    // TODO(@qhuynh96): according to discussion in https://github.com/kubernetes/test-infra/pull/7165, the
+    // fuzzy search should respect user input no matter it is in the list or not. User may
+    // experience being redirected back to default view if the search input is invalid.
     input.blur();
     list.classList.remove("active-fuzzy-search");
     redraw(fz);
@@ -245,7 +241,6 @@ function handleEnterKeyDown(fz, list, input) {
 function registerFuzzySearchHandler(fz, id, list, input) {
     input.addEventListener("keydown", function (event) {
         if (event.keyCode === 13) {
-            // If enter key is hit, selects the first job in the list.
             handleEnterKeyDown(fz, list, input);
         } else if (validToken(event.keyCode)) {
             // Delay 1 frame that the input character is recorded before getting

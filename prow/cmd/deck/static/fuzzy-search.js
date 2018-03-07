@@ -102,12 +102,7 @@ limitations under the License.
       while (i < Math.min(pttn.length, str.length) && pttn[i] === str[i]) {
         i++;
       }
-      // If a string is match at least 5 characters, we consider it a significant match
-      // and give it a base score: Number.MAX_SAFE_INTEGER - len(pattern) and the number
-      // of matches will rank the string.
-      if (i > 5) {
-        return Number.MAX_SAFE_INTEGER - pttn.length + i;
-      }
+      var streak = i;
       var score = [];
       for (i = 0; i < 2; i++) {
         score[i] = [];
@@ -120,6 +115,9 @@ limitations under the License.
         for (j = 0; j < str.length; j++) {
           var scoreVal = pttn[i].toLowerCase() === str[j].toLowerCase() ?
             this.calcScore(j, str) : Number.MIN_SAFE_INTEGER;
+          if (streak > 4 && i === streak - 1 && j === streak - 1) {
+            scoreVal += 10 * streak;
+          }
           if (i === 0) {
             score[t][j] = scoreVal;
             if (j > 0) score[t][j] = Math.max(score[t][j], score[t][j-1]);
