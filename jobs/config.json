@@ -4793,6 +4793,7 @@
     "args": [
       "--check-leaked-resources",
       "--env=KUBE_PROXY_MODE=ipvs",
+      "--env=HAIRPIN_MODE=hairpin-veth",
       "--env-file=jobs/platform/gce.env",
       "--extract=ci/latest",
       "--gcp-master-image=gci",
