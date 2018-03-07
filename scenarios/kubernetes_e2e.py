@@ -452,7 +452,6 @@ def main(args):
     # TODO(fejta): remove after next image push
     mode.add_environment('KUBETEST_MANUAL_DUMP=y')
     runner_args = [
-        '-v',
         '--dump=%s' % mode.artifacts,
     ]
 
