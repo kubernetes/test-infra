@@ -165,7 +165,7 @@ func TestExtractStrategies(t *testing.T) {
 		if err := es.Set(tc.option); err != nil {
 			t.Errorf("extractStrategy.Set(%q) returned err: %q", tc.option, err)
 		}
-		if err := es.Extract("", "", false); err != nil {
+		if err := es.Extract("", "", "", false); err != nil {
 			t.Errorf("extractStrategy(%q).Extract() returned err: %q", tc.option, err)
 		}
 

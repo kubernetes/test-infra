@@ -247,7 +247,7 @@ func newGKE(provider, project, zone, region, network, image, cluster string, tes
 				if strings.HasPrefix(val, "gke-latest-") {
 					releasePrefix = strings.TrimPrefix(val, "gke-latest-")
 				}
-				if val, err = getLatestGKEVersion(project, zone, releasePrefix); err != nil {
+				if val, err = getLatestGKEVersion(project, zone, region, releasePrefix); err != nil {
 					return nil, fmt.Errorf("fail to get latest gke version : %v", err)
 				}
 			}
