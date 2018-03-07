@@ -89,6 +89,13 @@ func TestMilestoneStatus(t *testing.T) {
 			previousMilestone: 10,
 			expectedMilestone: 10,
 		},
+		{
+			name:              "Multiline comment",
+			body:              "Foo\n/milestone v1.0\r\n/priority critical-urgent",
+			commenter:         "sig-lead",
+			previousMilestone: 10,
+			expectedMilestone: 1,
+		},
 	}
 
 	for _, tc := range testcases {
