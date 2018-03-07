@@ -5822,35 +5822,22 @@ postsubmits:
     name: ci-federation-release
     labels:
       preset-service-account: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
         args:
         - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/logs"
-        env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
           # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "2Gi"
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
 
   kubernetes/kubernetes:
   - name: ci-kubernetes-bazel-build
@@ -5952,12 +5939,12 @@ postsubmits:
     - release-1.9
     labels:
       preset-service-account: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
         args:
         - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -5968,91 +5955,12 @@ postsubmits:
         - "--gcs=gs://kubernetes-release-dev/ci"
         - "--version-suffix=-bazel"
         - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel-1.9.txt"
-        env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
-    run_after_success:
-    - name: ci-kubernetes-bazel-test-1-9
-      agent: kubernetes
-      labels:
-        preset-service-account: true
-      spec:
-        containers:
-        - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
-          args:
-          - "--clean"
-          - "--git-cache=/root/.cache/git"
-          - "--job=$(JOB_NAME)"
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-          - "--service-account=/etc/service-account/service-account.json"
-          - "--upload=gs://kubernetes-jenkins/logs"
-          - "--" # end bootstrap args, scenario args below
-          - "--test=//... -//build/... -//vendor/..."
-          - "--manual-test=//hack:verify-all"
-          - "--test-args=--build_tag_filters=-e2e,-integration"
-          - "--test-args=--test_tag_filters=-e2e,-integration"
-          - "--test-args=--flaky_test_attempts=3"
-          env:
-          - name: TEST_TMPDIR
-            value: /root/.cache/bazel
-          securityContext:
-            privileged: true
-          volumeMounts:
-          - name: cache-ssd
-            mountPath: /root/.cache
-          ports:
-          - containerPort: 9999
-            hostPort: 9999
-          resources:
-            requests:
-              memory: "6Gi"
-        volumes:
-        - name: cache-ssd
-          hostPath:
-            path: /mnt/disks/ssd0
-    - name: ci-kubernetes-e2e-kubeadm-gce-1-8-on-1-9
-      agent: kubernetes
-      labels:
-        preset-service-account: true
-        preset-k8s-ssh: true
-      spec:
-        containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
-          args:
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-          - "--clean"
-          - "--timeout=320"
-          - "--upload=gs://kubernetes-jenkins/logs"
-    - name: ci-kubernetes-e2e-kubeadm-gce-1-9
-      agent: kubernetes
-      labels:
-        preset-service-account: true
-        preset-k8s-ssh: true
-      spec:
-        containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
-          args:
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-          - "--clean"
-          - "--timeout=320"
-          - "--upload=gs://kubernetes-jenkins/logs"
-
   - name: ci-kubernetes-bazel-test-1-10
     agent: kubernetes
     branches:
@@ -6084,33 +5992,32 @@ postsubmits:
         resources:
           requests:
             memory: "6Gi"
-    run_after_success:
-    - name: ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
-      agent: kubernetes
-      labels:
-        preset-service-account: true
-        preset-k8s-ssh: true
-      spec:
-        containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
-          args:
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-          - "--clean"
-          - "--timeout=320"
-          - "--upload=gs://kubernetes-jenkins/logs"
-    - name: ci-kubernetes-e2e-kubeadm-gce-1-10
-      agent: kubernetes
-      labels:
-        preset-service-account: true
-        preset-k8s-ssh: true
-      spec:
-        containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
-          args:
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-          - "--clean"
-          - "--timeout=320"
-          - "--upload=gs://kubernetes-jenkins/logs"
+
+  - name: ci-kubernetes-bazel-test-1-9
+    agent: kubernetes
+    labels:
+      preset-service-account: true
+      preset-bazel-scratch-dir: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
+        args:
+        - "--clean"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/logs"
+        - "--" # end bootstrap args, scenario args below
+        - "--test=//... -//build/... -//vendor/..."
+        - "--manual-test=//hack:verify-all"
+        - "--test-args=--build_tag_filters=-e2e,-integration"
+        - "--test-args=--test_tag_filters=-e2e,-integration"
+        - "--test-args=--flaky_test_attempts=3"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
 
   kubernetes/test-infra:
   - name: ci-test-infra-bazel
@@ -6833,7 +6740,7 @@ periodics:
 
 
 - name: ci-kubernetes-bazel-build
-  interval: 6h
+  interval: 5m
   agent: kubernetes
   labels:
     preset-service-account: true
@@ -6868,164 +6775,6 @@ periodics:
       resources:
         requests:
           memory: "6Gi"
-  run_after_success:
-  - name: ci-kubernetes-e2e-kubeadm-gce-ipvs
-    agent: kubernetes
-    labels:
-      preset-service-account: true
-      preset-k8s-ssh: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
-        args:
-        - "--repo=k8s.io/kubernetes=master"
-        - "--clean"
-        - "--timeout=320"
-        - "--upload=gs://kubernetes-jenkins/logs"
-  - name: periodic-kubernetes-e2e-kubeadm-gce-selfhosting
-    agent: kubernetes
-    labels:
-      preset-service-account: true
-      preset-k8s-ssh: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
-        args:
-        - "--repo=k8s.io/kubernetes=master"
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--timeout=320"
-        - "--upload=gs://kubernetes-jenkins/logs"
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
-  - name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
-    agent: kubernetes
-    labels:
-      preset-service-account: true
-      preset-k8s-ssh: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
-        args:
-        - "--repo=k8s.io/kubernetes=master"
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--timeout=320"
-        - "--upload=gs://kubernetes-jenkins/logs"
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
-  - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-stable-master
-    agent: kubernetes
-    labels:
-      preset-service-account: true
-      preset-k8s-ssh: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
-        args:
-        - "--repo=k8s.io/kubernetes=master"
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--timeout=320"
-        - "--upload=gs://kubernetes-jenkins/logs"
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
-  - name: ci-kubernetes-e2e-kubeadm-gce-cni-calico
-    agent: kubernetes
-    labels:
-      preset-service-account: true
-      preset-k8s-ssh: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
-        args:
-        - "--repo=k8s.io/kubernetes=master"
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--timeout=320"
-        - "--upload=gs://kubernetes-jenkins/logs"
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
-  - name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
-    agent: kubernetes
-    labels:
-      preset-service-account: true
-      preset-k8s-ssh: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
-        args:
-        - "--repo=k8s.io/kubernetes=master"
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--timeout=320"
-        - "--upload=gs://kubernetes-jenkins/logs"
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
-  - name: ci-kubernetes-e2e-kubeadm-gce-dns-coredns
-    agent: kubernetes
-    labels:
-      preset-service-account: true
-      preset-k8s-ssh: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
-        args:
-        - "--repo=k8s.io/kubernetes=master"
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--timeout=320"
-        - "--upload=gs://kubernetes-jenkins/logs"
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
 
 - name: ci-kubernetes-bazel-build-1-7
   interval: 24h
@@ -12841,6 +12590,22 @@ periodics:
       - "--timeout=320"
       - "--upload=gs://kubernetes-jenkins/logs"
 
+- name: ci-kubernetes-e2e-kubeadm-gce-1-10
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
+      args:
+      - "--repo=k8s.io/kubernetes=release-1.10"
+      - "--clean"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
+
+
 - name: ci-kubernetes-e2e-kubeadm-gce-1-7
   interval: 12h
   agent: kubernetes
@@ -12851,7 +12616,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
       args:
-      - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+      - "--repo=k8s.io/kubernetes=release-1.7"
       - "--clean"
       - "--timeout=320"
       - "--upload=gs://kubernetes-jenkins/logs"
@@ -12866,7 +12631,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
       args:
-      - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+      - "--repo=k8s.io/kubernetes=release-1.8"
       - "--timeout=320"
       - "--upload=gs://kubernetes-jenkins/logs"
 
@@ -12883,7 +12648,197 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
       args:
-      - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+      - "--repo=k8s.io/kubernetes=release-1.8"
+      - "--clean"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
+
+- name: ci-kubernetes-e2e-kubeadm-gce-1-8-on-1-9
+  interval: 12h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
+      args:
+      - "--repo=k8s.io/kubernetes=release-1.9"
+      - "--clean"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
+
+- name: ci-kubernetes-e2e-kubeadm-gce-1-9
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
+      args:
+      - "--repo=k8s.io/kubernetes=release-1.9"
+      - "--clean"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
+
+- name: ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
+      args:
+      - "--repo=k8s.io/kubernetes=release-1.10"
+      - "--clean"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
+
+- name: ci-kubernetes-e2e-kubeadm-gce-cni-calico
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
+      args:
+      - "--repo=k8s.io/kubernetes=master"
+      - "--clean"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
+- name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
+      args:
+      - "--repo=k8s.io/kubernetes=master"
+      - "--clean"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
+- name: ci-kubernetes-e2e-kubeadm-gce-dns-coredns
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
+      args:
+      - "--repo=k8s.io/kubernetes=master"
+      - "--clean"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
+
+- name: ci-kubernetes-e2e-kubeadm-gce-ipvs
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
+      args:
+      - "--repo=k8s.io/kubernetes=master"
+      - "--clean"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
+- name: ci-kubernetes-e2e-kubeadm-gce-selfhosting
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
+      args:
+      - "--repo=k8s.io/kubernetes=master"
+      - "--clean"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
+- name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
+      args:
+      - "--repo=k8s.io/kubernetes=master"
+      - "--clean"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
+- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
+      args:
+      - "--repo=k8s.io/kubernetes=release-1.7"
+      - "--clean"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
+
+- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
+      args:
+      - "--repo=k8s.io/kubernetes=release-1.9"
+      - "--clean"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
+
+- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
+      args:
+      - "--repo=k8s.io/kubernetes=release-1.10"
+      - "--clean"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
+
+- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-stable-master
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
+      args:
+      - "--repo=k8s.io/kubernetes=master"
       - "--clean"
       - "--timeout=320"
       - "--upload=gs://kubernetes-jenkins/logs"
@@ -14980,117 +14935,6 @@ periodics:
       - --repo=k8s.io/kubeadm=master
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
-
-- name: periodic-kubernetes-e2e-kubeadm-gce-1-10
-  interval: 6h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
-      args:
-      - "--repo=k8s.io/kubernetes=release-1.10"
-      - "--clean"
-      - "--timeout=320"
-      - "--upload=gs://kubernetes-jenkins/logs"
-
-- name: periodic-kubernetes-e2e-kubeadm-gce-1-7
-  interval: 12h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
-      args:
-      - "--repo=k8s.io/kubernetes=release-1.7"
-      - "--clean"
-      - "--timeout=320"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      env:
-      - name: REPO_NAME
-        value: kubernetes=release-1.7
-
-- name: periodic-kubernetes-e2e-kubeadm-gce-1-8
-  interval: 6h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
-      args:
-      - "--repo=k8s.io/kubernetes=release-1.8"
-      - "--clean"
-      - "--timeout=320"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      env:
-      - name: REPO_NAME
-        value: kubernetes=release-1.8
-
-- name: periodic-kubernetes-e2e-kubeadm-gce-1-9
-  interval: 6h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
-      args:
-      - "--repo=k8s.io/kubernetes=release-1.9"
-      - "--clean"
-      - "--timeout=320"
-      - "--upload=gs://kubernetes-jenkins/logs"
-
-- name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
-  interval: 6h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
-      args:
-      - "--repo=k8s.io/kubernetes=release-1.8"
-      - "--clean"
-      - "--timeout=320"
-      - "--upload=gs://kubernetes-jenkins/logs"
-
-- name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9
-  interval: 6h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
-      args:
-      - "--repo=k8s.io/kubernetes=release-1.9"
-      - "--clean"
-      - "--timeout=320"
-      - "--upload=gs://kubernetes-jenkins/logs"
-
-- name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
-  interval: 6h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180306-1db99ab1d
-      args:
-      - "--repo=k8s.io/kubernetes=release-1.10"
-      - "--clean"
-      - "--timeout=320"
-      - "--upload=gs://kubernetes-jenkins/logs"
 
 - name: periodic-test-infra-close
   interval: 1h
