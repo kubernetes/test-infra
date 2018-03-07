@@ -8919,6 +8919,7 @@
     ]
   },
   "ci-kubernetes-e2e-kubeadm-gce": {
+    "_commment": "TODO(bentheelder): --kubernetes-anywhere-kubernetes-version should really be ci/latest-bazel but we need changes to kubeadm and possibly kubernetes-anywhere first",
     "args": [
       "--cluster=",
       "--deployment=kubernetes-anywhere",
@@ -8928,7 +8929,7 @@
       "--kubeadm=ci",
       "--kubernetes-anywhere-dump-cluster-logs=true",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel",
-      "--kubernetes-anywhere-kubernetes-version=ci/latest-bazel",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
@@ -8947,7 +8948,7 @@
       "--gcp-zone=us-central1-f",
       "--kubeadm=ci",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.10",
-      "--kubernetes-anywhere-kubernetes-version=latest-bazel-1.10",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest-1.10",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
@@ -8966,7 +8967,7 @@
       "--gcp-zone=us-central1-f",
       "--kubeadm=ci",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.7",
-      "--kubernetes-anywhere-kubernetes-version=latest-bazel-1.7",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest-1.7",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
       "--timeout=300m"
@@ -8985,7 +8986,7 @@
       "--gcp-zone=us-central1-f",
       "--kubeadm=ci",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.7",
-      "--kubernetes-anywhere-kubernetes-version=latest-bazel-1.7",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest-1.7",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
       "--timeout=300m"
@@ -9004,7 +9005,7 @@
       "--gcp-zone=us-central1-f",
       "--kubeadm=ci",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.8",
-      "--kubernetes-anywhere-kubernetes-version=latest-bazel-1.8",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest-1.8",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
@@ -9023,7 +9024,7 @@
       "--gcp-zone=us-central1-f",
       "--kubeadm=ci",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.8",
-      "--kubernetes-anywhere-kubernetes-version=latest-bazel-1.8",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest-1.8",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
@@ -9042,7 +9043,7 @@
       "--gcp-zone=us-central1-f",
       "--kubeadm=ci",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.9",
-      "--kubernetes-anywhere-kubernetes-version=latest-bazel-1.9",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest-1.9",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
@@ -9061,7 +9062,7 @@
       "--gcp-zone=us-central1-f",
       "--kubeadm=ci",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.9",
-      "--kubernetes-anywhere-kubernetes-version=latest-bazel-1.9",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest-1.9",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
@@ -9081,7 +9082,7 @@
       "--kubeadm=ci",
       "--kubernetes-anywhere-cni=calico",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel",
-      "--kubernetes-anywhere-kubernetes-version=ci/latest-bazel",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
@@ -9101,7 +9102,7 @@
       "--kubeadm=ci",
       "--kubernetes-anywhere-cni=flannel",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel",
-      "--kubernetes-anywhere-kubernetes-version=ci/latest-bazel",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
@@ -10869,7 +10870,7 @@
       "--gcp-zone=us-central1-f",
       "--kubeadm=ci",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.10",
-      "--kubernetes-anywhere-kubernetes-version=latest-bazel-1.10",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest-1.10",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
@@ -10888,7 +10889,7 @@
       "--gcp-zone=us-central1-f",
       "--kubeadm=periodic",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.7",
-      "--kubernetes-anywhere-kubernetes-version=latest-bazel-1.7",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest-1.7",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
       "--timeout=300m"
@@ -10907,7 +10908,7 @@
       "--gcp-zone=us-central1-f",
       "--kubeadm=periodic",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.8",
-      "--kubernetes-anywhere-kubernetes-version=latest-bazel-1.8",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest-1.8",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
@@ -10926,7 +10927,7 @@
       "--gcp-zone=us-central1-f",
       "--kubeadm=ci",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.9",
-      "--kubernetes-anywhere-kubernetes-version=latest-bazel-1.9",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest-1.9",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
@@ -10947,7 +10948,7 @@
       "--kubernetes-anywhere-dump-cluster-logs=true",
       "--kubernetes-anywhere-kubeadm-feature-gates=SelfHosting=true",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel",
-      "--kubernetes-anywhere-kubernetes-version=ci/latest-bazel",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
@@ -10967,7 +10968,7 @@
       "--gcp-zone=us-central1-f",
       "--kubeadm=periodic",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.7",
-      "--kubernetes-anywhere-kubernetes-version=latest-bazel-1.7",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest-1.7",
       "--kubernetes-anywhere-upgrade-method=upgrade",
       "--provider=kubernetes-anywhere",
       "--skew",
@@ -10990,7 +10991,7 @@
       "--gcp-zone=us-central1-f",
       "--kubeadm=periodic",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.8",
-      "--kubernetes-anywhere-kubernetes-version=latest-bazel-1.8",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest-1.8",
       "--kubernetes-anywhere-upgrade-method=upgrade",
       "--provider=kubernetes-anywhere",
       "--skew",
@@ -11013,7 +11014,7 @@
       "--gcp-zone=us-central1-f",
       "--kubeadm=periodic",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.9",
-      "--kubernetes-anywhere-kubernetes-version=latest-bazel-1.9",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest-1.9",
       "--kubernetes-anywhere-upgrade-method=upgrade",
       "--provider=kubernetes-anywhere",
       "--skew",
