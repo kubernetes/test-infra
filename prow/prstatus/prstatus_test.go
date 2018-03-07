@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package userdashboard
+package prstatus
 
 import (
 	"context"
@@ -73,10 +73,10 @@ func TestServeHTTPWithoutLogin(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	request := httptest.NewRequest(http.MethodGet, "/user-data.js", nil)
+	request := httptest.NewRequest(http.MethodGet, "/pr-data.js", nil)
 
-	udHandler := mockAgent.HandleUserDashboard(mockAgent)
-	udHandler.ServeHTTP(rr, request)
+	prHandler := mockAgent.HandlePrStatus(mockAgent)
+	prHandler.ServeHTTP(rr, request)
 	if rr.Code != http.StatusOK {
 		t.Fatalf("Bad status code: %d", rr.Code)
 	}
@@ -106,7 +106,7 @@ func TestServeHTTPWithLogin(t *testing.T) {
 	mockUserData := generateMockUserData()
 
 	rr := httptest.NewRecorder()
-	request := httptest.NewRequest(http.MethodGet, "/user-data.js", nil)
+	request := httptest.NewRequest(http.MethodGet, "/pr-data.js", nil)
 	mockSession, err := sessions.GetRegistry(request).Get(mockCookieStore, tokenSession)
 	if err != nil {
 		t.Errorf("Error with creating mock session: %v", err)
@@ -117,8 +117,8 @@ func TestServeHTTPWithLogin(t *testing.T) {
 	mockSession.Values[loginKey] = "random_user"
 
 	mockQueryHandler := newMockQueryHandler(mockUserData.PullRequests)
-	udHandler := mockAgent.HandleUserDashboard(mockQueryHandler)
-	udHandler.ServeHTTP(rr, request)
+	prHandler := mockAgent.HandlePrStatus(mockQueryHandler)
+	prHandler.ServeHTTP(rr, request)
 	if rr.Code != http.StatusOK {
 		t.Fatalf("Bad status code: %d", rr.Code)
 	}
@@ -142,6 +142,7 @@ func generateMockPullRequest(numPr int) PullRequest {
 	repoName := fmt.Sprintf("repo_%d", numPr)
 	return PullRequest{
 		Number: (githubql.Int)(numPr),
+		Merged: (githubql.Boolean)(true),
 		Title:  (githubql.String)("A mock pull request"),
 		Author: struct {
 			Login githubql.String
