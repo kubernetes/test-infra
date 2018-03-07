@@ -34,7 +34,7 @@ import (
 const pluginName = "milestone"
 
 var (
-	milestoneRegex   = regexp.MustCompile(`(?m)^/milestone\s+(.+)$`)
+	milestoneRegex   = regexp.MustCompile(`(?m)^/milestone\s+(.+?)\s*$`)
 	mustBeSigLead    = "You must be a member of the [%s](https://github.com/orgs/%s/teams/%s/members) github team to set the milestone."
 	invalidMilestone = "The provided milestone is not valid for this repository. Milestones in this repository: [%s]\n\nUse `/milestone %s` to clear the milestone."
 	clearKeyword     = "clear"
