@@ -11927,7 +11927,7 @@ periodics:
     - args:
       - --timeout=920
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180306-47f8a1178-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-65c895737-master
 
 - interval: 2h
   agent: kubernetes
@@ -11979,7 +11979,7 @@ periodics:
     - args:
       - --timeout=920
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180306-47f8a1178-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-65c895737-master
 
 - interval: 30m
   agent: kubernetes
