@@ -7064,6 +7064,7 @@
       "--check-leaked-resources",
       "--deployment=gke",
       "--extract=ci/latest",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-node-image=gci",
       "--gcp-project=k8s-jkns-e2e-regional",
       "--gcp-region=us-central1",
