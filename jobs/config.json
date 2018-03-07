@@ -11436,6 +11436,46 @@
       "sig-gcp"
     ]
   },
+  "pull-kubernetes-e2e-gce-100-performance": {
+    "args": [
+      "--build",
+      "--cluster=",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability.env",
+      "--extract=local",
+      "--gcp-project=k8s-scale-testing",
+      "--gcp-zone=us-east1-a",
+      "--provider=gce",
+      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-100-performance",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --allowed-not-ready-nodes=1 --node-schedulable-timeout=10m --minStartupPods=8 --gather-resource-usage=true --gather-metrics-at-teardown=true",
+      "--timeout=100m",
+      "--use-logexporter"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scalability"
+    ]
+  },
+  "pull-kubernetes-e2e-gce-big-performance": {
+    "args": [
+      "--build",
+      "--cluster=",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gce-big-performance.env",
+      "--extract=local",
+      "--gcp-project=k8s-scale-testing",
+      "--gcp-zone=us-east1-a",
+      "--provider=gce",
+      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-big-performance",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --allowed-not-ready-nodes=5 --node-schedulable-timeout=10m --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
+      "--timeout=240m",
+      "--use-logexporter"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scalability"
+    ]
+  },
   "pull-kubernetes-e2e-gce-device-plugin-gpu": {
     "args": [
       "--build=bazel",
@@ -11456,6 +11496,26 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-scheduling"
+    ]
+  },
+  "pull-kubernetes-e2e-gce-large-performance": {
+    "args": [
+      "--build",
+      "--cluster=",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gce-large-performance.env",
+      "--extract=local",
+      "--gcp-project=k8s-scale-testing",
+      "--gcp-zone=us-east1-a",
+      "--provider=gce",
+      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-large-performance",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --allowed-not-ready-nodes=20 --node-schedulable-timeout=60m --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
+      "--timeout=540m",
+      "--use-logexporter"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scalability"
     ]
   },
   "pull-kubernetes-e2e-gke": {
