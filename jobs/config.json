@@ -4654,12 +4654,11 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=",
-      "--env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-e2e-glbc-amd64:latest",
       "--env=CLUSTER_DNS_CORE_DNS=true",
+      "--env-file=jobs/platform/gce.env",
       "--extract=ci/latest",
-      "--gcp-project-type=ingress-project",
       "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel=1",
+      "--ginkgo-parallel=30",
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--timeout=150m"
