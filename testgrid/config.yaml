@@ -1809,6 +1809,18 @@ test_groups:
   num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
+- name: pull-kubernetes-e2e-gce-100-performance
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-100-performance
+  days_of_results: 60
+  num_columns_recent: 20
+- name: pull-kubernetes-e2e-gce-big-performance
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-big-performance
+  days_of_results: 60
+  num_columns_recent: 20
+- name: pull-kubernetes-e2e-gce-large-performance
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-large-performance
+  days_of_results: 60
+  num_columns_recent: 20
 - name: pull-kubernetes-e2e-gce-device-plugin-gpu
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-device-plugin-gpu
   days_of_results: 1
@@ -5248,14 +5260,26 @@ dashboards:
   - name: pull-kubernetes-e2e-kubeadm-gce
     test_group_name: pull-kubernetes-e2e-kubeadm-gce
     base_options: 'width=10'
+  - name: pull-kubernetes-typecheck
+    test_group_name: pull-kubernetes-typecheck
+    base_options: 'width=10'
+
+- name: presubmits-kubernetes-scalability
+  dashboard_tab:
+  - name: pull-kubernetes-e2e-gce-100-performance
+    test_group_name: pull-kubernetes-e2e-gce-100-performance
+    base_options: 'width=10'
+  - name: pull-kubernetes-e2e-gce-big-performance
+    test_group_name: pull-kubernetes-e2e-gce-big-performance
+    base_options: 'width=10'
+  - name: pull-kubernetes-e2e-gce-large-performance
+    test_group_name: pull-kubernetes-e2e-gce-large-performance
+    base_options: 'width=10'
   - name: pull-kubernetes-kubemark-e2e-gce-big
     test_group_name: pull-kubernetes-kubemark-e2e-gce-big
     base_options: 'width=10'
   - name: pull-kubernetes-kubemark-e2e-gce-scale
     test_group_name: pull-kubernetes-kubemark-e2e-gce-scale
-    base_options: 'width=10'
-  - name: pull-kubernetes-typecheck
-    test_group_name: pull-kubernetes-typecheck
     base_options: 'width=10'
 
 - name: presubmits-test-infra
@@ -5406,6 +5430,7 @@ dashboard_groups:
   - presubmits-federation
   - presubmits-kubernetes-blocking
   - presubmits-kubernetes-nonblocking
+  - presubmits-kubernetes-scalability
   - presubmits-test-infra
   - presubmits-kops
   - presubmits-misc
