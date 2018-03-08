@@ -9287,7 +9287,7 @@
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
-      "--extract=ci/latest",
+      "--extract=ci/latest-bazel",
       "--extract=release/stable",
       "--gcp-zone=us-central1-f",
       "--kubeadm=periodic",
