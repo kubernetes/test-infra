@@ -165,9 +165,10 @@ func (c *Controller) QueryChanges() (map[string]gerrit.ChangeInfo, error) {
 			// process if updated later than last updated
 			// stop if already parsed
 			if updated.After(c.lastUpdate) {
-				// in case of a new change comes in during the current sync cycle
-				if _, ok := pending[change.CurrentRevision]; !ok {
-					pending[change.CurrentRevision] = change
+				// here we use changeID as the key, since multiple revisions can occur for the same change
+				// and since we sorted by recent timestamp, first change will be the most recent revision
+				if _, ok := pending[change.ID]; !ok {
+					pending[change.ID] = change
 				}
 			} else {
 				return pending, nil

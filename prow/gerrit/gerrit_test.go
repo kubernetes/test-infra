@@ -93,7 +93,8 @@ func TestQueryChange(t *testing.T) {
 			lastUpdate: now,
 			changes: []gerrit.ChangeInfo{
 				{
-					CurrentRevision: "1",
+					ID:              "1",
+					CurrentRevision: "1-1",
 					Updated:         now.Add(-time.Hour).Format(layout),
 				},
 			},
@@ -105,11 +106,12 @@ func TestQueryChange(t *testing.T) {
 			lastUpdate: now.Add(-time.Minute),
 			changes: []gerrit.ChangeInfo{
 				{
-					CurrentRevision: "1",
+					ID:              "1",
+					CurrentRevision: "1-1",
 					Updated:         now.Format(layout),
 				},
 			},
-			revisions: []string{"1"},
+			revisions: []string{"1-1"},
 		},
 		{
 			name:       "one good one bad",
@@ -117,15 +119,17 @@ func TestQueryChange(t *testing.T) {
 			lastUpdate: now.Add(-time.Minute),
 			changes: []gerrit.ChangeInfo{
 				{
-					CurrentRevision: "1",
+					ID:              "1",
+					CurrentRevision: "1-1",
 					Updated:         now.Format(layout),
 				},
 				{
-					CurrentRevision: "2",
+					ID:              "2",
+					CurrentRevision: "2-1",
 					Updated:         now.Add(-time.Hour).Format(layout),
 				},
 			},
-			revisions: []string{"1"},
+			revisions: []string{"1-1"},
 		},
 		{
 			name:       "multiple up-to-date changes",
@@ -133,23 +137,32 @@ func TestQueryChange(t *testing.T) {
 			lastUpdate: now.Add(-time.Minute),
 			changes: []gerrit.ChangeInfo{
 				{
-					CurrentRevision: "1",
+					ID:              "1",
+					CurrentRevision: "1-1",
 					Updated:         now.Format(layout),
 				},
 				{
-					CurrentRevision: "2",
+					ID:              "2",
+					CurrentRevision: "2-1",
 					Updated:         now.Format(layout),
 				},
 				{
-					CurrentRevision: "3",
+					ID:              "3",
+					CurrentRevision: "3-2",
 					Updated:         now.Format(layout),
 				},
 				{
-					CurrentRevision: "4",
+					ID:              "3",
+					CurrentRevision: "3-1",
+					Updated:         now.Format(layout),
+				},
+				{
+					ID:              "4",
+					CurrentRevision: "4-1",
 					Updated:         now.Add(-time.Hour).Format(layout),
 				},
 			},
-			revisions: []string{"1", "2", "3"},
+			revisions: []string{"1-1", "2-1", "3-2"},
 		},
 	}
 
