@@ -11380,7 +11380,7 @@
   },
   "pull-kubernetes-e2e-gce-100-performance": {
     "args": [
-      "--build",
+      "--build=bazel",
       "--cluster=",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability.env",
@@ -11400,7 +11400,7 @@
   },
   "pull-kubernetes-e2e-gce-big-performance": {
     "args": [
-      "--build",
+      "--build=bazel",
       "--cluster=",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-big-performance.env",
@@ -11442,7 +11442,7 @@
   },
   "pull-kubernetes-e2e-gce-large-performance": {
     "args": [
-      "--build",
+      "--build=bazel",
       "--cluster=",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-large-performance.env",
