@@ -2172,31 +2172,31 @@ test_groups:
   num_failures_to_alert: 1
 # Istio daily releases
 - name: daily-e2e-rbac-no_auth
-  gcs_prefix: istio-prow/daily-e2e-rbac-no_auth
+  gcs_prefix: istio-prow/directory/daily-e2e-rbac-no_auth
   num_failures_to_alert: 1
 - name: daily-e2e-rbac-no_auth-default
-  gcs_prefix: istio-prow/daily-e2e-rbac-no_auth-default
+  gcs_prefix: istio-prow/directory/daily-e2e-rbac-no_auth-default
   num_failures_to_alert: 1
 - name: daily-e2e-rbac-no_auth-skew
-  gcs_prefix: istio-prow/daily-e2e-rbac-no_auth-skew
+  gcs_prefix: istio-prow/directory/daily-e2e-rbac-no_auth-skew
   num_failures_to_alert: 1
 - name: daily-e2e-rbac-auth
-  gcs_prefix: istio-prow/daily-e2e-rbac-auth
+  gcs_prefix: istio-prow/directory/daily-e2e-rbac-auth
   num_failures_to_alert: 1
 - name: daily-e2e-rbac-auth-default
-  gcs_prefix: istio-prow/daily-e2e-rbac-auth-default
+  gcs_prefix: istio-prow/directory/daily-e2e-rbac-auth-default
   num_failures_to_alert: 1
 - name: daily-e2e-rbac-auth-skew
-  gcs_prefix: istio-prow/daily-e2e-rbac-auth-skew
+  gcs_prefix: istio-prow/directory/daily-e2e-rbac-auth-skew
   num_failures_to_alert: 1
 - name: daily-e2e-cluster_wide-auth
-  gcs_prefix: istio-prow/daily-e2e-cluster_wide-auth
+  gcs_prefix: istio-prow/directory/daily-e2e-cluster_wide-auth
   num_failures_to_alert: 1
 - name: daily-e2e-cluster_wide-auth-default
-  gcs_prefix: istio-prow/daily-e2e-cluster_wide-auth-default
+  gcs_prefix: istio-prow/directory/daily-e2e-cluster_wide-auth-default
   num_failures_to_alert: 1
 - name: daily-e2e-cluster_wide-auth-skew
-  gcs_prefix: istio-prow/daily-e2e-cluster_wide-auth-skew
+  gcs_prefix: istio-prow/directory/daily-e2e-cluster_wide-auth-skew
   num_failures_to_alert: 1
 - name: istio-periodic-e2e-gke-addon
   gcs_prefix: kubernetes-jenkins/logs/istio-periodic-e2e-gke-addon
