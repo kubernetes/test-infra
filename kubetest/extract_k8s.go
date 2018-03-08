@@ -398,9 +398,6 @@ func (e extractStrategy) Extract(project, zone, region string, extractSrc bool) 
 		if project == "" {
 			return fmt.Errorf("--gcp-project unset")
 		}
-		if zone == "" {
-			return fmt.Errorf("--gcp-zone unset")
-		}
 		if e.value == "gke" {
 			log.Print("*** --extract=gke is deprecated, migrate to --extract=gke-default ***")
 		}
@@ -415,6 +412,11 @@ func (e extractStrategy) Extract(project, zone, region string, extractSrc bool) 
 				return fmt.Errorf("failed to get latest gke version: %s", err)
 			}
 			return getKube("https://storage.googleapis.com/kubernetes-release-gke/release", version, extractSrc)
+		}
+
+		// TODO(krzyzacy): clean up gke-default logic
+		if zone == "" {
+			return fmt.Errorf("--gcp-zone unset")
 		}
 
 		// get default cluster version for default extract strategy
