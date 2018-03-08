@@ -2163,6 +2163,34 @@ test_groups:
 - name: istio-e2e-cluster_wide-auth
   gcs_prefix: istio-prow/e2e-cluster_wide-auth
   num_failures_to_alert: 1
+# Istio daily releases
+- name: daily-e2e-rbac-no_auth
+  gcs_prefix: istio-prow/daily-e2e-rbac-no_auth
+  num_failures_to_alert: 1
+- name: daily-e2e-rbac-no_auth-default
+  gcs_prefix: istio-prow/daily-e2e-rbac-no_auth-default
+  num_failures_to_alert: 1
+- name: daily-e2e-rbac-no_auth-skew
+  gcs_prefix: istio-prow/daily-e2e-rbac-no_auth-skew
+  num_failures_to_alert: 1
+- name: daily-e2e-rbac-auth
+  gcs_prefix: istio-prow/daily-e2e-rbac-auth
+  num_failures_to_alert: 1
+- name: daily-e2e-rbac-auth-default
+  gcs_prefix: istio-prow/daily-e2e-rbac-auth-default
+  num_failures_to_alert: 1
+- name: daily-e2e-rbac-auth-skew
+  gcs_prefix: istio-prow/daily-e2e-rbac-auth-skew
+  num_failures_to_alert: 1
+- name: daily-e2e-cluster_wide-auth
+  gcs_prefix: istio-prow/daily-e2e-cluster_wide-auth
+  num_failures_to_alert: 1
+- name: daily-e2e-cluster_wide-auth-default
+  gcs_prefix: istio-prow/daily-e2e-cluster_wide-auth-default
+  num_failures_to_alert: 1
+- name: daily-e2e-cluster_wide-auth-skew
+  gcs_prefix: istio-prow/daily-e2e-cluster_wide-auth-skew
+  num_failures_to_alert: 1
 - name: istio-periodic-e2e-gke-addon
   gcs_prefix: kubernetes-jenkins/logs/istio-periodic-e2e-gke-addon
 # gke 1.7-1.8; 1.8-1.9 staging upgrade
@@ -5358,19 +5386,55 @@ dashboards:
   - name: istio-postsubmit
     test_group_name: istio-istio-postsubmit
     alert_options:
-      alert_mail_to_addresses: 'istio-oncall@googlegroups.com,michelle.192837@gmail.com,bentheelder@google.com,yutongz@google.com'
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
   - name: e2e-suite-rbac-no_auth
     test_group_name: istio-e2e-suite-rbac-no_auth
     alert_options:
-      alert_mail_to_addresses: 'istio-oncall@googlegroups.com,michelle.192837@gmail.com,bentheelder@google.com,yutongz@google.com'
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
   - name: e2e-suite-rbac-auth
     test_group_name: istio-e2e-suite-rbac-auth
     alert_options:
-      alert_mail_to_addresses: 'istio-oncall@googlegroups.com,michelle.192837@gmail.com,bentheelder@google.com,yutongz@google.com'
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
   - name: e2e-cluster_wide-auth
     test_group_name: istio-e2e-cluster_wide-auth
     alert_options:
-      alert_mail_to_addresses: 'istio-oncall@googlegroups.com,michelle.192837@gmail.com,bentheelder@google.com,yutongz@google.com'
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: daily-e2e-rbac-no_auth
+    test_group_name: daily-e2e-rbac-no_auth
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: daily-e2e-rbac-no_auth-default
+    test_group_name: daily-e2e-rbac-no_auth-default
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: daily-e2e-rbac-no_auth-skew
+    test_group_name: daily-e2e-rbac-no_auth-skew
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: daily-e2e-rbac-auth
+    test_group_name: daily-e2e-rbac-auth
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: daily-e2e-rbac-auth-default
+    test_group_name: daily-e2e-rbac-auth-default
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: daily-e2e-rbac-auth-skew
+    test_group_name: daily-e2e-rbac-auth-skew
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: daily-e2e-cluster_wide-auth
+    test_group_name: daily-e2e-cluster_wide-auth
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: daily-e2e-cluster_wide-auth-default
+    test_group_name: daily-e2e-cluster_wide-auth-default
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: daily-e2e-cluster_wide-auth-skew
+    test_group_name: daily-e2e-cluster_wide-auth-skew
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
   - name: istio-gke-addon
     test_group_name: istio-periodic-e2e-gke-addon
 
