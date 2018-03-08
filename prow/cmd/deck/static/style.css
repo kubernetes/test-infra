@@ -146,6 +146,16 @@ i.state {
     color: #BDBDBD;
 }
 
+#top-navigator {
+    background-color: #e5e5e5;
+    bottom: 32px;
+    height: 52px;
+    min-width: 52px;
+    position: fixed;
+    right: 32px;
+    width: 52px;
+}
+
 #rerun {
     display: none;
     position: fixed;
@@ -342,8 +352,8 @@ span.label:not(.merge-table-label):hover {
 }
 .label.do-not-merge,
 .label.do-not-merge\/hold,
-.label.do-not-merge\/work-in-progress, 
-.label.do-not-merge\/release-note-label-needed, 
+.label.do-not-merge\/work-in-progress,
+.label.do-not-merge\/release-note-label-needed,
 .label.do-not-merge\/cherry-pick-not-approved,
 .label.do-not-merge\/blocked-paths {
     background-color: #e11d21;
