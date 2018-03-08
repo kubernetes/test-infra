@@ -18,17 +18,18 @@ We use this with [Prow](./../prow), to set it up we do the following:
 
  - Install [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) and [bazel](https://bazel.build/) and Point `KUBECONFIG` at your cluster.
    - for k8s.io use `make -C prow get-build-cluster-credentials`
- - Create a dedicated node. We use a GKE node-pool with a single node. Tag this node with label `dedicated=bazel-cache` and taint `dedicated=bazel-cache:NoSchedule` so your other tasks don't schedule on it.
+ - Create a dedicated node. We use a GKE node-pool with a single node. Tag this node with label `dedicated=greenhouse` and taint `dedicated=greenhouse:NoSchedule` so your other tasks don't schedule on it.
    - for k8s.io this is:
    ```
-   gcloud beta container node-pools create bazel-cache --cluster=prow --project=k8s-prow-builds --zone=us-central1-f --node-taints dedicated=bazel-cache:NoSchedule --machine-type=n1-standard-8 --num-nodes=1 --local-ssd-count=1
-   kubectl label nodes $(kubectl get no | grep cache | cut -d" " -f1) dedicated=bazel-cache
-   kubectl taint nodes $(kubectl get no | grep cache | cut -d" " -f1) dedicated=bazel-cache:NoSchedule
+   gcloud beta container node-pools create greenhouse --cluster=prow --project=k8s-prow-builds --zone=us-central1-f --node-taints dedicated=greenhouse:NoSchedule --machine-type=n1-standard-32 --num-nodes=1
+   kubectl label nodes $(kubectl get no | grep greenhouse | cut -d" " -f1) dedicated=greenhouse
+   kubectl taint nodes $(kubectl get no | grep greenhouse | cut -d" " -f1) dedicated=greenhouse:NoSchedule
    ```
  - Create the Kubernetes service so jobs can talk to it conveniently: `kubectl apply -f greenhouse/service.yaml`
+ - Create a `StorageClass` / `PersistentVolumeClaim` for fast cache storage, we use `kubectl apply -f greenhouse/gce-fast-storage.yaml` for 3TB of pd-ssd storage
  - Finally build, push, and deploy with `bazel run //greenhouse:production.apply --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64`
    <!--TODO(bentheelder): make this easier to consume by other users?-->
-   - NOTE: other uses will likely need to tweak this step to their needs
+   - NOTE: other uses will likely need to tweak this step to their needs, particular the service and storage definitions
 
 
 ## Optional Setup:

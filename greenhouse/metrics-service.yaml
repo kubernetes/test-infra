@@ -5,7 +5,7 @@ metadata:
   namespace: default
 spec:
   selector:
-    app: bazel-cache
+    app: greenhouse
   ports:
   - name: default
     protocol: TCP
