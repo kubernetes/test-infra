@@ -12,7 +12,7 @@ kubetest/** @krzyzacy
 logexporter/** @shyamjvs
 mungegithub/** @cjwagner
 planter/** @bentheelder
-prow/** @cjwagner @kargakis
+prow/** @cjwagner @stevekuznetsov
 prow/config.yaml @bentheelder @krzyzacy
 scenarios/** @bentheelder @krzyzacy
 testgrid/** @krzyzacy @michelle192837
