@@ -6779,8 +6779,6 @@ periodics:
 - name: ci-kubernetes-bazel-build-1-7
   interval: 24h
   agent: kubernetes
-  branches:
-  - release-1.7
   labels:
     preset-service-account: true
     preset-bazel-scratch-dir: true
@@ -6806,8 +6804,6 @@ periodics:
 - name: ci-kubernetes-bazel-build-1-8
   interval: 12h
   agent: kubernetes
-  branches:
-  - release-1.8
   labels:
     preset-service-account: true
     preset-bazel-scratch-dir: true
@@ -6830,6 +6826,64 @@ periodics:
       resources:
         requests:
           memory: "6Gi"
+- name: ci-kubernetes-bazel-build-1-9
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-bazel-scratch-dir: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
+      args:
+      - "--clean"
+      - "--job=$(JOB_NAME)"
+      - "--repo=k8s.io/kubernetes=release-1.9"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--" # end bootstrap args, scenario args below
+      - "--build=//... -//vendor/..."
+      - "--release=//build/release-tars"
+      - "--gcs=gs://kubernetes-release-dev/ci"
+      - "--version-suffix=-bazel"
+      - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel-1.9.txt"
+      # Bazel needs privileged mode in order to sandbox builds.
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "6Gi"
+- name: ci-kubernetes-bazel-build-1-10
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-bazel-scratch-dir: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-1.10
+      args:
+      - "--clean"
+      - "--job=$(JOB_NAME)"
+      - "--repo=k8s.io/kubernetes=release-1.10"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--" # end bootstrap args, scenario args below
+      - "--build=//... -//vendor/..."
+      - "--release=//build/release-tars"
+      - "--gcs=gs://kubernetes-release-dev/ci"
+      - "--version-suffix=-bazel"
+      - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel-1.10.txt"
+      env:
+      - name: BAZEL_REMOTE_CACHE_ENABLED
+        value: "true"
+      # Bazel needs privileged mode in order to sandbox builds.
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "6Gi"
+
 - interval: 5m
   name: ci-kubernetes-bazel-test
   agent: kubernetes
