@@ -167,6 +167,7 @@ projects:
       istio/istio: *transform-istio
       istio/pilot: *transform-istio
       istio/mixer: *transform-istio
+      istio/fortio: *transform-istio
       istio/proxy: *transform-istio
     nginx:
       public-ip: "130.211.224.127"
