@@ -573,6 +573,7 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-node-kubelet-stable1': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-stable2': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-stable3': 'ci-kubernetes-node-kubelet-*',
+            'ci-kubernetes-node-kubelet-alpha': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-beta': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-non-cri-1-6': 'ci-kubernetes-node-kubelet-*',
             # The cri-containerd validation node e2e jobs intentionally share projects.
