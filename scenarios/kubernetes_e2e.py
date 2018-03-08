@@ -103,7 +103,13 @@ def check_env(env, *cmd):
     for key, value in sorted(env.items()):
         print >>sys.stderr, '%s=%s' % (key, value)
     print >>sys.stderr, 'Run:', cmd
-    subprocess.check_call(cmd, env=env)
+    proc = subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    _, err = proc.communicate()
+    if proc.returncode != 0:
+        err_msg = "Command: {} failed with error code: {} stderr: \n{}".format(
+            cmd, proc.returncode, err
+        )
+        raise RuntimeError(err_msg)
 
 
 def kubekins(tag):
