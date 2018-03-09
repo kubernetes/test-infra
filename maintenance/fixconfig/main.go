@@ -157,6 +157,9 @@ func stripCache(j *config.Presubmit) {
 		if volumeIsCacheSSD(&volume) {
 			removedVolumeNames.Insert(volume.Name)
 			continue
+		} else if volume.Name == "docker-graph" {
+			removedVolumeNames.Insert(volume.Name)
+			continue
 		}
 		filteredVolumes = append(filteredVolumes, volume)
 	}
