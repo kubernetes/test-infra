@@ -258,19 +258,8 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=90"
         - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--"
         - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml --test-suite=cadvisor"
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
 
   kubeflow/examples:
   - name: kubeflow-examples-presubmit
@@ -379,13 +368,10 @@ presubmits:
         volumeMounts:
         - name: docker-graph
           mountPath: /docker-graph
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
       volumes:
       - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
+        emptyDir: {}
+
   kubernetes/community:
   - name: pull-community-verify
     agent: kubernetes
@@ -405,16 +391,7 @@ presubmits:
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
+
   kubernetes/dns:
   - name: pull-kubernetes-dns-test
     agent: kubernetes
@@ -434,16 +411,7 @@ presubmits:
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
+
   kubernetes/ingress-gce:
   - name: pull-ingress-gce-test
     agent: kubernetes
@@ -467,19 +435,16 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
         volumeMounts:
         - name: docker-graph
           mountPath: /docker-graph
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
       volumes:
       - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
+        emptyDir: {}
+
   GoogleCloudPlatform/k8s-multicluster-ingress:
   - name: pull-kubernetes-multicluster-ingress-test
     agent: kubernetes
@@ -507,6 +472,7 @@ presubmits:
       - name: coveralls
         secret:
           secretName: k8s-multicluster-ingress-coveralls-token
+
   kubernetes/federation:
   - name: pull-federation-bazel-test
     agent: kubernetes
@@ -516,6 +482,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-federation-bazel-test),?(\\s+|$)"
     labels:
       preset-service-account: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
@@ -532,25 +499,13 @@ presubmits:
         - "--test-args=--build_tag_filters=-e2e"
         - "--test-args=--test_tag_filters=-e2e"
         - "--test-args=--flaky_test_attempts=3"
-        env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
+
   - name: pull-federation-e2e-gce
     agent: kubernetes
     always_run: true
@@ -579,13 +534,9 @@ presubmits:
         volumeMounts:
         - name: docker-graph
           mountPath: /docker-graph
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
       volumes:
       - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
+        emptyDir: {}
   - name: pull-federation-verify
     agent: kubernetes
     context: pull-federation-verify
@@ -602,16 +553,7 @@ presubmits:
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
+
   kubernetes/heapster:
   - name: pull-heapster-e2e
     agent: kubernetes
@@ -638,13 +580,10 @@ presubmits:
           mountPath: /docker-graph
         securityContext:
           privileged: true
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
       volumes:
       - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
+        emptyDir: {}
+
   kubernetes/kube-deploy:
   - name: pull-kube-deploy-build
     agent: kubernetes
@@ -776,16 +715,12 @@ presubmits:
         volumeMounts:
         - name: docker-graph
           mountPath: /docker-graph
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
       volumes:
       - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
+        emptyDir: {}
 
   - name: pull-kops-verify-bazel
     agent: kubernetes
@@ -1022,7 +957,6 @@ presubmits:
           args:
           - --root=/go/src
           - "--clean"
-          - "--git-cache=/root/.cache/git"
           - "--job=$(JOB_NAME)"
           - "--repo=k8s.io/kubernetes"
           - "--repo=github.com/containerd/$(REPO_NAME)=$(PULL_REFS)"
@@ -1031,16 +965,7 @@ presubmits:
           - "--timeout=90"
           - "--"
           - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri-containerd --node-env=PULL_REFS=$(PULL_REFS)"
-          volumeMounts:
-          - name: cache-ssd
-            mountPath: /root/.cache
-          ports:
-          - containerPort: 9999
-            hostPort: 9999
-        volumes:
-        - name: cache-ssd
-          hostPath:
-            path: /mnt/disks/ssd0
+
   - name: pull-cri-containerd-verify
     agent: kubernetes
     always_run: true
@@ -1519,13 +1444,13 @@ presubmits:
     trigger: "(?m)^/test pull-kubernetes-bazel-test-integration-canary,?(\\s+|$)"
     labels:
       preset-service-account: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
         imagePullPolicy: Always
         args:
         - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -1536,24 +1461,13 @@ presubmits:
         env:
         - name: BAZEL_REMOTE_CACHE_ENABLED
           value: "true"
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
+
 
   - name: pull-kubernetes-cross
     agent: kubernetes
@@ -1585,8 +1499,6 @@ presubmits:
           mountPath: /root/.cache
         - name: docker-graph
           mountPath: /docker-graph
-        - name: var-lib-docker
-          mountPath: /var/lib/docker
         ports:
         - containerPort: 9999
           hostPort: 9999
@@ -1601,8 +1513,7 @@ presubmits:
       - name: docker-graph
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
-      - name: var-lib-docker
-        emptyDir: {}
+
   - name: pull-kubernetes-cross-prow
     agent: kubernetes
     context: pull-kubernetes-cross-prow
@@ -1667,28 +1578,12 @@ presubmits:
         - --repo=k8s.io/release
         - --repo=github.com/containerd/cri-containerd
         - --upload=gs://kubernetes-jenkins/pr-logs
-        - --git-cache=/root/.cache/git
         - --clean
         - --timeout=90
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        env:
-        # Make Bazel use shared cache for its root
-        # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
-        volumeMounts:
-        - mountPath: /root/.cache
-          name: cache-ssd
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
   - name: pull-kubernetes-e2e-gce
     agent: kubernetes
     context: pull-kubernetes-e2e-gce
@@ -1835,6 +1730,7 @@ presubmits:
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - args:
@@ -1842,31 +1738,15 @@ presubmits:
         - --repo=k8s.io/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-jenkins/pr-logs
-        - --git-cache=/root/.cache/git
         - --clean
         - --timeout=120
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        env:
-        # Make Bazel use shared cache for its root
-        # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
-        volumeMounts:
-        - mountPath: /root/.cache
-          name: cache-ssd
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
   - name: pull-kubernetes-e2e-gce-big-performance
     agent: kubernetes
     context: pull-kubernetes-e2e-gce-big-performance
@@ -1879,6 +1759,7 @@ presubmits:
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - args:
@@ -1886,31 +1767,16 @@ presubmits:
         - --repo=k8s.io/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-jenkins/pr-logs
-        - --git-cache=/root/.cache/git
         - --clean
         - --timeout=270
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        env:
-        # Make Bazel use shared cache for its root
-        # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
-        volumeMounts:
-        - mountPath: /root/.cache
-          name: cache-ssd
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
+
   - name: pull-kubernetes-e2e-gce-device-plugin-gpu
     agent: kubernetes
     skip_branches:
@@ -2675,13 +2541,13 @@ presubmits:
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
         args:
         - --root=/go/src
         - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--repo=k8s.io/release"
@@ -2694,29 +2560,18 @@ presubmits:
         # value: "y"
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
         volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
         - name: docker-graph
           mountPath: /docker-graph
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
       volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
       - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
+        emptyDir: {}
   - name: pull-kubernetes-kubemark-e2e-gce-big
     agent: kubernetes
     always_run: false
@@ -2729,13 +2584,13 @@ presubmits:
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-1.8
         args:
         - --root=/go/src
         - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--repo=k8s.io/release"
@@ -2748,29 +2603,19 @@ presubmits:
         # value: "y"
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
         volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
         - name: docker-graph
           mountPath: /docker-graph
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
       volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
       - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
+        emptyDir: {}
+
   - name: pull-kubernetes-kubemark-e2e-gce-big
     agent: kubernetes
     always_run: false
@@ -2783,13 +2628,13 @@ presubmits:
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-1.7
         args:
         - --root=/go/src
         - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--repo=k8s.io/release"
@@ -2802,29 +2647,18 @@ presubmits:
         # value: "y"
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
         volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
         - name: docker-graph
           mountPath: /docker-graph
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
       volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
       - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
+        emptyDir: {}
 
   - name: pull-kubernetes-kubemark-e2e-gce-scale
     agent: kubernetes
@@ -2838,13 +2672,13 @@ presubmits:
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
         args:
         - --root=/go/src
         - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--repo=k8s.io/release"
@@ -2857,29 +2691,18 @@ presubmits:
         # value: "y"
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
         volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
         - name: docker-graph
           mountPath: /docker-graph
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
       volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
       - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
+        emptyDir: {}
 
   - name: pull-kubernetes-local-e2e
     agent: kubernetes
@@ -2900,7 +2723,6 @@ presubmits:
         args:
         - --root=/go/src
         - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -2915,18 +2737,10 @@ presubmits:
         volumeMounts:
         - name: docker-graph
           mountPath: /docker-graph
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
       volumes:
       - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0/
+        emptyDir: {}
+
   - name: pull-kubernetes-node-e2e
     agent: kubernetes
     skip_branches:
@@ -3065,23 +2879,13 @@ presubmits:
         args:
         - --root=/go/src
         - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--repo=github.com/containerd/cri-containerd"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=90"
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
+
   - name: pull-kubernetes-typecheck
     agent: kubernetes
     always_run: true
@@ -3670,6 +3474,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-bazel-test-integration-canary
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-bazel-test-integration-canary
@@ -3738,15 +3543,11 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /var/lib/docker
-          name: var-lib-docker
         - mountPath: /etc/ssh-security
           name: ssh-security
         - mountPath: /docker-graph
           name: auto-generated-docker-graph-volume-mount
       volumes:
-      - emptyDir: {}
-        name: var-lib-docker
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -3976,6 +3777,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gce-100-performance
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
@@ -4018,6 +3820,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gce-big-performance
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 1
@@ -4789,6 +4592,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce-big
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
@@ -4844,6 +4648,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce-big
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
@@ -4895,6 +4700,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce-big
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
@@ -4946,6 +4752,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce-scale
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 1
@@ -5433,16 +5240,6 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - --upload=gs://kubernetes-jenkins/pr-logs
         - --service-account=/etc/service-account/service-account.json
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
 
   - name: pull-test-infra-lint
     agent: kubernetes
@@ -5777,13 +5574,9 @@ postsubmits:
         volumeMounts:
         - name: docker-graph
           mountPath: /docker-graph
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
       volumes:
       - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
+        emptyDir: {}
 
   GoogleCloudPlatform/k8s-multicluster-ingress:
   - name: ci-kubemci-image-push
@@ -5809,13 +5602,9 @@ postsubmits:
         volumeMounts:
         - name: docker-graph
           mountPath: /docker-graph
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
       volumes:
       - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
+        emptyDir: {}
 
   kubernetes/federation:
   - agent: kubernetes
@@ -6165,13 +5954,9 @@ periodics:
       volumeMounts:
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
     volumes:
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - name: ci-cadvisor-e2e
   interval: 8h
@@ -6521,7 +6306,6 @@ periodics:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - --clean
-      - --git-cache=/root/.cache/git
       - --repo=k8s.io/federation=master
       - --repo=k8s.io/release
       - --root=/go/src
@@ -6533,24 +6317,15 @@ periodics:
       securityContext:
         privileged: true
       volumeMounts:
-      - name: cache-ssd
-        mountPath: /root/.cache
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 4
           memory: "8Gi"
     volumes:
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - interval: 30m
   agent: kubernetes
@@ -6670,7 +6445,6 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
       args:
       - --clean
-      - --git-cache=/root/.cache/git
       - --repo=k8s.io/kops
       - --repo=k8s.io/release
       - --root=/go/src
@@ -6682,20 +6456,11 @@ periodics:
       securityContext:
         privileged: true
       volumeMounts:
-      - name: cache-ssd
-        mountPath: /root/.cache
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
     volumes:
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - name: ci-kube-deploy-build
   interval: 1h
@@ -7052,7 +6817,6 @@ periodics:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - --clean
-      - --git-cache=/root/.cache/git
       - --repo=k8s.io/release
       - --root=/go/src
       - --timeout=50
@@ -7063,24 +6827,15 @@ periodics:
       securityContext:
         privileged: true
       volumeMounts:
-      - name: cache-ssd
-        mountPath: /root/.cache
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 4
           memory: "8Gi"
     volumes:
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - interval: 30m
   name: ci-kubernetes-build-stable1
@@ -13576,6 +13331,7 @@ periodics:
       - name: GOPATH
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-1.8
+
 - interval: 6h
   name: ci-kubernetes-federation-build-1-7
   agent: kubernetes
@@ -13586,7 +13342,6 @@ periodics:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - --clean
-      - --git-cache=/root/.cache/git
       - --repo=k8s.io/kubernetes=release-1.7
       - --repo=k8s.io/release
       - --root=/go/src
@@ -13598,24 +13353,15 @@ periodics:
       securityContext:
         privileged: true
       volumeMounts:
-      - name: cache-ssd
-        mountPath: /root/.cache
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 4
           memory: "8Gi"
     volumes:
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - interval: 2h
   name: ci-kubernetes-federation-build-1-8
@@ -13627,7 +13373,6 @@ periodics:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - --clean
-      - --git-cache=/root/.cache/git
       - --repo=k8s.io/kubernetes=release-1.8
       - --repo=k8s.io/release
       - --root=/go/src
@@ -13639,24 +13384,15 @@ periodics:
       securityContext:
         privileged: true
       volumeMounts:
-      - name: cache-ssd
-        mountPath: /root/.cache
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 4
           memory: "8Gi"
     volumes:
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - interval: 2h
   name: ci-kubernetes-integration-beta
@@ -13679,16 +13415,12 @@ periodics:
       volumeMounts:
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 4
     volumes:
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - interval: 1h
   name: ci-kubernetes-integration-master
@@ -13711,16 +13443,12 @@ periodics:
       volumeMounts:
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 4
     volumes:
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - interval: 2h
   name: ci-kubernetes-integration-stable1
@@ -13743,16 +13471,12 @@ periodics:
       volumeMounts:
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 4
     volumes:
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - interval: 6h
   name: ci-kubernetes-integration-stable2
@@ -13775,16 +13499,12 @@ periodics:
       volumeMounts:
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 4
     volumes:
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - interval: 24h
   name: ci-kubernetes-integration-stable3
@@ -13807,16 +13527,12 @@ periodics:
       volumeMounts:
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 4
     volumes:
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - name: ci-kubernetes-kubemark-100-canary
   interval: 1h
@@ -13837,17 +13553,12 @@ periodics:
       volumeMounts:
       - name: docker-graph
         mountPath: /docker-graph
-      # TODO(bentheelder): sort out container port
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
     volumes:
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - name: ci-kubernetes-kubemark-100-gce
   tags:
@@ -13870,17 +13581,12 @@ periodics:
       volumeMounts:
       - name: docker-graph
         mountPath: /docker-graph
-      # TODO(bentheelder): sort out container port
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
     volumes:
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - name: ci-kubernetes-kubemark-5-gce
   interval: 30m
@@ -13900,17 +13606,12 @@ periodics:
       volumeMounts:
       - name: docker-graph
         mountPath: /docker-graph
-      # TODO(bentheelder): sort out container port
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
     volumes:
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - name: ci-kubernetes-kubemark-5-gce-last-release
   interval: 30m
@@ -13930,17 +13631,12 @@ periodics:
       volumeMounts:
       - name: docker-graph
         mountPath: /docker-graph
-      # TODO(bentheelder): sort out container port
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
     volumes:
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - name: ci-kubernetes-kubemark-5-prow-canary
   cron: "0 * * * *"
@@ -13983,17 +13679,12 @@ periodics:
       volumeMounts:
       - name: docker-graph
         mountPath: /docker-graph
-      # TODO(bentheelder): sort out container port
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       # docker-in-docker needs privilged mode
       securityContext:
         privileged: true
     volumes:
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - name: ci-kubernetes-kubemark-gce-scale
   tags:
@@ -14016,17 +13707,12 @@ periodics:
       volumeMounts:
       - name: docker-graph
         mountPath: /docker-graph
-      # TODO(bentheelder): sort out container port
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       # docker-in-docker needs privilged mode
       securityContext:
         privileged: true
     volumes:
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - name: ci-kubernetes-kubemark-high-density-100-gce
   tags:
@@ -14049,17 +13735,12 @@ periodics:
       volumeMounts:
       - name: docker-graph
         mountPath: /docker-graph
-      # TODO(bentheelder): sort out container port
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
     volumes:
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - name: ci-kubernetes-local-e2e
   agent: kubernetes
@@ -14082,13 +13763,9 @@ periodics:
       volumeMounts:
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
     volumes:
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - name: ci-kubernetes-node-kubelet
   interval: 1h
@@ -14626,35 +14303,23 @@ periodics:
   name: cluster-registry-nightly
   labels:
     preset-service-account: true
+    preset-bazel-scratch-dir: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-1.10
       args:
       - "--clean"
-      - "--git-cache=/root/.cache/git"
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/cluster-registry=master"
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
-      env:
-      - name: TEST_TMPDIR
-        value: /root/.cache/bazel
       # Bazel needs privileged mode in order to sandbox builds.
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: cache-ssd
-        mountPath: /root/.cache
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           memory: "2Gi"
-    volumes:
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
+
 - name: issue-creator
   agent: kubernetes
   interval: 24h
@@ -15173,17 +14838,12 @@ periodics:
       volumeMounts:
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
-      resources:
         requests:
           cpu: 6
           memory: "8Gi"
     volumes:
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - interval: 2h
   agent: kubernetes
@@ -15209,17 +14869,13 @@ periodics:
       volumeMounts:
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 6
           memory: "8Gi"
     volumes:
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - name: tf-minigo-periodic
   interval: 8h
