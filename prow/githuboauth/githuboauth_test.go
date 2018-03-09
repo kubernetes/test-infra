@@ -23,6 +23,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/google/go-github/github"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 	"github.com/sirupsen/logrus"
@@ -126,6 +127,24 @@ func TestHandleLogin(t *testing.T) {
 	}
 }
 
+type fakeGithubClient struct {
+	login string
+}
+
+func (fgc *fakeGithubClient) GetUser(login string) (*github.User, error) {
+	return &github.User{
+		Login: &fgc.login,
+	}, nil
+}
+
+type fakeGetter struct {
+	login string
+}
+
+func (fgc *fakeGetter) GetGithubClient(accessToken string, dryRun bool) GithubClientWrapper {
+	return &fakeGithubClient{login: fgc.login}
+}
+
 func TestHandleRedirectWithInvalidState(t *testing.T) {
 	gob.Register(&oauth2.Token{})
 	cookie := sessions.NewCookieStore([]byte("secret-key"))
@@ -146,7 +165,7 @@ func TestHandleRedirectWithInvalidState(t *testing.T) {
 	}
 	mockSession.Values[stateKey] = mockStateToken
 
-	handleLoginFn := mockGithubOAuthAgent.HandleRedirect(mockOAuthClient)
+	handleLoginFn := mockGithubOAuthAgent.HandleRedirect(mockOAuthClient, &fakeGetter{""})
 	handleLoginFn.ServeHTTP(mockResponse, mockRequest)
 	result := mockResponse.Result()
 
@@ -161,6 +180,7 @@ func TestHandleRedirectWithValidState(t *testing.T) {
 	mockConfig := getMockConfig(cookie)
 	mockLogger := logrus.WithField("uni-test", "githuboauth")
 	mockGithubOAuthAgent := NewGithubOAuthAgent(mockConfig, mockLogger)
+	mockLogin := "foo_name"
 	mockOAuthClient := &MockOAuthClient{}
 	mockStateToken := createMockStateToken(mockConfig)
 
@@ -176,7 +196,7 @@ func TestHandleRedirectWithValidState(t *testing.T) {
 	}
 	mockSession.Values[stateKey] = mockStateToken
 
-	handleLoginFn := mockGithubOAuthAgent.HandleRedirect(mockOAuthClient)
+	handleLoginFn := mockGithubOAuthAgent.HandleRedirect(mockOAuthClient, &fakeGetter{mockLogin})
 	handleLoginFn.ServeHTTP(mockResponse, mockRequest)
 	result := mockResponse.Result()
 	if result.StatusCode != http.StatusFound {
@@ -191,7 +211,7 @@ func TestHandleRedirectWithValidState(t *testing.T) {
 		}
 	}
 	if oauthCookie == nil {
-		t.Error("Cookie for oauth session not found")
+		t.Fatalf("Cookie for oauth session not found")
 	}
 	decodedCookie := make(map[interface{}]interface{})
 	if err := securecookie.DecodeMulti(oauthCookie.Name, oauthCookie.Value, &decodedCookie, cookie.Codecs...); err != nil {
@@ -206,5 +226,18 @@ func TestHandleRedirectWithValidState(t *testing.T) {
 	}
 	if !isEqual(accessTokenFromCookie, token) {
 		t.Errorf("Invalid access token. Got %v, expected %v", accessTokenFromCookie, token)
+	}
+	var loginCookie *http.Cookie
+	for _, v := range resultCookies {
+		if v.Name == "github_login" {
+			loginCookie = v
+			break
+		}
+	}
+	if loginCookie == nil {
+		t.Fatalf("Cookie for github login not found")
+	}
+	if loginCookie.Value != mockLogin {
+		t.Errorf("Mismatch github login. Got %v, expected %v", loginCookie.Value, mockLogin)
 	}
 }

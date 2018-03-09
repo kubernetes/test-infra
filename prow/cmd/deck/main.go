@@ -254,7 +254,7 @@ func prodOnlyMain(o options, mux *http.ServeMux) {
 		// Handles login request.
 		mux.Handle("/github-login", goa.HandleLogin(oauthClient))
 		// Handles redirect from Github OAuth server.
-		mux.Handle("/github-login/redirect", goa.HandleRedirect(oauthClient))
+		mux.Handle("/github-login/redirect", goa.HandleRedirect(oauthClient, githuboauth.NewGithubClientGetter()))
 	}
 
 	// optionally inject http->https redirect handler when behind loadbalancer
