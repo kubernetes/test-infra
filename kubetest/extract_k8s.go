@@ -458,9 +458,12 @@ func (e extractStrategy) Extract(project, zone, region string, extractSrc bool) 
 		}
 		return getKube(url, release, extractSrc)
 	case gcs:
-		// strip gs://foo -> /foo
-		withoutGS := e.option[3:]
-		url := "https://storage.googleapis.com" + path.Dir(withoutGS)
+		// strip gs://foo -> foo
+		withoutGS := e.option[5:]
+		if strings.HasSuffix(e.option, ".txt") {
+			return setReleaseFromGcs(path.Dir(withoutGS), e.option, extractSrc)
+		}
+		url := "https://storage.googleapis.com" + "/" + path.Dir(withoutGS)
 		return getKube(url, path.Base(withoutGS), extractSrc)
 	case load:
 		return loadState(e.option, extractSrc)

@@ -130,6 +130,11 @@ func TestExtractStrategies(t *testing.T) {
 			"https://storage.googleapis.com/kubernetes-release-gke/release",
 			"v1.2.3+abcde",
 		},
+		{
+			"gs://whatever-bucket/ci/latest.txt",
+			"https://storage.googleapis.com/whatever-bucket/ci",
+			"v1.2.3+abcde",
+		},
 	}
 
 	var gotURL string
