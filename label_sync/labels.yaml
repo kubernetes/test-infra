@@ -16,6 +16,14 @@ labels:
     name: 'cla: no'
   - color: bfe5bf
     name: 'cla: yes'
+  - color: d455d0
+    name: 'close/duplicate'
+  - color: d455d0
+    name: 'close/needs-information'
+  - color: d455d0
+    name: 'close/not-reproducible'
+  - color: d455d0
+    name: 'close/unresolved'
   - color: c0ff4a
     name: committee/conduct
   - color: c0ff4a
