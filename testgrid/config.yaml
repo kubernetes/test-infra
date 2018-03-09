@@ -280,34 +280,34 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-ci-serial-master
 - name: ci-kubernetes-e2e-gce-gci-ci-slow-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-ci-slow-master
-- name: ci-kubernetes-e2e-gce-gci-qa-m62
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m62
 - name: ci-kubernetes-e2e-gce-gci-qa-m63
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m63
 - name: ci-kubernetes-e2e-gce-gci-qa-m64
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m64
 - name: ci-kubernetes-e2e-gce-gci-qa-m65
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m65
+- name: ci-kubernetes-e2e-gce-gci-qa-m66
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m66
 - name: ci-kubernetes-e2e-gce-gci-qa-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-master
-- name: ci-kubernetes-e2e-gce-gci-qa-serial-m62
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-serial-m62
 - name: ci-kubernetes-e2e-gce-gci-qa-serial-m63
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-serial-m63
 - name: ci-kubernetes-e2e-gce-gci-qa-serial-m64
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-serial-m64
 - name: ci-kubernetes-e2e-gce-gci-qa-serial-m65
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-serial-m65
+- name: ci-kubernetes-e2e-gce-gci-qa-serial-m66
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-serial-m66
 - name: ci-kubernetes-e2e-gce-gci-qa-serial-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-serial-master
-- name: ci-kubernetes-e2e-gce-gci-qa-slow-m62
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-slow-m62
 - name: ci-kubernetes-e2e-gce-gci-qa-slow-m63
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-slow-m63
 - name: ci-kubernetes-e2e-gce-gci-qa-slow-m64
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-slow-m64
 - name: ci-kubernetes-e2e-gce-gci-qa-slow-m65
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-slow-m65
+- name: ci-kubernetes-e2e-gce-gci-qa-slow-m66
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-slow-m66
 - name: ci-kubernetes-e2e-gce-gci-qa-slow-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-slow-master
 - name: ci-kubernetes-e2e-gci-gce-scalability
@@ -2526,34 +2526,34 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-gci-ci-serial-master
   - name: ci-slow-master
     test_group_name: ci-kubernetes-e2e-gce-gci-ci-slow-master
-  - name: qa-m62
-    test_group_name: ci-kubernetes-e2e-gce-gci-qa-m62
   - name: qa-m63
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-m63
   - name: qa-m64
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-m64
   - name: qa-m65
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-m65
+  - name: qa-m66
+    test_group_name: ci-kubernetes-e2e-gce-gci-qa-m66
   - name: qa-master
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-master
-  - name: qa-serial-m62
-    test_group_name: ci-kubernetes-e2e-gce-gci-qa-serial-m62
   - name: qa-serial-m63
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-serial-m63
   - name: qa-serial-m64
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-serial-m64
   - name: qa-serial-m65
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-serial-m65
+  - name: qa-serial-m66
+    test_group_name: ci-kubernetes-e2e-gce-gci-qa-serial-m66
   - name: qa-serial-master
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-serial-master
-  - name: qa-slow-m62
-    test_group_name: ci-kubernetes-e2e-gce-gci-qa-slow-m62
   - name: qa-slow-m63
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-slow-m63
   - name: qa-slow-m64
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-slow-m64
   - name: qa-slow-m65
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-slow-m65
+  - name: qa-slow-m66
+    test_group_name: ci-kubernetes-e2e-gce-gci-qa-slow-m66
   - name: qa-slow-master
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-slow-master
   - name: ci-gke-master
