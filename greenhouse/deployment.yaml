@@ -15,18 +15,18 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: bazel-cache
+  name: greenhouse
   labels:
-    app: bazel-cache
+    app: greenhouse
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: bazel-cache
+        app: greenhouse
     spec:
       containers:
-      - name: bazel-cache
+      - name: greenhouse
         image: gcr.io/k8s-testimages/greenhouse:latest
         imagePullPolicy: Always
         ports:
@@ -36,23 +36,18 @@ spec:
           containerPort: 9090
         args:
         - --dir=/data
-        - --remount
-        # mount the local ssd
         volumeMounts:
         - name: cache
           mountPath: /data
-        # --remount needs privileges to remount the disk *shrug*
-        securityContext:
-          privileged: true
       volumes:
       - name: cache
-        hostPath:
-          path: /mnt/disks/ssd0/cache
+        persistentVolumeClaim:
+          claimName: greenhouse
       # run on our dedicated node
       tolerations:
       - key: "dedicated"
         operator: "Equal"
-        value: "bazel-cache"
+        value: "greenhouse"
         effect: "NoSchedule"
       nodeSelector:
-        dedicated: "bazel-cache"
+        dedicated: "greenhouse"
