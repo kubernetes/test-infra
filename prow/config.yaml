@@ -11823,6 +11823,19 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
 
+- name: ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu-v100
+  interval: 12h #expensive test
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=100
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
+
 - interval: 30m
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-latest-parallel
