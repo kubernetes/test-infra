@@ -9,7 +9,10 @@ metadata:
 provisioner: kubernetes.io/gce-pd
 parameters:
   type: pd-ssd
-# so we can get accurat eviction, note that lazytime only works on ext4
+# we want to use a volume with strictatime,lazytime (and not noatime or relatime)
+# so that file access times *are* recorded but are lazily flushed to the disk
+# https://lwn.net/Articles/621046/
+# https://unix.stackexchange.com/questions/276858/why-is-ext4-filesystem-mounted-with-both-relatime-and-lazytime
 mountOptions: ["strictatime", "lazytime"]
 ---
 # 3TB of SSD :-)

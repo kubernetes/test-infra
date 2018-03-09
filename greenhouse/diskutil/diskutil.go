@@ -18,57 +18,12 @@ limitations under the License.
 package diskutil
 
 import (
-	"fmt"
-	"os/exec"
-	"strings"
 	"syscall"
 	"time"
 
 	"github.com/djherbis/atime"
 	log "github.com/sirupsen/logrus"
 )
-
-// exec command and returns lines of combined output
-func commandLines(cmd []string) (lines []string, err error) {
-	c := exec.Command(cmd[0], cmd[1:]...)
-	b, err := c.CombinedOutput()
-	if err != nil {
-		return nil, err
-	}
-	return strings.Split(string(b), "\n"), nil
-}
-
-// FindMountForPath wraps `mount` to find the device / mountpoint
-// on which path is mounted
-func FindMountForPath(path string) (device, mountPoint string, err error) {
-	mounts, err := commandLines([]string{"mount"})
-	if err != nil {
-		return "", "", err
-	}
-	// these lines are like:
-	// $fs on $mountpoint type $fs_type ($mountopts)
-	device, mountPoint = "", ""
-	for _, mount := range mounts {
-		parts := strings.Fields(mount)
-		if len(parts) >= 3 {
-			currDevice := parts[0]
-			currMount := parts[2]
-			// we want the longest matching mountpoint
-			if strings.HasPrefix(path, currMount) && len(currMount) > len(mountPoint) {
-				device, mountPoint = currDevice, currMount
-			}
-		}
-	}
-	return device, mountPoint, nil
-}
-
-// Remount `wraps mount -o remount,options device mountPoint`
-func Remount(device, mountPoint, options string) error {
-	_, err := commandLines([]string{
-		"mount", "-o", fmt.Sprintf("remount,%s", options), device, mountPoint,
-	})
-	return err
-}
 
 // GetDiskUsage wraps syscall.Statfs for usage in GCing the disk
 func GetDiskUsage(path string) (percentBlocksFree float64, bytesFree, bytesUsed uint64, err error) {
