@@ -8613,19 +8613,6 @@ periodics:
 
 - interval: 30m
   agent: kubernetes
-  name: ci-kubernetes-e2e-gce-gci-qa-m62
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - args:
-      - --timeout=70
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
-
-- interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-m63
   labels:
     preset-service-account: true
@@ -8665,7 +8652,7 @@ periodics:
 
 - interval: 30m
   agent: kubernetes
-  name: ci-kubernetes-e2e-gce-gci-qa-master
+  name: ci-kubernetes-e2e-gce-gci-qa-m66
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
@@ -8676,16 +8663,16 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
 
-- interval: 1h
+- interval: 30m
   agent: kubernetes
-  name: ci-kubernetes-e2e-gce-gci-qa-serial-m62
+  name: ci-kubernetes-e2e-gce-gci-qa-master
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
   spec:
     containers:
     - args:
-      - --timeout=320
+      - --timeout=70
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
 
@@ -8730,7 +8717,7 @@ periodics:
 
 - interval: 1h
   agent: kubernetes
-  name: ci-kubernetes-e2e-gce-gci-qa-serial-master
+  name: ci-kubernetes-e2e-gce-gci-qa-serial-m66
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
@@ -8741,16 +8728,16 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
 
-- interval: 2h
+- interval: 1h
   agent: kubernetes
-  name: ci-kubernetes-e2e-gce-gci-qa-slow-m62
+  name: ci-kubernetes-e2e-gce-gci-qa-serial-master
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
   spec:
     containers:
     - args:
-      - --timeout=170
+      - --timeout=320
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
 
@@ -8783,6 +8770,19 @@ periodics:
 - interval: 2h
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-slow-m65
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=170
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
+
+- interval: 2h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gce-gci-qa-slow-m66
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
