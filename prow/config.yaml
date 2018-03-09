@@ -643,6 +643,9 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "make"
         - "bazel-build"
+        env:
+        - name: BAZEL_REMOTE_CACHE_ENABLED
+          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -1012,6 +1015,9 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
+        env:
+        - name: BAZEL_REMOTE_CACHE_ENABLED
+          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -1590,12 +1596,56 @@ presubmits:
     rerun_command: "/test pull-kubernetes-e2e-gce"
     trigger: "(?m)^/test (all|pull-kubernetes-e2e-gce),?(\\s+|$)"
     always_run: true
-    # TODO(bentheelder): enforce this pattern (skip all releases) or implement
-    # something better like https://github.com/kubernetes/test-infra/pull/4918
+    # TODO(bentheelder): fork 1.10 after release
     skip_branches:
     - release-1.6 # per-release image
     - release-1.7 # per-release image
     - release-1.8 # per-release image
+    - release-1.9 # per-release image
+    labels:
+      preset-service-account: true
+      preset-k8s-ssh: true
+      preset-bazel-scratch-dir: true
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --git-cache=/root/.cache/git
+        - --clean
+        - --timeout=90
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        env:
+        - name: BAZEL_REMOTE_CACHE_ENABLED
+          value: "true"
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
+        volumeMounts:
+        - mountPath: /root/.cache
+          name: cache-ssd
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
+      volumes:
+      - hostPath:
+          path: /mnt/disks/ssd0
+        name: cache-ssd
+  - name: pull-kubernetes-e2e-gce
+    agent: kubernetes
+    context: pull-kubernetes-e2e-gce
+    rerun_command: "/test pull-kubernetes-e2e-gce"
+    trigger: "(?m)^/test (all|pull-kubernetes-e2e-gce),?(\\s+|$)"
+    always_run: true
+    # TODO(bentheelder): enforce this pattern (skip all releases) or implement
+    # something better like https://github.com/kubernetes/test-infra/pull/4918
+    branches:
+    - release-1.9 # per-release image
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
@@ -1617,7 +1667,7 @@ presubmits:
         # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
         - name: TEST_TMPDIR
           value: /root/.cache/bazel
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-1.9
         volumeMounts:
         - mountPath: /root/.cache
           name: cache-ssd
@@ -1783,6 +1833,53 @@ presubmits:
     - release-1.6  # not supported
     - release-1.7  # not supported
     - release-1.8  # per-release image
+    - release-1.9  # per-release image
+    always_run: true
+    skip_report: false
+    max_concurrency: 12
+    context: pull-kubernetes-e2e-gce-device-plugin-gpu
+    rerun_command: "/test pull-kubernetes-e2e-gce-device-plugin-gpu"
+    trigger: "(?m)^/test( all| pull-kubernetes-e2e-gce-device-plugin-gpu),?(\\s+|$)"
+    labels:
+      preset-service-account: true
+      preset-k8s-ssh: true
+      preset-bazel-scratch-dir: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
+        args:
+        - --root=/go/src
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=k8s.io/release"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
+        env:
+        - name: BAZEL_REMOTE_CACHE_ENABLED
+          value: "true"
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
+      volumes:
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+  - name: pull-kubernetes-e2e-gce-device-plugin-gpu
+    agent: kubernetes
+    branches:
+    - release-1.9 # per-release image
     always_run: true
     skip_report: false
     max_concurrency: 12
@@ -1794,7 +1891,7 @@ presubmits:
       preset-k8s-ssh: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-1.9
         args:
         - --root=/go/src
         - "--clean"
@@ -2147,9 +2244,10 @@ presubmits:
   - name: pull-kubernetes-e2e-kops-aws
     agent: kubernetes
     skip_branches:
-    - release-1.6  # runs on Jenkins?
+    - release-1.6  # runs on Jenkins? NOT ANYMORE :D
     - release-1.7  # per-release image
     - release-1.8  # per-release image
+    - release-1.9  # per-release image
     max_concurrency: 12
     always_run: true
     context: pull-kubernetes-e2e-kops-aws
@@ -2162,6 +2260,51 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
+        args:
+        - --root=/go/src
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=k8s.io/release"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=75"
+        env:
+        - name: BAZEL_REMOTE_CACHE_ENABLED
+          value: "true"
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
+      volumes:
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+  - name: pull-kubernetes-e2e-kops-aws
+    agent: kubernetes
+    branches:
+    - release-1.9  # per-release image
+    max_concurrency: 12
+    always_run: true
+    context: pull-kubernetes-e2e-kops-aws
+    rerun_command: "/test pull-kubernetes-e2e-kops-aws"
+    trigger: "(?m)^/test( all| pull-kubernetes-e2e-kops-aws),?(\\s+|$)"
+    labels:
+      preset-service-account: true
+      preset-aws-ssh: true
+      preset-aws-credential: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-1.9
         args:
         - --root=/go/src
         - "--clean"
@@ -3647,6 +3790,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gce
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 0
@@ -3657,6 +3801,7 @@ presubmits:
     - release-1.6
     - release-1.7
     - release-1.8
+    - release-1.9
     skip_report: false
     spec:
       containers:
@@ -3671,6 +3816,48 @@ presubmits:
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
+        name: ""
+        resources:
+          requests:
+            memory: 6Gi
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test (all|pull-security-kubernetes-e2e-gce),?(\s+|$)
+  - agent: kubernetes
+    always_run: true
+    branches:
+    - release-1.9
+    cluster: security
+    context: pull-security-kubernetes-e2e-gce
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    max_concurrency: 0
+    name: pull-security-kubernetes-e2e-gce
+    rerun_command: /test pull-security-kubernetes-e2e-gce
+    run_if_changed: ""
+    skip_report: false
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --root=/go/src
+        - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-security-prow/pr-logs
+        - --clean
+        - --timeout=90
+        - --
+        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-1.9
         name: ""
         resources:
           requests:
@@ -3861,6 +4048,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gce-device-plugin-gpu
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
@@ -3871,6 +4059,7 @@ presubmits:
     - release-1.6
     - release-1.7
     - release-1.8
+    - release-1.9
     skip_report: false
     spec:
       containers:
@@ -3886,7 +4075,54 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-device-plugin-gpu
+        env:
+        - name: BAZEL_REMOTE_CACHE_ENABLED
+          value: "true"
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
+        name: ""
+        resources:
+          requests:
+            memory: 6Gi
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test( all| pull-security-kubernetes-e2e-gce-device-plugin-gpu),?(\s+|$)
+  - agent: kubernetes
+    always_run: true
+    branches:
+    - release-1.9
+    cluster: security
+    context: pull-security-kubernetes-e2e-gce-device-plugin-gpu
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    max_concurrency: 12
+    name: pull-security-kubernetes-e2e-gce-device-plugin-gpu
+    rerun_command: /test pull-security-kubernetes-e2e-gce-device-plugin-gpu
+    run_if_changed: ""
+    skip_report: false
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --root=/go/src
+        - --clean
+        - --job=$(JOB_NAME)
+        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-security-prow/pr-logs
+        - --timeout=90
+        - --
+        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-device-plugin-gpu
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-1.9
         name: ""
         resources:
           requests:
@@ -4222,6 +4458,7 @@ presubmits:
     - release-1.6
     - release-1.7
     - release-1.8
+    - release-1.9
     skip_report: false
     spec:
       containers:
@@ -4237,7 +4474,55 @@ presubmits:
         - --timeout=75
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-kops-aws
+        env:
+        - name: BAZEL_REMOTE_CACHE_ENABLED
+          value: "true"
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
+        name: ""
+        resources:
+          requests:
+            memory: 6Gi
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test( all| pull-security-kubernetes-e2e-kops-aws),?(\s+|$)
+  - agent: kubernetes
+    always_run: true
+    branches:
+    - release-1.9
+    cluster: security
+    context: pull-security-kubernetes-e2e-kops-aws
+    labels:
+      preset-aws-credential: "true"
+      preset-aws-ssh: "true"
+      preset-service-account: "true"
+    max_concurrency: 12
+    name: pull-security-kubernetes-e2e-kops-aws
+    rerun_command: /test pull-security-kubernetes-e2e-kops-aws
+    run_if_changed: ""
+    skip_report: false
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --root=/go/src
+        - --clean
+        - --job=$(JOB_NAME)
+        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-security-prow/pr-logs
+        - --timeout=75
+        - --
+        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-kops-aws
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-1.9
         name: ""
         resources:
           requests:
