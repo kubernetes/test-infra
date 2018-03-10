@@ -190,7 +190,42 @@ func TestLatestBuildForSpec(t *testing.T) {
 
 	for _, test := range testCases {
 		if expected, actual := test.expected, LatestBuildForSpec(test.spec); expected != actual {
-			t.Errorf("%s: expected alias %q but got %q", test.name, expected, actual)
+			t.Errorf("%s: expected path %q but got %q", test.name, expected, actual)
+		}
+	}
+}
+
+func TestRootForSpec(t *testing.T) {
+	testCases := []struct {
+		name     string
+		spec     *pjutil.JobSpec
+		expected string
+	}{
+		{
+			name:     "presubmit",
+			spec:     &pjutil.JobSpec{Type: kube.PresubmitJob, Job: "pull-kubernetes-unit"},
+			expected: "pr-logs/directory/pull-kubernetes-unit",
+		},
+		{
+			name:     "batch",
+			spec:     &pjutil.JobSpec{Type: kube.BatchJob, Job: "pull-kubernetes-unit"},
+			expected: "pr-logs/directory/pull-kubernetes-unit",
+		},
+		{
+			name:     "postsubmit",
+			spec:     &pjutil.JobSpec{Type: kube.PostsubmitJob, Job: "ci-kubernetes-unit"},
+			expected: "logs/ci-kubernetes-unit",
+		},
+		{
+			name:     "periodic",
+			spec:     &pjutil.JobSpec{Type: kube.PeriodicJob, Job: "ci-kubernetes-periodic"},
+			expected: "logs/ci-kubernetes-periodic",
+		},
+	}
+
+	for _, test := range testCases {
+		if expected, actual := test.expected, RootForSpec(test.spec); expected != actual {
+			t.Errorf("%s: expected path %q but got %q", test.name, expected, actual)
 		}
 	}
 }
