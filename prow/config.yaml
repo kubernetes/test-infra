@@ -233,7 +233,11 @@ presets:
   volumeMounts:
   - name: bazel-scratch
     mountPath: /bazel-scratch/.cache
-
+- labels:
+    preset-bazel-remote-cache-enabled: true
+  env:
+  - name: BAZEL_REMOTE_CACHE_ENABLED
+    value: "true"
 
 presubmits:
   google/cadvisor:
@@ -630,6 +634,7 @@ presubmits:
     labels:
       preset-service-account: true
       preset-bazel-scratch-dir: true
+      preset-bazel-remote-cache-enabled: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-experimental
@@ -643,9 +648,6 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "make"
         - "bazel-build"
-        env:
-        - name: BAZEL_REMOTE_CACHE_ENABLED
-          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -665,6 +667,7 @@ presubmits:
     labels:
       preset-service-account: true
       preset-bazel-scratch-dir: true
+      preset-bazel-remote-cache-enabled: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-experimental
@@ -678,9 +681,6 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "make"
         - "bazel-test"
-        env:
-        - name: BAZEL_REMOTE_CACHE_ENABLED
-          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -830,6 +830,7 @@ presubmits:
     labels:
       preset-service-account: true
       preset-bazel-scratch-dir: true
+      preset-bazel-remote-cache-enabled: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-1.10
@@ -839,9 +840,6 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        env:
-        - name: BAZEL_REMOTE_CACHE_ENABLED
-          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -1002,6 +1000,7 @@ presubmits:
     labels:
       preset-service-account: true
       preset-bazel-scratch-dir: true
+      preset-bazel-remote-cache-enabled: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
@@ -1015,9 +1014,6 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
-        env:
-        - name: BAZEL_REMOTE_CACHE_ENABLED
-          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -1242,6 +1238,7 @@ presubmits:
     labels:
       preset-service-account: true
       preset-bazel-scratch-dir: true
+      preset-bazel-remote-cache-enabled: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
@@ -1256,9 +1253,6 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
-        env:
-        - name: BAZEL_REMOTE_CACHE_ENABLED
-          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -1280,6 +1274,7 @@ presubmits:
     labels:
       preset-service-account: true
       preset-bazel-scratch-dir: true
+      preset-bazel-remote-cache-enabled: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
@@ -1297,9 +1292,6 @@ presubmits:
         - "--test-args=--build_tag_filters=-e2e,-integration"
         - "--test-args=--test_tag_filters=-e2e,-integration"
         - "--test-args=--flaky_test_attempts=3"
-        env:
-        - name: BAZEL_REMOTE_CACHE_ENABLED
-          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -1417,6 +1409,7 @@ presubmits:
     labels:
       preset-service-account: true
       preset-bazel-scratch-dir: true
+      preset-bazel-remote-cache-enabled: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
@@ -1432,9 +1425,6 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "make"
         - "bazel-test"
-        env:
-        - name: BAZEL_REMOTE_CACHE_ENABLED
-          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -1451,6 +1441,7 @@ presubmits:
     labels:
       preset-service-account: true
       preset-bazel-scratch-dir: true
+      preset-bazel-remote-cache-enabled: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
@@ -1464,9 +1455,6 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "--test=//test/integration/..."
         - "--test-args=--config=integration"
-        env:
-        - name: BAZEL_REMOTE_CACHE_ENABLED
-          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -1606,6 +1594,7 @@ presubmits:
       preset-service-account: true
       preset-k8s-ssh: true
       preset-bazel-scratch-dir: true
+      preset-bazel-remote-cache-enabled: true
     spec:
       containers:
       - args:
@@ -1619,9 +1608,6 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        env:
-        - name: BAZEL_REMOTE_CACHE_ENABLED
-          value: "true"
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
         volumeMounts:
         - mountPath: /root/.cache
@@ -1844,6 +1830,7 @@ presubmits:
       preset-service-account: true
       preset-k8s-ssh: true
       preset-bazel-scratch-dir: true
+      preset-bazel-remote-cache-enabled: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
@@ -1857,9 +1844,6 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=90"
-        env:
-        - name: BAZEL_REMOTE_CACHE_ENABLED
-          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -2257,6 +2241,7 @@ presubmits:
       preset-service-account: true
       preset-aws-ssh: true
       preset-aws-credential: true
+      preset-bazel-remote-cache-enabled: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
@@ -2270,9 +2255,6 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=75"
-        env:
-        - name: BAZEL_REMOTE_CACHE_ENABLED
-          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -4075,9 +4057,6 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-device-plugin-gpu
-        env:
-        - name: BAZEL_REMOTE_CACHE_ENABLED
-          value: "true"
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
         name: ""
         resources:
@@ -4474,9 +4453,6 @@ presubmits:
         - --timeout=75
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-kops-aws
-        env:
-        - name: BAZEL_REMOTE_CACHE_ENABLED
-          value: "true"
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
         name: ""
         resources:
@@ -5452,6 +5428,7 @@ presubmits:
     labels:
       preset-service-account: true
       preset-bazel-scratch-dir: true
+      preset-bazel-remote-cache-enabled: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-experimental
@@ -5464,9 +5441,6 @@ presubmits:
         - "--scenario=kubernetes_execute_bazel"
         - "--" # end bootstrap args, scenario args below
         - "hack/build-then-unit.sh"
-        env:
-        - name: BAZEL_REMOTE_CACHE_ENABLED
-          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -5483,6 +5457,7 @@ presubmits:
     labels:
       preset-service-account: true
       preset-bazel-scratch-dir: true
+      preset-bazel-remote-cache-enabled: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
@@ -5496,9 +5471,6 @@ presubmits:
         - "--scenario=kubernetes_execute_bazel"
         - "--" # end bootstrap args, scenario args below
         - "hack/build-then-unit.sh"
-        env:
-        - name: BAZEL_REMOTE_CACHE_ENABLED
-          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -5535,6 +5507,7 @@ presubmits:
     labels:
       preset-service-account: true
       preset-bazel-scratch-dir: true
+      preset-bazel-remote-cache-enabled: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
@@ -5550,9 +5523,6 @@ presubmits:
         - "--install=gubernator/test_requirements.txt"
         - "--test=//..."
         - "--test-args=--config=lint"
-        env:
-        - name: BAZEL_REMOTE_CACHE_ENABLED
-          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -5921,6 +5891,7 @@ postsubmits:
     labels:
       preset-service-account: true
       preset-bazel-scratch-dir: true
+      preset-bazel-remote-cache-enabled: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
@@ -5936,9 +5907,6 @@ postsubmits:
         - "--gcs=gs://kubernetes-release-dev/ci"
         - "--version-suffix=-bazel"
         - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel.txt"
-        env:
-        - name: BAZEL_REMOTE_CACHE_ENABLED
-          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -5951,6 +5919,7 @@ postsubmits:
       labels:
         preset-service-account: true
         preset-bazel-scratch-dir: true
+        preset-bazel-remote-cache-enabled: true
       spec:
         containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
@@ -5967,9 +5936,6 @@ postsubmits:
           - "--test-args=--build_tag_filters=-e2e,-integration"
           - "--test-args=--test_tag_filters=-e2e,-integration"
           - "--test-args=--flaky_test_attempts=3"
-          env:
-          - name: BAZEL_REMOTE_CACHE_ENABLED
-            value: "true"
           securityContext:
             privileged: true
           resources:
@@ -5982,6 +5948,7 @@ postsubmits:
     labels:
       preset-service-account: true
       preset-bazel-scratch-dir: true
+      preset-bazel-remote-cache-enabled: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-1.10
@@ -5997,9 +5964,6 @@ postsubmits:
         - "--gcs=gs://kubernetes-release-dev/ci"
         - "--version-suffix=-bazel"
         - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel-1.10.txt"
-        env:
-        - name: BAZEL_REMOTE_CACHE_ENABLED
-          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -6042,6 +6006,7 @@ postsubmits:
     labels:
       preset-service-account: true
       preset-bazel-scratch-dir: true
+      preset-bazel-remote-cache-enabled: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-1.10
@@ -6058,9 +6023,6 @@ postsubmits:
         - "--test-args=--build_tag_filters=-e2e,-integration"
         - "--test-args=--test_tag_filters=-e2e,-integration"
         - "--test-args=--flaky_test_attempts=3"
-        env:
-        - name: BAZEL_REMOTE_CACHE_ENABLED
-          value: "true"
         securityContext:
           privileged: true
         resources:
@@ -6101,6 +6063,7 @@ postsubmits:
     labels:
       preset-service-account: true
       preset-bazel-scratch-dir: true
+      preset-bazel-remote-cache-enabled: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-experimental
@@ -6115,9 +6078,6 @@ postsubmits:
         - "--install=gubernator/test_requirements.txt"
         - "--test=//..."
         - "--test-args=--test_output=errors"
-        env:
-        - name: BAZEL_REMOTE_CACHE_ENABLED
-          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -6795,6 +6755,7 @@ periodics:
   labels:
     preset-service-account: true
     preset-bazel-scratch-dir: true
+    preset-bazel-remote-cache-enabled: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
@@ -6811,8 +6772,6 @@ periodics:
       - "--version-suffix=-bazel"
       - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel.txt"
       env:
-      - name: BAZEL_REMOTE_CACHE_ENABLED
-        value: "true"
       # so we can use the right cache id
       # TODO(bentheelder): switch to kubernetes_execute_bazel and consider dropping this
       - name: REPO_OWNER
@@ -6832,6 +6791,7 @@ periodics:
   labels:
     preset-service-account: true
     preset-bazel-scratch-dir: true
+    preset-bazel-remote-cache-enabled: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-1.10
@@ -6847,9 +6807,6 @@ periodics:
       - "--gcs=gs://kubernetes-release-dev/ci"
       - "--version-suffix=-bazel"
       - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel-1.10.txt"
-      env:
-      - name: BAZEL_REMOTE_CACHE_ENABLED
-        value: "true"
       # Bazel needs privileged mode in order to sandbox builds.
       securityContext:
         privileged: true
@@ -6940,6 +6897,7 @@ periodics:
   labels:
     preset-service-account: true
     preset-bazel-scratch-dir: true
+    preset-bazel-remote-cache-enabled: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-master
@@ -6957,8 +6915,6 @@ periodics:
       - "--test-args=--test_tag_filters=-e2e,-integration"
       - "--test-args=--flaky_test_attempts=3"
       env:
-      - name: BAZEL_REMOTE_CACHE_ENABLED
-        value: "true"
       # TODO(bentheelder): switch to kubernetes_execute_bazel and consider dropping this
       - name: REPO_OWNER
         value: kubernetes
@@ -14539,6 +14495,7 @@ periodics:
   labels:
     preset-service-account: true
     preset-bazel-scratch-dir: true
+    preset-bazel-remote-cache-enabled: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-experimental
@@ -14554,9 +14511,6 @@ periodics:
       - "--install=gubernator/test_requirements.txt"
       - "--test=//..."
       - "--test-args=--test_output=errors"
-      env:
-      - name: BAZEL_REMOTE_CACHE_ENABLED
-        value: "true"
       # Bazel needs privileged mode in order to sandbox builds.
       securityContext:
         privileged: true
@@ -14742,6 +14696,7 @@ periodics:
   labels:
     preset-service-account: true
     preset-bazel-scratch-dir: true
+    preset-bazel-remote-cache-enabled: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-1.10
@@ -14755,8 +14710,6 @@ periodics:
       - "--build=//... -//vendor/..."
       - "--release=//build/release-tars"
       env:
-      - name: BAZEL_REMOTE_CACHE_ENABLED
-        value: "true"
       # TODO(bentheelder): switch to kubernetes_execute_bazel and consider dropping this
       - name: REPO_OWNER
         value: kubernetes
@@ -14843,6 +14796,7 @@ periodics:
   labels:
     preset-service-account: true
     preset-bazel-scratch-dir: true
+    preset-bazel-remote-cache-enabled: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180307-ce8e19913-1.10
@@ -14861,8 +14815,6 @@ periodics:
       - "--test-args=--test_tag_filters=-e2e,-integration"
       - "--test-args=--flaky_test_attempts=3"
       env:
-      - name: BAZEL_REMOTE_CACHE_ENABLED
-        value: "true"
       # TODO(bentheelder): switch to kubernetes_execute_bazel and consider dropping this
       - name: REPO_OWNER
         value: kubernetes
