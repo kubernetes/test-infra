@@ -49,13 +49,14 @@ func Run(refs kube.Refs, dir, gitUserName, gitUserEmail string) Record {
 	commands = append(commands, shellCloneCommand(cloneDir, "git", "fetch", repositoryURL, "--tags", "--prune"))
 	commands = append(commands, shellCloneCommand(cloneDir, "git", "fetch", repositoryURL, refs.BaseRef))
 
-	var checkout string
+	var target string
 	if refs.BaseSHA != "" {
-		checkout = refs.BaseSHA
+		target = refs.BaseSHA
 	} else {
-		checkout = "FETCH_HEAD"
+		target = "FETCH_HEAD"
 	}
-	commands = append(commands, shellCloneCommand(cloneDir, "git", "checkout", checkout))
+	commands = append(commands, shellCloneCommand(cloneDir, "git", "branch", "--force", refs.BaseRef, target))
+	commands = append(commands, shellCloneCommand(cloneDir, "git", "checkout", refs.BaseRef))
 
 	for _, prRef := range refs.Pulls {
 		commands = append(commands, shellCloneCommand(cloneDir, "git", "fetch", repositoryURL, fmt.Sprintf("pull/%d/head", prRef.Number)))
