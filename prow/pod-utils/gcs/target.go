@@ -70,6 +70,20 @@ func LatestBuildForSpec(spec *pjutil.JobSpec) string {
 	return ""
 }
 
+// RootForSpec determines the root GCS path for storing artifacts about
+// the provided job.
+func RootForSpec(spec *pjutil.JobSpec) string {
+	switch spec.Type {
+	case kube.PeriodicJob, kube.PostsubmitJob:
+		return path.Join("logs", spec.Job)
+	case kube.PresubmitJob, kube.BatchJob:
+		return path.Join("pr-logs", "directory", spec.Job)
+	default:
+		logrus.Errorf("unknown job spec type: %v", spec.Type)
+	}
+	return ""
+}
+
 // RepoPathBuilder builds GCS path segments and embeds defaulting behavior
 type RepoPathBuilder func(org, repo string) string
 

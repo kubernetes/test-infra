@@ -132,8 +132,23 @@ func getJobFallbackNumber(bucket string, spec *pjutil.JobSpec) (bool, error) {
 		fmt.Printf("OK: %s\n", spec.Job)
 		return false, nil
 	case http.StatusNotFound:
-		fmt.Printf("NOT FOUND: %s\n", spec.Job)
-		return true, nil
+		rootURL := fmt.Sprintf("%s/%s", strings.TrimSuffix(bucket, "/"), gcs.RootForSpec(spec))
+		resp, err := http.Get(rootURL)
+		if err != nil {
+			return false, err
+		}
+		defer resp.Body.Close()
+		switch resp.StatusCode {
+		case http.StatusOK:
+			fmt.Printf("NOT FOUND: %s\n", spec.Job)
+			return true, nil
+		case http.StatusNotFound:
+			fmt.Printf("IGNORE: %s\n", spec.Job)
+			return false, nil
+		default:
+			return false, fmt.Errorf("unexpected status when checking the existence of %s: %v", spec.Job, resp.Status)
+		}
+
 	default:
 		return false, fmt.Errorf("unexpected status for %s: %v", spec.Job, resp.Status)
 	}
