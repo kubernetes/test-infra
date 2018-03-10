@@ -28,6 +28,7 @@ import (
 	"flag"
 	"io/ioutil"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -90,6 +91,7 @@ func main() {
 	uploadTargets := map[string]gcs.UploadFunc{
 		"clone-log.txt":      gcs.DataUpload(&buildLog),
 		"clone-records.json": gcs.FileUpload(o.cloneLog),
+		"job-spec.json":      gcs.DataUpload(strings.NewReader(os.Getenv("JOB_SPEC"))),
 	}
 
 	started := struct {
