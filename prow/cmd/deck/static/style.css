@@ -161,6 +161,10 @@ i.state {
     line-height: 14px;
     text-align: center;
 }
+
+#job-bar div {
+    outline: none;
+}
 /** Job bar **/
 #job-bar-success {
     background-color: #66BB6A;

@@ -564,31 +564,26 @@ function stateCell(state) {
     }
     c.classList.add("icon-cell");
 
-    let displayState = "";
+    let displayState = stateToAdj(state);
+    displayState = displayState[0].toUpperCase() + displayState.slice(1);
     let displayIcon = "";
     switch (state) {
         case "triggered":
-            displayState = "Triggered";
             displayIcon = "schedule";
-            break
+            break;
         case "pending":
-            displayState = "Pending";
             displayIcon = "watch_later";
             break;
         case "success":
-            displayState = "Succeded";
             displayIcon = "check_circle";
             break;
         case "failure":
-            displayState = "Failed";
             displayIcon = "error";
             break;
         case "aborted":
-            displayState = "Aborted";
             displayIcon = "remove_circle";
             break;
         case "error":
-            displayState = "Error";
             displayIcon = "warning";
             break;
     }
@@ -658,14 +653,35 @@ function drawJobBar(total, jobCountMap) {
     }
     const id = "job-bar-" + state;
     const el = document.getElementById(id);
+    const tt = document.getElementById(state + "-tooltip");
     if (!count || count === 0 || total === 0) {
       el.textContent = "";
+      tt.textContent = "";
       el.style.width = "0";
     } else {
       el.textContent = count;
+      tt.textContent = count + " " + stateToAdj(state) + " jobs";
       el.style.width = (count / total * 100) + "%";
     }
   });
+}
+
+function stateToAdj(state) {
+    switch (state) {
+        case "triggered":
+            return "triggered";
+        case "pending":
+            return "pending";
+        case "success":
+            return "succeded";
+        case "failure":
+            return "failed";
+        case "aborted":
+            return "aborted";
+        case "error":
+            return "error";
+    }
+    return "unknown";
 }
 
 /**
