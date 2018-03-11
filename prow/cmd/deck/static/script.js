@@ -418,7 +418,9 @@ function redraw(fz) {
     redrawOptions(fz, opts);
 
     var lastKey = '';
-    for (var i = 0, emitted = 0; i < allBuilds.length && emitted < 500; i++) {
+    const jobCountMap = new Map();
+    let totalJob = 0;
+    for (var i = 0; i < allBuilds.length && totalJob < 500; i++) {
         var build = allBuilds[i];
         if (!equalSelected(typeSel, build.type)) {
             continue;
@@ -442,8 +444,12 @@ function redraw(fz) {
         } else if (pullSel || authorSel) {
             continue;
         }
-        emitted++;
 
+        if (!jobCountMap.has(build.state)) {
+          jobCountMap.set(build.state, 0);
+        }
+        totalJob += 1;
+        jobCountMap.set(build.state, jobCountMap.get(build.state) + 1);
         var r = document.createElement("tr");
         r.appendChild(stateCell(build.state));
         if (build.pod_name) {
@@ -492,6 +498,9 @@ function redraw(fz) {
         r.appendChild(createTextCell(build.duration));
         builds.appendChild(r);
     }
+    const jobCount = document.getElementById("job-count");
+    jobCount.textContent = "Shows " + totalJob + " job(s)";
+    drawJobBar(totalJob, jobCountMap);
 }
 
 function createTextCell(text) {
@@ -639,6 +648,25 @@ function prRevisionCell(build) {
     return c;
 }
 
+function drawJobBar(total, jobCountMap) {
+  const states = ["success", "pending", "triggered", "error", "failure", "aborted", ""];
+  states.forEach(state => {
+    const count = jobCountMap.get(state);
+    // If state is undefined or empty, treats it as unkown state.
+    if (!state || state === "") {
+      state = "unknown";
+    }
+    const id = "job-bar-" + state;
+    const el = document.getElementById(id);
+    if (!count || count === 0 || total === 0) {
+      el.textContent = "";
+      el.style.width = "0";
+    } else {
+      el.textContent = count;
+      el.style.width = (count / total * 100) + "%";
+    }
+  });
+}
 
 /**
  * Returns an icon element.
