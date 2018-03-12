@@ -418,7 +418,9 @@ function redraw(fz) {
     redrawOptions(fz, opts);
 
     var lastKey = '';
-    for (var i = 0, emitted = 0; i < allBuilds.length && emitted < 500; i++) {
+    const jobCountMap = new Map();
+    let totalJob = 0;
+    for (var i = 0; i < allBuilds.length && totalJob < 500; i++) {
         var build = allBuilds[i];
         if (!equalSelected(typeSel, build.type)) {
             continue;
@@ -442,8 +444,12 @@ function redraw(fz) {
         } else if (pullSel || authorSel) {
             continue;
         }
-        emitted++;
 
+        if (!jobCountMap.has(build.state)) {
+          jobCountMap.set(build.state, 0);
+        }
+        totalJob += 1;
+        jobCountMap.set(build.state, jobCountMap.get(build.state) + 1);
         var r = document.createElement("tr");
         r.appendChild(stateCell(build.state));
         if (build.pod_name) {
@@ -492,6 +498,9 @@ function redraw(fz) {
         r.appendChild(createTextCell(build.duration));
         builds.appendChild(r);
     }
+    const jobCount = document.getElementById("job-count");
+    jobCount.textContent = "Shows " + totalJob + " job(s)";
+    drawJobBar(totalJob, jobCountMap);
 }
 
 function createTextCell(text) {
@@ -555,31 +564,26 @@ function stateCell(state) {
     }
     c.classList.add("icon-cell");
 
-    let displayState = "";
+    let displayState = stateToAdj(state);
+    displayState = displayState[0].toUpperCase() + displayState.slice(1);
     let displayIcon = "";
     switch (state) {
         case "triggered":
-            displayState = "Triggered";
             displayIcon = "schedule";
-            break
+            break;
         case "pending":
-            displayState = "Pending";
             displayIcon = "watch_later";
             break;
         case "success":
-            displayState = "Succeded";
             displayIcon = "check_circle";
             break;
         case "failure":
-            displayState = "Failed";
             displayIcon = "error";
             break;
         case "aborted":
-            displayState = "Aborted";
             displayIcon = "remove_circle";
             break;
         case "error":
-            displayState = "Error";
             displayIcon = "warning";
             break;
     }
@@ -639,6 +643,46 @@ function prRevisionCell(build) {
     return c;
 }
 
+function drawJobBar(total, jobCountMap) {
+  const states = ["success", "pending", "triggered", "error", "failure", "aborted", ""];
+  states.forEach(state => {
+    const count = jobCountMap.get(state);
+    // If state is undefined or empty, treats it as unkown state.
+    if (!state || state === "") {
+      state = "unknown";
+    }
+    const id = "job-bar-" + state;
+    const el = document.getElementById(id);
+    const tt = document.getElementById(state + "-tooltip");
+    if (!count || count === 0 || total === 0) {
+      el.textContent = "";
+      tt.textContent = "";
+      el.style.width = "0";
+    } else {
+      el.textContent = count;
+      tt.textContent = count + " " + stateToAdj(state) + " jobs";
+      el.style.width = (count / total * 100) + "%";
+    }
+  });
+}
+
+function stateToAdj(state) {
+    switch (state) {
+        case "triggered":
+            return "triggered";
+        case "pending":
+            return "pending";
+        case "success":
+            return "succeded";
+        case "failure":
+            return "failed";
+        case "aborted":
+            return "aborted";
+        case "error":
+            return "error";
+    }
+    return "unknown";
+}
 
 /**
  * Returns an icon element.
