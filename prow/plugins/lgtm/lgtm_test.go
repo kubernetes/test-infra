@@ -22,12 +22,12 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 )
 
 func TestLGTMComment(t *testing.T) {
-	// "a" is the author, "a", "r1", and "r2" are reviewers.
 	var testcases = []struct {
 		name          string
 		body          string
@@ -47,28 +47,28 @@ func TestLGTMComment(t *testing.T) {
 		{
 			name:         "lgtm comment by reviewer, no lgtm on pr",
 			body:         "/lgtm",
-			commenter:    "r1",
+			commenter:    "reviewer1",
 			hasLGTM:      false,
 			shouldToggle: true,
 		},
 		{
 			name:         "LGTM comment by reviewer, no lgtm on pr",
 			body:         "/LGTM",
-			commenter:    "r1",
+			commenter:    "reviewer1",
 			hasLGTM:      false,
 			shouldToggle: true,
 		},
 		{
 			name:         "lgtm comment by reviewer, lgtm on pr",
 			body:         "/lgtm",
-			commenter:    "r1",
+			commenter:    "reviewer1",
 			hasLGTM:      true,
 			shouldToggle: false,
 		},
 		{
 			name:          "lgtm comment by author",
 			body:          "/lgtm",
-			commenter:     "a",
+			commenter:     "author",
 			hasLGTM:       false,
 			shouldToggle:  false,
 			shouldComment: true,
@@ -76,7 +76,7 @@ func TestLGTMComment(t *testing.T) {
 		{
 			name:         "lgtm cancel by author",
 			body:         "/lgtm cancel",
-			commenter:    "a",
+			commenter:    "author",
 			hasLGTM:      true,
 			shouldToggle: true,
 		},
@@ -146,21 +146,21 @@ func TestLGTMComment(t *testing.T) {
 		{
 			name:         "lgtm cancel comment by reviewer",
 			body:         "/lgtm cancel",
-			commenter:    "r1",
+			commenter:    "reviewer1",
 			hasLGTM:      true,
 			shouldToggle: true,
 		},
 		{
 			name:         "lgtm cancel comment by reviewer, with trailing space",
 			body:         "/lgtm cancel \r",
-			commenter:    "r1",
+			commenter:    "reviewer1",
 			hasLGTM:      true,
 			shouldToggle: true,
 		},
 		{
 			name:         "lgtm cancel comment by reviewer, no lgtm",
 			body:         "/lgtm cancel",
-			commenter:    "r1",
+			commenter:    "reviewer1",
 			hasLGTM:      false,
 			shouldToggle: false,
 		},
@@ -175,9 +175,9 @@ func TestLGTMComment(t *testing.T) {
 			IsPR:        true,
 			Body:        tc.body,
 			User:        github.User{Login: tc.commenter},
-			IssueAuthor: github.User{Login: "a"},
+			IssueAuthor: github.User{Login: "author"},
 			Number:      5,
-			Assignees:   []github.User{{Login: "a"}, {Login: "r1"}, {Login: "r2"}},
+			Assignees:   []github.User{{Login: "author"}, {Login: "reviewer1"}, {Login: "reviewer2"}},
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 			HTMLURL:     "<url>",
 		}
@@ -229,24 +229,164 @@ func TestLGTMComment(t *testing.T) {
 	}
 }
 
+func TestLGTMCommentWithLGTMNoti(t *testing.T) {
+	var testcases = []struct {
+		name         string
+		body         string
+		commenter    string
+		shouldDelete bool
+	}{
+		{
+			name:         "non-lgtm comment",
+			body:         "uh oh",
+			commenter:    "o",
+			shouldDelete: false,
+		},
+		{
+			name:         "lgtm comment by reviewer, no lgtm on pr",
+			body:         "/lgtm",
+			commenter:    "reviewer1",
+			shouldDelete: true,
+		},
+		{
+			name:         "LGTM comment by reviewer, no lgtm on pr",
+			body:         "/LGTM",
+			commenter:    "reviewer1",
+			shouldDelete: true,
+		},
+		{
+			name:         "lgtm comment by author",
+			body:         "/lgtm",
+			commenter:    "author",
+			shouldDelete: false,
+		},
+		{
+			name:         "lgtm comment by non-reviewer",
+			body:         "/lgtm",
+			commenter:    "o",
+			shouldDelete: true,
+		},
+		{
+			name:         "lgtm comment by non-reviewer, with trailing space",
+			body:         "/lgtm ",
+			commenter:    "o",
+			shouldDelete: true,
+		},
+		{
+			name:         "lgtm comment by non-reviewer, with no-issue",
+			body:         "/lgtm no-issue",
+			commenter:    "o",
+			shouldDelete: true,
+		},
+		{
+			name:         "lgtm comment by non-reviewer, with no-issue and trailing space",
+			body:         "/lgtm no-issue \r",
+			commenter:    "o",
+			shouldDelete: true,
+		},
+		{
+			name:         "lgtm comment by rando",
+			body:         "/lgtm",
+			commenter:    "not-in-the-org",
+			shouldDelete: false,
+		},
+		{
+			name:         "lgtm cancel comment by reviewer, no lgtm",
+			body:         "/lgtm cancel",
+			commenter:    "reviewer1",
+			shouldDelete: false,
+		},
+	}
+	for _, tc := range testcases {
+		fc := &fakegithub.FakeClient{
+			IssueComments: make(map[int][]github.IssueComment),
+		}
+		e := &github.GenericCommentEvent{
+			Action:      github.GenericCommentActionCreated,
+			IssueState:  "open",
+			IsPR:        true,
+			Body:        tc.body,
+			User:        github.User{Login: tc.commenter},
+			IssueAuthor: github.User{Login: "author"},
+			Number:      5,
+			Assignees:   []github.User{{Login: "author"}, {Login: "reviewer1"}, {Login: "reviewer2"}},
+			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
+			HTMLURL:     "<url>",
+		}
+		botName, err := fc.BotName()
+		if err != nil {
+			t.Fatalf("For case %s, could not get Bot nam", tc.name)
+		}
+		ic := github.IssueComment{
+			User: github.User{
+				Login: botName,
+			},
+			Body: removeLGTMLabelNoti,
+		}
+		fc.IssueComments[5] = append(fc.IssueComments[5], ic)
+		if err := handle(fc, logrus.WithField("plugin", pluginName), e); err != nil {
+			t.Errorf("For case %s, didn't expect error from lgtmComment: %v", tc.name, err)
+			continue
+		}
+		found := false
+		for _, v := range fc.IssueComments[5] {
+			if v.User.Login == botName && v.Body == removeLGTMLabelNoti {
+				found = true
+				break
+			}
+		}
+		if tc.shouldDelete {
+			if found {
+				t.Errorf("For case %s, LGTM removed notification should have been deleted", tc.name)
+			}
+		} else {
+			if !found {
+				t.Errorf("For case %s, LGTM removed notification should not have been deleted", tc.name)
+			}
+		}
+	}
+}
+
+type fakeIssueComment struct {
+	Owner   string
+	Repo    string
+	Number  int
+	Comment string
+}
+
 type githubUnlabeler struct {
-	err           error
-	labelsRemoved []string
+	labelsRemoved    []string
+	issueComments    []fakeIssueComment
+	removeLabelErr   error
+	createCommentErr error
 }
 
 func (c *githubUnlabeler) RemoveLabel(owner, repo string, pr int, label string) error {
 	c.labelsRemoved = append(c.labelsRemoved, label)
-	return c.err
+	return c.removeLabelErr
+}
+
+func (c *githubUnlabeler) CreateComment(owner, repo string, number int, comment string) error {
+	ic := fakeIssueComment{
+		Owner:   owner,
+		Repo:    repo,
+		Number:  number,
+		Comment: comment,
+	}
+	c.issueComments = append(c.issueComments, ic)
+	return c.createCommentErr
 }
 
 func TestHandlePullRequest(t *testing.T) {
 	cases := []struct {
-		name           string
-		event          github.PullRequestEvent
-		removeLabelErr error
+		name             string
+		event            github.PullRequestEvent
+		removeLabelErr   error
+		createCommentErr error
 
 		err           error
 		labelsRemoved []string
+		issueComments []fakeIssueComment
 	}{
 		{
 			name: "pr_synchronize, no RemoveLabel error",
@@ -265,6 +405,14 @@ func TestHandlePullRequest(t *testing.T) {
 				},
 			},
 			labelsRemoved: []string{lgtmLabel},
+			issueComments: []fakeIssueComment{
+				{
+					Owner:   "kubernetes",
+					Repo:    "kubernetes",
+					Number:  101,
+					Comment: removeLGTMLabelNoti,
+				},
+			},
 		},
 		{
 			name: "pr_assigned",
@@ -295,13 +443,23 @@ func TestHandlePullRequest(t *testing.T) {
 				Label:  lgtmLabel,
 			},
 			labelsRemoved: []string{lgtmLabel},
+			issueComments: []fakeIssueComment{
+				{
+					Owner:   "kubernetes",
+					Repo:    "kubernetes",
+					Number:  101,
+					Comment: removeLGTMLabelNoti,
+				},
+			},
 		},
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			fakeGitHub := &githubUnlabeler{}
-			err := handlePullRequest(fakeGitHub, c.event)
+			fakeGitHub.removeLabelErr = c.removeLabelErr
+			fakeGitHub.createCommentErr = c.createCommentErr
+			err := handlePullRequest(fakeGitHub, c.event, logrus.WithField("plugin", pluginName))
 
 			if err != nil && c.err == nil {
 				t.Fatalf("handlePullRequest error: %v", err)
@@ -311,13 +469,17 @@ func TestHandlePullRequest(t *testing.T) {
 				t.Fatalf("handlePullRequest wanted error: %v, got nil", c.err)
 			}
 
-			if got, want := err, c.err; got != want {
+			if got, want := err, c.err; !equality.Semantic.DeepEqual(got, want) {
 				t.Fatalf("handlePullRequest error mismatch: got %v, want %v", got, want)
 			}
 
 			if got, want := len(fakeGitHub.labelsRemoved), len(c.labelsRemoved); got != want {
 				t.Logf("labelsRemoved: got %v, want: %v", fakeGitHub.labelsRemoved, c.labelsRemoved)
 				t.Fatalf("labelsRemoved length mismatch: got %d, want %d", got, want)
+			}
+
+			if got, want := fakeGitHub.issueComments, c.issueComments; !equality.Semantic.DeepEqual(got, want) {
+				t.Fatalf("LGTM revmoved notifications mismatch: got %v, want %v", got, want)
 			}
 		})
 	}
