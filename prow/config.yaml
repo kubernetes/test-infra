@@ -32,13 +32,11 @@ branch-protection:
       protect-by-default: true
       require-contexts:
       - cla/linuxfoundation
-    kubernetes-sig-testing:
       repos:
-        frameworks:
-          protect-by-default: true
+        testing_frameworks:
           require-contexts:
-          - continuous-integration/travis-ci
           - cla/linuxfoundation
+          - continuous-integration/travis-ci
 
 tide:
   queries:
@@ -100,7 +98,7 @@ tide:
     - do-not-merge/work-in-progress
     reviewApprovedRequired: true
   - repos:
-    - kubernetes-sig-testing/frameworks
+    - kubernetes-sigs/testing_frameworks
     labels:
     - lgtm
     - approved
@@ -5395,7 +5393,7 @@ presubmits:
       - emptyDir: {}
         name: auto-generated-docker-graph-volume-mount
     trigger: (?m)^/test pull-security-kubernetes-verify-prow,?(\s+|$)
-  kubernetes-sig-testing/frameworks:
+  kubernetes-sigs/testing_frameworks:
   - name: pull-frameworks-test
     context: pull-frameworks-test
     agent: kubernetes
