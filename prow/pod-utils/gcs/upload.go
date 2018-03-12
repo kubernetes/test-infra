@@ -25,6 +25,8 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
+
+	"k8s.io/test-infra/prow/errorutil"
 )
 
 // UploadFunc knows how to upload into an object
@@ -70,8 +72,10 @@ func FileUpload(file string) UploadFunc {
 			return err
 		}
 
-		defer reader.Close()
-		return DataUpload(reader)(obj)
+		uploadErr := DataUpload(reader)(obj)
+		closeErr := reader.Close()
+
+		return errorutil.NewAggregate([]error{uploadErr, closeErr})
 	}
 }
 
@@ -80,9 +84,9 @@ func FileUpload(file string) UploadFunc {
 func DataUpload(src io.Reader) UploadFunc {
 	return func(obj *storage.ObjectHandle) error {
 		writer := obj.NewWriter(context.Background())
-		defer writer.Close()
+		_, copyErr := io.Copy(writer, src)
+		closeErr := writer.Close()
 
-		_, err := io.Copy(writer, src)
-		return err
+		return errorutil.NewAggregate([]error{copyErr, closeErr})
 	}
 }
