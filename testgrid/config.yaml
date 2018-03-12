@@ -718,6 +718,13 @@ test_groups:
 - name: ci-kubernetes-e2enode-ubuntustable1-k8sstable2-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntustable1-k8sstable2-serial
 # Ubuntu cluster e2e tests on GCE (contact: @kubernetes/ubuntu-image on github)
+- name: ci-kubernetes-e2e-gce-ubuntu1-k8sdev-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu1-k8sdev-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default
   column_header:
@@ -908,6 +915,12 @@ test_groups:
   - configuration_value: Commit
   - configuration_value: infra-commit
 # Ubuntu cluster e2e tests on GKE (contact: @kubernetes/ubuntu-image on github)
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sdev-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sdev-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-alphafeatures
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-alphafeatures
   column_header:
@@ -2270,6 +2283,13 @@ test_groups:
 #
 
 dashboards:
+- name: canonical-ubuntu1-k8sdev
+  dashboard_tab:
+  - name: e2e-gce-ubuntu1-k8sdev-default
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu1-k8sdev-default
+  - name: e2e-gke-ubuntu1-k8sdev-default
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sdev-default
+
 - name: canonical-ubuntudev-k8sdev
   dashboard_tab:
   - name: e2enode-ubuntudev-k8sdev-default(gkespec)
@@ -5465,6 +5485,7 @@ dashboards:
 dashboard_groups:
 - name: canonical
   dashboard_names:
+  - canonical-ubuntu1-k8sdev
   - canonical-ubuntudev-k8sdev
   - canonical-ubuntudev-k8sbeta
   - canonical-ubuntudev-k8sstable1

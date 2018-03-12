@@ -472,6 +472,7 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2enode-cosbeta-k8sstable3-serial': 'ci-kubernetes-e2e-gce-cos*',
 
             # The ubuntu image validation jobs intentionally share projects.
+            'ci-kubernetes-e2e-gce-ubuntu1-k8sdev-default': 'ci-kubernetes-e2e-gce-ubuntu*',
             'ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default': 'ci-kubernetes-e2e-gce-ubuntu*',
             'ci-kubernetes-e2e-gce-ubuntudev-k8sdev-serial': 'ci-kubernetes-e2e-gce-ubuntu*',
             'ci-kubernetes-e2e-gce-ubuntudev-k8sdev-slow': 'ci-kubernetes-e2e-gce-ubuntu*',
@@ -499,6 +500,7 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-default': 'ci-kubernetes-e2e-gce-ubuntu*',
             'ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-serial': 'ci-kubernetes-e2e-gce-ubuntu*',
             'ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-slow': 'ci-kubernetes-e2e-gce-ubuntu*',
+            'ci-kubernetes-e2e-gke-ubuntu1-k8sdev-default': 'ci-kubernetes-e2e-gce-ubuntu*',
             'ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-alphafeatures': 'ci-kubernetes-e2e-gke-ubuntu*',
             'ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-autoscaling': 'ci-kubernetes-e2e-gke-ubuntu*',
             'ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-default': 'ci-kubernetes-e2e-gke-ubuntu*',

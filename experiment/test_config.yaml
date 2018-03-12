@@ -242,6 +242,12 @@ jobs:
   # +---------------+----------+----------+------------+------------+------------+
   # | ubuntustable2 |      n/a |      n/a |        n/a |        n/a |        n/a |
   # +---------------+----------+----------+------------+------------+------------+
+  ci-kubernetes-e2e-gce-ubuntu1-k8sdev-default:
+    interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
+    sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default:
     interval: 2h
     args:
@@ -406,6 +412,11 @@ jobs:
     - --check-leaked-resources=false # disabled since it uses shared project.
     - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
     sigOwners: ['sig-node']
+
+  ci-kubernetes-e2e-gke-ubuntu1-k8sdev-default:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+
   ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-alphafeatures:
     interval: 2h
     sigOwners: ['sig-gcp']
@@ -912,6 +923,11 @@ images:
     - --image-family=cos-stable
     - --image-project=cos-cloud
     - --gcp-node-image=gci
+  ubuntu1:
+    args:
+    - --image-family=ubuntu-gke-1604-lts-1
+    - --image-project=ubuntu-os-gke-cloud-devel
+    - --gcp-node-image=CUSTOM
   ubuntudev:
     args:
     - --image-family=ubuntu-gke-1604-lts-1
