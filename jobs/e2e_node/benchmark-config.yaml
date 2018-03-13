@@ -128,21 +128,21 @@ images:
       - 'create 105 pods with 100ms interval \[Benchmark\]'
 
   cosdev-resource1:
-    image: cos-dev-65-10323-1-0
+    image: cos-dev-66-10452-8-0
     project: cos-cloud
     machine: n1-standard-1
     metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
     tests:
       - 'resource tracking for 0 pods per node \[Benchmark\]'
   cosdev-resource2:
-    image: cos-dev-65-10323-1-0
+    image: cos-dev-66-10452-8-0
     project: cos-cloud
     machine: n1-standard-1
     metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
     tests:
       - 'resource tracking for 35 pods per node \[Benchmark\]'
   cosdev-resource3:
-    image: cos-dev-65-10323-1-0
+    image: cos-dev-66-10452-8-0
     project: cos-cloud
     machine: n1-standard-1
     metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
