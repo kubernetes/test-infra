@@ -4,6 +4,8 @@ load("@io_bazel_rules_docker//docker:docker.bzl", "docker_bundle")
 load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
 load(
     ":prow.bzl",
+    prow_docker_tags = "docker_tags",
+    prow_prefix = "prefix",
     prow_tags = "tags",
 )
 
@@ -22,7 +24,9 @@ docker_bundle(
         "splice",
         "tide",
         "tot",
-    ),
+    ) + prow_docker_tags(**{
+        prow_prefix("needs-rebase"): "//prow/external-plugins/needs-rebase:image",
+    }),
     stamp = True,
 )
 
