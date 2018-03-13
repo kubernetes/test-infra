@@ -1,6 +1,17 @@
 'use strict';
 
 /**
+ * Submit the query by redirecting the page with the query and let window.onload
+ * sends the request.
+ * @param {Element} input query input element
+ */
+function submitQuery(input) {
+    const query = getPRQuery(input.value);
+    input.value = query;
+    window.location.search = '?query=' + encodeURIComponent(query);
+}
+
+/**
  * Creates a XMLHTTP request to /pr-data.js.
  * @param {function} fulfillFn
  * @param {function} errorHandler
@@ -146,9 +157,14 @@ function createSearchCard() {
     input.rows = 1;
     input.spellcheck = false;
     input.addEventListener("keydown", (event) => {
-        const el = event.target;
-        el.style.height  = "auto";
-        el.style.height = event.target.scrollHeight + "px";
+        if (event.keyCode === 13) {
+            event.preventDefault();
+            submitQuery(input);
+        } else {
+            const el = event.target;
+            el.style.height  = "auto";
+            el.style.height = event.target.scrollHeight + "px";
+        }
     });
     input.addEventListener("focus", (event) => {
         const el = event.target;
@@ -158,9 +174,7 @@ function createSearchCard() {
     // Refresh button
     const refBtn = createIcon("refresh", "Reload the query", ["search-button"], true);
     refBtn.addEventListener("click", () => {
-        const query = getPRQuery(input.value);
-        input.value = query;
-        window.location.search = '?query=' + encodeURIComponent(query);
+        submitQuery(input);
     }, true);
     const userBtn = createIcon("person", "Show my open pull requests", ["search-button"], true);
     userBtn.addEventListener("click", () => {

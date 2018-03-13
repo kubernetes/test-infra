@@ -387,6 +387,8 @@ func TestHandlePullRequest(t *testing.T) {
 		err           error
 		labelsRemoved []string
 		issueComments []fakeIssueComment
+
+		expectNoComments bool
 	}{
 		{
 			name: "pr_synchronize, no RemoveLabel error",
@@ -413,12 +415,14 @@ func TestHandlePullRequest(t *testing.T) {
 					Comment: removeLGTMLabelNoti,
 				},
 			},
+			expectNoComments: false,
 		},
 		{
 			name: "pr_assigned",
 			event: github.PullRequestEvent{
 				Action: "assigned",
 			},
+			expectNoComments: true,
 		},
 		{
 			name: "pr_synchronize, with RemoveLabel github.LabelNotFound error",
@@ -442,23 +446,17 @@ func TestHandlePullRequest(t *testing.T) {
 				Number: 101,
 				Label:  lgtmLabel,
 			},
-			labelsRemoved: []string{lgtmLabel},
-			issueComments: []fakeIssueComment{
-				{
-					Owner:   "kubernetes",
-					Repo:    "kubernetes",
-					Number:  101,
-					Comment: removeLGTMLabelNoti,
-				},
-			},
+			labelsRemoved:    []string{lgtmLabel},
+			expectNoComments: true,
 		},
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			fakeGitHub := &githubUnlabeler{}
-			fakeGitHub.removeLabelErr = c.removeLabelErr
-			fakeGitHub.createCommentErr = c.createCommentErr
+			fakeGitHub := &githubUnlabeler{
+				removeLabelErr:   c.removeLabelErr,
+				createCommentErr: c.createCommentErr,
+			}
 			err := handlePullRequest(fakeGitHub, c.event, logrus.WithField("plugin", pluginName))
 
 			if err != nil && c.err == nil {
@@ -480,6 +478,12 @@ func TestHandlePullRequest(t *testing.T) {
 
 			if got, want := fakeGitHub.issueComments, c.issueComments; !equality.Semantic.DeepEqual(got, want) {
 				t.Fatalf("LGTM revmoved notifications mismatch: got %v, want %v", got, want)
+			}
+			if c.expectNoComments && len(fakeGitHub.issueComments) > 0 {
+				t.Fatalf("expected no comments but got %v", fakeGitHub.issueComments)
+			}
+			if !c.expectNoComments && len(fakeGitHub.issueComments) == 0 {
+				t.Fatalf("expected comments but got none")
 			}
 		})
 	}

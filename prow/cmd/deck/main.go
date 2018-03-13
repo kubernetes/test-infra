@@ -120,7 +120,7 @@ func main() {
 		mux.Handle("/", staticHandlerFromDir("./static"))
 	} else {
 		mux.Handle("/", staticHandlerFromDir("/static"))
-		prodOnlyMain(o, mux)
+		mux = prodOnlyMain(o, mux)
 	}
 
 	// setup done, actually start the server
@@ -128,7 +128,7 @@ func main() {
 }
 
 // prodOnlyMain contains logic only used when running deployed, not locally
-func prodOnlyMain(o options, mux *http.ServeMux) {
+func prodOnlyMain(o options, mux *http.ServeMux) *http.ServeMux {
 	// setup config agent, pod log clients etc.
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(o.configPath); err != nil {
@@ -279,6 +279,7 @@ func prodOnlyMain(o options, mux *http.ServeMux) {
 		}(mux, o.redirectHTTPTo))
 		mux = redirectMux
 	}
+	return mux
 }
 
 func loadToken(file string) ([]byte, error) {
