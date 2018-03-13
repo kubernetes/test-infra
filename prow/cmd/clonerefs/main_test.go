@@ -16,7 +16,11 @@ limitations under the License.
 
 package main
 
-import "testing"
+import (
+	"testing"
+
+	"k8s.io/test-infra/prow/kube"
+)
 
 func TestOptions_Validate(t *testing.T) {
 	var testCases = []struct {
@@ -43,6 +47,42 @@ func TestOptions_Validate(t *testing.T) {
 			name: "missing log location",
 			input: options{
 				srcRoot: "test",
+			},
+			expectedErr: true,
+		},
+		{
+			name: "separate repos",
+			input: options{
+				srcRoot: "test",
+				log:     "thing",
+				refs: gitRefs{gitRefs: []kube.Refs{
+					{
+						Repo: "repo1",
+						Org:  "org1",
+					},
+					{
+						Repo: "repo2",
+						Org:  "org2",
+					},
+				}},
+			},
+			expectedErr: false,
+		},
+		{
+			name: "duplicate repos",
+			input: options{
+				srcRoot: "test",
+				log:     "thing",
+				refs: gitRefs{gitRefs: []kube.Refs{
+					{
+						Repo: "repo",
+						Org:  "org",
+					},
+					{
+						Repo: "repo",
+						Org:  "org",
+					},
+				}},
 			},
 			expectedErr: true,
 		},

@@ -383,8 +383,8 @@ func getSmoothFactor(dur time.Duration) float64 {
 // This calculates an exponentially smoothed merge Rate based on the formula
 //   newRate = (1-smooth)oldRate + smooth*newRate
 // Which is really great and simple for constant time series data. But of course
-// ours isn't time series data so I vary the smoothing factor based on how long
-// its been since the last entry. See the comments on the `getSmoothFactor` for
+// ours isn't time series data, so I vary the smoothing factor based on how long
+// it has been since the last entry. See the comments on the `getSmoothFactor` for
 // a discussion of why.
 //    This whole thing was dreamed up by eparis one weekend via a combination
 //    of guess-and-test and intuition. Someone who knows about this stuff

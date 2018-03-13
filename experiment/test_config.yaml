@@ -242,6 +242,12 @@ jobs:
   # +---------------+----------+----------+------------+------------+------------+
   # | ubuntustable2 |      n/a |      n/a |        n/a |        n/a |        n/a |
   # +---------------+----------+----------+------------+------------+------------+
+  ci-kubernetes-e2e-gce-ubuntu1-k8sdev-default:
+    interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
+    sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default:
     interval: 2h
     args:
@@ -406,6 +412,11 @@ jobs:
     - --check-leaked-resources=false # disabled since it uses shared project.
     - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
     sigOwners: ['sig-node']
+
+  ci-kubernetes-e2e-gke-ubuntu1-k8sdev-default:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+
   ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-alphafeatures:
     interval: 2h
     sigOwners: ['sig-gcp']
@@ -753,7 +764,7 @@ jobs:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
     - --env=KUBE_FEATURE_GATES=AllAlpha=true
-    - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|PVCProtection|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8
+    - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8
     sigOwners: ['sig-gcp']
 
   # stable1
@@ -795,7 +806,7 @@ jobs:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
     - --env=KUBE_FEATURE_GATES=AllAlpha=true
-    - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|PVCProtection|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8
+    - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8
     sigOwners: ['sig-gcp']
 
   # stable2
@@ -912,6 +923,11 @@ images:
     - --image-family=cos-stable
     - --image-project=cos-cloud
     - --gcp-node-image=gci
+  ubuntu1:
+    args:
+    - --image-family=ubuntu-gke-1604-lts-1
+    - --image-project=ubuntu-os-gke-cloud-devel
+    - --gcp-node-image=CUSTOM
   ubuntudev:
     args:
     - --image-family=ubuntu-gke-1604-lts-1
@@ -1050,23 +1066,23 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180305-98b9ccd6e-master
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180312-a6be97dc1-master
   beta:
     args:
     - --repo=k8s.io/kubernetes=release-1.10
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180305-98b9ccd6e-1.10
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180312-a6be97dc1-1.10
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.9
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180305-98b9ccd6e-1.9
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180312-a6be97dc1-1.9
   stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.8
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180305-98b9ccd6e-1.8
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180312-a6be97dc1-1.8
   stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.7
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180305-98b9ccd6e-1.7
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180312-a6be97dc1-1.7
 
 nodeTestSuites:
   default:

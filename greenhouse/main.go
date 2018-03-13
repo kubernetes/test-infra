@@ -60,15 +60,6 @@ var evictUntilPercentBlocksFree = flag.Float64("evict-until-percent-blocks-free"
 var diskCheckInterval = flag.Duration("disk-check-interval", time.Second*10,
 	"interval between checking disk usage (and potentially evicting entries)")
 
-// NOTE: remount is a bit of a hack, unfortunately the kubernetes volumes
-// don't really support this and to cleanly track entry access times we
-// want to use a volume with strictatime,lazytime (and not noatime or relatime)
-// so that file access times *are* recorded but are lazily flushed to the disk
-// https://lwn.net/Articles/621046/
-// https://unix.stackexchange.com/questions/276858/why-is-ext4-filesystem-mounted-with-both-relatime-and-lazytime
-var remount = flag.Bool("remount", false,
-	"attempt to remount --dir with strictatime,lazyatime to improve eviction")
-
 // global metrics object, see prometheus.go
 var promMetrics *prometheusMetrics
 
@@ -84,23 +75,6 @@ func main() {
 	flag.Parse()
 	if *dir == "" {
 		logrus.Fatal("--dir must be set!")
-	}
-	if *remount {
-		device, mount, err := diskutil.FindMountForPath(*dir)
-		if err != nil {
-			logrus.WithError(err).Errorf("Failed to find mountpoint for %s", *dir)
-		} else {
-			logrus.Warnf(
-				"Attempting to remount %s on %s with 'strictatime,lazyatime'",
-				device, mount,
-			)
-			err = diskutil.Remount(device, mount, "strictatime,lazytime")
-			if err != nil {
-				logrus.WithError(err).Error("Failed to remount with lazyatime!")
-			} else {
-				logrus.Info("Remount complete")
-			}
-		}
 	}
 
 	cache := diskcache.NewCache(*dir)

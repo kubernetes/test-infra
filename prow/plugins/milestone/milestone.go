@@ -19,9 +19,10 @@ limitations under the License.
 package milestone
 
 import (
-	"bytes"
 	"fmt"
 	"regexp"
+	"sort"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 
@@ -33,9 +34,9 @@ import (
 const pluginName = "milestone"
 
 var (
-	milestoneRegex   = regexp.MustCompile(`(?m)^/milestone\s+(.+)$`)
+	milestoneRegex   = regexp.MustCompile(`(?m)^/milestone\s+(.+?)\s*$`)
 	mustBeSigLead    = "You must be a member of the [%s](https://github.com/orgs/%s/teams/%s/members) github team to set the milestone."
-	invalidMilestone = "The provided milestone is not valid for this repository.  Here are the available milestones:\n %s"
+	invalidMilestone = "The provided milestone is not valid for this repository. Milestones in this repository: [%s]\n\nUse `/milestone %s` to clear the milestone."
 	clearKeyword     = "clear"
 )
 
@@ -125,12 +126,13 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, m
 	milestoneMap := buildMilestoneMap(milestones)
 	milestoneNumber, ok := milestoneMap[proposedMilestone]
 	if !ok {
-		var buffer bytes.Buffer
-		buffer.WriteString("\t 1." + clearKeyword + "\n")
+		slice := make([]string, 0, len(milestoneMap))
 		for k := range milestoneMap {
-			buffer.WriteString("\t 1." + k + "\n")
+			slice = append(slice, fmt.Sprintf("`%s`", k))
 		}
-		msg := fmt.Sprintf(invalidMilestone, buffer.String())
+		sort.Strings(slice)
+
+		msg := fmt.Sprintf(invalidMilestone, strings.Join(slice, ", "), clearKeyword)
 		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
 	}
 

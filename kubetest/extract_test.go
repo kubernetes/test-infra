@@ -130,6 +130,11 @@ func TestExtractStrategies(t *testing.T) {
 			"https://storage.googleapis.com/kubernetes-release-gke/release",
 			"v1.2.3+abcde",
 		},
+		{
+			"gs://whatever-bucket/ci/latest.txt",
+			"https://storage.googleapis.com/whatever-bucket/ci",
+			"v1.2.3+abcde",
+		},
 	}
 
 	var gotURL string
@@ -165,7 +170,7 @@ func TestExtractStrategies(t *testing.T) {
 		if err := es.Set(tc.option); err != nil {
 			t.Errorf("extractStrategy.Set(%q) returned err: %q", tc.option, err)
 		}
-		if err := es.Extract("", "", false); err != nil {
+		if err := es.Extract("", "", "", false); err != nil {
 			t.Errorf("extractStrategy(%q).Extract() returned err: %q", tc.option, err)
 		}
 

@@ -80,6 +80,8 @@ type gkeDeployer struct {
 	subnetwork                  string
 	subnetworkRegion            string
 	image                       string
+	imageFamily                 string
+	imageProject                string
 	commandGroup                []string
 	createCommand               []string
 	singleZoneNodeInstanceGroup bool
@@ -98,7 +100,7 @@ type ig struct {
 
 var _ deployer = &gkeDeployer{}
 
-func newGKE(provider, project, zone, region, network, image, cluster string, testArgs *string, upgradeArgs *string) (*gkeDeployer, error) {
+func newGKE(provider, project, zone, region, network, image, imageFamily, imageProject, cluster string, testArgs *string, upgradeArgs *string) (*gkeDeployer, error) {
 	if provider != "gke" {
 		return nil, fmt.Errorf("--provider must be 'gke' for GKE deployment, found %q", provider)
 	}
@@ -135,6 +137,13 @@ func newGKE(provider, project, zone, region, network, image, cluster string, tes
 	if image == "" {
 		return nil, fmt.Errorf("--gcp-node-image must be set for GKE deployment")
 	}
+	if strings.ToUpper(image) == "CUSTOM" {
+		if imageFamily == "" || imageProject == "" {
+			return nil, fmt.Errorf("--image-family and --image-project must be set for GKE deployment if --gcp-node-image=CUSTOM")
+		}
+	}
+	g.imageFamily = imageFamily
+	g.imageProject = imageProject
 	g.image = image
 
 	g.additionalZones = *gkeAdditionalZones
@@ -247,7 +256,7 @@ func newGKE(provider, project, zone, region, network, image, cluster string, tes
 				if strings.HasPrefix(val, "gke-latest-") {
 					releasePrefix = strings.TrimPrefix(val, "gke-latest-")
 				}
-				if val, err = getLatestGKEVersion(project, zone, releasePrefix); err != nil {
+				if val, err = getLatestGKEVersion(project, zone, region, releasePrefix); err != nil {
 					return nil, fmt.Errorf("fail to get latest gke version : %v", err)
 				}
 			}
@@ -297,6 +306,10 @@ func (g *gkeDeployer) Up() error {
 		"--num-nodes="+strconv.Itoa(def.Nodes),
 		"--network="+g.network,
 	)
+	if strings.ToUpper(g.image) == "CUSTOM" {
+		args = append(args, "--image-family="+g.imageFamily)
+		args = append(args, "--image-project="+g.imageProject)
+	}
 	if g.subnetwork != "" {
 		args = append(args, "--subnetwork="+g.subnetwork)
 	}

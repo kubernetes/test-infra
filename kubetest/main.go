@@ -75,6 +75,8 @@ type options struct {
 	gcpMasterImage      string
 	gcpNetwork          string
 	gcpNodeImage        string
+	gcpImageFamily      string
+	gcpImageProject     string
 	gcpNodes            string
 	gcpProject          string
 	gcpProjectType      string
@@ -141,6 +143,8 @@ func defineFlags() *options {
 	flag.StringVar(&o.gcpNetwork, "gcp-network", "", "Cluster network. Must be set for --deployment=gke (TODO: other deployments).")
 	flag.StringVar(&o.gcpMasterImage, "gcp-master-image", "", "Master image type (cos|debian on GCE, n/a on GKE)")
 	flag.StringVar(&o.gcpNodeImage, "gcp-node-image", "", "Node image type (cos|container_vm on GKE, cos|debian on GCE)")
+	flag.StringVar(&o.gcpImageFamily, "image-family", "", "Node image family from which to use the latest image, required when --gcp-node-image=CUSTOM")
+	flag.StringVar(&o.gcpImageProject, "image-project", "", "Project containing node image family, required when --gcp-node-image=CUSTOM")
 	flag.StringVar(&o.gcpNodes, "gcp-nodes", "", "(--provider=gce only) Number of nodes to create.")
 	flag.StringVar(&o.kubecfg, "kubeconfig", "", "The location of a kubeconfig file.")
 	flag.BoolVar(&o.kubemark, "kubemark", false, "If true, run kubemark tests.")
@@ -227,7 +231,7 @@ func getDeployer(o *options) (deployer, error) {
 	case "dind":
 		return dind.NewDeployer(o.kubecfg, o.dindImage, &o.testArgs, control)
 	case "gke":
-		return newGKE(o.provider, o.gcpProject, o.gcpZone, o.gcpRegion, o.gcpNetwork, o.gcpNodeImage, o.cluster, &o.testArgs, &o.upgradeArgs)
+		return newGKE(o.provider, o.gcpProject, o.gcpZone, o.gcpRegion, o.gcpNetwork, o.gcpNodeImage, o.gcpImageFamily, o.gcpImageProject, o.cluster, &o.testArgs, &o.upgradeArgs)
 	case "kops":
 		return newKops(o.provider, o.gcpProject, o.cluster)
 	case "kubernetes-anywhere":
@@ -443,7 +447,7 @@ func acquireKubernetes(o *options) error {
 			}
 
 			// New deployment, extract new version
-			return o.extract.Extract(o.gcpProject, o.gcpZone, o.extractSource)
+			return o.extract.Extract(o.gcpProject, o.gcpZone, o.gcpRegion, o.extractSource)
 		})
 		if err != nil {
 			return err

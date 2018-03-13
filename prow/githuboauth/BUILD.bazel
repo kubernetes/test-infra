@@ -6,7 +6,9 @@ go_library(
     importpath = "k8s.io/test-infra/prow/githuboauth",
     visibility = ["//visibility:public"],
     deps = [
+        "//ghclient:go_default_library",
         "//prow/config:go_default_library",
+        "//vendor/github.com/google/go-github/github:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/golang.org/x/net/context:go_default_library",
         "//vendor/golang.org/x/net/xsrftoken:go_default_library",
@@ -34,6 +36,7 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//prow/config:go_default_library",
+        "//vendor/github.com/google/go-github/github:go_default_library",
         "//vendor/github.com/gorilla/securecookie:go_default_library",
         "//vendor/github.com/gorilla/sessions:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",

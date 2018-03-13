@@ -25,6 +25,7 @@ import (
 	"io/ioutil"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/logrusutil"
 
 	"k8s.io/test-infra/prow/kube"
@@ -49,6 +50,19 @@ func (o *options) Validate() error {
 
 	if o.log == "" {
 		return errors.New("no log file specified")
+	}
+
+	seen := map[string]sets.String{}
+	for _, ref := range o.refs.gitRefs {
+		if _, seenOrg := seen[ref.Org]; seenOrg {
+			if seen[ref.Org].Has(ref.Repo) {
+				return errors.New("sync config for %s/%s provided more than once")
+			}
+
+			seen[ref.Org].Insert(ref.Repo)
+		} else {
+			seen[ref.Org] = sets.NewString(ref.Repo)
+		}
 	}
 
 	return nil
@@ -111,6 +125,11 @@ func main() {
 		if jobRefs.Type != kube.PeriodicJob {
 			// periodic jobs do not configure a set
 			// of refs to clone, so we ignore them
+			for _, gitRef := range o.refs.gitRefs {
+				if gitRef.Org == jobRefs.Refs.Org && gitRef.Repo == jobRefs.Refs.Repo {
+					logrus.Fatalf("Clone specification for %s/%s found both in Prow variables and user-provided flags", jobRefs.Refs.Org, jobRefs.Refs.Repo)
+				}
+			}
 			results = append(results, clone.Run(jobRefs.Refs, o.srcRoot, o.gitUserName, o.gitUserEmail))
 		}
 	}

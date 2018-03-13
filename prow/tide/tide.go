@@ -24,6 +24,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -40,9 +41,12 @@ import (
 )
 
 const (
-	statusContext   string = "tide"
-	statusInPool           = "In tide pool."
-	statusNotInPool        = "Not in tide pool."
+	statusContext string = "tide"
+	statusInPool         = "In merge pool."
+	// statusNotInPool is a format string used when a PR is not in a tide pool.
+	// The '%s' field is populated with the reason why the PR is not in a
+	// tide pool or the empty string if the reason is unknown. See requirementDiff.
+	statusNotInPool = "Not mergeable.%s"
 )
 
 type kubeClient interface {
@@ -179,18 +183,100 @@ func byRepoAndNumber(prs []PullRequest) map[string]PullRequest {
 	return m
 }
 
+// requirementDiff calculates the diff between a PR and a TideQuery.
+// This diff is defined with a string that describes some subset of the
+// differences and an integer counting the total number of differences.
+// Note: an empty diff can be returned if the reason that the PR does not match
+// the TideQuery is unknown. This can happen happen if this function's logic
+// does not match GitHub's and does not indicate that the PR matches the query.
+func requirementDiff(pr *PullRequest, q *config.TideQuery) (string, int) {
+	const maxLabelChars = 50
+	var desc string
+	// Drops labels if needed to fit the description text area, but keep at least 1.
+	truncate := func(labels []string) []string {
+		i := 1
+		chars := len(labels[0])
+		for ; i < len(labels); i++ {
+			if chars+len(labels[i]) > maxLabelChars {
+				break
+			}
+			chars += len(labels[i]) + 2 // ", "
+		}
+		return labels[:i]
+	}
+
+	var missingLabels []string
+	for _, l1 := range q.Labels {
+		var found bool
+		for _, l2 := range pr.Labels.Nodes {
+			if string(l2.Name) == l1 {
+				found = true
+				break
+			}
+		}
+		if !found {
+			missingLabels = append(missingLabels, l1)
+		}
+	}
+	if len(missingLabels) > 0 {
+		sort.Strings(missingLabels)
+		trunced := truncate(missingLabels)
+		if len(trunced) == 1 {
+			desc = fmt.Sprintf(" Needs %s label.", trunced[0])
+		} else {
+			desc = fmt.Sprintf(" Needs %s labels.", strings.Join(trunced, ", "))
+		}
+	}
+
+	var presentLabels []string
+	for _, l1 := range q.MissingLabels {
+		for _, l2 := range pr.Labels.Nodes {
+			if string(l2.Name) == l1 {
+				presentLabels = append(presentLabels, l1)
+				break
+			}
+		}
+	}
+	if desc == "" && len(presentLabels) > 0 {
+		sort.Strings(presentLabels)
+		trunced := truncate(presentLabels)
+		if len(trunced) == 1 {
+			desc = fmt.Sprintf(" Should not have %s label.", trunced[0])
+		} else {
+			desc = fmt.Sprintf(" Should not have %s labels.", strings.Join(trunced, ", "))
+		}
+	}
+
+	// TODO(cjwagner): List reviews (states:[APPROVED], first: 1) as part of open
+	// PR query and include status context description.
+
+	return desc, len(missingLabels) + len(presentLabels)
+}
+
 // Returns expected status state and description.
-// TODO(spxtr): Useful information such as "missing label: foo."
-func expectedStatus(pr *PullRequest, pool map[string]PullRequest) (string, string) {
-	key := prKey(pr)
-	if _, ok := pool[key]; !ok {
-		return github.StatusPending, statusNotInPool
+// If a PR is not mergeable, we have to select a TideQuery to compare it against
+// in order to generate a diff for the status description. We choose the query
+// for the repo that the PR is closest to meeting (as determined by the number
+// of unmet/violated requirements).
+func expectedStatus(queriesByRepo map[string]config.TideQueries, pr *PullRequest, pool map[string]PullRequest) (string, string) {
+	if _, ok := pool[prKey(pr)]; !ok {
+		minDiffCount := -1
+		var minDiff string
+		for _, q := range queriesByRepo[string(pr.Repository.NameWithOwner)] {
+			diff, diffCount := requirementDiff(pr, &q)
+			if minDiffCount == -1 || diffCount < minDiffCount {
+				minDiffCount = diffCount
+				minDiff = diff
+			}
+		}
+		return github.StatusPending, fmt.Sprintf(statusNotInPool, minDiff)
 	}
 	return github.StatusSuccess, statusInPool
 }
 
 func (sc *statusController) setStatuses(all, pool []PullRequest) {
 	poolM := byRepoAndNumber(pool)
+	queriesByRepo := sc.ca.Config().Tide.Queries.ByRepo()
 	processed := sets.NewString()
 
 	process := func(pr *PullRequest) {
@@ -203,7 +289,7 @@ func (sc *statusController) setStatuses(all, pool []PullRequest) {
 			return
 		}
 
-		wantState, wantDesc := expectedStatus(pr, poolM)
+		wantState, wantDesc := expectedStatus(queriesByRepo, pr, poolM)
 		var actualState githubql.StatusState
 		var actualDesc string
 		for _, ctx := range contexts {
@@ -243,7 +329,7 @@ func (sc *statusController) setStatuses(all, pool []PullRequest) {
 	// Note: We could still fail to update a status context if the statusController
 	// falls behind the main Tide sync loop by multiple loops (if we are lapped).
 	// This would be unlikely to occur, could only occur if the status update sync
-	// period is smaller than the main sync period, and would only result in a
+	// period is longer than the main sync period, and would only result in a
 	// missing tide status context on a successfully merged PR.
 	for key, poolPR := range poolM {
 		if !processed.Has(key) {
@@ -875,6 +961,11 @@ type PullRequest struct {
 		// We can't raise this too much or we could hit the limit of 50,000 nodes
 		// per query: https://developer.github.com/v4/guides/resource-limitations/#node-limit
 	} `graphql:"commits(last: 4)"`
+	Labels struct {
+		Nodes []struct {
+			Name githubql.String
+		}
+	} `graphql:"labels(first: 10)"`
 }
 
 type Commit struct {

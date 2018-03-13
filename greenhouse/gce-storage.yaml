@@ -1,0 +1,30 @@
+# storage class used by greenhouse for GKE / GCE we use persistent SSD
+# previously we also used local SSDs via hostPath which are *great* but
+# "only" ~375 GB
+# https://cloud.google.com/compute/docs/disks/
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: greenhouse
+provisioner: kubernetes.io/gce-pd
+parameters:
+  type: pd-ssd
+# we want to use a volume with strictatime,lazytime (and not noatime or relatime)
+# so that file access times *are* recorded but are lazily flushed to the disk
+# https://lwn.net/Articles/621046/
+# https://unix.stackexchange.com/questions/276858/why-is-ext4-filesystem-mounted-with-both-relatime-and-lazytime
+mountOptions: ["strictatime", "lazytime"]
+---
+# 3TB of SSD :-)
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: greenhouse
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3000Gi
+  storageClassName: greenhouse
+---

@@ -43,7 +43,7 @@ function optionsForRepo(repo) {
     return opts;
 }
 
-function redrawOptions(opts) {
+function redrawOptions(fz, opts) {
     var ts = Object.keys(opts.types).sort();
     addOptions(ts, "type");
     var rs = Object.keys(opts.repos).filter(function (r) {
@@ -53,7 +53,7 @@ function redrawOptions(opts) {
     var js = Object.keys(opts.jobs).sort();
     var jobInput = document.getElementById("job-input");
     var jobList = document.getElementById("job-list");
-    addOptionFuzzySearch(js, "job", jobList, jobInput);
+    addOptionFuzzySearch(fz, js, "job", jobList, jobInput);
     var as = Object.keys(opts.authors).sort(function (a, b) {
         return a.toLowerCase().localeCompare(b.toLowerCase());
     });
@@ -97,7 +97,6 @@ function handleDownKey() {
     }
     if (selectedJobs.length === 0) {
         // If no job selected, selecte the first one that visible in the list.
-        var activeSearchRect = activeSearch.getBoundingClientRect();
         var jobs = Array.from(activeSearch.children)
             .filter(function (elChild) {
                 var childRect = elChild.getBoundingClientRect();
@@ -151,6 +150,26 @@ function handleUpKey() {
 }
 
 window.onload = function () {
+    var topNavigator = document.querySelector("#top-navigator");
+    var navigatorTimeOut;
+    var main = document.querySelector("main");
+    main.onscroll = () => {
+        topNavigator.classList.add("hidden");
+        if (navigatorTimeOut) {
+            clearTimeout(navigatorTimeOut);
+        }
+        navigatorTimeOut = setTimeout(() => {
+            if (main.scrollTop === 0) {
+                topNavigator.classList.add("hidden");
+            } else if (main.scrollTop > 100) {
+                topNavigator.classList.remove("hidden");
+            }
+        }, 100);
+    };
+    topNavigator.onclick = () => {
+      main.scrollTop = 0;
+    };
+
     document.addEventListener("keydown", function (event) {
         if (event.keyCode === 40) {
             handleDownKey();
@@ -160,13 +179,21 @@ window.onload = function () {
     });
     // set dropdown based on options from query string
     var opts = optionsForRepo("");
-    initFuzzySearch(
+    var fz = initFuzzySearch(
         "job",
         "job-input",
         "job-list",
         Object.keys(opts["jobs"]).sort());
-    redrawOptions(opts);
-    redraw();
+    redrawOptions(fz, opts);
+    redraw(fz);
+    // Register on change functions
+    var filterBox = document.querySelector("#filter-box");
+    var options = filterBox.querySelectorAll("select");
+    options.forEach(opt => {
+        opt.addEventListener("change", () => {
+            redraw(fz);
+        });
+    });
 };
 
 document.addEventListener("DOMContentLoaded", function (event) {
@@ -197,11 +224,12 @@ function displayFuzzySearchResult(el, inputContainer) {
     el.style.top = inputContainer.height + "px";
     el.style.width = inputContainer.width + "px";
     el.style.height = 200 + "px";
+    el.style.zIndex = "9999"
 }
 
 function fuzzySearch(fz, id, list, input) {
     var inputValue = input.value.trim();
-    addOptionFuzzySearch(fz.search(inputValue), id, list, input, true);
+    addOptionFuzzySearch(fz, fz.search(inputValue), id, list, input, true);
 }
 
 function validToken(token) {
@@ -217,28 +245,23 @@ function validToken(token) {
     return token === 189 || token === 8;
 }
 
-function handleEnterKeyDown(list, input) {
-    if (list.childElementCount === 0) {
-        return;
-    }
-
+function handleEnterKeyDown(fz, list, input) {
     var selectedJobs = list.getElementsByClassName("job-selected");
-    var job = list.firstElementChild.innerHTML;
     if (selectedJobs && selectedJobs.length === 1) {
-        job = selectedJobs[0].innerHTML;
+        input.value = selectedJobs[0].innerHTML;
     }
-
-    input.value = job;
+    // TODO(@qhuynh96): according to discussion in https://github.com/kubernetes/test-infra/pull/7165, the
+    // fuzzy search should respect user input no matter it is in the list or not. User may
+    // experience being redirected back to default view if the search input is invalid.
     input.blur();
     list.classList.remove("active-fuzzy-search");
-    redraw();
+    redraw(fz);
 }
 
 function registerFuzzySearchHandler(fz, id, list, input) {
     input.addEventListener("keydown", function (event) {
         if (event.keyCode === 13) {
-            // If enter key is hit, selects the first job in the list.
-            handleEnterKeyDown(list, input);
+            handleEnterKeyDown(fz, list, input);
         } else if (validToken(event.keyCode)) {
             // Delay 1 frame that the input character is recorded before getting
             // input value
@@ -261,23 +284,17 @@ function initFuzzySearch(id, inputId, listId, data) {
         displayFuzzySearchResult(list, el.getBoundingClientRect());
     });
     input.addEventListener("blur", function () {
-        // Delay blur action so that the list can handle click action before
-        // blured out.
-        setTimeout(function () {
-            list.classList.remove("active-fuzzy-search");
-        }, 120);
-    });
-    input.addEventListener("keypress", function () {
-        var inputText = input.value;
+        list.classList.remove("active-fuzzy-search");
     });
 
     registerFuzzySearchHandler(fz, id, list, input);
+    return fz;
 }
 
-function registerJobResultEventHandler(li, input) {
-    li.addEventListener("click", function (event) {
+function registerJobResultEventHandler(fz, li, input) {
+    li.addEventListener("mousedown", function (event) {
         input.value = event.currentTarget.innerHTML;
-        redraw();
+        redraw(fz);
     });
     li.addEventListener("mouseover", function (event) {
         var selectedJobs = document.getElementsByClassName("job-selected");
@@ -295,17 +312,18 @@ function registerJobResultEventHandler(li, input) {
     });
 }
 
-function addOptionFuzzySearch(data, id, list, input, stopAutoFill) {
+function addOptionFuzzySearch(fz, data, id, list, input, stopAutoFill) {
     if (!stopAutoFill) {
         input.value = getParameterByName(id);
     }
     while (list.firstChild) {
         list.removeChild(list.firstChild);
     }
+    list.scrollTop = 0;
     for (var i = 0; i < data.length; i++) {
         var li = document.createElement("li");
         li.innerHTML = data[i];
-        registerJobResultEventHandler(li, input);
+        registerJobResultEventHandler(fz, li, input);
         list.appendChild(li);
     }
 }
@@ -338,7 +356,7 @@ function groupKey(build) {
     return build.repo + " " + build.number + " " + build.refs;
 }
 
-function redraw() {
+function redraw(fz) {
     var modal = document.getElementById('rerun');
     var rerun_command = document.getElementById('rerun-content');
     window.onclick = function (event) {
@@ -396,10 +414,13 @@ function redraw() {
             history.replaceState(null, "", "/")
         }
     }
-    redrawOptions(opts);
+    fz.setDict(Object.keys(opts.jobs).sort());
+    redrawOptions(fz, opts);
 
     var lastKey = '';
-    for (var i = 0, emitted = 0; i < allBuilds.length && emitted < 500; i++) {
+    const jobCountMap = new Map();
+    let totalJob = 0;
+    for (var i = 0; i < allBuilds.length && totalJob < 500; i++) {
         var build = allBuilds[i];
         if (!equalSelected(typeSel, build.type)) {
             continue;
@@ -423,8 +444,12 @@ function redraw() {
         } else if (pullSel || authorSel) {
             continue;
         }
-        emitted++;
 
+        if (!jobCountMap.has(build.state)) {
+          jobCountMap.set(build.state, 0);
+        }
+        totalJob += 1;
+        jobCountMap.set(build.state, jobCountMap.get(build.state) + 1);
         var r = document.createElement("tr");
         r.appendChild(stateCell(build.state));
         if (build.pod_name) {
@@ -473,6 +498,9 @@ function redraw() {
         r.appendChild(createTextCell(build.duration));
         builds.appendChild(r);
     }
+    const jobCount = document.getElementById("job-count");
+    jobCount.textContent = "Shows " + totalJob + " job(s)";
+    drawJobBar(totalJob, jobCountMap);
 }
 
 function createTextCell(text) {
@@ -530,33 +558,32 @@ function createRerunCell(modal, rerun_command, prowjob) {
 
 function stateCell(state) {
     const c = document.createElement("td");
+    if (!state || state === "") {
+        c.appendChild(document.createTextNode(""));
+        return c;
+    }
     c.classList.add("icon-cell");
 
-    let displayState = "";
+    let displayState = stateToAdj(state);
+    displayState = displayState[0].toUpperCase() + displayState.slice(1);
     let displayIcon = "";
     switch (state) {
         case "triggered":
-            displayState = "Triggered";
             displayIcon = "schedule";
-            break
+            break;
         case "pending":
-            displayState = "Pending";
             displayIcon = "watch_later";
             break;
         case "success":
-            displayState = "Succeded";
             displayIcon = "check_circle";
             break;
         case "failure":
-            displayState = "Failed";
             displayIcon = "error";
             break;
         case "aborted":
-            displayState = "Aborted";
             displayIcon = "remove_circle";
             break;
         case "error":
-            displayState = "Error";
             displayIcon = "warning";
             break;
     }
@@ -616,6 +643,46 @@ function prRevisionCell(build) {
     return c;
 }
 
+function drawJobBar(total, jobCountMap) {
+  const states = ["success", "pending", "triggered", "error", "failure", "aborted", ""];
+  states.forEach(state => {
+    const count = jobCountMap.get(state);
+    // If state is undefined or empty, treats it as unkown state.
+    if (!state || state === "") {
+      state = "unknown";
+    }
+    const id = "job-bar-" + state;
+    const el = document.getElementById(id);
+    const tt = document.getElementById(state + "-tooltip");
+    if (!count || count === 0 || total === 0) {
+      el.textContent = "";
+      tt.textContent = "";
+      el.style.width = "0";
+    } else {
+      el.textContent = count;
+      tt.textContent = count + " " + stateToAdj(state) + " jobs";
+      el.style.width = (count / total * 100) + "%";
+    }
+  });
+}
+
+function stateToAdj(state) {
+    switch (state) {
+        case "triggered":
+            return "triggered";
+        case "pending":
+            return "pending";
+        case "success":
+            return "succeded";
+        case "failure":
+            return "failed";
+        case "aborted":
+            return "aborted";
+        case "error":
+            return "error";
+    }
+    return "unknown";
+}
 
 /**
  * Returns an icon element.

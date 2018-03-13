@@ -131,7 +131,7 @@
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:(Audit|BlockVolume|PodPreset|PVCProtection|ExpandPersistentVolumes)\\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8",
       "--timeout=180m"
     ],
     "scenario": "kubernetes_e2e",
@@ -360,7 +360,7 @@
       "--deployment=node",
       "--gcp-project=cri-containerd-node-e2e",
       "--gcp-zone=us-central1-f",
-      "--node-test-args=--container-runtime=remote --container-runtime-endpoint=/run/containerd/containerd.sock --container-runtime-process-name=containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/runtime\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
+      "--node-test-args=--container-runtime=remote --container-runtime-endpoint=/run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/runtime\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]|querying\\s\\/stats\\/summary\" --flakeAttempts=2",
@@ -376,7 +376,7 @@
       "--deployment=node",
       "--gcp-project=cri-containerd-node-e2e",
       "--gcp-zone=us-central1-f",
-      "--node-test-args=--feature-gates=DynamicKubeletConfig=true --container-runtime=remote --container-runtime-endpoint=/run/containerd/containerd.sock --container-runtime-process-name=containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/runtime\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
+      "--node-test-args=--feature-gates=DynamicKubeletConfig=true --container-runtime=remote --container-runtime-endpoint=/run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/runtime\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=1 --skip=\"\\[Flaky\\]\"",
@@ -392,7 +392,7 @@
       "--deployment=node",
       "--gcp-project=cri-containerd-node-e2e",
       "--gcp-zone=us-central1-f",
-      "--node-test-args=--feature-gates=DynamicKubeletConfig=true --container-runtime=remote --container-runtime-endpoint=/run/containerd/containerd.sock --container-runtime-process-name=containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/runtime\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
+      "--node-test-args=--feature-gates=DynamicKubeletConfig=true --container-runtime=remote --container-runtime-endpoint=/run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/runtime\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=1 --focus=\"\\[Flaky\\]\"",
@@ -408,7 +408,7 @@
       "--deployment=node",
       "--gcp-project=cri-containerd-node-e2e",
       "--gcp-zone=us-central1-f",
-      "--node-test-args=--feature-gates=DynamicKubeletConfig=true,LocalStorageCapacityIsolation=true,PodPriority=true --container-runtime=remote --container-runtime-endpoint=/run/containerd/containerd.sock --container-runtime-process-name=containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/runtime\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
+      "--node-test-args=--feature-gates=DynamicKubeletConfig=true,LocalStorageCapacityIsolation=true,PodPriority=true --container-runtime=remote --container-runtime-endpoint=/run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/runtime\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=1 --focus=\"\\[Serial\\]\" --skip=\"\\[Flaky\\]|\\[Benchmark\\]|\\[Feature:Docker\\]\"",
@@ -1129,7 +1129,7 @@
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:(Audit|BlockVolume|PodPreset|PVCProtection|ExpandPersistentVolumes)\\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8",
       "--timeout=180m"
     ],
     "scenario": "kubernetes_e2e",
@@ -1259,7 +1259,7 @@
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:(Audit|BlockVolume|PodPreset|PVCProtection|ExpandPersistentVolumes)\\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8",
       "--timeout=180m"
     ],
     "scenario": "kubernetes_e2e",
@@ -2785,23 +2785,6 @@
       "sig-cluster-lifecycle"
     ]
   },
-  "ci-kubernetes-e2e-gce-gci-qa-m62": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gce.env",
-      "--extract=gci/gci-62",
-      "--gcp-project-type=gci-qa-project",
-      "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel=25",
-      "--provider=gce",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=50m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-gcp"
-    ]
-  },
   "ci-kubernetes-e2e-gce-gci-qa-m63": {
     "args": [
       "--check-leaked-resources",
@@ -2853,11 +2836,11 @@
       "sig-gcp"
     ]
   },
-  "ci-kubernetes-e2e-gce-gci-qa-master": {
+  "ci-kubernetes-e2e-gce-gci-qa-m66": {
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--extract=gci/gci-canary",
+      "--extract=gci/gci-66",
       "--gcp-project-type=gci-qa-project",
       "--gcp-zone=us-central1-f",
       "--ginkgo-parallel=25",
@@ -2870,16 +2853,17 @@
       "sig-gcp"
     ]
   },
-  "ci-kubernetes-e2e-gce-gci-qa-serial-m62": {
+  "ci-kubernetes-e2e-gce-gci-qa-master": {
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--extract=gci/gci-62",
+      "--extract=gci/gci-canary",
       "--gcp-project-type=gci-qa-project",
       "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel=25",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=300m"
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=50m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2934,11 +2918,11 @@
       "sig-gcp"
     ]
   },
-  "ci-kubernetes-e2e-gce-gci-qa-serial-master": {
+  "ci-kubernetes-e2e-gce-gci-qa-serial-m66": {
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--extract=gci/gci-canary",
+      "--extract=gci/gci-66",
       "--gcp-project-type=gci-qa-project",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
@@ -2950,17 +2934,16 @@
       "sig-gcp"
     ]
   },
-  "ci-kubernetes-e2e-gce-gci-qa-slow-m62": {
+  "ci-kubernetes-e2e-gce-gci-qa-serial-master": {
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--extract=gci/gci-62",
+      "--extract=gci/gci-canary",
       "--gcp-project-type=gci-qa-project",
       "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel=25",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=150m"
+      "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=300m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3006,6 +2989,23 @@
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
       "--extract=gci/gci-65",
+      "--gcp-project-type=gci-qa-project",
+      "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel=25",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=150m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-gcp"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-gci-qa-slow-m66": {
+    "args": [
+      "--check-leaked-resources",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=gci/gci-66",
       "--gcp-project-type=gci-qa-project",
       "--gcp-zone=us-central1-f",
       "--ginkgo-parallel=25",
@@ -3862,6 +3862,31 @@
       "sig-apps"
     ]
   },
+  "ci-kubernetes-e2e-gce-ubuntu1-k8sdev-default": {
+    "_comment": "AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT.",
+    "args": [
+      "--check-leaked-resources=false",
+      "--cluster=test-118970819f",
+      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
+      "--extract=ci/latest",
+      "--gcp-node-image=CUSTOM",
+      "--gcp-project=ubuntu-os-gke-cloud-dev-tests",
+      "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel=30",
+      "--image-family=ubuntu-gke-1604-lts-1",
+      "--image-project=ubuntu-os-gke-cloud-devel",
+      "--provider=gce",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=50m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ],
+    "tags": [
+      "generated"
+    ]
+  },
   "ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-default": {
     "_comment": "AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT.",
     "args": [
@@ -4566,7 +4591,7 @@
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:(Audit|BlockVolume|PodPreset|PVCProtection|ExpandPersistentVolumes)\\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8",
       "--timeout=180m"
     ],
     "scenario": "kubernetes_e2e",
@@ -4648,6 +4673,24 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-autoscaling"
+    ]
+  },
+  "ci-kubernetes-e2e-gci-gce-coredns": {
+    "args": [
+      "--check-leaked-resources",
+      "--cluster=",
+      "--env=CLUSTER_DNS_CORE_DNS=true",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=ci/latest",
+      "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel=30",
+      "--provider=gce",
+      "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=150m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-network"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-es-logging": {
@@ -4793,6 +4836,7 @@
     "args": [
       "--check-leaked-resources",
       "--env=KUBE_PROXY_MODE=ipvs",
+      "--env=HAIRPIN_MODE=hairpin-veth",
       "--env-file=jobs/platform/gce.env",
       "--extract=ci/latest",
       "--gcp-master-image=gci",
@@ -5058,6 +5102,7 @@
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
       "--ginkgo-parallel",
+      "--gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling,KubernetesDashboard",
       "--gke-environment=test",
       "--provider=gke",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
@@ -7063,6 +7108,7 @@
       "--check-leaked-resources",
       "--deployment=gke",
       "--extract=ci/latest",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-node-image=gci",
       "--gcp-project=k8s-jkns-e2e-regional",
       "--gcp-region=us-central1",
@@ -7487,6 +7533,28 @@
       "sig-cluster-lifecycle"
     ]
   },
+  "ci-kubernetes-e2e-gke-staging-1-7-1-8-upgrade-regional-cluster": {
+    "args": [
+      "--check-leaked-resources",
+      "--check-version-skew=false",
+      "--deployment=gke",
+      "--extract=gke-latest-1.8",
+      "--extract=gke-latest-1.7",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=gci",
+      "--gcp-region=us-central1",
+      "--gke-command-group=beta",
+      "--gke-environment=test",
+      "--provider=gke",
+      "--test_args=--ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]|Initializers|Dashboard --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
+      "--timeout=900m",
+      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=gke-latest-1.8 --upgrade-image=gci"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
   "ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-cluster": {
     "args": [
       "--check-leaked-resources",
@@ -7544,6 +7612,28 @@
       "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
       "--timeout=900m",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=gke-latest-1.9 --upgrade-image=gci"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
+  "ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-regional-cluster": {
+    "args": [
+      "--check-leaked-resources",
+      "--check-version-skew=false",
+      "--deployment=gke",
+      "--extract=gke-latest-1.9",
+      "--extract=gke-latest-1.8",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=gci",
+      "--gcp-region=us-central1",
+      "--gke-command-group=beta",
+      "--gke-environment=test",
+      "--provider=gke",
+      "--test_args=--ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]|Initializers|Dashboard --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
+      "--timeout=900m",
+      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=gke-latest-1.8 --upgrade-image=gci"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -7612,6 +7702,28 @@
       "sig-gcp"
     ]
   },
+  "ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu-v100": {
+    "args": [
+      "--check-leaked-resources",
+      "--deployment=gke",
+      "--env=NVIDIA_DRIVER_INSTALLER_DAEMONSET=https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/k8s-1.9/nvidia-driver-installer/cos/daemonset-preloaded.yaml",
+      "--extract=gke-latest",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/rc",
+      "--gcp-node-image=gci",
+      "--gcp-project=k8s-gke-gpu-boskos-v100",
+      "--gcp-zone=us-central1-f",
+      "--gke-create-command=beta container clusters create --accelerator=type=nvidia-tesla-v100,count=8",
+      "--gke-environment=staging",
+      "--gke-shape={\"default\":{\"Nodes\":2,\"MachineType\":\"n1-standard-2\"}}",
+      "--provider=gke",
+      "--test_args=--ginkgo.focus=\\[Feature:GPUDevicePlugin\\] --minStartupPods=8",
+      "--timeout=80m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-gcp"
+    ]
+  },
   "ci-kubernetes-e2e-gke-staging-latest-parallel": {
     "args": [
       "--check-leaked-resources",
@@ -7649,6 +7761,32 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-gcp"
+    ]
+  },
+  "ci-kubernetes-e2e-gke-ubuntu1-k8sdev-default": {
+    "_comment": "AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT.",
+    "args": [
+      "--check-leaked-resources",
+      "--cluster=test-f5bd6fc2f0",
+      "--deployment=gke",
+      "--extract=ci/latest",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=CUSTOM",
+      "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel=30",
+      "--gke-environment=test",
+      "--image-family=ubuntu-gke-1604-lts-1",
+      "--image-project=ubuntu-os-gke-cloud-devel",
+      "--provider=gke",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=50m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-gcp"
+    ],
+    "tags": [
+      "generated"
     ]
   },
   "ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-alphafeatures": {
@@ -8875,6 +9013,7 @@
     ]
   },
   "ci-kubernetes-e2e-kubeadm-gce": {
+    "_commment": "TODO(bentheelder): --kubernetes-anywhere-kubernetes-version should really be ci/latest-bazel but we need changes to kubeadm and possibly kubernetes-anywhere first",
     "args": [
       "--cluster=",
       "--deployment=kubernetes-anywhere",
@@ -8882,9 +9021,8 @@
       "--extract=ci/latest-bazel",
       "--gcp-zone=us-central1-f",
       "--kubeadm=ci",
-      "--kubernetes-anywhere-dump-cluster-logs=true",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel",
-      "--kubernetes-anywhere-kubernetes-version=ci/latest-bazel",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
@@ -8903,7 +9041,7 @@
       "--gcp-zone=us-central1-f",
       "--kubeadm=ci",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.10",
-      "--kubernetes-anywhere-kubernetes-version=latest-bazel-1.10",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest-1.10",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
@@ -8922,7 +9060,7 @@
       "--gcp-zone=us-central1-f",
       "--kubeadm=ci",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.7",
-      "--kubernetes-anywhere-kubernetes-version=latest-bazel-1.7",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest-1.7",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
       "--timeout=300m"
@@ -8941,7 +9079,7 @@
       "--gcp-zone=us-central1-f",
       "--kubeadm=ci",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.7",
-      "--kubernetes-anywhere-kubernetes-version=latest-bazel-1.7",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest-1.7",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
       "--timeout=300m"
@@ -8960,7 +9098,7 @@
       "--gcp-zone=us-central1-f",
       "--kubeadm=ci",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.8",
-      "--kubernetes-anywhere-kubernetes-version=latest-bazel-1.8",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest-1.8",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
@@ -8979,7 +9117,7 @@
       "--gcp-zone=us-central1-f",
       "--kubeadm=ci",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.8",
-      "--kubernetes-anywhere-kubernetes-version=latest-bazel-1.8",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest-1.8",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
@@ -8998,7 +9136,7 @@
       "--gcp-zone=us-central1-f",
       "--kubeadm=ci",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.9",
-      "--kubernetes-anywhere-kubernetes-version=latest-bazel-1.9",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest-1.9",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
@@ -9017,7 +9155,7 @@
       "--gcp-zone=us-central1-f",
       "--kubeadm=ci",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.9",
-      "--kubernetes-anywhere-kubernetes-version=latest-bazel-1.9",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest-1.9",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
@@ -9037,7 +9175,7 @@
       "--kubeadm=ci",
       "--kubernetes-anywhere-cni=calico",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel",
-      "--kubernetes-anywhere-kubernetes-version=ci/latest-bazel",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
@@ -9057,7 +9195,7 @@
       "--kubeadm=ci",
       "--kubernetes-anywhere-cni=flannel",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel",
-      "--kubernetes-anywhere-kubernetes-version=ci/latest-bazel",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
@@ -9075,7 +9213,6 @@
       "--extract=ci/latest-bazel",
       "--gcp-zone=us-central1-f",
       "--kubeadm=ci",
-      "--kubernetes-anywhere-dump-cluster-logs=true",
       "--kubernetes-anywhere-kubeadm-feature-gates=CoreDNS=true",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel",
       "--kubernetes-anywhere-kubernetes-version=ci/latest-bazel",
@@ -9108,6 +9245,26 @@
       "sig-network"
     ]
   },
+  "ci-kubernetes-e2e-kubeadm-gce-selfhosting": {
+    "args": [
+      "--cluster=",
+      "--deployment=kubernetes-anywhere",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=ci/latest-bazel",
+      "--gcp-zone=us-central1-f",
+      "--kubeadm=ci",
+      "--kubernetes-anywhere-kubeadm-feature-gates=SelfHosting=true",
+      "--kubernetes-anywhere-kubelet-ci-version=latest-bazel",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest",
+      "--provider=kubernetes-anywhere",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
+      "--timeout=300m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
   "ci-kubernetes-e2e-kubeadm-gce-stable-on-master": {
     "args": [
       "--cluster=",
@@ -9121,6 +9278,75 @@
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
+  "ci-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8": {
+    "args": [
+      "--cluster=",
+      "--deployment=kubernetes-anywhere",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=release/latest-1.8",
+      "--extract=ci/latest-bazel-1.7",
+      "--gcp-zone=us-central1-f",
+      "--kubeadm=periodic",
+      "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.7",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest-1.7",
+      "--kubernetes-anywhere-upgrade-method=upgrade",
+      "--provider=kubernetes-anywhere",
+      "--skew",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
+      "--timeout=300m",
+      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=release/latest-1.8"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
+  "ci-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9": {
+    "args": [
+      "--cluster=",
+      "--deployment=kubernetes-anywhere",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=release/latest-1.9",
+      "--extract=ci/latest-bazel-1.8",
+      "--gcp-zone=us-central1-f",
+      "--kubeadm=periodic",
+      "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.8",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest-1.8",
+      "--kubernetes-anywhere-upgrade-method=upgrade",
+      "--provider=kubernetes-anywhere",
+      "--skew",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
+      "--timeout=300m",
+      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=release/latest-1.9"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
+  "ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10": {
+    "args": [
+      "--cluster=",
+      "--deployment=kubernetes-anywhere",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=release/latest-1.10",
+      "--extract=ci/latest-bazel-1.9",
+      "--gcp-zone=us-central1-f",
+      "--kubeadm=periodic",
+      "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.9",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest-1.9",
+      "--kubernetes-anywhere-upgrade-method=upgrade",
+      "--provider=kubernetes-anywhere",
+      "--skew",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
+      "--timeout=300m",
+      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=release/latest-1.10"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -10201,6 +10427,23 @@
       "sig-node"
     ]
   },
+  "ci-kubernetes-node-kubelet-alpha": {
+    "args": [
+      "--deployment=node",
+      "--gcp-project=k8s-jkns-ci-node-e2e",
+      "--gcp-zone=us-central1-f",
+      "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml",
+      "--node-test-args=--feature-gates=AllAlpha=true,RotateKubeletServerCertificate=false --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
+      "--node-tests=true",
+      "--provider=gce",
+      "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
+      "--timeout=65m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
   "ci-kubernetes-node-kubelet-benchmark": {
     "args": [
       "--deployment=node",
@@ -10663,7 +10906,7 @@
       "--extract=ci/latest-1.9",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
-      "--gke-create-command=container clusters create --quiet --num-nodes=4 --enable-kubernetes-alpha --no-enable-legacy-authorization",
+      "--gke-create-command=container clusters create --quiet --num-nodes=4 --enable-kubernetes-alpha --no-enable-legacy-authorization --addons=Istio --istio-config=auth=NONE",
       "--gke-environment=test",
       "--provider=gke",
       "--test=false",
@@ -10816,172 +11059,6 @@
       "sig-cluster-lifecycle"
     ]
   },
-  "periodic-kubernetes-e2e-kubeadm-gce-1-10": {
-    "args": [
-      "--cluster=",
-      "--deployment=kubernetes-anywhere",
-      "--env-file=jobs/platform/gce.env",
-      "--extract=ci/latest-bazel-1.10",
-      "--gcp-zone=us-central1-f",
-      "--kubeadm=ci",
-      "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.10",
-      "--kubernetes-anywhere-kubernetes-version=latest-bazel-1.10",
-      "--provider=kubernetes-anywhere",
-      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
-      "--timeout=300m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
-  "periodic-kubernetes-e2e-kubeadm-gce-1-7": {
-    "args": [
-      "--cluster=",
-      "--deployment=kubernetes-anywhere",
-      "--env-file=jobs/platform/gce.env",
-      "--extract=ci/latest-bazel-1.7",
-      "--gcp-zone=us-central1-f",
-      "--kubeadm=periodic",
-      "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.7",
-      "--kubernetes-anywhere-kubernetes-version=latest-bazel-1.7",
-      "--provider=kubernetes-anywhere",
-      "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
-      "--timeout=300m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
-  "periodic-kubernetes-e2e-kubeadm-gce-1-8": {
-    "args": [
-      "--cluster=",
-      "--deployment=kubernetes-anywhere",
-      "--env-file=jobs/platform/gce.env",
-      "--extract=ci/latest-bazel-1.8",
-      "--gcp-zone=us-central1-f",
-      "--kubeadm=periodic",
-      "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.8",
-      "--kubernetes-anywhere-kubernetes-version=latest-bazel-1.8",
-      "--provider=kubernetes-anywhere",
-      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
-      "--timeout=300m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
-  "periodic-kubernetes-e2e-kubeadm-gce-1-9": {
-    "args": [
-      "--cluster=",
-      "--deployment=kubernetes-anywhere",
-      "--env-file=jobs/platform/gce.env",
-      "--extract=ci/latest-bazel-1.9",
-      "--gcp-zone=us-central1-f",
-      "--kubeadm=ci",
-      "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.9",
-      "--kubernetes-anywhere-kubernetes-version=latest-bazel-1.9",
-      "--provider=kubernetes-anywhere",
-      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
-      "--timeout=300m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
-  "periodic-kubernetes-e2e-kubeadm-gce-selfhosting": {
-    "args": [
-      "--cluster=",
-      "--deployment=kubernetes-anywhere",
-      "--env-file=jobs/platform/gce.env",
-      "--extract=ci/latest-bazel",
-      "--gcp-zone=us-central1-f",
-      "--kubeadm=ci",
-      "--kubernetes-anywhere-dump-cluster-logs=true",
-      "--kubernetes-anywhere-kubeadm-feature-gates=SelfHosting=true",
-      "--kubernetes-anywhere-kubelet-ci-version=latest-bazel",
-      "--kubernetes-anywhere-kubernetes-version=ci/latest-bazel",
-      "--provider=kubernetes-anywhere",
-      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
-      "--timeout=300m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
-  "periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8": {
-    "args": [
-      "--cluster=",
-      "--deployment=kubernetes-anywhere",
-      "--env-file=jobs/platform/gce.env",
-      "--extract=release/latest-1.8",
-      "--extract=ci/latest-bazel-1.7",
-      "--gcp-zone=us-central1-f",
-      "--kubeadm=periodic",
-      "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.7",
-      "--kubernetes-anywhere-kubernetes-version=latest-bazel-1.7",
-      "--kubernetes-anywhere-upgrade-method=upgrade",
-      "--provider=kubernetes-anywhere",
-      "--skew",
-      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
-      "--timeout=300m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=release/latest-1.8"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
-  "periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9": {
-    "args": [
-      "--cluster=",
-      "--deployment=kubernetes-anywhere",
-      "--env-file=jobs/platform/gce.env",
-      "--extract=release/latest-1.9",
-      "--extract=ci/latest-bazel-1.8",
-      "--gcp-zone=us-central1-f",
-      "--kubeadm=periodic",
-      "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.8",
-      "--kubernetes-anywhere-kubernetes-version=latest-bazel-1.8",
-      "--kubernetes-anywhere-upgrade-method=upgrade",
-      "--provider=kubernetes-anywhere",
-      "--skew",
-      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
-      "--timeout=300m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=release/latest-1.9"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
-  "periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10": {
-    "args": [
-      "--cluster=",
-      "--deployment=kubernetes-anywhere",
-      "--env-file=jobs/platform/gce.env",
-      "--extract=release/latest-1.10",
-      "--extract=ci/latest-bazel-1.9",
-      "--gcp-zone=us-central1-f",
-      "--kubeadm=periodic",
-      "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.9",
-      "--kubernetes-anywhere-kubernetes-version=latest-bazel-1.9",
-      "--kubernetes-anywhere-upgrade-method=upgrade",
-      "--provider=kubernetes-anywhere",
-      "--skew",
-      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
-      "--timeout=300m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=release/latest-1.10"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
   "pull-cadvisor-e2e": {
     "args": [
       "--deployment=node",
@@ -11067,7 +11144,7 @@
       "--deployment=node",
       "--gcp-project=cri-c8d-pr-node-e2e",
       "--gcp-zone=us-central1-f",
-      "--node-test-args=--container-runtime=remote --container-runtime-endpoint=/run/containerd/containerd.sock --container-runtime-process-name=containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/runtime\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
+      "--node-test-args=--container-runtime=remote --container-runtime-endpoint=/run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/runtime\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Slow\\]|\\[Serial\\]|querying\\s\\/stats\\/summary\" --flakeAttempts=2",
@@ -11389,6 +11466,46 @@
       "sig-gcp"
     ]
   },
+  "pull-kubernetes-e2e-gce-100-performance": {
+    "args": [
+      "--build=bazel",
+      "--cluster=",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability.env",
+      "--extract=local",
+      "--gcp-project=kubemark-scalability-testing",
+      "--gcp-zone=us-east1-b",
+      "--provider=gce",
+      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-100-performance",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --allowed-not-ready-nodes=1 --node-schedulable-timeout=10m --minStartupPods=8 --gather-resource-usage=true --gather-metrics-at-teardown=true",
+      "--timeout=100m",
+      "--use-logexporter"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scalability"
+    ]
+  },
+  "pull-kubernetes-e2e-gce-big-performance": {
+    "args": [
+      "--build=bazel",
+      "--cluster=",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gce-big-performance.env",
+      "--extract=local",
+      "--gcp-project=k8s-scale-testing",
+      "--gcp-zone=us-east1-a",
+      "--provider=gce",
+      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-big-performance",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --allowed-not-ready-nodes=5 --node-schedulable-timeout=10m --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
+      "--timeout=240m",
+      "--use-logexporter"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scalability"
+    ]
+  },
   "pull-kubernetes-e2e-gce-device-plugin-gpu": {
     "args": [
       "--build=bazel",
@@ -11411,6 +11528,26 @@
       "sig-scheduling"
     ]
   },
+  "pull-kubernetes-e2e-gce-large-performance": {
+    "args": [
+      "--build=bazel",
+      "--cluster=",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gce-large-performance.env",
+      "--extract=local",
+      "--gcp-project=k8s-scale-testing",
+      "--gcp-zone=us-east1-a",
+      "--provider=gce",
+      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-large-performance",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --allowed-not-ready-nodes=20 --node-schedulable-timeout=60m --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
+      "--timeout=540m",
+      "--use-logexporter"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scalability"
+    ]
+  },
   "pull-kubernetes-e2e-gke": {
     "args": [
       "--build=bazel",
@@ -11422,6 +11559,7 @@
       "--gcp-project=k8s-jkns-pr-gci-gke",
       "--gcp-zone=us-central1-f",
       "--ginkgo-parallel=30",
+      "--gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling,KubernetesDashboard",
       "--gke-environment=test",
       "--gke-shape={\"default\":{\"Nodes\":4,\"MachineType\":\"n1-standard-2\"}}",
       "--provider=gke",
@@ -11488,7 +11626,6 @@
       "--gcp-zone=us-central1-f",
       "--ginkgo-parallel=30",
       "--kubeadm=pull",
-      "--kubernetes-anywhere-dump-cluster-logs=true",
       "--kubernetes-anywhere-kubernetes-version=ci/latest",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\] --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\] --minStartupPods=8",

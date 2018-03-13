@@ -74,7 +74,8 @@ var (
 		"ap-northeast-1",
 		"sa-east-1",
 		"ca-central-1",
-		"ap-southeast-1",
+		// not supporting Singapore since they do not seem to have capacity for c4.large
+		//"ap-southeast-1",
 		"ap-southeast-2",
 		"eu-central-1",
 		"us-east-1",

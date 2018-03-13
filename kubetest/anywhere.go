@@ -59,7 +59,7 @@ var (
 		"(kubernetes-anywhere only) Indicates whether to do the control plane upgrade with kubeadm method \"init\" or \"upgrade\"")
 	kubernetesAnywhereCNI = flag.String("kubernetes-anywhere-cni", "",
 		"(kubernetes-anywhere only) The name of the CNI plugin used for the cluster's SDN.")
-	kubernetesAnywhereDumpClusterLogs = flag.Bool("kubernetes-anywhere-dump-cluster-logs", false,
+	kubernetesAnywhereDumpClusterLogs = flag.Bool("kubernetes-anywhere-dump-cluster-logs", true,
 		"(kubernetes-anywhere only) Whether to dump cluster logs.")
 	kubernetesAnywhereOSImage = flag.String("kubernetes-anywhere-os-image", "ubuntu-1604-xenial-v20171212",
 		"(kubernetes-anywhere only) The name of the os_image to use for nodes")

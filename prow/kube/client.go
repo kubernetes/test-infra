@@ -416,7 +416,13 @@ func (c *Client) DeletePod(name string) error {
 }
 
 func (c *Client) CreateProwJob(j ProwJob) (ProwJob, error) {
-	c.log("CreateProwJob", j)
+	var representation string
+	if out, err := json.Marshal(j); err == nil {
+		representation = string(out[:])
+	} else {
+		representation = fmt.Sprintf("%v", j)
+	}
+	c.log("CreateProwJob", representation)
 	var retJob ProwJob
 	err := c.request(&request{
 		method:      http.MethodPost,

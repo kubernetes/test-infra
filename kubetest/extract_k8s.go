@@ -119,7 +119,7 @@ func (e extractStrategy) name() string {
 	return filepath.Base(e.option)
 }
 
-func (l extractStrategies) Extract(project, zone string, extractSrc bool) error {
+func (l extractStrategies) Extract(project, zone, region string, extractSrc bool) error {
 	// rm -rf kubernetes*
 	files, err := ioutil.ReadDir(".")
 	if err != nil {
@@ -143,7 +143,7 @@ func (l extractStrategies) Extract(project, zone string, extractSrc bool) error 
 				return err
 			}
 		}
-		if err := e.Extract(project, zone, extractSrc); err != nil {
+		if err := e.Extract(project, zone, region, extractSrc); err != nil {
 			return err
 		}
 	}
@@ -365,7 +365,7 @@ func setReleaseFromGci(image string, getSrc bool) error {
 	return getKube("https://storage.googleapis.com/kubernetes-release/release", strings.TrimSpace(r), getSrc)
 }
 
-func (e extractStrategy) Extract(project, zone string, extractSrc bool) error {
+func (e extractStrategy) Extract(project, zone, region string, extractSrc bool) error {
 	switch e.mode {
 	case local:
 		url := util.K8s("kubernetes", "_output", "gcs-stage")
@@ -398,9 +398,6 @@ func (e extractStrategy) Extract(project, zone string, extractSrc bool) error {
 		if project == "" {
 			return fmt.Errorf("--gcp-project unset")
 		}
-		if zone == "" {
-			return fmt.Errorf("--gcp-zone unset")
-		}
 		if e.value == "gke" {
 			log.Print("*** --extract=gke is deprecated, migrate to --extract=gke-default ***")
 		}
@@ -410,11 +407,16 @@ func (e extractStrategy) Extract(project, zone string, extractSrc bool) error {
 			if strings.HasPrefix(e.option, "latest-") {
 				releasePrefix = strings.TrimPrefix(e.option, "latest-")
 			}
-			version, err := getLatestGKEVersion(project, zone, releasePrefix)
+			version, err := getLatestGKEVersion(project, zone, region, releasePrefix)
 			if err != nil {
 				return fmt.Errorf("failed to get latest gke version: %s", err)
 			}
 			return getKube("https://storage.googleapis.com/kubernetes-release-gke/release", version, extractSrc)
+		}
+
+		// TODO(krzyzacy): clean up gke-default logic
+		if zone == "" {
+			return fmt.Errorf("--gcp-zone unset")
 		}
 
 		// get default cluster version for default extract strategy
@@ -456,9 +458,12 @@ func (e extractStrategy) Extract(project, zone string, extractSrc bool) error {
 		}
 		return getKube(url, release, extractSrc)
 	case gcs:
-		// strip gs://foo -> /foo
-		withoutGS := e.option[3:]
-		url := "https://storage.googleapis.com" + path.Dir(withoutGS)
+		// strip gs://foo -> foo
+		withoutGS := e.option[5:]
+		if strings.HasSuffix(e.option, ".txt") {
+			return setReleaseFromGcs(path.Dir(withoutGS), e.option, extractSrc)
+		}
+		url := "https://storage.googleapis.com" + "/" + path.Dir(withoutGS)
 		return getKube(url, path.Base(withoutGS), extractSrc)
 	case load:
 		return loadState(e.option, extractSrc)

@@ -379,7 +379,119 @@ func (f *fgc) GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, 
 		nil
 }
 
+func TestExpectedStatus(t *testing.T) {
+	neededLabels := []string{"need-1", "need-2", "need-a-very-super-duper-extra-not-short-at-all-label-name"}
+	forbiddenLabels := []string{"forbidden-1", "forbidden-2"}
+	testcases := []struct {
+		name string
+
+		labels []string
+		inPool bool
+
+		state string
+		desc  string
+	}{
+		{
+			name:   "in pool",
+			inPool: true,
+
+			state: github.StatusSuccess,
+			desc:  statusInPool,
+		},
+		{
+			name:   "check truncation of label list",
+			inPool: false,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " Needs need-1, need-2 labels."),
+		},
+		{
+			name:   "check truncation of label list is not excessive",
+			labels: append([]string{}, neededLabels[:2]...),
+			inPool: false,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " Needs need-a-very-super-duper-extra-not-short-at-all-label-name label."),
+		},
+		{
+			name:   "has forbidden labels",
+			labels: append(append([]string{}, neededLabels...), forbiddenLabels...),
+			inPool: false,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " Should not have forbidden-1, forbidden-2 labels."),
+		},
+		{
+			name:   "has one forbidden label",
+			labels: append(append([]string{}, neededLabels...), forbiddenLabels[0]),
+			inPool: false,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " Should not have forbidden-1 label."),
+		},
+		{
+			name:   "only mention one requirement class",
+			labels: append(append([]string{}, neededLabels[1:]...), forbiddenLabels[0]),
+			inPool: false,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " Needs need-1 label."),
+		},
+		{
+			name:   "unknown requirement",
+			labels: neededLabels,
+			inPool: false,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, ""),
+		},
+		{
+			name:   "check that min diff query is used",
+			labels: []string{"3", "4", "5", "6", "7"},
+			inPool: false,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " Needs 1, 2 labels."),
+		},
+	}
+	queriesByRepo := map[string]config.TideQueries{
+		"": {
+			config.TideQuery{
+				Labels:        neededLabels,
+				MissingLabels: forbiddenLabels,
+			},
+			config.TideQuery{
+				Labels: []string{"1", "2", "3", "4", "5", "6", "7"}, // lots of requirements
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Logf("Test Case: %q\n", tc.name)
+		var pr PullRequest
+		for _, label := range tc.labels {
+			pr.Labels.Nodes = append(
+				pr.Labels.Nodes,
+				struct{ Name githubql.String }{Name: githubql.String(label)},
+			)
+		}
+		var pool map[string]PullRequest
+		if tc.inPool {
+			pool = map[string]PullRequest{"#0": {}}
+		}
+
+		state, desc := expectedStatus(queriesByRepo, &pr, pool)
+		if state != tc.state {
+			t.Errorf("Expected status state %q, but got %q.", string(tc.state), string(state))
+		}
+		if desc != tc.desc {
+			t.Errorf("Expected status description %q, but got %q.", tc.desc, desc)
+		}
+	}
+}
+
 func TestSetStatuses(t *testing.T) {
+	statusNotInPoolEmpty := fmt.Sprintf(statusNotInPool, "")
 	testcases := []struct {
 		name string
 
@@ -414,7 +526,7 @@ func TestSetStatuses(t *testing.T) {
 			inPool:     true,
 			hasContext: true,
 			state:      githubql.StatusStateSuccess,
-			desc:       statusNotInPool,
+			desc:       statusNotInPoolEmpty,
 
 			shouldSet: true,
 		},
@@ -434,7 +546,7 @@ func TestSetStatuses(t *testing.T) {
 			inPool:     false,
 			hasContext: true,
 			state:      githubql.StatusStatePending,
-			desc:       statusNotInPool,
+			desc:       statusNotInPoolEmpty,
 
 			shouldSet: false,
 		},

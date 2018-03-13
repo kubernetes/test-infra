@@ -669,7 +669,6 @@ func skewTestEnv(env, args []string, prefix string, checkSkew bool) error {
 		"kubetest",
 		"--test",
 		"--test_args="+strings.Join(args, " "),
-		fmt.Sprintf("--v=%t", verbose),
 		fmt.Sprintf("--check-version-skew=%t", checkSkew),
 	)
 	cmd.Env = env

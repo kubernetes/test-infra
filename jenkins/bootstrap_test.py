@@ -283,19 +283,19 @@ class PullRefsTest(unittest.TestCase):
         )
 
 
-class ChooseSshKeyTest(unittest.TestCase):
-    """Tests for choose_ssh_key()."""
+class ConfigureSshKeyTest(unittest.TestCase):
+    """Tests for configure_ssh_key()."""
     def test_empty(self):
         """Do not change environ if no ssh key."""
         fake_env = {}
         with Stub(os, 'environ', fake_env):
-            with bootstrap.choose_ssh_key(''):
+            with bootstrap.configure_ssh_key(''):
                 self.assertFalse(fake_env)
 
     def test_full(self):
         fake_env = {}
         with Stub(os, 'environ', fake_env):
-            with bootstrap.choose_ssh_key('hello there'):
+            with bootstrap.configure_ssh_key('hello there'):
                 self.assertIn('GIT_SSH', fake_env)
                 with open(fake_env['GIT_SSH']) as fp:
                     buf = fp.read()
@@ -308,7 +308,7 @@ class ChooseSshKeyTest(unittest.TestCase):
         fake_env = {'GIT_SSH': 'random-value'}
         old_env = dict(fake_env)
         with Stub(os, 'environ', fake_env):
-            with bootstrap.choose_ssh_key('hello there'):
+            with bootstrap.configure_ssh_key('hello there'):
                 self.assertNotEqual(old_env, fake_env)
             self.assertEquals(old_env, fake_env)
 

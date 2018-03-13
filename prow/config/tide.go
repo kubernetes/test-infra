@@ -128,3 +128,14 @@ func (tqs TideQueries) AllPRsSince(t time.Time) string {
 	}
 	return strings.Join(toks, " ")
 }
+
+// ByRepo returns a mapping from "org/repo" -> TideQueries that apply to that repo.
+func (tqs TideQueries) ByRepo() map[string]TideQueries {
+	res := make(map[string]TideQueries)
+	for _, tq := range tqs {
+		for _, repo := range tq.Repos {
+			res[repo] = append(res[repo], tq)
+		}
+	}
+	return res
+}

@@ -157,6 +157,9 @@ func stripCache(j *config.Presubmit) {
 		if volumeIsCacheSSD(&volume) {
 			removedVolumeNames.Insert(volume.Name)
 			continue
+		} else if volume.Name == "docker-graph" {
+			removedVolumeNames.Insert(volume.Name)
+			continue
 		}
 		filteredVolumes = append(filteredVolumes, volume)
 	}
@@ -464,9 +467,10 @@ func main() {
 
 	// convert each kubernetes/kubernetes presubmit to a
 	// kubernetes-security/kubernetes presubmit and write to the file
-	cacheLabels := getCacheSSDPresetLabels(parsed)
+	dropLabels := getCacheSSDPresetLabels(parsed)
+	dropLabels.Insert("preset-bazel-remote-cache-enabled: true")
 	for _, job := range parsed.Presubmits["kubernetes/kubernetes"] {
-		convertJobToSecurityJob(&job, cacheLabels, jobsConfig)
+		convertJobToSecurityJob(&job, dropLabels, jobsConfig)
 		jobBytes, err := yaml.Marshal(job)
 		if err != nil {
 			log.Fatalf("Failed to marshal job: %v", err)
