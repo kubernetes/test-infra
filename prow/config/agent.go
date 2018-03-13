@@ -55,7 +55,7 @@ func (ca *Agent) Start(path string) error {
 					logrus.WithField("path", path).WithError(err).Error("Error loading config.")
 					continue
 				}
-				if stat.ModTime() == lastModTime {
+				if stat.ModTime().Equal(lastModTime) {
 					skips++
 					continue // file hasn't been modified
 				}
