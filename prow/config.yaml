@@ -99,6 +99,7 @@ tide:
     reviewApprovedRequired: true
   - repos:
     - kubernetes-sigs/testing_frameworks
+    - kubernetes-sigs/scheduling_poseidon
     labels:
     - lgtm
     - approved
