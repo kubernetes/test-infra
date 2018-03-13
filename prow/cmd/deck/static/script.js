@@ -221,7 +221,7 @@ function configure() {
 
 function displayFuzzySearchResult(el, inputContainer) {
     el.classList.add("active-fuzzy-search");
-    el.style.top = inputContainer.height + "px";
+    el.style.top = inputContainer.height - 1 + "px";
     el.style.width = inputContainer.width + "px";
     el.style.height = 200 + "px";
     el.style.zIndex = "9999"
@@ -420,7 +420,7 @@ function redraw(fz) {
     var lastKey = '';
     const jobCountMap = new Map();
     let totalJob = 0;
-    for (var i = 0; i < allBuilds.length && totalJob < 500; i++) {
+    for (var i = 0; i < allBuilds.length; i++) {
         var build = allBuilds[i];
         if (!equalSelected(typeSel, build.type)) {
             continue;
@@ -448,8 +448,11 @@ function redraw(fz) {
         if (!jobCountMap.has(build.state)) {
           jobCountMap.set(build.state, 0);
         }
-        totalJob += 1;
+        totalJob ++;
         jobCountMap.set(build.state, jobCountMap.get(build.state) + 1);
+        if (totalJob > 499) {
+            continue;
+        }
         var r = document.createElement("tr");
         r.appendChild(stateCell(build.state));
         if (build.pod_name) {
@@ -499,7 +502,7 @@ function redraw(fz) {
         builds.appendChild(r);
     }
     const jobCount = document.getElementById("job-count");
-    jobCount.textContent = "Shows " + totalJob + " job(s)";
+    jobCount.textContent = "Showing " + Math.min(totalJob, 500) + "/" + totalJob + " jobs";
     drawJobBar(totalJob, jobCountMap);
 }
 
@@ -645,7 +648,10 @@ function prRevisionCell(build) {
 
 function drawJobBar(total, jobCountMap) {
   const states = ["success", "pending", "triggered", "error", "failure", "aborted", ""];
-  states.forEach(state => {
+  states.sort((s1, s2) => {
+    return jobCountMap.get(s1) - jobCountMap.get(s2);
+  });
+  states.forEach((state, index) => {
     const count = jobCountMap.get(state);
     // If state is undefined or empty, treats it as unkown state.
     if (!state || state === "") {
@@ -661,7 +667,11 @@ function drawJobBar(total, jobCountMap) {
     } else {
       el.textContent = count;
       tt.textContent = count + " " + stateToAdj(state) + " jobs";
-      el.style.width = (count / total * 100) + "%";
+      if (index === states.size - 1) {
+        el.style.width = "auto";
+      } else {
+        el.style.width = Math.max((count / total * 100), 1) + "%";
+      }
     }
   });
 }
