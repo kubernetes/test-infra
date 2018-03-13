@@ -21,6 +21,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/google/go-github/github"
 	"github.com/sirupsen/logrus"
@@ -160,14 +161,17 @@ func (ga *GithubOAuthAgent) HandleRedirect(client OAuthClient, getter GithubClie
 			ga.serverError(w, "Save session", err)
 			return
 		}
-
 		ghc := getter.GetGithubClient(token.AccessToken, false)
 		user, err := ghc.GetUser("")
 		if err != nil {
 			ga.serverError(w, "Get user login", err)
 			return
 		}
-		http.SetCookie(w, &http.Cookie{Name: "github_login", Value: *user.Login})
+		http.SetCookie(w, &http.Cookie{
+			Name:    "github_login",
+			Value:   *user.Login,
+			Expires: time.Now().Add(time.Hour * 24 * 30),
+			Path:    "/"})
 		http.Redirect(w, r, ga.gc.FinalRedirectURL, http.StatusFound)
 	}
 }
