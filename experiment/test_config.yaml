@@ -1041,12 +1041,12 @@ nodeCommon:
 nodeImages:
   cosbeta:
     args:
-    - --node-args=--images=cos-beta-64-10176-60-0
+    - --node-args=--images=cos-beta-65-10323-51-0
     - --node-args=--image-project=gke-node-images
     - --node-args=--instance-metadata=user-data<test/e2e_node/jenkins/cos-init-disable-live-restore.yaml,gci-update-strategy=update_disabled
   cosstable1:
     args:
-    - --node-args=--images=cos-stable-63-10032-71-0
+    - --node-args=--images=cos-stable-64-10176-62-0
     - --node-args=--image-project=cos-cloud
     - --node-args=--instance-metadata=user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled
   ubuntudev:
