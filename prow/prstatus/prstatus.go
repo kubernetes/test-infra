@@ -183,8 +183,10 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 			http.SetCookie(w, &http.Cookie{
 				Name:    "github_login",
 				Value:   login,
+				Path:    "/",
 				Expires: time.Now().Add(time.Hour * 24 * 30),
-				Path:    "/"})
+				Secure:  true,
+			})
 			session.Values[loginKey] = login
 			if err := session.Save(r, w); err != nil {
 				serverError("Save oauth session", err)
