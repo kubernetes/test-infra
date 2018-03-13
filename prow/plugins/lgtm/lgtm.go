@@ -186,8 +186,9 @@ func handlePullRequest(gc ghLabelClient, pe github.PullRequestEvent, log *logrus
 	repo := pe.PullRequest.Base.Repo.Name
 	number := pe.PullRequest.Number
 
+	var labelNotFound bool
 	if err := gc.RemoveLabel(org, repo, number, lgtmLabel); err != nil {
-		if _, ok := err.(*github.LabelNotFound); !ok {
+		if _, labelNotFound = err.(*github.LabelNotFound); !labelNotFound {
 			return fmt.Errorf("failed removing lgtm label: %v", err)
 		}
 
@@ -195,6 +196,9 @@ func handlePullRequest(gc ghLabelClient, pe github.PullRequestEvent, log *logrus
 	}
 	// Creates a comment to inform participants that LGTM label is removed due to new
 	// pull request changes.
-	log.Info("Create a LGTM removed notification to %s/%s#%d  with a message: %s", org, repo, number, removeLGTMLabelNoti)
-	return gc.CreateComment(org, repo, number, removeLGTMLabelNoti)
+	if !labelNotFound {
+		log.Infof("Create a LGTM removed notification to %s/%s#%d  with a message: %s", org, repo, number, removeLGTMLabelNoti)
+		return gc.CreateComment(org, repo, number, removeLGTMLabelNoti)
+	}
+	return nil
 }
