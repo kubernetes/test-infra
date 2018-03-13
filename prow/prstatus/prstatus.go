@@ -23,6 +23,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	gogithub "github.com/google/go-github/github"
 	"github.com/gorilla/sessions"
@@ -179,7 +180,13 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 			}
 			// Saves login. We save the login under 2 cookies. One for the use of client to render the
 			// data and one encoded for server to verify the identity of the authenticated user.
-			http.SetCookie(w, &http.Cookie{Name: "github_login", Value: login})
+			http.SetCookie(w, &http.Cookie{
+				Name:    "github_login",
+				Value:   login,
+				Path:    "/",
+				Expires: time.Now().Add(time.Hour * 24 * 30),
+				Secure:  true,
+			})
 			session.Values[loginKey] = login
 			if err := session.Save(r, w); err != nil {
 				serverError("Save oauth session", err)

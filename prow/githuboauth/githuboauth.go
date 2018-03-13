@@ -21,6 +21,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/google/go-github/github"
 	"github.com/sirupsen/logrus"
@@ -90,6 +91,8 @@ func (ga *GithubOAuthAgent) HandleLogin(client OAuthClient) http.HandlerFunc {
 		stateToken := xsrftoken.Generate(ga.gc.ClientSecret, "", "")
 		state := hex.EncodeToString([]byte(stateToken))
 		oauthSession, err := ga.gc.CookieStore.New(r, oauthSessionCookie)
+		oauthSession.Options.Secure = true
+		oauthSession.Options.HttpOnly = true
 		if err != nil {
 			ga.serverError(w, "Creating new OAuth session", err)
 			return
@@ -131,7 +134,7 @@ func (ga *GithubOAuthAgent) HandleRedirect(client OAuthClient, getter GithubClie
 		}
 		secretState, ok := oauthSession.Values[stateKey].(string)
 		if !ok {
-			ga.serverError(w, "Get secret state", fmt.Errorf("cannot convert secret state to string"))
+			ga.serverError(w, "Get secret state", fmt.Errorf("empty string or cannot convert to string"))
 			return
 		}
 		// Validate the state parameter to prevent cross-site attack.
@@ -150,6 +153,8 @@ func (ga *GithubOAuthAgent) HandleRedirect(client OAuthClient, getter GithubClie
 
 		// New session that stores the token.
 		session, err := ga.gc.CookieStore.New(r, tokenSession)
+		session.Options.Secure = true
+		session.Options.HttpOnly = true
 		if err != nil {
 			ga.serverError(w, "Create new session", err)
 			return
@@ -160,14 +165,19 @@ func (ga *GithubOAuthAgent) HandleRedirect(client OAuthClient, getter GithubClie
 			ga.serverError(w, "Save session", err)
 			return
 		}
-
 		ghc := getter.GetGithubClient(token.AccessToken, false)
 		user, err := ghc.GetUser("")
 		if err != nil {
 			ga.serverError(w, "Get user login", err)
 			return
 		}
-		http.SetCookie(w, &http.Cookie{Name: "github_login", Value: *user.Login})
+		http.SetCookie(w, &http.Cookie{
+			Name:    "github_login",
+			Value:   *user.Login,
+			Path:    "/",
+			Expires: time.Now().Add(time.Hour * 24 * 30),
+			Secure:  true,
+		})
 		http.Redirect(w, r, ga.gc.FinalRedirectURL, http.StatusFound)
 	}
 }
