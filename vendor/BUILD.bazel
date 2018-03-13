@@ -20,6 +20,7 @@ filegroup(
         "//vendor/github.com/NYTimes/gziphandler:all-srcs",
         "//vendor/github.com/PuerkitoBio/purell:all-srcs",
         "//vendor/github.com/PuerkitoBio/urlesc:all-srcs",
+        "//vendor/github.com/andygrunwald/go-gerrit:all-srcs",
         "//vendor/github.com/armon/go-radix:all-srcs",
         "//vendor/github.com/aws/aws-sdk-go/aws:all-srcs",
         "//vendor/github.com/aws/aws-sdk-go/internal/shareddefaults:all-srcs",
