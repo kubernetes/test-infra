@@ -355,21 +355,6 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
 
         self.assertEqual(sysexit.exception.code, 2)
 
-    def test_image_family(self):
-        """Make sure --image-family fetches the latest image correctly."""
-        args = kubernetes_e2e.parse_args([
-            '--image-family=cos-stable',
-            '--image-project=cos-cloud'])
-        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
-            with Stub(
-                kubernetes_e2e,
-                'check_output',
-                self.fake_output_get_latest_image):
-                kubernetes_e2e.main(args)
-        self.assertEqual(
-            self.envs['KUBE_GCE_NODE_IMAGE'], 'cos-stable-59-9460-64-0')
-        self.assertEqual(self.envs['KUBE_GCE_NODE_PROJECT'], 'cos-cloud')
-
     def test_parse_args_order_agnostic(self):
         args = kubernetes_e2e.parse_args([
             '--some-kubetest-arg=foo',
