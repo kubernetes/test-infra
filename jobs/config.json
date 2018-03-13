@@ -11775,7 +11775,7 @@
       "--deployment=node",
       "--gcp-project=k8s-c8d-pr-node-e2e",
       "--gcp-zone=us-central1-f",
-      "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri-containerd",
+      "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri",
       "--node-test-args=--container-runtime=remote --container-runtime-endpoint=/run/containerd/containerd.sock --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/runtime\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
       "--node-tests=true",
       "--provider=gce",

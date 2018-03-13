@@ -16,7 +16,7 @@ triggers:
   trusted_org: kubernetes
   join_org_url: "https://git.k8s.io/community/community-membership.md#member"
 - repos:
-  - containerd/cri-containerd
+  - containerd/cri
   trusted_org: containerd
   join_org_url: "https://github.com/containerd/containerd/blob/master/MAINTAINERS"
 - repos:
@@ -310,7 +310,7 @@ plugins:
   kubernetes-sigs/scheduling_poseidon:
   - approve
 
-  containerd/cri-containerd:
+  containerd/cri:
   - assign
   - cla
   - label
