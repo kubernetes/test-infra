@@ -328,11 +328,14 @@ class GSUtil(object):
             gen = ['-h', 'x-goog-if-generation-match:%s' % generation]
         else:
             gen = []
-        cmd = [
-            self.gsutil, '-q',
-            '-h', 'Content-Type:application/json'] + gen + [
-            'cp', '-', path]
-        self.call(cmd, stdin=json.dumps(jdict, indent=2))
+        with tempfile.NamedTemporaryFile(prefix='gsutil_') as fp:
+            fp.write(json.dumps(jdict, indent=2))
+            fp.flush()
+            cmd = [
+                self.gsutil, '-q',
+                '-h', 'Content-Type:application/json'] + gen + [
+                'cp', fp.name, path]
+            self.call(cmd)
 
     def copy_file(self, dest, orig):
         """Copy the file to the specified path using compressed encoding."""
@@ -346,8 +349,11 @@ class GSUtil(object):
             headers += ['-h', 'Cache-Control:private, max-age=0, no-transform']
         if additional_headers:
             headers += additional_headers
-        cmd = [self.gsutil, '-q'] + headers + ['cp', '-', path]
-        self.call(cmd, stdin=txt)
+        with tempfile.NamedTemporaryFile(prefix='gsutil_') as fp:
+            fp.write(txt)
+            fp.flush()
+            cmd = [self.gsutil, '-q'] + headers + ['cp', fp.name, path]
+            self.call(cmd)
 
     def cat(self, path, generation):
         """Return contents of path#generation"""
