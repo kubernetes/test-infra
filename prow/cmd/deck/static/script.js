@@ -31,18 +31,30 @@ function optionsForRepo(repo) {
         states: {},
     };
 
-    for (var i = 0; i < allBuilds.length; i++) {
-        var build = allBuilds[i];
-        opts.types[build.type] = true;
-        opts.repos[build.repo] = true;
-        if (!repo || repo === build.repo) {
-            opts.jobs[build.job] = true;
-            opts.states[build.state] = true;
-            if (build.type === "presubmit") {
-                opts.authors[build.author] = true;
-                opts.pulls[build.number] = true;
-            } else if (build.type === "batch") {
-                opts.batches[shortenBuildRefs(build.refs)] = true;
+
+//  if its NOT PERIODIC 
+//  refs eempty
+
+// presubmit exoun MONO PULLS
+// post submit 
+// exoun refs 
+
+
+
+
+
+
+
+    for (var i = 0; i < allBuilds.items.length; i++) {
+        var build = allBuilds.items[i];
+        opts.types[build.spec.type] = true;
+        opts.repos[build.spec.refs.repo] = true;
+        if (!repo || repo === build.spec.refs.repo) {
+            opts.jobs[build.spec.job] = true;
+            if (build.spec.type === "presubmit") {
+                opts.authors[build.spec.refs.pulls[0]['author']] = true;
+                opts.pulls[build.spec.refs.pulls[0]['number']] = true;
+                opts.states[build.status.state] = true;
             }
         }
     }
@@ -380,7 +392,11 @@ function equalSelected(sel, t) {
 }
 
 function groupKey(build) {
-    return build.repo + " " + build.number + " " + build.refs;
+    return build.spec.refs.org + "/" +
+           build.spec.refs.repo + " " + 
+           build.spec.refs.pulls[0]['number'] + " " + 
+           build.spec.refs.base_ref + ":" + 
+           build.spec.refs.base_sha;
 }
 
 function redraw(fz) {
@@ -450,25 +466,51 @@ function redraw(fz) {
     var lastKey = '';
     const jobCountMap = new Map();
     let totalJob = 0;
-    for (var i = 0; i < allBuilds.length; i++) {
-        var build = allBuilds[i];
-        if (!equalSelected(typeSel, build.type)) {
+    
+    for (var i = 0, emitted = 0; i < allBuilds.items.length && emitted < 500; i++) {
+        var build = allBuilds.items[i];
+
+        // assign default values 
+        var prop = { 
+            org: "",
+            repo: "",
+            base_ref: "", 
+            base_sha:"",
+            pulls: [
+                {
+                    "number": 0,
+                    "author": "",
+                    "sha": ""
+                }
+            ]
+        }
+ ``
+        if ( Object.keys(build.spec.refs).length == 0){
+            build.spec.refs = prop;
+        } 
+
+        if (!build.spec.refs.hasOwnProperty("pulls")) {
+            build.spec.refs.pulls = prop.pulls;
+        }
+
+
+        if (!equalSelected(typeSel, build.spec.type)) {
             continue;
         }
-        if (!equalSelected(repoSel, build.repo)) {
+        if (!equalSelected(repoSel, build.spec.refs.repo)) {
             continue;
         }
-        if (!equalSelected(stateSel, build.state)) {
+        if (!equalSelected(stateSel, build.status.state)) {
             continue;
         }
-        if (!equalSelected(jobSel, build.job)) {
+        if (!equalSelected(jobSel, build.spec.job)) {
             continue;
         }
-        if (build.type === "presubmit") {
-            if (!equalSelected(pullSel, build.number)) {
+        if (build.spec.type === "presubmit") {
+            if (!equalSelected(pullSel, build.spec.refs.pulls[0]['number'])) {
                 continue;
             }
-            if (!equalSelected(authorSel, build.author)) {
+            if (!equalSelected(authorSel, build.spec.refs.pulls[0]['author'])) {
                 continue;
             }
         } else if (build.type === "batch" && !authorSel) {
@@ -488,10 +530,10 @@ function redraw(fz) {
             continue;
         }
         var r = document.createElement("tr");
-        r.appendChild(stateCell(build.state));
-        if (build.pod_name) {
+        r.appendChild(stateCell(build.status.state));
+        if (build.status.pod_name) {
             const icon = createIcon("description", "Build log");
-            icon.href = "log?job=" + build.job + "&id=" + build.build_id;
+            icon.href = "log?job=" + build.spec.job + "&id=" + build.status.build_id;
             const cell = document.createElement("TD");
             cell.classList.add("icon-cell");
             cell.appendChild(icon);
@@ -499,28 +541,28 @@ function redraw(fz) {
         } else {
             r.appendChild(createTextCell(""));
         }
-        r.appendChild(createRerunCell(modal, rerun_command, build.prow_job));
+        r.appendChild(createRerunCell(modal, rerun_command, build.metadata.name));
         var key = groupKey(build);
         if (key !== lastKey) {
             // This is a different PR or commit than the previous row.
             lastKey = key;
             r.className = "changed";
 
-            if (build.type === "periodic") {
+            if (build.spec.type === "periodic") {
                 r.appendChild(createTextCell(""));
             } else if (build.repo.startsWith("http://") || build.repo.startsWith("https://") ) {
                 r.appendChild(createLinkCell(build.repo, build.repo, ""));
             } else {
-                r.appendChild(createLinkCell(build.repo, "https://github.com/"
-                    + build.repo, ""));
+                r.appendChild(createLinkCell(build.spec.refs.repo, "https://github.com/"
+                    + build.spec.refs.org + "/" + build.spec.refs.repo , ""));
             }
-            if (build.type === "presubmit") {
+            if (build.spec.type === "presubmit") {
                 r.appendChild(prRevisionCell(build));
-            } else if (build.type === "batch") {
+            } else if (build.spec.type === "batch") {
                 r.appendChild(batchRevisionCell(build));
-            } else if (build.type === "postsubmit") {
+            } else if (build.spec.type === "postsubmit") {
                 r.appendChild(pushRevisionCell(build));
-            } else if (build.type === "periodic") {
+            } else if (build.spec.type === "periodic") {
                 r.appendChild(createTextCell(""));
             }
         } else {
@@ -528,12 +570,13 @@ function redraw(fz) {
             r.appendChild(createTextCell(""));
             r.appendChild(createTextCell(""));
         }
-        if (build.url === "") {
-            r.appendChild(createTextCell(build.job));
+        if (build.status.url === "") {
+            r.appendChild(createTextCell(build.spec.job));
         } else {
-            r.appendChild(createLinkCell(build.job, build.url, ""));
+            r.appendChild(createLinkCell(build.spec.job, build.status.url, ""));
         }
-        r.appendChild(createTimeCell(i, parseInt(build.started)));
+        r.appendChild(createTimeCell(i, parseInt(build.status.startTime)));
+        // TODO duration needs to be calculated
         r.appendChild(createTextCell(build.duration));
         builds.appendChild(r);
     }
@@ -548,6 +591,7 @@ function createTextCell(text) {
     return c;
 }
 
+// TODO FIX date time
 function createTimeCell(id, time) {
     var momentTime = moment.unix(time);
     var tid = "time-cell-" + id;
@@ -637,14 +681,16 @@ function stateCell(state) {
 
 function batchRevisionCell(build) {
     var c = document.createElement("td");
-    var pr_refs = build.refs.split(",");
-    for (var i = 1; i < pr_refs.length; i++) {
-        if (i != 1) {
+    var pr_refs = build.spec.refs.pulls;
+    for (var i = 0; i < pr_refs.length; i++) {
+
+        if (i > 0) {
             c.appendChild(document.createTextNode(", "));
         }
-        var pr = pr_refs[i].split(":")[0];
+
+        var pr = pr_refs[i]['number'];
         var l = document.createElement("a");
-        l.href = "https://github.com/" + build.repo + "/pull/" + pr;
+        l.href = "https://github.com/" + build.spec.refs.org + "/" + build.spec.refs.repo + "/pull/" + pr;
         l.text = pr;
         c.appendChild(document.createTextNode("#"));
         c.appendChild(l);
@@ -655,8 +701,8 @@ function batchRevisionCell(build) {
 function pushRevisionCell(build) {
     var c = document.createElement("td");
     var bl = document.createElement("a");
-    bl.href = "https://github.com/" + build.repo + "/commit/" + build.base_sha;
-    bl.text = build.base_ref + " (" + build.base_sha.slice(0, 7) + ")";
+    bl.href = "https://github.com/" + build.spec.refs.org + "/" + build.spec.refs.repo + "/commit/" + build.spec.refs.base_sha;
+    bl.text = build.spec.refs.base_ref + " (" + build.spec.refs.base_sha.slice(0, 7) + ")";
     c.appendChild(bl);
     return c;
 }
@@ -665,21 +711,22 @@ function prRevisionCell(build) {
     var c = document.createElement("td");
     c.appendChild(document.createTextNode("#"));
     var pl = document.createElement("a");
-    pl.href = "https://github.com/" + build.repo + "/pull/" + build.number;
-    pl.text = build.number;
+    pl.href = "https://github.com/" + build.spec.refs.org + "/" + build.spec.refs.repo + "/pull/" + build.spec.refs.pulls[0]['number'];
+    pl.text = build.spec.refs.pulls[0]['number'];
     c.appendChild(pl);
     c.appendChild(document.createTextNode(" ("));
     var cl = document.createElement("a");
-    cl.href = "https://github.com/" + build.repo + "/pull/" + build.number
-        + '/commits/' + build.pull_sha;
-    cl.text = build.pull_sha.slice(0, 7);
+    cl.href = "https://github.com/" + build.spec.refs.org + "/" + build.spec.refs.repo + "/pull/" + build.spec.refs.pulls[0]['number']
+        + '/commits/' + build.spec.refs.pulls[0]['sha'];
+    cl.text = build.spec.refs.pulls[0]['sha'].slice(0, 7);
     c.appendChild(cl);
     c.appendChild(document.createTextNode(") by "));
     var al = document.createElement("a");
-    al.href = "https://github.com/" + build.author;
-    al.text = build.author;
+    al.href = "https://github.com/" + build.spec.refs.pulls[0]['author'];
+    al.text = build.spec.refs.pulls[0]['author'];
     c.appendChild(al);
     return c;
+
 }
 
 function drawJobBar(total, jobCountMap) {
