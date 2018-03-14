@@ -1461,13 +1461,66 @@ presubmits:
           requests:
             memory: "6Gi"
 
+  - name: pull-kubernetes-cross
+    agent: kubernetes
+    context: pull-kubernetes-cross
+    rerun_command: "/test pull-kubernetes-cross"
+    trigger: "(?m)^/test pull-kubernetes-cross,?(\\s+|$)"
+    run_if_changed: '^(build\/|hack\/lib\/)|(Makefile)$'
+    skip_branches:
+    - release-1.7
+    - release-1.8
+    - release-1.9
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+        args:
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: cache-ssd
+          mountPath: /root/.cache
+        - name: docker-graph
+          mountPath: /docker-graph
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+        resources:
+          requests:
+            cpu: 7
+            memory: "41Gi"
+      volumes:
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+      - name: docker-graph
+        hostPath:
+          path: /mnt/disks/ssd0/docker-graph
 
   - name: pull-kubernetes-cross
     agent: kubernetes
     context: pull-kubernetes-cross
     rerun_command: "/test pull-kubernetes-cross"
     trigger: "(?m)^/test pull-kubernetes-cross,?(\\s+|$)"
+    # typecheck doesn't exist for < 1.10 currently, so we still run cross more often
     run_if_changed: '^(build\/|hack\/lib\/)|(Makefile)|(.*_(windows|linux|osx|unsupported)(_test)?\.go)$'
+    branches:
+    - release-1.7
+    - release-1.8
+    - release-1.9
     labels:
       preset-service-account: true
     spec:
@@ -3801,6 +3854,59 @@ presubmits:
     trigger: (?m)^/test pull-security-kubernetes-bazel-test-integration-canary,?(\s+|$)
   - agent: kubernetes
     always_run: false
+    cluster: security
+    context: pull-security-kubernetes-cross
+    labels:
+      preset-service-account: "true"
+    max_concurrency: 0
+    name: pull-security-kubernetes-cross
+    rerun_command: /test pull-security-kubernetes-cross
+    run_if_changed: ^(build\/|hack\/lib\/)|(Makefile)$
+    skip_branches:
+    - release-1.7
+    - release-1.8
+    - release-1.9
+    skip_report: false
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --clean
+        - --job=$(JOB_NAME)
+        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-security-prow/pr-logs
+        - --timeout=90
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: "true"
+        image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+        name: ""
+        resources:
+          requests:
+            cpu: "7"
+            memory: 41Gi
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+        - mountPath: /docker-graph
+          name: auto-generated-docker-graph-volume-mount
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+      - emptyDir: {}
+        name: auto-generated-docker-graph-volume-mount
+    trigger: (?m)^/test pull-security-kubernetes-cross,?(\s+|$)
+  - agent: kubernetes
+    always_run: false
+    branches:
+    - release-1.7
+    - release-1.8
+    - release-1.9
     cluster: security
     context: pull-security-kubernetes-cross
     labels:

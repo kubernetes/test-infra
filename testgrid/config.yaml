@@ -5296,6 +5296,9 @@ dashboards:
     base_options: 'width=10'
     alert_options:
       alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
+  - name: pull-kubernetes-typecheck
+    test_group_name: pull-kubernetes-typecheck
+    base_options: 'width=10'
 
 - name: presubmits-kubernetes-nonblocking
   dashboard_tab:
@@ -5314,9 +5317,7 @@ dashboards:
   - name: pull-kubernetes-e2e-kubeadm-gce
     test_group_name: pull-kubernetes-e2e-kubeadm-gce
     base_options: 'width=10'
-  - name: pull-kubernetes-typecheck
-    test_group_name: pull-kubernetes-typecheck
-    base_options: 'width=10'
+
 
 - name: presubmits-kubernetes-scalability
   dashboard_tab:

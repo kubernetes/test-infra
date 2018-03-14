@@ -15,12 +15,12 @@ github-key-file: /etc/hook-secret-volume/secret
 required-retest-contexts: "\
   pull-kubernetes-bazel-build,\
   pull-kubernetes-bazel-test,\
-  pull-kubernetes-cross,\
   pull-kubernetes-e2e-gce,\
   pull-kubernetes-e2e-kops-aws,\
   pull-kubernetes-integration,\
   pull-kubernetes-kubemark-e2e-gce,\
   pull-kubernetes-node-e2e,\
+  pull-kubernetes-typecheck,\
   pull-kubernetes-verify"
 
 # submit-queue options. Keep job lists sorted!
