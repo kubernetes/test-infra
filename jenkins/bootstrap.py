@@ -1080,5 +1080,6 @@ def parse_args(arguments=None):
 
 
 if __name__ == '__main__':
+    logging.info('Args: %s', ' '.join(pipes.quote(a) for a in sys.argv[1:]))
     ARGS = parse_args()
     bootstrap(ARGS)
