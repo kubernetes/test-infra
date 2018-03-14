@@ -10922,6 +10922,26 @@
       "sig-gcp"
     ]
   },
+  "kinflate-periodic-default-gke": {
+    "args": [
+      "--check-leaked-resources",
+      "--cluster=",
+      "--deployment=gke",
+      "--extract=gke",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--gke-environment=prod",
+      "--provider=gke",
+      "--test=false",
+      "--test-cmd=../cmd/kinflate/test/main.sh",
+      "--test-cmd-name=kinflate-integration",
+      "--timeout=120m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cli"
+    ]
+  },
   "maintenance-boskos-config-upload": {
     "args": [
       "./boskos/update_prow_config.sh"
