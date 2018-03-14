@@ -29,6 +29,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/github/fakegithub"
+
+	prowConf "k8s.io/test-infra/prow/config"
 )
 
 var (
@@ -71,12 +73,26 @@ func patternAll(values ...string) map[string]sets.String {
 	return map[string]sets.String{"": sets.NewString(values...)}
 }
 
+type testConfigGetter struct {
+	defaultBlacklist []string
+	repoBlacklist    map[string][]string
+}
+
+func (c testConfigGetter) Config() *prowConf.Config {
+	return &prowConf.Config{
+		OwnersDirBlacklist: prowConf.OwnersDirBlacklist{
+			Repos:   c.repoBlacklist,
+			Default: c.defaultBlacklist,
+		},
+	}
+}
+
 func getTestClient(
 	files map[string][]byte,
 	enableMdYaml,
 	includeAliases bool,
-	ownersDirBlacklistDefault sets.String,
-	ownersDirBlacklistByRepo map[string]sets.String,
+	ownersDirBlacklistDefault []string,
+	ownersDirBlacklistByRepo map[string][]string,
 ) (*Client, func(), error) {
 	testAliasesFile := map[string][]byte{
 		"OWNERS_ALIASES": []byte("aliases:\n  Best-approvers:\n  - carl\n  - cjwagner\n  best-reviewers:\n  - Carl\n  - BOB"),
@@ -108,8 +124,10 @@ func getTestClient(
 				return enableMdYaml
 			},
 
-			dirBlacklistDefault: ownersDirBlacklistDefault,
-			dirBlacklistByRepo:  ownersDirBlacklistByRepo,
+			configGetter: testConfigGetter{
+				repoBlacklist:    ownersDirBlacklistByRepo,
+				defaultBlacklist: ownersDirBlacklistDefault,
+			},
 		},
 		// Clean up function
 		func() {
@@ -157,7 +175,7 @@ func TestOwnersDirBlacklist(t *testing.T) {
 		}
 	}
 
-	getRepoOwnersWithBlacklist := func(t *testing.T, defaults sets.String, byRepo map[string]sets.String) *RepoOwners {
+	getRepoOwnersWithBlacklist := func(t *testing.T, defaults []string, byRepo map[string][]string) *RepoOwners {
 		client, cleanup, err := getTestClient(testFiles, true, true, defaults, byRepo)
 		if err != nil {
 			t.Fatalf("Error creating test client: %v.", err)
@@ -173,36 +191,36 @@ func TestOwnersDirBlacklist(t *testing.T) {
 	}
 
 	type testConf struct {
-		blackistDefault sets.String
-		blacklistByRepo map[string]sets.String
+		blackistDefault []string
+		blacklistByRepo map[string][]string
 		validator       func(t *testing.T, ro *RepoOwners)
 	}
 
 	tests := map[string]testConf{}
 
 	tests["blacklist by org"] = testConf{
-		blacklistByRepo: map[string]sets.String{
-			"org": sets.NewString("src"),
+		blacklistByRepo: map[string][]string{
+			"org": {"src"},
 		},
 		validator: validatorExcluded,
 	}
 	tests["blacklist by org/repo"] = testConf{
-		blacklistByRepo: map[string]sets.String{
-			"org/repo": sets.NewString("src"),
+		blacklistByRepo: map[string][]string{
+			"org/repo": {"src"},
 		},
 		validator: validatorExcluded,
 	}
 	tests["blacklist by default"] = testConf{
-		blackistDefault: sets.NewString("src"),
+		blackistDefault: []string{"src"},
 		validator:       validatorExcluded,
 	}
 	tests["no blacklist setup"] = testConf{
 		validator: validatorIncluded,
 	}
 	tests["blacklist setup but not matching this repo"] = testConf{
-		blacklistByRepo: map[string]sets.String{
-			"not_org/not_repo": sets.NewString("src"),
-			"not_org":          sets.NewString("src"),
+		blacklistByRepo: map[string][]string{
+			"not_org/not_repo": {"src"},
+			"not_org":          {"src"},
 		},
 		validator: validatorIncluded,
 	}
