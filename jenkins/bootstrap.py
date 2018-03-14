@@ -958,6 +958,8 @@ def bootstrap(args):
     call = lambda *a, **kw: _call(end, *a, **kw)
     gsutil = GSUtil(call)
 
+    if len(sys.argv) > 1:
+        logging.info('Args: %s', ' '.join(pipes.quote(a) for a in sys.argv[1:]))
     logging.info('Bootstrap %s...', job)
     logging.info('Builder: %s', node())
     if IMAGE_NAME_ENV in os.environ:
@@ -1086,6 +1088,5 @@ def parse_args(arguments=None):
 
 
 if __name__ == '__main__':
-    logging.info('Args: %s', ' '.join(pipes.quote(a) for a in sys.argv[1:]))
     ARGS = parse_args()
     bootstrap(ARGS)
