@@ -19,6 +19,8 @@ package gcs
 import (
 	"testing"
 
+	"k8s.io/apimachinery/pkg/api/equality"
+
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 )
@@ -164,33 +166,78 @@ func TestLatestBuildForSpec(t *testing.T) {
 	testCases := []struct {
 		name     string
 		spec     *pjutil.JobSpec
-		expected string
+		builder  RepoPathBuilder
+		expected []string
 	}{
 		{
-			name:     "presubmit",
-			spec:     &pjutil.JobSpec{Type: kube.PresubmitJob, Job: "pull-kubernetes-unit"},
-			expected: "pr-logs/directory/pull-kubernetes-unit/latest-build.txt",
+			name: "presubmit - no strategy",
+			spec: &pjutil.JobSpec{
+				Type: kube.PresubmitJob,
+				Job:  "pull-kubernetes-unit",
+				Refs: kube.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []kube.Pull{{Number: 1234}}},
+			},
+			expected: []string{"pr-logs/directory/pull-kubernetes-unit/latest-build.txt"},
+		},
+		{
+			name: "presubmit - explicit strategy",
+			spec: &pjutil.JobSpec{
+				Type: kube.PresubmitJob,
+				Job:  "pull-kubernetes-unit",
+				Refs: kube.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []kube.Pull{{Number: 1234}}},
+			},
+			builder: NewExplicitRepoPathBuilder(),
+			expected: []string{
+				"pr-logs/directory/pull-kubernetes-unit/latest-build.txt",
+				"pr-logs/pull/kubernetes_test-infra/1234/pull-kubernetes-unit/latest-build.txt",
+			},
+		},
+		{
+			name: "presubmit - legacy strategy",
+			spec: &pjutil.JobSpec{
+				Type: kube.PresubmitJob,
+				Job:  "pull-kubernetes-unit",
+				Refs: kube.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []kube.Pull{{Number: 1234}}},
+			},
+			builder: NewLegacyRepoPathBuilder("kubernetes", "test-infra"),
+			expected: []string{
+				"pr-logs/directory/pull-kubernetes-unit/latest-build.txt",
+				"pr-logs/pull/1234/pull-kubernetes-unit/latest-build.txt",
+			},
+		},
+		{
+			name: "presubmit - single strategy",
+			spec: &pjutil.JobSpec{
+				Type: kube.PresubmitJob,
+				Job:  "pull-kubernetes-unit",
+				Refs: kube.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []kube.Pull{{Number: 1234}}},
+			},
+			builder: NewSingleDefaultRepoPathBuilder("defaultorg", "defaultrepo"),
+			expected: []string{
+				"pr-logs/directory/pull-kubernetes-unit/latest-build.txt",
+				"pr-logs/pull/kubernetes_test-infra/1234/pull-kubernetes-unit/latest-build.txt",
+			},
 		},
 		{
 			name:     "batch",
 			spec:     &pjutil.JobSpec{Type: kube.BatchJob, Job: "pull-kubernetes-unit"},
-			expected: "pr-logs/directory/pull-kubernetes-unit/latest-build.txt",
+			expected: []string{"pr-logs/directory/pull-kubernetes-unit/latest-build.txt"},
 		},
 		{
 			name:     "postsubmit",
 			spec:     &pjutil.JobSpec{Type: kube.PostsubmitJob, Job: "ci-kubernetes-unit"},
-			expected: "logs/ci-kubernetes-unit/latest-build.txt",
+			expected: []string{"logs/ci-kubernetes-unit/latest-build.txt"},
 		},
 		{
 			name:     "periodic",
 			spec:     &pjutil.JobSpec{Type: kube.PeriodicJob, Job: "ci-kubernetes-periodic"},
-			expected: "logs/ci-kubernetes-periodic/latest-build.txt",
+			expected: []string{"logs/ci-kubernetes-periodic/latest-build.txt"},
 		},
 	}
 
 	for _, test := range testCases {
-		if expected, actual := test.expected, LatestBuildForSpec(test.spec); expected != actual {
-			t.Errorf("%s: expected path %q but got %q", test.name, expected, actual)
+		actual := LatestBuildForSpec(test.spec, test.builder)
+		if !equality.Semantic.DeepEqual(actual, test.expected) {
+			t.Errorf("%s: expected path %q but got %q", test.name, test.expected, actual)
 		}
 	}
 }

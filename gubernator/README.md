@@ -98,10 +98,11 @@ the different types of jobs:
         ├── batch                # batch jobs live here
         │   └── job_name         # contains all the builds of a job
         │       └── build_number # contains job artifacts, as above
-        └── org_repo                 # jobs testing PRs for org/repo live here
-            └── pull_number          # jobs running for a PR with pull_number live here
-                └── job_name         # all builds for the job for this pr live here
-                    └── build_number # contains job artifacts, as above
+        └── org_repo                     # jobs testing PRs for org/repo live here
+            └── pull_number              # jobs running for a PR with pull_number live here
+                └── job_name             # all builds for the job for this pr live here
+                    └── build_number     # contains job artifacts, as above
+                    └── latest-build.txt # contains the latest build id of a job
 ```
 
 # Migrations

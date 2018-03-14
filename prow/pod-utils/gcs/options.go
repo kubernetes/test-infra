@@ -145,8 +145,10 @@ func (o *Options) Run(extra map[string]UploadFunc) error {
 		uploadTargets[alias] = DataUpload(strings.NewReader(fullBasePath))
 	}
 
-	if latestBuild := LatestBuildForSpec(spec); latestBuild != "" {
-		uploadTargets[latestBuild] = DataUpload(strings.NewReader(spec.BuildId))
+	if latestBuilds := LatestBuildForSpec(spec, builder); len(latestBuilds) > 0 {
+		for _, latestBuild := range latestBuilds {
+			uploadTargets[latestBuild] = DataUpload(strings.NewReader(spec.BuildId))
+		}
 	}
 
 	for _, item := range o.Items {
