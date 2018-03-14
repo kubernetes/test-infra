@@ -55,6 +55,13 @@ func Run(refs kube.Refs, dir, gitUserName, gitUserEmail string) Record {
 	} else {
 		target = "FETCH_HEAD"
 	}
+	// we need to be "on" the target branch after the sync
+	// so we need to set the branch to point to the base ref,
+	// but we cannot update a branch we are on, so in case we
+	// are on the branch we are syncing, we check out the SHA
+	// first and reset the branch second, then check out the
+	// branch we just reset to be in the correct final state
+	commands = append(commands, shellCloneCommand(cloneDir, "git", "checkout", target))
 	commands = append(commands, shellCloneCommand(cloneDir, "git", "branch", "--force", refs.BaseRef, target))
 	commands = append(commands, shellCloneCommand(cloneDir, "git", "checkout", refs.BaseRef))
 
