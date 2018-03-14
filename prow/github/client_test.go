@@ -391,6 +391,27 @@ func TestRemoveLabel(t *testing.T) {
 	}
 }
 
+func TestRemoveLabelFailsOnOtherThan404(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodDelete {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/issues/5/labels/yay" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		http.Error(w, "403 Forbidden", http.StatusForbidden)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	err := c.RemoveLabel("k8s", "kuber", 5, "yay")
+	if err == nil {
+		t.Errorf("Expected error but got none")
+	}
+	if _, ok := err.(*LabelNotFound); ok {
+		t.Fatalf("Expected error not to be a 404: %v", err)
+	}
+}
+
 func TestRemoveLabelNotFound(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"message": "Label does not exist"}`, 404)
