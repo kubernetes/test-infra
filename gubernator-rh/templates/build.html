@@ -2,7 +2,7 @@
 {% block title %}{{job}} #{{build}} Results{% endblock %}
 % block head
 {{super()}}
-% if finished and finished['result'] == 'SUCCESS' and not res['failed']
+% if finished and finished['passed'] and not res['failed']
 <link rel="icon" type="image/png" href="{{'favicon-green.png'|static}}" />
 % endif
 % endblock
@@ -27,7 +27,11 @@
 		% set pl = pr_digest.payload
 		<tr><td>PR<td><a href="/pr/{{pl['author']}}">{{pl['author']}}</a>: {{pl['title']}}
 	% endif
-		% set result = finished['result'] if finished else 'Not Finished'
+		% if finished
+			% set result = finished['result']
+		% else
+			% set result = 'Not Finished'
+		% endif
 		<tr><td>Result<td class="build-{{result | slugify}}">{{result}}
 	% if started
 		% if finished

@@ -139,6 +139,15 @@ def build_details(build_dir):
     started = json.loads(started)
     finished = json.loads(finished)
 
+    # we want to allow users pushing to GCS to
+    # provide us either passed or result, but not
+    # require either (or both)
+    if 'result' in finished and 'passed' not in finished:
+        finished['passed'] = finished['result'] == 'SUCCESS'
+
+    if 'passed' in finished and 'result' not in finished:
+        finished['result'] = 'SUCCESS' if finished['passed'] else 'FAILURE'
+
     junit_paths = [f.filename for f in view_base.gcs_ls_recursive('%s/artifacts' % build_dir)
                    if re.match(r'.*\.xml', os.path.basename(f.filename))]
 
