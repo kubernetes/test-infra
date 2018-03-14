@@ -638,8 +638,25 @@ func kubemarkTest(testArgs []string, dump, numNodes string) error {
 
 	// Run tests on the kubemark cluster.
 	if err := control.XmlWrap(&suite, "Kubemark Test", func() error {
-		testArgs = util.SetFieldDefault(testArgs, "--ginkgo.focus", "starting\\s30\\pods")
-		return control.FinishRunning(exec.Command("./test/kubemark/run-e2e-tests.sh", testArgs...))
+		testArgs = append(
+			util.SetFieldDefault(testArgs, "--ginkgo.focus", "starting\\s30\\pods"),
+			"--e2e-verify-service-account=false",
+			"--dump-logs-on-failure=false",
+		)
+
+		cmd := exec.Command("./hack/ginkgo-e2e.sh", testArgs...)
+		cmd.Env = append(
+			os.Environ(),
+			"KUBERNETES_PROVIDER=kubemark",
+			"KUBE_CONFIG_FILE=config-default.sh",
+			"KUBECONFIG="+util.K8s("test", "kubemark", "resources", "kubeconfig.kubemark"),
+			"E2E_MIN_STARTUP_PODS=0",
+			"KUBE_MASTER_URL=https://"+os.Getenv("KUBE_MASTER_IP"),
+		)
+		if os.Getenv("ENABLE_KUBEMARK_CLUSTER_AUTOSCALER") == "true" {
+			testArgs = append(testArgs, "--kubemark-external-kubeconfig="+os.Getenv("DEFAULT_KUBECONFIG"))
+		}
+		return control.FinishRunning(cmd)
 	}); err != nil {
 		if dump != "" {
 			control.XmlWrap(&suite, "Kubemark MasterLogDump (--test failed)", func() error {
