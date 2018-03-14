@@ -645,12 +645,16 @@ func kubemarkTest(testArgs []string, dump string, o options, deploy deployer) er
 		testArgs = util.SetFieldDefault(testArgs, "--ginkgo.focus", "starting\\s30\\pods")
 
 		// detect master IP
+		if err := os.Setenv("MASTER_NAME", os.Getenv("INSTANCE_PREFIX")+"-kubemark-master"); err != nil {
+			return err
+		}
+
 		masterIP, err := control.Output(exec.Command(
 			"gcloud", "compute", "addresses", "describe",
 			os.Getenv("MASTER_NAME")+"-ip",
-			"--project", o.gcpProject,
-			"--region", o.gcpRegion,
-			"-q", "--format='value(address)'"))
+			"--project="+o.gcpProject,
+			"--region="+o.gcpZone[:len(o.gcpZone)-2],
+			"--format=value(address)"))
 		if err != nil {
 			return fmt.Errorf("failed to get masterIP: %v", err)
 		} else {
@@ -659,17 +663,28 @@ func kubemarkTest(testArgs []string, dump string, o options, deploy deployer) er
 			}
 		}
 
+		if os.Getenv("ENABLE_KUBEMARK_CLUSTER_AUTOSCALER") == "true" {
+			testArgs = append(testArgs, "--kubemark-external-kubeconfig="+os.Getenv("DEFAULT_KUBECONFIG"))
+		}
+
+		cwd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+
+		// TODO(krzyzacy): unsure if the envs in kubemark/util.sh makes a difference to e2e tests
+		//                 will verify and remove (or uncomment) next
+		//util := os.Getenv("WORKSPACE") + "/kubernetes/cluster/kubemark/util.sh"
+		//testArgs = append([]string{"-c", "source", util, " ; ./hack/ginkgo-e2e.sh"}, testArgs...)
 		cmd := exec.Command("./hack/ginkgo-e2e.sh", testArgs...)
 		cmd.Env = append(
 			os.Environ(),
 			"KUBERNETES_PROVIDER=kubemark",
 			"KUBE_CONFIG_FILE=config-default.sh",
-			fmt.Sprintf("KUBECONFIG=%s/kubernetes/test/kubemark/resources/kubeconfig.kubemark", os.Getenv("WORKSPACE")),
+			fmt.Sprintf("KUBECONFIG=%s/test/kubemark/resources/kubeconfig.kubemark", cwd),
 			"KUBE_MASTER_URL=https://"+os.Getenv("KUBE_MASTER_IP"),
 		)
-		if os.Getenv("ENABLE_KUBEMARK_CLUSTER_AUTOSCALER") == "true" {
-			testArgs = append(testArgs, "--kubemark-external-kubeconfig="+os.Getenv("DEFAULT_KUBECONFIG"))
-		}
+
 		return control.FinishRunning(cmd)
 	}); err != nil {
 		if dump != "" {
