@@ -28,7 +28,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: horologium
-        image: gcr.io/k8s-prow/horologium:v20180308-43ea85da7
+        image: gcr.io/k8s-prow/horologium:v20180313-8a0eb795d
         volumeMounts:
         - name: config
           mountPath: /etc/config

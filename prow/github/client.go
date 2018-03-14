@@ -991,18 +991,30 @@ type githubError struct {
 
 func (c *Client) RemoveLabel(org, repo string, number int, label string) error {
 	c.log("RemoveLabel", org, repo, number, label)
-	ge := githubError{}
-	code, err := c.request(&request{
+	code, body, err := c.requestRaw(&request{
 		method: http.MethodDelete,
 		path:   fmt.Sprintf("%s/repos/%s/%s/issues/%d/labels/%s", c.base, org, repo, number, label),
 		// GitHub sometimes returns 200 for this call, which is a bug on their end.
-		// On 404, do not retry. We will inspect and handle this case appropriately.
-		exitCodes: []int{200, 204, 404},
-	}, &ge)
+		// Do not expect a 404 exit code and handle it separately because we need
+		// to introspect the request's response body.
+		exitCodes: []int{200, 204},
+	})
 
-	// If our code was 200 or 204, no error info.
-	if code != 404 {
+	switch {
+	case code == 200 || code == 204:
+		// If our code was 200 or 204, no error info.
 		return nil
+	case code == 404:
+		// continue
+	case err != nil:
+		return err
+	default:
+		return fmt.Errorf("unexpected status code: %v", code)
+	}
+
+	ge := &githubError{}
+	if err := json.Unmarshal(body, ge); err != nil {
+		return err
 	}
 
 	// If the error was because the label was not found, annotate that error with type information.
@@ -1013,11 +1025,6 @@ func (c *Client) RemoveLabel(org, repo string, number int, label string) error {
 			Number: number,
 			Label:  label,
 		}
-	}
-
-	// If we saw an opaque error, pass it up.
-	if err != nil {
-		return err
 	}
 
 	// Otherwise we got some other 404 error.

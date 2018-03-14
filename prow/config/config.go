@@ -50,6 +50,7 @@ type Config struct {
 	Sinker           Sinker           `json:"sinker,omitempty"`
 	Deck             Deck             `json:"deck,omitempty"`
 	BranchProtection BranchProtection `json:"branch-protection,omitempty"`
+	Gerrit           Gerrit           `json:"gerrit,omitempty"`
 
 	// TODO: Move this out of the main config.
 	JenkinsOperator  *JenkinsOperator  `json:"jenkins_operator,omitempty"`
@@ -145,6 +146,16 @@ type Plank struct {
 	// PodPendingTimeout is after how long the controller will perform a garbage
 	// collection on pending pods. Defaults to one day.
 	PodPendingTimeout time.Duration `json:"-"`
+}
+
+// Gerrit is config for the gerrit controller.
+type Gerrit struct {
+	// TickInterval is how often we do a sync with binded gerrit instance
+	TickIntervalString string        `json:"tick_interval,omitempty"`
+	TickInterval       time.Duration `json:"-"`
+	// RateLimit defines how many changes to query per gerrit API call
+	// default is 5
+	RateLimit int `json:"ratelimit,omitempty"`
 }
 
 // JenkinsOperator is config for the jenkins-operator controller.
@@ -350,6 +361,20 @@ func parseConfig(c *Config) error {
 			return fmt.Errorf("cannot parse duration for plank.pod_pending_timeout: %v", err)
 		}
 		c.Plank.PodPendingTimeout = podPendingTimeout
+	}
+
+	if c.Gerrit.TickIntervalString == "" {
+		c.Gerrit.TickInterval = time.Minute
+	} else {
+		tickInterval, err := time.ParseDuration(c.Gerrit.TickIntervalString)
+		if err != nil {
+			return fmt.Errorf("cannot parse duration for c.gerrit.tick_interval: %v", err)
+		}
+		c.Gerrit.TickInterval = tickInterval
+	}
+
+	if c.Gerrit.RateLimit == 0 {
+		c.Gerrit.RateLimit = 5
 	}
 
 	if c.JenkinsOperator != nil && len(c.JenkinsOperators) > 0 {

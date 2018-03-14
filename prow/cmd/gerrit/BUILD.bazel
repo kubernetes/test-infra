@@ -1,0 +1,61 @@
+package(default_visibility = ["//visibility:public"])
+
+load("@io_bazel_rules_docker//container:image.bzl", "container_image")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("@io_bazel_rules_docker//docker:docker.bzl", "container_push")
+
+container_image(
+    name = "image",
+    base = "@python//image",
+    cmd = ["./gerrit"],
+    files = [
+        "third_party/git-cookie-authdaemon",
+        ":gerrit",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+container_push(
+    name = "push",
+    format = "Docker",
+    image = ":image",
+    registry = "gcr.io",
+    repository = "gke-prow/gerrit",
+    stamp = True,
+    tag = "latest",
+)
+
+go_library(
+    name = "go_default_library",
+    srcs = ["main.go"],
+    importpath = "k8s.io/test-infra/prow/cmd/gerrit",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//prow/config:go_default_library",
+        "//prow/gerrit:go_default_library",
+        "//prow/kube:go_default_library",
+        "//prow/logrusutil:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+    ],
+)
+
+go_binary(
+    name = "gerrit",
+    embed = [":go_default_library"],
+    pure = "on",
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

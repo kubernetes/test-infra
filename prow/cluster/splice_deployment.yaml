@@ -15,7 +15,7 @@ spec:
       - name: splice
         args:
         - --always-run=pull-kubernetes-cross
-        image: gcr.io/k8s-prow/splice:v20180308-43ea85da7
+        image: gcr.io/k8s-prow/splice:v20180313-8a0eb795d
         volumeMounts:
         - name: config
           mountPath: /etc/config
