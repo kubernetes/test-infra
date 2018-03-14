@@ -1768,6 +1768,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/spark-periodic-default-gke
 - name: spark-periodic-latest-gke
   gcs_prefix: kubernetes-jenkins/logs/spark-periodic-latest-gke
+- name: kinflate-periodic-default-gke
+  gcs_prefix: kubernetes-jenkins/logs/kinflate-periodic-default-gke
 # kube-proxy daemonset migration jobs
 - name: ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
@@ -3948,6 +3950,12 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew-serial
     description: 'stable1 serial tests run against a master gke cluster using a stable1 kubectl binary'
 
+- name: sig-cli-misc
+  dashboard_tab:
+  - name: kinflate-periodic-default-gke
+    description: Periodic integration testing of kinflate.
+    test_group_name: kinflate-periodic-default-gke
+
 - name: sig-cluster-lifecycle-all
   dashboard_tab:
   - name: kubeadm-gce-1.7
@@ -5533,6 +5541,7 @@ dashboard_groups:
 - name: sig-cli
   dashboard_names:
   - sig-cli-master
+  - sig-cli-misc
 
 - name: sig-cluster-lifecycle
   dashboard_names:
