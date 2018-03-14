@@ -6350,6 +6350,8 @@ postsubmits:
 
   - name: ci-kubernetes-bazel-test-1-9
     agent: kubernetes
+    branches:
+    - release-1.9
     labels:
       preset-service-account: true
       preset-bazel-scratch-dir: true
