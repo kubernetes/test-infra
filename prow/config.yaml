@@ -5197,6 +5197,8 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=110
+        - --
+        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce-canary
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
@@ -5247,6 +5249,8 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=110
+        - --
+        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce-canary
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
@@ -5296,6 +5300,8 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=110
+        - --
+        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce-canary
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
