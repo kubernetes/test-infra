@@ -664,6 +664,31 @@ func prepareGcp(o *options) error {
 				return fmt.Errorf("could not set KUBE_MASTER_OS_DISTRIBUTION=%s: %v", distro, err)
 			}
 		}
+
+		hasGCPImageFamily, hasGCPImageProject := len(o.gcpImageFamily) != 0, len(o.gcpImageProject) != 0
+		if hasGCPImageFamily != hasGCPImageProject {
+			return fmt.Errorf("--image-family and --image-project must be both set or unset")
+		}
+		if hasGCPImageFamily && hasGCPImageProject {
+			out, err := control.Output(exec.Command("gcloud", "compute", "images", "describe-from-family", o.gcpImageFamily, "--project", o.gcpImageProject))
+			if err != nil {
+				return fmt.Errorf("failed to get latest image from family %q in project %q: %s", o.gcpImageFamily, o.gcpImageProject, err)
+			}
+			latestImage := ""
+			latestImageRegexp := regexp.MustCompile("^name: *(\\S+)")
+			for _, line := range strings.Split(string(out), "\n") {
+				matches := latestImageRegexp.FindStringSubmatch(line)
+				if len(matches) == 2 {
+					latestImage = matches[1]
+					break
+				}
+			}
+			if len(latestImage) == 0 {
+				return fmt.Errorf("failed to get latest image from family %q in project %q", o.gcpImageFamily, o.gcpImageProject)
+			}
+			os.Setenv("KUBE_GCE_NODE_IMAGE", latestImage)
+			os.Setenv("KUBE_GCE_NODE_PROJECT", o.gcpImageProject)
+		}
 	} else if o.provider == "gke" {
 		if o.deployment == "" {
 			o.deployment = "gke"

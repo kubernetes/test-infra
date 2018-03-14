@@ -56,6 +56,12 @@
   revision = "de5bf2ad457846296e2031421a34e2568e304e35"
 
 [[projects]]
+  name = "github.com/andygrunwald/go-gerrit"
+  packages = ["."]
+  revision = "95b11af228a177a6c9961202fa40ff284ba86849"
+  version = "0.5.2"
+
+[[projects]]
   branch = "master"
   name = "github.com/armon/go-radix"
   packages = ["."]
@@ -911,6 +917,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "06898d0722ad3ac8e31d6a6c6b33d427d4e12a1628ea897cf8de26f32c479e75"
+  inputs-digest = "3227ee0b4f0931730ee667820ab4433f6352459f899fefe3cb6695afa07179f5"
   solver-name = "gps-cdcl"
   solver-version = 1

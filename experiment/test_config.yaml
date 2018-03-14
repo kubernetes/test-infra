@@ -1041,12 +1041,12 @@ nodeCommon:
 nodeImages:
   cosbeta:
     args:
-    - --node-args=--images=cos-beta-64-10176-60-0
+    - --node-args=--images=cos-beta-65-10323-51-0
     - --node-args=--image-project=gke-node-images
     - --node-args=--instance-metadata=user-data<test/e2e_node/jenkins/cos-init-disable-live-restore.yaml,gci-update-strategy=update_disabled
   cosstable1:
     args:
-    - --node-args=--images=cos-stable-63-10032-71-0
+    - --node-args=--images=cos-stable-64-10176-62-0
     - --node-args=--image-project=cos-cloud
     - --node-args=--instance-metadata=user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled
   ubuntudev:
@@ -1066,23 +1066,23 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180312-a6be97dc1-master
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180313-3e7524a90-master
   beta:
     args:
     - --repo=k8s.io/kubernetes=release-1.10
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180312-a6be97dc1-1.10
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180313-3e7524a90-1.10
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.9
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180312-a6be97dc1-1.9
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180313-3e7524a90-1.9
   stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.8
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180312-a6be97dc1-1.8
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180313-3e7524a90-1.8
   stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.7
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180312-a6be97dc1-1.7
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180313-3e7524a90-1.7
 
 nodeTestSuites:
   default:
