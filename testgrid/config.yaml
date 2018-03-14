@@ -1877,6 +1877,10 @@ test_groups:
   num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
+- name: pull-kubernetes-kubemark-e2e-gce-canary
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-kubemark-e2e-gce-canary
+  days_of_results: 1
+  num_columns_recent: 20
 - name: pull-kubernetes-kubemark-e2e-gce-big
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-kubemark-e2e-gce-big
   days_of_results: 1
@@ -5330,6 +5334,9 @@ dashboards:
     base_options: 'width=10'
   - name: pull-kubernetes-kubemark-e2e-gce-scale
     test_group_name: pull-kubernetes-kubemark-e2e-gce-scale
+    base_options: 'width=10'
+  - name: pull-kubernetes-kubemark-e2e-gce-canary
+    test_group_name: pull-kubernetes-kubemark-e2e-gce-canary
     base_options: 'width=10'
 
 - name: presubmits-test-infra

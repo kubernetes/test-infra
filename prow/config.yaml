@@ -2784,6 +2784,171 @@ presubmits:
       - name: docker-graph
         emptyDir: {}
 
+  - name: pull-kubernetes-kubemark-e2e-gce-canary
+    agent: kubernetes
+    always_run: false
+    max_concurrency: 5
+    skip_branches:
+    - release-1.7  # per-release image
+    - release-1.8  # per-release image
+    context: pull-kubernetes-kubemark-e2e-gce-canary
+    rerun_command: "/test pull-kubernetes-kubemark-e2e-gce-canary"
+    trigger: "(?m)^/test pull-kubernetes-kubemark-e2e-gce-canary,?(\\s+|$)"
+    labels:
+      preset-service-account: true
+      preset-k8s-ssh: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        imagePullPolicy: Always
+        args:
+        - --root=/go/src
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=k8s.io/release"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=110"
+        env:
+        # TODO(krzyzacy): Figure out bazel built kubemark image
+        # - name: KUBEMARK_BAZEL_BUILD
+        # value: "y"
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: cache-ssd
+          mountPath: /root/.cache
+        - name: docker-graph
+          mountPath: /docker-graph
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
+      volumes:
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+      - name: docker-graph
+        hostPath:
+          path: /mnt/disks/ssd0/docker-graph
+  - name: pull-kubernetes-kubemark-e2e-gce-canary
+    agent: kubernetes
+    always_run: false
+    max_concurrency: 5
+    branches:
+    - release-1.8
+    context: pull-kubernetes-kubemark-e2e-gce-canary
+    rerun_command: "/test pull-kubernetes-kubemark-e2e-gce-canary"
+    trigger: "(?m)^/test pull-kubernetes-kubemark-e2e-gce-canary,?(\\s+|$)"
+    labels:
+      preset-service-account: true
+      preset-k8s-ssh: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180312-a6be97dc1-1.8
+        args:
+        - --root=/go/src
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=k8s.io/release"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=110"
+        env:
+        # TODO(krzyzacy): Figure out bazel built kubemark image
+        # - name: KUBEMARK_BAZEL_BUILD
+        # value: "y"
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: cache-ssd
+          mountPath: /root/.cache
+        - name: docker-graph
+          mountPath: /docker-graph
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
+      volumes:
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+      - name: docker-graph
+        hostPath:
+          path: /mnt/disks/ssd0/docker-graph
+  - name: pull-kubernetes-kubemark-e2e-gce-canary
+    agent: kubernetes
+    always_run: false
+    max_concurrency: 5
+    branches:
+    - release-1.7
+    context: pull-kubernetes-kubemark-e2e-gce-canary
+    rerun_command: "/test pull-kubernetes-kubemark-e2e-gce-canary"
+    trigger: "(?m)^/test pull-kubernetes-kubemark-e2e-gce-canary,?(\\s+|$)"
+    labels:
+      preset-service-account: true
+      preset-k8s-ssh: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180312-a6be97dc1-1.7
+        args:
+        - --root=/go/src
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=k8s.io/release"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=110"
+        env:
+        # TODO(krzyzacy): Figure out bazel built kubemark image
+        # - name: KUBEMARK_BAZEL_BUILD
+        # value: "y"
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: cache-ssd
+          mountPath: /root/.cache
+        - name: docker-graph
+          mountPath: /docker-graph
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
+      volumes:
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+      - name: docker-graph
+        hostPath:
+          path: /mnt/disks/ssd0/docker-graph
+
   - name: pull-kubernetes-kubemark-e2e-gce-scale
     agent: kubernetes
     always_run: false
@@ -5005,6 +5170,155 @@ presubmits:
       - emptyDir: {}
         name: auto-generated-docker-graph-volume-mount
     trigger: (?m)^/test pull-security-kubernetes-kubemark-e2e-gce-big,?(\s+|$)
+  - agent: kubernetes
+    always_run: false
+    cluster: security
+    context: pull-security-kubernetes-kubemark-e2e-gce-canary
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    max_concurrency: 5
+    name: pull-security-kubernetes-kubemark-e2e-gce-canary
+    rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce-canary
+    run_if_changed: ""
+    skip_branches:
+    - release-1.7
+    - release-1.8
+    skip_report: false
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --root=/go/src
+        - --clean
+        - --job=$(JOB_NAME)
+        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-security-prow/pr-logs
+        - --timeout=110
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: "true"
+        image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        imagePullPolicy: Always
+        name: ""
+        resources:
+          requests:
+            memory: 6Gi
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+        - mountPath: /docker-graph
+          name: auto-generated-docker-graph-volume-mount
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+      - emptyDir: {}
+        name: auto-generated-docker-graph-volume-mount
+    trigger: (?m)^/test pull-security-kubernetes-kubemark-e2e-gce-canary,?(\s+|$)
+  - agent: kubernetes
+    always_run: false
+    branches:
+    - release-1.8
+    cluster: security
+    context: pull-security-kubernetes-kubemark-e2e-gce-canary
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    max_concurrency: 5
+    name: pull-security-kubernetes-kubemark-e2e-gce-canary
+    rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce-canary
+    run_if_changed: ""
+    skip_report: false
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --root=/go/src
+        - --clean
+        - --job=$(JOB_NAME)
+        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-security-prow/pr-logs
+        - --timeout=110
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: "true"
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180312-a6be97dc1-1.8
+        name: ""
+        resources:
+          requests:
+            memory: 6Gi
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+        - mountPath: /docker-graph
+          name: auto-generated-docker-graph-volume-mount
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+      - emptyDir: {}
+        name: auto-generated-docker-graph-volume-mount
+    trigger: (?m)^/test pull-security-kubernetes-kubemark-e2e-gce-canary,?(\s+|$)
+  - agent: kubernetes
+    always_run: false
+    branches:
+    - release-1.7
+    cluster: security
+    context: pull-security-kubernetes-kubemark-e2e-gce-canary
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    max_concurrency: 5
+    name: pull-security-kubernetes-kubemark-e2e-gce-canary
+    rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce-canary
+    run_if_changed: ""
+    skip_report: false
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --root=/go/src
+        - --clean
+        - --job=$(JOB_NAME)
+        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-security-prow/pr-logs
+        - --timeout=110
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: "true"
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180312-a6be97dc1-1.7
+        name: ""
+        resources:
+          requests:
+            memory: 6Gi
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+        - mountPath: /docker-graph
+          name: auto-generated-docker-graph-volume-mount
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+      - emptyDir: {}
+        name: auto-generated-docker-graph-volume-mount
+    trigger: (?m)^/test pull-security-kubernetes-kubemark-e2e-gce-canary,?(\s+|$)
   - agent: kubernetes
     always_run: false
     branches:
