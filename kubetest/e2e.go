@@ -254,7 +254,7 @@ func run(deploy deployer, o options) error {
 
 	if o.kubemark {
 		errs = util.AppendError(errs, control.XmlWrap(&suite, "Kubemark Overall", func() error {
-			return kubemarkTest(testArgs, dump, o.kubemarkNodes)
+			return kubemarkTest(testArgs, dump, o.kubemarkNodes, deploy)
 		}))
 	}
 
@@ -600,7 +600,7 @@ func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone string) e
 	return control.FinishRunning(exec.Command("go", runner...))
 }
 
-func kubemarkTest(testArgs []string, dump, numNodes string) error {
+func kubemarkTest(testArgs []string, dump, numNodes string, deploy deployer) error {
 	// Stop previously running kubemark cluster (if any).
 	if err := control.XmlWrap(&suite, "Kubemark TearDown Previous", func() error {
 		return control.FinishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
@@ -636,6 +636,14 @@ func kubemarkTest(testArgs []string, dump, numNodes string) error {
 		})
 	}
 
+	if err := control.XmlWrap(&suite, "kubectl version", getKubectlVersion); err != nil {
+		return err
+	}
+
+	if err := control.XmlWrap(&suite, "IsUp", deploy.IsUp); err != nil {
+		return err
+	}
+
 	// Run tests on the kubemark cluster.
 	if err := control.XmlWrap(&suite, "Kubemark Test", func() error {
 		testArgs = append(
@@ -649,7 +657,7 @@ func kubemarkTest(testArgs []string, dump, numNodes string) error {
 			os.Environ(),
 			"KUBERNETES_PROVIDER=kubemark",
 			"KUBE_CONFIG_FILE=config-default.sh",
-			"KUBECONFIG="+util.K8s("test", "kubemark", "resources", "kubeconfig.kubemark"),
+			fmt.Sprintf("KUBECONFIG=%s/kubernetes/test/kubemark/resources/kubeconfig.kubemark", os.Getenv("WORKSPACE")),
 			"E2E_MIN_STARTUP_PODS=0",
 			"KUBE_MASTER_URL=https://"+os.Getenv("KUBE_MASTER_IP"),
 		)
