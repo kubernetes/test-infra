@@ -167,6 +167,7 @@ func (jb *JenkinsBuild) BuildID() string {
 type Client struct {
 	// If logger is non-nil, log all method calls with it.
 	logger *logrus.Entry
+	dryRun bool
 
 	client     *http.Client
 	baseURL    string
@@ -204,12 +205,20 @@ type BearerTokenAuthConfig struct {
 	Token string
 }
 
-func NewClient(url string, tlsConfig *tls.Config, authConfig *AuthConfig, logger *logrus.Entry, metrics *ClientMetrics) (*Client, error) {
+func NewClient(
+	url string,
+	dryRun bool,
+	tlsConfig *tls.Config,
+	authConfig *AuthConfig,
+	logger *logrus.Entry,
+	metrics *ClientMetrics,
+) (*Client, error) {
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
 	c := &Client{
 		logger:     logger.WithField("client", "jenkins"),
+		dryRun:     dryRun,
 		baseURL:    url,
 		authConfig: authConfig,
 		client: &http.Client{
@@ -369,6 +378,9 @@ func (c *Client) Build(pj *kube.ProwJob, buildId string) error {
 // BuildFromSpec triggers a Jenkins build for the provided ProwJobSpec.
 // prowJobId helps us track the build before it's scheduled by Jenkins.
 func (c *Client) BuildFromSpec(spec *kube.ProwJobSpec, buildId, prowJobId string) error {
+	if c.dryRun {
+		return nil
+	}
 	env, err := pjutil.EnvForSpec(pjutil.NewJobSpec(*spec, buildId, prowJobId))
 	if err != nil {
 		return err
@@ -511,7 +523,9 @@ func (c *Client) GetBuilds(job string) (map[string]JenkinsBuild, error) {
 // Abort aborts the provided Jenkins build for job.
 func (c *Client) Abort(job string, build *JenkinsBuild) error {
 	c.logger.Debugf("Abort(%v %v)", job, build.Number)
-
+	if c.dryRun {
+		return nil
+	}
 	resp, err := c.request(http.MethodPost, fmt.Sprintf("/job/%s/%d/stop", job, build.Number), nil, false)
 	if err != nil {
 		return err
