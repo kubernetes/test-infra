@@ -66,6 +66,9 @@ if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
     echo "Done setting up docker in docker."
 fi
 
+# TODO(krzyzacy): remove after https://github.com/kubernetes/test-infra/pull/7267 is settled
+touch $(which kubetest)
+
 # disable error exit so we can run post-command cleanup
 set +o errexit
 # actually start bootstrap and the job
