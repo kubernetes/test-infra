@@ -26,28 +26,34 @@ import sys
 
 
 # A resource that need to be cleared.
-Resource = collections.namedtuple('Resource', 'name group condition managed tolerate')
+Resource = collections.namedtuple('Resource', 'group name subgroup condition managed tolerate')
 DEMOLISH_ORDER = [
     # [WARNING FROM KRZYZACY] : TOUCH THIS WITH CARE!
     # ORDER REALLY MATTERS HERE!
-    Resource('instances', None, 'zone', None, False),
-    Resource('addresses', None, 'region', None, False),
-    Resource('disks', None, 'zone', None, False),
-    Resource('firewall-rules', None, None, None, False),
-    Resource('routes', None, None, None, False),
-    Resource('forwarding-rules', None, 'region', None, False),
-    Resource('target-http-proxies', None, None, None, False),
-    Resource('target-https-proxies', None, None, None, False),
-    Resource('url-maps', None, None, None, False),
-    Resource('backend-services', None, 'region', None, False),
-    Resource('target-pools', None, 'region', None, False),
-    Resource('health-checks', None, None, None, False),
-    Resource('http-health-checks', None, None, None, False),
-    Resource('instance-groups', None, 'zone', 'Yes', False),
-    Resource('instance-groups', None, 'zone', 'No', False),
-    Resource('instance-templates', None, None, None, False),
-    Resource('networks', 'subnets', 'region', None, True),
-    Resource('networks', None, '', None, False),
+
+    # compute resources
+    Resource('compute', 'instances', None, 'zone', None, False),
+    Resource('compute', 'addresses', None, 'region', None, False),
+    Resource('compute', 'disks', None, 'zone', None, False),
+    Resource('compute', 'firewall-rules', None, None, None, False),
+    Resource('compute', 'routes', None, None, None, False),
+    Resource('compute', 'forwarding-rules', None, 'region', None, False),
+    Resource('compute', 'target-http-proxies', None, None, None, False),
+    Resource('compute', 'target-https-proxies', None, None, None, False),
+    Resource('compute', 'url-maps', None, None, None, False),
+    Resource('compute', 'backend-services', None, 'region', None, False),
+    Resource('compute', 'target-pools', None, 'region', None, False),
+    Resource('compute', 'health-checks', None, None, None, False),
+    Resource('compute', 'http-health-checks', None, None, None, False),
+    Resource('compute', 'instance-groups', None, 'zone', 'Yes', False),
+    Resource('compute', 'instance-groups', None, 'zone', 'No', False),
+    Resource('compute', 'instance-templates', None, None, None, False),
+    Resource('compute', 'networks', 'subnets', 'region', None, True),
+    Resource('compute', 'networks', None, '', None, False),
+    Resource('compute', 'routes', None, None, None, False),
+
+    # logging resources
+    Resource('logging', 'sinks', None, None, None, False),
 ]
 
 
@@ -67,9 +73,9 @@ def collect(project, age, resource, filt):
 
     col = collections.defaultdict(list)
 
-    cmd = ['gcloud', 'compute', '-q', resource.name]
-    if resource.group:
-        cmd.append(resource.group)
+    cmd = ['gcloud', resource.group, '-q', resource.name]
+    if resource.subgroup:
+        cmd.append(resource.subgroup)
     cmd.extend([
         'list',
         '--format=json(name,creationTimestamp.date(tz=UTC),zone,region,isManaged)',
@@ -98,10 +104,10 @@ def collect(project, age, resource, filt):
         # Unify datetime to use utc timezone.
         created = datetime.datetime.strptime(item['creationTimestamp'], '%Y-%m-%dT%H:%M:%S')
         print ('Found %r(%r), %r in %r, created time = %r' %
-               (resource.name, resource.group, item['name'], colname, item['creationTimestamp']))
+               (resource.name, resource.subgroup, item['name'], colname, item['creationTimestamp']))
         if created < age:
             print ('Added to janitor list: %r(%r), %r' %
-                   (resource.name, resource.group, item['name']))
+                   (resource.name, resource.subgroup, item['name']))
             col[colname].append(item['name'])
     return col
 
@@ -121,15 +127,15 @@ def clear_resources(project, cols, resource):
     for col, items in cols.items():
         if ARGS.dryrun:
             print ('Resource type %r(%r) to be deleted: %r' %
-                   (resource.name, resource.group, list(items)))
+                   (resource.name, resource.subgroup, list(items)))
             continue
 
         manage_key = {'Yes':'managed', 'No':'unmanaged'}
 
         # construct the customized gcloud commend
-        base = ['gcloud', 'compute', '-q', resource.name]
-        if resource.group:
-            base.append(resource.group)
+        base = ['gcloud', resource.group, '-q', resource.name]
+        if resource.subgroup:
+            base.append(resource.subgroup)
         if resource.managed:
             base.append(manage_key[resource.managed])
         base.append('delete')
