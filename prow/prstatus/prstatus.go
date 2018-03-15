@@ -37,6 +37,7 @@ import (
 )
 
 const (
+	loginSession   = "github_login"
 	githubEndpoint = "https://api.github.com"
 	tokenSession   = "access-token-session"
 	tokenKey       = "access-token"
@@ -168,20 +169,44 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 		data := UserData{
 			Login: false,
 		}
+
+		login := ""
 		if ok && token.Valid() {
-			data.Login = true
-			ghc := github.NewClient(token.AccessToken, githubEndpoint)
-			// Get user login
+			// If access token exist, get user login using the access token. This is a chance
+			// to validate whether the access token is consumable or not. If not, invalidate the
+			// session.
 			grc := pullRequestRestfulClient{ghclient.NewClient(token.AccessToken, false)}
-			login, err := getUserLogin(session, grc)
+			var err error
+			login, err = getUserLogin(session, grc)
 			if err != nil {
-				serverError("Error with getting user login", err)
-				return
+				if strings.Contains(err.Error(), "401 Unauthorized") {
+					// Invalidate access token session
+					session.Options.MaxAge = -1
+					if err := session.Save(r, w); err != nil {
+						serverError("Error with saving invalidated session", err)
+						return
+					}
+					// Invalidate github login session
+					http.SetCookie(w, &http.Cookie{
+						Name:    loginSession,
+						Path:    "/",
+						Expires: time.Now().Add(-time.Hour * 24),
+						MaxAge:  -1,
+						Secure:  true,
+					})
+				} else {
+					serverError("Error with getting user login", err)
+					return
+				}
 			}
+		}
+
+		if login != "" {
+			data.Login = true
 			// Saves login. We save the login under 2 cookies. One for the use of client to render the
 			// data and one encoded for server to verify the identity of the authenticated user.
 			http.SetCookie(w, &http.Cookie{
-				Name:    "github_login",
+				Name:    loginSession,
 				Value:   login,
 				Path:    "/",
 				Expires: time.Now().Add(time.Hour * 24 * 30),
@@ -193,6 +218,7 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 				return
 			}
 			// Construct query
+			ghc := github.NewClient(token.AccessToken, githubEndpoint)
 			query := da.ConstructSearchQuery(login)
 			if err := r.ParseForm(); err == nil {
 				if q := r.Form.Get("query"); q != "" {
