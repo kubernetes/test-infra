@@ -927,7 +927,7 @@ images:
     args:
     - --image-family=ubuntu-gke-1604-lts-1
     - --image-project=ubuntu-os-gke-cloud-devel
-    - --gcp-node-image=CUSTOM
+    - --gcp-node-image=custom
   ubuntudev:
     args:
     - --image-family=ubuntu-gke-1604-lts-1
