@@ -835,7 +835,7 @@ func checkLatestUsesImagePullPolicy(spec *v1.PodSpec) error {
 		if strings.Contains(container.Image, ":latest-") {
 			// If the job doesn't specify imagePullPolicy: Always,
 			// we aren't guaranteed to check for the latest version of the image.
-			if container.ImagePullPolicy == "" || container.ImagePullPolicy != "Always" {
+			if container.ImagePullPolicy != "Always" {
 				return errors.New("job uses latest- tag, but does not specify imagePullPolicy: Always")
 			}
 		}

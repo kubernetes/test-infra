@@ -6017,6 +6017,7 @@ presubmits:
         args:
         - --src-root=/go
         - --log=/logs/clone.json
+        - --clone-alias=kubernetes,test-infra=k8s.io/test-infra
         image: registry.svc.ci.openshift.org/ci/clonerefs:latest
         volumeMounts:
         - name: code
