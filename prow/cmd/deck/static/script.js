@@ -31,20 +31,6 @@ function optionsForRepo(repo) {
         states: {},
     };
 
-
-//  if its NOT PERIODIC 
-//  refs eempty
-
-// presubmit exoun MONO PULLS
-// post submit 
-// exoun refs 
-
-
-
-
-
-
-
     for (var i = 0; i < allBuilds.items.length; i++) {
         var build = allBuilds.items[i];
         opts.types[build.spec.type] = true;
@@ -484,7 +470,6 @@ function redraw(fz) {
                 }
             ]
         }
- ``
         if ( Object.keys(build.spec.refs).length == 0){
             build.spec.refs = prop;
         } 
@@ -575,7 +560,7 @@ function redraw(fz) {
         } else {
             r.appendChild(createLinkCell(build.spec.job, build.status.url, ""));
         }
-        r.appendChild(createTimeCell(i, parseInt(build.status.startTime)));
+        r.appendChild(createTimeCell(i, build.status.startTime));
         // TODO duration needs to be calculated
         r.appendChild(createTextCell(build.duration));
         builds.appendChild(r);
@@ -591,9 +576,8 @@ function createTextCell(text) {
     return c;
 }
 
-// TODO FIX date time
 function createTimeCell(id, time) {
-    var momentTime = moment.unix(time);
+    var momentTime = moment(time);
     var tid = "time-cell-" + id;
     var main = document.createElement("div");
     var isADayOld = momentTime.isBefore(moment().startOf('day'));
