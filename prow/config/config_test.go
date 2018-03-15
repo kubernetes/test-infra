@@ -78,7 +78,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func volumesAndMountsMatch(mounts []v1.VolumeMount, volumes []v1.Volume) bool {
+func missingVolumesForContainer(mounts []v1.VolumeMount, volumes []v1.Volume) sets.String {
 	mountNames := sets.NewString()
 	volumeNames := sets.NewString()
 	for _, m := range mounts {
@@ -87,34 +87,66 @@ func volumesAndMountsMatch(mounts []v1.VolumeMount, volumes []v1.Volume) bool {
 	for _, v := range volumes {
 		volumeNames.Insert(v.Name)
 	}
-	return volumeNames.Equal(mountNames)
+	return mountNames.Difference(volumeNames)
 }
 
-func specHasMatchingVolumesAndMounts(spec *v1.PodSpec) bool {
+func missingVolumesForSpec(spec *v1.PodSpec) map[string]sets.String {
+	malformed := map[string]sets.String{}
+	for _, container := range spec.InitContainers {
+		malformed[container.Name] = missingVolumesForContainer(container.VolumeMounts, spec.Volumes)
+	}
 	for _, container := range spec.Containers {
-		if !volumesAndMountsMatch(container.VolumeMounts, spec.Volumes) {
-			return false
+		malformed[container.Name] = missingVolumesForContainer(container.VolumeMounts, spec.Volumes)
+	}
+	return malformed
+}
+
+func missingMountsForSpec(spec *v1.PodSpec) sets.String {
+	mountNames := sets.NewString()
+	volumeNames := sets.NewString()
+	for _, container := range spec.Containers {
+		for _, m := range container.VolumeMounts {
+			mountNames.Insert(m.Name)
 		}
 	}
-	return true
+	for _, container := range spec.InitContainers {
+		for _, m := range container.VolumeMounts {
+			mountNames.Insert(m.Name)
+		}
+	}
+	for _, v := range spec.Volumes {
+		volumeNames.Insert(v.Name)
+	}
+	return volumeNames.Difference(mountNames)
 }
 
 // verify that all volume mounts reference volumes that exist
 func TestMountsHaveVolumes(t *testing.T) {
 	for _, job := range c.AllPresubmits(nil) {
-		if job.Spec != nil && !specHasMatchingVolumesAndMounts(job.Spec) {
-			t.Errorf("volumes and mounts do not match for: %v", job.Name)
+		if job.Spec != nil {
+			validateVolumesAndMounts(job.Name, job.Spec, t)
 		}
 	}
 	for _, job := range c.AllPostsubmits(nil) {
-		if job.Spec != nil && !specHasMatchingVolumesAndMounts(job.Spec) {
-			t.Errorf("volumes and mounts do not match for: %v", job.Name)
+		if job.Spec != nil {
+			validateVolumesAndMounts(job.Name, job.Spec, t)
 		}
 	}
 	for _, job := range c.AllPeriodics() {
-		if job.Spec != nil && !specHasMatchingVolumesAndMounts(job.Spec) {
-			t.Errorf("volumes and mounts do not match for: %v", job.Name)
+		if job.Spec != nil {
+			validateVolumesAndMounts(job.Name, job.Spec, t)
 		}
+	}
+}
+
+func validateVolumesAndMounts(name string, spec *v1.PodSpec, t *testing.T) {
+	for container, missingVolumes := range missingVolumesForSpec(spec) {
+		if len(missingVolumes) > 0 {
+			t.Errorf("job %s in container %s has mounts that are missing volumes: %v", name, container, missingVolumes.List())
+		}
+	}
+	if missingMounts := missingMountsForSpec(spec); len(missingMounts) > 0 {
+		t.Errorf("job %s has volumes that are not mounted: %v", name, missingMounts.List())
 	}
 }
 
@@ -855,6 +887,12 @@ func TestLatestUsesImagePullPolicy(t *testing.T) {
 func checkKubekinsPresets(jobName string, spec *v1.PodSpec, labels, validLabels map[string]string) error {
 	service := true
 	ssh := true
+
+	if len(spec.InitContainers) > 0 && len(spec.Containers) > 0 {
+		// preset rules do not apply to complex pods
+		return nil
+	}
+
 	for _, container := range spec.Containers {
 		if strings.Contains(container.Image, "kubekins-e2e") || strings.Contains(container.Image, "bootstrap") {
 			service = false

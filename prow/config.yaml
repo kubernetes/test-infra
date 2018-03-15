@@ -6019,10 +6019,10 @@ presubmits:
         - --log=/logs/clone.json
         image: registry.svc.ci.openshift.org/ci/clonerefs:latest
         volumeMounts:
-        - mountPath: /go
-          name: code
-        - mountPath: /logs
-          name: logs
+        - name: code
+          mountPath: /go
+        - name: logs
+          mountPath: /logs
       - name: initupload
         command:
         - /initupload
@@ -6036,10 +6036,10 @@ presubmits:
         - --default-repo=kubernetes
         image: registry.svc.ci.openshift.org/ci/initupload:latest
         volumeMounts:
-        - mountPath: /logs
-          name: logs
-        - mountPath: /secrets/gcs
-          name: gcs-credentials
+        - name: logs
+          mountPath: /logs
+        - name: gcs-credentials
+          mountPath: /secrets/gcs
       - name: place-tools
         command:
         - /bin/cp
@@ -6048,8 +6048,8 @@ presubmits:
         - /tools/entrypoint
         image: registry.svc.ci.openshift.org/ci/entrypoint:latest
         volumeMounts:
-        - mountPath: /tools
-          name: tools
+        - name: tools
+          mountPath: /tools
       containers:
       - name: test
         command:
@@ -6070,12 +6070,12 @@ presubmits:
           requests:
             memory: "2Gi"
         volumeMounts:
-        - mountPath: /tools
-          name: tools
-        - mountPath: /go
-          name: code
-        - mountPath: /logs
-          name: logs
+        - name: tools
+          mountPath: /tools
+        - name: code
+          mountPath: /go
+        - name: logs
+          mountPath: /logs
         - name: bazel-scratch
           mountPath: /bazel-scratch/.cache
       - name: sidecar
@@ -6092,10 +6092,10 @@ presubmits:
         - --default-repo=kubernetes
         image: registry.svc.ci.openshift.org/ci/sidecar:latest
         volumeMounts:
-        - mountPath: /logs
-          name: logs
-        - mountPath: /secrets/gcs
-          name: gcs-credentials
+        - name: logs
+          mountPath: /logs
+        - name: gcs-credentials
+          mountPath: /secrets/gcs
       volumes:
       - name: code
         emptyDir: {}
