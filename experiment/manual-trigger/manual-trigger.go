@@ -138,7 +138,7 @@ func main() {
 		log.Fatalf("no jenkins auth token provided")
 	}
 
-	jc, err := jenkins.NewClient(o.jenkinsURL, nil, &ac, nil, nil)
+	jc, err := jenkins.NewClient(o.jenkinsURL, false, nil, &ac, nil, nil)
 	if err != nil {
 		log.Fatalf("cannot setup Jenkins client: %v", err)
 	}

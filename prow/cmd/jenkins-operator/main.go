@@ -48,6 +48,7 @@ type options struct {
 	configPath string
 	selector   string
 	totURL     string
+	deckURL    string
 
 	jenkinsURL             string
 	jenkinsUserName        string
@@ -91,6 +92,7 @@ func gatherOptions() options {
 	flag.StringVar(&o.configPath, "config-path", "/etc/config/config", "Path to config.yaml.")
 	flag.StringVar(&o.selector, "label-selector", kube.EmptySelector, "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
 	flag.StringVar(&o.totURL, "tot-url", "", "Tot URL")
+	flag.StringVar(&o.deckURL, "deck-url", "", "Deck URL for read-only access to the cluster.")
 
 	flag.StringVar(&o.jenkinsURL, "jenkins-url", "http://jenkins-proxy", "Jenkins URL")
 	flag.StringVar(&o.jenkinsUserName, "jenkins-user", "jenkins-trigger", "Jenkins username")
@@ -103,7 +105,7 @@ func gatherOptions() options {
 
 	flag.StringVar(&o.githubEndpoint, "github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
 	flag.StringVar(&o.githubTokenFile, "github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
-	flag.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
+	flag.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub/Kubernetes/Jenkins.")
 	flag.Parse()
 	return o
 }
@@ -161,7 +163,7 @@ func main() {
 		tlsConfig = config
 	}
 	metrics := jenkins.NewMetrics()
-	jc, err := jenkins.NewClient(o.jenkinsURL, tlsConfig, ac, nil, metrics.ClientMetrics)
+	jc, err := jenkins.NewClient(o.jenkinsURL, o.dryRun, tlsConfig, ac, nil, metrics.ClientMetrics)
 	if err != nil {
 		logrus.WithError(err).Fatalf("Could not setup Jenkins client.")
 	}
@@ -180,6 +182,7 @@ func main() {
 	var ghc *github.Client
 	if o.dryRun {
 		ghc = github.NewDryRunClient(oauthSecret, o.githubEndpoint)
+		kc = kube.NewFakeClient(o.deckURL)
 	} else {
 		ghc = github.NewClient(oauthSecret, o.githubEndpoint)
 	}
