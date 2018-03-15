@@ -112,6 +112,39 @@ def get_running_build_log(job, build, prow_url):
     return None, None
 
 
+def normalize_metadata(started_future, finished_future):
+    """
+    Munge and normalize the output of loading started
+    and finished.json files from a GCS bucket.
+
+    :param started_future: future from gcs_async.read()
+    :param finished_future: future from gcs_async.read()
+    :return: started, finished dictionaries
+    """
+    started = started_future.get_result()
+    finished = finished_future.get_result()
+    if finished and not started:
+        started = 'null'
+    elif started and not finished:
+        finished = 'null'
+    elif not (started and finished):
+        return None, None
+    started = json.loads(started)
+    finished = json.loads(finished)
+
+    if finished is not None:
+        # we want to allow users pushing to GCS to
+        # provide us either passed or result, but not
+        # require either (or both)
+        if 'result' in finished and 'passed' not in finished:
+            finished['passed'] = finished['result'] == 'SUCCESS'
+
+        if 'passed' in finished and 'result' not in finished:
+            finished['result'] = 'SUCCESS' if finished['passed'] else 'FAILURE'
+
+    return started, finished
+
+
 @view_base.memcache_memoize('build-details://', expires=60)
 def build_details(build_dir):
     """
@@ -127,29 +160,16 @@ def build_details(build_dir):
                   skipped: [name...],
                   passed: [name...]}
     """
-    started_fut = gcs_async.read(build_dir + '/started.json')
-    finished = gcs_async.read(build_dir + '/finished.json').get_result()
-    started = started_fut.get_result()
-    if finished and not started:
-        started = 'null'
-    if started and not finished:
-        finished = 'null'
-    elif not (started and finished):
-        return
-    started = json.loads(started)
-    finished = json.loads(finished)
+    started, finished = normalize_metadata(
+        gcs_async.read(build_dir + '/started.json'),
+        gcs_async.read(build_dir + '/finished.json')
+    )
 
-    # we want to allow users pushing to GCS to
-    # provide us either passed or result, but not
-    # require either (or both)
-    if 'result' in finished and 'passed' not in finished:
-        finished['passed'] = finished['result'] == 'SUCCESS'
-
-    if 'passed' in finished and 'result' not in finished:
-        finished['result'] = 'SUCCESS' if finished['passed'] else 'FAILURE'
+    if started is None and finished is None:
+        return started, finished, None
 
     junit_paths = [f.filename for f in view_base.gcs_ls_recursive('%s/artifacts' % build_dir)
-                   if re.match(r'.*\.xml', os.path.basename(f.filename))]
+                   if f.filename.endswith('.xml')]
 
     junit_futures = {f: gcs_async.read(f) for f in junit_paths}
 
@@ -206,15 +226,14 @@ class BuildHandler(view_base.BaseHandler):
         job_dir = '/%s/%s/' % (prefix, job)
         testgrid_query = testgrid.path_to_query(job_dir)
         build_dir = job_dir + build
-        details = build_details(build_dir)
-        if not details:
+        started, finished, results = build_details(build_dir)
+        if started is None and finished is None:
             logging.warning('unable to load %s', build_dir)
             self.render(
                 'build_404.html',
                 dict(build_dir=build_dir, job_dir=job_dir, job=job, build=build))
             self.response.set_status(404)
             return
-        started, finished, results = details
 
         want_build_log = False
         build_log = ''
@@ -355,13 +374,12 @@ def build_list(job_dir, before):
             for build in builds
         ]
 
-    def resolve(future):
-        res = future.get_result()
-        if res:
-            return json.loads(res)
+    output = []
+    for build, loc, started_future, finished_future in build_futures:
+        started, finished = normalize_metadata(started_future, finished_future)
+        output.append((str(build), loc, started, finished))
 
-    return [(str(build), loc, resolve(started), resolve(finished))
-            for build, loc, started, finished in build_futures]
+    return output
 
 class BuildListHandler(view_base.BaseHandler):
     """Show a list of Builds for a Job."""
