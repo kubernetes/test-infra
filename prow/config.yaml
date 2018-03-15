@@ -15069,7 +15069,7 @@ periodics:
 
 - interval: 2h
   agent: kubernetes
-  name: kinflate-periodic-default-gke
+  name: ci-kinflate-periodic-default-gke
   labels:
     preset-service-account: true
     preset-k8s-ssh: true

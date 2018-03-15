@@ -10922,7 +10922,7 @@
       "sig-gcp"
     ]
   },
-  "kinflate-periodic-default-gke": {
+  "ci-kinflate-periodic-default-gke": {
     "args": [
       "--check-leaked-resources",
       "--cluster=",
@@ -10933,7 +10933,8 @@
       "--gke-environment=prod",
       "--provider=gke",
       "--test=false",
-      "--test-cmd=../cmd/kinflate/test/main.sh /go/src/example-ldap-repo",
+      "--test-cmd=../cmd/kinflate/test/main.sh",
+      "--test-cmd-args=/go/src/example-ldap-repo",
       "--test-cmd-name=kinflate-integration",
       "--timeout=120m"
     ],
