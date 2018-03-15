@@ -215,19 +215,9 @@ function createSearchCard() {
  * Loads Pr Status
  */
 function loadPrStatus(prData) {
-    const buildRepoNumberRefMap = new Map();
-    allBuilds.filter(build => {
-        return build.type === "presubmit";
-    }).forEach(build => {
-        const key = buildKey(build);
-        if (!buildRepoNumberRefMap[key]) {
-            buildRepoNumberRefMap[key] = [];
-        }
-        buildRepoNumberRefMap[key].push(build);
-    });
     const repoTideQueryMap = new Map();
-    tideData.TideQueries.forEach(query => {
-        query.repos.forEach(repo => {
+    for (let query of tideData.TideQueries) {
+        for (let repo of query.repos) {
             if (!repoTideQueryMap[repo]) {
                 repoTideQueryMap[repo] = [];
             }
@@ -235,8 +225,8 @@ function loadPrStatus(prData) {
                 labels: query.labels,
                 missingLabels: query.missingLabels
             });
-        });
-    });
+        }
+    }
     const container = document.querySelector("#main-container");
     container.appendChild(createSearchCard());
     if (!prData.PullRequests || prData.PullRequests.length === 0) {
@@ -244,12 +234,27 @@ function loadPrStatus(prData) {
         container.appendChild(msg);
         return;
     }
-    prData.PullRequests.forEach(pr => {
-        const prKey = [pr.Repository.NameWithOwner, pr.BaseRef.Name, pr.Number,
-            pr.HeadRefOID].join("_");
-        container.appendChild(createPRCard(pr, buildRepoNumberRefMap[prKey],
+    for (let pr of prData.PullRequests) {
+        // There might be multiple runs of jobs for a build.
+        // allBuilds is sorted with the most recent builds first, so
+        // we only need to keep the first build for each job name.
+        let seenJobs = {};
+        let builds = [];
+        for (let build of allBuilds) {
+            if (build.type === 'presubmit' &&
+                build.repo === pr.Repository.NameWithOwner &&
+                build.base_ref === pr.BaseRef.Name &&
+                build.number === pr.Number &&
+                build.pull_sha === pr.HeadRefOID) {
+                if (!seenJobs[build.job]) {  // First (latest) build for job.
+                    seenJobs[build.job] = true;
+                    builds.push(build);
+                }
+            }
+        }
+        container.appendChild(createPRCard(pr, builds,
             repoTideQueryMap[pr.Repository.NameWithOwner], tideData.Pools));
-    });
+    }
 }
 
 /**
@@ -833,10 +838,6 @@ function isAbleToMerge(queries) {
         return -1;
     }
     return Math.abs(queries[0].score - 1.0) < Number.EPSILON ? 1 : 0;
-}
-
-function buildKey(build) {
-    return [build.repo, build.base_ref, build.number, build.pull_sha].join("_");
 }
 
 /**
