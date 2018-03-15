@@ -15079,6 +15079,7 @@ periodics:
       args:
       - "--clean"
       - "--job=$(JOB_NAME)"
+      - "--root=/go/src"
       - "--repo=github.com/kubernetes/kubectl"
       - "--repo=github.com/kinflate/example-ldap-customized"
       - "--repo=github.com/kinflate/example-ldap"

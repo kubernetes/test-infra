@@ -10933,7 +10933,7 @@
       "--gke-environment=prod",
       "--provider=gke",
       "--test=false",
-      "--test-cmd=../cmd/kinflate/test/main.sh",
+      "--test-cmd=../cmd/kinflate/test/main.sh /go/src/example-ldap-repo",
       "--test-cmd-name=kinflate-integration",
       "--timeout=120m"
     ],
