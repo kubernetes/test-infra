@@ -53,7 +53,6 @@ type Config struct {
 	Gerrit           Gerrit           `json:"gerrit,omitempty"`
 
 	// TODO: Move this out of the main config.
-	JenkinsOperator  *JenkinsOperator  `json:"jenkins_operator,omitempty"`
 	JenkinsOperators []JenkinsOperator `json:"jenkins_operators,omitempty"`
 
 	// ProwJobNamespace is the namespace in the cluster that prow
@@ -377,20 +376,6 @@ func parseConfig(c *Config) error {
 		c.Gerrit.RateLimit = 5
 	}
 
-	if c.JenkinsOperator != nil && len(c.JenkinsOperators) > 0 {
-		return fmt.Errorf("invalid config: use one of jenkins_operator and jenkins_operators")
-	}
-	if c.JenkinsOperator != nil {
-		// Maintain backwards-compatibility - remove JenkinsOperator in the future.
-		logrus.Warning("jenkins_operator is deprecated, please switch to the jenkins_operators option!")
-		c.JenkinsOperators = make([]JenkinsOperator, 0, 1)
-		c.JenkinsOperators = append(c.JenkinsOperators, *c.JenkinsOperator)
-	}
-	if len(c.JenkinsOperators) == 1 {
-		if c.JenkinsOperators[0].LabelSelectorString != "" {
-			return errors.New("label_selector is invalid when used for a single jenkins-operator")
-		}
-	}
 	for i := range c.JenkinsOperators {
 		if err := ValidateController(&c.JenkinsOperators[i].Controller); err != nil {
 			return fmt.Errorf("validating jenkins_operators config: %v", err)
@@ -403,6 +388,9 @@ func parseConfig(c *Config) error {
 		// TODO: Invalidate overlapping selectors more
 		if len(c.JenkinsOperators) > 1 && c.JenkinsOperators[i].LabelSelectorString == "" {
 			return errors.New("selector overlap: cannot use an empty label_selector with multiple selectors")
+		}
+		if len(c.JenkinsOperators) == 1 && c.JenkinsOperators[0].LabelSelectorString != "" {
+			return errors.New("label_selector is invalid when used for a single jenkins-operator")
 		}
 	}
 
