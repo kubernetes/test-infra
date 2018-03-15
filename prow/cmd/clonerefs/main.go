@@ -23,6 +23,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"sync"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -140,7 +141,8 @@ func main() {
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "clonerefs"}),
 	)
 
-	var results []clone.Record
+	wg := &sync.WaitGroup{}
+	output := make(chan clone.Record, len(o.refs.gitRefs)+1)
 
 	jobRefs, err := pjutil.ResolveSpecFromEnv()
 	if err != nil {
@@ -154,12 +156,28 @@ func main() {
 					logrus.Fatalf("Clone specification for %s/%s found both in Prow variables and user-provided flags", jobRefs.Refs.Org, jobRefs.Refs.Repo)
 				}
 			}
-			results = append(results, clone.Run(jobRefs.Refs, o.srcRoot, o.gitUserName, o.gitUserEmail, o.aliases.aliases))
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				output <- clone.Run(jobRefs.Refs, o.srcRoot, o.gitUserName, o.gitUserEmail, o.aliases.aliases)
+			}()
 		}
 	}
 
+	wg.Add(len(o.refs.gitRefs))
 	for _, gitRef := range o.refs.gitRefs {
-		results = append(results, clone.Run(gitRef, o.srcRoot, o.gitUserName, o.gitUserEmail, o.aliases.aliases))
+		go func(ref kube.Refs) {
+			defer wg.Done()
+			output <- clone.Run(ref, o.srcRoot, o.gitUserName, o.gitUserEmail, o.aliases.aliases)
+		}(gitRef)
+	}
+
+	wg.Wait()
+	close(output)
+
+	var results []clone.Record
+	for record := range output {
+		results = append(results, record)
 	}
 
 	logData, err := json.Marshal(results)
