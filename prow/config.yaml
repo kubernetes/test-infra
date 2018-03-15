@@ -6002,6 +6002,113 @@ presubmits:
           requests:
             memory: "2Gi"
 
+  - name: pull-test-infra-verify-config-canary
+    agent: kubernetes
+    context: pull-test-infra-verify-config-canary
+    branches:
+    - master
+    rerun_command: "/test pull-test-infra-verify-config-canary"
+    trigger: "/test pull-test-infra-verify-config-canary"
+    spec:
+      initContainers:
+      - name: clonerefs
+        command:
+        - /clonerefs
+        args:
+        - --src-root=/go
+        - --log=/logs/clone.json
+        image: registry.svc.ci.openshift.org/ci/clonerefs:latest
+        volumeMounts:
+        - mountPath: /go
+          name: code
+        - mountPath: /logs
+          name: logs
+      - name: initupload
+        command:
+        - /initupload
+        args:
+        - --dry-run=false
+        - --clone-log=/logs/clone.json
+        - --gcs-bucket=kubernetes-jenkins
+        - --gcs-credentials-file=/secrets/gcs/service-account.json
+        - --path-strategy=legacy
+        - --default-org=kubernetes
+        - --default-repo=kubernetes
+        image: registry.svc.ci.openshift.org/ci/initupload:latest
+        volumeMounts:
+        - mountPath: /logs
+          name: logs
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+      - name: place-tools
+        command:
+        - /bin/cp
+        args:
+        - /entrypoint
+        - /tools/entrypoint
+        image: registry.svc.ci.openshift.org/ci/entrypoint:latest
+        volumeMounts:
+        - mountPath: /tools
+          name: tools
+      containers:
+      - name: test
+        command:
+        - /tools/entrypoint
+        args:
+        - --process-log=/logs/process-log.txt
+        - --marker-file=/logs/marker-file.txt
+        - --
+        - ./hack/verify-config.sh
+        workingDir: /go/src/k8s.io/test-infra
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180313-3e7524a90-experimental
+        env:
+        - name: TEST_TMPDIR
+          value: /bazel-scratch/.cache/bazel
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "2Gi"
+        volumeMounts:
+        - mountPath: /tools
+          name: tools
+        - mountPath: /go
+          name: code
+        - mountPath: /logs
+          name: logs
+        - name: bazel-scratch
+          mountPath: /bazel-scratch/.cache
+      - name: sidecar
+        command:
+        - /sidecar
+        args:
+        - --process-log=/logs/process-log.txt
+        - --marker-file=/logs/marker-file.txt
+        - --dry-run=false
+        - --gcs-bucket=kubernetes-jenkins
+        - --gcs-credentials-file=/secrets/gcs/service-account.json
+        - --path-strategy=legacy
+        - --default-org=kubernetes
+        - --default-repo=kubernetes
+        image: registry.svc.ci.openshift.org/ci/sidecar:latest
+        volumeMounts:
+        - mountPath: /logs
+          name: logs
+        - mountPath: /secrets/gcs
+          name: gcs-credentials
+      volumes:
+      - name: code
+        emptyDir: {}
+      - name: logs
+        emptyDir: {}
+      - name: tools
+        emptyDir: {}
+      - name: gcs-credentials
+        secret:
+          secretName: service-account
+      - name: bazel-scratch
+        emptyDir: {}
+
   - name: pull-test-infra-verify-deps
     agent: kubernetes
     context: pull-test-infra-verify-deps
