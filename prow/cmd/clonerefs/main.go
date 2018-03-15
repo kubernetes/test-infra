@@ -40,7 +40,8 @@ type options struct {
 	gitUserName  string
 	gitUserEmail string
 
-	refs gitRefs
+	refs    gitRefs
+	aliases pathAliases
 }
 
 func (o *options) Validate() error {
@@ -75,6 +76,7 @@ func gatherOptions() options {
 	flag.StringVar(&o.gitUserName, "git-user-name", "ci-robot", "Username to set in git config")
 	flag.StringVar(&o.gitUserEmail, "git-user-email", "ci-robot@k8s.io", "Email to set in git config")
 	flag.Var(&o.refs, "repo", "Mapping of Git URI to refs to check out, can be provided more than once")
+	flag.Var(&o.aliases, "clone-alias", "Mapping of org and repo to path to clone to, can be provided more than once")
 	flag.Parse()
 	return o
 }
@@ -106,6 +108,28 @@ func (r *gitRefs) Set(value string) error {
 	return nil
 }
 
+type pathAliases struct {
+	aliases []clone.PathResolver
+}
+
+func (a *pathAliases) String() string {
+	representation := bytes.Buffer{}
+	for _, resolver := range a.aliases {
+		fmt.Fprint(&representation, resolver.String())
+	}
+	return representation.String()
+}
+
+// Set parses out path aliases from user input
+func (a *pathAliases) Set(value string) error {
+	resolver, err := clone.ParseAliases(value)
+	if err != nil {
+		return err
+	}
+	a.aliases = append(a.aliases, resolver)
+	return nil
+}
+
 func main() {
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {
@@ -130,12 +154,12 @@ func main() {
 					logrus.Fatalf("Clone specification for %s/%s found both in Prow variables and user-provided flags", jobRefs.Refs.Org, jobRefs.Refs.Repo)
 				}
 			}
-			results = append(results, clone.Run(jobRefs.Refs, o.srcRoot, o.gitUserName, o.gitUserEmail))
+			results = append(results, clone.Run(jobRefs.Refs, o.srcRoot, o.gitUserName, o.gitUserEmail, o.aliases.aliases))
 		}
 	}
 
 	for _, gitRef := range o.refs.gitRefs {
-		results = append(results, clone.Run(gitRef, o.srcRoot, o.gitUserName, o.gitUserEmail))
+		results = append(results, clone.Run(gitRef, o.srcRoot, o.gitUserName, o.gitUserEmail, o.aliases.aliases))
 	}
 
 	logData, err := json.Marshal(results)
