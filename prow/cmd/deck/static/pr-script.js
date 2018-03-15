@@ -437,7 +437,7 @@ function createJobStatus(builds) {
             stateIcon = "check_circle";
             break;
         case "failed":
-            statusText = failedJobs.length + " test(s) failed";
+            statusText = failedJobs.length + " test" + (failedJobs.length === 1 ? "" : "s") + " failed";
             stateIcon = "error";
             break;
         case "unknown":
