@@ -561,8 +561,7 @@ function redraw(fz) {
             r.appendChild(createLinkCell(build.spec.job, build.status.url, ""));
         }
         r.appendChild(createTimeCell(i, build.status.startTime));
-        // TODO duration needs to be calculated
-        r.appendChild(createTextCell(build.duration));
+        r.appendChild(createTextCell(duration(build.status.startTime, build.status.completionTime)));
         builds.appendChild(r);
     }
     const jobCount = document.getElementById("job-count");
@@ -774,3 +773,18 @@ function createIcon(iconString, tooltip = "") {
 
     return container;
 }
+
+/**
+ * Returns the duration between two moments
+ * @param {date time} startTime
+ * @param {data time} completionTime 
+ */
+
+ function duration(startTime, completionTime) {
+     
+    var startMoment = new moment(startTime),
+        completionMoment = new moment(completionTime),
+        d = moment.duration(completionMoment.diff(startMoment));
+
+    return d.hours() + "h" + d.minutes() + "m" + d.seconds() + "s";
+ }
