@@ -158,7 +158,7 @@ func main() {
 	spec := kube.ProwJobSpec{
 		Type: kube.PresubmitJob,
 		Job:  o.jobName,
-		Refs: kube.Refs{
+		Refs: &kube.Refs{
 			Org:     o.org,
 			Repo:    o.repo,
 			BaseRef: pr.Base.Ref,

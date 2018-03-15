@@ -239,7 +239,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			pj: kube.ProwJob{
 				Spec: kube.ProwJobSpec{
 					Type: kube.PresubmitJob,
-					Refs: kube.Refs{
+					Refs: &kube.Refs{
 						Pulls: []kube.Pull{{
 							Number: 1,
 							SHA:    "fake-sha",
@@ -443,7 +443,7 @@ func TestSyncPendingJobs(t *testing.T) {
 				Spec: kube.ProwJobSpec{
 					Type: kube.PresubmitJob,
 					Job:  "test-job",
-					Refs: kube.Refs{
+					Refs: &kube.Refs{
 						Pulls: []kube.Pull{{
 							Number: 1,
 							SHA:    "fake-sha",
@@ -675,7 +675,7 @@ func TestRunAfterSuccessCanRun(t *testing.T) {
 				Spec: kube.ProwJobSpec{
 					Job:  "test-e2e",
 					Type: kube.PresubmitJob,
-					Refs: kube.Refs{
+					Refs: &kube.Refs{
 						Org:  "kubernetes",
 						Repo: "kubernetes",
 						Pulls: []kube.Pull{
@@ -697,7 +697,7 @@ func TestRunAfterSuccessCanRun(t *testing.T) {
 				Spec: kube.ProwJobSpec{
 					Job:  "test-bazel-build",
 					Type: kube.PresubmitJob,
-					Refs: kube.Refs{
+					Refs: &kube.Refs{
 						Org:  "kubernetes",
 						Repo: "kubernetes",
 						Pulls: []kube.Pull{
@@ -724,7 +724,7 @@ func TestRunAfterSuccessCanRun(t *testing.T) {
 				Spec: kube.ProwJobSpec{
 					Job:  "test-bazel-build",
 					Type: kube.PresubmitJob,
-					Refs: kube.Refs{
+					Refs: &kube.Refs{
 						Org:  "kubernetes",
 						Repo: "kubernetes",
 						Pulls: []kube.Pull{

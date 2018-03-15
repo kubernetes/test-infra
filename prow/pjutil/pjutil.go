@@ -52,7 +52,7 @@ func PresubmitSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 	pjs := kube.ProwJobSpec{
 		Type: kube.PresubmitJob,
 		Job:  p.Name,
-		Refs: refs,
+		Refs: &refs,
 
 		Report:         !p.SkipReport,
 		Context:        p.Context,
@@ -61,7 +61,7 @@ func PresubmitSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 	}
 	pjs.Agent = kube.ProwJobAgent(p.Agent)
 	if pjs.Agent == kube.KubernetesAgent {
-		pjs.PodSpec = *p.Spec
+		pjs.PodSpec = p.Spec
 		pjs.Cluster = p.Cluster
 		if pjs.Cluster == "" {
 			pjs.Cluster = kube.DefaultClusterAlias
@@ -78,12 +78,12 @@ func PostsubmitSpec(p config.Postsubmit, refs kube.Refs) kube.ProwJobSpec {
 	pjs := kube.ProwJobSpec{
 		Type:           kube.PostsubmitJob,
 		Job:            p.Name,
-		Refs:           refs,
+		Refs:           &refs,
 		MaxConcurrency: p.MaxConcurrency,
 	}
 	pjs.Agent = kube.ProwJobAgent(p.Agent)
 	if pjs.Agent == kube.KubernetesAgent {
-		pjs.PodSpec = *p.Spec
+		pjs.PodSpec = p.Spec
 		pjs.Cluster = p.Cluster
 		if pjs.Cluster == "" {
 			pjs.Cluster = kube.DefaultClusterAlias
@@ -103,7 +103,7 @@ func PeriodicSpec(p config.Periodic) kube.ProwJobSpec {
 	}
 	pjs.Agent = kube.ProwJobAgent(p.Agent)
 	if pjs.Agent == kube.KubernetesAgent {
-		pjs.PodSpec = *p.Spec
+		pjs.PodSpec = p.Spec
 		pjs.Cluster = p.Cluster
 		if pjs.Cluster == "" {
 			pjs.Cluster = kube.DefaultClusterAlias
@@ -120,12 +120,12 @@ func BatchSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 	pjs := kube.ProwJobSpec{
 		Type:    kube.BatchJob,
 		Job:     p.Name,
-		Refs:    refs,
+		Refs:    &refs,
 		Context: p.Context, // The Submit Queue's getCompleteBatches needs this.
 	}
 	pjs.Agent = kube.ProwJobAgent(p.Agent)
 	if pjs.Agent == kube.KubernetesAgent {
-		pjs.PodSpec = *p.Spec
+		pjs.PodSpec = p.Spec
 		pjs.Cluster = p.Cluster
 		if pjs.Cluster == "" {
 			pjs.Cluster = kube.DefaultClusterAlias
@@ -139,6 +139,9 @@ func BatchSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 
 // ProwJobToPod converts a ProwJob to a Pod that will run the tests.
 func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
+	if pj.Spec.PodSpec == nil {
+		return nil, fmt.Errorf("prowjob %q lacks a pod spec?", pj.Name)
+	}
 	env, err := EnvForSpec(NewJobSpec(pj.Spec, buildID, pj.Name))
 	if err != nil {
 		return nil, err
@@ -249,7 +252,7 @@ func ProwJobFields(pj *kube.ProwJob) logrus.Fields {
 	if len(pj.ObjectMeta.Labels[github.EventGUID]) > 0 {
 		fields[github.EventGUID] = pj.ObjectMeta.Labels[github.EventGUID]
 	}
-	if len(pj.Spec.Refs.Pulls) == 1 {
+	if pj.Spec.Refs != nil && len(pj.Spec.Refs.Pulls) == 1 {
 		fields[github.PrLogField] = pj.Spec.Refs.Pulls[0].Number
 		fields[github.RepoLogField] = pj.Spec.Refs.Repo
 		fields[github.OrgLogField] = pj.Spec.Refs.Org

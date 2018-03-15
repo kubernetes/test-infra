@@ -176,7 +176,7 @@ func TestParseIssueComment(t *testing.T) {
 		pj := kube.ProwJob{
 			Spec: kube.ProwJobSpec{
 				Context: tc.context,
-				Refs:    kube.Refs{Pulls: []kube.Pull{{}}},
+				Refs:    &kube.Refs{Pulls: []kube.Pull{{}}},
 			},
 			Status: kube.ProwJobStatus{
 				State: kube.ProwJobState(tc.state),
@@ -324,7 +324,7 @@ func TestReportStatus(t *testing.T) {
 			Spec: kube.ProwJobSpec{
 				Context: "parent",
 				Report:  report,
-				Refs: kube.Refs{
+				Refs: &kube.Refs{
 					Org:  "k8s",
 					Repo: "test-infra",
 					Pulls: []kube.Pull{{

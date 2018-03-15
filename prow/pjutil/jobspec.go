@@ -52,12 +52,16 @@ type JobSpec struct {
 }
 
 func NewJobSpec(spec kube.ProwJobSpec, buildId, prowJobId string) JobSpec {
+	refs := kube.Refs{}
+	if spec.Refs != nil {
+		refs = *spec.Refs
+	}
 	return JobSpec{
 		Type:      spec.Type,
 		Job:       spec.Job,
 		BuildId:   buildId,
 		ProwJobId: prowJobId,
-		Refs:      spec.Refs,
+		Refs:      refs,
 		agent:     spec.Agent,
 	}
 }

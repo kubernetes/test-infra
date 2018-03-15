@@ -43,7 +43,7 @@ func TestProwJobToPod(t *testing.T) {
 				Type:  kube.PresubmitJob,
 				Job:   "job-name",
 				Agent: kube.KubernetesAgent,
-				Refs: kube.Refs{
+				Refs: &kube.Refs{
 					Org:     "org-name",
 					Repo:    "repo-name",
 					BaseRef: "base-ref",
@@ -54,7 +54,7 @@ func TestProwJobToPod(t *testing.T) {
 						SHA:    "pull-sha",
 					}},
 				},
-				PodSpec: v1.PodSpec{
+				PodSpec: &v1.PodSpec{
 					Containers: []v1.Container{
 						{
 							Image: "tester",
@@ -277,7 +277,7 @@ func TestGetLatestProwJobs(t *testing.T) {
 						Type:  kube.PresubmitJob,
 						Agent: kube.JenkinsAgent,
 						Job:   "test_pull_request_origin_extended_networking_minimal",
-						Refs: kube.Refs{
+						Refs: &kube.Refs{
 							Org:     "openshift",
 							Repo:    "origin",
 							BaseRef: "master",
@@ -311,7 +311,7 @@ func TestGetLatestProwJobs(t *testing.T) {
 						Type:  kube.PresubmitJob,
 						Agent: kube.JenkinsAgent,
 						Job:   "test_pull_request_origin_extended_networking_minimal",
-						Refs: kube.Refs{
+						Refs: &kube.Refs{
 							Org:     "openshift",
 							Repo:    "origin",
 							BaseRef: "master",
