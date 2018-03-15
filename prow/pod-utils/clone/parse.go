@@ -85,3 +85,65 @@ func ParseRefs(value string) (kube.Refs, error) {
 
 	return gitRef, nil
 }
+
+// PathResolver provides path overrides for a given set
+// of repos
+type PathResolver struct {
+	org  string
+	repo string
+
+	path string
+}
+
+// Resolve returns an override clone path if the org and
+// repo match the settings in in the resolver
+func (r *PathResolver) Resolve(org, repo string) string {
+	if r.org == org && (r.repo == "" || r.repo == repo) {
+		return r.path
+	}
+
+	return ""
+}
+
+func (r *PathResolver) String() string {
+	var prefix string
+	if r.repo == "" {
+		prefix = r.org
+	} else {
+		prefix = fmt.Sprintf("%s,%s", r.org, r.repo)
+	}
+	return fmt.Sprintf("%s=%s", prefix, r.path)
+}
+
+// ParseAliases parses a human-provided string into a
+// PathResolver that resolves the path under the
+// $GOPATH/src directory where the repository should
+// be cloned. The format for the human-provided string
+// is:
+//   org[,repo]=path
+// The repository is optional and if not set, all repos
+// for the org will be captured. Exmaples:
+//   kubernetes=k8s.io
+//   myorg,non-go-project=somewhere/else
+func ParseAliases(value string) (PathResolver, error) {
+	var resolver PathResolver
+	values := strings.SplitN(value, "=", 2)
+	if len(values) != 2 {
+		return resolver, fmt.Errorf("path override %s invalid: does not contain '='", value)
+	}
+	info := values[0]
+	resolver.path = values[1]
+
+	infoValues := strings.SplitN(info, ",", 2)
+	switch len(infoValues) {
+	case 1:
+		resolver.org = infoValues[0]
+		return resolver, nil
+	case 2:
+		resolver.org = infoValues[0]
+		resolver.repo = infoValues[1]
+		return resolver, nil
+	default:
+		return resolver, fmt.Errorf("path override %s invalid: does not contain 'org[,repo]' as prefix", value)
+	}
+}

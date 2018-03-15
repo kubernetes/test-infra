@@ -27,11 +27,17 @@ import (
 	"k8s.io/test-infra/prow/kube"
 )
 
-func Run(refs kube.Refs, dir, gitUserName, gitUserEmail string) Record {
+func Run(refs kube.Refs, dir, gitUserName, gitUserEmail string, pathResolvers []PathResolver) Record {
 	logrus.WithFields(logrus.Fields{"refs": refs}).Infof("Cloning refs")
-	repositoryURL := fmt.Sprintf("https://github.com/%s/%s.git", refs.Org, refs.Repo)
-	cloneDir := fmt.Sprintf("%s/src/github.com/%s/%s", dir, refs.Org, refs.Repo)
 	record := Record{Refs: refs}
+	repositoryURL := fmt.Sprintf("https://github.com/%s/%s.git", refs.Org, refs.Repo)
+	clonePath := fmt.Sprintf("github.com/%s/%s", refs.Org, refs.Repo)
+	for _, resolver := range pathResolvers {
+		if override := resolver.Resolve(refs.Org, refs.Repo); override != "" {
+			clonePath = override
+		}
+	}
+	cloneDir := fmt.Sprintf("%s/src/%s", dir, clonePath)
 
 	commands := []cloneCommand{
 		func() (string, string, error) {
