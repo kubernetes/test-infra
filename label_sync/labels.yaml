@@ -170,6 +170,8 @@ labels:
   - color: d2b48c
     name: sig/ui
   - color: d2b48c
+    name: sig/vmware
+  - color: d2b48c
     name: sig/windows
   - color: ee9900
     name: size/L
