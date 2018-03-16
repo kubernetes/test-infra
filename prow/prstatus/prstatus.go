@@ -26,7 +26,6 @@ import (
 	"time"
 
 	gogithub "github.com/google/go-github/github"
-	"github.com/gorilla/sessions"
 	"github.com/shurcooL/githubql"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
@@ -170,16 +169,16 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 			Login: false,
 		}
 
-		login := ""
+		var user *gogithub.User
 		if ok && token.Valid() {
 			// If access token exist, get user login using the access token. This is a chance
 			// to validate whether the access token is consumable or not. If not, invalidate the
 			// session.
 			grc := pullRequestRestfulClient{ghclient.NewClient(token.AccessToken, false)}
 			var err error
-			login, err = getUserLogin(session, grc)
+			user, err = grc.GetUser("")
 			if err != nil {
-				if strings.Contains(err.Error(), "401 Unauthorized") {
+				if strings.Contains(err.Error(), "401") {
 					// Invalidate access token session
 					session.Options.MaxAge = -1
 					if err := session.Save(r, w); err != nil {
@@ -201,7 +200,8 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 			}
 		}
 
-		if login != "" {
+		if user != nil {
+			login := *user.Login
 			data.Login = true
 			// Saves login. We save the login under 2 cookies. One for the use of client to render the
 			// data and one encoded for server to verify the identity of the authenticated user.
@@ -300,16 +300,4 @@ func queryConstrainsRepos(q string) bool {
 		}
 	}
 	return false
-}
-
-func getUserLogin(session *sessions.Session, grc githubRestfulClient) (string, error) {
-	login, ok := session.Values[loginKey].(string)
-	if !ok || login == "" {
-		user, err := grc.GetUser("")
-		if err != nil {
-			return "", err
-		}
-		return *user.Login, nil
-	}
-	return login, nil
 }
