@@ -7107,6 +7107,25 @@ periodics:
       args:
       - "--timeout=340"
       - "--bare"
+- interval: 2h
+  agent: kubernetes
+  name: ci-kinflate-periodic-default-gke
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180313-3e7524a90-master
+      args:
+      - "--clean"
+      - "--job=$(JOB_NAME)"
+      - "--root=/go/src"
+      - "--repo=github.com/kubernetes/kubectl"
+      - "--repo=github.com/kinflate/example-ldap-customized"
+      - "--repo=github.com/kinflate/example-ldap"
+      - "--upload=gs://kubernetes-jenkins/logs/"
+      - "--timeout=150"
+
 - interval: 30m
   name: ci-kops-build
   agent: kubernetes
@@ -15066,25 +15085,6 @@ periodics:
       - "--clean"
       - "--repo=github.com/istio/istio=master"
       - "--timeout=90"
-
-- interval: 2h
-  agent: kubernetes
-  name: kinflate-periodic-default-gke
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180313-3e7524a90-master
-      args:
-      - "--clean"
-      - "--job=$(JOB_NAME)"
-      - "--root=/go/src"
-      - "--repo=github.com/kubernetes/kubectl"
-      - "--repo=github.com/kinflate/example-ldap-customized"
-      - "--repo=github.com/kinflate/example-ldap"
-      - "--upload=gs://kubernetes-jenkins/logs/"
-      - "--timeout=150"
 
 - name: kubeflow-periodic
   interval: 8h
