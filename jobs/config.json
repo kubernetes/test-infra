@@ -11309,6 +11309,15 @@
       "sig-aws"
     ]
   },
+  "pull-kops-verify-apimachinery": {
+    "args": [
+      "./hack/verify-apimachinery.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
   "pull-kops-verify-bazel": {
     "args": [
       "./hack/verify-bazel.sh"
@@ -11321,6 +11330,15 @@
   "pull-kops-verify-boilerplate": {
     "args": [
       "./hack/verify-boilerplate.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
+  "pull-kops-verify-gendocs": {
+    "args": [
+      "./hack/verify-gendocs.sh"
     ],
     "scenario": "execute",
     "sigOwners": [

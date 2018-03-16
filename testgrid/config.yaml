@@ -2257,12 +2257,20 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-bazel-test
   days_of_results: 1
   num_columns_recent: 20
+- name: pull-kops-verify-apimachinery
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-verify-apimachinery
+  days_of_results: 1
+  num_columns_recent: 20
 - name: pull-kops-verify-bazel
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-verify-bazel
   days_of_results: 1
   num_columns_recent: 20
 - name: pull-kops-verify-boilerplate
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-verify-boilerplate
+  days_of_results: 1
+  num_columns_recent: 20
+- name: pull-kops-verify-gendocs
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-verify-gendocs
   days_of_results: 1
   num_columns_recent: 20
 - name: pull-kops-verify-govet
@@ -5433,6 +5441,8 @@ dashboards:
   dashboard_tab:
   - name: e2e
     test_group_name: pull-kops-e2e-kubernetes-aws
+  - name: verify-apimachinery
+    test_group_name: pull-kops-verify-apimachinery
   - name: verify-bazel
     test_group_name: pull-kops-verify-bazel
   - name: bazel-build
@@ -5441,6 +5451,8 @@ dashboards:
     test_group_name: pull-kops-bazel-test
   - name: verify-boilerplate
     test_group_name: pull-kops-verify-boilerplate
+  - name: verify-gendocs
+    test_group_name: pull-kops-verify-gendocs
   - name: verify-govet
     test_group_name: pull-kops-verify-govet
   - name: verify-gofmt
