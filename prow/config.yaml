@@ -6682,6 +6682,66 @@ periodics:
       - name: GOPATH
         value: /go
 
+- name: ci-containerd-build
+  interval: 30m
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180314-34ab1109a-experimental
+      args:
+      - "--repo=github.com/containerd/containerd=master"
+      - "--repo=github.com/containerd/cri=master"
+      - "--root=/go/src"
+      - "--upload=gs://kubernetes-jenkins/logs"
+
+- interval: 1h
+  agent: kubernetes
+  name: ci-containerd-e2e-gci-gce
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - "--repo=github.com/containerd/cri=master"
+      - "--timeout=70"
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180314-34ab1109a-master
+
+- interval: 1h
+  agent: kubernetes
+  name: ci-containerd-e2e-ubuntu-gce
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - "--repo=github.com/containerd/cri=master"
+      - "--timeout=70"
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180314-34ab1109a-master
+
+- name: ci-containerd-node-e2e
+  interval: 1h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180314-34ab1109a-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes
+      - --repo=github.com/containerd/cri=master
+      - --timeout=90
+      - --
+      - "--node-args=--image-config-file=test/e2e_node/image-config-containerd.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri"
+      env:
+      - name: GOPATH
+        value: /go
+
 - name: ci-cri-containerd-build
   interval: 30m
   agent: kubernetes
