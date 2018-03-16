@@ -15,7 +15,7 @@ spec:
       - name: sinker
         args:
         - --build-cluster=/etc/cluster/cluster
-        image: gcr.io/k8s-prow/sinker:v20180314-ac917cffb
+        image: gcr.io/k8s-prow/sinker:v20180316-93ade3390
         volumeMounts:
         - mountPath: /etc/cluster
           name: cluster
