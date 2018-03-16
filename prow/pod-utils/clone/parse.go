@@ -98,7 +98,7 @@ type PathResolver struct {
 // Resolve returns an override clone path if the org and
 // repo match the settings in in the resolver
 func (r *PathResolver) Resolve(org, repo string) string {
-	if r.org == org && (r.repo == "" || r.repo == repo) {
+	if r.org == org && r.repo == repo {
 		return r.path
 	}
 
@@ -106,13 +106,7 @@ func (r *PathResolver) Resolve(org, repo string) string {
 }
 
 func (r *PathResolver) String() string {
-	var prefix string
-	if r.repo == "" {
-		prefix = r.org
-	} else {
-		prefix = fmt.Sprintf("%s,%s", r.org, r.repo)
-	}
-	return fmt.Sprintf("%s=%s", prefix, r.path)
+	return fmt.Sprintf("%s,%s=%s", r.org, r.repo, r.path)
 }
 
 // ParseAliases parses a human-provided string into a
@@ -120,10 +114,9 @@ func (r *PathResolver) String() string {
 // $GOPATH/src directory where the repository should
 // be cloned. The format for the human-provided string
 // is:
-//   org[,repo]=path
-// The repository is optional and if not set, all repos
-// for the org will be captured. Exmaples:
-//   kubernetes=k8s.io
+//   org,repo=path
+// Examples:
+//   kubernetes,test-infra=k8s.io/test-infra
 //   myorg,non-go-project=somewhere/else
 func ParseAliases(value string) (PathResolver, error) {
 	var resolver PathResolver
@@ -136,14 +129,11 @@ func ParseAliases(value string) (PathResolver, error) {
 
 	infoValues := strings.SplitN(info, ",", 2)
 	switch len(infoValues) {
-	case 1:
-		resolver.org = infoValues[0]
-		return resolver, nil
 	case 2:
 		resolver.org = infoValues[0]
 		resolver.repo = infoValues[1]
 		return resolver, nil
 	default:
-		return resolver, fmt.Errorf("path override %s invalid: does not contain 'org[,repo]' as prefix", value)
+		return resolver, fmt.Errorf("path override %s invalid: does not contain 'org,repo' as prefix", value)
 	}
 }
