@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2017 The Kubernetes Authors.
+# Copyright 2018 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,15 @@ set -o nounset
 set -o pipefail
 
 TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
-${TESTINFRA_ROOT}/hack/update-bazel.sh
-${TESTINFRA_ROOT}/hack/update-gofmt.sh
-${TESTINFRA_ROOT}/hack/update-config.sh
-${TESTINFRA_ROOT}/hack/update-labels.sh
+
+TMP_LABELS_DOCS=$(mktemp)
+trap "rm -f $TMP_LABELS_DOCS" EXIT
+LABELS_DOCS_OUTPUT="${TMP_LABELS_DOCS}" ${TESTINFRA_ROOT}/hack/update-labels.sh
+
+DIFF=$(diff "${TMP_LABELS_DOCS}" "${TESTINFRA_ROOT}/label_sync/labels.md" || true)
+if [ ! -z "$DIFF" ]; then
+    echo "${DIFF}"
+    echo ""
+    echo "labels.yaml was updated without updating labels.md, please run 'hack/update-labels.sh'"
+    exit 1
+fi

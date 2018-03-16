@@ -5685,6 +5685,33 @@ presubmits:
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
 
+  - name: pull-test-infra-verify-labels
+    agent: kubernetes
+    context: pull-test-infra-verify-labels
+    branches:
+    - master
+    rerun_command: "/test pull-test-infra-verify-labels"
+    trigger: "/test pull-test-infra-verify-labels"
+    run_if_changed: '^label_sync'
+    always_run: false # introduce job as non-blocking
+    skip_report: true # introduce job as non-blocking
+    labels:
+      preset-service-account: true
+      preset-bazel-scratch-dir: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "2Gi"
 
   tensorflow/minigo:
   - name: tf-minigo-presubmit

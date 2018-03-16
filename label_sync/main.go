@@ -23,8 +23,11 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync"
+	"text/template"
 	"time"
 
 	"github.com/ghodss/yaml"
@@ -36,12 +39,27 @@ import (
 const maxConcurrentWorkers = 20
 
 // A label in a repository.
+
+type LabelTarget string
+
+const (
+	PRTarget    LabelTarget = "prs"
+	IssueTarget             = "issues"
+	BothTarget              = "both"
+)
+
+var LabelTargets []LabelTarget = []LabelTarget{PRTarget, IssueTarget, BothTarget}
+
 type Label struct {
-	Name        string     `json:"name"`                  // Current name of the label
-	Color       string     `json:"color"`                 // rrggbb or color
-	Previously  []Label    `json:"previously,omitempty"`  // Previous names for this label
-	DeleteAfter *time.Time `json:"deleteAfter,omitempty"` // Retired labels deleted on this date
-	parent      *Label     // Current name for previous labels (used internally)
+	Name        string      `json:"name"`                  // Current name of the label
+	Color       string      `json:"color"`                 // rrggbb or color
+	Description string      `json:"description"`           // What does this label mean, who can apply it
+	Target      LabelTarget `json:"target"`                // What can this label be applied to: issues, prs, or both
+	ProwPlugin  string      `json:"prowPlugin"`            // Which prow plugin is used to add/remove this label
+	AddedBy     string      `json:"addedBy"`               // What human or plugin or munger or bot adds this label
+	Previously  []Label     `json:"previously,omitempty"`  // Previous names for this label
+	DeleteAfter *time.Time  `json:"deleteAfter,omitempty"` // Retired labels deleted on this date
+	parent      *Label      // Current name for previous labels (used internally)
 }
 
 // Configuration is a list of Required Labels to sync in all kubernetes repos
@@ -64,15 +82,61 @@ type Update struct {
 type RepoUpdates map[string][]Update
 
 var (
-	debug      = flag.Bool("debug", false, "Turn on debug to be more verbose")
-	confirm    = flag.Bool("confirm", false, "Make mutating API calls to GitHub.")
-	endpoint   = flag.String("endpoint", "https://api.github.com", "GitHub's API endpoint")
-	labelsPath = flag.String("config", "", "Path to labels.yaml")
-	onlyRepos  = flag.String("only", "", "Only look at the following comma separated org/repos")
-	orgs       = flag.String("orgs", "", "Comma separated list of orgs to sync")
-	skipRepos  = flag.String("skip", "", "Comma separated list of org/repos to skip syncing")
-	token      = flag.String("token", "", "Path to github oauth secret")
+	debug        = flag.Bool("debug", false, "Turn on debug to be more verbose")
+	confirm      = flag.Bool("confirm", false, "Make mutating API calls to GitHub.")
+	endpoint     = flag.String("endpoint", "https://api.github.com", "GitHub's API endpoint")
+	labelsPath   = flag.String("config", "", "Path to labels.yaml")
+	onlyRepos    = flag.String("only", "", "Only look at the following comma separated org/repos")
+	orgs         = flag.String("orgs", "", "Comma separated list of orgs to sync")
+	skipRepos    = flag.String("skip", "", "Comma separated list of org/repos to skip syncing")
+	token        = flag.String("token", "", "Path to github oauth secret")
+	action       = flag.String("action", "sync", "One of: sync, docs")
+	docsTemplate = flag.String("docs-template", "", "Path to template file for label docs")
+	docsOutput   = flag.String("docs-output", "", "Path to output file for docs")
 )
+
+func pathExists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
+}
+
+// Writes the golang text template at templatePath to outputPath using the given data
+func writeTemplate(templatePath string, outputPath string, data interface{}) error {
+	// set up template
+	funcMap := template.FuncMap{
+		"anchor": func(input string) string {
+			return strings.Replace(input, ":", " ", -1)
+		},
+	}
+	t, err := template.New(filepath.Base(templatePath)).Funcs(funcMap).ParseFiles(templatePath)
+	if err != nil {
+		return err
+	}
+
+	// ensure output path exists
+	if !pathExists(outputPath) {
+		_, err = os.Create(outputPath)
+		if err != nil {
+			return err
+		}
+	}
+
+	// open file at output path and truncate
+	f, err := os.OpenFile(outputPath, os.O_RDWR, 0644)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	f.Truncate(0)
+
+	// render template to output path
+	err = t.Execute(f, data)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 // Ensures that no two label names (including previous names) have the same lowercase value.
 func validate(labels []Label, parent string, seen map[string]string) error {
@@ -97,6 +161,16 @@ func (c Configuration) validate() error {
 		return fmt.Errorf("invalid config: %v", err)
 	}
 	return nil
+}
+
+// Return labels that have a given target
+func (c Configuration) LabelsByTarget(target LabelTarget) (labels []Label) {
+	for _, label := range c.Labels {
+		if target == label.Target {
+			labels = append(labels, label)
+		}
+	}
+	return
 }
 
 // Load yaml config at path
@@ -477,49 +551,71 @@ func main() {
 		logrus.WithError(err).Fatalf("failed to load --config=%s", *labelsPath)
 	}
 
-	githubClient, err := newClient(*token, *endpoint, !*confirm)
-	if err != nil {
-		logrus.WithError(err).Fatal("failed to create client")
-	}
-
-	var filt filter
 	switch {
-	case *onlyRepos != "":
-		if *skipRepos != "" {
-			logrus.Fatalf("--only and --skip cannot both be set")
+	case *action == "docs":
+		if err := WriteDocs(*docsTemplate, *docsOutput, *config); err != nil {
+			logrus.WithError(err).Fatalf("failed to write docs using docs-template %s to docs-output %s", *docsTemplate, *docsOutput)
 		}
-		only := make(map[string]bool)
-		for _, r := range strings.Split(*onlyRepos, ",") {
-			only[strings.TrimSpace(r)] = true
+	case *action == "sync":
+		githubClient, err := newClient(*token, *endpoint, !*confirm)
+		if err != nil {
+			logrus.WithError(err).Fatal("failed to create client")
 		}
-		filt = func(org, repo string) bool {
-			_, ok := only[org+"/"+repo]
-			return ok
+
+		var filt filter
+		switch {
+		case *onlyRepos != "":
+			if *skipRepos != "" {
+				logrus.Fatalf("--only and --skip cannot both be set")
+			}
+			only := make(map[string]bool)
+			for _, r := range strings.Split(*onlyRepos, ",") {
+				only[strings.TrimSpace(r)] = true
+			}
+			filt = func(org, repo string) bool {
+				_, ok := only[org+"/"+repo]
+				return ok
+			}
+		case *skipRepos != "":
+			skip := make(map[string]bool)
+			for _, r := range strings.Split(*skipRepos, ",") {
+				skip[strings.TrimSpace(r)] = true
+			}
+			filt = func(org, repo string) bool {
+				_, ok := skip[org+"/"+repo]
+				return !ok
+			}
+		default:
+			filt = func(o, r string) bool {
+				return true
+			}
 		}
-	case *skipRepos != "":
-		skip := make(map[string]bool)
-		for _, r := range strings.Split(*skipRepos, ",") {
-			skip[strings.TrimSpace(r)] = true
-		}
-		filt = func(org, repo string) bool {
-			_, ok := skip[org+"/"+repo]
-			return !ok
+
+		for _, org := range strings.Split(*orgs, ",") {
+			org = strings.TrimSpace(org)
+
+			if err = SyncOrg(org, githubClient, *config, filt); err != nil {
+				logrus.WithError(err).Fatalf("failed to update %s", org)
+			}
 		}
 	default:
-		filt = func(o, r string) bool {
-			return true
-		}
-	}
-
-	for _, org := range strings.Split(*orgs, ",") {
-		org = strings.TrimSpace(org)
-		if err = SyncOrg(org, githubClient, *config, filt); err != nil {
-			logrus.WithError(err).Fatalf("failed to update %s", org)
-		}
+		logrus.Fatalf("unrecognized action: %s", *action)
 	}
 }
 
 type filter func(string, string) bool
+
+func WriteDocs(template string, output string, config Configuration) error {
+	labels := map[string][]Label{
+		"both issues and PRs": config.LabelsByTarget(BothTarget),
+		"only issues":         config.LabelsByTarget(IssueTarget),
+		"only PRs":            config.LabelsByTarget(PRTarget),
+	}
+	if err := writeTemplate(*docsTemplate, *docsOutput, labels); err != nil {
+		return err
+	}
+	return nil
+}
 
 func SyncOrg(org string, githubClient client, config Configuration, filt filter) error {
 	logrus.WithField("org", org).Info("Reading repos")

@@ -12935,6 +12935,15 @@
       "sig-testing"
     ]
   },
+  "pull-test-infra-verify-labels": {
+    "args": [
+      "./hack/verify-labels.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "random_job": {
     "scenario": "execute",
     "sigOwners": [
