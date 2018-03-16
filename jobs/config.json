@@ -602,7 +602,7 @@
       "--provider=gke",
       "--test=false",
       "--test-cmd=../cmd/kinflate/test/main.sh",
-      "--test-cmd-args=/go/src/github.com/kinflate/example-ldap-repo",
+      "--test-cmd-args=/go/src/github.com/kinflate/example-ldap",
       "--test-cmd-name=kinflate-integration",
       "--timeout=120m"
     ],
