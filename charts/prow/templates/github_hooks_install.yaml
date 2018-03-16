@@ -1,0 +1,66 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{.Release.Name}}.hookinstall"
+  labels:
+    heritage: {{.Release.Service | quote }}
+    release: {{.Release.Name | quote }}
+    chart: "{{.Chart.Name}}-{{.Chart.Version}}"
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    # secret names required by prow:  oauth, jenkins, hmac
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-5"
+spec:
+  template:
+    metadata:
+      name: "{{.Release.Name}}.hookinstall"
+      labels:
+        heritage: {{.Release.Service | quote }}
+        release: {{.Release.Name | quote }}
+        chart: "{{.Chart.Name}}-{{.Chart.Version}}"
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: install-hooks-job
+        image: "{{ .Values.images.hook_manager }}"
+        imagePullPolicy: {{ .Values.images.pullPolicy }}
+        env:
+        - name: BOT_USER_ID
+          value: "{{ .Values.githubBotAccount }}"
+        - name: HOOK_URL
+          value: "{{ .Values.prowDomain }}/hook"
+        - name: REPOS_TO_HOOK
+          value: "{{ .Values.repos }}"
+        - name: AUTH_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hookmanager-cred
+              key: auth_token
+        - name: INSTALL_SCRIPT
+          value: &script |-
+            echo "generating hmac"
+            HMAC_KEY=`/hook_manager create_hmac` #used by the webhook security
+            echo $HMAC_KEY >hmac
+            kubectl create secret generic hmac --from-file=./hmac
+            echo
+            REPOS=(`echo ${REPOS_TO_HOOK} | sed -e 's/\[//g;s/\]//g;s/(//g;s/)//g;' | tr -d '\n\r'`)
+            mkdir -p /etc/webhooks
+            touch /etc/webhooks/created_hooks
+            for repo in "${REPOS[@]}"
+            do
+              echo "creating hook for repo: ${repo}"
+              HOOK_ID=`/hook_manager create_webhook --credentials=${BOT_USER_ID}:${AUTH_TOKEN} --url=${HOOK_URL} --repo=${repo} --hmac=${HMAC_KEY} --content_type=json`
+              if [ $? -eq 0 ]
+              then 
+                echo "${HOOK_ID}:${repo}" >> /etc/webhooks/created_hooks
+              else 
+                echo "invalid repo: ${repo}"
+              fi
+            done
+            kubectl delete secret created-hooks
+            kubectl create secret generic created-hooks --from-file=/etc/webhooks/created_hooks
+        command: ["bash"]
+        args: ["-cx", *script]
+      

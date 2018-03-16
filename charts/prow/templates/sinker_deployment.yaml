@@ -1,0 +1,18 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: "{{ template "sinker" . }}"
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    app: {{ template "sinker" . }}
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{ template "sinker" . }}
+    spec:
+      containers:
+      - name: {{ template "sinker" . }}
+        image: "{{ .Values.images.sinker }}"
+        imagePullPolicy: {{ .Values.images.pullPolicy }}

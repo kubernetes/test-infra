@@ -1,0 +1,86 @@
+# Copyright 2016 The Kubernetes Authors All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+{{- if .Values.tot.persistence.Enabled }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    app:  {{ template "tot" . }}
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+  name: "{{ template "tot" . }}storage"
+  annotations:
+      {{- if .Values.tot.persistence.storageClass }}
+      volume.beta.kubernetes.io/storage-class: {{ .Values.tot.persistence.storageClass | quote }}
+      {{- else }}
+      volume.alpha.kubernetes.io/storage-class: default
+      {{- end }}
+spec:
+  accessModes:
+    - {{ .Values.tot.persistence.AccessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.tot.persistence.Size }}
+{{- end }}
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: "{{ template "tot" . }}"
+  labels:
+    heritage: {{.Release.Service | quote }}
+    release: {{.Release.Name | quote }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    app: {{ template "tot" . }}
+spec:
+  replicas: {{ .Values.tot.replicaCount }}  # one canonical source of build numbers
+  template:
+    metadata:
+      labels:
+        name: "{{ template "tot" . }}"
+        app: "{{ template "tot" . }}"
+        type: tot
+        heritage: {{.Release.Service | quote }}
+        release: {{.Release.Name | quote }}
+        chart: "{{.Chart.Name}}-{{.Chart.Version}}"
+    spec:
+      containers:
+      - name: {{ template "tot" . }}
+        image: "{{ .Values.images.tot }}"
+        imagePullPolicy: {{ .Values.images.pullPolicy }}
+        args: 
+        - -log-json
+        - -storage=/store/tot.json
+        ports:
+        - containerPort: {{ .Values.tot.service.internalPort }}
+        volumeMounts:
+        - mountPath: /store
+          name: "store"
+        resources:
+            requests:
+              cpu: "{{.Values.tot.resources.requests.cpu}}"
+              memory: "{{.Values.tot.resources.requests.memory}}"
+            limits:
+              cpu: "{{.Values.tot.resources.limits.cpu}}"
+              memory: "{{.Values.tot.resources.limits.memory}}"
+      volumes:
+        - name: "store"
+          {{- if .Values.tot.persistence.Enabled }}
+          persistentVolumeClaim:
+            claimName: "{{ template "tot" . }}storage"
+          {{- else }}
+          emptyDir: {}
+          {{- end -}}

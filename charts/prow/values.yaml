@@ -1,0 +1,142 @@
+# Default values for prow.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+#the bot account used for hook management
+githubBotAccount: samsungbot
+
+#which org is trusted by prow
+trustedOrg: kubernetes
+
+#this must be a domain under your control
+prowDomain: prow.k8s.io
+jenkinsaddress: ""
+
+#make sure these are github repos under your control
+repos: 
+  - kubernetes/test-infra
+#  - kubernetes/kubernetes 
+
+#docker iamges used by prow
+images:
+  deck: gcr.io/k8s-prow/deck:0.30
+  hook: gcr.io/k8s-prow/hook:0.113
+  hook_manager: jfelten/hook_manager:latest
+  horologium: gcr.io/k8s-prow/horologium:0.3
+  lego: jetstack/kube-lego:0.1.3
+  line: gcr.io/k8s-prow/line:0.86
+  sinker: gcr.io/k8s-prow/sinker:0.10
+  splice: gcr.io/k8s-prow/splice:0.20
+  tot: gcr.io/k8s-prow/tot:0.2
+  
+  pullPolicy: Always
+
+crier:
+  replicaCount: 1
+  service:
+    name: crier
+    type: ClusterIP
+    externalPort: 8888
+    internalPort: 80
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+deck:
+  replicaCount: 3
+  service:
+    name: crier
+    type: ClusterIP
+    externalPort: 80
+    internalPort: 80
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+hook:
+  replicaCount: 1
+  service:
+    name: hook
+    type: ClusterIP
+    externalPort: 8888
+    internalPort: 8888
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+horologium:
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+marque:
+  replicaCount: 1
+  service:
+    name: marque
+    type: ClusterIP
+    externalPort: 80
+    internalPort: 80
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+sinker:
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+splice:
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+tot:
+  persistence: 
+    Enabled: false
+    #StorageClass: generic
+    AccessMode: ReadWriteOnce
+    Size: 1Gi
+  replicaCount: 1
+  service:
+    name: tot
+    type: ClusterIP
+    externalPort: 8888
+    internalPort: 80
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+lego:
+  email: kubernetes@k8s.io
+

@@ -1,0 +1,35 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: "{{ template "splice" . }}"
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    app: {{ template "splice" . }}
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: "{{ template "splice" . }}"
+        app: {{ template "splice" . }}
+    spec:
+      containers:
+      - name: "{{ template "splice" . }}"
+        image: "{{ .Values.images.splice }}"
+        imagePullPolicy: {{ .Values.images.pullPolicy }}
+        args:
+        - "-config-path=/etc/config/config.yaml"
+        - -log-json
+        env:
+        - name: LINE_IMAGE
+          value: "{{ .Values.images.line }}"
+        - name: DRY_RUN
+          value: "false"
+        volumeMounts:
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: {{ template "fullname" . }}

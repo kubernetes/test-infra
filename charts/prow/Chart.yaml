@@ -1,0 +1,4 @@
+apiVersion: v1
+description: A deployment of prow
+name: prow
+version: 0.1.0
