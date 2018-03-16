@@ -31,6 +31,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
+
+	prowConf "k8s.io/test-infra/prow/config"
 )
 
 const (
@@ -77,9 +79,12 @@ type cacheEntry struct {
 	owners  *RepoOwners
 }
 
+type configGetter interface {
+	Config() *prowConf.Config
+}
+
 type Client struct {
-	dirBlacklistByRepo  map[string]sets.String
-	dirBlacklistDefault sets.String
+	configGetter configGetter
 
 	git    *git.Client
 	ghc    githubClient
@@ -94,9 +99,8 @@ type Client struct {
 func NewClient(
 	gc *git.Client,
 	ghc *github.Client,
+	configGetter *prowConf.Agent,
 	mdYAMLEnabled func(org, repo string) bool,
-	blacklistDefault sets.String,
-	blacklistByRepo map[string]sets.String,
 ) *Client {
 	return &Client{
 		git:    gc,
@@ -106,8 +110,7 @@ func NewClient(
 
 		mdYAMLEnabled: mdYAMLEnabled,
 
-		dirBlacklistDefault: blacklistDefault,
-		dirBlacklistByRepo:  blacklistByRepo,
+		configGetter: configGetter,
 	}
 }
 
@@ -185,12 +188,14 @@ func (c *Client) LoadRepoOwners(org, repo string) (*RepoOwners, error) {
 			entry.aliases = loadAliasesFrom(gitRepo.Dir, log)
 		}
 
-		dirBlacklist := defaultDirBlacklist.Union(c.dirBlacklistDefault)
-		if bl, ok := c.dirBlacklistByRepo[org]; ok {
-			dirBlacklist = dirBlacklist.Union(bl)
+		blacklistConfig := c.configGetter.Config().OwnersDirBlacklist
+
+		dirBlacklist := defaultDirBlacklist.Union(sets.NewString(blacklistConfig.Default...))
+		if bl, ok := blacklistConfig.Repos[org]; ok {
+			dirBlacklist.Insert(bl...)
 		}
-		if bl, ok := c.dirBlacklistByRepo[org+"/"+repo]; ok {
-			dirBlacklist = dirBlacklist.Union(bl)
+		if bl, ok := blacklistConfig.Repos[org+"/"+repo]; ok {
+			dirBlacklist.Insert(bl...)
 		}
 		entry.owners, err = loadOwnersFrom(gitRepo.Dir, mdYaml, entry.aliases, dirBlacklist, log)
 		if err != nil {

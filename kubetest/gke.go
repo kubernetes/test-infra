@@ -278,7 +278,7 @@ func (g *gkeDeployer) Up() error {
 		// Assume error implies non-existent.
 		if err := control.FinishRunning(exec.Command("gcloud", "compute", "networks", "create", g.network,
 			"--project="+g.project,
-			"--mode=auto")); err != nil {
+			"--subnet-mode=auto")); err != nil {
 			return err
 		}
 	}

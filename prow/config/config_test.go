@@ -796,60 +796,6 @@ func TestReportTemplate(t *testing.T) {
 	}
 }
 
-func TestPullKubernetesCross(t *testing.T) {
-	crossBuildJob := "pull-kubernetes-cross"
-	tests := []struct {
-		changedFile string
-		expected    bool
-	}{
-		{
-			changedFile: "pkg/kubelet/cadvisor/cadvisor_unsupported.go",
-			expected:    true,
-		},
-		{
-			changedFile: "pkg/kubelet/cadvisor/util.go",
-			expected:    false,
-		},
-		{
-			changedFile: "Makefile",
-			expected:    true,
-		},
-		{
-			changedFile: "hack/lib/etcd.sh",
-			expected:    true,
-		},
-		{
-			changedFile: "build/debs/kubelet.service",
-			expected:    true,
-		},
-		{
-			changedFile: "federation/README.md",
-			expected:    false,
-		},
-	}
-	kkPresumits := c.Presubmits["kubernetes/kubernetes"]
-	var cross *Presubmit
-	for i := range kkPresumits {
-		ps := kkPresumits[i]
-		if ps.Name == crossBuildJob {
-			cross = &ps
-			break
-		}
-	}
-	if cross == nil {
-		t.Fatalf("expected %q in the presubmit section of the prow config", crossBuildJob)
-	}
-
-	for i, test := range tests {
-		t.Logf("test run #%d", i)
-		got := cross.RunsAgainstChanges([]string{test.changedFile})
-		if got != test.expected {
-			t.Errorf("expected changes (%s) to run cross job: %t, got: %t",
-				test.changedFile, test.expected, got)
-		}
-	}
-}
-
 // checkLatestUsesImagePullPolicy returns an error if an image is a `latest-.*` tag,
 // but doesn't have imagePullPolicy: Always
 func checkLatestUsesImagePullPolicy(spec *v1.PodSpec) error {

@@ -71,9 +71,13 @@ class FakeSubprocess(object):
     """Keep track of calls."""
     def __init__(self):
         self.calls = []
+        self.file_data = []
 
     def __call__(self, cmd, *a, **kw):
         self.calls.append((cmd, a, kw))
+        for arg in cmd:
+            if arg.startswith('/') and os.path.exists(arg):
+                self.file_data.append(open(arg).read())
 
 
 # pylint: disable=invalid-name
@@ -488,7 +492,7 @@ class GSUtilTest(unittest.TestCase):
         gsutil.upload_json('fake_path', {'wee': 'fun'})
         self.assertTrue(any(
             'application/json' in a for a in fake.calls[0][0]))
-        self.assertIn('stdin', fake.calls[0][2])  # kwargs
+        self.assertEqual(fake.file_data, ['{\n  "wee": "fun"\n}'])
 
     def test_upload_text_cached(self):
         fake = FakeSubprocess()
@@ -497,7 +501,7 @@ class GSUtilTest(unittest.TestCase):
         self.assertFalse(any(
             'Cache-Control' in a and 'max-age' in a
             for a in fake.calls[0][0]))
-        self.assertIn('stdin', fake.calls[0][2])  # kwargs
+        self.assertEqual(fake.file_data, ['hello world'])
 
     def test_upload_text_default(self):
         fake = FakeSubprocess()
@@ -506,7 +510,7 @@ class GSUtilTest(unittest.TestCase):
         self.assertFalse(any(
             'Cache-Control' in a and 'max-age' in a
             for a in fake.calls[0][0]))
-        self.assertIn('stdin', fake.calls[0][2])  # kwargs
+        self.assertEqual(fake.file_data, ['hello world'])
 
     def test_upload_text_uncached(self):
         fake = FakeSubprocess()
@@ -515,13 +519,14 @@ class GSUtilTest(unittest.TestCase):
         self.assertTrue(any(
             'Cache-Control' in a and 'max-age' in a
             for a in fake.calls[0][0]))
-        self.assertIn('stdin', fake.calls[0][2])  # kwargs
+        self.assertEqual(fake.file_data, ['hello world'])
 
     def test_upload_text_metalink(self):
         fake = FakeSubprocess()
         gsutil = bootstrap.GSUtil(fake)
         gsutil.upload_text('txt', 'path', additional_headers=['foo: bar'])
         self.assertTrue(any('foo: bar' in a for a in fake.calls[0][0]))
+        self.assertEqual(fake.file_data, ['path'])
 
 class FakeGSUtil(object):
     generation = 123

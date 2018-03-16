@@ -590,6 +590,27 @@
       "sig-network"
     ]
   },
+  "ci-kinflate-periodic-default-gke": {
+    "args": [
+      "--check-leaked-resources",
+      "--cluster=",
+      "--deployment=gke",
+      "--extract=gke",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--gke-environment=prod",
+      "--provider=gke",
+      "--test=false",
+      "--test-cmd=../cmd/kinflate/test/main.sh",
+      "--test-cmd-args=/go/src/example-ldap-repo",
+      "--test-cmd-name=kinflate-integration",
+      "--timeout=120m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cli"
+    ]
+  },
   "ci-kops-build": {
     "args": [
       "make",
@@ -3869,7 +3890,7 @@
       "--cluster=test-118970819f",
       "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/latest",
-      "--gcp-node-image=CUSTOM",
+      "--gcp-node-image=custom",
       "--gcp-project=ubuntu-os-gke-cloud-dev-tests",
       "--gcp-zone=us-central1-f",
       "--ginkgo-parallel=30",
@@ -7771,7 +7792,7 @@
       "--deployment=gke",
       "--extract=ci/latest",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-node-image=CUSTOM",
+      "--gcp-node-image=custom",
       "--gcp-zone=us-central1-f",
       "--ginkgo-parallel=30",
       "--gke-environment=test",
@@ -10906,6 +10927,7 @@
       "--extract=ci/latest-1.9",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-node-image=gci",
+      "--gcp-project=istio-gke-addon-prow-e2e-test",
       "--gcp-zone=us-central1-f",
       "--gke-command-group=alpha",
       "--gke-create-command=container clusters create --quiet --num-nodes=4 --enable-kubernetes-alpha --no-enable-legacy-authorization --addons=Istio --istio-config=auth=NONE",

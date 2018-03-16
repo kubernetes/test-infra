@@ -120,7 +120,7 @@ func main() {
 }
 
 func getJobFallbackNumber(bucket string, spec *pjutil.JobSpec) (bool, error) {
-	url := fmt.Sprintf("%s/%s", strings.TrimSuffix(bucket, "/"), gcs.LatestBuildForSpec(spec))
+	url := fmt.Sprintf("%s/%s", strings.TrimSuffix(bucket, "/"), gcs.LatestBuildForSpec(spec, nil)[0])
 
 	resp, err := http.Get(url)
 	if err != nil {

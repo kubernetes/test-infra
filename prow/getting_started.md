@@ -27,9 +27,9 @@ gcloud container --project "${PROJECT}" clusters create prow \
 
 You will need two secrets to talk to GitHub. The `hmac-token` is the token that
 you give to GitHub for validating webhooks. Generate it using any reasonable
-randomness-generator. I like [random.org][1]. The `oauth-token` is an OAuth2 token
+randomness-generator, eg `openssl rand -hex 20`. The `oauth-token` is an OAuth2 token
 that has read and write access to the bot account. Generate it from the
-[account's settings -> Personal access tokens -> Generate new token][2].
+[account's settings -> Personal access tokens -> Generate new token][1].
 
 ```sh
 kubectl create secret generic hmac-token --from-file=hmac=/path/to/hook/secret
@@ -199,7 +199,7 @@ the change within a few minutes.
 
 When you push a new change, the postsubmit job will run.
 
-For more information on the job environment, see [How to add new jobs][3].
+For more information on the job environment, see [How to add new jobs][2].
 
 ## Run test pods in a different namespace or a different cluster
 
@@ -251,8 +251,8 @@ spec:
 
 ## Configure SSL
 
-I suggest using [kube-lego][4] for automatic LetsEncrypt integration. If you
-already have a cert then follow the [official docs][5] to set up HTTPS
+I suggest using [kube-lego][3] for automatic LetsEncrypt integration. If you
+already have a cert then follow the [official docs][4] to set up HTTPS
 termination. Promote your ingress IP to static IP. On GKE, run:
 
 ```
@@ -265,8 +265,7 @@ for naming is `prow.org.io`, but of course that's not a requirement.
 Then, install kube-lego as described in its readme. You don't need to run it in
 a separate namespace.
 
-[1]: https://www.random.org/strings/?num=1&len=16&digits=on&upperalpha=on&loweralpha=on&unique=on&format=html&rnd=new
-[2]: https://github.com/settings/tokens
-[3]: ./README.md##how-to-add-new-jobs
-[4]: https://github.com/jetstack/kube-lego
-[5]: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
+[1]: https://github.com/settings/tokens
+[2]: ./README.md##how-to-add-new-jobs
+[3]: https://github.com/jetstack/kube-lego
+[4]: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls

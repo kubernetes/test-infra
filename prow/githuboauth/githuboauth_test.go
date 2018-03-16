@@ -127,6 +127,87 @@ func TestHandleLogin(t *testing.T) {
 	}
 }
 
+func TestHandleLogout(t *testing.T) {
+	cookie := sessions.NewCookieStore([]byte("secret-key"))
+	mockConfig := getMockConfig(cookie)
+	mockLogger := logrus.WithField("uni-test", "githuboauth")
+	mockGithubOAuthAgent := NewGithubOAuthAgent(mockConfig, mockLogger)
+	mockOAuthClient := &MockOAuthClient{}
+
+	mockRequest := httptest.NewRequest(http.MethodGet, "/mock-logout", nil)
+	_, err := cookie.New(mockRequest, tokenSession)
+	if err != nil {
+		t.Fatalf("Failed to create a mock token session with error: %v", err)
+	}
+	mockResponse := httptest.NewRecorder()
+
+	handleLoginFn := mockGithubOAuthAgent.HandleLogout(mockOAuthClient)
+	handleLoginFn.ServeHTTP(mockResponse, mockRequest)
+	result := mockResponse.Result()
+	if result.StatusCode != http.StatusFound {
+		t.Errorf("Unexpected status code. Got %v, expected %v", result.StatusCode, http.StatusFound)
+	}
+	resultCookies := result.Cookies()
+	var tokenCookie *http.Cookie
+	cookieCounts := 0
+	for _, v := range resultCookies {
+		if v.Name == tokenSession {
+			tokenCookie = v
+			cookieCounts++
+		}
+	}
+	if cookieCounts != 1 {
+		t.Errorf("Wrong number of %s cookie. There should be only one cookie with name %s", tokenSession, tokenSession)
+	}
+	if tokenCookie == nil {
+		t.Error("Cookie for oauth session not found")
+	}
+	if tokenCookie.MaxAge != -1 {
+		t.Errorf("Expect cookie MaxAge equals -1, %d", tokenCookie.MaxAge)
+	}
+}
+
+func TestHandleLogoutWithLoginSession(t *testing.T) {
+	cookie := sessions.NewCookieStore([]byte("secret-key"))
+	mockConfig := getMockConfig(cookie)
+	mockLogger := logrus.WithField("uni-test", "githuboauth")
+	mockGithubOAuthAgent := NewGithubOAuthAgent(mockConfig, mockLogger)
+	mockOAuthClient := &MockOAuthClient{}
+
+	mockRequest := httptest.NewRequest(http.MethodGet, "/mock-logout", nil)
+	_, err := cookie.New(mockRequest, tokenSession)
+	mocKLoginSession := &http.Cookie{
+		Name: loginSession,
+		Path: "/",
+	}
+	mockRequest.AddCookie(mocKLoginSession)
+	if err != nil {
+		t.Fatalf("Failed to create a mock token session with error: %v", err)
+	}
+	mockResponse := httptest.NewRecorder()
+
+	handleLoginFn := mockGithubOAuthAgent.HandleLogout(mockOAuthClient)
+	handleLoginFn.ServeHTTP(mockResponse, mockRequest)
+	result := mockResponse.Result()
+	if result.StatusCode != http.StatusFound {
+		t.Errorf("Unexpected status code. Got %v, expected %v", result.StatusCode, http.StatusFound)
+	}
+	resultCookies := result.Cookies()
+	var loginCookie *http.Cookie
+	for _, v := range resultCookies {
+		if v.Name == loginSession {
+			loginCookie = v
+			break
+		}
+	}
+	if loginCookie == nil {
+		t.Error("Cookie for oauth session not found")
+	}
+	if loginCookie.MaxAge != -1 {
+		t.Errorf("Expect cookie MaxAge equals -1, %d", loginCookie.MaxAge)
+	}
+}
+
 type fakeGithubClient struct {
 	login string
 }
@@ -229,7 +310,7 @@ func TestHandleRedirectWithValidState(t *testing.T) {
 	}
 	var loginCookie *http.Cookie
 	for _, v := range resultCookies {
-		if v.Name == "github_login" {
+		if v.Name == loginSession {
 			loginCookie = v
 			break
 		}

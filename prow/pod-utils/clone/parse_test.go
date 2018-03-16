@@ -154,3 +154,115 @@ func TestParseRefs(t *testing.T) {
 		}
 	}
 }
+
+func TestParseAliases(t *testing.T) {
+	var testCases = []struct {
+		name      string
+		value     string
+		expected  PathResolver
+		expectErr bool
+	}{
+		{
+			name:  "org and repo provided",
+			value: "org,repo=path",
+			expected: PathResolver{
+				org:  "org",
+				repo: "repo",
+				path: "path",
+			},
+			expectErr: false,
+		},
+		{
+			name:  "only org provided",
+			value: "org=path",
+			expected: PathResolver{
+				org:  "org",
+				path: "path",
+			},
+			expectErr: false,
+		},
+		{
+			name:      "no org or repo",
+			value:     "path",
+			expectErr: true,
+		},
+		{
+			name:      "no path",
+			value:     "org,repo",
+			expectErr: true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		actual, err := ParseAliases(testCase.value)
+		if testCase.expectErr && err == nil {
+			t.Errorf("%s: expected an error but got none", testCase.name)
+		}
+		if !testCase.expectErr && err != nil {
+			t.Errorf("%s: expected no error but got %v", testCase.name, err)
+		}
+
+		if !testCase.expectErr && !reflect.DeepEqual(actual, testCase.expected) {
+			t.Errorf("%s: incorrect path resolver parsed:\nexpected\n\t%v,\ngot:\n\t%v", testCase.name, testCase.expected, actual)
+		}
+	}
+}
+
+func TestPathResolver_Resolve(t *testing.T) {
+	var testCases = []struct {
+		name     string
+		org      string
+		repo     string
+		resolver PathResolver
+		expected string
+	}{
+		{
+			name: "matching resolver for org and repo",
+			org:  "org",
+			repo: "repo",
+			resolver: PathResolver{
+				org:  "org",
+				repo: "repo",
+				path: "path",
+			},
+			expected: "path",
+		},
+		{
+			name: "not matching resolver for org and repo",
+			org:  "org",
+			repo: "repo2",
+			resolver: PathResolver{
+				org:  "org",
+				repo: "repo",
+				path: "path",
+			},
+			expected: "",
+		},
+		{
+			name: "matching resolver for org",
+			org:  "org",
+			repo: "repo",
+			resolver: PathResolver{
+				org:  "org",
+				path: "path",
+			},
+			expected: "path",
+		},
+		{
+			name: "not matching resolver for org",
+			org:  "org2",
+			repo: "repo",
+			resolver: PathResolver{
+				org:  "org",
+				path: "path",
+			},
+			expected: "",
+		},
+	}
+
+	for _, testCase := range testCases {
+		if actual, expected := testCase.resolver.Resolve(testCase.org, testCase.repo), testCase.expected; actual != expected {
+			t.Errorf("%s: incorrect override path resolved:\nexpected\n\t%v,\ngot:\n\t%v", testCase.name, expected, actual)
+		}
+	}
+}

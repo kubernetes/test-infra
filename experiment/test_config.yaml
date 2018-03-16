@@ -927,7 +927,7 @@ images:
     args:
     - --image-family=ubuntu-gke-1604-lts-1
     - --image-project=ubuntu-os-gke-cloud-devel
-    - --gcp-node-image=CUSTOM
+    - --gcp-node-image=custom
   ubuntudev:
     args:
     - --image-family=ubuntu-gke-1604-lts-1
@@ -1066,23 +1066,23 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180313-3e7524a90-master
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180314-34ab1109a-master
   beta:
     args:
     - --repo=k8s.io/kubernetes=release-1.10
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180313-3e7524a90-1.10
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180314-34ab1109a-1.10
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.9
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180313-3e7524a90-1.9
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180314-34ab1109a-1.9
   stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.8
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180313-3e7524a90-1.8
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180314-34ab1109a-1.8
   stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.7
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180313-3e7524a90-1.7
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180314-34ab1109a-1.7
 
 nodeTestSuites:
   default:

@@ -57,17 +57,28 @@ func AliasForSpec(spec *pjutil.JobSpec) string {
 }
 
 // LatestBuildForSpec determines the GCS path for storing the latest
-// build id for a job.
-func LatestBuildForSpec(spec *pjutil.JobSpec) string {
+// build id for a job. pathSegment can be nil so callers of this
+// helper are not required to choose a path strategy but can still
+// get back a result.
+func LatestBuildForSpec(spec *pjutil.JobSpec, pathSegment RepoPathBuilder) []string {
+	var latestBuilds []string
 	switch spec.Type {
 	case kube.PeriodicJob, kube.PostsubmitJob:
-		return path.Join("logs", spec.Job, "latest-build.txt")
-	case kube.PresubmitJob, kube.BatchJob:
-		return path.Join("pr-logs", "directory", spec.Job, "latest-build.txt")
+		latestBuilds = append(latestBuilds, path.Join("logs", spec.Job, "latest-build.txt"))
+	case kube.PresubmitJob:
+		latestBuilds = append(latestBuilds, path.Join("pr-logs", "directory", spec.Job, "latest-build.txt"))
+		// Gubernator expects presubmit tests to upload latest-build.txt
+		// under the PR-specific directory too.
+		if pathSegment != nil {
+			latestBuilds = append(latestBuilds, path.Join("pr-logs", "pull", pathSegment(spec.Refs.Org, spec.Refs.Repo), strconv.Itoa(spec.Refs.Pulls[0].Number), spec.Job, "latest-build.txt"))
+		}
+	case kube.BatchJob:
+		latestBuilds = append(latestBuilds, path.Join("pr-logs", "directory", spec.Job, "latest-build.txt"))
 	default:
 		logrus.Errorf("unknown job spec type: %v", spec.Type)
+		return nil
 	}
-	return ""
+	return latestBuilds
 }
 
 // RootForSpec determines the root GCS path for storing artifacts about

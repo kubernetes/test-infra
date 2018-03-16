@@ -34,6 +34,7 @@ import (
 )
 
 const (
+	loginSession       = "github_login"
 	tokenSession       = "access-token-session"
 	tokenKey           = "access-token"
 	oauthSessionCookie = "oauth-session"
@@ -110,6 +111,31 @@ func (ga *GithubOAuthAgent) HandleLogin(client OAuthClient) http.HandlerFunc {
 	}
 }
 
+// HandleLogout handles Github logout request from front-end. It invalidates cookie sessions and
+// redirect back to the front page.
+func (ga *GithubOAuthAgent) HandleLogout(client OAuthClient) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		accessTokenSession, err := ga.gc.CookieStore.Get(r, tokenSession)
+		if err != nil {
+			ga.serverError(w, "get cookie", err)
+			return
+		}
+		// Clear session
+		accessTokenSession.Options.MaxAge = -1
+		if err := accessTokenSession.Save(r, w); err != nil {
+			ga.serverError(w, "Save invalidated session on log out", err)
+			return
+		}
+		loginCookie, err := r.Cookie(loginSession)
+		if err == nil {
+			loginCookie.MaxAge = -1
+			loginCookie.Expires = time.Now().Add(-time.Hour * 24)
+			http.SetCookie(w, loginCookie)
+		}
+		http.Redirect(w, r, ga.gc.FinalRedirectURL, http.StatusFound)
+	}
+}
+
 // HandleRedirect handles the redirection from Github. It exchanges the code from redirect URL for
 // user access token. The access token is then saved to the cookie and the page is redirected to
 // the final destination in the config, which should be the front-end.
@@ -172,7 +198,7 @@ func (ga *GithubOAuthAgent) HandleRedirect(client OAuthClient, getter GithubClie
 			return
 		}
 		http.SetCookie(w, &http.Cookie{
-			Name:    "github_login",
+			Name:    loginSession,
 			Value:   *user.Login,
 			Path:    "/",
 			Expires: time.Now().Add(time.Hour * 24 * 30),

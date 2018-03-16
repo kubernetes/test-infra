@@ -255,7 +255,12 @@ func (f fallbackHandler) getURL(jobName string) string {
 		logrus.Errorf("requested job is unknown to prow: %s", jobName)
 		return ""
 	}
-	return fmt.Sprintf("%s/%s", strings.TrimSuffix(f.bucket, "/"), gcs.LatestBuildForSpec(spec))
+	paths := gcs.LatestBuildForSpec(spec, nil)
+	if len(paths) != 1 {
+		logrus.Errorf("expected a single GCS path, got %v", paths)
+		return ""
+	}
+	return fmt.Sprintf("%s/%s", strings.TrimSuffix(f.bucket, "/"), paths[0])
 }
 
 func main() {
