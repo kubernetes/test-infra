@@ -171,7 +171,8 @@ i.state {
     text-align: center;
 }
 
-#job-bar div {
+.job-bar-state {
+    cursor: pointer;
     outline: none;
 }
 /** Job bar **/
