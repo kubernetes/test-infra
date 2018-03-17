@@ -105,7 +105,7 @@ func gatherOptions() options {
 
 	flag.StringVar(&o.githubEndpoint, "github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
 	flag.StringVar(&o.githubTokenFile, "github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
-	flag.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub/Kubernetes/Jenkins.")
+	flag.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub and Jenkins. Kubernetes API calls will still be mutating state unless a deck URL is provided.")
 	flag.Parse()
 	return o
 }
@@ -131,6 +131,13 @@ func main() {
 	kc, err := kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting kube client.")
+	}
+	// Use a real client in case no deck endpoint is provided. In that way
+	// we can support testing actual prowjob mutation in test clusters.
+	if o.dryRun && o.deckURL != "" {
+		kc = kube.NewFakeClient(o.deckURL)
+	} else if o.dryRun {
+		logrus.Warning("Using a real in-cluster Kubernetes client. If you want to avoid k8s mutations, provide a deck URL.")
 	}
 
 	ac := &jenkins.AuthConfig{
@@ -182,7 +189,6 @@ func main() {
 	var ghc *github.Client
 	if o.dryRun {
 		ghc = github.NewDryRunClient(oauthSecret, o.githubEndpoint)
-		kc = kube.NewFakeClient(o.deckURL)
 	} else {
 		ghc = github.NewClient(oauthSecret, o.githubEndpoint)
 	}
