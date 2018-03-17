@@ -6737,7 +6737,7 @@ periodics:
       - --repo=github.com/containerd/cri=master
       - --timeout=90
       - --
-      - "--node-args=--image-config-file=test/e2e_node/image-config-containerd.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri"
+      - "--node-args=--image-config-file=test/containerd/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri"
       env:
       - name: GOPATH
         value: /go

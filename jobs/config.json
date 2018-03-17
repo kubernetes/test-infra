@@ -37,7 +37,7 @@
   },
   "ci-containerd-build": {
     "args": [
-      "/go/src/github.com/containerd/cri/test/build-containerd.sh"
+      "/go/src/github.com/containerd/cri/test/containerd/build.sh"
     ],
     "scenario": "execute",
     "sigOwners": [
