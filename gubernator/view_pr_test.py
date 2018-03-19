@@ -183,7 +183,8 @@ class TestDashboard(main_test.TestBase):
         self.assertIn('123', resp)
         self.assertIn('124', resp)
         resp = app.get('/pr/user?milestone=v1.24')
-        self.assertNotIn('123', resp)
+        # Don't match timestamps that happen to include "123".
+        self.assertNotRegexpMatches(str(resp), r'\b123\b')
         self.assertIn('124', resp)
 
     @staticmethod
