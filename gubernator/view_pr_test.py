@@ -226,6 +226,8 @@ class TestDashboard(main_test.TestBase):
         self.assertIn('huge pr!', resp)
 
     def test_acks(self):
+        app.get('/')  # initialize session secrets
+
         make_pr(124, ['human'], {'title': 'huge pr', 'attn': {'human': 'help#123#456'}}, repo='k/k')
         cookie = self.make_session(user='human')
         headers = {'Cookie': 'session=%s' % cookie}
