@@ -376,6 +376,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
   alert_stale_results_hours: 36
   num_failures_to_alert: 4 # Runs every 12h. Alert when it's been failing for a couple of days.
+- name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable1
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable1
+  alert_stale_results_hours: 36
+  num_failures_to_alert: 4 # Runs every 12h. Alert when it's been failing for a couple of days.
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
   alert_stale_results_hours: 24
@@ -3573,6 +3577,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
   - name: gke-device-plugin-gpu-1.9
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
+  - name: gke-device-plugin-gpu-p100-1.9
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable1
 
 - name: sig-release-1.9-blocking
   dashboard_tab:
@@ -3992,8 +3998,13 @@ dashboards:
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
-  - name: gke-device-plugin-gpu-p100-1.9
+  - name: gke-device-plugin-gpu-p100-1.10
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gke-device-plugin-gpu-p100-1.9
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable1
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'

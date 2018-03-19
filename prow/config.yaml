@@ -11693,6 +11693,19 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180316-92e6ccade-master
 
+- name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable1
+  interval: 12h #expensive test
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=300
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180316-92e6ccade-master
+
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
   interval: 6h
   agent: kubernetes
