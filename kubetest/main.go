@@ -694,13 +694,13 @@ func prepareGcp(o *options) error {
 			o.deployment = "gke"
 		}
 		if o.deployment != "gke" {
-			return fmt.Errorf("--provider=gke implies --deployment=gke")
+			return fmt.Errorf("expected --deployment=gke for --provider=gke, found --deployment=%s", o.deployment)
 		}
 		if o.gcpNodeImage == "" {
 			return fmt.Errorf("--gcp-node-image must be set for GKE")
 		}
 		if o.gcpMasterImage != "" {
-			return fmt.Errorf("--gcp-master-image cannot be set on GKE")
+			return fmt.Errorf("expected --gcp-master-image to be empty for --provider=gke, found --gcp-master-image=%s", o.gcpMasterImage)
 		}
 		if o.gcpNodes != "" {
 			return fmt.Errorf("--gcp-nodes cannot be set on GKE, use --gke-shape instead")
