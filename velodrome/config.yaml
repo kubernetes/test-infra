@@ -182,7 +182,7 @@ projects:
             metrics_path: /metrics
             static_configs:
               - targets:
-                  - http://104.197.146.56:9103
+                  - http://35.199.148.121:9103
   tensorflow:
     repositories:
       tensorflow/tensorflow:
