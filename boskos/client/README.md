@@ -30,16 +30,16 @@ func NewClient(url string, owner string) *Client
 // Acquire asks boskos for a resource of certain type in certain state, and set the resource to dest state.
 func (c *Client) Acquire(rtype string, state string, dest string) (string, error)
 
-// ReleaseAll returns all resource hold by the client back to boskos and set them to dest state.
+// ReleaseAll returns all resources hold by the client back to boskos and set them to dest state.
 func (c *Client) ReleaseAll(dest string) error
 
-// ReleaseOne returns one of owned resource back to boskos and set it to dest state.
+// ReleaseOne returns one of owned resources back to boskos and set it to dest state.
 func (c *Client) ReleaseOne(name string, dest string) error
 
 // UpdateAll signals update for all resources hold by the client.
 func (c *Client) UpdateAll(state string) error
 
-// UpdateOne signale update for one of the resource hold by the client.
+// UpdateOne signale update for one of the resources hold by the client.
 func (c *Client) UpdateOne(name string, state string) error
 
 // Reset will scan all boskos resources of type, in state, last updated before expire, and set them to dest state.
