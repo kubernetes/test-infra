@@ -21,6 +21,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/andygrunwald/go-gerrit"
@@ -64,9 +67,11 @@ func NewController(instance, storage string, projects []string, kc *kube.Client,
 	if storage != "" {
 		buf, err := ioutil.ReadFile(storage)
 		if err == nil {
-			lastUpdate, err = time.Parse(time.UnixDate, string(buf))
+			unix, err := strconv.ParseInt(string(buf), 10, 64)
 			if err != nil {
 				return nil, err
+			} else {
+				lastUpdate = time.Unix(unix, 0)
 			}
 		} else if !os.IsNotExist(err) {
 			return nil, err
@@ -78,6 +83,22 @@ func NewController(instance, storage string, projects []string, kc *kube.Client,
 	if err != nil {
 		return nil, err
 	}
+	raw, err := ioutil.ReadFile(filepath.Join(os.Getenv("HOME"), ".git-credential-cache/cookie"))
+	if err != nil {
+		return nil, err
+	}
+	fields := strings.Fields(string(raw))
+	token := fields[len(fields)-1]
+
+	c.Authentication.SetCookieAuth("o", token)
+	self, _, err := c.Accounts.GetAccount("self")
+	if err != nil {
+		logrus.WithError(err).Errorf("Fail to auth with token: %s", token)
+		return nil, err
+	} else {
+		logrus.Printf("Username: %s", self.Name)
+	}
+
 	return &Controller{
 		instance:   instance,
 		projects:   projects,
@@ -94,7 +115,10 @@ func (c *Controller) SaveLastSync(lastSync time.Time) error {
 		return nil
 	}
 
-	err := ioutil.WriteFile(c.storage+".tmp", []byte(lastSync.String()), 0644)
+	lastSyncUnix := strconv.FormatInt(lastSync.Unix(), 10)
+	logrus.Printf("Writing last sync: %s", lastSyncUnix)
+
+	err := ioutil.WriteFile(c.storage+".tmp", []byte(lastSyncUnix), 0644)
 	if err != nil {
 		return err
 	}
@@ -147,6 +171,8 @@ func (c *Controller) QueryChanges() (map[string]gerrit.ChangeInfo, error) {
 			// should not happen? Let next sync loop catch up
 			return pending, fmt.Errorf("failed to query gerrit changes: %v", err)
 		}
+
+		logrus.Infof("Find %d changes from query %v", len(*changes), opt.Query)
 
 		if len(*changes) == 0 {
 			return pending, nil
