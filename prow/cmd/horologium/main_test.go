@@ -116,7 +116,7 @@ func TestSync(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		cfg := config.Config{
-			Periodics: []config.Periodic{{Name: "j"}},
+			Periodics: []config.Periodic{{BasicConfig: config.BasicConfig{Name: "j"}}},
 		}
 		cfg.Periodics[0].SetInterval(time.Minute)
 
@@ -181,7 +181,7 @@ func TestSyncCron(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		cfg := config.Config{
-			Periodics: []config.Periodic{{Name: "j", Cron: "@every 1m"}},
+			Periodics: []config.Periodic{{BasicConfig: config.BasicConfig{Name: "j"}, Cron: "@every 1m"}},
 		}
 
 		var jobs []kube.ProwJob

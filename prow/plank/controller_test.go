@@ -49,24 +49,24 @@ const (
 func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
 	presubmits := []config.Presubmit{
 		{
-			Name: "test-bazel-build",
+			BasicConfig: config.BasicConfig{Name: "test-bazel-build"},
 			RunAfterSuccess: []config.Presubmit{
 				{
-					Name:         "test-kubeadm-cloud",
+					BasicConfig:  config.BasicConfig{Name: "test-kubeadm-cloud"},
 					RunIfChanged: "^(cmd/kubeadm|build/debs).*$",
 				},
 			},
 		},
 		{
-			Name: "test-e2e",
+			BasicConfig: config.BasicConfig{Name: "test-e2e"},
 			RunAfterSuccess: []config.Presubmit{
 				{
-					Name: "push-image",
+					BasicConfig: config.BasicConfig{Name: "push-image"},
 				},
 			},
 		},
 		{
-			Name: "test-bazel-test",
+			BasicConfig: config.BasicConfig{Name: "test-bazel-test"},
 		},
 	}
 	if err := config.SetRegexes(presubmits); err != nil {
@@ -1073,17 +1073,21 @@ func TestSyncPendingJob(t *testing.T) {
 // TestPeriodic walks through the happy path of a periodic job.
 func TestPeriodic(t *testing.T) {
 	per := config.Periodic{
-		Name:    "ci-periodic-job",
-		Agent:   "kubernetes",
-		Cluster: "trusted",
-		Spec: &kube.PodSpec{
-			Containers: []v1.Container{{}},
+		BasicConfig: config.BasicConfig{
+			Name:    "ci-periodic-job",
+			Agent:   "kubernetes",
+			Cluster: "trusted",
+			Spec: &kube.PodSpec{
+				Containers: []v1.Container{{}},
+			},
 		},
 		RunAfterSuccess: []config.Periodic{
 			{
-				Name:  "ci-periodic-job-2",
-				Agent: "kubernetes",
-				Spec:  &kube.PodSpec{},
+				BasicConfig: config.BasicConfig{
+					Name:  "ci-periodic-job-2",
+					Agent: "kubernetes",
+					Spec:  &kube.PodSpec{},
+				},
 			},
 		},
 	}

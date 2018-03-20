@@ -292,21 +292,21 @@ func TestRequiredPresubmits(t *testing.T) {
 			name: "basic",
 			possible: []config.Presubmit{
 				{
-					Name:      "always",
-					AlwaysRun: true,
+					BasicConfig: config.BasicConfig{Name: "always"},
+					AlwaysRun:   true,
 				},
 				{
-					Name:      "optional",
-					AlwaysRun: false,
+					BasicConfig: config.BasicConfig{Name: "optional"},
+					AlwaysRun:   false,
 				},
 				{
-					Name:       "hidden",
-					AlwaysRun:  true,
-					SkipReport: true,
+					BasicConfig: config.BasicConfig{Name: "hidden"},
+					AlwaysRun:   true,
+					SkipReport:  true,
 				},
 				{
-					Name:      "optional_but_overridden",
-					AlwaysRun: false,
+					BasicConfig: config.BasicConfig{Name: "optional_but_overridden"},
+					AlwaysRun:   false,
 				},
 			},
 			required:   []string{"always", "optional_but_overridden"},
@@ -335,17 +335,17 @@ func TestNeededPresubmits(t *testing.T) {
 			name: "basic",
 			possible: []config.Presubmit{
 				{
-					Name:      "always",
-					AlwaysRun: true,
+					BasicConfig: config.BasicConfig{Name: "always"},
+					AlwaysRun:   true,
 				},
 				{
-					Name:      "optional",
-					AlwaysRun: false,
+					BasicConfig: config.BasicConfig{Name: "optional"},
+					AlwaysRun:   false,
 				},
 				{
-					Name:       "hidden",
-					AlwaysRun:  true,
-					SkipReport: true,
+					BasicConfig: config.BasicConfig{Name: "hidden"},
+					AlwaysRun:   true,
+					SkipReport:  true,
 				},
 			},
 			required: []string{"always"},
@@ -354,14 +354,14 @@ func TestNeededPresubmits(t *testing.T) {
 			name: "skip already passed",
 			possible: []config.Presubmit{
 				{
-					Name:      "new",
-					Context:   "brandnew",
-					AlwaysRun: true,
+					BasicConfig: config.BasicConfig{Name: "new"},
+					Context:     "brandnew",
+					AlwaysRun:   true,
 				},
 				{
-					Name:      "passed",
-					Context:   "already-ran",
-					AlwaysRun: true,
+					BasicConfig: config.BasicConfig{Name: "passed"},
+					Context:     "already-ran",
+					AlwaysRun:   true,
 				},
 			},
 			current: []kube.ProwJob{
@@ -374,19 +374,19 @@ func TestNeededPresubmits(t *testing.T) {
 			name: "handle branches/skipbranches specifiers",
 			possible: []config.Presubmit{
 				{
-					Name:      "old",
-					Brancher:  config.Brancher{Branches: []string{"release-1.2", "release-1.3"}},
-					AlwaysRun: true,
+					BasicConfig: config.BasicConfig{Name: "old"},
+					Brancher:    config.Brancher{Branches: []string{"release-1.2", "release-1.3"}},
+					AlwaysRun:   true,
 				},
 				{
-					Name:      "outdated",
-					Brancher:  config.Brancher{SkipBranches: []string{"master"}},
-					AlwaysRun: true,
+					BasicConfig: config.BasicConfig{Name: "outdated"},
+					Brancher:    config.Brancher{SkipBranches: []string{"master"}},
+					AlwaysRun:   true,
 				},
 				{
-					Name:      "latest",
-					Brancher:  config.Brancher{Branches: []string{"master"}},
-					AlwaysRun: true,
+					BasicConfig: config.BasicConfig{Name: "latest"},
+					Brancher:    config.Brancher{Branches: []string{"master"}},
+					AlwaysRun:   true,
 				},
 			},
 			required: []string{"latest"},

@@ -29,12 +29,12 @@ func TestSync(t *testing.T) {
 	initial := &config.Config{
 		Periodics: []config.Periodic{
 			{
-				Name:     "interval",
-				Interval: "1m",
+				BasicConfig: config.BasicConfig{Name: "interval"},
+				Interval:    "1m",
 			},
 			{
-				Name: "cron",
-				Cron: "@every 1m",
+				BasicConfig: config.BasicConfig{Name: "cron"},
+				Cron:        "@every 1m",
 			},
 		},
 	}
@@ -42,16 +42,16 @@ func TestSync(t *testing.T) {
 	addAndUpdate := &config.Config{
 		Periodics: []config.Periodic{
 			{
-				Name:     "interval",
-				Interval: "1m",
+				BasicConfig: config.BasicConfig{Name: "interval"},
+				Interval:    "1m",
 			},
 			{
-				Name: "cron",
-				Cron: "@every 1m",
+				BasicConfig: config.BasicConfig{Name: "cron"},
+				Cron:        "@every 1m",
 			},
 			{
-				Name: "cron-2",
-				Cron: "@every 1m",
+				BasicConfig: config.BasicConfig{Name: "cron-2"},
+				Cron:        "@every 1m",
 			},
 		},
 	}
@@ -59,12 +59,12 @@ func TestSync(t *testing.T) {
 	deleted := &config.Config{
 		Periodics: []config.Periodic{
 			{
-				Name:     "interval",
-				Interval: "1m",
+				BasicConfig: config.BasicConfig{Name: "interval"},
+				Interval:    "1m",
 			},
 			{
-				Name: "cron-2",
-				Cron: "@every 1h",
+				BasicConfig: config.BasicConfig{Name: "cron-2"},
+				Cron:        "@every 1h",
 			},
 		},
 	}
@@ -126,12 +126,12 @@ func TestTrigger(t *testing.T) {
 	cfg := &config.Config{
 		Periodics: []config.Periodic{
 			{
-				Name: "cron",
-				Cron: "* 8 * * *",
+				BasicConfig: config.BasicConfig{Name: "cron"},
+				Cron:        "* 8 * * *",
 			},
 			{
-				Name: "periodic",
-				Cron: "@every 1h",
+				BasicConfig: config.BasicConfig{Name: "periodic"},
+				Cron:        "@every 1h",
 			},
 		},
 	}

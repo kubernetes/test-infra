@@ -43,24 +43,24 @@ type fca struct {
 func newFakeConfigAgent(t *testing.T, maxConcurrency int, operators []config.JenkinsOperator) *fca {
 	presubmits := []config.Presubmit{
 		{
-			Name: "test-bazel-build",
+			BasicConfig: config.BasicConfig{Name: "test-bazel-build"},
 			RunAfterSuccess: []config.Presubmit{
 				{
-					Name:         "test-kubeadm-cloud",
+					BasicConfig:  config.BasicConfig{Name: "test-kubeadm-cloud"},
 					RunIfChanged: "^(cmd/kubeadm|build/debs).*$",
 				},
 			},
 		},
 		{
-			Name: "test-e2e",
+			BasicConfig: config.BasicConfig{Name: "test-e2e"},
 			RunAfterSuccess: []config.Presubmit{
 				{
-					Name: "push-image",
+					BasicConfig: config.BasicConfig{Name: "push-image"},
 				},
 			},
 		},
 		{
-			Name: "test-bazel-test",
+			BasicConfig: config.BasicConfig{Name: "test-bazel-test"},
 		},
 	}
 	if err := config.SetRegexes(presubmits); err != nil {
@@ -579,8 +579,10 @@ func pState(state string) *string {
 // TestBatch walks through the happy path of a batch job on Jenkins.
 func TestBatch(t *testing.T) {
 	pre := config.Presubmit{
-		Name:    "pr-some-job",
-		Agent:   "jenkins",
+		BasicConfig: config.BasicConfig{
+			Name:  "pr-some-job",
+			Agent: "jenkins",
+		},
 		Context: "Some Job Context",
 	}
 	pj := pjutil.NewProwJob(pjutil.BatchSpec(pre, kube.Refs{

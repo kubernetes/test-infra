@@ -105,7 +105,7 @@ func newFakeConfigAgent() *fca {
 				MaxPodAge:     maxPodAge,
 			},
 			Periodics: []config.Periodic{
-				{Name: "retester"},
+				{BasicConfig: config.BasicConfig{Name: "retester"}},
 			},
 		},
 	}

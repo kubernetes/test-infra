@@ -1001,8 +1001,8 @@ func TestTakeAction(t *testing.T) {
 			Presubmits: map[string][]config.Presubmit{
 				"o/r": {
 					{
-						Name:      "foo",
-						AlwaysRun: true,
+						BasicConfig: config.BasicConfig{Name: "foo"},
+						AlwaysRun:   true,
 					},
 				},
 			},

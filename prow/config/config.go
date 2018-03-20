@@ -265,67 +265,30 @@ func parseConfig(c *Config) error {
 
 	// Validate presubmits.
 	for _, v := range c.AllPresubmits(nil) {
-		name := v.Name
-		agent := v.Agent
-		// Ensure that k8s presubmits have a pod spec.
-		if agent == string(kube.KubernetesAgent) && v.Spec == nil {
-			return fmt.Errorf("job %s has no spec", name)
-		}
-		// Ensure agent is a known value.
-		if agent != string(kube.KubernetesAgent) && agent != string(kube.JenkinsAgent) {
-			return fmt.Errorf("job %s has invalid agent (%s), it needs to be one of the following: %s %s",
-				name, agent, kube.KubernetesAgent, kube.JenkinsAgent)
+		if err := validateBasicConfig(v.BasicConfig, c.Presets); err != nil {
+			return err
 		}
 		// Ensure max_concurrency is non-negative.
 		if v.MaxConcurrency < 0 {
-			return fmt.Errorf("job %s jas invalid max_concurrency (%d), it needs to be a non-negative number", name, v.MaxConcurrency)
-		}
-		for _, preset := range c.Presets {
-			if err := mergePreset(preset, v.Labels, v.Spec); err != nil {
-				return fmt.Errorf("could not merge preset: %v", err)
-			}
+			return fmt.Errorf("job %s jas invalid max_concurrency (%d), it needs to be a non-negative number", v.Name, v.MaxConcurrency)
 		}
 	}
 
 	// Validate postsubmits.
 	for _, j := range c.AllPostsubmits(nil) {
-		name := j.Name
-		agent := j.Agent
-		// Ensure that k8s postsubmits have a pod spec.
-		if agent == string(kube.KubernetesAgent) && j.Spec == nil {
-			return fmt.Errorf("job %s has no spec", name)
-		}
-		// Ensure agent is a known value.
-		if agent != string(kube.KubernetesAgent) && agent != string(kube.JenkinsAgent) {
-			return fmt.Errorf("job %s has invalid agent (%s), it needs to be one of the following: %s %s",
-				name, agent, kube.KubernetesAgent, kube.JenkinsAgent)
+		if err := validateBasicConfig(j.BasicConfig, c.Presets); err != nil {
+			return err
 		}
 		// Ensure max_concurrency is non-negative.
 		if j.MaxConcurrency < 0 {
-			return fmt.Errorf("job %s jas invalid max_concurrency (%d), it needs to be a non-negative number", name, j.MaxConcurrency)
-		}
-		for _, preset := range c.Presets {
-			if err := mergePreset(preset, j.Labels, j.Spec); err != nil {
-				return fmt.Errorf("could not merge preset: %v", err)
-			}
+			return fmt.Errorf("job %s jas invalid max_concurrency (%d), it needs to be a non-negative number", j.Name, j.MaxConcurrency)
 		}
 	}
 
-	// Ensure that the periodic durations are valid and specs exist.
+	// Validate postsubmits.
 	for _, p := range c.AllPeriodics() {
-		name := p.Name
-		agent := p.Agent
-		if agent == string(kube.KubernetesAgent) && p.Spec == nil {
-			return fmt.Errorf("job %s has no spec", name)
-		}
-		if agent != string(kube.KubernetesAgent) && agent != string(kube.JenkinsAgent) {
-			return fmt.Errorf("job %s has invalid agent (%s), it needs to be one of the following: %s %s",
-				name, agent, kube.KubernetesAgent, kube.JenkinsAgent)
-		}
-		for _, preset := range c.Presets {
-			if err := mergePreset(preset, p.Labels, p.Spec); err != nil {
-				return fmt.Errorf("could not merge preset: %v", err)
-			}
+		if err := validateBasicConfig(p.BasicConfig, c.Presets); err != nil {
+			return err
 		}
 	}
 	// Set the interval on the periodic jobs. It doesn't make sense to do this
@@ -507,6 +470,25 @@ func parseConfig(c *Config) error {
 		return err
 	}
 	logrus.SetLevel(lvl)
+
+	return nil
+}
+
+func validateBasicConfig(config BasicConfig, presets []Preset) error {
+	// Ensure that k8s presubmits have a pod spec.
+	if config.Agent == string(kube.KubernetesAgent) && config.Spec == nil {
+		return fmt.Errorf("job %s has no spec", config.Name)
+	}
+	// Ensure config.Agent is a known value.
+	if config.Agent != string(kube.KubernetesAgent) && config.Agent != string(kube.JenkinsAgent) {
+		return fmt.Errorf("job %s has invalid config.Agent (%s), it needs to be one of the following: %s %s",
+			config.Name, config.Agent, kube.KubernetesAgent, kube.JenkinsAgent)
+	}
+	for _, preset := range presets {
+		if err := mergePreset(preset, config.Labels, config.Spec); err != nil {
+			return fmt.Errorf("could not merge preset: %v", err)
+		}
+	}
 
 	return nil
 }

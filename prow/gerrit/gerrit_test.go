@@ -273,7 +273,7 @@ func TestProcessChange(t *testing.T) {
 				Presubmits: map[string][]config.Presubmit{
 					"gerrit/test-infra": {
 						{
-							Name: "test-foo",
+							BasicConfig: config.BasicConfig{Name: "test-foo"},
 						},
 					},
 				},

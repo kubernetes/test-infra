@@ -178,16 +178,16 @@ func TestHandleIssueComment(t *testing.T) {
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:      "job",
-						AlwaysRun: false,
-						Context:   "pull-job",
-						Trigger:   `/test all`,
+						BasicConfig: config.BasicConfig{Name: "job"},
+						AlwaysRun:   false,
+						Context:     "pull-job",
+						Trigger:     `/test all`,
 					},
 					{
-						Name:      "jib",
-						AlwaysRun: false,
-						Context:   "pull-jib",
-						Trigger:   `/test jib`,
+						BasicConfig: config.BasicConfig{Name: "jib"},
+						AlwaysRun:   false,
+						Context:     "pull-jib",
+						Trigger:     `/test jib`,
 					},
 				},
 			},
@@ -203,12 +203,12 @@ func TestHandleIssueComment(t *testing.T) {
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:       "job",
-						AlwaysRun:  true,
-						SkipReport: true,
-						Context:    "pull-job",
-						Trigger:    `/test all`,
-						Brancher:   config.Brancher{Branches: []string{"master"}},
+						BasicConfig: config.BasicConfig{Name: "job"},
+						AlwaysRun:   true,
+						SkipReport:  true,
+						Context:     "pull-job",
+						Trigger:     `/test all`,
+						Brancher:    config.Brancher{Branches: []string{"master"}},
 					},
 				},
 			},
@@ -222,7 +222,7 @@ func TestHandleIssueComment(t *testing.T) {
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:         "jab",
+						BasicConfig:  config.BasicConfig{Name: "jab"},
 						RunIfChanged: "CHANGED",
 						SkipReport:   true,
 						Context:      "pull-jab",
@@ -242,7 +242,7 @@ func TestHandleIssueComment(t *testing.T) {
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:         "jib",
+						BasicConfig:  config.BasicConfig{Name: "jib"},
 						RunIfChanged: "CHANGED",
 						Context:      "pull-jib",
 						Trigger:      `/test all`,
@@ -261,7 +261,7 @@ func TestHandleIssueComment(t *testing.T) {
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:         "jub",
+						BasicConfig:  config.BasicConfig{Name: "jub"},
 						RunIfChanged: "CHANGED",
 						Context:      "pull-jub",
 						Trigger:      `/test jub`,
@@ -280,7 +280,7 @@ func TestHandleIssueComment(t *testing.T) {
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:         "jib",
+						BasicConfig:  config.BasicConfig{Name: "jib"},
 						RunIfChanged: "CHANGED2",
 						Context:      "pull-jib",
 						Trigger:      `/test all`,
@@ -299,7 +299,7 @@ func TestHandleIssueComment(t *testing.T) {
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:         "jab",
+						BasicConfig:  config.BasicConfig{Name: "jab"},
 						RunIfChanged: "CHANGED",
 						Context:      "pull-jab",
 						Trigger:      `/test all`,
@@ -319,16 +319,16 @@ func TestHandleIssueComment(t *testing.T) {
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:     "jab",
-						Brancher: config.Brancher{Branches: []string{"master"}},
-						Context:  "pull-jab",
-						Trigger:  `/test jab`,
+						BasicConfig: config.BasicConfig{Name: "jab"},
+						Brancher:    config.Brancher{Branches: []string{"master"}},
+						Context:     "pull-jab",
+						Trigger:     `/test jab`,
 					},
 					{
-						Name:     "jab",
-						Brancher: config.Brancher{Branches: []string{"release"}},
-						Context:  "pull-jab",
-						Trigger:  `/test jab`,
+						BasicConfig: config.BasicConfig{Name: "jab"},
+						Brancher:    config.Brancher{Branches: []string{"release"}},
+						Context:     "pull-jab",
+						Trigger:     `/test jab`,
 					},
 				},
 			},
@@ -345,16 +345,16 @@ func TestHandleIssueComment(t *testing.T) {
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:     "jab",
-						Brancher: config.Brancher{Branches: []string{"master"}},
-						Context:  "pull-jab",
-						Trigger:  `/test jab`,
+						BasicConfig: config.BasicConfig{Name: "jab"},
+						Brancher:    config.Brancher{Branches: []string{"master"}},
+						Context:     "pull-jab",
+						Trigger:     `/test jab`,
 					},
 					{
-						Name:     "jab",
-						Brancher: config.Brancher{Branches: []string{"release"}},
-						Context:  "pull-jab",
-						Trigger:  `/test jab`,
+						BasicConfig: config.BasicConfig{Name: "jab"},
+						Brancher:    config.Brancher{Branches: []string{"release"}},
+						Context:     "pull-jab",
+						Trigger:     `/test jab`,
 					},
 				},
 			},
@@ -370,7 +370,7 @@ func TestHandleIssueComment(t *testing.T) {
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:         "jeb",
+						BasicConfig:  config.BasicConfig{Name: "jeb"},
 						RunIfChanged: "CHANGED2",
 						Context:      "pull-jeb",
 						Trigger:      `/test all`,
@@ -389,7 +389,7 @@ func TestHandleIssueComment(t *testing.T) {
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:         "jeb",
+						BasicConfig:  config.BasicConfig{Name: "jeb"},
 						RunIfChanged: "CHANGED2",
 						Context:      "pull-jib",
 						Trigger:      `/test (all|pull-jeb)`,
@@ -407,7 +407,7 @@ func TestHandleIssueComment(t *testing.T) {
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:         "jub",
+						BasicConfig:  config.BasicConfig{Name: "jub"},
 						RunIfChanged: "CHANGED",
 						Context:      "pull-jub",
 						Trigger:      `/test jub`,
@@ -426,7 +426,7 @@ func TestHandleIssueComment(t *testing.T) {
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:         "jub",
+						BasicConfig:  config.BasicConfig{Name: "jub"},
 						RunIfChanged: "CHANGED2",
 						Context:      "pull-jub",
 						Trigger:      `/test jub`,
@@ -483,17 +483,17 @@ func TestHandleIssueComment(t *testing.T) {
 			presubmits = map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:      "job",
-						AlwaysRun: true,
-						Context:   "pull-job",
-						Trigger:   `/test all`,
-						Brancher:  config.Brancher{Branches: []string{"master"}},
+						BasicConfig: config.BasicConfig{Name: "job"},
+						AlwaysRun:   true,
+						Context:     "pull-job",
+						Trigger:     `/test all`,
+						Brancher:    config.Brancher{Branches: []string{"master"}},
 					},
 					{
-						Name:      "jib",
-						AlwaysRun: false,
-						Context:   "pull-jib",
-						Trigger:   `/test jib`,
+						BasicConfig: config.BasicConfig{Name: "jib"},
+						AlwaysRun:   false,
+						Context:     "pull-jib",
+						Trigger:     `/test jib`,
 					},
 				},
 			}
