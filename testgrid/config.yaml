@@ -193,6 +193,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws
 - name: ci-kubernetes-e2e-kops-aws-canary
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-canary
+- name: ci-kubernetes-e2e-kops-aws-networking-kopeio-vxlan
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-networking-kopeio-vxlan
 - name: ci-kubernetes-e2e-kops-aws-sig-cli
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-sig-cli
 - name: ci-kubernetes-e2e-kops-aws-updown
@@ -2785,6 +2787,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-aws-beta
   - name: kops-aws-updown
     test_group_name: ci-kubernetes-e2e-kops-aws-updown
+  - name: kops-aws-networking-kopeio-vxlan
+    test_group_name: ci-kubernetes-e2e-kops-aws-networking-kopeio-vxlan
   - name: kops-aws-weave
     test_group_name: ci-kubernetes-e2e-kops-aws-weave
   - name: kops-aws-channelalpha
