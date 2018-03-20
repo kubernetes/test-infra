@@ -749,7 +749,7 @@ func TestURLTemplate(t *testing.T) {
 			Spec: kube.ProwJobSpec{
 				Type: tc.jobType,
 				Job:  tc.job,
-				Refs: kube.Refs{
+				Refs: &kube.Refs{
 					Pulls: []kube.Pull{{}},
 					Org:   tc.org,
 					Repo:  tc.repo,
@@ -807,7 +807,7 @@ func TestReportTemplate(t *testing.T) {
 		var b bytes.Buffer
 		if err := c.Plank.ReportTemplate.Execute(&b, &kube.ProwJob{
 			Spec: kube.ProwJobSpec{
-				Refs: kube.Refs{
+				Refs: &kube.Refs{
 					Org:  tc.org,
 					Repo: tc.repo,
 					Pulls: []kube.Pull{

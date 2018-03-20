@@ -83,14 +83,14 @@ type ProwJobSpec struct {
 	Agent   ProwJobAgent `json:"agent,omitempty"`
 	Cluster string       `json:"cluster,omitempty"`
 	Job     string       `json:"job,omitempty"`
-	Refs    Refs         `json:"refs,omitempty"`
+	Refs    *Refs        `json:"refs,omitempty"`
 
 	Report         bool   `json:"report,omitempty"`
 	Context        string `json:"context,omitempty"`
 	RerunCommand   string `json:"rerun_command,omitempty"`
 	MaxConcurrency int    `json:"max_concurrency,omitempty"`
 
-	PodSpec v1.PodSpec `json:"pod_spec,omitempty"`
+	PodSpec *v1.PodSpec `json:"pod_spec,omitempty"`
 
 	RunAfterSuccess []ProwJobSpec `json:"run_after_success,omitempty"`
 }

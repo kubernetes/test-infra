@@ -207,10 +207,6 @@ func (ja *JobAgent) update() error {
 		buildID := j.Status.BuildID
 		nj := Job{
 			Type:    string(j.Spec.Type),
-			Repo:    fmt.Sprintf("%s/%s", j.Spec.Refs.Org, j.Spec.Refs.Repo),
-			Refs:    j.Spec.Refs.String(),
-			BaseRef: j.Spec.Refs.BaseRef,
-			BaseSHA: j.Spec.Refs.BaseSHA,
 			Job:     j.Spec.Job,
 			Context: j.Spec.Context,
 			Agent:   j.Spec.Agent,
@@ -232,10 +228,16 @@ func (ja *JobAgent) update() error {
 			duration -= duration % time.Second // strip fractional seconds
 			nj.Duration = duration.String()
 		}
-		if len(j.Spec.Refs.Pulls) == 1 {
-			nj.Number = j.Spec.Refs.Pulls[0].Number
-			nj.Author = j.Spec.Refs.Pulls[0].Author
-			nj.PullSHA = j.Spec.Refs.Pulls[0].SHA
+		if j.Spec.Refs != nil {
+			nj.Repo = fmt.Sprintf("%s/%s", j.Spec.Refs.Org, j.Spec.Refs.Repo)
+			nj.Refs = j.Spec.Refs.String()
+			nj.BaseRef = j.Spec.Refs.BaseRef
+			nj.BaseSHA = j.Spec.Refs.BaseSHA
+			if len(j.Spec.Refs.Pulls) == 1 {
+				nj.Number = j.Spec.Refs.Pulls[0].Number
+				nj.Author = j.Spec.Refs.Pulls[0].Author
+				nj.PullSHA = j.Spec.Refs.Pulls[0].SHA
+			}
 		}
 		njs = append(njs, nj)
 		if nj.PodName != "" {

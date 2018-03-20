@@ -106,7 +106,7 @@ func TestProwJobs(t *testing.T) {
 			Spec: kube.ProwJobSpec{
 				Agent: kube.KubernetesAgent,
 				Job:   "job",
-				Refs: kube.Refs{
+				Refs: &kube.Refs{
 					Org:  "kubernetes",
 					Repo: "test-infra",
 				},

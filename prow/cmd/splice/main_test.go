@@ -189,7 +189,7 @@ func fakeProwJob(context string, jobType kube.ProwJobType, completed bool, state
 		},
 		Spec: kube.ProwJobSpec{
 			Context: context,
-			Refs:    refs,
+			Refs:    &refs,
 			Type:    jobType,
 		},
 	}
