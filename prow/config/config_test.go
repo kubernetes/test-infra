@@ -888,11 +888,6 @@ func checkKubekinsPresets(jobName string, spec *v1.PodSpec, labels, validLabels 
 	service := true
 	ssh := true
 
-	if len(spec.InitContainers) > 0 && len(spec.Containers) > 0 {
-		// preset rules do not apply to complex pods
-		return nil
-	}
-
 	for _, container := range spec.Containers {
 		if strings.Contains(container.Image, "kubekins-e2e") || strings.Contains(container.Image, "bootstrap") {
 			service = false
