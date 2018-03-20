@@ -214,48 +214,48 @@ func TestCommentBodyMatches(t *testing.T) {
 		Presubmits: map[string][]Presubmit{
 			"org/repo": {
 				{
-					Name:      "gce",
-					re:        regexp.MustCompile(`/test (gce|all)`),
-					AlwaysRun: true,
+					BasicConfig: BasicConfig{Name: "gce"},
+					re:          regexp.MustCompile(`/test (gce|all)`),
+					AlwaysRun:   true,
 				},
 				{
-					Name:      "unit",
-					re:        regexp.MustCompile(`/test (unit|all)`),
-					AlwaysRun: true,
+					BasicConfig: BasicConfig{Name: "unit"},
+					re:          regexp.MustCompile(`/test (unit|all)`),
+					AlwaysRun:   true,
 				},
 				{
-					Name:      "gke",
-					re:        regexp.MustCompile(`/test (gke|all)`),
-					AlwaysRun: false,
+					BasicConfig: BasicConfig{Name: "gke"},
+					re:          regexp.MustCompile(`/test (gke|all)`),
+					AlwaysRun:   false,
 				},
 				{
-					Name:      "federation",
-					re:        regexp.MustCompile(`/test federation`),
-					AlwaysRun: false,
+					BasicConfig: BasicConfig{Name: "federation"},
+					re:          regexp.MustCompile(`/test federation`),
+					AlwaysRun:   false,
 				},
 			},
 			"org/repo2": {
 				{
-					Name:      "cadveapster",
-					re:        regexp.MustCompile(`/test all`),
-					AlwaysRun: true,
+					BasicConfig: BasicConfig{Name: "cadveapster"},
+					re:          regexp.MustCompile(`/test all`),
+					AlwaysRun:   true,
 					RunAfterSuccess: []Presubmit{
 						{
-							Name:      "after-cadveapster",
-							re:        regexp.MustCompile(`/test (really|all)`),
-							AlwaysRun: true,
+							BasicConfig: BasicConfig{Name: "after-cadveapster"},
+							re:          regexp.MustCompile(`/test (really|all)`),
+							AlwaysRun:   true,
 							RunAfterSuccess: []Presubmit{
 								{
-									Name:      "after-after-cadveapster",
-									re:        regexp.MustCompile(`/test (again really|all)`),
-									AlwaysRun: true,
+									BasicConfig: BasicConfig{Name: "after-after-cadveapster"},
+									re:          regexp.MustCompile(`/test (again really|all)`),
+									AlwaysRun:   true,
 								},
 							},
 						},
 						{
-							Name:      "another-after-cadveapster",
-							re:        regexp.MustCompile(`@k8s-bot dont test this`),
-							AlwaysRun: true,
+							BasicConfig: BasicConfig{Name: "another-after-cadveapster"},
+							re:          regexp.MustCompile(`@k8s-bot dont test this`),
+							AlwaysRun:   true,
 						},
 					},
 				},
@@ -378,7 +378,7 @@ func TestRetestPresubmits(t *testing.T) {
 func TestConditionalPresubmits(t *testing.T) {
 	presubmits := []Presubmit{
 		{
-			Name:         "cross build",
+			BasicConfig:  BasicConfig{Name: "cross build"},
 			RunIfChanged: `(Makefile|\.sh|_(windows|linux|osx|unknown)(_test)?\.go)$`,
 		},
 	}
@@ -408,30 +408,30 @@ func TestListPresubmit(t *testing.T) {
 		Presubmits: map[string][]Presubmit{
 			"r1": {
 				{
-					Name: "a",
+					BasicConfig: BasicConfig{Name: "a"},
 					RunAfterSuccess: []Presubmit{
-						{Name: "aa"},
-						{Name: "ab"},
+						{BasicConfig: BasicConfig{Name: "aa"}},
+						{BasicConfig: BasicConfig{Name: "ab"}},
 					},
 				},
-				{Name: "b"},
+				{BasicConfig: BasicConfig{Name: "b"}},
 			},
 			"r2": {
 				{
-					Name: "c",
+					BasicConfig: BasicConfig{Name: "c"},
 					RunAfterSuccess: []Presubmit{
-						{Name: "ca"},
-						{Name: "cb"},
+						{BasicConfig: BasicConfig{Name: "ca"}},
+						{BasicConfig: BasicConfig{Name: "cb"}},
 					},
 				},
-				{Name: "d"},
+				{BasicConfig: BasicConfig{Name: "d"}},
 			},
 		},
 		Postsubmits: map[string][]Postsubmit{
-			"r1": {{Name: "e"}},
+			"r1": {{BasicConfig: BasicConfig{Name: "e"}}},
 		},
 		Periodics: []Periodic{
-			{Name: "f"},
+			{BasicConfig: BasicConfig{Name: "f"}},
 		},
 	}
 
@@ -475,23 +475,23 @@ func TestListPresubmit(t *testing.T) {
 func TestListPostsubmit(t *testing.T) {
 	c := &Config{
 		Presubmits: map[string][]Presubmit{
-			"r1": {{Name: "a"}},
+			"r1": {{BasicConfig: BasicConfig{Name: "a"}}},
 		},
 		Postsubmits: map[string][]Postsubmit{
 			"r1": {
 				{
-					Name: "c",
+					BasicConfig: BasicConfig{Name: "c"},
 					RunAfterSuccess: []Postsubmit{
-						{Name: "ca"},
-						{Name: "cb"},
+						{BasicConfig: BasicConfig{Name: "ca"}},
+						{BasicConfig: BasicConfig{Name: "cb"}},
 					},
 				},
-				{Name: "d"},
+				{BasicConfig: BasicConfig{Name: "d"}},
 			},
-			"r2": {{Name: "e"}},
+			"r2": {{BasicConfig: BasicConfig{Name: "e"}}},
 		},
 		Periodics: []Periodic{
-			{Name: "f"},
+			{BasicConfig: BasicConfig{Name: "f"}},
 		},
 	}
 
@@ -535,20 +535,20 @@ func TestListPostsubmit(t *testing.T) {
 func TestListPeriodic(t *testing.T) {
 	c := &Config{
 		Presubmits: map[string][]Presubmit{
-			"r1": {{Name: "a"}},
+			"r1": {{BasicConfig: BasicConfig{Name: "a"}}},
 		},
 		Postsubmits: map[string][]Postsubmit{
-			"r1": {{Name: "b"}},
+			"r1": {{BasicConfig: BasicConfig{Name: "b"}}},
 		},
 		Periodics: []Periodic{
 			{
-				Name: "c",
+				BasicConfig: BasicConfig{Name: "c"},
 				RunAfterSuccess: []Periodic{
-					{Name: "ca"},
-					{Name: "cb"},
+					{BasicConfig: BasicConfig{Name: "ca"}},
+					{BasicConfig: BasicConfig{Name: "cb"}},
 				},
 			},
-			{Name: "d"},
+			{BasicConfig: BasicConfig{Name: "d"}},
 		},
 	}
 
@@ -574,29 +574,29 @@ func TestListPeriodic(t *testing.T) {
 func TestRunAgainstBranch(t *testing.T) {
 	jobs := []Presubmit{
 		{
-			Name:     "a",
-			Brancher: Brancher{SkipBranches: []string{"s"}},
+			BasicConfig: BasicConfig{Name: "a"},
+			Brancher:    Brancher{SkipBranches: []string{"s"}},
 		},
 		{
-			Name:     "b",
-			Brancher: Brancher{Branches: []string{"r"}},
+			BasicConfig: BasicConfig{Name: "b"},
+			Brancher:    Brancher{Branches: []string{"r"}},
 		},
 		{
-			Name: "c",
+			BasicConfig: BasicConfig{Name: "c"},
 			Brancher: Brancher{
 				SkipBranches: []string{"s"},
 				Branches:     []string{"r"},
 			},
 		},
 		{
-			Name: "d",
+			BasicConfig: BasicConfig{Name: "d"},
 			Brancher: Brancher{
 				SkipBranches: []string{"s"},
 				Branches:     []string{"s", "r"},
 			},
 		},
 		{
-			Name: "default",
+			BasicConfig: BasicConfig{Name: "default"},
 		},
 	}
 
@@ -781,11 +781,12 @@ func TestMergePreset(t *testing.T) {
 			Presets: tc.presets,
 			Periodics: []Periodic{
 				{
-					Name:     "foo",
-					Labels:   tc.jobLabels,
-					Agent:    string(kube.JenkinsAgent),
+					BasicConfig: BasicConfig{Name: "foo",
+						Labels: tc.jobLabels,
+						Agent:  string(kube.JenkinsAgent),
+						Spec:   tc.pod,
+					},
 					Interval: "1h",
-					Spec:     tc.pod,
 				},
 			},
 		}

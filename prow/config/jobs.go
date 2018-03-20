@@ -75,10 +75,8 @@ func mergePreset(preset Preset, labels map[string]string, pod *v1.PodSpec) error
 
 // Presubmit is the job-specific trigger info.
 type Presubmit struct {
-	// eg kubernetes-pull-build-test-e2e-gce
-	Name string `json:"name"`
-	// Labels are added in prowjobs created for this job.
-	Labels map[string]string `json:"labels"`
+	BasicConfig
+
 	// Run for every PR, or only when a comment triggers it.
 	AlwaysRun bool `json:"always_run"`
 	// Run if the PR modifies a file that matches this regex.
@@ -94,15 +92,10 @@ type Presubmit struct {
 	// Maximum number of this job running concurrently, 0 implies no limit.
 	MaxConcurrency int `json:"max_concurrency"`
 	// Agent that will take care of running this job.
-	Agent string `json:"agent"`
-	// Cluster is the alias of the cluster to run this job in. (Default: kube.DefaultClusterAlias)
-	Cluster string `json:"cluster"`
-	// Kubernetes pod spec.
-	Spec *v1.PodSpec `json:"spec,omitempty"`
-	// Run these jobs after successfully running this one.
-	RunAfterSuccess []Presubmit `json:"run_after_success"`
 
 	Brancher
+	// Run these jobs after successfully running this one.
+	RunAfterSuccess []Presubmit `json:"run_after_success"`
 
 	// We'll set these when we load it.
 	re        *regexp.Regexp // from Trigger.
@@ -111,34 +104,21 @@ type Presubmit struct {
 
 // Postsubmit runs on push events.
 type Postsubmit struct {
-	Name string `json:"name"`
-	// Labels are added in prowjobs created for this job.
-	Labels map[string]string `json:"labels"`
-	// Agent that will take care of running this job.
-	Agent string `json:"agent"`
-	// Cluster is the alias of the cluster to run this job in. (Default: kube.DefaultClusterAlias)
-	Cluster string `json:"cluster"`
-	// Kubernetes pod spec.
-	Spec *v1.PodSpec `json:"spec,omitempty"`
+	BasicConfig
+
 	// Maximum number of this job running concurrently, 0 implies no limit.
 	MaxConcurrency int `json:"max_concurrency"`
 
 	Brancher
+
 	// Run these jobs after successfully running this one.
 	RunAfterSuccess []Postsubmit `json:"run_after_success"`
 }
 
 // Periodic runs on a timer.
 type Periodic struct {
-	Name string `json:"name"`
-	// Labels are added in prowjobs created for this job.
-	Labels map[string]string `json:"labels"`
-	// Agent that will take care of running this job.
-	Agent string `json:"agent"`
-	// Cluster is the alias of the cluster to run this job in. (Default: kube.DefaultClusterAlias)
-	Cluster string `json:"cluster"`
-	// Kubernetes pod spec.
-	Spec *v1.PodSpec `json:"spec,omitempty"`
+	BasicConfig
+
 	// (deprecated)Interval to wait between two runs of the job.
 	Interval string `json:"interval"`
 	// Cron representation of job trigger time
@@ -157,6 +137,19 @@ func (p *Periodic) SetInterval(d time.Duration) {
 
 func (p *Periodic) GetInterval() time.Duration {
 	return p.interval
+}
+
+// BasicConfig conglomerates basic options all jobs will have
+type BasicConfig struct {
+	Name string `json:"name"`
+	// Labels are added in prowjobs created for this job.
+	Labels map[string]string `json:"labels"`
+	// Agent that will take care of running this job.
+	Agent string `json:"agent"`
+	// Cluster is the alias of the cluster to run this job in. (Default: kube.DefaultClusterAlias)
+	Cluster string `json:"cluster"`
+	// Kubernetes pod spec.
+	Spec *v1.PodSpec `json:"spec,omitempty"`
 }
 
 // Brancher is for shared code between jobs that only run against certain
