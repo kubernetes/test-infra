@@ -20,7 +20,7 @@ package pjutil
 import (
 	"fmt"
 
-	uuid "github.com/satori/go.uuid"
+	"github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -144,23 +144,16 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
 		return nil, err
 	}
 
-	spec := pj.Spec.PodSpec
+	spec := pj.Spec.PodSpec.DeepCopy()
 	spec.RestartPolicy = "Never"
 
-	// Set environment variables in each container in the pod spec. We don't
-	// want to update the spec in place, since that will update the ProwJob
-	// spec. Instead, create a copy.
-	spec.InitContainers = []v1.Container{}
-	for i := range pj.Spec.PodSpec.InitContainers {
-		spec.InitContainers = append(spec.InitContainers, pj.Spec.PodSpec.InitContainers[i])
+	for i := range spec.InitContainers {
 		if spec.InitContainers[i].Name == "" {
 			spec.InitContainers[i].Name = fmt.Sprintf("%s-%d", pj.ObjectMeta.Name, i)
 		}
 		spec.InitContainers[i].Env = append(spec.InitContainers[i].Env, kubeEnv(env)...)
 	}
-	spec.Containers = []v1.Container{}
-	for i := range pj.Spec.PodSpec.Containers {
-		spec.Containers = append(spec.Containers, pj.Spec.PodSpec.Containers[i])
+	for i := range spec.Containers {
 		if spec.Containers[i].Name == "" {
 			spec.Containers[i].Name = fmt.Sprintf("%s-%d", pj.ObjectMeta.Name, i)
 		}
@@ -180,7 +173,7 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
 				kube.ProwJobAnnotation: pj.Spec.Job,
 			},
 		},
-		Spec: spec,
+		Spec: *spec,
 	}, nil
 }
 
