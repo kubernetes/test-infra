@@ -9845,6 +9845,25 @@
       "sig-aws"
     ]
   },
+  "ci-kubernetes-e2e-kops-aws-imagecentos7": {
+    "args": [
+      "--cluster=e2e-kops-aws-imagecentos7.test-cncf-aws.k8s.io",
+      "--deployment=kops",
+      "--env=KUBE_SSH_USER=centos",
+      "--extract=ci/latest",
+      "--ginkgo-parallel",
+      "--kops-args=--image=ami-4bf3d731",
+      "--kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt",
+      "--kops-zones=us-east-1c",
+      "--provider=aws",
+      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
+      "--timeout=120m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-aws"
+    ]
+  },
   "ci-kubernetes-e2e-kops-aws-imageubuntu1604": {
     "args": [
       "--cluster=e2e-kops-aws-imageubuntu1604.test-cncf-aws.k8s.io",

@@ -1515,6 +1515,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-channelalpha
 - name: ci-kubernetes-e2e-kops-aws-ena-nvme
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-ena-nvme
+- name: ci-kubernetes-e2e-kops-aws-imagecentos7
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-imagecentos7
 - name: ci-kubernetes-e2e-kops-aws-imageubuntu1604
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-imageubuntu1604
 - name: ci-kubernetes-e2e-kops-aws-newrunner
@@ -2797,6 +2799,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-aws-ena-nvme
   - name: kops-aws-newrunner
     test_group_name: ci-kubernetes-e2e-kops-aws-newrunner
+  - name: kops-aws-imagecentos7
+    test_group_name: ci-kubernetes-e2e-kops-aws-imagecentos7
   - name: kops-aws-imageubuntu1604
     test_group_name: ci-kubernetes-e2e-kops-aws-imageubuntu1604
 
