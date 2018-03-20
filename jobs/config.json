@@ -618,7 +618,7 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=",
-      "--env=GCE_GLBC_IMAGE=gcr.io/google_containers/glbc:0.9.7",
+      "--env=GCE_GLBC_IMAGE=gcr.io/google_containers/ingress-gce-glbc-amd64:1.0.0",
       "--extract=ci/latest",
       "--gcp-project-type=ingress-project",
       "--gcp-zone=us-central1-f",
