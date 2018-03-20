@@ -9865,7 +9865,7 @@
   },
   "ci-kubernetes-e2e-kops-aws-networking-kopeio-vxlan": {
     "args": [
-      "--cluster=e2e-kops-aws-networking-kopeio-vxlan.test-cncf-aws.k8s.io",
+      "--cluster=e2e-kops-aws-kopeio-vxlan.test-cncf-aws.k8s.io",
       "--deployment=kops",
       "--env=KUBE_SSH_USER=admin",
       "--extract=ci/latest",
