@@ -307,7 +307,7 @@ plugins:
   kubernetes-sigs/testing_frameworks:
   - approve
 
-  kubernetes-sigs/scheduling_poseidon:
+  kubernetes-sigs/poseidon:
   - approve
 
   containerd/cri:
