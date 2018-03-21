@@ -92,7 +92,7 @@ def do_maybe_linkify(inp):
         if urlparse.urlparse(inp).scheme in ('http', 'https'):
             inp = unicode(jinja2.escape(inp))
             return jinja2.Markup('<a href="%s">%s</a>' % (inp, inp))
-    except AttributeError:
+    except (AttributeError, TypeError):
         pass
     return inp
 

@@ -67,6 +67,7 @@ class HelperTest(unittest.TestCase):
     def test_maybe_linkify(self):
         for inp, expected in [
             (3, 3),
+            ({"a": "b"}, {"a": "b"}),
             ("", ""),
             ("whatever", "whatever"),
             ("http://example.com",
