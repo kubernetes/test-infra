@@ -83,7 +83,7 @@ func TestProwJobToPod(t *testing.T) {
 					RestartPolicy: "Never",
 					Containers: []v1.Container{
 						{
-							Name:  "pod-0",
+							Name:  "test",
 							Image: "tester",
 							Env: []v1.EnvVar{
 								{Name: "MY_ENV", Value: "rocks"},

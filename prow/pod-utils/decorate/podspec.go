@@ -121,19 +121,8 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
 
 	spec := pj.Spec.PodSpec.DeepCopy()
 	spec.RestartPolicy = "Never"
-
-	for i := range spec.InitContainers {
-		if spec.InitContainers[i].Name == "" {
-			spec.InitContainers[i].Name = fmt.Sprintf("%s-%d", pj.ObjectMeta.Name, i)
-		}
-		spec.InitContainers[i].Env = append(spec.InitContainers[i].Env, kubeEnv(env)...)
-	}
-	for i := range spec.Containers {
-		if spec.Containers[i].Name == "" {
-			spec.Containers[i].Name = fmt.Sprintf("%s-%d", pj.ObjectMeta.Name, i)
-		}
-		spec.Containers[i].Env = append(spec.Containers[i].Env, kubeEnv(env)...)
-	}
+	spec.Containers[0].Name = "test"
+	spec.Containers[0].Env = append(spec.Containers[0].Env, kubeEnv(env)...)
 	podLabels := make(map[string]string)
 	for k, v := range pj.ObjectMeta.Labels {
 		podLabels[k] = v
