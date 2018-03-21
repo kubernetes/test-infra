@@ -27,6 +27,7 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/test-infra/kubetest/conformance"
 	"k8s.io/test-infra/kubetest/dind"
 	"k8s.io/test-infra/kubetest/util"
 )
@@ -200,6 +201,18 @@ func run(deploy deployer, o options) error {
 			}
 			errs = util.AppendError(errs, control.XmlWrap(&suite, "Test", func() error {
 				return tester.Test()
+			}))
+
+		} else if o.deployment == "conformance" {
+			if err := control.XmlWrap(&suite, "IsUp", deploy.IsUp); err != nil {
+				errs = util.AppendError(errs, err)
+			}
+			tester, err := conformance.NewTester("", "", o.kubecfg, "", &o.testArgs, control)
+			if err != nil {
+				return err
+			}
+			errs = util.AppendError(errs, control.XmlWrap(&suite, "Test", func() error {
+				return tester.Test("", "")
 			}))
 
 		} else {
