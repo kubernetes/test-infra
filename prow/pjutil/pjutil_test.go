@@ -23,6 +23,7 @@ import (
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/diff"
 
 	"k8s.io/test-infra/prow/kube"
 )
@@ -116,7 +117,7 @@ func TestProwJobToPod(t *testing.T) {
 			t.Errorf("unexpected error: %v", err)
 		}
 		if !equality.Semantic.DeepEqual(got, test.expected) {
-			t.Errorf("expected pod:\n%#v\ngot:\n%#v", test.expected, got)
+			t.Errorf("expected pod:\n%s", diff.ObjectReflectDiff(test.expected, got))
 		}
 	}
 }
