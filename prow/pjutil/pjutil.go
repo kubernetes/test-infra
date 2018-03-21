@@ -19,6 +19,7 @@ package pjutil
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
@@ -178,13 +179,20 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
 }
 
 // kubeEnv transforms a mapping of environment variables
-// into their serialized form for a PodSpec
+// into their serialized form for a PodSpec, sorting by
+// the name of the env vars
 func kubeEnv(environment map[string]string) []v1.EnvVar {
+	var keys []string
+	for key := range environment {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
 	var kubeEnvironment []v1.EnvVar
-	for key, value := range environment {
+	for _, key := range keys {
 		kubeEnvironment = append(kubeEnvironment, v1.EnvVar{
 			Name:  key,
-			Value: value,
+			Value: environment[key],
 		})
 	}
 
