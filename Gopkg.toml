@@ -6,6 +6,11 @@ required = [
   "github.com/client9/misspell/cmd/misspell"
 ]
 
+[prune]
+  unused-packages = true
+  go-tests = true
+  non-go = true
+
 [[constraint]]
   name = "github.com/prometheus/client_golang"
   version = "0.8.0"
@@ -27,10 +32,6 @@ required = [
 [[constraint]]
   name = "github.com/golang/dep"
   version = "v0.4.1"
-
-[prune]
-  unused-packages = true
-  go-tests = true
 
 [[constraint]]
   name = "cloud.google.com/go"
