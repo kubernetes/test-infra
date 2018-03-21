@@ -1622,6 +1622,69 @@ presubmits:
       - name: docker-graph
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
+  - name: pull-kubernetes-dind-e2e
+    agent: kubernetes
+    context: pull-kubernetes-dind-e2e
+    always_run: false
+    rerun_command: "/test pull-kubernetes-dind-e2e"
+    trigger: "(?m)^/test pull-kubernetes-dind-e2e,?(\\s+|$)"
+    skip_branches:
+    - release-1.7
+    - release-1.8
+    - release-1.9
+    labels:
+      preset-service-account: true
+      preset-bazel-scratch-dir: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+        args:
+        - "--clean"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/kubernetes=master"
+        - "--repo=k8s.io/test-infra=master"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--scenario=kuberenetes_execute_bazel"
+        - "--"
+        - "kubetest"
+        - "--build=dind"
+        - "--deployment=dind"
+        - "--up"
+        - "--test"
+        - "--down"
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: "true"
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["SYS_ADMIN"]
+        volumeMounts:
+        - mountPath: /lib/modules
+          name: modules
+          readOnly: true
+        - mountPath: /sys/fs/cgroup
+          name: cgroup
+        - mountPath: /docker-graph
+          name: auto-generated-docker-graph-volume-mount
+        resources:
+          requests:
+            # We can adjust this after we know the requirements.
+            memory: "6Gi"
+      volumes:
+      - name: modules
+        hostPath:
+          path: /lib/modules
+          type: Directory
+      - name: cgroup
+        hostPath:
+          path: /sys/fs/cgroup
+          type: Directory
+      - name: auto-generated-docker-graph-volume-mount
+        emptyDir: {}
+
   - name: pull-kubernetes-e2e-containerd-gce
     agent: kubernetes
     context: pull-kubernetes-e2e-containerd-gce
@@ -4013,6 +4076,81 @@ presubmits:
       - emptyDir: {}
         name: auto-generated-docker-graph-volume-mount
     trigger: (?m)^/test pull-security-kubernetes-cross-prow,?(\s+|$)
+  - agent: kubernetes
+    always_run: false
+    cluster: security
+    context: pull-security-kubernetes-dind-e2e
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-service-account: "true"
+    max_concurrency: 0
+    name: pull-security-kubernetes-dind-e2e
+    rerun_command: /test pull-security-kubernetes-dind-e2e
+    run_if_changed: ""
+    skip_branches:
+    - release-1.7
+    - release-1.8
+    - release-1.9
+    skip_report: false
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --clean
+        - --job=$(JOB_NAME)
+        - --repo=github.com/kubernetes-security/kubernetes=master
+        - --repo=k8s.io/test-infra=master
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-security-prow/pr-logs
+        - --scenario=kuberenetes_execute_bazel
+        - --
+        - kubetest
+        - --build=dind
+        - --deployment=dind
+        - --up
+        - --test
+        - --down
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: "true"
+        image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+        name: ""
+        resources:
+          requests:
+            memory: 6Gi
+        securityContext:
+          capabilities:
+            add:
+            - SYS_ADMIN
+          privileged: true
+        volumeMounts:
+        - mountPath: /lib/modules
+          name: modules
+          readOnly: true
+        - mountPath: /sys/fs/cgroup
+          name: cgroup
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+        - mountPath: /docker-graph
+          name: auto-generated-docker-graph-volume-mount
+      volumes:
+      - hostPath:
+          path: /lib/modules
+          type: Directory
+        name: modules
+      - hostPath:
+          path: /sys/fs/cgroup
+          type: Directory
+        name: cgroup
+      - emptyDir: {}
+        name: auto-generated-docker-graph-volume-mount
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+      - emptyDir: {}
+        name: auto-generated-docker-graph-volume-mount
+    trigger: (?m)^/test pull-security-kubernetes-dind-e2e,?(\s+|$)
   - agent: kubernetes
     always_run: false
     branches:
