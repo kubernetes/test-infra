@@ -5635,6 +5635,7 @@
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
       "--ginkgo-parallel=30",
+      "--gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling,KubernetesDashboard",
       "--gke-environment=test",
       "--provider=gke",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
