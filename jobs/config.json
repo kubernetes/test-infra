@@ -11716,7 +11716,7 @@
       "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gce-gci",
       "--soak",
       "--test_args=--ginkgo.skip=\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --clean-start=true --minStartupPods=8",
-      "--timeout=600m",
+      "--timeout=800m",
       "--up=false"
     ],
     "scenario": "kubernetes_e2e",
@@ -11738,7 +11738,7 @@
       "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gci-gce-beta",
       "--soak",
       "--test_args=--ginkgo.skip=\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --clean-start=true --minStartupPods=8",
-      "--timeout=600m",
+      "--timeout=800m",
       "--up=false"
     ],
     "scenario": "kubernetes_e2e",
@@ -11760,7 +11760,7 @@
       "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gci-gce-stable1",
       "--soak",
       "--test_args=--ginkgo.skip=\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --clean-start=true --minStartupPods=8",
-      "--timeout=600m",
+      "--timeout=800m",
       "--up=false"
     ],
     "scenario": "kubernetes_e2e",
@@ -11781,7 +11781,7 @@
       "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gci-gce-stable2",
       "--soak",
       "--test_args=--ginkgo.skip=\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --clean-start=true --minStartupPods=8",
-      "--timeout=600m",
+      "--timeout=800m",
       "--up=false"
     ],
     "scenario": "kubernetes_e2e",
@@ -11802,7 +11802,7 @@
       "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gci-gce-stable3",
       "--soak",
       "--test_args=--ginkgo.skip=\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --clean-start=true --minStartupPods=8",
-      "--timeout=600m",
+      "--timeout=800m",
       "--up=false"
     ],
     "scenario": "kubernetes_e2e",
@@ -11825,7 +11825,7 @@
       "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gke-gci",
       "--soak",
       "--test_args=--ginkgo.skip=\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --clean-start=true --minStartupPods=8",
-      "--timeout=600m",
+      "--timeout=800m",
       "--up=false"
     ],
     "scenario": "kubernetes_e2e",

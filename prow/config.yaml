@@ -15391,7 +15391,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=620
+      - --timeout=820
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180316-92e6ccade-master
 
@@ -15404,7 +15404,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=620
+      - --timeout=820
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180316-92e6ccade-master
 
@@ -15417,7 +15417,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=620
+      - --timeout=820
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180316-92e6ccade-master
 
@@ -15430,7 +15430,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=620
+      - --timeout=820
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180316-92e6ccade-master
 
@@ -15443,7 +15443,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=620
+      - --timeout=820
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180316-92e6ccade-master
 
@@ -15456,7 +15456,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=620
+      - --timeout=820
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180316-92e6ccade-master
 
