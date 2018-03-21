@@ -20,6 +20,8 @@ import urllib
 
 import filters
 
+import jinja2
+
 
 def linkify(inp, commit):
     return str(filters.do_linkify_stacktrace(
@@ -61,6 +63,18 @@ class HelperTest(unittest.TestCase):
         # Check that Unicode characters pass through cleanly.
         linked = filters.do_linkify_stacktrace(u'\u883c', 'VERSION', '')
         self.assertEqual(linked, u'\u883c')
+
+    def test_maybe_linkify(self):
+        for inp, expected in [
+            (3, 3),
+            ("", ""),
+            ("whatever", "whatever"),
+            ("http://example.com",
+             jinja2.Markup('<a href="http://example.com">http://example.com</a>')),
+            ("http://&",
+             jinja2.Markup('<a href="http://&amp;">http://&amp;</a>')),
+        ]:
+            self.assertEqual(filters.do_maybe_linkify(inp), expected)
 
     def test_slugify(self):
         self.assertEqual('k8s-test-foo', filters.do_slugify('[k8s] Test Foo'))

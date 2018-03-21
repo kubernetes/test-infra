@@ -60,12 +60,12 @@
 		% endif
 		% if 'metadata' in started
 			% for k, v in started['metadata']|dictsort
-			<tr><td>{{k}}<td>{{v}}
+			<tr><td>{{k}}<td>{{v|maybe_linkify}}
 			% endfor
 		% endif
 		% if finished and 'metadata' in finished
 			% for k, v in finished['metadata']|dictsort
-			<tr><td>{{k}}<td>{{v}}
+			<tr><td>{{k}}<td>{{v|maybe_linkify}}
 			% endfor
 		% endif
 	% endif
