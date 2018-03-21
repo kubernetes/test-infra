@@ -690,20 +690,13 @@ function drawJobBar(total, jobCountMap) {
 
 function stateToAdj(state) {
     switch (state) {
-        case "triggered":
-            return "triggered";
-        case "pending":
-            return "pending";
         case "success":
-            return "succeded";
+            return "succeeded";
         case "failure":
             return "failed";
-        case "aborted":
-            return "aborted";
-        case "error":
-            return "error";
+        default:
+            return state;
     }
-    return "unknown";
 }
 
 /**
