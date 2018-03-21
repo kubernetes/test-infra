@@ -2924,7 +2924,8 @@ presubmits:
       preset-k8s-ssh: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180316-92e6ccade-1.8
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.8
+        imagePullPolicy: Always
         args:
         - --root=/go/src
         - "--clean"
@@ -2978,7 +2979,8 @@ presubmits:
       preset-k8s-ssh: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180316-92e6ccade-1.7
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.7
+        imagePullPolicy: Always
         args:
         - --root=/go/src
         - "--clean"
@@ -5377,7 +5379,8 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180316-92e6ccade-1.8
+        image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.8
+        imagePullPolicy: Always
         name: ""
         resources:
           requests:
@@ -5428,7 +5431,8 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180316-92e6ccade-1.7
+        image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.7
+        imagePullPolicy: Always
         name: ""
         resources:
           requests:
