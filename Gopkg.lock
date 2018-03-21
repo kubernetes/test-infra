@@ -136,6 +136,12 @@
   revision = "9ce5d979ffdaca6385988d7ad1079a33ec942d20"
 
 [[projects]]
+  name = "github.com/davecgh/go-spew"
+  packages = ["spew"]
+  revision = "346938d642f2ec3594ed81d874461961cd0faa76"
+  version = "v1.1.0"
+
+[[projects]]
   name = "github.com/djherbis/atime"
   packages = ["."]
   revision = "8e47e0e01d08df8b9f840d74299c8ab70a024a30"
@@ -821,6 +827,7 @@
     "pkg/selection",
     "pkg/types",
     "pkg/util/clock",
+    "pkg/util/diff",
     "pkg/util/errors",
     "pkg/util/framer",
     "pkg/util/intstr",
@@ -917,6 +924,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3227ee0b4f0931730ee667820ab4433f6352459f899fefe3cb6695afa07179f5"
+  inputs-digest = "474cd175c758c45d510116cf5fa8d25fbf5c7925d5de404282e372473cb16f67"
   solver-name = "gps-cdcl"
   solver-version = 1
