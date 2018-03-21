@@ -2,19 +2,13 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "lex.go",
-        "parse.y.go",
-        "print.go",
-        "quote.go",
-        "rewrite.go",
-        "rule.go",
-        "syntax.go",
-        "walk.go",
-    ],
-    importpath = "github.com/bazelbuild/buildtools/build",
+    srcs = ["streaming.go"],
+    importpath = "k8s.io/apimachinery/pkg/runtime/serializer/streaming",
     visibility = ["//visibility:public"],
-    deps = ["//vendor/github.com/bazelbuild/buildtools/tables:go_default_library"],
+    deps = [
+        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
+    ],
 )
 
 filegroup(

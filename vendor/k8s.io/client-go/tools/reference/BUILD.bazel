@@ -2,19 +2,15 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "lex.go",
-        "parse.y.go",
-        "print.go",
-        "quote.go",
-        "rewrite.go",
-        "rule.go",
-        "syntax.go",
-        "walk.go",
-    ],
-    importpath = "github.com/bazelbuild/buildtools/build",
+    srcs = ["ref.go"],
+    importpath = "k8s.io/client-go/tools/reference",
     visibility = ["//visibility:public"],
-    deps = ["//vendor/github.com/bazelbuild/buildtools/tables:go_default_library"],
+    deps = [
+        "//vendor/k8s.io/api/core/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/api/meta:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
+    ],
 )
 
 filegroup(

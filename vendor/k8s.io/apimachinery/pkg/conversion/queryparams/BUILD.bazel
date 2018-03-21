@@ -3,18 +3,11 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
-        "lex.go",
-        "parse.y.go",
-        "print.go",
-        "quote.go",
-        "rewrite.go",
-        "rule.go",
-        "syntax.go",
-        "walk.go",
+        "convert.go",
+        "doc.go",
     ],
-    importpath = "github.com/bazelbuild/buildtools/build",
+    importpath = "k8s.io/apimachinery/pkg/conversion/queryparams",
     visibility = ["//visibility:public"],
-    deps = ["//vendor/github.com/bazelbuild/buildtools/tables:go_default_library"],
 )
 
 filegroup(
