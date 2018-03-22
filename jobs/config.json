@@ -12149,6 +12149,16 @@
       "sig-apps"
     ]
   },
+  "pull-cloud-provider-openstack-check": {
+    "args": [
+      "make",
+      "check"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-openstack"
+    ]
+  },
   "pull-cloud-provider-openstack-test": {
     "args": [
       "make",
@@ -12156,7 +12166,7 @@
     ],
     "scenario": "execute",
     "sigOwners": [
-      "sig-cluster-lifecycle"
+      "sig-openstack"
     ]
   },
   "pull-cluster-registry-bazel": {
