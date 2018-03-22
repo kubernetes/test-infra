@@ -15,7 +15,7 @@ function submitQuery(input) {
  * Creates a XMLHTTP request to /pr-data.js.
  * @param {function} fulfillFn
  * @param {function} errorHandler
- * @return {XMLHTTPRequest}
+ * @return {XMLHttpRequest}
  */
 function createXMLHTTPRequest(fulfillFn, errorHandler) {
     const request = new XMLHttpRequest();
