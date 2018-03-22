@@ -205,7 +205,7 @@ func TestTerminateDupes(t *testing.T) {
 					Spec: kube.ProwJobSpec{
 						Type: kube.PresubmitJob,
 						Job:  "j1",
-						Refs: kube.Refs{Pulls: []kube.Pull{{}}},
+						Refs: &kube.Refs{Pulls: []kube.Pull{{}}},
 					},
 					Status: kube.ProwJobStatus{
 						StartTime: metav1.NewTime(now.Add(-time.Minute)),
@@ -216,7 +216,7 @@ func TestTerminateDupes(t *testing.T) {
 					Spec: kube.ProwJobSpec{
 						Type: kube.PresubmitJob,
 						Job:  "j1",
-						Refs: kube.Refs{Pulls: []kube.Pull{{}}},
+						Refs: &kube.Refs{Pulls: []kube.Pull{{}}},
 					},
 					Status: kube.ProwJobStatus{
 						StartTime: metav1.NewTime(now.Add(-time.Hour)),
@@ -227,7 +227,7 @@ func TestTerminateDupes(t *testing.T) {
 					Spec: kube.ProwJobSpec{
 						Type: kube.PresubmitJob,
 						Job:  "j1",
-						Refs: kube.Refs{Pulls: []kube.Pull{{}}},
+						Refs: &kube.Refs{Pulls: []kube.Pull{{}}},
 					},
 					Status: kube.ProwJobStatus{
 						StartTime: metav1.NewTime(now.Add(-2 * time.Hour)),
@@ -238,7 +238,7 @@ func TestTerminateDupes(t *testing.T) {
 					Spec: kube.ProwJobSpec{
 						Type: kube.PresubmitJob,
 						Job:  "j1",
-						Refs: kube.Refs{Pulls: []kube.Pull{{}}},
+						Refs: &kube.Refs{Pulls: []kube.Pull{{}}},
 					},
 					Status: kube.ProwJobStatus{
 						StartTime:      metav1.NewTime(now.Add(-3 * time.Hour)),
@@ -250,7 +250,7 @@ func TestTerminateDupes(t *testing.T) {
 					Spec: kube.ProwJobSpec{
 						Type: kube.PresubmitJob,
 						Job:  "j2",
-						Refs: kube.Refs{Pulls: []kube.Pull{{}}},
+						Refs: &kube.Refs{Pulls: []kube.Pull{{}}},
 					},
 					Status: kube.ProwJobStatus{
 						StartTime: metav1.NewTime(now.Add(-time.Minute)),
@@ -261,7 +261,7 @@ func TestTerminateDupes(t *testing.T) {
 					Spec: kube.ProwJobSpec{
 						Type: kube.PresubmitJob,
 						Job:  "j2",
-						Refs: kube.Refs{Pulls: []kube.Pull{{}}},
+						Refs: &kube.Refs{Pulls: []kube.Pull{{}}},
 					},
 					Status: kube.ProwJobStatus{
 						StartTime: metav1.NewTime(now.Add(-time.Hour)),
@@ -272,7 +272,7 @@ func TestTerminateDupes(t *testing.T) {
 					Spec: kube.ProwJobSpec{
 						Type: kube.PresubmitJob,
 						Job:  "j3",
-						Refs: kube.Refs{Pulls: []kube.Pull{{}}},
+						Refs: &kube.Refs{Pulls: []kube.Pull{{}}},
 					},
 					Status: kube.ProwJobStatus{
 						StartTime: metav1.NewTime(now.Add(-time.Hour)),
@@ -283,7 +283,7 @@ func TestTerminateDupes(t *testing.T) {
 					Spec: kube.ProwJobSpec{
 						Type: kube.PresubmitJob,
 						Job:  "j3",
-						Refs: kube.Refs{Pulls: []kube.Pull{{}}},
+						Refs: &kube.Refs{Pulls: []kube.Pull{{}}},
 					},
 					Status: kube.ProwJobStatus{
 						StartTime: metav1.NewTime(now.Add(-time.Minute)),
@@ -305,7 +305,7 @@ func TestTerminateDupes(t *testing.T) {
 					Spec: kube.ProwJobSpec{
 						Type: kube.PresubmitJob,
 						Job:  "j1",
-						Refs: kube.Refs{Pulls: []kube.Pull{{}}},
+						Refs: &kube.Refs{Pulls: []kube.Pull{{}}},
 					},
 					Status: kube.ProwJobStatus{
 						StartTime: metav1.NewTime(now.Add(-time.Minute)),
@@ -316,7 +316,7 @@ func TestTerminateDupes(t *testing.T) {
 					Spec: kube.ProwJobSpec{
 						Type: kube.PresubmitJob,
 						Job:  "j1",
-						Refs: kube.Refs{Pulls: []kube.Pull{{}}},
+						Refs: &kube.Refs{Pulls: []kube.Pull{{}}},
 					},
 					Status: kube.ProwJobStatus{
 						StartTime: metav1.NewTime(now.Add(-time.Hour)),
@@ -422,8 +422,9 @@ func TestSyncTriggeredJobs(t *testing.T) {
 					Name: "blabla",
 				},
 				Spec: kube.ProwJobSpec{
-					Job:  "boop",
-					Type: kube.PeriodicJob,
+					Job:     "boop",
+					Type:    kube.PeriodicJob,
+					PodSpec: new(kube.PodSpec),
 				},
 				Status: kube.ProwJobStatus{
 					State: kube.TriggeredState,
@@ -443,6 +444,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 					Job:            "same",
 					Type:           kube.PeriodicJob,
 					MaxConcurrency: 1,
+					PodSpec:        new(kube.PodSpec),
 				},
 				Status: kube.ProwJobStatus{
 					State: kube.TriggeredState,
@@ -474,6 +476,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 					Type:           kube.PeriodicJob,
 					Cluster:        "trusted",
 					MaxConcurrency: 1,
+					PodSpec:        new(kube.PodSpec),
 				},
 				Status: kube.ProwJobStatus{
 					State: kube.TriggeredState,
@@ -508,6 +511,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 					Type:           kube.PeriodicJob,
 					Cluster:        "trusted",
 					MaxConcurrency: 1,
+					PodSpec:        new(kube.PodSpec),
 				},
 				Status: kube.ProwJobStatus{
 					State: kube.TriggeredState,
@@ -539,8 +543,9 @@ func TestSyncTriggeredJobs(t *testing.T) {
 					Name: "beer",
 				},
 				Spec: kube.ProwJobSpec{
-					Job:  "same",
-					Type: kube.PeriodicJob,
+					Job:     "same",
+					Type:    kube.PeriodicJob,
+					PodSpec: new(kube.PodSpec),
 				},
 				Status: kube.ProwJobStatus{
 					State: kube.TriggeredState,
@@ -557,8 +562,9 @@ func TestSyncTriggeredJobs(t *testing.T) {
 					Name: "beer",
 				},
 				Spec: kube.ProwJobSpec{
-					Job:  "same",
-					Type: kube.PeriodicJob,
+					Job:     "same",
+					Type:    kube.PeriodicJob,
+					PodSpec: new(kube.PodSpec),
 				},
 				Status: kube.ProwJobStatus{
 					State: kube.TriggeredState,
@@ -576,8 +582,9 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			name: "unprocessable prow job",
 			pj: kube.ProwJob{
 				Spec: kube.ProwJobSpec{
-					Job:  "boop",
-					Type: kube.PeriodicJob,
+					Job:     "boop",
+					Type:    kube.PeriodicJob,
+					PodSpec: new(kube.PodSpec),
 				},
 				Status: kube.ProwJobStatus{
 					State: kube.TriggeredState,
@@ -593,8 +600,9 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			name: "conflict error starting pod",
 			pj: kube.ProwJob{
 				Spec: kube.ProwJobSpec{
-					Job:  "boop",
-					Type: kube.PeriodicJob,
+					Job:     "boop",
+					Type:    kube.PeriodicJob,
+					PodSpec: new(kube.PodSpec),
 				},
 				Status: kube.ProwJobStatus{
 					State: kube.TriggeredState,
@@ -608,8 +616,9 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			name: "unknown error starting pod",
 			pj: kube.ProwJob{
 				Spec: kube.ProwJobSpec{
-					Job:  "boop",
-					Type: kube.PeriodicJob,
+					Job:     "boop",
+					Type:    kube.PeriodicJob,
+					PodSpec: new(kube.PodSpec),
 				},
 				Status: kube.ProwJobStatus{
 					State: kube.TriggeredState,
@@ -626,8 +635,9 @@ func TestSyncTriggeredJobs(t *testing.T) {
 					Name: "foo",
 				},
 				Spec: kube.ProwJobSpec{
-					Job:  "boop",
-					Type: kube.PeriodicJob,
+					Job:     "boop",
+					Type:    kube.PeriodicJob,
+					PodSpec: new(kube.PodSpec),
 				},
 				Status: kube.ProwJobStatus{
 					State: kube.TriggeredState,
@@ -770,7 +780,8 @@ func TestSyncPendingJob(t *testing.T) {
 					Name: "boop-41",
 				},
 				Spec: kube.ProwJobSpec{
-					Type: kube.PostsubmitJob,
+					Type:    kube.PostsubmitJob,
+					PodSpec: new(kube.PodSpec),
 				},
 				Status: kube.ProwJobStatus{
 					State:   kube.PendingState,
@@ -846,7 +857,7 @@ func TestSyncPendingJob(t *testing.T) {
 				},
 				Spec: kube.ProwJobSpec{
 					Type: kube.PresubmitJob,
-					Refs: kube.Refs{
+					Refs: &kube.Refs{
 						Org: "kubernetes", Repo: "kubernetes",
 						BaseRef: "baseref", BaseSHA: "basesha",
 						Pulls: []kube.Pull{{Number: 100, Author: "me", SHA: "sha"}},
@@ -966,8 +977,9 @@ func TestSyncPendingJob(t *testing.T) {
 					Name: "jose",
 				},
 				Spec: kube.ProwJobSpec{
-					Job:  "boop",
-					Type: kube.PostsubmitJob,
+					Job:     "boop",
+					Type:    kube.PostsubmitJob,
+					PodSpec: new(kube.PodSpec),
 				},
 				Status: kube.ProwJobStatus{
 					State: kube.PendingState,
@@ -1012,6 +1024,7 @@ func TestSyncPendingJob(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		t.Logf("Running test case %q", tc.name)
 		totServ := httptest.NewServer(http.HandlerFunc(handleTot))
 		defer totServ.Close()
 		pm := make(map[string]kube.Pod)
@@ -1102,12 +1115,11 @@ func TestPeriodic(t *testing.T) {
 		pendingJobs: make(map[string]int),
 		lock:        sync.RWMutex{},
 	}
-
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on first sync: %v", err)
 	}
-	if fc.prowjobs[0].Spec.PodSpec.Containers[0].Name != "" {
-		t.Fatal("Sync step updated the TPR spec.")
+	if len(fc.prowjobs[0].Spec.PodSpec.Containers) != 1 || fc.prowjobs[0].Spec.PodSpec.Containers[0].Name != "" {
+		t.Fatalf("Sync step updated the pod spec: %#v", fc.prowjobs[0].Spec.PodSpec)
 	}
 	if len(fc.pods) != 1 {
 		t.Fatal("Didn't create pod on first sync.")
@@ -1160,7 +1172,7 @@ func TestRunAfterSuccessCanRun(t *testing.T) {
 				Spec: kube.ProwJobSpec{
 					Job:  "test-e2e",
 					Type: kube.PresubmitJob,
-					Refs: kube.Refs{
+					Refs: &kube.Refs{
 						Org:  "kubernetes",
 						Repo: "kubernetes",
 						Pulls: []kube.Pull{
@@ -1182,7 +1194,7 @@ func TestRunAfterSuccessCanRun(t *testing.T) {
 				Spec: kube.ProwJobSpec{
 					Job:  "test-bazel-build",
 					Type: kube.PresubmitJob,
-					Refs: kube.Refs{
+					Refs: &kube.Refs{
 						Org:  "kubernetes",
 						Repo: "kubernetes",
 						Pulls: []kube.Pull{
@@ -1209,7 +1221,7 @@ func TestRunAfterSuccessCanRun(t *testing.T) {
 				Spec: kube.ProwJobSpec{
 					Job:  "test-bazel-build",
 					Type: kube.PresubmitJob,
-					Refs: kube.Refs{
+					Refs: &kube.Refs{
 						Org:  "kubernetes",
 						Repo: "kubernetes",
 						Pulls: []kube.Pull{
@@ -1263,6 +1275,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 						Job:            "test-bazel-build",
 						Type:           kube.PostsubmitJob,
 						MaxConcurrency: 1,
+						PodSpec:        new(kube.PodSpec),
 					},
 					Status: kube.ProwJobStatus{
 						State: kube.TriggeredState,
@@ -1273,6 +1286,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 						Job:            "test-bazel-build",
 						Type:           kube.PostsubmitJob,
 						MaxConcurrency: 1,
+						PodSpec:        new(kube.PodSpec),
 					},
 					Status: kube.ProwJobStatus{
 						State: kube.TriggeredState,
@@ -1290,6 +1304,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 						Job:            "test-bazel-build",
 						Type:           kube.PostsubmitJob,
 						MaxConcurrency: 2,
+						PodSpec:        new(kube.PodSpec),
 					},
 					Status: kube.ProwJobStatus{
 						State: kube.TriggeredState,
@@ -1300,6 +1315,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 						Job:            "test-bazel-build",
 						Type:           kube.PostsubmitJob,
 						MaxConcurrency: 2,
+						PodSpec:        new(kube.PodSpec),
 					},
 					Status: kube.ProwJobStatus{
 						State: kube.TriggeredState,
@@ -1339,6 +1355,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		t.Logf("Running scenario %q", test.name)
 		jobs := make(chan kube.ProwJob, len(test.pjs))
 		for _, pj := range test.pjs {
 			jobs <- pj

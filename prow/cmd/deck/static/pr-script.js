@@ -15,7 +15,7 @@ function submitQuery(input) {
  * Creates a XMLHTTP request to /pr-data.js.
  * @param {function} fulfillFn
  * @param {function} errorHandler
- * @return {XMLHTTPRequest}
+ * @return {XMLHttpRequest}
  */
 function createXMLHTTPRequest(fulfillFn, errorHandler) {
     const request = new XMLHttpRequest();
@@ -885,4 +885,26 @@ function createMessage(msg, icStr) {
     msgContainer.classList.add("message");
 
     return msgContainer;
+}
+
+document.addEventListener("DOMContentLoaded", function(event) {
+   configure();
+});
+
+function configure() {
+    if(typeof branding === undefined){
+        return;
+    }
+    if (branding.logo !== '') {
+        document.getElementById('img').src = branding.logo;
+    }
+    if (branding.favicon !== '') {
+        document.getElementById('favicon').href = branding.favicon;
+    }
+    if (branding.background_color !== '') {
+        document.body.style.background = branding.background_color;
+    }
+    if (branding.header_color !== '') {
+        document.getElementsByTagName('header')[0].style.backgroundColor = branding.header_color;
+    }
 }

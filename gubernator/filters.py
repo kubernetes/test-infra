@@ -19,6 +19,7 @@ import os
 import re
 import time
 import urllib
+import urlparse
 
 import jinja2
 
@@ -84,6 +85,16 @@ def do_linkify_stacktrace(inp, commit, repo):
 def do_github_commit_link(commit, repo):
     commit_url = jinja2.escape(GITHUB_COMMIT_TEMPLATE % (repo, commit))
     return jinja2.Markup('<a href="%s">%s</a>' % (commit_url, commit[:8]))
+
+
+def do_maybe_linkify(inp):
+    try:
+        if urlparse.urlparse(inp).scheme in ('http', 'https'):
+            inp = unicode(jinja2.escape(inp))
+            return jinja2.Markup('<a href="%s">%s</a>' % (inp, inp))
+    except (AttributeError, TypeError):
+        pass
+    return inp
 
 
 def do_testcmd(name):

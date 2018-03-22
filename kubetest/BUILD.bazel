@@ -37,6 +37,7 @@ go_library(
     importpath = "k8s.io/test-infra/kubetest",
     deps = [
         "//boskos/client:go_default_library",
+        "//kubetest/conformance:go_default_library",
         "//kubetest/dind:go_default_library",
         "//kubetest/process:go_default_library",
         "//kubetest/util:go_default_library",
@@ -59,6 +60,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
+        "//kubetest/conformance:all-srcs",
         "//kubetest/dind:all-srcs",
         "//kubetest/process:all-srcs",
         "//kubetest/util:all-srcs",

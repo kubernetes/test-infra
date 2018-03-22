@@ -28,7 +28,8 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
-	cron "gopkg.in/robfig/cron.v2"
+	"gopkg.in/robfig/cron.v2"
+	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
 	"k8s.io/test-infra/prow/kube"
@@ -265,67 +266,39 @@ func parseConfig(c *Config) error {
 
 	// Validate presubmits.
 	for _, v := range c.AllPresubmits(nil) {
-		name := v.Name
-		agent := v.Agent
-		// Ensure that k8s presubmits have a pod spec.
-		if agent == string(kube.KubernetesAgent) && v.Spec == nil {
-			return fmt.Errorf("job %s has no spec", name)
+		if err := validateAgent(v.Name, v.Agent, v.Spec); err != nil {
+			return err
 		}
-		// Ensure agent is a known value.
-		if agent != string(kube.KubernetesAgent) && agent != string(kube.JenkinsAgent) {
-			return fmt.Errorf("job %s has invalid agent (%s), it needs to be one of the following: %s %s",
-				name, agent, kube.KubernetesAgent, kube.JenkinsAgent)
+		if err := validatePresets(v.Name, v.Labels, v.Spec, c.Presets); err != nil {
+			return err
 		}
 		// Ensure max_concurrency is non-negative.
 		if v.MaxConcurrency < 0 {
-			return fmt.Errorf("job %s jas invalid max_concurrency (%d), it needs to be a non-negative number", name, v.MaxConcurrency)
-		}
-		for _, preset := range c.Presets {
-			if err := mergePreset(preset, v.Labels, v.Spec); err != nil {
-				return fmt.Errorf("could not merge preset: %v", err)
-			}
+			return fmt.Errorf("job %s jas invalid max_concurrency (%d), it needs to be a non-negative number", v.Name, v.MaxConcurrency)
 		}
 	}
 
 	// Validate postsubmits.
 	for _, j := range c.AllPostsubmits(nil) {
-		name := j.Name
-		agent := j.Agent
-		// Ensure that k8s postsubmits have a pod spec.
-		if agent == string(kube.KubernetesAgent) && j.Spec == nil {
-			return fmt.Errorf("job %s has no spec", name)
+		if err := validateAgent(j.Name, j.Agent, j.Spec); err != nil {
+			return err
 		}
-		// Ensure agent is a known value.
-		if agent != string(kube.KubernetesAgent) && agent != string(kube.JenkinsAgent) {
-			return fmt.Errorf("job %s has invalid agent (%s), it needs to be one of the following: %s %s",
-				name, agent, kube.KubernetesAgent, kube.JenkinsAgent)
+		if err := validatePresets(j.Name, j.Labels, j.Spec, c.Presets); err != nil {
+			return err
 		}
 		// Ensure max_concurrency is non-negative.
 		if j.MaxConcurrency < 0 {
-			return fmt.Errorf("job %s jas invalid max_concurrency (%d), it needs to be a non-negative number", name, j.MaxConcurrency)
-		}
-		for _, preset := range c.Presets {
-			if err := mergePreset(preset, j.Labels, j.Spec); err != nil {
-				return fmt.Errorf("could not merge preset: %v", err)
-			}
+			return fmt.Errorf("job %s jas invalid max_concurrency (%d), it needs to be a non-negative number", j.Name, j.MaxConcurrency)
 		}
 	}
 
 	// Ensure that the periodic durations are valid and specs exist.
 	for _, p := range c.AllPeriodics() {
-		name := p.Name
-		agent := p.Agent
-		if agent == string(kube.KubernetesAgent) && p.Spec == nil {
-			return fmt.Errorf("job %s has no spec", name)
+		if err := validateAgent(p.Name, p.Agent, p.Spec); err != nil {
+			return err
 		}
-		if agent != string(kube.KubernetesAgent) && agent != string(kube.JenkinsAgent) {
-			return fmt.Errorf("job %s has invalid agent (%s), it needs to be one of the following: %s %s",
-				name, agent, kube.KubernetesAgent, kube.JenkinsAgent)
-		}
-		for _, preset := range c.Presets {
-			if err := mergePreset(preset, p.Labels, p.Spec); err != nil {
-				return fmt.Errorf("could not merge preset: %v", err)
-			}
+		if err := validatePresets(p.Name, p.Labels, p.Spec, c.Presets); err != nil {
+			return err
 		}
 	}
 	// Set the interval on the periodic jobs. It doesn't make sense to do this
@@ -507,6 +480,29 @@ func parseConfig(c *Config) error {
 		return err
 	}
 	logrus.SetLevel(lvl)
+
+	return nil
+}
+
+func validateAgent(name, agent string, spec *v1.PodSpec) error {
+	// Ensure that k8s presubmits have a pod spec.
+	if agent == string(kube.KubernetesAgent) && spec == nil {
+		return fmt.Errorf("job %s has no spec", name)
+	}
+	// Ensure agent is a known value.
+	if agent != string(kube.KubernetesAgent) && agent != string(kube.JenkinsAgent) {
+		return fmt.Errorf("job %s has invalid agent (%s), it needs to be one of the following: %s %s",
+			name, agent, kube.KubernetesAgent, kube.JenkinsAgent)
+	}
+	return nil
+}
+
+func validatePresets(name string, labels map[string]string, spec *v1.PodSpec, presets []Preset) error {
+	for _, preset := range presets {
+		if err := mergePreset(preset, labels, spec); err != nil {
+			return fmt.Errorf("job %s failed to merge presets: %v", name, err)
+		}
+	}
 
 	return nil
 }

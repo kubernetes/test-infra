@@ -41,7 +41,11 @@ import (
 	"k8s.io/test-infra/kubetest/util"
 )
 
+// kopsAWSMasterSize is the default ec2 instance type for kops on aws
+const kopsAWSMasterSize = "c4.large"
+
 var (
+
 	// kops specific flags.
 	kopsPath         = flag.String("kops", "", "(kops only) Path to the kops binary. kops will be downloaded from kops-base-url if not set.")
 	kopsCluster      = flag.String("kops-cluster", "", "(kops only) Deprecated. Cluster name for kops; if not set defaults to --cluster.")
@@ -60,7 +64,7 @@ var (
 	kopsVersion      = flag.String("kops-version", "", "(kops only) URL to a file containing a valid kops-base-url")
 	kopsDiskSize     = flag.Int("kops-disk-size", 48, "(kops only) Disk size to use for nodes and masters")
 	kopsPublish      = flag.String("kops-publish", "", "(kops only) Publish kops version to the specified gs:// path on success")
-	kopsMasterSize   = flag.String("kops-master-size", "c4.large", "(kops only) master instance type")
+	kopsMasterSize   = flag.String("kops-master-size", kopsAWSMasterSize, "(kops only) master instance type")
 	kopsMasterCount  = flag.Int("kops-master-count", 1, "(kops only) Number of masters to run")
 	kopsEtcdVersion  = flag.String("kops-etcd-version", "", "(kops only) Etcd Version")
 
@@ -350,9 +354,16 @@ func (k kops) Up() error {
 		"--node-count", strconv.Itoa(k.nodes),
 		"--node-volume-size", strconv.Itoa(k.diskSize),
 		"--master-volume-size", strconv.Itoa(k.diskSize),
-		"--master-size", k.masterSize,
-		"--zones", strings.Join(k.zones, ","),
 		"--master-count", strconv.Itoa(k.masterCount),
+		"--zones", strings.Join(k.zones, ","),
+	}
+
+	// We are defaulting the master size to c4.large on AWS because m3.larges are getting less previlent.
+	// When we are using GCE, then we need to handle the flag differently.
+	// If we are not using gce then add the masters size flag, or if we are using gce, and the
+	// master size is not set to the aws default, then add the master size flag.
+	if !k.isGoogleCloud() || (k.isGoogleCloud() && k.masterSize != kopsAWSMasterSize) {
+		createArgs = append(createArgs, "--master-size", k.masterSize)
 	}
 
 	if k.kubeVersion != "" {

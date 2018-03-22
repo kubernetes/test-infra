@@ -134,7 +134,7 @@ func TestParseRefs(t *testing.T) {
 			expectErr: true,
 		},
 		{
-			name:      "malformed pull nuber",
+			name:      "malformed pull number",
 			value:     "org,repo=branch:sha,NaN:sha",
 			expectErr: true,
 		},
@@ -173,13 +173,9 @@ func TestParseAliases(t *testing.T) {
 			expectErr: false,
 		},
 		{
-			name:  "only org provided",
-			value: "org=path",
-			expected: PathResolver{
-				org:  "org",
-				path: "path",
-			},
-			expectErr: false,
+			name:      "only org provided",
+			value:     "org=path",
+			expectErr: true,
 		},
 		{
 			name:      "no org or repo",
@@ -239,21 +235,12 @@ func TestPathResolver_Resolve(t *testing.T) {
 			expected: "",
 		},
 		{
-			name: "matching resolver for org",
-			org:  "org",
-			repo: "repo",
-			resolver: PathResolver{
-				org:  "org",
-				path: "path",
-			},
-			expected: "path",
-		},
-		{
 			name: "not matching resolver for org",
 			org:  "org2",
 			repo: "repo",
 			resolver: PathResolver{
 				org:  "org",
+				repo: "repo",
 				path: "path",
 			},
 			expected: "",

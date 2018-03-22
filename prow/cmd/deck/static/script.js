@@ -32,10 +32,10 @@ function optionsForRepo(repo) {
         opts.repos[build.repo] = true;
         if (!repo || repo === build.repo) {
             opts.jobs[build.job] = true;
+            opts.states[build.state] = true;
             if (build.type === "presubmit") {
                 opts.authors[build.author] = true;
                 opts.pulls[build.number] = true;
-                opts.states[build.state] = true;
             }
         }
     }
@@ -177,6 +177,26 @@ window.onload = function () {
             handleUpKey();
         }
     });
+    // Register selection on change functions
+    var filterBox = document.querySelector("#filter-box");
+    var options = filterBox.querySelectorAll("select");
+    options.forEach(opt => {
+        opt.onchange = () => {
+            redraw(fz);
+        };
+    });
+    // Attach job status bar on click
+    var stateFilter = document.querySelector("#state");
+    document.querySelectorAll(".job-bar-state").forEach(jb => {
+        var state = jb.id.slice("job-bar-".length);
+        if (state === "unknown") {
+            return;
+        }
+        jb.addEventListener("click", () => {
+            stateFilter.value = state;
+            stateFilter.onchange();
+        });
+    });
     // set dropdown based on options from query string
     var opts = optionsForRepo("");
     var fz = initFuzzySearch(
@@ -186,14 +206,6 @@ window.onload = function () {
         Object.keys(opts["jobs"]).sort());
     redrawOptions(fz, opts);
     redraw(fz);
-    // Register on change functions
-    var filterBox = document.querySelector("#filter-box");
-    var options = filterBox.querySelectorAll("select");
-    options.forEach(opt => {
-        opt.addEventListener("change", () => {
-            redraw(fz);
-        });
-    });
 };
 
 document.addEventListener("DOMContentLoaded", function (event) {

@@ -417,6 +417,122 @@ jobs:
     interval: 2h
     sigOwners: ['sig-gcp']
 
+  # ci-kubernetes-gke-ubuntu2-k8sbeta-*
+  ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-alphafeatures:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-autoscaling:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-default:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-flaky:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-ingress:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-reboot:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-serial:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-slow:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-updown:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+
+  # ci-kubernetes-gke-ubuntu2-k8sstable1-*
+  ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-alphafeatures:
+    interval: 4h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-autoscaling:
+    interval: 4h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-default:
+    interval: 4h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-flaky:
+    interval: 4h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-ingress:
+    interval: 4h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-reboot:
+    interval: 4h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-serial:
+    interval: 4h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-slow:
+    interval: 4h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-updown:
+    interval: 4h
+    sigOwners: ['sig-gcp']
+
+  # ci-kubernetes-gke-ubuntu2-k8sstable2-*
+  ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-alphafeatures:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-autoscaling:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-default:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-flaky:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-ingress:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-reboot:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-serial:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-slow:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-updown:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+
+  # ci-kubernetes-gke-ubuntu2-k8sstable3-*
+  ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-alphafeatures:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-autoscaling:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-default:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-flaky:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-ingress:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-reboot:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-serial:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-slow:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-updown:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+
   ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-alphafeatures:
     interval: 2h
     sigOwners: ['sig-gcp']
@@ -751,6 +867,8 @@ jobs:
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cos-k8sbeta-default:
     interval: 1h
+    args:
+    - --gke-create-command=container clusters create --quiet --addons=HttpLoadBalancing,HorizontalPodAutoscaling,KubernetesDashboard
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cos-k8sbeta-serial:
     interval: 1h
@@ -928,6 +1046,11 @@ images:
     - --image-family=ubuntu-gke-1604-lts-1
     - --image-project=ubuntu-os-gke-cloud-devel
     - --gcp-node-image=custom
+  ubuntu2:
+    args:
+    - --image-family=ubuntu-gke-1604-lts-2
+    - --image-project=ubuntu-os-gke-cloud-devel
+    - --gcp-node-image=custom
   ubuntudev:
     args:
     - --image-family=ubuntu-gke-1604-lts-1
@@ -1066,23 +1189,23 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180314-34ab1109a-master
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180316-92e6ccade-master
   beta:
     args:
     - --repo=k8s.io/kubernetes=release-1.10
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180314-34ab1109a-1.10
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180316-92e6ccade-1.10
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.9
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180314-34ab1109a-1.9
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180316-92e6ccade-1.9
   stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.8
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180314-34ab1109a-1.8
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180316-92e6ccade-1.8
   stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.7
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180314-34ab1109a-1.7
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180316-92e6ccade-1.7
 
 nodeTestSuites:
   default:

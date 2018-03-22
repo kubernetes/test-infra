@@ -583,6 +583,7 @@ class JobTest(unittest.TestCase):
             'ci-cri-containerd-node-e2e-serial': 'cri-containerd-node-e2e-*',
             'ci-cri-containerd-node-e2e-flaky': 'cri-containerd-node-e2e-*',
             'ci-cri-containerd-node-e2e-benchmark': 'cri-containerd-node-e2e-*',
+            'ci-containerd-node-e2e': 'cri-containerd-node-e2e-*',
             # ci-cri-containerd-e2e-gce-stackdriver intentionally share projects with
             # ci-kubernetes-e2e-gce-stackdriver.
             'ci-kubernetes-e2e-gce-stackdriver': 'k8s-jkns-e2e-gce-stackdriver',

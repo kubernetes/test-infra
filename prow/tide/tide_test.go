@@ -158,6 +158,7 @@ func TestAccumulateBatch(t *testing.T) {
 				Spec: kube.ProwJobSpec{
 					Job:  pj.job,
 					Type: kube.BatchJob,
+					Refs: new(kube.Refs),
 				},
 				Status: kube.ProwJobStatus{State: pj.state},
 			}
@@ -306,7 +307,7 @@ func TestAccumulate(t *testing.T) {
 				Spec: kube.ProwJobSpec{
 					Job:  pj.job,
 					Type: kube.PresubmitJob,
-					Refs: kube.Refs{Pulls: []kube.Pull{{Number: pj.prNumber}}},
+					Refs: &kube.Refs{Pulls: []kube.Pull{{Number: pj.prNumber}}},
 				},
 				Status: kube.ProwJobStatus{State: pj.state},
 			})
@@ -719,7 +720,7 @@ func TestDividePool(t *testing.T) {
 		pjs = append(pjs, kube.ProwJob{
 			Spec: kube.ProwJobSpec{
 				Type: pj.jobType,
-				Refs: kube.Refs{
+				Refs: &kube.Refs{
 					Org:     pj.org,
 					Repo:    pj.repo,
 					BaseRef: pj.baseRef,

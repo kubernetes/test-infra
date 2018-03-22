@@ -22,14 +22,20 @@ import (
 	"context"
 	"encoding/json"
 	"encoding/xml"
+	"errors"
+	"flag"
 	"fmt"
 	"hash/crc32"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/url"
 	"path"
 	"regexp"
+	"runtime"
 	"sort"
+	"strings"
+	"sync"
 	"time"
 
 	"k8s.io/test-infra/testgrid/config"
@@ -42,11 +48,109 @@ import (
 	"vbom.ml/util/sortorder"
 )
 
+// options configures the updater
+type options struct {
+	config           gcsPath // gs://path/to/config/proto
+	creds            string  // TODO(fejta): implement
+	confirm          bool    // TODO(fejta): implement
+	group            string
+	groupConcurrency int
+	buildConcurrency int
+}
+
+// validate ensures sane options
+func (o *options) validate() error {
+	if o.config.String() == "" {
+		return errors.New("empty --config")
+	}
+	if o.config.bucket() == "k8s-testgrid" { // TODO(fejta): remove
+		return fmt.Errorf("--config=%s cannot start with gs://k8s-testgrid", o.config)
+	}
+	if o.groupConcurrency == 0 {
+		o.groupConcurrency = 4 * runtime.NumCPU()
+	}
+	if o.buildConcurrency == 0 {
+		o.buildConcurrency = 4 * runtime.NumCPU()
+	}
+
+	return nil
+}
+
+// gatherOptions reads options from flags
+func gatherOptions() options {
+	o := options{}
+	flag.Var(&o.config, "config", "gs://path/to/config.pb")
+	flag.StringVar(&o.creds, "gcp-service-account", "", "/path/to/gcp/creds (use local creds if empty")
+	flag.BoolVar(&o.confirm, "confirm", false, "Upload data if set")
+	flag.StringVar(&o.group, "test-group", "", "Only update named group if set")
+	flag.IntVar(&o.groupConcurrency, "group-concurrency", 0, "Manually define the number of groups to concurrently update if non-zero")
+	flag.IntVar(&o.buildConcurrency, "build-concurrency", 0, "Manually define the number of builds to concurrently read if non-zero")
+	flag.Parse()
+	return o
+}
+
+// gcsPath parses gs://bucket/obj urls
+type gcsPath struct {
+	url url.URL
+}
+
+// String() returns the gs://bucket/obj url
+func (g gcsPath) String() string {
+	return g.url.String()
+}
+
+// Set() updates value from a gs://bucket/obj string, validating errors.
+func (g *gcsPath) Set(v string) error {
+	u, err := url.Parse(v)
+	switch {
+	case err != nil:
+		return fmt.Errorf("invalid gs:// url %s: %v", v, err)
+	case u.Scheme != "gs":
+		return fmt.Errorf("must use a gs:// url: %s", v)
+	case strings.Contains(u.Host, ":"):
+		return fmt.Errorf("gs://bucket may not contain a port: %s", v)
+	case u.Opaque != "":
+		return fmt.Errorf("url must start with gs://: %s", v)
+	case u.User != nil:
+		return fmt.Errorf("gs://bucket may not contain an user@ prefix: %s", v)
+	case u.RawQuery != "":
+		return fmt.Errorf("gs:// url may not contain a ?query suffix: %s", v)
+	case u.Fragment != "":
+		return fmt.Errorf("gs:// url may not contain a #fragment suffix: %s", v)
+	}
+	g.url = *u
+	return nil
+}
+
+// bucket() returns bucket in gs://bucket/obj
+func (g gcsPath) bucket() string {
+	return g.url.Host
+}
+
+// object() returns path/to/something in gs://bucket/path/to/something
+func (g gcsPath) object() string {
+	if g.url.Path == "" {
+		return g.url.Path
+	}
+	return g.url.Path[1:]
+}
+
+// testGroup() returns the path to a test_group proto given this proto
+func (g gcsPath) testGroup(name string) gcsPath {
+	newG := g
+	newG.url.Path = path.Join(path.Dir(g.url.Path), name)
+	return newG
+}
+
 type Build struct {
 	Bucket  *storage.BucketHandle
 	Context context.Context
 	Prefix  string
 	number  *int
+}
+
+func (b Build) String() string {
+	return b.Prefix
 }
 
 type Started struct {
@@ -62,6 +166,7 @@ type Finished struct {
 	Passed     bool     `json:"passed"`
 	JobVersion string   `json:"job-version"`
 	Metadata   Metadata `json:"metadata"`
+	running    bool
 }
 
 // infra-commit, repos, repo, repo-commit, others
@@ -119,62 +224,108 @@ type JunitResult struct {
 	Name      string  `xml:"name,attr"`
 	Time      float64 `xml:"time,attr"`
 	ClassName string  `xml:"classname,attr"`
-	Failure   *string `xml:"failure"`
-	Output    *string `xml:"system-out"`
-	Skipped   *string `xml:"skipped"`
+	Failure   *string `xml:"failure,omitempty"`
+	Output    *string `xml:"system-out,omitempty"`
+	Error     *string `xml:"system-err,omitempty"`
+	Skipped   *string `xml:"skipped,omitempty"`
 }
 
-func (jr JunitResult) RowResult() state.Row_Result {
+func (jr JunitResult) Message() string {
+	const max = 140
+	var msg string
+	switch {
+	case jr.Failure != nil && *jr.Failure != "":
+		msg = *jr.Failure
+	case jr.Skipped != nil && *jr.Skipped != "":
+		msg = *jr.Skipped
+	case jr.Output != nil && *jr.Output != "":
+		msg = *jr.Output
+	}
+	if l := len(msg); max == 0 || l <= max {
+		return msg
+	} else {
+		h := max / 2
+		return msg[:h] + "..." + msg[l-h-1:]
+	}
+}
+
+func (jr JunitResult) Row(suite string) (string, Row) {
+	n := jr.Name
+	if suite != "" {
+		n = suite + "." + n
+	}
+	r := Row{
+		Metrics: map[string]float64{},
+		Metadata: map[string]string{
+			"Tests name": n,
+		},
+	}
+	if jr.Time > 0 {
+		r.Metrics[elapsedKey] = jr.Time
+	}
+	if msg := jr.Message(); msg != "" {
+		r.Message = msg
+	}
 	switch {
 	case jr.Failure != nil:
-		return state.Row_FAIL
+		r.Result = state.Row_FAIL
+		if r.Message != "" {
+			r.Icon = "F"
+		}
 	case jr.Skipped != nil:
-		return state.Row_PASS_WITH_SKIPS
+		r.Result = state.Row_PASS_WITH_SKIPS
+		if r.Message != "" {
+			r.Icon = "S"
+		}
+	default:
+		r.Result = state.Row_PASS
 	}
-	return state.Row_PASS
+	return n, r
 }
 
-func extractRows(buf []byte, rows map[string][]Row, meta map[string]string) error {
+func unmarshalXML(buf []byte, i interface{}) error {
+	reader := bytes.NewReader(buf)
+	dec := xml.NewDecoder(reader)
+	dec.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
+		switch charset {
+		case "UTF-8", "utf8", "":
+			// utf8 is not recognized by golang, but our coalesce.py writes a utf8 doc, which python accepts.
+			return input, nil
+		default:
+			return nil, fmt.Errorf("unknown charset: %s", charset)
+		}
+	}
+	return dec.Decode(i)
+}
+
+func extractRows(buf []byte, meta map[string]string) (map[string][]Row, error) {
 	var suites JunitSuites
 	// Try to parse it as a <testsuites/> object
-	err := xml.Unmarshal(buf, &suites)
+	err := unmarshalXML(buf, &suites)
 	if err != nil {
 		// Maybe it is a <testsuite/> object instead
 		suites.Suites = append([]JunitSuite(nil), JunitSuite{})
-		ie := xml.Unmarshal(buf, &suites.Suites[0])
+		ie := unmarshalXML(buf, &suites.Suites[0])
 		if ie != nil {
 			// Nope, it just doesn't parse
-			return fmt.Errorf("not valid testsuites: %v nor testsuite: %v", err, ie)
+			return nil, fmt.Errorf("not valid testsuites: %v nor testsuite: %v", err, ie)
 		}
 	}
+	rows := map[string][]Row{}
 	for _, suite := range suites.Suites {
 		for _, sr := range suite.Results {
 			if sr.Skipped != nil && len(*sr.Skipped) == 0 {
 				continue
 			}
 
-			n := sr.Name
-			if len(suite.Name) > 0 {
-				n = suite.Name + "." + n
-			}
-			r := Row{
-				Result:  sr.RowResult(),
-				Metrics: map[string]float64{},
-				Metadata: map[string]string{
-					"Tests name": n,
-				},
-			}
-			if sr.Time > 0 {
-				r.Metrics[elapsedKey] = sr.Time
-			}
+			n, r := sr.Row(suite.Name)
 			for k, v := range meta {
 				r.Metadata[k] = v
 			}
-			// TODO(fejta): set message from failure/skipped/system-out
 			rows[n] = append(rows[n], r)
 		}
 	}
-	return nil
+	return rows, nil
 }
 
 type ColumnMetadata map[string]string
@@ -192,25 +343,37 @@ type Row struct {
 	Result   state.Row_Result
 	Metrics  map[string]float64
 	Metadata map[string]string
+	Message  string
+	Icon     string
 }
 
-func (br Column) Overall() state.Row_Result {
+func (br Column) Overall() Row {
+	r := Row{
+		Metadata: map[string]string{"Tests name": "Overall"},
+	}
 	switch {
 	case br.Finished > 0:
-		// Completed
+		// Completed, did we pass?
 		if br.Passed {
-			return state.Row_PASS
+			r.Result = state.Row_PASS // Yep
+		} else {
+			r.Result = state.Row_FAIL
 		}
-		return state.Row_FAIL
+		r.Metrics = map[string]float64{
+			elapsedKey: float64(br.Finished - br.Started),
+		}
 	case time.Now().Add(-24*time.Hour).Unix() > br.Started:
 		// Timed out
-		return state.Row_FAIL
+		r.Result = state.Row_FAIL
+		r.Message = "Testing did not complete within 24 hours"
+		r.Icon = "T"
 	default:
-		return state.Row_RUNNING
+		r.Result = state.Row_RUNNING
+		r.Message = "Still running; has not finished..."
+		r.Icon = "R"
 	}
+	return r
 }
-
-var uniq int
 
 func AppendMetric(metric *state.Metric, idx int32, value float64) {
 	if l := int32(len(metric.Indices)); l == 0 || metric.Indices[l-2]+metric.Indices[l-1] != idx {
@@ -232,8 +395,10 @@ func FindMetric(row *state.Row, name string) *state.Metric {
 	return nil
 }
 
-func AppendResult(row *state.Row, result state.Row_Result, count int) {
-	latest := int32(result)
+var noResult = Row{Result: state.Row_NO_RESULT}
+
+func AppendResult(row *state.Row, rowResult Row, count int) {
+	latest := int32(rowResult.Result)
 	n := len(row.Results)
 	switch {
 	case n == 0, row.Results[n-2] != latest:
@@ -241,11 +406,18 @@ func AppendResult(row *state.Row, result state.Row_Result, count int) {
 	default:
 		row.Results[n-1] += int32(count)
 	}
-	for i := 0; i < count; i++ {
-		row.CellIds = append(row.CellIds, fmt.Sprintf("%d", uniq))
-		row.Messages = append(row.Messages, fmt.Sprintf("messsage %d", uniq))
-		row.Icons = append(row.Icons, string(int('A')+uniq%26))
-		uniq++
+
+	for i := 0; i < count; i++ { // TODO(fejta): update server to allow empty cellids
+		row.CellIds = append(row.CellIds, "")
+	}
+
+	// Javascript client expects no result cells to skip icons/messages
+	// TODO(fejta): reconsider this
+	if rowResult.Result != state.Row_NO_RESULT {
+		for i := 0; i < count; i++ {
+			row.Messages = append(row.Messages, rowResult.Message)
+			row.Icons = append(row.Icons, rowResult.Icon)
+		}
 	}
 }
 
@@ -294,14 +466,26 @@ func AppendColumn(headers []string, format NameConfig, grid *state.Grid, rows ma
 			continue
 		}
 		trunc := 0
-		if h == "Commit" { // TODO(fejta): fix
+		var ah string
+		if h == "Commit" { // TODO(fejta): fix, jobs use explicit key, support truncation
 			h = "repo-commit"
 			trunc = 9
+			ah = "job-version"
 		}
 		v, ok := build.Metadata[h]
 		if !ok {
-			log.Printf("%s metadata missing %s", c.Build, h)
-			v = "missing"
+			// TODO(fejta): fix, make jobs use one or the other
+			if ah == "" {
+				log.Printf("  %s metadata missing %s", c.Build, h)
+				v = "missing"
+			} else {
+				if av, ok := build.Metadata[ah]; ok {
+					parts := strings.SplitN(av, "+", 2)
+					v = parts[len(parts)-1]
+				} else {
+					log.Printf("  %s metadata missing both keys %s and alternate %s", c.Build, h, ah)
+				}
+			}
 		}
 		if trunc > 0 && trunc < len(v) {
 			v = v[0:trunc]
@@ -335,21 +519,23 @@ func AppendColumn(headers []string, format NameConfig, grid *state.Grid, rows ma
 			// hooray, name not in found
 			found[name] = true
 			delete(missing, name)
+
+			// Does this row already exist?
 			r, ok := rows[name]
-			if !ok {
+			if !ok { // New row
 				r = &state.Row{
 					Name: name,
 					Id:   target,
 				}
 				rows[name] = r
 				grid.Rows = append(grid.Rows, r)
-				if n := len(grid.Columns); n > 0 {
-					// Add missing entries for later builds
-					AppendResult(r, state.Row_NO_RESULT, n-1)
+				if n := len(grid.Columns); n > 1 {
+					// Add missing entries for more recent builds (aka earlier columns)
+					AppendResult(r, noResult, n-1)
 				}
 			}
 
-			AppendResult(r, br.Result, 1)
+			AppendResult(r, br, 1)
 			for k, v := range br.Metrics {
 				m := FindMetric(r, k)
 				if m == nil {
@@ -362,7 +548,7 @@ func AppendColumn(headers []string, format NameConfig, grid *state.Grid, rows ma
 	}
 
 	for _, row := range missing {
-		AppendResult(row, state.Row_NO_RESULT, 1)
+		AppendResult(row, noResult, 1)
 	}
 }
 
@@ -399,90 +585,267 @@ func ValidateName(name string) map[string]string {
 }
 
 func ReadBuild(build Build) (*Column, error) {
-	br := Column{
-		Id: path.Base(build.Prefix),
-	}
-	s := build.Bucket.Object(build.Prefix + "started.json")
-	sr, err := s.NewReader(build.Context)
-	if err != nil {
-		return nil, fmt.Errorf("build has not started")
-	}
-	var started Started
-	if err = json.NewDecoder(sr).Decode(&started); err != nil {
-		return nil, fmt.Errorf("could not decode started.json: %v", err)
-	}
-	br.Started = started.Timestamp
-	br.Rows = map[string][]Row{}
+	var wg sync.WaitGroup                                             // Each subtask does wg.Add(1), then we wg.Wait() for them to finish
+	ctx, cancel := context.WithTimeout(build.Context, 30*time.Second) // Allows aborting after first error
+	ec := make(chan error)                                            // Receives errors from anyone
 
-	f := build.Bucket.Object(build.Prefix + "finished.json")
-	fr, err := f.NewReader(build.Context)
-	if err == storage.ErrObjectNotExist {
-		br.Rows["Overall"] = []Row{
-			{
-				Result: br.Overall(),
-				Metadata: map[string]string{
-					"Tests name": "Overall",
-				},
-			},
+	// Download started.json, send to sc
+	wg.Add(1)
+	sc := make(chan Started) // Receives started.json result
+	go func() {
+		defer wg.Done()
+		started, err := func() (Started, error) {
+			var started Started
+			s := build.Bucket.Object(build.Prefix + "started.json")
+			sr, err := s.NewReader(ctx)
+			if err != nil {
+				return started, fmt.Errorf("build has not started")
+			}
+			if err = json.NewDecoder(sr).Decode(&started); err != nil {
+				return started, fmt.Errorf("could not decode started.json: %v", err)
+			}
+			return started, nil
+		}()
+		if err != nil {
+			select {
+			case <-ctx.Done():
+			case ec <- err:
+			}
+			return
+		}
+		select {
+		case <-ctx.Done():
+		case sc <- started:
+		}
+	}()
+
+	// Download finished.json, send to fc
+	wg.Add(1)
+	fc := make(chan Finished) // Receives finished.json result
+	go func() {
+		defer wg.Done()
+		finished, err := func() (Finished, error) {
+			f := build.Bucket.Object(build.Prefix + "finished.json")
+			fr, err := f.NewReader(ctx)
+			var finished Finished
+			if err == storage.ErrObjectNotExist { // Job has not (yet) completed
+				finished.running = true
+				return finished, nil
+			} else if err != nil {
+				return finished, fmt.Errorf("could not open %s: %v", f, err)
+			}
+			if err = json.NewDecoder(fr).Decode(&finished); err != nil {
+				return finished, fmt.Errorf("could not decode finished.json: %v", err)
+			}
+			return finished, nil
+		}()
+		if err != nil {
+			select {
+			case <-ctx.Done():
+			case ec <- err:
+			}
+			return
+		}
+		select {
+		case <-ctx.Done():
+		case fc <- finished:
+		}
+	}()
+
+	// List artifacts, send to ac channel
+	wg.Add(1)
+	ac := make(chan string) // Receives names of arifacts
+	go func() {
+		defer wg.Done()
+		defer close(ac) // No more artifacts
+		err := func() error {
+			pref := build.Prefix + "artifacts/"
+			ai := build.Bucket.Objects(ctx, &storage.Query{Prefix: pref})
+			for {
+				a, err := ai.Next()
+				if err == iterator.Done {
+					break
+				}
+				if err != nil {
+					return fmt.Errorf("failed to list %s: %v", pref, err)
+				}
+				select {
+				case <-ctx.Done():
+					return fmt.Errorf("interrupted listing %s", pref)
+				case ac <- a.Name: // Added
+				}
+			}
+			return nil
+		}()
+		if err != nil {
+			select {
+			case <-ctx.Done():
+			case ec <- err:
+			}
+		}
+	}()
+
+	// Download each artifact, send row map to rc
+	// With parallelism: 60s without: 220s
+	wg.Add(1)
+	rc := make(chan map[string][]Row)
+	go func() {
+		defer wg.Done()
+		defer close(rc) // No more rows
+		var awg sync.WaitGroup
+		for a := range ac {
+			select { // Should we stop?
+			case <-ctx.Done(): // Yes
+				return
+			default: // No, keep going
+			}
+			meta := ValidateName(a)
+			if meta == nil { // Not junit
+				continue
+			}
+			awg.Add(1)
+			// Read each artifact in a new thread
+			go func(ap string, meta map[string]string) {
+				defer awg.Done()
+				err := func() error {
+					ar, err := build.Bucket.Object(ap).NewReader(ctx)
+					if err != nil {
+						return fmt.Errorf("could not read %s: %v", ap, err)
+					}
+					if r := ar.Remain(); r > 50e6 {
+						return fmt.Errorf("too large: %s is %d > 50M", ap, r)
+					}
+					buf, err := ioutil.ReadAll(ar)
+					if err != nil {
+						return fmt.Errorf("partial read of %s: %v", ap, err)
+					}
+
+					select { // Keep going?
+					case <-ctx.Done(): // No, cancelled
+						return errors.New("aborted artifact read")
+					default: // Yes, acquire lock
+						// TODO(fejta): consider sync.Map
+						if rows, err := extractRows(buf, meta); err != nil {
+							return fmt.Errorf("failed to parse %s: %v", ap, err)
+						} else {
+							rc <- rows
+						}
+					}
+					return nil
+				}()
+				if err == nil {
+					return
+				}
+				select {
+				case <-ctx.Done():
+				case ec <- err:
+				}
+			}(a, meta)
+		}
+		awg.Wait()
+	}()
+
+	// Append each row into the column
+	rows := map[string][]Row{}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for r := range rc {
+			select { // Should we continue
+			case <-ctx.Done(): // No, aborted
+				return
+			default: // Yes
+			}
+			for t, rs := range r {
+				rows[t] = append(rows[t], rs...)
+			}
+		}
+	}()
+
+	// Wait for everyone to complete their work
+	go func() {
+		wg.Wait()
+		select {
+		case <-ctx.Done():
+			return
+		case ec <- nil:
+		}
+	}()
+	var finished *Finished
+	var started *Started
+	for { // Wait until we receive started and finished and/or an error
+		select {
+		case err := <-ec:
+			if err != nil {
+				cancel()
+				return nil, fmt.Errorf("failed to read %s: %v", build, err)
+			}
+			break
+		case s := <-sc:
+			started = &s
+		case f := <-fc:
+			finished = &f
+		}
+		if started != nil && finished != nil {
+			break
+		}
+	}
+	br := Column{
+		Id:      path.Base(build.Prefix),
+		Started: started.Timestamp,
+	}
+	// Has the build finished?
+	if finished.running { // No
+		cancel()
+		br.Rows = map[string][]Row{
+			"Overall": {br.Overall()},
 		}
 		return &br, nil
 	}
-
-	var finished Finished
-	if err = json.NewDecoder(fr).Decode(&finished); err != nil {
-		return nil, fmt.Errorf("could not decode finished.json: %v", err)
-	}
-
 	br.Finished = finished.Timestamp
 	br.Metadata = finished.Metadata.ColumnMetadata()
 	br.Passed = finished.Passed
-
-	br.Rows["Overall"] = []Row{
-		{
-			Result: br.Overall(),
-			Metrics: map[string]float64{
-				elapsedKey: float64(br.Finished - br.Started),
-			},
-			Metadata: map[string]string{
-				"Tests name": "Overall",
-			},
-		},
+	or := br.Overall()
+	br.Rows = map[string][]Row{
+		"Overall": {or},
+	}
+	select {
+	case <-ctx.Done():
+		cancel()
+		return nil, fmt.Errorf("interrupted reading %s", build)
+	case err := <-ec:
+		if err != nil {
+			cancel()
+			return nil, fmt.Errorf("failed to read %s: %v", build, err)
+		}
 	}
 
-	ai := build.Bucket.Objects(build.Context, &storage.Query{Prefix: build.Prefix + "artifacts/"})
-	artifacts := map[string]map[string]string{}
-	for {
-		a, err := ai.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			return nil, fmt.Errorf("failed to list artifacts: %v", err)
-		}
-
-		meta := ValidateName(a.Name)
-		if meta == nil {
-			continue
-		}
-		artifacts[a.Name] = meta
+	for t, rs := range rows {
+		br.Rows[t] = append(br.Rows[t], rs...)
 	}
-	for ap, meta := range artifacts {
-		ar, err := build.Bucket.Object(ap).NewReader(build.Context)
-		if err != nil {
-			return nil, fmt.Errorf("could not read %s: %v", ap, err)
+	if or.Result == state.Row_FAIL { // Ensure failing build has a failing row
+		ft := false
+		for n, rs := range br.Rows {
+			if n == "Overall" {
+				continue
+			}
+			for _, r := range rs {
+				if r.Result == state.Row_FAIL {
+					ft = true // Failing test, huzzah!
+					break
+				}
+			}
+			if ft {
+				break
+			}
 		}
-		if r := ar.Remain(); r > 50e6 {
-			return nil, fmt.Errorf("too large: %s is %d > 50M", ap, r)
-		}
-		buf, err := ioutil.ReadAll(ar)
-		if err != nil {
-			return nil, fmt.Errorf("failed to read all of %s: %v", ap, err)
-		}
-
-		if err = extractRows(buf, br.Rows, meta); err != nil {
-			return nil, fmt.Errorf("failed to parse %s: %v", ap, err)
+		if !ft { // Nope, add the F icon and an explanatory message
+			br.Rows["Overall"][0].Icon = "F"
+			br.Rows["Overall"][0].Message = "Build failed outside of test results"
 		}
 	}
+
+	cancel()
 	return &br, nil
 }
 
@@ -494,31 +857,18 @@ func (b Builds) Less(i, j int) bool {
 	return sortorder.NaturalLess(b[i].Prefix, b[j].Prefix)
 }
 
-func ListBuilds(client *storage.Client, ctx context.Context, path string, builds chan Build) error {
-	u, err := url.Parse(path)
-	if err != nil {
-		return fmt.Errorf("could not parse %s: %v", path, err)
-	}
-	if u.Scheme != "gs" {
-		return fmt.Errorf("only gs:// paths supported: %s", path)
-	}
-	if len(u.Host) == 0 {
-		return fmt.Errorf("empty host: %s", path)
-	}
-	if len(u.Path) < 2 {
-		return fmt.Errorf("empty path: %s", path)
-	}
-	b := u.Host
-	p := u.Path[1:]
+// listBuilds lists and sorts builds under path, sending them to the builds channel.
+func listBuilds(client *storage.Client, ctx context.Context, path gcsPath) (Builds, error) {
+	log.Printf("LIST: %s", path)
+	p := path.object()
 	if p[len(p)-1] != '/' {
 		p += "/"
 	}
-	bkt := client.Bucket(b)
+	bkt := client.Bucket(path.bucket())
 	it := bkt.Objects(ctx, &storage.Query{
 		Delimiter: "/",
 		Prefix:    p,
 	})
-	fmt.Println("Looking in ", u, b, p)
 	var all Builds
 	for {
 		objAttrs, err := it.Next()
@@ -526,13 +876,12 @@ func ListBuilds(client *storage.Client, ctx context.Context, path string, builds
 			break
 		}
 		if err != nil {
-			return fmt.Errorf("failed to list objects: %v", err)
+			return nil, fmt.Errorf("failed to list objects: %v", err)
 		}
 		if len(objAttrs.Prefix) == 0 {
 			continue
 		}
 
-		//fmt.Println("Found name:", objAttrs.Name, "prefix:", objAttrs.Prefix)
 		all = append(all, Build{
 			Bucket:  bkt,
 			Context: ctx,
@@ -541,12 +890,8 @@ func ListBuilds(client *storage.Client, ctx context.Context, path string, builds
 	}
 	// Expect builds to be in monotonically increasing order.
 	// So build9 should be followed by build10 or build888 but not build8
-	sort.Sort(all)
-	// Iterate backwards since the largest (and thus most recent) is at the end.
-	for i := len(all) - 1; i >= 0; i-- {
-		builds <- all[i]
-	}
-	return nil
+	sort.Sort(sort.Reverse(all))
+	return all, nil
 }
 
 func Headers(group config.TestGroup) []string {
@@ -565,40 +910,122 @@ func (r Rows) Less(i, j int) bool {
 	return sortorder.NaturalLess(r[i].Name, r[j].Name)
 }
 
-func ReadBuilds(group config.TestGroup, builds chan Build, max int, dur time.Duration) state.Grid {
-	i := 0
+func ReadBuilds(parent context.Context, group config.TestGroup, builds Builds, max int, dur time.Duration, concurrency int) (*state.Grid, error) {
+	// Spawn build readers
+	if concurrency == 0 {
+		return nil, fmt.Errorf("zero readers for %s", group.Name)
+	}
+	ctx, cancel := context.WithCancel(parent)
 	var stop time.Time
 	if dur != 0 {
 		stop = time.Now().Add(-dur)
 	}
+	lb := len(builds)
+	if lb > max {
+		log.Printf("  Truncating %d %s results to %d", lb, group.Name, max)
+		lb = max
+	}
+	cols := make([]*Column, lb)
+	log.Printf("UPDATE: %s since %s (%d)", group.Name, stop, stop.Unix())
+	ec := make(chan error)
+	old := make(chan int)
+	var wg sync.WaitGroup
+
+	// Send build indices to readers
+	indices := make(chan int)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		defer close(indices)
+		for i := range builds[:lb] {
+			select {
+			case <-ctx.Done():
+				return
+			case <-old:
+				return
+			case indices <- i:
+			}
+		}
+	}()
+
+	// Concurrently receive indicies and read builds
+	for i := 0; i < concurrency; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case i, open := <-indices:
+					if !open {
+						return
+					}
+					b := builds[i]
+					c, err := ReadBuild(b)
+					if err != nil {
+						ec <- err
+						return
+					}
+					cols[i] = c
+					if c.Started < stop.Unix() {
+						select {
+						case <-ctx.Done():
+						case old <- i:
+							log.Printf("STOP: %d %s started at %d < %d", i, b.Prefix, c.Started, stop.Unix())
+						default: // Someone else may have already reported an old result
+						}
+					}
+				}
+			}
+		}()
+	}
+
+	// Wait for everyone to finish
+	go func() {
+		wg.Wait()
+		select {
+		case <-ctx.Done():
+		case ec <- nil: // No error
+		}
+	}()
+
+	// Determine if we got an error
+	select {
+	case <-ctx.Done():
+		cancel()
+		return nil, fmt.Errorf("interrupted reading %s", group.Name)
+	case err := <-ec:
+		if err != nil {
+			cancel()
+			return nil, fmt.Errorf("error reading %s: %v", group.Name, err)
+		}
+	}
+
+	// Add the columns into a grid message
 	grid := &state.Grid{}
+	rows := map[string]*state.Row{} // For fast target => row lookup
 	h := Headers(group)
 	nc := MakeNameConfig(group.TestNameConfig)
-	rows := map[string]*state.Row{}
-	log.Printf("Reading builds after %s (%d)", stop, stop.Unix())
-	for b := range builds {
-		i++
-		if max > 0 && i > max {
-			log.Printf("Hit ceiling of %d results", max)
-			break
+	for _, c := range cols {
+		select {
+		case <-ctx.Done():
+			cancel()
+			return nil, fmt.Errorf("interrupted appending columns to %s", group.Name)
+		default:
 		}
-		br, err := ReadBuild(b)
-		if err != nil {
-			log.Printf("FAIL %s: %v", b.Prefix, err)
+		if c == nil {
 			continue
 		}
-		AppendColumn(h, nc, grid, rows, *br)
-		log.Printf("found: %s pass:%t %d-%d: %d results", br.Id, br.Passed, br.Started, br.Finished, len(br.Rows))
-		if br.Started < stop.Unix() {
-			log.Printf("Latest result before %s", stop)
-			break
+		AppendColumn(h, nc, grid, rows, *c)
+		if c.Started < stop.Unix() { // There may be concurrency results < stop.Unix()
+			log.Printf("  %s#%s before %s, stopping...", group.Name, c.Id, stop)
+			break // Just process the first result < stop.Unix()
 		}
 	}
-	log.Println("Finished reading builds.")
-	for range builds {
-	}
 	sort.Stable(Rows(grid.Rows))
-	return *grid
+	cancel()
+	return grid, nil
 }
 
 func Days(d float64) time.Duration {
@@ -631,9 +1058,14 @@ func Group(cfg config.Configuration, name string) (*config.TestGroup, bool) {
 }
 
 func main() {
-	b := "fejternetes"
-	o := "ci-kubernetes-test-go"
-	o = "ci-kubernetes-node-kubelet-stable3"
+	opt := gatherOptions()
+	if err := opt.validate(); err != nil {
+		log.Fatalf("Invalid flags: %v", err)
+	}
+	if opt.creds != "" {
+		log.Fatalf("Service accounts are not yet supported")
+	}
+	// opt.confirm
 
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
@@ -641,72 +1073,122 @@ func main() {
 		log.Fatalf("Failed to create storage client: %v", err)
 	}
 
-	cfg, err := ReadConfig(client.Bucket(b).Object("config"), ctx)
+	cfg, err := ReadConfig(client.Bucket(opt.config.bucket()).Object(opt.config.object()), ctx)
 	if err != nil {
-		log.Fatalf("Failed to read gs://%s/config: %v", b, err)
+		log.Fatalf("Failed to read %s: %v", opt.config, err)
 	}
-	tg, ok := Group(*cfg, o)
-	if !ok {
-		log.Fatalf("Failed to find %s in gs://%s/config", o, b)
-	}
-	log.Println(tg)
+	log.Printf("Found %d groups", len(cfg.TestGroups))
 
-	bkt := client.Bucket("kubernetes-jenkins")
-	attrs, err := bkt.Attrs(ctx)
-	if err != nil {
-		log.Fatalf("Failed to access bucket: %v", err)
+	groups := make(chan config.TestGroup)
+	var wg sync.WaitGroup
+
+	for i := 0; i < opt.groupConcurrency; i++ {
+		wg.Add(1)
+		go func() {
+			for tg := range groups {
+				if err := updateGroup(client, ctx, tg, opt.config.testGroup(tg.Name), opt.buildConcurrency, opt.confirm); err != nil {
+					log.Printf("FAIL: %v", err)
+				}
+			}
+			wg.Done()
+		}()
 	}
-	fmt.Printf("bucket %s, attrs %v", bkt, attrs)
+
+	if opt.group != "" { // Just a specific group
+		// o := "ci-kubernetes-test-go"
+		// o = "ci-kubernetes-node-kubelet-stable3"
+		// gs://kubernetes-jenkins/logs/ci-kubernetes-test-go
+		// gs://kubernetes-jenkins/pr-logs/pull-ingress-gce-e2e
+		o := opt.group
+		if tg, ok := Group(*cfg, o); !ok {
+			log.Fatalf("Failed to find %s in %s", o, opt.config)
+		} else {
+			groups <- *tg
+		}
+	} else { // All groups
+		for _, tg := range cfg.TestGroups {
+			groups <- *tg
+		}
+	}
+	close(groups)
+	wg.Wait()
+}
+
+func updateGroup(client *storage.Client, ctx context.Context, tg config.TestGroup, gridPath gcsPath, concurrency int, write bool) error {
+	o := tg.Name
+
+	var tgPath gcsPath
+	if err := tgPath.Set("gs://" + tg.GcsPrefix); err != nil {
+		return fmt.Errorf("group %s has an invalid gcs_prefix %s: %v", o, tg.GcsPrefix, err)
+	}
+
 	g := state.Grid{}
 	g.Columns = append(g.Columns, &state.Column{Build: "first", Started: 1})
-	fmt.Println(g)
-	builds := make(chan Build)
-	uPR := "gs://kubernetes-jenkins/pr-logs/pull-ingress-gce-e2e"
-	uCI := "gs://kubernetes-jenkins/logs/ci-kubernetes-test-go"
-	uCIN := "gs://kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-stable3"
-	_ = uCI
-	_ = uPR
-	u := uCIN
-	go func() {
-		if err = ListBuilds(client, ctx, u, builds); err != nil {
-			log.Fatalf("Failed to list builds: %v", err)
+	builds, err := listBuilds(client, ctx, tgPath)
+	if err != nil {
+		return fmt.Errorf("failed to list %s builds: %v", o, err)
+	}
+	grid, err := ReadBuilds(ctx, tg, builds, 50, Days(7), concurrency)
+	if err != nil {
+		return err
+	}
+	buf, err := marshalGrid(*grid)
+	if err != nil {
+		return fmt.Errorf("failed to marshal %s grid: %v", o, err)
+	}
+	tgp := gridPath
+	if !write {
+		log.Printf("  Not writing %s (%d bytes) to %s", o, len(buf), tgp)
+	} else {
+		log.Printf("  Writing %s (%d bytes) to %s", o, len(buf), tgp)
+		if err := uploadBytes(client, ctx, tgp, buf); err != nil {
+			return fmt.Errorf("upload %s to %s failed: %v", o, tgp, err)
 		}
-		close(builds)
-	}()
-	grid := ReadBuilds(*tg, builds, 1000, Days(5))
-	log.Printf("Grid: %d %s", len(grid.Columns), grid.String())
+	}
+	log.Printf("WROTE: %s, %dx%d grid (%s, %d bytes)", tg.Name, len(grid.Columns), len(grid.Rows), tgp, len(buf))
+	return nil
+}
+
+// marhshalGrid serializes a state proto into zlib-compressed bytes and its crc32 checksum.
+func marshalGrid(grid state.Grid) ([]byte, error) {
 	buf, err := proto.Marshal(&grid)
 	if err != nil {
-		log.Fatalf("Failed to encode grid: %v", err)
+		return nil, fmt.Errorf("proto encoding failed: %v", err)
 	}
 	var zbuf bytes.Buffer
 	zw := zlib.NewWriter(&zbuf)
 	if _, err = zw.Write(buf); err != nil {
-		log.Fatalf("Failed to compress gs://%s/%s: %v", b, o, err)
+		return nil, fmt.Errorf("zlib compression failed: %v", err)
 	}
 	if err = zw.Close(); err != nil {
-		log.Fatalf("Failed to close zlib gs://%s/%s buffer: %v", b, o, err)
+		return nil, fmt.Errorf("zlib closing failed: %v", err)
 	}
-	if b == "k8s-testgrid" {
-		log.Fatalf("do not change prod")
-	}
-	w := client.Bucket(b).Object(o).NewWriter(ctx)
+	return zbuf.Bytes(), nil
+}
+
+func calcCRC(buf []byte) uint32 {
+	return crc32.Checksum(buf, crc32.MakeTable(crc32.Castagnoli))
+}
+
+// uploadBytes writes bytes to the specified gcsPath
+func uploadBytes(client *storage.Client, ctx context.Context, path gcsPath, buf []byte) error {
+	crc := calcCRC(buf)
+	w := client.Bucket(path.bucket()).Object(path.object()).NewWriter(ctx)
 	w.SendCRC32C = true
-	buf = zbuf.Bytes()
 	// Send our CRC32 to ensure google received the same data we sent.
 	// See checksum example at:
 	// https://godoc.org/cloud.google.com/go/storage#Writer.Write
-	w.ObjectAttrs.CRC32C = crc32.Checksum(buf, crc32.MakeTable(crc32.Castagnoli))
+	w.ObjectAttrs.CRC32C = crc
 	w.ProgressFunc = func(bytes int64) {
-		log.Printf("Uploading gs://%s/%s: %d/%d...", b, o, bytes, len(buf))
+		log.Printf("Uploading %s: %d/%d...", path, bytes, len(buf))
 	}
 	if n, err := w.Write(buf); err != nil {
-		log.Fatalf("Failed to write gs://%s/%s: %v", b, o, err)
+		return fmt.Errorf("writing %s failed: %v", path, err)
 	} else if n != len(buf) {
-		log.Fatalf("Partial gs://%s/%s write: %d < %d", b, o, n, len(buf))
+		return fmt.Errorf("partial write of %s: %d < %d", path, n, len(buf))
 	}
-	if err = w.Close(); err != nil {
-		log.Fatalf("Failed to close write to gs://%s/%s: %v", b, o, err)
+	if err := w.Close(); err != nil {
+		return fmt.Errorf("closing %s failed: %v", path, err)
 	}
-	log.Print("Success!")
+	return nil
 }

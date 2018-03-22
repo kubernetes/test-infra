@@ -183,7 +183,8 @@ class TestDashboard(main_test.TestBase):
         self.assertIn('123', resp)
         self.assertIn('124', resp)
         resp = app.get('/pr/user?milestone=v1.24')
-        self.assertNotIn('123', resp)
+        # Don't match timestamps that happen to include "123".
+        self.assertNotRegexpMatches(str(resp), r'\b123\b')
         self.assertIn('124', resp)
 
     @staticmethod
@@ -226,6 +227,8 @@ class TestDashboard(main_test.TestBase):
         self.assertIn('huge pr!', resp)
 
     def test_acks(self):
+        app.get('/')  # initialize session secrets
+
         make_pr(124, ['human'], {'title': 'huge pr', 'attn': {'human': 'help#123#456'}}, repo='k/k')
         cookie = self.make_session(user='human')
         headers = {'Cookie': 'session=%s' % cookie}

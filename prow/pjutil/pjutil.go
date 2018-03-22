@@ -19,8 +19,9 @@ package pjutil
 
 import (
 	"fmt"
+	"sort"
 
-	uuid "github.com/satori/go.uuid"
+	"github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -52,7 +53,7 @@ func PresubmitSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 	pjs := kube.ProwJobSpec{
 		Type: kube.PresubmitJob,
 		Job:  p.Name,
-		Refs: refs,
+		Refs: &refs,
 
 		Report:         !p.SkipReport,
 		Context:        p.Context,
@@ -61,7 +62,7 @@ func PresubmitSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 	}
 	pjs.Agent = kube.ProwJobAgent(p.Agent)
 	if pjs.Agent == kube.KubernetesAgent {
-		pjs.PodSpec = *p.Spec
+		pjs.PodSpec = p.Spec
 		pjs.Cluster = p.Cluster
 		if pjs.Cluster == "" {
 			pjs.Cluster = kube.DefaultClusterAlias
@@ -78,12 +79,12 @@ func PostsubmitSpec(p config.Postsubmit, refs kube.Refs) kube.ProwJobSpec {
 	pjs := kube.ProwJobSpec{
 		Type:           kube.PostsubmitJob,
 		Job:            p.Name,
-		Refs:           refs,
+		Refs:           &refs,
 		MaxConcurrency: p.MaxConcurrency,
 	}
 	pjs.Agent = kube.ProwJobAgent(p.Agent)
 	if pjs.Agent == kube.KubernetesAgent {
-		pjs.PodSpec = *p.Spec
+		pjs.PodSpec = p.Spec
 		pjs.Cluster = p.Cluster
 		if pjs.Cluster == "" {
 			pjs.Cluster = kube.DefaultClusterAlias
@@ -103,7 +104,7 @@ func PeriodicSpec(p config.Periodic) kube.ProwJobSpec {
 	}
 	pjs.Agent = kube.ProwJobAgent(p.Agent)
 	if pjs.Agent == kube.KubernetesAgent {
-		pjs.PodSpec = *p.Spec
+		pjs.PodSpec = p.Spec
 		pjs.Cluster = p.Cluster
 		if pjs.Cluster == "" {
 			pjs.Cluster = kube.DefaultClusterAlias
@@ -120,12 +121,12 @@ func BatchSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 	pjs := kube.ProwJobSpec{
 		Type:    kube.BatchJob,
 		Job:     p.Name,
-		Refs:    refs,
+		Refs:    &refs,
 		Context: p.Context, // The Submit Queue's getCompleteBatches needs this.
 	}
 	pjs.Agent = kube.ProwJobAgent(p.Agent)
 	if pjs.Agent == kube.KubernetesAgent {
-		pjs.PodSpec = *p.Spec
+		pjs.PodSpec = p.Spec
 		pjs.Cluster = p.Cluster
 		if pjs.Cluster == "" {
 			pjs.Cluster = kube.DefaultClusterAlias
@@ -139,28 +140,24 @@ func BatchSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 
 // ProwJobToPod converts a ProwJob to a Pod that will run the tests.
 func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
+	if pj.Spec.PodSpec == nil {
+		return nil, fmt.Errorf("prowjob %q lacks a pod spec?", pj.Name)
+	}
 	env, err := EnvForSpec(NewJobSpec(pj.Spec, buildID, pj.Name))
 	if err != nil {
 		return nil, err
 	}
 
-	spec := pj.Spec.PodSpec
+	spec := pj.Spec.PodSpec.DeepCopy()
 	spec.RestartPolicy = "Never"
 
-	// Set environment variables in each container in the pod spec. We don't
-	// want to update the spec in place, since that will update the ProwJob
-	// spec. Instead, create a copy.
-	spec.InitContainers = []v1.Container{}
-	for i := range pj.Spec.PodSpec.InitContainers {
-		spec.InitContainers = append(spec.InitContainers, pj.Spec.PodSpec.InitContainers[i])
+	for i := range spec.InitContainers {
 		if spec.InitContainers[i].Name == "" {
 			spec.InitContainers[i].Name = fmt.Sprintf("%s-%d", pj.ObjectMeta.Name, i)
 		}
 		spec.InitContainers[i].Env = append(spec.InitContainers[i].Env, kubeEnv(env)...)
 	}
-	spec.Containers = []v1.Container{}
-	for i := range pj.Spec.PodSpec.Containers {
-		spec.Containers = append(spec.Containers, pj.Spec.PodSpec.Containers[i])
+	for i := range spec.Containers {
 		if spec.Containers[i].Name == "" {
 			spec.Containers[i].Name = fmt.Sprintf("%s-%d", pj.ObjectMeta.Name, i)
 		}
@@ -180,18 +177,25 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
 				kube.ProwJobAnnotation: pj.Spec.Job,
 			},
 		},
-		Spec: spec,
+		Spec: *spec,
 	}, nil
 }
 
 // kubeEnv transforms a mapping of environment variables
-// into their serialized form for a PodSpec
+// into their serialized form for a PodSpec, sorting by
+// the name of the env vars
 func kubeEnv(environment map[string]string) []v1.EnvVar {
+	var keys []string
+	for key := range environment {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
 	var kubeEnvironment []v1.EnvVar
-	for key, value := range environment {
+	for _, key := range keys {
 		kubeEnvironment = append(kubeEnvironment, v1.EnvVar{
 			Name:  key,
-			Value: value,
+			Value: environment[key],
 		})
 	}
 
@@ -256,7 +260,7 @@ func ProwJobFields(pj *kube.ProwJob) logrus.Fields {
 	if len(pj.ObjectMeta.Labels[github.EventGUID]) > 0 {
 		fields[github.EventGUID] = pj.ObjectMeta.Labels[github.EventGUID]
 	}
-	if len(pj.Spec.Refs.Pulls) == 1 {
+	if pj.Spec.Refs != nil && len(pj.Spec.Refs.Pulls) == 1 {
 		fields[github.PrLogField] = pj.Spec.Refs.Pulls[0].Number
 		fields[github.RepoLogField] = pj.Spec.Refs.Repo
 		fields[github.OrgLogField] = pj.Spec.Refs.Org

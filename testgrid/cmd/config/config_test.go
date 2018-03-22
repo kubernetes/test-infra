@@ -355,6 +355,7 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 		"google/cadvisor",
 		"kubeflow/examples",
 		"kubeflow/kubeflow",
+		"kubeflow/pytorch-operator",
 		"kubeflow/reporting",
 		"kubeflow/testing",
 		"kubeflow/tf-operator",

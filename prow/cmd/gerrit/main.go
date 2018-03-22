@@ -100,6 +100,8 @@ func main() {
 		logrus.WithError(err).Fatal("Error creating gerrit client.")
 	}
 
+	logrus.Infof("Starting gerrit fetcher")
+
 	tick := time.Tick(ca.Config().Gerrit.TickInterval)
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
