@@ -440,6 +440,11 @@ func (c *Client) getHiddenRepos() sets.String {
 }
 
 func shouldHide(pj *ProwJob, hiddenRepos sets.String, showHiddenOnly bool) bool {
+	if pj.Spec.Refs == nil {
+		// periodic jobs do not have refs and therefore cannot be
+		// hidden by the org/repo mechanism
+		return false
+	}
 	shouldHide := hiddenRepos.HasAny(fmt.Sprintf("%s/%s", pj.Spec.Refs.Org, pj.Spec.Refs.Repo), pj.Spec.Refs.Org)
 	if showHiddenOnly {
 		return !shouldHide
