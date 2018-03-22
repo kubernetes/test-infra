@@ -10278,7 +10278,7 @@
       "--kubeadm=ci",
       "--kubernetes-anywhere-kubeadm-feature-gates=CoreDNS=true",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel",
-      "--kubernetes-anywhere-kubernetes-version=ci/latest-bazel",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
@@ -10297,7 +10297,7 @@
       "--gcp-zone=us-central1-f",
       "--kubeadm=ci",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel",
-      "--kubernetes-anywhere-kubernetes-version=ci/latest-bazel",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest",
       "--kubernetes-anywhere-proxy-mode=ipvs",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
