@@ -326,6 +326,7 @@ plugins:
 
   kubernetes-sigs/testing_frameworks:
   - approve
+  - trigger
 
   kubernetes-sigs/poseidon:
   - approve
