@@ -165,6 +165,26 @@ plugins:
   - blunderbuss
   - trigger
 
+  kubernetes/cloud-provider-aws:
+  - approve
+  - blunderbuss
+  - trigger
+
+  kubernetes/cloud-provider-azure:
+  - approve
+  - blunderbuss
+  - trigger
+
+  kubernetes/cloud-provider-gcp:
+  - approve
+  - blunderbuss
+  - trigger
+
+  kubernetes/cloud-provider-openstack:
+  - approve
+  - blunderbuss
+  - trigger
+
   kubernetes/cluster-registry:
   - approve
   - trigger
