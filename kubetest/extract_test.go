@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
+	"strings"
 	"testing"
 	"time"
 )
@@ -156,6 +158,12 @@ func TestExtractStrategies(t *testing.T) {
 	oldCat := gsutilCat
 	defer func() { gsutilCat = oldCat }()
 	gsutilCat = func(url string) ([]byte, error) {
+		if path.Ext(url) != ".txt" {
+			return []byte{}, fmt.Errorf("url %s must end with .txt", url)
+		}
+		if !strings.HasPrefix(path.Dir(url), "gs:/") {
+			return []byte{}, fmt.Errorf("url %s must starts with gs:/", path.Dir(url))
+		}
 		return []byte("v1.2.3+abcde"), nil
 	}
 
