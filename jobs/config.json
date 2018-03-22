@@ -12316,26 +12316,6 @@
       "sig-network"
     ]
   },
-  "pull-k8s-tpu-operator-unit": {
-    "args": [
-      "make",
-      "test"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-node"
-    ]
-  },
-  "pull-k8s-tpu-operator-verify": {
-    "args": [
-      "make",
-      "verify"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-node"
-    ]
-  },
   "pull-kops-bazel-build": {
     "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
     "args": [],
