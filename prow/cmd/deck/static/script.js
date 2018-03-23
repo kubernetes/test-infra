@@ -486,6 +486,8 @@ function redraw(fz) {
 
             if (build.type === "periodic") {
                 r.appendChild(createTextCell(""));
+            } else if (build.repo.startsWith("http://") || build.repo.startsWith("https://") ) {
+                r.appendChild(createLinkCell(build.repo, build.repo, ""));
             } else {
                 r.appendChild(createLinkCell(build.repo, "https://github.com/"
                     + build.repo, ""));
