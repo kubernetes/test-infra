@@ -349,6 +349,11 @@ func handleProwJobs(ja *JobAgent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
 		jobs := ja.ProwJobs()
+		if v := r.URL.Query().Get("omit"); v == "pod_spec" {
+			for i := range jobs {
+				jobs[i].Spec.PodSpec = nil
+			}
+		}
 		jd, err := json.Marshal(struct {
 			Items []kube.ProwJob `json:"items"`
 		}{jobs})
