@@ -26,7 +26,7 @@ var logger = {
   // the actual fetch
   request: function(endpoint) {
     generateView.toggleElement(generateView.loader, true);
-    fetch(endpoint).then(
+    fetch(endpoint, {credentials: 'same-origin'}).then(
         function(response) {
 
           if (response.status !== 200) {
