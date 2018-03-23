@@ -19,6 +19,7 @@ package gerrit
 import (
 	"reflect"
 	"sort"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -53,20 +54,37 @@ func (f *fkc) CreateProwJob(pj kube.ProwJob) (kube.ProwJob, error) {
 }
 
 type fgc struct {
-	changes  []gerrit.ChangeInfo
+	changes  map[string][]gerrit.ChangeInfo
 	instance string
 }
 
 func (f *fgc) QueryChanges(opt *gerrit.QueryChangeOptions) (*[]gerrit.ChangeInfo, *gerrit.Response, error) {
 	changes := []gerrit.ChangeInfo{}
 
-	for idx, change := range f.changes {
-		if idx >= opt.Start && len(changes) <= opt.Limit {
-			changes = append(changes, change)
+	project := ""
+	for _, query := range opt.Query {
+		for _, q := range strings.Split(query, "+") {
+			if strings.HasPrefix(q, "project:") {
+				project = q[8:]
+			}
+		}
+	}
+
+	if changeInfos, ok := f.changes[project]; !ok {
+		return &changes, nil, nil
+	} else {
+		for idx, change := range changeInfos {
+			if idx >= opt.Start && len(changes) <= opt.Limit {
+				changes = append(changes, change)
+			}
 		}
 	}
 
 	return &changes, nil, nil
+}
+
+func (f *fgc) SetReview(changeID, revisionID string, input *gerrit.ReviewInput) (*gerrit.ReviewResult, *gerrit.Response, error) {
+	return nil, nil, nil
 }
 
 func TestQueryChange(t *testing.T) {
@@ -77,7 +95,7 @@ func TestQueryChange(t *testing.T) {
 		name        string
 		limit       int
 		lastUpdate  time.Time
-		changes     []gerrit.ChangeInfo
+		changes     map[string][]gerrit.ChangeInfo
 		revisions   []string
 		shouldError bool
 	}{
@@ -91,11 +109,13 @@ func TestQueryChange(t *testing.T) {
 			name:       "one outdated change",
 			limit:      2,
 			lastUpdate: now,
-			changes: []gerrit.ChangeInfo{
-				{
-					ID:              "1",
-					CurrentRevision: "1-1",
-					Updated:         now.Add(-time.Hour).Format(layout),
+			changes: map[string][]gerrit.ChangeInfo{
+				"foo": {
+					{
+						ID:              "1",
+						CurrentRevision: "1-1",
+						Updated:         now.Add(-time.Hour).Format(layout),
+					},
 				},
 			},
 			revisions: []string{},
@@ -104,29 +124,70 @@ func TestQueryChange(t *testing.T) {
 			name:       "one up-to-date change",
 			limit:      2,
 			lastUpdate: now.Add(-time.Minute),
-			changes: []gerrit.ChangeInfo{
-				{
-					ID:              "1",
-					CurrentRevision: "1-1",
-					Updated:         now.Format(layout),
+			changes: map[string][]gerrit.ChangeInfo{
+				"foo": {
+					{
+						ID:              "1",
+						CurrentRevision: "1-1",
+						Updated:         now.Format(layout),
+					},
 				},
 			},
 			revisions: []string{"1-1"},
 		},
 		{
+			name:       "one up-to-date change, wrong project",
+			limit:      2,
+			lastUpdate: now.Add(-time.Minute),
+			changes: map[string][]gerrit.ChangeInfo{
+				"evil": {
+					{
+						ID:              "1",
+						CurrentRevision: "1-1",
+						Updated:         now.Format(layout),
+					},
+				},
+			},
+			revisions: []string{},
+		},
+		{
+			name:       "two up-to-date changes, two projects",
+			limit:      2,
+			lastUpdate: now.Add(-time.Minute),
+			changes: map[string][]gerrit.ChangeInfo{
+				"foo": {
+					{
+						ID:              "1",
+						CurrentRevision: "1-1",
+						Updated:         now.Format(layout),
+					},
+				},
+				"bar": {
+					{
+						ID:              "2",
+						CurrentRevision: "2-1",
+						Updated:         now.Format(layout),
+					},
+				},
+			},
+			revisions: []string{"1-1", "2-1"},
+		},
+		{
 			name:       "one good one bad",
 			limit:      2,
 			lastUpdate: now.Add(-time.Minute),
-			changes: []gerrit.ChangeInfo{
-				{
-					ID:              "1",
-					CurrentRevision: "1-1",
-					Updated:         now.Format(layout),
-				},
-				{
-					ID:              "2",
-					CurrentRevision: "2-1",
-					Updated:         now.Add(-time.Hour).Format(layout),
+			changes: map[string][]gerrit.ChangeInfo{
+				"foo": {
+					{
+						ID:              "1",
+						CurrentRevision: "1-1",
+						Updated:         now.Format(layout),
+					},
+					{
+						ID:              "2",
+						CurrentRevision: "2-1",
+						Updated:         now.Add(-time.Hour).Format(layout),
+					},
 				},
 			},
 			revisions: []string{"1-1"},
@@ -135,31 +196,33 @@ func TestQueryChange(t *testing.T) {
 			name:       "multiple up-to-date changes",
 			limit:      2,
 			lastUpdate: now.Add(-time.Minute),
-			changes: []gerrit.ChangeInfo{
-				{
-					ID:              "1",
-					CurrentRevision: "1-1",
-					Updated:         now.Format(layout),
-				},
-				{
-					ID:              "2",
-					CurrentRevision: "2-1",
-					Updated:         now.Format(layout),
-				},
-				{
-					ID:              "3",
-					CurrentRevision: "3-2",
-					Updated:         now.Format(layout),
-				},
-				{
-					ID:              "3",
-					CurrentRevision: "3-1",
-					Updated:         now.Format(layout),
-				},
-				{
-					ID:              "4",
-					CurrentRevision: "4-1",
-					Updated:         now.Add(-time.Hour).Format(layout),
+			changes: map[string][]gerrit.ChangeInfo{
+				"foo": {
+					{
+						ID:              "1",
+						CurrentRevision: "1-1",
+						Updated:         now.Format(layout),
+					},
+					{
+						ID:              "2",
+						CurrentRevision: "2-1",
+						Updated:         now.Format(layout),
+					},
+					{
+						ID:              "3",
+						CurrentRevision: "3-2",
+						Updated:         now.Format(layout),
+					},
+					{
+						ID:              "3",
+						CurrentRevision: "3-1",
+						Updated:         now.Format(layout),
+					},
+					{
+						ID:              "4",
+						CurrentRevision: "4-1",
+						Updated:         now.Add(-time.Hour).Format(layout),
+					},
 				},
 			},
 			revisions: []string{"1-1", "2-1", "3-2"},
@@ -182,6 +245,7 @@ func TestQueryChange(t *testing.T) {
 		c := &Controller{
 			ca:         fca,
 			gc:         fgc,
+			projects:   []string{"foo", "bar"},
 			lastUpdate: tc.lastUpdate,
 		}
 
@@ -228,9 +292,7 @@ func TestProcessChange(t *testing.T) {
 				CurrentRevision: "1",
 				Project:         "woof",
 				Revisions: map[string]gerrit.RevisionInfo{
-					"1": {
-						Ref: "foo",
-					},
+					"1": {},
 				},
 			},
 		},
@@ -240,13 +302,11 @@ func TestProcessChange(t *testing.T) {
 				CurrentRevision: "1",
 				Project:         "test-infra",
 				Revisions: map[string]gerrit.RevisionInfo{
-					"1": {
-						Ref: "foo",
-					},
+					"1": {},
 				},
 			},
 			numPJ: 1,
-			pjRef: "foo",
+			pjRef: "1",
 		},
 		{
 			name: "multiple revisions",
@@ -254,16 +314,12 @@ func TestProcessChange(t *testing.T) {
 				CurrentRevision: "2",
 				Project:         "test-infra",
 				Revisions: map[string]gerrit.RevisionInfo{
-					"1": {
-						Ref: "foo",
-					},
-					"2": {
-						Ref: "bar",
-					},
+					"1": {},
+					"2": {},
 				},
 			},
 			numPJ: 1,
-			pjRef: "bar",
+			pjRef: "2",
 		},
 	}
 
@@ -281,10 +337,12 @@ func TestProcessChange(t *testing.T) {
 		}
 
 		fkc := &fkc{}
+		fgc := &fgc{}
 
 		c := &Controller{
 			ca:       fca,
 			kc:       fkc,
+			gc:       fgc,
 			instance: "gerrit",
 		}
 

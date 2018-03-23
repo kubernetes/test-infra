@@ -21,7 +21,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"os/exec"
 	"os/signal"
 	"strings"
 	"syscall"
@@ -74,17 +73,6 @@ func main() {
 		logrus.Fatal("must have one or more target gerrit project")
 	}
 
-	// authenticate to gerrit server
-	cmd := exec.Command("python", "./git-cookie-authdaemon")
-
-	// TODO(krzyzacy): trace in case authdaemon fails, remove once this is stable
-	cmd.Stderr = os.Stderr
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	if err := cmd.Run(); err != nil {
-		logrus.Fatalf("Fail to authenticate to gerrit using git-cookie-authdaemon : %v", err)
-	}
-
 	ca := &config.Agent{}
 	if err := ca.Start(o.configPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
@@ -100,9 +88,14 @@ func main() {
 		logrus.WithError(err).Fatal("Error creating gerrit client.")
 	}
 
+	if err := c.Auth(); err != nil {
+		logrus.WithError(err).Fatal("Error auth gerrit client.")
+	}
+
 	logrus.Infof("Starting gerrit fetcher")
 
 	tick := time.Tick(ca.Config().Gerrit.TickInterval)
+	auth := time.Tick(time.Minute * 10)
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 
@@ -114,6 +107,10 @@ func main() {
 				logrus.WithError(err).Error("Error syncing.")
 			}
 			logrus.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Synced")
+		case <-auth:
+			if err := c.Auth(); err != nil {
+				logrus.WithError(err).Error("Error auth to gerrit... (continue)")
+			}
 		case <-sig:
 			logrus.Info("gerrit fetcher is shutting down...")
 			return
