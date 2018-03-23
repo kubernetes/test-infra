@@ -75,6 +75,7 @@ filegroup(
         "//prow/config:all-srcs",
         "//prow/cron:all-srcs",
         "//prow/errorutil:all-srcs",
+        "//prow/external-plugins/cherrypicker:all-srcs",
         "//prow/external-plugins/needs-rebase:all-srcs",
         "//prow/genfiles:all-srcs",
         "//prow/gerrit:all-srcs",

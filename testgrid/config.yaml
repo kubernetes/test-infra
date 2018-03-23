@@ -4209,6 +4209,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gke-autoscaling-regional
   - name: gke-ubuntustable1-k8sdev-autoscaling
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-autoscaling
+  - name: gke-ubuntu2-k8sbeta-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-autoscaling
   - name: gke-ubuntustable1-k8sstable1-autoscaling
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-autoscaling
   - name: gke-ubuntustable1-k8sstable2-autoscaling

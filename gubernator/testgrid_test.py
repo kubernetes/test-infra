@@ -62,6 +62,8 @@ class TestTestgrid(unittest.TestCase):
                 {'query': ['gce-soak-1.3'], 'name': ['gce-soak-1.3']},
                 {'query': ['gke'], 'name': ['gke']},
                 {'query': ['unusedgroup'], 'name': ['unused']},
+                {'query': ['pr-logs/directory/pull-gce'], 'name': ['pull-gce']},
+                {'query': ['pr-logs/directory/pull-ti-verify'], 'name': ['pull-ti-verify']},
             ],
             'dashboards': [
                 {
@@ -98,7 +100,20 @@ class TestTestgrid(unittest.TestCase):
                        {'test_group_name': ['gce-serial'], 'name': ['gce-serial'],
                          'base_options': ['include-filter-by-regex=Storage']}
                     ]
-                }
+                },
+                {
+                    'name': ['pull'],
+                    'dashboard_tab': [
+                       {'test_group_name': ['pull-gce'], 'name': ['gce'],
+                        'base_options': ['width=10']},
+                    ]
+                },
+                {
+                    'name': ['pull-ti'],
+                    'dashboard_tab': [
+                       {'test_group_name': ['pull-ti-verify'], 'name': ['verify']},
+                    ]
+                },
             ]
         }
         def expect(path, out):
@@ -110,6 +125,8 @@ class TestTestgrid(unittest.TestCase):
         expect('unusedgroup', '')
         expect('notarealpath', '')
         expect('gke', 'gke#gke')
+        expect('pr-logs/pull/123/pull-gce/', 'pull#gce')
+        expect('pr-logs/pull/ti/123/pull-ti-verify/', 'pull-ti#verify')
 
 
 class TestTestgridGCS(main_test.TestBase):

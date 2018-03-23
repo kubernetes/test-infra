@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import logging
+import re
 
 import cloudstorage as gcs
 
@@ -63,7 +64,12 @@ def get_config():
     """
     global _testgrid_config  # pylint: disable=global-statement
     if not _testgrid_config:
-        data = gcs.open('/k8s-testgrid/config').read()
+        try:
+            data = gcs.open('/k8s-testgrid/config').read()
+        except gcs.NotFoundError:
+            # Fallback to local files for development-- the k8s-testgrid bucket
+            # has restrictive ACLs that dev_appserver.py can't read.
+            data = open('tg-config').read()
         _testgrid_config = pb_glance.parse_protobuf(data, CONFIG_PROTO_SCHEMA)
     return _testgrid_config
 
@@ -75,14 +81,17 @@ def path_to_group_name(path):
     Returns:
         test_group_name: the group name in the config, or None if not found
     """
-    path = path.strip('/')  # the config doesn't have leading/trailing slashes
     try:
         config = get_config()
     except gcs.errors.Error:
         logging.exception('unable to load testgrid config')
         return None
+    path = path.strip('/')  # the config doesn't have leading/trailing slashes
+    if '/pull/' in path:  # translate PR to all-pr result form
+        path = re.sub(r'/pull/([^/]+/)?\d+/', '/directory/', path)
     for test_group in config.get('test_groups', []):
         if path in test_group['query']:
+            print test_group['query']
             return test_group['name'][0]
 
 
@@ -106,16 +115,19 @@ def path_to_query(path):
     for dashboard in get_config().get('dashboards', []):
         dashboard_name = dashboard['name'][0]
         tabs = dashboard['dashboard_tab']
-        for tab in tabs:
-            if 'base_options' in tab:
-                continue
-            if group in tab['test_group_name']:
-                query = '%s#%s' % (dashboard_name, tab['name'][0])
-                options[dashboard_name] = (-len(tabs), query)
+        for (skip_base_options, penalty) in ((True, 0), (False, 1000)):
+            for tab in tabs:
+                if 'base_options' in tab and skip_base_options:
+                    continue
+                if group in tab['test_group_name']:
+                    query = '%s#%s' % (dashboard_name, tab['name'][0])
+                    options[dashboard_name] = (-len(tabs) + penalty, query)
+            if dashboard_name in options:
+                break
     if 'k8s' in options:
         return options['k8s'][1]
     elif len(options) > 1:
-        logging.warning('ambiguous testgrid options: %s', options)
+        logging.info('ambiguous testgrid options: %s', options)
     elif len(options) == 0:
         return ''
     return sorted(options.values())[0][1]

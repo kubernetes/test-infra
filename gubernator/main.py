@@ -52,7 +52,10 @@ class Warmup(webapp2.RequestHandler):
     """Warms up gubernator."""
     def get(self):
         """Receives the warmup request."""
-        self.app.config['github_client'] = secrets.get('github_client')
+        try:
+            self.app.config['github_client'] = secrets.get('github_client')
+        except KeyError:
+            pass  # dev server, generally
 
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.write('Warmup successful')

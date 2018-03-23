@@ -53,8 +53,10 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
+        "//testgrid/cluster:all-srcs",
         "//testgrid/cmd/config:all-srcs",
         "//testgrid/cmd/updater:all-srcs",
+        "//testgrid/images:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],

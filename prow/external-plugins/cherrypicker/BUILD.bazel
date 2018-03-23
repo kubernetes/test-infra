@@ -7,7 +7,7 @@ go_library(
         "main.go",
         "server.go",
     ],
-    importpath = "k8s.io/test-infra/experiment/cherrypicker",
+    importpath = "k8s.io/test-infra/prow/external-plugins/cherrypicker",
     visibility = ["//visibility:private"],
     deps = [
         "//prow/git:go_default_library",

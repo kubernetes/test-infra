@@ -219,7 +219,8 @@ func newKops(provider, gcpProject, cluster string) (*kops, error) {
 	}
 	// Set KUBERNETES_CONFORMANCE_PROVIDER to override the
 	// cloudprovider for KUBERNETES_CONFORMANCE_TEST.
-	if err := os.Setenv("KUBERNETES_CONFORMANCE_PROVIDER", "aws"); err != nil {
+	// This value is set by the provider flag that is passed into kubetest.
+	if err := os.Setenv("KUBERNETES_CONFORMANCE_PROVIDER", provider); err != nil {
 		return nil, err
 	}
 	// AWS_SSH_KEY is required by the AWS e2e tests.

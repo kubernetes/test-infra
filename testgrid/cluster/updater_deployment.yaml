@@ -1,0 +1,32 @@
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: testgrid-updater
+  labels:
+    component: updater
+    app: testgrid
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: updater
+        app: testgrid
+    spec:
+      containers:
+      - name: updater
+        image: gcr.io/fejta-prod/testgrid/updater:latest
+        imagePullPolicy: Always
+        args:
+        - --config=gs://fejternetes/config
+        - --gcp-service-account=/etc/gcp/service-account.json
+        #- --confirm
+        volumeMounts:
+        - name: gcp-account
+          mountPath: /etc/gcp
+          readOnly: true
+      volumes:
+      - name: gcp-account
+        secret:
+          secretName: testgrid-updater-service-account
