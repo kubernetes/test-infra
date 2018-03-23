@@ -12,7 +12,6 @@ deck:
   tide_update_period: 1s
   hidden_repos:
   - kubernetes-security
-  - GoogleCloudPlatform/k8s-tpu-operator
 
 prowjob_namespace: default
 pod_namespace: test-pods
@@ -113,14 +112,6 @@ tide:
     - do-not-merge/hold
     - do-not-merge/work-in-progress
     - needs-ok-to-test
-  - repos:
-    - GoogleCloudPlatform/k8s-tpu-operator
-    labels:
-    - lgtm
-    - approved
-    missingLabels:
-    - do-not-merge/hold
-    - do-not-merge/work-in-progress
   merge_method:
     kubeflow: squash
     kubernetes/charts: squash
@@ -6153,84 +6144,6 @@ presubmits:
         - "--repo=github.com/tensorflow/minigo=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-
-  GoogleCloudPlatform/k8s-tpu-operator:
-  - name: pull-k8s-tpu-operator-unit
-    context: pull-k8s-tpu-operator-unit
-    agent: kubernetes
-    cluster: k8s-tpu-operator
-    always_run: true
-    rerun_command: /test pull-k8s-tpu-operator-unit
-    trigger: (?m)^/test( all| pull-k8s-tpu-operator-unit),?(\s+|$)
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
-        args:
-        - --clean
-        - --job=$(JOB_NAME)
-        - --repo=github.com/GoogleCloudPlatform/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://k8s-tpu-operator-prow/pr-logs
-        - --timeout=60
-        - --ssh=/etc/tpu-ssh/tpu-ssh
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: true
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/tpu-ssh
-          name: tpu-ssh
-        - mountPath: /docker-graph
-          name: docker-graph
-      volumes:
-      - name: tpu-ssh
-        secret:
-          defaultMode: 0400
-          secretName: tpu-ssh
-      - name: docker-graph
-        emptyDir: {}
-  - name: pull-k8s-tpu-operator-verify
-    context: pull-k8s-tpu-operator-verify
-    agent: kubernetes
-    cluster: k8s-tpu-operator
-    always_run: true
-    rerun_command: /test pull-k8s-tpu-operator-verify
-    trigger: (?m)^/test( all| pull-k8s-tpu-operator-verify),?(\s+|$)
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
-        args:
-        - --clean
-        - --job=$(JOB_NAME)
-        - --repo=github.com/GoogleCloudPlatform/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://k8s-tpu-operator-prow/pr-logs
-        - --timeout=60
-        - --ssh=/etc/tpu-ssh/tpu-ssh
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: true
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/tpu-ssh
-          name: tpu-ssh
-        - mountPath: /docker-graph
-          name: docker-graph
-      volumes:
-      - name: tpu-ssh
-        secret:
-          defaultMode: 0400
-          secretName: tpu-ssh
-      - name: docker-graph
-        emptyDir: {}
 
 postsubmits:
   kubeflow/examples:
