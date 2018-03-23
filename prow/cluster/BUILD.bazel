@@ -24,6 +24,7 @@ release(
     component("tls-ing", "ingress"),
     component("tot", "service", "deployment"),
     component("needs-rebase", "deployment"),
+    component("cherrypicker", "deployment"),
 )
 
 component("starter", MULTI_KIND)

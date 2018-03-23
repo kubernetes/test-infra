@@ -26,6 +26,7 @@ docker_bundle(
         "tot",
     ) + prow_docker_tags(**{
         prow_prefix("needs-rebase"): "//prow/external-plugins/needs-rebase:image",
+        prow_prefix("cherrypicker"): "//prow/external-plugins/cherrypicker:image",
     }),
     stamp = True,
 )
