@@ -1100,7 +1100,7 @@ testSuites:
   autoscaling:
     args:
     - --timeout=420m
-    - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
+    - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]|\[Feature:ClusterSizeAutoscalingScaleWithNAP\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
   default:
     args:
     - --timeout=50m
