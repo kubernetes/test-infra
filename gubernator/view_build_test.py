@@ -278,6 +278,9 @@ class BuildTest(main_test.TestBase):
         check(
             'kubernetes-jenkins/pr-logs/pull/google_cadvisor/296',
             ('296', 'google/cadvisor/', 'google/cadvisor'))
+        check(
+            'kj/pr-logs/pull/kubernetes-sigs_testing_frameworks/49',
+            ('49', 'kubernetes-sigs/testing_frameworks/', 'kubernetes-sigs/testing_frameworks'))
 
     def test_github_commit_links(self):
         def check(build_dir, result):
