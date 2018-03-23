@@ -61,11 +61,6 @@ branch-protection:
       protect-by-default: true
       require-contexts:
       - cla/linuxfoundation
-      repos:
-        testing_frameworks:
-          require-contexts:
-          - cla/linuxfoundation
-          - continuous-integration/travis-ci
 
 tide:
   queries:
@@ -5520,9 +5515,9 @@ presubmits:
     agent: kubernetes
     branches:
     - master
-    always_run: false # for initial testing of new job
-    skip_report: true # for initial testing of new job
-    trigger: "/test pull-frameworks-test"
+    always_run: true
+    skip_report: false
+    trigger: "/test (all|pull-frameworks-test)"
     rerun_command: "/test pull-frameworks-test"
     labels:
       preset-service-account: true
