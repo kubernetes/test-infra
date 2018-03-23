@@ -12,7 +12,6 @@ triggers:
   - tensorflow/k8s
   - tensorflow/minigo
   - GoogleCloudPlatform/k8s-multicluster-ingress
-  - GoogleCloudPlatform/k8s-tpu-operator
   trusted_org: kubernetes
   join_org_url: "https://git.k8s.io/community/community-membership.md#member"
 - repos:
@@ -54,7 +53,6 @@ approve:
   - kubernetes/sig-release
   - kubernetes/steering
   - kubernetes/test-infra
-  - GoogleCloudPlatform/k8s-tpu-operator
   implicit_self_approve: true
 - repos:
   - kubernetes-sigs
@@ -359,18 +357,6 @@ plugins:
 
   GoogleCloudPlatform/k8s-multicluster-ingress:
   - trigger
-
-  GoogleCloudPlatform/k8s-tpu-operator:
-  - approve
-  - assign
-  - blunderbuss
-  - hold
-  - label
-  - lgtm
-  - lifecycle
-  - size
-  - trigger
-  - wip
 
 external_plugins:
   kubernetes/community:

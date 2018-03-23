@@ -486,6 +486,8 @@ function redraw(fz) {
 
             if (build.type === "periodic") {
                 r.appendChild(createTextCell(""));
+            } else if (build.repo.startsWith("http://") || build.repo.startsWith("https://") ) {
+                r.appendChild(createLinkCell(build.repo, build.repo, ""));
             } else {
                 r.appendChild(createLinkCell(build.repo, "https://github.com/"
                     + build.repo, ""));
@@ -690,20 +692,13 @@ function drawJobBar(total, jobCountMap) {
 
 function stateToAdj(state) {
     switch (state) {
-        case "triggered":
-            return "triggered";
-        case "pending":
-            return "pending";
         case "success":
-            return "succeded";
+            return "succeeded";
         case "failure":
             return "failed";
-        case "aborted":
-            return "aborted";
-        case "error":
-            return "error";
+        default:
+            return state;
     }
-    return "unknown";
 }
 
 /**

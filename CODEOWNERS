@@ -9,11 +9,13 @@ jenkins/** @bentheelder @krzyzacy
 jobs/** @bentheelder @krzyzacy
 kettle/** @rmmh
 kubetest/** @krzyzacy
+label_sync/labels.yaml @cblecker
 logexporter/** @shyamjvs
 mungegithub/** @cjwagner
 planter/** @bentheelder
 prow/** @cjwagner @stevekuznetsov
 prow/config.yaml @bentheelder @krzyzacy
+prow/plugins.yaml @cblecker
 scenarios/** @bentheelder @krzyzacy
 testgrid/** @krzyzacy @michelle192837
 triage/** @rmmh
