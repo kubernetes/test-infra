@@ -44,6 +44,7 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/api/iterator"
+	"google.golang.org/api/option"
 
 	"vbom.ml/util/sortorder"
 )
@@ -51,8 +52,8 @@ import (
 // options configures the updater
 type options struct {
 	config           gcsPath // gs://path/to/config/proto
-	creds            string  // TODO(fejta): implement
-	confirm          bool    // TODO(fejta): implement
+	creds            string
+	confirm          bool
 	group            string
 	groupConcurrency int
 	buildConcurrency int
@@ -1062,13 +1063,16 @@ func main() {
 	if err := opt.validate(); err != nil {
 		log.Fatalf("Invalid flags: %v", err)
 	}
-	if opt.creds != "" {
-		log.Fatalf("Service accounts are not yet supported")
+	if !opt.confirm {
+		log.Println("--confirm=false (DRY-RUN): will not write to gcs")
 	}
-	// opt.confirm
 
 	ctx := context.Background()
-	client, err := storage.NewClient(ctx)
+	var options []option.ClientOption
+	if opt.creds != "" {
+		options = append(options, option.WithCredentialsFile(opt.creds))
+	}
+	client, err := storage.NewClient(ctx, options...)
 	if err != nil {
 		log.Fatalf("Failed to create storage client: %v", err)
 	}
