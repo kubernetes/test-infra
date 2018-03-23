@@ -1,0 +1,51 @@
+# Copyright 2018 The Kubernetes Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+load("//:image.bzl", "tags")
+load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
+load("@io_bazel_rules_docker//docker:docker.bzl", "docker_bundle")
+load("@io_bazel_rules_docker//go:image.bzl", "go_image")
+
+package(default_visibility = ["//testgrid:__subpackages__"])
+
+# TODO(fejta): move registry to a variable
+docker_bundle(
+    name = "images",
+    images = tags(**{"gcr.io/fejta-prod/testgrid/updater": ":updater"}),
+    stamp = True,
+)
+
+docker_push(
+    name = "push",
+    bundle = ":images",
+)
+
+go_image(
+    name = "updater",
+    binary = "//testgrid/cmd/updater",
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
