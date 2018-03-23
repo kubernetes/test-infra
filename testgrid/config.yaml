@@ -2160,6 +2160,12 @@ test_groups:
   num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
+- name: pull-kubernetes-dind-e2e
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-dind-e2e
+  days_of_results: 1
+  num_columns_recent: 20
+  alert_stale_results_hours: 2400
+  num_failures_to_alert: 1000
 - name: pull-kubernetes-verify
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-verify
   days_of_results: 1
@@ -5096,6 +5102,9 @@ dashboards:
 
 - name: sig-testing-misc
   dashboard_tab:
+  - name: dind
+    description: Runs e2e tests against a dind cluster.
+    test_group_name: pull-kubernetes-dind-e2e
   - name: bazel
     description: Runs bazel test //... on the test-infra repo.
     test_group_name: ci-test-infra-bazel
