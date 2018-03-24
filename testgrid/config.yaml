@@ -704,238 +704,435 @@ test_groups:
 - name: ci-tectonic-e2e-etcd-serial
   gcs_prefix: upstream-jenkins-logs/logs/ci-tectonic-e2e-etcd-serial
 # Ubuntu node e2e tests (contact: @kubernetes/ubuntu-image on github)
-- name: ci-kubernetes-e2enode-ubuntudev-k8sdev-gkespec
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntudev-k8sdev-gkespec
-- name: ci-kubernetes-e2enode-ubuntudev-k8sdev-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntudev-k8sdev-serial
-- name: ci-kubernetes-e2enode-ubuntudev-k8sstable1-gkespec
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntudev-k8sstable1-gkespec
-- name: ci-kubernetes-e2enode-ubuntudev-k8sstable1-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntudev-k8sstable1-serial
-- name: ci-kubernetes-e2enode-ubuntudev-k8sstable2-gkespec
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntudev-k8sstable2-gkespec
-- name: ci-kubernetes-e2enode-ubuntudev-k8sstable2-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntudev-k8sstable2-serial
-- name: ci-kubernetes-e2enode-ubuntudev2-k8sdev-gkespec
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntudev2-k8sdev-gkespec
-- name: ci-kubernetes-e2enode-ubuntudev2-k8sdev-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntudev2-k8sdev-serial
-- name: ci-kubernetes-e2enode-ubuntudev2-k8sbeta-gkespec
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntudev2-k8sbeta-gkespec
-- name: ci-kubernetes-e2enode-ubuntudev2-k8sbeta-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntudev2-k8sbeta-serial
-- name: ci-kubernetes-e2enode-ubuntustable1-k8sdev-gkespec
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntustable1-k8sdev-gkespec
-- name: ci-kubernetes-e2enode-ubuntustable1-k8sdev-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntustable1-k8sdev-serial
-- name: ci-kubernetes-e2enode-ubuntustable1-k8sstable1-gkespec
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntustable1-k8sstable1-gkespec
-- name: ci-kubernetes-e2enode-ubuntustable1-k8sstable1-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntustable1-k8sstable1-serial
-- name: ci-kubernetes-e2enode-ubuntustable1-k8sstable2-gkespec
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntustable1-k8sstable2-gkespec
-- name: ci-kubernetes-e2enode-ubuntustable1-k8sstable2-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntustable1-k8sstable2-serial
+- name: ci-kubernetes-e2enode-ubuntu1-k8sbeta-gkespec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu1-k8sbeta-gkespec
+- name: ci-kubernetes-e2enode-ubuntu1-k8sbeta-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu1-k8sbeta-serial
+- name: ci-kubernetes-e2enode-ubuntu1-k8sstable1-gkespec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu1-k8sstable1-gkespec
+- name: ci-kubernetes-e2enode-ubuntu1-k8sstable1-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu1-k8sstable1-serial
+- name: ci-kubernetes-e2enode-ubuntu1-k8sstable2-gkespec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu1-k8sstable2-gkespec
+- name: ci-kubernetes-e2enode-ubuntu1-k8sstable2-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu1-k8sstable2-serial
+- name: ci-kubernetes-e2enode-ubuntu1-k8sstable3-gkespec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu1-k8sstable3-gkespec
+- name: ci-kubernetes-e2enode-ubuntu1-k8sstable3-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu1-k8sstable3-serial
+- name: ci-kubernetes-e2enode-ubuntu2-k8sbeta-gkespec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu2-k8sbeta-gkespec
+- name: ci-kubernetes-e2enode-ubuntu2-k8sbeta-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu2-k8sbeta-serial
+- name: ci-kubernetes-e2enode-ubuntu2-k8sstable1-gkespec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu2-k8sstable1-gkespec
+- name: ci-kubernetes-e2enode-ubuntu2-k8sstable1-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu2-k8sstable1-serial
+- name: ci-kubernetes-e2enode-ubuntu2-k8sstable2-gkespec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu2-k8sstable2-gkespec
+- name: ci-kubernetes-e2enode-ubuntu2-k8sstable2-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu2-k8sstable2-serial
+- name: ci-kubernetes-e2enode-ubuntu2-k8sstable3-gkespec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu2-k8sstable3-gkespec
+- name: ci-kubernetes-e2enode-ubuntu2-k8sstable3-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu2-k8sstable3-serial
 # Ubuntu cluster e2e tests on GCE (contact: @kubernetes/ubuntu-image on github)
-- name: ci-kubernetes-e2e-gce-ubuntu1-k8sdev-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu1-k8sdev-default
+# ci-kubernetes-e2e-gce-ubuntu1-k8sbeta-*
+- name: ci-kubernetes-e2e-gce-ubuntu1-k8sbeta-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu1-k8sbeta-default
   column_header:
   - configuration_value: node_os_image
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default
+- name: ci-kubernetes-e2e-gce-ubuntu1-k8sbeta-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu1-k8sbeta-serial
   column_header:
   - configuration_value: node_os_image
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sdev-serial
+- name: ci-kubernetes-e2e-gce-ubuntu1-k8sbeta-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu1-k8sbeta-slow
   column_header:
   - configuration_value: node_os_image
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sdev-slow
+# ci-kubernetes-e2e-gce-ubuntu1-k8sstable1-*
+- name: ci-kubernetes-e2e-gce-ubuntu1-k8sstable1-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu1-k8sstable1-default
   column_header:
   - configuration_value: node_os_image
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-default
+- name: ci-kubernetes-e2e-gce-ubuntu1-k8sstable1-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu1-k8sstable1-serial
   column_header:
   - configuration_value: node_os_image
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-serial
+- name: ci-kubernetes-e2e-gce-ubuntu1-k8sstable1-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu1-k8sstable1-slow
   column_header:
   - configuration_value: node_os_image
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-slow
+# ci-kubernetes-e2e-gce-ubuntu1-k8sstable2-*
+- name: ci-kubernetes-e2e-gce-ubuntu1-k8sstable2-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu1-k8sstable2-default
   column_header:
   - configuration_value: node_os_image
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-default
+- name: ci-kubernetes-e2e-gce-ubuntu1-k8sstable2-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu1-k8sstable2-serial
   column_header:
   - configuration_value: node_os_image
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-serial
+- name: ci-kubernetes-e2e-gce-ubuntu1-k8sstable2-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu1-k8sstable2-slow
   column_header:
   - configuration_value: node_os_image
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-slow
+# ci-kubernetes-e2e-gce-ubuntu1-k8sstable3-*
+- name: ci-kubernetes-e2e-gce-ubuntu1-k8sstable3-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu1-k8sstable3-default
   column_header:
   - configuration_value: node_os_image
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable2-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sstable2-default
+- name: ci-kubernetes-e2e-gce-ubuntu1-k8sstable3-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu1-k8sstable3-serial
   column_header:
   - configuration_value: node_os_image
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable2-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sstable2-serial
+- name: ci-kubernetes-e2e-gce-ubuntu1-k8sstable3-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu1-k8sstable3-slow
   column_header:
   - configuration_value: node_os_image
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable2-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sstable2-slow
+# ci-kubernetes-e2e-gce-ubuntu2-k8sbeta-*
+- name: ci-kubernetes-e2e-gce-ubuntu2-k8sbeta-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu2-k8sbeta-default
   column_header:
   - configuration_value: node_os_image
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-default
+- name: ci-kubernetes-e2e-gce-ubuntu2-k8sbeta-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu2-k8sbeta-serial
   column_header:
   - configuration_value: node_os_image
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-serial
+- name: ci-kubernetes-e2e-gce-ubuntu2-k8sbeta-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu2-k8sbeta-slow
   column_header:
   - configuration_value: node_os_image
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-slow
+# ci-kubernetes-e2e-gce-ubuntu2-k8sstable1-*
+- name: ci-kubernetes-e2e-gce-ubuntu2-k8sstable1-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu2-k8sstable1-default
   column_header:
   - configuration_value: node_os_image
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-ubuntudev2-k8sbeta-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev2-k8sbeta-default
+- name: ci-kubernetes-e2e-gce-ubuntu2-k8sstable1-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu2-k8sstable1-serial
   column_header:
   - configuration_value: node_os_image
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-ubuntudev2-k8sbeta-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev2-k8sbeta-serial
+- name: ci-kubernetes-e2e-gce-ubuntu2-k8sstable1-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu2-k8sstable1-slow
   column_header:
   - configuration_value: node_os_image
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-ubuntudev2-k8sbeta-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev2-k8sbeta-slow
+# ci-kubernetes-e2e-gce-ubuntu2-k8sstable2-*
+- name: ci-kubernetes-e2e-gce-ubuntu2-k8sstable2-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu2-k8sstable2-default
   column_header:
   - configuration_value: node_os_image
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-default
+- name: ci-kubernetes-e2e-gce-ubuntu2-k8sstable2-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu2-k8sstable2-serial
   column_header:
   - configuration_value: node_os_image
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-serial
+- name: ci-kubernetes-e2e-gce-ubuntu2-k8sstable2-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu2-k8sstable2-slow
   column_header:
   - configuration_value: node_os_image
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-slow
+# ci-kubernetes-e2e-gce-ubuntu2-k8sstable3-*
+- name: ci-kubernetes-e2e-gce-ubuntu2-k8sstable3-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu2-k8sstable3-default
   column_header:
   - configuration_value: node_os_image
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-default
+- name: ci-kubernetes-e2e-gce-ubuntu2-k8sstable3-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu2-k8sstable3-serial
   column_header:
   - configuration_value: node_os_image
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-serial
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-slow
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-default
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-serial
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-slow
+- name: ci-kubernetes-e2e-gce-ubuntu2-k8sstable3-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu2-k8sstable3-slow
   column_header:
   - configuration_value: node_os_image
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
 # Ubuntu cluster e2e tests on GKE (contact: @kubernetes/ubuntu-image on github)
-- name: ci-kubernetes-e2e-gke-ubuntu1-k8sdev-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sdev-default
+# ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-*
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-alphafeatures
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-alphafeatures
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-autoscaling
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-autoscaling
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-flaky
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-ingress
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-ingress
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-reboot
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-reboot
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-updown
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-updown
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+
+# ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-*
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-alphafeatures
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-alphafeatures
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-autoscaling
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-autoscaling
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-flaky
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-ingress
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-ingress
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-reboot
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-reboot
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-updown
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-updown
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+
+# ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-*
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-alphafeatures
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-alphafeatures
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-autoscaling
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-autoscaling
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-flaky
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-ingress
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-ingress
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-reboot
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-reboot
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-updown
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-updown
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+
+# ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-*
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-alphafeatures
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-alphafeatures
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-autoscaling
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-autoscaling
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-flaky
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-ingress
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-ingress
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-reboot
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-reboot
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-updown
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-updown
   column_header:
   - configuration_value: node_os_image
   - configuration_value: Commit
@@ -1165,222 +1362,6 @@ test_groups:
   - configuration_value: Commit
   - configuration_value: infra-commit
 
-- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-alphafeatures
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-alphafeatures
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-autoscaling
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-autoscaling
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-default
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-flaky
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-flaky
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-ingress
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-ingress
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-reboot
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-reboot
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-serial
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-slow
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-updown
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-updown
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-alphafeatures
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-alphafeatures
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-autoscaling
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-autoscaling
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-default
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-flaky
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-flaky
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-ingress
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-ingress
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-reboot
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-reboot
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-serial
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-slow
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-updown
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-updown
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-alphafeatures
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-alphafeatures
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-autoscaling
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-autoscaling
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-default
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-flaky
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-flaky
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-ingress
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-ingress
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-reboot
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-reboot
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-serial
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-slow
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-updown
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-updown
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-alphafeatures
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-alphafeatures
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-autoscaling
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-autoscaling
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-default
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-flaky
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-flaky
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-ingress
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-ingress
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-reboot
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-reboot
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-serial
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-slow
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-updown
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-updown
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
 # Canonical Distribution of Kubernetes (contact: @chuckbutler on github)
 - name: canonical-kubernetes-e2e-gce
   gcs_prefix: canonical-kubernetes-tests/logs/kubernetes-gce-e2e-node
@@ -2546,15 +2527,142 @@ test_groups:
 #
 
 dashboards:
-- name: canonical-ubuntu1-k8sdev
+- name: canonical-ubuntu1-k8sbeta
   dashboard_tab:
-  - name: e2e-gce-ubuntu1-k8sdev-default
-    test_group_name: ci-kubernetes-e2e-gce-ubuntu1-k8sdev-default
-  - name: e2e-gke-ubuntu1-k8sdev-default
-    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sdev-default
+  - name: e2enode-ubuntu1-k8sbeta-gkespec
+    test_group_name: ci-kubernetes-e2enode-ubuntu1-k8sbeta-gkespec
+  - name: e2enode-ubuntu1-k8sbeta-serial
+    test_group_name: ci-kubernetes-e2enode-ubuntu1-k8sbeta-serial
+  - name: gce-ubuntu1-k8sbeta-default
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu1-k8sbeta-default
+  - name: gce-ubuntu1-k8sbeta-serial
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu1-k8sbeta-serial
+  - name: gce-ubuntu1-k8sbeta-slow
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu1-k8sbeta-slow
+  - name: gke-ubuntu1-k8sbeta-alphafeatures
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-alphafeatures
+  - name: gke-ubuntu1-k8sbeta-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-autoscaling
+  - name: gke-ubuntu1-k8sbeta-default
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-default
+  - name: gke-ubuntu1-k8sbeta-flaky
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-flaky
+  - name: gke-ubuntu1-k8sbeta-ingress
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-ingress
+  - name: gke-ubuntu1-k8sbeta-reboot
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-reboot
+  - name: gke-ubuntu1-k8sbeta-serial
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-serial
+  - name: gke-ubuntu1-k8sbeta-slow
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-slow
+  - name: gke-ubuntu1-k8sbeta-updown
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-updown
+
+- name: canonical-ubuntu1-k8sstable1
+  dashboard_tab:
+  - name: e2enode-ubuntu1-k8sstable1-gkespec
+    test_group_name: ci-kubernetes-e2enode-ubuntu1-k8sstable1-gkespec
+  - name: e2enode-ubuntu1-k8sstable1-serial
+    test_group_name: ci-kubernetes-e2enode-ubuntu1-k8sstable1-serial
+  - name: gce-ubuntu1-k8sstable1-default
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu1-k8sstable1-default
+  - name: gce-ubuntu1-k8sstable1-serial
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu1-k8sstable1-serial
+  - name: gce-ubuntu1-k8sstable1-slow
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu1-k8sstable1-slow
+  - name: gke-ubuntu1-k8sstable1-alphafeatures
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-alphafeatures
+  - name: gke-ubuntu1-k8sstable1-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-autoscaling
+  - name: gke-ubuntu1-k8sstable1-default
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-default
+  - name: gke-ubuntu1-k8sstable1-flaky
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-flaky
+  - name: gke-ubuntu1-k8sstable1-ingress
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-ingress
+  - name: gke-ubuntu1-k8sstable1-reboot
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-reboot
+  - name: gke-ubuntu1-k8sstable1-serial
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-serial
+  - name: gke-ubuntu1-k8sstable1-slow
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-slow
+  - name: gke-ubuntu1-k8sstable1-updown
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-updown
+
+- name: canonical-ubuntu1-k8sstable2
+  dashboard_tab:
+  - name: e2enode-ubuntu1-k8sstable2-gkespec
+    test_group_name: ci-kubernetes-e2enode-ubuntu1-k8sstable2-gkespec
+  - name: e2enode-ubuntu1-k8sstable2-serial
+    test_group_name: ci-kubernetes-e2enode-ubuntu1-k8sstable2-serial
+  - name: gce-ubuntu1-k8sstable2-default
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu1-k8sstable2-default
+  - name: gce-ubuntu1-k8sstable2-serial
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu1-k8sstable2-serial
+  - name: gce-ubuntu1-k8sstable2-slow
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu1-k8sstable2-slow
+  - name: gke-ubuntu1-k8sstable2-alphafeatures
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-alphafeatures
+  - name: gke-ubuntu1-k8sstable2-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-autoscaling
+  - name: gke-ubuntu1-k8sstable2-default
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-default
+  - name: gke-ubuntu1-k8sstable2-flaky
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-flaky
+  - name: gke-ubuntu1-k8sstable2-ingress
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-ingress
+  - name: gke-ubuntu1-k8sstable2-reboot
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-reboot
+  - name: gke-ubuntu1-k8sstable2-serial
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-serial
+  - name: gke-ubuntu1-k8sstable2-slow
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-slow
+  - name: gke-ubuntu1-k8sstable2-updown
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-updown
+
+- name: canonical-ubuntu1-k8sstable3
+  dashboard_tab:
+  - name: e2enode-ubuntu1-k8sstable3-gkespec
+    test_group_name: ci-kubernetes-e2enode-ubuntu1-k8sstable3-gkespec
+  - name: e2enode-ubuntu1-k8sstable3-serial
+    test_group_name: ci-kubernetes-e2enode-ubuntu1-k8sstable3-serial
+  - name: gce-ubuntu1-k8sstable3-default
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu1-k8sstable3-default
+  - name: gce-ubuntu1-k8sstable3-serial
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu1-k8sstable3-serial
+  - name: gce-ubuntu1-k8sstable3-slow
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu1-k8sstable3-slow
+  - name: gke-ubuntu1-k8sstable3-alphafeatures
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-alphafeatures
+  - name: gke-ubuntu1-k8sstable3-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-autoscaling
+  - name: gke-ubuntu1-k8sstable3-default
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-default
+  - name: gke-ubuntu1-k8sstable3-flaky
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-flaky
+  - name: gke-ubuntu1-k8sstable3-ingress
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-ingress
+  - name: gke-ubuntu1-k8sstable3-reboot
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-reboot
+  - name: gke-ubuntu1-k8sstable3-serial
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-serial
+  - name: gke-ubuntu1-k8sstable3-slow
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-slow
+  - name: gke-ubuntu1-k8sstable3-updown
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-updown
 
 - name: canonical-ubuntu2-k8sbeta
   dashboard_tab:
+  - name: e2enode-ubuntu2-k8sbeta-gkespec
+    test_group_name: ci-kubernetes-e2enode-ubuntu2-k8sbeta-gkespec
+  - name: e2enode-ubuntu2-k8sbeta-serial
+    test_group_name: ci-kubernetes-e2enode-ubuntu2-k8sbeta-serial
+  - name: gce-ubuntu2-k8sbeta-default
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu2-k8sbeta-default
+  - name: gce-ubuntu2-k8sbeta-serial
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu2-k8sbeta-serial
+  - name: gce-ubuntu2-k8sbeta-slow
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu2-k8sbeta-slow
   - name: gke-ubuntu2-k8sbeta-alphafeatures
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-alphafeatures
   - name: gke-ubuntu2-k8sbeta-autoscaling
@@ -2576,6 +2684,16 @@ dashboards:
 
 - name: canonical-ubuntu2-k8sstable1
   dashboard_tab:
+  - name: e2enode-ubuntu2-k8sstable1-gkespec
+    test_group_name: ci-kubernetes-e2enode-ubuntu2-k8sstable1-gkespec
+  - name: e2enode-ubuntu2-k8sstable1-serial
+    test_group_name: ci-kubernetes-e2enode-ubuntu2-k8sstable1-serial
+  - name: gce-ubuntu2-k8sstable1-default
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu2-k8sstable1-default
+  - name: gce-ubuntu2-k8sstable1-serial
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu2-k8sstable1-serial
+  - name: gce-ubuntu2-k8sstable1-slow
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu2-k8sstable1-slow
   - name: gke-ubuntu2-k8sstable1-alphafeatures
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-alphafeatures
   - name: gke-ubuntu2-k8sstable1-autoscaling
@@ -2597,6 +2715,16 @@ dashboards:
 
 - name: canonical-ubuntu2-k8sstable2
   dashboard_tab:
+  - name: e2enode-ubuntu2-k8sstable2-gkespec
+    test_group_name: ci-kubernetes-e2enode-ubuntu2-k8sstable2-gkespec
+  - name: e2enode-ubuntu2-k8sstable2-serial
+    test_group_name: ci-kubernetes-e2enode-ubuntu2-k8sstable2-serial
+  - name: gce-ubuntu2-k8sstable2-default
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu2-k8sstable2-default
+  - name: gce-ubuntu2-k8sstable2-serial
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu2-k8sstable2-serial
+  - name: gce-ubuntu2-k8sstable2-slow
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu2-k8sstable2-slow
   - name: gke-ubuntu2-k8sstable2-alphafeatures
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-alphafeatures
   - name: gke-ubuntu2-k8sstable2-autoscaling
@@ -2618,6 +2746,16 @@ dashboards:
 
 - name: canonical-ubuntu2-k8sstable3
   dashboard_tab:
+  - name: e2enode-ubuntu2-k8sstable3-gkespec
+    test_group_name: ci-kubernetes-e2enode-ubuntu2-k8sstable3-gkespec
+  - name: e2enode-ubuntu2-k8sstable3-serial
+    test_group_name: ci-kubernetes-e2enode-ubuntu2-k8sstable3-serial
+  - name: gce-ubuntu2-k8sstable3-default
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu2-k8sstable3-default
+  - name: gce-ubuntu2-k8sstable3-serial
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu2-k8sstable3-serial
+  - name: gce-ubuntu2-k8sstable3-slow
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu2-k8sstable3-slow
   - name: gke-ubuntu2-k8sstable3-alphafeatures
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-alphafeatures
   - name: gke-ubuntu2-k8sstable3-autoscaling
@@ -2636,119 +2774,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-slow
   - name: gke-ubuntu2-k8sstable3-updown
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-updown
-
-- name: canonical-ubuntudev-k8sdev
-  dashboard_tab:
-  - name: e2enode-ubuntudev-k8sdev-default(gkespec)
-    test_group_name: ci-kubernetes-e2enode-ubuntudev-k8sdev-gkespec
-  - name: e2enode-ubuntudev-k8sdev-serial
-    test_group_name: ci-kubernetes-e2enode-ubuntudev-k8sdev-serial
-  - name: e2e-gce-ubuntudev-k8sdev-default
-    test_group_name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default
-  - name: e2e-gce-ubuntudev-k8sdev-serial
-    test_group_name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-serial
-  - name: e2e-gce-ubuntudev-k8sdev-slow
-    test_group_name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-slow
-
-- name: canonical-ubuntudev-k8sbeta
-  dashboard_tab:
-  - name: e2e-gce-ubuntudev-k8sbeta-default
-    test_group_name: ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-default
-  - name: e2e-gce-ubuntudev-k8sbeta-serial
-    test_group_name: ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-serial
-  - name: e2e-gce-ubuntudev-k8sbeta-slow
-    test_group_name: ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-slow
-
-- name: canonical-ubuntudev-k8sstable1
-  dashboard_tab:
-  - name: e2enode-ubuntudev-k8sstable1-default(gkespec)
-    test_group_name: ci-kubernetes-e2enode-ubuntudev-k8sstable1-gkespec
-  - name: e2enode-ubuntudev-k8sstable1-serial
-    test_group_name: ci-kubernetes-e2enode-ubuntudev-k8sstable1-serial
-  - name: e2e-gce-ubuntudev-k8sstable1-default
-    test_group_name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-default
-  - name: e2e-gce-ubuntudev-k8sstable1-serial
-    test_group_name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-serial
-  - name: e2e-gce-ubuntudev-k8sstable1-slow
-    test_group_name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-slow
-
-- name: canonical-ubuntudev-k8sstable2
-  dashboard_tab:
-  - name: e2enode-ubuntudev-k8sstable2-default(gkespec)
-    test_group_name: ci-kubernetes-e2enode-ubuntudev-k8sstable2-gkespec
-  - name: e2enode-ubuntudev-k8sstable2-serial
-    test_group_name: ci-kubernetes-e2enode-ubuntudev-k8sstable2-serial
-  - name: e2e-gce-ubuntudev-k8sstable2-default
-    test_group_name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable2-default
-  - name: e2e-gce-ubuntudev-k8sstable2-serial
-    test_group_name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable2-serial
-  - name: e2e-gce-ubuntudev-k8sstable2-slow
-    test_group_name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable2-slow
-
-- name: canonical-ubuntudev2-k8sdev
-  dashboard_tab:
-  - name: e2enode-ubuntudev2-k8sdev-default(gkespec)
-    test_group_name: ci-kubernetes-e2enode-ubuntudev2-k8sdev-gkespec
-  - name: e2enode-ubuntudev2-k8sdev-serial
-    test_group_name: ci-kubernetes-e2enode-ubuntudev2-k8sdev-serial
-  - name: e2e-gce-ubuntudev2-k8sdev-default
-    test_group_name: ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-default
-  - name: e2e-gce-ubuntudev2-k8sdev-serial
-    test_group_name: ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-serial
-  - name: e2e-gce-ubuntudev2-k8sdev-slow
-    test_group_name: ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-slow
-
-- name: canonical-ubuntudev2-k8sbeta
-  dashboard_tab:
-  - name: e2enode-ubuntudev2-k8sbeta-default(gkespec)
-    test_group_name: ci-kubernetes-e2enode-ubuntudev2-k8sbeta-gkespec
-  - name: e2enode-ubuntudev2-k8sbeta-serial
-    test_group_name: ci-kubernetes-e2enode-ubuntudev2-k8sbeta-serial
-  - name: e2e-gce-ubuntudev2-k8sbeta-default
-    test_group_name: ci-kubernetes-e2e-gce-ubuntudev2-k8sbeta-default
-  - name: e2e-gce-ubuntudev2-k8sbeta-serial
-    test_group_name: ci-kubernetes-e2e-gce-ubuntudev2-k8sbeta-serial
-  - name: e2e-gce-ubuntudev2-k8sbeta-slow
-    test_group_name: ci-kubernetes-e2e-gce-ubuntudev2-k8sbeta-slow
-
-- name: canonical-ubuntustable1-k8sdev
-  dashboard_tab:
-  - name: e2enode-ubuntustable1-k8sdev-default(gkespec)
-    test_group_name: ci-kubernetes-e2enode-ubuntustable1-k8sdev-gkespec
-  - name: e2enode-ubuntustable1-k8sdev-serial
-    test_group_name: ci-kubernetes-e2enode-ubuntustable1-k8sdev-serial
-  - name: e2e-gce-ubuntustable1-k8sdev-default
-    test_group_name: ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-default
-  - name: e2e-gce-ubuntustable1-k8sdev-serial
-    test_group_name: ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-serial
-  - name: e2e-gce-ubuntustable1-k8sdev-slow
-    test_group_name: ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-slow
-
-- name: canonical-ubuntustable1-k8sstable1
-  dashboard_tab:
-  - name: e2enode-ubuntustable1-k8sstable1-default(gkespec)
-    test_group_name: ci-kubernetes-e2enode-ubuntustable1-k8sstable1-gkespec
-  - name: e2enode-ubuntustable1-k8sstable1-serial
-    test_group_name: ci-kubernetes-e2enode-ubuntustable1-k8sstable1-serial
-  - name: e2e-gce-ubuntustable1-k8sstable1-default
-    test_group_name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-default
-  - name: e2e-gce-ubuntustable1-k8sstable1-serial
-    test_group_name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-serial
-  - name: e2e-gce-ubuntustable1-k8sstable1-slow
-    test_group_name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-slow
-
-- name: canonical-ubuntustable1-k8sstable2
-  dashboard_tab:
-  - name: e2enode-ubuntustable1-k8sstable2-default(gkespec)
-    test_group_name: ci-kubernetes-e2enode-ubuntustable1-k8sstable2-gkespec
-  - name: e2enode-ubuntustable1-k8sstable2-serial
-    test_group_name: ci-kubernetes-e2enode-ubuntustable1-k8sstable2-serial
-  - name: e2e-gce-ubuntustable1-k8sstable2-default
-    test_group_name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-default
-  - name: e2e-gce-ubuntustable1-k8sstable2-serial
-    test_group_name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-serial
-  - name: e2e-gce-ubuntustable1-k8sstable2-slow
-    test_group_name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-slow
 
 - name: canonical-cdk
   dashboard_tab:
@@ -3004,79 +3029,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-serial
   - name: gci-gke-slow-1.8
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-slow
-    # Ubuntu cluster/node e2e tests on GKE (contact: @kubernetes/ubuntu-image on github)
-  - name: gke-ubuntustable1-k8sdev-alphafeatures
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-alphafeatures
-  - name: gke-ubuntustable1-k8sdev-autoscaling
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-autoscaling
-  - name: gke-ubuntustable1-k8sdev-default
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-default
-  - name: gke-ubuntustable1-k8sdev-flaky
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-flaky
-  - name: gke-ubuntustable1-k8sdev-ingress
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-ingress
-  - name: gke-ubuntustable1-k8sdev-reboot
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-reboot
-  - name: gke-ubuntustable1-k8sdev-serial
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-serial
-  - name: gke-ubuntustable1-k8sdev-slow
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-slow
-  - name: gke-ubuntustable1-k8sdev-updown
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-updown
-  - name: gke-ubuntustable2-k8sbeta-alphafeatures
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-alphafeatures
-  - name: gke-ubuntustable2-k8sbeta-autoscaling
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-autoscaling
-  - name: gke-ubuntustable2-k8sbeta-default
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-default
-  - name: gke-ubuntustable2-k8sbeta-flaky
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-flaky
-  - name: gke-ubuntustable2-k8sbeta-ingress
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-ingress
-  - name: gke-ubuntustable2-k8sbeta-reboot
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-reboot
-  - name: gke-ubuntustable2-k8sbeta-serial
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-serial
-  - name: gke-ubuntustable2-k8sbeta-slow
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-slow
-  - name: gke-ubuntustable2-k8sbeta-updown
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-updown
-  - name: gke-ubuntustable1-k8sstable1-alphafeatures
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-alphafeatures
-  - name: gke-ubuntustable1-k8sstable1-autoscaling
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-autoscaling
-  - name: gke-ubuntustable1-k8sstable1-default
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-default
-  - name: gke-ubuntustable1-k8sstable1-flaky
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-flaky
-  - name: gke-ubuntustable1-k8sstable1-ingress
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-ingress
-  - name: gke-ubuntustable1-k8sstable1-reboot
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-reboot
-  - name: gke-ubuntustable1-k8sstable1-serial
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-serial
-  - name: gke-ubuntustable1-k8sstable1-slow
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-slow
-  - name: gke-ubuntustable1-k8sstable1-updown
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-updown
-  - name: gke-ubuntustable1-k8sstable2-alphafeatures
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-alphafeatures
-  - name: gke-ubuntustable1-k8sstable2-autoscaling
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-autoscaling
-  - name: gke-ubuntustable1-k8sstable2-default
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-default
-  - name: gke-ubuntustable1-k8sstable2-flaky
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-flaky
-  - name: gke-ubuntustable1-k8sstable2-ingress
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-ingress
-  - name: gke-ubuntustable1-k8sstable2-reboot
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-reboot
-  - name: gke-ubuntustable1-k8sstable2-serial
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-serial
-  - name: gke-ubuntustable1-k8sstable2-slow
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-slow
-  - name: gke-ubuntustable1-k8sstable2-updown
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-updown
 
 - name: google-gke-stackdriver
   dashboard_tab:
@@ -4213,14 +4165,22 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gke-autoscaling
   - name: gci-gke-autoscaling-regional
     test_group_name: ci-kubernetes-e2e-gci-gke-autoscaling-regional
-  - name: gke-ubuntustable1-k8sdev-autoscaling
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-autoscaling
+  - name: gke-ubuntu1-k8sbeta-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-autoscaling
+  - name: gke-ubuntu1-k8sstable1-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-autoscaling
+  - name: gke-ubuntu1-k8sstable2-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-autoscaling
+  - name: gke-ubuntu1-k8sstable3-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-autoscaling
   - name: gke-ubuntu2-k8sbeta-autoscaling
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-autoscaling
-  - name: gke-ubuntustable1-k8sstable1-autoscaling
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-autoscaling
-  - name: gke-ubuntustable1-k8sstable2-autoscaling
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-autoscaling
+  - name: gke-ubuntu2-k8sstable1-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-autoscaling
+  - name: gke-ubuntu2-k8sstable2-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-autoscaling
+  - name: gke-ubuntu2-k8sstable3-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-autoscaling
 
 - name: sig-autoscaling-hpa
   dashboard_tab:
@@ -4636,16 +4596,36 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: gke-ubuntustable1-k8sdev-ingress
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-ingress
+  - name: gke-ubuntu1-k8sbeta-ingress
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-ingress
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: gke-ubuntustable1-k8sstable1-ingress
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-ingress
+  - name: gke-ubuntu1-k8sstable1-ingress
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-ingress
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: gke-ubuntustable1-k8sstable2-ingress
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-ingress
+  - name: gke-ubuntu1-k8sstable2-ingress
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-ingress
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: gke-ubuntu1-k8sstable3-ingress
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-ingress
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: gke-ubuntu2-k8sbeta-ingress
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-ingress
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: gke-ubuntu2-k8sstable1-ingress
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-ingress
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: gke-ubuntu2-k8sstable2-ingress
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-ingress
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: gke-ubuntu2-k8sstable3-ingress
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-ingress
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gke
@@ -5468,171 +5448,6 @@ dashboards:
     - configuration_value: Commit
     - configuration_value: infra-commit
 
-- name: sig-gcp-ubuntu
-  dashboard_tab:
-  - name: gke-ubuntustable1-k8sdev-alphafeatures
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-alphafeatures
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gke-ubuntustable1-k8sdev-autoscaling
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-autoscaling
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gke-ubuntustable1-k8sdev-default
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-default
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gke-ubuntustable1-k8sdev-flaky
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-flaky
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gke-ubuntustable1-k8sdev-ingress
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-ingress
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gke-ubuntustable1-k8sdev-reboot
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-reboot
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gke-ubuntustable1-k8sdev-serial
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-serial
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gke-ubuntustable1-k8sdev-slow
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-slow
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gke-ubuntustable1-k8sdev-updown
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-updown
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gke-ubuntustable1-k8sstable1-alphafeatures
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-alphafeatures
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gke-ubuntustable1-k8sstable1-autoscaling
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-autoscaling
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gke-ubuntustable1-k8sstable1-default
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-default
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gke-ubuntustable1-k8sstable1-flaky
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-flaky
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gke-ubuntustable1-k8sstable1-ingress
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-ingress
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gke-ubuntustable1-k8sstable1-reboot
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-reboot
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gke-ubuntustable1-k8sstable1-serial
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-serial
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gke-ubuntustable1-k8sstable1-slow
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-slow
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gke-ubuntustable1-k8sstable1-updown
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-updown
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gke-ubuntustable1-k8sstable2-alphafeatures
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-alphafeatures
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gke-ubuntustable1-k8sstable2-autoscaling
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-autoscaling
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gke-ubuntustable1-k8sstable2-default
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-default
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gke-ubuntustable1-k8sstable2-flaky
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-flaky
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gke-ubuntustable1-k8sstable2-ingress
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-ingress
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gke-ubuntustable1-k8sstable2-reboot
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-reboot
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gke-ubuntustable1-k8sstable2-serial
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-serial
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gke-ubuntustable1-k8sstable2-slow
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-slow
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gke-ubuntustable1-k8sstable2-updown
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-updown
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-
 - name: presubmits-kubernetes-blocking
   dashboard_tab:
   - name: pull-kubernetes-bazel-build
@@ -5872,20 +5687,14 @@ dashboards:
 dashboard_groups:
 - name: canonical
   dashboard_names:
-  - canonical-ubuntu1-k8sdev
+  - canonical-ubuntu1-k8sbeta
+  - canonical-ubuntu1-k8sstable1
+  - canonical-ubuntu1-k8sstable2
+  - canonical-ubuntu1-k8sstable3
   - canonical-ubuntu2-k8sbeta
   - canonical-ubuntu2-k8sstable1
   - canonical-ubuntu2-k8sstable2
   - canonical-ubuntu2-k8sstable3
-  - canonical-ubuntudev-k8sdev
-  - canonical-ubuntudev-k8sbeta
-  - canonical-ubuntudev-k8sstable1
-  - canonical-ubuntudev-k8sstable2
-  - canonical-ubuntudev2-k8sdev
-  - canonical-ubuntudev2-k8sbeta
-  - canonical-ubuntustable1-k8sdev
-  - canonical-ubuntustable1-k8sstable1
-  - canonical-ubuntustable1-k8sstable2
   - canonical-cdk
 
 - name: google
@@ -5984,7 +5793,6 @@ dashboard_groups:
   - sig-gcp-release-1.9
   - sig-gcp-release-1.8
   - sig-gcp-release-1.7
-  - sig-gcp-ubuntu
 
 - name: sig-autoscaling
   dashboard_names:

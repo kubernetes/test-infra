@@ -8,10 +8,9 @@
 # the test definition and Prow configuration from the test name by pulling the
 # configs of each dimension in the test name and assembling them together.
 #
-# E.g., for test "ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-serial", its
+# E.g., for test "ci-kubernetes-e2e-gce-ubuntu1-k8sdev-serial", its
 # configuration will be generated from the configs of cloud provider "gce", the
-# image "ubuntustable1", the Kubernetes version "k8sdev" and the test suite
-# "serial".
+# image "ubuntu1", the Kubernetes version "k8sdev" and the test suite "serial".
 
 # To generate the test definitions and Prow configurations from this file:
 #
@@ -231,190 +230,398 @@ jobs:
 
   # Ubuntu image validation.
   #
-  # +---------------+----------+----------+------------+------------+------------+
-  # |               |   k8sdev |  k8sbeta | k8sstable1 | k8sstable2 | k8sstable3 |
-  # +---------------+----------+----------+------------+------------+------------+
-  # | ubuntudev     | every 2h | every 2h |   every 2h |      never |      never |
-  # +---------------+----------+----------+------------+------------+------------+
-  # | ubuntubeta    |      n/a |      n/a |        n/a |        n/a |        n/a |
-  # +---------------+----------+----------+------------+------------+------------+
-  # | ubuntustable1 | every 2h |      n/a |   every 2h |   every 6h |      never |
-  # +---------------+----------+----------+------------+------------+------------+
-  # | ubuntustable2 |      n/a |      n/a |        n/a |        n/a |        n/a |
-  # +---------------+----------+----------+------------+------------+------------+
-  ci-kubernetes-e2e-gce-ubuntu1-k8sdev-default:
+  # +---------+--------+----------+------------+------------+------------+
+  # |         | k8sdev |  k8sbeta | k8sstable1 | k8sstable2 | k8sstable3 |
+  # +---------+--------+----------+------------+------------+------------+
+  # | ubuntu1 |    n/a | every 2h |   every 4h |   every 4h |   every 6h |
+  # +---------+--------+----------+------------+------------+------------+
+  # | ubuntu2 |    n/a | every 2h |   every 4h |   every 4h |   every 6h |
+  # +---------+--------+----------+------------+------------+------------+
+  #
+  # Each cell contains 2 node e2e tests, 3 GCE e2e tests, and 9 GKE e2e tests.
+
+  # Node e2e tests
+
+  # ci-kubernetes-e2enode-ubuntu1-k8sbeta-*
+  ci-kubernetes-e2enode-ubuntu1-k8sbeta-gkespec:
+    interval: 2h
+    args:
+    - --gcp-project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntu1-k8sbeta-serial:
+    interval: 2h
+    args:
+    - --gcp-project=ubuntu-image-validation
+    - --node-test-args=--feature-gates=DynamicKubeletConfig=true
+    sigOwners: ['sig-node']
+
+  # ci-kubernetes-e2enode-ubuntu1-k8sstable1-*
+  ci-kubernetes-e2enode-ubuntu1-k8sstable1-gkespec:
+    interval: 2h
+    args:
+    - --gcp-project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntu1-k8sstable1-serial:
+    interval: 2h
+    args:
+    - --gcp-project=ubuntu-image-validation
+    - --node-test-args=--feature-gates=DynamicKubeletConfig=true
+    sigOwners: ['sig-node']
+
+  # ci-kubernetes-e2enode-ubuntu1-k8sstable2-*
+  ci-kubernetes-e2enode-ubuntu1-k8sstable2-gkespec:
+    interval: 2h
+    args:
+    - --gcp-project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntu1-k8sstable2-serial:
+    interval: 2h
+    args:
+    - --gcp-project=ubuntu-image-validation
+    - --node-test-args=--feature-gates=DynamicKubeletConfig=true
+    sigOwners: ['sig-node']
+
+  # ci-kubernetes-e2enode-ubuntu1-k8sstable3-*
+  ci-kubernetes-e2enode-ubuntu1-k8sstable3-gkespec:
+    interval: 2h
+    args:
+    - --gcp-project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntu1-k8sstable3-serial:
+    interval: 2h
+    args:
+    - --gcp-project=ubuntu-image-validation
+    - --node-test-args=--feature-gates=DynamicKubeletConfig=true
+    sigOwners: ['sig-node']
+
+  # ci-kubernetes-e2enode-ubuntu2-k8sbeta-*
+  ci-kubernetes-e2enode-ubuntu2-k8sbeta-gkespec:
+    interval: 2h
+    args:
+    - --gcp-project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntu2-k8sbeta-serial:
+    interval: 2h
+    args:
+    - --gcp-project=ubuntu-image-validation
+    - --node-test-args=--feature-gates=DynamicKubeletConfig=true
+    sigOwners: ['sig-node']
+
+  # ci-kubernetes-e2enode-ubuntu2-k8sstable1-*
+  ci-kubernetes-e2enode-ubuntu2-k8sstable1-gkespec:
+    interval: 2h
+    args:
+    - --gcp-project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntu2-k8sstable1-serial:
+    interval: 2h
+    args:
+    - --gcp-project=ubuntu-image-validation
+    - --node-test-args=--feature-gates=DynamicKubeletConfig=true
+    sigOwners: ['sig-node']
+
+  # ci-kubernetes-e2enode-ubuntu2-k8sstable2-*
+  ci-kubernetes-e2enode-ubuntu2-k8sstable2-gkespec:
+    interval: 2h
+    args:
+    - --gcp-project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntu2-k8sstable2-serial:
+    interval: 2h
+    args:
+    - --gcp-project=ubuntu-image-validation
+    - --node-test-args=--feature-gates=DynamicKubeletConfig=true
+    sigOwners: ['sig-node']
+
+  # ci-kubernetes-e2enode-ubuntu2-k8sstable3-*
+  ci-kubernetes-e2enode-ubuntu2-k8sstable3-gkespec:
+    interval: 2h
+    args:
+    - --gcp-project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntu2-k8sstable3-serial:
+    interval: 2h
+    args:
+    - --gcp-project=ubuntu-image-validation
+    - --node-test-args=--feature-gates=DynamicKubeletConfig=true
+    sigOwners: ['sig-node']
+
+  # GCE e2e tests
+
+  # ci-kubernetes-e2e-gce-ubuntu1-k8sbeta-*
+  ci-kubernetes-e2e-gce-ubuntu1-k8sbeta-default:
     interval: 2h
     args:
     - --check-leaked-resources=false # disabled since it uses shared project.
     - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
     sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default:
+  ci-kubernetes-e2e-gce-ubuntu1-k8sbeta-slow:
     interval: 2h
     args:
     - --check-leaked-resources=false # disabled since it uses shared project.
     - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
     sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gce-ubuntudev-k8sdev-slow:
-    interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gce-ubuntudev-k8sdev-serial:
-    interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-default:
-    interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-slow:
-    interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-serial:
-    interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-default:
-    interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-slow:
-    interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-serial:
-    interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gce-ubuntudev-k8sstable2-default:
-    interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gce-ubuntudev-k8sstable2-slow:
-    interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gce-ubuntudev-k8sstable2-serial:
+  ci-kubernetes-e2e-gce-ubuntu1-k8sbeta-serial:
     interval: 2h
     args:
     - --check-leaked-resources=false # disabled since it uses shared project.
     - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
     sigOwners: ['sig-node']
 
-  ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-default:
-    interval: 2h
+  # ci-kubernetes-e2e-gce-ubuntu1-k8sstable1-*
+  ci-kubernetes-e2e-gce-ubuntu1-k8sstable1-default:
+    interval: 4h
     args:
     - --check-leaked-resources=false # disabled since it uses shared project.
     - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
     sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-slow:
-    interval: 2h
+  ci-kubernetes-e2e-gce-ubuntu1-k8sstable1-slow:
+    interval: 4h
     args:
     - --check-leaked-resources=false # disabled since it uses shared project.
     - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
     sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-serial:
-    interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gce-ubuntudev2-k8sbeta-default:
-    interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gce-ubuntudev2-k8sbeta-slow:
-    interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gce-ubuntudev2-k8sbeta-serial:
-    interval: 2h
+  ci-kubernetes-e2e-gce-ubuntu1-k8sstable1-serial:
+    interval: 4h
     args:
     - --check-leaked-resources=false # disabled since it uses shared project.
     - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
     sigOwners: ['sig-node']
 
-  ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-default:
-    interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=ubuntu-os-gke-cloud-tests  # Canonical owned project.
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-slow:
-    interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=ubuntu-os-gke-cloud-tests  # Canonical owned project.
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-serial:
-    interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=ubuntu-os-gke-cloud-tests  # Canonical owned project.
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-default:
-    interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=ubuntu-os-gke-cloud-tests  # Canonical owned project.
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-slow:
-    interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=ubuntu-os-gke-cloud-tests  # Canonical owned project.
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-serial:
-    interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=ubuntu-os-gke-cloud-tests  # Canonical owned project.
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-default:
+  # ci-kubernetes-e2e-gce-ubuntu1-k8sstable2-*
+  ci-kubernetes-e2e-gce-ubuntu1-k8sstable2-default:
     interval: 6h
     args:
     - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=ubuntu-os-gke-cloud-tests  # Canonical owned project.
+    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
     sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-slow:
+  ci-kubernetes-e2e-gce-ubuntu1-k8sstable2-slow:
     interval: 6h
     args:
     - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=ubuntu-os-gke-cloud-tests  # Canonical owned project.
+    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
     sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-serial:
+  ci-kubernetes-e2e-gce-ubuntu1-k8sstable2-serial:
     interval: 6h
     args:
     - --check-leaked-resources=false # disabled since it uses shared project.
     - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
     sigOwners: ['sig-node']
 
-  ci-kubernetes-e2e-gke-ubuntu1-k8sdev-default:
+  # ci-kubernetes-e2e-gce-ubuntu1-k8sstable3-*
+  ci-kubernetes-e2e-gce-ubuntu1-k8sstable3-default:
+    interval: 6h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntu1-k8sstable3-slow:
+    interval: 6h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntu1-k8sstable3-serial:
+    interval: 6h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
+    sigOwners: ['sig-node']
+
+  # ci-kubernetes-e2e-gce-ubuntu2-k8sbeta-*
+  ci-kubernetes-e2e-gce-ubuntu2-k8sbeta-default:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntu2-k8sbeta-slow:
+    interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntu2-k8sbeta-serial:
+    interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
+    sigOwners: ['sig-node']
+
+  # ci-kubernetes-e2e-gce-ubuntu2-k8sstable1-*
+  ci-kubernetes-e2e-gce-ubuntu2-k8sstable1-default:
+    interval: 4h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntu2-k8sstable1-slow:
+    interval: 4h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntu2-k8sstable1-serial:
+    interval: 4h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
+    sigOwners: ['sig-node']
+
+  # ci-kubernetes-e2e-gce-ubuntu2-k8sstable2-*
+  ci-kubernetes-e2e-gce-ubuntu2-k8sstable2-default:
+    interval: 6h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntu2-k8sstable2-slow:
+    interval: 6h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntu2-k8sstable2-serial:
+    interval: 6h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
+    sigOwners: ['sig-node']
+
+  # ci-kubernetes-e2e-gce-ubuntu2-k8sstable3-*
+  ci-kubernetes-e2e-gce-ubuntu2-k8sstable3-default:
+    interval: 6h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntu2-k8sstable3-slow:
+    interval: 6h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntu2-k8sstable3-serial:
+    interval: 6h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
+    sigOwners: ['sig-node']
+
+  # ci-kubernetes-gke-ubuntu1-k8sbeta-*
+  ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-alphafeatures:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-autoscaling:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-default:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-flaky:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-ingress:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-reboot:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-serial:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-slow:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-updown:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+
+  # ci-kubernetes-gke-ubuntu1-k8sstable1-*
+  ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-alphafeatures:
+    interval: 4h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-autoscaling:
+    interval: 4h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-default:
+    interval: 4h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-flaky:
+    interval: 4h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-ingress:
+    interval: 4h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-reboot:
+    interval: 4h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-serial:
+    interval: 4h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-slow:
+    interval: 4h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-updown:
+    interval: 4h
+    sigOwners: ['sig-gcp']
+
+  # ci-kubernetes-gke-ubuntu1-k8sstable2-*
+  ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-alphafeatures:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-autoscaling:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-default:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-flaky:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-ingress:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-reboot:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-serial:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-slow:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-updown:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+
+  # ci-kubernetes-gke-ubuntu1-k8sstable3-*
+  ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-alphafeatures:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-autoscaling:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-default:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-flaky:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-ingress:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-reboot:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-serial:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-slow:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-updown:
+    interval: 6h
     sigOwners: ['sig-gcp']
 
   # ci-kubernetes-gke-ubuntu2-k8sbeta-*
@@ -533,115 +740,6 @@ jobs:
     interval: 6h
     sigOwners: ['sig-gcp']
 
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-alphafeatures:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-autoscaling:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-default:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-flaky:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-ingress:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-reboot:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-serial:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-slow:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-updown:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-alphafeatures:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-autoscaling:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-default:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-flaky:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-ingress:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-reboot:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-serial:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-slow:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-updown:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-alphafeatures:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-autoscaling:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-default:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-flaky:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-ingress:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-reboot:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-serial:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-slow:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-updown:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-alphafeatures:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-autoscaling:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-default:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-flaky:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-ingress:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-reboot:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-serial:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-slow:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-updown:
-    interval: 2h
-    sigOwners: ['sig-gcp']
-
   # Others
   ci-kubernetes-e2e-gce-cosbeta-k8sdev-nosnat:
     interval: 24h
@@ -754,91 +852,6 @@ jobs:
     - --gcp-project=k8s-test-592642f0ef
     sigOwners: ['sig-node']
 
-  ci-kubernetes-e2enode-ubuntudev-k8sdev-gkespec:
-    interval: 2h
-    args:
-    - --gcp-project=ubuntu-image-validation
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2enode-ubuntudev-k8sdev-serial:
-    interval: 2h
-    args:
-    - --gcp-project=ubuntu-image-validation
-    - --node-test-args=--feature-gates=DynamicKubeletConfig=true
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2enode-ubuntudev-k8sstable1-gkespec:
-    interval: 2h
-    args:
-    - --gcp-project=ubuntu-image-validation
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2enode-ubuntudev-k8sstable1-serial:
-    interval: 2h
-    args:
-    - --gcp-project=ubuntu-image-validation
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2enode-ubuntudev-k8sstable2-gkespec:
-    interval: 2h
-    args:
-    - --gcp-project=ubuntu-image-validation
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2enode-ubuntudev-k8sstable2-serial:
-    interval: 2h
-    args:
-    - --gcp-project=ubuntu-image-validation
-    sigOwners: ['sig-node']
-
-  ci-kubernetes-e2enode-ubuntudev2-k8sdev-gkespec:
-    interval: 2h
-    args:
-    - --gcp-project=ubuntu-image-validation
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2enode-ubuntudev2-k8sdev-serial:
-    interval: 2h
-    args:
-    - --gcp-project=ubuntu-image-validation
-    - --node-test-args=--feature-gates=DynamicKubeletConfig=true
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2enode-ubuntudev2-k8sbeta-gkespec:
-    interval: 2h
-    args:
-    - --gcp-project=ubuntu-image-validation
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2enode-ubuntudev2-k8sbeta-serial:
-    interval: 2h
-    args:
-    - --gcp-project=ubuntu-image-validation
-    sigOwners: ['sig-node']
-
-  ci-kubernetes-e2enode-ubuntustable1-k8sdev-gkespec:
-    interval: 2h
-    args:
-    - --gcp-project=ubuntu-image-validation
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2enode-ubuntustable1-k8sdev-serial:
-    interval: 2h
-    args:
-    - --gcp-project=ubuntu-image-validation
-    - --node-test-args=--feature-gates=DynamicKubeletConfig=true
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2enode-ubuntustable1-k8sstable1-gkespec:
-    interval: 2h
-    args:
-    - --gcp-project=ubuntu-image-validation
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2enode-ubuntustable1-k8sstable1-serial:
-    interval: 2h
-    args:
-    - --gcp-project=ubuntu-image-validation
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2enode-ubuntustable1-k8sstable2-gkespec:
-    interval: 2h
-    args:
-    - --gcp-project=ubuntu-image-validation
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2enode-ubuntustable1-k8sstable2-serial:
-    interval: 2h
-    args:
-    - --gcp-project=ubuntu-image-validation
-    sigOwners: ['sig-node']
 
   # release branch jobs - cos only (cvm is deprecated at 1.8)
   # beta release (inactive)
@@ -1051,26 +1064,6 @@ images:
     - --image-family=ubuntu-gke-1604-lts-2
     - --image-project=ubuntu-os-gke-cloud-devel
     - --gcp-node-image=custom
-  ubuntudev:
-    args:
-    - --image-family=ubuntu-gke-1604-lts-1
-    - --image-project=ubuntu-os-gke-cloud-devel
-    - --gcp-node-image=ubuntu
-  ubuntudev2:
-    args:
-    - --image-family=ubuntu-gke-1604-lts-2
-    - --image-project=ubuntu-os-gke-cloud-devel
-    - --gcp-node-image=ubuntu
-  ubuntustable1:
-    args:
-    - --image-family=ubuntu-gke-1604-lts
-    - --image-project=ubuntu-os-gke-cloud
-    - --gcp-node-image=ubuntu
-  ubuntustable2:
-    args:
-    - --image-family=ubuntu-gke-1604-lts-2
-    - --image-project=ubuntu-os-gke-cloud
-    - --gcp-node-image=ubuntu
   cos:
     args:
     - --gcp-node-image=gci
@@ -1172,18 +1165,14 @@ nodeImages:
     - --node-args=--images=cos-stable-64-10176-62-0
     - --node-args=--image-project=cos-cloud
     - --node-args=--instance-metadata=user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled
-  ubuntudev:
+  ubuntu1:
     args:
-    - --node-args=--images=ubuntu-gke-1604-xenial-v20180122
+    - --node-args=--images=ubuntu-gke-1604-xenial-v20180308
     - --node-args=--image-project=ubuntu-os-gke-cloud-devel
-  ubuntudev2:
+  ubuntu2:
     args:
-    - --node-args=--images=ubuntu-gke-1604-xenial-v20180122-1
+    - --node-args=--images=ubuntu-gke-1604-xenial-v20180317-1
     - --node-args=--image-project=ubuntu-os-gke-cloud-devel
-  ubuntustable1:
-    args:
-    - --node-args=--images=ubuntu-gke-1604-xenial-v20170816-1
-    - --node-args=--image-project=ubuntu-os-gke-cloud
 
 nodeK8sVersions:
   dev:
