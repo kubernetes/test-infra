@@ -202,10 +202,8 @@ func main() {
 	promMetrics := hook.NewMetrics()
 
 	// Push metrics to the configured prometheus pushgateway endpoint.
-	pushGateway := configAgent.Config().PushGateway
-	if pushGateway.Endpoint != "" {
-		go metrics.PushMetrics("hook", pushGateway.Endpoint, pushGateway.Interval)
-	}
+	pusher := metrics.NewPusher(configAgent)
+	go pusher.Start("hook")
 
 	server := &hook.Server{
 		HMACSecret:  webhookSecret,

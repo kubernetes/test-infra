@@ -26,19 +26,50 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/push"
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/config"
 )
 
-// PushMetrics is meant to run in a goroutine and continuously push
+// NewPusher creates a Pusher which dynamically reads its config from the
+// ConfigAgent
+func NewPusher(ca configGetter) Pusher {
+	return Pusher{
+		configAgent: ca,
+	}
+}
+
+// Pusher is a struct that knows how to push metrics to prometheus
+type Pusher struct {
+	configAgent configGetter
+
+	// gatherer and waiter are only on this struct to be faked out in the tests
+	gatherer gathererFunc
+	waiter   func(time.Duration) <-chan time.Time
+}
+
+// Start is meant to run in a goroutine and continuously push
 // metrics to the provided endpoint.
-func PushMetrics(component, endpoint string, interval time.Duration) {
+func (pm Pusher) Start(component string) {
+	if pm.gatherer == nil {
+		pm.gatherer = push.FromGatherer
+	}
+	if pm.waiter == nil {
+		pm.waiter = time.After
+	}
+
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 
 	for {
+		interval := pm.configAgent.Config().PushGateway.Interval
+		waiter := pm.waiter(interval)
+
 		select {
-		case <-time.Tick(interval):
-			if err := push.FromGatherer(component, push.HostnameGroupingKey(), endpoint, prometheus.DefaultGatherer); err != nil {
-				logrus.WithField("component", component).WithError(err).Error("Failed to push metrics.")
+		case <-waiter:
+			endpoint := pm.configAgent.Config().PushGateway.Endpoint
+			if endpoint != "" {
+				if err := pm.gatherer(component, push.HostnameGroupingKey(), endpoint, prometheus.DefaultGatherer); err != nil {
+					logrus.WithField("component", component).WithError(err).Error("Failed to push metrics.")
+				}
 			}
 		case <-sig:
 			logrus.WithField("component", component).Infof("Metrics pusher shutting down...")
@@ -46,3 +77,8 @@ func PushMetrics(component, endpoint string, interval time.Duration) {
 		}
 	}
 }
+
+type configGetter interface {
+	Config() *config.Config
+}
+type gathererFunc func(job string, grouping map[string]string, url string, g prometheus.Gatherer) error

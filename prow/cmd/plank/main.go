@@ -163,10 +163,9 @@ func main() {
 	}
 
 	// Push metrics to the configured prometheus pushgateway endpoint.
-	pushGateway := configAgent.Config().PushGateway
-	if pushGateway.Endpoint != "" {
-		go metrics.PushMetrics("plank", pushGateway.Endpoint, pushGateway.Interval)
-	}
+	pusher := metrics.NewPusher(configAgent)
+	go pusher.Start("plank")
+
 	// serve prometheus metrics.
 	go serve()
 	// gather metrics for the jobs handled by plank.
