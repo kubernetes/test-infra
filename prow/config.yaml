@@ -75,6 +75,7 @@ tide:
     - kubernetes/kube-state-metrics
     - kubernetes/kube-deploy
     - kubernetes/minikube
+    - kubernetes/node-problem-detector
     - kubernetes/repo-infra
     - kubernetes/sig-release
     - kubernetes/steering
