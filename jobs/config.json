@@ -9720,6 +9720,24 @@
       "sig-aws"
     ]
   },
+  "ci-kubernetes-e2e-kops-aws-ha-uswest2": {
+    "args": [
+      "--cluster=e2e-kops-aws-ha-uswest2.k8s.local",
+      "--deployment=kops",
+      "--extract=ci/latest",
+      "--ginkgo-parallel=30",
+      "--kops-args=--master-count=3",
+      "--kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt",
+      "--kops-zones=us-west-2a,us-west-2b,us-west-2c",
+      "--provider=aws",
+      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
+      "--timeout=120m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-aws"
+    ]
+  },
   "ci-kubernetes-e2e-kops-aws-imagecentos7": {
     "args": [
       "--cluster=e2e-kops-aws-imagecentos7.test-cncf-aws.k8s.io",
