@@ -1675,7 +1675,7 @@ presubmits:
         args:
         - "--clean"
         - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/kubernetes=master"
+        - "--repo=k8s.io/kubernetes=$(PULL_REFS)"
         - "--repo=k8s.io/test-infra=master"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -4135,7 +4135,7 @@ presubmits:
         - --ssh=/etc/ssh-security/ssh-security
         - --clean
         - --job=$(JOB_NAME)
-        - --repo=github.com/kubernetes-security/kubernetes=master
+        - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/test-infra=master
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
