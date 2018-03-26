@@ -1062,6 +1062,7 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=60"
         - "--" # end bootstrap args, scenario args below
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
@@ -1141,6 +1142,7 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=60"
         - "--" # end bootstrap args, scenario args below
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
@@ -1220,6 +1222,7 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=60"
         - "--" # end bootstrap args, scenario args below
         - "--build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/... //vendor/k8s.io/..."
         - "--release=//build/release-tars"
@@ -1301,6 +1304,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--scenario=kubernetes_bazel"
+        - "--timeout=60"
         - "--" # end bootstrap args, scenario args below
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
@@ -1336,6 +1340,7 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=60"
         - "--" # end bootstrap args, scenario args below
         - "--test=//... -//build/... -//vendor/..."
         - "--manual-test=//hack:verify-all"
@@ -1380,6 +1385,7 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=60"
         - "--" # end bootstrap args, scenario args below
         - "--test=//... -//build/... -//vendor/..."
         - "--manual-test=//hack:verify-all"
@@ -1426,6 +1432,7 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=60"
         - "--" # end bootstrap args, scenario args below
         - "--test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //vendor/k8s.io/..."
         - "--manual-test=//hack:verify-all"
@@ -1473,6 +1480,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--scenario=kubernetes_execute_bazel"
+        - "--timeout=60"
         - "--" # end bootstrap args, scenario args below
         - "make"
         - "bazel-test"
@@ -1506,6 +1514,7 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "--test=//test/integration/..."
         - "--test-args=--config=integration"
+        - "--timeout=60"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -3517,6 +3526,7 @@ presubmits:
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
+        - --timeout=60
         - --
         - --build=//... -//vendor/...
         - --release=//build/release-tars
@@ -3600,6 +3610,7 @@ presubmits:
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
+        - --timeout=60
         - --
         - --build=//... -//vendor/...
         - --release=//build/release-tars
@@ -3685,6 +3696,7 @@ presubmits:
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
+        - --timeout=60
         - --
         - --build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/... //vendor/k8s.io/...
         - --release=//build/release-tars
@@ -3728,6 +3740,7 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --scenario=kubernetes_bazel
+        - --timeout=60
         - --
         - --build=//... -//vendor/...
         - --release=//build/release-tars
@@ -3776,6 +3789,7 @@ presubmits:
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
+        - --timeout=60
         - --
         - --test=//... -//build/... -//vendor/...
         - --manual-test=//hack:verify-all
@@ -3821,6 +3835,7 @@ presubmits:
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
+        - --timeout=60
         - --
         - --test=//... -//build/... -//vendor/...
         - --manual-test=//hack:verify-all
@@ -3866,6 +3881,7 @@ presubmits:
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
+        - --timeout=60
         - --
         - --test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //vendor/k8s.io/...
         - --manual-test=//hack:verify-all
@@ -3909,6 +3925,7 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --scenario=kubernetes_execute_bazel
+        - --timeout=60
         - --
         - make
         - bazel-test
@@ -3953,6 +3970,7 @@ presubmits:
         - --
         - --test=//test/integration/...
         - --test-args=--config=integration
+        - --timeout=60
         image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
         imagePullPolicy: Always
         name: ""
@@ -6456,6 +6474,7 @@ postsubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/logs"
+        - "--timeout=60"
         - "--" # end bootstrap args, scenario args below
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
@@ -6484,6 +6503,7 @@ postsubmits:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--service-account=/etc/service-account/service-account.json"
           - "--upload=gs://kubernetes-jenkins/logs"
+          - "--timeout=60"
           - "--" # end bootstrap args, scenario args below
           - "--test=//... -//build/... -//vendor/..."
           - "--manual-test=//hack:verify-all"
@@ -6513,6 +6533,7 @@ postsubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/logs"
+        - "--timeout=60"
         - "--" # end bootstrap args, scenario args below
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
@@ -6542,6 +6563,7 @@ postsubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/logs"
+        - "--timeout=60"
         - "--" # end bootstrap args, scenario args below
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
@@ -6571,6 +6593,7 @@ postsubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/logs"
+        - "--timeout=60"
         - "--" # end bootstrap args, scenario args below
         - "--test=//... -//build/... -//vendor/..."
         - "--manual-test=//hack:verify-all"
@@ -6600,6 +6623,7 @@ postsubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/logs"
+        - "--timeout=60"
         - "--" # end bootstrap args, scenario args below
         - "--test=//... -//build/... -//vendor/..."
         - "--manual-test=//hack:verify-all"
@@ -7401,6 +7425,7 @@ periodics:
       - "--repo=k8s.io/kubernetes=master"
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
+      - "--timeout=60"
       - "--" # end bootstrap args, scenario args below
       - "--build=//... -//vendor/..."
       - "--release=//build/release-tars"
@@ -7437,6 +7462,7 @@ periodics:
       - "--repo=k8s.io/kubernetes=release-1.10"
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
+      - "--timeout=60"
       - "--" # end bootstrap args, scenario args below
       - "--build=//... -//vendor/..."
       - "--release=//build/release-tars"
@@ -7465,6 +7491,7 @@ periodics:
       - "--repo=k8s.io/kubernetes=release-1.7"
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
+      - "--timeout=60"
       - "--"
       - "--gcs=gs://kubernetes-release-dev/ci"
       - "--version-suffix=-bazel"
@@ -7490,6 +7517,7 @@ periodics:
       - "--repo=k8s.io/kubernetes=release-1.8"
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
+      - "--timeout=60"
       - "--"
       - "--gcs=gs://kubernetes-release-dev/ci"
       - "--version-suffix=-bazel"
@@ -7515,6 +7543,7 @@ periodics:
       - "--repo=k8s.io/kubernetes=release-1.9"
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
+      - "--timeout=60"
       - "--" # end bootstrap args, scenario args below
       - "--build=//... -//vendor/..."
       - "--release=//build/release-tars"
@@ -7543,6 +7572,7 @@ periodics:
       - --root=/go/src
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
+      - "--timeout=60"
       - "--" # end bootstrap args, scenario args below
       - "--test=//... -//build/... -//vendor/..."
       - "--manual-test=//hack:verify-all"
@@ -7577,6 +7607,7 @@ periodics:
       - "--repo=k8s.io/kubernetes=release-1.7"
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
+      - "--timeout=60"
       securityContext:
         privileged: true
       resources:
@@ -7597,6 +7628,7 @@ periodics:
       - "--repo=k8s.io/kubernetes=release-1.8"
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
+      - "--timeout=60"
       securityContext:
         privileged: true
       resources:
