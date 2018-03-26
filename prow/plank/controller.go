@@ -31,6 +31,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
+	"k8s.io/test-infra/prow/pod-utils/decorate"
 	reportlib "k8s.io/test-infra/prow/report"
 )
 
@@ -480,7 +481,7 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 		return "", "", fmt.Errorf("error getting build ID: %v", err)
 	}
 
-	pod, err := pjutil.ProwJobToPod(pj, buildID)
+	pod, err := decorate.ProwJobToPod(pj, buildID)
 	if err != nil {
 		return "", "", err
 	}
