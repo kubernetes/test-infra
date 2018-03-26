@@ -1681,7 +1681,7 @@ presubmits:
       preset-bazel-scratch-dir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
         args:
         - "--clean"
         - "--job=$(JOB_NAME)"
@@ -4170,7 +4170,7 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
         name: ""
         resources:
           requests:
