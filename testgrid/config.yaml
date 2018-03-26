@@ -5729,6 +5729,45 @@ dashboards:
   - name: istio-gke-addon
     test_group_name: istio-periodic-e2e-gke-addon
 
+- name: sig-cluster-lifecycle-kops
+  dashboard_tab:
+  - name: kops-aws
+    test_group_name: ci-kubernetes-e2e-kops-aws
+  - name: kops-aws-canary
+    test_group_name: ci-kubernetes-e2e-kops-aws-canary
+  - name: kops-aws-1.7
+    test_group_name: ci-kubernetes-e2e-kops-aws-stable3
+  - name: kops-aws-1.8
+    test_group_name: ci-kubernetes-e2e-kops-aws-stable2
+  - name: kops-aws-1.9
+    test_group_name: ci-kubernetes-e2e-kops-aws-stable1
+  - name: kops-aws-beta
+    test_group_name: ci-kubernetes-e2e-kops-aws-beta
+  - name: kops-aws-updown
+    test_group_name: ci-kubernetes-e2e-kops-aws-updown
+  - name: kops-aws-networking-kopeio-vxlan
+    test_group_name: ci-kubernetes-e2e-kops-aws-networking-kopeio-vxlan
+  - name: kops-aws-weave
+    test_group_name: ci-kubernetes-e2e-kops-aws-weave
+  - name: kops-aws-channelalpha
+    test_group_name: ci-kubernetes-e2e-kops-aws-channelalpha
+  - name: kops-aws-ena-nvme
+    test_group_name: ci-kubernetes-e2e-kops-aws-ena-nvme
+  - name: kops-aws-ha-uswest2
+    test_group_name: ci-kubernetes-e2e-kops-aws-ha-uswest2
+  - name: kops-aws-newrunner
+    test_group_name: ci-kubernetes-e2e-kops-aws-newrunner
+  - name: kops-aws-imagecentos7
+    test_group_name: ci-kubernetes-e2e-kops-aws-imagecentos7
+  - name: kops-aws-imageubuntu1604
+    test_group_name: ci-kubernetes-e2e-kops-aws-imageubuntu1604
+  - name: kops-gce
+    test_group_name: ci-kubernetes-e2e-kops-gce
+  - name: kops-gce-channelalpha
+    test_group_name: ci-kubernetes-e2e-kops-gce-channelalpha
+  - name: kops-gce-ha
+    test_group_name: ci-kubernetes-e2e-kops-gce-ha
+
 #
 # Start dashboard groups
 #
