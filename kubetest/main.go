@@ -235,6 +235,17 @@ type publisher interface {
 	Publish() error
 }
 
+// testBuilder is implemented by deployers that want to customize how the e2e tests are run
+type testBuilder interface {
+	// BuildTester builds the appropriate Tester object for running tests
+	BuildTester(o *options) (Tester, error)
+}
+
+// Tester is implemented by runners that run our tests
+type Tester interface {
+	Run(control *process.Control, args []string) error
+}
+
 func getDeployer(o *options) (deployer, error) {
 	switch o.deployment {
 	case "bash":

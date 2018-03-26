@@ -29,6 +29,7 @@ import (
 
 	"k8s.io/test-infra/kubetest/conformance"
 	"k8s.io/test-infra/kubetest/dind"
+	"k8s.io/test-infra/kubetest/process"
 	"k8s.io/test-infra/kubetest/util"
 )
 
@@ -228,9 +229,17 @@ func run(deploy deployer, o options) error {
 							return federationTest(testArgs)
 						}))
 					} else {
-						errs = util.AppendError(errs, control.XmlWrap(&suite, "Test", func() error {
-							return test(testArgs)
-						}))
+						var tester Tester
+						tester = &GinkgoScriptTester{}
+						if testBuilder, ok := deploy.(testBuilder); ok {
+							tester, err = testBuilder.BuildTester(&o)
+							errs = util.AppendError(errs, err)
+						}
+						if tester != nil {
+							errs = util.AppendError(errs, control.XmlWrap(&suite, "Test", func() error {
+								return tester.Run(control, testArgs)
+							}))
+						}
 					}
 				}
 			}
@@ -732,6 +741,11 @@ func skewTestEnv(env, args []string, prefix string, checkSkew bool) error {
 	return control.FinishRunning(cmd)
 }
 
-func test(testArgs []string) error {
+// GinkgoScriptTester implements Tester by calling the hack/ginkgo-e2e.sh script
+type GinkgoScriptTester struct {
+}
+
+// Run executes ./hack/ginkgo-e2e.sh
+func (t *GinkgoScriptTester) Run(control *process.Control, testArgs []string) error {
 	return control.FinishRunning(exec.Command("./hack/ginkgo-e2e.sh", testArgs...))
 }
