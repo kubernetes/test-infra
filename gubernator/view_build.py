@@ -207,8 +207,8 @@ def parse_pr_path(gcs_path, default_org, default_repo):
         pr_path = parsed_repo + '/'
         repo = '%s/%s' % (default_org, parsed_repo)
     else:
-        pr_path = parsed_repo.replace('_', '/') + '/'
-        repo = parsed_repo.replace('_', '/')
+        pr_path = parsed_repo.replace('_', '/', 1) + '/'
+        repo = parsed_repo.replace('_', '/', 1)
     return pull_number, pr_path, repo
 
 
