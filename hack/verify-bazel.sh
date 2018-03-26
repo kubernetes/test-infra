@@ -21,33 +21,25 @@ TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
 TMP_GOPATH=$(mktemp -d)
 cd "${TESTINFRA_ROOT}"
 
-"${TESTINFRA_ROOT}/hack/go_install_from_commit.sh" \
-  github.com/kubernetes/repo-infra/kazel \
-  2a736b4fba317cf3038e3cbd06899b544b875fae \
-  "${TMP_GOPATH}"
-
-"${TESTINFRA_ROOT}/hack/go_install_from_commit.sh" \
-  github.com/bazelbuild/bazel-gazelle/cmd/gazelle \
-  578e73e57d6a4054ef933db1553405c9284322c7 \
-  "${TMP_GOPATH}"
+OUTPUT_GOBIN="${TESTINFRA_ROOT}/_output/bin"
+GOBIN="${OUTPUT_GOBIN}" go install ./vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle
+GOBIN="${OUTPUT_GOBIN}" go install ./vendor/github.com/kubernetes/repo-infra/kazel
 
 touch "${TESTINFRA_ROOT}/vendor/BUILD.bazel"
 
-gazelle_diff=$("${TMP_GOPATH}/bin/gazelle" fix \
+gazelle_diff=$("${OUTPUT_GOBIN}/gazelle" fix \
   -external=vendored \
-  -mode=diff \
-  -repo_root="${TESTINFRA_ROOT}")
+  -mode=diff)
 
-kazel_diff=$("${TMP_GOPATH}/bin/kazel" \
+kazel_diff=$("${OUTPUT_GOBIN}/kazel" \
   -dry-run \
-  -print-diff \
-  -root="${TESTINFRA_ROOT}")
+  -print-diff)
 
 if [[ -n "${gazelle_diff}" || -n "${kazel_diff}" ]]; then
-  echo "${gazelle_diff}" >&2
-  echo "${kazel_diff}" >&2
-  echo >&2
-  echo "Run ./hack/update-bazel.sh" >&2
+  echo "${gazelle_diff}"
+  echo "${kazel_diff}"
+  echo
+  echo "Run ./verify/update-bazel.sh"
   exit 1
 fi
 
