@@ -13625,6 +13625,21 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
 
+- interval: 1h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-kops-aws-ha-uswest2
+  labels:
+    preset-service-account: true
+    preset-aws-ssh: true
+    preset-aws-credential: true
+  spec:
+    containers:
+    - args:
+      - --timeout=140
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      imagePullPolicy: Always
+
 - interval: 4h
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-imagecentos7
