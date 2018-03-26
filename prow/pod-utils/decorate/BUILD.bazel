@@ -1,22 +1,19 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["manual-trigger.go"],
-    importpath = "k8s.io/test-infra/experiment/manual-trigger",
-    visibility = ["//visibility:private"],
+    srcs = [
+        "doc.go",
+        "podspec.go",
+    ],
+    importpath = "k8s.io/test-infra/prow/pod-utils/decorate",
+    visibility = ["//visibility:public"],
     deps = [
-        "//prow/github:go_default_library",
-        "//prow/jenkins:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/pod-utils/downwardapi:go_default_library",
+        "//vendor/k8s.io/api/core/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
     ],
-)
-
-go_binary(
-    name = "manual-trigger",
-    embed = [":go_default_library"],
-    visibility = ["//visibility:public"],
 )
 
 filegroup(

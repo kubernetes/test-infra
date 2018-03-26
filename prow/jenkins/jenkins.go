@@ -31,6 +31,7 @@ import (
 
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
+	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
 const (
@@ -381,7 +382,7 @@ func (c *Client) BuildFromSpec(spec *kube.ProwJobSpec, buildId, prowJobId string
 	if c.dryRun {
 		return nil
 	}
-	env, err := pjutil.EnvForSpec(pjutil.NewJobSpec(*spec, buildId, prowJobId))
+	env, err := downwardapi.EnvForSpec(downwardapi.NewJobSpec(*spec, buildId, prowJobId))
 	if err != nil {
 		return err
 	}
