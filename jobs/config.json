@@ -9724,6 +9724,7 @@
     "args": [
       "--cluster=e2e-kops-aws-ha-uswest2.k8s.local",
       "--deployment=kops",
+      "--env=KUBE_SSH_USER=admin",
       "--extract=ci/latest",
       "--ginkgo-parallel=30",
       "--kops-args=--master-count=3",
