@@ -2471,8 +2471,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-7-1-8-upgrade-cluster
 - name: ci-kubernetes-e2e-gke-staging-1-7-1-8-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-7-1-8-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gke-staging-1-7-1-8-upgrade-regional-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-7-1-8-upgrade-regional-cluster
 - name: ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-master
 - name: ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-cluster
@@ -3071,8 +3069,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-staging-1-7-1-8-upgrade-cluster
   - name: gke-staging-1-7-1-8-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gke-staging-1-7-1-8-upgrade-cluster-new
-  - name: gke-staging-1-7-1-8-upgrade-regional-cluster
-    test_group_name: ci-kubernetes-e2e-gke-staging-1-7-1-8-upgrade-regional-cluster
   - name: gke-staging-1-8-1-9-upgrade-master
     test_group_name: ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-master
   - name: gke-staging-1-8-1-9-upgrade-cluster

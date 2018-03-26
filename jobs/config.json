@@ -7539,28 +7539,6 @@
       "sig-cluster-lifecycle"
     ]
   },
-  "ci-kubernetes-e2e-gke-staging-1-7-1-8-upgrade-regional-cluster": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--deployment=gke",
-      "--extract=gke-latest-1.8",
-      "--extract=gke-latest-1.7",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-node-image=gci",
-      "--gcp-region=us-central1",
-      "--gke-command-group=beta",
-      "--gke-environment=test",
-      "--provider=gke",
-      "--test_args=--gce-multizone=true --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]|Initializers|Dashboard --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
-      "--timeout=900m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=gke-latest-1.8 --upgrade-image=gci"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
   "ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-cluster": {
     "args": [
       "--check-leaked-resources",
