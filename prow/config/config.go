@@ -31,6 +31,7 @@ import (
 	"gopkg.in/robfig/cron.v2"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/test-infra/prow/pod-utils/decorate"
 
 	"k8s.io/test-infra/prow/kube"
 )
@@ -276,6 +277,9 @@ func parseConfig(c *Config) error {
 		if v.MaxConcurrency < 0 {
 			return fmt.Errorf("job %s jas invalid max_concurrency (%d), it needs to be a non-negative number", v.Name, v.MaxConcurrency)
 		}
+		if err := validatePodSpec(v.Name, kube.PresubmitJob, v.Spec); err != nil {
+			return err
+		}
 	}
 
 	// Validate postsubmits.
@@ -290,6 +294,9 @@ func parseConfig(c *Config) error {
 		if j.MaxConcurrency < 0 {
 			return fmt.Errorf("job %s jas invalid max_concurrency (%d), it needs to be a non-negative number", j.Name, j.MaxConcurrency)
 		}
+		if err := validatePodSpec(j.Name, kube.PostsubmitJob, j.Spec); err != nil {
+			return err
+		}
 	}
 
 	// Ensure that the periodic durations are valid and specs exist.
@@ -298,6 +305,9 @@ func parseConfig(c *Config) error {
 			return err
 		}
 		if err := validatePresets(p.Name, p.Labels, p.Spec, c.Presets); err != nil {
+			return err
+		}
+		if err := validatePodSpec(p.Name, kube.PeriodicJob, p.Spec); err != nil {
 			return err
 		}
 	}
@@ -501,6 +511,30 @@ func validatePresets(name string, labels map[string]string, spec *v1.PodSpec, pr
 	for _, preset := range presets {
 		if err := mergePreset(preset, labels, spec); err != nil {
 			return fmt.Errorf("job %s failed to merge presets: %v", name, err)
+		}
+	}
+
+	return nil
+}
+
+func validatePodSpec(name string, jobType kube.ProwJobType, spec *v1.PodSpec) error {
+	if spec == nil {
+		return nil
+	}
+
+	if len(spec.InitContainers) != 0 {
+		return fmt.Errorf("job %s specified init containers, which is not allowed", name)
+	}
+
+	if len(spec.Containers) != 1 {
+		return fmt.Errorf("job %s specified %d containers when only one is allowed", name, len(spec.Containers))
+	}
+
+	for _, env := range spec.Containers[0].Env {
+		for _, prowEnv := range decorate.EnvForType(jobType) {
+			if env.Name == prowEnv {
+				return fmt.Errorf("job %s attempted to set Prow-controlled environment variable %s to %s on test container", name, env.Name, env.Value)
+			}
 		}
 	}
 

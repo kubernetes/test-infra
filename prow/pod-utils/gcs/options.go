@@ -29,7 +29,8 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/option"
-	"k8s.io/test-infra/prow/pjutil"
+
+	"k8s.io/test-infra/prow/pod-utils/decorate"
 )
 
 type pathStrategyType string
@@ -123,7 +124,7 @@ func (o *Options) Run(extra map[string]UploadFunc) error {
 		builder = NewSingleDefaultRepoPathBuilder(o.DefaultOrg, o.DefaultRepo)
 	}
 
-	spec, err := pjutil.ResolveSpecFromEnv()
+	spec, err := decorate.ResolveSpecFromEnv()
 	if err != nil {
 		return fmt.Errorf("could not resolve job spec: %v", err)
 	}

@@ -27,11 +27,11 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/logrusutil"
 
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/pjutil"
+	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pod-utils/clone"
+	"k8s.io/test-infra/prow/pod-utils/decorate"
 )
 
 type options struct {
@@ -144,7 +144,7 @@ func main() {
 	wg := &sync.WaitGroup{}
 	output := make(chan clone.Record, len(o.refs.gitRefs)+1)
 
-	jobRefs, err := pjutil.ResolveSpecFromEnv()
+	jobRefs, err := decorate.ResolveSpecFromEnv()
 	if err != nil {
 		logrus.WithError(err).Warn("Could not determine Prow job refs from environment")
 	} else {
