@@ -24,12 +24,12 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/pod-utils/decorate"
+	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
 // PathForSpec determines the GCS path prefix for files uploaded
 // for a specific job spec
-func PathForSpec(spec *decorate.JobSpec, pathSegment RepoPathBuilder) string {
+func PathForSpec(spec *downwardapi.JobSpec, pathSegment RepoPathBuilder) string {
 	switch spec.Type {
 	case kube.PeriodicJob, kube.PostsubmitJob:
 		return path.Join("logs", spec.Job, spec.BuildId)
@@ -44,7 +44,7 @@ func PathForSpec(spec *decorate.JobSpec, pathSegment RepoPathBuilder) string {
 }
 
 // AliasForSpec determines the GCS path aliases for a job spec
-func AliasForSpec(spec *decorate.JobSpec) string {
+func AliasForSpec(spec *downwardapi.JobSpec) string {
 	switch spec.Type {
 	case kube.PeriodicJob, kube.PostsubmitJob, kube.BatchJob:
 		return ""
@@ -60,7 +60,7 @@ func AliasForSpec(spec *decorate.JobSpec) string {
 // build id for a job. pathSegment can be nil so callers of this
 // helper are not required to choose a path strategy but can still
 // get back a result.
-func LatestBuildForSpec(spec *decorate.JobSpec, pathSegment RepoPathBuilder) []string {
+func LatestBuildForSpec(spec *downwardapi.JobSpec, pathSegment RepoPathBuilder) []string {
 	var latestBuilds []string
 	switch spec.Type {
 	case kube.PeriodicJob, kube.PostsubmitJob:
@@ -83,7 +83,7 @@ func LatestBuildForSpec(spec *decorate.JobSpec, pathSegment RepoPathBuilder) []s
 
 // RootForSpec determines the root GCS path for storing artifacts about
 // the provided job.
-func RootForSpec(spec *decorate.JobSpec) string {
+func RootForSpec(spec *downwardapi.JobSpec) string {
 	switch spec.Type {
 	case kube.PeriodicJob, kube.PostsubmitJob:
 		return path.Join("logs", spec.Job)

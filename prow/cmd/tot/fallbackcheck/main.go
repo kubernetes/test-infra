@@ -32,7 +32,7 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/pjutil"
-	"k8s.io/test-infra/prow/pod-utils/decorate"
+	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 )
 
@@ -120,7 +120,7 @@ func main() {
 	}
 }
 
-func getJobFallbackNumber(bucket string, spec *decorate.JobSpec) (bool, error) {
+func getJobFallbackNumber(bucket string, spec *downwardapi.JobSpec) (bool, error) {
 	url := fmt.Sprintf("%s/%s", strings.TrimSuffix(bucket, "/"), gcs.LatestBuildForSpec(spec, nil)[0])
 
 	resp, err := http.Get(url)
