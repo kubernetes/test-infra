@@ -1682,6 +1682,7 @@ presubmits:
         - "--scenario=kubernetes_execute_bazel"
         - "--"
         - "kubetest"
+        - "--"
         - "--build=dind"
         - "--deployment=dind"
         - "--up"
@@ -4141,6 +4142,7 @@ presubmits:
         - --scenario=kubernetes_execute_bazel
         - --
         - kubetest
+        - --
         - --build=dind
         - --deployment=dind
         - --up
