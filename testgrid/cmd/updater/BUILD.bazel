@@ -1,5 +1,4 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
-load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 
 go_library(
     name = "go_default_library",
@@ -9,10 +8,10 @@ go_library(
     deps = [
         "//testgrid:config",
         "//testgrid:state",
+        "//testgrid/util/gcs:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
         "//vendor/google.golang.org/api/iterator:go_default_library",
-        "//vendor/google.golang.org/api/option:go_default_library",
         "//vendor/vbom.ml/util/sortorder:go_default_library",
     ],
 )
@@ -43,5 +42,8 @@ go_test(
     name = "go_default_test",
     srcs = ["main_test.go"],
     embed = [":go_default_library"],
-    deps = ["//testgrid:state"],
+    deps = [
+        "//testgrid:state",
+        "//vendor/github.com/golang/protobuf/proto:go_default_library",
+    ],
 )

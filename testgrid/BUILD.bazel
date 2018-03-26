@@ -24,18 +24,6 @@ go_proto_library(
     visibility = ["//visibility:public"],
 )
 
-genrule(
-    name = "gen-config",
-    srcs = [
-        "config.yaml",
-    ],
-    outs = ["testgrid-config"],
-    cmd = "$(location //testgrid/cmd/config) --yaml=$< --output=$@",
-    tools = [
-        "//testgrid/cmd/config",
-    ],
-)
-
 filegroup(
     name = "config-yaml",
     srcs = ["config.yaml"],
@@ -57,6 +45,7 @@ filegroup(
         "//testgrid/cmd/config:all-srcs",
         "//testgrid/cmd/updater:all-srcs",
         "//testgrid/images:all-srcs",
+        "//testgrid/util/gcs:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],

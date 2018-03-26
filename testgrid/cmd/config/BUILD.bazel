@@ -35,6 +35,8 @@ go_library(
     importpath = "k8s.io/test-infra/testgrid/cmd/config",
     deps = [
         "//testgrid:config",
+        "//testgrid/util/gcs:go_default_library",
+        "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
     ],

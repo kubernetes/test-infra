@@ -18,7 +18,11 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
-bazel clean --expunge
-bazel build //testgrid:testgrid-config
-gsutil cp bazel-genfiles/testgrid/testgrid-config gs://k8s-testgrid/config
-gsutil cp bazel-genfiles/testgrid/testgrid-config gs://k8s-testgrid-canary/config
+
+for output in gs://k8s-testgrid-canary/config gs://k8s-testgrid/config; do
+  bazel run //testgrid/cmd/config -- \
+    --yaml="$(dirname "${BASH_SOURCE}")"/config.yaml \
+    --output="${output}" \
+    --print-text \
+    --oneshot
+done
