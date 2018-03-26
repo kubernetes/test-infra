@@ -336,14 +336,16 @@ All PRs updating the configuration must pass prior to merging
 Updates to the testgrid configuration are automatically pushed immediately when
 merging a change.
 
-It may take some time (around an hour) after merging a change for test results
-to first appear.
-
-If for some reason you want to run this manually then do the following:
+Manually convert the yaml file to the config proto with:
 ```
-go build ./yaml2proto  # Build the yaml2proto library
-go install .  # Install the config converter
-config --yaml=config.yaml --output=config.pb.txt  # Run the conversion
+bazel run //testgrid/cmd/config -- \
+  --yaml=testgrid/config.yaml \
+  --print-text \
+  --oneshot \
+  --output=/tmp/config.pb \
+  # Or push to gcs
+  # --output=gs://my-bucket/config
+  # --gcp-service-account=/path/to/foo.json
 ```
 
 [`config.proto`]: ./config.proto
