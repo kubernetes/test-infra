@@ -79,20 +79,94 @@ type ProwJob struct {
 }
 
 type ProwJobSpec struct {
-	Type    ProwJobType  `json:"type,omitempty"`
-	Agent   ProwJobAgent `json:"agent,omitempty"`
-	Cluster string       `json:"cluster,omitempty"`
-	Job     string       `json:"job,omitempty"`
-	Refs    *Refs        `json:"refs,omitempty"`
+	// Type is the type of job and informs how
+	// the jobs is triggered
+	Type ProwJobType `json:"type,omitempty"`
+	// Agent determines which controller fulfills
+	// this specific ProwJobSpec and runs the job
+	Agent ProwJobAgent `json:"agent,omitempty"`
+	// Cluster is which Kubernetes cluster is used
+	// to run the job, only applicable for that
+	// specific agent
+	Cluster string `json:"cluster,omitempty"`
+	// Job is the name of the job
+	Job string `json:"job,omitempty"`
+	// Refs is the code under test, determined at
+	// runtime by Prow itself
+	Refs *Refs `json:"refs,omitempty"`
+	// ExtraRefs are auxiliary repositories that
+	// need to be cloned, determined from config
+	ExtraRefs []*Refs `json:"extra_refs,omitempty"`
 
-	Report         bool   `json:"report,omitempty"`
-	Context        string `json:"context,omitempty"`
-	RerunCommand   string `json:"rerun_command,omitempty"`
-	MaxConcurrency int    `json:"max_concurrency,omitempty"`
+	// TimeoutMinutes is the number of minutes that
+	// the pod utilities will wait before aborting
+	// a job. Only applicable if decorating the PodSpec.
+	TimeoutMinutes int `json:"timeout_minutes,omitempty"`
+	// Report determines if the result of this job should
+	// be posted as a status on GitHub
+	Report bool `json:"report,omitempty"`
+	// Context is the name of the status context used to
+	// report back to GitHub
+	Context string `json:"context,omitempty"`
+	// RerunCommand is the command a user would write to
+	// trigger this job on their pull request
+	RerunCommand string `json:"rerun_command,omitempty"`
+	// MaxConcurrency restricts the total number of instances
+	// of this job that can run in parallel at once
+	MaxConcurrency int `json:"max_concurrency,omitempty"`
 
+	// Decorate determines if the user-provided PodSpec
+	// will be decorated with more containers to add in
+	// cloning and logging functionality.
+	Decorate bool `json:"decorate,omitempty"`
+	// UtilityImages holds pull specs for utility container
+	// images used to decorate a PodSpec.
+	UtilityImages UtilityImages `json:"utility_images,omitempty"`
+	// GCSConfiguration holds options for pushing logs and
+	// artifacts to GCS from a job.
+	GCSConfiguration GCSConfiguration `json:"gcs_configuration,omitempty"`
+	// GCSCredentialsSecret is the name of the Kubernetes secret
+	// that holds GCS push credentials
+	GCSCredentialsSecret string `json:"credentials_secret,omitempty"`
+
+	// PodSpec provides the basis for running the test under
+	// a Kubernetes agent
 	PodSpec *v1.PodSpec `json:"pod_spec,omitempty"`
 
+	// RunAfterSuccess are jobs that should be triggered if
+	// this job runs and does not fail
 	RunAfterSuccess []ProwJobSpec `json:"run_after_success,omitempty"`
+}
+
+// UtilityImages holds pull specs for the utility images
+// to be used for a job
+type UtilityImages struct {
+	CloneRefs  string `json:"clonerefs,omitempty"`
+	InitUpload string `json:"initupload,omitempty"`
+	Entrypoint string `json:"entrypoint,omitempty"`
+	Sidecar    string `json:"sidecar,omitempty"`
+}
+
+const (
+	PathStrategyLegacy   = "legacy"
+	PathStrategySingle   = "single"
+	PathStrategyExplicit = "explicit"
+)
+
+// GCSConfiguration holds options for pushing logs and
+// artifacts to GCS from a job.
+type GCSConfiguration struct {
+	// Bucket is the GCS bucket to upload to
+	Bucket string `json:"bucket,omitempty"`
+	// PathStrategy dictates how the org and repo are used
+	// when calculating the full path to an artifact in GCS
+	PathStrategy string `json:"path_strategy,omitempty"`
+	// DefaultOrg is omitted from GCS paths when using the
+	// legacy or simple strategy
+	DefaultOrg string `json:"default_org,omitempty"`
+	// DefaultRepo is omitted from GCS paths when using the
+	// legacy or simple strategy
+	DefaultRepo string `json:"default_repo,omitempty"`
 }
 
 type ProwJobStatus struct {
@@ -152,6 +226,8 @@ type Refs struct {
 	BaseSHA string `json:"base_sha,omitempty"`
 
 	Pulls []Pull `json:"pulls,omitempty"`
+
+	PathAlias string `json:"path_alias,omitempty"`
 }
 
 func (r Refs) String() string {

@@ -29,10 +29,14 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/pod-utils/decorate/downwardapi"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/pjutil"
+<<<<<<< HEAD
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
+=======
+>>>>>>> cbf2bd5... work
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 )
 

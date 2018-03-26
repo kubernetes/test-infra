@@ -17,122 +17,23 @@ limitations under the License.
 package main
 
 import (
-	"bytes"
-	"encoding/json"
-	"errors"
-	"flag"
-	"fmt"
-	"io/ioutil"
-	"sync"
-
 	"github.com/sirupsen/logrus"
-	"k8s.io/apimachinery/pkg/util/sets"
 
-	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/clonerefs"
 	"k8s.io/test-infra/prow/logrusutil"
+<<<<<<< HEAD
 	"k8s.io/test-infra/prow/pod-utils/clone"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
+=======
+>>>>>>> cbf2bd5... work
 )
 
-type options struct {
-	srcRoot string
-	log     string
-
-	gitUserName  string
-	gitUserEmail string
-
-	refs    gitRefs
-	aliases pathAliases
-}
-
-func (o *options) Validate() error {
-	if o.srcRoot == "" {
-		return errors.New("no source root specified")
-	}
-
-	if o.log == "" {
-		return errors.New("no log file specified")
-	}
-
-	seen := map[string]sets.String{}
-	for _, ref := range o.refs.gitRefs {
-		if _, seenOrg := seen[ref.Org]; seenOrg {
-			if seen[ref.Org].Has(ref.Repo) {
-				return errors.New("sync config for %s/%s provided more than once")
-			}
-
-			seen[ref.Org].Insert(ref.Repo)
-		} else {
-			seen[ref.Org] = sets.NewString(ref.Repo)
-		}
-	}
-
-	return nil
-}
-
-func gatherOptions() options {
-	o := options{}
-	flag.StringVar(&o.srcRoot, "src-root", "", "Where to root source checkouts")
-	flag.StringVar(&o.log, "log", "", "Where to write logs")
-	flag.StringVar(&o.gitUserName, "git-user-name", "ci-robot", "Username to set in git config")
-	flag.StringVar(&o.gitUserEmail, "git-user-email", "ci-robot@k8s.io", "Email to set in git config")
-	flag.Var(&o.refs, "repo", "Mapping of Git URI to refs to check out, can be provided more than once")
-	flag.Var(&o.aliases, "clone-alias", "Mapping of org and repo to path to clone to, can be provided more than once")
-	flag.Parse()
-	return o
-}
-
-type gitRefs struct {
-	gitRefs []kube.Refs
-}
-
-func (r *gitRefs) String() string {
-	representation := bytes.Buffer{}
-	for _, ref := range r.gitRefs {
-		fmt.Fprintf(&representation, "%s,%s=%s", ref.Org, ref.Repo, ref.String())
-	}
-	return representation.String()
-}
-
-// Set parses out a kube.Refs from the user string.
-// The following example shows all possible fields:
-//   org,repo=base-ref:base-sha[,pull-number:pull-sha]...
-// For the base ref and every pull number, the SHAs
-// are optional and any number of them may be set or
-// unset.
-func (r *gitRefs) Set(value string) error {
-	gitRef, err := clone.ParseRefs(value)
-	if err != nil {
-		return err
-	}
-	r.gitRefs = append(r.gitRefs, gitRef)
-	return nil
-}
-
-type pathAliases struct {
-	aliases []clone.PathResolver
-}
-
-func (a *pathAliases) String() string {
-	representation := bytes.Buffer{}
-	for _, resolver := range a.aliases {
-		fmt.Fprint(&representation, resolver.String())
-	}
-	return representation.String()
-}
-
-// Set parses out path aliases from user input
-func (a *pathAliases) Set(value string) error {
-	resolver, err := clone.ParseAliases(value)
-	if err != nil {
-		return err
-	}
-	a.aliases = append(a.aliases, resolver)
-	return nil
-}
-
 func main() {
-	o := gatherOptions()
+	o, err := clonerefs.ResolveOptions()
+	if err != nil {
+		logrus.Fatalf("Could not resolve options: %v", err)
+	}
+
 	if err := o.Validate(); err != nil {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
@@ -141,6 +42,7 @@ func main() {
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "clonerefs"}),
 	)
 
+<<<<<<< HEAD
 	wg := &sync.WaitGroup{}
 	output := make(chan clone.Record, len(o.refs.gitRefs)+1)
 
@@ -187,6 +89,10 @@ func main() {
 		if err := ioutil.WriteFile(o.log, logData, 0755); err != nil {
 			logrus.WithError(err).Fatal("Failed to write clone records")
 		}
+=======
+	if err := o.Run(); err != nil {
+		logrus.WithError(err).Fatal("Failed to clone refs")
+>>>>>>> cbf2bd5... work
 	}
 
 	logrus.Info("Finished cloning refs")

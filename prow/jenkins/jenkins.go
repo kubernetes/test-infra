@@ -28,10 +28,14 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/pod-utils/decorate/downwardapi"
 
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
+<<<<<<< HEAD
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
+=======
+>>>>>>> cbf2bd5... work
 )
 
 const (

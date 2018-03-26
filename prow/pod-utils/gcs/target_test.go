@@ -22,7 +22,11 @@ import (
 	"k8s.io/apimachinery/pkg/api/equality"
 
 	"k8s.io/test-infra/prow/kube"
+<<<<<<< HEAD
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
+=======
+	"k8s.io/test-infra/prow/pod-utils/decorate/downwardapi"
+>>>>>>> cbf2bd5... work
 )
 
 func TestPathForSpec(t *testing.T) {

@@ -5,7 +5,6 @@ go_library(
     srcs = [
         "clone.go",
         "format.go",
-        "parse.go",
         "types.go",
     ],
     importpath = "k8s.io/test-infra/prow/pod-utils/clone",
@@ -32,7 +31,7 @@ filegroup(
 
 go_test(
     name = "go_default_test",
-    srcs = ["parse_test.go"],
+    srcs = ["clone_test.go"],
     embed = [":go_default_library"],
     deps = ["//prow/kube:go_default_library"],
 )

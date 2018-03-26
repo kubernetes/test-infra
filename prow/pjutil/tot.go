@@ -26,7 +26,11 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
+<<<<<<< HEAD
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
+=======
+	"k8s.io/test-infra/prow/pod-utils/decorate/downwardapi"
+>>>>>>> cbf2bd5... work
 )
 
 // PresubmitToJobSpec generates a downwardapi.JobSpec out of a Presubmit.
