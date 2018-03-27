@@ -42,7 +42,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//testgrid/cluster:all-srcs",
-        "//testgrid/cmd/config:all-srcs",
+        "//testgrid/cmd/configurator:all-srcs",
         "//testgrid/cmd/updater:all-srcs",
         "//testgrid/images:all-srcs",
         "//testgrid/util/gcs:all-srcs",
