@@ -17,6 +17,7 @@
 KUBE_ROOT=${KUBE_ROOT:-"../../kubernetes"}
 K8S_VERSION=$(cat ${KUBE_ROOT}/bazel-out/stable-status.txt | grep STABLE_DOCKER_TAG | awk '{print $2}')
 
+TMPDIR=$(mktemp -d -p /tmp)
 CONTAINER=$(docker run -d --privileged=true --security-opt seccomp:unconfined --cap-add=SYS_ADMIN \
   -v /lib/modules:/lib/modules -v /sys/fs/cgroup:/sys/fs/cgroup:ro \
   gcr.io/google-containers/dind-cluster-amd64:${K8S_VERSION})

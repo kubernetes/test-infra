@@ -16,6 +16,10 @@
 
 wait_for_docker ()
 {
+  # Start docker.
+  systemctl enable docker
+  systemctl start docker
+
   # Wait for docker.
   until docker version; do sleep 1 ;done
 }
@@ -25,21 +29,45 @@ start_kubelet ()
   # Start the kubelet.
   mkdir -p /etc/kubernetes/manifests
   mkdir -p /etc/srv/kubernetes
-  mount --make-rshared /etc/kubernetes
 
   # Change the kubelet to not fail with swap on.
-  cat > /etc/systemd/system/kubelet.service.d/kubeadm-20.conf << EOM
+  cat > /etc/systemd/system/kubelet.service.d/20-kubeadm.conf << EOM
 [Service]
-Environment="KUBELET_EXTRA_ARGS=--fail-swap-on=false"
+Environment="KUBELET_EXTRA_ARGS=-v4 --fail-swap-on=false"
 EOM
   systemctl enable kubelet
   systemctl start kubelet
 }
 
-start_worker ()
+start_node ()
 {
+  mount --make-rshared /lib/modules
   wait_for_docker
   start_kubelet
+  mount --make-rshared /etc/kubernetes
+  mount --make-shared /run
+  mount --make-shared /
+  mount --make-shared /var/lib/docker
+  mount --make-shared /var/lib/kubelet
+
+  # To support arbitrary host mounts, we would need all mounts shared.
+  #mount --make-rshared /
+
+  # kube-proxy attempts to write some values into sysfs for performance. But these
+  # values cannot be written outside of the original netns, even if the fs is rw.
+  # This causes kube-proxy to panic if run inside dind.
+  #
+  # Historically, --max-conntrack or --conntrack-max-per-core could be set to 0,
+  # and kube-proxy would skip the write (#25543). kube-proxy no longer respects
+  # the CLI arguments if a config file is present.
+  #
+  # Instead, we can make sysfs ro, so that kube-proxy will forego write attempts.
+  mount -o remount,ro /sys
+}
+
+start_worker ()
+{
+  start_node
 
   # Load docker images
   docker load -i /kube-proxy.tar
@@ -53,8 +81,7 @@ start_worker ()
 
 start_master ()
 {
-  wait_for_docker
-  start_kubelet
+  start_node
 
   # Load the docker images
   docker load -i /kube-apiserver.tar
@@ -75,12 +102,11 @@ start_master ()
   # permissions on admin.conf.
   chmod a+r /etc/kubernetes/admin.conf
 
-  # We need to prevent kube-config from trying to set conntrack values.
-  kubectl --kubeconfig=/etc/kubernetes/admin.conf get ds -n kube-system kube-proxy -o json | jq '.spec.template.spec.containers[0].command |= .+ ["--conntrack-max-per-core=0"]' | kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f -
   # Apply a pod network.
-  # Calico is an ip-over-ip overlay network. This saves us from many of the
-  # difficulties from configuring an L2 network.
-  kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f http://docs.projectcalico.org/v2.4/getting-started/kubernetes/installation/hosted/kubeadm/1.6/calico.yaml
+  kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f https://docs.projectcalico.org/v3.0/getting-started/kubernetes/installation/hosted/kubeadm/1.7/calico.yaml
+
+  #export kubever=$(kubectl version | base64 | tr -d '\n')
+  #kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$kubever"
 
   # Install the metrics server, and the HPA.
   kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f /addons/metrics-server/
@@ -88,49 +114,41 @@ start_master ()
 
 start_cluster ()
 {
-  wait_for_docker
-
-  # Create a mount point for kubernetes credentials.
-  mkdir -p /var/kubernetes
-
   # Start some workers.
   echo "Creating testnet"
   docker network create --subnet=172.18.0.0/16 testnet
   docker network ls
   echo "Creating virtual nodes"
-  docker load -i /dind-node-bundle.tar
-  docker run -d --privileged --net testnet --ip 172.18.0.2 -p 443:6443 -v /var/kubernetes:/etc/kubernetes -v /lib/modules:/lib/modules gcr.io/google-containers/dind-node-amd64:$(cat /docker_version) master $(hostname --ip-address)
+  docker run -d --privileged --net testnet --ip 172.18.0.2 -p 443:6443 -v /lib/modules:/lib/modules -v /var/kubernetes:/etc/kubernetes gcr.io/google-containers/dind-node-amd64:$(cat /docker_version) master $(hostname --ip-address)
   docker run -d --privileged --net testnet --ip 172.18.0.3 -v /lib/modules:/lib/modules gcr.io/google-containers/dind-node-amd64:$(cat /docker_version) worker
   docker run -d --privileged --net testnet --ip 172.18.0.4 -v /lib/modules:/lib/modules gcr.io/google-containers/dind-node-amd64:$(cat /docker_version) worker
   docker run -d --privileged --net testnet --ip 172.18.0.5 -v /lib/modules:/lib/modules gcr.io/google-containers/dind-node-amd64:$(cat /docker_version) worker
 }
 
-# kube-proxy attempts to write some values into sysfs for performance. But these
-# values cannot be written outside of the original netns, even if the fs is rw.
-# This causes kube-proxy to panic if run inside dind.
-#
-# Historically, --max-conntrack or --conntrack-max-per-core could be set to 0,
-# and kube-proxy would skip the write (#25543). kube-proxy no longer respects
-# the CLI arguments if a config file is present.
-#
-# Instead, we can make sysfs ro, so that kube-proxy will forego write attempts.
-mount -o remount,ro /sys
+start_host()
+{
+  mount --make-rshared /lib/modules
+  mount --make-rshared /var/lib/docker
+  mount --make-rshared /var/lib/kubelet
+  wait_for_docker
 
-# Start docker.
-mount --make-rshared /lib/modules/
+  docker load -i /dind-node-bundle.tar
+  # Create a mount point for kubernetes credentials.
+  mkdir -p /var/kubernetes
 
-# Make everything rshared. This is necessary to correctly propagate arbitrary
-# host mounts. Leave the other rshared commands, because we shouldn't propagate
-# arbitrary host mounts.
-mount --make-rshared /
-/bin/dockerd-entrypoint.sh &
+  start_cluster
+}
+
 
 # Start a new process to do work.
 if [[ $1 == "worker" ]] ; then
   start_worker
 elif [[ $1 == "master" ]] ; then
   start_master $2
-else
+elif [[ $1 == "dind" ]] ; then
+  # Don't run dindind. Just run a cluster from the current docker level.
   start_cluster
+else
+  # Run dindind, where the cluster lives under a single container.
+  start_host
 fi
-
