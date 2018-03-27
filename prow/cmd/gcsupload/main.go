@@ -19,20 +19,18 @@ limitations under the License.
 package main
 
 import (
-	"flag"
-	"os"
-
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 )
 
 func main() {
-	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-	o := gcs.BindOptions(fs)
-	fs.Parse(os.Args[1:])
-	o.Complete(fs.Args())
+	o, err := gcsupload.ResolveOptions()
+	if err != nil {
+		logrus.Fatalf("Could not resolve options: %v", err)
+	}
 
 	if err := o.Validate(); err != nil {
 		logrus.Fatalf("Invalid options: %v", err)

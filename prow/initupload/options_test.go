@@ -14,37 +14,42 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package initupload
 
 import (
 	"testing"
 
-	"k8s.io/test-infra/prow/pod-utils/wrapper"
+	"k8s.io/test-infra/prow/gcsupload"
+	"k8s.io/test-infra/prow/kube"
 )
 
 func TestOptions_Validate(t *testing.T) {
 	var testCases = []struct {
 		name        string
-		input       options
+		input       Options
 		expectedErr bool
 	}{
 		{
-			name: "all ok",
-			input: options{
-				args: []string{"/usr/bin/true"},
-				wrapperOptions: &wrapper.Options{
-					ProcessLog: "output.txt",
-					MarkerFile: "marker.txt",
+			name: "minimal set ok",
+			input: Options{
+				Log: "testing",
+				Options: &gcsupload.Options{
+					DryRun: true,
+					GCSConfiguration: kube.GCSConfiguration{
+						PathStrategy: kube.PathStrategyExplicit,
+					},
 				},
 			},
 			expectedErr: false,
 		},
 		{
-			name: "missing args",
-			input: options{
-				wrapperOptions: &wrapper.Options{
-					ProcessLog: "output.txt",
-					MarkerFile: "marker.txt",
+			name: "missing clone log",
+			input: Options{
+				Options: &gcsupload.Options{
+					DryRun: true,
+					GCSConfiguration: kube.GCSConfiguration{
+						PathStrategy: kube.PathStrategyExplicit,
+					},
 				},
 			},
 			expectedErr: true,

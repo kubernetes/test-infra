@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package clonerefs
 
 import (
 	"testing"
@@ -25,37 +25,63 @@ import (
 func TestOptions_Validate(t *testing.T) {
 	var testCases = []struct {
 		name        string
-		input       options
+		input       Options
 		expectedErr bool
 	}{
 		{
 			name: "all ok",
-			input: options{
-				srcRoot: "test",
-				log:     "thing",
+			input: Options{
+				SrcRoot: "test",
+				Log:     "thing",
+				GitRefs: []*kube.Refs{
+					{
+						Repo: "repo1",
+						Org:  "org1",
+					},
+				},
 			},
 			expectedErr: false,
 		},
 		{
 			name: "missing src root",
-			input: options{
-				log: "thing",
+			input: Options{
+				Log: "thing",
+				GitRefs: []*kube.Refs{
+					{
+						Repo: "repo1",
+						Org:  "org1",
+					},
+				},
 			},
 			expectedErr: true,
 		},
 		{
-			name: "missing log location",
-			input: options{
-				srcRoot: "test",
+			name: "missing Log location",
+			input: Options{
+				SrcRoot: "test",
+				GitRefs: []*kube.Refs{
+					{
+						Repo: "repo1",
+						Org:  "org1",
+					},
+				},
+			},
+			expectedErr: true,
+		},
+		{
+			name: "missing refs",
+			input: Options{
+				SrcRoot: "test",
+				Log:     "thing",
 			},
 			expectedErr: true,
 		},
 		{
 			name: "separate repos",
-			input: options{
-				srcRoot: "test",
-				log:     "thing",
-				refs: gitRefs{gitRefs: []kube.Refs{
+			input: Options{
+				SrcRoot: "test",
+				Log:     "thing",
+				GitRefs: []*kube.Refs{
 					{
 						Repo: "repo1",
 						Org:  "org1",
@@ -64,16 +90,16 @@ func TestOptions_Validate(t *testing.T) {
 						Repo: "repo2",
 						Org:  "org2",
 					},
-				}},
+				},
 			},
 			expectedErr: false,
 		},
 		{
 			name: "duplicate repos",
-			input: options{
-				srcRoot: "test",
-				log:     "thing",
-				refs: gitRefs{gitRefs: []kube.Refs{
+			input: Options{
+				SrcRoot: "test",
+				Log:     "thing",
+				GitRefs: []*kube.Refs{
 					{
 						Repo: "repo",
 						Org:  "org",
@@ -82,7 +108,7 @@ func TestOptions_Validate(t *testing.T) {
 						Repo: "repo",
 						Org:  "org",
 					},
-				}},
+				},
 			},
 			expectedErr: true,
 		},

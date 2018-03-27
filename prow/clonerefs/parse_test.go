@@ -14,12 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package clone
+package clonerefs
 
 import (
 	"reflect"
 	"testing"
 
+	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -27,13 +28,13 @@ func TestParseRefs(t *testing.T) {
 	var testCases = []struct {
 		name      string
 		value     string
-		expected  kube.Refs
+		expected  *kube.Refs
 		expectErr bool
 	}{
 		{
 			name:  "base branch only",
 			value: "org,repo=branch",
-			expected: kube.Refs{
+			expected: &kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "branch",
@@ -43,7 +44,7 @@ func TestParseRefs(t *testing.T) {
 		{
 			name:  "base branch and sha",
 			value: "org,repo=branch:sha",
-			expected: kube.Refs{
+			expected: &kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "branch",
@@ -54,7 +55,7 @@ func TestParseRefs(t *testing.T) {
 		{
 			name:  "base branch and pr number only",
 			value: "org,repo=branch,1",
-			expected: kube.Refs{
+			expected: &kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "branch",
@@ -65,7 +66,7 @@ func TestParseRefs(t *testing.T) {
 		{
 			name:  "base branch and pr number and sha",
 			value: "org,repo=branch,1:sha",
-			expected: kube.Refs{
+			expected: &kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "branch",
@@ -76,7 +77,7 @@ func TestParseRefs(t *testing.T) {
 		{
 			name:  "base branch, sha, pr number and sha",
 			value: "org,repo=branch:sha,1:pull-sha",
-			expected: kube.Refs{
+			expected: &kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "branch",
@@ -88,7 +89,7 @@ func TestParseRefs(t *testing.T) {
 		{
 			name:  "base branch and multiple prs",
 			value: "org,repo=branch,1,2,3",
-			expected: kube.Refs{
+			expected: &kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "branch",
@@ -99,7 +100,7 @@ func TestParseRefs(t *testing.T) {
 		{
 			name:  "base branch and multiple prs with shas",
 			value: "org,repo=branch:sha,1:pull-1-sha,2:pull-2-sha,3:pull-3-sha",
-			expected: kube.Refs{
+			expected: &kube.Refs{
 				Org:     "org",
 				Repo:    "repo",
 				BaseRef: "branch",
@@ -150,7 +151,7 @@ func TestParseRefs(t *testing.T) {
 		}
 
 		if !testCase.expectErr && !reflect.DeepEqual(actual, testCase.expected) {
-			t.Errorf("%s: incorrect refs parsed:\nexpected\n\t%v,\ngot:\n\t%v", testCase.name, testCase.expected, actual)
+			t.Errorf("%s: incorrect refs parsed:\n%s", testCase.name, diff.ObjectReflectDiff(testCase.expected, actual))
 		}
 	}
 }
@@ -159,16 +160,16 @@ func TestParseAliases(t *testing.T) {
 	var testCases = []struct {
 		name      string
 		value     string
-		expected  PathResolver
+		expected  ClonePathAlias
 		expectErr bool
 	}{
 		{
 			name:  "org and repo provided",
 			value: "org,repo=path",
-			expected: PathResolver{
-				org:  "org",
-				repo: "repo",
-				path: "path",
+			expected: ClonePathAlias{
+				Org:  "org",
+				Repo: "repo",
+				Path: "path",
 			},
 			expectErr: false,
 		},
@@ -199,57 +200,7 @@ func TestParseAliases(t *testing.T) {
 		}
 
 		if !testCase.expectErr && !reflect.DeepEqual(actual, testCase.expected) {
-			t.Errorf("%s: incorrect path resolver parsed:\nexpected\n\t%v,\ngot:\n\t%v", testCase.name, testCase.expected, actual)
-		}
-	}
-}
-
-func TestPathResolver_Resolve(t *testing.T) {
-	var testCases = []struct {
-		name     string
-		org      string
-		repo     string
-		resolver PathResolver
-		expected string
-	}{
-		{
-			name: "matching resolver for org and repo",
-			org:  "org",
-			repo: "repo",
-			resolver: PathResolver{
-				org:  "org",
-				repo: "repo",
-				path: "path",
-			},
-			expected: "path",
-		},
-		{
-			name: "not matching resolver for org and repo",
-			org:  "org",
-			repo: "repo2",
-			resolver: PathResolver{
-				org:  "org",
-				repo: "repo",
-				path: "path",
-			},
-			expected: "",
-		},
-		{
-			name: "not matching resolver for org",
-			org:  "org2",
-			repo: "repo",
-			resolver: PathResolver{
-				org:  "org",
-				repo: "repo",
-				path: "path",
-			},
-			expected: "",
-		},
-	}
-
-	for _, testCase := range testCases {
-		if actual, expected := testCase.resolver.Resolve(testCase.org, testCase.repo), testCase.expected; actual != expected {
-			t.Errorf("%s: incorrect override path resolved:\nexpected\n\t%v,\ngot:\n\t%v", testCase.name, expected, actual)
+			t.Errorf("%s: incorrect path alias parsed:\nexpected\n\t%v,\ngot:\n\t%v", testCase.name, testCase.expected, actual)
 		}
 	}
 }

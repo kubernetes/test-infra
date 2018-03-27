@@ -31,6 +31,8 @@ import (
 	"gopkg.in/robfig/cron.v2"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/test-infra/prow/pod-utils/decorate"
+	"k8s.io/test-infra/prow/pod-utils/decorate/downwardapi"
 
 	"k8s.io/test-infra/prow/kube"
 )
@@ -276,6 +278,12 @@ func parseConfig(c *Config) error {
 		if v.MaxConcurrency < 0 {
 			return fmt.Errorf("job %s jas invalid max_concurrency (%d), it needs to be a non-negative number", v.Name, v.MaxConcurrency)
 		}
+		if err := validatePodSpec(v.Name, kube.PresubmitJob, v.Spec); err != nil {
+			return err
+		}
+		if err := validateLabels(v.Name, v.Labels); err != nil {
+			return err
+		}
 	}
 
 	// Validate postsubmits.
@@ -290,6 +298,12 @@ func parseConfig(c *Config) error {
 		if j.MaxConcurrency < 0 {
 			return fmt.Errorf("job %s jas invalid max_concurrency (%d), it needs to be a non-negative number", j.Name, j.MaxConcurrency)
 		}
+		if err := validatePodSpec(j.Name, kube.PostsubmitJob, j.Spec); err != nil {
+			return err
+		}
+		if err := validateLabels(j.Name, j.Labels); err != nil {
+			return err
+		}
 	}
 
 	// Ensure that the periodic durations are valid and specs exist.
@@ -298,6 +312,12 @@ func parseConfig(c *Config) error {
 			return err
 		}
 		if err := validatePresets(p.Name, p.Labels, p.Spec, c.Presets); err != nil {
+			return err
+		}
+		if err := validatePodSpec(p.Name, kube.PeriodicJob, p.Spec); err != nil {
+			return err
+		}
+		if err := validateLabels(p.Name, p.Labels); err != nil {
 			return err
 		}
 	}
@@ -483,6 +503,16 @@ func parseConfig(c *Config) error {
 
 	return nil
 }
+func validateLabels(name string, labels map[string]string) error {
+	for label := range labels {
+		for _, prowLabel := range decorate.Labels() {
+			if label == prowLabel {
+				return fmt.Errorf("job %s attempted to set Prow-controlled label %s to %s", name, label, labels[label])
+			}
+		}
+	}
+	return nil
+}
 
 func validateAgent(name, agent string, spec *v1.PodSpec) error {
 	// Ensure that k8s presubmits have a pod spec.
@@ -501,6 +531,51 @@ func validatePresets(name string, labels map[string]string, spec *v1.PodSpec, pr
 	for _, preset := range presets {
 		if err := mergePreset(preset, labels, spec); err != nil {
 			return fmt.Errorf("job %s failed to merge presets: %v", name, err)
+		}
+	}
+
+	return nil
+}
+
+func validatePodSpec(name string, jobType kube.ProwJobType, spec *v1.PodSpec) error {
+	if spec == nil {
+		return nil
+	}
+
+	if len(spec.InitContainers) != 0 {
+		return fmt.Errorf("job %s specified init containers, which is not allowed", name)
+	}
+
+	if len(spec.Containers) != 1 {
+		return fmt.Errorf("job %s specified %d containers when only one is allowed", name, len(spec.Containers))
+	}
+
+	for _, env := range spec.Containers[0].Env {
+		for _, prowEnv := range downwardapi.EnvForType(jobType) {
+			if env.Name == prowEnv {
+				return fmt.Errorf("job %s attempted to set Prow-controlled environment variable %s to %s on test container", name, env.Name, env.Value)
+			}
+		}
+	}
+
+	for _, mount := range spec.Containers[0].VolumeMounts {
+		for _, prowMount := range decorate.VolumeMounts() {
+			if mount.Name == prowMount {
+				return fmt.Errorf("job %s attempted to mount a Prow-controlled volume mount %s on test container", name, mount.Name)
+			}
+		}
+		for _, prowMountPath := range decorate.VolumeMountPaths() {
+			if strings.HasPrefix(mount.MountPath, prowMountPath) || strings.HasPrefix(prowMountPath, mount.MountPath) {
+				return fmt.Errorf("job %s mounts %s at %s, which would conflict with a Prow-controlled mount at %s", name, mount.Name, mount.MountPath, prowMountPath)
+			}
+		}
+	}
+
+	for _, volume := range spec.Volumes {
+		for _, prowVolume := range decorate.VolumeMounts() {
+			if volume.Name == prowVolume {
+				return fmt.Errorf("job %s attempted to add a Prow-controlled volume %s", name, volume.Name)
+			}
 		}
 	}
 

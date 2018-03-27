@@ -36,6 +36,11 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
+<<<<<<< HEAD
+	"k8s.io/test-infra/prow/pod-utils/downwardapi"
+=======
+	"k8s.io/test-infra/prow/pod-utils/decorate/downwardapi"
+>>>>>>> cbf2bd5... work
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 )
 
@@ -225,7 +230,7 @@ func (f fallbackHandler) getURL(jobName string) string {
 		return fmt.Sprintf(f.template, jobName)
 	}
 
-	var spec *pjutil.JobSpec
+	var spec *downwardapi.JobSpec
 	cfg := f.configAgent.Config()
 
 	for _, pre := range cfg.AllPresubmits(nil) {

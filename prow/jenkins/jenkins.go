@@ -28,9 +28,14 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/pod-utils/decorate/downwardapi"
 
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
+<<<<<<< HEAD
+	"k8s.io/test-infra/prow/pod-utils/downwardapi"
+=======
+>>>>>>> cbf2bd5... work
 )
 
 const (
@@ -381,7 +386,7 @@ func (c *Client) BuildFromSpec(spec *kube.ProwJobSpec, buildId, prowJobId string
 	if c.dryRun {
 		return nil
 	}
-	env, err := pjutil.EnvForSpec(pjutil.NewJobSpec(*spec, buildId, prowJobId))
+	env, err := downwardapi.EnvForSpec(downwardapi.NewJobSpec(*spec, buildId, prowJobId))
 	if err != nil {
 		return err
 	}

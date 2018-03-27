@@ -29,9 +29,14 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/pod-utils/decorate/downwardapi"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/pjutil"
+<<<<<<< HEAD
+	"k8s.io/test-infra/prow/pod-utils/downwardapi"
+=======
+>>>>>>> cbf2bd5... work
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 )
 
@@ -119,7 +124,7 @@ func main() {
 	}
 }
 
-func getJobFallbackNumber(bucket string, spec *pjutil.JobSpec) (bool, error) {
+func getJobFallbackNumber(bucket string, spec *downwardapi.JobSpec) (bool, error) {
 	url := fmt.Sprintf("%s/%s", strings.TrimSuffix(bucket, "/"), gcs.LatestBuildForSpec(spec, nil)[0])
 
 	resp, err := http.Get(url)
