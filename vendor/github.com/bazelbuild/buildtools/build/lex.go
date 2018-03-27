@@ -37,18 +37,19 @@ func Parse(filename string, data []byte) (*File, error) {
 // An input represents a single input file being parsed.
 type input struct {
 	// Lexing state.
-	filename  string    // name of input file, for errors
-	complete  []byte    // entire input
-	remaining []byte    // remaining input
-	token     []byte    // token being scanned
-	lastToken string    // most recently returned token, for error messages
-	pos       Position  // current input position
-	comments  []Comment // accumulated comments
-	endStmt   int       // position of the end of the current statement
-	depth     int       // nesting of [ ] { } ( )
-	cleanLine bool      // true if the current line only contains whitespace before the current position
-	indent    int       // current line indentation in spaces
-	indents   []int     // stack of indentation levels in spaces
+	filename       string    // name of input file, for errors
+	complete       []byte    // entire input
+	remaining      []byte    // remaining input
+	token          []byte    // token being scanned
+	lastToken      string    // most recently returned token, for error messages
+	pos            Position  // current input position
+	lineComments   []Comment // accumulated line comments
+	suffixComments []Comment // accumulated suffix comments
+	endStmt        int       // position of the end of the current statement
+	depth          int       // nesting of [ ] { } ( )
+	cleanLine      bool      // true if the current line only contains whitespace before the current position
+	indent         int       // current line indentation in spaces
+	indents        []int     // stack of indentation levels in spaces
 
 	// Parser state.
 	file       *File // returned top-level syntax tree
@@ -272,9 +273,13 @@ func (in *input) Lex(val *yySymType) int {
 
 			// Otherwise, save comment for later attachment to syntax tree.
 			if countNL > 1 {
-				in.comments = append(in.comments, Comment{val.pos, "", false})
+				in.lineComments = append(in.lineComments, Comment{val.pos, ""})
 			}
-			in.comments = append(in.comments, Comment{val.pos, val.tok, isSuffix})
+			if isSuffix {
+				in.suffixComments = append(in.suffixComments, Comment{val.pos, val.tok})
+			} else {
+				in.lineComments = append(in.lineComments, Comment{val.pos, val.tok})
+			}
 			countNL = 0
 			continue
 		}
@@ -352,12 +357,17 @@ func (in *input) Lex(val *yySymType) int {
 		in.readRune()
 		return c
 
-	case '.', '-', '%', ':', ';', ',', '/', '*': // single-char tokens
+	case '.', ':', ';', ',': // single-char tokens
 		in.readRune()
 		return c
 
-	case '<', '>', '=', '!', '+': // possibly followed by =
+	case '<', '>', '=', '!', '+', '-', '*', '/', '%': // possibly followed by =
 		in.readRune()
+		if c == '/' && in.peekRune() == '/' {
+			// integer division
+			in.readRune()
+		}
+
 		if in.peekRune() == '=' {
 			in.readRune()
 			switch c {
@@ -369,8 +379,8 @@ func (in *input) Lex(val *yySymType) int {
 				return _EQ
 			case '!':
 				return _NE
-			case '+':
-				return _ADDEQ
+			default:
+				return _AUGM
 			}
 		}
 		return c
@@ -499,6 +509,7 @@ var keywordToken = map[string]int{
 	"in":     _IN,
 	"is":     _IS,
 	"lambda": _LAMBDA,
+	"load":   _LOAD,
 	"not":    _NOT,
 	"or":     _OR,
 	"def":    _DEF,
@@ -807,17 +818,8 @@ func (in *input) assignComments() {
 	// Generate preorder and postorder lists.
 	in.order(in.file)
 
-	// Split into whole-line comments and suffix comments.
-	var line, suffix []Comment
-	for _, com := range in.comments {
-		if com.Suffix {
-			suffix = append(suffix, com)
-		} else {
-			line = append(line, com)
-		}
-	}
-
 	// Assign line comments to syntax immediately following.
+	line := in.lineComments
 	for _, x := range in.pre {
 		start, _ := x.Span()
 		xcom := x.Comment()
@@ -831,6 +833,7 @@ func (in *input) assignComments() {
 	in.file.After = append(in.file.After, line...)
 
 	// Assign suffix comments to syntax immediately before.
+	suffix := in.suffixComments
 	for i := len(in.post) - 1; i >= 0; i-- {
 		x := in.post[i]
 
