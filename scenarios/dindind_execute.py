@@ -36,6 +36,7 @@ def main(envs, cmd):
     """Make important mounts r-shared, then run script and verify it exits 0."""
     check("mount", "--make-rshared", "/lib/modules")
     check("mount", "--make-rshared", "/sys")
+    check("mount", "--make-rshared", "/")
 
     for env in envs:
         key, val = env.split('=', 1)
