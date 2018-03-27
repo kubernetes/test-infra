@@ -1690,7 +1690,7 @@ presubmits:
         - "--repo=k8s.io/test-infra=master"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=kubernetes_execute_bazel"
+        - "--scenario=dindind_execute"
         - "--"
         - "kubetest"
         - "--"
@@ -4160,7 +4160,7 @@ presubmits:
         - --repo=k8s.io/test-infra=master
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
-        - --scenario=kubernetes_execute_bazel
+        - --scenario=dindind_execute
         - --
         - kubetest
         - --
