@@ -202,7 +202,9 @@ func main() {
 	go announceChanges(ctx, opt.inputs, channel)
 
 	// Wait for changed files
-	for range channel {
+	for changes := range channel {
+		log.Printf("Changed: %v", changes)
+		log.Println("Writing config...")
 		if err := doOneshot(client, ctx, opt); err != nil {
 			log.Printf("FAIL: %v", err)
 			continue
