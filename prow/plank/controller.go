@@ -26,6 +26,7 @@ import (
 	"github.com/bwmarrin/snowflake"
 	"github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
+	"k8s.io/test-infra/prow/pod-utils/decorate"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
@@ -480,7 +481,7 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 		return "", "", fmt.Errorf("error getting build ID: %v", err)
 	}
 
-	pod, err := pjutil.ProwJobToPod(pj, buildID)
+	pod, err := decorate.ProwJobToPod(pj, buildID)
 	if err != nil {
 		return "", "", err
 	}

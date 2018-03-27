@@ -93,6 +93,8 @@ filegroup(
         "//prow/pluginhelp:all-srcs",
         "//prow/plugins:all-srcs",
         "//prow/pod-utils/clone:all-srcs",
+        "//prow/pod-utils/decorate:all-srcs",
+        "//prow/pod-utils/downwardapi:all-srcs",
         "//prow/pod-utils/gcs:all-srcs",
         "//prow/pod-utils/wrapper:all-srcs",
         "//prow/prstatus:all-srcs",
