@@ -92,12 +92,11 @@ func TestQueryChange(t *testing.T) {
 	layout := "2006-01-02 15:04:05"
 
 	var testcases = []struct {
-		name        string
-		limit       int
-		lastUpdate  time.Time
-		changes     map[string][]gerrit.ChangeInfo
-		revisions   []string
-		shouldError bool
+		name       string
+		limit      int
+		lastUpdate time.Time
+		changes    map[string][]gerrit.ChangeInfo
+		revisions  []string
 	}{
 		{
 			name:       "no changes",
@@ -115,6 +114,11 @@ func TestQueryChange(t *testing.T) {
 						ID:              "1",
 						CurrentRevision: "1-1",
 						Updated:         now.Add(-time.Hour).Format(layout),
+						Revisions: map[string]gerrit.RevisionInfo{
+							"1-1": {
+								Created: now.Add(-time.Hour).Format(layout),
+							},
+						},
 					},
 				},
 			},
@@ -130,10 +134,35 @@ func TestQueryChange(t *testing.T) {
 						ID:              "1",
 						CurrentRevision: "1-1",
 						Updated:         now.Format(layout),
+						Revisions: map[string]gerrit.RevisionInfo{
+							"1-1": {
+								Created: now.Format(layout),
+							},
+						},
 					},
 				},
 			},
 			revisions: []string{"1-1"},
+		},
+		{
+			name:       "one up-to-date change but stale commit",
+			limit:      2,
+			lastUpdate: now.Add(-time.Minute),
+			changes: map[string][]gerrit.ChangeInfo{
+				"foo": {
+					{
+						ID:              "1",
+						CurrentRevision: "1-1",
+						Updated:         now.Format(layout),
+						Revisions: map[string]gerrit.RevisionInfo{
+							"1-1": {
+								Created: now.Add(-time.Hour).Format(layout),
+							},
+						},
+					},
+				},
+			},
+			revisions: []string{},
 		},
 		{
 			name:       "one up-to-date change, wrong project",
@@ -145,6 +174,11 @@ func TestQueryChange(t *testing.T) {
 						ID:              "1",
 						CurrentRevision: "1-1",
 						Updated:         now.Format(layout),
+						Revisions: map[string]gerrit.RevisionInfo{
+							"1-1": {
+								Created: now.Format(layout),
+							},
+						},
 					},
 				},
 			},
@@ -160,6 +194,11 @@ func TestQueryChange(t *testing.T) {
 						ID:              "1",
 						CurrentRevision: "1-1",
 						Updated:         now.Format(layout),
+						Revisions: map[string]gerrit.RevisionInfo{
+							"1-1": {
+								Created: now.Format(layout),
+							},
+						},
 					},
 				},
 				"bar": {
@@ -167,6 +206,11 @@ func TestQueryChange(t *testing.T) {
 						ID:              "2",
 						CurrentRevision: "2-1",
 						Updated:         now.Format(layout),
+						Revisions: map[string]gerrit.RevisionInfo{
+							"2-1": {
+								Created: now.Format(layout),
+							},
+						},
 					},
 				},
 			},
@@ -182,11 +226,21 @@ func TestQueryChange(t *testing.T) {
 						ID:              "1",
 						CurrentRevision: "1-1",
 						Updated:         now.Format(layout),
+						Revisions: map[string]gerrit.RevisionInfo{
+							"1-1": {
+								Created: now.Format(layout),
+							},
+						},
 					},
 					{
 						ID:              "2",
 						CurrentRevision: "2-1",
 						Updated:         now.Add(-time.Hour).Format(layout),
+						Revisions: map[string]gerrit.RevisionInfo{
+							"2-1": {
+								Created: now.Add(-time.Hour).Format(layout),
+							},
+						},
 					},
 				},
 			},
@@ -202,26 +256,44 @@ func TestQueryChange(t *testing.T) {
 						ID:              "1",
 						CurrentRevision: "1-1",
 						Updated:         now.Format(layout),
+						Revisions: map[string]gerrit.RevisionInfo{
+							"1-1": {
+								Created: now.Format(layout),
+							},
+						},
 					},
 					{
 						ID:              "2",
 						CurrentRevision: "2-1",
 						Updated:         now.Format(layout),
+						Revisions: map[string]gerrit.RevisionInfo{
+							"2-1": {
+								Created: now.Format(layout),
+							},
+						},
 					},
 					{
 						ID:              "3",
 						CurrentRevision: "3-2",
 						Updated:         now.Format(layout),
-					},
-					{
-						ID:              "3",
-						CurrentRevision: "3-1",
-						Updated:         now.Format(layout),
+						Revisions: map[string]gerrit.RevisionInfo{
+							"3-2": {
+								Created: now.Format(layout),
+							},
+							"3-1": {
+								Created: now.Format(layout),
+							},
+						},
 					},
 					{
 						ID:              "4",
 						CurrentRevision: "4-1",
 						Updated:         now.Add(-time.Hour).Format(layout),
+						Revisions: map[string]gerrit.RevisionInfo{
+							"4-1": {
+								Created: now.Add(-time.Hour).Format(layout),
+							},
+						},
 					},
 				},
 			},
@@ -249,14 +321,7 @@ func TestQueryChange(t *testing.T) {
 			lastUpdate: tc.lastUpdate,
 		}
 
-		changes, err := c.QueryChanges()
-		if err != nil && !tc.shouldError {
-			t.Errorf("tc %s, expect no error, but got %v", tc.name, err)
-			continue
-		} else if err == nil && tc.shouldError {
-			t.Errorf("tc %s, expect error, but got none", tc.name)
-			continue
-		}
+		changes := c.QueryChanges()
 
 		revisions := []string{}
 		for _, change := range changes {

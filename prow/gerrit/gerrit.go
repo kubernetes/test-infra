@@ -45,7 +45,7 @@ type gerritAuthentication interface {
 
 type gerritAccount interface {
 	GetAccount(name string) (*gerrit.AccountInfo, *gerrit.Response, error)
-	SetAccountName(accountID string, input *gerrit.AccountNameInput) (*string, *gerrit.Response, error)
+	SetUsername(accountID string, input *gerrit.UsernameInput) (*string, *gerrit.Response, error)
 }
 
 type gerritChange interface {
@@ -133,15 +133,8 @@ func (c *Controller) Auth() error {
 		return err
 	}
 
-	// set account name
-	// TODO(krzyzacy): this call needs specific permission from gerrit
-	account := strconv.Itoa(self.AccountID)
-	name, _, err := c.account.SetAccountName(account, &gerrit.AccountNameInput{Name: "gerrit-prow-robot"})
-	if err != nil {
-		logrus.WithError(err).Errorf("Fail to set account name for: %s", account)
-	}
+	logrus.Infof("Authentication successful, Username: %s", self.Name)
 
-	logrus.Infof("Authentication successful, Username: %s", *name)
 	return nil
 }
 
@@ -165,10 +158,7 @@ func (c *Controller) SaveLastSync(lastSync time.Time) error {
 // and creates prowjobs according to presubmit specs
 func (c *Controller) Sync() error {
 	syncTime := time.Now()
-	changes, err := c.QueryChanges()
-	if err != nil {
-		return fmt.Errorf("failed query changes : %v", err)
-	}
+	changes := c.QueryChanges()
 
 	for _, change := range changes {
 		if err := c.ProcessChange(change); err != nil {
@@ -184,65 +174,87 @@ func (c *Controller) Sync() error {
 	return nil
 }
 
-// QueryChanges will query all gerrit changes since controller's last sync loop
-func (c *Controller) QueryChanges() (map[string]gerrit.ChangeInfo, error) {
-	// store a map of changeID:change
-	pending := map[string]gerrit.ChangeInfo{}
+func (c *Controller) queryProjectChanges(proj string) ([]gerrit.ChangeInfo, error) {
+	pending := []gerrit.ChangeInfo{}
 
-	// can only query against one project at a time :-(
-	for _, proj := range c.projects {
-		opt := &gerrit.QueryChangeOptions{}
-		opt.Query = append(opt.Query, "project:"+proj+"+status:open")
-		//opt.Query = append(opt.Query, )
-		opt.AdditionalFields = []string{"CURRENT_REVISION", "CURRENT_COMMIT"}
+	opt := &gerrit.QueryChangeOptions{}
+	opt.Query = append(opt.Query, "project:"+proj+"+status:open")
+	opt.AdditionalFields = []string{"CURRENT_REVISION", "CURRENT_COMMIT"}
 
-		start := 0
+	start := 0
 
-		for {
-			opt.Limit = c.ca.Config().Gerrit.RateLimit
-			opt.Start = start
+	for {
+		opt.Limit = c.ca.Config().Gerrit.RateLimit
+		opt.Start = start
 
-			// The change output is sorted by the last update time, most recently updated to oldest updated.
-			// Gerrit API docs: https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
-			changes, _, err := c.gc.QueryChanges(opt)
+		// The change output is sorted by the last update time, most recently updated to oldest updated.
+		// Gerrit API docs: https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
+		changes, _, err := c.gc.QueryChanges(opt)
+		if err != nil {
+			// should not happen? Let next sync loop catch up
+			return pending, fmt.Errorf("failed to query gerrit changes: %v", err)
+		}
+
+		logrus.Infof("Find %d changes from query %v", len(*changes), opt.Query)
+
+		if len(*changes) == 0 {
+			return pending, nil
+		}
+		start += len(*changes)
+
+		for _, change := range *changes {
+			// if we already processed this change, then we stop the current sync loop
+			const layout = "2006-01-02 15:04:05"
+			updated, err := time.Parse(layout, change.Updated)
 			if err != nil {
-				// should not happen? Let next sync loop catch up
-				logrus.WithError(err).Errorf("failed to query gerrit changes: %v", err)
-				break
+				logrus.WithError(err).Errorf("Parse time %v failed", change.Updated)
+				continue
 			}
 
-			logrus.Infof("Find %d changes from query %v", len(*changes), opt.Query)
-
-			if len(*changes) == 0 {
-				break
-			}
-			start += len(*changes)
-
-			for _, change := range *changes {
-				// if we already processed this change, then we stop the current sync loop
-				const layout = "2006-01-02 15:04:05"
-				updated, err := time.Parse(layout, change.Updated)
-				if err != nil {
-					logrus.WithError(err).Error("Parse time %v failed", change.Updated)
+			// process if updated later than last updated
+			// stop if update was stale
+			if updated.After(c.lastUpdate) {
+				// we need to make sure the change update is from a new commit change
+				rev, ok := change.Revisions[change.CurrentRevision]
+				if !ok {
+					logrus.WithError(err).Errorf("(should not happen?)cannot find current revision for change %v", change.ID)
 					continue
 				}
 
-				// process if updated later than last updated
-				// stop if already parsed
-				if updated.After(c.lastUpdate) {
-					// here we use changeID as the key, since multiple revisions can occur for the same change
-					// and since we sorted by recent timestamp, first change will be the most recent revision
-					if _, ok := pending[change.ID]; !ok {
-						pending[change.ID] = change
-					}
-				} else {
-					break
+				created, err := time.Parse(layout, rev.Created)
+				if err != nil {
+					logrus.WithError(err).Errorf("Parse time %v failed", rev.Created)
+					continue
 				}
+
+				if !created.After(c.lastUpdate) {
+					// stale commit
+					continue
+				}
+
+				pending = append(pending, change)
+			} else {
+				return pending, nil
 			}
 		}
 	}
+}
 
-	return pending, nil
+// QueryChanges will query all valid gerrit changes since controller's last sync loop
+func (c *Controller) QueryChanges() []gerrit.ChangeInfo {
+	// store a map of changeID:change
+	pending := []gerrit.ChangeInfo{}
+
+	// can only query against one project at a time :-(
+	for _, proj := range c.projects {
+		if res, err := c.queryProjectChanges(proj); err != nil {
+			logrus.WithError(err).Errorf("fail to query changes for project %s", proj)
+		} else {
+			pending = append(pending, res...)
+		}
+	}
+
+	return pending
 }
 
 // ProcessChange creates new presubmit prowjobs base off the gerrit changes
