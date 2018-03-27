@@ -284,8 +284,6 @@ presubmits:
     always_run: true         # Run for every PR, or only when requested.
     rerun_command: "/test kubeflow-presubmit"
     trigger: "(?m)^/test( all| kubeflow-presubmit),?(\\s+|$)"
-    branches:
-    - master
     labels:
       preset-service-account: true
     spec:
@@ -348,8 +346,6 @@ presubmits:
     always_run: true         # Run for every PR, or only when requested.
     rerun_command: "/test kubeflow-tf-operator-presubmit"
     trigger: "(?m)^/test( all| kubeflow-tf-operator-presubmit),?(\\s+|$)"
-    branches:
-    - master
     labels:
       preset-service-account: true
     spec:
@@ -6322,8 +6318,6 @@ postsubmits:
   kubeflow/kubeflow:
   - name: kubeflow-postsubmit
     agent: kubernetes
-    branches:
-    - master
     labels:
       preset-service-account: true
     spec:
@@ -6370,8 +6364,6 @@ postsubmits:
   kubeflow/tf-operator:
   - name: kubeflow-tf-operator-postsubmit
     agent: kubernetes
-    branches:
-    - master
     labels:
       preset-service-account: true
     spec:
