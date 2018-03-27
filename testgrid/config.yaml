@@ -628,6 +628,8 @@ test_groups:
 - name: maintenance-ci-testgrid-config-upload
   gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-testgrid-config-upload
   num_failures_to_alert: 1
+  code_search_url_template:
+    url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
 - name: maintenance-ci-aws-janitor
   gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-aws-janitor
 - name: maintenance-ci-janitor
