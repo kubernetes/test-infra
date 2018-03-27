@@ -494,7 +494,7 @@ func TestNotificationIsCurrent(t *testing.T) {
 	warningInterval := day
 	createdYesterday := createdNow.Add(-(warningInterval + time.Hour))
 
-	realSample := "@foo @bar @baz\n\n**Action required**: This issue requires label changes. If the required changes are not made within 6 days, the issue will be moved out of the v1.8 milestone.\n\n_**kind**_: Must specify at most one of [`kind/bug`, `kind/cleanup`, `kind/feature`].\n_**priority**_: Must specify at most one of [`priority/critical-urgent`, `priority/important-longterm`, `priority/important-soon`].\n_**sig owner**_: Must specify at least one label prefixed with `sig/`.\n\n<details>\nAdditional instructions available <a href=\"https://github.com/kubernetes/community/blob/master/contributors/devel/release/issues.md\">here</a>\n</details>"
+	realSample := "@foo @bar @baz\n\n**Action required**: This issue requires label changes. If the required changes are not made within 6 days, the issue will be moved out of the v1.10 milestone.\n\n_**kind**_: Must specify at most one of [`kind/bug`, `kind/cleanup`, `kind/feature`].\n_**priority**_: Must specify at most one of [`priority/critical-urgent`, `priority/important-longterm`, `priority/important-soon`].\n_**sig owner**_: Must specify at least one label prefixed with `sig/`.\n\n<details>\nAdditional instructions available <a href=\"https://github.com/kubernetes/sig-release/blob/master/ephemera/issues.md\">here</a>\n</details>"
 
 	tests := map[string]struct {
 		message            string
