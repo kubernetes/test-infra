@@ -10594,7 +10594,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=110
+      - --timeout=340
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
 

@@ -4777,7 +4777,7 @@
       "--gcp-zone=us-east2-a",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Feature:Ingress\\]|\\[Feature:NEG\\]",
-      "--timeout=90m"
+      "--timeout=320m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
