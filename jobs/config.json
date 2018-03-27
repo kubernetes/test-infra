@@ -158,7 +158,7 @@
       "--gcp-project=k8s-jkns-e2e-gce-stackdriver",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:StackdriverMonitoring\\]|\\[Feature:StackdriverCustomMetrics\\]|\\[Feature:StackdriverMetadataAgent\\] --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:StackdriverMonitoring\\]|\\[Feature:StackdriverCustomMetrics\\]|\\[Feature:StackdriverMetadataAgent\\]|\\[Feature:StackdriverExternalMetrics\\] --minStartupPods=8",
       "--timeout=50m"
     ],
     "scenario": "kubernetes_e2e",
@@ -3925,7 +3925,7 @@
       "--gcp-project=k8s-jkns-e2e-gce-stackdriver",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:StackdriverMonitoring\\]|\\[Feature:StackdriverCustomMetrics\\]|\\[Feature:StackdriverMetadataAgent\\] --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:StackdriverMonitoring\\]|\\[Feature:StackdriverCustomMetrics\\]|\\[Feature:StackdriverMetadataAgent\\]|\\[Feature:StackdriverExternalMetrics\\] --minStartupPods=8",
       "--timeout=50m"
     ],
     "scenario": "kubernetes_e2e",
@@ -6051,7 +6051,7 @@
       "--image-family=cos-beta",
       "--image-project=cos-cloud",
       "--provider=gke",
-      "--test_args=--ginkgo.focus=\\[Feature:StackdriverMonitoring\\]|\\[Feature:StackdriverCustomMetrics\\]|\\[Feature:StackdriverMetadataAgent\\] --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:StackdriverMonitoring\\]|\\[Feature:StackdriverCustomMetrics\\]|\\[Feature:StackdriverMetadataAgent\\]|\\[Feature:StackdriverExternalMetrics\\] --minStartupPods=8",
       "--timeout=50m"
     ],
     "scenario": "kubernetes_e2e",
@@ -6108,7 +6108,7 @@
       "--image-family=cos-beta",
       "--image-project=cos-cloud",
       "--provider=gke",
-      "--test_args=--ginkgo.focus=\\[Feature:StackdriverMonitoring\\]|\\[Feature:StackdriverCustomMetrics\\]|\\[Feature:StackdriverMetadataAgent\\] --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:StackdriverMonitoring\\]|\\[Feature:StackdriverCustomMetrics\\]|\\[Feature:StackdriverMetadataAgent\\]|\\[Feature:StackdriverExternalMetrics\\] --minStartupPods=8",
       "--timeout=50m"
     ],
     "scenario": "kubernetes_e2e",
@@ -6165,7 +6165,7 @@
       "--image-family=cos-beta",
       "--image-project=cos-cloud",
       "--provider=gke",
-      "--test_args=--ginkgo.focus=\\[Feature:StackdriverMonitoring\\]|\\[Feature:StackdriverCustomMetrics\\]|\\[Feature:StackdriverMetadataAgent\\] --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:StackdriverMonitoring\\]|\\[Feature:StackdriverCustomMetrics\\]|\\[Feature:StackdriverMetadataAgent\\]|\\[Feature:StackdriverExternalMetrics\\] --minStartupPods=8",
       "--timeout=50m"
     ],
     "scenario": "kubernetes_e2e",
@@ -6222,7 +6222,7 @@
       "--image-family=cos-beta",
       "--image-project=cos-cloud",
       "--provider=gke",
-      "--test_args=--ginkgo.focus=\\[Feature:StackdriverMonitoring\\]|\\[Feature:StackdriverCustomMetrics\\]|\\[Feature:StackdriverMetadataAgent\\] --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:StackdriverMonitoring\\]|\\[Feature:StackdriverCustomMetrics\\]|\\[Feature:StackdriverMetadataAgent\\]|\\[Feature:StackdriverExternalMetrics\\] --minStartupPods=8",
       "--timeout=50m"
     ],
     "scenario": "kubernetes_e2e",
@@ -6279,7 +6279,7 @@
       "--image-family=cos-beta",
       "--image-project=cos-cloud",
       "--provider=gke",
-      "--test_args=--ginkgo.focus=\\[Feature:StackdriverMonitoring\\]|\\[Feature:StackdriverCustomMetrics\\]|\\[Feature:StackdriverMetadataAgent\\] --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:StackdriverMonitoring\\]|\\[Feature:StackdriverCustomMetrics\\]|\\[Feature:StackdriverMetadataAgent\\]|\\[Feature:StackdriverExternalMetrics\\] --minStartupPods=8",
       "--timeout=50m"
     ],
     "scenario": "kubernetes_e2e",
@@ -7471,7 +7471,7 @@
       "--gcp-zone=us-central1-f",
       "--gke-environment=test",
       "--provider=gke",
-      "--test_args=--ginkgo.focus=\\[Feature:StackdriverMonitoring\\]|\\[Feature:StackdriverCustomMetrics\\]|\\[Feature:StackdriverMetadataAgent\\] --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:StackdriverMonitoring\\]|\\[Feature:StackdriverCustomMetrics\\]|\\[Feature:StackdriverMetadataAgent\\]|\\[Feature:StackdriverExternalMetrics\\] --minStartupPods=8",
       "--timeout=50m"
     ],
     "scenario": "kubernetes_e2e",
