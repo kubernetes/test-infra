@@ -37,6 +37,7 @@ approve:
   - kubernetes/community
   - kubernetes/contrib
   - kubernetes/dashboard
+  - kubernetes/examples
   - kubernetes/features
   - kubernetes/federation
   - kubernetes/gengo
@@ -205,6 +206,9 @@ plugins:
   - approve
 
   kubernetes/dns:
+  - trigger
+  
+  kubernetes/examples:
   - trigger
 
   kubernetes/features:
