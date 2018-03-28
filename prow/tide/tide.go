@@ -441,7 +441,7 @@ func (c *Controller) Sync() error {
 			defer wg.Done()
 			for sp := range sps {
 				if pool, err := c.syncSubpool(sp); err != nil {
-					sp.log.WithError(err).Errorf("Syncing subpool.")
+					sp.log.WithError(err).Errorf("Error syncing subpool.")
 				} else {
 					poolChan <- pool
 				}
@@ -721,10 +721,18 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 						time.Sleep(backoff)
 						backoff *= 2
 					}
+				} else if _, ok = err.(github.UnauthorizedToPushError); ok {
+					// Github let us know that the token used cannot push to the branch.
+					// Even if the robot is set up to have write access to the repo, an
+					// overzealous branch protection setting will not allow the robot to
+					// push to a specific branch.
+					log.WithError(err).Error("Merge failed: Branch needs to be configured to allow this robot to push.")
+					break
 				} else if _, ok = err.(github.UnmergablePRError); ok {
 					log.WithError(err).Error("Merge failed: PR is unmergable. How did it pass tests?!")
 					break
 				} else {
+					log.WithError(err).Error("Merge failed.")
 					return err
 				}
 			} else {
