@@ -192,6 +192,7 @@ func byRepoAndNumber(prs []PullRequest) map[string]PullRequest {
 func requirementDiff(pr *PullRequest, q *config.TideQuery) (string, int) {
 	const maxLabelChars = 50
 	var desc string
+	var diff int
 	// Drops labels if needed to fit the description text area, but keep at least 1.
 	truncate := func(labels []string) []string {
 		i := 1
@@ -218,6 +219,7 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery) (string, int) {
 			missingLabels = append(missingLabels, l1)
 		}
 	}
+	diff += len(missingLabels)
 	if len(missingLabels) > 0 {
 		sort.Strings(missingLabels)
 		trunced := truncate(missingLabels)
@@ -237,6 +239,7 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery) (string, int) {
 			}
 		}
 	}
+	diff += len(presentLabels)
 	if desc == "" && len(presentLabels) > 0 {
 		sort.Strings(presentLabels)
 		trunced := truncate(presentLabels)
@@ -247,10 +250,30 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery) (string, int) {
 		}
 	}
 
-	// TODO(cjwagner): List reviews (states:[APPROVED], first: 1) as part of open
-	// PR query and include status context description.
+	// fixing label issues takes precedence over status contexts
+	var contexts []string
+	for _, commit := range pr.Commits.Nodes {
+		if commit.Commit.OID == pr.HeadRefOID {
+			for _, ctx := range unsuccessfulContexts(commit.Commit.Status.Contexts) {
+				contexts = append(contexts, string(ctx.Context))
+			}
+		}
+	}
+	diff += len(contexts)
+	if desc == "" && len(contexts) > 0 {
+		sort.Strings(contexts)
+		trunced := truncate(contexts)
+		if len(trunced) == 1 {
+			desc = fmt.Sprintf(" Job %s has not succeeded.", trunced[0])
+		} else {
+			desc = fmt.Sprintf(" Jobs %s have not succeeded.", strings.Join(trunced, ", "))
+		}
+	}
 
-	return desc, len(missingLabels) + len(presentLabels)
+	// TODO(cjwagner): List reviews (states:[APPROVED], first: 1) as part of open
+	// PR query.
+
+	return desc, diff
 }
 
 // Returns expected status state and description.
@@ -501,15 +524,23 @@ func isPassingTests(log *logrus.Entry, ghc githubClient, pr PullRequest) bool {
 		// If we can't get the status of the commit, assume that it is failing.
 		return false
 	}
+	return len(unsuccessfulContexts(contexts)) == 0
+}
+
+// unsuccessfulContexts determines which contexts from the list are failed that
+// we care about. For instance, we do not care about our own context.
+func unsuccessfulContexts(contexts []Context) []Context {
+	var failed []Context
 	for _, ctx := range contexts {
 		if string(ctx.Context) == statusContext {
 			continue
 		}
 		if ctx.State != githubql.StatusStateSuccess {
-			return false
+			failed = append(failed, ctx)
 		}
 	}
-	return true
+
+	return failed
 }
 
 func pickSmallestPassingNumber(log *logrus.Entry, ghc githubClient, prs []PullRequest) (bool, PullRequest) {
