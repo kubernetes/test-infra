@@ -152,6 +152,12 @@ type Refs struct {
 	BaseSHA string `json:"base_sha,omitempty"`
 
 	Pulls []Pull `json:"pulls,omitempty"`
+
+	// PathAlias is the location under <root-dir>/src
+	// where this repository is cloned. If this is not
+	// set, <root-dir>/src/github.com/org/repo will be
+	// used as the default.
+	PathAlias string `json:"path_alias,omitempty"`
 }
 
 func (r Refs) String() string {

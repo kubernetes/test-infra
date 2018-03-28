@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package clone
+package clonerefs
 
 import (
 	"fmt"
@@ -37,8 +37,8 @@ import (
 //   kubernetes,test-infra=master:abcde12,34:fghij56
 //   kubernetes,test-infra=master,34:fghij56
 //   kubernetes,test-infra=master:abcde12,34:fghij56,78
-func ParseRefs(value string) (kube.Refs, error) {
-	gitRef := kube.Refs{}
+func ParseRefs(value string) (*kube.Refs, error) {
+	gitRef := &kube.Refs{}
 	values := strings.SplitN(value, "=", 2)
 	if len(values) != 2 {
 		return gitRef, fmt.Errorf("refspec %s invalid: does not contain '='", value)
@@ -86,31 +86,20 @@ func ParseRefs(value string) (kube.Refs, error) {
 	return gitRef, nil
 }
 
-// PathResolver provides path overrides for a given set
-// of repos
-type PathResolver struct {
-	org  string
-	repo string
+// ClonePathAlias provides path overrides for a given repo
+type ClonePathAlias struct {
+	Org  string
+	Repo string
 
-	path string
+	Path string
 }
 
-// Resolve returns an override clone path if the org and
-// repo match the settings in in the resolver
-func (r *PathResolver) Resolve(org, repo string) string {
-	if r.org == org && r.repo == repo {
-		return r.path
-	}
-
-	return ""
-}
-
-func (r *PathResolver) String() string {
-	return fmt.Sprintf("%s,%s=%s", r.org, r.repo, r.path)
+func (r *ClonePathAlias) String() string {
+	return fmt.Sprintf("%s,%s=%s", r.Org, r.Repo, r.Path)
 }
 
 // ParseAliases parses a human-provided string into a
-// PathResolver that resolves the path under the
+// ClonePathAlias that resolves the path under the
 // $GOPATH/src directory where the repository should
 // be cloned. The format for the human-provided string
 // is:
@@ -118,20 +107,20 @@ func (r *PathResolver) String() string {
 // Examples:
 //   kubernetes,test-infra=k8s.io/test-infra
 //   myorg,non-go-project=somewhere/else
-func ParseAliases(value string) (PathResolver, error) {
-	var resolver PathResolver
+func ParseAliases(value string) (ClonePathAlias, error) {
+	var resolver ClonePathAlias
 	values := strings.SplitN(value, "=", 2)
 	if len(values) != 2 {
 		return resolver, fmt.Errorf("path override %s invalid: does not contain '='", value)
 	}
 	info := values[0]
-	resolver.path = values[1]
+	resolver.Path = values[1]
 
 	infoValues := strings.SplitN(info, ",", 2)
 	switch len(infoValues) {
 	case 2:
-		resolver.org = infoValues[0]
-		resolver.repo = infoValues[1]
+		resolver.Org = infoValues[0]
+		resolver.Repo = infoValues[1]
 		return resolver, nil
 	default:
 		return resolver, fmt.Errorf("path override %s invalid: does not contain 'org,repo' as prefix", value)
