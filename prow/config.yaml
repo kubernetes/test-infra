@@ -6053,6 +6053,26 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
 
+  kubernetes-sigs/poseidon:
+  - name: pull-poseidon-verify
+    context: pull-poseidon-verify
+    agent: kubernetes
+    branches:
+    - master
+    always_run: true
+    trigger: "(?m)^/test( all| pull-poseidon-verify),?(\\s+|$)"
+    rerun_command: "/test pull-poseidon-verify"
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+        args:
+        - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+
   kubernetes/test-infra:
   - name: pull-test-infra-bazel
     agent: kubernetes
