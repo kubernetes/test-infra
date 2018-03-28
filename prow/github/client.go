@@ -1441,6 +1441,10 @@ type UnmergablePRBaseChangedError string
 
 func (e UnmergablePRBaseChangedError) Error() string { return string(e) }
 
+type UnauthorizedToPushError string
+
+func (e UnauthorizedToPushError) Error() string { return string(e) }
+
 // Merge merges a PR.
 func (c *Client) Merge(org, repo string, pr int, details MergeDetails) error {
 	c.log("Merge", org, repo, pr, details)
@@ -1457,6 +1461,9 @@ func (c *Client) Merge(org, repo string, pr int, details MergeDetails) error {
 	if ec == 405 {
 		if strings.Contains(ge.Message, "Base branch was modified") {
 			return UnmergablePRBaseChangedError(ge.Message)
+		}
+		if strings.Contains(ge.Message, "You're not authorized to push to this branch") {
+			return UnauthorizedToPushError(ge.Message)
 		}
 		return UnmergablePRError(ge.Message)
 	} else if ec == 409 {
