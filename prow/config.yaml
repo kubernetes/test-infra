@@ -65,6 +65,7 @@ tide:
     - kubernetes/community
     - kubernetes/contrib
     - kubernetes/dashboard
+    - kubernetes/examples
     - kubernetes/features
     - kubernetes/federation
     - kubernetes/gengo
