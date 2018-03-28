@@ -210,6 +210,7 @@ plugins:
   
   kubernetes/examples:
   - trigger
+  - approve
 
   kubernetes/features:
   - approve
