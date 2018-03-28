@@ -19,34 +19,34 @@ ENV container docker
 ARG DEBIAN_FRONTEND=noninteractive
 RUN clean-install apt-utils \
     apt-transport-https \
+    bash \
     ca-certificates \
     curl \
+    ethtool \
     gnupg2 \
-    software-properties-common \
-    curl \
-    lxc \
     iptables \
     iproute2 \
-    socat \
-    util-linux \
-    mount ebtables \
-    ethtool \
-    vim \
-    bash \
-    procps \
-    less \
+    jq \
     kmod \
+    lsb-core \
+    less \
+    lxc \
+    mount ebtables \
+    procps \
+    socat \
+    software-properties-common \
+    util-linux \
+    vim \
     systemd \
-    systemd-sysv \
-    jq
+    systemd-sysv
 
 
 # Install docker.
 RUN curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - && apt-key fingerprint 0EBFCD88 && add-apt-repository \
     "deb [arch=amd64] https://download.docker.com/linux/debian \
-    jessie \
+    $(lsb_release -cs) \
     stable"
-RUN clean-install docker-ce=17.03.2~ce-0~debian-jessie
+RUN clean-install docker-ce=17.03.2~ce-0~debian-stretch
 
 # Install our startup configuration for docker.
 COPY daemon.json /etc/docker/daemon.json

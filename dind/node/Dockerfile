@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/k8s-testimages/dind-test-base-amd64:0.1
+FROM gcr.io/k8s-testimages/dind-test-base-amd64:0.2
 
 # Get our short startup scripts first, because they're least likely to change.
 COPY init-wrapper.sh /init-wrapper.sh
