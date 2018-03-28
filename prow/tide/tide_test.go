@@ -404,6 +404,7 @@ func TestExpectedStatus(t *testing.T) {
 	testcases := []struct {
 		name string
 
+		baseref  string
 		labels   []string
 		contexts []Context
 		inPool   bool
@@ -458,6 +459,15 @@ func TestExpectedStatus(t *testing.T) {
 			desc:  fmt.Sprintf(statusNotInPool, " Needs need-1 label."),
 		},
 		{
+			name:    "against excluded branch",
+			baseref: "bad",
+			labels:  neededLabels,
+			inPool:  false,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " Merging to branch bad is forbidden."),
+		},
+		{
 			name:     "only failed tide context",
 			labels:   neededLabels,
 			contexts: []Context{{Context: githubql.String(statusContext), State: githubql.StatusStateError}},
@@ -508,8 +518,9 @@ func TestExpectedStatus(t *testing.T) {
 	queriesByRepo := map[string]config.TideQueries{
 		"": {
 			config.TideQuery{
-				Labels:        neededLabels,
-				MissingLabels: forbiddenLabels,
+				ExcludedBranches: []string{"bad"},
+				Labels:           neededLabels,
+				MissingLabels:    forbiddenLabels,
 			},
 			config.TideQuery{
 				Labels: []string{"1", "2", "3", "4", "5", "6", "7"}, // lots of requirements
@@ -520,6 +531,12 @@ func TestExpectedStatus(t *testing.T) {
 	for _, tc := range testcases {
 		t.Logf("Test Case: %q\n", tc.name)
 		var pr PullRequest
+		pr.BaseRef = struct {
+			Name   githubql.String
+			Prefix githubql.String
+		}{
+			Name: githubql.String(tc.baseref),
+		}
 		for _, label := range tc.labels {
 			pr.Labels.Nodes = append(
 				pr.Labels.Nodes,

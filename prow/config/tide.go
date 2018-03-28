@@ -85,6 +85,8 @@ func (t *Tide) MergeMethod(org, repo string) github.PullRequestMergeType {
 type TideQuery struct {
 	Repos []string `json:"repos,omitempty"`
 
+	ExcludedBranches []string `json:"excludedBranches,omitempty"`
+
 	Labels        []string `json:"labels,omitempty"`
 	MissingLabels []string `json:"missingLabels,omitempty"`
 
@@ -95,6 +97,9 @@ func (tq *TideQuery) Query() string {
 	toks := []string{"is:pr", "state:open"}
 	for _, r := range tq.Repos {
 		toks = append(toks, fmt.Sprintf("repo:\"%s\"", r))
+	}
+	for _, b := range tq.ExcludedBranches {
+		toks = append(toks, fmt.Sprintf("-base:\"%s\"", b))
 	}
 	for _, l := range tq.Labels {
 		toks = append(toks, fmt.Sprintf("label:\"%s\"", l))
