@@ -7134,6 +7134,45 @@
       "sig-gcp"
     ]
   },
+  "ci-kubernetes-e2e-gke-regional-serial": {
+    "args": [
+      "--check-leaked-resources",
+      "--deployment=gke",
+      "--extract=ci/latest",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=gci",
+      "--gcp-region=us-central1",
+      "--gke-command-group=beta",
+      "--gke-environment=test",
+      "--provider=gke",
+      "--test_args=--gce-multizone=true --gce-region=us-central1 --ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=500m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-gcp"
+    ]
+  },
+  "ci-kubernetes-e2e-gke-regional-slow": {
+    "args": [
+      "--check-leaked-resources",
+      "--deployment=gke",
+      "--extract=ci/latest",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=gci",
+      "--gcp-region=us-central1",
+      "--ginkgo-parallel",
+      "--gke-command-group=beta",
+      "--gke-environment=test",
+      "--provider=gke",
+      "--test_args=--gce-multizone=true --gce-region=us-central1 --ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=150m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-gcp"
+    ]
+  },
   "ci-kubernetes-e2e-gke-scale-correctness": {
     "args": [
       "--cluster=gke-scale-cluster",
