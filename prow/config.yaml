@@ -635,6 +635,22 @@ presubmits:
       volumes:
       - name: docker-graph
         emptyDir: {}
+  - name: pull-heapster-unit
+    agent: kubernetes
+    always_run: false
+    context: pull-heapster-unit
+    rerun_command: "/test pull-heapster-unit"
+    trigger: "(?m)^/test pull-heapster-unit,?(\\s+|$)"
+    labels:
+      preset-service-account: true
+      preset-k8s-ssh: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
 
   kubernetes/kube-deploy:
   - name: pull-kube-deploy-build
