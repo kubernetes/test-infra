@@ -404,8 +404,9 @@ func TestExpectedStatus(t *testing.T) {
 	testcases := []struct {
 		name string
 
-		labels []string
-		inPool bool
+		labels   []string
+		contexts []Context
+		inPool   bool
 
 		state string
 		desc  string
@@ -457,9 +458,40 @@ func TestExpectedStatus(t *testing.T) {
 			desc:  fmt.Sprintf(statusNotInPool, " Needs need-1 label."),
 		},
 		{
-			name:   "unknown requirement",
+			name:     "only failed tide context",
+			labels:   neededLabels,
+			contexts: []Context{{Context: githubql.String(statusContext), State: githubql.StatusStateError}},
+			inPool:   false,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, ""),
+		},
+		{
+			name:     "single bad context",
+			labels:   neededLabels,
+			contexts: []Context{{Context: githubql.String("job-name"), State: githubql.StatusStateError}},
+			inPool:   false,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " Job job-name has not succeeded."),
+		},
+		{
+			name:   "multiple bad contexts",
 			labels: neededLabels,
+			contexts: []Context{
+				{Context: githubql.String("job-name"), State: githubql.StatusStateError},
+				{Context: githubql.String("other-job-name"), State: githubql.StatusStateError},
+			},
 			inPool: false,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " Jobs job-name, other-job-name have not succeeded."),
+		},
+		{
+			name:     "unknown requirement",
+			labels:   neededLabels,
+			contexts: []Context{{Context: githubql.String("job-name"), State: githubql.StatusStateSuccess}},
+			inPool:   false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, ""),
@@ -492,6 +524,20 @@ func TestExpectedStatus(t *testing.T) {
 			pr.Labels.Nodes = append(
 				pr.Labels.Nodes,
 				struct{ Name githubql.String }{Name: githubql.String(label)},
+			)
+		}
+		if len(tc.contexts) > 0 {
+			pr.HeadRefOID = githubql.String("head")
+			pr.Commits.Nodes = append(
+				pr.Commits.Nodes,
+				struct{ Commit Commit }{
+					Commit: Commit{
+						Status: struct{ Contexts []Context }{
+							Contexts: tc.contexts,
+						},
+						OID: githubql.String("head"),
+					},
+				},
 			)
 		}
 		var pool map[string]PullRequest
@@ -1144,7 +1190,8 @@ func TestServeHTTP(t *testing.T) {
 }
 
 func TestHeadContexts(t *testing.T) {
-	type commitContext struct { // one context per commit for testing
+	type commitContext struct {
+		// one context per commit for testing
 		context string
 		sha     string
 	}
