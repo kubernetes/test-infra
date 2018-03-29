@@ -699,9 +699,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test-1-10
 - name: ci-test-infra-bazel
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-bazel
-# rktnetes
-- name: kubernetes-rktnetes
-  gcs_prefix: rktnetes-jenkins/logs/kubernetes-e2e-gce
 # Tectonic (contact: @ethernetdan on GitHub)
 - name: ci-tectonic-e2e-aws
   gcs_prefix: upstream-jenkins-logs/logs/ci-tectonic-e2e-aws
@@ -4746,11 +4743,6 @@ dashboards:
     test_group_name: pull-kubernetes-e2e-containerd-gce
     base_options: 'width=10'
 
-- name: sig-node-rkt
-  dashboard_tab:
-  - name: rktnetes
-    test_group_name: kubernetes-rktnetes
-
 - name: sig-node-cri
   dashboard_tab:
   - name: sig-node-docker-node-conformance
@@ -5776,7 +5768,6 @@ dashboard_groups:
   - sig-node-cos-image
   - sig-node-kubelet
   - sig-node-containerd
-  - sig-node-rkt
   - sig-node-ppc64le
   - sig-node-cri-o
   - sig-node-cri
