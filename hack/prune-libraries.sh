@@ -28,8 +28,10 @@ set -o pipefail
 # dependencies outside of vendor, e.g. helper commands we have vendored.
 # It should probably match the list in Gopkg.toml.
 REQUIRED=(
+  //vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle:gazelle
   //vendor/github.com/golang/dep/cmd/dep:dep
   //vendor/github.com/client9/misspell/cmd/misspell:misspell
+  //vendor/github.com/kubernetes/repo-infra/kazel:kazel
 )
 
 # darwin is great

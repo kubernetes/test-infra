@@ -2,8 +2,10 @@
 
 # Updating this list likely also requires updating hack/prune-libraries.sh.
 required = [
+  "github.com/bazelbuild/bazel-gazelle/cmd/gazelle",
+  "github.com/client9/misspell/cmd/misspell",
   "github.com/golang/dep/cmd/dep",
-  "github.com/client9/misspell/cmd/misspell"
+  "github.com/kubernetes/repo-infra/kazel",
 ]
 
 [prune]
@@ -38,8 +40,9 @@ required = [
   version = "0.17.0"
 
 [[constraint]]
+  # used by both prow/plugins/buildifier and gazelle
   name = "github.com/bazelbuild/buildtools"
-  revision = "0e53062d74ecbdd699b007d74c996b6c73039c7f"
+  revision = "80c7f0d45d7e40fa1f7362852697d4a03df557b3"
 
 [[constraint]]
   name = "github.com/client9/misspell"
@@ -49,3 +52,6 @@ required = [
   name = "github.com/peterbourgon/diskv"
   revision= "2973218375c3d13162e1d3afe1708aaee318ef3f"
 
+[[constraint]]
+  name = "github.com/bazelbuild/bazel-gazelle"
+  version = "0.10.1"

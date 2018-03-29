@@ -27,17 +27,13 @@ import (
 	"k8s.io/test-infra/prow/kube"
 )
 
-func Run(refs kube.Refs, dir, gitUserName, gitUserEmail string, pathResolvers []PathResolver) Record {
-	logrus.WithFields(logrus.Fields{"refs": refs}).Infof("Cloning refs")
+// Run clones the refs under the prescribed directory and optionally
+// configures the git username and email in the repository as well.
+func Run(refs *kube.Refs, dir, gitUserName, gitUserEmail string) Record {
+	logrus.WithFields(logrus.Fields{"refs": refs}).Info("Cloning refs")
 	record := Record{Refs: refs}
 	repositoryURL := fmt.Sprintf("https://github.com/%s/%s.git", refs.Org, refs.Repo)
-	clonePath := fmt.Sprintf("github.com/%s/%s", refs.Org, refs.Repo)
-	for _, resolver := range pathResolvers {
-		if override := resolver.Resolve(refs.Org, refs.Repo); override != "" {
-			clonePath = override
-		}
-	}
-	cloneDir := fmt.Sprintf("%s/src/%s", dir, clonePath)
+	cloneDir := PathForRefs(dir, refs)
 
 	commands := []cloneCommand{
 		func() (string, string, error) {
@@ -84,7 +80,7 @@ func Run(refs kube.Refs, dir, gitUserName, gitUserEmail string, pathResolvers []
 
 	for _, command := range commands {
 		formattedCommand, output, err := command()
-		logrus.WithFields(logrus.Fields{"command": formattedCommand, "output": output, "error": err}).Infof("Ran clone command")
+		logrus.WithFields(logrus.Fields{"command": formattedCommand, "output": output, "error": err}).Info("Ran command")
 		message := ""
 		if err != nil {
 			message = err.Error()
@@ -97,6 +93,18 @@ func Run(refs kube.Refs, dir, gitUserName, gitUserEmail string, pathResolvers []
 	}
 
 	return record
+}
+
+// PathForRefs determines the full path to where
+// refs should be cloned
+func PathForRefs(baseDir string, refs *kube.Refs) string {
+	var clonePath string
+	if refs.PathAlias != "" {
+		clonePath = refs.PathAlias
+	} else {
+		clonePath = fmt.Sprintf("github.com/%s/%s", refs.Org, refs.Repo)
+	}
+	return fmt.Sprintf("%s/src/%s", baseDir, clonePath)
 }
 
 type cloneCommand func() (string, string, error)

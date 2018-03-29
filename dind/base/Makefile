@@ -18,7 +18,7 @@
 PREFIX = gcr.io/k8s-testimages
 NAME = dind-test-base
 ARCH = amd64
-TAG = 0.1
+TAG = 0.2
 
 IMAGE_NO_TAG = ${PREFIX}/${NAME}-${ARCH}
 IMAGE = ${IMAGE_NO_TAG}:$(TAG)

@@ -253,6 +253,11 @@ const (
 var opPrec = map[string]int{
 	"=":   precAssign,
 	"+=":  precAssign,
+	"-=":  precAssign,
+	"*=":  precAssign,
+	"/=":  precAssign,
+	"//=": precAssign,
+	"%=":  precAssign,
 	"or":  precOr,
 	"and": precAnd,
 	"<":   precCmp,
@@ -265,6 +270,7 @@ var opPrec = map[string]int{
 	"-":   precAdd,
 	"*":   precMultiply,
 	"/":   precMultiply,
+	"//":  precMultiply,
 	"%":   precMultiply,
 }
 

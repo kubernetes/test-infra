@@ -37,6 +37,7 @@ approve:
   - kubernetes/community
   - kubernetes/contrib
   - kubernetes/dashboard
+  - kubernetes/examples
   - kubernetes/features
   - kubernetes/federation
   - kubernetes/gengo
@@ -49,6 +50,7 @@ approve:
   - kubernetes/kubernetes-template-project
   - kubernetes/kube-state-metrics
   - kubernetes/minikube
+  - kubernetes/node-problem-detector
   - kubernetes/repo-infra
   - kubernetes/sig-release
   - kubernetes/steering
@@ -111,7 +113,9 @@ slack:
     channels:
     - kubernetes-dev
     whitelist:
-    - k8s-merge-robot
+    - k8s-ci-robot # future home of tide
+    - k8s-merge-robot # submit queue
+    - k8s-release-robot # anago
     - wojtek-t # 1.7 patch release manager
     - jpbetz # 1.8 patch release manager
     - mbohlool # 1.9 patch release manager
@@ -203,6 +207,10 @@ plugins:
 
   kubernetes/dns:
   - trigger
+  
+  kubernetes/examples:
+  - trigger
+  - approve
 
   kubernetes/features:
   - approve
@@ -257,6 +265,10 @@ plugins:
 
   kubernetes/minikube:
   - approve
+
+  kubernetes/node-problem-detector:
+  - approve
+  - blunderbuss
 
   kubernetes/repo-infra:
   - approve
