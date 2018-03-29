@@ -12098,6 +12098,32 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
 
+- interval: 1h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gke-regional-serial
+  labels:
+    preset-gke-alpha-service: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=520
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+
+- interval: 1h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gke-regional-slow
+  labels:
+    preset-gke-alpha-service: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=170
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+
 - cron: '1 17 * * 0' # Run at 9:01PST (17:01 UTC) on sunday
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-scale-correctness

@@ -445,6 +445,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-multizone
 - name: ci-kubernetes-e2e-gke-regional
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-regional
+- name: ci-kubernetes-e2e-gke-regional-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-regional-serial
+- name: ci-kubernetes-e2e-gke-regional-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-regional-slow
 - name: ci-kubernetes-e2e-gke-scale-correctness
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-scale-correctness
   days_of_results: 60
@@ -2996,6 +3000,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gke-multizone
   - name: gke-regional
     test_group_name: ci-kubernetes-e2e-gke-regional
+  - name: gke-regional-serial
+    test_group_name: ci-kubernetes-e2e-gke-regional-serial
+  - name: gke-regional-slow
+    test_group_name: ci-kubernetes-e2e-gke-regional-slow
   - name: gci-gke-reboot
     test_group_name: ci-kubernetes-e2e-gci-gke-reboot
   - name: gke-updown
