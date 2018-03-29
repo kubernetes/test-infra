@@ -143,6 +143,8 @@ labels:
   - color: d2b48c
     name: sig/gcp
   - color: d2b48c
+    name: sig/ibmcloud
+  - color: d2b48c
     name: sig/instrumentation
   - color: d2b48c
     name: sig/multicluster
