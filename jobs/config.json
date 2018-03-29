@@ -12181,6 +12181,16 @@
       "sig-instrumentation"
     ]
   },
+  "pull-heapster-unit": {
+    "args": [
+      "make",
+      "test-unit"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-instrumentation"
+    ]
+  },
   "pull-ingress-gce-test": {
     "args": [
       "make",
