@@ -22,12 +22,10 @@ import (
 )
 
 // BindOptions adds flags to the FlagSet that populate
-// the GCS upload options struct returned.
-func BindOptions(fs *flag.FlagSet) *Options {
-	o := Options{}
-	fs.StringVar(&o.ProcessLog, "process-log", "", "path to the log where stdout and stderr are streamed for the process we execute")
-	fs.StringVar(&o.MarkerFile, "marker-file", "", "file we write the return code of the process we execute once it has finished running")
-	return &o
+// the wrapper options struct provided.
+func BindOptions(options *Options, fs *flag.FlagSet) {
+	fs.StringVar(&options.ProcessLog, "process-log", "", "path to the log where stdout and stderr are streamed for the process we execute")
+	fs.StringVar(&options.MarkerFile, "marker-file", "", "file we write the return code of the process we execute once it has finished running")
 }
 
 // Options exposes the configuration options
@@ -35,12 +33,12 @@ func BindOptions(fs *flag.FlagSet) *Options {
 type Options struct {
 	// ProcessLog will contain std{out,err} from the
 	// wrapped test process
-	ProcessLog string
+	ProcessLog string `json:"process_log"`
 
 	// MarkerFile will be written with the exit code
 	// of the test process or an internal error code
 	// if the entrypoint fails.
-	MarkerFile string
+	MarkerFile string `json:"marker_file"`
 }
 
 // Validate ensures that the set of options are

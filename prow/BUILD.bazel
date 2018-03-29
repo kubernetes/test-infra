@@ -75,6 +75,7 @@ filegroup(
         "//prow/commentpruner:all-srcs",
         "//prow/config:all-srcs",
         "//prow/cron:all-srcs",
+        "//prow/entrypoint:all-srcs",
         "//prow/errorutil:all-srcs",
         "//prow/external-plugins/cherrypicker:all-srcs",
         "//prow/external-plugins/needs-rebase:all-srcs",

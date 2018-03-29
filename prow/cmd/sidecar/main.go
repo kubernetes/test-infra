@@ -52,7 +52,7 @@ func (o *options) Validate() error {
 func gatherOptions() options {
 	o := options{}
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-	o.wrapperOptions = wrapper.BindOptions(fs)
+	wrapper.BindOptions(o.wrapperOptions, fs)
 	o.gcsOptions = gcs.BindOptions(fs)
 	fs.Parse(os.Args[1:])
 	o.gcsOptions.Complete(fs.Args())
