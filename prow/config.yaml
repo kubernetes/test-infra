@@ -12089,7 +12089,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-regional
   labels:
-    preset-gke-alpha-service: true
+    preset-service-account: true
     preset-k8s-ssh: true
   spec:
     containers:
@@ -12102,7 +12102,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-regional-serial
   labels:
-    preset-gke-alpha-service: true
+    preset-service-account: true
     preset-k8s-ssh: true
   spec:
     containers:
@@ -12115,7 +12115,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-regional-slow
   labels:
-    preset-gke-alpha-service: true
+    preset-service-account: true
     preset-k8s-ssh: true
   spec:
     containers:
