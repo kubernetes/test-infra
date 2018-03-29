@@ -7193,6 +7193,41 @@ periodics:
       - name: GOPATH
         value: /go
 
+- name: ci-docker-node-conformance
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --timeout=90
+      - --root=/go/src
+      env:
+      - name: GOPATH
+        value: /go
+
+- name: ci-docker-node-features
+  interval: 4h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --timeout=200
+      - --root=/go/src
+      env:
+      - name: GOPATH
+        value: /go
+
+
 - interval: 1h
   name: ci-federation-build
   agent: kubernetes
