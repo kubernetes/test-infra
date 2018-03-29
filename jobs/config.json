@@ -491,7 +491,7 @@
       "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
       "--node-tests=true",
       "--provider=gce",
-      "--test_args=--nodes=8 --focus=\"\\[Conformance\\] --skip=\"\\[Flaky\\]|\\[Serial\\]|\\[Feature:.+\\]\"",
+      "--test_args=--nodes=8 --focus=\"\\[Conformance\\]\" --skip=\"\\[Flaky\\]|\\[Serial\\]|\\[Feature:.+\\]\"",
       "--timeout=65m"
     ],
     "scenario": "kubernetes_e2e",
@@ -507,7 +507,7 @@
       "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
       "--node-tests=true",
       "--provider=gce",
-      "--test_args=--nodes=8 --focus=\"\\[Feature:.+\\] --skip=\"\\[Flaky\\]|\\[Serial\\]|\\[Conformance\\]\"",
+      "--test_args=--nodes=8 --focus=\"\\[Feature:.+\\]\" --skip=\"\\[Flaky\\]|\\[Serial\\]|\\[Conformance\\]\"",
       "--timeout=180m"
     ],
     "scenario": "kubernetes_e2e",
