@@ -49,7 +49,7 @@ cp ${KUBE_ROOT}/bazel-bin/test/e2e/e2e.test ${CLUSTER_DIR}
 cat ${KUBE_ROOT}/bazel-out/stable-status.txt | grep STABLE_BUILD_SCM_REVISION | awk '{print $2}' > ${CLUSTER_DIR}/source_version
 cat ${KUBE_ROOT}/bazel-out/stable-status.txt | grep STABLE_DOCKER_TAG | awk '{print $2}' > ${CLUSTER_DIR}/docker_version
 
-# Get systemd wrapper (needed until we put cluster-up into a systemd target).
+# Get systemd wrapper (needed until we have systemd run start.sh at startup).
 cp ${TOOL_ROOT}/init-wrapper.sh ${CLUSTER_DIR}
 # Get the cluster-up script.
 cp ${TOOL_ROOT}/start.sh ${CLUSTER_DIR}
@@ -64,3 +64,5 @@ cd ${CLUSTER_DIR}
 docker save gcr.io/google-containers/dind-node-amd64:$(cat docker_version) -o dind-node-bundle.tar
 make build K8S_VERSION=$(cat docker_version)
 cd -
+
+rm -rf ${CLUSTER_DIR}

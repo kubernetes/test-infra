@@ -13,7 +13,7 @@ go_library(
     deps = [
         "//prow/errorutil:go_default_library",
         "//prow/kube:go_default_library",
-        "//prow/pjutil:go_default_library",
+        "//prow/pod-utils/downwardapi:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/google.golang.org/api/option:go_default_library",
@@ -44,7 +44,7 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//prow/kube:go_default_library",
-        "//prow/pjutil:go_default_library",
+        "//prow/pod-utils/downwardapi:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/equality:go_default_library",
     ],

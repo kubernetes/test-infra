@@ -16,6 +16,10 @@ external_services:
     gcs_bucket: kubernetes-jenkins/
     gcs_pull_prefix: kubernetes-jenkins/pr-logs/pull
     prow_url: prow.k8s.io
+  kubernetes-sigs:
+    gcs_bucket: kubernetes-jenkins/
+    gcs_pull_prefix: kubernetes-jenkins/pr-logs/pull
+    prow_url: prow.k8s.io
   tensorflow:
     gcs_bucket: kubernetes-jenkins/
     gcs_pull_prefix: kubernetes-jenkins/pr-logs/pull

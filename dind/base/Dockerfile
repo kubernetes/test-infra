@@ -19,33 +19,38 @@ ENV container docker
 ARG DEBIAN_FRONTEND=noninteractive
 RUN clean-install apt-utils \
     apt-transport-https \
+    bash \
     ca-certificates \
     curl \
+    ethtool \
     gnupg2 \
-    software-properties-common \
-    curl \
-    lxc \
     iptables \
     iproute2 \
-    socat \
-    util-linux \
-    mount ebtables \
-    ethtool \
-    vim \
-    bash \
-    procps \
-    less \
+    jq \
     kmod \
+    lsb-core \
+    less \
+    lxc \
+    mount ebtables \
+    procps \
+    socat \
+    software-properties-common \
+    util-linux \
+    vim \
     systemd \
-    systemd-sysv \
-    jq
+    systemd-sysv
+
 
 # Install docker.
 RUN curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - && apt-key fingerprint 0EBFCD88 && add-apt-repository \
     "deb [arch=amd64] https://download.docker.com/linux/debian \
-    jessie \
+    $(lsb_release -cs) \
     stable"
-RUN clean-install docker-ce
+RUN clean-install docker-ce=17.03.2~ce-0~debian-stretch
+
+# Install our startup configuration for docker.
+COPY daemon.json /etc/docker/daemon.json
+COPY docker.service /lib/systemd/system/docker.service
 
 # Install the magic wrapper.
 COPY dind /bin/dind
@@ -60,11 +65,6 @@ RUN for i in /lib/systemd/system/sysinit.target.wants/*; do [ "${i##*/}" = "syst
   rm -f /lib/systemd/system/sockets.target.wants/*initctl*; \
   rm -f /lib/systemd/system/basic.target.wants/*;\
   rm -f /lib/systemd/system/anaconda.target.wants/*;
-
-# We don't want systemd to start docker for us.
-RUN find / -name docker.conf -exec rm {} \;
-RUN find / -name docker.service -exec rm {} \;
-RUN find / -name docker.socket -exec rm {} \;
 
 # TODO(Q-Lee): SIGRTMIN+3 is the shutdown signal for systemd. Investigate why "STOPSIGNAL SIGRTMIN+3" breaks.
 

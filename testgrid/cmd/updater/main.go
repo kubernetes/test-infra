@@ -25,7 +25,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"hash/crc32"
 	"io"
 	"io/ioutil"
 	"log"
@@ -40,6 +39,7 @@ import (
 
 	"k8s.io/test-infra/testgrid/config"
 	"k8s.io/test-infra/testgrid/state"
+	"k8s.io/test-infra/testgrid/util/gcs"
 
 	"cloud.google.com/go/storage"
 	"github.com/golang/protobuf/proto"
@@ -50,9 +50,9 @@ import (
 
 // options configures the updater
 type options struct {
-	config           gcsPath // gs://path/to/config/proto
-	creds            string  // TODO(fejta): implement
-	confirm          bool    // TODO(fejta): implement
+	config           gcs.Path // gs://path/to/config/proto
+	creds            string
+	confirm          bool
 	group            string
 	groupConcurrency int
 	buildConcurrency int
@@ -63,7 +63,7 @@ func (o *options) validate() error {
 	if o.config.String() == "" {
 		return errors.New("empty --config")
 	}
-	if o.config.bucket() == "k8s-testgrid" { // TODO(fejta): remove
+	if o.config.Bucket() == "k8s-testgrid" { // TODO(fejta): remove
 		return fmt.Errorf("--config=%s cannot start with gs://k8s-testgrid", o.config)
 	}
 	if o.groupConcurrency == 0 {
@@ -89,57 +89,17 @@ func gatherOptions() options {
 	return o
 }
 
-// gcsPath parses gs://bucket/obj urls
-type gcsPath struct {
-	url url.URL
-}
-
-// String() returns the gs://bucket/obj url
-func (g gcsPath) String() string {
-	return g.url.String()
-}
-
-// Set() updates value from a gs://bucket/obj string, validating errors.
-func (g *gcsPath) Set(v string) error {
-	u, err := url.Parse(v)
-	switch {
-	case err != nil:
-		return fmt.Errorf("invalid gs:// url %s: %v", v, err)
-	case u.Scheme != "gs":
-		return fmt.Errorf("must use a gs:// url: %s", v)
-	case strings.Contains(u.Host, ":"):
-		return fmt.Errorf("gs://bucket may not contain a port: %s", v)
-	case u.Opaque != "":
-		return fmt.Errorf("url must start with gs://: %s", v)
-	case u.User != nil:
-		return fmt.Errorf("gs://bucket may not contain an user@ prefix: %s", v)
-	case u.RawQuery != "":
-		return fmt.Errorf("gs:// url may not contain a ?query suffix: %s", v)
-	case u.Fragment != "":
-		return fmt.Errorf("gs:// url may not contain a #fragment suffix: %s", v)
+// testGroupPath() returns the path to a test_group proto given this proto
+func testGroupPath(g gcs.Path, name string) (*gcs.Path, error) {
+	u, err := url.Parse(name)
+	if err != nil {
+		return nil, fmt.Errorf("invalid url %s: %v", name, err)
 	}
-	g.url = *u
-	return nil
-}
-
-// bucket() returns bucket in gs://bucket/obj
-func (g gcsPath) bucket() string {
-	return g.url.Host
-}
-
-// object() returns path/to/something in gs://bucket/path/to/something
-func (g gcsPath) object() string {
-	if g.url.Path == "" {
-		return g.url.Path
+	np, err := g.ResolveReference(u)
+	if err == nil && np.Bucket() != g.Bucket() {
+		return nil, fmt.Errorf("testGroup %s should not change bucket", name)
 	}
-	return g.url.Path[1:]
-}
-
-// testGroup() returns the path to a test_group proto given this proto
-func (g gcsPath) testGroup(name string) gcsPath {
-	newG := g
-	newG.url.Path = path.Join(path.Dir(g.url.Path), name)
-	return newG
+	return np, nil
 }
 
 type Build struct {
@@ -858,13 +818,13 @@ func (b Builds) Less(i, j int) bool {
 }
 
 // listBuilds lists and sorts builds under path, sending them to the builds channel.
-func listBuilds(client *storage.Client, ctx context.Context, path gcsPath) (Builds, error) {
+func listBuilds(client *storage.Client, ctx context.Context, path gcs.Path) (Builds, error) {
 	log.Printf("LIST: %s", path)
-	p := path.object()
+	p := path.Object()
 	if p[len(p)-1] != '/' {
 		p += "/"
 	}
-	bkt := client.Bucket(path.bucket())
+	bkt := client.Bucket(path.Bucket())
 	it := bkt.Objects(ctx, &storage.Query{
 		Delimiter: "/",
 		Prefix:    p,
@@ -1062,18 +1022,17 @@ func main() {
 	if err := opt.validate(); err != nil {
 		log.Fatalf("Invalid flags: %v", err)
 	}
-	if opt.creds != "" {
-		log.Fatalf("Service accounts are not yet supported")
+	if !opt.confirm {
+		log.Println("--confirm=false (DRY-RUN): will not write to gcs")
 	}
-	// opt.confirm
 
 	ctx := context.Background()
-	client, err := storage.NewClient(ctx)
+	client, err := gcs.ClientWithCreds(ctx, opt.creds)
 	if err != nil {
 		log.Fatalf("Failed to create storage client: %v", err)
 	}
 
-	cfg, err := ReadConfig(client.Bucket(opt.config.bucket()).Object(opt.config.object()), ctx)
+	cfg, err := ReadConfig(client.Bucket(opt.config.Bucket()).Object(opt.config.Object()), ctx)
 	if err != nil {
 		log.Fatalf("Failed to read %s: %v", opt.config, err)
 	}
@@ -1086,7 +1045,11 @@ func main() {
 		wg.Add(1)
 		go func() {
 			for tg := range groups {
-				if err := updateGroup(client, ctx, tg, opt.config.testGroup(tg.Name), opt.buildConcurrency, opt.confirm); err != nil {
+				tgp, err := testGroupPath(opt.config, tg.Name)
+				if err == nil {
+					err = updateGroup(client, ctx, tg, *tgp, opt.buildConcurrency, opt.confirm)
+				}
+				if err != nil {
 					log.Printf("FAIL: %v", err)
 				}
 			}
@@ -1114,10 +1077,10 @@ func main() {
 	wg.Wait()
 }
 
-func updateGroup(client *storage.Client, ctx context.Context, tg config.TestGroup, gridPath gcsPath, concurrency int, write bool) error {
+func updateGroup(client *storage.Client, ctx context.Context, tg config.TestGroup, gridPath gcs.Path, concurrency int, write bool) error {
 	o := tg.Name
 
-	var tgPath gcsPath
+	var tgPath gcs.Path
 	if err := tgPath.Set("gs://" + tg.GcsPrefix); err != nil {
 		return fmt.Errorf("group %s has an invalid gcs_prefix %s: %v", o, tg.GcsPrefix, err)
 	}
@@ -1141,7 +1104,7 @@ func updateGroup(client *storage.Client, ctx context.Context, tg config.TestGrou
 		log.Printf("  Not writing %s (%d bytes) to %s", o, len(buf), tgp)
 	} else {
 		log.Printf("  Writing %s (%d bytes) to %s", o, len(buf), tgp)
-		if err := uploadBytes(client, ctx, tgp, buf); err != nil {
+		if err := gcs.Upload(client, ctx, tgp, buf); err != nil {
 			return fmt.Errorf("upload %s to %s failed: %v", o, tgp, err)
 		}
 	}
@@ -1149,7 +1112,7 @@ func updateGroup(client *storage.Client, ctx context.Context, tg config.TestGrou
 	return nil
 }
 
-// marhshalGrid serializes a state proto into zlib-compressed bytes and its crc32 checksum.
+// marhshalGrid serializes a state proto into zlib-compressed bytes.
 func marshalGrid(grid state.Grid) ([]byte, error) {
 	buf, err := proto.Marshal(&grid)
 	if err != nil {
@@ -1164,31 +1127,4 @@ func marshalGrid(grid state.Grid) ([]byte, error) {
 		return nil, fmt.Errorf("zlib closing failed: %v", err)
 	}
 	return zbuf.Bytes(), nil
-}
-
-func calcCRC(buf []byte) uint32 {
-	return crc32.Checksum(buf, crc32.MakeTable(crc32.Castagnoli))
-}
-
-// uploadBytes writes bytes to the specified gcsPath
-func uploadBytes(client *storage.Client, ctx context.Context, path gcsPath, buf []byte) error {
-	crc := calcCRC(buf)
-	w := client.Bucket(path.bucket()).Object(path.object()).NewWriter(ctx)
-	w.SendCRC32C = true
-	// Send our CRC32 to ensure google received the same data we sent.
-	// See checksum example at:
-	// https://godoc.org/cloud.google.com/go/storage#Writer.Write
-	w.ObjectAttrs.CRC32C = crc
-	w.ProgressFunc = func(bytes int64) {
-		log.Printf("Uploading %s: %d/%d...", path, bytes, len(buf))
-	}
-	if n, err := w.Write(buf); err != nil {
-		return fmt.Errorf("writing %s failed: %v", path, err)
-	} else if n != len(buf) {
-		return fmt.Errorf("partial write of %s: %d < %d", path, n, len(buf))
-	}
-	if err := w.Close(); err != nil {
-		return fmt.Errorf("closing %s failed: %v", path, err)
-	}
-	return nil
 }

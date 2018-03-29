@@ -104,12 +104,30 @@
   version = "v1.12.53"
 
 [[projects]]
+  name = "github.com/bazelbuild/bazel-gazelle"
+  packages = [
+    "cmd/gazelle",
+    "internal/config",
+    "internal/label",
+    "internal/merger",
+    "internal/packages",
+    "internal/pathtools",
+    "internal/repos",
+    "internal/resolve",
+    "internal/rules",
+    "internal/version",
+    "internal/wspace",
+  ]
+  revision = "ff4d67f395b3f4d1dc9810eeceb61585fea252cb"
+  version = "0.10.1"
+
+[[projects]]
   name = "github.com/bazelbuild/buildtools"
   packages = [
     "build",
     "tables",
   ]
-  revision = "0e53062d74ecbdd699b007d74c996b6c73039c7f"
+  revision = "80c7f0d45d7e40fa1f7362852697d4a03df557b3"
 
 [[projects]]
   name = "github.com/beorn7/perks"
@@ -290,9 +308,10 @@
   version = "v0.4.1"
 
 [[projects]]
+  branch = "master"
   name = "github.com/golang/glog"
   packages = ["."]
-  revision = "44145f04b68cf362d9c4df2182967c2275eaefed"
+  revision = "23def4e6c14b4da8ac2ed8007337bc5eb5007998"
 
 [[projects]]
   name = "github.com/golang/lint"
@@ -442,6 +461,12 @@
   packages = ["."]
   revision = "59fac5042749a5afb9af70e813da1dd5474f0167"
   version = "1.0.1"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/kubernetes/repo-infra"
+  packages = ["kazel"]
+  revision = "06471ba92308f7bfff038aa0850f31cbb7254ea3"
 
 [[projects]]
   branch = "master"
@@ -674,6 +699,7 @@
   packages = [
     "go/gcexportdata",
     "go/gcimporter15",
+    "go/vcs",
   ]
   revision = "1f0f7f68c993a0ff4e0fe1793c08cdd14cc243cb"
 
@@ -924,6 +950,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "474cd175c758c45d510116cf5fa8d25fbf5c7925d5de404282e372473cb16f67"
+  inputs-digest = "37b2fe59147da0681ef31f3ec9b026c16b658f9f02d4476d2c6720bd64a6797e"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -22,19 +22,19 @@ import (
 	"k8s.io/apimachinery/pkg/api/equality"
 
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/pjutil"
+	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
 func TestPathForSpec(t *testing.T) {
 	testCases := []struct {
 		name     string
-		spec     *pjutil.JobSpec
+		spec     *downwardapi.JobSpec
 		builder  RepoPathBuilder
 		expected string
 	}{
 		{
 			name: "periodic",
-			spec: &pjutil.JobSpec{
+			spec: &downwardapi.JobSpec{
 				Type:    kube.PeriodicJob,
 				Job:     "job",
 				BuildId: "number",
@@ -43,7 +43,7 @@ func TestPathForSpec(t *testing.T) {
 		},
 		{
 			name: "postsubmit",
-			spec: &pjutil.JobSpec{Type: kube.PostsubmitJob,
+			spec: &downwardapi.JobSpec{Type: kube.PostsubmitJob,
 				Job:     "job",
 				BuildId: "number",
 			},
@@ -51,7 +51,7 @@ func TestPathForSpec(t *testing.T) {
 		},
 		{
 			name: "batch",
-			spec: &pjutil.JobSpec{Type: kube.BatchJob,
+			spec: &downwardapi.JobSpec{Type: kube.BatchJob,
 				Job:     "job",
 				BuildId: "number",
 			},
@@ -59,7 +59,7 @@ func TestPathForSpec(t *testing.T) {
 		},
 		{
 			name: "presubmit full default legacy",
-			spec: &pjutil.JobSpec{
+			spec: &downwardapi.JobSpec{
 				Type:    kube.PresubmitJob,
 				Job:     "job",
 				BuildId: "number",
@@ -78,7 +78,7 @@ func TestPathForSpec(t *testing.T) {
 		},
 		{
 			name: "presubmit default org legacy",
-			spec: &pjutil.JobSpec{
+			spec: &downwardapi.JobSpec{
 				Type:    kube.PresubmitJob,
 				Job:     "job",
 				BuildId: "number",
@@ -97,7 +97,7 @@ func TestPathForSpec(t *testing.T) {
 		},
 		{
 			name: "presubmit nondefault legacy",
-			spec: &pjutil.JobSpec{
+			spec: &downwardapi.JobSpec{
 				Type:    kube.PresubmitJob,
 				Job:     "job",
 				BuildId: "number",
@@ -126,27 +126,27 @@ func TestPathForSpec(t *testing.T) {
 func TestAliasForSpec(t *testing.T) {
 	testCases := []struct {
 		name     string
-		spec     *pjutil.JobSpec
+		spec     *downwardapi.JobSpec
 		expected string
 	}{
 		{
 			name:     "periodic",
-			spec:     &pjutil.JobSpec{Type: kube.PeriodicJob},
+			spec:     &downwardapi.JobSpec{Type: kube.PeriodicJob},
 			expected: "",
 		},
 		{
 			name:     "batch",
-			spec:     &pjutil.JobSpec{Type: kube.BatchJob},
+			spec:     &downwardapi.JobSpec{Type: kube.BatchJob},
 			expected: "",
 		},
 		{
 			name:     "postsubmit",
-			spec:     &pjutil.JobSpec{Type: kube.PostsubmitJob},
+			spec:     &downwardapi.JobSpec{Type: kube.PostsubmitJob},
 			expected: "",
 		},
 		{
 			name: "presubmit",
-			spec: &pjutil.JobSpec{
+			spec: &downwardapi.JobSpec{
 				Type:    kube.PresubmitJob,
 				Job:     "job",
 				BuildId: "number",
@@ -165,13 +165,13 @@ func TestAliasForSpec(t *testing.T) {
 func TestLatestBuildForSpec(t *testing.T) {
 	testCases := []struct {
 		name     string
-		spec     *pjutil.JobSpec
+		spec     *downwardapi.JobSpec
 		builder  RepoPathBuilder
 		expected []string
 	}{
 		{
 			name: "presubmit - no strategy",
-			spec: &pjutil.JobSpec{
+			spec: &downwardapi.JobSpec{
 				Type: kube.PresubmitJob,
 				Job:  "pull-kubernetes-unit",
 				Refs: kube.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []kube.Pull{{Number: 1234}}},
@@ -180,7 +180,7 @@ func TestLatestBuildForSpec(t *testing.T) {
 		},
 		{
 			name: "presubmit - explicit strategy",
-			spec: &pjutil.JobSpec{
+			spec: &downwardapi.JobSpec{
 				Type: kube.PresubmitJob,
 				Job:  "pull-kubernetes-unit",
 				Refs: kube.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []kube.Pull{{Number: 1234}}},
@@ -193,7 +193,7 @@ func TestLatestBuildForSpec(t *testing.T) {
 		},
 		{
 			name: "presubmit - legacy strategy",
-			spec: &pjutil.JobSpec{
+			spec: &downwardapi.JobSpec{
 				Type: kube.PresubmitJob,
 				Job:  "pull-kubernetes-unit",
 				Refs: kube.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []kube.Pull{{Number: 1234}}},
@@ -206,7 +206,7 @@ func TestLatestBuildForSpec(t *testing.T) {
 		},
 		{
 			name: "presubmit - single strategy",
-			spec: &pjutil.JobSpec{
+			spec: &downwardapi.JobSpec{
 				Type: kube.PresubmitJob,
 				Job:  "pull-kubernetes-unit",
 				Refs: kube.Refs{Org: "kubernetes", Repo: "test-infra", Pulls: []kube.Pull{{Number: 1234}}},
@@ -219,17 +219,17 @@ func TestLatestBuildForSpec(t *testing.T) {
 		},
 		{
 			name:     "batch",
-			spec:     &pjutil.JobSpec{Type: kube.BatchJob, Job: "pull-kubernetes-unit"},
+			spec:     &downwardapi.JobSpec{Type: kube.BatchJob, Job: "pull-kubernetes-unit"},
 			expected: []string{"pr-logs/directory/pull-kubernetes-unit/latest-build.txt"},
 		},
 		{
 			name:     "postsubmit",
-			spec:     &pjutil.JobSpec{Type: kube.PostsubmitJob, Job: "ci-kubernetes-unit"},
+			spec:     &downwardapi.JobSpec{Type: kube.PostsubmitJob, Job: "ci-kubernetes-unit"},
 			expected: []string{"logs/ci-kubernetes-unit/latest-build.txt"},
 		},
 		{
 			name:     "periodic",
-			spec:     &pjutil.JobSpec{Type: kube.PeriodicJob, Job: "ci-kubernetes-periodic"},
+			spec:     &downwardapi.JobSpec{Type: kube.PeriodicJob, Job: "ci-kubernetes-periodic"},
 			expected: []string{"logs/ci-kubernetes-periodic/latest-build.txt"},
 		},
 	}
@@ -245,27 +245,27 @@ func TestLatestBuildForSpec(t *testing.T) {
 func TestRootForSpec(t *testing.T) {
 	testCases := []struct {
 		name     string
-		spec     *pjutil.JobSpec
+		spec     *downwardapi.JobSpec
 		expected string
 	}{
 		{
 			name:     "presubmit",
-			spec:     &pjutil.JobSpec{Type: kube.PresubmitJob, Job: "pull-kubernetes-unit"},
+			spec:     &downwardapi.JobSpec{Type: kube.PresubmitJob, Job: "pull-kubernetes-unit"},
 			expected: "pr-logs/directory/pull-kubernetes-unit",
 		},
 		{
 			name:     "batch",
-			spec:     &pjutil.JobSpec{Type: kube.BatchJob, Job: "pull-kubernetes-unit"},
+			spec:     &downwardapi.JobSpec{Type: kube.BatchJob, Job: "pull-kubernetes-unit"},
 			expected: "pr-logs/directory/pull-kubernetes-unit",
 		},
 		{
 			name:     "postsubmit",
-			spec:     &pjutil.JobSpec{Type: kube.PostsubmitJob, Job: "ci-kubernetes-unit"},
+			spec:     &downwardapi.JobSpec{Type: kube.PostsubmitJob, Job: "ci-kubernetes-unit"},
 			expected: "logs/ci-kubernetes-unit",
 		},
 		{
 			name:     "periodic",
-			spec:     &pjutil.JobSpec{Type: kube.PeriodicJob, Job: "ci-kubernetes-periodic"},
+			spec:     &downwardapi.JobSpec{Type: kube.PeriodicJob, Job: "ci-kubernetes-periodic"},
 			expected: "logs/ci-kubernetes-periodic",
 		},
 	}

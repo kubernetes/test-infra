@@ -72,3 +72,5 @@ cp ${TOOL_ROOT}/node/Makefile ${NODE_DIR}/Makefile
 cd ${NODE_DIR}
 make build K8S_VERSION=$(cat docker_version)
 cd -
+
+rm -rf ${NODE_DIR}

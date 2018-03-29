@@ -65,6 +65,7 @@ tide:
     - kubernetes/community
     - kubernetes/contrib
     - kubernetes/dashboard
+    - kubernetes/examples
     - kubernetes/features
     - kubernetes/federation
     - kubernetes/gengo
@@ -75,6 +76,7 @@ tide:
     - kubernetes/kube-state-metrics
     - kubernetes/kube-deploy
     - kubernetes/minikube
+    - kubernetes/node-problem-detector
     - kubernetes/repo-infra
     - kubernetes/sig-release
     - kubernetes/steering
@@ -283,8 +285,6 @@ presubmits:
     always_run: true         # Run for every PR, or only when requested.
     rerun_command: "/test kubeflow-presubmit"
     trigger: "(?m)^/test( all| kubeflow-presubmit),?(\\s+|$)"
-    branches:
-    - master
     labels:
       preset-service-account: true
     spec:
@@ -347,8 +347,6 @@ presubmits:
     always_run: true         # Run for every PR, or only when requested.
     rerun_command: "/test kubeflow-tf-operator-presubmit"
     trigger: "(?m)^/test( all| kubeflow-tf-operator-presubmit),?(\\s+|$)"
-    branches:
-    - master
     labels:
       preset-service-account: true
     spec:
@@ -637,6 +635,22 @@ presubmits:
       volumes:
       - name: docker-graph
         emptyDir: {}
+  - name: pull-heapster-unit
+    agent: kubernetes
+    always_run: false
+    context: pull-heapster-unit
+    rerun_command: "/test pull-heapster-unit"
+    trigger: "(?m)^/test pull-heapster-unit,?(\\s+|$)"
+    labels:
+      preset-service-account: true
+      preset-k8s-ssh: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
 
   kubernetes/kube-deploy:
   - name: pull-kube-deploy-build
@@ -1061,6 +1075,7 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=60"
         - "--" # end bootstrap args, scenario args below
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
@@ -1140,6 +1155,7 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=60"
         - "--" # end bootstrap args, scenario args below
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
@@ -1219,6 +1235,7 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=60"
         - "--" # end bootstrap args, scenario args below
         - "--build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/... //vendor/k8s.io/..."
         - "--release=//build/release-tars"
@@ -1300,6 +1317,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--scenario=kubernetes_bazel"
+        - "--timeout=60"
         - "--" # end bootstrap args, scenario args below
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
@@ -1335,6 +1353,7 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=60"
         - "--" # end bootstrap args, scenario args below
         - "--test=//... -//build/... -//vendor/..."
         - "--manual-test=//hack:verify-all"
@@ -1379,6 +1398,7 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=60"
         - "--" # end bootstrap args, scenario args below
         - "--test=//... -//build/... -//vendor/..."
         - "--manual-test=//hack:verify-all"
@@ -1425,6 +1445,7 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=60"
         - "--" # end bootstrap args, scenario args below
         - "--test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //vendor/k8s.io/..."
         - "--manual-test=//hack:verify-all"
@@ -1472,6 +1493,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--scenario=kubernetes_execute_bazel"
+        - "--timeout=60"
         - "--" # end bootstrap args, scenario args below
         - "make"
         - "bazel-test"
@@ -1505,6 +1527,7 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "--test=//test/integration/..."
         - "--test-args=--config=integration"
+        - "--timeout=60"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -1656,6 +1679,71 @@ presubmits:
       - name: docker-graph
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
+  - name: pull-kubernetes-dind-e2e
+    agent: kubernetes
+    context: pull-kubernetes-dind-e2e
+    always_run: false
+    rerun_command: "/test pull-kubernetes-dind-e2e"
+    trigger: "(?m)^/test pull-kubernetes-dind-e2e,?(\\s+|$)"
+    skip_branches:
+    - release-1.7
+    - release-1.8
+    - release-1.9
+    labels:
+      preset-service-account: true
+      preset-bazel-scratch-dir: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+        args:
+        - "--clean"
+        - "--job=$(JOB_NAME)"
+        - "--root=/go/src"
+        - "--repo=k8s.io/kubernetes=$(PULL_REFS)"
+        - "--repo=k8s.io/test-infra=master"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--scenario=dindind_execute"
+        - "--"
+        - "kubetest"
+        - "--"
+        - "--build=dind"
+        - "--deployment=dind"
+        - "--up"
+        - "--test"
+        - "--down"
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: "true"
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["SYS_ADMIN"]
+        volumeMounts:
+        - mountPath: /lib/modules
+          name: modules
+          readOnly: true
+        - mountPath: /sys/fs/cgroup
+          name: cgroup
+        - mountPath: /docker-graph
+          name: auto-generated-docker-graph-volume-mount
+        resources:
+          requests:
+            # We can adjust this after we know the requirements.
+            memory: "6Gi"
+      volumes:
+      - name: modules
+        hostPath:
+          path: /lib/modules
+          type: Directory
+      - name: cgroup
+        hostPath:
+          path: /sys/fs/cgroup
+          type: Directory
+      - name: auto-generated-docker-graph-volume-mount
+        emptyDir: {}
+
   - name: pull-kubernetes-e2e-containerd-gce
     agent: kubernetes
     context: pull-kubernetes-e2e-containerd-gce
@@ -3452,6 +3540,7 @@ presubmits:
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
+        - --timeout=60
         - --
         - --build=//... -//vendor/...
         - --release=//build/release-tars
@@ -3535,6 +3624,7 @@ presubmits:
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
+        - --timeout=60
         - --
         - --build=//... -//vendor/...
         - --release=//build/release-tars
@@ -3620,6 +3710,7 @@ presubmits:
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
+        - --timeout=60
         - --
         - --build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/... //vendor/k8s.io/...
         - --release=//build/release-tars
@@ -3663,6 +3754,7 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --scenario=kubernetes_bazel
+        - --timeout=60
         - --
         - --build=//... -//vendor/...
         - --release=//build/release-tars
@@ -3711,6 +3803,7 @@ presubmits:
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
+        - --timeout=60
         - --
         - --test=//... -//build/... -//vendor/...
         - --manual-test=//hack:verify-all
@@ -3756,6 +3849,7 @@ presubmits:
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
+        - --timeout=60
         - --
         - --test=//... -//build/... -//vendor/...
         - --manual-test=//hack:verify-all
@@ -3801,6 +3895,7 @@ presubmits:
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
+        - --timeout=60
         - --
         - --test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //vendor/k8s.io/...
         - --manual-test=//hack:verify-all
@@ -3844,6 +3939,7 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --scenario=kubernetes_execute_bazel
+        - --timeout=60
         - --
         - make
         - bazel-test
@@ -3888,6 +3984,7 @@ presubmits:
         - --
         - --test=//test/integration/...
         - --test-args=--config=integration
+        - --timeout=60
         image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
         imagePullPolicy: Always
         name: ""
@@ -4049,6 +4146,83 @@ presubmits:
       - emptyDir: {}
         name: auto-generated-docker-graph-volume-mount
     trigger: (?m)^/test pull-security-kubernetes-cross-prow,?(\s+|$)
+  - agent: kubernetes
+    always_run: false
+    cluster: security
+    context: pull-security-kubernetes-dind-e2e
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-service-account: "true"
+    max_concurrency: 0
+    name: pull-security-kubernetes-dind-e2e
+    rerun_command: /test pull-security-kubernetes-dind-e2e
+    run_if_changed: ""
+    skip_branches:
+    - release-1.7
+    - release-1.8
+    - release-1.9
+    skip_report: false
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --clean
+        - --job=$(JOB_NAME)
+        - --root=/go/src
+        - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/test-infra=master
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-security-prow/pr-logs
+        - --scenario=dindind_execute
+        - --
+        - kubetest
+        - --
+        - --build=dind
+        - --deployment=dind
+        - --up
+        - --test
+        - --down
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: "true"
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+        name: ""
+        resources:
+          requests:
+            memory: 6Gi
+        securityContext:
+          capabilities:
+            add:
+            - SYS_ADMIN
+          privileged: true
+        volumeMounts:
+        - mountPath: /lib/modules
+          name: modules
+          readOnly: true
+        - mountPath: /sys/fs/cgroup
+          name: cgroup
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+        - mountPath: /docker-graph
+          name: auto-generated-docker-graph-volume-mount
+      volumes:
+      - hostPath:
+          path: /lib/modules
+          type: Directory
+        name: modules
+      - hostPath:
+          path: /sys/fs/cgroup
+          type: Directory
+        name: cgroup
+      - emptyDir: {}
+        name: auto-generated-docker-graph-volume-mount
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+      - emptyDir: {}
+        name: auto-generated-docker-graph-volume-mount
+    trigger: (?m)^/test pull-security-kubernetes-dind-e2e,?(\s+|$)
   - agent: kubernetes
     always_run: false
     branches:
@@ -6161,8 +6335,6 @@ postsubmits:
   kubeflow/kubeflow:
   - name: kubeflow-postsubmit
     agent: kubernetes
-    branches:
-    - master
     labels:
       preset-service-account: true
     spec:
@@ -6209,8 +6381,6 @@ postsubmits:
   kubeflow/tf-operator:
   - name: kubeflow-tf-operator-postsubmit
     agent: kubernetes
-    branches:
-    - master
     labels:
       preset-service-account: true
     spec:
@@ -6315,6 +6485,7 @@ postsubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/logs"
+        - "--timeout=60"
         - "--" # end bootstrap args, scenario args below
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
@@ -6343,6 +6514,7 @@ postsubmits:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--service-account=/etc/service-account/service-account.json"
           - "--upload=gs://kubernetes-jenkins/logs"
+          - "--timeout=60"
           - "--" # end bootstrap args, scenario args below
           - "--test=//... -//build/... -//vendor/..."
           - "--manual-test=//hack:verify-all"
@@ -6372,6 +6544,7 @@ postsubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/logs"
+        - "--timeout=60"
         - "--" # end bootstrap args, scenario args below
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
@@ -6401,6 +6574,7 @@ postsubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/logs"
+        - "--timeout=60"
         - "--" # end bootstrap args, scenario args below
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
@@ -6430,6 +6604,7 @@ postsubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/logs"
+        - "--timeout=60"
         - "--" # end bootstrap args, scenario args below
         - "--test=//... -//build/... -//vendor/..."
         - "--manual-test=//hack:verify-all"
@@ -6459,6 +6634,7 @@ postsubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/logs"
+        - "--timeout=60"
         - "--" # end bootstrap args, scenario args below
         - "--test=//... -//build/... -//vendor/..."
         - "--manual-test=//hack:verify-all"
@@ -7260,6 +7436,7 @@ periodics:
       - "--repo=k8s.io/kubernetes=master"
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
+      - "--timeout=60"
       - "--" # end bootstrap args, scenario args below
       - "--build=//... -//vendor/..."
       - "--release=//build/release-tars"
@@ -7296,6 +7473,7 @@ periodics:
       - "--repo=k8s.io/kubernetes=release-1.10"
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
+      - "--timeout=60"
       - "--" # end bootstrap args, scenario args below
       - "--build=//... -//vendor/..."
       - "--release=//build/release-tars"
@@ -7324,6 +7502,7 @@ periodics:
       - "--repo=k8s.io/kubernetes=release-1.7"
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
+      - "--timeout=60"
       - "--"
       - "--gcs=gs://kubernetes-release-dev/ci"
       - "--version-suffix=-bazel"
@@ -7349,6 +7528,7 @@ periodics:
       - "--repo=k8s.io/kubernetes=release-1.8"
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
+      - "--timeout=60"
       - "--"
       - "--gcs=gs://kubernetes-release-dev/ci"
       - "--version-suffix=-bazel"
@@ -7374,6 +7554,7 @@ periodics:
       - "--repo=k8s.io/kubernetes=release-1.9"
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
+      - "--timeout=60"
       - "--" # end bootstrap args, scenario args below
       - "--build=//... -//vendor/..."
       - "--release=//build/release-tars"
@@ -7402,6 +7583,7 @@ periodics:
       - --root=/go/src
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
+      - "--timeout=60"
       - "--" # end bootstrap args, scenario args below
       - "--test=//... -//build/... -//vendor/..."
       - "--manual-test=//hack:verify-all"
@@ -7436,6 +7618,7 @@ periodics:
       - "--repo=k8s.io/kubernetes=release-1.7"
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
+      - "--timeout=60"
       securityContext:
         privileged: true
       resources:
@@ -7456,6 +7639,7 @@ periodics:
       - "--repo=k8s.io/kubernetes=release-1.8"
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
+      - "--timeout=60"
       securityContext:
         privileged: true
       resources:
@@ -9901,7 +10085,7 @@ periodics:
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gce-ubuntu1-k8sdev-default
+  name: ci-kubernetes-e2e-gce-ubuntu1-k8sbeta-default
   spec:
     containers:
     - args:
@@ -9916,22 +10100,7 @@ periodics:
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-default
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=70
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-serial
+  name: ci-kubernetes-e2e-gce-ubuntu1-k8sbeta-serial
   spec:
     containers:
     - args:
@@ -9946,7 +10115,7 @@ periodics:
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-slow
+  name: ci-kubernetes-e2e-gce-ubuntu1-k8sbeta-slow
   spec:
     containers:
     - args:
@@ -9956,12 +10125,12 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
+  interval: 4h
   agent: kubernetes
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default
+  name: ci-kubernetes-e2e-gce-ubuntu1-k8sstable1-default
   spec:
     containers:
     - args:
@@ -9971,12 +10140,12 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
+  interval: 4h
   agent: kubernetes
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-serial
+  name: ci-kubernetes-e2e-gce-ubuntu1-k8sstable1-serial
   spec:
     containers:
     - args:
@@ -9986,282 +10155,12 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
+  interval: 4h
   agent: kubernetes
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-slow
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=170
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-default
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=70
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-serial
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=520
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-slow
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=170
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable2-default
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=70
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable2-serial
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=520
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable2-slow
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=170
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gce-ubuntudev2-k8sbeta-default
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=70
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gce-ubuntudev2-k8sbeta-serial
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=520
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gce-ubuntudev2-k8sbeta-slow
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=170
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-default
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=70
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-serial
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=520
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-slow
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=170
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-default
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=70
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-serial
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=520
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-slow
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=170
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-default
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=70
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-serial
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=520
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-slow
+  name: ci-kubernetes-e2e-gce-ubuntu1-k8sstable1-slow
   spec:
     containers:
     - args:
@@ -10276,7 +10175,7 @@ periodics:
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-default
+  name: ci-kubernetes-e2e-gce-ubuntu1-k8sstable2-default
   spec:
     containers:
     - args:
@@ -10291,7 +10190,7 @@ periodics:
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-serial
+  name: ci-kubernetes-e2e-gce-ubuntu1-k8sstable2-serial
   spec:
     containers:
     - args:
@@ -10306,7 +10205,232 @@ periodics:
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-slow
+  name: ci-kubernetes-e2e-gce-ubuntu1-k8sstable2-slow
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=170
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gce-ubuntu1-k8sstable3-default
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=70
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gce-ubuntu1-k8sstable3-serial
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=520
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gce-ubuntu1-k8sstable3-slow
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=170
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gce-ubuntu2-k8sbeta-default
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=70
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gce-ubuntu2-k8sbeta-serial
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=520
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gce-ubuntu2-k8sbeta-slow
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=170
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 4h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gce-ubuntu2-k8sstable1-default
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=70
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 4h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gce-ubuntu2-k8sstable1-serial
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=520
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 4h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gce-ubuntu2-k8sstable1-slow
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=170
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gce-ubuntu2-k8sstable2-default
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=70
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gce-ubuntu2-k8sstable2-serial
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=520
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gce-ubuntu2-k8sstable2-slow
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=170
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gce-ubuntu2-k8sstable3-default
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=70
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gce-ubuntu2-k8sstable3-serial
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=520
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gce-ubuntu2-k8sstable3-slow
   spec:
     containers:
     - args:
@@ -10479,7 +10603,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=110
+      - --timeout=340
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
 
@@ -12240,19 +12364,6 @@ periodics:
 
 - interval: 2h
   agent: kubernetes
-  name: ci-kubernetes-e2e-gke-staging-1-7-1-8-upgrade-regional-cluster
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - args:
-      - --timeout=920
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-
-- interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-cluster
   labels:
     preset-service-account: true
@@ -12388,12 +12499,537 @@ periodics:
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntu1-k8sdev-default
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-alphafeatures
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=200
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-autoscaling
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=440
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-default
   spec:
     containers:
     - args:
       - --bare
       - --timeout=70
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-flaky
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=320
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-ingress
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=110
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-reboot
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=200
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-serial
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=520
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-slow
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=170
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-updown
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=50
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 4h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-alphafeatures
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=200
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 4h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-autoscaling
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=440
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 4h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-default
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=70
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 4h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-flaky
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=320
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 4h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-ingress
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=110
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 4h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-reboot
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=200
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 4h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-serial
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=520
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 4h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-slow
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=170
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 4h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-updown
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=50
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-alphafeatures
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=200
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-autoscaling
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=440
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-default
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=70
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-flaky
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=320
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-ingress
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=110
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-reboot
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=200
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-serial
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=520
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-slow
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=170
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-updown
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=50
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-alphafeatures
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=200
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-autoscaling
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=440
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-default
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=70
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-flaky
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=320
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-ingress
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=110
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-reboot
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=200
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-serial
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=520
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-slow
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=170
+      env:
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-updown
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=50
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
 - tags:
@@ -12936,547 +13572,6 @@ periodics:
       - --timeout=50
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-alphafeatures
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-autoscaling
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=440
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-default
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=70
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-flaky
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=320
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-ingress
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=110
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-reboot
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-serial
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=520
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-slow
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=170
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-updown
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=50
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-alphafeatures
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-autoscaling
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=440
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-default
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=70
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-flaky
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=320
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-ingress
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=110
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-reboot
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-serial
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=520
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-slow
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=170
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-updown
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=50
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-alphafeatures
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-autoscaling
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=440
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-default
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=70
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-flaky
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=320
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-ingress
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=110
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-reboot
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-serial
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=520
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-slow
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=170
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-updown
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=50
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-alphafeatures
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-autoscaling
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=440
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-default
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=70
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-flaky
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=320
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-ingress
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=110
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-reboot
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=200
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-serial
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=520
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-slow
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=170
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-updown
-  spec:
-    containers:
-    - args:
-      - --bare
-      - --timeout=50
-      env:
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
 - interval: 30m
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-updown
@@ -13551,6 +13646,21 @@ periodics:
 - interval: 1h
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-ena-nvme
+  labels:
+    preset-service-account: true
+    preset-aws-ssh: true
+    preset-aws-credential: true
+  spec:
+    containers:
+    - args:
+      - --timeout=140
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      imagePullPolicy: Always
+
+- interval: 1h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-kops-aws-ha-uswest2
   labels:
     preset-service-account: true
     preset-aws-ssh: true
@@ -14351,6 +14461,7 @@ periodics:
       - name: GOPATH
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.8
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -14412,115 +14523,7 @@ periodics:
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
-  name: ci-kubernetes-e2enode-ubuntudev-k8sdev-gkespec
-  spec:
-    containers:
-    - args:
-      - --timeout=80
-      - --repo=k8s.io/kubernetes=master
-      - --root=/go/src
-      env:
-      - name: GOPATH
-        value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2enode-ubuntudev-k8sdev-serial
-  spec:
-    containers:
-    - args:
-      - --timeout=200
-      - --repo=k8s.io/kubernetes=master
-      - --root=/go/src
-      env:
-      - name: GOPATH
-        value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2enode-ubuntudev-k8sstable1-gkespec
-  spec:
-    containers:
-    - args:
-      - --timeout=80
-      - --repo=k8s.io/kubernetes=release-1.9
-      - --root=/go/src
-      env:
-      - name: GOPATH
-        value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.9
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2enode-ubuntudev-k8sstable1-serial
-  spec:
-    containers:
-    - args:
-      - --timeout=200
-      - --repo=k8s.io/kubernetes=release-1.9
-      - --root=/go/src
-      env:
-      - name: GOPATH
-        value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.9
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2enode-ubuntudev-k8sstable2-gkespec
-  spec:
-    containers:
-    - args:
-      - --timeout=80
-      - --repo=k8s.io/kubernetes=release-1.8
-      - --root=/go/src
-      env:
-      - name: GOPATH
-        value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.8
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2enode-ubuntudev-k8sstable2-serial
-  spec:
-    containers:
-    - args:
-      - --timeout=200
-      - --repo=k8s.io/kubernetes=release-1.8
-      - --root=/go/src
-      env:
-      - name: GOPATH
-        value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.8
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2enode-ubuntudev2-k8sbeta-gkespec
+  name: ci-kubernetes-e2enode-ubuntu1-k8sbeta-gkespec
   spec:
     containers:
     - args:
@@ -14538,7 +14541,7 @@ periodics:
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
-  name: ci-kubernetes-e2enode-ubuntudev2-k8sbeta-serial
+  name: ci-kubernetes-e2enode-ubuntu1-k8sbeta-serial
   spec:
     containers:
     - args:
@@ -14556,79 +14559,7 @@ periodics:
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
-  name: ci-kubernetes-e2enode-ubuntudev2-k8sdev-gkespec
-  spec:
-    containers:
-    - args:
-      - --timeout=80
-      - --repo=k8s.io/kubernetes=master
-      - --root=/go/src
-      env:
-      - name: GOPATH
-        value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2enode-ubuntudev2-k8sdev-serial
-  spec:
-    containers:
-    - args:
-      - --timeout=200
-      - --repo=k8s.io/kubernetes=master
-      - --root=/go/src
-      env:
-      - name: GOPATH
-        value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2enode-ubuntustable1-k8sdev-gkespec
-  spec:
-    containers:
-    - args:
-      - --timeout=80
-      - --repo=k8s.io/kubernetes=master
-      - --root=/go/src
-      env:
-      - name: GOPATH
-        value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2enode-ubuntustable1-k8sdev-serial
-  spec:
-    containers:
-    - args:
-      - --timeout=200
-      - --repo=k8s.io/kubernetes=master
-      - --root=/go/src
-      env:
-      - name: GOPATH
-        value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  name: ci-kubernetes-e2enode-ubuntustable1-k8sstable1-gkespec
+  name: ci-kubernetes-e2enode-ubuntu1-k8sstable1-gkespec
   spec:
     containers:
     - args:
@@ -14646,7 +14577,7 @@ periodics:
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
-  name: ci-kubernetes-e2enode-ubuntustable1-k8sstable1-serial
+  name: ci-kubernetes-e2enode-ubuntu1-k8sstable1-serial
   spec:
     containers:
     - args:
@@ -14664,7 +14595,7 @@ periodics:
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
-  name: ci-kubernetes-e2enode-ubuntustable1-k8sstable2-gkespec
+  name: ci-kubernetes-e2enode-ubuntu1-k8sstable2-gkespec
   spec:
     containers:
     - args:
@@ -14682,7 +14613,7 @@ periodics:
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
-  name: ci-kubernetes-e2enode-ubuntustable1-k8sstable2-serial
+  name: ci-kubernetes-e2enode-ubuntu1-k8sstable2-serial
   spec:
     containers:
     - args:
@@ -14693,6 +14624,186 @@ periodics:
       - name: GOPATH
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.8
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2enode-ubuntu1-k8sstable3-gkespec
+  spec:
+    containers:
+    - args:
+      - --timeout=80
+      - --repo=k8s.io/kubernetes=release-1.7
+      - --root=/go/src
+      env:
+      - name: GOPATH
+        value: /go
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.7
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2enode-ubuntu1-k8sstable3-serial
+  spec:
+    containers:
+    - args:
+      - --timeout=200
+      - --repo=k8s.io/kubernetes=release-1.7
+      - --root=/go/src
+      env:
+      - name: GOPATH
+        value: /go
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.7
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2enode-ubuntu2-k8sbeta-gkespec
+  spec:
+    containers:
+    - args:
+      - --timeout=80
+      - --repo=k8s.io/kubernetes=release-1.10
+      - --root=/go/src
+      env:
+      - name: GOPATH
+        value: /go
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.10
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2enode-ubuntu2-k8sbeta-serial
+  spec:
+    containers:
+    - args:
+      - --timeout=200
+      - --repo=k8s.io/kubernetes=release-1.10
+      - --root=/go/src
+      env:
+      - name: GOPATH
+        value: /go
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.10
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2enode-ubuntu2-k8sstable1-gkespec
+  spec:
+    containers:
+    - args:
+      - --timeout=80
+      - --repo=k8s.io/kubernetes=release-1.9
+      - --root=/go/src
+      env:
+      - name: GOPATH
+        value: /go
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.9
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2enode-ubuntu2-k8sstable1-serial
+  spec:
+    containers:
+    - args:
+      - --timeout=200
+      - --repo=k8s.io/kubernetes=release-1.9
+      - --root=/go/src
+      env:
+      - name: GOPATH
+        value: /go
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.9
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2enode-ubuntu2-k8sstable2-gkespec
+  spec:
+    containers:
+    - args:
+      - --timeout=80
+      - --repo=k8s.io/kubernetes=release-1.8
+      - --root=/go/src
+      env:
+      - name: GOPATH
+        value: /go
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.8
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2enode-ubuntu2-k8sstable2-serial
+  spec:
+    containers:
+    - args:
+      - --timeout=200
+      - --repo=k8s.io/kubernetes=release-1.8
+      - --root=/go/src
+      env:
+      - name: GOPATH
+        value: /go
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.8
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2enode-ubuntu2-k8sstable3-gkespec
+  spec:
+    containers:
+    - args:
+      - --timeout=80
+      - --repo=k8s.io/kubernetes=release-1.7
+      - --root=/go/src
+      env:
+      - name: GOPATH
+        value: /go
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.7
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2enode-ubuntu2-k8sstable3-serial
+  spec:
+    containers:
+    - args:
+      - --timeout=200
+      - --repo=k8s.io/kubernetes=release-1.7
+      - --root=/go/src
+      env:
+      - name: GOPATH
+        value: /go
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.7
 - interval: 6h
   name: ci-kubernetes-federation-build-1-7
   agent: kubernetes

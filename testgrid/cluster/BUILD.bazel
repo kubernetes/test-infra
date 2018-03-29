@@ -18,21 +18,58 @@ load("@io_bazel_rules_k8s//k8s:objects.bzl", "k8s_objects")
 k8s_objects(
     name = "dev",
     objects = [
+        ":config",
+        ":configurator",
         ":updater",
     ],
 )
 
-# TODO(fejta): move cluster and registry to variables
+# TODO(fejta): move to variable and figure out real values
+CLUSTER = "gke_fejta-prod_us-central1-f_erick"
+
+ROOT = "gcr.io/fejta-prod/testgrid"
+
+# TODO(fejta): wrap this in a rule like for prow
 k8s_object(
     name = "updater",
-    cluster = "gke_fejta-prod_us-central1-f_erick",
-    image_chroot = "gcr.io/fejta-prod/testgrid",
+    cluster = CLUSTER,
+    image_chroot = ROOT,
     images = {
-        "gcr.io/fejta-prod/testgrid/updater:latest": "//testgrid/images:updater",
+        ROOT + "/updater:latest": "//testgrid/images:updater",
     },
     kind = "Deployment",
     namespace = "testgrid",
     template = "updater_deployment.yaml",
+)
+
+k8s_object(
+    name = "configurator",
+    cluster = CLUSTER,
+    image_chroot = ROOT,
+    images = {
+        ROOT + "/configurator:latest": "//testgrid/images:configurator",
+    },
+    kind = "Deployment",
+    namespace = "testgrid",
+    template = "configurator_deployment.yaml",
+)
+
+genrule(
+    name = "gen-config",
+    srcs = [
+        ":config_template.yaml",
+        "//testgrid:config-yaml",
+    ],
+    outs = ["config_configmap.yaml"],
+    cmd = "cat $(location :config_template.yaml) > $@ && echo '  config.yaml: |' >> $@ && cat $(location //testgrid:config-yaml) | sed -e 's/^/    /' >> $@",
+)
+
+k8s_object(
+    name = "config",
+    cluster = CLUSTER,
+    kind = "configmap",
+    namespace = "testgrid",
+    template = "config_configmap.yaml",
 )
 
 filegroup(

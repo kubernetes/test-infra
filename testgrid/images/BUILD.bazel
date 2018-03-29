@@ -22,7 +22,10 @@ package(default_visibility = ["//testgrid:__subpackages__"])
 # TODO(fejta): move registry to a variable
 docker_bundle(
     name = "images",
-    images = tags(**{"gcr.io/fejta-prod/testgrid/updater": ":updater"}),
+    images = tags(**{
+        "gcr.io/fejta-prod/testgrid/updater": ":updater",
+        "gcr.io/fejta-prod/testgrid/configurator": ":configurator",
+    }),
     stamp = True,
 )
 
@@ -34,6 +37,11 @@ docker_push(
 go_image(
     name = "updater",
     binary = "//testgrid/cmd/updater",
+)
+
+go_image(
+    name = "configurator",
+    binary = "//testgrid/cmd/configurator",
 )
 
 filegroup(

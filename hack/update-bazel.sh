@@ -22,21 +22,14 @@ TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
 cd ${TESTINFRA_ROOT}
 TMP_GOPATH=$(mktemp -d)
 
-"${TESTINFRA_ROOT}/hack/go_install_from_commit.sh" \
-  github.com/kubernetes/repo-infra/kazel \
-  2a736b4fba317cf3038e3cbd06899b544b875fae \
-  "${TMP_GOPATH}"
-
-"${TESTINFRA_ROOT}/hack/go_install_from_commit.sh" \
-  github.com/bazelbuild/bazel-gazelle/cmd/gazelle \
-  578e73e57d6a4054ef933db1553405c9284322c7 \
-  "${TMP_GOPATH}"
+OUTPUT_GOBIN="${TESTINFRA_ROOT}/_output/bin"
+GOBIN="${OUTPUT_GOBIN}" go install ./vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle
+GOBIN="${OUTPUT_GOBIN}" go install ./vendor/github.com/kubernetes/repo-infra/kazel
 
 touch "${TESTINFRA_ROOT}/vendor/BUILD.bazel"
 
-"${TMP_GOPATH}/bin/gazelle" fix \
+"${OUTPUT_GOBIN}/gazelle" fix \
   -external=vendored \
-  -mode=fix \
-  -repo_root="${TESTINFRA_ROOT}"
+  -mode=fix
 
-"${TMP_GOPATH}/bin/kazel" -root="${TESTINFRA_ROOT}"
+"${OUTPUT_GOBIN}/kazel"
