@@ -486,6 +486,7 @@
   "ci-docker-node-conformance": {
     "args": [
       "--deployment=node",
+      "--gcp-zone=us-central1-f",
       "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml",
       "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
       "--node-tests=true",
@@ -501,6 +502,7 @@
   "ci-docker-node-features": {
     "args": [
       "--deployment=node",
+      "--gcp-zone=us-central1-f",
       "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml",
       "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
       "--node-tests=true",
