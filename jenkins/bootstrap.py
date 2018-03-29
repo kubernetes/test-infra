@@ -94,7 +94,7 @@ def terminate(end, proc, kill):
     return True
 
 
-def _call(end, cmd, stdin=None, check=True, output=None, log_failures=True):
+def _call(end, cmd, stdin=None, check=True, output=None, log_failures=True, env=None):  # pylint: disable=too-many-locals
     """Start a subprocess."""
     logging.info('Call:  %s', ' '.join(pipes.quote(c) for c in cmd))
     begin = time.time()
@@ -106,6 +106,7 @@ def _call(end, cmd, stdin=None, check=True, output=None, log_failures=True):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         preexec_fn=os.setsid,
+        env=env,
     )
     if stdin:
         proc.stdin.write(stdin)
@@ -216,6 +217,12 @@ def auth_google_gerrit(git, call):
     call([git, 'clone', 'https://gerrit.googlesource.com/gcompute-tools'])
     call(['./gcompute-tools/git-cookie-authdaemon'])
 
+def commit_date(git, commit, call):
+    try:
+        return call([git, 'show', '-s', '--format=format:%ct', commit], output=True)
+    except subprocess.CalledProcessError:
+        logging.warning('Failed to print commit date for %s', commit)
+        return None
 
 def checkout(call, repo, repo_path, branch, pull, ssh='', git_cache='', clean=False):
     """Fetch and checkout the repository at the specified branch/pull.
@@ -272,8 +279,18 @@ def checkout(call, repo, repo_path, branch, pull, ssh='', git_cache='', clean=Fa
             logging.warning('git fetch failed')
             random_sleep(attempt)
     call([git, 'checkout', '-B', 'test', checkouts[0]])
+
+    # Lie about the date in merge commits: use sequential seconds after the
+    # commit date of the tip of the parent branch we're checking into.
+    merge_date = int(commit_date(git, 'HEAD', call) or time.time())
+
+    git_merge_env = os.environ.copy()
     for ref, head in zip(refs, checkouts)[1:]:
-        call(['git', 'merge', '--no-ff', '-m', 'Merge %s' % ref, head])
+        merge_date += 1
+        git_merge_env[GIT_AUTHOR_DATE_ENV] = str(merge_date)
+        git_merge_env[GIT_COMMITTER_DATE_ENV] = str(merge_date)
+        call(['git', 'merge', '--no-ff', '-m', 'Merge %s' % ref, head],
+             env=git_merge_env)
 
 
 def repos_dict(repos):
@@ -676,6 +693,9 @@ SERVICE_ACCOUNT_ENV = 'GOOGLE_APPLICATION_CREDENTIALS'
 WORKSPACE_ENV = 'WORKSPACE'
 GCS_ARTIFACTS_ENV = 'GCS_ARTIFACTS_DIR'
 IMAGE_NAME_ENV = 'IMAGE'
+GIT_AUTHOR_DATE_ENV = 'GIT_AUTHOR_DATE'
+GIT_COMMITTER_DATE_ENV = 'GIT_COMMITTER_DATE'
+SOURCE_DATE_EPOCH_ENV = 'SOURCE_DATE_EPOCH'
 
 
 def build_name(started):
@@ -743,7 +763,7 @@ def setup_logging(path):
     return build_log
 
 
-def setup_magic_environment(job):
+def setup_magic_environment(job, call):
     """Set magic environment variables scripts currently expect."""
     home = os.environ[HOME_ENV]
     # TODO(fejta): jenkins sets these values. Consider migrating to using
@@ -794,6 +814,13 @@ def setup_magic_environment(job):
     # This helps prevent reuse of cloudsdk configuration. It also reduces the
     # risk that running a job on a workstation corrupts the user's config.
     os.environ[CLOUDSDK_ENV] = '%s/.config/gcloud' % cwd
+
+    # Try to set SOURCE_DATE_EPOCH based on the commit date of the tip of the
+    # tree.
+    # This improves cacheability of stamped binaries.
+    head_commit_date = commit_date('git', 'HEAD', call)
+    if head_commit_date:
+        os.environ[SOURCE_DATE_EPOCH_ENV] = head_commit_date.strip()
 
 
 def job_args(args):
@@ -992,7 +1019,7 @@ def bootstrap(args):
                 version = find_version(call)
             else:
                 version = ''
-            setup_magic_environment(job)
+            setup_magic_environment(job, call)
             setup_credentials(call, args.service_account, upload)
             logging.info('Start %s at %s...', build, version)
             if upload:
