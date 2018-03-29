@@ -258,7 +258,6 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=90"
-        - "--clean"
         - "--"
         - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml --test-suite=cadvisor"
 
@@ -371,7 +370,6 @@ presubmits:
         - "--repo=k8s.io/charts=$(PULL_REFS)"
         - "--root=/go/src/"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
@@ -403,7 +401,6 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
 
   - name: pull-cloud-provider-openstack-test
     agent: kubernetes
@@ -422,7 +419,6 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
 
   kubernetes/community:
   - name: pull-community-verify
@@ -442,7 +438,6 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
 
   kubernetes/dns:
   - name: pull-kubernetes-dns-test
@@ -462,7 +457,6 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
 
   kubernetes/ingress-gce:
   - name: pull-ingress-gce-test
@@ -483,7 +477,6 @@ presubmits:
         - "--repo=k8s.io/ingress-gce=$(PULL_REFS)"
         - "--root=/go/src/"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
@@ -515,7 +508,6 @@ presubmits:
         - "--repo=github.com/GoogleCloudPlatform/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
         volumeMounts:
         - name: coveralls
           mountPath: /etc/coveralls-token
@@ -539,8 +531,6 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
         args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -575,7 +565,6 @@ presubmits:
         - "--repo=k8s.io/release"
         - "--root=/go/src/"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
         - "--timeout=110"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
@@ -604,7 +593,6 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
 
   kubernetes/heapster:
   - name: pull-heapster-e2e
@@ -623,7 +611,6 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
@@ -668,7 +655,6 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
   - name: pull-kube-deploy-test
     agent: kubernetes
     always_run: true
@@ -684,7 +670,6 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
   kubernetes/kops:
   - name: pull-kops-bazel-build
     agent: kubernetes
@@ -703,7 +688,6 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-experimental
         args:
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -736,7 +720,6 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-experimental
         args:
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -767,7 +750,6 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
         args:
         - --root=/go/src
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -806,7 +788,6 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
 
   - name: pull-kops-verify-boilerplate
     agent: kubernetes
@@ -825,7 +806,6 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
 
   - name: pull-kops-verify-gofmt
     agent: kubernetes
@@ -844,7 +824,6 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
 
   - name: pull-kops-verify-govet
     agent: kubernetes
@@ -863,7 +842,6 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
 
   - name: pull-kops-verify-packages
     agent: kubernetes
@@ -882,7 +860,6 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
 
   kubernetes/cluster-registry:
   - name: pull-cluster-registry-bazel
@@ -899,7 +876,6 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.10
         args:
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -922,7 +898,6 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
         args:
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -947,7 +922,6 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
         args:
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -971,7 +945,6 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.8
         args:
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -1021,7 +994,6 @@ presubmits:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
           args:
           - --root=/go/src
-          - "--clean"
           - "--job=$(JOB_NAME)"
           - "--repo=k8s.io/kubernetes"
           - "--repo=github.com/containerd/$(REPO_NAME)=$(PULL_REFS)"
@@ -1069,8 +1041,6 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
         args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -1082,20 +1052,9 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        # TODO(bentheelder): eliminate the "git caching" junk
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
     run_after_success:
     - name: pull-kubernetes-e2e-kubeadm-gce
       agent: kubernetes
@@ -1119,22 +1078,10 @@ presubmits:
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
-          - "--git-cache=/root/.cache/git"
           - "--timeout=75"
-          - "--clean"
           env:
           - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
             value: true
-          volumeMounts:
-          - name: cache-ssd
-            mountPath: /root/.cache
-          ports:
-          - containerPort: 9999
-            hostPort: 9999
-        volumes:
-        - name: cache-ssd
-          hostPath:
-            path: /mnt/disks/ssd0
   - name: pull-kubernetes-bazel-build
     agent: kubernetes
     context: pull-kubernetes-bazel-build
@@ -1145,12 +1092,11 @@ presubmits:
     - release-1.9
     labels:
       preset-service-account: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
         args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -1159,25 +1105,12 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
-        env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
     run_after_success:
     - name: pull-kubernetes-e2e-kubeadm-gce
       agent: kubernetes
@@ -1198,22 +1131,10 @@ presubmits:
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
-          - "--git-cache=/root/.cache/git"
           - "--timeout=75"
-          - "--clean"
           env:
           - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
             value: true
-          volumeMounts:
-          - name: cache-ssd
-            mountPath: /root/.cache
-          ports:
-          - containerPort: 9999
-            hostPort: 9999
-        volumes:
-        - name: cache-ssd
-          hostPath:
-            path: /mnt/disks/ssd0
   - name: pull-kubernetes-bazel-build
     agent: kubernetes
     context: pull-kubernetes-bazel-build
@@ -1225,12 +1146,11 @@ presubmits:
     - release-1.8
     labels:
       preset-service-account: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
         args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -1239,25 +1159,12 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "--build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/... //vendor/k8s.io/..."
         - "--release=//build/release-tars"
-        env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
     run_after_success:
     - name: pull-kubernetes-e2e-kubeadm-gce
       agent: kubernetes
@@ -1279,22 +1186,10 @@ presubmits:
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
-          - "--git-cache=/root/.cache/git"
           - "--timeout=75"
-          - "--clean"
           env:
           - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
             value: true
-          volumeMounts:
-          - name: cache-ssd
-            mountPath: /root/.cache
-          ports:
-          - containerPort: 9999
-            hostPort: 9999
-        volumes:
-        - name: cache-ssd
-          hostPath:
-            path: /mnt/disks/ssd0
 
   - name: pull-kubernetes-bazel-build-canary
     agent: kubernetes
@@ -1311,7 +1206,6 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
         imagePullPolicy: Always
         args:
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -1347,8 +1241,6 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
         args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -1364,20 +1256,9 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        # TODO(bentheelder): eliminate the "git caching" junk
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
   - name: pull-kubernetes-bazel-test
     agent: kubernetes
     context: pull-kubernetes-bazel-test
@@ -1388,12 +1269,11 @@ presubmits:
     - release-1.9
     labels:
       preset-service-account: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
         args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -1405,25 +1285,12 @@ presubmits:
         - "--test-args=--build_tag_filters=-e2e,-integration"
         - "--test-args=--test_tag_filters=-e2e,-integration"
         - "--test-args=--flaky_test_attempts=3"
-        env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
   - name: pull-kubernetes-bazel-test
     agent: kubernetes
     context: pull-kubernetes-bazel-test
@@ -1435,12 +1302,11 @@ presubmits:
     - release-1.8
     labels:
       preset-service-account: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
         args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -1451,25 +1317,12 @@ presubmits:
         - "--manual-test=//hack:verify-all"
         - "--test-args=--test_tag_filters=-integration"
         - "--test-args=--flaky_test_attempts=3"
-        env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
 
   - name: pull-kubernetes-bazel-test-canary
     agent: kubernetes
@@ -1486,8 +1339,6 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
         imagePullPolicy: Always
         args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -1519,7 +1370,6 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
         imagePullPolicy: Always
         args:
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -1551,8 +1401,6 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
         args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -1565,24 +1413,15 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
         - name: docker-graph
           mountPath: /docker-graph
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             cpu: 7
             memory: "41Gi"
       volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
       - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
+        emptyDir: {}
 
   - name: pull-kubernetes-cross
     agent: kubernetes
@@ -1601,8 +1440,6 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
         args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -1615,24 +1452,15 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
         - name: docker-graph
           mountPath: /docker-graph
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             cpu: 7
             memory: "41Gi"
       volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
       - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
+        emptyDir: {}
 
   - name: pull-kubernetes-cross-prow
     agent: kubernetes
@@ -1647,8 +1475,6 @@ presubmits:
       - image: gcr.io/k8s-testimages/bootstrap:latest
         imagePullPolicy: Always
         args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -1661,24 +1487,15 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
         - name: docker-graph
           mountPath: /docker-graph
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             cpu: 7
             memory: "41Gi"
       volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
       - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
+        emptyDir: {}
   - name: pull-kubernetes-dind-e2e
     agent: kubernetes
     context: pull-kubernetes-dind-e2e
@@ -1696,7 +1513,6 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
         args:
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
         - "--repo=k8s.io/kubernetes=$(PULL_REFS)"
@@ -1763,7 +1579,6 @@ presubmits:
         - --repo=k8s.io/release
         - --repo=github.com/containerd/cri
         - --upload=gs://kubernetes-jenkins/pr-logs
-        - --clean
         - --timeout=90
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
@@ -1793,26 +1608,14 @@ presubmits:
         - --repo=k8s.io/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-jenkins/pr-logs
-        - --git-cache=/root/.cache/git
-        - --clean
         - --timeout=90
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-        volumeMounts:
-        - mountPath: /root/.cache
-          name: cache-ssd
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
   - name: pull-kubernetes-e2e-gce
     agent: kubernetes
     context: pull-kubernetes-e2e-gce
@@ -1826,6 +1629,7 @@ presubmits:
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - args:
@@ -1833,31 +1637,14 @@ presubmits:
         - --repo=k8s.io/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-jenkins/pr-logs
-        - --git-cache=/root/.cache/git
-        - --clean
         - --timeout=90
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        env:
-        # Make Bazel use shared cache for its root
-        # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.9
-        volumeMounts:
-        - mountPath: /root/.cache
-          name: cache-ssd
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
   - name: pull-kubernetes-e2e-gce
     agent: kubernetes
     context: pull-kubernetes-e2e-gce
@@ -1869,6 +1656,7 @@ presubmits:
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - args:
@@ -1876,31 +1664,14 @@ presubmits:
         - --repo=k8s.io/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-jenkins/pr-logs
-        - --git-cache=/root/.cache/git
-        - --clean
         - --timeout=90
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        env:
-        # Make Bazel use shared cache for its root
-        # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.8
-        volumeMounts:
-        - mountPath: /root/.cache
-          name: cache-ssd
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
   - name: pull-kubernetes-e2e-gce
     agent: kubernetes
     context: pull-kubernetes-e2e-gce
@@ -1912,6 +1683,7 @@ presubmits:
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - args:
@@ -1919,31 +1691,14 @@ presubmits:
         - --repo=k8s.io/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-jenkins/pr-logs
-        - --git-cache=/root/.cache/git
-        - --clean
         - --timeout=90
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        env:
-        # Make Bazel use shared cache for its root
-        # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.7
-        volumeMounts:
-        - mountPath: /root/.cache
-          name: cache-ssd
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
 
   - name: pull-kubernetes-e2e-gce-100-performance
     agent: kubernetes
@@ -1965,7 +1720,6 @@ presubmits:
         - --repo=k8s.io/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-jenkins/pr-logs
-        - --clean
         - --timeout=120
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
@@ -1994,7 +1748,6 @@ presubmits:
         - --repo=k8s.io/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-jenkins/pr-logs
-        - --clean
         - --timeout=270
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
@@ -2027,8 +1780,6 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
         args:
         - --root=/go/src
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--repo=k8s.io/release"
@@ -2038,19 +1789,9 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
   - name: pull-kubernetes-e2e-gce-device-plugin-gpu
     agent: kubernetes
     branches:
@@ -2064,38 +1805,24 @@ presubmits:
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.9
         args:
         - --root=/go/src
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--repo=k8s.io/release"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=90"
-        env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
   - name: pull-kubernetes-e2e-gce-device-plugin-gpu
     agent: kubernetes
     branches:
@@ -2109,38 +1836,24 @@ presubmits:
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.8
         args:
         - --root=/go/src
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--repo=k8s.io/release"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=90"
-        env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
   - name: pull-kubernetes-e2e-gce-large-performance
     agent: kubernetes
     context: pull-kubernetes-e2e-gce-large-performance
@@ -2153,6 +1866,7 @@ presubmits:
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - args:
@@ -2160,31 +1874,14 @@ presubmits:
         - --repo=k8s.io/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-jenkins/pr-logs
-        - --git-cache=/root/.cache/git
-        - --clean
         - --timeout=570
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        env:
-        # Make Bazel use shared cache for its root
-        # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-        volumeMounts:
-        - mountPath: /root/.cache
-          name: cache-ssd
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
 
   - name: pull-kubernetes-e2e-gke
     agent: kubernetes
@@ -2202,6 +1899,7 @@ presubmits:
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - args:
@@ -2209,31 +1907,14 @@ presubmits:
         - --repo=k8s.io/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-jenkins/pr-logs
-        - --git-cache=/root/.cache/git
-        - --clean
         - --timeout=90
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        env:
-        # Make Bazel use shared cache for its root
-        # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
-        volumeMounts:
-        - mountPath: /root/.cache
-          name: cache-ssd
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
   - name: pull-kubernetes-e2e-gke
     agent: kubernetes
     context: pull-kubernetes-e2e-gke
@@ -2246,6 +1927,7 @@ presubmits:
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - args:
@@ -2253,31 +1935,14 @@ presubmits:
         - --repo=k8s.io/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-jenkins/pr-logs
-        - --git-cache=/root/.cache/git
-        - --clean
         - --timeout=90
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        env:
-        # Make Bazel use shared cache for its root
-        # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.8
-        volumeMounts:
-        - mountPath: /root/.cache
-          name: cache-ssd
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
   - name: pull-kubernetes-e2e-gke
     agent: kubernetes
     context: pull-kubernetes-e2e-gke
@@ -2290,6 +1955,7 @@ presubmits:
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - args:
@@ -2297,31 +1963,14 @@ presubmits:
         - --repo=k8s.io/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-jenkins/pr-logs
-        - --git-cache=/root/.cache/git
-        - --clean
         - --timeout=90
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        env:
-        # Make Bazel use shared cache for its root
-        # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.7
-        volumeMounts:
-        - mountPath: /root/.cache
-          name: cache-ssd
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
 
   - name: pull-kubernetes-e2e-gke-device-plugin-gpu
     agent: kubernetes
@@ -2338,38 +1987,24 @@ presubmits:
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
         args:
         - --root=/go/src
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--repo=k8s.io/release"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=90"
-        env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
   - name: pull-kubernetes-e2e-gke-device-plugin-gpu
     agent: kubernetes
     branches:
@@ -2383,38 +2018,24 @@ presubmits:
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.8
         args:
         - --root=/go/src
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--repo=k8s.io/release"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=90"
-        env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
 
   - name: pull-kubernetes-e2e-kops-aws
     agent: kubernetes
@@ -2433,13 +2054,12 @@ presubmits:
       preset-aws-ssh: true
       preset-aws-credential: true
       preset-bazel-remote-cache-enabled: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
         args:
         - --root=/go/src
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--repo=k8s.io/release"
@@ -2449,19 +2069,9 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
   - name: pull-kubernetes-e2e-kops-aws
     agent: kubernetes
     branches:
@@ -2475,38 +2085,24 @@ presubmits:
       preset-service-account: true
       preset-aws-ssh: true
       preset-aws-credential: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.9
         args:
         - --root=/go/src
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--repo=k8s.io/release"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=75"
-        env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
   - name: pull-kubernetes-e2e-kops-aws
     agent: kubernetes
     branches:
@@ -2520,38 +2116,24 @@ presubmits:
       preset-service-account: true
       preset-aws-ssh: true
       preset-aws-credential: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.8
         args:
         - --root=/go/src
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--repo=k8s.io/release"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=75"
-        env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
   - name: pull-kubernetes-e2e-kops-aws
     agent: kubernetes
     branches:
@@ -2565,38 +2147,24 @@ presubmits:
       preset-service-account: true
       preset-aws-ssh: true
       preset-aws-credential: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.7
         args:
         - --root=/go/src
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--repo=k8s.io/release"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=75"
-        env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
   - name: pull-kubernetes-integration
     agent: kubernetes
     always_run: true
@@ -2609,7 +2177,6 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
         args:
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -2624,16 +2191,12 @@ presubmits:
         volumeMounts:
         - name: docker-graph
           mountPath: /docker-graph
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             cpu: 4
       volumes:
       - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
+        emptyDir: {}
   - name: pull-kubernetes-integration-prow
     agent: kubernetes
     always_run: false
@@ -2647,8 +2210,6 @@ presubmits:
       - image: gcr.io/k8s-testimages/bootstrap:latest
         imagePullPolicy: Always
         args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -2661,23 +2222,14 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
         - name: docker-graph
           mountPath: /docker-graph
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             cpu: 4
       volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
       - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
+        emptyDir: {}
   - name: pull-kubernetes-kubemark-e2e-gce
     agent: kubernetes
     always_run: true
@@ -2692,13 +2244,12 @@ presubmits:
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
         args:
         - --root=/go/src
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--repo=k8s.io/release"
@@ -2711,29 +2262,18 @@ presubmits:
         # value: "y"
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
         volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
         - name: docker-graph
           mountPath: /docker-graph
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
       volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
       - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
+        emptyDir: {}
   - name: pull-kubernetes-kubemark-e2e-gce
     agent: kubernetes
     always_run: true
@@ -2746,13 +2286,12 @@ presubmits:
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.8
         args:
         - --root=/go/src
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--repo=k8s.io/release"
@@ -2765,29 +2304,18 @@ presubmits:
         # value: "y"
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
         volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
         - name: docker-graph
           mountPath: /docker-graph
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
       volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
       - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
+        emptyDir: {}
   - name: pull-kubernetes-kubemark-e2e-gce
     agent: kubernetes
     always_run: true
@@ -2800,13 +2328,12 @@ presubmits:
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.7
         args:
         - --root=/go/src
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--repo=k8s.io/release"
@@ -2819,29 +2346,18 @@ presubmits:
         # value: "y"
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
         volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
         - name: docker-graph
           mountPath: /docker-graph
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
       volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
       - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
+        emptyDir: {}
 
   - name: pull-kubernetes-kubemark-e2e-gce-big
     agent: kubernetes
@@ -2863,7 +2379,6 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
         args:
         - --root=/go/src
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--repo=k8s.io/release"
@@ -2906,7 +2421,6 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.8
         args:
         - --root=/go/src
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--repo=k8s.io/release"
@@ -2950,7 +2464,6 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.7
         args:
         - --root=/go/src
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--repo=k8s.io/release"
@@ -2989,14 +2502,13 @@ presubmits:
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
         imagePullPolicy: Always
         args:
         - --root=/go/src
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--repo=k8s.io/release"
@@ -3009,29 +2521,18 @@ presubmits:
         # value: "y"
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
         volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
         - name: docker-graph
           mountPath: /docker-graph
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
       volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
       - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
+        emptyDir: {}
   - name: pull-kubernetes-kubemark-e2e-gce-canary
     agent: kubernetes
     always_run: false
@@ -3044,14 +2545,13 @@ presubmits:
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.8
         imagePullPolicy: Always
         args:
         - --root=/go/src
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--repo=k8s.io/release"
@@ -3064,29 +2564,18 @@ presubmits:
         # value: "y"
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
         volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
         - name: docker-graph
           mountPath: /docker-graph
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
       volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
       - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
+        emptyDir: {}
   - name: pull-kubernetes-kubemark-e2e-gce-canary
     agent: kubernetes
     always_run: false
@@ -3099,14 +2588,13 @@ presubmits:
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.7
         imagePullPolicy: Always
         args:
         - --root=/go/src
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--repo=k8s.io/release"
@@ -3119,29 +2607,18 @@ presubmits:
         # value: "y"
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
         volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
         - name: docker-graph
           mountPath: /docker-graph
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
       volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
       - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
+        emptyDir: {}
 
   - name: pull-kubernetes-kubemark-e2e-gce-scale
     agent: kubernetes
@@ -3161,7 +2638,6 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
         args:
         - --root=/go/src
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--repo=k8s.io/release"
@@ -3205,7 +2681,6 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
         args:
         - --root=/go/src
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -3243,8 +2718,6 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
         args:
         - --root=/go/src
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -3252,19 +2725,10 @@ presubmits:
         - "--timeout=90"
         - "--" # end bootstrap args, scenario args below
         - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml"
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
         ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
   - name: pull-kubernetes-node-e2e
     agent: kubernetes
     branches:
@@ -3282,8 +2746,6 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.8
         args:
         - --root=/go/src
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -3291,19 +2753,9 @@ presubmits:
         - "--timeout=90"
         - "--" # end bootstrap args, scenario args below
         - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml"
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
   - name: pull-kubernetes-node-e2e
     agent: kubernetes
     branches:
@@ -3321,8 +2773,6 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.7
         args:
         - --root=/go/src
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -3330,19 +2780,9 @@ presubmits:
         - "--timeout=90"
         - "--" # end bootstrap args, scenario args below
         - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-1-7.yaml"
-        volumeMounts:
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
 
   - name: pull-kubernetes-node-e2e-containerd
     agent: kubernetes
@@ -3361,7 +2801,6 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
         args:
         - --root=/go/src
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--repo=github.com/containerd/cri"
@@ -3387,7 +2826,6 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
         args:
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -3407,7 +2845,6 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
         args:
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -3422,16 +2859,13 @@ presubmits:
         volumeMounts:
         - name: docker-graph
           mountPath: /docker-graph
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             cpu: 4
       volumes:
       - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
+        emptyDir: {}
+
   - name: pull-kubernetes-verify-prow
     agent: kubernetes
     always_run: false
@@ -3445,7 +2879,6 @@ presubmits:
       - image: gcr.io/k8s-testimages/bootstrap:latest
         imagePullPolicy: Always
         args:
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -3460,16 +2893,12 @@ presubmits:
         volumeMounts:
         - name: docker-graph
           mountPath: /docker-graph
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             cpu: 4
       volumes:
       - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
+        emptyDir: {}
   kubernetes-security/kubernetes:
   - agent: kubernetes
     always_run: true
@@ -3506,7 +2935,6 @@ presubmits:
           - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
           - --upload=gs://kubernetes-security-prow/pr-logs
           - --timeout=75
-          - --clean
           - --
           - --gcs-shared=gs://kubernetes-security-prow/bazel
           env:
@@ -3535,7 +2963,6 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -3569,6 +2996,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-bazel-build
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-bazel-build
@@ -3595,7 +3023,6 @@ presubmits:
           - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
           - --upload=gs://kubernetes-security-prow/pr-logs
           - --timeout=75
-          - --clean
           - --
           - --gcs-shared=gs://kubernetes-security-prow/bazel
           env:
@@ -3619,7 +3046,6 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -3654,6 +3080,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-bazel-build
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-bazel-build
@@ -3681,7 +3108,6 @@ presubmits:
           - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
           - --upload=gs://kubernetes-security-prow/pr-logs
           - --timeout=75
-          - --clean
           - --
           - --gcs-shared=gs://kubernetes-security-prow/bazel
           env:
@@ -3705,7 +3131,6 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -3748,7 +3173,6 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -3798,7 +3222,6 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -3834,6 +3257,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-bazel-test
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-bazel-test
@@ -3844,7 +3268,6 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -3880,6 +3303,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-bazel-test
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-bazel-test
@@ -3890,7 +3314,6 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -3933,7 +3356,6 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -3976,7 +3398,6 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -4021,7 +3442,6 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -4070,7 +3490,6 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -4115,7 +3534,6 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -4166,7 +3584,6 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --clean
         - --job=$(JOB_NAME)
         - --root=/go/src
         - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
@@ -4246,7 +3663,6 @@ presubmits:
         - --repo=k8s.io/release
         - --repo=github.com/containerd/cri
         - --upload=gs://kubernetes-security-prow/pr-logs
-        - --clean
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-containerd-gce
@@ -4290,7 +3706,6 @@ presubmits:
         - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-security-prow/pr-logs
-        - --clean
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce
@@ -4317,6 +3732,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gce
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 0
@@ -4332,7 +3748,6 @@ presubmits:
         - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-security-prow/pr-logs
-        - --clean
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce
@@ -4359,6 +3774,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gce
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 0
@@ -4374,7 +3790,6 @@ presubmits:
         - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-security-prow/pr-logs
-        - --clean
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce
@@ -4401,6 +3816,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gce
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 0
@@ -4416,7 +3832,6 @@ presubmits:
         - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-security-prow/pr-logs
-        - --clean
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce
@@ -4459,7 +3874,6 @@ presubmits:
         - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-security-prow/pr-logs
-        - --clean
         - --timeout=120
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-100-performance
@@ -4502,7 +3916,6 @@ presubmits:
         - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-security-prow/pr-logs
-        - --clean
         - --timeout=270
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-big-performance
@@ -4545,7 +3958,6 @@ presubmits:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -4577,6 +3989,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gce-device-plugin-gpu
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
@@ -4589,7 +4002,6 @@ presubmits:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -4621,6 +4033,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gce-device-plugin-gpu
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
@@ -4633,7 +4046,6 @@ presubmits:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -4665,6 +4077,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gce-large-performance
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 1
@@ -4680,7 +4093,6 @@ presubmits:
         - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-security-prow/pr-logs
-        - --clean
         - --timeout=570
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-large-performance
@@ -4705,6 +4117,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gke
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 0
@@ -4724,7 +4137,6 @@ presubmits:
         - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-security-prow/pr-logs
-        - --clean
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke
@@ -4751,6 +4163,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gke
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 0
@@ -4766,7 +4179,6 @@ presubmits:
         - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-security-prow/pr-logs
-        - --clean
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke
@@ -4793,6 +4205,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gke
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 0
@@ -4808,7 +4221,6 @@ presubmits:
         - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-security-prow/pr-logs
-        - --clean
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke
@@ -4833,6 +4245,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gke-device-plugin-gpu
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 1
@@ -4849,7 +4262,6 @@ presubmits:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -4881,6 +4293,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gke-device-plugin-gpu
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 1
@@ -4893,7 +4306,6 @@ presubmits:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -4925,6 +4337,7 @@ presubmits:
     labels:
       preset-aws-credential: "true"
       preset-aws-ssh: "true"
+      preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-kops-aws
@@ -4941,7 +4354,6 @@ presubmits:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -4975,6 +4387,7 @@ presubmits:
     labels:
       preset-aws-credential: "true"
       preset-aws-ssh: "true"
+      preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-kops-aws
@@ -4986,7 +4399,6 @@ presubmits:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -5020,6 +4432,7 @@ presubmits:
     labels:
       preset-aws-credential: "true"
       preset-aws-ssh: "true"
+      preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-kops-aws
@@ -5031,7 +4444,6 @@ presubmits:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -5065,6 +4477,7 @@ presubmits:
     labels:
       preset-aws-credential: "true"
       preset-aws-ssh: "true"
+      preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-kops-aws
@@ -5076,7 +4489,6 @@ presubmits:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -5116,7 +4528,6 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -5160,7 +4571,6 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -5195,6 +4605,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
@@ -5211,7 +4622,6 @@ presubmits:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -5250,6 +4660,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
@@ -5262,7 +4673,6 @@ presubmits:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -5301,6 +4711,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
@@ -5313,7 +4724,6 @@ presubmits:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -5367,7 +4777,6 @@ presubmits:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -5419,7 +4828,6 @@ presubmits:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -5471,7 +4879,6 @@ presubmits:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -5508,6 +4915,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce-canary
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 5
@@ -5523,7 +4931,6 @@ presubmits:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -5563,6 +4970,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce-canary
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 5
@@ -5575,7 +4983,6 @@ presubmits:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -5615,6 +5022,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce-canary
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 5
@@ -5627,7 +5035,6 @@ presubmits:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -5680,7 +5087,6 @@ presubmits:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -5731,7 +5137,6 @@ presubmits:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -5779,7 +5184,6 @@ presubmits:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -5820,7 +5224,6 @@ presubmits:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -5861,7 +5264,6 @@ presubmits:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -5902,7 +5304,6 @@ presubmits:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=github.com/containerd/cri
@@ -5941,7 +5342,6 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --clean
         - --job=$(JOB_NAME)
         - --root=/go/src
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
@@ -5975,7 +5375,6 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -6019,7 +5418,6 @@ presubmits:
       containers:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
-        - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -6068,7 +5466,6 @@ presubmits:
         - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
 
   kubernetes/test-infra:
   - name: pull-test-infra-bazel
@@ -6087,7 +5484,6 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-experimental
         args:
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -6117,7 +5513,6 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
         imagePullPolicy: Always
         args:
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -6167,7 +5562,6 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
         imagePullPolicy: Always
         args:
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -6202,7 +5596,6 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
 
   - name: pull-test-infra-verify-config
     agent: kubernetes
@@ -6222,7 +5615,6 @@ presubmits:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
         - --service-account=/etc/service-account/service-account.json
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
@@ -6249,7 +5641,6 @@ presubmits:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
         - --service-account=/etc/service-account/service-account.json
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
@@ -6275,7 +5666,6 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
 
   - name: pull-test-infra-verify-govet
     agent: kubernetes
@@ -6294,7 +5684,6 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
 
 
   tensorflow/minigo:
@@ -6313,7 +5702,6 @@ presubmits:
       - image: gcr.io/minigo-testing/minigo-prow-harness-v2:latest
         imagePullPolicy: Always
         args:
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--repo=github.com/tensorflow/minigo=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -6402,7 +5790,6 @@ postsubmits:
         args:
         - "--repo=k8s.io/ingress-gce=master"
         - "--root=/go/src/"
-        - "--clean"
         - "--timeout=320"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
@@ -6430,7 +5817,6 @@ postsubmits:
         args:
         - "--repo=k8s.io/test-infra=master"
         - "--root=/go/src/"
-        - "--clean"
         - "--timeout=90"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
@@ -6455,7 +5841,6 @@ postsubmits:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
         args:
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -6480,7 +5865,6 @@ postsubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
         args:
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -6509,7 +5893,6 @@ postsubmits:
         containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
           args:
-          - "--clean"
           - "--job=$(JOB_NAME)"
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--service-account=/etc/service-account/service-account.json"
@@ -6539,7 +5922,6 @@ postsubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.10
         args:
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -6569,7 +5951,6 @@ postsubmits:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
         args:
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -6599,7 +5980,6 @@ postsubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.10
         args:
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -6629,7 +6009,6 @@ postsubmits:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
         args:
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -6660,7 +6039,6 @@ postsubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-experimental
         args:
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -6687,8 +6065,6 @@ postsubmits:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
         args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -6711,19 +6087,15 @@ postsubmits:
     - master
     labels:
       preset-service-account: true
+      preset-bazel-scratch-dir: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-experimental
         args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/logs"
-        env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         resources:
           requests:
             memory: "1Gi"
@@ -6741,7 +6113,6 @@ postsubmits:
       - image: gcr.io/minigo-testing/minigo-prow-harness-v2:latest
         imagePullPolicy: Always
         args:
-        - "--clean"
         - "--job=$(JOB_NAME)"
         - "--repo=github.com/tensorflow/minigo=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -6778,7 +6149,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - --clean
       - --repo=github.com/google/cadvisor
       - --root=/go/src
       - --timeout=30
@@ -7202,7 +6572,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - --clean
       - --repo=k8s.io/federation=master
       - --repo=k8s.io/release
       - --root=/go/src
@@ -7342,7 +6711,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
       args:
-      - "--clean"
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
       - "--repo=k8s.io/kubectl"
@@ -7360,7 +6728,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
       args:
-      - --clean
       - --repo=k8s.io/kops
       - --repo=k8s.io/release
       - --root=/go/src
@@ -7390,7 +6757,6 @@ periodics:
       - "--repo=k8s.io/kube-deploy"
       - "--root=/go/src"
       - "--upload=gs://kubernetes-jenkins/logs"
-      - "--clean"
 - name: ci-kube-deploy-test
   interval: 1h
   agent: kubernetes
@@ -7403,7 +6769,6 @@ periodics:
       - "--repo=k8s.io/kube-deploy"
       - "--root=/go/src"
       - "--upload=gs://kubernetes-jenkins/logs"
-      - "--clean"
 
 - interval: 60m
   agent: kubernetes
@@ -7431,7 +6796,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
       args:
-      - "--clean"
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes=master"
       - "--service-account=/etc/service-account/service-account.json"
@@ -7468,7 +6832,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.10
       args:
-      - "--clean"
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes=release-1.10"
       - "--service-account=/etc/service-account/service-account.json"
@@ -7497,7 +6860,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
       args:
-      - "--clean"
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes=release-1.7"
       - "--service-account=/etc/service-account/service-account.json"
@@ -7523,7 +6885,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
       args:
-      - "--clean"
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes=release-1.8"
       - "--service-account=/etc/service-account/service-account.json"
@@ -7549,7 +6910,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
       args:
-      - "--clean"
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes=release-1.9"
       - "--service-account=/etc/service-account/service-account.json"
@@ -7578,7 +6938,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
       args:
-      - --clean
       - --repo=k8s.io/kubernetes
       - --root=/go/src
       - "--service-account=/etc/service-account/service-account.json"
@@ -7613,7 +6972,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
       args:
-      - "--clean"
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes=release-1.7"
       - "--service-account=/etc/service-account/service-account.json"
@@ -7634,7 +6992,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
       args:
-      - "--clean"
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes=release-1.8"
       - "--service-account=/etc/service-account/service-account.json"
@@ -7654,8 +7011,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - --clean
-      - --git-cache=/root/.cache/git
       - --repo=k8s.io/kubernetes
       - --repo=k8s.io/release
       - --root=/go/src
@@ -7667,24 +7022,15 @@ periodics:
       securityContext:
         privileged: true
       volumeMounts:
-      - name: cache-ssd
-        mountPath: /root/.cache
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 4
           memory: "8Gi"
     volumes:
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - interval: 30m
   name: ci-kubernetes-build-beta
@@ -7695,8 +7041,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - --clean
-      - --git-cache=/root/.cache/git
       - --repo=k8s.io/kubernetes=release-1.10
       - --repo=k8s.io/release
       - --root=/go/src
@@ -7708,24 +7052,15 @@ periodics:
       securityContext:
         privileged: true
       volumeMounts:
-      - name: cache-ssd
-        mountPath: /root/.cache
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 4
           memory: "8Gi"
     volumes:
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - interval: 2h
   name: ci-kubernetes-build-debian-unstable
@@ -7736,7 +7071,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - --clean
       - --repo=k8s.io/release
       - --root=/go/src
       - --timeout=50
@@ -7766,8 +7100,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - --clean
-      - --git-cache=/root/.cache/git
       - --repo=k8s.io/kubernetes=release-1.9
       - --repo=k8s.io/release
       - --root=/go/src
@@ -7779,24 +7111,15 @@ periodics:
       securityContext:
         privileged: true
       volumeMounts:
-      - name: cache-ssd
-        mountPath: /root/.cache
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 4
           memory: "8Gi"
     volumes:
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - interval: 1h
   name: ci-kubernetes-build-stable2
@@ -7807,8 +7130,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - --clean
-      - --git-cache=/root/.cache/git
       - --repo=k8s.io/kubernetes=release-1.8
       - --repo=k8s.io/release
       - --root=/go/src
@@ -7820,24 +7141,15 @@ periodics:
       securityContext:
         privileged: true
       volumeMounts:
-      - name: cache-ssd
-        mountPath: /root/.cache
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 4
           memory: "8Gi"
     volumes:
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - interval: 2h
   name: ci-kubernetes-build-stable3
@@ -7848,8 +7160,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - --clean
-      - --git-cache=/root/.cache/git
       - --repo=k8s.io/kubernetes=release-1.7
       - --repo=k8s.io/release
       - --root=/go/src
@@ -7861,24 +7171,15 @@ periodics:
       securityContext:
         privileged: true
       volumeMounts:
-      - name: cache-ssd
-        mountPath: /root/.cache
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 4
           memory: "8Gi"
     volumes:
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - interval: 1h
   agent: kubernetes
@@ -7903,8 +7204,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - --clean
-      - --git-cache=/root/.cache/git
       - --repo=k8s.io/kubernetes
       - --repo=k8s.io/release
       - --root=/go/src
@@ -7916,24 +7215,15 @@ periodics:
       securityContext:
         privileged: true
       volumeMounts:
-      - name: cache-ssd
-        mountPath: /root/.cache
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 7
           memory: "41Gi"
     volumes:
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - name: ci-kubernetes-e2e-autoscaling-vpa-actuation
   interval: 2h
@@ -13893,7 +13183,6 @@ periodics:
     - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180322-703c85f84
       args:
       - "--repo=k8s.io/kubernetes=master"
-      - "--clean"
       - "--timeout=320"
       - "--upload=gs://kubernetes-jenkins/logs"
 
@@ -13908,7 +13197,6 @@ periodics:
     - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180322-703c85f84
       args:
       - "--repo=k8s.io/kubernetes=release-1.10"
-      - "--clean"
       - "--timeout=320"
       - "--upload=gs://kubernetes-jenkins/logs"
 
@@ -13924,7 +13212,6 @@ periodics:
     - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180322-703c85f84
       args:
       - "--repo=k8s.io/kubernetes=release-1.7"
-      - "--clean"
       - "--timeout=320"
       - "--upload=gs://kubernetes-jenkins/logs"
 
@@ -13956,7 +13243,6 @@ periodics:
     - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180322-703c85f84
       args:
       - "--repo=k8s.io/kubernetes=release-1.8"
-      - "--clean"
       - "--timeout=320"
       - "--upload=gs://kubernetes-jenkins/logs"
 
@@ -13971,7 +13257,6 @@ periodics:
     - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180322-703c85f84
       args:
       - "--repo=k8s.io/kubernetes=release-1.9"
-      - "--clean"
       - "--timeout=320"
       - "--upload=gs://kubernetes-jenkins/logs"
 
@@ -13986,7 +13271,6 @@ periodics:
     - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180322-703c85f84
       args:
       - "--repo=k8s.io/kubernetes=release-1.9"
-      - "--clean"
       - "--timeout=320"
       - "--upload=gs://kubernetes-jenkins/logs"
 
@@ -14001,7 +13285,6 @@ periodics:
     - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180322-703c85f84
       args:
       - "--repo=k8s.io/kubernetes=release-1.10"
-      - "--clean"
       - "--timeout=320"
       - "--upload=gs://kubernetes-jenkins/logs"
 
@@ -14016,7 +13299,6 @@ periodics:
     - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180322-703c85f84
       args:
       - "--repo=k8s.io/kubernetes=master"
-      - "--clean"
       - "--timeout=320"
       - "--upload=gs://kubernetes-jenkins/logs"
 - name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
@@ -14030,7 +13312,6 @@ periodics:
     - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180322-703c85f84
       args:
       - "--repo=k8s.io/kubernetes=master"
-      - "--clean"
       - "--timeout=320"
       - "--upload=gs://kubernetes-jenkins/logs"
 - name: ci-kubernetes-e2e-kubeadm-gce-dns-coredns
@@ -14044,7 +13325,6 @@ periodics:
     - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180322-703c85f84
       args:
       - "--repo=k8s.io/kubernetes=master"
-      - "--clean"
       - "--timeout=320"
       - "--upload=gs://kubernetes-jenkins/logs"
 
@@ -14059,7 +13339,6 @@ periodics:
     - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180322-703c85f84
       args:
       - "--repo=k8s.io/kubernetes=master"
-      - "--clean"
       - "--timeout=320"
       - "--upload=gs://kubernetes-jenkins/logs"
 - name: ci-kubernetes-e2e-kubeadm-gce-selfhosting
@@ -14073,7 +13352,6 @@ periodics:
     - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180322-703c85f84
       args:
       - "--repo=k8s.io/kubernetes=master"
-      - "--clean"
       - "--timeout=320"
       - "--upload=gs://kubernetes-jenkins/logs"
 - name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
@@ -14087,7 +13365,6 @@ periodics:
     - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180322-703c85f84
       args:
       - "--repo=k8s.io/kubernetes=master"
-      - "--clean"
       - "--timeout=320"
       - "--upload=gs://kubernetes-jenkins/logs"
 - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
@@ -14101,7 +13378,6 @@ periodics:
     - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180322-703c85f84
       args:
       - "--repo=k8s.io/kubernetes=release-1.7"
-      - "--clean"
       - "--timeout=320"
       - "--upload=gs://kubernetes-jenkins/logs"
 
@@ -14116,7 +13392,6 @@ periodics:
     - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180322-703c85f84
       args:
       - "--repo=k8s.io/kubernetes=release-1.9"
-      - "--clean"
       - "--timeout=320"
       - "--upload=gs://kubernetes-jenkins/logs"
 
@@ -14131,7 +13406,6 @@ periodics:
     - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180322-703c85f84
       args:
       - "--repo=k8s.io/kubernetes=release-1.10"
-      - "--clean"
       - "--timeout=320"
       - "--upload=gs://kubernetes-jenkins/logs"
 
@@ -14146,7 +13420,6 @@ periodics:
     - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180322-703c85f84
       args:
       - "--repo=k8s.io/kubernetes=master"
-      - "--clean"
       - "--timeout=320"
       - "--upload=gs://kubernetes-jenkins/logs"
 - name: ci-kubernetes-e2e-node-canary
@@ -14839,7 +14112,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - --clean
       - --repo=k8s.io/kubernetes=release-1.7
       - --repo=k8s.io/release
       - --root=/go/src
@@ -14870,7 +14142,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - --clean
       - --repo=k8s.io/kubernetes=release-1.8
       - --repo=k8s.io/release
       - --root=/go/src
@@ -14901,7 +14172,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - "--clean"
       - "--repo=k8s.io/kubernetes=release-1.10"
       - "--timeout=100"
       env:
@@ -14929,7 +14199,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - "--clean"
       - "--repo=k8s.io/kubernetes"
       - "--timeout=100"
       env:
@@ -14957,7 +14226,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - "--clean"
       - "--repo=k8s.io/kubernetes=release-1.9"
       - "--timeout=100"
       env:
@@ -14985,7 +14253,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - "--clean"
       - "--repo=k8s.io/kubernetes=release-1.8"
       - "--timeout=100"
       env:
@@ -15013,7 +14280,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - "--clean"
       - "--repo=k8s.io/kubernetes=release-1.7"
       - "--timeout=100"
       env:
@@ -15566,7 +14832,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - "--clean"
       - "--repo=k8s.io/kubernetes=release-1.10"
       - "--timeout=75"
       env:
@@ -15578,16 +14843,12 @@ periodics:
       volumeMounts:
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 4
     volumes:
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - interval: 1h
   name: ci-kubernetes-verify-master
@@ -15598,7 +14859,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - "--clean"
       - "--repo=k8s.io/kubernetes"
       - "--timeout=75"
       env:
@@ -15610,16 +14870,12 @@ periodics:
       volumeMounts:
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 4
     volumes:
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - interval: 2h
   name: ci-kubernetes-verify-stable1
@@ -15630,7 +14886,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - "--clean"
       - "--repo=k8s.io/kubernetes=release-1.9"
       - "--timeout=75"
       env:
@@ -15642,16 +14897,12 @@ periodics:
       volumeMounts:
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 4
     volumes:
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - interval: 6h
   name: ci-kubernetes-verify-stable2
@@ -15662,7 +14913,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - "--clean"
       - "--repo=k8s.io/kubernetes=release-1.8"
       - "--timeout=75"
       env:
@@ -15674,16 +14924,12 @@ periodics:
       volumeMounts:
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 4
     volumes:
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - interval: 24h
   name: ci-kubernetes-verify-stable3
@@ -15694,7 +14940,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - "--clean"
       - "--repo=k8s.io/kubernetes=release-1.7"
       - "--timeout=75"
       env:
@@ -15706,16 +14951,12 @@ periodics:
       volumeMounts:
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 4
     volumes:
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - name: ci-perf-tests-e2e-gce-clusterloader
   interval: 2h
@@ -15757,8 +14998,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-experimental
       args:
-      - "--clean"
-      - "--git-cache=/root/.cache/git"
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/test-infra=master"
       - "--service-account=/etc/service-account/service-account.json"
@@ -15804,7 +15043,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.10
       args:
-      - "--clean"
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/cluster-registry=master"
       - "--service-account=/etc/service-account/service-account.json"
@@ -15851,7 +15089,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
       args:
-      - "--clean"
       - "--repo=github.com/istio/istio=master"
       - "--timeout=90"
 
@@ -15958,7 +15195,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.10
       args:
-      - "--clean"
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes=release-1.10"
       - "--service-account=/etc/service-account/service-account.json"
@@ -15989,7 +15225,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
       args:
-      - "--clean"
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes=release-1.7"
       - "--service-account=/etc/service-account/service-account.json"
@@ -16011,7 +15246,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
       args:
-      - "--clean"
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes=release-1.8"
       - "--service-account=/etc/service-account/service-account.json"
@@ -16033,7 +15267,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
       args:
-      - "--clean"
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes=release-1.9"
       - "--service-account=/etc/service-account/service-account.json"
@@ -16058,7 +15291,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-1.10
       args:
-      - "--clean"
       - --root=/go/src
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes=release-1.10"
@@ -16093,7 +15325,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
       args:
-      - "--clean"
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes=release-1.7"
       - "--service-account=/etc/service-account/service-account.json"
@@ -16114,7 +15345,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
       args:
-      - "--clean"
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes=release-1.8"
       - "--service-account=/etc/service-account/service-account.json"
@@ -16135,7 +15365,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
       args:
-      - "--clean"
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes=release-1.9"
       - "--service-account=/etc/service-account/service-account.json"
@@ -16318,7 +15547,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
       args:
-      - "--clean"
       - "--job=$(JOB_NAME)"
       - "--repo=github.com/apache-spark-on-k8s/spark-integration=master"
       - "--upload=gs://kubernetes-jenkins/logs/"
@@ -16349,7 +15577,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
       args:
-      - "--clean"
       - "--job=$(JOB_NAME)"
       - "--repo=github.com/apache-spark-on-k8s/spark-integration=master"
       - "--upload=gs://kubernetes-jenkins/logs/"
@@ -16381,7 +15608,6 @@ periodics:
     - image: gcr.io/minigo-testing/minigo-prow-harness-v2:latest
       imagePullPolicy: Always
       args:
-      - "--clean"
       - "--job=$(JOB_NAME)"
       - "--repo=github.com/tensorflow/minigo=master"
       - "--service-account=/etc/service-account/service-account.json"
