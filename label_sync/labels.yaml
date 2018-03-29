@@ -160,6 +160,7 @@ labels:
     name: sig/release
   - color: d2b48c
     name: sig/rktnetes
+    deleteAfter: 2018-03-30T00:00:00Z
   - color: d2b48c
     name: sig/scalability
   - color: d2b48c
