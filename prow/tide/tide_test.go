@@ -183,10 +183,11 @@ func TestAccumulate(t *testing.T) {
 		prNumber int
 		job      string
 		state    kube.ProwJobState
+		sha      string
 	}
 	tests := []struct {
 		presubmits   []string
-		pullRequests []int
+		pullRequests map[int]string
 		prowJobs     []prowjob
 
 		successes []int
@@ -195,21 +196,21 @@ func TestAccumulate(t *testing.T) {
 	}{
 		{
 			presubmits:   []string{"job1", "job2"},
-			pullRequests: []int{1, 2, 3, 4, 5, 6, 7},
+			pullRequests: map[int]string{1: "", 2: "", 3: "", 4: "", 5: "", 6: "", 7: ""},
 			prowJobs: []prowjob{
-				{2, "job1", kube.PendingState},
-				{3, "job1", kube.PendingState},
-				{3, "job2", kube.TriggeredState},
-				{4, "job1", kube.FailureState},
-				{4, "job2", kube.PendingState},
-				{5, "job1", kube.PendingState},
-				{5, "job2", kube.FailureState},
-				{5, "job2", kube.PendingState},
-				{6, "job1", kube.SuccessState},
-				{6, "job2", kube.PendingState},
-				{7, "job1", kube.SuccessState},
-				{7, "job2", kube.SuccessState},
-				{7, "job1", kube.FailureState},
+				{2, "job1", kube.PendingState, ""},
+				{3, "job1", kube.PendingState, ""},
+				{3, "job2", kube.TriggeredState, ""},
+				{4, "job1", kube.FailureState, ""},
+				{4, "job2", kube.PendingState, ""},
+				{5, "job1", kube.PendingState, ""},
+				{5, "job2", kube.FailureState, ""},
+				{5, "job2", kube.PendingState, ""},
+				{6, "job1", kube.SuccessState, ""},
+				{6, "job2", kube.PendingState, ""},
+				{7, "job1", kube.SuccessState, ""},
+				{7, "job2", kube.SuccessState, ""},
+				{7, "job1", kube.FailureState, ""},
 			},
 
 			successes: []int{7},
@@ -218,17 +219,17 @@ func TestAccumulate(t *testing.T) {
 		},
 		{
 			presubmits:   []string{"job1", "job2", "job3", "job4"},
-			pullRequests: []int{7},
+			pullRequests: map[int]string{7: ""},
 			prowJobs: []prowjob{
-				{7, "job1", kube.SuccessState},
-				{7, "job2", kube.FailureState},
-				{7, "job3", kube.FailureState},
-				{7, "job4", kube.FailureState},
-				{7, "job3", kube.FailureState},
-				{7, "job4", kube.FailureState},
-				{7, "job2", kube.SuccessState},
-				{7, "job3", kube.SuccessState},
-				{7, "job4", kube.FailureState},
+				{7, "job1", kube.SuccessState, ""},
+				{7, "job2", kube.FailureState, ""},
+				{7, "job3", kube.FailureState, ""},
+				{7, "job4", kube.FailureState, ""},
+				{7, "job3", kube.FailureState, ""},
+				{7, "job4", kube.FailureState, ""},
+				{7, "job2", kube.SuccessState, ""},
+				{7, "job3", kube.SuccessState, ""},
+				{7, "job4", kube.FailureState, ""},
 			},
 
 			successes: []int{},
@@ -237,17 +238,17 @@ func TestAccumulate(t *testing.T) {
 		},
 		{
 			presubmits:   []string{"job1", "job2", "job3", "job4"},
-			pullRequests: []int{7},
+			pullRequests: map[int]string{7: ""},
 			prowJobs: []prowjob{
-				{7, "job1", kube.FailureState},
-				{7, "job2", kube.FailureState},
-				{7, "job3", kube.FailureState},
-				{7, "job4", kube.FailureState},
-				{7, "job3", kube.FailureState},
-				{7, "job4", kube.FailureState},
-				{7, "job2", kube.FailureState},
-				{7, "job3", kube.FailureState},
-				{7, "job4", kube.FailureState},
+				{7, "job1", kube.FailureState, ""},
+				{7, "job2", kube.FailureState, ""},
+				{7, "job3", kube.FailureState, ""},
+				{7, "job4", kube.FailureState, ""},
+				{7, "job3", kube.FailureState, ""},
+				{7, "job4", kube.FailureState, ""},
+				{7, "job2", kube.FailureState, ""},
+				{7, "job3", kube.FailureState, ""},
+				{7, "job4", kube.FailureState, ""},
 			},
 
 			successes: []int{},
@@ -256,18 +257,18 @@ func TestAccumulate(t *testing.T) {
 		},
 		{
 			presubmits:   []string{"job1", "job2", "job3", "job4"},
-			pullRequests: []int{7},
+			pullRequests: map[int]string{7: ""},
 			prowJobs: []prowjob{
-				{7, "job1", kube.SuccessState},
-				{7, "job2", kube.FailureState},
-				{7, "job3", kube.FailureState},
-				{7, "job4", kube.FailureState},
-				{7, "job3", kube.FailureState},
-				{7, "job4", kube.FailureState},
-				{7, "job2", kube.SuccessState},
-				{7, "job3", kube.SuccessState},
-				{7, "job4", kube.SuccessState},
-				{7, "job1", kube.FailureState},
+				{7, "job1", kube.SuccessState, ""},
+				{7, "job2", kube.FailureState, ""},
+				{7, "job3", kube.FailureState, ""},
+				{7, "job4", kube.FailureState, ""},
+				{7, "job3", kube.FailureState, ""},
+				{7, "job4", kube.FailureState, ""},
+				{7, "job2", kube.SuccessState, ""},
+				{7, "job3", kube.SuccessState, ""},
+				{7, "job4", kube.SuccessState, ""},
+				{7, "job1", kube.FailureState, ""},
 			},
 
 			successes: []int{7},
@@ -276,30 +277,47 @@ func TestAccumulate(t *testing.T) {
 		},
 		{
 			presubmits:   []string{"job1", "job2", "job3", "job4"},
-			pullRequests: []int{7},
+			pullRequests: map[int]string{7: ""},
 			prowJobs: []prowjob{
-				{7, "job1", kube.SuccessState},
-				{7, "job2", kube.FailureState},
-				{7, "job3", kube.FailureState},
-				{7, "job4", kube.FailureState},
-				{7, "job3", kube.FailureState},
-				{7, "job4", kube.FailureState},
-				{7, "job2", kube.SuccessState},
-				{7, "job3", kube.SuccessState},
-				{7, "job4", kube.PendingState},
-				{7, "job1", kube.FailureState},
+				{7, "job1", kube.SuccessState, ""},
+				{7, "job2", kube.FailureState, ""},
+				{7, "job3", kube.FailureState, ""},
+				{7, "job4", kube.FailureState, ""},
+				{7, "job3", kube.FailureState, ""},
+				{7, "job4", kube.FailureState, ""},
+				{7, "job2", kube.SuccessState, ""},
+				{7, "job3", kube.SuccessState, ""},
+				{7, "job4", kube.PendingState, ""},
+				{7, "job1", kube.FailureState, ""},
 			},
 
 			successes: []int{},
 			pendings:  []int{7},
 			none:      []int{},
 		},
+		{
+			presubmits:   []string{"job1"},
+			pullRequests: map[int]string{7: "new", 8: "new"},
+			prowJobs: []prowjob{
+				{7, "job1", kube.SuccessState, "old"},
+				{7, "job1", kube.FailureState, "new"},
+				{8, "job1", kube.FailureState, "old"},
+				{8, "job1", kube.SuccessState, "new"},
+			},
+
+			successes: []int{8},
+			pendings:  []int{},
+			none:      []int{7},
+		},
 	}
 
 	for i, test := range tests {
 		var pulls []PullRequest
-		for _, p := range test.pullRequests {
-			pulls = append(pulls, PullRequest{Number: githubql.Int(p)})
+		for num, sha := range test.pullRequests {
+			pulls = append(
+				pulls,
+				PullRequest{Number: githubql.Int(num), HeadRefOID: githubql.String(sha)},
+			)
 		}
 		var pjs []kube.ProwJob
 		for _, pj := range test.prowJobs {
@@ -307,7 +325,7 @@ func TestAccumulate(t *testing.T) {
 				Spec: kube.ProwJobSpec{
 					Job:  pj.job,
 					Type: kube.PresubmitJob,
-					Refs: &kube.Refs{Pulls: []kube.Pull{{Number: pj.prNumber}}},
+					Refs: &kube.Refs{Pulls: []kube.Pull{{Number: pj.prNumber, SHA: pj.sha}}},
 				},
 				Status: kube.ProwJobStatus{State: pj.state},
 			})

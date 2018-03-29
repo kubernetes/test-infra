@@ -616,6 +616,10 @@ func accumulate(presubmits []string, prs []PullRequest, pjs []kube.ProwJob) (suc
 			if pj.Spec.Refs.Pulls[0].Number != int(pr.Number) {
 				continue
 			}
+			if pj.Spec.Refs.Pulls[0].SHA != string(pr.HeadRefOID) {
+				continue
+			}
+
 			name := pj.Spec.Job
 			oldState := psStates[name]
 			newState := toSimpleState(pj.Status.State)
