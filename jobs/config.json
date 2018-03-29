@@ -483,6 +483,36 @@
       "sig-node"
     ]
   },
+  "ci-docker-node-conformance": {
+    "args": [
+      "--deployment=node",
+      "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml",
+      "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
+      "--node-tests=true",
+      "--provider=gce",
+      "--test_args=--nodes=8 --focus=\"\\[Conformance\\] --skip=\"\\[Flaky\\]|\\[Serial\\]|\\[Feature:.+\\]\"",
+      "--timeout=65m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
+  "ci-docker-node-features": {
+    "args": [
+      "--deployment=node",
+      "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml",
+      "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
+      "--node-tests=true",
+      "--provider=gce",
+      "--test_args=--nodes=8 --focus=\"\\[Feature:.+\\] --skip=\"\\[Flaky\\]|\\[Serial\\]|\\[Conformance\\]\"",
+      "--timeout=180m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
   "ci-federation-build": {
     "args": [
       "--allow-dup",

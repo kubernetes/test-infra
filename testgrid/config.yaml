@@ -161,6 +161,10 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
+- name: ci-docker-node-conformance
+  gcs_prefix: kubernetes-jenkins/logs/ci-docker-node-conformance
+- name: ci-docker-node-features
+  gcs_prefix: kubernetes-jenkins/logs/ci-docker-node-features
 - name: ci-ingress-gce-image-push
   gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-image-push
 - name: ci-ingress-gce-e2e
@@ -4747,6 +4751,13 @@ dashboards:
   - name: rktnetes
     test_group_name: kubernetes-rktnetes
 
+- name: sig-node-cri
+  dashboard_tab:
+  - name: sig-node-docker-node-conformance
+    test_group_name: ci-docker-node-conformance
+  - name: sig-node-docker-node-features
+    test_group_name: ci-docker-node-features
+
 - name: sig-node-cadvisor
   dashboard_tab:
   - name: cadvisor-push
@@ -5768,6 +5779,7 @@ dashboard_groups:
   - sig-node-rkt
   - sig-node-ppc64le
   - sig-node-cri-o
+  - sig-node-cri
 
 - name: sig-release
   dashboard_names:
