@@ -7166,7 +7166,6 @@ periodics:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - --clean
-      - --git-cache=/root/.cache/git
       - --repo=k8s.io/kubernetes
       - --repo=k8s.io/release
       - --root=/go/src
@@ -7178,24 +7177,15 @@ periodics:
       securityContext:
         privileged: true
       volumeMounts:
-      - name: cache-ssd
-        mountPath: /root/.cache
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 4
           memory: "8Gi"
     volumes:
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - interval: 30m
   name: ci-kubernetes-build-beta
@@ -7207,7 +7197,6 @@ periodics:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - --clean
-      - --git-cache=/root/.cache/git
       - --repo=k8s.io/kubernetes=release-1.10
       - --repo=k8s.io/release
       - --root=/go/src
@@ -7219,24 +7208,15 @@ periodics:
       securityContext:
         privileged: true
       volumeMounts:
-      - name: cache-ssd
-        mountPath: /root/.cache
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 4
           memory: "8Gi"
     volumes:
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - interval: 2h
   name: ci-kubernetes-build-debian-unstable
@@ -7290,24 +7270,15 @@ periodics:
       securityContext:
         privileged: true
       volumeMounts:
-      - name: cache-ssd
-        mountPath: /root/.cache
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 4
           memory: "8Gi"
     volumes:
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - interval: 1h
   name: ci-kubernetes-build-stable2
@@ -7319,7 +7290,6 @@ periodics:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - --clean
-      - --git-cache=/root/.cache/git
       - --repo=k8s.io/kubernetes=release-1.8
       - --repo=k8s.io/release
       - --root=/go/src
@@ -7331,24 +7301,15 @@ periodics:
       securityContext:
         privileged: true
       volumeMounts:
-      - name: cache-ssd
-        mountPath: /root/.cache
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 4
           memory: "8Gi"
     volumes:
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - interval: 2h
   name: ci-kubernetes-build-stable3
@@ -7360,7 +7321,6 @@ periodics:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
       - --clean
-      - --git-cache=/root/.cache/git
       - --repo=k8s.io/kubernetes=release-1.7
       - --repo=k8s.io/release
       - --root=/go/src
@@ -7372,24 +7332,15 @@ periodics:
       securityContext:
         privileged: true
       volumeMounts:
-      - name: cache-ssd
-        mountPath: /root/.cache
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 4
           memory: "8Gi"
     volumes:
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - interval: 1h
   agent: kubernetes
@@ -7414,8 +7365,6 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - --clean
-      - --git-cache=/root/.cache/git
       - --repo=k8s.io/kubernetes
       - --repo=k8s.io/release
       - --root=/go/src
@@ -7427,24 +7376,15 @@ periodics:
       securityContext:
         privileged: true
       volumeMounts:
-      - name: cache-ssd
-        mountPath: /root/.cache
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 7
           memory: "41Gi"
     volumes:
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - name: ci-kubernetes-e2e-autoscaling-vpa-actuation
   interval: 2h
@@ -15063,16 +15003,12 @@ periodics:
       volumeMounts:
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 4
     volumes:
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - interval: 1h
   name: ci-kubernetes-verify-master
@@ -15095,16 +15031,12 @@ periodics:
       volumeMounts:
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 4
     volumes:
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - interval: 2h
   name: ci-kubernetes-verify-stable1
@@ -15127,16 +15059,12 @@ periodics:
       volumeMounts:
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 4
     volumes:
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - interval: 6h
   name: ci-kubernetes-verify-stable2
@@ -15159,16 +15087,12 @@ periodics:
       volumeMounts:
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 4
     volumes:
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - interval: 24h
   name: ci-kubernetes-verify-stable3
@@ -15191,16 +15115,12 @@ periodics:
       volumeMounts:
       - name: docker-graph
         mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
       resources:
         requests:
           cpu: 4
     volumes:
     - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
+      emptyDir: {}
 
 - name: ci-perf-tests-e2e-gce-clusterloader
   interval: 2h
@@ -15243,7 +15163,6 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-experimental
       args:
       - "--clean"
-      - "--git-cache=/root/.cache/git"
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/test-infra=master"
       - "--service-account=/etc/service-account/service-account.json"
