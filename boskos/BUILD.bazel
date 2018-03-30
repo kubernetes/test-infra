@@ -62,10 +62,8 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//boskos/client:all-srcs",
-        "//boskos/cmd/mason:all-srcs",
         "//boskos/common:all-srcs",
         "//boskos/crds:all-srcs",
-        "//boskos/gcp:all-srcs",
         "//boskos/janitor:all-srcs",
         "//boskos/mason:all-srcs",
         "//boskos/metrics:all-srcs",
