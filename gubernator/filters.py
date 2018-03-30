@@ -185,18 +185,22 @@ def do_render_status(payload, user):
         states.add(state)
 
     icon = ''
+    title = ''
     if 'failure' in states:
         icon = 'x'
         state = 'failure'
+        title = 'failing tests'
     elif 'pending' in states:
         icon = 'primitive-dot'
         state = 'pending'
+        title = 'pending tests'
     elif 'success' in states:
         icon = 'check'
         state = 'success'
+        title = 'tests passing'
     if icon:
-        icon = '<span class="text-%s octicon octicon-%s"></span>' % (
-            state, icon)
+        icon = '<span class="text-%s octicon octicon-%s" title="%s"></span>' % (
+            state, icon, title)
     return jinja2.Markup('%s%s' % (icon, text))
 
 

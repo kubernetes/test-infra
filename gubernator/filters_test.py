@@ -102,7 +102,7 @@ class HelperTest(unittest.TestCase):
     def test_render_status_basic(self):
         payload = {'status': {'ci': ['pending', '', '']}}
         self.assertEqual(str(filters.do_render_status(payload, '')),
-            '<span class="text-pending octicon octicon-primitive-dot">'
+            '<span class="text-pending octicon octicon-primitive-dot" title="pending tests">'
             '</span>Pending')
 
     def test_render_status_complex(self):
@@ -110,7 +110,8 @@ class HelperTest(unittest.TestCase):
             # strip the excess html from the result down to the text class,
             # the opticon class, and the rendered text
             result = str(filters.do_render_status(payload, user))
-            result = re.sub(r'<span class="text-|octicon octicon-|</span>', '', result)
+            result = re.sub(r'<span class="text-|octicon octicon-| title="[^"]*"|</span>',
+                            '', result)
             result = result.replace('">', ' ')
             self.assertEqual(result, expected)
 
