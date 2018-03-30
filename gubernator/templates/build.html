@@ -79,7 +79,7 @@
 	% if issues
 		<h4>References</h4>
 		% for issue in issues
-		<a href="https://github.com/{{issue.repo}}/issues/{{issue.number}}">
+		<a href="{{issue.url}}">
 		{% if issue.is_pr %}PR{% else %}Issue{% endif %} #{{issue.number}} {{issue.payload['title']}}</a>
 		<br>
 		% endfor

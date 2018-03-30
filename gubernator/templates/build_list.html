@@ -20,16 +20,17 @@
   % if started and 'timestamp' in started
     {{started['timestamp'] | timestamp}}
     % if 'timestamp' in finished
-        took {{(finished['timestamp']-started['timestamp'])|duration}}
-    % endif
+    took {{(finished['timestamp']-started['timestamp'])|duration}}{% endif %}
   % else
-    {{finished['result']}}
-  % endif
-</span>
+    {{finished['result']}}{% endif %}
+</span></a>
 % elif started and 'timestamp' in started
-{{started['timestamp'] | timestamp}}
+{{started['timestamp'] | timestamp}}</a>
 % endif
-</a><br>
+  % for issue in refs[loc]
+    <a href="{{issue.url}}" title="{{issue.title}}">#{{issue.number}}</a>
+  % endfor
+<br>
 % endfor
 % if 'directory' in job_dir or '/pull/' not in job_dir
 <br>
