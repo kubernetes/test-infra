@@ -126,6 +126,8 @@ class HelperTest(unittest.TestCase):
         expect({'status': {'ci': ['success', '', ''],
             'Submit Queue': ['pending', '', 'does not have LGTM']}}, 'success check Pending')
         expect({'status': {'ci': ['success', '', ''],
+            'tide': ['pending', '', '']}}, 'success check Pending')
+        expect({'status': {'ci': ['success', '', ''],
             'code-review/reviewable': ['pending', '', '10 files left']}}, 'success check Pending')
         expect({'status': {'ci': ['success', '', '']}, 'labels': ['lgtm']}, 'success check LGTM')
         expect({'attn': {'foo': 'Needs Rebase'}}, 'Needs Rebase', user='foo')
