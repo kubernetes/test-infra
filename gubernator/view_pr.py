@@ -78,6 +78,12 @@ def org_repo(path, default_org, default_repo):
     return org, repo
 
 
+def get_pull_prefix(config, org):
+    if org in config['external_services']:
+        return config['external_services'][org]['gcs_pull_prefix']
+    return config['default_external_services']['gcs_pull_prefix']
+
+
 class PRHandler(view_base.BaseHandler):
     """Show a list of test runs for a PR."""
     def get(self, path, pr):
@@ -87,7 +93,7 @@ class PRHandler(view_base.BaseHandler):
             default_repo=self.app.config['default_repo'],
         )
         path = pr_path(org=org, repo=repo, pr=pr,
-            pull_prefix=self.app.config['external_services'][org]['gcs_pull_prefix'],
+            pull_prefix=get_pull_prefix(self.app.config, org),
             default_org=self.app.config['default_org'],
             default_repo=self.app.config['default_repo'],
         )
@@ -246,5 +252,5 @@ class PRBuildLogHandler(view_base.BaseHandler):
             default_repo=self.app.config['default_repo'],
         )
         self.redirect('https://storage.googleapis.com/%s/%s' % (
-            self.app.config['external_services'][org]['gcs_pull_prefix'], path
+            get_pull_prefix(self.app.config, org), path
         ))

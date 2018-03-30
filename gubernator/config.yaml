@@ -1,29 +1,16 @@
 ---
+default_external_services:
+  gcs_pull_prefix: kubernetes-jenkins/pr-logs/pull
+  prow_url: prow.k8s.io
 default_org: kubernetes
 default_repo: kubernetes
 external_services:
-  GoogleCloudPlatform:
-    gcs_bucket: kubernetes-jenkins/
-    gcs_pull_prefix: kubernetes-jenkins/pr-logs/pull
-    prow_url: prow.k8s.io
   istio:
     gcs_pull_prefix: istio-prow/pull
     prow_url: prow.istio.io
   istio-releases:
     gcs_pull_prefix: istio-prow/pull
     prow_url: prow.istio.io
-  kubernetes:
-    gcs_bucket: kubernetes-jenkins/
-    gcs_pull_prefix: kubernetes-jenkins/pr-logs/pull
-    prow_url: prow.k8s.io
-  kubernetes-sigs:
-    gcs_bucket: kubernetes-jenkins/
-    gcs_pull_prefix: kubernetes-jenkins/pr-logs/pull
-    prow_url: prow.k8s.io
-  tensorflow:
-    gcs_bucket: kubernetes-jenkins/
-    gcs_pull_prefix: kubernetes-jenkins/pr-logs/pull
-    prow_url: prow.k8s.io
 jobs:
   kubernetes-jenkins/logs/:
   - ci-kubernetes-build

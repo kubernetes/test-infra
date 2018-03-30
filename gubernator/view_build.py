@@ -284,8 +284,8 @@ def get_build_config(prefix, config):
     for item in config['external_services'].values():
         if prefix.startswith(item['gcs_pull_prefix']):
             return item
-        if 'gcs_bucket' in item and prefix.startswith(item['gcs_bucket']):
-            return item
+    if prefix.startswith(config['default_external_services']['gcs_pull_prefix']):
+        return config['default_external_services']
 
 def get_pr_info(prefix, config):
     if config is not None:
