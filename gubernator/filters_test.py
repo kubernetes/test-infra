@@ -133,6 +133,11 @@ class HelperTest(unittest.TestCase):
         expect({'attn': {'foo': 'Needs Rebase'}}, 'Needs Rebase', user='foo')
         expect({'attn': {'foo': 'Needs Rebase'}, 'labels': {'lgtm'}}, 'LGTM', user='foo')
 
+        expect({'author': 'u', 'labels': ['lgtm']}, 'LGTM', 'u')
+        expect({'author': 'b', 'labels': ['lgtm'], 'approvers': ['u'],
+                'attn': {'u': 'needs approval'}},
+               'Needs Approval', 'u')
+
     def test_tg_url(self):
         self.assertEqual(
             filters.do_tg_url('a#b'),
