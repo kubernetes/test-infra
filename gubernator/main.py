@@ -112,4 +112,5 @@ app = webapp2.WSGIApplication([
     (r'/pr/(.*/build-log.txt)', view_pr.PRBuildLogHandler),
     (r'/github_auth(.*)', github_auth.Endpoint),
     (r'/config', ConfigHandler),
+    (r'/gcsproxy', view_build.GcsProxyHandler)
 ], debug=True, config=config)

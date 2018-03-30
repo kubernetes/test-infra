@@ -65,31 +65,42 @@ function get(uri, callback) {
 	req.open('GET', url);
 	req.onload = function(resp) {
 		get_cache[uri] = req.response;
-		callback(req.response);
+		callback(req);
 	}
 	req.send();
 }
 
+function expand_lines(els, data) {
+	var lines = data.split('\n');
+	var parent = els[0].parentElement;
+	for (var i = 0; i < els.length; i++) {
+		var el = els[i];
+		var range = el.dataset['range'].split('-');
+		var chunk = lines.slice(range[0], range[1]);
+		var chunk = chunk.join('\n');
+		if (el.previousSibling) {
+			el.previousSibling.appendData(chunk);
+			el.remove();
+		} else if (el.nextSibling) {
+			el.nextSibling.data = chunk + el.nextSibling.data;
+			el.remove();
+		}
+	}
+	parent.normalize();  // merge adjacent text nodes
+	fix_escape_codes();  // colorize new segments
+}
+
 function expand_skipped(els) {
 	var src = els[0].parentElement.dataset['src'];
-	get(src, function(data) {
-		var lines = data.split('\n');
-		var parent = els[0].parentElement;
-		for (var i = 0; i < els.length; i++) {
-			var el = els[i];
-			var range = el.dataset['range'].split('-');
-			var chunk = lines.slice(range[0], range[1]);
-			var chunk = chunk.join('\n');
-			if (el.previousSibling) {
-				el.previousSibling.appendData(chunk);
-				el.remove();
-			} else if (el.nextSibling) {
-				el.nextSibling.data = chunk + el.nextSibling.data;
-				el.remove();
-			}
+	get(src, function(req) {
+		if (req.status == 401) {  // unauthorized
+			// try proxying through Gubernator
+			var proxyUrl = document.location.origin + '/gcsproxy?path=' + escape(src);
+			document.getElementById('rawloglink').href = proxyUrl
+			get(proxyUrl, function (req) { expand_lines(els, req.response); })
+		} else {
+			expand_lines(els, req.response);
 		}
-		parent.normalize();  // merge adjacent text nodes
-		fix_escape_codes();  // colorize new segments
 	});
 	document.querySelector('h2#log').innerHTML = 'Build Log';
 }
