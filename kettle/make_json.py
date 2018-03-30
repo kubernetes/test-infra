@@ -124,8 +124,6 @@ def row_for_build(path, started, finished, results):
 
     if started:
         build['started'] = int(started['timestamp'])
-        if 'jenkins-node' in started:
-            build['executor'] = started['jenkins-node']
         if 'node' in started:
             build['executor'] = started['node']
     if finished:

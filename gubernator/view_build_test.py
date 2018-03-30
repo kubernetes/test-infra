@@ -174,7 +174,7 @@ class BuildTest(main_test.TestBase):
             {
                 'version': 'v1+56',
                 'timestamp': 1406535800,
-                'jenkins-node': 'agent-light-7',
+                'node': 'agent-light-7',
                 'pull': 'master:1234,35:abcd,72814',
                 'metadata': {
                     'master-version': 'm12'
