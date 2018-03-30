@@ -27,15 +27,17 @@ set -o pipefail
 ginkgo="/ginkgo"
 e2e_test="/e2e.test"
 
+CONFORMANCE_TEST_FOCUS_REGEX=${CONFORMANCE_TEST_FOCUS_REGEX:-".*Conformance.*"}
 CONFORMANCE_TEST_SKIP_REGEX=${CONFORMANCE_TEST_SKIP_REGEX:-"(Feature:Example)|(NFS)|(StatefulSet)"}
 
 # Configure ginkgo
-GINKGO_PARALLEL_NODES=${GINKGO_PARALLEL_NODES:-"25"}
+GINKGO_PARALLEL_NODES=${GINKGO_PARALLEL_NODES:-"5"}
 
 # If 'y', will rerun failed tests once to give them a second chance.
 GINKGO_TOLERATE_FLAKES=${GINKGO_TOLERATE_FLAKES:-n}
 
 ginkgo_args=()
+ginkgo_args+=("--focus=${CONFORMANCE_TEST_FOCUS_REGEX}")
 ginkgo_args+=("--skip=${CONFORMANCE_TEST_SKIP_REGEX}")
 ginkgo_args+=("--seed=1436380640")
 ginkgo_args+=("--nodes=${GINKGO_PARALLEL_NODES}")
