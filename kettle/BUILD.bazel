@@ -23,6 +23,13 @@ py_binary(
     ],
 )
 
+py_binary(
+    name = "monitor",
+    srcs = [
+        "monitor.py",
+    ],
+)
+
 py_test(
     name = "model_test",
     srcs = [

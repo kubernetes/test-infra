@@ -15198,7 +15198,33 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bigquery:v20170911-5aa1975d
+    - image: gcr.io/k8s-testimages/bigquery:v20180330-f723e8d3f
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: VELODROME_INFLUXDB_CONFIG
+        value: /etc/velodrome-influxdb/config.json
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+      - name: influxdb
+        mountPath: /etc/velodrome-influxdb
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: triage-service-account
+    - name: influxdb
+      secret:
+        secretName: velodrome-influxdb
+
+- name: metrics-kettle
+  interval: 1h
+  agent: kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bigquery:v20180330-f723e8d3f
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
