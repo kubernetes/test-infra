@@ -114,6 +114,7 @@ class StreamTest(unittest.TestCase):
               ([[5,
                  now - 5,
                  now,
+                 True,
                  u'SUCCESS',
                  None,
                  u'gs://kubernetes-jenkins/logs/fake/123',

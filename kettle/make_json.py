@@ -130,7 +130,12 @@ def row_for_build(path, started, finished, results):
             build['executor'] = started['node']
     if finished:
         build['finished'] = int(finished['timestamp'])
-        build['result'] = finished['result']
+        if 'result' in finished:
+            build['result'] = finished['result']
+            build['passed'] = build['result'] == 'SUCCESS'
+        elif isinstance(finished.get('passed'), bool):
+            build['passed'] = finished['passed']
+            build['result'] = 'SUCCESS' if build['passed'] else 'FAILURE'
         if 'version' in finished:
             build['version'] = finished['version']
 
