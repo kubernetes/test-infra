@@ -34,7 +34,6 @@ approve:
 - repos:
   - kubernetes/charts
   - kubernetes/cluster-registry
-  - kubernetes/community
   - kubernetes/contrib
   - kubernetes/dashboard
   - kubernetes/examples
