@@ -80,19 +80,18 @@ class HelperTest(unittest.TestCase):
     def test_slugify(self):
         self.assertEqual('k8s-test-foo', filters.do_slugify('[k8s] Test Foo'))
 
-    def test_testcmd_unit(self):
-        self.assertEqual(
-            filters.do_testcmd('k8s.io/kubernetes/pkg/api/errors TestErrorNew'),
-            'go test -v k8s.io/kubernetes/pkg/api/errors -run TestErrorNew$')
-
-    def test_testcmd_e2e(self):
-        self.assertEqual(filters.do_testcmd('[k8s.io] Proxy [k8s.io] works'),
+    def test_testcmd(self):
+        for name, expected in (
+            ('k8s.io/kubernetes/pkg/api/errors TestErrorNew',
+             'go test -v k8s.io/kubernetes/pkg/api/errors -run TestErrorNew$'),
+            ('[k8s.io] Proxy [k8s.io] works',
             "go run hack/e2e.go -v --test --test_args='--ginkgo.focus="
-            "Proxy\\s\\[k8s\\.io\\]\\sworks$'")
-
-    def test_testcmd_bazel(self):
-        self.assertEqual(filters.do_testcmd('//pkg/foo/bar:go_default_test'),
-            'bazel test //pkg/foo/bar:go_default_test')
+            "Proxy\\s\\[k8s\\.io\\]\\sworks$'"),
+            ('//pkg/foo/bar:go_default_test',
+            'bazel test //pkg/foo/bar:go_default_test'),
+            ('verify typecheck', 'make verify WHAT=typecheck')):
+            print 'test name:', name
+            self.assertEqual(filters.do_testcmd(name), expected)
 
     def test_classify_size(self):
         self.assertEqual(filters.do_classify_size(
