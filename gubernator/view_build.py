@@ -414,3 +414,21 @@ class JobListHandler(view_base.BaseHandler):
         fstats = view_base.gcs_ls(jobs_dir)
         fstats.sort()
         self.render('job_list.html', dict(jobs_dir=jobs_dir, fstats=fstats))
+
+
+class GcsProxyHandler(view_base.BaseHandler):
+    """Proxy results from GCS.
+
+    Useful for buckets that don't have public read permissions."""
+    def get(self):
+        # let's lock this down to build logs for now.
+        path = self.request.get('path')
+        if not re.match(r'^[-\w/.]+$', path):
+            self.abort(403)
+        if not path.endswith('/build-log.txt'):
+            self.abort(403)
+        content = gcs_async.read(path).get_result()
+        # lazy XSS prevention.
+        # doesn't work on terrible browsers that do content sniffing (ancient IE).
+        self.response.headers['Content-Type'] = 'text/plain'
+        self.response.write(content)

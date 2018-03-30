@@ -137,7 +137,7 @@
 		<h2 id="log">Error lines from build-log.txt</h2>
 		<ul class="log">
 			<li class="log"><button onclick="javascript:expand_all(this.parentElement)">Expand Skipped Lines</button></li>
-			<li class="log"><a href="{{build_log_src or "https://storage.googleapis.com%s/build-log.txt" % build_dir}}">Raw build-log.txt</a></li>
+			<li class="log"><a id="rawloglink" href="{{build_log_src or "https://storage.googleapis.com%s/build-log.txt" % build_dir}}">Raw build-log.txt</a></li>
 		</ul>
 		<pre data-src="{{build_log_src or "%s/build-log.txt" % build_dir}}">{{build_log | safe}}</pre>
 	</div>
