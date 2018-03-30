@@ -149,6 +149,14 @@ class GHIssueDigest(ndb.Model):
     def number(self):
         return int(self.key.id().split()[1])
 
+    @property
+    def url(self):
+        return 'https://github.com/%s/issues/%s' % tuple(self.key.id().split())
+
+    @property
+    def title(self):
+        return self.payload.get('title', '')
+
     @staticmethod
     def find_head(repo, head):
         return GHIssueDigest.query(GHIssueDigest.key > GHIssueDigest.make_key(repo, ''),
@@ -158,6 +166,30 @@ class GHIssueDigest(ndb.Model):
     @staticmethod
     def find_xrefs(xref):
         return GHIssueDigest.query(GHIssueDigest.xref == xref)
+
+    @staticmethod
+    @ndb.tasklet
+    def find_xrefs_multi_async(xrefs):
+        """
+        Given a list of xrefs to search for, return a dict of lists
+        of result values. Xrefs that have no corresponding issues are
+        not represented in the dictionary.
+        """
+        # The IN operator does multiple sequential queries and ORs them
+        # together. This is slow here-- a range query is faster, since
+        # this is used to get xrefs for a set of contiguous builds.
+        if not xrefs:  # nothing => nothing
+            raise ndb.Return({})
+        xrefs = set(xrefs)
+        issues = yield GHIssueDigest.query(
+            GHIssueDigest.xref >= min(xrefs),
+            GHIssueDigest.xref <= max(xrefs)).fetch_async(batch_size=500)
+        refs = {}
+        for issue in issues:
+            for xref in issue.xref:
+                if xref in xrefs:
+                    refs.setdefault(xref, []).append(issue)
+        raise ndb.Return(refs)
 
     @staticmethod
     def find_open_prs():
