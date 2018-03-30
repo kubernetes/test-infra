@@ -109,6 +109,8 @@ def do_testcmd(name):
         return ''
     elif name.startswith('//'):
         return 'bazel test %s' % name
+    elif name.startswith('verify '):
+        return 'make verify WHAT=%s' % name.split(' ')[1]
     else:
         name = re.sub(r'^\[k8s\.io\] ', '', name)
         name_escaped = re.escape(name).replace('\\ ', '\\s')
