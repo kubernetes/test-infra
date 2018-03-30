@@ -22,14 +22,15 @@ import (
 
 // prometheusMetrics are served by /prometheus on the metrics port
 type prometheusMetrics struct {
-	DiskFree          prometheus.Gauge
-	DiskUsed          prometheus.Gauge
-	DiskTotal         prometheus.Gauge
-	FilesEvicted      prometheus.Counter
-	ActionCacheHits   prometheus.Counter
-	CASHits           prometheus.Counter
-	ActionCacheMisses prometheus.Counter
-	CASMisses         prometheus.Counter
+	DiskFree             prometheus.Gauge
+	DiskUsed             prometheus.Gauge
+	DiskTotal            prometheus.Gauge
+	FilesEvicted         prometheus.Counter
+	ActionCacheHits      prometheus.Counter
+	CASHits              prometheus.Counter
+	ActionCacheMisses    prometheus.Counter
+	CASMisses            prometheus.Counter
+	LastEvictedAccessAge prometheus.Gauge
 }
 
 func initMetrics() *prometheusMetrics {
@@ -66,6 +67,10 @@ func initMetrics() *prometheusMetrics {
 			Name: "bazel_cache_cas_misses",
 			Help: "Approximate number of Content Addressed Storage cache misses since last server start",
 		}),
+		LastEvictedAccessAge: prometheus.NewGauge(prometheus.GaugeOpts{
+			Name: "bazel_cache_last_evicted_access_age",
+			Help: "Hours since last access of most recently evicted file (at eviction time)",
+		}),
 	}
 	prometheus.MustRegister(metrics.DiskFree)
 	prometheus.MustRegister(metrics.DiskUsed)
@@ -75,5 +80,6 @@ func initMetrics() *prometheusMetrics {
 	prometheus.MustRegister(metrics.CASHits)
 	prometheus.MustRegister(metrics.ActionCacheMisses)
 	prometheus.MustRegister(metrics.CASMisses)
+	prometheus.MustRegister(metrics.LastEvictedAccessAge)
 	return metrics
 }
