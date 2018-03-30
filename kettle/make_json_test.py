@@ -46,6 +46,8 @@ class MakeJsonTest(unittest.TestCase):
                 'tests_failed': 0,
                 'tests_run': 0,
             }
+            if finish:
+                expected['passed'] = kwargs.get('result') == 'SUCCESS'
             expected.update(kwargs)
             row = make_json.row_for_build(path, start, finish, results)
             self.assertEqual(row, expected)
@@ -60,6 +62,14 @@ class MakeJsonTest(unittest.TestCase):
                job='J', number=123,
                started=10, finished=15, elapsed=5,
                version='v1.2.3', result='SUCCESS', executor='agent-34',
+              )
+        expect(path,
+               {'timestamp': 10},
+               {'timestamp': 15, 'passed': True},
+               [],
+               job='J', number=123,
+               started=10, finished=15, elapsed=5,
+               result='SUCCESS',
               )
         expect(path, None,
                {'timestamp': 15, 'result': 'FAILURE',

@@ -283,7 +283,6 @@ def start(gsutil, paths, stamp, node_name, version, repos):
     """Construct and upload started.json."""
     data = {
         'timestamp': int(stamp),
-        'jenkins-node': node_name,
         'node': node_name,
     }
     if version:
