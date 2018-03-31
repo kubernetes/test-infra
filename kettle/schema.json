@@ -18,7 +18,13 @@
       "name" : "finished"
    },
    {
-      "description" : "\"SUCCESS\" \"FAILED\" \"ABORTED\", etc",
+      "description" : "Whether the build succeeded.",
+      "mode" : "NULLABLE",
+      "type" : "BOOLEAN",
+      "name" : "passed"
+   },
+   {
+      "description" : "(DEPRECATED: use passed) \"SUCCESS\" \"FAILURE\" \"ABORTED\", etc",
       "mode" : "NULLABLE",
       "type" : "STRING",
       "name" : "result"

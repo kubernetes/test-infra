@@ -161,6 +161,10 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
+- name: ci-docker-node-conformance
+  gcs_prefix: kubernetes-jenkins/logs/ci-docker-node-conformance
+- name: ci-docker-node-features
+  gcs_prefix: kubernetes-jenkins/logs/ci-docker-node-features
 - name: ci-ingress-gce-image-push
   gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-image-push
 - name: ci-ingress-gce-e2e
@@ -445,6 +449,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-multizone
 - name: ci-kubernetes-e2e-gke-regional
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-regional
+- name: ci-kubernetes-e2e-gke-regional-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-regional-serial
+- name: ci-kubernetes-e2e-gke-regional-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-regional-slow
 - name: ci-kubernetes-e2e-gke-scale-correctness
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-scale-correctness
   days_of_results: 60
@@ -691,9 +699,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test-1-10
 - name: ci-test-infra-bazel
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-bazel
-# rktnetes
-- name: kubernetes-rktnetes
-  gcs_prefix: rktnetes-jenkins/logs/kubernetes-e2e-gce
 # Tectonic (contact: @ethernetdan on GitHub)
 - name: ci-tectonic-e2e-aws
   gcs_prefix: upstream-jenkins-logs/logs/ci-tectonic-e2e-aws
@@ -2996,6 +3001,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gke-multizone
   - name: gke-regional
     test_group_name: ci-kubernetes-e2e-gke-regional
+  - name: gke-regional-serial
+    test_group_name: ci-kubernetes-e2e-gke-regional-serial
+  - name: gke-regional-slow
+    test_group_name: ci-kubernetes-e2e-gke-regional-slow
   - name: gci-gke-reboot
     test_group_name: ci-kubernetes-e2e-gci-gke-reboot
   - name: gke-updown
@@ -4734,10 +4743,12 @@ dashboards:
     test_group_name: pull-kubernetes-e2e-containerd-gce
     base_options: 'width=10'
 
-- name: sig-node-rkt
+- name: sig-node-cri
   dashboard_tab:
-  - name: rktnetes
-    test_group_name: kubernetes-rktnetes
+  - name: sig-node-docker-node-conformance
+    test_group_name: ci-docker-node-conformance
+  - name: sig-node-docker-node-features
+    test_group_name: ci-docker-node-features
 
 - name: sig-node-cadvisor
   dashboard_tab:
@@ -5757,9 +5768,9 @@ dashboard_groups:
   - sig-node-cos-image
   - sig-node-kubelet
   - sig-node-containerd
-  - sig-node-rkt
   - sig-node-ppc64le
   - sig-node-cri-o
+  - sig-node-cri
 
 - name: sig-release
   dashboard_names:

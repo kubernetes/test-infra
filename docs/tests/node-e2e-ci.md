@@ -114,7 +114,6 @@ The `TestGrid` then expects the following content of each build:
   ```json
   {
     "node": "ip-172-18-0-237.ec2.internal",
-    "jenkins-node": "ci.openshift",
     "timestamp": 1511906201,
     "repos": {
       "k8s.io/kubernetes": "master"

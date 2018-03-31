@@ -106,15 +106,15 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 
 	for _, job := range presubmits {
 		// Ignore blocking jobs.
-		if job.AlwaysRun {
+		if !job.SkipReport && job.AlwaysRun {
 			continue
 		}
 		// Ignore jobs that need to run against the PR changes.
-		if job.RunIfChanged != "" && job.RunsAgainstChanges(changes) {
+		if !job.SkipReport && job.RunIfChanged != "" && job.RunsAgainstChanges(changes) {
 			continue
 		}
-		// Ignore jobs that do not report already.
-		if job.SkipReport {
+		// Ignore jobs that don't have a status yet.
+		if !statusExists(job, statuses) {
 			continue
 		}
 		// Ignore jobs that have a green status.
@@ -134,6 +134,15 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 		}
 	}
 	return nil
+}
+
+func statusExists(job config.Presubmit, statuses []github.Status) bool {
+	for _, status := range statuses {
+		if status.Context == job.Context {
+			return true
+		}
+	}
+	return false
 }
 
 func isNotSuccess(job config.Presubmit, statuses []github.Status) bool {

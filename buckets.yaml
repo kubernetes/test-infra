@@ -10,9 +10,6 @@
 gs://kubernetes-jenkins/logs/:
   contact: "fejta"
   prefix: ""
-gs://rktnetes-jenkins/logs/:
-  contact: "euank"
-  prefix: "rktnetes:"
 gs://kopeio-kubernetes-e2e/logs/:
   contact: "justinsb"
   prefix: "kopeio:"

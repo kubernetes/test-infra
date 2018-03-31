@@ -546,7 +546,6 @@ func checkBazelbuildSpec(t *testing.T, name string, spec *v1.PodSpec, periodic b
 			"--service-account",
 			"--upload",
 			"--job",
-			"--clean",
 		} {
 			if _, ok := found[f]; !ok {
 				t.Errorf("%s: missing %s flag", name, f)

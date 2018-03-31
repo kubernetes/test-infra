@@ -337,14 +337,18 @@ def get_build_numbers(job_dir, before, indirect):
 def build_list(job_dir, before):
     """
     Given a job dir, give a (partial) list of recent build
-    finished.jsons.
+    started.json & finished.jsons.
 
     Args:
         job_dir: the GCS path holding the jobs
     Returns:
-        a list of [(build, finished)]. build is a string like "123",
-        finished is either None or a dict of the finished.json.
+        a list of [(build, loc, started, finished)].
+            build is a string like "123",
+            loc is the job directory and build,
+            started/finished are either None or a dict of the finished.json,
+        and a dict of {build: [issues...]} of xrefs.
     """
+    # pylint: disable=too-many-locals
 
     # /directory/ folders have a series of .txt files pointing at the correct location,
     # as a sort of fake symlink.
@@ -376,12 +380,16 @@ def build_list(job_dir, before):
             for build in builds
         ]
 
+    # This is done in parallel with waiting for GCS started/finished.
+    build_refs = models.GHIssueDigest.find_xrefs_multi_async(
+            [b[1] for b in build_futures])
+
     output = []
     for build, loc, started_future, finished_future in build_futures:
         started, finished = normalize_metadata(started_future, finished_future)
         output.append((str(build), loc, started, finished))
 
-    return output
+    return output, build_refs.get_result()
 
 class BuildListHandler(view_base.BaseHandler):
     """Show a list of Builds for a Job."""
@@ -389,12 +397,14 @@ class BuildListHandler(view_base.BaseHandler):
         job_dir = '/%s/%s/' % (prefix, job)
         testgrid_query = testgrid.path_to_query(job_dir)
         before = self.request.get('before')
-        builds = build_list(job_dir, before)
+        builds, refs = build_list(job_dir, before)
         dir_link = re.sub(r'/pull/.*', '/directory/%s' % job, prefix)
+
         self.render('build_list.html',
                     dict(job=job, job_dir=job_dir, dir_link=dir_link,
                          testgrid_query=testgrid_query,
-                         builds=builds, before=before))
+                         builds=builds, refs=refs,
+                         before=before))
 
 
 class JobListHandler(view_base.BaseHandler):
@@ -404,3 +414,21 @@ class JobListHandler(view_base.BaseHandler):
         fstats = view_base.gcs_ls(jobs_dir)
         fstats.sort()
         self.render('job_list.html', dict(jobs_dir=jobs_dir, fstats=fstats))
+
+
+class GcsProxyHandler(view_base.BaseHandler):
+    """Proxy results from GCS.
+
+    Useful for buckets that don't have public read permissions."""
+    def get(self):
+        # let's lock this down to build logs for now.
+        path = self.request.get('path')
+        if not re.match(r'^[-\w/.]+$', path):
+            self.abort(403)
+        if not path.endswith('/build-log.txt'):
+            self.abort(403)
+        content = gcs_async.read(path).get_result()
+        # lazy XSS prevention.
+        # doesn't work on terrible browsers that do content sniffing (ancient IE).
+        self.response.headers['Content-Type'] = 'text/plain'
+        self.response.write(content)

@@ -207,6 +207,50 @@ func TestSkipStatus(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "Skip broken but skippable tests",
+
+			presubmits: []config.Presubmit{
+				{
+					SkipReport:   true,
+					RunIfChanged: "^(test/integration)",
+					Context:      "integration-tests",
+				},
+			},
+			sha: "shalala",
+			event: &github.GenericCommentEvent{
+				IsPR:       true,
+				IssueState: "open",
+				Action:     github.GenericCommentActionCreated,
+				Body:       "/skip",
+				Number:     1,
+				Repo:       github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
+			},
+			existing: []github.Status{
+				{
+					State:   github.StatusPending,
+					Context: "integration-tests",
+				},
+			},
+			prChanges: map[int][]github.PullRequestChange{
+				1: {
+					{
+						Filename: "test/integration/main.go",
+					},
+					{
+						Filename: "README.md",
+					},
+				},
+			},
+
+			expected: []github.Status{
+				{
+					State:       github.StatusSuccess,
+					Description: "Skipped",
+					Context:     "integration-tests",
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {

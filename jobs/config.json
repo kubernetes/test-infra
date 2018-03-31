@@ -483,6 +483,38 @@
       "sig-node"
     ]
   },
+  "ci-docker-node-conformance": {
+    "args": [
+      "--deployment=node",
+      "--gcp-zone=us-central1-f",
+      "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml",
+      "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
+      "--node-tests=true",
+      "--provider=gce",
+      "--test_args=--nodes=8 --focus=\"\\[Conformance\\]\" --skip=\"\\[Flaky\\]|\\[Serial\\]|\\[Feature:.+\\]\"",
+      "--timeout=65m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
+  "ci-docker-node-features": {
+    "args": [
+      "--deployment=node",
+      "--gcp-zone=us-central1-f",
+      "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml",
+      "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
+      "--node-tests=true",
+      "--provider=gce",
+      "--test_args=--nodes=8 --focus=\"\\[Feature:.+\\]\" --skip=\"\\[Flaky\\]|\\[Serial\\]|\\[Conformance\\]\"",
+      "--timeout=180m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
   "ci-federation-build": {
     "args": [
       "--allow-dup",
@@ -4825,7 +4857,6 @@
     "args": [
       "--check-leaked-resources",
       "--env=KUBE_PROXY_MODE=ipvs",
-      "--env=HAIRPIN_MODE=hairpin-veth",
       "--env-file=jobs/platform/gce.env",
       "--extract=ci/latest",
       "--gcp-master-image=gci",
@@ -7134,6 +7165,45 @@
       "sig-gcp"
     ]
   },
+  "ci-kubernetes-e2e-gke-regional-serial": {
+    "args": [
+      "--check-leaked-resources",
+      "--deployment=gke",
+      "--extract=ci/latest",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=gci",
+      "--gcp-region=us-central1",
+      "--gke-command-group=beta",
+      "--gke-environment=test",
+      "--provider=gke",
+      "--test_args=--gce-multizone=true --gce-region=us-central1 --ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=500m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-gcp"
+    ]
+  },
+  "ci-kubernetes-e2e-gke-regional-slow": {
+    "args": [
+      "--check-leaked-resources",
+      "--deployment=gke",
+      "--extract=ci/latest",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=gci",
+      "--gcp-region=us-central1",
+      "--ginkgo-parallel",
+      "--gke-command-group=beta",
+      "--gke-environment=test",
+      "--provider=gke",
+      "--test_args=--gce-multizone=true --gce-region=us-central1 --ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=150m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-gcp"
+    ]
+  },
   "ci-kubernetes-e2e-gke-scale-correctness": {
     "args": [
       "--cluster=gke-scale-cluster",
@@ -7617,11 +7687,11 @@
       "--gcp-node-image=gci",
       "--gcp-region=us-central1",
       "--gke-command-group=beta",
-      "--gke-environment=test",
+      "--gke-environment=staging",
       "--provider=gke",
-      "--test_args=--gce-multizone=true --gce-region=us-central1 --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]|Initializers|Dashboard --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
+      "--test_args=--gce-multizone=true --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]|Initializers|Dashboard --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
       "--timeout=900m",
-      "--upgrade_args=--gce-multizone=true --gce-region=us-central1 --ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=gke-latest-1.8 --upgrade-image=gci"
+      "--upgrade_args=--gce-multizone=true --ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=gke-latest-1.8 --upgrade-image=gci"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -11404,7 +11474,7 @@
       "--deployment=node",
       "--gcp-project=k8s-jkns-ci-node-e2e",
       "--gcp-zone=us-central1-f",
-      "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-beta.yaml",
+      "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-1-10.yaml",
       "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
       "--node-tests=true",
       "--provider=gce",
