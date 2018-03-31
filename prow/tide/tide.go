@@ -402,7 +402,7 @@ func (sc *statusController) sync(pool []PullRequest) {
 	sinceTime := sc.lastSuccessfulQueryStart.Add(-time.Second)
 	query := sc.ca.Config().Tide.Queries.AllPRsSince(sinceTime)
 	queryStartTime := time.Now()
-	allPRs, err := search(sc.ghc, sc.logger, context.Background(), query)
+	allPRs, err := Search(sc.ghc, sc.logger, context.Background(), query)
 	if err != nil {
 		sc.logger.WithError(err).Errorf("Searching for open PRs.")
 		return
@@ -418,7 +418,7 @@ func (c *Controller) Sync() error {
 	c.logger.Info("Building tide pool.")
 	var pool []PullRequest
 	for _, q := range c.ca.Config().Tide.Queries {
-		poolPRs, err := search(c.ghc, c.logger, ctx, q.Query())
+		poolPRs, err := Search(c.ghc, c.logger, ctx, q.Query())
 		if err != nil {
 			return err
 		}
@@ -949,7 +949,7 @@ func (c *Controller) dividePool(pool []PullRequest, pjs []kube.ProwJob) (chan su
 	return ret, nil
 }
 
-func search(ghc githubClient, log *logrus.Entry, ctx context.Context, q string) ([]PullRequest, error) {
+func Search(ghc githubClient, log *logrus.Entry, ctx context.Context, q string) ([]PullRequest, error) {
 	var ret []PullRequest
 	vars := map[string]interface{}{
 		"query":        githubql.String(q),
