@@ -26,7 +26,10 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/plugins"
 )
+
+const defaultNamespace = "default"
 
 type fakeKubeClient struct {
 	maps map[string]kube.ConfigMap
@@ -35,6 +38,9 @@ type fakeKubeClient struct {
 func (c *fakeKubeClient) ReplaceConfigMap(name string, config kube.ConfigMap) (kube.ConfigMap, error) {
 	if config.ObjectMeta.Name != name {
 		return kube.ConfigMap{}, fmt.Errorf("name %s does not match configmap name %s", name, config.ObjectMeta.Name)
+	}
+	if config.Namespace == "" {
+		config.Namespace = defaultNamespace
 	}
 	c.maps[name] = config
 	return c.maps[name], nil
@@ -62,8 +68,7 @@ func TestUpdateConfig(t *testing.T) {
 		merged        bool
 		mergeCommit   string
 		changes       []github.PullRequestChange
-		configUpdate  bool
-		pluginsUpdate bool
+		configUpdates []string
 	}{
 		{
 			name:     "Opened PR, no update",
@@ -119,7 +124,7 @@ func TestUpdateConfig(t *testing.T) {
 					Additions: 1,
 				},
 			},
-			configUpdate: true,
+			configUpdates: []string{"config"},
 		},
 		{
 			name:        "changed plugins.yaml, 1 update",
@@ -132,7 +137,20 @@ func TestUpdateConfig(t *testing.T) {
 					Additions: 1,
 				},
 			},
-			pluginsUpdate: true,
+			configUpdates: []string{"plugins"},
+		},
+		{
+			name:        "changed resources.yaml, 1 update",
+			prAction:    github.PullRequestActionClosed,
+			merged:      true,
+			mergeCommit: "12345",
+			changes: []github.PullRequestChange{
+				{
+					Filename:  "boskos/resources.yaml",
+					Additions: 1,
+				},
+			},
+			configUpdates: []string{"boskos-config"},
 		},
 		{
 			name:        "changed config.yaml and plugins.yaml, 2 update",
@@ -148,9 +166,12 @@ func TestUpdateConfig(t *testing.T) {
 					Filename:  "prow/config.yaml",
 					Additions: 1,
 				},
+				{
+					Filename:  "boskos/resources.yaml",
+					Additions: 1,
+				},
 			},
-			configUpdate:  true,
-			pluginsUpdate: true,
+			configUpdates: []string{"config", "plugins", "boskos-config"},
 		},
 	}
 
@@ -181,22 +202,40 @@ func TestUpdateConfig(t *testing.T) {
 					"master": "old-plugins",
 					"12345":  "new-plugins",
 				},
+				"boskos/resources.yaml": {
+					"master": "old-boskos-config",
+					"12345":  "new-boskos-config",
+				},
 			},
 		}
 		fkc := &fakeKubeClient{
 			maps: map[string]kube.ConfigMap{},
 		}
 
-		m := map[string]string{
-			"prow/config.yaml":  "config",
-			"prow/plugins.yaml": "plugins",
+		m := map[string]plugins.ConfigMapSpec{
+			"prow/config.yaml": {
+				Name: "config",
+			},
+			"prow/plugins.yaml": {
+				Name: "plugins",
+			},
+			"boskos/resources.yaml": {
+				Name:      "boskos-config",
+				Namespace: "boskos",
+			},
+		}
+
+		configNamespaces := map[string]string{
+			"config":        defaultNamespace,
+			"plugins":       defaultNamespace,
+			"boskos-config": "boskos",
 		}
 
 		if err := handle(fgc, fkc, log, event, m); err != nil {
 			t.Fatal(err)
 		}
 
-		if tc.configUpdate || tc.pluginsUpdate {
+		if tc.configUpdates != nil {
 			if len(fgc.IssueComments[basicPR.Number]) != 1 {
 				t.Fatalf("tc %s : Expect 1 comment, actually got %d", tc.name, len(fgc.IssueComments[basicPR.Number]))
 			}
@@ -205,28 +244,32 @@ func TestUpdateConfig(t *testing.T) {
 			if !strings.Contains(comment, "Updated the") {
 				t.Errorf("%s: missing Updated the from %s", tc.name, comment)
 			}
-			if tc.configUpdate && !strings.Contains(comment, "config") {
-				t.Errorf("%s: missing config from %s", tc.name, comment)
-			}
-			if tc.pluginsUpdate && !strings.Contains(comment, "plugins") {
-				t.Errorf("%s: missing plugins from %s", tc.name, comment)
-			}
-		}
-
-		if tc.configUpdate {
-			if config, ok := fkc.maps["config"]; !ok {
-				t.Fatalf("tc %s : Should have updated configmap for 'config'", tc.name)
-			} else if config.Data["config"] != "new-config" {
-				t.Fatalf("tc %s : Expect get config 'new-config', got '%s'", tc.name, config.Data["config"])
+			for _, configName := range tc.configUpdates {
+				if !strings.Contains(comment, configName) {
+					t.Errorf("%s: missing %s from %s", tc.name, configName, comment)
+				}
 			}
 		}
 
-		if tc.pluginsUpdate {
-			if plugins, ok := fkc.maps["plugins"]; !ok {
-				t.Fatalf("tc %s : Should have updated configmap for 'plugins'", tc.name)
-			} else if plugins.Data["plugins"] != "new-plugins" {
-				t.Fatalf("tc %s : Expect get config 'new-plugins', got '%s'", tc.name, plugins.Data["plugins"])
+		for _, configName := range tc.configUpdates {
+			newConfigContent := fmt.Sprintf("new-%s", configName)
+			if config, ok := fkc.maps[configName]; !ok {
+				t.Fatalf("tc %s : Should have updated configmap for '%s'", tc.name, configName)
+			} else if config.Data[configName] != newConfigContent {
+				t.Fatalf(
+					"tc %s : Expect get %s '%s', got '%s'",
+					tc.name,
+					configName,
+					newConfigContent,
+					config.Data[configName])
+			} else if config.Namespace != configNamespaces[configName] {
+				t.Fatalf(
+					"tc %s : Namespace should be set to %s, found '%s'",
+					tc.name,
+					configNamespaces[configName],
+					config.Data["config"])
 			}
+
 		}
 	}
 }

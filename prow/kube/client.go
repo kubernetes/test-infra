@@ -542,10 +542,14 @@ func (c *Client) CreateConfigMap(content ConfigMap) (ConfigMap, error) {
 
 func (c *Client) ReplaceConfigMap(name string, config ConfigMap) (ConfigMap, error) {
 	c.log("ReplaceConfigMap", name)
+	namespace := c.namespace
+	if config.Namespace != "" {
+		namespace = config.Namespace
+	}
 	var retConfigMap ConfigMap
 	err := c.request(&request{
 		method:      http.MethodPut,
-		path:        fmt.Sprintf("/api/v1/namespaces/%s/configmaps/%s", c.namespace, name),
+		path:        fmt.Sprintf("/api/v1/namespaces/%s/configmaps/%s", namespace, name),
 		requestBody: &config,
 	}, &retConfigMap)
 

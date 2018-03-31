@@ -135,9 +135,12 @@ milestone:
 
 config_updater:
   maps:
-    label_sync/labels.yaml: label-config
-    prow/config.yaml: config
-    prow/plugins.yaml: plugins
+    label_sync/labels.yaml:
+      name: label-config
+    prow/config.yaml:
+      name: config
+    prow/plugins.yaml:
+      name: plugins
 
 plugins:
   google/cadvisor:
