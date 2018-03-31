@@ -109,6 +109,8 @@ def do_testcmd(name):
         return ''
     elif name.startswith('//'):
         return 'bazel test %s' % name
+    elif name.startswith('verify '):
+        return 'make verify WHAT=%s' % name.split(' ')[1]
     else:
         name = re.sub(r'^\[k8s\.io\] ', '', name)
         name_escaped = re.escape(name).replace('\\ ', '\\s')
@@ -183,18 +185,22 @@ def do_render_status(payload, user):
         states.add(state)
 
     icon = ''
+    title = ''
     if 'failure' in states:
         icon = 'x'
         state = 'failure'
+        title = 'failing tests'
     elif 'pending' in states:
         icon = 'primitive-dot'
         state = 'pending'
+        title = 'pending tests'
     elif 'success' in states:
         icon = 'check'
         state = 'success'
+        title = 'tests passing'
     if icon:
-        icon = '<span class="text-%s octicon octicon-%s"></span>' % (
-            state, icon)
+        icon = '<span class="text-%s octicon octicon-%s" title="%s"></span>' % (
+            state, icon, title)
     return jinja2.Markup('%s%s' % (icon, text))
 
 

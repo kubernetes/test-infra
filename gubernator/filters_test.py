@@ -80,19 +80,18 @@ class HelperTest(unittest.TestCase):
     def test_slugify(self):
         self.assertEqual('k8s-test-foo', filters.do_slugify('[k8s] Test Foo'))
 
-    def test_testcmd_unit(self):
-        self.assertEqual(
-            filters.do_testcmd('k8s.io/kubernetes/pkg/api/errors TestErrorNew'),
-            'go test -v k8s.io/kubernetes/pkg/api/errors -run TestErrorNew$')
-
-    def test_testcmd_e2e(self):
-        self.assertEqual(filters.do_testcmd('[k8s.io] Proxy [k8s.io] works'),
+    def test_testcmd(self):
+        for name, expected in (
+            ('k8s.io/kubernetes/pkg/api/errors TestErrorNew',
+             'go test -v k8s.io/kubernetes/pkg/api/errors -run TestErrorNew$'),
+            ('[k8s.io] Proxy [k8s.io] works',
             "go run hack/e2e.go -v --test --test_args='--ginkgo.focus="
-            "Proxy\\s\\[k8s\\.io\\]\\sworks$'")
-
-    def test_testcmd_bazel(self):
-        self.assertEqual(filters.do_testcmd('//pkg/foo/bar:go_default_test'),
-            'bazel test //pkg/foo/bar:go_default_test')
+            "Proxy\\s\\[k8s\\.io\\]\\sworks$'"),
+            ('//pkg/foo/bar:go_default_test',
+            'bazel test //pkg/foo/bar:go_default_test'),
+            ('verify typecheck', 'make verify WHAT=typecheck')):
+            print 'test name:', name
+            self.assertEqual(filters.do_testcmd(name), expected)
 
     def test_classify_size(self):
         self.assertEqual(filters.do_classify_size(
@@ -103,7 +102,7 @@ class HelperTest(unittest.TestCase):
     def test_render_status_basic(self):
         payload = {'status': {'ci': ['pending', '', '']}}
         self.assertEqual(str(filters.do_render_status(payload, '')),
-            '<span class="text-pending octicon octicon-primitive-dot">'
+            '<span class="text-pending octicon octicon-primitive-dot" title="pending tests">'
             '</span>Pending')
 
     def test_render_status_complex(self):
@@ -111,7 +110,8 @@ class HelperTest(unittest.TestCase):
             # strip the excess html from the result down to the text class,
             # the opticon class, and the rendered text
             result = str(filters.do_render_status(payload, user))
-            result = re.sub(r'<span class="text-|octicon octicon-|</span>', '', result)
+            result = re.sub(r'<span class="text-|octicon octicon-| title="[^"]*"|</span>',
+                            '', result)
             result = result.replace('">', ' ')
             self.assertEqual(result, expected)
 
