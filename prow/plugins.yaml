@@ -55,6 +55,7 @@ approve:
   - kubernetes/steering
   - kubernetes/test-infra
   implicit_self_approve: true
+  lgtm_acts_as_approve: true
 - repos:
   - kubernetes-sigs
   implicit_self_approve: true
@@ -206,7 +207,7 @@ plugins:
 
   kubernetes/dns:
   - trigger
-  
+
   kubernetes/examples:
   - trigger
   - approve
