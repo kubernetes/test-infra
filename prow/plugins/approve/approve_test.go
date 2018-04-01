@@ -147,8 +147,9 @@ func TestHandleGenericComment(t *testing.T) {
 		files         []string
 		comments      []github.IssueComment
 
-		selfApprove bool
-		needsIssue  bool
+		selfApprove       bool
+		needsIssue        bool
+		lgtmActsAsApprove bool
 
 		expectDelete    bool
 		expectComment   bool
@@ -160,12 +161,13 @@ func TestHandleGenericComment(t *testing.T) {
 		// case: /approve in PR body
 
 		{
-			name:        "initial notification (approved)",
-			hasLabel:    false,
-			files:       []string{"c/c.go"},
-			comments:    []github.IssueComment{},
-			selfApprove: true,
-			needsIssue:  false,
+			name:              "initial notification (approved)",
+			hasLabel:          false,
+			files:             []string{"c/c.go"},
+			comments:          []github.IssueComment{},
+			selfApprove:       true,
+			needsIssue:        false,
+			lgtmActsAsApprove: false,
 
 			expectDelete:  false,
 			expectToggle:  true,
@@ -189,12 +191,13 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 <!-- META={"approvers":[]} -->`,
 		},
 		{
-			name:        "initial notification (unapproved)",
-			hasLabel:    false,
-			files:       []string{"c/c.go"},
-			comments:    []github.IssueComment{},
-			selfApprove: false,
-			needsIssue:  false,
+			name:              "initial notification (unapproved)",
+			hasLabel:          false,
+			files:             []string{"c/c.go"},
+			comments:          []github.IssueComment{},
+			selfApprove:       false,
+			needsIssue:        false,
+			lgtmActsAsApprove: false,
 
 			expectDelete:  false,
 			expectToggle:  false,
@@ -222,12 +225,13 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 <!-- META={"approvers":["cjwagner"]} -->`,
 		},
 		{
-			name:        "no-issue comment",
-			hasLabel:    false,
-			files:       []string{"a/a.go"},
-			comments:    []github.IssueComment{newTestComment("Alice", "stuff\n/approve no-issue \nmore stuff")},
-			selfApprove: false,
-			needsIssue:  true,
+			name:              "no-issue comment",
+			hasLabel:          false,
+			files:             []string{"a/a.go"},
+			comments:          []github.IssueComment{newTestComment("Alice", "stuff\n/approve no-issue \nmore stuff")},
+			selfApprove:       false,
+			needsIssue:        true,
+			lgtmActsAsApprove: false,
 
 			expectDelete:  false,
 			expectToggle:  true,
@@ -253,13 +257,14 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 <!-- META={"approvers":[]} -->`,
 		},
 		{
-			name:        "issue provided in PR body",
-			prBody:      "some changes that fix #42.\n/assign",
-			hasLabel:    false,
-			files:       []string{"a/a.go"},
-			comments:    []github.IssueComment{newTestComment("Alice", "stuff\n/approve")},
-			selfApprove: false,
-			needsIssue:  true,
+			name:              "issue provided in PR body",
+			prBody:            "some changes that fix #42.\n/assign",
+			hasLabel:          false,
+			files:             []string{"a/a.go"},
+			comments:          []github.IssueComment{newTestComment("Alice", "stuff\n/approve")},
+			selfApprove:       false,
+			needsIssue:        true,
+			lgtmActsAsApprove: false,
 
 			expectDelete:  false,
 			expectToggle:  true,
@@ -292,8 +297,9 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 				newTestComment("ALIcE", "stuff\n/approve"),
 				newTestComment("cjwagner", "stuff\n/approve no-issue"),
 			},
-			selfApprove: false,
-			needsIssue:  true,
+			selfApprove:       false,
+			needsIssue:        true,
+			lgtmActsAsApprove: false,
 
 			expectDelete:    false,
 			expectToggle:    true,
@@ -327,8 +333,9 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 </details>
 <!-- META={"approvers":[]} -->`),
 			},
-			selfApprove: true,
-			needsIssue:  true,
+			selfApprove:       true,
+			needsIssue:        true,
+			lgtmActsAsApprove: false,
 
 			expectDelete:  false,
 			expectToggle:  false,
@@ -343,8 +350,9 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 				newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"),
 				newTestComment("Alice", "stuff\n/approve cancel \nmore stuff"),
 			},
-			selfApprove: true, // no-op test
-			needsIssue:  true,
+			selfApprove:       true, // no-op test
+			needsIssue:        true,
+			lgtmActsAsApprove: false,
 
 			expectDelete:  true,
 			expectToggle:  true,
@@ -379,11 +387,12 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			hasLabel: true,
 			files:    []string{"a/a.go", "b/b.go"},
 			comments: []github.IssueComment{
-				newTestComment("bOb", "stuff\n/lgtm \nblah"),
+				newTestComment("bOb", "stuff\n/approve \nblah"),
 				newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"),
 			},
-			selfApprove: true, // no-op test
-			needsIssue:  false,
+			selfApprove:       true, // no-op test
+			needsIssue:        false,
+			lgtmActsAsApprove: false,
 
 			expectDelete:  true,
 			expectToggle:  true,
@@ -398,8 +407,9 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 				newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"),
 				newTestCommentTime(time.Now(), "CJWagner", "stuff\n/approve cancel \nmore stuff"),
 			},
-			selfApprove: true,
-			needsIssue:  true,
+			selfApprove:       true,
+			needsIssue:        true,
+			lgtmActsAsApprove: false,
 
 			expectDelete:  true,
 			expectToggle:  true,
@@ -414,8 +424,9 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 				newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"),
 				newTestCommentTime(time.Now(), "CJWagner", "/lgtm cancel //PR changed after LGTM, removing LGTM."),
 			},
-			selfApprove: true,
-			needsIssue:  true,
+			selfApprove:       true,
+			needsIssue:        true,
+			lgtmActsAsApprove: true,
 
 			expectDelete:  true,
 			expectToggle:  true,
@@ -427,10 +438,10 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			hasLabel: true,
 			files:    []string{"a/a.go", "a/aa.go"},
 			comments: []github.IssueComment{
-				newTestComment("alice", "stuff\n/lgtm \nblah"),
+				newTestComment("alice", "stuff\n/approve\nblah"),
 				newTestCommentTime(time.Now(), "k8s-ci-robot", `[APPROVALNOTIFIER] This PR is **APPROVED**
 
-This pull-request has been approved by: *<a href="" title="LGTM">alice</a>*
+This pull-request has been approved by: *<a href="" title="Approved">alice</a>*
 
 Associated issue: *#1*
 
@@ -448,8 +459,9 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 </details>
 <!-- META={"approvers":[]} -->`),
 			},
-			selfApprove: false,
-			needsIssue:  true,
+			selfApprove:       false,
+			needsIssue:        true,
+			lgtmActsAsApprove: false,
 
 			expectDelete:  false,
 			expectToggle:  false,
@@ -461,11 +473,12 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 			hasLabel: false,
 			files:    []string{"a/a.go", "a/aa.go"}, // previous commits may have been ["b/b.go"]
 			comments: []github.IssueComment{
-				newTestComment("alice", "stuff\n/lgtm \nblah"),
+				newTestComment("alice", "stuff\n/approve\nblah"),
 				newTestCommentTime(time.Now(), "k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **NOT APPROVED**\n\nblah"),
 			},
-			selfApprove: false,
-			needsIssue:  true,
+			selfApprove:       false,
+			needsIssue:        true,
+			lgtmActsAsApprove: false,
 
 			expectDelete:  true,
 			expectToggle:  true,
@@ -479,8 +492,9 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 			comments: []github.IssueComment{
 				newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **NOT APPROVED**\n\nblah"),
 			},
-			selfApprove: false,
-			needsIssue:  false,
+			selfApprove:       false,
+			needsIssue:        false,
+			lgtmActsAsApprove: false,
 
 			expectDelete:  true,
 			expectToggle:  false,
@@ -505,6 +519,60 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 </details>
 <!-- META={"approvers":["alice"]} -->`,
 		},
+		{
+			name:     "lgtm means approve",
+			prBody:   "This is a great PR that will fix\nlots of things!",
+			hasLabel: false,
+			files:    []string{"a/a.go", "a/aa.go"},
+			comments: []github.IssueComment{
+				newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **NOT APPROVED**\n\nblah"),
+				newTestCommentTime(time.Now(), "alice", "stuff\n/lgtm\nblah"),
+			},
+			selfApprove:       false,
+			needsIssue:        false,
+			lgtmActsAsApprove: true,
+
+			expectDelete:  true,
+			expectToggle:  true,
+			expectComment: true,
+		},
+		{
+			name:     "lgtm does not mean approve",
+			prBody:   "This is a great PR that will fix\nlots of things!",
+			hasLabel: false,
+			files:    []string{"a/a.go", "a/aa.go"},
+			comments: []github.IssueComment{
+				newTestComment("k8s-ci-robot", `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by: 
+To fully approve this pull request, please assign additional approvers.
+We suggest the following additional approver: **alice**
+
+Assign the PR to them by writing `+"`/assign @alice`"+` in a comment when ready.
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+<details open>
+Needs approval from an approver in each of these files:
+
+- **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
+
+Approvers can indicate their approval by writing `+"`/approve`"+` in a comment
+Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
+</details>
+<!-- META={"approvers":["alice"]} -->`),
+				newTestCommentTime(time.Now(), "alice", "stuff\n/lgtm\nblah"),
+			},
+			selfApprove:       false,
+			needsIssue:        false,
+			lgtmActsAsApprove: false,
+
+			expectDelete:  false,
+			expectToggle:  false,
+			expectComment: false,
+		},
 		// {
 		// 	name:          "",
 		// 	hasLabel:      false,
@@ -512,6 +580,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 		// 	comments:      []github.IssueComment{},
 		// 	selfApprove:   false,
 		// 	needsIssue:    false,
+		// 	lgtmActsAsApprove:   false,
 
 		// 	expectDelete:    true,
 		// 	expectToggle:    true,
@@ -525,6 +594,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 		// 	comments:      []github.IssueComment{},
 		// 	selfApprove:   false,
 		// 	needsIssue:    false,
+		// 	lgtmActsAsApprove:   false,
 
 		// 	expectDelete:    true,
 		// 	expectToggle:    true,
@@ -563,6 +633,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 				Repos:               []string{"org/repo"},
 				ImplicitSelfApprove: test.selfApprove,
 				IssueRequired:       test.needsIssue,
+				LgtmActsAsApprove:   test.lgtmActsAsApprove,
 			},
 			&state{
 				org:       "org",
