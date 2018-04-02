@@ -19,23 +19,37 @@ package ranch
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"os"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
+
 	"k8s.io/test-infra/boskos/common"
 )
 
 // Ranch is the place which all of the Resource objects lives.
 type Ranch struct {
-	Resources   []common.Resource
-	lock        sync.RWMutex
-	storagePath string
+	Storage       *Storage
+	resourcesLock sync.RWMutex
+	// For testing
+	UpdateTime func() time.Time
+}
+
+func updateTime() time.Time {
+	return time.Now()
 }
 
 // Public errors:
+
+// ResourceNotFound will be returned if requested resource does not exist.
+type ResourceNotFound struct {
+	name string
+}
+
+func (r ResourceNotFound) Error() string {
+	return fmt.Sprintf("Resource %s not exist", r.name)
+}
 
 // OwnerNotMatch will be returned if request owner does not match current owner for target resource.
 type OwnerNotMatch struct {
@@ -45,15 +59,6 @@ type OwnerNotMatch struct {
 
 func (o OwnerNotMatch) Error() string {
 	return fmt.Sprintf("OwnerNotMatch - request by %s, currently owned by %s", o.request, o.owner)
-}
-
-// ResourceNotFound will be returned if requested resource does not exist.
-type ResourceNotFound struct {
-	name string
-}
-
-func (r ResourceNotFound) Error() string {
-	return fmt.Sprintf("Resource %s not exist", r.name)
 }
 
 // StateNotMatch will be returned if requested state does not match current state for target resource.
@@ -70,31 +75,17 @@ func (s StateNotMatch) Error() string {
 // In: config - path to resource file
 //     storage - path to where to save/restore the state data
 // Out: A Ranch object, loaded from config/storage, or error
-func NewRanch(config string, storage string) (*Ranch, error) {
-
+func NewRanch(config string, s *Storage) (*Ranch, error) {
 	newRanch := &Ranch{
-		storagePath: storage,
+		Storage:    s,
+		UpdateTime: updateTime,
 	}
-
-	if storage != "" {
-		buf, err := ioutil.ReadFile(storage)
-		if err == nil {
-			logrus.Infof("Current state: %v.", buf)
-			err = json.Unmarshal(buf, newRanch)
-			if err != nil {
-				return nil, err
-			}
-		} else if !os.IsNotExist(err) {
+	if config != "" {
+		if err := newRanch.SyncConfig(config); err != nil {
 			return nil, err
 		}
 	}
-
-	if err := newRanch.SyncConfig(config); err != nil {
-		return nil, err
-	}
-
 	newRanch.LogStatus()
-
 	return newRanch, nil
 }
 
@@ -106,24 +97,90 @@ func NewRanch(config string, storage string) (*Ranch, error) {
 //     owner - requester of the resource
 // Out: A valid Resource object on success, or
 //      ResourceNotFound error if target type resource does not exist in target state.
-func (r *Ranch) Acquire(rtype string, state string, dest string, owner string) (*common.Resource, error) {
-	r.lock.Lock()
-	defer r.lock.Unlock()
+func (r *Ranch) Acquire(rType, state, dest, owner string) (*common.Resource, error) {
+	r.resourcesLock.Lock()
+	defer r.resourcesLock.Unlock()
 
-	for idx := range r.Resources {
-		res := r.Resources[idx]
-		if rtype == res.Type && state == res.State && res.Owner == "" {
-			res.LastUpdate = time.Now()
+	resources, err := r.Storage.GetResources()
+	if err != nil {
+		logrus.WithError(err).Errorf("could not get resources")
+		return nil, &ResourceNotFound{rType}
+	}
+
+	for idx := range resources {
+		res := resources[idx]
+		if rType == res.Type && state == res.State && res.Owner == "" {
+			res.LastUpdate = r.UpdateTime()
 			res.Owner = owner
 			res.State = dest
-
-			copy(r.Resources[idx:], r.Resources[idx+1:])
-			r.Resources[len(r.Resources)-1] = res
+			if err := r.Storage.UpdateResource(res); err != nil {
+				logrus.WithError(err).Errorf("could not update resource %s", res.Name)
+				return nil, err
+			}
 			return &res, nil
 		}
 	}
+	return nil, &ResourceNotFound{rType}
+}
 
-	return nil, &ResourceNotFound{rtype}
+// AcquireByState checks out resources of a given type without an owner,
+// that matches a list of resources names.
+// In: state - current state of the requested resource
+//     dest - destination state of the requested resource
+//     owner - requester of the resource
+//     names - names of resource to acquire
+// Out: A valid list of Resource object on success, or
+//      ResourceNotFound error if target type resource does not exist in target state.
+func (r *Ranch) AcquireByState(state, dest, owner string, names []string) ([]common.Resource, error) {
+	r.resourcesLock.Lock()
+	defer r.resourcesLock.Unlock()
+
+	if names == nil {
+		return nil, fmt.Errorf("must provide names of expected resources")
+	}
+
+	rNames := map[string]bool{}
+	for _, t := range names {
+		rNames[t] = true
+	}
+
+	allResources, err := r.Storage.GetResources()
+	if err != nil {
+		logrus.WithError(err).Errorf("could not get resources")
+		return nil, &ResourceNotFound{state}
+	}
+
+	var resources []common.Resource
+
+	for idx := range allResources {
+		res := allResources[idx]
+		if state == res.State {
+			if res.Owner != "" {
+				continue
+			}
+			if rNames[res.Name] {
+				res.LastUpdate = r.UpdateTime()
+				res.Owner = owner
+				res.State = dest
+				if err := r.Storage.UpdateResource(res); err != nil {
+					logrus.WithError(err).Errorf("could not update resource %s", res.Name)
+					return nil, err
+				}
+				resources = append(resources, res)
+				delete(rNames, res.Name)
+			}
+		}
+	}
+	if len(rNames) != 0 {
+		var missingResources []string
+		for n := range rNames {
+			missingResources = append(missingResources, n)
+		}
+		err := &ResourceNotFound{state}
+		logrus.WithError(err).Errorf("could not find required resources %s", strings.Join(missingResources, ", "))
+		return resources, err
+	}
+	return resources, nil
 }
 
 // Release unsets owner for target resource and move it to a new state.
@@ -133,54 +190,62 @@ func (r *Ranch) Acquire(rtype string, state string, dest string, owner string) (
 // Out: nil on success, or
 //      OwnerNotMatch error if owner does not match current owner of the resource, or
 //      ResourceNotFound error if target named resource does not exist.
-func (r *Ranch) Release(name string, dest string, owner string) error {
-	r.lock.Lock()
-	defer r.lock.Unlock()
+func (r *Ranch) Release(name, dest, owner string) error {
+	r.resourcesLock.Lock()
+	defer r.resourcesLock.Unlock()
 
-	for idx := range r.Resources {
-		res := &r.Resources[idx]
-		if name == res.Name {
-			if owner != res.Owner {
-				return &OwnerNotMatch{res.Owner, owner}
-			}
-			res.LastUpdate = time.Now()
-			res.Owner = ""
-			res.State = dest
-			return nil
-		}
+	res, err := r.Storage.GetResource(name)
+	if err != nil {
+		logrus.WithError(err).Errorf("unable to release resource %s", name)
+		return &ResourceNotFound{name}
 	}
-
-	return &ResourceNotFound{name}
+	if owner != res.Owner {
+		return &OwnerNotMatch{res.Owner, owner}
+	}
+	res.LastUpdate = r.UpdateTime()
+	res.Owner = ""
+	res.State = dest
+	if err := r.Storage.UpdateResource(res); err != nil {
+		logrus.WithError(err).Errorf("could not update resource %s", res.Name)
+		return err
+	}
+	return nil
 }
 
 // Update updates the timestamp of a target resource.
-// In: name - name of the target resource
+// In: name  - name of the target resource
 //     state - current state of the resource
 //     owner - current owner of the resource
+// 	   info  - information on how to use the resource
 // Out: nil on success, or
 //      OwnerNotMatch error if owner does not match current owner of the resource, or
 //      ResourceNotFound error if target named resource does not exist, or
 //      StateNotMatch error if state does not match current state of the resource.
-func (r *Ranch) Update(name string, owner string, state string) error {
-	r.lock.Lock()
-	defer r.lock.Unlock()
+func (r *Ranch) Update(name, owner, state string, ud common.UserData) error {
+	r.resourcesLock.Lock()
+	defer r.resourcesLock.Unlock()
 
-	for idx := range r.Resources {
-		res := &r.Resources[idx]
-		if name == res.Name {
-			if owner != res.Owner {
-				return &OwnerNotMatch{res.Owner, owner}
-			}
-
-			if state != res.State {
-				return &StateNotMatch{res.State, state}
-			}
-			res.LastUpdate = time.Now()
-			return nil
-		}
+	res, err := r.Storage.GetResource(name)
+	if err != nil {
+		logrus.WithError(err).Errorf("could not find resource %s for update", name)
+		return &ResourceNotFound{name}
 	}
-
-	return &ResourceNotFound{name}
+	if owner != res.Owner {
+		return &OwnerNotMatch{owner, res.Owner}
+	}
+	if state != res.State {
+		return &StateNotMatch{res.State, state}
+	}
+	if res.UserData == nil {
+		res.UserData = common.UserData{}
+	}
+	res.UserData.Update(ud)
+	res.LastUpdate = r.UpdateTime()
+	if err := r.Storage.UpdateResource(res); err != nil {
+		logrus.WithError(err).Errorf("could not update resource %s", res.Name)
+		return err
+	}
+	return nil
 }
 
 // Reset unstucks a type of stale resource to a new state.
@@ -189,149 +254,61 @@ func (r *Ranch) Update(name string, owner string, state string) error {
 //     expire - duration before resource's last update
 //     dest - destination state of expired resources
 // Out: map of resource name - resource owner.
-func (r *Ranch) Reset(rtype string, state string, expire time.Duration, dest string) map[string]string {
-	r.lock.Lock()
-	defer r.lock.Unlock()
+func (r *Ranch) Reset(rtype, state string, expire time.Duration, dest string) (map[string]string, error) {
+	r.resourcesLock.Lock()
+	defer r.resourcesLock.Unlock()
 
 	ret := make(map[string]string)
 
-	for idx := range r.Resources {
-		res := &r.Resources[idx]
+	resources, err := r.Storage.GetResources()
+	if err != nil {
+		logrus.WithError(err).Errorf("cannot find resources")
+		return nil, err
+	}
+
+	for idx := range resources {
+		res := resources[idx]
 		if rtype == res.Type && state == res.State && res.Owner != "" {
-			if time.Now().Sub(res.LastUpdate) > expire {
-				res.LastUpdate = time.Now()
+			if time.Since(res.LastUpdate) > expire {
+				res.LastUpdate = r.UpdateTime()
 				ret[res.Name] = res.Owner
 				res.Owner = ""
 				res.State = dest
+				if err := r.Storage.UpdateResource(res); err != nil {
+					logrus.WithError(err).Errorf("could not update resource %s", res.Name)
+					return ret, err
+				}
 			}
 		}
 	}
-
-	return ret
+	return ret, nil
 }
 
 // LogStatus outputs current status of all resources
 func (r *Ranch) LogStatus() {
-	r.lock.RLock()
-	defer r.lock.RUnlock()
+	resources, err := r.Storage.GetResources()
 
-	resJSON, err := json.Marshal(r.Resources)
 	if err != nil {
-		logrus.WithError(err).Errorf("Fail to marshal Resources. %v", r.Resources)
+		return
+	}
+
+	resJSON, err := json.Marshal(resources)
+	if err != nil {
+		logrus.WithError(err).Errorf("Fail to marshal Resources. %v", resources)
 	}
 	logrus.Infof("Current Resources : %v", string(resJSON))
 }
 
-// ResourceEntry is resource config format defined from resources.json
-type ResourceEntry struct {
-	Type  string   `json:"type"`
-	State string   `json:"state"`
-	Names []string `json:"names"`
-}
-
 // SyncConfig updates resource list from a file
 func (r *Ranch) SyncConfig(config string) error {
-	r.lock.Lock()
-	defer r.lock.Unlock()
-
-	data, err := r.ParseConfig(config)
+	resources, err := ParseConfig(config)
 	if err != nil {
 		return err
 	}
-
-	r.syncConfigHelper(data)
+	if err := r.Storage.SyncResources(resources); err != nil {
+		return err
+	}
 	return nil
-}
-
-// ParseConfig reads in configPath and returns a list of resource objects
-// on success.
-func (r *Ranch) ParseConfig(configPath string) ([]common.Resource, error) {
-	file, err := ioutil.ReadFile(configPath)
-	if err != nil {
-		return nil, err
-	}
-
-	data := []ResourceEntry{}
-	err = json.Unmarshal(file, &data)
-	if err != nil {
-		return nil, err
-	}
-
-	var resources []common.Resource
-	for _, res := range data {
-		for _, name := range res.Names {
-			resources = append(resources, common.Resource{
-				Type:  res.Type,
-				State: res.State,
-				Name:  name,
-			})
-		}
-	}
-	return resources, nil
-}
-
-// Boskos resource config will be updated every 10 mins.
-// It will append newly added resources to ranch.Resources,
-// And try to remove newly deleted resources from ranch.Resources.
-// If the newly deleted resource is currently held by a user, the deletion will
-// yield to next update cycle.
-func (r *Ranch) syncConfigHelper(data []common.Resource) {
-	// delete non-exist resource
-	valid := 0
-	for _, res := range r.Resources {
-		// If currently busy, yield deletion to later cycles.
-		if res.Owner != "" {
-			r.Resources[valid] = res
-			valid++
-			continue
-		}
-
-		for _, newRes := range data {
-			if res.Name == newRes.Name {
-				r.Resources[valid] = res
-				valid++
-				break
-			}
-		}
-	}
-	r.Resources = r.Resources[:valid]
-
-	// add new resource
-	for _, p := range data {
-		found := false
-		for _, exist := range r.Resources {
-			if p.Name == exist.Name {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			if p.State == "" {
-				p.State = "free"
-			}
-			r.Resources = append(r.Resources, p)
-		}
-	}
-}
-
-// SaveState saves current server state in json format
-func (r *Ranch) SaveState() {
-	if r.storagePath == "" {
-		return
-	}
-
-	r.lock.RLock()
-	defer r.lock.RUnlock()
-
-	// If fail to save data, fatal and restart the server
-	if buf, err := json.Marshal(r); err != nil {
-		logrus.WithError(err).Fatal("Error marshal ranch")
-	} else if err = ioutil.WriteFile(r.storagePath+".tmp", buf, 0644); err != nil {
-		logrus.WithError(err).Fatal("Error write file")
-	} else if err = os.Rename(r.storagePath+".tmp", r.storagePath); err != nil {
-		logrus.WithError(err).Fatal("Error rename file")
-	}
 }
 
 // Metric returns a metric object with metrics filled in
@@ -342,7 +319,13 @@ func (r *Ranch) Metric(rtype string) (common.Metric, error) {
 		Owners:  map[string]int{},
 	}
 
-	for _, res := range r.Resources {
+	resources, err := r.Storage.GetResources()
+	if err != nil {
+		logrus.WithError(err).Error("cannot find resources")
+		return metric, &ResourceNotFound{rtype}
+	}
+
+	for _, res := range resources {
 		if res.Type != rtype {
 			continue
 		}

@@ -28,9 +28,11 @@ import (
 	"k8s.io/test-infra/boskos/common"
 )
 
-var FAKE_RES = "{\"name\": \"res\", \"type\": \"t\", \"state\": \"d\"}"
-var FAKE_MAP = "{\"res\":\"user\"}"
-var FAKE_METRIC = "{\"type\":\"t\",\"current\":{\"s\":1},\"owner\":{\"merlin\":1}}"
+const (
+	FakeRes    = "{\"name\": \"res\", \"type\": \"t\", \"state\": \"d\"}"
+	FakeMap    = "{\"res\":\"user\"}"
+	FakeMetric = "{\"type\":\"t\",\"current\":{\"s\":1},\"owner\":{\"merlin\":1}}"
+)
 
 func AreErrorsEqual(got error, expect error) bool {
 	if got == nil && expect == nil {
@@ -53,7 +55,7 @@ func TestAcquire(t *testing.T) {
 		{
 			name:      "request error",
 			serverErr: true,
-			expectErr: fmt.Errorf("Status %d %s, StatusCode %d", http.StatusBadRequest, http.StatusText(http.StatusBadRequest), http.StatusBadRequest),
+			expectErr: fmt.Errorf("status %d %s, status code %d", http.StatusBadRequest, http.StatusText(http.StatusBadRequest), http.StatusBadRequest),
 		},
 		{
 			name:      "request successful",
@@ -66,20 +68,20 @@ func TestAcquire(t *testing.T) {
 			if tc.serverErr {
 				http.Error(w, "", http.StatusBadRequest)
 			} else {
-				fmt.Fprint(w, FAKE_RES)
+				fmt.Fprint(w, FakeRes)
 			}
 		}))
 		defer ts.Close()
 
 		c := NewClient("user", ts.URL)
-		name, err := c.Acquire("t", "s", "d")
+		res, err := c.Acquire("t", "s", "d")
 
 		if !AreErrorsEqual(err, tc.expectErr) {
 			t.Errorf("Test %v, got error %v, expect error %v", tc.name, err, tc.expectErr)
 		}
 		if err == nil {
-			if name != "res" {
-				t.Errorf("Test %v, got resource name %v, expect res", tc.name, name)
+			if res.Name != "res" {
+				t.Errorf("Test %v, got resource name %v, expect res", tc.name, res.Name)
 			} else if len(c.resources) != 1 {
 				t.Errorf("Test %v, resource in client: %d, expect 1", tc.name, len(c.resources))
 			}
@@ -98,19 +100,19 @@ func TestRelease(t *testing.T) {
 			name:      "all - no res",
 			resources: []string{},
 			res:       "",
-			expectErr: errors.New("No holding resource"),
+			expectErr: errors.New("no holding resource"),
 		},
 		{
 			name:      "one - no res",
 			resources: []string{},
 			res:       "res",
-			expectErr: errors.New("No resource name res"),
+			expectErr: errors.New("no resource name res"),
 		},
 		{
 			name:      "one - no match",
 			resources: []string{"foo"},
 			res:       "res",
-			expectErr: errors.New("No resource name res"),
+			expectErr: errors.New("no resource name res"),
 		},
 		{
 			name:      "all - ok",
@@ -131,9 +133,7 @@ func TestRelease(t *testing.T) {
 		defer ts.Close()
 
 		c := NewClient("user", ts.URL)
-		for _, r := range tc.resources {
-			c.resources = append(c.resources, r)
-		}
+		c.resources = append(c.resources, tc.resources...)
 		var err error
 		if tc.res == "" {
 			err = c.ReleaseAll("d")
@@ -162,19 +162,19 @@ func TestUpdate(t *testing.T) {
 			name:      "all - no res",
 			resources: []string{},
 			res:       "",
-			expectErr: errors.New("No holding resource"),
+			expectErr: errors.New("no holding resource"),
 		},
 		{
 			name:      "one - no res",
 			resources: []string{},
 			res:       "res",
-			expectErr: errors.New("No resource name res"),
+			expectErr: errors.New("no resource name res"),
 		},
 		{
 			name:      "one - no match",
 			resources: []string{"foo"},
 			res:       "res",
-			expectErr: errors.New("No resource name res"),
+			expectErr: errors.New("no resource name res"),
 		},
 		{
 			name:      "all - ok",
@@ -193,16 +193,13 @@ func TestUpdate(t *testing.T) {
 	for _, tc := range testcases {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
 		defer ts.Close()
-
 		c := NewClient("user", ts.URL)
-		for _, r := range tc.resources {
-			c.resources = append(c.resources, r)
-		}
+		c.resources = append(c.resources, tc.resources...)
 		var err error
 		if tc.res == "" {
 			err = c.UpdateAll("s")
 		} else {
-			err = c.UpdateOne(tc.res, "s")
+			err = c.UpdateOne(tc.res, "s", nil)
 		}
 
 		if !AreErrorsEqual(err, tc.expectErr) {
@@ -213,7 +210,7 @@ func TestUpdate(t *testing.T) {
 
 func TestReset(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, FAKE_MAP)
+		fmt.Fprint(w, FakeMap)
 	}))
 	defer ts.Close()
 
@@ -230,7 +227,7 @@ func TestReset(t *testing.T) {
 
 func TestMetric(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, FAKE_METRIC)
+		fmt.Fprint(w, FakeMetric)
 	}))
 	defer ts.Close()
 	expectMetric := common.Metric{
