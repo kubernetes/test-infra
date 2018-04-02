@@ -72,7 +72,6 @@ def sorted_boskos_config():
     output = cStringIO.StringIO()
     yaml.round_trip_dump(
         configs, output, default_flow_style=False, width=float("inf"))
-    output.write('\n')
     return output
 
 def sort_boskos_config():

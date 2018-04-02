@@ -492,4 +492,29 @@ resources:
   - k8s-jkns-e2e-gke-plugin-gpus
   state: dirty
   type: gpu-project
+- names:
+  - k8s-ingress-boskos-01
+  - k8s-ingress-boskos-02
+  - k8s-ingress-boskos-03
+  - k8s-ingress-boskos-04
+  - k8s-ingress-boskos-05
+  - k8s-ingress-boskos-06
+  - k8s-ingress-boskos-07
+  - k8s-ingress-boskos-08
+  - k8s-ingress-boskos-09
+  - k8s-ingress-boskos-10
+  - k8s-ingress-boskos-11
+  - k8s-ingress-boskos-12
+  - k8s-ingress-boskos-13
+  - k8s-ingress-boskos-14
+  - k8s-ingress-boskos-15
+  - k8s-ingress-boskos-16
+  - k8s-ingress-boskos-17
+  - k8s-ingress-boskos-18
+  - k8s-ingress-boskos-19
+  - k8s-ingress-boskos-20
+  state: dirty
+  type: ingress-project
+
+
 

@@ -603,7 +603,7 @@ class JobTest(unittest.TestCase):
         projects = collections.defaultdict(set)
         boskos = []
         with open(config_sort.test_infra('boskos/resources.yaml')) as fp:
-            boskos_config = yaml.round_trip_load(fp, preserve_quotes=True)
+            boskos_config = yaml.safe_load(fp)
             for rtype in boskos_config['resources']:
                 if 'project' in rtype['type']:
                     for name in rtype['names']:
