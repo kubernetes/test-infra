@@ -635,7 +635,7 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/maintenance-boskos-config-upload
 - name: maintenance-ci-testgrid-config-upload
   gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-testgrid-config-upload
-  num_failures_to_alert: 1
+  num_failures_to_alert: 2
 - name: maintenance-ci-aws-janitor
   gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-aws-janitor
 - name: maintenance-ci-janitor
