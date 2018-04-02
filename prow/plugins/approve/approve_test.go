@@ -573,34 +573,6 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 			expectToggle:  false,
 			expectComment: false,
 		},
-		// {
-		// 	name:          "",
-		// 	hasLabel:      false,
-		// 	files:         []string{},
-		// 	comments:      []github.IssueComment{},
-		// 	selfApprove:   false,
-		// 	needsIssue:    false,
-		// 	lgtmActsAsApprove:   false,
-
-		// 	expectDelete:    true,
-		// 	expectToggle:    true,
-		// 	expectComment:   true,
-		// 	expectedComment: "",
-		// },
-		// {
-		// 	name:          "",
-		// 	hasLabel:      false,
-		// 	files:         []string{},
-		// 	comments:      []github.IssueComment{},
-		// 	selfApprove:   false,
-		// 	needsIssue:    false,
-		// 	lgtmActsAsApprove:   false,
-
-		// 	expectDelete:    true,
-		// 	expectToggle:    true,
-		// 	expectComment:   true,
-		// 	expectedComment: "",
-		// },
 	}
 
 	fr := fakeRepo{
