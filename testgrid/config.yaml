@@ -476,14 +476,22 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ha-master
 - name: ci-kubernetes-e2e-gci-gke-sig-cli
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-sig-cli
-- name: ci-kubernetes-e2e-gke-staging-latest-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-latest-serial
-- name: ci-kubernetes-e2e-gke-staging-default-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-default-serial
-- name: ci-kubernetes-e2e-gke-staging-latest-parallel
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-latest-parallel
 - name: ci-kubernetes-e2e-gke-staging-default-parallel
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-default-parallel
+- name: ci-kubernetes-e2e-gke-staging-default-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-default-serial
+- name: ci-kubernetes-e2e-gke-staging-stable1-parallel
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-stable1-parallel
+- name: ci-kubernetes-e2e-gke-staging-stable1-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-stable1-serial
+- name: ci-kubernetes-e2e-gke-staging-stable2-parallel
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-stable2-parallel
+- name: ci-kubernetes-e2e-gke-staging-stable2-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-stable2-serial
+- name: ci-kubernetes-e2e-gke-staging-stable3-parallel
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-stable3-parallel
+- name: ci-kubernetes-e2e-gke-staging-stable3-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-stable3-serial
 - name: ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu
   alert_stale_results_hours: 24
@@ -3067,14 +3075,22 @@ dashboards:
 
 - name: google-gke-staging
   dashboard_tab:
-  - name: gke-staging-latest-serial
-    test_group_name: ci-kubernetes-e2e-gke-staging-latest-serial
-  - name: gke-staging-default-serial
-    test_group_name: ci-kubernetes-e2e-gke-staging-default-serial
-  - name: gke-staging-latest-parallel
-    test_group_name: ci-kubernetes-e2e-gke-staging-latest-parallel
   - name: gke-staging-default-parallel
     test_group_name: ci-kubernetes-e2e-gke-staging-default-parallel
+  - name: gke-staging-default-serial
+    test_group_name: ci-kubernetes-e2e-gke-staging-default-serial
+  - name: gke-staging-1.9-parallel
+    test_group_name: ci-kubernetes-e2e-gke-staging-stable1-parallel
+  - name: gke-staging-1.9-serial
+    test_group_name: ci-kubernetes-e2e-gke-staging-stable1-serial
+  - name: gke-staging-1.8-parallel
+    test_group_name: ci-kubernetes-e2e-gke-staging-stable2-parallel
+  - name: gke-staging-1.8-serial
+    test_group_name: ci-kubernetes-e2e-gke-staging-stable2-serial
+  - name: gke-staging-1.7-parallel
+    test_group_name: ci-kubernetes-e2e-gke-staging-stable3-parallel
+  - name: gke-staging-1.7-serial
+    test_group_name: ci-kubernetes-e2e-gke-staging-stable3-serial
   - name: gke-staging-latest-device-plugin-gpu
     test_group_name: ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu
   - name: gke-staging-latest-device-plugin-gpu-v100
