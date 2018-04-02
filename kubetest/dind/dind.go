@@ -127,7 +127,7 @@ func (d *DindDeployer) NewTester() (*Tester, error) {
 // Test just execs ginkgo. This will take more parameters in the future.
 func (t *Tester) Test() error {
 	skipRegex := "--skip=\"(Feature)|(NFS)|(StatefulSet)\""
-	focusRegex := "--focus=\".*Conformance.*\""
+	focusRegex := "--focus=\".*\\[Conformance\\].*\""
 	args := []string{"--seed=1436380640", "--nodes=10", skipRegex, focusRegex, t.e2etest,
 		"--", "--kubeconfig", t.kubecfg, "--ginkgo.flakeAttempts=2", "--num-nodes=4", "--systemd-services=docker,kubelet",
 		"--report-dir", t.reportdir}
