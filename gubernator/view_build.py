@@ -231,6 +231,7 @@ class BuildHandler(view_base.BaseHandler):
         job_dir = '/%s/%s/' % (prefix, job)
         testgrid_query = testgrid.path_to_query(job_dir)
         build_dir = job_dir + build
+        issues_fut = models.GHIssueDigest.find_xrefs_async(build_dir)
         started, finished, results = build_details(
             build_dir, self.app.config.get('recursive_artifacts', True))
         if started is None and finished is None:
@@ -265,8 +266,6 @@ class BuildHandler(view_base.BaseHandler):
         version = finished and finished.get('version') or started and started.get('version')
         commit = version and version.split('+')[-1]
 
-        issues = list(models.GHIssueDigest.find_xrefs(build_dir))
-
         refs = []
         if started and started.get('pull'):
             for ref in started['pull'].split(','):
@@ -281,7 +280,7 @@ class BuildHandler(view_base.BaseHandler):
             commit=commit, started=started, finished=finished,
             res=results, refs=refs,
             build_log=build_log, build_log_src=build_log_src,
-            issues=issues, repo=repo,
+            issues=issues_fut.get_result(), repo=repo,
             pr_path=pr_path, pr=pr, pr_digest=pr_digest,
             testgrid_query=testgrid_query))
 
