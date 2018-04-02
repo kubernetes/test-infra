@@ -19,7 +19,9 @@ package main
 import (
 	"testing"
 
+	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/equality"
+
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/tide"
 )
@@ -125,6 +127,7 @@ func TestFilterHidden(t *testing.T) {
 		ta := &tideAgent{
 			hiddenRepos: test.hiddenRepos,
 			hiddenOnly:  test.hiddenOnly,
+			log:         logrus.WithField("agent", "tide"),
 		}
 
 		gotQueries, gotPools := ta.filterHidden(test.queries, test.pools)

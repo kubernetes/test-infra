@@ -115,6 +115,8 @@ func (ta *tideAgent) filterHidden(tideQueries []config.TideQuery, pools []tide.P
 		if (includesHidden && ta.hiddenOnly) ||
 			(!includesHidden && !ta.hiddenOnly) {
 			filteredTideQueries = append(filteredTideQueries, qc)
+		} else {
+			ta.log.Debugf("Ignoring query: %v", qc.Query())
 		}
 	}
 
@@ -124,6 +126,8 @@ func (ta *tideAgent) filterHidden(tideQueries []config.TideQuery, pools []tide.P
 		if (needsHide && ta.hiddenOnly) ||
 			(!needsHide && !ta.hiddenOnly) {
 			filteredPools = append(filteredPools, pool)
+		} else {
+			ta.log.Debugf("Ignoring pool for %s", pool.Org+"/"+pool.Repo)
 		}
 	}
 
@@ -136,10 +140,7 @@ func (ta *tideAgent) filterHidden(tideQueries []config.TideQuery, pools []tide.P
 func matches(repo string, repos []string) bool {
 	org := strings.Split(repo, "/")[0]
 	for _, r := range repos {
-		if r == repo {
-			return true
-		}
-		if !strings.Contains(r, "/") && r == org {
+		if r == repo || r == org {
 			return true
 		}
 	}
