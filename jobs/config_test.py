@@ -603,7 +603,8 @@ class JobTest(unittest.TestCase):
         projects = collections.defaultdict(set)
         boskos = []
         with open(config_sort.test_infra('boskos/resources.yaml')) as fp:
-            for rtype in json.loads(fp.read()):
+            boskos_config = yaml.round_trip_load(fp, preserve_quotes=True)
+            for rtype in boskos_config['resources']:
                 if 'project' in rtype['type']:
                     for name in rtype['names']:
                         boskos.append(name)
