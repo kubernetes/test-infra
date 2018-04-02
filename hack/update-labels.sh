@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2017 The Kubernetes Authors.
+# Copyright 2018 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,13 @@ set -o nounset
 set -o pipefail
 
 TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
-${TESTINFRA_ROOT}/hack/update-bazel.sh
-${TESTINFRA_ROOT}/hack/update-gofmt.sh
-${TESTINFRA_ROOT}/hack/update-config.sh
-${TESTINFRA_ROOT}/hack/update-labels.sh
+LABELS_CONFIG=${LABELS_CONFIG:-"${TESTINFRA_ROOT}/label_sync/labels.yaml"}
+LABELS_DOCS_TEMPLATE=${LABELS_DOCS_TEMPLATE:-"${TESTINFRA_ROOT}/label_sync/labels.md.tmpl"}
+LABELS_DOCS_OUTPUT=${LABELS_DOCS_OUTPUT:-"${TESTINFRA_ROOT}/label_sync/labels.md"}
+
+bazel run //label_sync -- \
+--config=${LABELS_CONFIG} \
+--action=docs \
+--docs-template=${LABELS_DOCS_TEMPLATE} \
+--docs-output=${LABELS_DOCS_OUTPUT}
+

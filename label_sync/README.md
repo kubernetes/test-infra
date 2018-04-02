@@ -40,7 +40,7 @@ bazel test //label_sync/...
 bazel run //label_sync -- \
   --config $(pwd)/labels.yaml \
   --token /path/to/github_oauth_token \
-  --org kubernetes
+  --orgs kubernetes
   # actually you need to pass the --confirm flag too, it will
   # run in dry-run mode by default so you avoid doing something
   # too hastily, hence why this copy-pasta isn't including it
@@ -49,7 +49,7 @@ bazel run //label_sync -- \
 bazel run //label_sync -- \
   --config $(pwd)/labels.yaml \
   --token /path/to/github_oauth_token \
-  --org kubernetes \
+  --orgs kubernetes \
   --skip kubernetes/helm
   # see above
 
@@ -57,9 +57,16 @@ bazel run //label_sync -- \
 bazel run //label_sync -- \
   --config $(pwd)/labels.yaml \
   --token /path/to/github_oauth_token \
-  --org kubernetes \
+  --orgs kubernetes \
   --only kubernetes/community,kubernetes/steering
   # see above
+
+# generate docs based on labels.yaml
+bazel run //label_sync -- \
+  --action docs \
+  --config $(pwd)/labels.yaml \
+  --docs-template $(pwd)/labels.md.tmpl \
+  --docs-output $(pwd)/labels.md
 ```
 
 ## Our Deployment
