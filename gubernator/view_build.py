@@ -146,12 +146,13 @@ def normalize_metadata(started_future, finished_future):
 
 
 @view_base.memcache_memoize('build-details://', expires=60)
-def build_details(build_dir):
+def build_details(build_dir, recursive=False):
     """
     Collect information from a build directory.
 
     Args:
         build_dir: GCS path containing a build's results.
+        recursive: Whether to scan artifacts recursively for XML files.
     Returns:
         started: value from started.json {'version': ..., 'timestamp': ...}
         finished: value from finished.json {'timestamp': ..., 'result': ...}
@@ -168,8 +169,12 @@ def build_details(build_dir):
     if started is None and finished is None:
         return started, finished, None
 
-    junit_paths = [f.filename for f in view_base.gcs_ls_recursive('%s/artifacts' % build_dir)
-                   if f.filename.endswith('.xml')]
+    if recursive:
+        artifact_paths = view_base.gcs_ls_recursive('%s/artifacts' % build_dir)
+    else:
+        artifact_paths = view_base.gcs_ls('%s/artifacts' % build_dir)
+
+    junit_paths = [f.filename for f in artifact_paths if f.filename.endswith('.xml')]
 
     junit_futures = {f: gcs_async.read(f) for f in junit_paths}
 
@@ -226,7 +231,8 @@ class BuildHandler(view_base.BaseHandler):
         job_dir = '/%s/%s/' % (prefix, job)
         testgrid_query = testgrid.path_to_query(job_dir)
         build_dir = job_dir + build
-        started, finished, results = build_details(build_dir)
+        started, finished, results = build_details(
+            build_dir, self.app.config.get('recursive_artifacts', True))
         if started is None and finished is None:
             logging.warning('unable to load %s', build_dir)
             self.render(
