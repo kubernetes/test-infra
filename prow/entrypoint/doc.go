@@ -14,29 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
-
-import (
-	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/entrypoint"
-	"k8s.io/test-infra/prow/logrusutil"
-)
-
-func main() {
-	o, err := entrypoint.ResolveOptions()
-	if err != nil {
-		logrus.Fatalf("Could not resolve options: %v", err)
-	}
-
-	if err := o.Validate(); err != nil {
-		logrus.Fatalf("Invalid options: %v", err)
-	}
-
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "entrypoint"}),
-	)
-
-	if err := o.Run(); err != nil {
-		logrus.WithError(err).Fatal("Failed to run test process")
-	}
-}
+// Package entrypoint is a library that knows how to wrap
+// a process and write it's output and exit code to disk
+package entrypoint

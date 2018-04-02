@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package entrypoint
 
 import (
 	"testing"
@@ -25,14 +25,14 @@ import (
 func TestOptions_Validate(t *testing.T) {
 	var testCases = []struct {
 		name        string
-		input       options
+		input       Options
 		expectedErr bool
 	}{
 		{
 			name: "all ok",
-			input: options{
-				args: []string{"/usr/bin/true"},
-				wrapperOptions: &wrapper.Options{
+			input: Options{
+				Args: []string{"/usr/bin/true"},
+				Options: &wrapper.Options{
 					ProcessLog: "output.txt",
 					MarkerFile: "marker.txt",
 				},
@@ -41,8 +41,8 @@ func TestOptions_Validate(t *testing.T) {
 		},
 		{
 			name: "missing args",
-			input: options{
-				wrapperOptions: &wrapper.Options{
+			input: Options{
+				Options: &wrapper.Options{
 					ProcessLog: "output.txt",
 					MarkerFile: "marker.txt",
 				},
