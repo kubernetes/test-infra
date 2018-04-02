@@ -624,10 +624,10 @@ presubmits:
         emptyDir: {}
   - name: pull-heapster-unit
     agent: kubernetes
-    always_run: false
+    always_run: true
     context: pull-heapster-unit
     rerun_command: "/test pull-heapster-unit"
-    trigger: "(?m)^/test pull-heapster-unit,?(\\s+|$)"
+    trigger: "(?m)^/test( all| pull-heapster-unit),?(\\s+|$)"
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
