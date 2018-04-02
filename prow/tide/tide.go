@@ -186,6 +186,11 @@ func byRepoAndNumber(prs []PullRequest) map[string]PullRequest {
 // requirementDiff calculates the diff between a PR and a TideQuery.
 // This diff is defined with a string that describes some subset of the
 // differences and an integer counting the total number of differences.
+// The diff count should always reflect the total number of differences between
+// the current state of the PR and the query, but the message returned need not
+// attempt to convey all of that information if some differences are more severe.
+// For instance, we need to convey that a PR is open against a forbidden branch
+// more than we need to detail which status contexts are failed against the PR.
 // Note: an empty diff can be returned if the reason that the PR does not match
 // the TideQuery is unknown. This can happen happen if this function's logic
 // does not match GitHub's and does not indicate that the PR matches the query.
@@ -206,6 +211,13 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery) (string, int) {
 		return labels[:i]
 	}
 
+	for _, excludedBranch := range q.ExcludedBranches {
+		if string(pr.BaseRef.Name) == excludedBranch {
+			desc = fmt.Sprintf(" Merging to branch %s is forbidden.", pr.BaseRef.Name)
+			diff = 1
+		}
+	}
+
 	var missingLabels []string
 	for _, l1 := range q.Labels {
 		var found bool
@@ -220,7 +232,7 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery) (string, int) {
 		}
 	}
 	diff += len(missingLabels)
-	if len(missingLabels) > 0 {
+	if desc == "" && len(missingLabels) > 0 {
 		sort.Strings(missingLabels)
 		trunced := truncate(missingLabels)
 		if len(trunced) == 1 {
