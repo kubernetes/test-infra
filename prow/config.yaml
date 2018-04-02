@@ -11876,7 +11876,7 @@ periodics:
 
 - interval: 30m
   agent: kubernetes
-  name: ci-kubernetes-e2e-gke-staging-latest-parallel
+  name: ci-kubernetes-e2e-gke-staging-stable1-parallel
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
@@ -11889,7 +11889,59 @@ periodics:
 
 - interval: 30m
   agent: kubernetes
-  name: ci-kubernetes-e2e-gke-staging-latest-serial
+  name: ci-kubernetes-e2e-gke-staging-stable1-serial
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=620
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+
+- interval: 30m
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gke-staging-stable2-parallel
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=100
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+
+- interval: 30m
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gke-staging-stable2-serial
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=620
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+
+- interval: 30m
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gke-staging-stable3-parallel
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=100
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+
+- interval: 30m
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gke-staging-stable3-serial
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
