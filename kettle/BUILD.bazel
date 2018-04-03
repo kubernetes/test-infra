@@ -1,3 +1,5 @@
+load("@kettle_deps//:requirements.bzl", "requirement")
+
 py_test(
     name = "make_db_test",
     srcs = [
@@ -27,6 +29,10 @@ py_binary(
     name = "monitor",
     srcs = [
         "monitor.py",
+    ],
+    deps = [
+        requirement("influxdb"),
+        requirement("google-cloud-bigquery"),
     ],
 )
 
