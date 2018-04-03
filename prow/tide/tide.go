@@ -24,6 +24,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"sort"
 	"strings"
 	"sync"
@@ -309,6 +310,28 @@ func expectedStatus(queriesByRepo map[string]config.TideQueries, pr *PullRequest
 	return github.StatusSuccess, statusInPool
 }
 
+// targetUrl determines the URL used for more details in the status
+// context on GitHub. If no PR dashboard is configured, we will use
+// the administrative Prow overview.
+func targetUrl(c *config.Agent, pr *PullRequest, log *logrus.Entry) string {
+	var link string
+	if tideUrl := c.Config().Tide.TargetURL; tideUrl != "" {
+		link = tideUrl
+	} else if baseUrl := c.Config().Tide.PRStatusBaseUrl; baseUrl != "" {
+		parsedUrl, err := url.Parse(baseUrl)
+		if err != nil {
+			log.WithError(err).Error("Failed to parse PR status base URL")
+		} else {
+			prQuery := fmt.Sprintf("is:pr repo:%s author:%s head:%s", pr.Repository.NameWithOwner, pr.Author.Login, pr.HeadRefName)
+			values := parsedUrl.Query()
+			values.Set("query", prQuery)
+			parsedUrl.RawQuery = values.Encode()
+			link = parsedUrl.String()
+		}
+	}
+	return link
+}
+
 func (sc *statusController) setStatuses(all, pool []PullRequest) {
 	poolM := byRepoAndNumber(pool)
 	queriesByRepo := sc.ca.Config().Tide.Queries.ByRepo()
@@ -342,7 +365,7 @@ func (sc *statusController) setStatuses(all, pool []PullRequest) {
 					Context:     statusContext,
 					State:       wantState,
 					Description: wantDesc,
-					TargetURL:   sc.ca.Config().Tide.TargetURL,
+					TargetURL:   targetUrl(sc.ca, pr, log),
 				}); err != nil {
 				log.WithError(err).Errorf(
 					"Failed to set status context from %q to %q.",
@@ -997,9 +1020,10 @@ type PullRequest struct {
 		Name   githubql.String
 		Prefix githubql.String
 	}
-	HeadRefOID githubql.String `graphql:"headRefOid"`
-	Mergeable  githubql.MergeableState
-	Repository struct {
+	HeadRefName githubql.String `graphql:"headRefName"`
+	HeadRefOID  githubql.String `graphql:"headRefOid"`
+	Mergeable   githubql.MergeableState
+	Repository  struct {
 		Name          githubql.String
 		NameWithOwner githubql.String
 		Owner         struct {
