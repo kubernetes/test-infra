@@ -33,6 +33,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//boskos:all-srcs",
+        "//def:all-srcs",
         "//experiment:all-srcs",
         "//gcsweb/cmd/gcsweb:all-srcs",
         "//gcsweb/pkg/version:all-srcs",

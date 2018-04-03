@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: testgrid-config
-  labels:
-    component: config
-    app: testgrid
-data:  # Generate items below
