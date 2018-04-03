@@ -15290,7 +15290,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180402-7b54c4ba6-master
       args:
-      - "--repo=github.com/istio/istio=master"
+      - "--repo=istio.io/istio=master"
       - "--timeout=90"
 
 - name: kubeflow-periodic
