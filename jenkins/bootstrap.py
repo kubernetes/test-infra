@@ -197,6 +197,8 @@ def repository(repo, ssh):
     """Return the url associated with the repo."""
     if repo.startswith('k8s.io/'):
         repo = 'github.com/kubernetes/%s' % (repo[len('k8s.io/'):])
+    elif repo.startswith('istio.io/'):
+        repo = 'github.com/istio/%s' % (repo[len('istio.io/'):])
     if ssh:
         if ":" not in repo:
             parts = repo.split('/', 1)
