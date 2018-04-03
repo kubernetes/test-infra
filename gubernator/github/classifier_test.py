@@ -238,6 +238,7 @@ class CalculateTest(unittest.TestCase):
         expect(mk(('pull_request', 'review_request_removed', user_a)), set())
         expect(mk(('pull_request', 'review_requested', user_a),
                   ('pull_request', 'review_request_removed', user_a)), set())
+        expect(mk(('pull_request_review', 'submitted', {'sender': {'login': 'a'}})), {'a'})
 
     def test_approvers(self):
         def expect(comment, result):
