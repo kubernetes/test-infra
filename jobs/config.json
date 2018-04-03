@@ -12964,6 +12964,16 @@
       "sig-testing"
     ]
   },
+  "pull-poseidon-verify": {
+    "args": [
+      "make",
+      "verify"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-scheduling"
+    ]
+  },
   "pull-test-infra-bazel": {
     "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
     "args": [],

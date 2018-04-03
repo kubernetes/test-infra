@@ -2541,6 +2541,9 @@ test_groups:
 - name: pull-cadvisor-e2e
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cadvisor-e2e
   num_columns_recent: 20
+- name: pull-poseidon-verify
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-poseidon-verify
+  num_columns_recent: 20
 
 # Add New Testgroups Here
 
@@ -5649,6 +5652,8 @@ dashboards:
     test_group_name: pull-charts-e2e
   - name: cadvisor
     test_group_name: pull-cadvisor-e2e
+  - name: poseidon
+    test_group_name: pull-poseidon-verify
 
 - name: presubmits-kops
   dashboard_tab:
