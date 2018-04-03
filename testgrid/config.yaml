@@ -1462,6 +1462,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/issue-creator
 - name: metrics-bigquery
   gcs_prefix: kubernetes-jenkins/logs/metrics-bigquery
+- name: metrics-kettle
+  gcs_prefix: kubernetes-jenkins/logs/metrics-kettle
 - name: periodic-kubernetes-bazel-test-1-7
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-7
 - name: periodic-kubernetes-bazel-test-1-8
@@ -5144,6 +5146,11 @@ dashboards:
   - name: metrics-bigquery
     description: Runs BigQuery queries to generate data for metrics.
     test_group_name: metrics-bigquery
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: metrics-kettle
+    description: Monitors Kettle's BigQuery database freshness.
+    test_group_name: metrics-kettle
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: maintenance-aws-janitor

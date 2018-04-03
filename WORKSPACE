@@ -425,3 +425,20 @@ git_repository(
 load("@io_bazel_rules_appengine//appengine:py_appengine.bzl", "py_appengine_repositories")
 
 py_appengine_repositories()
+
+git_repository(
+    name = "io_bazel_rules_python",
+    commit = "f414af5ed85e451908b3fb873211e8f2939ea4e8",
+    remote = "https://github.com/bazelbuild/rules_python.git",
+)
+
+# Only needed for PIP support:
+load("@io_bazel_rules_python//python:pip.bzl", "pip_import")
+
+pip_import(
+    name = "kettle_deps",
+    requirements = "//kettle:requirements.txt",
+)
+
+load("@kettle_deps//:requirements.bzl", "pip_install")
+pip_install()

@@ -26,9 +26,9 @@ RUN apt-get update && apt-get install -y \
     python-pip && \
     apt-get clean
 
-RUN pip install influxdb
+RUN pip install influxdb google-cloud-bigquery==0.24.0
 
-ENV GCLOUD_VERSION 156.0.0
+ENV GCLOUD_VERSION 195.0.0
 RUN wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
     tar xf google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
     rm google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \

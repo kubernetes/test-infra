@@ -12072,6 +12072,21 @@
       "sig-testing"
     ]
   },
+  "metrics-kettle": {
+    "args": [
+      "test-infra/kettle/monitor.py",
+      "--",
+      "--stale=6",
+      "--table",
+      "k8s-gubernator:build.all",
+      "k8s-gubernator:build.week",
+      "k8s-gubernator:build.day"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "periodic-kubernetes-bazel-build-1-10": {
     "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
     "args": [],
