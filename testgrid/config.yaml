@@ -225,10 +225,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-device-plugin-gpu-beta
   alert_stale_results_hours: 24
   num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
-- name: ci-kubernetes-e2e-gce-gpu
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu
-  alert_stale_results_hours: 24
-  num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
 - name: ci-kubernetes-e2e-gce-gpu-stable1
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-stable1
   alert_stale_results_hours: 24
@@ -2913,8 +2909,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-taint-evict
   - name: gce-device-plugin-gpu
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
-  - name: gce-gpu
-    test_group_name: ci-kubernetes-e2e-gce-gpu
   - name: gce-min-node-permissions
     test_group_name: ci-kubernetes-e2e-gce-min-node-permissions
 
@@ -3291,8 +3285,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gke
   - name: aws
     test_group_name: ci-kubernetes-e2e-kops-aws
-  - name: gce-gpu
-    test_group_name: ci-kubernetes-e2e-gce-gpu
   - name: gce-device-plugin-gpu
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
   - name: gke-device-plugin-gpu
@@ -3959,11 +3951,6 @@ dashboards:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gce-device-plugin-gpu-1.9
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
-    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
-    alert_options:
-      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
-  - name: gce-gpu
-    test_group_name: ci-kubernetes-e2e-gce-gpu
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'

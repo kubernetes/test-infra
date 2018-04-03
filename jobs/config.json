@@ -3171,24 +3171,6 @@
       "sig-cli"
     ]
   },
-  "ci-kubernetes-e2e-gce-gpu": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-gpu.env",
-      "--extract=ci/latest",
-      "--gcp-node-image=gci",
-      "--gcp-project-type=gpu-project",
-      "--gcp-zone=us-west1-b",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:GPU\\] --minStartupPods=8",
-      "--timeout=180m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-scheduling"
-    ]
-  },
   "ci-kubernetes-e2e-gce-gpu-beta": {
     "args": [
       "--check-leaked-resources",

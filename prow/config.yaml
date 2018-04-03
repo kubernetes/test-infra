@@ -8933,19 +8933,6 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180402-7b54c4ba6-master
 
-- name: ci-kubernetes-e2e-gce-gpu
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - args:
-      - --timeout=300
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180402-7b54c4ba6-master
-
 - name: ci-kubernetes-e2e-gce-gpu-beta
   interval: 2h
   agent: kubernetes

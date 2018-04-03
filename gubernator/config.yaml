@@ -14,7 +14,6 @@ external_services:
 jobs:
   kubernetes-jenkins/logs/:
   - ci-kubernetes-build
-  - ci-kubernetes-e2e-gce-gpu
   - ci-kubernetes-e2e-gce-scale-correctness
   - ci-kubernetes-e2e-gce-scale-performance
   - ci-kubernetes-e2e-gci-gce
