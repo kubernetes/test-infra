@@ -17,7 +17,14 @@ container_image(
     # Add files under into the root directory.
     directory = "/",
     # Everything under static/
-    files = glob(["static/**/*"]),
+    files = glob(
+        ["static/**/*"],
+        exclude = [
+            "static/tide.js",
+            "static/data.js",
+            "static/plugin-help.js",
+        ],
+    ),
 )
 
 go_image(
