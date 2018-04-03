@@ -24,6 +24,7 @@ import (
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/plugins"
 )
 
 func formatLabels(labels ...string) []string {
@@ -44,6 +45,7 @@ func TestMilestoneStatus(t *testing.T) {
 		commenter         string
 		previousMilestone int
 		expectedMilestone int
+		noRepoMaintainer  bool
 	}
 	var milestonesMap = map[string]int{"v1.0": 1}
 	testcases := []testCase{
@@ -96,6 +98,22 @@ func TestMilestoneStatus(t *testing.T) {
 			previousMilestone: 10,
 			expectedMilestone: 1,
 		},
+		{
+			name:              "Use default maintainer team when none is specified",
+			body:              "Foo\n/milestone v1.0\r\n/priority critical-urgent",
+			commenter:         "default-sig-lead",
+			previousMilestone: 10,
+			expectedMilestone: 1,
+			noRepoMaintainer:  true,
+		},
+		{
+			name:              "Don't use default maintainer team when one is specified",
+			body:              "Foo\n/milestone v1.0\r\n/priority critical-urgent",
+			commenter:         "default-sig-lead",
+			previousMilestone: 10,
+			expectedMilestone: 10,
+			noRepoMaintainer:  false,
+		},
 	}
 
 	for _, tc := range testcases {
@@ -112,7 +130,13 @@ func TestMilestoneStatus(t *testing.T) {
 			User:   github.User{Login: tc.commenter},
 		}
 
-		if err := handle(fakeClient, logrus.WithField("plugin", pluginName), e, maintainersID, maintainersName); err != nil {
+		repoMilestone := map[string]plugins.Milestone{"": {MaintainersID: 0, MaintainersTeam: maintainersName}}
+
+		if !tc.noRepoMaintainer {
+			repoMilestone["org/repo"] = plugins.Milestone{MaintainersID: maintainersID, MaintainersTeam: maintainersName}
+		}
+
+		if err := handle(fakeClient, logrus.WithField("plugin", pluginName), e, repoMilestone); err != nil {
 			t.Errorf("(%s): Unexpected error from handle: %v.", tc.name, err)
 			continue
 		}

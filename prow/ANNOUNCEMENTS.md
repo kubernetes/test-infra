@@ -20,6 +20,19 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *July 9, 2018* `milestone` format has changed from
+    ```yaml
+    milestone:
+     maintainers_id: <some_team_id>
+     maintainers_team: <some_team_name>
+    ```
+    to `repo_milestone`
+    ```yaml
+    repo_milestone:
+     <some_repo_name>:
+       maintainers_id: <some_team_id>
+       maintainers_team: <some_team_name>
+    ```
  - *July 2, 2018* the `trigger` plugin will now trust PRs from repo
    collaborators. Use `only_org_members: true` in the trigger config to
    temporarily disable this behavior.

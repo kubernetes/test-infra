@@ -304,7 +304,15 @@ func (f *FakeClient) ListTeamMembers(teamID int, role string) ([]github.TeamMemb
 	if role != github.RoleAll {
 		return nil, fmt.Errorf("unsupport role %v (only all supported)", role)
 	}
-	return []github.TeamMember{{Login: "sig-lead"}}, nil
+	teams := map[int][]github.TeamMember{
+		0:  {{Login: "default-sig-lead"}},
+		42: {{Login: "sig-lead"}},
+	}
+	members, ok := teams[teamID]
+	if !ok {
+		return []github.TeamMember{}, nil
+	}
+	return members, nil
 }
 
 // IsCollaborator returns true if the user is a collaborator of the repo.

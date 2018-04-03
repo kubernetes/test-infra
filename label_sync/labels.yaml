@@ -614,16 +614,16 @@ labels:
       - name: approved-for-milestone
     target: both
     prowPlugin: milestonestatus
-    addedBy: "[@kubernetes/kubernetes-milestone-maintainers](https://github.com/orgs/kubernetes/teams/kubernetes-milestone-maintainers/members)"
+    addedBy: "members of a configurable github team. default: [@kubernetes/kubernetes-milestone-maintainers](https://github.com/orgs/kubernetes/teams/kubernetes-milestone-maintainers/members)"
   - color: fef2c0
     description: Used during release burndown. Denotes that an issue is actively being worked.
     name: status/in-progress
     target: both
     prowPlugin: milestonestatus
-    addedBy: "[@kubernetes/kubernetes-milestone-maintainers](https://github.com/orgs/kubernetes/teams/kubernetes-milestone-maintainers/members)"
+    addedBy: "members of a configurable github team. default: [@kubernetes/kubernetes-milestone-maintainers](https://github.com/orgs/kubernetes/teams/kubernetes-milestone-maintainers/members)"
   - color: fef2c0
     description: Used during release burndown. Denotes that a fix for an issue is actively being reviewed.
     name: status/in-review
     target: both
     prowPlugin: milestonestatus
-    addedBy: "[@kubernetes/kubernetes-milestone-maintainers](https://github.com/orgs/kubernetes/teams/kubernetes-milestone-maintainers/members)"
+    addedBy: "members of a configurable github team. default: [@kubernetes/kubernetes-milestone-maintainers](https://github.com/orgs/kubernetes/teams/kubernetes-milestone-maintainers/members)"

@@ -161,19 +161,19 @@ type Configuration struct {
 	Owners Owners `json:"owners,omitempty"`
 
 	// Built-in plugins specific configuration.
-	Triggers      []Trigger     `json:"triggers,omitempty"`
-	Heart         Heart         `json:"heart,omitempty"`
-	Milestone     Milestone     `json:"milestone,omitempty"`
-	Slack         Slack         `json:"slack,omitempty"`
-	ConfigUpdater ConfigUpdater `json:"config_updater,omitempty"`
-	Blockades     []Blockade    `json:"blockades,omitempty"`
-	Approve       []Approve     `json:"approve,omitempty"`
-	Blunderbuss   Blunderbuss   `json:"blunderbuss,omitempty"`
-	RequireSIG    RequireSIG    `json:"requiresig,omitempty"`
-	SigMention    SigMention    `json:"sigmention,omitempty"`
-	Cat           Cat           `json:"cat,omitempty"`
-	Label         *Label        `json:"label,omitempty"`
-	Lgtm          []Lgtm        `json:"lgtm,omitempty"`
+	Triggers      []Trigger            `json:"triggers,omitempty"`
+	Heart         Heart                `json:"heart,omitempty"`
+	RepoMilestone map[string]Milestone `json:"repo_milestone,omitempty"`
+	Slack         Slack                `json:"slack,omitempty"`
+	ConfigUpdater ConfigUpdater        `json:"config_updater,omitempty"`
+	Blockades     []Blockade           `json:"blockades,omitempty"`
+	Approve       []Approve            `json:"approve,omitempty"`
+	Blunderbuss   Blunderbuss          `json:"blunderbuss,omitempty"`
+	RequireSIG    RequireSIG           `json:"requiresig,omitempty"`
+	SigMention    SigMention           `json:"sigmention,omitempty"`
+	Cat           Cat                  `json:"cat,omitempty"`
+	Label         *Label               `json:"label,omitempty"`
+	Lgtm          []Lgtm               `json:"lgtm,omitempty"`
 }
 
 // ExternalPlugin holds configuration for registering an external
