@@ -15,6 +15,6 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: boskos-reaper
-        image: gcr.io/k8s-testimages/reaper:v20170913-73a0e4da
+        image: gcr.io/k8s-testimages/reaper:v20180402-43203f868
         args:
         - --resource-type=gce-project,gke-project,gci-qa-project,gpu-project,ingress-project

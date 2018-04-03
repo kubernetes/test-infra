@@ -46,7 +46,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: metrics
-        image: gcr.io/k8s-testimages/metrics:v20170815-83a7595f
+        image: gcr.io/k8s-testimages/metrics:v20180402-43203f868
         ports:
           - containerPort: 8080
             protocol: TCP

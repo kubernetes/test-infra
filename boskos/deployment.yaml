@@ -50,7 +50,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: boskos
-        image: gcr.io/k8s-testimages/boskos:v20170725-ef5f2dc3
+        image: gcr.io/k8s-testimages/boskos:v20180402-43203f868
         args:
         - -storage=/store/boskos.json
         - -config=/etc/config/config
