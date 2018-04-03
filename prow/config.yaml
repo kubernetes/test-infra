@@ -20,9 +20,18 @@ log_level: info
 branch-protection:
   orgs:
     kubernetes:
+      # TODO(fejta): build blacklist and then protect-by-default
+      # protect-by-default: true
       require-contexts:
       - cla/linuxfoundation
       repos:
+        # BLACKLIST
+        # dashboard - kubernetes/test-infra#7525 need required reviews
+        # WHITELIST
+        charts:
+          protect-by-default: true
+          require-contexts:
+          - ci/circleci
         cloud-provider-aws:
           protect-by-default: true
         cloud-provider-azure:
@@ -35,6 +44,10 @@ branch-protection:
           protect-by-default: true
         community:
           protect-by-default: true
+        contrib:
+          protect-by-default: true
+        examples:
+          protect-by-default: true
         features:
           protect-by-default: true
         federation:
@@ -45,18 +58,36 @@ branch-protection:
           protect-by-default: true
         ingress-nginx:
           protect-by-default: true
+        kops:
+          protect-by-default: true
+        kubectl:
+          protect-by-default: true
+          require-contexts:
+          - continuous-integration/travis-ci
         kubernetes-template-project:
           protect-by-default: true
         kube-state-metrics:
           protect-by-default: true
         kube-deploy:
           protect-by-default: true
+        minikube:
+          protect-by-default: true
         node-problem-detector:
+          protect-by-default: true
+        repo-infra:
+          protect-by-default: true
+          require-contexts:
+          - continuous-integration/travis-ci
+        sig-release:
           protect-by-default: true
         steering:
           protect-by-default: true
         test-infra:
           protect-by-default: true
+        website:
+          protect-by-default: true
+          require-contexts:
+          - continuous-integration/travis-ci
     kubernetes-sigs:
       protect-by-default: true
       require-contexts:
