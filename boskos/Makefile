@@ -59,19 +59,19 @@ metrics-image:
 	docker push "$(HUB)/metrics:$(TAG)"
 	rm metrics/metrics
 
-server-deployment:
+server-deployment: get-cluster-credentials
 	kubectl apply -f deployment.yaml
 
-reaper-deployment:
+reaper-deployment: get-cluster-credentials
 	kubectl apply -f reaper/deployment.yaml
 
-janitor-deployment:
+janitor-deployment: get-cluster-credentials
 	kubectl apply -f janitor/deployment.yaml
 
-metrics-deployment:
+metrics-deployment: get-cluster-credentials
 	kubectl apply -f metrics/deployment.yaml
 
-service:
+service: get-cluster-credentials
 	kubectl apply -f service.yaml
 
 update-config: get-cluster-credentials
