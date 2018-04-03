@@ -14,10 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package gcs
+package gcsupload
 
 import (
 	"testing"
+
+	"k8s.io/test-infra/prow/kube"
 )
 
 func TestOptions_Validate(t *testing.T) {
@@ -29,8 +31,10 @@ func TestOptions_Validate(t *testing.T) {
 		{
 			name: "minimal set ok",
 			input: Options{
-				DryRun:       true,
-				PathStrategy: pathStrategyExplicit,
+				DryRun: true,
+				GCSConfiguration: kube.GCSConfiguration{
+					PathStrategy: kube.PathStrategyExplicit,
+				},
 			},
 			expectedErr: false,
 		},
@@ -38,9 +42,11 @@ func TestOptions_Validate(t *testing.T) {
 			name: "push to GCS, ok",
 			input: Options{
 				DryRun:             false,
-				GcsBucket:          "seal",
-				GceCredentialsFile: "secrets",
-				PathStrategy:       pathStrategyExplicit,
+				GcsCredentialsFile: "secrets",
+				GCSConfiguration: kube.GCSConfiguration{
+					Bucket:       "seal",
+					PathStrategy: kube.PathStrategyExplicit,
+				},
 			},
 			expectedErr: false,
 		},
@@ -48,17 +54,21 @@ func TestOptions_Validate(t *testing.T) {
 			name: "push to GCS, missing bucket",
 			input: Options{
 				DryRun:             false,
-				GceCredentialsFile: "secrets",
-				PathStrategy:       pathStrategyExplicit,
+				GcsCredentialsFile: "secrets",
+				GCSConfiguration: kube.GCSConfiguration{
+					PathStrategy: kube.PathStrategyExplicit,
+				},
 			},
 			expectedErr: true,
 		},
 		{
 			name: "push to GCS, missing credentials",
 			input: Options{
-				DryRun:       false,
-				GcsBucket:    "seal",
-				PathStrategy: pathStrategyExplicit,
+				DryRun: false,
+				GCSConfiguration: kube.GCSConfiguration{
+					Bucket:       "seal",
+					PathStrategy: kube.PathStrategyExplicit,
+				},
 			},
 			expectedErr: true,
 		},
@@ -90,7 +100,7 @@ func TestValidatePathOptions(t *testing.T) {
 		},
 		{
 			name:        "explicit strategy, no defaults",
-			strategy:    "explicit",
+			strategy:    kube.PathStrategyExplicit,
 			expectedErr: false,
 		},
 		{
@@ -145,10 +155,12 @@ func TestValidatePathOptions(t *testing.T) {
 
 	for _, testCase := range testCases {
 		o := Options{
-			DryRun:       true,
-			PathStrategy: testCase.strategy,
-			DefaultOrg:   testCase.org,
-			DefaultRepo:  testCase.repo,
+			DryRun: true,
+			GCSConfiguration: kube.GCSConfiguration{
+				PathStrategy: testCase.strategy,
+				DefaultOrg:   testCase.org,
+				DefaultRepo:  testCase.repo,
+			},
 		}
 		err := o.Validate()
 		if err != nil && !testCase.expectedErr {

@@ -14,29 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
-
-import (
-	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/logrusutil"
-	"k8s.io/test-infra/prow/sidecar"
-)
-
-func main() {
-	o, err := sidecar.ResolveOptions()
-	if err != nil {
-		logrus.Fatalf("Could not resolve options: %v", err)
-	}
-
-	if err := o.Validate(); err != nil {
-		logrus.Fatalf("Invalid options: %v", err)
-	}
-
-	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "sidecar"}),
-	)
-
-	if err := o.Run(); err != nil {
-		logrus.WithError(err).Fatal("Failed to report job status")
-	}
-}
+// Package sidecar is a library that knows how to report on the
+// output of a process that writes it's output and exit code to
+// disk
+package sidecar

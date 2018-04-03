@@ -1,5 +1,5 @@
 /*
-Copyright 2017 The Kubernetes Authors.
+Copyright 2018 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,37 +14,42 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package initupload
 
 import (
 	"testing"
 
-	"k8s.io/test-infra/prow/pod-utils/gcs"
+	"k8s.io/test-infra/prow/gcsupload"
+	"k8s.io/test-infra/prow/kube"
 )
 
 func TestOptions_Validate(t *testing.T) {
 	var testCases = []struct {
 		name        string
-		input       options
+		input       Options
 		expectedErr bool
 	}{
 		{
 			name: "minimal set ok",
-			input: options{
-				cloneLog: "testing",
-				gcsOptions: &gcs.Options{
-					DryRun:       true,
-					PathStrategy: "explicit",
+			input: Options{
+				Log: "testing",
+				Options: &gcsupload.Options{
+					DryRun: true,
+					GCSConfiguration: kube.GCSConfiguration{
+						PathStrategy: kube.PathStrategyExplicit,
+					},
 				},
 			},
 			expectedErr: false,
 		},
 		{
 			name: "missing clone log",
-			input: options{
-				gcsOptions: &gcs.Options{
-					DryRun:       true,
-					PathStrategy: "explicit",
+			input: Options{
+				Options: &gcsupload.Options{
+					DryRun: true,
+					GCSConfiguration: kube.GCSConfiguration{
+						PathStrategy: kube.PathStrategyExplicit,
+					},
 				},
 			},
 			expectedErr: true,
