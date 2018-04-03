@@ -413,6 +413,43 @@ presubmits:
       - name: docker-graph
         emptyDir: {}
 
+  kubernetes/cloud-provider-azure:
+  - name: pull-cloud-provider-azure-lint
+    agent: kubernetes
+    always_run: true
+    context: pull-cloud-provider-azure-lint
+    rerun_command: "/test pull-cloud-provider-azure-lint"
+    trigger: "(?m)^/test( all| pull-cloud-provider-azure-lint),?(\\s+|$)"
+    branches:
+    - master
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+
+  - name: pull-cloud-provider-azure-unit
+    agent: kubernetes
+    always_run: true
+    context: pull-cloud-provider-azure-unit
+    rerun_command: "/test pull-cloud-provider-azure-unit"
+    trigger: "(?m)^/test( all| pull-cloud-provider-azure-unit),?(\\s+|$)"
+    branches:
+    - master
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+
   kubernetes/cloud-provider-openstack:
   - name: pull-cloud-provider-openstack-check
     agent: kubernetes

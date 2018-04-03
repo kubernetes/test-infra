@@ -12194,6 +12194,27 @@
       "sig-apps"
     ]
   },
+  "pull-cloud-provider-azure-lint": {
+    "args": [
+      "make",
+      "test-lint-prepare",
+      "test-lint"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-azure"
+    ]
+  },
+  "pull-cloud-provider-azure-unit": {
+    "args": [
+      "make",
+      "test-unit"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-azure"
+    ]
+  },
   "pull-cloud-provider-openstack-check": {
     "args": [
       "make",
