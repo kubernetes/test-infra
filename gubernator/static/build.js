@@ -64,7 +64,7 @@ function get(uri, callback) {
 	var req = new XMLHttpRequest();
 	req.open('GET', url);
 	req.onload = function(resp) {
-		get_cache[uri] = req.response;
+		get_cache[uri] = {status: req.status, response: req.response};
 		callback(req);
 	}
 	req.send();
