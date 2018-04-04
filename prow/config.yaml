@@ -76,6 +76,7 @@ tide:
     - kubeflow/pytorch-operator
     - kubeflow/testing
     - kubeflow/tf-operator
+    - kubeflow/hp-tuning
     labels:
     - lgtm
     - approved
@@ -376,6 +377,22 @@ presubmits:
     always_run: true         # Run for every PR, or only when requested.
     rerun_command: "/test kubeflow-tf-operator-presubmit"
     trigger: "(?m)^/test( all| kubeflow-tf-operator-presubmit),?(\\s+|$)"
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/hp-tuning:
+  - name: kubeflow-hp-tuning-presubmit
+    context: kubeflow-hp-tuning-presubmit
+    agent: kubernetes
+    always_run: true         # Run for every PR, or only when requested.
+    rerun_command: "/test kubeflow-hp-tuning-presubmit"
+    trigger: "(?m)^/test( all| kubeflow-hp-tuning-presubmit),?(\\s+|$)"
+    branches:
+    - master
     labels:
       preset-service-account: true
     spec:
@@ -5882,6 +5899,16 @@ postsubmits:
 
   kubeflow/tf-operator:
   - name: kubeflow-tf-operator-postsubmit
+    agent: kubernetes
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/hp-tuning:
+  - name: kubeflow-hp-tuning-postsubmit
     agent: kubernetes
     labels:
       preset-service-account: true
