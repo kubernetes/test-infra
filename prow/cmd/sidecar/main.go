@@ -19,12 +19,13 @@ package main
 import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/pod-utils/options"
 	"k8s.io/test-infra/prow/sidecar"
 )
 
 func main() {
-	o, err := sidecar.ResolveOptions()
-	if err != nil {
+	o := sidecar.Options{}
+	if err := options.Load(&o); err != nil {
 		logrus.Fatalf("Could not resolve options: %v", err)
 	}
 

@@ -20,8 +20,6 @@ import (
 	"encoding/json"
 	"errors"
 	"flag"
-	"fmt"
-	"os"
 
 	"k8s.io/test-infra/prow/gcsupload"
 )
@@ -48,26 +46,25 @@ func (o *Options) Validate() error {
 	return o.Options.Validate()
 }
 
-// ResolveOptions will resolve the set of options,
-// preferring to use the full JSON configuration variable but
-// falling back to user-provided flags if the variable is not
-// provided.
-func ResolveOptions() (*Options, error) {
-	options := &Options{}
-	if jsonConfig, provided := os.LookupEnv(JSONConfigEnvVar); provided {
-		if err := json.Unmarshal([]byte(jsonConfig), &options); err != nil {
-			return options, fmt.Errorf("could not resolve config from env: %v", err)
-		}
-		return options, nil
-	}
+// ConfigVar exposes the environment variable used
+// to store serialized configuration
+func (o *Options) ConfigVar() string {
+	return JSONConfigEnvVar
+}
 
-	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-	fs.StringVar(&options.Log, "log", "", "path to the output file for the cloning step")
-	gcsupload.BindOptions(options.Options, fs)
-	fs.Parse(os.Args[1:])
-	options.Complete(fs.Args())
+// LoadConfig loads options from serialized config
+func (o *Options) LoadConfig(config string) error {
+	return json.Unmarshal([]byte(config), o)
+}
 
-	return options, nil
+// BindOptions binds flags to options
+func (o *Options) BindOptions(flags *flag.FlagSet) {
+	gcsupload.BindOptions(o.Options, flags)
+}
+
+// Complete internalizes command line arguments
+func (o *Options) Complete(args []string) {
+	o.Options.Complete(args)
 }
 
 // Encode will encode the set of options in the format

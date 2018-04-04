@@ -100,6 +100,7 @@ filegroup(
         "//prow/pod-utils/decorate:all-srcs",
         "//prow/pod-utils/downwardapi:all-srcs",
         "//prow/pod-utils/gcs:all-srcs",
+        "//prow/pod-utils/options:all-srcs",
         "//prow/pod-utils/wrapper:all-srcs",
         "//prow/prstatus:all-srcs",
         "//prow/repoowners:all-srcs",

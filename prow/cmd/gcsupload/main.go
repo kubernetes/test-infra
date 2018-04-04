@@ -20,6 +20,7 @@ package main
 
 import (
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/pod-utils/options"
 
 	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -27,8 +28,8 @@ import (
 )
 
 func main() {
-	o, err := gcsupload.ResolveOptions()
-	if err != nil {
+	o := gcsupload.Options{}
+	if err := options.Load(&o); err != nil {
 		logrus.Fatalf("Could not resolve options: %v", err)
 	}
 

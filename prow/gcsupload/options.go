@@ -21,7 +21,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"os"
 
 	"k8s.io/test-infra/prow/kube"
 )
@@ -41,11 +40,6 @@ type Options struct {
 	// credentials for pushing to GCS
 	GcsCredentialsFile string `json:"gcs_credentials_file,omitempty"`
 	DryRun             bool   `json:"dry_run"`
-}
-
-// Complete internalizes command line arguments
-func (o *Options) Complete(args []string) {
-	o.Items = args
 }
 
 // Validate ensures that the set of options are
@@ -72,6 +66,27 @@ func (o *Options) Validate() error {
 	return nil
 }
 
+// ConfigVar exposes the environment variable used
+// to store serialized configuration
+func (o *Options) ConfigVar() string {
+	return JSONConfigEnvVar
+}
+
+// LoadConfig loads options from serialized config
+func (o *Options) LoadConfig(config string) error {
+	return json.Unmarshal([]byte(config), o)
+}
+
+// BindOptions binds flags to options
+func (o *Options) BindOptions(flags *flag.FlagSet) {
+	BindOptions(o, flags)
+}
+
+// Complete internalizes command line arguments
+func (o *Options) Complete(args []string) {
+	o.Items = args
+}
+
 // BindOptions adds flags to the FlagSet that populate
 // the GCS upload options struct given.
 func BindOptions(options *Options, fs *flag.FlagSet) {
@@ -92,27 +107,6 @@ const (
 	// in when run.
 	JSONConfigEnvVar = "GCSUPLOAD_OPTIONS"
 )
-
-// ResolveOptions will resolve the set of options, preferring
-// to use the full JSON configuration variable but falling
-// back to user-provided flags if the variable is not
-// provided.
-func ResolveOptions() (*Options, error) {
-	options := &Options{}
-	if jsonConfig, provided := os.LookupEnv(JSONConfigEnvVar); provided {
-		if err := json.Unmarshal([]byte(jsonConfig), &options); err != nil {
-			return options, fmt.Errorf("could not resolve config from env: %v", err)
-		}
-		return options, nil
-	}
-
-	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-	BindOptions(options, fs)
-	fs.Parse(os.Args[1:])
-	options.Complete(fs.Args())
-
-	return options, nil
-}
 
 // Encode will encode the set of options in the format that
 // is expected for the configuration environment variable

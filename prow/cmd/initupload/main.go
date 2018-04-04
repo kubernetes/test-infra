@@ -23,14 +23,15 @@ package main
 
 import (
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/pod-utils/options"
 
 	"k8s.io/test-infra/prow/initupload"
 	"k8s.io/test-infra/prow/logrusutil"
 )
 
 func main() {
-	o, err := initupload.ResolveOptions()
-	if err != nil {
+	o := initupload.Options{}
+	if err := options.Load(&o); err != nil {
 		logrus.Fatalf("Could not resolve options: %v", err)
 	}
 

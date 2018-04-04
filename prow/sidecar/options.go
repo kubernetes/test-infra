@@ -51,6 +51,28 @@ const (
 	JSONConfigEnvVar = "SIDECAR_OPTIONS"
 )
 
+// ConfigVar exposese the environment variable used
+// to store serialized configuration
+func (o *Options) ConfigVar() string {
+	return JSONConfigEnvVar
+}
+
+// LoadConfig loads options from serialized config
+func (o *Options) LoadConfig(config string) error {
+	return json.Unmarshal([]byte(config), o)
+}
+
+// BindOptions binds flags to options
+func (o *Options) BindOptions(flags *flag.FlagSet) {
+	gcsupload.BindOptions(o.GcsOptions, flags)
+	wrapper.BindOptions(o.WrapperOptions, flags)
+}
+
+// Complete internalizes command line arguments
+func (o *Options) Complete(args []string) {
+	o.GcsOptions.Complete(args)
+}
+
 // ResolveOptions will resolve the set of options, preferring
 // to use the full JSON configuration variable but falling
 // back to user-provided flags if the variable is not

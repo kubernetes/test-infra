@@ -22,7 +22,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"os"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/kube"
@@ -47,6 +46,10 @@ type Options struct {
 
 	// GitRefs are the refs to clone
 	GitRefs []*kube.Refs `json:"refs"`
+
+	// used to hold flag values
+	refs    gitRefs
+	aliases pathAliases
 }
 
 // Validate ensures that the configuration options are valid
@@ -89,40 +92,44 @@ const (
 	DefaultGitUserEmail = "ci-robot@k8s.io"
 )
 
-// ResolveOptions will resolve the set of options, preferring
-// to use the full JSON configuration variable but falling
-// back to user-provided flags if the variable is not
-// provided.
-func ResolveOptions() (*Options, error) {
-	options := &Options{}
-	if jsonConfig, provided := os.LookupEnv(JSONConfigEnvVar); provided {
-		if err := json.Unmarshal([]byte(jsonConfig), &options); err != nil {
-			return options, fmt.Errorf("could not resolve config from env: %v", err)
-		}
-		return options, nil
-	}
+// ConfigVar exposes the environment variable used
+// to store serialized configuration
+func (o *Options) ConfigVar() string {
+	return JSONConfigEnvVar
+}
 
-	flag.StringVar(&options.SrcRoot, "src-root", "", "Where to root source checkouts")
-	flag.StringVar(&options.Log, "log", "", "Where to write logs")
-	flag.StringVar(&options.GitUserName, "git-user-name", DefaultGitUserName, "Username to set in git config")
-	flag.StringVar(&options.GitUserEmail, "git-user-email", DefaultGitUserEmail, "Email to set in git config")
+// LoadConfig loads options from serialized config
+func (o *Options) LoadConfig(config string) error {
+	return json.Unmarshal([]byte(config), o)
+}
 
-	refs := gitRefs{}
-	aliases := pathAliases{}
-	flag.Var(&refs, "repo", "Mapping of Git URI to refs to check out, can be provided more than once")
-	flag.Var(&aliases, "clone-alias", "Mapping of org and repo to path to clone to, can be provided more than once")
-	flag.Parse()
+// BindOptions binds flags to options
+func (o *Options) BindOptions(flags *flag.FlagSet) {
+	BindOptions(o, flags)
+}
 
-	options.GitRefs = refs.gitRefs
+// Complete internalizes command line arguments
+func (o *Options) Complete(args []string) {
+	o.GitRefs = o.refs.gitRefs
 
-	for _, pathAlias := range aliases.aliases {
-		for _, ref := range options.GitRefs {
+	for _, pathAlias := range o.aliases.aliases {
+		for _, ref := range o.GitRefs {
 			if pathAlias.Org == ref.Org && pathAlias.Repo == ref.Repo {
 				ref.PathAlias = pathAlias.Path
 			}
 		}
 	}
-	return options, nil
+}
+
+// BindOptions adds flags to the FlagSet that populate
+// the GCS upload options struct given.
+func BindOptions(options *Options, fs *flag.FlagSet) {
+	fs.StringVar(&options.SrcRoot, "src-root", "", "Where to root source checkouts")
+	fs.StringVar(&options.Log, "log", "", "Where to write logs")
+	fs.StringVar(&options.GitUserName, "git-user-name", DefaultGitUserName, "Username to set in git config")
+	fs.StringVar(&options.GitUserEmail, "git-user-email", DefaultGitUserEmail, "Email to set in git config")
+	fs.Var(&options.refs, "repo", "Mapping of Git URI to refs to check out, can be provided more than once")
+	fs.Var(&options.aliases, "clone-alias", "Mapping of org and repo to path to clone to, can be provided more than once")
 }
 
 type gitRefs struct {
