@@ -1771,8 +1771,8 @@ presubmits:
     agent: kubernetes
     context: pull-kubernetes-e2e-gce-100-performance
     rerun_command: "/test pull-kubernetes-e2e-gce-100-performance"
-    trigger: "(?m)^/test pull-kubernetes-e2e-gce-100-performance,?(\\s+|$)"
-    always_run: false
+    trigger: "(?m)^/test (all|pull-kubernetes-e2e-gce-100-performance),?(\\s+|$)"
+    always_run: true
     max_concurrency: 12
     branches:
     - master
@@ -2428,7 +2428,7 @@ presubmits:
 
   - name: pull-kubernetes-kubemark-e2e-gce-big
     agent: kubernetes
-    always_run: false
+    always_run: true
     max_concurrency: 12
     skip_branches:
     - release-1.6  # not supported
@@ -2436,7 +2436,7 @@ presubmits:
     - release-1.8  # per-release image
     context: pull-kubernetes-kubemark-e2e-gce-big
     rerun_command: "/test pull-kubernetes-kubemark-e2e-gce-big"
-    trigger: "(?m)^/test pull-kubernetes-kubemark-e2e-gce-big,?(\\s+|$)"
+    trigger: "(?m)^/test (all|pull-kubernetes-kubemark-e2e-gce-big),?(\\s+|$)"
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
@@ -3919,7 +3919,7 @@ presubmits:
           secretName: ssh-security
     trigger: (?m)^/test (all|pull-security-kubernetes-e2e-gce),?(\s+|$)
   - agent: kubernetes
-    always_run: false
+    always_run: true
     branches:
     - master
     cluster: security
@@ -3959,7 +3959,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-e2e-gce-100-performance,?(\s+|$)
+    trigger: (?m)^/test (all|pull-security-kubernetes-e2e-gce-100-performance),?(\s+|$)
   - agent: kubernetes
     always_run: false
     branches:
@@ -4823,7 +4823,7 @@ presubmits:
         name: auto-generated-docker-graph-volume-mount
     trigger: (?m)^/test( all| pull-security-kubernetes-kubemark-e2e-gce),?(\s+|$)
   - agent: kubernetes
-    always_run: false
+    always_run: true
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce-big
     labels:
@@ -4874,7 +4874,7 @@ presubmits:
           secretName: ssh-security
       - emptyDir: {}
         name: auto-generated-docker-graph-volume-mount
-    trigger: (?m)^/test pull-security-kubernetes-kubemark-e2e-gce-big,?(\s+|$)
+    trigger: (?m)^/test (all|pull-security-kubernetes-kubemark-e2e-gce-big),?(\s+|$)
   - agent: kubernetes
     always_run: false
     branches:
