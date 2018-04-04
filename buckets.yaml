@@ -37,3 +37,6 @@ gs://kubernetes-github-redhat/logs/:
 gs://istio-prow/:
   contact: "chxchx"
   prefix: ""
+gs://istio-circleci/:
+  contact: "chxchx"
+  prefix: ""
