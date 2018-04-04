@@ -2448,6 +2448,13 @@ test_groups:
 - name: istio-e2e-cluster_wide-auth
   gcs_prefix: istio-prow/e2e-cluster_wide-auth
   num_failures_to_alert: 1
+# Istio CircleCI
+- name: circleci-e2e-mixer
+  gcs_prefix: istio-circleci/e2e-mixer
+  num_failures_to_alert: 5
+- name: circleci-e2e-simple
+  gcs_prefix: istio-circleci/e2e-simple
+  num_failures_to_alert: 5
 # Istio daily releases
 - name: daily-e2e-rbac-no_auth
   gcs_prefix: istio-prow/directory/daily-e2e-rbac-no_auth
@@ -5677,6 +5684,14 @@ dashboards:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
   - name: e2e-cluster_wide-auth
     test_group_name: istio-e2e-cluster_wide-auth
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: circleci-e2e-mixer
+    test_group_name: circleci-e2e-mixer
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: circleci-e2e-simple
+    test_group_name: circleci-e2e-simple
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
   - name: daily-e2e-rbac-no_auth
