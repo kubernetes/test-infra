@@ -910,7 +910,7 @@ class SetupMagicEnvironmentTest(unittest.TestCase):
         old_workspace = env[bootstrap.WORKSPACE_ENV]
         with Stub(os, 'environ', env):
             with Stub(os, 'getcwd', lambda: cwd):
-                bootstrap.setup_magic_environment(JOB)
+                bootstrap.setup_magic_environment(JOB, FakeCall())
 
         self.assertIn(bootstrap.WORKSPACE_ENV, env)
         self.assertNotEquals(env[bootstrap.HOME_ENV],
@@ -928,7 +928,7 @@ class SetupMagicEnvironmentTest(unittest.TestCase):
         old_workspace = env[bootstrap.WORKSPACE_ENV]
         with Stub(os, 'environ', env):
             with Stub(os, 'getcwd', lambda: cwd):
-                bootstrap.setup_magic_environment(JOB)
+                bootstrap.setup_magic_environment(JOB, FakeCall())
 
         self.assertIn(bootstrap.WORKSPACE_ENV, env)
         self.assertNotEquals(env[bootstrap.HOME_ENV],
@@ -944,7 +944,7 @@ class SetupMagicEnvironmentTest(unittest.TestCase):
         cwd = '/fake/random-location'
         with Stub(os, 'environ', env):
             with Stub(os, 'getcwd', lambda: cwd):
-                bootstrap.setup_magic_environment(JOB)
+                bootstrap.setup_magic_environment(JOB, FakeCall())
 
         self.assertIn(bootstrap.WORKSPACE_ENV, env)
         self.assertEquals(cwd, env[bootstrap.HOME_ENV])
@@ -954,7 +954,7 @@ class SetupMagicEnvironmentTest(unittest.TestCase):
         env = fake_environment()
         with Stub(os, 'environ', env):
             self.assertNotEquals('this-is-a-job', env[bootstrap.JOB_ENV])
-            bootstrap.setup_magic_environment('this-is-a-job')
+            bootstrap.setup_magic_environment('this-is-a-job', FakeCall())
             self.assertEquals('this-is-a-job', env[bootstrap.JOB_ENV])
 
     def test_expected(self):
@@ -962,7 +962,9 @@ class SetupMagicEnvironmentTest(unittest.TestCase):
         del env[bootstrap.JOB_ENV]
         del env[bootstrap.NODE_ENV]
         with Stub(os, 'environ', env):
-            bootstrap.setup_magic_environment(JOB)
+            # call is only used to git show the HEAD commit, so give a fake
+            # timestamp in return
+            bootstrap.setup_magic_environment(JOB, lambda *a, **kw: '123456\n')
 
         def check(name):
             self.assertIn(name, env)
@@ -974,6 +976,7 @@ class SetupMagicEnvironmentTest(unittest.TestCase):
         check(bootstrap.BOOTSTRAP_ENV)
         check(bootstrap.WORKSPACE_ENV)
         self.assertNotIn(bootstrap.SERVICE_ACCOUNT_ENV, env)
+        self.assertEquals(env[bootstrap.SOURCE_DATE_EPOCH_ENV], '123456')
 
     def test_node_present(self):
         expected = 'whatever'
@@ -996,7 +999,7 @@ class SetupMagicEnvironmentTest(unittest.TestCase):
         env = fake_environment()
         with Stub(os, 'environ', env):
             with Stub(os, 'getcwd', lambda: cwd):
-                bootstrap.setup_magic_environment(JOB)
+                bootstrap.setup_magic_environment(JOB, FakeCall())
 
 
         self.assertTrue(env[bootstrap.CLOUDSDK_ENV].startswith(cwd))
@@ -1386,6 +1389,8 @@ class IntegrationTest(unittest.TestCase):
             # them after each commit.
             return subprocess.check_output(['git', 'rev-parse', 'HEAD']).strip()
         refs = ['master:%s' % head_sha()]
+        master_commit_date = int(subprocess.check_output(
+            ['git', 'show', '-s', '--format=format:%ct', head_sha()]))
         for pr in (123, 456):
             subprocess.check_call(['git', 'checkout', '-b', 'refs/pull/%d/head' % pr, 'master'])
             subprocess.check_call(['git', 'rm', self.MASTER])
@@ -1405,6 +1410,11 @@ class IntegrationTest(unittest.TestCase):
             branch=None,
             pull=pull,
             root=self.root_workspace)
+        head_commit_date = int(subprocess.check_output(
+            ['git', 'show', '-s', '--format=format:%ct', 'test']))
+        # Since there were 2 PRs merged, we expect the timestamp of the latest
+        # commit on the 'test' branch to be 2 more than master.
+        self.assertEqual(head_commit_date, master_commit_date + 2)
 
     def test_pr_bad(self):
         random_pr = 111
