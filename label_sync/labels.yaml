@@ -41,22 +41,22 @@ labels:
     addedBy: googlebot
   - color: d455d0
     description: "TODO, see [kubernetes/test-infra#7251](https://github.com/kubernetes/test-infra/issues/7251)"
-    name: close/duplicate
+    name: triage/duplicate
     target: both
     addedBy: humans
   - color: d455d0
     description: "TODO, see [kubernetes/test-infra#7251](https://github.com/kubernetes/test-infra/issues/7251)"
-    name: close/needs-information
+    name: triage/needs-information
     target: both
     addedBy: humans
   - color: d455d0
     description: "TODO, see [kubernetes/test-infra#7251](https://github.com/kubernetes/test-infra/issues/7251)"
-    name: close/not-reproducible
+    name: triage/not-reproducible
     target: both
     addedBy: humans
   - color: d455d0
     description: "TODO, see [kubernetes/test-infra#7251](https://github.com/kubernetes/test-infra/issues/7251)"
-    name: close/unresolved
+    name: triage/unresolved
     target: both
     addedBy: humans
   - color: c0ff4a
