@@ -23,22 +23,11 @@ labels:
     target: prs
     addedBy: humans
   - color: bfe5bf
-    description: DEPRECATED. This is a holdover from when we had difficulties getting either the google or cncf CLA bots to behave. It can only be manually applied and is consumed by the submit-queue. It has seen very little use lately.
+    deleteAfter: 2018-04-16T00:00:00Z
+    description: This is a holdover from when we had difficulties getting either the google or cncf CLA bots to behave. It can only be manually applied and is consumed by the submit-queue. It has seen very little use lately.
     name: 'cla: human-approved'
     target: prs
     addedBy: humans
-  - color: e11d21
-    deleteAfter: 2018-03-16T00:00:00Z
-    description: This was what we used when the googlebot was enforcing CLA. We now use the cncf-cla labels.
-    name: 'cla: no'
-    target: prs
-    addedBy: googlebot
-  - color: bfe5bf
-    deleteAfter: 2018-03-16T00:00:00Z
-    description: This was what we used when the googlebot was enforcing CLA. We now use the cncf-cla labels.
-    name: 'cla: yes'
-    target: prs
-    addedBy: googlebot
   - color: d455d0
     description: "TODO, see [kubernetes/test-infra#7251](https://github.com/kubernetes/test-infra/issues/7251)"
     name: close/duplicate
@@ -190,12 +179,6 @@ labels:
     target: issues
     prowPlugin: requiresig
     addedBy: prow
-  - color: fbca04
-    deleteAfter: 2018-03-16T00:00:00Z
-    description: This is unused.
-    name: ok-to-merge
-    target: prs
-    addedBy: humans
   - color: fef2c0
     description: Lowest priority. Possibly useful, but not yet enough support to actually get it done. These are mostly place-holders for potentially good ideas, so that they don't get completely forgotten, and can be referenced /deduped every time they come up.
     name: priority/awaiting-more-evidence
@@ -266,7 +249,8 @@ labels:
     addedBy: prow
   - color: db5a64
     name: release-note-label-needed
-    description: DEPRECATED. This should be removed. Used to be added by a mungegithub munger which is no longer active. Consumed by submit-queue, but so is the replacement of `do-not-merge/release-note-label-needed`.
+    deleteAfter: 2018-04-16T00:00:00Z
+    description: This should be removed. Used to be added by a mungegithub munger which is no longer active. Consumed by submit-queue, but so is the replacement of `do-not-merge/release-note-label-needed`.
     target: prs
     addedBy: humans
   - color: c2e0c6
@@ -275,11 +259,6 @@ labels:
     target: prs
     prowPlugin: release-note
     addedBy: prow or member or author
-  - color: d93f0b
-    description: We no longer use this label.
-    deleteAfter: 2018-03-16T00:00:00Z
-    name: requires-release-czar-attention
-    addedBy: humans
   - color: eb6420
     description: Indicates that a PR doesn't need to be retested prior to merge. At present only submit-queue consumes this label. Unclear whether we're going to modify tide to respect this or not ([kubernetes/test-infra#5334](https://github.com/kubernetes/test-infra/issues/5334))
     name: retest-not-required
