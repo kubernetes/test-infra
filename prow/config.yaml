@@ -3922,7 +3922,6 @@ presubmits:
     trigger: (?m)^/test (all|pull-security-kubernetes-e2e-gce),?(\s+|$)
   - agent: kubernetes
     always_run: true
-    skip_report: true
     branches:
     - master
     cluster: security
@@ -3935,6 +3934,7 @@ presubmits:
     name: pull-security-kubernetes-e2e-gce-100-performance
     rerun_command: /test pull-security-kubernetes-e2e-gce-100-performance
     run_if_changed: ""
+    skip_report: true
     spec:
       containers:
       - args:
@@ -4826,7 +4826,6 @@ presubmits:
     trigger: (?m)^/test( all| pull-security-kubernetes-kubemark-e2e-gce),?(\s+|$)
   - agent: kubernetes
     always_run: true
-    skip_report: true
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce-big
     labels:
@@ -4841,7 +4840,7 @@ presubmits:
     - release-1.6
     - release-1.7
     - release-1.8
-    skip_report: false
+    skip_report: true
     spec:
       containers:
       - args:
