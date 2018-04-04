@@ -109,6 +109,15 @@ func TestLabel(t *testing.T) {
 			commenter:             orgMember,
 		},
 		{
+			name:                  "Add Single Triage Label",
+			body:                  "/triage needs-information",
+			repoLabels:            []string{"area/infra", "triage/needs-information"},
+			issueLabels:           []string{"area/infra"},
+			expectedNewLabels:     formatLabels("triage/needs-information"),
+			expectedRemovedLabels: []string{},
+			commenter:             orgMember,
+		},
+		{
 			name:                  "Adding Labels is Case Insensitive",
 			body:                  "/kind BuG",
 			repoLabels:            []string{"area/infra", "priority/critical", "kind/bug"},
@@ -295,6 +304,15 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{"area/infra", "sig/testing"},
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("sig/testing"),
+			commenter:             orgMember,
+		},
+		{
+			name:                  "Remove Triage Label",
+			body:                  "/remove-triage needs-information",
+			repoLabels:            []string{"area/infra", "triage/needs-information"},
+			issueLabels:           []string{"area/infra", "triage/needs-information"},
+			expectedNewLabels:     []string{},
+			expectedRemovedLabels: formatLabels("triage/needs-information"),
 			commenter:             orgMember,
 		},
 		{
