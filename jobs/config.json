@@ -7140,7 +7140,7 @@
       "--gke-command-group=beta",
       "--gke-environment=test",
       "--provider=gke",
-      "--test_args=--gce-multizone=true --gce-region=us-central1 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--test_args=--gce-multizone=true --gce-multimaster=true --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--timeout=150m"
     ],
     "scenario": "kubernetes_e2e",
@@ -7159,7 +7159,7 @@
       "--gke-command-group=beta",
       "--gke-environment=test",
       "--provider=gke",
-      "--test_args=--gce-multizone=true --gce-region=us-central1 --ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--test_args=--gce-multizone=true --gce-multimaster=true --ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--timeout=500m"
     ],
     "scenario": "kubernetes_e2e",
@@ -7179,7 +7179,7 @@
       "--gke-command-group=beta",
       "--gke-environment=test",
       "--provider=gke",
-      "--test_args=--gce-multizone=true --gce-region=us-central1 --ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--test_args=--gce-multizone=true --gce-multimaster=true --ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--timeout=150m"
     ],
     "scenario": "kubernetes_e2e",
