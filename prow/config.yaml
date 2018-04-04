@@ -1804,6 +1804,7 @@ presubmits:
     rerun_command: "/test pull-kubernetes-e2e-gce-100-performance"
     trigger: "(?m)^/test (all|pull-kubernetes-e2e-gce-100-performance),?(\\s+|$)"
     always_run: true
+    skip_report: true
     max_concurrency: 12
     branches:
     - master
@@ -2460,6 +2461,7 @@ presubmits:
   - name: pull-kubernetes-kubemark-e2e-gce-big
     agent: kubernetes
     always_run: true
+    skip_report: true
     max_concurrency: 12
     skip_branches:
     - release-1.6  # not supported
@@ -3963,7 +3965,7 @@ presubmits:
     name: pull-security-kubernetes-e2e-gce-100-performance
     rerun_command: /test pull-security-kubernetes-e2e-gce-100-performance
     run_if_changed: ""
-    skip_report: false
+    skip_report: true
     spec:
       containers:
       - args:
@@ -4869,7 +4871,7 @@ presubmits:
     - release-1.6
     - release-1.7
     - release-1.8
-    skip_report: false
+    skip_report: true
     spec:
       containers:
       - args:
