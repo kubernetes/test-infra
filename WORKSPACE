@@ -443,3 +443,14 @@ pip_import(
 load("@kettle_deps//:requirements.bzl", "pip_install")
 
 pip_install()
+
+load("//autogo:deps.bzl", "autogo_dependencies")
+
+autogo_dependencies()
+
+load("//autogo:def.bzl", "autogo_generate")
+
+autogo_generate(
+    name = "autogo",
+    prefix = "k8s.io/test-infra",
+)
