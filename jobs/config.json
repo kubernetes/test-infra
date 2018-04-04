@@ -4621,7 +4621,6 @@
   },
   "ci-kubernetes-e2e-gci-gce-autoscaling": {
     "args": [
-      "--check-leaked-resources",
       "--cluster=ca",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-autoscaling.env",
@@ -4641,7 +4640,6 @@
   },
   "ci-kubernetes-e2e-gci-gce-autoscaling-hpa": {
     "args": [
-      "--check-leaked-resources",
       "--cluster=hpa",
       "--env-file=jobs/platform/gce.env",
       "--extract=ci/latest",
@@ -4659,7 +4657,6 @@
   },
   "ci-kubernetes-e2e-gci-gce-autoscaling-migs": {
     "args": [
-      "--check-leaked-resources",
       "--cluster=ca",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-autoscaling-migs.env",
@@ -4679,7 +4676,6 @@
   },
   "ci-kubernetes-e2e-gci-gce-autoscaling-migs-hpa": {
     "args": [
-      "--check-leaked-resources",
       "--cluster=hpa",
       "--env-file=jobs/platform/gce.env",
       "--extract=ci/latest",
