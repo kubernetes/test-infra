@@ -3085,17 +3085,17 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-staging-default-parallel
   - name: gke-staging-default-serial
     test_group_name: ci-kubernetes-e2e-gke-staging-default-serial
-  - name: gke-staging-1.9-parallel
+  - name: gke-staging-1.10-parallel
     test_group_name: ci-kubernetes-e2e-gke-staging-stable1-parallel
-  - name: gke-staging-1.9-serial
+  - name: gke-staging-1.10-serial
     test_group_name: ci-kubernetes-e2e-gke-staging-stable1-serial
-  - name: gke-staging-1.8-parallel
+  - name: gke-staging-1.9-parallel
     test_group_name: ci-kubernetes-e2e-gke-staging-stable2-parallel
-  - name: gke-staging-1.8-serial
+  - name: gke-staging-1.9-serial
     test_group_name: ci-kubernetes-e2e-gke-staging-stable2-serial
-  - name: gke-staging-1.7-parallel
+  - name: gke-staging-1.8-parallel
     test_group_name: ci-kubernetes-e2e-gke-staging-stable3-parallel
-  - name: gke-staging-1.7-serial
+  - name: gke-staging-1.8-serial
     test_group_name: ci-kubernetes-e2e-gke-staging-stable3-serial
   - name: gke-staging-latest-device-plugin-gpu
     test_group_name: ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu
