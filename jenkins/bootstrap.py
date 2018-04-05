@@ -169,8 +169,13 @@ def pull_ref(pull):
     refs = []
     checkouts = []
     for ref in pulls:
-        if ':' in ref:  # master:abcd or 1234:abcd
-            name, sha = ref.split(':')
+        change_ref = None
+        if ':' in ref:  # master:abcd or 1234:abcd or 1234:abcd:ref/for/pr
+            res = ref.split(':')
+            name = res[0]
+            sha = res[1]
+            if len(res) > 2:
+                change_ref = res[2]
         elif not refs:  # master
             name, sha = ref, 'FETCH_HEAD'
         else:
@@ -180,7 +185,9 @@ def pull_ref(pull):
         checkouts.append(sha)
         if not refs:  # First ref should be branch to merge into
             refs.append(name)
-        else:  # Subsequent refs should be PR numbers
+        elif change_ref: # explicit change refs
+            refs.append(change_ref)
+        else: # PR numbers
             num = int(name)
             refs.append('+refs/pull/%d/head:refs/pr/%d' % (num, num))
     return refs, checkouts
@@ -952,7 +959,8 @@ def parse_repos(args):
         ret[repo] = (args.branch, args.pull)
         return ret
     for repo in repos:
-        mat = re.match(r'([^=]+)(=([^:,~^\s]+(:[0-9a-fA-F]+)?(,|$))+)?$', repo)
+        mat = re.match(
+            r'([^=]+)(=([^:,~^\s]+(:[0-9a-fA-F]+)?(:refs/changes/[0-9/]+)?(,|$))+)?$', repo)
         if not mat:
             raise ValueError('bad repo', repo, repos)
         this_repo = mat.group(1)
