@@ -55,6 +55,11 @@ type Tide struct {
 	// allowing it to be a template.
 	TargetURL string `json:"target_url,omitempty"`
 
+	// PRStatusBaseUrl is the base URL for the PR status page.
+	// This is used to link to a merge requirements overview
+	// in the tide status context.
+	PRStatusBaseUrl string `json:"pr_status_base_url,omitempty"`
+
 	// MaxGoroutines is the maximum number of goroutines spawned inside the
 	// controller to handle org/repo:branch pools. Defaults to 20. Needs to be a
 	// positive number.

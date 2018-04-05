@@ -1423,3 +1423,59 @@ func TestSync(t *testing.T) {
 		}
 	}
 }
+
+func TestTargetUrl(t *testing.T) {
+	testcases := []struct {
+		name   string
+		pr     *PullRequest
+		config config.Tide
+
+		expectedUrl string
+	}{
+		{
+			name:        "no config",
+			pr:          &PullRequest{},
+			config:      config.Tide{},
+			expectedUrl: "",
+		},
+		{
+			name:        "tide overview config",
+			pr:          &PullRequest{},
+			config:      config.Tide{TargetURL: "tide.com"},
+			expectedUrl: "tide.com",
+		},
+		{
+			name:        "PR dashboard config and overview config",
+			pr:          &PullRequest{},
+			config:      config.Tide{TargetURL: "tide.com", PRStatusBaseUrl: "pr.status.com"},
+			expectedUrl: "tide.com",
+		},
+		{
+			name: "PR dashboard config",
+			pr: &PullRequest{
+				Author: struct {
+					Login githubql.String
+				}{Login: githubql.String("author")},
+				Repository: struct {
+					Name          githubql.String
+					NameWithOwner githubql.String
+					Owner         struct {
+						Login githubql.String
+					}
+				}{NameWithOwner: githubql.String("org/repo")},
+				HeadRefName: "head",
+			},
+			config:      config.Tide{PRStatusBaseUrl: "pr.status.com"},
+			expectedUrl: "pr.status.com?query=is%3Apr+repo%3Aorg%2Frepo+author%3Aauthor+head%3Ahead",
+		},
+	}
+
+	for _, tc := range testcases {
+		ca := &config.Agent{}
+		ca.Set(&config.Config{Tide: tc.config})
+		log := logrus.WithField("controller", "status-update")
+		if actual, expected := targetUrl(ca, tc.pr, log), tc.expectedUrl; actual != expected {
+			t.Errorf("%s: expected target URL %s but got %s", tc.name, expected, actual)
+		}
+	}
+}
