@@ -12882,11 +12882,12 @@
       "make",
       "--",
       "-j",
-      "4",
+      "5",
       "test",
       "coveralls",
       "vet",
-      "fmt"
+      "fmt",
+      "lint"
     ],
     "scenario": "execute",
     "sigOwners": [
