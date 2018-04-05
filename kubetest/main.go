@@ -93,6 +93,7 @@ type options struct {
 	metadataSources     string
 	multiClusters       multiClusterDeployment
 	multipleFederations bool
+	noAllowDup          bool
 	nodeArgs            string
 	nodeTestArgs        string
 	nodeTests           bool
@@ -157,6 +158,7 @@ func defineFlags() *options {
 	flag.BoolVar(&o.multipleFederations, "multiple-federations", false, "If true, enable running multiple federation control planes in parallel")
 	flag.StringVar(&o.nodeArgs, "node-args", "", "Args for node e2e tests.")
 	flag.StringVar(&o.nodeTestArgs, "node-test-args", "", "Test args specifically for node e2e tests.")
+	flag.BoolVar(&o.noAllowDup, "no-allow-dup", false, "if set --allow-dup will not be passed to push-build and --stage will error if the build already exists on the gcs path")
 	flag.BoolVar(&o.nodeTests, "node-tests", false, "If true, run node-e2e tests.")
 	flag.BoolVar(&o.perfTests, "perf-tests", false, "If true, run tests from perf-tests repo.")
 	flag.StringVar(&o.provider, "provider", "", "Kubernetes provider such as gce, gke, aws, etc")
@@ -282,7 +284,7 @@ func main() {
 
 	control = process.NewControl(timeout, interrupt, terminate, verbose)
 
-	// do things when we know we are running in the CI (see the kubetest image)
+	// do things when we know we are running in the kubetest image
 	if os.Getenv("KUBETEST_IN_DOCKER") == "true" {
 		o.flushMemAfterBuild = true
 	}
@@ -419,7 +421,7 @@ func acquireKubernetes(o *options) error {
 			return fmt.Errorf("staging dind images isn't supported yet")
 		}
 		if err := control.XmlWrap(&suite, "Stage", func() error {
-			return o.stage.Stage(o.federation)
+			return o.stage.Stage(o.federation, o.noAllowDup)
 		}); err != nil {
 			return err
 		}
