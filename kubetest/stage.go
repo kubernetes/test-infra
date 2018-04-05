@@ -66,7 +66,7 @@ func (s *stageStrategy) Enabled() bool {
 
 // Stage the release build to GCS.
 // Essentially release/push-build.sh --bucket=B --ci? --gcs-suffix=S --federation? --noupdatelatest
-func (s *stageStrategy) Stage(fed bool) error {
+func (s *stageStrategy) Stage(fed, noAllowDup bool) error {
 	name := util.K8s("release", "push-build.sh")
 	b := s.bucket
 	if strings.HasPrefix(b, "gs://") {
@@ -92,6 +92,10 @@ func (s *stageStrategy) Stage(fed bool) error {
 	}
 	if fed {
 		args = append(args, "--federation")
+	}
+
+	if !noAllowDup {
+		args = append(args, "--allow-dup")
 	}
 
 	cmd := exec.Command(name, args...)
