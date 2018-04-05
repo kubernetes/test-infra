@@ -11477,6 +11477,23 @@
       "sig-testing"
     ]
   },
+  "ci-kubernetes-multicluster-ingress-test": {
+    "args": [
+      "make",
+      "--",
+      "-j",
+      "5",
+      "test",
+      "coveralls",
+      "vet",
+      "fmt",
+      "lint"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-multicluster"
+    ]
+  },
   "ci-kubernetes-node-kubelet": {
     "args": [
       "--deployment=node",

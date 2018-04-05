@@ -14747,6 +14747,29 @@ periodics:
     - name: docker-graph
       emptyDir: {}
 
+- interval: 6h
+  name: ci-kubernetes-multicluster-ingress-test
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      args:
+      - --repo=github.com/GoogleCloudPlatform/k8s-multicluster-ingress=master
+      - --root=/go/src
+      - --timeout=50
+      - --service-account=/etc/service-account/service-account.json
+      - --upload=gs://kubernetes-jenkins/logs
+      volumeMounts:
+      - name: coveralls
+        mountPath: /etc/coveralls-token
+        readOnly: true
+    volumes:
+    - name: coveralls
+      secret:
+        secretName: k8s-multicluster-ingress-coveralls-token
+
 - name: ci-kubernetes-node-kubelet
   interval: 1h
   agent: kubernetes
