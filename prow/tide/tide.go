@@ -58,6 +58,7 @@ type kubeClient interface {
 type githubClient interface {
 	CreateStatus(string, string, string, github.Status) error
 	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
+	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 	GetRef(string, string, string) (string, error)
 	Merge(string, string, int, github.MergeDetails) error
 	Query(context.Context, interface{}, map[string]interface{}) error
@@ -75,6 +76,9 @@ type Controller struct {
 
 	m     sync.Mutex
 	pools []Pool
+
+	// Cache from last sync loop. "org/repo#num:sha" -> files changed
+	fileChangesCache map[string][]string
 }
 
 type statusController struct {
@@ -149,12 +153,13 @@ func NewController(ghcSync, ghcStatus *github.Client, kc *kube.Client, ca *confi
 	}
 	go sc.run()
 	return &Controller{
-		logger: logger.WithField("controller", "sync"),
-		ghc:    ghcSync,
-		kc:     kc,
-		ca:     ca,
-		gc:     gc,
-		sc:     sc,
+		logger:           logger.WithField("controller", "sync"),
+		ghc:              ghcSync,
+		kc:               kc,
+		ca:               ca,
+		gc:               gc,
+		sc:               sc,
+		fileChangesCache: map[string][]string{},
 	}
 }
 
@@ -600,7 +605,7 @@ func pickSmallestPassingNumber(log *logrus.Entry, ghc githubClient, prs []PullRe
 // accumulateBatch returns a list of PRs that can be merged after passing batch
 // testing, if any exist. It also returns a list of PRs currently being batch
 // tested.
-func accumulateBatch(presubmits []string, prs []PullRequest, pjs []kube.ProwJob) ([]PullRequest, []PullRequest) {
+func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []kube.ProwJob) ([]PullRequest, []PullRequest) {
 	prNums := make(map[int]PullRequest)
 	for _, pr := range prs {
 		prNums[int(pr.Number)] = pr
@@ -654,8 +659,12 @@ func accumulateBatch(presubmits []string, prs []PullRequest, pjs []kube.ProwJob)
 		if !state.validPulls {
 			continue
 		}
+		requiredPresubmits := sets.NewString()
+		for _, pr := range state.prs {
+			requiredPresubmits = requiredPresubmits.Union(presubmits[int(pr.Number)])
+		}
 		passesAll := true
-		for _, p := range presubmits {
+		for _, p := range requiredPresubmits.List() {
 			if s, ok := state.jobStates[p]; !ok || s != successState {
 				passesAll = false
 				continue
@@ -671,7 +680,7 @@ func accumulateBatch(presubmits []string, prs []PullRequest, pjs []kube.ProwJob)
 
 // accumulate returns the supplied PRs sorted into three buckets based on their
 // accumulated state across the presubmits.
-func accumulate(presubmits []string, prs []PullRequest, pjs []kube.ProwJob) (successes, pendings, nones []PullRequest) {
+func accumulate(presubmits map[int]sets.String, prs []PullRequest, pjs []kube.ProwJob) (successes, pendings, nones []PullRequest) {
 	for _, pr := range prs {
 		// Accumulate the best result for each job.
 		psStates := make(map[string]simpleState)
@@ -697,7 +706,7 @@ func accumulate(presubmits []string, prs []PullRequest, pjs []kube.ProwJob) (suc
 		}
 		// The overall result is the worst of the best.
 		overallState := successState
-		for _, ps := range presubmits {
+		for _, ps := range presubmits[int(pr.Number)].List() {
 			if s, ok := psStates[ps]; s == noneState || !ok {
 				overallState = noneState
 				break
@@ -819,13 +828,18 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 	return nil
 }
 
-func (c *Controller) trigger(sp subpool, prs []PullRequest) error {
+func (c *Controller) trigger(sp subpool, presubmits map[int]sets.String, prs []PullRequest) error {
+	requiredJobs := sets.NewString()
+	for _, pr := range prs {
+		requiredJobs = requiredJobs.Union(presubmits[int(pr.Number)])
+	}
+
+	// TODO(cjwagner): DRY this out when generalizing triggering code (and code to determine required and to-run jobs).
 	for _, ps := range c.ca.Config().Presubmits[sp.org+"/"+sp.repo] {
-		if ps.SkipReport || !ps.AlwaysRun || !ps.RunsAgainstBranch(sp.branch) {
+		if ps.SkipReport || !ps.RunsAgainstBranch(sp.branch) || !requiredJobs.Has(ps.Name) {
 			continue
 		}
 
-		var spec kube.ProwJobSpec
 		refs := kube.Refs{
 			Org:     sp.org,
 			Repo:    sp.repo,
@@ -842,6 +856,7 @@ func (c *Controller) trigger(sp subpool, prs []PullRequest) error {
 				},
 			)
 		}
+		var spec kube.ProwJobSpec
 		if len(prs) == 1 {
 			spec = pjutil.PresubmitSpec(ps, refs)
 		} else {
@@ -855,7 +870,7 @@ func (c *Controller) trigger(sp subpool, prs []PullRequest) error {
 	return nil
 }
 
-func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, nones, batchMerges []PullRequest) (Action, []PullRequest, error) {
+func (c *Controller) takeAction(sp subpool, presubmits map[int]sets.String, batchPending, successes, pendings, nones, batchMerges []PullRequest) (Action, []PullRequest, error) {
 	// Merge the batch!
 	if len(batchMerges) > 0 {
 		return MergeBatch, batchMerges, c.mergePRs(sp, batchMerges)
@@ -870,7 +885,7 @@ func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, n
 	// If we have no serial jobs pending or successful, trigger one.
 	if len(nones) > 0 && len(pendings) == 0 && len(successes) == 0 {
 		if ok, pr := pickSmallestPassingNumber(sp.log, c.ghc, nones); ok {
-			return Trigger, []PullRequest{pr}, c.trigger(sp, []PullRequest{pr})
+			return Trigger, []PullRequest{pr}, c.trigger(sp, presubmits, []PullRequest{pr})
 		}
 	}
 	// If we have no batch, trigger one.
@@ -880,20 +895,68 @@ func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, n
 			return Wait, nil, err
 		}
 		if len(batch) > 1 {
-			return TriggerBatch, batch, c.trigger(sp, batch)
+			return TriggerBatch, batch, c.trigger(sp, presubmits, batch)
 		}
 	}
 	return Wait, nil, nil
 }
 
-func (c *Controller) syncSubpool(sp subpool) (Pool, error) {
-	sp.log.Infof("Syncing subpool: %d PRs, %d PJs.", len(sp.prs), len(sp.pjs))
-	var presubmits []string
+func (c *Controller) presubmitsByPull(sp subpool) (map[int]sets.String, error) {
+	presubmits := make(map[int]sets.String, len(sp.prs))
+	record := func(num int, job string) {
+		if jobs, ok := presubmits[num]; ok {
+			jobs.Insert(job)
+		} else {
+			presubmits[num] = sets.NewString(job)
+		}
+	}
+	// nextChangeCache caches file change info that is relevant this sync for use next sync.
+	nextChangeCache := map[string][]string{}
+	defer func() {
+		c.fileChangesCache = nextChangeCache
+	}()
+
 	for _, ps := range c.ca.Config().Presubmits[sp.org+"/"+sp.repo] {
-		if ps.SkipReport || !ps.AlwaysRun || !ps.RunsAgainstBranch(sp.branch) {
+		if ps.SkipReport || !ps.RunsAgainstBranch(sp.branch) {
 			continue
 		}
-		presubmits = append(presubmits, ps.Name)
+
+		if ps.AlwaysRun {
+			// Every PR requires this job.
+			for _, pr := range sp.prs {
+				record(int(pr.Number), ps.Name)
+			}
+		} else if ps.RunIfChanged != "" {
+			// This is a run if changed job so we need to check if each PR requires it.
+			for _, pr := range sp.prs {
+				cacheKey := fmt.Sprintf("%s/%s#%d:%s", sp.org, sp.repo, int(pr.Number), string(pr.HeadRefOID))
+				changedFiles, ok := c.fileChangesCache[cacheKey]
+				if !ok {
+					changes, err := c.ghc.GetPullRequestChanges(sp.org, sp.repo, int(pr.Number))
+					if err != nil {
+						return nil, fmt.Errorf("error getting PR changes for #%d: %v", int(pr.Number), err)
+					}
+					changedFiles = make([]string, 0, len(changes))
+					for _, change := range changes {
+						changedFiles = append(changedFiles, change.Filename)
+					}
+					c.fileChangesCache[cacheKey] = changedFiles
+				}
+				nextChangeCache[cacheKey] = changedFiles
+				if ps.RunsAgainstChanges(changedFiles) {
+					record(int(pr.Number), ps.Name)
+				}
+			}
+		}
+	}
+	return presubmits, nil
+}
+
+func (c *Controller) syncSubpool(sp subpool) (Pool, error) {
+	sp.log.Infof("Syncing subpool: %d PRs, %d PJs.", len(sp.prs), len(sp.pjs))
+	presubmits, err := c.presubmitsByPull(sp)
+	if err != nil {
+		return Pool{}, fmt.Errorf("error determining required presubmits: %v", err)
 	}
 	successes, pendings, nones := accumulate(presubmits, sp.prs, sp.pjs)
 	batchMerge, batchPending := accumulateBatch(presubmits, sp.prs, sp.pjs)
@@ -904,11 +967,13 @@ func (c *Controller) syncSubpool(sp subpool) (Pool, error) {
 		"batch-passing": prNumbers(batchMerge),
 		"batch-pending": prNumbers(batchPending),
 	}).Info("Subpool accumulated.")
-	act, targets, err := c.takeAction(sp, batchPending, successes, pendings, nones, batchMerge)
+
+	act, targets, err := c.takeAction(sp, presubmits, batchPending, successes, pendings, nones, batchMerge)
 	sp.log.WithFields(logrus.Fields{
 		"action":  string(act),
 		"targets": prNumbers(targets),
 	}).Info("Subpool synced.")
+
 	return Pool{
 			Org:    sp.org,
 			Repo:   sp.repo,
