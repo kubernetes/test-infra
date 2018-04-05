@@ -45,11 +45,11 @@ func NewStorage(r storage.PersistenceLayer, storage string) (*Storage, error) {
 
 	if storage != "" {
 		var data struct {
-			resources []common.Resource
+			Resources []common.Resource
 		}
 		buf, err := ioutil.ReadFile(storage)
 		if err == nil {
-			logrus.Infof("Current state: %v.", buf)
+			logrus.Infof("Current state: %s.", string(buf))
 			err = json.Unmarshal(buf, &data)
 			if err != nil {
 				return nil, err
@@ -57,10 +57,13 @@ func NewStorage(r storage.PersistenceLayer, storage string) (*Storage, error) {
 		} else if !os.IsNotExist(err) {
 			return nil, err
 		}
-		for _, res := range data.resources {
+
+		logrus.Info("Before adding resource loop")
+		for _, res := range data.Resources {
 			if err := s.AddResource(res); err != nil {
-				return nil, err
+				logrus.WithError(err).Errorf("Failed Adding Resources: %s - %s.", res.Name, res.State)
 			}
+			logrus.Infof("Successfully Added Resources: %s - %s.", res.Name, res.State)
 		}
 	}
 	return s, nil
