@@ -176,7 +176,7 @@ function redrawPools() {
         var pool = tideData.Pools[i];
         var r = document.createElement("tr");
 
-        
+
         var deckLink = "/?repo="+pool.Org+"%2F"+pool.Repo;
         var repoLink = "https://github.com/" + pool.Org + "/" + pool.Repo + "/tree/" + pool.Branch;
         var linksTD = document.createElement("td");
@@ -185,7 +185,7 @@ function redrawPools() {
         linksTD.appendChild(createLink(repoLink, pool.Branch));
         r.appendChild(linksTD);
         r.appendChild(createActionCell(pool));
-        r.appendChild(createPRCell(pool, pool.BatchPending));
+        r.appendChild(createBatchCell(pool));
         r.appendChild(createPRCell(pool, pool.SuccessPRs));
         r.appendChild(createPRCell(pool, pool.PendingPRs));
         r.appendChild(createPRCell(pool, pool.MissingPRs));
@@ -225,6 +225,21 @@ function createPRCell(pool, prs) {
     var c = document.createElement("td");
     addPRsToElem(c, pool, prs)
     return c;
+}
+
+function createBatchCell(pool) {
+    var td = document.createElement('td');
+    if (pool.BatchPending) {
+        var numbers = pool.BatchPending.map(p => String(p.Number));
+        var batchRef = pool.Branch + ',' + numbers.join(',');
+        var href = '/?repo=' + encodeURIComponent(pool.Org + '/' + pool.Repo) +
+            '&type=batch&pull=' + encodeURIComponent(batchRef);
+        var link = document.createElement('a');
+        link.href = href;
+        link.appendChild(document.createTextNode(numbers.join(' ')));
+        td.appendChild(link);
+    }
+    return td;
 }
 
 // addPRsToElem adds a space separated list of PR numbers that link to the corresponding PR on github.

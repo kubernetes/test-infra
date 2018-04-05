@@ -16,6 +16,10 @@ function updateQueryStringParameter(uri, key, value) {
     }
 }
 
+function shortenBuildRefs(buildRef) {
+    return buildRef && buildRef.replace(/:[0-9a-f]*/g, '');
+}
+
 function optionsForRepo(repo) {
     var opts = {
         types: {},
@@ -23,6 +27,7 @@ function optionsForRepo(repo) {
         jobs: {},
         authors: {},
         pulls: {},
+        batches: {},
         states: {},
     };
 
@@ -36,6 +41,8 @@ function optionsForRepo(repo) {
             if (build.type === "presubmit") {
                 opts.authors[build.author] = true;
                 opts.pulls[build.number] = true;
+            } else if (build.type === "batch") {
+                opts.batches[shortenBuildRefs(build.refs)] = true;
             }
         }
     }
@@ -45,7 +52,7 @@ function optionsForRepo(repo) {
 
 function redrawOptions(fz, opts) {
     var ts = Object.keys(opts.types).sort();
-    addOptions(ts, "type");
+    var selectedType = addOptions(ts, "type");
     var rs = Object.keys(opts.repos).filter(function (r) {
         return r !== "/";
     }).sort();
@@ -58,10 +65,17 @@ function redrawOptions(fz, opts) {
         return a.toLowerCase().localeCompare(b.toLowerCase());
     });
     addOptions(as, "author");
-    var ps = Object.keys(opts.pulls).sort(function (a, b) {
-        return parseInt(a) - parseInt(b);
-    });
-    addOptions(ps, "pull");
+    if (selectedType === "batch") {
+        opts.pulls = opts.batches;
+    }
+    if (selectedType !== "periodic" && selectedType !== "postsubmit") {
+        var ps = Object.keys(opts.pulls).sort(function (a, b) {
+            return parseInt(a) - parseInt(b);
+        });
+        addOptions(ps, "pull");
+    } else {
+        addOptions([], "pull");
+    }
     var ss = Object.keys(opts.states).sort();
     addOptions(ss, "state");
 };
@@ -354,6 +368,7 @@ function addOptions(s, p) {
         }
         sel.appendChild(o);
     }
+    return param;
 }
 
 function selectionText(sel, t) {
@@ -414,6 +429,9 @@ function redraw(fz) {
     opts = optionsForRepo(repoSel);
 
     var typeSel = getSelection("type");
+    if (typeSel === "batch") {
+        opts.pulls = opts.batches;
+    }
     var pullSel = getSelection("pull");
     var authorSel = getSelection("author");
     var jobSel = getSelectionFuzzySearch("job", "job-input");
@@ -426,7 +444,7 @@ function redraw(fz) {
             history.replaceState(null, "", "/")
         }
     }
-    fz.setDict(Object.keys(opts.jobs).sort());
+    fz.setDict(Object.keys(opts.jobs));
     redrawOptions(fz, opts);
 
     var lastKey = '';
@@ -451,6 +469,10 @@ function redraw(fz) {
                 continue;
             }
             if (!equalSelected(authorSel, build.author)) {
+                continue;
+            }
+        } else if (build.type === "batch" && !authorSel) {
+            if (!equalSelected(pullSel, shortenBuildRefs(build.refs))) {
                 continue;
             }
         } else if (pullSel || authorSel) {
