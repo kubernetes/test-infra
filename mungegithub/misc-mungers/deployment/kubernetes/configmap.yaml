@@ -3,7 +3,7 @@ app: misc-mungers
 http-cache-dir: /cache/httpcache
 organization: kubernetes
 project: kubernetes
-pr-mungers: lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,path-label,stale-green-ci,comment-deleter,milestone-maintainer
+pr-mungers: cherrypick-auto-approve,label-unapproved-picks,path-label,stale-green-ci,comment-deleter,milestone-maintainer
 state: open
 token-file: /etc/secret-volume/token
 period: 60s
