@@ -720,11 +720,12 @@ func (c *Controller) pickBatch(sp subpool) ([]PullRequest, error) {
 		return nil, err
 	}
 	var res []PullRequest
-	for i, pr := range sp.prs {
+	for i := range sp.prs {
 		// TODO: Make this configurable per subpool.
 		if i == 5 {
 			break
 		}
+		pr := sp.prs[len(sp.prs)-i-1]
 		if !isPassingTests(sp.log, c.ghc, pr) {
 			continue
 		}
