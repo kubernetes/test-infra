@@ -20,11 +20,12 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/entrypoint"
 	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/pod-utils/options"
 )
 
 func main() {
-	o, err := entrypoint.ResolveOptions()
-	if err != nil {
+	o := entrypoint.Options{}
+	if err := options.Load(&o); err != nil {
 		logrus.Fatalf("Could not resolve options: %v", err)
 	}
 

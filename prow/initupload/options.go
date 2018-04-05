@@ -14,42 +14,37 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package entrypoint
+package initupload
 
 import (
 	"encoding/json"
 	"errors"
 	"flag"
 
-	"k8s.io/test-infra/prow/pod-utils/wrapper"
+	"k8s.io/test-infra/prow/gcsupload"
 )
-
-// Options exposes the configuration necessary
-// for defining the process being watched and
-// where in GCS an upload will land.
-type Options struct {
-	Args           []string `json:"args"`
-	TimeoutMinutes int      `json:"timeout_minutes"`
-
-	*wrapper.Options
-}
-
-// Validate ensures that the set of options are
-// self-consistent and valid
-func (o *Options) Validate() error {
-	if len(o.Args) == 0 {
-		return errors.New("no process to wrap specified")
-	}
-
-	return o.Options.Validate()
-}
 
 const (
 	// JSONConfigEnvVar is the environment variable that
 	// utilities expect to find a full JSON configuration
 	// in when run.
-	JSONConfigEnvVar = "ENTRYPOINT_OPTIONS"
+	JSONConfigEnvVar = "INITUPLOAD_OPTIONS"
 )
+
+type Options struct {
+	*gcsupload.Options
+
+	// Log is the log file to which clone records are written
+	Log string `json:"log"`
+}
+
+func (o *Options) Validate() error {
+	if o.Log == "" {
+		return errors.New("the path to the clone records log was not provided")
+	}
+
+	return o.Options.Validate()
+}
 
 // ConfigVar exposes the environment variable used
 // to store serialized configuration
@@ -64,16 +59,16 @@ func (o *Options) LoadConfig(config string) error {
 
 // BindOptions binds flags to options
 func (o *Options) BindOptions(flags *flag.FlagSet) {
-	wrapper.BindOptions(o.Options, flags)
+	gcsupload.BindOptions(o.Options, flags)
 }
 
 // Complete internalizes command line arguments
 func (o *Options) Complete(args []string) {
-	o.Args = args
+	o.Options.Complete(args)
 }
 
-// Encode will encode the set of options in the format that
-// is expected for the configuration environment variable
+// Encode will encode the set of options in the format
+// that is expected for the configuration environment variable
 func Encode(options Options) (string, error) {
 	encoded, err := json.Marshal(options)
 	return string(encoded), err

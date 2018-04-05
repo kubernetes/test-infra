@@ -14,13 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package entrypoint
+package sidecar
 
 import (
 	"encoding/json"
-	"errors"
 	"flag"
+	"fmt"
+	"os"
 
+	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/pod-utils/wrapper"
 )
 
@@ -28,30 +30,28 @@ import (
 // for defining the process being watched and
 // where in GCS an upload will land.
 type Options struct {
-	Args           []string `json:"args"`
-	TimeoutMinutes int      `json:"timeout_minutes"`
-
-	*wrapper.Options
+	GcsOptions     *gcsupload.Options `json:"-"`
+	WrapperOptions *wrapper.Options   `json:"-"`
 }
 
 // Validate ensures that the set of options are
 // self-consistent and valid
 func (o *Options) Validate() error {
-	if len(o.Args) == 0 {
-		return errors.New("no process to wrap specified")
+	if err := o.WrapperOptions.Validate(); err != nil {
+		return err
 	}
 
-	return o.Options.Validate()
+	return o.GcsOptions.Validate()
 }
 
 const (
 	// JSONConfigEnvVar is the environment variable that
 	// utilities expect to find a full JSON configuration
 	// in when run.
-	JSONConfigEnvVar = "ENTRYPOINT_OPTIONS"
+	JSONConfigEnvVar = "SIDECAR_OPTIONS"
 )
 
-// ConfigVar exposes the environment variable used
+// ConfigVar exposese the environment variable used
 // to store serialized configuration
 func (o *Options) ConfigVar() string {
 	return JSONConfigEnvVar
@@ -64,12 +64,35 @@ func (o *Options) LoadConfig(config string) error {
 
 // BindOptions binds flags to options
 func (o *Options) BindOptions(flags *flag.FlagSet) {
-	wrapper.BindOptions(o.Options, flags)
+	gcsupload.BindOptions(o.GcsOptions, flags)
+	wrapper.BindOptions(o.WrapperOptions, flags)
 }
 
 // Complete internalizes command line arguments
 func (o *Options) Complete(args []string) {
-	o.Args = args
+	o.GcsOptions.Complete(args)
+}
+
+// ResolveOptions will resolve the set of options, preferring
+// to use the full JSON configuration variable but falling
+// back to user-provided flags if the variable is not
+// provided.
+func ResolveOptions() (*Options, error) {
+	options := &Options{}
+	if jsonConfig, provided := os.LookupEnv(JSONConfigEnvVar); provided {
+		if err := json.Unmarshal([]byte(jsonConfig), &options); err != nil {
+			return options, fmt.Errorf("could not resolve config from env: %v", err)
+		}
+		return options, nil
+	}
+
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	gcsupload.BindOptions(options.GcsOptions, fs)
+	wrapper.BindOptions(options.WrapperOptions, fs)
+	fs.Parse(os.Args[1:])
+	options.GcsOptions.Complete(fs.Args())
+
+	return options, nil
 }
 
 // Encode will encode the set of options in the format that

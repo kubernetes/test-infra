@@ -18,14 +18,15 @@ package main
 
 import (
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/pod-utils/options"
 
 	"k8s.io/test-infra/prow/clonerefs"
 	"k8s.io/test-infra/prow/logrusutil"
 )
 
 func main() {
-	o, err := clonerefs.ResolveOptions()
-	if err != nil {
+	o := clonerefs.Options{}
+	if err := options.Load(&o); err != nil {
 		logrus.Fatalf("Could not resolve options: %v", err)
 	}
 
