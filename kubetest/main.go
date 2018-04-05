@@ -689,8 +689,12 @@ func prepareGcp(o *options) error {
 			if len(latestImage) == 0 {
 				return fmt.Errorf("failed to get latest image from family %q in project %q", o.gcpImageFamily, o.gcpImageProject)
 			}
-			os.Setenv("KUBE_GCE_NODE_IMAGE", latestImage)
-			os.Setenv("KUBE_GCE_NODE_PROJECT", o.gcpImageProject)
+			if o.deployment == "node" {
+				o.nodeArgs += fmt.Sprintf(" --images=%s --image-project=%s", latestImage, o.gcpImageProject)
+			} else {
+				os.Setenv("KUBE_GCE_NODE_IMAGE", latestImage)
+				os.Setenv("KUBE_GCE_NODE_PROJECT", o.gcpImageProject)
+			}
 		}
 	} else if o.provider == "gke" {
 		if o.deployment == "" {
