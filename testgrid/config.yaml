@@ -1970,6 +1970,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster-parallel
 - name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
+- name: ci-kubernetes-multicluster-ingress-test
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-multicluster-ingress-test
 - name: kubeflow-periodic
   gcs_prefix: kubernetes-jenkins/logs/kubeflow-periodic
 - name: kubeflow-presubmit
@@ -4402,6 +4404,8 @@ dashboards:
     test_group_name: ci-kubemci-image-push
   - name: kubemci-ingress-conformance
     test_group_name: ci-kubemci-ingress-conformance
+  - name: ci-kubemci-unit-tests
+    test_group_name: ci-kubernetes-multicluster-ingress-test
 
 - name: sig-instrumentation
   dashboard_tab:
