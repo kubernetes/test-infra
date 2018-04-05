@@ -252,6 +252,7 @@ plugins:
   - docs-no-retest
   - milestone
   - milestonestatus
+  - owners-label
   - release-note
   - require-sig
   - trigger
