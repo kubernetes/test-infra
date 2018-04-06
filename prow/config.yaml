@@ -2768,6 +2768,7 @@ presubmits:
     context: pull-kubernetes-local-e2e
     rerun_command: "/test pull-kubernetes-local-e2e"
     trigger: "(?m)^/test pull-kubernetes-local-e2e,?(\\s+|$)"
+    run_if_changed: '(hyperkube|local-up-cluster)'
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
@@ -5225,7 +5226,7 @@ presubmits:
     max_concurrency: 8
     name: pull-security-kubernetes-local-e2e
     rerun_command: /test pull-security-kubernetes-local-e2e
-    run_if_changed: ""
+    run_if_changed: (hyperkube|local-up-cluster)
     skip_report: false
     spec:
       containers:
