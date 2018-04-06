@@ -7,6 +7,8 @@ release(
     "production",
     component("branchprotector", "cronjob"),
     component("deck", "service", "deployment"),
+    component("gce-ssd-retain", "storageclass"),
+    component("ghproxy", "service", "deployment"),
     component("hook", "service", "deployment"),
     component("horologium", "deployment"),
     component("lego", "deployment"),
