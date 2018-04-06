@@ -601,6 +601,7 @@ presubmits:
         - "--repo=github.com/GoogleCloudPlatform/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+          "--clean"
         volumeMounts:
         - name: coveralls
           mountPath: /etc/coveralls-token
@@ -14779,6 +14780,7 @@ periodics:
       - --timeout=50
       - --service-account=/etc/service-account/service-account.json
       - --upload=gs://kubernetes-jenkins/logs
+      - --clean
       volumeMounts:
       - name: coveralls
         mountPath: /etc/coveralls-token
