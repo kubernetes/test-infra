@@ -19,7 +19,7 @@ function readOptions() {
     if (el.type === "checkbox") return el.checked;
     if (el.type === "radio") return el.form[el.name].value;
     if (el.type === "select-one") return el.value;
-    if (el.type === "text") {
+    if (el.type === "text" || el.type === "hidden") {
       if (id.startsWith("filter")) {
         if (el.value === "") {
           return null;
@@ -47,6 +47,7 @@ function readOptions() {
   }
 
   var opts = {
+    date: read('date'),
     ci: read('job-ci'),
     pr: read('job-pr'),
     reText: read('filter-text'),
@@ -60,6 +61,7 @@ function readOptions() {
   console.log(opts.sig);
 
   var url = '';
+  if (opts.date) url += '&date=' + opts.date;
   if (!opts.ci) url += '&ci=0';
   if (opts.pr) url += '&pr=1';
   if (opts.sig.length) url += '&sig=' + opts.sig.join(',');
@@ -115,6 +117,7 @@ function setOptionsFromURL() {
     }
   }
 
+  write('date', qs.date);
   write('job-ci', qs.ci);
   write('job-pr', qs.pr);
   write('filter-text', qs.text);
@@ -275,9 +278,14 @@ function get(uri, callback, onprogress) {
 }
 
 function getData(clusterId) {
-  var url = '/k8s-gubernator/triage/failure_data.json'
-  if (clusterId) {
-    url = '/k8s-gubernator/triage/slices/failure_data_' + clusterId.slice(0, 2) + '.json';
+  var url = '/k8s-gubernator/triage/'
+  var date = document.getElementById('date');
+  if (date && date.value) {
+    url += 'history/' + date.value + '.json';
+  } else if (clusterId) {
+    url += 'slices/failure_data_' + clusterId.slice(0, 2) + '.json';
+  } else {
+    url += 'failure_data.json'
   }
 
   var setLoading = t => document.getElementById("loading-progress").innerText = t;
