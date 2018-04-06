@@ -11320,6 +11320,23 @@
       "sig-multicluster"
     ]
   },
+  "ci-kubernetes-gce-conformance": {
+    "args": [
+      "--env=KUBERNETES_CONFORMANCE_TEST=y",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=ci/latest",
+      "--gcp-master-image=gci",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]",
+      "--timeout=200m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-gcp"
+    ]
+  },
   "ci-kubernetes-integration-beta": {
     "args": [
       "--branch=release-1.10",

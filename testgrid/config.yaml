@@ -2497,6 +2497,11 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-poseidon-verify
   num_columns_recent: 20
 
+
+# conformance tests
+- name: ci-kubernetes-gce-conformance
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance
+
 # Add New Testgroups Here
 
 #
@@ -2504,6 +2509,16 @@ test_groups:
 #
 
 dashboards:
+- name: conformance-all
+  dashboard_tab:
+  - name: gci-gce
+    test_group_name: ci-kubernetes-gce-conformance
+
+- name: conformance-gce
+  dashboard_tab:
+  - name: gci-gce
+    test_group_name: ci-kubernetes-gce-conformance
+
 - name: canonical-ubuntu1-k8sbeta
   dashboard_tab:
   - name: e2enode-ubuntu1-k8sbeta-gkespec
@@ -5809,3 +5824,8 @@ dashboard_groups:
     - sig-autoscaling-cluster-autoscaler
     - sig-autoscaling-hpa
     - sig-autoscaling-vpa
+
+- name: conformance
+  dashboard_names:
+  - conformance-all
+  - conformance-gce
