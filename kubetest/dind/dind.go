@@ -182,7 +182,7 @@ func (d *DindDeployer) ensureImage() error {
 		if err != nil {
 			return err
 		}
-		d.image = "gcr.io/google-containers/dind-cluster-amd64:" + tag
+		d.image = "k8s.gcr.io/dind-cluster-amd64:" + tag
 	}
 	return nil
 

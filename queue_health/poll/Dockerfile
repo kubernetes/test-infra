@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/google-containers/queue-health-base:v20161020
+FROM k8s.gcr.io/queue-health-base:v20161020
 LABEL maintainer="Erick Fejta <fejta@google.com>"
 
 # Install poller and set default variables

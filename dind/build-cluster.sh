@@ -61,7 +61,7 @@ cp ${TOOL_ROOT}/cluster/Makefile ${CLUSTER_DIR}/Makefile
 
 # Create the dind-cluster container
 cd ${CLUSTER_DIR}
-docker save gcr.io/google-containers/dind-node-amd64:$(cat docker_version) -o dind-node-bundle.tar
+docker save k8s.gcr.io/dind-node-amd64:$(cat docker_version) -o dind-node-bundle.tar
 make build K8S_VERSION=$(cat docker_version)
 cd -
 

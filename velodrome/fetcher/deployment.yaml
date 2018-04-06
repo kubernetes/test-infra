@@ -27,7 +27,7 @@ spec:
         - --host=sqlproxy
         - --user=$(MYSQL_WRITER_USER)
         - --password=$(MYSQL_WRITER_PASS)
-        image: gcr.io/google-containers/github-fetcher:v20170327-143731
+        image: k8s.gcr.io/github-fetcher:v20170327-143731
         resources:
           requests:
             cpu: 0m
