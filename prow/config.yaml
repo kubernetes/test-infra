@@ -596,7 +596,7 @@ presubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      - image: gcr.io/k8s-testimages/kubekins-test:1.11-v20180402-74c08e269
         args:
         - "--repo=github.com/GoogleCloudPlatform/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -14772,7 +14772,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+    - image: gcr.io/k8s-testimages/kubekins-test:1.11-v20180402-74c08e269
       args:
       - --repo=github.com/GoogleCloudPlatform/k8s-multicluster-ingress=master
       - --root=/go/src
