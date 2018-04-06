@@ -19,6 +19,7 @@ spec:
             - --config-path=/etc/config/config
             - --github-token-path=/etc/github/oauth
             - --confirm
+            - --github-endpoint=http://github-cache
             volumeMounts:
             - name: oauth
               mountPath: /etc/github
