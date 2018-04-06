@@ -348,6 +348,24 @@
       "sig-node"
     ]
   },
+  "ci-cri-containerd-e2e-gci-gce-sd-logging-k8s-resources": {
+    "args": [
+      "--check-leaked-resources",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-sd-logging-k8s-resources.env",
+      "--env-file=jobs/env/ci-cri-containerd-e2e-gce.env",
+      "--extract=ci/latest",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Feature:StackdriverLogging\\] --minStartupPods=8",
+      "--timeout=1320m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
   "ci-cri-containerd-e2e-gci-gce-serial": {
     "args": [
       "--check-leaked-resources",
