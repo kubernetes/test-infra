@@ -28,17 +28,32 @@ import (
 
 // Run clones the configured refs
 func (o Options) Run() error {
-	wg := &sync.WaitGroup{}
-	wg.Add(len(o.GitRefs))
-
-	output := make(chan clone.Record, len(o.GitRefs))
-	for _, gitRef := range o.GitRefs {
-		go func(ref *kube.Refs) {
-			defer wg.Done()
-			output <- clone.Run(ref, o.SrcRoot, o.GitUserName, o.GitUserEmail)
-		}(gitRef)
+	var numWorkers int
+	if o.MaxParallelWorkers != 0 {
+		numWorkers = o.MaxParallelWorkers
+	} else {
+		numWorkers = len(o.GitRefs)
 	}
 
+	wg := &sync.WaitGroup{}
+	wg.Add(numWorkers)
+
+	input := make(chan *kube.Refs)
+	output := make(chan clone.Record, len(o.GitRefs))
+	for i := 0; i < numWorkers; i++ {
+		go func() {
+			defer wg.Done()
+			for ref := range input {
+				output <- clone.Run(ref, o.SrcRoot, o.GitUserName, o.GitUserEmail)
+			}
+		}()
+	}
+
+	for _, ref := range o.GitRefs {
+		input <- ref
+	}
+
+	close(input)
 	wg.Wait()
 	close(output)
 
