@@ -751,19 +751,25 @@ func (c *Controller) pickBatch(sp subpool) ([]PullRequest, error) {
 	if err := r.Checkout(sp.sha); err != nil {
 		return nil, err
 	}
+
+	// we must choose the oldest PRs for the batch
+	sort.Slice(sp.prs, func(i, j int) bool { return sp.prs[i].Number < sp.prs[j].Number })
+
 	var res []PullRequest
-	for i, pr := range sp.prs {
-		// TODO: Make this configurable per subpool.
-		if i == 5 {
-			break
-		}
+	for _, pr := range sp.prs {
 		if !isPassingTests(sp.log, c.ghc, pr) {
 			continue
 		}
 		if ok, err := r.Merge(string(pr.HeadRefOID)); err != nil {
+			// we failed to abort the merge and our git client is
+			// in a bad state; it must be cleaned before we try again
 			return nil, err
 		} else if ok {
 			res = append(res, pr)
+			// TODO: Make this configurable per subpool.
+			if len(res) == 5 {
+				break
+			}
 		}
 	}
 	return res, nil

@@ -903,32 +903,56 @@ func TestPickBatch(t *testing.T) {
 	testprs := []struct {
 		files   map[string][]byte
 		success bool
+		number  int
 
 		included bool
 	}{
 		{
 			files:    map[string][]byte{"bar": []byte("ok")},
 			success:  true,
+			number:   0,
 			included: true,
 		},
 		{
 			files:    map[string][]byte{"foo": []byte("ok")},
 			success:  true,
+			number:   1,
 			included: true,
 		},
 		{
 			files:    map[string][]byte{"bar": []byte("conflicts with 0")},
 			success:  true,
+			number:   2,
 			included: false,
 		},
 		{
 			files:    map[string][]byte{"qux": []byte("ok")},
 			success:  false,
+			number:   6,
 			included: false,
 		},
 		{
 			files:    map[string][]byte{"bazel": []byte("ok")},
 			success:  true,
+			number:   7,
+			included: false, // batch of 5 smallest excludes this
+		},
+		{
+			files:    map[string][]byte{"other": []byte("ok")},
+			success:  true,
+			number:   5,
+			included: true,
+		},
+		{
+			files:    map[string][]byte{"changes": []byte("ok")},
+			success:  true,
+			number:   4,
+			included: true,
+		},
+		{
+			files:    map[string][]byte{"something": []byte("ok")},
+			success:  true,
+			number:   3,
 			included: true,
 		},
 	}
@@ -939,8 +963,8 @@ func TestPickBatch(t *testing.T) {
 		branch: "master",
 		sha:    "master",
 	}
-	for i, testpr := range testprs {
-		if err := lg.CheckoutNewBranch("o", "r", fmt.Sprintf("pr-%d", i)); err != nil {
+	for _, testpr := range testprs {
+		if err := lg.CheckoutNewBranch("o", "r", fmt.Sprintf("pr-%d", testpr.number)); err != nil {
 			t.Fatalf("Error checking out new branch: %v", err)
 		}
 		if err := lg.AddCommit("o", "r", testpr.files); err != nil {
@@ -949,9 +973,9 @@ func TestPickBatch(t *testing.T) {
 		if err := lg.Checkout("o", "r", "master"); err != nil {
 			t.Fatalf("Error checking out master: %v", err)
 		}
-		oid := githubql.String(fmt.Sprintf("origin/pr-%d", i))
+		oid := githubql.String(fmt.Sprintf("origin/pr-%d", testpr.number))
 		var pr PullRequest
-		pr.Number = githubql.Int(i)
+		pr.Number = githubql.Int(testpr.number)
 		pr.HeadRefOID = oid
 		pr.Commits.Nodes = []struct {
 			Commit Commit
@@ -970,18 +994,18 @@ func TestPickBatch(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error from pickBatch: %v", err)
 	}
-	for i, testpr := range testprs {
+	for _, testpr := range testprs {
 		var found bool
 		for _, pr := range prs {
-			if int(pr.Number) == i {
+			if int(pr.Number) == testpr.number {
 				found = true
 				break
 			}
 		}
 		if found && !testpr.included {
-			t.Errorf("PR %d should not be picked.", i)
+			t.Errorf("PR %d should not be picked.", testpr.number)
 		} else if !found && testpr.included {
-			t.Errorf("PR %d should be picked.", i)
+			t.Errorf("PR %d should be picked.", testpr.number)
 		}
 	}
 }
