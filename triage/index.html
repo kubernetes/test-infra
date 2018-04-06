@@ -6,7 +6,10 @@
 <title>Kubernetes Aggregated Test Results</title>
 </head>
 <body>
-<h1 class="clearoptions">Kubernetes Aggregated Failures</h1>
+<h1 class="clearoptions">Kubernetes Aggregated Failures
+from
+<input id="date" onfocus="(this.type='date')" placeholder="today" onchange="getData();">
+</h1>
 <b>Show clusters for SIG:</b><span id="btn-sig-group">
 	<button id="btn-sig-api-machinery" class="toggle sig-api-machinery">api-machinery</button>
 	<button id="btn-sig-apps" class="toggle sig-apps">apps</button>
@@ -44,8 +47,10 @@ Filter (these are regexes):
 </table>
 </form>
 <div id="summary"></div>
-<div id="clusters">
+<div id="load-status">
   <h2>Loading... <span id="loading-progress"></span></h2>
+</div>
+<div id="clusters">
 </div>
 </body>
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
