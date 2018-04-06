@@ -47,6 +47,11 @@ type Options struct {
 	// GitRefs are the refs to clone
 	GitRefs []*kube.Refs `json:"refs"`
 
+	// MaxParallelWorkers determines how many repositories
+	// can be cloned in parallel. If 0, interpreted as no
+	// limit to parallelism
+	MaxParallelWorkers int `json:"max_parallel_workers,omitempty"`
+
 	// used to hold flag values
 	refs    gitRefs
 	aliases pathAliases
@@ -130,6 +135,7 @@ func BindOptions(options *Options, fs *flag.FlagSet) {
 	fs.StringVar(&options.GitUserEmail, "git-user-email", DefaultGitUserEmail, "Email to set in git config")
 	fs.Var(&options.refs, "repo", "Mapping of Git URI to refs to check out, can be provided more than once")
 	fs.Var(&options.aliases, "clone-alias", "Mapping of org and repo to path to clone to, can be provided more than once")
+	fs.IntVar(&options.MaxParallelWorkers, "max-workers", 0, "Maximum number of parallel workers, unset for unlimited.")
 }
 
 type gitRefs struct {
