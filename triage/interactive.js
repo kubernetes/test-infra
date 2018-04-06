@@ -18,8 +18,8 @@ function readOptions() {
     let el = document.getElementById(id);
     if (el.type === "checkbox") return el.checked;
     if (el.type === "radio") return el.form[el.name].value;
-    if (el.type === "select-one") return el.value;
-    if (el.type === "text" || el.type === "hidden") {
+    if (el.type === "select-one" || el.type === "date") return el.value;
+    if (el.type === "text") {
       if (id.startsWith("filter")) {
         if (el.value === "") {
           return null;
@@ -57,8 +57,6 @@ function readOptions() {
     sort: read('sort'),
     sig: readSigs(),
   };
-
-  console.log(opts.sig);
 
   var url = '';
   if (opts.date) url += '&date=' + opts.date;
@@ -139,11 +137,18 @@ function renderSubset(start, count) {
   }
 }
 
+function setElementVisibility(id, visible) {
+  document.getElementById(id).style.display = visible ? null : 'none';
+}
+
 // Clear the page and reinitialize the renderer and filtering. Render a few failures.
 function rerender(maxCount) {
   if (!clusteredAll) return;
 
   console.log('rerender!');
+
+  setElementVisibility('load-status', false);
+  setElementVisibility('clusters', true);
 
   options = readOptions();
   clustered = clusteredAll.refilter(options);
@@ -281,18 +286,28 @@ function getData(clusterId) {
   var url = '/k8s-gubernator/triage/'
   var date = document.getElementById('date');
   if (date && date.value) {
-    url += 'history/' + date.value + '.json';
+    url += 'history/' + date.value.replace(/-/g, '') + '.json';
   } else if (clusterId) {
     url += 'slices/failure_data_' + clusterId.slice(0, 2) + '.json';
   } else {
     url += 'failure_data.json'
   }
 
+  setElementVisibility('load-status', true);
+  setElementVisibility('clusters', false);
   var setLoading = t => document.getElementById("loading-progress").innerText = t;
   var toMB = b => Math.round(b / 1024 / 1024 * 100) / 100;
 
   get(url,
     req => {
+      if (req.status >= 300) {
+        if (req.status == 401) {
+          setLoading(`error ${req.status}: missing data (bad date?): ${req.response}`);
+        } else {
+          setLoading(`error ${req.status}: ${req.response}`)
+        }
+        return;
+      }
       setLoading(`parsing ${toMB(req.response.length)}MB.`);
       setTimeout(() => {
         var data = JSON.parse(req.response);
@@ -341,4 +356,6 @@ function load() {
 
   document.addEventListener('click', clickHandler, false);
   document.addEventListener('scroll', scrollHandler);
+
+  document.getElementById('date').max = new Date().toISOString().slice(0, 10);
 }
