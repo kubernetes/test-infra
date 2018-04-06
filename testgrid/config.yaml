@@ -5812,6 +5812,8 @@ dashboard_groups:
   dashboard_names:
   - sig-network-gce
   - sig-network-gke
+  - sig-network-gce-ingress
+  - sig-network-gke-ingress
 
 - name: sig-node
   dashboard_names:
