@@ -15,7 +15,7 @@
 .PHONY:	build push
 
 # TAG is the version to build and push to.
-PREFIX = gcr.io/google-containers
+PREFIX = k8s.gcr.io
 NAME = dind-node
 ARCH = amd64
 K8S_VERSION = 0.1

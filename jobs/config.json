@@ -670,7 +670,7 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=",
-      "--env=GCE_GLBC_IMAGE=gcr.io/google_containers/ingress-gce-glbc-amd64:v1.0.1",
+      "--env=GCE_GLBC_IMAGE=k8s.gcr.io/ingress-gce-glbc-amd64:1.0.1",
       "--extract=ci/latest",
       "--gcp-project-type=ingress-project",
       "--gcp-zone=us-central1-f",
