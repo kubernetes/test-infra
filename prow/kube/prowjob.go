@@ -106,6 +106,9 @@ const (
 type GCSConfiguration struct {
 	// Bucket is the GCS bucket to upload to
 	Bucket string `json:"bucket,omitempty"`
+	// PathPrefix is an optional path that follows the
+	// bucket name and comes before any structure
+	PathPrefix string `json:"path_prefix,omitempty"`
 	// PathStrategy dictates how the org and repo are used
 	// when calculating the full path to an artifact in GCS
 	PathStrategy string `json:"path_strategy,omitempty"`

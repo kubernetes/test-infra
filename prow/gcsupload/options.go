@@ -23,6 +23,7 @@ import (
 	"fmt"
 
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/testgrid/util/gcs"
 )
 
 // Options exposes the configuration necessary
@@ -40,11 +41,21 @@ type Options struct {
 	// credentials for pushing to GCS
 	GcsCredentialsFile string `json:"gcs_credentials_file,omitempty"`
 	DryRun             bool   `json:"dry_run"`
+
+	// gcsPath is used to store human-provided GCS
+	// paths that are parsed to get more granular
+	// fields
+	gcsPath gcs.Path
 }
 
 // Validate ensures that the set of options are
 // self-consistent and valid
 func (o *Options) Validate() error {
+	if o.gcsPath.String() != "" {
+		o.Bucket = o.gcsPath.Bucket()
+		o.PathPrefix = o.gcsPath.Object()
+	}
+
 	if !o.DryRun {
 		if o.Bucket == "" {
 			return errors.New("GCS upload was requested no GCS bucket was provided")
@@ -96,7 +107,7 @@ func BindOptions(options *Options, fs *flag.FlagSet) {
 	fs.StringVar(&options.DefaultOrg, "default-org", "", "optional default org for GCS path encoding")
 	fs.StringVar(&options.DefaultRepo, "default-repo", "", "optional default repo for GCS path encoding")
 
-	fs.StringVar(&options.Bucket, "gcs-bucket", "", "GCS bucket to upload into")
+	fs.Var(&options.gcsPath, "gcs-path", "GCS path to upload into")
 	fs.StringVar(&options.GcsCredentialsFile, "gcs-credentials-file", "", "file where Google Cloud authentication credentials are stored")
 	fs.BoolVar(&options.DryRun, "dry-run", true, "do not interact with GCS")
 }
