@@ -90,7 +90,7 @@ func (o Options) Run() error {
 		return fmt.Errorf("could not write return code to marker file: %v", err)
 	}
 	if commandErr != nil {
-		return fmt.Errorf("wrapped process failed: %v", err)
+		return fmt.Errorf("wrapped process failed with code %s: %v", returnCode, err)
 	}
 	return nil
 }
