@@ -12079,7 +12079,7 @@
       "--gke-environment=test",
       "--provider=gke",
       "--test=false",
-      "--test-cmd=../tests/e2e_istio_preinstalled.sh",
+      "--test-cmd=make init; ../tests/e2e_istio_preinstalled.sh",
       "--test-cmd-args=simple",
       "--test-cmd-name=istio-addon",
       "--timeout=60m"
