@@ -29,23 +29,31 @@ labels:
     target: prs
     addedBy: humans
   - color: d455d0
-    description: "TODO, see [kubernetes/test-infra#7251](https://github.com/kubernetes/test-infra/issues/7251)"
-    name: close/duplicate
+    description: Indicates an issue is a duplicate of other open issue. The usage should be supported by adding triage findings as an issue comment.
+    name: triage/duplicate
+    target: both
+    previously:
+      - name: close/duplicate
+    addedBy: humans
+  - color: d455d0
+    description: Indicates an issue needs more information in order to work on it. The usage should be supported by adding triage findings as an issue comment.
+    name: triage/needs-information
+    previously:
+      - name: close/needs-information
     target: both
     addedBy: humans
   - color: d455d0
-    description: "TODO, see [kubernetes/test-infra#7251](https://github.com/kubernetes/test-infra/issues/7251)"
-    name: close/needs-information
+    description: Indicates an issue can not be reproduced as described. The usage should be supported by adding triage findings as an issue comment.
+    name: triage/not-reproducible
+    previously:
+      - name: close/not-reproducible
     target: both
     addedBy: humans
   - color: d455d0
-    description: "TODO, see [kubernetes/test-infra#7251](https://github.com/kubernetes/test-infra/issues/7251)"
-    name: close/not-reproducible
-    target: both
-    addedBy: humans
-  - color: d455d0
-    description: "TODO, see [kubernetes/test-infra#7251](https://github.com/kubernetes/test-infra/issues/7251)"
-    name: close/unresolved
+    description: Indicates an issue that can not be resolved. The usage should be supported by adding triage findings as an issue comment.
+    name: triage/unresolved
+    previously:
+      - name: close/unresolved
     target: both
     addedBy: humans
   - color: c0ff4a
