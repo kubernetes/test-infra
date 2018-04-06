@@ -116,6 +116,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gce-multizone
 - name: ci-cri-containerd-e2e-gci-gce-sd-logging
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-sd-logging
+- name: ci-cri-containerd-e2e-gci-gce-sd-logging-k8s-resources
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-sd-logging-k8s-resources
 - name: ci-cri-containerd-e2e-gci-gce-es-logging
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-es-logging
 - name: ci-cri-containerd-e2e-gce-stackdriver
@@ -4747,6 +4749,8 @@ dashboards:
     test_group_name: ci-cri-containerd-e2e-gce-multizone
   - name: e2e-gci-sd-logging
     test_group_name: ci-cri-containerd-e2e-gci-gce-sd-logging
+  - name: e2e-gci-sd-logging-k8s-resources
+    test_group_name: ci-cri-containerd-e2e-gci-gce-sd-logging-k8s-resources
   - name: e2e-gci-es-logging
     test_group_name: ci-cri-containerd-e2e-gci-gce-es-logging
   - name: e2e-gci-stackdriver

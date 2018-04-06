@@ -6572,6 +6572,19 @@ periodics:
       - "--timeout=1340"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180405-7df977424-master
 
+- interval: 2h
+  agent: kubernetes
+  name: ci-cri-containerd-e2e-gci-gce-sd-logging-k8s-resources
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - "--repo=github.com/containerd/cri=master"
+      - "--timeout=1340"
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180405-7df977424-master
+
 - interval: 1h
   agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce-serial
