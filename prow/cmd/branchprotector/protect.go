@@ -27,6 +27,7 @@ import (
 	"sync"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/config/branchprotection"
 	"k8s.io/test-infra/prow/github"
 )
 
@@ -88,12 +89,10 @@ func repoRequirements(org, repo string, cfg config.Config) []string {
 }
 
 type Requirements struct {
-	Org      string
-	Repo     string
-	Branch   string
-	Protect  bool
-	Contexts []string
-	Pushers  []string
+	Org    string
+	Repo   string
+	Branch string
+	branchprotection.Policy
 }
 
 type Errors struct {
@@ -153,7 +152,7 @@ func main() {
 
 type client interface {
 	RemoveBranchProtection(org, repo, branch string) error
-	UpdateBranchProtection(org, repo, branch string, contexts, pushers []string) error
+	UpdateBranchProtection(org, repo, branch string, policy github.BranchProtectionRequest) error
 	GetBranches(org, repo string) ([]github.Branch, error)
 	GetRepos(org string, user bool) ([]github.Repo, error)
 }
@@ -169,13 +168,17 @@ type Protector struct {
 
 func (p *Protector) ConfigureBranches() {
 	for r := range p.updates {
-		if !r.Protect {
+		if r.Policy.Protect == nil {
+			p.errors.add(fmt.Errorf("%s/%s:%s has Protect==nil", r.Org, r.Repo, r.Branch))
+			continue
+		}
+		if !*r.Policy.Protect {
 			err := p.client.RemoveBranchProtection(r.Org, r.Repo, r.Branch)
 			if err != nil {
 				p.errors.add(fmt.Errorf("remove %s/%s=%s protection failed: %v", r.Org, r.Repo, r.Branch, err))
 			}
 		} else {
-			err := p.client.UpdateBranchProtection(r.Org, r.Repo, r.Branch, r.Contexts, r.Pushers)
+			err := p.client.UpdateBranchProtection(r.Org, r.Repo, r.Branch, makeRequest(r.Policy))
 			if err != nil {
 				p.errors.add(fmt.Errorf("update %s/%s=%s protection failed: %v", r.Org, r.Repo, r.Branch, err))
 			}
@@ -188,51 +191,81 @@ func (p *Protector) ConfigureBranches() {
 func (p *Protector) Protect() {
 	bp := p.cfg.BranchProtection
 
-	// Scan the branch-protection configuration
-	for orgName, org := range bp.Orgs {
-		if err := p.UpdateOrg(orgName, org, bp.Protect, bp.Contexts, bp.Pushers); err != nil {
-			p.errors.add(err)
-		}
-	}
-
-	// Do not automatically protect tested repositories
-	if !bp.ProtectTested {
+	policy, dep, err := bp.MakePolicy()
+	if err != nil {
+		p.errors.add(err)
 		return
 	}
+	if dep {
+		log.Println("WARNING: global branch-protection config uses deprecated fields (only policy, protect-tested-repos, orgs keys supported)")
+	}
 
-	// Some repos with presubmits might not be listed in the branch-protection
-	for repo := range p.cfg.Presubmits {
-		if p.completedRepos[repo] == true {
-			continue
+	if bp.ProtectTested { // Automatically require any required prow jobs for unconfigured repos
+		for repoPath := range p.cfg.Presubmits {
+			parts := strings.Split(repoPath, "/")
+			if len(parts) != 2 {
+				p.errors.add(fmt.Errorf("bad repo in prow jobs: %s", repoPath))
+				continue
+			}
+			orgName := parts[0]
+			repoName := parts[1]
+			repoReqs := repoRequirements(orgName, repoName, *p.cfg)
+			org, ok := bp.Orgs[orgName]
+			if !ok {
+				org = branchprotection.Org{
+					Repos: map[string]branchprotection.Repo{},
+				}
+				bp.Orgs[orgName] = org
+			}
+			if _, ok = org.Repos[repoName]; !ok {
+				protected := len(repoReqs) > 0
+				repoPolicy := branchprotection.Policy{
+					Protect: &protected,
+				}
+				if protected {
+					repoPolicy.ContextPolicy = &branchprotection.ContextPolicy{
+						Contexts: repoReqs,
+					}
+				}
+				repo := branchprotection.Repo{
+					Policy: repoPolicy,
+				}
+				org.Repos[repoName] = repo
+			}
+
 		}
-		parts := strings.Split(repo, "/")
-		if len(parts) != 2 {
-			log.Fatalf("Bad repo: %s", repo)
-		}
-		orgName := parts[0]
-		repoName := parts[1]
-		repoReqs := repoRequirements(orgName, repoName, *p.cfg)
-		protect := len(repoReqs) > 0
-		if err := p.UpdateRepo(orgName, repoName, config.Repo{}, &protect, repoReqs, nil); err != nil {
+	}
+
+	// Scan the branch-protection configuration
+	for orgName, org := range bp.Orgs {
+		if err := p.updateOrg(orgName, org, policy); err != nil {
 			p.errors.add(err)
 		}
 	}
 }
 
-// Update all repos in the org with the specified defaults
-func (p *Protector) UpdateOrg(orgName string, org config.Org, protect *bool, contexts, pushers []string) error {
-	if org.Protect != nil {
-		protect = org.Protect
+// defined returns true if the policy's protect field is non-nil
+func defined(p *branchprotection.Policy) bool {
+	return p != nil && p.Protect != nil
+}
+
+// updateOrg will configure repos.
+//
+// It will update every org in the repo if an (inherited) protection policy is defined for the org.
+// Otherwise it will only update explicitly defined repositories.
+func (p *Protector) updateOrg(orgName string, org branchprotection.Org, defaultPolicy *branchprotection.Policy) error {
+
+	orgPolicy, dep, err := org.MakePolicy()
+	if err != nil {
+		return fmt.Errorf("branch-protection.orgs[\"%s\"] mixes policy with deprecated fields: %v", orgName, err)
 	}
-
-	oc := append([]string(nil), contexts...)
-	oc = append(oc, org.Contexts...)
-
-	op := append([]string(nil), pushers...)
-	op = append(op, org.Pushers...)
+	if dep {
+		log.Printf("WARNING: %s branch protection config uses deprecated fields (only repos and policy keys supported)", orgName)
+	}
+	policy := branchprotection.MergePolicy(defaultPolicy, orgPolicy)
 
 	var repos []string
-	if protect != nil {
+	if defined(policy) {
 		// Strongly opinionated org, configure every repo in the org.
 		rs, err := p.client.GetRepos(orgName, false)
 		if err != nil {
@@ -242,14 +275,14 @@ func (p *Protector) UpdateOrg(orgName string, org config.Org, protect *bool, con
 			repos = append(repos, r.Name)
 		}
 	} else {
-		// Unopinionated org, just set explicitly defined repos
+		// Unopinionated org, configure only explicitly listed repos
 		for r := range org.Repos {
 			repos = append(repos, r)
 		}
 	}
 
 	for _, repoName := range repos {
-		err := p.UpdateRepo(orgName, repoName, org.Repos[repoName], protect, oc, op)
+		err := p.updateRepo(orgName, repoName, org.Repos[repoName], policy)
 		if err != nil {
 			return err
 		}
@@ -257,23 +290,23 @@ func (p *Protector) UpdateOrg(orgName string, org config.Org, protect *bool, con
 	return nil
 }
 
-// Update all branches in the repo with the specified defaults
-func (p *Protector) UpdateRepo(orgName string, repo string, repoDefaults config.Repo, protect *bool, contexts, pushers []string) error {
+// updateRepo will configure branches.
+//
+// It will update every branch in the repo if an (inherited) protection policy is defined for the repo.
+// Otherwise it will only update explicitly defined branches.
+func (p *Protector) updateRepo(orgName string, repo string, repoDefaults branchprotection.Repo, defaultPolicy *branchprotection.Policy) error {
+	repoPolicy, dep, err := repoDefaults.MakePolicy()
+	if err != nil {
+		return fmt.Errorf("branch-protection.orgs[\"%s\"].repos[\"%s\"] mixes policy with deprecated fields: %v", orgName, repo, err)
+	}
+	if dep {
+		log.Printf("WARNING: %s/%s branch protection config uses deprecated fields (only branches and policy keys supported)", orgName, repo)
+	}
+	policy := branchprotection.MergePolicy(defaultPolicy, repoPolicy)
 	p.completedRepos[orgName+"/"+repo] = true
 
-	rc := append([]string(nil), contexts...)
-	rp := append([]string(nil), pushers...)
-
-	if repoDefaults.Protect != nil {
-		protect = repoDefaults.Protect
-	}
-	rc = append(rc, repoDefaults.Contexts...)
-	rp = append(rp, repoDefaults.Pushers...)
-
-	rc = append(rc, repoRequirements(orgName, repo, *p.cfg)...)
-
 	var branches []string
-	if protect != nil {
+	if defined(policy) { // Opinionated org or repo, confiugre all branches
 		bs, err := p.client.GetBranches(orgName, repo)
 		if err != nil {
 			return fmt.Errorf("GetBranches(%s, %s) failed: %v", orgName, repo, err)
@@ -288,42 +321,46 @@ func (p *Protector) UpdateRepo(orgName string, repo string, repoDefaults config.
 	}
 
 	for _, branchName := range branches {
-		if err := p.UpdateBranch(orgName, repo, branchName, repoDefaults.Branches[branchName], protect, rc, rp); err != nil {
-			return fmt.Errorf("UpdateBranch(%s, %s, %s, ...) failed: %v", orgName, repo, branchName, err)
+		if err := p.updateBranch(orgName, repo, branchName, repoDefaults.Branches[branchName], policy); err != nil {
+			return fmt.Errorf("updateBranch(%s, %s, %s, ...) failed: %v", orgName, repo, branchName, err)
 		}
 	}
 	return nil
 }
 
-// Update the branch with the specified configuration
-func (p *Protector) UpdateBranch(orgName, repo string, branchName string, branchDefaults config.Branch, protect *bool, contexts, pushers []string) error {
-	bc := append([]string{}, contexts...)
-	bpush := append([]string{}, pushers...)
-	if branchDefaults.Protect != nil {
-		protect = branchDefaults.Protect
+// updateBranch configures branch protection is a protection policy is defined.
+func (p *Protector) updateBranch(orgName, repo string, branchName string, branchDefaults branchprotection.Branch, defaultPolicy *branchprotection.Policy) error {
+
+	branchPolicy, dep, err := branchDefaults.MakePolicy()
+	if err != nil {
+		return fmt.Errorf("branch-protection.orgs[\"%s\"].repos[\"%s\"].branches[\"%s\"] uses both deprecated and non-deprecated fields: %v", orgName, repo, branchName, err)
 	}
-	bc = append(bc, branchDefaults.Contexts...)
-	bpush = append(bpush, branchDefaults.Pushers...)
-
-	if protect == nil {
-		return errors.New("protect should not be nil")
+	if dep {
+		log.Printf("WARNING: %s/%s=%s branch protection config uses deprecated fields (protect-by-default, require-contexts, allow-push are deprecated)", orgName, repo, branchName)
 	}
-
-	prot := *protect
-
-	if len(bc) > 0 || len(bpush) > 0 {
-		if !prot {
-			return errors.New("setting pushers or contexts requires protection")
+	policy := branchprotection.MergePolicy(defaultPolicy, branchPolicy)
+	if !defined(policy) {
+		return fmt.Errorf("branch-protection.orgs[\"%s\"].repos[\"%s\"].branches[\"%s\"] must specify a protect policy", orgName, repo, branchName)
+	}
+	if !*policy.Protect {
+		// Otherwise ensure all settings are off
+		switch {
+		case policy.ContextPolicy != nil:
+			return fmt.Errorf("branch-protection.orgs[\"%s\"].repos[\"%s\"].branches[\"%s\"]: required_status_checks require protect", orgName, repo, branchName)
+		case policy.Restrictions != nil:
+			return fmt.Errorf("branch-protection.orgs[\"%s\"].repos[\"%s\"].branches[\"%s\"]: restrictions require protect=true", orgName, repo, branchName)
+		case policy.Admins != nil:
+			return fmt.Errorf("branch-protection.orgs[\"%s\"].repos[\"%s\"].branches[\"%s\"]: enforce_admins require protect=true", orgName, repo, branchName)
+		case policy.ReviewPolicy != nil:
+			return fmt.Errorf("branch-protection.orgs[\"%s\"].repos[\"%s\"].branches[\"%s\"]: required_pull_request_reviews require protect=true", orgName, repo, branchName)
 		}
 	}
 
 	p.updates <- Requirements{
-		Org:      orgName,
-		Repo:     repo,
-		Branch:   branchName,
-		Protect:  prot,
-		Contexts: bc,
-		Pushers:  bpush,
+		Org:    orgName,
+		Repo:   repo,
+		Branch: branchName,
+		Policy: *policy,
 	}
 	return nil
 }

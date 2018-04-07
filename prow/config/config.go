@@ -32,6 +32,7 @@ import (
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
+	"k8s.io/test-infra/prow/config/branchprotection"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -46,12 +47,12 @@ type Config struct {
 	// Periodics are not associated with any repo.
 	Periodics []Periodic `json:"periodics,omitempty"`
 
-	Tide             Tide             `json:"tide,omitempty"`
-	Plank            Plank            `json:"plank,omitempty"`
-	Sinker           Sinker           `json:"sinker,omitempty"`
-	Deck             Deck             `json:"deck,omitempty"`
-	BranchProtection BranchProtection `json:"branch-protection,omitempty"`
-	Gerrit           Gerrit           `json:"gerrit,omitempty"`
+	Tide                              `json:"tide,omitempty"`
+	Plank                             `json:"plank,omitempty"`
+	Sinker                            `json:"sinker,omitempty"`
+	Deck                              `json:"deck,omitempty"`
+	branchprotection.BranchProtection `json:"branch-protection,omitempty"`
+	Gerrit                            `json:"gerrit,omitempty"`
 
 	// TODO: Move this out of the main config.
 	JenkinsOperators []JenkinsOperator `json:"jenkins_operators,omitempty"`
@@ -78,11 +79,11 @@ type Config struct {
 	LogLevel string `json:"log_level,omitempty"`
 
 	// PushGateway is a prometheus push gateway.
-	PushGateway PushGateway `json:"push_gateway,omitempty"`
+	PushGateway `json:"push_gateway,omitempty"`
 
 	// OwnersDirBlacklist is used to configure which directories to ignore when
 	// searching for OWNERS{,_ALIAS} files in a repo.
-	OwnersDirBlacklist OwnersDirBlacklist `json:"owners_dir_blacklist,omitempty"`
+	OwnersDirBlacklist `json:"owners_dir_blacklist,omitempty"`
 }
 
 // OwnersDirBlacklist is used to configure which directories to ignore when

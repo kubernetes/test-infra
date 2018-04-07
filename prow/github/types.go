@@ -215,21 +215,32 @@ type Branch struct {
 	Protected bool   `json:"protected"`
 }
 
-// https://developer.github.com/v3/repos/branches/#update-branch-protection
+// BranchProtectionRequest restricts who can write to a branch.
+// All keys required. Disable options by passing a nil value.
+//
+// See: https://developer.github.com/v3/repos/branches/#update-branch-protection
 type BranchProtectionRequest struct {
-	RequiredStatusChecks       RequiredStatusChecks        `json:"required_status_checks"`
-	EnforceAdmins              bool                        `json:"enforce_admins"`
-	RequiredPullRequestReviews *RequiredPullRequestReviews `json:"required_pull_request_reviews"`
-	Restrictions               Restrictions                `json:"restrictions"`
+	EnforceAdmins               *bool                                  `json:"enforce_admins"` // null to disable
+	*RequiredPullRequestReviews `json:"required_pull_request_reviews"` // null to disable
+	*RequiredStatusChecks       `json:"required_status_checks"`        // null to disable
+	*Restrictions               `json:"restrictions"`                  // null to disable
 }
 
+// RequiredStatusChecks specify necessary github status to merge, and whether the PR must be up to date
 type RequiredStatusChecks struct {
 	Strict   bool     `json:"strict"`
 	Contexts []string `json:"contexts"`
 }
 
-type RequiredPullRequestReviews struct{}
+// RequiredPullRequestReviews specifies what kind of github approvals are required. All keys required.
+type RequiredPullRequestReviews struct {
+	DismissalRestrictions       Restrictions `json:"dismissal_restrictions"` // Empty to disable
+	DismissStaleReviews         bool         `json:"dismiss_stale_reviews"`
+	RequireCodeOwnerReviews     bool         `json:"require_code_owner_reviews"`
+	RequireApprovingReviewCount int          `json:"require_approving_review_count"` // 1 to 6
+}
 
+// Restrictions is a struct of users and teams. Both fields are required.
 type Restrictions struct {
 	Users []string `json:"users"`
 	Teams []string `json:"teams"`
