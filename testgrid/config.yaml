@@ -2516,13 +2516,27 @@ test_groups:
 dashboards:
 - name: conformance-all
   dashboard_tab:
-  - name: gci-gce
+  - name: gce
+    description: Runs conformance tests using kubetest against latest kubernetes master CI build on GCE
     test_group_name: ci-kubernetes-gce-conformance
+  - name: local-e2e
+    description: Runs conformance tests using kubetest with local-up-cluster
+    test_group_name: ci-kubernetes-local-e2e
 
 - name: conformance-gce
   dashboard_tab:
-  - name: gci-gce
+  - name: gce
+    description: Runs conformance tests using kubetest against latest kubernetes master CI build on GCE
     test_group_name: ci-kubernetes-gce-conformance
+    # TODO(bentheelder): there's might be a more appropriate alias to alert this to
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-engprod+alerts@google.com'
+
+- name: conformance-providerless
+  dashboard_tab:
+  - name: local-e2e
+    description: Runs conformance tests using kubetest with local-up-cluster
+    test_group_name: ci-kubernetes-local-e2e
 
 - name: canonical-ubuntu1-k8sbeta
   dashboard_tab:
@@ -5840,3 +5854,4 @@ dashboard_groups:
   dashboard_names:
   - conformance-all
   - conformance-gce
+  - conformance-providerless

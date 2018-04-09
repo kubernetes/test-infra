@@ -11322,7 +11322,6 @@
   },
   "ci-kubernetes-gce-conformance": {
     "args": [
-      "--env=KUBERNETES_CONFORMANCE_TEST=y",
       "--env-file=jobs/platform/gce.env",
       "--extract=ci/latest",
       "--gcp-master-image=gci",
