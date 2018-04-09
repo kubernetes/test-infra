@@ -97,7 +97,7 @@ type InfluxDB struct {
 	tags        map[string]string
 }
 
-// mergeTags merge the default tags with the exta tags. Default will be overridden if it conflicts.
+// mergeTags merges the default tags with the exta tags. Default will be overridden if it conflicts.
 func mergeTags(defaultTags, extraTags map[string]string) map[string]string {
 	newTags := map[string]string{}
 

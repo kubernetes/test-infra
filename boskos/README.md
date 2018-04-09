@@ -13,21 +13,30 @@ Boskos is inited with a config of resources, one JSON entry per line, from `-con
 A resource object looks like
 ```go
 type Resource struct {
-	Type       string    `json:"type"`
-	Name       string    `json:"name"`
-	State      string    `json:"state"`
-	Owner      string    `json:"owner"`
-	LastUpdate time.Time `json:"lastupdate"`
+        Type       string             `json:"type"`
+        Name       string             `json:"name"`
+        State      string             `json:"state"`
+        Owner      string             `json:"owner"`
+        LastUpdate time.Time          `json:"lastupdate"`
+        UserData   map[string]string  `json:"userdata"`
 }
 ```
 
-Type can be GCPProject, cluster, or even a dota2 server, anything that you want to be a group of resources.
-Name is a unique identifier of the resource.
+Type can be GCPProject, cluster, or even a dota2 server, anything that you
+want to be a group of resources. Name is a unique identifier of the resource.
 State is a string that tells the current status of the resource.
+
+User Data is here for customization. In Mason as an example, we create new
+resources from existing ones (creating a cluster inside a GCP project), but
+in order to acquire the right resources, we need to store some information in the
+final resource UserData. It is up to the implementation to parse the string into the
+right struct. UserData can be updated using the update API call. All resource
+user data is returned as part of acquisition (calling acquire or acquirebystate)
+
 
 ## API
 
-###	`POST /acquire`
+###   `POST /acquire`
 
 Use `/acquire` when you want to get hold of some resource.
 
@@ -44,7 +53,25 @@ Example: `/acquire?type=gce-project&state=free&dest=busy&owner=user`.
 
 On a successful request, `/acquire` will return HTTP 200 and a valid Resource JSON object.
 
-###	`POST /release`
+###   `POST /acquirebystate`
+
+Use `/acquirebystate` when you want to get hold of a set of resources in a given
+state.
+
+#### Required Parameters
+
+| Name    | Type     | Description                                 |
+| ------- | -------- | ------------------------------------------- |
+| `state` | `string` | current state of the requested resource     |
+| `dest`  | `string` | destination state of the requested resource |
+| `owner` | `string` | requester of the resource                   |
+| `names` | `string` | comma separated list of resource names      |
+
+Example: `/acquirebystate?state=free&dest=busy&owner=user&names=res1,res2`.
+
+On a successful request, `/acquirebystate` will return HTTP 200 and a valid list of Resources JSON object.
+
+###   `POST /release`
 
 Use `/release` when you finish use some resource. Owner need to match current owner.
 
@@ -58,7 +85,7 @@ Use `/release` when you finish use some resource. Owner need to match current ow
 
 Example: `/release?name=k8s-jkns-foo&dest=dirty&owner=user`
 
-###	`POST /update`
+###   `POST /update`
 
 Use `/update` to update resource last-update timestamp. Owner need to match current owner.
 
@@ -70,9 +97,13 @@ Use `/update` to update resource last-update timestamp. Owner need to match curr
 | `owner` | `string` | owner of the resource          |
 | `state` | `string` | current state of the resource  |
 
+
+#### Optional Parameters
+In order to update user data, just marshall the user data into the request body.
+
 Example: `/update?name=k8s-jkns-foo&state=free&owner=user`
 
-###	`POST /reset`
+###   `POST /reset`
 
 Use `/reset` to reset a group of expired resource to certain state.
 
@@ -91,7 +122,7 @@ On a successful request, `/reset` will return HTTP 200 and a list of [Owner:Reso
 
 Example: `/reset?type=gce-project&state=busy&dest=dirty&expire=20m`
 
-###	`GET /metric`
+###   `GET /metric`
 
 Use `/metric` to retrieve a metric.
 
@@ -105,27 +136,27 @@ On a successful request, `/metric` will return HTTP 200 and a JSON object contai
 
 ```json
 {
-	"type" : "project",
-	"Current":
-	{
-		"total"   : 35,
-		"free"    : 20,
-		"dirty"   : 10,
-		"injured" : 5
-	},
-	"Owners":
-	{
-		"fejta" : 1,
-		"Senlu" : 1,
-		"sig-testing" : 20,
-		"Janitor" : 10,
-		"None" : 20
-	}
+        "type" : "project",
+        "Current":
+        {
+                "total"   : 35,
+                "free"    : 20,
+                "dirty"   : 10,
+                "injured" : 5
+        },
+        "Owners":
+        {
+                "fejta" : 1,
+                "Senlu" : 1,
+                "sig-testing" : 20,
+                "Janitor" : 10,
+                "None" : 20
+        }
 }
 ```
 
 ## Config update:
-1. Edit resources.json, and send a PR.
+1. Edit resources.yaml, and send a PR.
 
 1. After PR is LG'd, make sure your branch is synced up with master.
 
@@ -136,21 +167,36 @@ Newly deleted resource will be removed in a future update cycle if the resource 
 
 ## Other Components:
 
-[`Reaper`] looks for resources that owned by someone, but have not been updated for a period of time, 
-and reset the stale resources to dirty state for the [`Janitor`] component to pick up. It will prevent 
+[`Reaper`] looks for resources that owned by someone, but have not been updated for a period of time,
+and reset the stale resources to dirty state for the [`Janitor`] component to pick up. It will prevent
 state leaks if a client process is killed unexpectedly.
 
-[`Janitor`] looks for dirty resources from boskos, and will kick off sub-janitor process to clean up the 
+[`Janitor`] looks for dirty resources from boskos, and will kick off sub-janitor process to clean up the
 resource, finally return them back to boskos in a clean state.
 
-[`Metrics`] is a separate service, which can display json metric results, and has HTTP endpoint 
+[`Metrics`] is a separate service, which can display json metric results, and has HTTP endpoint
 opened for prometheus monitoring.
+
+[`Mason`] updates virtual resources with existing resources. An example would be
+a cluster. In order to create a GKE cluster you need a GCP Project. Mason will look for specific
+resources and release leased resources as dirty (such that Janitor can pick it up) and ask for
+brand new resources in order to convert them in the final resource states. Mason
+comes with its own client to ease usage. The mason client takes care of
+acquiring and release all the right resources from the User Data information.
+
+[`Storage`] There could be multiple implementation on how resources and mason
+config are stored. Since we have multiple components with storage needs, we have
+now shared storage implementation. In memory and in Cluster via k8s custom
+resource definition.
+
+[`crds`] General client library to store data on k8s custom resource definition.
+In theory those could be use outside of Boskos.
 
 For the boskos server that handles k8s e2e jobs, the status is available from the [`Velodrome dashboard`]
 
 
 ## Local test:
-1. Start boskos with a fake resources.json, with `go run boskos.go -config=/path/to/resources.json`
+1. Start boskos with a fake config.yaml, with `go run boskos.go -config=/path/to/config.yaml`
 
 1. Sent some local requests to boskos:
 ```
@@ -179,4 +225,7 @@ If you don't see a command prompt, try pressing enter.
 [`Reaper`]: ./reaper
 [`Janitor`]: ./janitor
 [`Metrics`]: ./metrics
+[`Mason`]: ./mason
+[`Storage`]: ./storage
+[`crds`]: ./crds
 [`Velodrome dashboard`]: http://velodrome.k8s.io/dashboard/db/boskos-dashboard

@@ -146,12 +146,13 @@ def normalize_metadata(started_future, finished_future):
 
 
 @view_base.memcache_memoize('build-details://', expires=60)
-def build_details(build_dir):
+def build_details(build_dir, recursive=False):
     """
     Collect information from a build directory.
 
     Args:
         build_dir: GCS path containing a build's results.
+        recursive: Whether to scan artifacts recursively for XML files.
     Returns:
         started: value from started.json {'version': ..., 'timestamp': ...}
         finished: value from finished.json {'timestamp': ..., 'result': ...}
@@ -168,8 +169,12 @@ def build_details(build_dir):
     if started is None and finished is None:
         return started, finished, None
 
-    junit_paths = [f.filename for f in view_base.gcs_ls_recursive('%s/artifacts' % build_dir)
-                   if f.filename.endswith('.xml')]
+    if recursive:
+        artifact_paths = view_base.gcs_ls_recursive('%s/artifacts' % build_dir)
+    else:
+        artifact_paths = view_base.gcs_ls('%s/artifacts' % build_dir)
+
+    junit_paths = [f.filename for f in artifact_paths if f.filename.endswith('.xml')]
 
     junit_futures = {f: gcs_async.read(f) for f in junit_paths}
 
@@ -226,7 +231,9 @@ class BuildHandler(view_base.BaseHandler):
         job_dir = '/%s/%s/' % (prefix, job)
         testgrid_query = testgrid.path_to_query(job_dir)
         build_dir = job_dir + build
-        started, finished, results = build_details(build_dir)
+        issues_fut = models.GHIssueDigest.find_xrefs_async(build_dir)
+        started, finished, results = build_details(
+            build_dir, self.app.config.get('recursive_artifacts', True))
         if started is None and finished is None:
             logging.warning('unable to load %s', build_dir)
             self.render(
@@ -259,8 +266,6 @@ class BuildHandler(view_base.BaseHandler):
         version = finished and finished.get('version') or started and started.get('version')
         commit = version and version.split('+')[-1]
 
-        issues = list(models.GHIssueDigest.find_xrefs(build_dir))
-
         refs = []
         if started and started.get('pull'):
             for ref in started['pull'].split(','):
@@ -275,13 +280,13 @@ class BuildHandler(view_base.BaseHandler):
             commit=commit, started=started, finished=finished,
             res=results, refs=refs,
             build_log=build_log, build_log_src=build_log_src,
-            issues=issues, repo=repo,
+            issues=issues_fut.get_result(), repo=repo,
             pr_path=pr_path, pr=pr, pr_digest=pr_digest,
             testgrid_query=testgrid_query))
 
 
 def get_build_config(prefix, config):
-    for item in config['external_services'].values():
+    for item in config['external_services'].values() + [config['default_external_services']]:
         if prefix.startswith(item['gcs_pull_prefix']):
             return item
         if 'gcs_bucket' in item and prefix.startswith(item['gcs_bucket']):

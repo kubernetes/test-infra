@@ -17,17 +17,20 @@ limitations under the License.
 package client
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"sync"
 	"time"
 
 	"k8s.io/test-infra/boskos/common"
+	"strings"
 )
 
-// Public Boskos client object
+// Client defines the public Boskos client object
 type Client struct {
 	owner string
 	url   string
@@ -50,20 +53,35 @@ func NewClient(owner string, url string) *Client {
 // public method
 
 // Acquire asks boskos for a resource of certain type in certain state, and set the resource to dest state.
-// Returns name of the resource on success.
-func (c *Client) Acquire(rtype string, state string, dest string) (string, error) {
+// Returns the resource on success.
+func (c *Client) Acquire(rtype, state, dest string) (*common.Resource, error) {
 	r, err := c.acquire(rtype, state, dest)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	if r != "" {
-		c.resources = append(c.resources, r)
+	if r != nil {
+		c.resources = append(c.resources, r.Name)
 	}
 
 	return r, nil
+}
+
+// AcquireByState asks boskos for a resources of certain type, and set the resource to dest state.
+// Returns a list of resources on success.
+func (c *Client) AcquireByState(state, dest string, names []string) ([]common.Resource, error) {
+	resources, err := c.acquireByState(state, dest, names)
+	if err != nil {
+		return nil, err
+	}
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	for _, resource := range resources {
+		c.resources = append(c.resources, resource.Name)
+	}
+	return resources, nil
 }
 
 // ReleaseAll returns all resources hold by the client back to boskos and set them to dest state.
@@ -72,7 +90,7 @@ func (c *Client) ReleaseAll(dest string) error {
 
 	if len(c.resources) == 0 {
 		c.lock.Unlock()
-		return fmt.Errorf("No holding resource")
+		return fmt.Errorf("no holding resource")
 	}
 	c.lock.Unlock()
 
@@ -86,12 +104,11 @@ func (c *Client) ReleaseAll(dest string) error {
 			return err
 		}
 	}
-
 	return nil
 }
 
 // ReleaseOne returns one of owned resources back to boskos and set it to dest state.
-func (c *Client) ReleaseOne(name string, dest string) error {
+func (c *Client) ReleaseOne(name, dest string) error {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
@@ -99,14 +116,12 @@ func (c *Client) ReleaseOne(name string, dest string) error {
 		if r == name {
 			c.resources[idx] = c.resources[len(c.resources)-1]
 			c.resources = c.resources[:len(c.resources)-1]
-			if err := c.release(r, dest); err != nil {
-				return err
-			}
-			return nil
+			err := c.release(r, dest)
+			return err
 		}
 	}
 
-	return fmt.Errorf("No resource name %v", name)
+	return fmt.Errorf("no resource name %v", name)
 }
 
 // UpdateAll signals update for all resources hold by the client.
@@ -115,11 +130,11 @@ func (c *Client) UpdateAll(state string) error {
 	defer c.lock.Unlock()
 
 	if len(c.resources) == 0 {
-		return fmt.Errorf("No holding resource")
+		return fmt.Errorf("no holding resource")
 	}
 
 	for _, r := range c.resources {
-		if err := c.update(r, state); err != nil {
+		if err := c.update(r, state, nil); err != nil {
 			return err
 		}
 	}
@@ -128,25 +143,23 @@ func (c *Client) UpdateAll(state string) error {
 }
 
 // UpdateOne signals update for one of the resources hold by the client.
-func (c *Client) UpdateOne(name string, state string) error {
+func (c *Client) UpdateOne(name, state string, userData common.UserData) error {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
 	for _, r := range c.resources {
 		if r == name {
-			if err := c.update(r, state); err != nil {
-				return err
-			}
-			return nil
+			err := c.update(r, state, userData)
+			return err
 		}
 	}
 
-	return fmt.Errorf("No resource name %v", name)
+	return fmt.Errorf("no resource name %v", name)
 }
 
 // Reset will scan all boskos resources of type, in state, last updated before expire, and set them to dest state.
 // Returns a map of {resourceName:owner} for further actions.
-func (c *Client) Reset(rtype string, state string, expire time.Duration, dest string) (map[string]string, error) {
+func (c *Client) Reset(rtype, state string, expire time.Duration, dest string) (map[string]string, error) {
 	return c.reset(rtype, state, expire, dest)
 }
 
@@ -176,61 +189,100 @@ func (c *Client) popResource() (string, bool) {
 	return r, true
 }
 
-func (c *Client) acquire(rtype string, state string, dest string) (string, error) {
-	resp, err := http.Post(fmt.Sprintf("%v/acquire?type=%v&state=%v&dest=%v&owner=%v", c.url, rtype, state, dest, c.owner), "", nil)
+func (c *Client) acquire(rtype, state, dest string) (*common.Resource, error) {
+	resp, err := http.Post(fmt.Sprintf("%v/acquire?type=%v&state=%v&dest=%v&owner=%v",
+		c.url, rtype, state, dest, c.owner), "", nil)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusOK {
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 
-		var res = new(common.Resource)
+		res := common.Resource{}
 		err = json.Unmarshal(body, &res)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
-		return res.Name, nil
+		if res.Name == "" {
+			return nil, fmt.Errorf("unable to parse resource")
+		}
+		return &res, nil
 	} else if resp.StatusCode == http.StatusNotFound {
-		return "", nil
+		return nil, fmt.Errorf("resource not found")
 	}
-
-	return "", fmt.Errorf("Status %s, StatusCode %v", resp.Status, resp.StatusCode)
+	return nil, fmt.Errorf("status %s, status code %v", resp.Status, resp.StatusCode)
 }
 
-func (c *Client) release(name string, dest string) error {
-	resp, err := http.Post(fmt.Sprintf("%v/release?name=%v&dest=%v&owner=%v", c.url, name, dest, c.owner), "", nil)
+func (c *Client) acquireByState(state, dest string, names []string) ([]common.Resource, error) {
+	resp, err := http.Post(fmt.Sprintf("%v/acquirebystate?state=%v&dest=%v&owner=%v&names=%v",
+		c.url, state, dest, c.owner, strings.Join(names, ",")), "", nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	switch resp.StatusCode {
+	case http.StatusOK:
+		var resources []common.Resource
+		if err := json.NewDecoder(resp.Body).Decode(&resources); err != nil {
+			return nil, err
+		}
+		return resources, nil
+	case http.StatusUnauthorized:
+		return nil, fmt.Errorf("resources already used by another user")
+
+	case http.StatusNotFound:
+		return nil, fmt.Errorf("resources not found")
+	}
+	return nil, fmt.Errorf("status %s, status code %v", resp.Status, resp.StatusCode)
+}
+
+func (c *Client) release(name, dest string) error {
+	resp, err := http.Post(fmt.Sprintf("%v/release?name=%v&dest=%v&owner=%v",
+		c.url, name, dest, c.owner), "", nil)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("Status %s, StatusCode %v", resp.Status, resp.StatusCode)
+		return fmt.Errorf("status %s, statusCode %v", resp.Status, resp.StatusCode)
 	}
 	return nil
 }
 
-func (c *Client) update(name string, state string) error {
-	resp, err := http.Post(fmt.Sprintf("%v/update?name=%v&owner=%v&state=%v", c.url, name, c.owner, state), "", nil)
+func (c *Client) update(name, state string, userData common.UserData) error {
+	var body io.Reader
+	if userData != nil {
+		b := new(bytes.Buffer)
+		err := json.NewEncoder(b).Encode(userData)
+		if err != nil {
+			return err
+		}
+		body = b
+	}
+	resp, err := http.Post(fmt.Sprintf("%v/update?name=%v&owner=%v&state=%v",
+		c.url, name, c.owner, state), "application/json", body)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("Status %s, StatusCode %v", resp.Status, resp.StatusCode)
+		return fmt.Errorf("status %s, status code %v", resp.Status, resp.StatusCode)
 	}
 	return nil
 }
 
-func (c *Client) reset(rtype string, state string, expire time.Duration, dest string) (map[string]string, error) {
+func (c *Client) reset(rtype, state string, expire time.Duration, dest string) (map[string]string, error) {
 	rmap := make(map[string]string)
-	resp, err := http.Post(fmt.Sprintf("%v/reset?type=%v&state=%v&expire=%v&dest=%v", c.url, rtype, state, expire.String(), dest), "", nil)
+	resp, err := http.Post(fmt.Sprintf("%v/reset?type=%v&state=%v&expire=%v&dest=%v",
+		c.url, rtype, state, expire.String(), dest), "", nil)
 	if err != nil {
 		return rmap, err
 	}
@@ -243,13 +295,10 @@ func (c *Client) reset(rtype string, state string, expire time.Duration, dest st
 		}
 
 		err = json.Unmarshal(body, &rmap)
-		if err != nil {
-			return rmap, err
-		}
-		return rmap, nil
+		return rmap, err
 	}
 
-	return rmap, fmt.Errorf("Status %s, StatusCode %v", resp.Status, resp.StatusCode)
+	return rmap, fmt.Errorf("status %s, status code %v", resp.Status, resp.StatusCode)
 }
 
 func (c *Client) metric(rtype string) (common.Metric, error) {
@@ -261,7 +310,7 @@ func (c *Client) metric(rtype string) (common.Metric, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return metric, fmt.Errorf("Status %s, StatusCode %v", resp.Status, resp.StatusCode)
+		return metric, fmt.Errorf("status %s, status code %v", resp.Status, resp.StatusCode)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
@@ -270,9 +319,5 @@ func (c *Client) metric(rtype string) (common.Metric, error) {
 	}
 
 	err = json.Unmarshal(body, &metric)
-	if err != nil {
-		return metric, err
-	}
-
-	return metric, nil
+	return metric, err
 }

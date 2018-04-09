@@ -14,7 +14,7 @@
 
 # Please set IMG
 TAG := $(shell date +v%Y%m%d-%H%M%S)
-IMG ?= gcr.io/google-containers/github-transform
+IMG ?= k8s.gcr.io/github-transform
 
 all: push
 

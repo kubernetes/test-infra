@@ -119,10 +119,10 @@ start_cluster ()
   docker network create --subnet=172.18.0.0/16 testnet
   docker network ls
   echo "Creating virtual nodes"
-  docker run -d --privileged --net testnet --ip 172.18.0.2 -p 443:6443 -v /lib/modules:/lib/modules -v /var/kubernetes:/etc/kubernetes gcr.io/google-containers/dind-node-amd64:$(cat /docker_version) master $(hostname --ip-address)
-  docker run -d --privileged --net testnet --ip 172.18.0.3 -v /lib/modules:/lib/modules gcr.io/google-containers/dind-node-amd64:$(cat /docker_version) worker
-  docker run -d --privileged --net testnet --ip 172.18.0.4 -v /lib/modules:/lib/modules gcr.io/google-containers/dind-node-amd64:$(cat /docker_version) worker
-  docker run -d --privileged --net testnet --ip 172.18.0.5 -v /lib/modules:/lib/modules gcr.io/google-containers/dind-node-amd64:$(cat /docker_version) worker
+  docker run -d --privileged --net testnet --ip 172.18.0.2 -p 443:6443 -v /lib/modules:/lib/modules -v /var/kubernetes:/etc/kubernetes k8s.gcr.io/dind-node-amd64:$(cat /docker_version) master $(hostname --ip-address)
+  docker run -d --privileged --net testnet --ip 172.18.0.3 -v /lib/modules:/lib/modules k8s.gcr.io/dind-node-amd64:$(cat /docker_version) worker
+  docker run -d --privileged --net testnet --ip 172.18.0.4 -v /lib/modules:/lib/modules k8s.gcr.io/dind-node-amd64:$(cat /docker_version) worker
+  docker run -d --privileged --net testnet --ip 172.18.0.5 -v /lib/modules:/lib/modules k8s.gcr.io/dind-node-amd64:$(cat /docker_version) worker
 }
 
 start_host()

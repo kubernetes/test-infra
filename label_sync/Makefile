@@ -32,8 +32,6 @@ bazel:
 get-cluster-credentials:
 	gcloud container clusters get-credentials "$(CLUSTER)" --project="$(PROJECT)" --zone="$(ZONE)"
 
-.PHONY: bazel get-cluster-credentials
-
 update-config: get-cluster-credentials
 	# Oddy the first time requires creating it instead of replacing it...
 	kubectl create configmap label-config --from-file=labels.yaml=labels.yaml --dry-run -o yaml | kubectl replace configmap label-config -f -
@@ -44,4 +42,4 @@ label_sync-job: get-cluster-credentials
 label_sync-cronjob: get-cluster-credentials
 	kubectl apply -f cluster/label_sync_cron_job.yaml
 
-.PHONY: label_sync-job label_sync-cronjob bazel
+.PHONY: label_sync-job label_sync-cronjob bazel get-cluster-credentials

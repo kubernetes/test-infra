@@ -55,6 +55,11 @@ type Tide struct {
 	// allowing it to be a template.
 	TargetURL string `json:"target_url,omitempty"`
 
+	// PRStatusBaseUrl is the base URL for the PR status page.
+	// This is used to link to a merge requirements overview
+	// in the tide status context.
+	PRStatusBaseUrl string `json:"pr_status_base_url,omitempty"`
+
 	// MaxGoroutines is the maximum number of goroutines spawned inside the
 	// controller to handle org/repo:branch pools. Defaults to 20. Needs to be a
 	// positive number.
@@ -85,6 +90,8 @@ func (t *Tide) MergeMethod(org, repo string) github.PullRequestMergeType {
 type TideQuery struct {
 	Repos []string `json:"repos,omitempty"`
 
+	ExcludedBranches []string `json:"excludedBranches,omitempty"`
+
 	Labels        []string `json:"labels,omitempty"`
 	MissingLabels []string `json:"missingLabels,omitempty"`
 
@@ -95,6 +102,9 @@ func (tq *TideQuery) Query() string {
 	toks := []string{"is:pr", "state:open"}
 	for _, r := range tq.Repos {
 		toks = append(toks, fmt.Sprintf("repo:\"%s\"", r))
+	}
+	for _, b := range tq.ExcludedBranches {
+		toks = append(toks, fmt.Sprintf("-base:\"%s\"", b))
 	}
 	for _, l := range tq.Labels {
 		toks = append(toks, fmt.Sprintf("label:\"%s\"", l))

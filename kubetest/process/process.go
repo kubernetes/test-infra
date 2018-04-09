@@ -170,15 +170,20 @@ func (c *Control) FinishRunning(cmd *exec.Cmd) error {
 		select {
 		case <-sigChannel:
 			log.Printf("Killing %v(%v) after receiving signal", stepName, -cmd.Process.Pid)
-			if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL); err != nil {
+
+			pgid := getGroupPid(cmd.Process.Pid)
+
+			if err := syscall.Kill(-pgid, syscall.SIGKILL); err != nil {
 				log.Printf("Failed to kill %v: %v", stepName, err)
 			}
+
 		case <-c.Terminate.C:
 			c.termLock.Lock()
 			c.terminated = true
 			c.termLock.Unlock()
 			c.Terminate.Reset(time.Duration(-1)) // Kill subsequent processes immediately.
-			if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL); err != nil {
+			pgid := getGroupPid(cmd.Process.Pid)
+			if err := syscall.Kill(-pgid, syscall.SIGKILL); err != nil {
 				log.Printf("Failed to kill %v: %v", stepName, err)
 			}
 			if err := cmd.Process.Kill(); err != nil {
@@ -190,9 +195,10 @@ func (c *Control) FinishRunning(cmd *exec.Cmd) error {
 			c.intLock.Unlock()
 			log.Printf("Abort after %s timeout during %s. Will terminate in another 15m", c.Timeout, stepName)
 			c.Terminate.Reset(15 * time.Minute)
-			if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGABRT); err != nil {
+			pgid := getGroupPid(cmd.Process.Pid)
+			if err := syscall.Kill(-pgid, syscall.SIGABRT); err != nil {
 				log.Printf("Failed to abort %s. Will terminate immediately: %v", stepName, err)
-				syscall.Kill(-cmd.Process.Pid, syscall.SIGTERM)
+				syscall.Kill(-pgid, syscall.SIGTERM)
 				cmd.Process.Kill()
 			}
 		case err := <-finished:
@@ -259,16 +265,18 @@ func (c *Control) executeParallelCommand(cmd *exec.Cmd, resChan chan CmdExecResu
 			return
 
 		case <-termChan:
-			syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
+			pgid := getGroupPid(cmd.Process.Pid)
+			syscall.Kill(-pgid, syscall.SIGKILL)
 			if err := cmd.Process.Kill(); err != nil {
 				log.Printf("Failed to terminate %s (terminated 15m after interrupt): %v", strings.Join(cmd.Args, " "), err)
 			}
 
 		case <-intChan:
 			log.Printf("Abort after %s timeout during %s. Will terminate in another 15m", c.Timeout, strings.Join(cmd.Args, " "))
-			if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGABRT); err != nil {
+			pgid := getGroupPid(cmd.Process.Pid)
+			if err := syscall.Kill(-pgid, syscall.SIGABRT); err != nil {
 				log.Printf("Failed to abort %s. Will terminate immediately: %v", strings.Join(cmd.Args, " "), err)
-				syscall.Kill(-cmd.Process.Pid, syscall.SIGTERM)
+				syscall.Kill(-pgid, syscall.SIGTERM)
 				cmd.Process.Kill()
 			}
 		}
@@ -357,4 +365,15 @@ func (c *Control) Output(cmd *exec.Cmd) ([]byte, error) {
 	err := c.FinishRunning(cmd)
 	return stdout.Bytes(), err
 
+}
+
+// Get the process group to kill the entire main/child process
+// if Getpgid return error use the current process Pid
+func getGroupPid(pid int) int {
+	pgid, err := syscall.Getpgid(pid)
+	if err != nil {
+		log.Printf("Failed to get the group process from %v: %v", pid, err)
+		return pid
+	}
+	return pgid
 }

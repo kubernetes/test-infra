@@ -29,6 +29,7 @@ import (
 	"github.com/shurcooL/githubql"
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/github"
@@ -55,6 +56,7 @@ func testPullsMatchList(t *testing.T, test string, actual []PullRequest, expecte
 }
 
 func TestAccumulateBatch(t *testing.T) {
+	jobSet := sets.NewString("foo", "bar", "baz")
 	type pull struct {
 		number int
 		sha    string
@@ -66,7 +68,7 @@ func TestAccumulateBatch(t *testing.T) {
 	}
 	tests := []struct {
 		name       string
-		presubmits []string
+		presubmits map[int]sets.String
 		pulls      []pull
 		prowJobs   []prowjob
 
@@ -78,14 +80,14 @@ func TestAccumulateBatch(t *testing.T) {
 		},
 		{
 			name:       "batch pending",
-			presubmits: []string{"foo", "bar", "baz"},
+			presubmits: map[int]sets.String{1: jobSet, 2: jobSet},
 			pulls:      []pull{{1, "a"}, {2, "b"}},
 			prowJobs:   []prowjob{{job: "foo", state: kube.PendingState, prs: []pull{{1, "a"}}}},
 			pending:    true,
 		},
 		{
 			name:       "batch pending, successful previous run",
-			presubmits: []string{"foo", "bar", "baz"},
+			presubmits: map[int]sets.String{1: jobSet, 2: jobSet},
 			pulls:      []pull{{1, "a"}, {2, "b"}},
 			prowJobs: []prowjob{
 				{job: "foo", state: kube.PendingState, prs: []pull{{1, "a"}}},
@@ -97,7 +99,7 @@ func TestAccumulateBatch(t *testing.T) {
 		},
 		{
 			name:       "successful run",
-			presubmits: []string{"foo", "bar", "baz"},
+			presubmits: map[int]sets.String{1: jobSet, 2: jobSet},
 			pulls:      []pull{{1, "a"}, {2, "b"}},
 			prowJobs: []prowjob{
 				{job: "foo", state: kube.SuccessState, prs: []pull{{2, "b"}}},
@@ -108,7 +110,7 @@ func TestAccumulateBatch(t *testing.T) {
 		},
 		{
 			name:       "successful run, multiple PRs",
-			presubmits: []string{"foo", "bar", "baz"},
+			presubmits: map[int]sets.String{1: jobSet, 2: jobSet},
 			pulls:      []pull{{1, "a"}, {2, "b"}},
 			prowJobs: []prowjob{
 				{job: "foo", state: kube.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
@@ -119,7 +121,7 @@ func TestAccumulateBatch(t *testing.T) {
 		},
 		{
 			name:       "successful run, failures in past",
-			presubmits: []string{"foo", "bar", "baz"},
+			presubmits: map[int]sets.String{1: jobSet, 2: jobSet},
 			pulls:      []pull{{1, "a"}, {2, "b"}},
 			prowJobs: []prowjob{
 				{job: "foo", state: kube.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
@@ -133,7 +135,7 @@ func TestAccumulateBatch(t *testing.T) {
 		},
 		{
 			name:       "failures",
-			presubmits: []string{"foo", "bar", "baz"},
+			presubmits: map[int]sets.String{1: jobSet, 2: jobSet},
 			pulls:      []pull{{1, "a"}, {2, "b"}},
 			prowJobs: []prowjob{
 				{job: "foo", state: kube.FailureState, prs: []pull{{1, "a"}, {2, "b"}}},
@@ -141,6 +143,28 @@ func TestAccumulateBatch(t *testing.T) {
 				{job: "baz", state: kube.FailureState, prs: []pull{{1, "a"}, {2, "b"}}},
 				{job: "foo", state: kube.FailureState, prs: []pull{{1, "c"}, {2, "b"}}},
 			},
+		},
+		{
+			name:       "missing job required by one PR",
+			presubmits: map[int]sets.String{1: jobSet, 2: jobSet.Union(sets.NewString("boo"))},
+			pulls:      []pull{{1, "a"}, {2, "b"}},
+			prowJobs: []prowjob{
+				{job: "foo", state: kube.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "bar", state: kube.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "baz", state: kube.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
+			},
+		},
+		{
+			name:       "successful run with PR that requires additional job",
+			presubmits: map[int]sets.String{1: jobSet, 2: jobSet.Union(sets.NewString("boo"))},
+			pulls:      []pull{{1, "a"}, {2, "b"}},
+			prowJobs: []prowjob{
+				{job: "foo", state: kube.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "bar", state: kube.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "baz", state: kube.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "boo", state: kube.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
+			},
+			merges: []int{1, 2},
 		},
 	}
 	for _, test := range tests {
@@ -179,6 +203,7 @@ func TestAccumulateBatch(t *testing.T) {
 }
 
 func TestAccumulate(t *testing.T) {
+	jobSet := sets.NewString("job1", "job2")
 	type prowjob struct {
 		prNumber int
 		job      string
@@ -186,7 +211,7 @@ func TestAccumulate(t *testing.T) {
 		sha      string
 	}
 	tests := []struct {
-		presubmits   []string
+		presubmits   map[int]sets.String
 		pullRequests map[int]string
 		prowJobs     []prowjob
 
@@ -195,8 +220,16 @@ func TestAccumulate(t *testing.T) {
 		none      []int
 	}{
 		{
-			presubmits:   []string{"job1", "job2"},
 			pullRequests: map[int]string{1: "", 2: "", 3: "", 4: "", 5: "", 6: "", 7: ""},
+			presubmits: map[int]sets.String{
+				1: jobSet,
+				2: jobSet,
+				3: jobSet,
+				4: jobSet,
+				5: jobSet,
+				6: jobSet,
+				7: jobSet,
+			},
 			prowJobs: []prowjob{
 				{2, "job1", kube.PendingState, ""},
 				{3, "job1", kube.PendingState, ""},
@@ -218,8 +251,8 @@ func TestAccumulate(t *testing.T) {
 			none:      []int{1, 2, 4},
 		},
 		{
-			presubmits:   []string{"job1", "job2", "job3", "job4"},
 			pullRequests: map[int]string{7: ""},
+			presubmits:   map[int]sets.String{7: sets.NewString("job1", "job2", "job3", "job4")},
 			prowJobs: []prowjob{
 				{7, "job1", kube.SuccessState, ""},
 				{7, "job2", kube.FailureState, ""},
@@ -237,8 +270,8 @@ func TestAccumulate(t *testing.T) {
 			none:      []int{7},
 		},
 		{
-			presubmits:   []string{"job1", "job2", "job3", "job4"},
 			pullRequests: map[int]string{7: ""},
+			presubmits:   map[int]sets.String{7: sets.NewString("job1", "job2", "job3", "job4")},
 			prowJobs: []prowjob{
 				{7, "job1", kube.FailureState, ""},
 				{7, "job2", kube.FailureState, ""},
@@ -256,8 +289,8 @@ func TestAccumulate(t *testing.T) {
 			none:      []int{7},
 		},
 		{
-			presubmits:   []string{"job1", "job2", "job3", "job4"},
 			pullRequests: map[int]string{7: ""},
+			presubmits:   map[int]sets.String{7: sets.NewString("job1", "job2", "job3", "job4")},
 			prowJobs: []prowjob{
 				{7, "job1", kube.SuccessState, ""},
 				{7, "job2", kube.FailureState, ""},
@@ -276,8 +309,8 @@ func TestAccumulate(t *testing.T) {
 			none:      []int{},
 		},
 		{
-			presubmits:   []string{"job1", "job2", "job3", "job4"},
 			pullRequests: map[int]string{7: ""},
+			presubmits:   map[int]sets.String{7: sets.NewString("job1", "job2", "job3", "job4")},
 			prowJobs: []prowjob{
 				{7, "job1", kube.SuccessState, ""},
 				{7, "job2", kube.FailureState, ""},
@@ -296,7 +329,7 @@ func TestAccumulate(t *testing.T) {
 			none:      []int{},
 		},
 		{
-			presubmits:   []string{"job1"},
+			presubmits:   map[int]sets.String{7: sets.NewString("job1")},
 			pullRequests: map[int]string{7: "new", 8: "new"},
 			prowJobs: []prowjob{
 				{7, "job1", kube.SuccessState, "old"},
@@ -398,12 +431,25 @@ func (f *fgc) GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, 
 		nil
 }
 
+func (f *fgc) GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error) {
+	if number != 100 {
+		return nil, nil
+	}
+	return []github.PullRequestChange{
+			{
+				Filename: "CHANGED",
+			},
+		},
+		nil
+}
+
 func TestExpectedStatus(t *testing.T) {
 	neededLabels := []string{"need-1", "need-2", "need-a-very-super-duper-extra-not-short-at-all-label-name"}
 	forbiddenLabels := []string{"forbidden-1", "forbidden-2"}
 	testcases := []struct {
 		name string
 
+		baseref  string
 		labels   []string
 		contexts []Context
 		inPool   bool
@@ -458,6 +504,15 @@ func TestExpectedStatus(t *testing.T) {
 			desc:  fmt.Sprintf(statusNotInPool, " Needs need-1 label."),
 		},
 		{
+			name:    "against excluded branch",
+			baseref: "bad",
+			labels:  neededLabels,
+			inPool:  false,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " Merging to branch bad is forbidden."),
+		},
+		{
 			name:     "only failed tide context",
 			labels:   neededLabels,
 			contexts: []Context{{Context: githubql.String(statusContext), State: githubql.StatusStateError}},
@@ -508,8 +563,9 @@ func TestExpectedStatus(t *testing.T) {
 	queriesByRepo := map[string]config.TideQueries{
 		"": {
 			config.TideQuery{
-				Labels:        neededLabels,
-				MissingLabels: forbiddenLabels,
+				ExcludedBranches: []string{"bad"},
+				Labels:           neededLabels,
+				MissingLabels:    forbiddenLabels,
 			},
 			config.TideQuery{
 				Labels: []string{"1", "2", "3", "4", "5", "6", "7"}, // lots of requirements
@@ -520,6 +576,12 @@ func TestExpectedStatus(t *testing.T) {
 	for _, tc := range testcases {
 		t.Logf("Test Case: %q\n", tc.name)
 		var pr PullRequest
+		pr.BaseRef = struct {
+			Name   githubql.String
+			Prefix githubql.String
+		}{
+			Name: githubql.String(tc.baseref),
+		}
 		for _, label := range tc.labels {
 			pr.Labels.Nodes = append(
 				pr.Labels.Nodes,
@@ -841,32 +903,56 @@ func TestPickBatch(t *testing.T) {
 	testprs := []struct {
 		files   map[string][]byte
 		success bool
+		number  int
 
 		included bool
 	}{
 		{
 			files:    map[string][]byte{"bar": []byte("ok")},
 			success:  true,
+			number:   0,
 			included: true,
 		},
 		{
 			files:    map[string][]byte{"foo": []byte("ok")},
 			success:  true,
+			number:   1,
 			included: true,
 		},
 		{
 			files:    map[string][]byte{"bar": []byte("conflicts with 0")},
 			success:  true,
+			number:   2,
 			included: false,
 		},
 		{
 			files:    map[string][]byte{"qux": []byte("ok")},
 			success:  false,
+			number:   6,
 			included: false,
 		},
 		{
 			files:    map[string][]byte{"bazel": []byte("ok")},
 			success:  true,
+			number:   7,
+			included: false, // batch of 5 smallest excludes this
+		},
+		{
+			files:    map[string][]byte{"other": []byte("ok")},
+			success:  true,
+			number:   5,
+			included: true,
+		},
+		{
+			files:    map[string][]byte{"changes": []byte("ok")},
+			success:  true,
+			number:   4,
+			included: true,
+		},
+		{
+			files:    map[string][]byte{"something": []byte("ok")},
+			success:  true,
+			number:   3,
 			included: true,
 		},
 	}
@@ -877,8 +963,8 @@ func TestPickBatch(t *testing.T) {
 		branch: "master",
 		sha:    "master",
 	}
-	for i, testpr := range testprs {
-		if err := lg.CheckoutNewBranch("o", "r", fmt.Sprintf("pr-%d", i)); err != nil {
+	for _, testpr := range testprs {
+		if err := lg.CheckoutNewBranch("o", "r", fmt.Sprintf("pr-%d", testpr.number)); err != nil {
 			t.Fatalf("Error checking out new branch: %v", err)
 		}
 		if err := lg.AddCommit("o", "r", testpr.files); err != nil {
@@ -887,9 +973,9 @@ func TestPickBatch(t *testing.T) {
 		if err := lg.Checkout("o", "r", "master"); err != nil {
 			t.Fatalf("Error checking out master: %v", err)
 		}
-		oid := githubql.String(fmt.Sprintf("origin/pr-%d", i))
+		oid := githubql.String(fmt.Sprintf("origin/pr-%d", testpr.number))
 		var pr PullRequest
-		pr.Number = githubql.Int(i)
+		pr.Number = githubql.Int(testpr.number)
 		pr.HeadRefOID = oid
 		pr.Commits.Nodes = []struct {
 			Commit Commit
@@ -908,18 +994,18 @@ func TestPickBatch(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error from pickBatch: %v", err)
 	}
-	for i, testpr := range testprs {
+	for _, testpr := range testprs {
 		var found bool
 		for _, pr := range prs {
-			if int(pr.Number) == i {
+			if int(pr.Number) == testpr.number {
 				found = true
 				break
 			}
 		}
 		if found && !testpr.included {
-			t.Errorf("PR %d should not be picked.", i)
+			t.Errorf("PR %d should not be picked.", testpr.number)
 		} else if !found && testpr.included {
-			t.Errorf("PR %d should be picked.", i)
+			t.Errorf("PR %d should be picked.", testpr.number)
 		}
 	}
 }
@@ -1058,20 +1144,45 @@ func TestTakeAction(t *testing.T) {
 			triggered: 0,
 			action:    MergeBatch,
 		},
+		{
+			name: "one PR that triggers RunIfChangedJob",
+
+			batchPending: false,
+			successes:    []int{},
+			pendings:     []int{},
+			nones:        []int{100},
+			batchMerges:  []int{},
+
+			merged:    0,
+			triggered: 2,
+			action:    Trigger,
+		},
 	}
 
 	for _, tc := range testcases {
 		ca := &config.Agent{}
-		ca.Set(&config.Config{
-			Presubmits: map[string][]config.Presubmit{
+		cfg := &config.Config{}
+		cfg.SetPresubmits(
+			map[string][]config.Presubmit{
 				"o/r": {
 					{
 						Name:      "foo",
+						Trigger:   "/test all",
 						AlwaysRun: true,
+					},
+					{
+						Name:         "if-changed",
+						Trigger:      "/test if-changed",
+						RunIfChanged: "CHANGED",
 					},
 				},
 			},
-		})
+		)
+		ca.Set(cfg)
+		presubmits := map[int]sets.String{100: sets.NewString("foo", "if-changed")}
+		for i := 0; i <= 8; i++ {
+			presubmits[i] = sets.NewString("foo")
+		}
 		lg, gc, err := localgit.New()
 		if err != nil {
 			t.Fatalf("Error making local git: %v", err)
@@ -1121,8 +1232,8 @@ func TestTakeAction(t *testing.T) {
 		c := &Controller{
 			logger: logrus.WithField("controller", "tide"),
 			gc:     gc,
-			ghc:    &fgc,
 			ca:     ca,
+			ghc:    &fgc,
 			kc:     &fkc,
 		}
 		var batchPending []PullRequest
@@ -1130,7 +1241,7 @@ func TestTakeAction(t *testing.T) {
 			batchPending = []PullRequest{{}}
 		}
 		t.Logf("Test case: %s", tc.name)
-		if act, _, err := c.takeAction(sp, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges)); err != nil {
+		if act, _, err := c.takeAction(sp, presubmits, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges)); err != nil {
 			t.Errorf("Error in takeAction: %v", err)
 			continue
 		} else if act != tc.action {
@@ -1403,6 +1514,269 @@ func TestSync(t *testing.T) {
 			} else if !reflect.DeepEqual(*match, expected) {
 				t.Errorf("Expected pool %#v does not match actual pool %#v.", expected, *match)
 			}
+		}
+	}
+}
+
+func TestTargetUrl(t *testing.T) {
+	testcases := []struct {
+		name   string
+		pr     *PullRequest
+		config config.Tide
+
+		expectedUrl string
+	}{
+		{
+			name:        "no config",
+			pr:          &PullRequest{},
+			config:      config.Tide{},
+			expectedUrl: "",
+		},
+		{
+			name:        "tide overview config",
+			pr:          &PullRequest{},
+			config:      config.Tide{TargetURL: "tide.com"},
+			expectedUrl: "tide.com",
+		},
+		{
+			name:        "PR dashboard config and overview config",
+			pr:          &PullRequest{},
+			config:      config.Tide{TargetURL: "tide.com", PRStatusBaseUrl: "pr.status.com"},
+			expectedUrl: "tide.com",
+		},
+		{
+			name: "PR dashboard config",
+			pr: &PullRequest{
+				Author: struct {
+					Login githubql.String
+				}{Login: githubql.String("author")},
+				Repository: struct {
+					Name          githubql.String
+					NameWithOwner githubql.String
+					Owner         struct {
+						Login githubql.String
+					}
+				}{NameWithOwner: githubql.String("org/repo")},
+				HeadRefName: "head",
+			},
+			config:      config.Tide{PRStatusBaseUrl: "pr.status.com"},
+			expectedUrl: "pr.status.com?query=is%3Apr+repo%3Aorg%2Frepo+author%3Aauthor+head%3Ahead",
+		},
+	}
+
+	for _, tc := range testcases {
+		ca := &config.Agent{}
+		ca.Set(&config.Config{Tide: tc.config})
+		log := logrus.WithField("controller", "status-update")
+		if actual, expected := targetUrl(ca, tc.pr, log), tc.expectedUrl; actual != expected {
+			t.Errorf("%s: expected target URL %s but got %s", tc.name, expected, actual)
+		}
+	}
+}
+
+func TestPresubmitsByPull(t *testing.T) {
+	samplePR := PullRequest{
+		Number:     githubql.Int(100),
+		HeadRefOID: githubql.String("sha"),
+	}
+	testcases := []struct {
+		name string
+
+		initialChangeCache map[string][]string
+		presubmits         []config.Presubmit
+
+		expectedPresubmits  map[int]sets.String
+		expectedChangeCache map[string][]string
+	}{
+		{
+			name: "no matching presubmits",
+			presubmits: []config.Presubmit{
+				{
+					Name:         "always",
+					RunIfChanged: "foo",
+				},
+				{
+					Name: "never",
+				},
+			},
+			expectedChangeCache: map[string][]string{"org/repo#100:sha": {"CHANGED"}},
+			expectedPresubmits:  map[int]sets.String{},
+		},
+		{
+			name:               "no presubmits",
+			presubmits:         []config.Presubmit{},
+			expectedPresubmits: map[int]sets.String{},
+		},
+		{
+			name: "no matching presubmits (check cache eviction)",
+			presubmits: []config.Presubmit{
+				{
+					Name: "never",
+				},
+			},
+			initialChangeCache: map[string][]string{"org/repo#100:sha": {"FILE"}},
+			expectedPresubmits: map[int]sets.String{},
+		},
+		{
+			name: "no matching presubmits (check cache retention)",
+			presubmits: []config.Presubmit{
+				{
+					Name:         "always",
+					RunIfChanged: "foo",
+				},
+				{
+					Name: "never",
+				},
+			},
+			initialChangeCache:  map[string][]string{"org/repo#100:sha": {"FILE"}},
+			expectedChangeCache: map[string][]string{"org/repo#100:sha": {"FILE"}},
+			expectedPresubmits:  map[int]sets.String{},
+		},
+		{
+			name: "always_run",
+			presubmits: []config.Presubmit{
+				{
+					Name:      "always",
+					AlwaysRun: true,
+				},
+				{
+					Name: "never",
+				},
+			},
+			expectedPresubmits: map[int]sets.String{100: sets.NewString("always")},
+		},
+		{
+			name: "runs against branch",
+			presubmits: []config.Presubmit{
+				{
+					Name:      "presubmit",
+					AlwaysRun: true,
+					Brancher: config.Brancher{
+						Branches: []string{"master", "dev"},
+					},
+				},
+				{
+					Name: "never",
+				},
+			},
+			expectedPresubmits: map[int]sets.String{100: sets.NewString("presubmit")},
+		},
+		{
+			name: "doesn't run against branch",
+			presubmits: []config.Presubmit{
+				{
+					Name:      "presubmit",
+					AlwaysRun: true,
+					Brancher: config.Brancher{
+						Branches: []string{"release", "dev"},
+					},
+				},
+				{
+					Name:      "always",
+					AlwaysRun: true,
+				},
+				{
+					Name: "never",
+				},
+			},
+			expectedPresubmits: map[int]sets.String{100: sets.NewString("always")},
+		},
+		{
+			name: "run_if_changed (uncached)",
+			presubmits: []config.Presubmit{
+				{
+					Name:         "presubmit",
+					RunIfChanged: "^CHANGE.$",
+				},
+				{
+					Name:      "always",
+					AlwaysRun: true,
+				},
+				{
+					Name: "never",
+				},
+			},
+			expectedPresubmits:  map[int]sets.String{100: sets.NewString("presubmit", "always")},
+			expectedChangeCache: map[string][]string{"org/repo#100:sha": {"CHANGED"}},
+		},
+		{
+			name: "run_if_changed (cached)",
+			presubmits: []config.Presubmit{
+				{
+					Name:         "presubmit",
+					RunIfChanged: "^FIL.$",
+				},
+				{
+					Name:      "always",
+					AlwaysRun: true,
+				},
+				{
+					Name: "never",
+				},
+			},
+			initialChangeCache:  map[string][]string{"org/repo#100:sha": {"FILE"}},
+			expectedPresubmits:  map[int]sets.String{100: sets.NewString("presubmit", "always")},
+			expectedChangeCache: map[string][]string{"org/repo#100:sha": {"FILE"}},
+		},
+		{
+			name: "run_if_changed (cached) (skippable)",
+			presubmits: []config.Presubmit{
+				{
+					Name:         "presubmit",
+					RunIfChanged: "^CHANGE.$",
+				},
+				{
+					Name:      "always",
+					AlwaysRun: true,
+				},
+				{
+					Name: "never",
+				},
+			},
+			initialChangeCache:  map[string][]string{"org/repo#100:sha": {"FILE"}},
+			expectedPresubmits:  map[int]sets.String{100: sets.NewString("always")},
+			expectedChangeCache: map[string][]string{"org/repo#100:sha": {"FILE"}},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Logf("Starting test case: %q", tc.name)
+
+		if tc.initialChangeCache == nil {
+			tc.initialChangeCache = map[string][]string{}
+		}
+		if tc.expectedChangeCache == nil {
+			tc.expectedChangeCache = map[string][]string{}
+		}
+
+		cfg := &config.Config{}
+		cfg.SetPresubmits(map[string][]config.Presubmit{
+			"org/repo": tc.presubmits,
+			"foo/bar":  {{Name: "wrong-repo", AlwaysRun: true}},
+		})
+		cfgAgent := &config.Agent{}
+		cfgAgent.Set(cfg)
+		sp := subpool{
+			org:    "org",
+			repo:   "repo",
+			branch: "master",
+			prs:    []PullRequest{samplePR},
+		}
+		c := &Controller{
+			ca:               cfgAgent,
+			fileChangesCache: tc.initialChangeCache,
+			ghc:              &fgc{},
+		}
+
+		presubmits, err := c.presubmitsByPull(sp)
+		if err != nil {
+			t.Fatalf("unexpected error from presubmitsByPull: %v", err)
+		}
+		if !reflect.DeepEqual(presubmits, tc.expectedPresubmits) {
+			t.Errorf("expected presubmit mapping: %v,\nbut got %v\n", tc.expectedPresubmits, presubmits)
+		}
+		if !reflect.DeepEqual(c.fileChangesCache, tc.expectedChangeCache) {
+			t.Errorf("expected file change cache: %v,\nbut got %v\n", tc.expectedChangeCache, c.fileChangesCache)
 		}
 	}
 }

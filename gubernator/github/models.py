@@ -164,8 +164,10 @@ class GHIssueDigest(ndb.Model):
                                    GHIssueDigest.head == head)
 
     @staticmethod
-    def find_xrefs(xref):
-        return GHIssueDigest.query(GHIssueDigest.xref == xref)
+    @ndb.tasklet
+    def find_xrefs_async(xref):
+        issues = yield GHIssueDigest.query(GHIssueDigest.xref == xref).fetch_async()
+        raise ndb.Return(list(issues))
 
     @staticmethod
     @ndb.tasklet

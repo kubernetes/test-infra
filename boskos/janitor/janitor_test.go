@@ -35,7 +35,7 @@ type fakeBoskos struct {
 }
 
 // Create a fake client
-func CreateFakeBoskos(resources int, types []string) *fakeBoskos {
+func createFakeBoskos(resources int, types []string) *fakeBoskos {
 	fb := &fakeBoskos{}
 	r := rand.New(rand.NewSource(99))
 	for i := 0; i < resources; i++ {
@@ -43,14 +43,14 @@ func CreateFakeBoskos(resources int, types []string) *fakeBoskos {
 			common.Resource{
 				Name:  fmt.Sprintf("res-%d", i),
 				Type:  types[r.Intn(len(types))],
-				State: "dirty",
+				State: common.Dirty,
 			})
 	}
 
 	return fb
 }
 
-func (fb *fakeBoskos) Acquire(rtype string, state string, dest string) (string, error) {
+func (fb *fakeBoskos) Acquire(rtype string, state string, dest string) (*common.Resource, error) {
 	fb.lock.Lock()
 	defer fb.lock.Unlock()
 
@@ -59,11 +59,11 @@ func (fb *fakeBoskos) Acquire(rtype string, state string, dest string) (string, 
 		if r.State == state {
 			r.State = dest
 			fb.wg.Add(1)
-			return r.Name, nil
+			return r, nil
 		}
 	}
 
-	return "", nil
+	return nil, fmt.Errorf("could not find resource of type %s", rtype)
 }
 
 func (fb *fakeBoskos) ReleaseOne(name string, dest string) error {
@@ -99,7 +99,7 @@ func waitTimeout(wg *sync.WaitGroup, timeout time.Duration) bool {
 }
 
 func TestNormal(t *testing.T) {
-	var totalClean int32 = 0
+	var totalClean int32
 
 	fakeClean := func(p string) error {
 		atomic.AddInt32(&totalClean, 1)
@@ -107,7 +107,7 @@ func TestNormal(t *testing.T) {
 	}
 
 	types := []string{"a", "b", "c", "d"}
-	fb := CreateFakeBoskos(1000, types)
+	fb := createFakeBoskos(1000, types)
 
 	buffer := setup(fb, poolSize, bufferSize, fakeClean)
 	totalAcquire := run(fb, buffer, []string{"t"})
@@ -125,7 +125,7 @@ func TestNormal(t *testing.T) {
 	}
 
 	for _, r := range fb.resources {
-		if r.State != "free" {
+		if r.State != common.Free {
 			t.Errorf("resource %v, expect state free, got state %v", r.Name, r.State)
 		}
 	}
@@ -142,9 +142,9 @@ func FakeRun(fb *fakeBoskos, buffer chan string, res string) (int, error) {
 		case <-timeout:
 			return totalClean, errors.New("should not timedout")
 		default:
-			if proj, err := fb.Acquire(res, "dirty", "cleaning"); err != nil {
+			if projRes, err := fb.Acquire(res, common.Dirty, common.Cleaning); err != nil {
 				return totalClean, fmt.Errorf("acquire failed with %v", err)
-			} else if proj == "" {
+			} else if projRes.Name == "" {
 				return totalClean, errors.New("not expect to run out of resources")
 			} else {
 				if totalClean > maxAcquire {
@@ -153,7 +153,7 @@ func FakeRun(fb *fakeBoskos, buffer chan string, res string) (int, error) {
 				}
 				boom := time.After(50 * time.Millisecond)
 				select {
-				case buffer <- proj: // normal case
+				case buffer <- projRes.Name: // normal case
 					totalClean++
 				case <-boom:
 					return totalClean, nil
@@ -171,7 +171,7 @@ func TestMalfunctionJanitor(t *testing.T) {
 		return nil
 	}
 
-	fb := CreateFakeBoskos(200, []string{"t"})
+	fb := createFakeBoskos(200, []string{"t"})
 
 	buffer := setup(fb, poolSize, bufferSize, fakeClean)
 

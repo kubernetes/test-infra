@@ -178,7 +178,7 @@ def main():
         print('%d files have incorrect boilerplate headers:' %
               len(nonconforming_files))
         for filename in sorted(nonconforming_files):
-            print(filename)
+            print(os.path.relpath(filename, ARGS.rootdir))
         sys.exit(1)
 
 
