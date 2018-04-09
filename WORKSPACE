@@ -8,10 +8,10 @@ load("@bazel_skylib//:lib.bzl", "versions")
 
 versions.check(minimum_bazel_version = "0.10.0")
 
-git_repository(
+http_archive(
     name = "io_bazel_rules_go",
-    commit = "6b39964af66c98580be4c5ac6cf1d243332f78e4",
-    remote = "https://github.com/bazelbuild/rules_go.git",
+    url = "https://github.com/bazelbuild/rules_go/releases/download/0.10.3/rules_go-0.10.3.tar.gz",
+    sha256 = "feba3278c13cde8d67e341a837f69a029f698d7a27ddbb2a202be7a10b22142a",
 )
 
 load("@io_bazel_rules_go//go:def.bzl", "go_rules_dependencies", "go_register_toolchains")
@@ -19,7 +19,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_rules_dependencies", "go_register_too
 go_rules_dependencies()
 
 go_register_toolchains(
-    go_version = "1.9.3",
+    go_version = "1.10.1",
 )
 
 git_repository(
@@ -425,3 +425,20 @@ git_repository(
 load("@io_bazel_rules_appengine//appengine:py_appengine.bzl", "py_appengine_repositories")
 
 py_appengine_repositories()
+
+git_repository(
+    name = "io_bazel_rules_python",
+    commit = "f414af5ed85e451908b3fb873211e8f2939ea4e8",
+    remote = "https://github.com/bazelbuild/rules_python.git",
+)
+
+# Only needed for PIP support:
+load("@io_bazel_rules_python//python:pip.bzl", "pip_import")
+
+pip_import(
+    name = "kettle_deps",
+    requirements = "//kettle:requirements.txt",
+)
+
+load("@kettle_deps//:requirements.bzl", "pip_install")
+pip_install()

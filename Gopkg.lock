@@ -160,6 +160,12 @@
   version = "v1.1.0"
 
 [[projects]]
+  name = "github.com/deckarep/golang-set"
+  packages = ["."]
+  revision = "1d4478f51bed434f1dadf96dcd9b43aabac66795"
+  version = "v1.7"
+
+[[projects]]
   name = "github.com/djherbis/atime"
   packages = ["."]
   revision = "8e47e0e01d08df8b9f840d74299c8ab70a024a30"
@@ -397,6 +403,18 @@
     "diskcache",
   ]
   revision = "16db777d8ebea60a3e746a7e0703eaaa53f85f7f"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/hashicorp/errwrap"
+  packages = ["."]
+  revision = "7554cd9344cec97297fa6649b055a8c98c2a1e55"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/hashicorp/go-multierror"
+  packages = ["."]
+  revision = "b7773ae218740a7be65057fc60b366a49b538a44"
 
 [[projects]]
   branch = "master"
@@ -828,6 +846,18 @@
   revision = "fbe336854453ac8e27bffe14e1964555245cbd05"
 
 [[projects]]
+  branch = "master"
+  name = "k8s.io/apiextensions-apiserver"
+  packages = [
+    "pkg/apis/apiextensions",
+    "pkg/apis/apiextensions/v1beta1",
+    "pkg/client/clientset/clientset",
+    "pkg/client/clientset/clientset/scheme",
+    "pkg/client/clientset/clientset/typed/apiextensions/v1beta1",
+  ]
+  revision = "e4d9f6c01342df2d731be47146016a52d1a623ed"
+
+[[projects]]
   branch = "release-1.9"
   name = "k8s.io/apimachinery"
   packages = [
@@ -950,6 +980,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "37b2fe59147da0681ef31f3ec9b026c16b658f9f02d4476d2c6720bd64a6797e"
+  inputs-digest = "f7037007e132280c60b53d6a6649c4b34e3ae0526730304189a7b200471d4993"
   solver-name = "gps-cdcl"
   solver-version = 1

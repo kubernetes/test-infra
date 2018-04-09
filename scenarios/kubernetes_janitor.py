@@ -92,6 +92,7 @@ PR_PROJECTS = {
     'k8s-jkns-pr-node-e2e': 3,
     'k8s-jkns-pr-gce-gpus': 3,
     'k8s-gke-gpu-pr': 3,
+    'k8s-presubmit-scale': 3,
 }
 
 def check_pr_jobs():

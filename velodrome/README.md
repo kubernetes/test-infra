@@ -48,7 +48,7 @@ One can set-up monitoring components in two different ways:
 
 1. Push data directly into InfluxDb. Influx uses a SQL-like syntax and
 receives that data (there is no scraping). If you have events that you would
-like to push from time to time rather than report a current status, you should
+like to push from time to time rather than reporting a current status, you should
 push to InfluxDB. Examples: build time, test time, etc ...
 
 2. Data can be polled on a regular interval by Prometheus. Prometheus will
@@ -65,7 +65,7 @@ Naming convention
 To disambiguate how each word is used, let's give a description of the naming
 convention used by velodrome:
 - Organization: This has the same meaning as the Github Organization. This is
-  holding multiple repository. e.g. In `github.com/istio/manager`, the
+  holding multiple repositories. e.g. In `github.com/istio/manager`, the
   organization is `istio`.
 - Repository can be either the last part of the github repository URL (i.e. in
   `github.com/istio/manager`, it would be `manager`), or the fully qualified
@@ -94,7 +94,7 @@ Update/Create deployments
 
 [config.py](config.py) will generate all the deployments file for you. It reads
 the configuration in [config.yaml](config.yaml) to generate deployments for each
-projects and/or repositories with proper labels. You can then use `kubectl`
+project and/or repositories with proper labels. You can then use `kubectl`
 labels help you select what you want to do exactly, for example:
 
 ```

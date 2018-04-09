@@ -261,9 +261,10 @@ def cluster_name(cluster, build):
     """Return or select a cluster name."""
     if cluster:
         return cluster
-    if len(build) < 20:
-        return 'e2e-%s' % build
-    return 'e2e-%s' % hashlib.md5(build).hexdigest()[:10]
+    # Create a suffix based on the build number. Append a random string to it for
+    # avoiding potential conflicts across different jobs' runs (see issue #7592).
+    suffix = build if len(build) < 10 else hashlib.md5(build).hexdigest()[:10]
+    return 'e2e-%s-%s' % (suffix, os.urandom(3).encode('hex'))
 
 
 # TODO(krzyzacy): Move this into kubetest

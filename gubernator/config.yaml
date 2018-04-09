@@ -1,33 +1,20 @@
 ---
+default_external_services:
+  gcs_bucket: kubernetes-jenkins/
+  gcs_pull_prefix: kubernetes-jenkins/pr-logs/pull
+  prow_url: prow.k8s.io
 default_org: kubernetes
 default_repo: kubernetes
 external_services:
-  GoogleCloudPlatform:
-    gcs_bucket: kubernetes-jenkins/
-    gcs_pull_prefix: kubernetes-jenkins/pr-logs/pull
-    prow_url: prow.k8s.io
   istio:
     gcs_pull_prefix: istio-prow/pull
     prow_url: prow.istio.io
   istio-releases:
     gcs_pull_prefix: istio-prow/pull
     prow_url: prow.istio.io
-  kubernetes:
-    gcs_bucket: kubernetes-jenkins/
-    gcs_pull_prefix: kubernetes-jenkins/pr-logs/pull
-    prow_url: prow.k8s.io
-  kubernetes-sigs:
-    gcs_bucket: kubernetes-jenkins/
-    gcs_pull_prefix: kubernetes-jenkins/pr-logs/pull
-    prow_url: prow.k8s.io
-  tensorflow:
-    gcs_bucket: kubernetes-jenkins/
-    gcs_pull_prefix: kubernetes-jenkins/pr-logs/pull
-    prow_url: prow.k8s.io
 jobs:
   kubernetes-jenkins/logs/:
   - ci-kubernetes-build
-  - ci-kubernetes-e2e-gce-gpu
   - ci-kubernetes-e2e-gce-scale-correctness
   - ci-kubernetes-e2e-gce-scale-performance
   - ci-kubernetes-e2e-gci-gce
@@ -42,10 +29,13 @@ jobs:
   - pull-kubernetes-bazel-build
   - pull-kubernetes-bazel-test
   - pull-kubernetes-e2e-gce
+  - pull-kubernetes-e2e-gce-100-performance
   - pull-kubernetes-e2e-gce-device-plugin-gpu
   - pull-kubernetes-e2e-kops-aws
   - pull-kubernetes-integration
   - pull-kubernetes-kubemark-e2e-gce
+  - pull-kubernetes-kubemark-e2e-gce-big
   - pull-kubernetes-node-e2e
   - pull-kubernetes-typecheck
   - pull-kubernetes-verify
+recursive_artifacts: false

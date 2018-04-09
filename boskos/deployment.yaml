@@ -50,10 +50,11 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: boskos
-        image: gcr.io/k8s-testimages/boskos:v20170725-ef5f2dc3
+        image: gcr.io/k8s-testimages/boskos:v20180405-12e892d69
         args:
-        - -storage=/store/boskos.json
-        - -config=/etc/config/config
+        - --storage=/store/boskos.json
+        - --config=/etc/config/config
+        - --namespace=test-pods
         ports:
           - containerPort: 8080
             protocol: TCP

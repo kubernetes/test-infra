@@ -11,5 +11,5 @@ Once your reviewer is happy, they will say `/lgtm` which will apply the
 The `approved` label will also automatically be applied to PRs opened by an 
 OWNER. If neither you nor your reviewer is an owner, please `/assign` someone
  who is.
-Your PR will be automatically merged once it has the the `lgtm` and `approved` 
+Your PR will be automatically merged once it has the `lgtm` and `approved` 
 labels, does not have any `do-not-merge/*` labels, and all tests are passing.

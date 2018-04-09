@@ -65,20 +65,19 @@ def sort_job_config():
 
 def sorted_boskos_config():
     """Get the sorted boskos configuration."""
-    with open(test_infra('boskos/resources.json'), 'r') as fp:
-        configs = json.loads(fp.read())
-    for rtype in configs:
+    with open(test_infra('boskos/resources.yaml'), 'r') as fp:
+        configs = yaml.round_trip_load(fp, preserve_quotes=True)
+    for rtype in configs['resources']:
         rtype["names"] = sorted(rtype["names"])
     output = cStringIO.StringIO()
-    json.dump(
-        configs, output, sort_keys=True, indent=2, separators=(',', ': '))
-    output.write('\n')
+    yaml.round_trip_dump(
+        configs, output, default_flow_style=False, width=float("inf"))
     return output
 
 def sort_boskos_config():
-    """Sort boskos/resources.json alphabetically."""
+    """Sort boskos/resources.yaml alphabetically."""
     output = sorted_boskos_config()
-    with open(test_infra('boskos/resources.json'), 'w+') as fp:
+    with open(test_infra('boskos/resources.yaml'), 'w+') as fp:
         fp.write(output.getvalue())
     output.close()
 

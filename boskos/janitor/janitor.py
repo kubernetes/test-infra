@@ -245,12 +245,11 @@ def main(project, days, hours, filt):
             print >>sys.stderr, 'Fail to list resource %r from project %r' % (res.name, project)
 
     # try to clean leaking gke cluster
-    if 'gke' in project:
-        try:
-            err |= clean_gke_cluster(project, age, filt)
-        except ValueError:
-            err |= 1 # keep clean the other resource
-            print >>sys.stderr, 'Fail to clean up cluster from project %r' % project
+    try:
+        err |= clean_gke_cluster(project, age, filt)
+    except ValueError:
+        err |= 1 # keep clean the other resource
+        print >>sys.stderr, 'Fail to clean up cluster from project %r' % project
 
     print '[=== Finish Janitor on project %r with status %r ===]' % (project, err)
     sys.exit(err)

@@ -78,7 +78,7 @@ class JobTest(unittest.TestCase):
                 yield job, job_path
 
     def test_config_is_sorted(self):
-        """Test jobs/config.json, prow/config.yaml and boskos/resources.json are sorted."""
+        """Test jobs/config.json, prow/config.yaml and boskos/resources.yaml are sorted."""
         with open(config_sort.test_infra('jobs/config.json')) as fp:
             original = fp.read()
             expect = config_sort.sorted_job_config().getvalue()
@@ -92,11 +92,11 @@ class JobTest(unittest.TestCase):
             if original != expect:
                 self.fail('prow/config.yaml is not sorted, please run '
                           '`bazel run //jobs:config_sort`')
-        with open(config_sort.test_infra('boskos/resources.json')) as fp:
+        with open(config_sort.test_infra('boskos/resources.yaml')) as fp:
             original = fp.read()
             expect = config_sort.sorted_boskos_config().getvalue()
             if original != expect:
-                self.fail('boskos/resources.json is not sorted, please run '
+                self.fail('boskos/resources.yaml is not sorted, please run '
                           '`bazel run //jobs:config_sort`')
 
     def test_orphaned_env(self):
@@ -602,8 +602,9 @@ class JobTest(unittest.TestCase):
         # pylint: enable=line-too-long
         projects = collections.defaultdict(set)
         boskos = []
-        with open(config_sort.test_infra('boskos/resources.json')) as fp:
-            for rtype in json.loads(fp.read()):
+        with open(config_sort.test_infra('boskos/resources.yaml')) as fp:
+            boskos_config = yaml.safe_load(fp)
+            for rtype in boskos_config['resources']:
                 if 'project' in rtype['type']:
                     for name in rtype['names']:
                         boskos.append(name)
@@ -620,7 +621,7 @@ class JobTest(unittest.TestCase):
                         project = arg.split('=', 1)[1]
                 if project:
                     if project in boskos:
-                        self.fail('Project %s cannot be in boskos/resources.json!' % project)
+                        self.fail('Project %s cannot be in boskos/resources.yaml!' % project)
                     projects[project].add(allowed_list.get(job, job))
 
         duplicates = [(p, j) for p, j in projects.items() if len(j) > 1]

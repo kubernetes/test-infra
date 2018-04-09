@@ -26,15 +26,18 @@ import (
 	"time"
 
 	"k8s.io/test-infra/boskos/common"
+	"k8s.io/test-infra/boskos/crds"
 	"k8s.io/test-infra/boskos/ranch"
 )
 
 func MakeTestRanch(resources []common.Resource) *ranch.Ranch {
-	newRanch := &ranch.Ranch{
-		Resources: resources,
+	resourceClient := crds.NewTestResourceClient()
+	s, _ := ranch.NewStorage(crds.NewCRDStorage(resourceClient), "")
+	for _, r := range resources {
+		s.AddResource(r)
 	}
-
-	return newRanch
+	r, _ := ranch.NewRanch("", s)
+	return r
 }
 
 func TestAcquire(t *testing.T) {
@@ -181,8 +184,13 @@ func TestAcquire(t *testing.T) {
 				t.Errorf("%s - Got state %v, expect d", tc.name, data.State)
 			}
 
-			if c.Resources[0].Owner != "o" {
-				t.Errorf("%s - Wrong owner. Got %v, expect o", tc.name, c.Resources[0].Owner)
+			resources, err := c.Storage.GetResources()
+			if err != nil {
+				t.Error("cannot get resources")
+				continue
+			}
+			if resources[0].Owner != "o" {
+				t.Errorf("%s - Wrong owner. Got %v, expect o", tc.name, resources[0].Owner)
 			}
 		}
 	}
@@ -301,12 +309,17 @@ func TestRelease(t *testing.T) {
 		}
 
 		if rr.Code == http.StatusOK {
-			if c.Resources[0].State != "d" {
-				t.Errorf("%s - Wrong state. Got %v, expect d", tc.name, c.Resources[0].State)
+			resources, err := c.Storage.GetResources()
+			if err != nil {
+				t.Error("cannot get resources")
+				continue
+			}
+			if resources[0].State != "d" {
+				t.Errorf("%s - Wrong state. Got %v, expect d", tc.name, resources[0].State)
 			}
 
-			if c.Resources[0].Owner != "" {
-				t.Errorf("%s - Wrong owner. Got %v, expect empty", tc.name, c.Resources[0].Owner)
+			if resources[0].Owner != "" {
+				t.Errorf("%s - Wrong owner. Got %v, expect empty", tc.name, resources[0].Owner)
 			}
 		}
 	}
@@ -591,6 +604,21 @@ func TestUpdate(t *testing.T) {
 			code:   http.StatusOK,
 			method: http.MethodPost,
 		},
+		{
+			name: "ok",
+			resources: []common.Resource{
+				{
+					Name:       "res",
+					Type:       "t",
+					State:      "s",
+					Owner:      "merlin",
+					LastUpdate: FakeNow,
+				},
+			},
+			path:   "?name=res&state=s&owner=merlin",
+			code:   http.StatusOK,
+			method: http.MethodPost,
+		},
 	}
 
 	for _, tc := range testcases {
@@ -612,7 +640,12 @@ func TestUpdate(t *testing.T) {
 		}
 
 		if rr.Code == http.StatusOK {
-			if c.Resources[0].LastUpdate == FakeNow {
+			resources, err := c.Storage.GetResources()
+			if err != nil {
+				t.Error("cannot get resources")
+				continue
+			}
+			if resources[0].LastUpdate == FakeNow {
 				t.Errorf("%s - Timestamp is not updated!", tc.name)
 			}
 		}
@@ -743,27 +776,26 @@ func TestDefault(t *testing.T) {
 	}
 }
 
-func TestProjectConfig(t *testing.T) {
-	r := MakeTestRanch([]common.Resource{})
-	data, err := r.ParseConfig("resources.json")
+func TestConfig(t *testing.T) {
+	resources, err := ranch.ParseConfig("resources.yaml")
 	if err != nil {
 		t.Errorf("parseConfig error: %v", err)
 	}
 
-	if len(data) == 0 {
+	if len(resources) == 0 {
 		t.Errorf("empty data")
 	}
+	resourceNames := map[string]bool{}
 
-	names := map[string]bool{}
-	for _, p := range data {
+	for _, p := range resources {
 		if p.Name == "" {
 			t.Errorf("empty resource name: %v", p.Name)
 		}
 
-		if _, ok := names[p.Name]; ok {
+		if _, ok := resourceNames[p.Name]; ok {
 			t.Errorf("duplicated resource name: %v", p.Name)
 		} else {
-			names[p.Name] = true
+			resourceNames[p.Name] = true
 		}
 	}
 }

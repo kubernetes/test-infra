@@ -4,6 +4,7 @@
    "sig-auth",
    "sig-autoscaling",
    "sig-aws",
+   "sig-azure",
    "sig-big-data",
    "sig-cli",
    "sig-cluster-lifecycle",

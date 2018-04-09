@@ -14,7 +14,7 @@
 
 # Please set IMG
 TAG := $(shell date +v%Y%m%d-%H%M%S)
-IMG ?= gcr.io/google-containers/github-token-counter
+IMG ?= k8s.gcr.io/github-token-counter
 
 all: push
 

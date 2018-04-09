@@ -19,6 +19,7 @@ This directory contains tooling for displaying [kubernetes conformance test](htt
    - make sure `kubectl` / `$KUBECONFIG` is authed to your cluster
    - run kubetest with:
     ```sh
+    export KUBERNETES_CONFORMANCE_TEST=y
     kubetest --provider=skeleton \
              --test --test_args="--ginkgo.focus=\[Conformance\]" \ 
              --dump=./_artifacts | tee ./e2e.log

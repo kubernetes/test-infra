@@ -17,13 +17,13 @@ TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
 # kubernetes master branch config
 K8S ?= master
-GO ?= 1.9.3
+GO ?= 1.10.1
 BAZEL ?= 0.11.0
 CFSSL ?= R1.2
 
 # config for testing prior to rolling out to master / ongoing release
 ifeq ($(K8S), experimental)
-	GO = 1.10
+	GO = 1.10.1
 	BAZEL = 0.11.0
 	CFSSL = R1.2
 endif

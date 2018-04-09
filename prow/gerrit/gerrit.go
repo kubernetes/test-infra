@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -38,8 +39,18 @@ type kubeClient interface {
 	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
 }
 
-type gerritClient interface {
+type gerritAuthentication interface {
+	SetCookieAuth(name, value string)
+}
+
+type gerritAccount interface {
+	GetAccount(name string) (*gerrit.AccountInfo, *gerrit.Response, error)
+	SetUsername(accountID string, input *gerrit.UsernameInput) (*string, *gerrit.Response, error)
+}
+
+type gerritChange interface {
 	QueryChanges(opt *gerrit.QueryChangeOptions) (*[]gerrit.ChangeInfo, *gerrit.Response, error)
+	SetReview(changeID, revisionID string, input *gerrit.ReviewInput) (*gerrit.ReviewResult, *gerrit.Response, error)
 }
 
 type configAgent interface {
@@ -51,7 +62,9 @@ type Controller struct {
 	ca configAgent
 
 	// go-gerrit change endpoint client
-	gc       gerritClient
+	auth     gerritAuthentication
+	account  gerritAccount
+	gc       gerritChange
 	instance string
 	storage  string
 	projects []string
@@ -83,40 +96,56 @@ func NewController(instance, storage string, projects []string, kc *kube.Client,
 	if err != nil {
 		return nil, err
 	}
-	raw, err := ioutil.ReadFile(filepath.Join(os.Getenv("HOME"), ".git-credential-cache/cookie"))
-	if err != nil {
-		return nil, err
-	}
-	fields := strings.Fields(string(raw))
-	token := fields[len(fields)-1]
-
-	c.Authentication.SetCookieAuth("o", token)
-	self, _, err := c.Accounts.GetAccount("self")
-	if err != nil {
-		logrus.WithError(err).Errorf("Fail to auth with token: %s", token)
-		return nil, err
-	} else {
-		logrus.Printf("Username: %s", self.Name)
-	}
 
 	return &Controller{
 		instance:   instance,
 		projects:   projects,
 		kc:         kc,
 		ca:         ca,
+		auth:       c.Authentication,
+		account:    c.Accounts,
 		gc:         c.Changes,
 		lastUpdate: lastUpdate,
 		storage:    storage,
 	}, nil
 }
 
+// Auth authenticates to gerrit server
+// Token will expire, so we need to regenerate it once so often
+func (c *Controller) Auth() error {
+	cmd := exec.Command("python", "./git-cookie-authdaemon")
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("Fail to authenticate to gerrit using git-cookie-authdaemon : %v", err)
+	}
+
+	raw, err := ioutil.ReadFile(filepath.Join(os.Getenv("HOME"), ".git-credential-cache/cookie"))
+	if err != nil {
+		return err
+	}
+	fields := strings.Fields(string(raw))
+	token := fields[len(fields)-1]
+
+	c.auth.SetCookieAuth("o", token)
+
+	self, _, err := c.account.GetAccount("self")
+	if err != nil {
+		logrus.WithError(err).Errorf("Fail to auth with token: %s", token)
+		return err
+	}
+
+	logrus.Infof("Authentication successful, Username: %s", self.Name)
+
+	return nil
+}
+
+// SaveLastSync saves last sync time in Unix to a volume
 func (c *Controller) SaveLastSync(lastSync time.Time) error {
 	if c.storage == "" {
 		return nil
 	}
 
 	lastSyncUnix := strconv.FormatInt(lastSync.Unix(), 10)
-	logrus.Printf("Writing last sync: %s", lastSyncUnix)
+	logrus.Infof("Writing last sync: %s", lastSyncUnix)
 
 	err := ioutil.WriteFile(c.storage+".tmp", []byte(lastSyncUnix), 0644)
 	if err != nil {
@@ -125,14 +154,11 @@ func (c *Controller) SaveLastSync(lastSync time.Time) error {
 	return os.Rename(c.storage+".tmp", c.storage)
 }
 
-// sync looks for newly made gerrit changes
+// Sync looks for newly made gerrit changes
 // and creates prowjobs according to presubmit specs
 func (c *Controller) Sync() error {
 	syncTime := time.Now()
-	changes, err := c.QueryChanges()
-	if err != nil {
-		return fmt.Errorf("failed query changes : %v", err)
-	}
+	changes := c.QueryChanges()
 
 	for _, change := range changes {
 		if err := c.ProcessChange(change); err != nil {
@@ -148,16 +174,13 @@ func (c *Controller) Sync() error {
 	return nil
 }
 
-// QueryChanges will query all gerrit changes since controller's last sync loop
-func (c *Controller) QueryChanges() (map[string]gerrit.ChangeInfo, error) {
-	opt := &gerrit.QueryChangeOptions{}
-	for _, proj := range c.projects {
-		opt.Query = append(opt.Query, "project:"+proj)
-	}
-	opt.AdditionalFields = []string{"CURRENT_REVISION"}
+func (c *Controller) queryProjectChanges(proj string) ([]gerrit.ChangeInfo, error) {
+	pending := []gerrit.ChangeInfo{}
 
-	// store a map of changeID:change
-	pending := map[string]gerrit.ChangeInfo{}
+	opt := &gerrit.QueryChangeOptions{}
+	opt.Query = append(opt.Query, "project:"+proj+"+status:open")
+	opt.AdditionalFields = []string{"CURRENT_REVISION", "CURRENT_COMMIT"}
+
 	start := 0
 
 	for {
@@ -184,23 +207,54 @@ func (c *Controller) QueryChanges() (map[string]gerrit.ChangeInfo, error) {
 			const layout = "2006-01-02 15:04:05"
 			updated, err := time.Parse(layout, change.Updated)
 			if err != nil {
-				logrus.WithError(err).Error("Parse time %v failed", change.Updated)
+				logrus.WithError(err).Errorf("Parse time %v failed", change.Updated)
 				continue
 			}
 
 			// process if updated later than last updated
-			// stop if already parsed
+			// stop if update was stale
 			if updated.After(c.lastUpdate) {
-				// here we use changeID as the key, since multiple revisions can occur for the same change
-				// and since we sorted by recent timestamp, first change will be the most recent revision
-				if _, ok := pending[change.ID]; !ok {
-					pending[change.ID] = change
+				// we need to make sure the change update is from a new commit change
+				rev, ok := change.Revisions[change.CurrentRevision]
+				if !ok {
+					logrus.WithError(err).Errorf("(should not happen?)cannot find current revision for change %v", change.ID)
+					continue
 				}
+
+				created, err := time.Parse(layout, rev.Created)
+				if err != nil {
+					logrus.WithError(err).Errorf("Parse time %v failed", rev.Created)
+					continue
+				}
+
+				if !created.After(c.lastUpdate) {
+					// stale commit
+					continue
+				}
+
+				pending = append(pending, change)
 			} else {
 				return pending, nil
 			}
 		}
 	}
+}
+
+// QueryChanges will query all valid gerrit changes since controller's last sync loop
+func (c *Controller) QueryChanges() []gerrit.ChangeInfo {
+	// store a map of changeID:change
+	pending := []gerrit.ChangeInfo{}
+
+	// can only query against one project at a time :-(
+	for _, proj := range c.projects {
+		if res, err := c.queryProjectChanges(proj); err != nil {
+			logrus.WithError(err).Errorf("fail to query changes for project %s", proj)
+		} else {
+			pending = append(pending, res...)
+		}
+	}
+
+	return pending
 }
 
 // ProcessChange creates new presubmit prowjobs base off the gerrit changes
@@ -210,28 +264,45 @@ func (c *Controller) ProcessChange(change gerrit.ChangeInfo) error {
 		return fmt.Errorf("cannot find current revision for change %v", change.ID)
 	}
 
+	parentSHA := ""
+	if len(rev.Commit.Parents) > 0 {
+		parentSHA = rev.Commit.Parents[0].Commit
+	}
+
 	logger := logrus.WithField("gerrit change", change.Number)
+	triggered := []string{}
 
 	for _, spec := range c.ca.Config().Presubmits[c.instance+"/"+change.Project] {
 		kr := kube.Refs{
 			Org:     c.instance,
 			Repo:    change.Project,
-			BaseRef: "",
-			BaseSHA: change.BaseChange,
+			BaseRef: change.Branch,
+			BaseSHA: parentSHA,
 			Pulls: []kube.Pull{
 				{
 					Number: change.Number,
-					Author: change.Owner.Name,
-					SHA:    rev.Ref,
+					Author: rev.Commit.Author.Name,
+					SHA:    change.CurrentRevision,
 				},
 			},
 		}
 
 		// TODO(krzyzacy): Support AlwaysRun and RunIfChanged
 		pj := pjutil.NewProwJob(pjutil.PresubmitSpec(spec, kr), map[string]string{})
-		logger.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob for.")
+		logger.WithFields(pjutil.ProwJobFields(&pj)).Infof("Creating a new prowjob for change %s.", change.Number)
 		if _, err := c.kc.CreateProwJob(pj); err != nil {
 			logger.WithError(err).Errorf("fail to create prowjob %v", pj)
+		} else {
+			triggered = append(triggered, spec.Name)
+		}
+	}
+
+	if len(triggered) > 0 {
+		// comment back to gerrit
+		if _, _, err := c.gc.SetReview(change.ID, change.CurrentRevision, &gerrit.ReviewInput{
+			Message: fmt.Sprintf("Triggered presubmit: %v", triggered),
+		}); err != nil {
+			return fmt.Errorf("cannot comment to gerrit: %v", err)
 		}
 	}
 

@@ -96,7 +96,7 @@ class PRTest(main_test.TestBase):
         builds = view_pr.pr_builds(view_pr.pr_path(org, repo, '123',
             app.app.config['default_repo'],
             app.app.config['default_repo'],
-            app.app.config['external_services'][org]['gcs_pull_prefix'],
+            app.app.config['default_external_services']['gcs_pull_prefix'],
         ))
         self.assertEqual(builds, self.BUILDS)
 

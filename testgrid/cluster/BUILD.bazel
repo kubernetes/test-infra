@@ -14,11 +14,12 @@
 
 load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")
 load("@io_bazel_rules_k8s//k8s:objects.bzl", "k8s_objects")
+load("//def:configmap.bzl", "k8s_configmap")
 
 k8s_objects(
     name = "dev",
     objects = [
-        ":config",
+        ":testgrid-config",
         ":configurator",
         ":updater",
     ],
@@ -54,22 +55,17 @@ k8s_object(
     template = "configurator_deployment.yaml",
 )
 
-genrule(
-    name = "gen-config",
-    srcs = [
-        ":config_template.yaml",
-        "//testgrid:config-yaml",
-    ],
-    outs = ["config_configmap.yaml"],
-    cmd = "cat $(location :config_template.yaml) > $@ && echo '  config.yaml: |' >> $@ && cat $(location //testgrid:config-yaml) | sed -e 's/^/    /' >> $@",
-)
-
-k8s_object(
-    name = "config",
+k8s_configmap(
+    name = "testgrid-config",
     cluster = CLUSTER,
-    kind = "configmap",
+    data = {
+        "config.yaml": "//testgrid:config-yaml",
+    },
+    labels = {
+        "component": "config",
+        "app": "testgrid",
+    },
     namespace = "testgrid",
-    template = "config_configmap.yaml",
 )
 
 filegroup(

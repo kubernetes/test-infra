@@ -1,5 +1,5 @@
 /*
-Copyright 2017 The Kubernetes Authors.
+Copyright 2018 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -93,6 +93,28 @@ type ProwJobSpec struct {
 	PodSpec *v1.PodSpec `json:"pod_spec,omitempty"`
 
 	RunAfterSuccess []ProwJobSpec `json:"run_after_success,omitempty"`
+}
+
+const (
+	PathStrategyLegacy   = "legacy"
+	PathStrategySingle   = "single"
+	PathStrategyExplicit = "explicit"
+)
+
+// GCSConfiguration holds options for pushing logs and
+// artifacts to GCS from a job.
+type GCSConfiguration struct {
+	// Bucket is the GCS bucket to upload to
+	Bucket string `json:"bucket,omitempty"`
+	// PathStrategy dictates how the org and repo are used
+	// when calculating the full path to an artifact in GCS
+	PathStrategy string `json:"path_strategy,omitempty"`
+	// DefaultOrg is omitted from GCS paths when using the
+	// legacy or simple strategy
+	DefaultOrg string `json:"default_org,omitempty"`
+	// DefaultRepo is omitted from GCS paths when using the
+	// legacy or simple strategy
+	DefaultRepo string `json:"default_repo,omitempty"`
 }
 
 type ProwJobStatus struct {
