@@ -574,6 +574,7 @@ presubmits:
     context: pull-ingress-gce-test
     branches:
     - master
+    - mci-dev
     rerun_command: "/test pull-ingress-gce-test"
     trigger: "(?m)^/test( all| pull-ingress-gce-test),?(\\s+|$)"
     always_run: true
