@@ -85,12 +85,13 @@ func (t *Tide) MergeMethod(org, repo string) github.PullRequestMergeType {
 
 // TideQuery is turned into a GitHub search query. See the docs for details:
 // https://help.github.com/articles/searching-issues-and-pull-requests/
-// If we choose to add orgs or branches then be sure to update the logic
-// for listing all PRs in the tide package.
+// If we choose to add orgs then be sure to update the logic for listing all
+// PRs in the tide package.
 type TideQuery struct {
 	Repos []string `json:"repos,omitempty"`
 
 	ExcludedBranches []string `json:"excludedBranches,omitempty"`
+	IncludedBranches []string `json:"includedBranches,omitempty"`
 
 	Labels        []string `json:"labels,omitempty"`
 	MissingLabels []string `json:"missingLabels,omitempty"`
@@ -105,6 +106,9 @@ func (tq *TideQuery) Query() string {
 	}
 	for _, b := range tq.ExcludedBranches {
 		toks = append(toks, fmt.Sprintf("-base:\"%s\"", b))
+	}
+	for _, b := range tq.IncludedBranches {
+		toks = append(toks, fmt.Sprintf("base:\"%s\"", b))
 	}
 	for _, l := range tq.Labels {
 		toks = append(toks, fmt.Sprintf("label:\"%s\"", l))

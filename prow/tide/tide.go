@@ -224,6 +224,19 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery) (string, int) {
 		}
 	}
 
+	// if no whitelist is configured, the target is OK by default
+	targetBranchWhitelisted := len(q.IncludedBranches) == 0
+	for _, includedBranch := range q.IncludedBranches {
+		if string(pr.BaseRef.Name) == includedBranch {
+			targetBranchWhitelisted = true
+		}
+	}
+
+	if !targetBranchWhitelisted {
+		desc = fmt.Sprintf(" Merging to branch %s is forbidden.", pr.BaseRef.Name)
+		diff += 1
+	}
+
 	var missingLabels []string
 	for _, l1 := range q.Labels {
 		var found bool

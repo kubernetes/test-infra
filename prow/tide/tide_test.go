@@ -449,10 +449,12 @@ func TestExpectedStatus(t *testing.T) {
 	testcases := []struct {
 		name string
 
-		baseref  string
-		labels   []string
-		contexts []Context
-		inPool   bool
+		baseref         string
+		branchWhitelist []string
+		branchBlacklist []string
+		labels          []string
+		contexts        []Context
+		inPool          bool
 
 		state string
 		desc  string
@@ -504,10 +506,21 @@ func TestExpectedStatus(t *testing.T) {
 			desc:  fmt.Sprintf(statusNotInPool, " Needs need-1 label."),
 		},
 		{
-			name:    "against excluded branch",
-			baseref: "bad",
-			labels:  neededLabels,
-			inPool:  false,
+			name:            "against excluded branch",
+			baseref:         "bad",
+			branchBlacklist: []string{"bad"},
+			labels:          neededLabels,
+			inPool:          false,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " Merging to branch bad is forbidden."),
+		},
+		{
+			name:            "not against included branch",
+			baseref:         "bad",
+			branchWhitelist: []string{"good"},
+			labels:          neededLabels,
+			inPool:          false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Merging to branch bad is forbidden."),
@@ -560,21 +573,22 @@ func TestExpectedStatus(t *testing.T) {
 			desc:  fmt.Sprintf(statusNotInPool, " Needs 1, 2 labels."),
 		},
 	}
-	queriesByRepo := map[string]config.TideQueries{
-		"": {
-			config.TideQuery{
-				ExcludedBranches: []string{"bad"},
-				Labels:           neededLabels,
-				MissingLabels:    forbiddenLabels,
-			},
-			config.TideQuery{
-				Labels: []string{"1", "2", "3", "4", "5", "6", "7"}, // lots of requirements
-			},
-		},
-	}
 
 	for _, tc := range testcases {
 		t.Logf("Test Case: %q\n", tc.name)
+		queriesByRepo := map[string]config.TideQueries{
+			"": {
+				config.TideQuery{
+					ExcludedBranches: tc.branchBlacklist,
+					IncludedBranches: tc.branchWhitelist,
+					Labels:           neededLabels,
+					MissingLabels:    forbiddenLabels,
+				},
+				config.TideQuery{
+					Labels: []string{"1", "2", "3", "4", "5", "6", "7"}, // lots of requirements
+				},
+			},
+		}
 		var pr PullRequest
 		pr.BaseRef = struct {
 			Name   githubql.String
