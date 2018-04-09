@@ -2001,6 +2001,11 @@ test_groups:
   num_columns_recent: 30
 - name: kubeflow-tf-operator-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_tf-operator/kubeflow-tf-operator-postsubmit
+- name: kubeflow-hp-tuning-presubmit
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/kubeflow-hp-tuning-presubmit
+  num_columns_recent: 30
+- name: kubeflow-hp-tuning-postsubmit
+  gcs_prefix: kubernetes-jenkins/logs/kubeflow_hp-tuning/kubeflow-hp-tuning-postsubmit
 - name: tf-minigo-periodic
   gcs_prefix: kubernetes-jenkins/logs/tf-minigo-periodic
 - name: tf-minigo-presubmit
@@ -4119,6 +4124,12 @@ dashboards:
   - name: kubeflow-tf-operator-presubmit
     description: Presubmits for kubeflow/tf-operator.
     test_group_name: kubeflow-tf-operator-presubmit
+  - name: kubeflow-hp-tuning-postsubmit
+    description: Postsubmit kubeflow/hp-tuning.
+    test_group_name: kubeflow-hp-tuning-postsubmit
+  - name: kubeflow-hp-tuning-presubmit
+    description: Presubmits for kubeflow/hp-tuning.
+    test_group_name: kubeflow-hp-tuning-presubmit
   - name: spark-periodic-default-gke
     description: Periodic builds and testing of Apache Spark on default version of GKE.
     test_group_name: spark-periodic-default-gke
