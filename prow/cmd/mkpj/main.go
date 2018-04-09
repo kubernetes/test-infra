@@ -34,6 +34,12 @@ import (
 type options struct {
 	jobName    string
 	configPath string
+
+	baseRef    string
+	baseSha    string
+	pullNumber int
+	pullSha    string
+	pullAuthor string
 }
 
 func (o *options) Validate() error {
@@ -52,6 +58,11 @@ func gatherOptions() options {
 	o := options{}
 	flag.StringVar(&o.jobName, "job", "", "Job to run.")
 	flag.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
+	flag.StringVar(&o.baseRef, "base-ref", "", "Git base ref under test")
+	flag.StringVar(&o.baseSha, "base-sha", "", "Git base SHA under test")
+	flag.IntVar(&o.pullNumber, "pull-number", 0, "Git pull number under test")
+	flag.StringVar(&o.pullSha, "pull-sha", "", "Git pull SHA under test")
+	flag.StringVar(&o.pullAuthor, "pull-author", "", "Git pull author under test")
 	flag.Parse()
 	return o
 }
@@ -80,9 +91,15 @@ func main() {
 		for _, p := range ps {
 			if p.Name == o.jobName {
 				pjs = pjutil.PresubmitSpec(p, kube.Refs{
-					Org:   org,
-					Repo:  repo,
-					Pulls: []kube.Pull{{}},
+					Org:     org,
+					Repo:    repo,
+					BaseRef: o.baseRef,
+					BaseSHA: o.baseSha,
+					Pulls: []kube.Pull{{
+						Author: o.pullAuthor,
+						Number: o.pullNumber,
+						SHA:    o.pullSha,
+					}},
 				})
 				labels = p.Labels
 				found = true
@@ -99,8 +116,10 @@ func main() {
 		for _, p := range ps {
 			if p.Name == o.jobName {
 				pjs = pjutil.PostsubmitSpec(p, kube.Refs{
-					Org:  org,
-					Repo: repo,
+					Org:     org,
+					Repo:    repo,
+					BaseRef: o.baseRef,
+					BaseSHA: o.baseSha,
 				})
 				labels = p.Labels
 				found = true
@@ -119,18 +138,28 @@ func main() {
 		logrus.Fatalf("Job %s not found.", o.jobName)
 	}
 	if needsBaseRef {
-		fmt.Fprint(os.Stderr, "Base ref (e.g. master): ")
-		fmt.Scanln(&pjs.Refs.BaseRef)
-		fmt.Fprint(os.Stderr, "Base SHA (e.g. 72bcb5d80): ")
-		fmt.Scanln(&pjs.Refs.BaseSHA)
+		if pjs.Refs.BaseRef == "" {
+			fmt.Fprint(os.Stderr, "Base ref (e.g. master): ")
+			fmt.Scanln(&pjs.Refs.BaseRef)
+		}
+		if pjs.Refs.BaseSHA == "" {
+			fmt.Fprint(os.Stderr, "Base SHA (e.g. 72bcb5d80): ")
+			fmt.Scanln(&pjs.Refs.BaseSHA)
+		}
 	}
 	if needsPR {
-		fmt.Fprint(os.Stderr, "PR Number: ")
-		fmt.Scanln(&pjs.Refs.Pulls[0].Number)
-		fmt.Fprint(os.Stderr, "PR author: ")
-		fmt.Scanln(&pjs.Refs.Pulls[0].Author)
-		fmt.Fprint(os.Stderr, "PR SHA (e.g. 72bcb5d80): ")
-		fmt.Scanln(&pjs.Refs.Pulls[0].SHA)
+		if pjs.Refs.Pulls[0].Number == 0 {
+			fmt.Fprint(os.Stderr, "PR Number: ")
+			fmt.Scanln(&pjs.Refs.Pulls[0].Number)
+		}
+		if pjs.Refs.Pulls[0].Author == "" {
+			fmt.Fprint(os.Stderr, "PR author: ")
+			fmt.Scanln(&pjs.Refs.Pulls[0].Author)
+		}
+		if pjs.Refs.Pulls[0].SHA == "" {
+			fmt.Fprint(os.Stderr, "PR SHA (e.g. 72bcb5d80): ")
+			fmt.Scanln(&pjs.Refs.Pulls[0].SHA)
+		}
 	}
 	pj := pjutil.NewProwJob(pjs, labels)
 	b, err := yaml.Marshal(&pj)
