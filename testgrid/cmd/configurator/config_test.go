@@ -45,6 +45,7 @@ var (
 		"redhat",
 	}
 	orgs = []string{
+		"conformance",
 		"presubmits",
 		"sig",
 		"wg",
