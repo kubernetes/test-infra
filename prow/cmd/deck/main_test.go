@@ -108,13 +108,6 @@ func (f flc) GetJobLog(job, id string) ([]byte, error) {
 	return nil, errors.New("muahaha")
 }
 
-func (f flc) GetJobLogStream(job, id string, options map[string]string) (io.ReadCloser, error) {
-	if job == "job" && id == "123" {
-		return ioutil.NopCloser(bytes.NewBuffer([]byte("hello\r\n"))), nil
-	}
-	return nil, errors.New("muahaha")
-}
-
 func TestHandleLog(t *testing.T) {
 	var testcases = []struct {
 		name string
@@ -139,11 +132,6 @@ func TestHandleLog(t *testing.T) {
 		{
 			name: "id and job, found",
 			path: "?job=job&id=123",
-			code: http.StatusOK,
-		},
-		{
-			name: "id and job, found",
-			path: "?job=job&id=123&follow=true",
 			code: http.StatusOK,
 		},
 		{
