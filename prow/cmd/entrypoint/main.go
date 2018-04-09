@@ -24,8 +24,8 @@ import (
 )
 
 func main() {
-	o := entrypoint.Options{}
-	if err := options.Load(&o); err != nil {
+	o := &entrypoint.Options{}
+	if err := options.Load(o); err != nil {
 		logrus.Fatalf("Could not resolve options: %v", err)
 	}
 
