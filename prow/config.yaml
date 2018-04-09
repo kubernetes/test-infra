@@ -7311,19 +7311,6 @@ periodics:
 
 - interval: 2h
   agent: kubernetes
-  name: ci-kubernetes-e2e-gce-alpha-features-release-1-7
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - args:
-      - --timeout=200
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
-
-- interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster
   labels:
     preset-service-account: true
@@ -8389,19 +8376,6 @@ periodics:
 
 - interval: 1h
   agent: kubernetes
-  name: ci-kubernetes-e2e-gce-federation-release-1-7
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - args:
-      - --timeout=920
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
-
-- interval: 1h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-federation-release-1-8
   labels:
     preset-service-account: true
@@ -8946,32 +8920,6 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 
-- interval: 6h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-reboot-release-1-7
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - args:
-      - --timeout=200
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
-
-- interval: 6h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-release-1-7
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - args:
-      - --timeout=70
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
-
 - interval: 30m
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-scalability-canary
@@ -9022,32 +8970,6 @@ periodics:
         requests:
           cpu: 6
           memory: "16Gi"
-
-- interval: 6h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-serial-release-1-7
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - args:
-      - --timeout=520
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
-
-- interval: 6h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-slow-release-1-7
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - args:
-      - --timeout=170
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 
 - interval: 2h
   agent: kubernetes
@@ -9909,7 +9831,7 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180405-7df977424-master
 
-- cron: "0 0/6 * * *" # every six hours, disjoint with ci-kubernetes-e2e-gci-gce-scalability-release-1-7
+- cron: "0 0/6 * * *" # every six hours, disjoint with ci-kubernetes-e2e-gci-gce-scalability-stable2
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-scalability-stable1
   tags:
@@ -10211,19 +10133,6 @@ periodics:
     containers:
     - args:
       - --timeout=50
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
-
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-alpha-features-release-1-7
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - args:
-      - --timeout=200
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 
@@ -10743,44 +10652,6 @@ periodics:
       - --timeout=70
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-cluster
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - args:
-      - --timeout=920
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
-
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-cluster-new
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - args:
-      - --timeout=920
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
-
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-master
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - args:
-      - --timeout=920
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu
   interval: 2h
@@ -11091,19 +10962,6 @@ periodics:
     containers:
     - args:
       - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
-
-- name: ci-kubernetes-e2e-gke-gpu-1-7
-  interval: 12h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - args:
-      - --timeout=300
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 
@@ -15133,27 +14991,6 @@ periodics:
         value: kubernetes
       - name: REPO_NAME
         value: kubernetes
-      # Bazel needs privileged mode in order to sandbox builds.
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          memory: "6Gi"
-
-- name: periodic-kubernetes-bazel-build-1-7
-  interval: 12h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-bazel-scratch-dir: true
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--repo=k8s.io/kubernetes=release-1.7"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
       # Bazel needs privileged mode in order to sandbox builds.
       securityContext:
         privileged: true
