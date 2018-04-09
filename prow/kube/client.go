@@ -528,14 +528,6 @@ func (c *Client) GetLog(pod string) ([]byte, error) {
 	})
 }
 
-func (c *Client) GetLogStream(pod string, options map[string]string) (io.ReadCloser, error) {
-	c.log("GetLogStream", pod)
-	return c.requestRetryStream(&request{
-		path:  fmt.Sprintf("/api/v1/namespaces/%s/pods/%s/log", c.namespace, pod),
-		query: options,
-	})
-}
-
 func (c *Client) CreateConfigMap(content ConfigMap) (ConfigMap, error) {
 	c.log("CreateConfigMap")
 	var retConfigMap ConfigMap

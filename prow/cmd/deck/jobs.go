@@ -19,7 +19,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"regexp"
@@ -73,7 +72,6 @@ type serviceClusterClient interface {
 
 type podLogClient interface {
 	GetLog(pod string) ([]byte, error)
-	GetLogStream(pod string, options map[string]string) (io.ReadCloser, error)
 }
 
 type configAgent interface {
@@ -156,27 +154,6 @@ func (ja *JobAgent) GetJobLog(job, id string) ([]byte, error) {
 		return ioutil.ReadAll(resp.Body)
 	}
 	return nil, fmt.Errorf("cannot get logs for prowjob %q with agent %q: the agent is missing from the prow config file", j.ObjectMeta.Name, j.Spec.Agent)
-}
-
-func (ja *JobAgent) GetJobLogStream(job, id string, options map[string]string) (io.ReadCloser, error) {
-	var j kube.ProwJob
-	ja.mut.Lock()
-	idMap, ok := ja.jobsIDMap[job]
-	if ok {
-		j, ok = idMap[id]
-	}
-	ja.mut.Unlock()
-	if !ok {
-		return nil, fmt.Errorf("no such job found: %s (id: %s)", job, id)
-	}
-	if j.Spec.Agent == kube.KubernetesAgent {
-		client, ok := ja.pkcs[j.ClusterAlias()]
-		if !ok {
-			return nil, fmt.Errorf("cannot get logs for prowjob %q with agent %q: unknown cluster alias %q", j.ObjectMeta.Name, j.Spec.Agent, j.ClusterAlias())
-		}
-		return client.GetLogStream(j.Status.PodName, options)
-	}
-	return nil, fmt.Errorf("streaming is available for kubernetes clients only, prowjob %q is running under %s.", j.ObjectMeta.Name, j.Spec.Agent)
 }
 
 func (ja *JobAgent) tryUpdate() {
