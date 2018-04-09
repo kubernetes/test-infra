@@ -14424,6 +14424,18 @@ periodics:
     - name: docker-graph
       emptyDir: {}
 
+- interval: 12h
+  agent: kubernetes
+  name: ci-kubernetes-gce-conformance
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=220
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180405-7df977424-master
 - interval: 2h
   name: ci-kubernetes-integration-beta
   agent: kubernetes
