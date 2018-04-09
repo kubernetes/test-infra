@@ -4860,12 +4860,12 @@
       "sig-scalability"
     ]
   },
-  "ci-kubernetes-e2e-gci-gce-scalability-stable2": {
+  "ci-kubernetes-e2e-gci-gce-scalability-stable1": {
     "args": [
-      "--cluster=e2e-big-stable2",
+      "--cluster=e2e-big-stable1",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-release-1-7.env",
-      "--extract=ci/k8s-stable2",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-stable1.env",
+      "--extract=ci/k8s-stable1",
       "--gcp-node-image=gci",
       "--gcp-project=k8s-e2e-gci-gce-scale-1-4",
       "--gcp-zone=us-east1-b",
@@ -4878,12 +4878,12 @@
       "sig-scalability"
     ]
   },
-  "ci-kubernetes-e2e-gci-gce-scalability-stable1": {
+  "ci-kubernetes-e2e-gci-gce-scalability-stable2": {
     "args": [
-      "--cluster=e2e-big-stable1",
+      "--cluster=e2e-big-stable2",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-stable1.env",
-      "--extract=ci/k8s-stable1",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-release-1-7.env",
+      "--extract=ci/k8s-stable2",
       "--gcp-node-image=gci",
       "--gcp-project=k8s-e2e-gci-gce-scale-1-4",
       "--gcp-zone=us-east1-b",
