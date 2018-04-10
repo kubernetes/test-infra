@@ -79,19 +79,48 @@ type ProwJob struct {
 }
 
 type ProwJobSpec struct {
-	Type    ProwJobType  `json:"type,omitempty"`
-	Agent   ProwJobAgent `json:"agent,omitempty"`
-	Cluster string       `json:"cluster,omitempty"`
-	Job     string       `json:"job,omitempty"`
-	Refs    *Refs        `json:"refs,omitempty"`
+	// Type is the type of job and informs how
+	// the jobs is triggered
+	Type ProwJobType `json:"type,omitempty"`
+	// Agent determines which controller fulfills
+	// this specific ProwJobSpec and runs the job
+	Agent ProwJobAgent `json:"agent,omitempty"`
+	// Cluster is which Kubernetes cluster is used
+	// to run the job, only applicable for that
+	// specific agent
+	Cluster string `json:"cluster,omitempty"`
+	// Job is the name of the job
+	Job string `json:"job,omitempty"`
+	// Refs is the code under test, determined at
+	// runtime by Prow itself
+	Refs *Refs `json:"refs,omitempty"`
+	// ExtraRefs are auxiliary repositories that
+	// need to be cloned, determined from config
+	ExtraRefs []*Refs `json:"extra_refs,omitempty"`
 
-	Report         bool   `json:"report,omitempty"`
-	Context        string `json:"context,omitempty"`
-	RerunCommand   string `json:"rerun_command,omitempty"`
-	MaxConcurrency int    `json:"max_concurrency,omitempty"`
+	// TimeoutMinutes is the number of minutes that
+	// the pod utilities will wait before aborting
+	// a job. Only applicable if decorating the PodSpec.
+	TimeoutMinutes int `json:"timeout_minutes,omitempty"`
+	// Report determines if the result of this job should
+	// be posted as a status on GitHub
+	Report bool `json:"report,omitempty"`
+	// Context is the name of the status context used to
+	// report back to GitHub
+	Context string `json:"context,omitempty"`
+	// RerunCommand is the command a user would write to
+	// trigger this job on their pull request
+	RerunCommand string `json:"rerun_command,omitempty"`
+	// MaxConcurrency restricts the total number of instances
+	// of this job that can run in parallel at once
+	MaxConcurrency int `json:"max_concurrency,omitempty"`
 
+	// PodSpec provides the basis for running the test under
+	// a Kubernetes agent
 	PodSpec *v1.PodSpec `json:"pod_spec,omitempty"`
 
+	// RunAfterSuccess are jobs that should be triggered if
+	// this job runs and does not fail
 	RunAfterSuccess []ProwJobSpec `json:"run_after_success,omitempty"`
 }
 
