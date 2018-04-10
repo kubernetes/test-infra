@@ -30,9 +30,15 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// InternalErrorCode is what we write to the marker file to
-// indicate that we failed to start the wrapped command
-const InternalErrorCode = "127"
+const (
+	// InternalErrorCode is what we write to the marker file to
+	// indicate that we failed to start the wrapped command
+	InternalErrorCode = "127"
+
+	// DefaultTimeoutMinutes is the default timeout in minutes
+	// for the test process
+	DefaultTimeoutMinutes = 120
+)
 
 // Run executes the process as configured, writing the output
 // to the process log and the exit code to the marker file on
@@ -60,7 +66,13 @@ func (o Options) Run() error {
 		return fmt.Errorf("could not start the process: %v", err)
 	}
 
-	timeout := time.Duration(o.TimeoutMinutes) * time.Minute
+	var timeoutMinutes int
+	if o.TimeoutMinutes == 0 {
+		timeoutMinutes = DefaultTimeoutMinutes
+	} else {
+		timeoutMinutes = o.TimeoutMinutes
+	}
+	timeout := time.Duration(timeoutMinutes) * time.Minute
 	var commandErr error
 	done := make(chan error)
 	go func() {

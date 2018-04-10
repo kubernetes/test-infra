@@ -64,6 +64,7 @@ func (o *Options) LoadConfig(config string) error {
 
 // BindOptions binds flags to options
 func (o *Options) BindOptions(flags *flag.FlagSet) {
+	flags.IntVar(&o.TimeoutMinutes, "timeout", DefaultTimeoutMinutes, "Timeout for the test command.")
 	wrapper.BindOptions(o.Options, flags)
 }
 
