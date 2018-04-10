@@ -158,26 +158,26 @@ func TestSetDefault_Maps(t *testing.T) {
 	cases := []struct {
 		name     string
 		config   ConfigUpdater
-		expected map[string]string
+		expected map[string]ConfigMapSpec
 	}{
 		{
 			name: "nothing",
-			expected: map[string]string{
-				"prow/config.yaml":  "config",
-				"prow/plugins.yaml": "plugins",
+			expected: map[string]ConfigMapSpec{
+				"prow/config.yaml":  {Name: "config"},
+				"prow/plugins.yaml": {Name: "plugins"},
 			},
 		},
 		{
 			name: "basic",
 			config: ConfigUpdater{
-				Maps: map[string]string{
-					"hello.yaml": "my-cm",
-					"world.yaml": "you-cm",
+				Maps: map[string]ConfigMapSpec{
+					"hello.yaml": {Name: "my-cm"},
+					"world.yaml": {Name: "you-cm"},
 				},
 			},
-			expected: map[string]string{
-				"hello.yaml": "my-cm",
-				"world.yaml": "you-cm",
+			expected: map[string]ConfigMapSpec{
+				"hello.yaml": {Name: "my-cm"},
+				"world.yaml": {Name: "you-cm"},
 			},
 		},
 		{
@@ -185,9 +185,9 @@ func TestSetDefault_Maps(t *testing.T) {
 			config: ConfigUpdater{
 				ConfigFile: "foo.yaml",
 			},
-			expected: map[string]string{
-				"foo.yaml":          "config",
-				"prow/plugins.yaml": "plugins",
+			expected: map[string]ConfigMapSpec{
+				"foo.yaml":          {Name: "config"},
+				"prow/plugins.yaml": {Name: "plugins"},
 			},
 		},
 		{
@@ -195,9 +195,9 @@ func TestSetDefault_Maps(t *testing.T) {
 			config: ConfigUpdater{
 				PluginFile: "bar.yaml",
 			},
-			expected: map[string]string{
-				"bar.yaml":         "plugins",
-				"prow/config.yaml": "config",
+			expected: map[string]ConfigMapSpec{
+				"bar.yaml":         {Name: "plugins"},
+				"prow/config.yaml": {Name: "config"},
 			},
 		},
 		{
@@ -206,26 +206,26 @@ func TestSetDefault_Maps(t *testing.T) {
 				ConfigFile: "foo.yaml",
 				PluginFile: "bar.yaml",
 			},
-			expected: map[string]string{
-				"foo.yaml": "config",
-				"bar.yaml": "plugins",
+			expected: map[string]ConfigMapSpec{
+				"foo.yaml": {Name: "config"},
+				"bar.yaml": {Name: "plugins"},
 			},
 		},
 		{
 			name: "both current and deprecated",
 			config: ConfigUpdater{
-				Maps: map[string]string{
-					"config.yaml":        "overwrite-config",
-					"plugins.yaml":       "overwrite-plugins",
-					"unconflicting.yaml": "ignored",
+				Maps: map[string]ConfigMapSpec{
+					"config.yaml":        {Name: "overwrite-config"},
+					"plugins.yaml":       {Name: "overwrite-plugins"},
+					"unconflicting.yaml": {Name: "ignored"},
 				},
 				ConfigFile: "config.yaml",
 				PluginFile: "plugins.yaml",
 			},
-			expected: map[string]string{
-				"config.yaml":        "overwrite-config",
-				"plugins.yaml":       "overwrite-plugins",
-				"unconflicting.yaml": "ignored",
+			expected: map[string]ConfigMapSpec{
+				"config.yaml":        {Name: "overwrite-config"},
+				"plugins.yaml":       {Name: "overwrite-plugins"},
+				"unconflicting.yaml": {Name: "ignored"},
 			},
 		},
 	}

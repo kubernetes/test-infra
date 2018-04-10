@@ -41,6 +41,17 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *April 2, 2018* `updateconfig` format has been changed from
+   ```yaml
+   path/to/some/other/thing: configName
+   ```
+   to
+   ```yaml
+   path/to/some/other/thing:
+     Name: configName
+     # If unspecified, Namespace default to the value of ProwJobNamespace.
+     Namespace: myNamespace
+   ```
  - *March 15, 2018* `jenkins_operator` is removed from the config in favor of
    `jenkins_operators`.
  - *March 1, 2018* `MilestoneStatus` has been removed from the plugins Configuration
