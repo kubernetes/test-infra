@@ -26,16 +26,13 @@ import subprocess
 import sys
 
 
-BRANCH_VERSION = {
-    'master': '1.11',
-}
-
 VERSION_TAG = {
     '1.7': '1.7-v20170713-c28e0556',
     '1.8': '1.8-v20170906-3a1c5ae5',
     '1.9': '1.9-v20171018-6ddbad97',
     '1.10': '1.10-v20180221-3655e24ae',
-    '1.11': '1.11-v20180402-74c08e269',
+    # this is master, feature branches...
+    'default': '1.11-v20180402-74c08e269'
 }
 
 
@@ -80,15 +77,17 @@ def get_git_cache(k8s):
         return git_file.read().replace("gitdir: ", "").rstrip("\n")
 
 
+def branch_to_tag(branch):
+    verify_branch = re.match(r'release-(\d+\.\d+)', branch)
+    if not verify_branch:
+        return VERSION_TAG['default']
+    return VERSION_TAG[verify_branch.group(1)]
+
+
 def main(branch, script, force, on_prow):
     """Test branch using script, optionally forcing verify checks."""
-    # If branch has 3-part version, only take first 2 parts.
-    verify_branch = re.match(r'master|release-(\d+\.\d+)', branch)
-    if not verify_branch:
-        raise ValueError(branch)
-    # Extract version if any.
-    ver = verify_branch.group(1) or verify_branch.group(0)
-    tag = VERSION_TAG[BRANCH_VERSION.get(ver, ver)]
+    tag = branch_to_tag(branch)
+
     force = 'y' if force else 'n'
     artifacts = '%s/_artifacts' % os.environ['WORKSPACE']
     k8s = os.getcwd()
