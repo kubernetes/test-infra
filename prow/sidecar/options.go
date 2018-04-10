@@ -19,8 +19,6 @@ package sidecar
 import (
 	"encoding/json"
 	"flag"
-	"fmt"
-	"os"
 
 	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/pod-utils/wrapper"
@@ -30,8 +28,8 @@ import (
 // for defining the process being watched and
 // where in GCS an upload will land.
 type Options struct {
-	GcsOptions     *gcsupload.Options `json:"-"`
-	WrapperOptions *wrapper.Options   `json:"-"`
+	GcsOptions     *gcsupload.Options `json:"gcs_options"`
+	WrapperOptions *wrapper.Options   `json:"wrapper_options"`
 }
 
 // Validate ensures that the set of options are
@@ -71,28 +69,6 @@ func (o *Options) BindOptions(flags *flag.FlagSet) {
 // Complete internalizes command line arguments
 func (o *Options) Complete(args []string) {
 	o.GcsOptions.Complete(args)
-}
-
-// ResolveOptions will resolve the set of options, preferring
-// to use the full JSON configuration variable but falling
-// back to user-provided flags if the variable is not
-// provided.
-func ResolveOptions() (*Options, error) {
-	options := &Options{}
-	if jsonConfig, provided := os.LookupEnv(JSONConfigEnvVar); provided {
-		if err := json.Unmarshal([]byte(jsonConfig), &options); err != nil {
-			return options, fmt.Errorf("could not resolve config from env: %v", err)
-		}
-		return options, nil
-	}
-
-	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-	gcsupload.BindOptions(options.GcsOptions, fs)
-	wrapper.BindOptions(options.WrapperOptions, fs)
-	fs.Parse(os.Args[1:])
-	options.GcsOptions.Complete(fs.Args())
-
-	return options, nil
 }
 
 // Encode will encode the set of options in the format that
