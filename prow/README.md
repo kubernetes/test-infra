@@ -16,7 +16,8 @@ not make any attempt to preserve backwards compatibility.
 * `cmd/phony` sends fake webhooks.
 * `cmd/tot` vends incrementing build numbers.
 * `cmd/horologium` starts periodic jobs when necessary.
-* `cmd/mkpj` creates `ProwJobs`.
+* `cmd/mkpj` creates `ProwJobs` using Prow configuration.
+* `cmd/mkpod` creates `Pods` from `ProwJobs`.
 * `cmd/clonerefs`, `cmd/initupload`, `cmd/gcsupload`, `cmd/entrypoint`, and
   `cmd/sidecar` are small utilities used in `ProwJob`s created by `plank` as
   `Pod`s. See [their README](./pod-utilities.md) for more information
