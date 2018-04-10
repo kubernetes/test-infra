@@ -33,10 +33,10 @@ RUN mkdir -p /go/src/k8s.io/kubernetes \
 # preinstall:
 # - graphviz package for graphing profiles
 # - bc for shell to junit
-# - rpmbuild for building RPMs with Bazel
+# - rpm for building RPMs with Bazel
 RUN apt-get install -y bc \
     graphviz \
-    rpmbuild
+    rpm
 # preinstall this for kops tests xref kubetest prepareAws(...)
 # TODO(bentheelder,krzyzacy,justisb,chrislovecnm): remove this
 RUN pip install awscli
