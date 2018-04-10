@@ -266,7 +266,7 @@
       "--gcp-project-type=ingress-project",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Ingress\\] --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:Ingress\\] --ginkgo.skip=\\[Unreleased\\] --minStartupPods=8",
       "--timeout=90m"
     ],
     "scenario": "kubernetes_e2e",
