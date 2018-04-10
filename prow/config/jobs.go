@@ -22,6 +22,8 @@ import (
 	"time"
 
 	"k8s.io/api/core/v1"
+
+	"k8s.io/test-infra/prow/kube"
 )
 
 // Preset is intended to match the k8s' PodPreset feature, and may be removed
@@ -106,6 +108,8 @@ type Presubmit struct {
 
 	Brancher
 
+	UtilityConfig
+
 	// We'll set these when we load it.
 	re        *regexp.Regexp // from Trigger.
 	reChanges *regexp.Regexp // from RunIfChanged
@@ -126,6 +130,9 @@ type Postsubmit struct {
 	MaxConcurrency int `json:"max_concurrency"`
 
 	Brancher
+
+	UtilityConfig
+
 	// Run these jobs after successfully running this one.
 	RunAfterSuccess []Postsubmit `json:"run_after_success"`
 }
@@ -149,6 +156,8 @@ type Periodic struct {
 	Tags []string `json:"tags,omitempty"`
 	// Run these jobs after successfully running this one.
 	RunAfterSuccess []Periodic `json:"run_after_success"`
+
+	UtilityConfig
 
 	interval time.Duration
 }
@@ -233,6 +242,22 @@ func (c *Config) MatchingPresubmits(fullRepoName, body string, testAll bool) []P
 		}
 	}
 	return result
+}
+
+type UtilityConfig struct {
+	// PathAlias is the location under <root-dir>/src
+	// where the repository under test is cloned. If this
+	// is not set, <root-dir>/src/github.com/org/repo will
+	// be used as the default.
+	PathAlias string `json:"path_alias,omitempty"`
+
+	// ExtraRefs are auxiliary repositories that
+	// need to be cloned, determined from config
+	ExtraRefs []*kube.Refs `json:"extra_refs,omitempty"`
+
+	// DecorationConfig holds configuration options for
+	// decorating PodSpecs that users provide
+	*kube.DecorationConfig
 }
 
 // RetestPresubmits returns all presubmits that should be run given a /retest command.
