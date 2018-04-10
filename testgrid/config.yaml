@@ -2082,6 +2082,9 @@ test_groups:
 - name: pull-kubernetes-local-e2e
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-local-e2e
   num_columns_recent: 20
+- name: pull-kubernetes-local-e2e-containerized
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-local-e2e-containerized
+  num_columns_recent: 20
 - name: pull-kubernetes-e2e-containerd-gce
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-containerd-gce
   num_columns_recent: 20
@@ -5150,6 +5153,11 @@ dashboards:
   - name: pull-kubernetes-local-e2e
     description: Runs conformance tests using kubetest with local-up-cluster
     test_group_name: pull-kubernetes-local-e2e
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: pull-kubernetes-local-e2e-containerized
+    description: Runs conformance tests using kubetest with local-up-cluster (containerized kubelet)
+    test_group_name: pull-kubernetes-local-e2e-containerized
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: pull-janitor
