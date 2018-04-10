@@ -283,8 +283,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-sd-logging
 - name: ci-kubernetes-e2e-gci-gce-etcd3
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-etcd3
-- name: ci-kubernetes-federation-build-1-7
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1-7
 - name: ci-kubernetes-federation-build-1-8
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1-8
 - name: ci-kubernetes-e2e-gci-gce-flaky
@@ -396,10 +394,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-device-plugin-gpu-monitoring
   alert_stale_results_hours: 24
   num_failures_to_alert: 8 # Runs every 3h. Alert when it's been failing for a day.
-- name: ci-kubernetes-e2e-gke-gpu-1-7
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gpu-1-7
-  alert_stale_results_hours: 36
-  num_failures_to_alert: 4 # Runs every 12h. Alert when it's been failing for a couple of days.
 - name: ci-kubernetes-e2e-gci-gke-alpha-features
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-alpha-features
 - name: ci-kubernetes-e2e-gci-gke-autoscaling
@@ -649,7 +643,7 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-teardown
 - name: ci-kubernetes-e2e-gce-taint-evict
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-taint-evict
-# stable3 (1.7) e2e
+# stable3 (1.8) e2e
 - name: ci-kubernetes-e2e-gce-cos-k8sstable3-alphafeatures
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable3-alphafeatures
 - name: ci-kubernetes-e2e-gce-cos-k8sstable3-ingress
@@ -680,8 +674,6 @@ test_groups:
 # bazel, run on prow
 - name: ci-kubernetes-bazel-build
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build
-- name: ci-kubernetes-bazel-build-1-7
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build-1-7
 - name: ci-kubernetes-bazel-build-1-8
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build-1-8
 - name: ci-kubernetes-bazel-build-1-9
@@ -690,8 +682,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build-1-10
 - name: ci-kubernetes-bazel-test
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test
-- name: ci-kubernetes-bazel-test-1-7
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test-1-7
 - name: ci-kubernetes-bazel-test-1-8
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test-1-8
 - name: ci-kubernetes-bazel-test-1-9
@@ -1414,16 +1404,12 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-stable-on-master
 - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-stable-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-upgrade-stable-master
-- name: ci-kubernetes-e2e-kubeadm-gce-1-7
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-7
 - name: ci-kubernetes-e2e-kubeadm-gce-1-8
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-8
 - name: ci-kubernetes-e2e-kubeadm-gce-1-9
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-9
 - name: ci-kubernetes-e2e-kubeadm-gce-1-10
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-10
-- name: ci-kubernetes-e2e-kubeadm-gce-1-7-on-1-8
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-7-on-1-8
 - name: ci-kubernetes-e2e-kubeadm-gce-1-8-on-1-9
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-8-on-1-9
 - name: ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
@@ -1435,8 +1421,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
 - name: ci-kubernetes-e2e-gce-gci-latest-rollback-etcd
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-latest-rollback-etcd
-- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
 - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9
 - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
@@ -1457,16 +1441,12 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/metrics-bigquery
 - name: metrics-kettle
   gcs_prefix: kubernetes-jenkins/logs/metrics-kettle
-- name: periodic-kubernetes-bazel-test-1-7
-  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-7
 - name: periodic-kubernetes-bazel-test-1-8
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-8
 - name: periodic-kubernetes-bazel-test-1-9
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-9
 - name: periodic-kubernetes-bazel-test-1-10
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-10
-- name: periodic-kubernetes-bazel-build-1-7
-  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-7
 - name: periodic-kubernetes-bazel-build-1-8
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-8
 - name: periodic-kubernetes-bazel-build-1-9
@@ -1489,9 +1469,6 @@ test_groups:
 # benchmarks
 - name: ci-benchmark-scheduler-master
   gcs_prefix: kubernetes-jenkins/logs/ci-benchmark-scheduler-master
-# release-1.7 suites
-- name: ci-kubernetes-e2e-gce-release-1-7
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-release-1-7
 - name: ci-kubernetes-e2e-gce-cos-k8sstable2-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable2-default
 - name: ci-kubernetes-e2e-gke-cos-k8sstable2-default
@@ -1512,8 +1489,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-imageubuntu1604
 - name: ci-kubernetes-e2e-kops-aws-newrunner
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-newrunner
-- name: ci-kubernetes-e2e-gce-slow-release-1-7
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-slow-release-1-7
 - name: ci-kubernetes-e2e-gce-cos-k8sstable2-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable2-slow
 - name: ci-kubernetes-e2e-gke-cos-k8sstable2-slow
@@ -1522,10 +1497,6 @@ test_groups:
   - configuration_value: node_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-alpha-features-release-1-7
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-alpha-features-release-1-7
-- name: ci-kubernetes-e2e-gce-serial-release-1-7
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-serial-release-1-7
 - name: ci-kubernetes-e2e-gce-cos-k8sstable2-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable2-serial
 - name: ci-kubernetes-e2e-gke-cos-k8sstable2-serial
@@ -1534,27 +1505,17 @@ test_groups:
   - configuration_value: node_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-federation-release-1-7
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-federation-release-1-7
-- name: ci-kubernetes-e2e-gce-alpha-features-release-1-7
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-alpha-features-release-1-7
 - name: ci-kubernetes-e2e-gce-cos-k8sstable2-alphafeatures
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable2-alphafeatures
-- name: ci-kubernetes-e2e-gci-gce-scalability-release-1-7
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability-release-1-7
   num_failures_to_alert: 1
 - name: ci-kubernetes-e2e-gce-cos-k8sstable2-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable2-ingress
 - name: ci-kubernetes-e2e-gke-cos-k8sstable2-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sstable2-ingress
-- name: ci-kubernetes-e2e-gce-reboot-release-1-7
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-reboot-release-1-7
 - name: ci-kubernetes-e2e-gce-cos-k8sstable2-reboot
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable2-reboot
 - name: ci-kubernetes-e2e-gke-cos-k8sstable2-reboot
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sstable2-reboot
-- name: ci-kubernetes-soak-gce-1-7
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-1-7
 - name: ci-kubernetes-soak-gci-gce-stable2
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-stable2
 # cos image validation.
@@ -2233,6 +2194,9 @@ test_groups:
 - name: ci-kubernetes-e2e-gci-gce-scalability-stable1
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability-stable1
   num_failures_to_alert: 1
+- name: ci-kubernetes-e2e-gci-gce-scalability-stable2
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability-stable2
+  num_failures_to_alert: 1
 - name: ci-kubernetes-e2e-gce-cos-k8sstable1-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable1-ingress
 - name: ci-kubernetes-e2e-gke-cos-k8sstable1-ingress
@@ -2247,10 +2211,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-federation-release-1-8
 - name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-master
-- name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-cluster-new
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-cluster
 - name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-master
 - name: ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew
@@ -2275,8 +2235,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable2-stable1-upgrade-master
 - name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-master
 - name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster
 - name: ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew
@@ -2883,8 +2841,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-reboot
   - name: gci-gce-scalability
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability
-  - name: gci-gce-scalability-1.7
-    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-release-1-7
+  - name: gci-gce-scalability-1.10
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable1
+  - name: gci-gce-scalability-1.9
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable2
   - name: gci-gce-ip-alias
     test_group_name: ci-kubernetes-e2e-gci-gce-ip-alias
   - name: gce-alpha-api
@@ -3018,32 +2978,39 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100
   - name: gke-canary
     test_group_name: ci-kubernetes-e2e-gke-canary
-  # K8S 1.7 branch on GKE
-  - name: gci-gke-ingress-1.7
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-ingress
-  - name: gci-gke-reboot-1.7
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-reboot
-  - name: gci-gke-1.7
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-default
-  - name: gci-gke-serial-1.7
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-serial
-  - name: gci-gke-slow-1.7
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-slow
-  - name: gke-alpha-features-1.7
-    test_group_name: ci-kubernetes-e2e-gke-alpha-features-release-1-7
-  - name: gke-gpu-1.7
-    test_group_name: ci-kubernetes-e2e-gke-gpu-1-7
   # K8S 1.8 branch on GKE
   - name: gci-gke-ingress-1.8
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-ingress
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-ingress
   - name: gci-gke-reboot-1.8
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-reboot
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-reboot
   - name: gci-gke-1.8
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-default
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-default
   - name: gci-gke-serial-1.8
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-serial
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-serial
   - name: gci-gke-slow-1.8
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-slow
+  # K8S 1.9 branch on GKE
+  - name: gci-gke-ingress-1.9
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-ingress
+  - name: gci-gke-reboot-1.9
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-reboot
+  - name: gci-gke-1.9
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-default
+  - name: gci-gke-serial-1.9
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-serial
+  - name: gci-gke-slow-1.9
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-slow
+  # K8S 1.10 branch on GKE
+  - name: gci-gke-ingress-1.10
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-ingress
+  - name: gci-gke-reboot-1.10
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-reboot
+  - name: gci-gke-1.10
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-default
+  - name: gci-gke-serial-1.10
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-serial
+  - name: gci-gke-slow-1.10
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-slow
 
 - name: google-gke-stackdriver
   dashboard_tab:
@@ -3053,13 +3020,13 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-gci-latest
   - name: sd-logging-ubuntu-latest
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-latest
-  - name: sd-logging-gci-1.9
+  - name: sd-logging-gci-1.10
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-gci-beta
-  - name: sd-logging-ubuntu-1.9
+  - name: sd-logging-ubuntu-1.10
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-beta
-  - name: sd-logging-gci-1.8
+  - name: sd-logging-gci-1.9
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-gci-stable1
-  - name: sd-logging-ubuntu-1.8
+  - name: sd-logging-ubuntu-1.9
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-stable1
 
 - name: google-gke-staging
@@ -3125,122 +3092,122 @@ dashboards:
   dashboard_tab:
   - name: build
     test_group_name: ci-kubernetes-build
-  - name: build-1.7
-    test_group_name: ci-kubernetes-build-stable3
   - name: build-1.8
-    test_group_name: ci-kubernetes-build-stable2
+    test_group_name: ci-kubernetes-build-stable3
   - name: build-1.9
-    test_group_name: ci-kubernetes-build-stable1
+    test_group_name: ci-kubernetes-build-stable2
   - name: build-1.10
+    test_group_name: ci-kubernetes-build-stable1
+  - name: build-1.11
     test_group_name: ci-kubernetes-build-beta
   - name: bazel-build
     test_group_name: ci-kubernetes-bazel-build
-  - name: bazel-build-1.7
-    test_group_name: ci-kubernetes-bazel-build-1-7
   - name: bazel-build-1.8
     test_group_name: ci-kubernetes-bazel-build-1-8
   - name: bazel-build-1.9
     test_group_name: ci-kubernetes-bazel-build-1-9
+  - name: bazel-build-1.10
+    test_group_name: ci-kubernetes-bazel-build-1-10
   - name: bazel-test
     test_group_name: ci-kubernetes-bazel-test
-  - name: bazel-test-1.7
-    test_group_name: ci-kubernetes-bazel-test-1-7
   - name: bazel-test-1.8
     test_group_name: ci-kubernetes-bazel-test-1-8
   - name: bazel-test-1.9
     test_group_name: ci-kubernetes-bazel-test-1-9
-  - name: integration-1.10
-    test_group_name: ci-kubernetes-integration-beta
+  - name: bazel-test-1.10
+    test_group_name: ci-kubernetes-bazel-test-1-10
   - name: integration-master
     test_group_name: ci-kubernetes-integration-master
-  - name: integration-1.7
-    test_group_name: ci-kubernetes-integration-stable3
   - name: integration-1.8
-    test_group_name: ci-kubernetes-integration-stable2
+    test_group_name: ci-kubernetes-integration-stable3
   - name: integration-1.9
+    test_group_name: ci-kubernetes-integration-stable2
+  - name: integration-1.10
     test_group_name: ci-kubernetes-integration-stable1
+  - name: integration-1.11
+    test_group_name: ci-kubernetes-integration-beta
   - name: verify-master
     test_group_name: ci-kubernetes-verify-master
-  - name: verify-1.7
-    test_group_name: ci-kubernetes-verify-stable3
   - name: verify-1.8
-    test_group_name: ci-kubernetes-verify-stable2
+    test_group_name: ci-kubernetes-verify-stable3
   - name: verify-1.9
-    test_group_name: ci-kubernetes-verify-stable1
+    test_group_name: ci-kubernetes-verify-stable2
   - name: verify-1.10
+    test_group_name: ci-kubernetes-verify-stable1
+  - name: verify-1.11
     test_group_name: ci-kubernetes-verify-beta
 
 - name: sig-release-master-kubectl-skew
   dashboard_tab:
-  - name: skew-cluster1.9-kubectlmaster-gce
+  - name: skew-cluster1.10-kubectlmaster-gce
     test_group_name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew
-    description: '1.9 e2e tests run against a 1.9 gce cluster using a master kubectl binary'
-  - name: skew-cluster1.9-kubectlmaster-gke
+    description: '1.10 e2e tests run against a 1.10 gce cluster using a master kubectl binary'
+  - name: skew-cluster1.10-kubectlmaster-gke
     test_group_name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew
-    description: '1.9 e2e tests run against a 1.9 gke cluster using a master kubectl binary'
-  - name: skew-clustermaster-kubectl1.9-gce
+    description: '1.10 e2e tests run against a 1.10 gke cluster using a master kubectl binary'
+  - name: skew-clustermaster-kubectl1.10-gce
     test_group_name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
-    description: '1.9 e2e tests run against a master gce cluster using a 1.9 kubectl binary'
-  - name: skew-cluster1.9-kubectl1.9-gke
+    description: '1.10 e2e tests run against a master gce cluster using a 1.10 kubectl binary'
+  - name: skew-cluster1.10-kubectl1.10-gke
     test_group_name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew
-    description: '1.9 e2e tests run against a master gke cluster using a 1.9 kubectl binary'
-  - name: skew-cluster1.9-kubectlmaster-gce-serial
+    description: '1.10 e2e tests run against a master gke cluster using a 1.10 kubectl binary'
+  - name: skew-cluster1.10-kubectlmaster-gce-serial
     test_group_name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew-serial
-    description: '1.9 serial tests run against a 1.9 gke cluster using a master kubectl binary'
-  - name: skew-cluster1.9-kubectlmaster-gke-serial
+    description: '1.10 serial tests run against a 1.10 gke cluster using a master kubectl binary'
+  - name: skew-cluster1.10-kubectlmaster-gke-serial
     test_group_name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew-serial
-    description: '1.9 serial tests run against a 1.9 gce cluster using a master kubectl binary'
-  - name: skew-clustermaster-kubectl1.9-gce-serial
+    description: '1.10 serial tests run against a 1.10 gce cluster using a master kubectl binary'
+  - name: skew-clustermaster-kubectl1.10-gce-serial
     test_group_name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-serial
-    description: '1.9 serial tests run against a master gce cluster using a 1.9 kubectl binary'
-  - name: skew-clustermaster-kubectl1.9-gke-serial
+    description: '1.10 serial tests run against a master gce cluster using a 1.10 kubectl binary'
+  - name: skew-clustermaster-kubectl1.10-gke-serial
     test_group_name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew-serial
-    description: '1.9 serial tests run against a master gke cluster using a 1.9 kubectl binary'
+    description: '1.10 serial tests run against a master gke cluster using a 1.10 kubectl binary'
 
 - name: sig-release-master-upgrade-optional
   dashboard_tab:
-  - name: gke-gci-1.9-gci-master-upgrade-master
+  - name: gke-gci-1.10-gci-master-upgrade-master
     test_group_name: ci-kubernetes-e2e-gke-gci-stable-gci-master-upgrade-master
-    description: 'Upgrade master only, in gke, from gci 1.9 to gci master'
+    description: 'Upgrade master only, in gke, from gci 1.10 to gci master'
 
 - name: sig-release-master-upgrade
   dashboard_tab:
-  - name: gce-1.9-master-upgrade-master
+  - name: gce-1.10-master-upgrade-master
     test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-master
-    description: 'Upgrade master only, in gce(gci), from 1.9 to master'
-  - name: gce-1.9-master-upgrade-cluster-parallel
+    description: 'Upgrade master only, in gce(gci), from 1.10 to master'
+  - name: gce-1.10-master-upgrade-cluster-parallel
     test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-parallel
-    description: 'Upgrade master and node, in gce(gci), from 1.9 to master, run parallel tests only'
-  - name: gce-1.9-master-upgrade-cluster
+    description: 'Upgrade master and node, in gce(gci), from 1.10 to master, run parallel tests only'
+  - name: gce-1.10-master-upgrade-cluster
     test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster
-    description: 'Upgrade master and node, in gce(gci), from 1.9 to master'
-  - name: gce-master-1.9-downgrade-cluster
+    description: 'Upgrade master and node, in gce(gci), from 1.10 to master'
+  - name: gce-master-1.10-downgrade-cluster
     test_group_name: ci-kubernetes-e2e-gce-master-new-downgrade-cluster
-    description: 'Downgrade master and node, in gce(gci), from master to 1.9'
-  - name: gce-master-1.9-downgrade-cluster-parallel
+    description: 'Downgrade master and node, in gce(gci), from master to 1.10'
+  - name: gce-master-1.10-downgrade-cluster-parallel
     test_group_name: ci-kubernetes-e2e-gce-master-new-downgrade-cluster-parallel
-    description: 'Downgrade master and node, in gce(gci), from master to 1.9, run parallel tests only'
-  - name: gce-1.9-master-upgrade-cluster-new
+    description: 'Downgrade master and node, in gce(gci), from master to 1.10, run parallel tests only'
+  - name: gce-1.10-master-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new
-    description: 'Upgrade master and node, in gce(gci), from 1.9 to master, and run skewed e2e tests'
-  - name: gke-gci-1.9-gci-master-upgrade-master
+    description: 'Upgrade master and node, in gce(gci), from 1.10 to master, and run skewed e2e tests'
+  - name: gke-gci-1.10-gci-master-upgrade-master
     test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-master
-    description: 'Upgrade master only, in gke(gci), from 1.9 to master'
-  - name: gke-gci-1.9-gci-master-upgrade-cluster-parallel
+    description: 'Upgrade master only, in gke(gci), from 1.10 to master'
+  - name: gke-gci-1.10-gci-master-upgrade-cluster-parallel
     test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-parallel
-    description: 'Upgrade master and node, in gke(gci), from 1.9 to master, run parallel tests only'
-  - name: gke-gci-1.9-gci-master-upgrade-cluster
+    description: 'Upgrade master and node, in gke(gci), from 1.10 to master, run parallel tests only'
+  - name: gke-gci-1.10-gci-master-upgrade-cluster
     test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster
-    description: 'Upgrade master and node, in gke(gci), from 1.9 to master'
-  - name: gke-gci-master-gci-1.9-downgrade-cluster
+    description: 'Upgrade master and node, in gke(gci), from 1.10 to master'
+  - name: gke-gci-master-gci-1.10-downgrade-cluster
     test_group_name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster
-    description: 'Downgrade master and node, in gke(gci), from master to 1.9'
-  - name: gke-gci-master-gci-1.9-downgrade-cluster-parallel
+    description: 'Downgrade master and node, in gke(gci), from master to 1.10'
+  - name: gke-gci-master-gci-1.10-downgrade-cluster-parallel
     test_group_name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster-parallel
-    description: 'Downgrade master and node, in gke(gci), from master to 1.9, run parallel tests only'
-  - name: gke-gci-1.9-gci-master-upgrade-cluster-new
+    description: 'Downgrade master and node, in gke(gci), from master to 1.10, run parallel tests only'
+  - name: gke-gci-1.10-gci-master-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
-    description: 'Upgrade master and node, in gke(gci), from 1.9 to master, and run skewed e2e tests'
+    description: 'Upgrade master and node, in gke(gci), from 1.10 to master, and run skewed e2e tests'
 
 - name: sig-release-etcd-upgrades
   dashboard_tab:
@@ -3310,14 +3277,170 @@ dashboards:
   - name: kubeadm-gce-selfhosting
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-selfhosting
 
+- name: sig-release-1.11-all
+  dashboard_tab:
+  - name: build-1.11
+    test_group_name: ci-kubernetes-build-beta
+  - name: verify-1.11
+    test_group_name: ci-kubernetes-verify-beta
+  - name: integration-1.11
+    test_group_name: ci-kubernetes-integration-beta
+  - name: gce-1.11
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
+  - name: gce-reboot-1.11
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-reboot
+  - name: gce-serial-1.11
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-serial
+  - name: gce-slow-1.11
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-slow
+  - name: gce-ingress-1.11
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-ingress
+  - name: gce-alpha-features-1.11
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures
+  - name: gke-1.11
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-default
+  - name: gke-reboot-1.11
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-reboot
+  - name: gci-gce-soak-1.11
+    test_group_name: ci-kubernetes-soak-gci-gce-beta
+  - name: gke-serial-1.11
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-serial
+  - name: gke-slow-1.11
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-slow
+  - name: gke-ingress-1.11
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
+  - name: gce-1.11-1.10-downgrade
+    test_group_name: ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster
+  - name: gce-1.11-1.10-downgrade-parallel
+    test_group_name: ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster-parallel
+  - name: gce-1.10-1.11-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster
+  - name: gce-1.10-1.11-upgrade-cluster-skew
+    test_group_name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster-new
+  - name: gce-1.10-1.11-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-master
+  - name: gce-1.11-1.10-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew
+  - name: gce-1.11-1.10-kubectl-skew-serial
+    test_group_name: ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew-serial
+  - name: gce-1.10-1.11-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew
+  - name: gce-1.10-1.11-kubectl-skew-serial
+    test_group_name: ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew-serial
+  - name: gke-1.11-1.10-downgrade
+    test_group_name: ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster
+  - name: gke-1.11-1.10-downgrade-parallel
+    test_group_name: ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster-parallel
+  - name: gke-1.10-1.11-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster
+  - name: gke-1.10-1.11-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster-new
+  - name: gke-1.10-1.11-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-master
+  - name: gke-1.11-1.10-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew
+  - name: gke-1.11-1.10-kubectl-skew-serial
+    test_group_name: ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew-serial
+  - name: gke-1.10-1.11-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew
+  - name: gke-1.10-1.11-kubectl-skew-serial
+    test_group_name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew-serial
+  - name: gce-gpu-1.11
+    test_group_name: ci-kubernetes-e2e-gce-gpu-beta
+  - name: gce-device-plugin-gpu-1.11
+    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
+  - name: gke-device-plugin-gpu-1.11
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
+  - name: gke-device-plugin-gpu-p100-1.11
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
+  - name: kops-aws-1.11
+    test_group_name: ci-kubernetes-e2e-kops-aws-beta
+  - name: kubelet-1.11
+    test_group_name: ci-kubernetes-node-kubelet-beta
+  - name: gce-scalability-1.11
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-beta
+  # TODO(bentheelder) (1.11 test-infra lead) create those jobs
+  #- name: bazel-build-1.11
+  #  test_group_name: ci-kubernetes-bazel-build-1-11
+  #- name: bazel-test-1.11
+  #  test_group_name: ci-kubernetes-bazel-test-1-11
+  #- name: periodic-bazel-build-1.11
+  #  test_group_name: periodic-kubernetes-bazel-build-1-11
+  #- name: periodic-bazel-test-1.11
+  #  test_group_name: periodic-kubernetes-bazel-test-1-11
+  #- name: gce-kubeadm-1.10-on-1.11
+  #  test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
+  #- name: ci-gce-kubeadm-1.11
+  #  test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-11
+  #- name: gce-kubeadm-upgrade-1.10-1.11
+  #  test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11
+
+- name: sig-release-1.11-blocking
+  dashboard_tab:
+  - name: build-1.11
+    test_group_name: ci-kubernetes-build-beta
+  - name: verify-1.11
+    test_group_name: ci-kubernetes-verify-beta
+  - name: integration-1.11
+    test_group_name: ci-kubernetes-integration-beta
+  - name: gce-1.11
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
+  - name: gce-reboot-1.11
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-reboot
+  - name: gce-serial-1.11
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-serial
+  - name: gce-slow-1.11
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-slow
+  - name: gce-ingress-1.11
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-ingress
+  - name: gce-alpha-features-1.11
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures
+  - name: gke-1.11
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-default
+  - name: gke-reboot-1.11
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-reboot
+  - name: gke-serial-1.11
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-serial
+  - name: gke-slow-1.11
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-slow
+  - name: gke-ingress-1.11
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
+  - name: gce-gpu-1.11
+    test_group_name: ci-kubernetes-e2e-gce-gpu-beta
+  - name: gce-device-plugin-gpu-1.11
+    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
+  - name: gke-device-plugin-gpu-1.11
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
+  - name: gke-device-plugin-gpu-p100-1.11
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
+  - name: kops-aws-1.11
+    test_group_name: ci-kubernetes-e2e-kops-aws-beta
+  - name: kubelet-1.11
+    test_group_name: ci-kubernetes-node-kubelet-beta
+  - name: gce-scalability-1.11
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-beta
+  # TODO(bentheelder) (1.11 test-infra lead) create those jobs
+  #- name: bazel-build-1.11
+  #  test_group_name: ci-kubernetes-bazel-build-1-10
+  #- name: bazel-test-1.11
+  #  test_group_name: ci-kubernetes-bazel-test-1-10
+  #- name: periodic-bazel-build-1.11
+  #  test_group_name: periodic-kubernetes-bazel-build-1-10
+  #- name: periodic-bazel-test-1.11
+  #  test_group_name: periodic-kubernetes-bazel-test-1-10
+  #- name: gce-kubeadm-1.10-on-1.11
+  #  test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
+  #- name: ci-gce-kubeadm-1.11
+  #  test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-11
+
 - name: sig-release-1.10-all
   dashboard_tab:
   - name: build-1.10
-    test_group_name: ci-kubernetes-build-beta
+    test_group_name: ci-kubernetes-build-stable1
   - name: verify-1.10
-    test_group_name: ci-kubernetes-verify-beta
+    test_group_name: ci-kubernetes-verify-stable1
   - name: integration-1.10
-    test_group_name: ci-kubernetes-integration-beta
+    test_group_name: ci-kubernetes-integration-stable1
   - name: bazel-build-1.10
     test_group_name: ci-kubernetes-bazel-build-1-10
   - name: bazel-test-1.10
@@ -3326,95 +3449,95 @@ dashboards:
     test_group_name: periodic-kubernetes-bazel-build-1-10
   - name: periodic-bazel-test-1.10
     test_group_name: periodic-kubernetes-bazel-test-1-10
-  - name: gce-1.10
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
-  - name: gce-reboot-1.10
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-reboot
-  - name: gce-serial-1.10
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-serial
-  - name: gce-slow-1.10
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-slow
-  - name: gce-ingress-1.10
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-ingress
-  - name: gce-alpha-features-1.10
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures
-  - name: gke-1.10
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-default
-  - name: gke-reboot-1.10
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-reboot
-  - name: gci-gce-soak-1.10
-    test_group_name: ci-kubernetes-soak-gci-gce-beta
-  - name: gke-serial-1.10
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-serial
-  - name: gke-slow-1.10
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-slow
-  - name: gke-ingress-1.10
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
-  - name: gce-1.10-1.9-downgrade
-    test_group_name: ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster
-  - name: gce-1.10-1.9-downgrade-parallel
-    test_group_name: ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster-parallel
-  - name: gce-1.9-1.10-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster
-  - name: gce-1.9-1.10-upgrade-cluster-skew
-    test_group_name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster-new
-  - name: gce-1.9-1.10-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-master
-  - name: gce-1.10-1.9-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew
-  - name: gce-1.10-1.9-kubectl-skew-serial
-    test_group_name: ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew-serial
-  - name: gce-1.9-1.10-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew
-  - name: gce-1.9-1.10-kubectl-skew-serial
-    test_group_name: ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew-serial
-  - name: gke-1.10-1.9-downgrade
-    test_group_name: ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster
-  - name: gke-1.10-1.9-downgrade-parallel
-    test_group_name: ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster-parallel
-  - name: gke-1.9-1.10-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster
-  - name: gke-1.9-1.10-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster-new
-  - name: gke-1.9-1.10-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-master
-  - name: gke-1.10-1.9-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew
-  - name: gke-1.10-1.9-kubectl-skew-serial
-    test_group_name: ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew-serial
-  - name: gke-1.9-1.10-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew
-  - name: gke-1.9-1.10-kubectl-skew-serial
-    test_group_name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew-serial
-  - name: gce-gpu-1.10
-    test_group_name: ci-kubernetes-e2e-gce-gpu-beta
-  - name: gce-device-plugin-gpu-1.10
-    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
-  - name: gke-device-plugin-gpu-1.10
-    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
-  - name: gke-device-plugin-gpu-p100-1.10
-    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
-  - name: kops-aws-1.10
-    test_group_name: ci-kubernetes-e2e-kops-aws-beta
-  - name: kubelet-1.10
-    test_group_name: ci-kubernetes-node-kubelet-beta
-  - name: gce-scalability-1.10
-    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-beta
   - name: gce-kubeadm-1.9-on-1.10
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
   - name: ci-gce-kubeadm-1.10
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-10
-  - name: gce-kubeadm-upgrade-1.9-1.10
+  - name: ci-gce-kubeadm-upgrade-1.9-1.10
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
+  - name: periodic-kubernetes-e2e-debs-pushed
+    test_group_name: periodic-kubernetes-e2e-debs-pushed
+  - name: gci-gce-1.10
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-default
+  - name: gci-gce-slow-1.10
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-slow
+  - name: gci-gce-serial-1.10
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-serial
+  - name: gci-gce-alpha-features-1.10
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-alphafeatures
+  - name: gci-gce-scalability-1.10
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable1
+  - name: gci-gce-ingress-1.10
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-ingress
+  - name: gci-gce-reboot-1.10
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-reboot
+  - name: gci-gke-1.10
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-default
+  - name: gci-gke-slow-1.10
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-slow
+  - name: gci-gke-serial-1.10
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-serial
+  - name: gci-gke-ingress-1.10
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-ingress
+  - name: gci-gke-reboot-1.10
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-reboot
+  - name: gci-gce-soak-1.10
+    test_group_name: ci-kubernetes-soak-gci-gce-stable1
+  - name: kops-aws-1.10
+    test_group_name: ci-kubernetes-e2e-kops-aws-stable1
+  - name: gke-gci-1.8-gci-1.10-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-master
+  - name: gke-gci-1.8-gci-1.10-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster
+  - name: gke-gci-1.8-gci-1.10-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster-new
+  - name: gke-gci-1.9-gci-1.10-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-master
+  - name: gke-gci-1.9-gci-1.10-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster
+  - name: gke-gci-1.9-gci-1.10-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster-new
+  - name: gce-1.9-1.10-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew
+  - name: gce-1.10-1.9-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew
+  - name: gke-1.10-1.9-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew
+  - name: gke-1.9-1.10-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew
+  - name: gce-1.9-1.10-gci-kubectl-skew-serial
+    test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew-serial
+  - name: gce-1.10-1.9-gci-kubectl-skew-serial
+    test_group_name: ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew-serial
+  - name: gke-1.10-1.9-gci-kubectl-skew-serial
+    test_group_name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew-serial
+  - name: gke-1.9-1.10-gci-kubectl-skew-serial
+    test_group_name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew-serial
+  - name: gce-1.9-1.10-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-master
+  - name: gce-1.9-1.10-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster
+  - name: gce-1.9-1.10-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster-new
+  - name: kubelet-1.10
+    test_group_name: ci-kubernetes-node-kubelet-stable1
+  - name: gce-gpu-1.10
+    test_group_name: ci-kubernetes-e2e-gce-gpu-stable1
+  - name: gce-device-plugin-gpu-1.10
+    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
+  - name: gke-device-plugin-gpu-1.10
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
+  - name: gke-device-plugin-gpu-p100-1.10
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable1
 
 - name: sig-release-1.10-blocking
   dashboard_tab:
   - name: build-1.10
-    test_group_name: ci-kubernetes-build-beta
+    test_group_name: ci-kubernetes-build-stable1
   - name: verify-1.10
-    test_group_name: ci-kubernetes-verify-beta
+    test_group_name: ci-kubernetes-verify-stable1
   - name: integration-1.10
-    test_group_name: ci-kubernetes-integration-beta
+    test_group_name: ci-kubernetes-integration-stable1
   - name: bazel-build-1.10
     test_group_name: ci-kubernetes-bazel-build-1-10
   - name: bazel-test-1.10
@@ -3423,251 +3546,89 @@ dashboards:
     test_group_name: periodic-kubernetes-bazel-build-1-10
   - name: periodic-bazel-test-1.10
     test_group_name: periodic-kubernetes-bazel-test-1-10
-  - name: gce-1.10
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
-  - name: gce-reboot-1.10
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-reboot
-  - name: gce-serial-1.10
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-serial
-  - name: gce-slow-1.10
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-slow
-  - name: gce-ingress-1.10
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-ingress
-  - name: gce-alpha-features-1.10
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures
-  - name: gke-1.10
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-default
-  - name: gke-reboot-1.10
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-reboot
-  - name: gke-serial-1.10
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-serial
-  - name: gke-slow-1.10
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-slow
-  - name: gke-ingress-1.10
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
-  - name: gce-gpu-1.10
-    test_group_name: ci-kubernetes-e2e-gce-gpu-beta
-  - name: gce-device-plugin-gpu-1.10
-    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
-  - name: gke-device-plugin-gpu-1.10
-    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
-  - name: gke-device-plugin-gpu-p100-1.10
-    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
-  - name: kops-aws-1.10
-    test_group_name: ci-kubernetes-e2e-kops-aws-beta
-  - name: kubelet-1.10
-    test_group_name: ci-kubernetes-node-kubelet-beta
-  - name: gce-scalability-1.10
-    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-beta
   - name: gce-kubeadm-1.9-on-1.10
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
   - name: ci-gce-kubeadm-1.10
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-10
-
-- name: sig-release-1.9-all
-  dashboard_tab:
-  - name: build-1.9
-    test_group_name: ci-kubernetes-build-stable1
-  - name: verify-1.9
-    test_group_name: ci-kubernetes-verify-stable1
-  - name: integration-1.9
-    test_group_name: ci-kubernetes-integration-stable1
-  - name: bazel-build-1.9
-    test_group_name: ci-kubernetes-bazel-build-1-9
-  - name: bazel-test-1.9
-    test_group_name: ci-kubernetes-bazel-test-1-9
-  - name: periodic-bazel-build-1.9
-    test_group_name: periodic-kubernetes-bazel-build-1-9
-  - name: periodic-bazel-test-1.9
-    test_group_name: periodic-kubernetes-bazel-test-1-9
-  - name: gce-kubeadm-1.8-on-1.9
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8-on-1-9
-  - name: ci-gce-kubeadm-1.9
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-9
-  - name: ci-gce-kubeadm-upgrade-1.8-1.9
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9
-  - name: periodic-kubernetes-e2e-debs-pushed
-    test_group_name: periodic-kubernetes-e2e-debs-pushed
-  - name: gci-gce-1.9
+  - name: gci-gce-1.10
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-default
-  - name: gci-gce-slow-1.9
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-slow
-  - name: gci-gce-serial-1.9
+  - name: gci-gce-slow-1.10
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-default
+  - name: gci-gce-serial-1.10
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-serial
-  - name: gci-gce-alpha-features-1.9
+  - name: gci-gce-alpha-features-1.10
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-alphafeatures
-  - name: gci-gce-scalability-1.9
+  - name: gci-gce-scalability-1.10
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable1
-  - name: gci-gce-ingress-1.9
+  - name: gci-gce-ingress-1.10
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-ingress
-  - name: gci-gce-reboot-1.9
+  - name: gci-gce-reboot-1.10
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-reboot
-  - name: gci-gke-1.9
+  - name: gci-gke-1.10
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-default
-  - name: gci-gke-slow-1.9
+  - name: gci-gke-slow-1.10
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-slow
-  - name: gci-gke-serial-1.9
+  - name: gci-gke-serial-1.10
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-serial
-  - name: gci-gke-ingress-1.9
+  - name: gci-gke-ingress-1.10
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-ingress
-  - name: gci-gke-reboot-1.9
+  - name: gci-gke-reboot-1.10
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-reboot
-  - name: gci-gce-soak-1.9
-    test_group_name: ci-kubernetes-soak-gci-gce-stable1
-  - name: kops-aws-1.9
+  - name: kops-aws-1.10
     test_group_name: ci-kubernetes-e2e-kops-aws-stable1
-  - name: gke-gci-1.7-gci-1.9-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-master
-  - name: gke-gci-1.7-gci-1.9-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster
-  - name: gke-gci-1.7-gci-1.9-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster-new
-  - name: gke-gci-1.8-gci-1.9-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-master
-  - name: gke-gci-1.8-gci-1.9-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster
-  - name: gke-gci-1.8-gci-1.9-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster-new
-  - name: gce-1.8-1.9-gci-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew
-  - name: gce-1.9-1.8-gci-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew
-  - name: gke-1.9-1.8-gci-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew
-  - name: gke-1.8-1.9-gci-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew
-  - name: gce-1.8-1.9-gci-kubectl-skew-serial
-    test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew-serial
-  - name: gce-1.9-1.8-gci-kubectl-skew-serial
-    test_group_name: ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew-serial
-  - name: gke-1.9-1.8-gci-kubectl-skew-serial
-    test_group_name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew-serial
-  - name: gke-1.8-1.9-gci-kubectl-skew-serial
-    test_group_name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew-serial
-  - name: gce-1.8-1.9-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-master
-  - name: gce-1.8-1.9-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster
-  - name: gce-1.8-1.9-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster-new
-  - name: kubelet-1.9
+  - name: kubelet-1.10
     test_group_name: ci-kubernetes-node-kubelet-stable1
-  - name: gce-gpu-1.9
+  - name: gce-gpu-1.10
     test_group_name: ci-kubernetes-e2e-gce-gpu-stable1
-  - name: gce-device-plugin-gpu-1.9
+  - name: gce-device-plugin-gpu-1.10
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
-  - name: gke-device-plugin-gpu-1.9
-    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
-  - name: gke-device-plugin-gpu-p100-1.9
-    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable1
-
-- name: sig-release-1.9-blocking
-  dashboard_tab:
-  - name: build-1.9
-    test_group_name: ci-kubernetes-build-stable1
-  - name: verify-1.9
-    test_group_name: ci-kubernetes-verify-stable1
-  - name: integration-1.9
-    test_group_name: ci-kubernetes-integration-stable1
-  - name: bazel-build-1.9
-    test_group_name: ci-kubernetes-bazel-build-1-9
-  - name: bazel-test-1.9
-    test_group_name: ci-kubernetes-bazel-test-1-9
-  - name: periodic-bazel-build-1.9
-    test_group_name: periodic-kubernetes-bazel-build-1-9
-  - name: periodic-bazel-test-1.9
-    test_group_name: periodic-kubernetes-bazel-test-1-9
-  - name: gce-kubeadm-1.8-on-1.9
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8-on-1-9
-  - name: ci-gce-kubeadm-1.9
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-9
-  - name: gci-gce-1.9
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-default
-  - name: gci-gce-slow-1.9
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-default
-  - name: gci-gce-serial-1.9
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-serial
-  - name: gci-gce-alpha-features-1.9
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-alphafeatures
-  - name: gci-gce-scalability-1.9
-    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable1
-  - name: gci-gce-ingress-1.9
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-ingress
-  - name: gci-gce-reboot-1.9
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-reboot
-  - name: gci-gke-1.9
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-default
-  - name: gci-gke-slow-1.9
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-slow
-  - name: gci-gke-serial-1.9
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-serial
-  - name: gci-gke-ingress-1.9
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-ingress
-  - name: gci-gke-reboot-1.9
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-reboot
-  - name: kops-aws-1.9
-    test_group_name: ci-kubernetes-e2e-kops-aws-stable1
-  - name: kubelet-1.9
-    test_group_name: ci-kubernetes-node-kubelet-stable1
-  - name: gce-gpu-1.9
-    test_group_name: ci-kubernetes-e2e-gce-gpu-stable1
-  - name: gce-device-plugin-gpu-1.9
-    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
-  - name: gke-device-plugin-gpu-1.9
+  - name: gke-device-plugin-gpu-1.10
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
 
 - name: sig-cluster-lifecycle-upgrade-skew
   dashboard_tab:
-  - name: gke-gci-1.7-gci-1.9-upgrade-master
+  - name: gke-gci-1.8-gci-1.10-upgrade-master
     test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-master
-  - name: gke-gci-1.7-gci-1.9-upgrade-cluster
+  - name: gke-gci-1.8-gci-1.10-upgrade-cluster
     test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster
-  - name: gke-gci-1.7-gci-1.9-upgrade-cluster-new
+  - name: gke-gci-1.8-gci-1.10-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster-new
-  - name: gke-gci-1.8-gci-1.9-upgrade-master
+  - name: gke-gci-1.9-gci-1.10-upgrade-master
     test_group_name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-master
-  - name: gke-gci-1.8-gci-1.9-upgrade-cluster
+  - name: gke-gci-1.9-gci-1.10-upgrade-cluster
     test_group_name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster
-  - name: gke-gci-1.8-gci-1.9-upgrade-cluster-new
+  - name: gke-gci-1.9-gci-1.10-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster-new
-  - name: gke-cvm-1.7-gci-1.8-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-master
-  - name: gke-cvm-1.7-gci-1.8-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-cluster
-  - name: gke-cvm-1.7-gci-1.8-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-cluster-new
-  - name: gce-1.8-1.9-gci-kubectl-skew
+  - name: gce-1.9-1.10-gci-kubectl-skew
     test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew
-  - name: gce-1.9-1.8-gci-kubectl-skew
+  - name: gce-1.10-1.9-gci-kubectl-skew
     test_group_name: ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew
-  - name: gke-1.9-1.8-gci-kubectl-skew
+  - name: gke-1.10-1.9-gci-kubectl-skew
     test_group_name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew
-  - name: gke-1.8-1.9-gci-kubectl-skew
+  - name: gke-1.9-1.10-gci-kubectl-skew
     test_group_name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew
-  - name: gce-1.8-1.9-gci-kubectl-skew-serial
+  - name: gce-1.9-1.10-gci-kubectl-skew-serial
     test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew-serial
-  - name: gce-1.9-1.8-gci-kubectl-skew-serial
+  - name: gce-1.10-1.9-gci-kubectl-skew-serial
     test_group_name: ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew-serial
-  - name: gke-1.9-1.8-gci-kubectl-skew-serial
+  - name: gke-1.10-1.9-gci-kubectl-skew-serial
     test_group_name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew-serial
-  - name: gke-1.8-1.9-gci-kubectl-skew-serial
+  - name: gke-1.9-1.10-gci-kubectl-skew-serial
     test_group_name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew-serial
-  - name: gce-1.8-1.9-upgrade-master
+  - name: gce-1.9-1.10-upgrade-master
     test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-master
-  - name: gce-1.8-1.9-upgrade-cluster
+  - name: gce-1.9-1.10-upgrade-cluster
     test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster
-  - name: gce-1.8-1.9-upgrade-cluster-new
+  - name: gce-1.9-1.10-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster-new
-  - name: gce-1.9-1.8-downgrade-cluster
+  - name: gce-1.10-1.9-downgrade-cluster
     test_group_name: ci-kubernetes-e2e-gce-stable1-stable2-downgrade-cluster
-  - name: gce-1.9-1.8-downgrade-cluster-parallel
+  - name: gce-1.10-1.9-downgrade-cluster-parallel
     test_group_name: ci-kubernetes-e2e-gce-stable1-stable2-downgrade-cluster-parallel
-  - name: gke-1.9-1.8-downgrade-cluster
+  - name: gke-1.10-1.9-downgrade-cluster
     test_group_name: ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster
-  - name: gke-1.9-1.8-downgrade-cluster-parallel
+  - name: gke-1.10-1.9-downgrade-cluster-parallel
     test_group_name: ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster-parallel
-  - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1.7-1.8
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
 
 - name: sig-release-misc
   dashboard_tab:
@@ -3680,252 +3641,206 @@ dashboards:
   - name: gci-garbage-collector
     test_group_name: ci-kubernetes-e2e-gci-gce-garbage
 
-- name: sig-release-1.8-all
+- name: sig-release-1.9-all
   dashboard_tab:
-  - name: build-1.8
+  - name: build-1.9
     test_group_name: ci-kubernetes-build-stable2
-  - name: verify-1.8
+  - name: verify-1.9
     test_group_name: ci-kubernetes-verify-stable2
-  - name: integration-1.8
+  - name: integration-1.9
     test_group_name: ci-kubernetes-integration-stable2
-  - name: bazel-build-1.8
-    test_group_name: periodic-kubernetes-bazel-build-1-8
-  - name: bazel-test-1.8
-    test_group_name: periodic-kubernetes-bazel-test-1-8
-  - name: gce-kubeadm-1.8
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8
-  - name: gce-kubeadm-1.7-on-1.8
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-7-on-1-8
-  - name: ci-gce-kubeadm-1.8
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8
-  - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1.7-1.8
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
-  - name: federation-build-1.8
-    test_group_name: ci-kubernetes-federation-build-1-8
-  - name: federation-test-1.8
-    test_group_name: ci-kubernetes-e2e-gce-federation-release-1-8
-  - name: gke-cvm-1.7-gci-1.8-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-master
-  - name: gke-cvm-1.7-gci-1.8-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-cluster
-  - name: gke-cvm-1.7-gci-1.8-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-cluster-new
-  - name: kubelet-1.8
+  - name: bazel-build-1.9
+    test_group_name: periodic-kubernetes-bazel-build-1-9
+  - name: bazel-test-1.9
+    test_group_name: periodic-kubernetes-bazel-test-1-9
+  - name: gce-kubeadm-1.9
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-9
+  - name: gce-kubeadm-1.8-on-1.9
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8-on-1-9
+  - name: ci-gce-kubeadm-1.9
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-9
+  - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1.8-1.9
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9
+  - name: kubelet-1.9
     test_group_name: ci-kubernetes-node-kubelet-stable2
-  - name: gci-gce-release-1.8
+  - name: gci-gce-release-1.9
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-default
-  - name: gci-gke-release-1.8
+  - name: gci-gke-release-1.9
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-default
-  - name: gci-gce-slow-release-1.8
+  - name: gci-gce-slow-release-1.9
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-slow
-  - name: gci-gke-slow-release-1.8
+  - name: gci-gke-slow-release-1.9
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-slow
-  - name: gci-gce-serial-release-1.8
+  - name: gci-gce-serial-release-1.9
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-serial
-  - name: gci-gke-serial-release-1.8
+  - name: gci-gke-serial-release-1.9
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-serial
-  - name: gci-gce-alpha-features-release-1.8
+  - name: gci-gce-alpha-features-release-1.9
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-alphafeatures
-  - name: gci-gce-ingress-release-1.8
+  - name: gci-gce-ingress-release-1.9
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-ingress
-  - name: gci-gke-ingress-release-1.8
+  - name: gci-gke-ingress-release-1.9
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-ingress
-  - name: gci-gce-reboot-release-1.8
+  - name: gci-gce-reboot-release-1.9
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-reboot
-  - name: gci-gke-reboot-release-1.8
+  - name: gci-gke-reboot-release-1.9
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-reboot
-  - name: soak-gci-gce-1.8
+  - name: soak-gci-gce-1.9
     test_group_name: ci-kubernetes-soak-gci-gce-stable2
+  - name: gci-gce-scalability-1.9
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable2
 
 # These are the release *blocking* tests.  These provide a valid binary signal
 # to gate releases (alpha, beta, official).
 # This list is used by kubernetes/release/lib/releaselib.sh to provide go/nogo
 # signal for releases.
 # The first test/suite in the list is the primary suite for release purposes
+- name: sig-release-1.9-blocking
+  dashboard_tab:
+  - name: build-1.9
+    test_group_name: ci-kubernetes-build-stable2
+  - name: verify-1.9
+    test_group_name: ci-kubernetes-verify-stable2
+  - name: integration-1.9
+    test_group_name: ci-kubernetes-integration-stable2
+  - name: gce-kubeadm-1.7-on-1.9
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8-on-1-9
+  - name: ci-gce-kubeadm-1.9
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-9
+  - name: kubelet-1.9
+    test_group_name: ci-kubernetes-node-kubelet-stable2
+  - name: gci-gce-release-1.9
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-default
+  - name: gci-gce-slow-release-1.9
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-slow
+  - name: gci-gke-slow-release-1.9
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-slow
+  - name: gci-gce-serial-release-1.9
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-serial
+  - name: gci-gke-serial-release-1.9
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-serial
+  - name: gci-gce-alpha-features-release-1.9
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-alphafeatures
+  - name: gci-gce-ingress-release-1.9
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-ingress
+  - name: gci-gke-ingress-release-1.9
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-ingress
+  - name: gci-gce-reboot-release-1.9
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-reboot
+  - name: gci-gke-reboot-release-1.9
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-reboot
+  - name: soak-gci-gce-1.9
+    test_group_name: ci-kubernetes-soak-gci-gce-stable2
+  - name: gci-gce-scalability-1.9
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable2
+
+- name: sig-release-1.8-all
+  dashboard_tab:
+  - name: build-1.8
+    test_group_name: ci-kubernetes-build-stable3
+  - name: verify-1.8
+    test_group_name: ci-kubernetes-verify-stable3
+  - name: integration-1.8
+    test_group_name: ci-kubernetes-integration-stable3
+  - name: federation-build-1.8
+    test_group_name: ci-kubernetes-federation-build-1-8
+  - name: kops-aws-release-1.8
+    test_group_name: ci-kubernetes-e2e-kops-aws-stable3
+  - name: ci-gce-kubeadm-1.8
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8
+  - name: ci-bazel-build-1.8
+    test_group_name: ci-kubernetes-bazel-build-1-8
+  - name: ci-bazel-test-1.8
+    test_group_name: ci-kubernetes-bazel-test-1-8
+  - name: periodic-bazel-build-1.8
+    test_group_name: periodic-kubernetes-bazel-build-1-8
+  - name: periodic-bazel-test-1.8
+    test_group_name: periodic-kubernetes-bazel-test-1-8
+  - name: kubelet-1.8
+    test_group_name: ci-kubernetes-node-kubelet-stable3
+  - name: gci-gce-alpha-features-1.8
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-alphafeatures
+  - name: gci-gce-ingress-1.8
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-ingress
+  - name: gci-gce-reboot-1.8
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-reboot
+  - name: gci-gce-1.8
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-default
+  - name: gci-gce-serial-1.8
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-serial
+  - name: gci-gce-slow-1.8
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-slow
+  - name: gci-gke-ingress-1.8
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-ingress
+  - name: gci-gke-reboot-1.8
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-reboot
+  - name: gci-gke-1.8
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-default
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gci-gke-serial-1.8
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-serial
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gci-gke-slow-1.8
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-slow
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: soak-gci-gce-1.8
+    test_group_name: ci-kubernetes-soak-gci-gce-stable3
+
 - name: sig-release-1.8-blocking
   dashboard_tab:
   - name: build-1.8
-    test_group_name: ci-kubernetes-build-stable2
+    test_group_name: ci-kubernetes-build-stable3
   - name: verify-1.8
-    test_group_name: ci-kubernetes-verify-stable2
+    test_group_name: ci-kubernetes-verify-stable3
   - name: integration-1.8
-    test_group_name: ci-kubernetes-integration-stable2
-  - name: gce-kubeadm-1.7-on-1.8
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-7-on-1-8
+    test_group_name: ci-kubernetes-integration-stable3
   - name: ci-gce-kubeadm-1.8
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8
-  - name: federation-build-1.8
-    test_group_name: ci-kubernetes-federation-build-1-8
-  - name: federation-test-1.8
-    test_group_name: ci-kubernetes-e2e-gce-federation-release-1-8
   - name: kubelet-1.8
-    test_group_name: ci-kubernetes-node-kubelet-stable2
-  - name: gci-gce-release-1.8
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-default
-  - name: gci-gce-slow-release-1.8
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-slow
-  - name: gci-gke-slow-release-1.8
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-slow
-  - name: gci-gce-serial-release-1.8
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-serial
-  - name: gci-gke-serial-release-1.8
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-serial
-  - name: gci-gce-alpha-features-release-1.8
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-alphafeatures
-  - name: gci-gce-ingress-release-1.8
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-ingress
-  - name: gci-gke-ingress-release-1.8
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-ingress
-  - name: gci-gce-reboot-release-1.8
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-reboot
-  - name: gci-gke-reboot-release-1.8
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-reboot
-  - name: soak-gci-gce-1.8
-    test_group_name: ci-kubernetes-soak-gci-gce-stable2
-
-- name: sig-release-1.7-all
-  dashboard_tab:
-  - name: build-1.7
-    test_group_name: ci-kubernetes-build-stable3
-  - name: verify-1.7
-    test_group_name: ci-kubernetes-verify-stable3
-  - name: integration-1.7
-    test_group_name: ci-kubernetes-integration-stable3
-  - name: federation-build-1.7
-    test_group_name: ci-kubernetes-federation-build-1-7
-  - name: gce-release-1.7
-    test_group_name: ci-kubernetes-e2e-gce-release-1-7
-  - name: kops-aws-release-1.7
-    test_group_name: ci-kubernetes-e2e-kops-aws-stable3
-  - name: gce-slow-release-1.7
-    test_group_name: ci-kubernetes-e2e-gce-slow-release-1-7
-  - name: gce-serial-release-1.7
-    test_group_name: ci-kubernetes-e2e-gce-serial-release-1-7
-  - name: gce-federation-release-1.7
-    test_group_name: ci-kubernetes-e2e-gce-federation-release-1-7
-  - name: gce-alpha-features-release-1.7
-    test_group_name: ci-kubernetes-e2e-gce-alpha-features-release-1-7
-  - name: gci-gce-scalability-release-1.7
-    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-release-1-7
-  - name: gce-reboot-release-1.7
-    test_group_name: ci-kubernetes-e2e-gce-reboot-release-1-7
-  - name: soak-gce-1.7
-    test_group_name: ci-kubernetes-soak-gce-1-7
-  - name: gke-gpu-1.7
-    test_group_name: ci-kubernetes-e2e-gke-gpu-1-7
-  - name: ci-gce-kubeadm-1.7
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-7
-  - name: ci-bazel-build-1.7
-    test_group_name: ci-kubernetes-bazel-build-1-7
-  - name: ci-bazel-test-1.7
-    test_group_name: ci-kubernetes-bazel-test-1-7
-  - name: periodic-bazel-build-1.7
-    test_group_name: periodic-kubernetes-bazel-build-1-7
-  - name: periodic-bazel-test-1.7
-    test_group_name: periodic-kubernetes-bazel-test-1-7
-  - name: gke-alpha-features-release-1.7
-    test_group_name: ci-kubernetes-e2e-gke-alpha-features-release-1-7
-  - name: kubelet-1.7
     test_group_name: ci-kubernetes-node-kubelet-stable3
-  - name: gci-gce-alpha-features-1.7
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-alphafeatures
-  - name: gci-gce-ingress-1.7
+  - name: gci-gce-ingress-1.8
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-ingress
-  - name: gci-gce-reboot-1.7
+  - name: gci-gce-reboot-1.8
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-reboot
-  - name: gci-gce-1.7
+  - name: gci-gce-1.8
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-default
-  - name: gci-gce-serial-1.7
+  - name: gci-gce-serial-1.8
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-serial
-  - name: gci-gce-slow-1.7
+  - name: gci-gce-slow-1.8
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-slow
-  - name: gci-gke-ingress-1.7
+  - name: gci-gke-ingress-1.8
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-ingress
-  - name: gci-gke-reboot-1.7
+  - name: gci-gke-reboot-1.8
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-reboot
-  - name: gci-gke-1.7
+  - name: gci-gke-1.8
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-default
     column_header:
     - configuration_value: node_os_image
     - configuration_value: Commit
     - configuration_value: infra-commit
-  - name: gci-gke-serial-1.7
+  - name: gci-gke-serial-1.8
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-serial
     column_header:
     - configuration_value: node_os_image
     - configuration_value: Commit
     - configuration_value: infra-commit
-  - name: gci-gke-slow-1.7
+  - name: gci-gke-slow-1.8
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-slow
     column_header:
     - configuration_value: node_os_image
     - configuration_value: Commit
     - configuration_value: infra-commit
-  - name: soak-gci-gce-1.7
-    test_group_name: ci-kubernetes-soak-gci-gce-stable3
-
-- name: sig-release-1.7-blocking
-  dashboard_tab:
-  - name: build-1.7
-    test_group_name: ci-kubernetes-build-stable3
-  - name: verify-1.7
-    test_group_name: ci-kubernetes-verify-stable3
-  - name: integration-1.7
-    test_group_name: ci-kubernetes-integration-stable3
-  - name: gce-release-1.7
-    test_group_name: ci-kubernetes-e2e-gce-release-1-7
-  - name: gce-serial-release-1.7
-    test_group_name: ci-kubernetes-e2e-gce-serial-release-1-7
-  - name: gce-slow-release-1.7
-    test_group_name: ci-kubernetes-e2e-gce-slow-release-1-7
-  - name: gce-reboot-release-1.7
-    test_group_name: ci-kubernetes-e2e-gce-reboot-release-1-7
-  - name: ci-gce-kubeadm-1.7
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-7
-  - name: kubelet-1.7
-    test_group_name: ci-kubernetes-node-kubelet-stable3
-  - name: gci-gce-ingress-1.7
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-ingress
-  - name: gci-gce-reboot-1.7
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-reboot
-  - name: gci-gce-1.7
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-default
-  - name: gci-gce-serial-1.7
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-serial
-  - name: gci-gce-slow-1.7
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-slow
-  - name: gci-gke-ingress-1.7
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-ingress
-  - name: gci-gke-reboot-1.7
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-reboot
-  - name: gci-gke-1.7
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-default
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gci-gke-serial-1.7
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-serial
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gci-gke-slow-1.7
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-slow
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gke-gpu-1.7
-    test_group_name: ci-kubernetes-e2e-gke-gpu-1-7
-  - name: gci-gce-scalability-release-1.7
-    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-release-1-7
-  - name: aws-release-1.7
+  - name: aws-release-1.8
     test_group_name: ci-kubernetes-e2e-kops-aws-stable3
-  - name: gce-alpha-features-release-1.7
-    test_group_name: ci-kubernetes-e2e-gce-alpha-features-release-1-7
-  - name: gce-federation-release-1.7
-    test_group_name: ci-kubernetes-e2e-gce-federation-release-1-7
 
 - name: wg-resource-management
   dashboard_tab:
@@ -3934,22 +3849,22 @@ dashboards:
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
-  - name: gce-device-plugin-gpu-1.10
+  - name: gce-device-plugin-gpu-1.11
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
-  - name: gce-device-plugin-gpu-1.9
+  - name: gce-device-plugin-gpu-1.10
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
-  - name: gce-gpu-1.10
+  - name: gce-gpu-1.11
     test_group_name: ci-kubernetes-e2e-gce-gpu-beta
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
-  - name: gce-gpu-1.9
+  - name: gce-gpu-1.10
     test_group_name: ci-kubernetes-e2e-gce-gpu-stable1
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
@@ -3959,12 +3874,12 @@ dashboards:
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
-  - name: gke-device-plugin-gpu-1.10
+  - name: gke-device-plugin-gpu-1.11
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
-  - name: gke-device-plugin-gpu-1.9
+  - name: gke-device-plugin-gpu-1.10
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
@@ -3974,12 +3889,12 @@ dashboards:
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
-  - name: gke-device-plugin-gpu-p100-1.10
+  - name: gke-device-plugin-gpu-p100-1.11
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
-  - name: gke-device-plugin-gpu-p100-1.9
+  - name: gke-device-plugin-gpu-p100-1.10
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable1
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
@@ -4001,11 +3916,6 @@ dashboards:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gce-device-plugin-gpu-cri-containerd
     test_group_name: ci-cri-containerd-e2e-gce-device-plugin-gpu
-    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
-    alert_options:
-      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
-  - name: gke-gpu-1.7
-    test_group_name: ci-kubernetes-e2e-gke-gpu-1-7
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
@@ -4298,12 +4208,6 @@ dashboards:
 
 - name: sig-cluster-lifecycle-all
   dashboard_tab:
-  - name: kubeadm-gce-1.7
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-7
-  - name: kubeadm-gce-1.7-on-1.8
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-7-on-1-8
-  - name: kubeadm-gce-upgrade-1.7-1.8
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
   - name: kubeadm-gce-1.8
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8
   - name: kubeadm-gce-1.8-on-1.9
@@ -4365,12 +4269,8 @@ dashboards:
 
 - name: sig-multicluster-federation-gce-old
   dashboard_tab:
-  - name: gce-1.7
-    test_group_name: ci-kubernetes-e2e-gce-federation-release-1-7
   - name: gce-1.8
     test_group_name: ci-kubernetes-e2e-gce-federation-release-1-8
-  - name: build-1.7
-    test_group_name: ci-kubernetes-federation-build-1-7
   - name: build-1.8
     test_group_name: ci-kubernetes-federation-build-1-8
 
@@ -4404,22 +4304,22 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gke
     base_options: 'include-filter-by-regex=sig-instrumentation'
     description: 'instrumentation gke e2e tests for master branch'
-  - name: gce-1.8
+  - name: gce-1.9
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-default
+    base_options: 'include-filter-by-regex=sig-instrumentation'
+    description: 'instrumentation gce e2e tests for 1.9 branch'
+  - name: gke-1.9
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-default
+    base_options: 'include-filter-by-regex=sig-instrumentation'
+    description: 'instrumentation gke e2e tests for 1.9 branch'
+  - name: gce-1.8
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-default
     base_options: 'include-filter-by-regex=sig-instrumentation'
     description: 'instrumentation gce e2e tests for 1.8 branch'
   - name: gke-1.8
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-default
-    base_options: 'include-filter-by-regex=sig-instrumentation'
-    description: 'instrumentation gke e2e tests for 1.8 branch'
-  - name: gce-1.7
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-default
-    base_options: 'include-filter-by-regex=sig-instrumentation'
-    description: 'instrumentation gce e2e tests for 1.7 branch'
-  - name: gke-1.7
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-default
     base_options: 'include-filter-by-regex=sig-instrumentation'
-    description: 'instrumentation gke e2e tests for 1.7 branch'
+    description: 'instrumentation gke e2e tests for 1.8 branch'
   - name: gce-serial
     test_group_name: ci-kubernetes-e2e-gci-gce-serial
     base_options: 'include-filter-by-regex=sig-instrumentation'
@@ -4452,19 +4352,19 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-latest
     base_options: 'include-filter-by-regex=sig-instrumentation'
     description: 'sig-instrumentation gke stackdriver logging e2e tests for master branch with Ubuntu'
-  - name: gke-sd-logging-gci-1.9
+  - name: gke-sd-logging-gci-1.10
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-gci-beta
+    base_options: 'include-filter-by-regex=sig-instrumentation'
+    description: 'sig-instrumentation gke stackdriver logging e2e tests for 1.10 branch with COS'
+  - name: gke-sd-logging-ubuntu-1.10
+    test_group_name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-beta
+    base_options: 'include-filter-by-regex=sig-instrumentation'
+    description: 'sig-instrumentation gke stackdriver logging e2e tests for 1.10 branch with Ubuntu'
+  - name: gke-sd-logging-gci-1.9
+    test_group_name: ci-kubernetes-e2e-gke-sd-logging-gci-stable1
     base_options: 'include-filter-by-regex=sig-instrumentation'
     description: 'sig-instrumentation gke stackdriver logging e2e tests for 1.9 branch with COS'
   - name: gke-sd-logging-ubuntu-1.9
-    test_group_name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-beta
-    base_options: 'include-filter-by-regex=sig-instrumentation'
-    description: 'sig-instrumentation gke stackdriver logging e2e tests for 1.9 branch with Ubuntu'
-  - name: gke-sd-logging-gci-1.8
-    test_group_name: ci-kubernetes-e2e-gke-sd-logging-gci-stable1
-    base_options: 'include-filter-by-regex=sig-instrumentation'
-    description: 'sig-instrumentation gke stackdriver logging e2e tests for 1.8 branch with COS'
-  - name: gke-sd-logging-ubuntu-1.8
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-stable1
     base_options: 'include-filter-by-regex=sig-instrumentation'
     description: 'sig-instrumentation gke stackdriver logging e2e tests for 1.9 branch with Ubuntu'
@@ -4484,19 +4384,19 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-ingress-manual-network
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: gci-gce-ingress-release-1.7
+  - name: gci-gce-ingress-release-1.8
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-ingress
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: gci-gce-ingress-release-1.8
+  - name: gci-gce-ingress-release-1.9
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-ingress
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: gci-gce-ingress-release-1.9
+  - name: gci-gce-ingress-release-1.10
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-ingress
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: gci-gce-ingress-release-1.10
+  - name: gci-gce-ingress-release-1.11
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-ingress
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
@@ -4602,19 +4502,19 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gke-ingress
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: gci-gke-ingress-release-1.7
+  - name: gci-gke-ingress-release-1.8
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-ingress
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: gci-gke-ingress-release-1.8
+  - name: gci-gke-ingress-release-1.9
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-ingress
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: gci-gke-ingress-release-1.9
+  - name: gci-gke-ingress-release-1.10
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-ingress
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: gci-gke-ingress-release-1.10
+  - name: gci-gke-ingress-release-1.11
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
@@ -4953,11 +4853,11 @@ dashboards:
   dashboard_tab:
   - name: gce
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability
-  - name: gce-1.8
-    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable1
-  - name: gce-1.7
-    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-release-1-7
   - name: gce-1.9
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable2
+  - name: gce-1.10
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable1
+  - name: gce-1.11
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-beta
   - name: gce-large-correctness
     test_group_name: ci-kubernetes-e2e-gce-large-correctness
@@ -5349,33 +5249,33 @@ dashboards:
     - configuration_value: Commit
     - configuration_value: infra-commit
 
-- name: sig-gcp-release-1.9
+- name: sig-gcp-release-1.10
   dashboard_tab:
-  - name: gci-gke-1.9
+  - name: gci-gke-1.10
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-default
     column_header:
     - configuration_value: node_os_image
     - configuration_value: Commit
     - configuration_value: infra-commit
-  - name: gci-gke-slow-1.9
+  - name: gci-gke-slow-1.10
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-slow
     column_header:
     - configuration_value: node_os_image
     - configuration_value: Commit
     - configuration_value: infra-commit
-  - name: gci-gke-serial-1.9
+  - name: gci-gke-serial-1.10
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-serial
     column_header:
     - configuration_value: node_os_image
     - configuration_value: Commit
     - configuration_value: infra-commit
-  - name: gci-gke-ingress-1.9
+  - name: gci-gke-ingress-1.10
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-ingress
     column_header:
     - configuration_value: node_os_image
     - configuration_value: Commit
     - configuration_value: infra-commit
-  - name: gci-gke-reboot-1.9
+  - name: gci-gke-reboot-1.10
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-reboot
     column_header:
     - configuration_value: node_os_image
@@ -5393,56 +5293,56 @@ dashboards:
     - configuration_value: node_os_image
     - configuration_value: Commit
     - configuration_value: infra-commit
-  - name: gke-gci-1.7-gci-1.9-upgrade-master
+  - name: gke-gci-1.8-gci-1.10-upgrade-master
     test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-master
-  - name: gke-gci-1.7-gci-1.9-upgrade-cluster
+  - name: gke-gci-1.8-gci-1.10-upgrade-cluster
     test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster
-  - name: gke-gci-1.7-gci-1.9-upgrade-cluster-new
+  - name: gke-gci-1.8-gci-1.10-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster-new
-  - name: gke-gci-1.8-gci-1.9-upgrade-master
+  - name: gke-gci-1.9-gci-1.10-upgrade-master
     test_group_name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-master
-  - name: gke-gci-1.8-gci-1.9-upgrade-cluster
+  - name: gke-gci-1.9-gci-1.10-upgrade-cluster
     test_group_name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster
-  - name: gke-gci-1.8-gci-1.9-upgrade-cluster-new
+  - name: gke-gci-1.9-gci-1.10-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster-new
-  - name: gke-1.9-1.8-gci-kubectl-skew
+  - name: gke-1.10-1.9-gci-kubectl-skew
     test_group_name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew
-  - name: gke-1.8-1.9-gci-kubectl-skew
+  - name: gke-1.9-1.10-gci-kubectl-skew
     test_group_name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew
-  - name: gke-1.9-1.8-gci-kubectl-skew-serial
+  - name: gke-1.10-1.9-gci-kubectl-skew-serial
     test_group_name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew-serial
-  - name: gke-1.8-1.9-gci-kubectl-skew-serial
+  - name: gke-1.9-1.10-gci-kubectl-skew-serial
     test_group_name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew-serial
-  - name: gke-device-plugin-gpu-1.9
+  - name: gke-device-plugin-gpu-1.10
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
 
-- name: sig-gcp-release-1.8
+- name: sig-gcp-release-1.9
   dashboard_tab:
-  - name: gci-gke-release-1.8
+  - name: gci-gke-release-1.9
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-default
     column_header:
     - configuration_value: node_os_image
     - configuration_value: Commit
     - configuration_value: infra-commit
-  - name: gci-gke-slow-release-1.8
+  - name: gci-gke-slow-release-1.9
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-slow
     column_header:
     - configuration_value: node_os_image
     - configuration_value: Commit
     - configuration_value: infra-commit
-  - name: gci-gke-serial-release-1.8
+  - name: gci-gke-serial-release-1.9
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-serial
     column_header:
     - configuration_value: node_os_image
     - configuration_value: Commit
     - configuration_value: infra-commit
-  - name: gci-gke-ingress-release-1.8
+  - name: gci-gke-ingress-release-1.9
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-ingress
     column_header:
     - configuration_value: node_os_image
     - configuration_value: Commit
     - configuration_value: infra-commit
-  - name: gci-gke-reboot-release-1.8
+  - name: gci-gke-reboot-release-1.9
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-reboot
     column_header:
     - configuration_value: node_os_image
@@ -5460,27 +5360,7 @@ dashboards:
     - configuration_value: node_os_image
     - configuration_value: Commit
     - configuration_value: infra-commit
-  - name: gke-cvm-1.7-gci-1.8-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-master
-  - name: gke-cvm-1.7-gci-1.8-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-cluster
-  - name: gke-cvm-1.7-gci-1.8-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-cluster-new
 
-- name: sig-gcp-release-1.7
-  dashboard_tab:
-  - name: gke-gpu-1.7
-    test_group_name: ci-kubernetes-e2e-gke-gpu-1-7
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gke-alpha-features-release-1.7
-    test_group_name: ci-kubernetes-e2e-gke-alpha-features-release-1-7
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
 
 - name: presubmits-kubernetes-blocking
   dashboard_tab:
@@ -5812,15 +5692,15 @@ dashboard_groups:
   - sig-release-master-kubectl-skew
   - sig-release-master-upgrade
   - sig-release-master-upgrade-optional
+  - sig-release-1.11-all
+  - sig-release-1.11-blocking
   - sig-release-1.10-all
   - sig-release-1.10-blocking
+  - sig-release-etcd-upgrades
   - sig-release-1.9-all
   - sig-release-1.9-blocking
-  - sig-release-etcd-upgrades
   - sig-release-1.8-all
   - sig-release-1.8-blocking
-  - sig-release-1.7-all
-  - sig-release-1.7-blocking
   - sig-release-misc
 
 - name: sig-scalability
@@ -5840,9 +5720,8 @@ dashboard_groups:
 - name: sig-gcp
   dashboard_names:
   - sig-gcp-master
+  - sig-gcp-release-1.10
   - sig-gcp-release-1.9
-  - sig-gcp-release-1.8
-  - sig-gcp-release-1.7
 
 - name: sig-autoscaling
   dashboard_names:
