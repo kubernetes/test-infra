@@ -34,7 +34,7 @@ type Options struct {
 	// SubDir is appended to the GCS path
 	SubDir string `json:"sub_dir,omitempty"`
 
-	kube.GCSConfiguration
+	*kube.GCSConfiguration
 
 	// GcsCredentialsFile is the path to the JSON
 	// credentials for pushing to GCS

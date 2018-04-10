@@ -35,7 +35,7 @@ func TestOptions_Validate(t *testing.T) {
 				Log: "testing",
 				Options: &gcsupload.Options{
 					DryRun: true,
-					GCSConfiguration: kube.GCSConfiguration{
+					GCSConfiguration: &kube.GCSConfiguration{
 						PathStrategy: kube.PathStrategyExplicit,
 					},
 				},
@@ -47,7 +47,7 @@ func TestOptions_Validate(t *testing.T) {
 			input: Options{
 				Options: &gcsupload.Options{
 					DryRun: true,
-					GCSConfiguration: kube.GCSConfiguration{
+					GCSConfiguration: &kube.GCSConfiguration{
 						PathStrategy: kube.PathStrategyExplicit,
 					},
 				},
