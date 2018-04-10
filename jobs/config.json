@@ -12306,6 +12306,18 @@
       "sig-apps"
     ]
   },
+  "pull-cloud-provider-azure-e2e": {
+    "args": [
+      "make",
+      "test-e2e",
+      "SUITE=default",
+      "SUBJECT=${PULL_NUMBER}"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-azure"
+    ]
+  },
   "pull-cloud-provider-azure-lint": {
     "args": [
       "make",
