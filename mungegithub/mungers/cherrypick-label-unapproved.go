@@ -18,6 +18,7 @@ package mungers
 
 import (
 	"fmt"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
@@ -72,9 +73,11 @@ func (LabelUnapprovedPicks) Munge(obj *github.MungeObject) {
 	if !obj.IsPR() {
 		return
 	}
-	//true=return
-	boolean, ok := obj.IsForBranch("master")
-	if !ok || boolean {
+	branch, ok := obj.Branch()
+	if !ok {
+		return
+	}
+	if !strings.HasPrefix(branch, "release-") {
 		return
 	}
 
