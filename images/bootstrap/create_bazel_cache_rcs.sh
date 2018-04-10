@@ -41,10 +41,12 @@ hash_toolchains () {
     local cc_version=$(command_to_version $cc)
     # NOTE: IIRC some rules call python internally, this can't hurt
     local python_version=$(command_to_version python)
+    # the rpm packaging rules use rpmbuild
+    local rpmbuild_version=$(command_to_version rpmbuild)
     # combine all tool versions into a hash
     # NOTE(bentheelder): if we change the set of tools considered we should
     # consider prepending the hash with a """schema version""" for completeness
-    local tool_versions="CC:${cc_version},PY:{python_version}"
+    local tool_versions="CC:${cc_version},PY:${python_version},RPM:${rpmbuild_version}"
     echo "${tool_versions}" | md5sum | cut -d" " -f1
 }
 
