@@ -5318,6 +5318,46 @@ presubmits:
           requests:
             memory: "2Gi"
 
+  - name: pull-test-infra-verify-config-canary
+    agent: kubernetes
+    context: pull-test-infra-verify-config-canary
+    branches:
+    - master
+    rerun_command: "/test pull-test-infra-verify-config-canary"
+    trigger: "/test pull-test-infra-verify-config-canary"
+    path_alias: "k8s.io/test-infra"
+    utility_images:
+      clonerefs: "registry.svc.ci.openshift.org/ci/clonerefs:latest"
+      initupload: "registry.svc.ci.openshift.org/ci/initupload:latest"
+      entrypoint: "registry.svc.ci.openshift.org/ci/entrypoint:latest"
+      sidecar: "registry.svc.ci.openshift.org/ci/sidecar:latest"
+    gcs_configuration:
+      bucket: "kubernetes-jenkins"
+      path_strategy: "legacy"
+      default_org: "kubernetes"
+      default_repo: "kubernetes"
+    gcs_credentials_secret: "service-account"
+    spec:
+      containers:
+      - name: test
+        command:
+        - ./hack/verify-config.sh
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180313-3e7524a90-experimental
+        env:
+        - name: TEST_TMPDIR
+          value: /bazel-scratch/.cache/bazel
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "2Gi"
+        volumeMounts:
+        - name: bazel-scratch
+          mountPath: /bazel-scratch/.cache
+      volumes:
+      - name: bazel-scratch
+        emptyDir: {}
+
   - name: pull-test-infra-verify-deps
     agent: kubernetes
     context: pull-test-infra-verify-deps
