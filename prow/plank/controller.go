@@ -405,9 +405,10 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 
 	var b bytes.Buffer
 	if err := c.ca.Config().Plank.JobURLTemplate.Execute(&b, &pj); err != nil {
-		return fmt.Errorf("error executing URL template: %v", err)
+		c.log.Errorf("error executing URL template: %v", err)
+	} else {
+		pj.Status.URL = b.String()
 	}
-	pj.Status.URL = b.String()
 	reports <- pj
 	if prevState != pj.Status.State {
 		c.log.WithFields(pjutil.ProwJobFields(&pj)).
