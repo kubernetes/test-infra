@@ -15440,6 +15440,10 @@ periodics:
       - --upload=gs://kubernetes-jenkins/logs
       env:
       image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      resources:
+        requests:
+          cpu: 5
+          memory: "8Gi"
 
 - interval: 1h
   agent: kubernetes
@@ -15455,6 +15459,10 @@ periodics:
       - --upload=gs://kubernetes-jenkins/logs
       env:
       image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      resources:
+        requests:
+          cpu: 5
+          memory: "8Gi"
 
 - name: metrics-bigquery
   interval: 24h
