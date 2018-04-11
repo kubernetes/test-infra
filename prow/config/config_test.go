@@ -716,8 +716,6 @@ func TestURLTemplate(t *testing.T) {
 		{
 			name:    "k8s periodic",
 			jobType: kube.PeriodicJob,
-			org:     "kubernetes",
-			repo:    "kubernetes",
 			job:     "k8s-peri-1",
 			build:   "1",
 			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/logs/k8s-peri-1/1/",
@@ -725,8 +723,6 @@ func TestURLTemplate(t *testing.T) {
 		{
 			name:    "empty periodic",
 			jobType: kube.PeriodicJob,
-			org:     "",
-			repo:    "",
 			job:     "nan-peri-1",
 			build:   "1",
 			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/logs/nan-peri-1/1/",
@@ -748,15 +744,17 @@ func TestURLTemplate(t *testing.T) {
 			Spec: kube.ProwJobSpec{
 				Type: tc.jobType,
 				Job:  tc.job,
-				Refs: &kube.Refs{
-					Pulls: []kube.Pull{{}},
-					Org:   tc.org,
-					Repo:  tc.repo,
-				},
 			},
 			Status: kube.ProwJobStatus{
 				BuildID: tc.build,
 			},
+		}
+		if tc.jobType != kube.PeriodicJob {
+			pj.Spec.Refs = &kube.Refs{
+				Pulls: []kube.Pull{{}},
+				Org:   tc.org,
+				Repo:  tc.repo,
+			}
 		}
 
 		var b bytes.Buffer
