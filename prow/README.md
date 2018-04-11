@@ -28,6 +28,8 @@ See also: [Life of a Prow Job](./architecture.md)
 
 New features added to each components:
 
+ - *April 10, 2018* `cla` plugin now supports `/check-cla` command 
+   to force rechecking of the CLA status.
  - *February 1, 2018* `updateconfig` will now update any configmap on merge
  - *November 14, 2017* `jenkins-operator:0.58` exposes prometheus metrics.
  - *November 8, 2017* `horologium:0.14` prow periodic job now support cron
