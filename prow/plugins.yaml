@@ -274,6 +274,9 @@ plugins:
   - approve
   - blunderbuss
 
+  kubernetes/release:
+  - trigger
+
   kubernetes/repo-infra:
   - approve
 
