@@ -2753,6 +2753,23 @@
       "sig-scheduling"
     ]
   },
+  "ci-kubernetes-e2e-gce-device-plugin-gpu-stable2": {
+    "args": [
+      "--check-leaked-resources",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gce-device-plugin-gpu.env",
+      "--extract=ci/k8s-stable2",
+      "--gcp-project-type=gpu-project",
+      "--gcp-zone=us-west1-b",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Feature:GPUDevicePlugin\\] --minStartupPods=8",
+      "--timeout=180m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scheduling"
+    ]
+  },
   "ci-kubernetes-e2e-gce-federation-release-1-8": {
     "args": [
       "--check-leaked-resources",
@@ -3130,13 +3147,12 @@
       "sig-cli"
     ]
   },
-  "ci-kubernetes-e2e-gce-gpu-beta": {
+  "ci-kubernetes-e2e-gce-gpu-stable1": {
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-gpu.env",
-      "--extract=ci/k8s-beta",
-      "--gcp-node-image=gci",
+      "--extract=ci/k8s-stable1",
       "--gcp-project-type=gpu-project",
       "--gcp-zone=us-west1-b",
       "--provider=gce",
@@ -3148,12 +3164,13 @@
       "sig-scheduling"
     ]
   },
-  "ci-kubernetes-e2e-gce-gpu-stable1": {
+  "ci-kubernetes-e2e-gce-gpu-stable2": {
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-gpu.env",
-      "--extract=ci/k8s-stable1",
+      "--extract=ci/k8s-stable2",
+      "--gcp-node-image=gci",
       "--gcp-project-type=gpu-project",
       "--gcp-zone=us-west1-b",
       "--provider=gce",
@@ -6298,6 +6315,26 @@
       "--check-leaked-resources",
       "--deployment=gke",
       "--extract=ci/k8s-stable1",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=gci",
+      "--gcp-project-type=gpu-project",
+      "--gcp-zone=us-west1-b",
+      "--gke-create-command=beta container clusters create --accelerator=type=nvidia-tesla-k80,count=2",
+      "--gke-environment=test",
+      "--provider=gke",
+      "--test_args=--ginkgo.focus=\\[Feature:GPUDevicePlugin\\] --minStartupPods=8",
+      "--timeout=180m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scheduling"
+    ]
+  },
+  "ci-kubernetes-e2e-gke-device-plugin-gpu-stable2": {
+    "args": [
+      "--check-leaked-resources",
+      "--deployment=gke",
+      "--extract=ci/k8s-stable2",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-node-image=gci",
       "--gcp-project-type=gpu-project",

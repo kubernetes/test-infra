@@ -223,6 +223,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
   alert_stale_results_hours: 24
   num_failures_to_alert: 4 # Runs every 6h. Alert when it's been failing for a day.
+- name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable2
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-device-plugin-gpu-stable2
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 2 # Runs every 12h. Alert when it's been failing for a day.
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-device-plugin-gpu-beta
   alert_stale_results_hours: 24
@@ -230,11 +234,11 @@ test_groups:
 - name: ci-kubernetes-e2e-gce-gpu-stable1
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-stable1
   alert_stale_results_hours: 24
-  num_failures_to_alert: 4 # Runs every 6h. Alert when it's been failing for a day.
-- name: ci-kubernetes-e2e-gce-gpu-beta
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-beta
-  alert_stale_results_hours: 24
   num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
+- name: ci-kubernetes-e2e-gce-gpu-stable2
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-stable2
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 4 # Runs every 6h. Alert when it's been failing for a day.
 - name: ci-kubernetes-e2e-gci-gce-alpha-features
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-alpha-features
 - name: ci-kubernetes-e2e-gci-gce-autoscaling
@@ -382,10 +386,18 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable1
   alert_stale_results_hours: 36
   num_failures_to_alert: 4 # Runs every 12h. Alert when it's been failing for a couple of days.
+- name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable2
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable2
+  alert_stale_results_hours: 36
+  num_failures_to_alert: 4 # Runs every 12h. Alert when it's been failing for a couple of days.
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
   alert_stale_results_hours: 24
   num_failures_to_alert: 4 # Runs every 6h. Alert when it's been failing for a day.
+- name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable2
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-device-plugin-gpu-stable2
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 2 # Runs every 12h. Alert when it's been failing for a day.
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-device-plugin-gpu-beta
   alert_stale_results_hours: 24
@@ -3345,8 +3357,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew
   - name: gke-1.10-1.11-kubectl-skew-serial
     test_group_name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew-serial
-  - name: gce-gpu-1.11
-    test_group_name: ci-kubernetes-e2e-gce-gpu-beta
   - name: gce-device-plugin-gpu-1.11
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
   - name: gke-device-plugin-gpu-1.11
@@ -3405,8 +3415,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-slow
   - name: gke-ingress-1.11
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
-  - name: gce-gpu-1.11
-    test_group_name: ci-kubernetes-e2e-gce-gpu-beta
   - name: gce-device-plugin-gpu-1.11
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
   - name: gke-device-plugin-gpu-1.11
@@ -3689,6 +3697,14 @@ dashboards:
     test_group_name: ci-kubernetes-soak-gci-gce-stable2
   - name: gci-gce-scalability-1.9
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable2
+  - name: gce-gpu-1.9
+    test_group_name: ci-kubernetes-e2e-gce-gpu-stable2
+  - name: gce-device-plugin-gpu-1.9
+    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable2
+  - name: gke-device-plugin-gpu-1.9
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable2
+  - name: gke-device-plugin-gpu-p100-1.9
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable2
 
 # These are the release *blocking* tests.  These provide a valid binary signal
 # to gate releases (alpha, beta, official).
@@ -3733,6 +3749,12 @@ dashboards:
     test_group_name: ci-kubernetes-soak-gci-gce-stable2
   - name: gci-gce-scalability-1.9
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable2
+  - name: gce-device-plugin-gpu-1.9
+    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable2
+  - name: gke-device-plugin-gpu-1.9
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable2
+  - name: gke-device-plugin-gpu-p100-1.9
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable2
 
 - name: sig-release-1.8-all
   dashboard_tab:
@@ -3859,13 +3881,18 @@ dashboards:
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
-  - name: gce-gpu-1.11
-    test_group_name: ci-kubernetes-e2e-gce-gpu-beta
+  - name: gce-device-plugin-gpu-1.9
+    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable2
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gce-gpu-1.10
     test_group_name: ci-kubernetes-e2e-gce-gpu-stable1
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gce-gpu-1.9
+    test_group_name: ci-kubernetes-e2e-gce-gpu-stable2
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
@@ -3884,6 +3911,11 @@ dashboards:
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gke-device-plugin-gpu-1.9
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable2
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-device-plugin-gpu-p100
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
@@ -3896,6 +3928,11 @@ dashboards:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-device-plugin-gpu-p100-1.10
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable1
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gke-device-plugin-gpu-p100-1.9
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable2
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'

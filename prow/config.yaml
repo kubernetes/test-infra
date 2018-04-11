@@ -7999,7 +7999,8 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
-  interval: 2h
+  # interval: 2h
+  cron: "0 0 31 2 *" # inactive, set to Feb.31st so it will never be triggered
   agent: kubernetes
   labels:
     preset-service-account: true
@@ -8013,6 +8014,19 @@ periodics:
 
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
   interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=300
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
+
+- name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable2
+  interval: 12h
   agent: kubernetes
   labels:
     preset-service-account: true
@@ -8310,7 +8324,7 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 
-- name: ci-kubernetes-e2e-gce-gpu-beta
+- name: ci-kubernetes-e2e-gce-gpu-stable1
   interval: 2h
   agent: kubernetes
   labels:
@@ -8323,7 +8337,7 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 
-- name: ci-kubernetes-e2e-gce-gpu-stable1
+- name: ci-kubernetes-e2e-gce-gpu-stable2
   interval: 6h
   agent: kubernetes
   labels:
@@ -10317,7 +10331,8 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
-  interval: 2h
+  # interval: 2h
+  cron: "0 0 31 2 *" # inactive, set to Feb.31st so it will never be triggered
   agent: kubernetes
   labels:
     preset-service-account: true
@@ -10356,7 +10371,8 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
-  interval: 12h #expensive test
+  # interval: 12h #expensive test, 
+  cron: "0 0 31 2 *" # inactive, set to Feb.31st so it will never be triggered
   agent: kubernetes
   labels:
     preset-service-account: true
@@ -10381,8 +10397,34 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 
+- name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable2
+  interval: 12h #expensive test
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=300
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
+
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
   interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=300
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
+
+- name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable2
+  interval: 12h
   agent: kubernetes
   labels:
     preset-service-account: true
