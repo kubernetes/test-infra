@@ -19,6 +19,7 @@ package kube
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -98,10 +99,14 @@ type ProwJobSpec struct {
 	// need to be cloned, determined from config
 	ExtraRefs []*Refs `json:"extra_refs,omitempty"`
 
-	// TimeoutMinutes is the number of minutes that
-	// the pod utilities will wait before aborting
+	// Timeout is how long the pod utilities will wait
+	// before aborting a job with SIGINT. Only applicable
+	// if decorating the PodSpec.
+	Timeout time.Duration `json:"timeout,omitempty"`
+	// GracePeriod is how long the pod utilities will wait
+	// after sending SIGINT to send SIGKILL when aborting
 	// a job. Only applicable if decorating the PodSpec.
-	TimeoutMinutes int `json:"timeout_minutes,omitempty"`
+	GracePeriod time.Duration `json:"grace_period,omitempty"`
 	// Report determines if the result of this job should
 	// be posted as a status on GitHub
 	Report bool `json:"report,omitempty"`
