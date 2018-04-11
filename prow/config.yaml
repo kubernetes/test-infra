@@ -5601,6 +5601,34 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
 
+  kubernetes/release:
+  - name: pull-release-null-e2e
+    agent: kubernetes
+    context: pull-release-null-e2e
+    rerun_command: "/test pull-release-null-e2e"
+    trigger: "(?m)^/test (all|pull-release-null-e2e),?(\\s+|$)"
+    always_run: true
+    labels:
+      preset-service-account: true
+      preset-k8s-ssh: true
+      preset-bazel-scratch-dir: true
+      preset-bazel-remote-cache-enabled: true
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes
+        - --repo=k8s.io/release=$(PULL_REFS)
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=90
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
+        resources:
+          requests:
+            memory: "6Gi"
+
   kubernetes/test-infra:
   - name: pull-test-infra-bazel
     agent: kubernetes
