@@ -1,5 +1,5 @@
-build --workspace_status_command=./print-workspace-status.sh
-run --workspace_status_command=./print-workspace-status.sh
+build --workspace_status_command=./hack/print-workspace-status.sh
+run --workspace_status_command=./hack/print-workspace-status.sh
 test --features=race --test_output=errors
 
 # you can run only lint tests with:
