@@ -15,7 +15,7 @@
 # This file creates a build environment for building and running kubernetes
 # unit and integration tests
 
-FROM gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+FROM gcr.io/k8s-testimages/bootstrap:v20180410-dcf7bea8a
 LABEL maintainer "Sen Lu <senlu@google.com>"
 
 # hint to kubetest that it is in CI
@@ -33,10 +33,10 @@ RUN mkdir -p /go/src/k8s.io/kubernetes \
 # preinstall:
 # - graphviz package for graphing profiles
 # - bc for shell to junit
-# - rpmbuild for building RPMs with Bazel
+# - rpm for building RPMs with Bazel
 RUN apt-get install -y bc \
     graphviz \
-    rpmbuild
+    rpm
 # preinstall this for kops tests xref kubetest prepareAws(...)
 # TODO(bentheelder,krzyzacy,justisb,chrislovecnm): remove this
 RUN pip install awscli
