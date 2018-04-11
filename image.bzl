@@ -19,7 +19,7 @@
 #   image_prefix:latest
 #   image_prefix:latest-{BUILD_USER}
 #   image_prefix:{DOCKER_TAG}
-# (See print-workspace-status.sh for how BUILD_USER and DOCKER_TAG are created.
+# (See hack/print-workspace-status.sh for how BUILD_USER and DOCKER_TAG are created.
 #
 # Concretely, tags(this=":that-image", foo="//bar") will return:
 #   {
