@@ -27,7 +27,7 @@ import (
 // ParseRefs parses a human-provided string into the repo
 // that should be cloned and the refs that need to be
 // checked out once it is. The format is:
-//   org,repo=base-ref[:base-sha][,pull-id[:pull-sha]]...
+//   org,repo=base-ref[:base-sha][,pull-id[:pull-sha[:pull-ref]]]...
 // For the base ref and pull IDs, a SHA may optionally be
 // provided or may be omitted for the latest available SHA.
 // Examples:
@@ -37,6 +37,7 @@ import (
 //   kubernetes,test-infra=master:abcde12,34:fghij56
 //   kubernetes,test-infra=master,34:fghij56
 //   kubernetes,test-infra=master:abcde12,34:fghij56,78
+//   gerrit,test-infra=master:abcde12,34:fghij56:refs/changes/00/123/1
 func ParseRefs(value string) (*kube.Refs, error) {
 	gitRef := &kube.Refs{}
 	values := strings.SplitN(value, "=", 2)
@@ -67,7 +68,7 @@ func ParseRefs(value string) (*kube.Refs, error) {
 	}
 	for _, refValue := range refValues[1:] {
 		refParts := strings.Split(refValue, ":")
-		if len(refParts) != 1 && len(refParts) != 2 {
+		if len(refParts) == 0 || len(refParts) > 3 {
 			return gitRef, fmt.Errorf("refspec %s invalid: malformed pull ref", refValue)
 		}
 		pullNumber, err := strconv.Atoi(refParts[0])
@@ -77,8 +78,11 @@ func ParseRefs(value string) (*kube.Refs, error) {
 		pullRef := kube.Pull{
 			Number: pullNumber,
 		}
-		if len(refParts) == 2 {
+		if len(refParts) > 1 {
 			pullRef.SHA = refParts[1]
+		}
+		if len(refParts) > 2 {
+			pullRef.Ref = refParts[2]
 		}
 		gitRef.Pulls = append(gitRef.Pulls, pullRef)
 	}

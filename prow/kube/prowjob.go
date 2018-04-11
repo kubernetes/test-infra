@@ -164,7 +164,12 @@ type Pull struct {
 	Number int    `json:"number,omitempty"`
 	Author string `json:"author,omitempty"`
 	SHA    string `json:"sha,omitempty"`
-	Ref    string `json:"ref,omitempty"`
+
+	// Ref is git ref can be checked out for a change
+	// for example,
+	// github: pull/123/head
+	// gerrit: refs/changes/00/123/1
+	Ref string `json:"ref,omitempty"`
 }
 
 type Refs struct {

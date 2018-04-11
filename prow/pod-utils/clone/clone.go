@@ -68,7 +68,11 @@ func Run(refs *kube.Refs, dir, gitUserName, gitUserEmail string) Record {
 	commands = append(commands, shellCloneCommand(cloneDir, "git", "checkout", refs.BaseRef))
 
 	for _, prRef := range refs.Pulls {
-		commands = append(commands, shellCloneCommand(cloneDir, "git", "fetch", repositoryURL, fmt.Sprintf("pull/%d/head", prRef.Number)))
+		ref := fmt.Sprintf("pull/%d/head", prRef.Number)
+		if prRef.Ref != "" {
+			ref = prRef.Ref
+		}
+		commands = append(commands, shellCloneCommand(cloneDir, "git", "fetch", repositoryURL, ref))
 		var prCheckout string
 		if prRef.SHA != "" {
 			prCheckout = prRef.SHA
