@@ -13086,6 +13086,25 @@
       "sig-scheduling"
     ]
   },
+  "pull-release-null-e2e": {
+    "args": [
+      "--build=bazel",
+      "--cluster=",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/pull-kubernetes-e2e.env",
+      "--extract=local",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--stage=gs://kubernetes-release-pull/ci/pull-release-null-e2e",
+      "--test_args=--ginkgo.focus=\\[Feature:Empty\\]",
+      "--timeout=65m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-release"
+    ]
+  },
   "pull-test-infra-bazel": {
     "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
     "args": [],
