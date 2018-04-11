@@ -10218,7 +10218,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-scalability-beta
   tags:
-  - "perfDashPrefix: gce-100Nodes-1.9"
+  - "perfDashPrefix: gce-100Nodes-beta"
   - "perfDashJobType: performance"
   labels:
     preset-service-account: true
@@ -10231,11 +10231,11 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
 
-- cron: "0 3-21/6 * * *" # every six hours, disjoint with ci-kubernetes-e2e-gci-gce-scalability-stable1
+- cron: "0 0/6 * * *" # every six hours, disjoint with ci-kubernetes-e2e-gci-gce-scalability-stable2
   agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gce-scalability-release-1-7
+  name: ci-kubernetes-e2e-gci-gce-scalability-stable1
   tags:
-  - "perfDashPrefix: gce-100Nodes-1.7"
+  - "perfDashPrefix: gce-100Nodes-stable1"
   - "perfDashJobType: performance"
   labels:
     preset-service-account: true
@@ -10247,11 +10247,11 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 
-- cron: "0 0/6 * * *" # every six hours, disjoint with ci-kubernetes-e2e-gci-gce-scalability-release-1-7
+- cron: "0 3-21/6 * * *" # every six hours, disjoint with ci-kubernetes-e2e-gci-gce-scalability-stable1
   agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gce-scalability-stable1
+  name: ci-kubernetes-e2e-gci-gce-scalability-stable2
   tags:
-  - "perfDashPrefix: gce-100Nodes-1.8"
+  - "perfDashPrefix: gce-100Nodes-stable2"
   - "perfDashJobType: performance"
   labels:
     preset-service-account: true
