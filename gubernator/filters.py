@@ -161,11 +161,18 @@ def do_classify_size(payload):
     return size
 
 
+def has_lgtm_without_missing_approval(payload, user):
+    labels = payload.get('labels', []) or []
+    return 'lgtm' in labels and not (
+        user in payload.get('approvers', [])
+        and 'approved' not in labels)
+
+
 def do_render_status(payload, user):
     states = set()
 
     text = 'Pending'
-    if 'lgtm' in payload.get('labels', []):
+    if has_lgtm_without_missing_approval(payload, user):
         text = 'LGTM'
     elif user in payload.get('attn', {}):
         text = payload['attn'][user].title()
@@ -178,6 +185,9 @@ def do_render_status(payload, user):
                 # Don't show overall status as pending when Submit
                 # won't continue without LGTM.
                 continue
+        if ctx == 'tide' and state == 'pending':
+            # Ignore pending tide statuses for now.
+            continue
         if ctx == 'code-review/reviewable' and state == 'pending':
             # Reviewable isn't a CI, so we don't care if it's pending.
             # Its dashboard might replace all of this eventually.
