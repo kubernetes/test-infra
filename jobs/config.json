@@ -13086,7 +13086,7 @@
       "sig-scheduling"
     ]
   },
-  "pull-release-null-e2e": {
+  "pull-release-cluster-up": {
     "args": [
       "--build=bazel",
       "--cluster=",
@@ -13096,7 +13096,7 @@
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--stage=gs://kubernetes-release-pull/ci/pull-release-null-e2e",
+      "--stage=gs://kubernetes-release-pull/ci/pull-release-cluster-up",
       "--test_args=--ginkgo.focus=\\[Feature:Empty\\]",
       "--timeout=65m"
     ],
