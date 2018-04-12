@@ -103,7 +103,7 @@ class JobTest(unittest.TestCase):
         orphans = env_gc.find_orphans()
         if orphans:
             self.fail('the following .env files are not referenced ' +
-                      'in config.json, please run `bazel run //jobs:env_gc: ' +
+                      'in config.json, please run `bazel run //jobs:env_gc`: ' +
                       ' '.join(orphans))
 
     def check_job_template(self, tmpl):
@@ -516,8 +516,8 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gce-ubuntu2-k8sstable3-serial': 'ci-kubernetes-e2e-gce-ubuntu*',
             'ci-kubernetes-e2e-gce-ubuntu2-k8sstable3-slow': 'ci-kubernetes-e2e-gce-ubuntu*',
 
-            # The 1.5 and 1.6 scalability jobs intentionally share projects.
-            'ci-kubernetes-e2e-gci-gce-scalability-release-1-7': 'ci-kubernetes-e2e-gci-gce-scalability-release-*',
+            # The release branch scalability jobs intentionally share projects.
+            'ci-kubernetes-e2e-gci-gce-scalability-stable2': 'ci-kubernetes-e2e-gci-gce-scalability-release-*',
             'ci-kubernetes-e2e-gci-gce-scalability-stable1': 'ci-kubernetes-e2e-gci-gce-scalability-release-*',
             'ci-kubernetes-e2e-gce-scalability': 'ci-kubernetes-e2e-gce-scalability-*',
             'ci-kubernetes-e2e-gce-scalability-canary': 'ci-kubernetes-e2e-gce-scalability-*',
@@ -582,23 +582,6 @@ class JobTest(unittest.TestCase):
             'pull-kubernetes-kubemark-e2e-gce-canary':'k8s-jkns-pr-kubemark',
             'pull-kubernetes-kubemark-e2e-gce':'k8s-jkns-pr-kubemark',
         }
-        for soak_prefix in [
-                'ci-kubernetes-soak-gce-1.5',
-                'ci-kubernetes-soak-gce-1-7',
-                'ci-kubernetes-soak-gce-1.6',
-                'ci-kubernetes-soak-gce-2',
-                'ci-kubernetes-soak-gce',
-                'ci-kubernetes-soak-gci-gce-1.5',
-                'ci-kubernetes-soak-gce-gci',
-                'ci-kubernetes-soak-gke-gci',
-                'ci-kubernetes-soak-gci-gce-stable1',
-                'ci-kubernetes-soak-gci-gce-1.6',
-                'ci-kubernetes-soak-gci-gce-1-7',
-                'ci-kubernetes-soak-cos-docker-validation',
-                'ci-kubernetes-soak-gke',
-        ]:
-            allowed_list['%s-deploy' % soak_prefix] = '%s-*' % soak_prefix
-            allowed_list['%s-test' % soak_prefix] = '%s-*' % soak_prefix
         # pylint: enable=line-too-long
         projects = collections.defaultdict(set)
         boskos = []

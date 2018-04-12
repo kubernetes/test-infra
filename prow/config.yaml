@@ -1154,8 +1154,6 @@ presubmits:
     rerun_command: "/test pull-kubernetes-bazel-build"
     trigger: "(?m)^/test( all| pull-kubernetes-bazel-build),?(\\s+|$)"
     skip_branches:
-    - release-1.6 # doesn't have BUILD files under //vendor/k8s.io
-    - release-1.7 # different target set
     - release-1.8 # different target set
     - release-1.9 # need to cherry pick back https://github.com/kubernetes/kubernetes/pull/59251, possibly others
     labels:
@@ -1190,8 +1188,6 @@ presubmits:
       rerun_command: "/test pull-kubernetes-e2e-kubeadm-gce"
       trigger: "(?m)^/test pull-kubernetes-e2e-kubeadm-gce,?(\\s+|$)"
       skip_branches:
-      - release-1.6 # doesn't have BUILD files under //vendor/k8s.io
-      - release-1.7 # different target set
       - release-1.8 # different target set
       - release-1.9 # need to cherry pick back https://github.com/kubernetes/kubernetes/pull/59251, possibly others
       labels:
@@ -1267,7 +1263,6 @@ presubmits:
     rerun_command: "/test pull-kubernetes-bazel-build"
     trigger: "(?m)^/test( all| pull-kubernetes-bazel-build),?(\\s+|$)"
     branches:
-    - release-1.7
     - release-1.8
     labels:
       preset-service-account: true
@@ -1300,7 +1295,6 @@ presubmits:
       rerun_command: "/test pull-kubernetes-e2e-kubeadm-gce"
       trigger: "(?m)^/test pull-kubernetes-e2e-kubeadm-gce,?(\\s+|$)"
       branches:
-      - release-1.7
       - release-1.8
       labels:
         preset-service-account: true
@@ -1354,8 +1348,6 @@ presubmits:
     rerun_command: "/test pull-kubernetes-bazel-test"
     trigger: "(?m)^/test( all| pull-kubernetes-bazel-test),?(\\s+|$)"
     skip_branches:
-    - release-1.6 # doesn't have BUILD files under //vendor/k8s.io
-    - release-1.7 # different set of targets
     - release-1.8 # different set of targets
     - release-1.9 # need to cherry pick back https://github.com/kubernetes/kubernetes/pull/59251, possibly others
     labels:
@@ -1423,7 +1415,6 @@ presubmits:
     rerun_command: "/test pull-kubernetes-bazel-test"
     trigger: "(?m)^/test( all| pull-kubernetes-bazel-test),?(\\s+|$)"
     branches:
-    - release-1.7
     - release-1.8
     labels:
       preset-service-account: true
@@ -1517,7 +1508,6 @@ presubmits:
     trigger: "(?m)^/test pull-kubernetes-cross,?(\\s+|$)"
     run_if_changed: '^(build\/|hack\/lib\/)|(Makefile)$'
     skip_branches:
-    - release-1.7
     - release-1.8
     - release-1.9
     labels:
@@ -1556,7 +1546,6 @@ presubmits:
     # typecheck doesn't exist for < 1.10 currently, so we still run cross more often
     run_if_changed: '^(build\/|hack\/lib\/)|(Makefile)|(.*_(windows|linux|osx|unsupported)(_test)?\.go)$'
     branches:
-    - release-1.7
     - release-1.8
     - release-1.9
     labels:
@@ -1628,7 +1617,6 @@ presubmits:
     rerun_command: "/test pull-kubernetes-dind-e2e"
     trigger: "(?m)^/test pull-kubernetes-dind-e2e,?(\\s+|$)"
     skip_branches:
-    - release-1.7
     - release-1.8
     - release-1.9
     labels:
@@ -1717,8 +1705,6 @@ presubmits:
     always_run: true
     # TODO(bentheelder): fork 1.10 after release
     skip_branches:
-    - release-1.6 # per-release image
-    - release-1.7 # per-release image
     - release-1.8 # per-release image
     - release-1.9 # per-release image
     labels:
@@ -1797,33 +1783,6 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
-  - name: pull-kubernetes-e2e-gce
-    agent: kubernetes
-    context: pull-kubernetes-e2e-gce
-    rerun_command: "/test pull-kubernetes-e2e-gce"
-    trigger: "(?m)^/test (all|pull-kubernetes-e2e-gce),?(\\s+|$)"
-    always_run: true
-    branches:
-    - release-1.7
-    labels:
-      preset-service-account: true
-      preset-k8s-ssh: true
-      preset-bazel-scratch-dir: true
-    spec:
-      containers:
-      - args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=90
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.7
-        resources:
-          requests:
-            memory: "6Gi"
 
   - name: pull-kubernetes-e2e-gce-100-performance
     agent: kubernetes
@@ -1886,8 +1845,6 @@ presubmits:
   - name: pull-kubernetes-e2e-gce-device-plugin-gpu
     agent: kubernetes
     skip_branches:
-    - release-1.6  # not supported
-    - release-1.7  # not supported
     - release-1.8  # per-release image
     - release-1.9  # per-release image
     always_run: true
@@ -2019,8 +1976,6 @@ presubmits:
     # TODO(bentheelder): enforce this pattern (skip all releases) or implement
     # something better like https://github.com/kubernetes/test-infra/pull/4918
     skip_branches:
-    - release-1.6 # per-release image
-    - release-1.7 # per-release image
     - release-1.8 # per-release image
     labels:
       preset-service-account: true
@@ -2069,40 +2024,10 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
-  - name: pull-kubernetes-e2e-gke
-    agent: kubernetes
-    context: pull-kubernetes-e2e-gke
-    rerun_command: "/test pull-kubernetes-e2e-gke"
-    trigger: "(?m)^/test pull-kubernetes-e2e-gke,?(\\s+|$)"
-    always_run: false
-    run_if_changed: '^(cluster/gce|cluster/addons).*$'
-    branches:
-    - release-1.7
-    labels:
-      preset-service-account: true
-      preset-k8s-ssh: true
-      preset-bazel-scratch-dir: true
-    spec:
-      containers:
-      - args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=90
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.7
-        resources:
-          requests:
-            memory: "6Gi"
 
   - name: pull-kubernetes-e2e-gke-device-plugin-gpu
     agent: kubernetes
     skip_branches:
-    - release-1.6  # not supported
-    - release-1.7  # not supported
     - release-1.8  # per-release image
     always_run: false
     skip_report: false
@@ -2166,8 +2091,6 @@ presubmits:
   - name: pull-kubernetes-e2e-kops-aws
     agent: kubernetes
     skip_branches:
-    - release-1.6  # runs on Jenkins? NOT ANYMORE :D
-    - release-1.7  # per-release image
     - release-1.8  # per-release image
     - release-1.9  # per-release image
     max_concurrency: 12
@@ -2260,37 +2183,6 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
-  - name: pull-kubernetes-e2e-kops-aws
-    agent: kubernetes
-    branches:
-    - release-1.7
-    max_concurrency: 12
-    always_run: true
-    context: pull-kubernetes-e2e-kops-aws
-    rerun_command: "/test pull-kubernetes-e2e-kops-aws"
-    trigger: "(?m)^/test( all| pull-kubernetes-e2e-kops-aws),?(\\s+|$)"
-    labels:
-      preset-service-account: true
-      preset-aws-ssh: true
-      preset-aws-credential: true
-      preset-bazel-scratch-dir: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.7
-        args:
-        - --root=/go/src
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/release"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=75"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "6Gi"
   - name: pull-kubernetes-integration
     agent: kubernetes
     always_run: true
@@ -2361,8 +2253,6 @@ presubmits:
     always_run: true
     max_concurrency: 12
     skip_branches:
-    - release-1.6  # runs on Jenkins?
-    - release-1.7  # per-release image
     - release-1.8  # per-release image
     context: pull-kubernetes-kubemark-e2e-gce
     rerun_command: "/test pull-kubernetes-kubemark-e2e-gce"
@@ -2442,57 +2332,12 @@ presubmits:
       volumes:
       - name: docker-graph
         emptyDir: {}
-  - name: pull-kubernetes-kubemark-e2e-gce
-    agent: kubernetes
-    always_run: true
-    max_concurrency: 12
-    branches:
-    - release-1.7
-    context: pull-kubernetes-kubemark-e2e-gce
-    rerun_command: "/test pull-kubernetes-kubemark-e2e-gce"
-    trigger: "(?m)^/test( all| pull-kubernetes-kubemark-e2e-gce),?(\\s+|$)"
-    labels:
-      preset-service-account: true
-      preset-k8s-ssh: true
-      preset-bazel-scratch-dir: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.7
-        args:
-        - --root=/go/src
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/release"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=110"
-        env:
-        # TODO(krzyzacy): Figure out bazel built kubemark image
-        # - name: KUBEMARK_BAZEL_BUILD
-        # value: "y"
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: true
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
-        resources:
-          requests:
-            memory: "6Gi"
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
-
   - name: pull-kubernetes-kubemark-e2e-gce-big
     agent: kubernetes
     always_run: true
     skip_report: true
     max_concurrency: 12
     skip_branches:
-    - release-1.6  # not supported
-    - release-1.7  # per-release image
     - release-1.8  # per-release image
     context: pull-kubernetes-kubemark-e2e-gce-big
     rerun_command: "/test pull-kubernetes-kubemark-e2e-gce-big"
@@ -2573,55 +2418,11 @@ presubmits:
       - name: docker-graph
         emptyDir: {}
 
-  - name: pull-kubernetes-kubemark-e2e-gce-big
-    agent: kubernetes
-    always_run: false
-    max_concurrency: 12
-    branches:
-    - release-1.7
-    context: pull-kubernetes-kubemark-e2e-gce-big
-    rerun_command: "/test pull-kubernetes-kubemark-e2e-gce-big"
-    trigger: "(?m)^/test pull-kubernetes-kubemark-e2e-gce-big,?(\\s+|$)"
-    labels:
-      preset-service-account: true
-      preset-k8s-ssh: true
-      preset-bazel-scratch-dir: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.7
-        args:
-        - --root=/go/src
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/release"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=120"
-        env:
-        # TODO(krzyzacy): Figure out bazel built kubemark image
-        # - name: KUBEMARK_BAZEL_BUILD
-        # value: "y"
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: true
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
-        resources:
-          requests:
-            memory: "6Gi"
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
-
   - name: pull-kubernetes-kubemark-e2e-gce-canary
     agent: kubernetes
     always_run: false
     max_concurrency: 5
     skip_branches:
-    - release-1.7  # per-release image
     - release-1.8  # per-release image
     context: pull-kubernetes-kubemark-e2e-gce-canary
     rerun_command: "/test pull-kubernetes-kubemark-e2e-gce-canary"
@@ -2676,49 +2477,6 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.8
-        imagePullPolicy: Always
-        args:
-        - --root=/go/src
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/release"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=110"
-        env:
-        # TODO(krzyzacy): Figure out bazel built kubemark image
-        # - name: KUBEMARK_BAZEL_BUILD
-        # value: "y"
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: true
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
-        resources:
-          requests:
-            memory: "6Gi"
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
-  - name: pull-kubernetes-kubemark-e2e-gce-canary
-    agent: kubernetes
-    always_run: false
-    max_concurrency: 5
-    branches:
-    - release-1.7
-    context: pull-kubernetes-kubemark-e2e-gce-canary
-    rerun_command: "/test pull-kubernetes-kubemark-e2e-gce-canary"
-    trigger: "(?m)^/test pull-kubernetes-kubemark-e2e-gce-canary,?(\\s+|$)"
-    labels:
-      preset-service-account: true
-      preset-k8s-ssh: true
-      preset-bazel-scratch-dir: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.7
         imagePullPolicy: Always
         args:
         - --root=/go/src
@@ -2830,8 +2588,6 @@ presubmits:
   - name: pull-kubernetes-node-e2e
     agent: kubernetes
     skip_branches:
-    - release-1.6  # per-release image
-    - release-1.7  # per-release image
     - release-1.8  # per-release image
     always_run: true
     max_concurrency: 12
@@ -2884,33 +2640,6 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
-  - name: pull-kubernetes-node-e2e
-    agent: kubernetes
-    branches:
-    - release-1.7
-    always_run: true
-    max_concurrency: 12
-    context: pull-kubernetes-node-e2e
-    rerun_command: "/test pull-kubernetes-node-e2e"
-    trigger: "(?m)^/test( all| pull-kubernetes-node-e2e),?(\\s+|$)"
-    labels:
-      preset-service-account: true
-      preset-k8s-ssh: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.7
-        args:
-        - --root=/go/src
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=90"
-        - "--" # end bootstrap args, scenario args below
-        - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-1-7.yaml"
-        resources:
-          requests:
-            memory: "6Gi"
 
   - name: pull-kubernetes-node-e2e-containerd
     agent: kubernetes
@@ -2944,8 +2673,6 @@ presubmits:
     rerun_command: "/test pull-kubernetes-typecheck"
     trigger: "(?m)^/test( all| pull-kubernetes-typecheck),?(\\s+|$)"
     skip_branches:
-    - release-1.6 # doesn't have typecheck
-    - release-1.7 # doesn't have typecheck
     - release-1.8 # doesn't have typecheck
     - release-1.9 # doesn't have typecheck
     labels:
@@ -3051,8 +2778,6 @@ presubmits:
       rerun_command: /test pull-security-kubernetes-e2e-kubeadm-gce
       run_if_changed: ^(cmd/kubeadm|build/debs).*$
       skip_branches:
-      - release-1.6
-      - release-1.7
       - release-1.8
       - release-1.9
       skip_report: true
@@ -3082,8 +2807,6 @@ presubmits:
       trigger: (?m)^/test pull-security-kubernetes-e2e-kubeadm-gce,?(\s+|$)
     run_if_changed: ""
     skip_branches:
-    - release-1.6
-    - release-1.7
     - release-1.8
     - release-1.9
     skip_report: false
@@ -3203,7 +2926,6 @@ presubmits:
   - agent: kubernetes
     always_run: true
     branches:
-    - release-1.7
     - release-1.8
     cluster: security
     context: pull-security-kubernetes-bazel-build
@@ -3217,7 +2939,6 @@ presubmits:
     - agent: kubernetes
       always_run: false
       branches:
-      - release-1.7
       - release-1.8
       cluster: security
       context: pull-security-kubernetes-e2e-kubeadm-gce
@@ -3341,8 +3062,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-bazel-test
     run_if_changed: ""
     skip_branches:
-    - release-1.6
-    - release-1.7
     - release-1.8
     - release-1.9
     skip_report: false
@@ -3426,7 +3145,6 @@ presubmits:
   - agent: kubernetes
     always_run: true
     branches:
-    - release-1.7
     - release-1.8
     cluster: security
     context: pull-security-kubernetes-bazel-test
@@ -3562,7 +3280,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-cross
     run_if_changed: ^(build\/|hack\/lib\/)|(Makefile)$
     skip_branches:
-    - release-1.7
     - release-1.8
     - release-1.9
     skip_report: false
@@ -3602,7 +3319,6 @@ presubmits:
   - agent: kubernetes
     always_run: false
     branches:
-    - release-1.7
     - release-1.8
     - release-1.9
     cluster: security
@@ -3704,7 +3420,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-dind-e2e
     run_if_changed: ""
     skip_branches:
-    - release-1.7
     - release-1.8
     - release-1.9
     skip_report: false
@@ -3821,8 +3536,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-e2e-gce
     run_if_changed: ""
     skip_branches:
-    - release-1.6
-    - release-1.7
     - release-1.8
     - release-1.9
     skip_report: false
@@ -3940,48 +3653,6 @@ presubmits:
   - agent: kubernetes
     always_run: true
     branches:
-    - release-1.7
-    cluster: security
-    context: pull-security-kubernetes-e2e-gce
-    labels:
-      preset-bazel-scratch-dir: "true"
-      preset-k8s-ssh: "true"
-      preset-service-account: "true"
-    max_concurrency: 0
-    name: pull-security-kubernetes-e2e-gce
-    rerun_command: /test pull-security-kubernetes-e2e-gce
-    run_if_changed: ""
-    skip_report: false
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - --root=/go/src
-        - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=90
-        - --
-        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.7
-        name: ""
-        resources:
-          requests:
-            memory: 6Gi
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test (all|pull-security-kubernetes-e2e-gce),?(\s+|$)
-  - agent: kubernetes
-    always_run: true
-    branches:
     - master
     cluster: security
     context: pull-security-kubernetes-e2e-gce-100-performance
@@ -4076,8 +3747,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-e2e-gce-device-plugin-gpu
     run_if_changed: ""
     skip_branches:
-    - release-1.6
-    - release-1.7
     - release-1.8
     - release-1.9
     skip_report: false
@@ -4253,8 +3922,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-e2e-gke
     run_if_changed: ^(cluster/gce|cluster/addons).*$
     skip_branches:
-    - release-1.6
-    - release-1.7
     - release-1.8
     skip_report: false
     spec:
@@ -4328,48 +3995,6 @@ presubmits:
     trigger: (?m)^/test pull-security-kubernetes-e2e-gke,?(\s+|$)
   - agent: kubernetes
     always_run: false
-    branches:
-    - release-1.7
-    cluster: security
-    context: pull-security-kubernetes-e2e-gke
-    labels:
-      preset-bazel-scratch-dir: "true"
-      preset-k8s-ssh: "true"
-      preset-service-account: "true"
-    max_concurrency: 0
-    name: pull-security-kubernetes-e2e-gke
-    rerun_command: /test pull-security-kubernetes-e2e-gke
-    run_if_changed: ^(cluster/gce|cluster/addons).*$
-    skip_report: false
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - --root=/go/src
-        - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=90
-        - --
-        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.7
-        name: ""
-        resources:
-          requests:
-            memory: 6Gi
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-e2e-gke,?(\s+|$)
-  - agent: kubernetes
-    always_run: false
     cluster: security
     context: pull-security-kubernetes-e2e-gke-device-plugin-gpu
     labels:
@@ -4381,8 +4006,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-e2e-gke-device-plugin-gpu
     run_if_changed: ""
     skip_branches:
-    - release-1.6
-    - release-1.7
     - release-1.8
     skip_report: false
     spec:
@@ -4472,8 +4095,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-e2e-kops-aws
     run_if_changed: ""
     skip_branches:
-    - release-1.6
-    - release-1.7
     - release-1.8
     - release-1.9
     skip_report: false
@@ -4598,51 +4219,6 @@ presubmits:
     trigger: (?m)^/test( all| pull-security-kubernetes-e2e-kops-aws),?(\s+|$)
   - agent: kubernetes
     always_run: true
-    branches:
-    - release-1.7
-    cluster: security
-    context: pull-security-kubernetes-e2e-kops-aws
-    labels:
-      preset-aws-credential: "true"
-      preset-aws-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-service-account: "true"
-    max_concurrency: 12
-    name: pull-security-kubernetes-e2e-kops-aws
-    rerun_command: /test pull-security-kubernetes-e2e-kops-aws
-    run_if_changed: ""
-    skip_report: false
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - --root=/go/src
-        - --job=$(JOB_NAME)
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=75
-        - --
-        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-kops-aws
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.7
-        name: ""
-        resources:
-          requests:
-            memory: 6Gi
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-e2e-kops-aws),?(\s+|$)
-  - agent: kubernetes
-    always_run: true
     cluster: security
     context: pull-security-kubernetes-integration
     labels:
@@ -4741,8 +4317,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce
     run_if_changed: ""
     skip_branches:
-    - release-1.6
-    - release-1.7
     - release-1.8
     skip_report: false
     spec:
@@ -4834,57 +4408,6 @@ presubmits:
     trigger: (?m)^/test( all| pull-security-kubernetes-kubemark-e2e-gce),?(\s+|$)
   - agent: kubernetes
     always_run: true
-    branches:
-    - release-1.7
-    cluster: security
-    context: pull-security-kubernetes-kubemark-e2e-gce
-    labels:
-      preset-bazel-scratch-dir: "true"
-      preset-k8s-ssh: "true"
-      preset-service-account: "true"
-    max_concurrency: 12
-    name: pull-security-kubernetes-kubemark-e2e-gce
-    rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce
-    run_if_changed: ""
-    skip_report: false
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - --root=/go/src
-        - --job=$(JOB_NAME)
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=110
-        - --
-        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.7
-        name: ""
-        resources:
-          requests:
-            memory: 6Gi
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-        - mountPath: /docker-graph
-          name: auto-generated-docker-graph-volume-mount
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-      - emptyDir: {}
-        name: auto-generated-docker-graph-volume-mount
-    trigger: (?m)^/test( all| pull-security-kubernetes-kubemark-e2e-gce),?(\s+|$)
-  - agent: kubernetes
-    always_run: true
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce-big
     labels:
@@ -4896,8 +4419,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce-big
     run_if_changed: ""
     skip_branches:
-    - release-1.6
-    - release-1.7
     - release-1.8
     skip_report: true
     spec:
@@ -4989,57 +4510,6 @@ presubmits:
     trigger: (?m)^/test pull-security-kubernetes-kubemark-e2e-gce-big,?(\s+|$)
   - agent: kubernetes
     always_run: false
-    branches:
-    - release-1.7
-    cluster: security
-    context: pull-security-kubernetes-kubemark-e2e-gce-big
-    labels:
-      preset-bazel-scratch-dir: "true"
-      preset-k8s-ssh: "true"
-      preset-service-account: "true"
-    max_concurrency: 12
-    name: pull-security-kubernetes-kubemark-e2e-gce-big
-    rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce-big
-    run_if_changed: ""
-    skip_report: false
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - --root=/go/src
-        - --job=$(JOB_NAME)
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=120
-        - --
-        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce-big
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.7
-        name: ""
-        resources:
-          requests:
-            memory: 6Gi
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-        - mountPath: /docker-graph
-          name: auto-generated-docker-graph-volume-mount
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-      - emptyDir: {}
-        name: auto-generated-docker-graph-volume-mount
-    trigger: (?m)^/test pull-security-kubernetes-kubemark-e2e-gce-big,?(\s+|$)
-  - agent: kubernetes
-    always_run: false
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce-canary
     labels:
@@ -5051,7 +4521,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce-canary
     run_if_changed: ""
     skip_branches:
-    - release-1.7
     - release-1.8
     skip_report: false
     spec:
@@ -5123,58 +4592,6 @@ presubmits:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
         image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.8
-        imagePullPolicy: Always
-        name: ""
-        resources:
-          requests:
-            memory: 6Gi
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-        - mountPath: /docker-graph
-          name: auto-generated-docker-graph-volume-mount
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-      - emptyDir: {}
-        name: auto-generated-docker-graph-volume-mount
-    trigger: (?m)^/test pull-security-kubernetes-kubemark-e2e-gce-canary,?(\s+|$)
-  - agent: kubernetes
-    always_run: false
-    branches:
-    - release-1.7
-    cluster: security
-    context: pull-security-kubernetes-kubemark-e2e-gce-canary
-    labels:
-      preset-bazel-scratch-dir: "true"
-      preset-k8s-ssh: "true"
-      preset-service-account: "true"
-    max_concurrency: 5
-    name: pull-security-kubernetes-kubemark-e2e-gce-canary
-    rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce-canary
-    run_if_changed: ""
-    skip_report: false
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - --root=/go/src
-        - --job=$(JOB_NAME)
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=110
-        - --
-        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce-canary
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
-        image: gcr.io/k8s-testimages/kubekins-e2e:latest-1.7
         imagePullPolicy: Always
         name: ""
         resources:
@@ -5303,8 +4720,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-node-e2e
     run_if_changed: ""
     skip_branches:
-    - release-1.6
-    - release-1.7
     - release-1.8
     skip_report: false
     spec:
@@ -5374,46 +4789,6 @@ presubmits:
           secretName: ssh-security
     trigger: (?m)^/test( all| pull-security-kubernetes-node-e2e),?(\s+|$)
   - agent: kubernetes
-    always_run: true
-    branches:
-    - release-1.7
-    cluster: security
-    context: pull-security-kubernetes-node-e2e
-    labels:
-      preset-k8s-ssh: "true"
-      preset-service-account: "true"
-    max_concurrency: 12
-    name: pull-security-kubernetes-node-e2e
-    rerun_command: /test pull-security-kubernetes-node-e2e
-    run_if_changed: ""
-    skip_report: false
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - --root=/go/src
-        - --job=$(JOB_NAME)
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=90
-        - --
-        - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-1-7.yaml
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.7
-        name: ""
-        resources:
-          requests:
-            memory: 6Gi
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-node-e2e),?(\s+|$)
-  - agent: kubernetes
     always_run: false
     branches:
     - master
@@ -5461,8 +4836,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-typecheck
     run_if_changed: ""
     skip_branches:
-    - release-1.6
-    - release-1.7
     - release-1.8
     - release-1.9
     skip_report: false
@@ -7086,6 +6459,7 @@ periodics:
         requests:
           memory: "6Gi"
 
+# TODO(krzyzacy) Stablize per branch bazel build|test jobs
 - name: ci-kubernetes-bazel-build-1-10
   interval: 2h
   agent: kubernetes
@@ -7115,31 +6489,6 @@ periodics:
         requests:
           memory: "6Gi"
 
-- name: ci-kubernetes-bazel-build-1-7
-  interval: 24h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-bazel-scratch-dir: true
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--repo=k8s.io/kubernetes=release-1.7"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--timeout=60"
-      - "--"
-      - "--gcs=gs://kubernetes-release-dev/ci"
-      - "--version-suffix=-bazel"
-      - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel-1.7.txt"
-      # Bazel needs privileged mode in order to sandbox builds.
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          memory: "6Gi"
 - name: ci-kubernetes-bazel-build-1-8
   interval: 12h
   agent: kubernetes
@@ -7227,26 +6576,6 @@ periodics:
         requests:
           memory: "6Gi"
 
-- name: ci-kubernetes-bazel-test-1-7
-  interval: 24h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-bazel-scratch-dir: true
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--repo=k8s.io/kubernetes=release-1.7"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--timeout=60"
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          memory: "6Gi"
 - name: ci-kubernetes-bazel-test-1-8
   interval: 12h
   agent: kubernetes
@@ -7297,7 +6626,7 @@ periodics:
     - name: docker-graph
       emptyDir: {}
 
-- interval: 30m
+- interval: 48h # Paused until new release cycle
   name: ci-kubernetes-build-beta
   agent: kubernetes
   labels:
@@ -7306,7 +6635,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - --repo=k8s.io/kubernetes=release-1.10
+      - --repo=k8s.io/kubernetes=release-1.11
       - --repo=k8s.io/release
       - --root=/go/src
       - --timeout=120
@@ -7365,7 +6694,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - --repo=k8s.io/kubernetes=release-1.9
+      - --repo=k8s.io/kubernetes=release-1.10
       - --repo=k8s.io/release
       - --root=/go/src
       - --timeout=120
@@ -7395,7 +6724,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - --repo=k8s.io/kubernetes=release-1.8
+      - --repo=k8s.io/kubernetes=release-1.9
       - --repo=k8s.io/release
       - --root=/go/src
       - --timeout=120
@@ -7425,10 +6754,10 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - --repo=k8s.io/kubernetes=release-1.7
+      - --repo=k8s.io/kubernetes=release-1.8
       - --repo=k8s.io/release
       - --root=/go/src
-      - --timeout=100
+      - --timeout=120
       env:
       - name: DOCKER_IN_DOCKER_ENABLED
         value: true
@@ -7730,19 +7059,6 @@ periodics:
 
 - interval: 2h
   agent: kubernetes
-  name: ci-kubernetes-e2e-gce-alpha-features-release-1-7
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - args:
-      - --timeout=200
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
-
-- interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster
   labels:
     preset-service-account: true
@@ -7809,7 +7125,7 @@ periodics:
 
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 1h
+  interval: 48h
   agent: kubernetes
   labels:
     preset-service-account: true
@@ -7824,7 +7140,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 1h
+  interval: 48h
   agent: kubernetes
   labels:
     preset-service-account: true
@@ -7839,7 +7155,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 1h
+  interval: 48h
   agent: kubernetes
   labels:
     preset-service-account: true
@@ -7854,7 +7170,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 1h
+  interval: 48h
   agent: kubernetes
   labels:
     preset-service-account: true
@@ -7869,7 +7185,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 1h
+  interval: 48h
   agent: kubernetes
   labels:
     preset-service-account: true
@@ -7884,7 +7200,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 1h
+  interval: 48h
   agent: kubernetes
   labels:
     preset-service-account: true
@@ -8781,7 +8097,8 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
-  interval: 2h
+  # interval: 2h
+  cron: "0 0 31 2 *" # inactive, set to Feb.31st so it will never be triggered
   agent: kubernetes
   labels:
     preset-service-account: true
@@ -8806,16 +8123,16 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 
-- interval: 1h
+- name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable2
+  interval: 12h
   agent: kubernetes
-  name: ci-kubernetes-e2e-gce-federation-release-1-7
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
   spec:
     containers:
     - args:
-      - --timeout=920
+      - --timeout=300
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 
@@ -9105,7 +8422,7 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 
-- name: ci-kubernetes-e2e-gce-gpu-beta
+- name: ci-kubernetes-e2e-gce-gpu-stable1
   interval: 2h
   agent: kubernetes
   labels:
@@ -9118,7 +8435,7 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 
-- name: ci-kubernetes-e2e-gce-gpu-stable1
+- name: ci-kubernetes-e2e-gce-gpu-stable2
   interval: 6h
   agent: kubernetes
   labels:
@@ -9365,32 +8682,6 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 
-- interval: 6h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-reboot-release-1-7
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - args:
-      - --timeout=200
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
-
-- interval: 6h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-release-1-7
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - args:
-      - --timeout=70
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
-
 - interval: 30m
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-scalability-canary
@@ -9441,32 +8732,6 @@ periodics:
         requests:
           cpu: 6
           memory: "16Gi"
-
-- interval: 6h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-serial-release-1-7
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - args:
-      - --timeout=520
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
-
-- interval: 6h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-slow-release-1-7
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - args:
-      - --timeout=170
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 
 - interval: 2h
   agent: kubernetes
@@ -10316,7 +9581,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-scalability-beta
   tags:
-  - "perfDashPrefix: gce-100Nodes-1.9"
+  - "perfDashPrefix: gce-100Nodes-1.11"
   - "perfDashJobType: performance"
   labels:
     preset-service-account: true
@@ -10326,14 +9591,13 @@ periodics:
     - args:
       - --timeout=140
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-      imagePullPolicy: Always
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180405-7df977424-master
 
-- cron: "0 3-21/6 * * *" # every six hours, disjoint with ci-kubernetes-e2e-gci-gce-scalability-stable1
+- cron: "0 0/6 * * *" # every six hours, disjoint with ci-kubernetes-e2e-gci-gce-scalability-stable2
   agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gce-scalability-release-1-7
+  name: ci-kubernetes-e2e-gci-gce-scalability-stable1
   tags:
-  - "perfDashPrefix: gce-100Nodes-1.7"
+  - "perfDashPrefix: gce-100Nodes-1.10"
   - "perfDashJobType: performance"
   labels:
     preset-service-account: true
@@ -10345,11 +9609,11 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 
-- cron: "0 0/6 * * *" # every six hours, disjoint with ci-kubernetes-e2e-gci-gce-scalability-release-1-7
+- cron: "0 3-21/6 * * *" # every six hours, disjoint with ci-kubernetes-e2e-gci-gce-scalability-stable1
   agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gce-scalability-stable1
+  name: ci-kubernetes-e2e-gci-gce-scalability-stable2
   tags:
-  - "perfDashPrefix: gce-100Nodes-1.8"
+  - "perfDashPrefix: gce-100Nodes-1.9"
   - "perfDashJobType: performance"
   labels:
     preset-service-account: true
@@ -10636,19 +9900,6 @@ periodics:
 
 - interval: 2h
   agent: kubernetes
-  name: ci-kubernetes-e2e-gke-alpha-features-release-1-7
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - args:
-      - --timeout=200
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
-
-- interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster
   labels:
     preset-service-account: true
@@ -10715,7 +9966,7 @@ periodics:
 
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 1h
+  interval: 48h
   agent: kubernetes
   labels:
     preset-service-account: true
@@ -10730,7 +9981,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 1h
+  interval: 48h
   agent: kubernetes
   labels:
     preset-service-account: true
@@ -10745,7 +9996,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 1h
+  interval: 48h
   agent: kubernetes
   labels:
     preset-service-account: true
@@ -10760,7 +10011,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 1h
+  interval: 48h
   agent: kubernetes
   labels:
     preset-service-account: true
@@ -10775,7 +10026,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 1h
+  interval: 48h
   agent: kubernetes
   labels:
     preset-service-account: true
@@ -11163,44 +10414,6 @@ periodics:
       - --timeout=70
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-cluster
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - args:
-      - --timeout=920
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
-
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-cluster-new
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - args:
-      - --timeout=920
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
-
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-master
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - args:
-      - --timeout=920
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu
   interval: 2h
@@ -11216,7 +10429,8 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
-  interval: 2h
+  # interval: 2h
+  cron: "0 0 31 2 *" # inactive, set to Feb.31st so it will never be triggered
   agent: kubernetes
   labels:
     preset-service-account: true
@@ -11255,7 +10469,8 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
-  interval: 12h #expensive test
+  # interval: 12h #expensive test, 
+  cron: "0 0 31 2 *" # inactive, set to Feb.31st so it will never be triggered
   agent: kubernetes
   labels:
     preset-service-account: true
@@ -11280,8 +10495,34 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 
+- name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable2
+  interval: 12h #expensive test
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=300
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
+
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
   interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=300
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
+
+- name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable2
+  interval: 12h
   agent: kubernetes
   labels:
     preset-service-account: true
@@ -11511,19 +10752,6 @@ periodics:
     containers:
     - args:
       - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
-
-- name: ci-kubernetes-e2e-gke-gpu-1-7
-  interval: 12h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - args:
-      - --timeout=300
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 
@@ -13560,35 +12788,6 @@ periodics:
       - "--timeout=320"
       - "--upload=gs://kubernetes-jenkins/logs"
 
-
-- name: ci-kubernetes-e2e-kubeadm-gce-1-7
-  interval: 12h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180410-a0ffefb2f
-      args:
-      - "--repo=k8s.io/kubernetes=release-1.7"
-      - "--timeout=320"
-      - "--upload=gs://kubernetes-jenkins/logs"
-
-- name: ci-kubernetes-e2e-kubeadm-gce-1-7-on-1-8
-  interval: 12h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180410-a0ffefb2f
-      args:
-      - "--repo=k8s.io/kubernetes=release-1.8"
-      - "--timeout=320"
-      - "--upload=gs://kubernetes-jenkins/logs"
-
 # TODO(bentheelder): switch ci-kubernetes-bazel-build to 100% periodic,
 # like the other build job once we don't have run_after_success
 - name: ci-kubernetes-e2e-kubeadm-gce-1-8
@@ -13727,19 +12926,6 @@ periodics:
       - "--repo=k8s.io/kubernetes=master"
       - "--timeout=320"
       - "--upload=gs://kubernetes-jenkins/logs"
-- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
-  interval: 6h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180410-a0ffefb2f
-      args:
-      - "--repo=k8s.io/kubernetes=release-1.7"
-      - "--timeout=320"
-      - "--upload=gs://kubernetes-jenkins/logs"
 
 - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9
   interval: 6h
@@ -13826,12 +13012,12 @@ periodics:
     containers:
     - args:
       - --timeout=90
-      - --repo=k8s.io/kubernetes=release-1.10
+      - --repo=k8s.io/kubernetes=release-1.11
       - --root=/go/src
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.10
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.11
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -13844,12 +13030,12 @@ periodics:
     containers:
     - args:
       - --timeout=200
-      - --repo=k8s.io/kubernetes=release-1.10
+      - --repo=k8s.io/kubernetes=release-1.11
       - --root=/go/src
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.10
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.11
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -13898,12 +13084,12 @@ periodics:
     containers:
     - args:
       - --timeout=90
-      - --repo=k8s.io/kubernetes=release-1.9
+      - --repo=k8s.io/kubernetes=release-1.10
       - --root=/go/src
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.9
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.10
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -13916,6 +13102,24 @@ periodics:
     containers:
     - args:
       - --timeout=200
+      - --repo=k8s.io/kubernetes=release-1.10
+      - --root=/go/src
+      env:
+      - name: GOPATH
+        value: /go
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.10
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2enode-cosbeta-k8sstable2-default
+  spec:
+    containers:
+    - args:
+      - --timeout=90
       - --repo=k8s.io/kubernetes=release-1.9
       - --root=/go/src
       env:
@@ -13929,35 +13133,17 @@ periodics:
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
-  name: ci-kubernetes-e2enode-cosbeta-k8sstable2-default
-  spec:
-    containers:
-    - args:
-      - --timeout=90
-      - --repo=k8s.io/kubernetes=release-1.8
-      - --root=/go/src
-      env:
-      - name: GOPATH
-        value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.8
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-cosbeta-k8sstable2-serial
   spec:
     containers:
     - args:
       - --timeout=200
-      - --repo=k8s.io/kubernetes=release-1.8
+      - --repo=k8s.io/kubernetes=release-1.9
       - --root=/go/src
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.8
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.9
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -13970,12 +13156,12 @@ periodics:
     containers:
     - args:
       - --timeout=90
-      - --repo=k8s.io/kubernetes=release-1.7
+      - --repo=k8s.io/kubernetes=release-1.8
       - --root=/go/src
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.7
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.8
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -13988,12 +13174,12 @@ periodics:
     containers:
     - args:
       - --timeout=200
-      - --repo=k8s.io/kubernetes=release-1.7
+      - --repo=k8s.io/kubernetes=release-1.8
       - --root=/go/src
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.7
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.8
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -14006,12 +13192,12 @@ periodics:
     containers:
     - args:
       - --timeout=90
-      - --repo=k8s.io/kubernetes=release-1.10
+      - --repo=k8s.io/kubernetes=release-1.11
       - --root=/go/src
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.10
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.11
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -14024,12 +13210,12 @@ periodics:
     containers:
     - args:
       - --timeout=200
-      - --repo=k8s.io/kubernetes=release-1.10
+      - --repo=k8s.io/kubernetes=release-1.11
       - --root=/go/src
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.10
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.11
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -14078,12 +13264,12 @@ periodics:
     containers:
     - args:
       - --timeout=90
-      - --repo=k8s.io/kubernetes=release-1.9
+      - --repo=k8s.io/kubernetes=release-1.10
       - --root=/go/src
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.9
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.10
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -14096,12 +13282,12 @@ periodics:
     containers:
     - args:
       - --timeout=200
-      - --repo=k8s.io/kubernetes=release-1.9
+      - --repo=k8s.io/kubernetes=release-1.10
       - --root=/go/src
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.9
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.10
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -14114,12 +13300,12 @@ periodics:
     containers:
     - args:
       - --timeout=90
-      - --repo=k8s.io/kubernetes=release-1.8
+      - --repo=k8s.io/kubernetes=release-1.9
       - --root=/go/src
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.8
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.9
 
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
@@ -14133,12 +13319,12 @@ periodics:
     containers:
     - args:
       - --timeout=200
-      - --repo=k8s.io/kubernetes=release-1.8
+      - --repo=k8s.io/kubernetes=release-1.9
       - --root=/go/src
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.8
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.9
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -14151,12 +13337,12 @@ periodics:
     containers:
     - args:
       - --timeout=90
-      - --repo=k8s.io/kubernetes=release-1.7
+      - --repo=k8s.io/kubernetes=release-1.8
       - --root=/go/src
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.7
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.8
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
@@ -14169,12 +13355,12 @@ periodics:
     containers:
     - args:
       - --timeout=200
-      - --repo=k8s.io/kubernetes=release-1.7
+      - --repo=k8s.io/kubernetes=release-1.8
       - --root=/go/src
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.7
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.8
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -14187,12 +13373,12 @@ periodics:
     containers:
     - args:
       - --timeout=80
-      - --repo=k8s.io/kubernetes=release-1.10
+      - --repo=k8s.io/kubernetes=release-1.11
       - --root=/go/src
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.10
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.11
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -14205,12 +13391,12 @@ periodics:
     containers:
     - args:
       - --timeout=200
-      - --repo=k8s.io/kubernetes=release-1.10
+      - --repo=k8s.io/kubernetes=release-1.11
       - --root=/go/src
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.10
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.11
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -14223,12 +13409,12 @@ periodics:
     containers:
     - args:
       - --timeout=80
-      - --repo=k8s.io/kubernetes=release-1.9
+      - --repo=k8s.io/kubernetes=release-1.10
       - --root=/go/src
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.9
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.10
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -14241,12 +13427,12 @@ periodics:
     containers:
     - args:
       - --timeout=200
-      - --repo=k8s.io/kubernetes=release-1.9
+      - --repo=k8s.io/kubernetes=release-1.10
       - --root=/go/src
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.9
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.10
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -14259,12 +13445,12 @@ periodics:
     containers:
     - args:
       - --timeout=80
-      - --repo=k8s.io/kubernetes=release-1.8
+      - --repo=k8s.io/kubernetes=release-1.9
       - --root=/go/src
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.8
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.9
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -14277,12 +13463,12 @@ periodics:
     containers:
     - args:
       - --timeout=200
-      - --repo=k8s.io/kubernetes=release-1.8
+      - --repo=k8s.io/kubernetes=release-1.9
       - --root=/go/src
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.8
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.9
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -14295,12 +13481,12 @@ periodics:
     containers:
     - args:
       - --timeout=80
-      - --repo=k8s.io/kubernetes=release-1.7
+      - --repo=k8s.io/kubernetes=release-1.8
       - --root=/go/src
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.7
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.8
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -14313,12 +13499,12 @@ periodics:
     containers:
     - args:
       - --timeout=200
-      - --repo=k8s.io/kubernetes=release-1.7
+      - --repo=k8s.io/kubernetes=release-1.8
       - --root=/go/src
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.7
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.8
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -14331,12 +13517,12 @@ periodics:
     containers:
     - args:
       - --timeout=80
-      - --repo=k8s.io/kubernetes=release-1.10
+      - --repo=k8s.io/kubernetes=release-1.11
       - --root=/go/src
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.10
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.11
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -14349,6 +13535,24 @@ periodics:
     containers:
     - args:
       - --timeout=200
+      - --repo=k8s.io/kubernetes=release-1.11
+      - --root=/go/src
+      env:
+      - name: GOPATH
+        value: /go
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.11
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2enode-ubuntu2-k8sstable1-gkespec
+  spec:
+    containers:
+    - args:
+      - --timeout=80
       - --repo=k8s.io/kubernetes=release-1.10
       - --root=/go/src
       env:
@@ -14362,35 +13566,17 @@ periodics:
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
-  name: ci-kubernetes-e2enode-ubuntu2-k8sstable1-gkespec
-  spec:
-    containers:
-    - args:
-      - --timeout=80
-      - --repo=k8s.io/kubernetes=release-1.9
-      - --root=/go/src
-      env:
-      - name: GOPATH
-        value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.9
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-ubuntu2-k8sstable1-serial
   spec:
     containers:
     - args:
       - --timeout=200
-      - --repo=k8s.io/kubernetes=release-1.9
+      - --repo=k8s.io/kubernetes=release-1.10
       - --root=/go/src
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.9
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.10
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -14403,12 +13589,12 @@ periodics:
     containers:
     - args:
       - --timeout=80
-      - --repo=k8s.io/kubernetes=release-1.8
+      - --repo=k8s.io/kubernetes=release-1.9
       - --root=/go/src
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.8
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.9
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -14421,6 +13607,24 @@ periodics:
     containers:
     - args:
       - --timeout=200
+      - --repo=k8s.io/kubernetes=release-1.9
+      - --root=/go/src
+      env:
+      - name: GOPATH
+        value: /go
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.9
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  name: ci-kubernetes-e2enode-ubuntu2-k8sstable3-gkespec
+  spec:
+    containers:
+    - args:
+      - --timeout=80
       - --repo=k8s.io/kubernetes=release-1.8
       - --root=/go/src
       env:
@@ -14434,64 +13638,17 @@ periodics:
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
-  name: ci-kubernetes-e2enode-ubuntu2-k8sstable3-gkespec
-  spec:
-    containers:
-    - args:
-      - --timeout=80
-      - --repo=k8s.io/kubernetes=release-1.7
-      - --root=/go/src
-      env:
-      - name: GOPATH
-        value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.7
-- tags:
-  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-ubuntu2-k8sstable3-serial
   spec:
     containers:
     - args:
       - --timeout=200
-      - --repo=k8s.io/kubernetes=release-1.7
+      - --repo=k8s.io/kubernetes=release-1.8
       - --root=/go/src
       env:
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.7
-- interval: 6h
-  name: ci-kubernetes-federation-build-1-7
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
-      args:
-      - --repo=k8s.io/kubernetes=release-1.7
-      - --repo=k8s.io/release
-      - --root=/go/src
-      - --timeout=50
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: true
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
-      resources:
-        requests:
-          cpu: 4
-          memory: "8Gi"
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.8
 
 - interval: 2h
   name: ci-kubernetes-federation-build-1-8
@@ -14545,7 +13702,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - "--repo=k8s.io/kubernetes=release-1.10"
+      - "--repo=k8s.io/kubernetes=release-1.11"
       - "--timeout=100"
       env:
       - name: DOCKER_IN_DOCKER_ENABLED
@@ -14599,7 +13756,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - "--repo=k8s.io/kubernetes=release-1.9"
+      - "--repo=k8s.io/kubernetes=release-1.10"
       - "--timeout=100"
       env:
       - name: DOCKER_IN_DOCKER_ENABLED
@@ -14626,7 +13783,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - "--repo=k8s.io/kubernetes=release-1.8"
+      - "--repo=k8s.io/kubernetes=release-1.9"
       - "--timeout=100"
       env:
       - name: DOCKER_IN_DOCKER_ENABLED
@@ -14653,7 +13810,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - "--repo=k8s.io/kubernetes=release-1.7"
+      - "--repo=k8s.io/kubernetes=release-1.8"
       - "--timeout=100"
       env:
       - name: DOCKER_IN_DOCKER_ENABLED
@@ -14954,7 +14111,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
       args:
-      - --repo=k8s.io/kubernetes=release-1.10
+      - --repo=k8s.io/kubernetes=master
       - --timeout=90
       - --root=/go/src
       env:
@@ -14988,7 +14145,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
       args:
-      - --repo=k8s.io/kubernetes=release-1.10
+      - --repo=k8s.io/kubernetes=release-1.11
       - --timeout=90
       - --root=/go/src
       env:
@@ -15071,9 +14228,9 @@ periodics:
     preset-k8s-ssh: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.9
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.10
       args:
-      - --repo=k8s.io/kubernetes=release-1.9
+      - --repo=k8s.io/kubernetes=release-1.10
       - --timeout=90
       - --root=/go/src
       env:
@@ -15088,9 +14245,9 @@ periodics:
     preset-k8s-ssh: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.8
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.9
       args:
-      - --repo=k8s.io/kubernetes=release-1.8
+      - --repo=k8s.io/kubernetes=release-1.9
       - --timeout=90
       - --root=/go/src
       env:
@@ -15105,9 +14262,9 @@ periodics:
     preset-k8s-ssh: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.7
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.8
       args:
-      - --repo=k8s.io/kubernetes=release-1.7
+      - --repo=k8s.io/kubernetes=release-1.8
       - --timeout=90
       - --root=/go/src
       env:
@@ -15125,20 +14282,6 @@ periodics:
     - args:
       - --timeout=620
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
-
-- interval: 12h
-  agent: kubernetes
-  name: ci-kubernetes-soak-gce-1-7
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - args:
-      - --timeout=620
-      - --bare
-      env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 
 - interval: 12h
@@ -15228,7 +14371,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - "--repo=k8s.io/kubernetes=release-1.10"
+      - "--repo=k8s.io/kubernetes=release-1.11"
       - "--timeout=75"
       env:
       - name: DOCKER_IN_DOCKER_ENABLED
@@ -15282,7 +14425,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - "--repo=k8s.io/kubernetes=release-1.9"
+      - "--repo=k8s.io/kubernetes=release-1.10"
       - "--timeout=75"
       env:
       - name: DOCKER_IN_DOCKER_ENABLED
@@ -15309,7 +14452,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - "--repo=k8s.io/kubernetes=release-1.8"
+      - "--repo=k8s.io/kubernetes=release-1.9"
       - "--timeout=75"
       env:
       - name: DOCKER_IN_DOCKER_ENABLED
@@ -15336,7 +14479,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
       args:
-      - "--repo=k8s.io/kubernetes=release-1.7"
+      - "--repo=k8s.io/kubernetes=release-1.8"
       - "--timeout=75"
       env:
       - name: DOCKER_IN_DOCKER_ENABLED
@@ -15646,27 +14789,6 @@ periodics:
         requests:
           memory: "6Gi"
 
-- name: periodic-kubernetes-bazel-build-1-7
-  interval: 12h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-bazel-scratch-dir: true
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--repo=k8s.io/kubernetes=release-1.7"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      # Bazel needs privileged mode in order to sandbox builds.
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          memory: "6Gi"
-
 - name: periodic-kubernetes-bazel-build-1-8
   interval: 6h
   agent: kubernetes
@@ -15740,26 +14862,6 @@ periodics:
         value: kubernetes
       - name: REPO_NAME
         value: kubernetes
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          memory: "6Gi"
-
-- name: periodic-kubernetes-bazel-test-1-7
-  interval: 12h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-bazel-scratch-dir: true
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--repo=k8s.io/kubernetes=release-1.7"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
       securityContext:
         privileged: true
       resources:
