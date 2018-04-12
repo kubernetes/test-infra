@@ -13097,7 +13097,7 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--stage=gs://kubernetes-release-pull/ci/pull-release-cluster-up",
-      "--test_args=--ginkgo.focus=\\[Feature:Empty\\]",
+      "--test_args=--ginkgo.focus=definitely-not-a-real-focus",
       "--timeout=65m"
     ],
     "scenario": "kubernetes_e2e",
