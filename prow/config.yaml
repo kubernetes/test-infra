@@ -134,6 +134,7 @@ tide:
     - kubernetes/kube-deploy
     - kubernetes/minikube
     - kubernetes/node-problem-detector
+    - kubernetes/perf-tests
     - kubernetes/repo-infra
     - kubernetes/sig-release
     - kubernetes/steering
