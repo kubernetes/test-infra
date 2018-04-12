@@ -50,6 +50,7 @@ approve:
   - kubernetes/kube-state-metrics
   - kubernetes/minikube
   - kubernetes/node-problem-detector
+  - kubernetes/perf-tests
   - kubernetes/repo-infra
   - kubernetes/sig-release
   - kubernetes/steering
@@ -271,6 +272,10 @@ plugins:
   - approve
 
   kubernetes/node-problem-detector:
+  - approve
+  - blunderbuss
+
+  kubernetes/perf-tests:
   - approve
   - blunderbuss
 
