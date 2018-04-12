@@ -7476,6 +7476,62 @@ periodics:
     - name: docker-graph
       emptyDir: {}
 
+- interval: 6h
+  name: ci-kubernetes-dind-conformance
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-bazel-scratch-dir: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
+      args:
+      - "--job=$(JOB_NAME)"
+      - "--root=/go/src"
+      - "--repo=k8s.io/kubernetes=master"
+      - "--repo=k8s.io/test-infra=master"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/pr-logs"
+      - "--scenario=dindind_execute"
+      - "--"
+      - "kubetest"
+      - "--"
+      - "--build=dind"
+      - "--deployment=dind"
+      - "--up"
+      - "--test"
+      - "--down"
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: "true"
+      # Bazel needs privileged mode in order to sandbox builds.
+      securityContext:
+        privileged: true
+        capabilities:
+          add: ["SYS_ADMIN"]
+      volumeMounts:
+      - mountPath: /lib/modules
+        name: modules
+        readOnly: true
+      - mountPath: /sys/fs/cgroup
+        name: cgroup
+      - mountPath: /docker-graph
+        name: docker-storage
+      resources:
+        requests:
+          # We can adjust this after we know the requirements.
+          memory: "6Gi"
+    volumes:
+    - name: modules
+      hostPath:
+        path: /lib/modules
+        type: Directory
+    - name: cgroup
+      hostPath:
+        path: /sys/fs/cgroup
+        type: Directory
+    - name: docker-storage
+      emptyDir: {}
 - name: ci-kubernetes-e2e-autoscaling-vpa-actuation
   interval: 2h
   agent: kubernetes
@@ -14453,7 +14509,7 @@ periodics:
     - name: docker-graph
       emptyDir: {}
 
-- interval: 12h
+- interval: 6h
   agent: kubernetes
   name: ci-kubernetes-gce-conformance
   labels:
@@ -14465,6 +14521,7 @@ periodics:
       - --timeout=220
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
+
 - interval: 2h
   name: ci-kubernetes-integration-beta
   agent: kubernetes

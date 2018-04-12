@@ -2503,9 +2503,13 @@ test_groups:
   num_columns_recent: 20
 
 
-# conformance tests
+# Prow hosted conformance tests
 - name: ci-kubernetes-gce-conformance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance
+  num_columns_recent: 3
+- name: ci-kubernetes-dind-conformance
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-dind-conformance
+  num_columns_recent: 3
 
 # Add New Testgroups Here
 
@@ -2519,6 +2523,9 @@ dashboards:
   - name: gce
     description: Runs conformance tests using kubetest against latest kubernetes master CI build on GCE
     test_group_name: ci-kubernetes-gce-conformance
+  - name: dind
+    description: Runs conformance tests using kubetest against latest kubernetes master with a docker-in-docker cluster
+    test_group_name: ci-kubernetes-dind-conformance
   - name: local-e2e
     description: Runs conformance tests using kubetest with local-up-cluster
     test_group_name: ci-kubernetes-local-e2e
@@ -2534,6 +2541,9 @@ dashboards:
 
 - name: conformance-providerless
   dashboard_tab:
+  - name: dind
+    description: Runs conformance tests using kubetest against latest kubernetes master with a docker-in-docker cluster
+    test_group_name: ci-kubernetes-dind-conformance
   - name: local-e2e
     description: Runs conformance tests using kubetest with local-up-cluster
     test_group_name: ci-kubernetes-local-e2e
