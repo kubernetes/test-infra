@@ -199,6 +199,11 @@ type Blunderbuss struct {
 	// reviews from. Selects reviewers based on file weighting.
 	// This and request_count are mutually exclusive options.
 	FileWeightCount *int `json:"file_weight_count,omitempty"`
+	// ExcludeApprovers controls whether approvers are considered to be
+	// reviewers. By default, approvers are considered as reviewers if
+	// insufficient reviewers are available. If ExcludeApprovers is true,
+	// approvers will never be considered as reviewers.
+	ExcludeApprovers bool `json:"exclude_approvers,omitempty"`
 }
 
 // Owners contains configuration related to handling OWNERS files.
