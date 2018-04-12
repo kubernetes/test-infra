@@ -10312,7 +10312,7 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 
-- cron: "0 */6 * * *" # every six hours
+- interval: 1h
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-scalability-beta
   tags:
