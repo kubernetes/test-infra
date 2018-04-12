@@ -13086,18 +13086,19 @@
       "sig-scheduling"
     ]
   },
-  "pull-release-null-e2e": {
+  "pull-release-cluster-up": {
     "args": [
       "--build=bazel",
       "--cluster=",
+      "--down=false",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/pull-kubernetes-e2e.env",
       "--extract=local",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--stage=gs://kubernetes-release-pull/ci/pull-release-null-e2e",
-      "--test_args=--ginkgo.focus=\\[Feature:Empty\\]",
+      "--stage=gs://kubernetes-release-pull/ci/pull-release-cluster-up",
+      "--test_args=--ginkgo.focus=definitely-not-a-real-focus",
       "--timeout=65m"
     ],
     "scenario": "kubernetes_e2e",

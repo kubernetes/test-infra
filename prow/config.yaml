@@ -5616,11 +5616,11 @@ presubmits:
         - "--clean"
 
   kubernetes/release:
-  - name: pull-release-null-e2e
+  - name: pull-release-cluster-up
     agent: kubernetes
-    context: pull-release-null-e2e
-    rerun_command: "/test pull-release-null-e2e"
-    trigger: "(?m)^/test (all|pull-release-null-e2e),?(\\s+|$)"
+    context: pull-release-cluster-up
+    rerun_command: "/test pull-release-cluster-up"
+    trigger: "(?m)^/test (all|pull-release-cluster-up),?(\\s+|$)"
     always_run: true
     labels:
       preset-service-account: true
