@@ -12,22 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  labels:
-    app: github-cache
-  name: github-cache
-spec:
-  capacity:
-    storage: 100Gi
-  accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  gcePersistentDisk:
-    pdName: github-cache
-    fsType: ext4
----
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
@@ -40,6 +24,14 @@ spec:
   resources:
     requests:
       storage: 100Gi
+  # gce-ssd-retain is specified in prow/cluster/gce-ssd-retain_storageclass.yaml
+  #
+  # If you are setting up your own Prow instance you can do any of the following:
+  # 1) Delete this to use the default storage class for your cluster.
+  # 2) Specify your own storage class.
+  # 3) If you are using GKE you can use the gce-ssd-retain storage class. It can be
+  #    created with: `kubectl create -f prow/cluster/gce-ssd-retain_storageclass.yaml
+  storageClassName: gce-ssd-retain
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
