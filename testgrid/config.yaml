@@ -1540,8 +1540,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-alpha-features-release-1-7
 - name: ci-kubernetes-e2e-gce-cos-k8sstable2-alphafeatures
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable2-alphafeatures
-- name: ci-kubernetes-e2e-gci-gce-scalability-release-1-7
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability-release-1-7
+- name: ci-kubernetes-e2e-gci-gce-scalability-stable2
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability-stable2
   num_failures_to_alert: 1
 - name: ci-kubernetes-e2e-gce-cos-k8sstable2-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable2-ingress
@@ -2893,8 +2893,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-reboot
   - name: gci-gce-scalability
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability
-  - name: gci-gce-scalability-1.7
-    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-release-1-7
   - name: gci-gce-ip-alias
     test_group_name: ci-kubernetes-e2e-gci-gce-ip-alias
   - name: gce-alpha-api
@@ -3706,6 +3704,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8
   - name: gce-kubeadm-1.7-on-1.8
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-7-on-1-8
+  - name: gci-gce-scalability-1.8
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable2
   - name: ci-gce-kubeadm-1.8
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8
   - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1.7-1.8
@@ -3788,6 +3788,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-ingress
   - name: gci-gce-reboot-release-1.8
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-reboot
+  - name: gci-gce-scalability-1.8
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable2
   - name: gci-gke-reboot-release-1.8
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-reboot
   - name: soak-gci-gce-1.8
@@ -3815,8 +3817,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-federation-release-1-7
   - name: gce-alpha-features-release-1.7
     test_group_name: ci-kubernetes-e2e-gce-alpha-features-release-1-7
-  - name: gci-gce-scalability-release-1.7
-    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-release-1-7
   - name: gce-reboot-release-1.7
     test_group_name: ci-kubernetes-e2e-gce-reboot-release-1-7
   - name: soak-gce-1.7
@@ -3928,8 +3928,6 @@ dashboards:
     - configuration_value: infra-commit
   - name: gke-gpu-1.7
     test_group_name: ci-kubernetes-e2e-gke-gpu-1-7
-  - name: gci-gce-scalability-release-1.7
-    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-release-1-7
   - name: aws-release-1.7
     test_group_name: ci-kubernetes-e2e-kops-aws-stable3
   - name: gce-alpha-features-release-1.7
@@ -4963,12 +4961,12 @@ dashboards:
   dashboard_tab:
   - name: gce
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability
-  - name: gce-1.8
-    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable1
-  - name: gce-1.7
-    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-release-1-7
-  - name: gce-1.9
+  - name: gce-beta
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-beta
+  - name: gce-stable1
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable1
+  - name: gce-stable2
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable2
   - name: gce-large-correctness
     test_group_name: ci-kubernetes-e2e-gce-large-correctness
   - name: gce-large-performance

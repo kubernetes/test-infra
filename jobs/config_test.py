@@ -516,9 +516,9 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gce-ubuntu2-k8sstable3-serial': 'ci-kubernetes-e2e-gce-ubuntu*',
             'ci-kubernetes-e2e-gce-ubuntu2-k8sstable3-slow': 'ci-kubernetes-e2e-gce-ubuntu*',
 
-            # The 1.5 and 1.6 scalability jobs intentionally share projects.
-            'ci-kubernetes-e2e-gci-gce-scalability-release-1-7': 'ci-kubernetes-e2e-gci-gce-scalability-release-*',
+            # The stable1 and stable2 scalability jobs intentionally share projects.
             'ci-kubernetes-e2e-gci-gce-scalability-stable1': 'ci-kubernetes-e2e-gci-gce-scalability-release-*',
+            'ci-kubernetes-e2e-gci-gce-scalability-stable2': 'ci-kubernetes-e2e-gci-gce-scalability-release-*',
             'ci-kubernetes-e2e-gce-scalability': 'ci-kubernetes-e2e-gce-scalability-*',
             'ci-kubernetes-e2e-gce-scalability-canary': 'ci-kubernetes-e2e-gce-scalability-*',
             # TODO(fejta): remove these (found while migrating jobs)
