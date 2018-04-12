@@ -14,44 +14,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package initupload
+package main
 
-import (
-	"testing"
-
-	"k8s.io/test-infra/prow/gcsupload"
-	"k8s.io/test-infra/prow/kube"
-)
+import "testing"
 
 func TestOptions_Validate(t *testing.T) {
 	var testCases = []struct {
 		name        string
-		input       Options
+		input       options
 		expectedErr bool
 	}{
 		{
-			name: "minimal set ok",
-			input: Options{
-				Log: "testing",
-				Options: &gcsupload.Options{
-					DryRun: true,
-					GCSConfiguration: &kube.GCSConfiguration{
-						PathStrategy: kube.PathStrategyExplicit,
-					},
-				},
+			name: "all ok",
+			input: options{
+				prowJobPath: "somewhere",
 			},
 			expectedErr: false,
 		},
 		{
-			name: "missing clone log",
-			input: Options{
-				Options: &gcsupload.Options{
-					DryRun: true,
-					GCSConfiguration: &kube.GCSConfiguration{
-						PathStrategy: kube.PathStrategyExplicit,
-					},
-				},
-			},
+			name:        "missing config",
+			input:       options{},
 			expectedErr: true,
 		},
 	}

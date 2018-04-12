@@ -25,8 +25,8 @@ import (
 )
 
 func main() {
-	o := clonerefs.Options{}
-	if err := options.Load(&o); err != nil {
+	o := &clonerefs.Options{}
+	if err := options.Load(o); err != nil {
 		logrus.Fatalf("Could not resolve options: %v", err)
 	}
 

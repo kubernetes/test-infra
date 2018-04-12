@@ -165,7 +165,7 @@ job resource.
 [github branch protection]: https://help.github.com/articles/about-protected-branches/
 [`oneshot-job.yaml`]: oneshot-job.yaml
 [`planter.sh`]: /planter
-[`print-workspace-status.sh`]: /print-workspace-status.sh
+[`print-workspace-status.sh`]: ../../../hack/print-workspace-status.sh
 [`prow/bump.sh`]: /prow/bump.sh
 [`prow/cluster/branchprotector_cronjob.yaml`]: /prow/cluster/branchprotector_cronjob.yaml
 [status contexts]: https://developer.github.com/v3/repos/statuses/#create-a-status

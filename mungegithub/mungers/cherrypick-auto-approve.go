@@ -105,10 +105,14 @@ func (c *CherrypickAutoApprove) Munge(obj *github.MungeObject) {
 	if !obj.IsPR() {
 		return
 	}
-	forBranch, ok := obj.IsForBranch("master")
-	if !ok || forBranch {
+	branch, ok := obj.Branch()
+	if !ok {
 		return
 	}
+	if !strings.HasPrefix(branch, "release-") {
+		return
+	}
+
 	milestone, ok := obj.ReleaseMilestone()
 	if !ok {
 		return
@@ -124,10 +128,6 @@ func (c *CherrypickAutoApprove) Munge(obj *github.MungeObject) {
 
 	major := 0
 	minor := 0
-	branch, ok := obj.Branch()
-	if !ok {
-		return
-	}
 	if l, err := fmt.Sscanf(branch, "release-%d.%d", &major, &minor); err != nil || l != 2 {
 		return
 	}

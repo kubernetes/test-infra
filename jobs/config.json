@@ -266,7 +266,7 @@
       "--gcp-project-type=ingress-project",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Ingress\\] --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:Ingress\\] --ginkgo.skip=\\[Unreleased\\] --minStartupPods=8",
       "--timeout=90m"
     ],
     "scenario": "kubernetes_e2e",
@@ -625,7 +625,7 @@
       "--env=KUBE_GCE_ENABLE_IP_ALIASES=true",
       "--extract=ci/latest",
       "--gcp-project-type=ingress-project",
-      "--gcp-zone=us-east2-a",
+      "--gcp-zone=asia-southeast1-a",
       "--ginkgo-parallel=1",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Feature:Ingress\\]|\\[Feature:NEG\\]",
@@ -4803,7 +4803,7 @@
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-project-type=ingress-project",
-      "--gcp-zone=us-east2-a",
+      "--gcp-zone=asia-southeast1-a",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Feature:Ingress\\]|\\[Feature:NEG\\] --ginkgo.skip=\\[Unreleased\\]",
       "--timeout=320m"
@@ -4822,7 +4822,7 @@
       "--gcp-project-type=ingress-project",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Ingress\\] --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:Ingress\\] --ginkgo.skip=\\[Unreleased\\] --minStartupPods=8",
       "--timeout=90m"
     ],
     "scenario": "kubernetes_e2e",
@@ -7736,7 +7736,7 @@
     "args": [
       "--check-leaked-resources",
       "--deployment=gke",
-      "--env=NVIDIA_DRIVER_INSTALLER_DAEMONSET=https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/k8s-1.9/nvidia-driver-installer/cos/daemonset-preloaded.yaml",
+      "--env=NVIDIA_DRIVER_INSTALLER_DAEMONSET=https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/k8s-1.10/nvidia-driver-installer/cos/daemonset-preloaded.yaml",
       "--extract=gke-latest",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/rc",
       "--gcp-node-image=gci",
@@ -11320,6 +11320,22 @@
       "sig-multicluster"
     ]
   },
+  "ci-kubernetes-gce-conformance": {
+    "args": [
+      "--env-file=jobs/platform/gce.env",
+      "--extract=ci/latest",
+      "--gcp-master-image=gci",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]",
+      "--timeout=200m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-gcp"
+    ]
+  },
   "ci-kubernetes-integration-beta": {
     "args": [
       "--branch=release-1.10",
@@ -12068,6 +12084,7 @@
       "--check-leaked-resources",
       "--cluster=",
       "--deployment=gke",
+      "--env=CLOUDSDK_CONTAINER_USE_V1_API=false",
       "--env=TAG=0.6.0",
       "--extract=ci/latest-1.10",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
@@ -12075,7 +12092,7 @@
       "--gcp-project=istio-gke-addon-prow-e2e-test",
       "--gcp-zone=us-central1-f",
       "--gke-command-group=alpha",
-      "--gke-create-command=container clusters create --quiet --num-nodes=4 --enable-kubernetes-alpha --no-enable-legacy-authorization --addons=Istio --istio-config=auth=NONE",
+      "--gke-create-command=container clusters create --quiet --num-nodes=4 --no-enable-legacy-authorization --addons=Istio --istio-config=auth=NONE",
       "--gke-environment=test",
       "--provider=gke",
       "--test=false",
@@ -13067,6 +13084,25 @@
     "scenario": "execute",
     "sigOwners": [
       "sig-scheduling"
+    ]
+  },
+  "pull-release-null-e2e": {
+    "args": [
+      "--build=bazel",
+      "--cluster=",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/pull-kubernetes-e2e.env",
+      "--extract=local",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--stage=gs://kubernetes-release-pull/ci/pull-release-null-e2e",
+      "--test_args=--ginkgo.focus=\\[Feature:Empty\\]",
+      "--timeout=65m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-release"
     ]
   },
   "pull-test-infra-bazel": {

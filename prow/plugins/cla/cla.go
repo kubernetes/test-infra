@@ -25,6 +25,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"regexp"
 )
 
 const (
@@ -54,17 +55,29 @@ It may take a couple minutes for the CLA signature to be fully registered; after
 	maxRetries = 5
 )
 
+var (
+	checkCLARe = regexp.MustCompile(`(?mi)^/check-cla\s*$`)
+)
+
 func init() {
 	plugins.RegisterStatusEventHandler(pluginName, handleStatusEvent, helpProvider)
+	plugins.RegisterGenericCommentHandler(pluginName, handleCommentEvent, helpProvider)
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// The {WhoCanUse, Usage, Examples, Config} fields are omitted because this plugin cannot be
 	// manually triggered and is not configurable.
-	return &pluginhelp.PluginHelp{
-			Description: "The cla plugin manages the application and removal of the 'cncf-cla' prefixed labels on pull requests as a reaction to the " + claContextName + " github status context. It is also responsible for warning unauthorized PR authors that they need to sign the CNCF CLA before their PR will be merged.",
-		},
-		nil
+	pluginHelp := &pluginhelp.PluginHelp{
+		Description: "The cla plugin manages the application and removal of the 'cncf-cla' prefixed labels on pull requests as a reaction to the " + claContextName + " github status context. It is also responsible for warning unauthorized PR authors that they need to sign the CNCF CLA before their PR will be merged.",
+	}
+	pluginHelp.AddCommand(pluginhelp.Command{
+		Usage:       "/check-cla",
+		Description: "Forces rechecking of the CLA status.",
+		Featured:    true,
+		WhoCanUse:   "Anyone",
+		Examples:    []string{"/check-cla"},
+	})
+	return pluginHelp, nil
 }
 
 type gitHubClient interface {
@@ -73,6 +86,8 @@ type gitHubClient interface {
 	RemoveLabel(owner, repo string, number int, label string) error
 	GetPullRequest(owner, repo string, number int) (*github.PullRequest, error)
 	FindIssues(query, sort string, asc bool) ([]github.Issue, error)
+	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
+	ListStatuses(org, repo, ref string) ([]github.Status, error)
 }
 
 func handleStatusEvent(pc plugins.PluginClient, se github.StatusEvent) error {
@@ -170,6 +185,100 @@ func handle(gc gitHubClient, log *logrus.Entry, se github.StatusEvent) error {
 		}
 		if err := gc.AddLabel(org, repo, number, claNoLabel); err != nil {
 			l.WithError(err).Warningf("Could not add %s label.", claNoLabel)
+		}
+	}
+	return nil
+}
+
+func handleCommentEvent(pc plugins.PluginClient, ce github.GenericCommentEvent) error {
+	return handleComment(pc.GitHubClient, pc.Logger, &ce)
+}
+
+func handleComment(gc gitHubClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
+	// Only consider open PRs and new comments.
+	if e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
+		return nil
+	}
+	// Only consider "/check-cla" comments.
+	if !checkCLARe.MatchString(e.Body) {
+		return nil
+	}
+
+	org := e.Repo.Owner.Login
+	repo := e.Repo.Name
+	number := e.Number
+	hasCLAYes := false
+	hasCLANo := false
+
+	// Check for existing cla labels.
+	labels, err := gc.GetIssueLabels(org, repo, number)
+	if err != nil {
+		log.WithError(err).Errorf("Failed to get the labels on %s/%s#%d.", org, repo, number)
+	}
+	for _, candidate := range labels {
+		if candidate.Name == claYesLabel {
+			hasCLAYes = true
+		}
+		// Could theoretically have both yes/no labels.
+		if candidate.Name == claNoLabel {
+			hasCLANo = true
+		}
+	}
+
+	pr, err := gc.GetPullRequest(org, repo, e.Number)
+	if err != nil {
+		log.WithError(err).Errorf("Unable to fetch PR-%d from %s/%s.", e.Number, org, repo)
+	}
+
+	// Check for the cla in past commit statuses, and add/remove corresponding cla label if necessary.
+	ref := pr.Head.SHA
+	statuses, err := gc.ListStatuses(org, repo, ref)
+	if err != nil {
+		log.WithError(err).Errorf("Failed to get statuses on %s/%s#%d", org, repo, number)
+	}
+
+	for _, status := range statuses {
+
+		// Only consider "cla/linuxfoundation" status.
+		if status.Context == claContextName {
+
+			// Success state implies that the cla exists, so label should be cncf-cla:yes.
+			if status.State == github.StatusSuccess {
+
+				// Remove cncf-cla:no (if label exists).
+				if hasCLANo {
+					if err := gc.RemoveLabel(org, repo, number, claNoLabel); err != nil {
+						log.WithError(err).Warningf("Could not remove %s label.", claNoLabel)
+					}
+				}
+
+				// Add cncf-cla:yes (if label doesn't exist).
+				if !hasCLAYes {
+					if err := gc.AddLabel(org, repo, number, claYesLabel); err != nil {
+						log.WithError(err).Warningf("Could not add %s label.", claYesLabel)
+					}
+				}
+
+				// Failure state implies that the cla does not exist, so label should be cncf-cla:no.
+			} else if status.State == github.StatusFailure {
+
+				// Remove cncf-cla:yes (if label exists).
+				if hasCLAYes {
+					if err := gc.RemoveLabel(org, repo, number, claYesLabel); err != nil {
+						log.WithError(err).Warningf("Could not remove %s label.", claYesLabel)
+					}
+				}
+
+				// Add cncf-cla:no (if label doesn't exist).
+				if !hasCLANo {
+					if err := gc.AddLabel(org, repo, number, claNoLabel); err != nil {
+						log.WithError(err).Warningf("Could not add %s label.", claNoLabel)
+					}
+				}
+			}
+
+			// Only consider the latest relevant status.
+			break
 		}
 	}
 	return nil

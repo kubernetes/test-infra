@@ -42,7 +42,10 @@ filegroup(
 
 go_test(
     name = "go_default_test",
-    srcs = ["pjutil_test.go"],
+    srcs = [
+        "pjutil_test.go",
+        "tot_test.go",
+    ],
     embed = [":go_default_library"],
     tags = ["automanaged"],
     deps = [

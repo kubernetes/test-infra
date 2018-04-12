@@ -16,7 +16,8 @@ not make any attempt to preserve backwards compatibility.
 * `cmd/phony` sends fake webhooks.
 * `cmd/tot` vends incrementing build numbers.
 * `cmd/horologium` starts periodic jobs when necessary.
-* `cmd/mkpj` creates `ProwJobs`.
+* `cmd/mkpj` creates `ProwJobs` using Prow configuration.
+* `cmd/mkpod` creates `Pods` from `ProwJobs`.
 * `cmd/clonerefs`, `cmd/initupload`, `cmd/gcsupload`, `cmd/entrypoint`, and
   `cmd/sidecar` are small utilities used in `ProwJob`s created by `plank` as
   `Pod`s. See [their README](./pod-utilities.md) for more information
@@ -27,6 +28,8 @@ See also: [Life of a Prow Job](./architecture.md)
 
 New features added to each components:
 
+ - *April 10, 2018* `cla` plugin now supports `/check-cla` command 
+   to force rechecking of the CLA status.
  - *February 1, 2018* `updateconfig` will now update any configmap on merge
  - *November 14, 2017* `jenkins-operator:0.58` exposes prometheus metrics.
  - *November 8, 2017* `horologium:0.14` prow periodic job now support cron
@@ -40,6 +43,17 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *April 2, 2018* `updateconfig` format has been changed from
+   ```yaml
+   path/to/some/other/thing: configName
+   ```
+   to
+   ```yaml
+   path/to/some/other/thing:
+     Name: configName
+     # If unspecified, Namespace default to the value of ProwJobNamespace.
+     Namespace: myNamespace
+   ```
  - *March 15, 2018* `jenkins_operator` is removed from the config in favor of
    `jenkins_operators`.
  - *March 1, 2018* `MilestoneStatus` has been removed from the plugins Configuration

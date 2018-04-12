@@ -29,7 +29,7 @@ BUILD_CLUSTER = "{STABLE_BUILD_CLUSTER}"  # For untrusted test code
 #
 # Concretely, image("foo") returns "{STABLE_PROW_REPO}/foo"
 # which usually becomes gcr.io/k8s-prow/foo
-# (See print-workspace-status.sh)
+# (See hack/print-workspace-status.sh)
 def prefix(cmd):
   return "{STABLE_PROW_REPO}/%s" % cmd
 

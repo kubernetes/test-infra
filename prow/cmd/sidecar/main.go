@@ -24,8 +24,8 @@ import (
 )
 
 func main() {
-	o := sidecar.Options{}
-	if err := options.Load(&o); err != nil {
+	o := &sidecar.Options{}
+	if err := options.Load(o); err != nil {
 		logrus.Fatalf("Could not resolve options: %v", err)
 	}
 

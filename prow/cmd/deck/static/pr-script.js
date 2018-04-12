@@ -42,7 +42,7 @@ function createXMLHTTPRequest(fulfillFn, errorHandler) {
  * @return {string}
  */
 function getPRQuery(q) {
-    const tokens = q.split(" ");
+    const tokens = q.replace(/\+/g, " ").split(" ");
     // Firstly, drop all pr/issue search tokens
     let result = tokens.filter(tkn => {
         tkn = tkn.trim();

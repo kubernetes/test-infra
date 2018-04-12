@@ -50,6 +50,7 @@ approve:
   - kubernetes/kube-state-metrics
   - kubernetes/minikube
   - kubernetes/node-problem-detector
+  - kubernetes/perf-tests
   - kubernetes/repo-infra
   - kubernetes/sig-release
   - kubernetes/steering
@@ -135,9 +136,12 @@ milestone:
 
 config_updater:
   maps:
-    label_sync/labels.yaml: label-config
-    prow/config.yaml: config
-    prow/plugins.yaml: plugins
+    label_sync/labels.yaml:
+      name: label-config
+    prow/config.yaml:
+      name: config
+    prow/plugins.yaml:
+      name: plugins
 
 plugins:
   google/cadvisor:
@@ -270,6 +274,13 @@ plugins:
   kubernetes/node-problem-detector:
   - approve
   - blunderbuss
+
+  kubernetes/perf-tests:
+  - approve
+  - blunderbuss
+
+  kubernetes/release:
+  - trigger
 
   kubernetes/repo-infra:
   - approve

@@ -38,7 +38,9 @@ import (
 	"k8s.io/test-infra/prow/slack"
 )
 
-const defaultBlunderbussReviewerCount = 2
+const (
+	defaultBlunderbussReviewerCount = 2
+)
 
 var (
 	pluginHelp                 = map[string]HelpProvider{}
@@ -337,12 +339,21 @@ type Slack struct {
 	MergeWarnings   []MergeWarning `json:"mergewarnings,omitempty"`
 }
 
+// ConfigMapSpec contains configuration options for the configMap being updated by the ConfigUpdater plugin
+type ConfigMapSpec struct {
+	// Name of ConfigMap
+	Name string `json:"name"`
+	// Namespace in which the configMap needs to be deployed. If no namespace is specified
+	// it will be deployed to the ProwJobNamespace.
+	Namespace string `json:"namespace,omitempty"`
+}
+
 type ConfigUpdater struct {
-	// A map of filename => configmap name.
+	// A map of filename => ConfigMapSpec.
 	// Whenever a commit changes filename, prow will update the corresponding configmap.
-	// map[string]string{ "/my/path.yaml": "foo" } will result in
-	// replacing the foo configmap whenever path.yaml changes
-	Maps map[string]string `json:"maps,omitempty"`
+	// map[string]ConfigMapSpec{ "/my/path.yaml": {Name: "foo", Namespace: "otherNamespace" }}
+	// will result in replacing the foo configmap whenever path.yaml changes
+	Maps map[string]ConfigMapSpec `json:"maps,omitempty"`
 	// The location of the prow configuration file inside the repository
 	// where the config-updater plugin is enabled. This needs to be relative
 	// to the root of the repository, eg. "prow/config.yaml" will match
@@ -397,9 +408,13 @@ func (c *Configuration) setDefaults() {
 		} else {
 			logrus.Warnf(`plugin_file is deprecated, please switch to "maps": {"%s": "plugins"} before July 2018`, pf)
 		}
-		c.ConfigUpdater.Maps = map[string]string{
-			cf: "config",
-			pf: "plugins",
+		c.ConfigUpdater.Maps = map[string]ConfigMapSpec{
+			cf: {
+				Name: "config",
+			},
+			pf: {
+				Name: "plugins",
+			},
 		}
 	}
 	for repo, plugins := range c.ExternalPlugins {

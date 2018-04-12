@@ -32,7 +32,7 @@ func TestOptions_Validate(t *testing.T) {
 			name: "minimal set ok",
 			input: Options{
 				DryRun: true,
-				GCSConfiguration: kube.GCSConfiguration{
+				GCSConfiguration: &kube.GCSConfiguration{
 					PathStrategy: kube.PathStrategyExplicit,
 				},
 			},
@@ -43,7 +43,7 @@ func TestOptions_Validate(t *testing.T) {
 			input: Options{
 				DryRun:             false,
 				GcsCredentialsFile: "secrets",
-				GCSConfiguration: kube.GCSConfiguration{
+				GCSConfiguration: &kube.GCSConfiguration{
 					Bucket:       "seal",
 					PathStrategy: kube.PathStrategyExplicit,
 				},
@@ -55,7 +55,7 @@ func TestOptions_Validate(t *testing.T) {
 			input: Options{
 				DryRun:             false,
 				GcsCredentialsFile: "secrets",
-				GCSConfiguration: kube.GCSConfiguration{
+				GCSConfiguration: &kube.GCSConfiguration{
 					PathStrategy: kube.PathStrategyExplicit,
 				},
 			},
@@ -65,7 +65,7 @@ func TestOptions_Validate(t *testing.T) {
 			name: "push to GCS, missing credentials",
 			input: Options{
 				DryRun: false,
-				GCSConfiguration: kube.GCSConfiguration{
+				GCSConfiguration: &kube.GCSConfiguration{
 					Bucket:       "seal",
 					PathStrategy: kube.PathStrategyExplicit,
 				},
@@ -156,7 +156,7 @@ func TestValidatePathOptions(t *testing.T) {
 	for _, testCase := range testCases {
 		o := Options{
 			DryRun: true,
-			GCSConfiguration: kube.GCSConfiguration{
+			GCSConfiguration: &kube.GCSConfiguration{
 				PathStrategy: testCase.strategy,
 				DefaultOrg:   testCase.org,
 				DefaultRepo:  testCase.repo,
