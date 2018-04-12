@@ -13090,6 +13090,7 @@
     "args": [
       "--build=bazel",
       "--cluster=",
+      "--down=false",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/pull-kubernetes-e2e.env",
       "--extract=local",
