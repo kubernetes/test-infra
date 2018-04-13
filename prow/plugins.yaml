@@ -120,6 +120,7 @@ slack:
     - jpbetz # 1.8 patch release manager
     - mbohlool # 1.9 patch release manager
     - calebamiles # 1.10 branch manager
+    - lavalamp # feature-serverside-apply "branch manager"
   - repos:
     - kubernetes/test-infra
     channels:
