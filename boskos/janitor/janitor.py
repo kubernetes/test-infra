@@ -148,13 +148,16 @@ def clear_resources(project, cols, resource):
             else:
                 base.append('--global')
 
-        print 'Call %r' % base
-        try:
-            subprocess.check_call(base + list(items))
-        except subprocess.CalledProcessError as exc:
-            if not resource.tolerate:
-                err = 1
-            print >>sys.stderr, 'Error try to delete resources: %r' % exc
+        print 'going to delete %d %s' % (len(items), resource.name)
+        # try to delete at most 50 items at a time
+        for i in xrange(0, len(items), 50)
+            print 'Call %r' % base + list(items[i:i+50])
+            try:
+                subprocess.check_call(base + list(items[i:i+50]))
+            except subprocess.CalledProcessError as exc:
+                if not resource.tolerate:
+                    err = 1
+                print >>sys.stderr, 'Error try to delete resources: %r' % exc
     return err
 
 
