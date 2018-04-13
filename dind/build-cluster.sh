@@ -29,16 +29,16 @@ echo "Building cluster docker image from ${CLUSTER_DIR}"
 cd ${KUBE_ROOT}
 
 # The outer layer doesn't run node or master components. But tests need kubectl.
-bazel build //build/debs:kubectl
+bazel build //build/debs:kubectl --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
 
 # Tests are run from the outer layer, so package the test artifacts.
-bazel build //vendor/github.com/onsi/ginkgo/ginkgo:ginkgo
-bazel build //test/e2e:e2e.test
+bazel build //vendor/github.com/onsi/ginkgo/ginkgo:ginkgo --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
+bazel build //test/e2e:e2e.test --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
 
 cd -
 
 cd ${TOOL_ROOT}
-bazel build //dind/cmd/cluster-up:cluster-up
+bazel build //dind/cmd/cluster-up:cluster-up --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
 cd -
 
 # Copy artifacts into the tmpdir for Docker's context.
