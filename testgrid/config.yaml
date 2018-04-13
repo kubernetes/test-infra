@@ -649,6 +649,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-janitor
 - name: maintenance-pull-janitor
   gcs_prefix: kubernetes-jenkins/logs/maintenance-pull-janitor
+- name: maintenance-pull-scale-janitor
+  gcs_prefix: kubernetes-jenkins/logs/maintenance-pull-scale-janitor
 - name: ci-kubernetes-build-debian-unstable
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-debian-unstable
 - name: ci-kubernetes-e2e-gke-large-teardown
@@ -5116,6 +5118,11 @@ dashboards:
   - name: pull-janitor
     description: Deletes old GCP resources from presubmit jobs
     test_group_name: maintenance-pull-janitor
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: pull-scale-janitor
+    description: Deletes old GCP resources from scalability presubmit jobs
+    test_group_name: maintenance-pull-scale-janitor
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: retester

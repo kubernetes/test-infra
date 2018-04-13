@@ -92,14 +92,16 @@ PR_PROJECTS = {
     'k8s-jkns-pr-node-e2e': 3,
     'k8s-jkns-pr-gce-gpus': 3,
     'k8s-gke-gpu-pr': 3,
+}
+
+SCALE_PROJECT = {
     'k8s-presubmit-scale': 3,
 }
 
-def check_pr_jobs():
-    """Handle PR jobs"""
-    for project, expire in PR_PROJECTS.iteritems():
+def check_predefine_jobs(jobs):
+    """Handle predefined jobs"""
+    for project, expire in jobs.iteritems():
         clean_project(project, hours=expire)
-
 
 def check_ci_jobs():
     """Handle CI jobs"""
@@ -122,7 +124,7 @@ def check_ci_jobs():
             if any(b in project for b in BLACKLIST):
                 print >>sys.stderr, 'Project %r is blacklisted in ci-janitor' % project
                 continue
-            if project in PR_PROJECTS:
+            if project in PR_PROJECTS or project in SCALE_PROJECT:
                 continue # CI janitor skips all PR jobs
             found = project
         if found:
@@ -137,7 +139,9 @@ def check_ci_jobs():
 def main(mode):
     """Run janitor for each project."""
     if mode == 'pr':
-        check_pr_jobs()
+        check_predefine_jobs(PR_PROJECTS)
+    if mode == 'scale':
+        check_predefine_jobs(SCALE_PROJECT)
     else:
         check_ci_jobs()
 
@@ -154,7 +158,7 @@ if __name__ == '__main__':
     FAILED = []
     PARSER = argparse.ArgumentParser()
     PARSER.add_argument(
-        '--mode', default='ci', choices=['ci', 'pr'],
+        '--mode', default='ci', choices=['ci', 'pr', 'scale'],
         help='Which type of projects to clear')
     ARGS = PARSER.parse_args()
     main(ARGS.mode)
