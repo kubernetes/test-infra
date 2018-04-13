@@ -367,11 +367,13 @@ func TestProcessChange(t *testing.T) {
 				CurrentRevision: "1",
 				Project:         "test-infra",
 				Revisions: map[string]gerrit.RevisionInfo{
-					"1": {},
+					"1": {
+						Ref: "refs/changes/00/1/1",
+					},
 				},
 			},
 			numPJ: 1,
-			pjRef: "1",
+			pjRef: "refs/changes/00/1/1",
 		},
 		{
 			name: "multiple revisions",
@@ -379,12 +381,16 @@ func TestProcessChange(t *testing.T) {
 				CurrentRevision: "2",
 				Project:         "test-infra",
 				Revisions: map[string]gerrit.RevisionInfo{
-					"1": {},
-					"2": {},
+					"1": {
+						Ref: "refs/changes/00/2/1",
+					},
+					"2": {
+						Ref: "refs/changes/00/2/2",
+					},
 				},
 			},
 			numPJ: 1,
-			pjRef: "2",
+			pjRef: "refs/changes/00/2/2",
 		},
 	}
 
@@ -425,8 +431,8 @@ func TestProcessChange(t *testing.T) {
 		}
 
 		if len(fkc.prowjobs) > 0 {
-			if fkc.prowjobs[0].Spec.Refs.Pulls[0].SHA != tc.pjRef {
-				t.Errorf("tc %s - ref should be %s, got %s", tc.name, tc.pjRef, fkc.prowjobs[0].Spec.Refs.BaseRef)
+			if fkc.prowjobs[0].Spec.Refs.Pulls[0].Ref != tc.pjRef {
+				t.Errorf("tc %s - ref should be %s, got %s", tc.name, tc.pjRef, fkc.prowjobs[0].Spec.Refs.Pulls[0].Ref)
 			}
 		}
 	}

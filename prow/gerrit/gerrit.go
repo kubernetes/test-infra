@@ -283,6 +283,7 @@ func (c *Controller) ProcessChange(change gerrit.ChangeInfo) error {
 					Number: change.Number,
 					Author: rev.Commit.Author.Name,
 					SHA:    change.CurrentRevision,
+					Ref:    rev.Ref,
 				},
 			},
 		}

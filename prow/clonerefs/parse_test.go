@@ -110,6 +110,18 @@ func TestParseRefs(t *testing.T) {
 			expectErr: false,
 		},
 		{
+			name:  "base branch and pr with refs",
+			value: "org,repo=branch:sha,1:pull-1-sha:pull-1-ref",
+			expected: &kube.Refs{
+				Org:     "org",
+				Repo:    "repo",
+				BaseRef: "branch",
+				BaseSHA: "sha",
+				Pulls:   []kube.Pull{{Number: 1, SHA: "pull-1-sha", Ref: "pull-1-ref"}},
+			},
+			expectErr: false,
+		},
+		{
 			name:      "no org or repo",
 			value:     "branch:sha",
 			expectErr: true,
@@ -131,7 +143,7 @@ func TestParseRefs(t *testing.T) {
 		},
 		{
 			name:      "malformed pull ref",
-			value:     "org,repo=branch:sha,1:what:ever",
+			value:     "org,repo=branch:sha,1:what:so:ever",
 			expectErr: true,
 		},
 		{
