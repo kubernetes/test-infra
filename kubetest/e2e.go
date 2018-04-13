@@ -254,7 +254,7 @@ func run(deploy deployer, o options) error {
 
 	if o.kubemark {
 		errs = util.AppendError(errs, control.XmlWrap(&suite, "Kubemark Overall", func() error {
-			return kubemarkTest(testArgs, dump, o.kubemarkNodes)
+			return kubemarkTest(testArgs, dump, o, deploy)
 		}))
 	}
 
@@ -600,7 +600,7 @@ func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone string) e
 	return control.FinishRunning(exec.Command("go", runner...))
 }
 
-func kubemarkTest(testArgs []string, dump, numNodes string) error {
+func kubemarkTest(testArgs []string, dump string, o options, deploy deployer) error {
 	// Stop previously running kubemark cluster (if any).
 	if err := control.XmlWrap(&suite, "Kubemark TearDown Previous", func() error {
 		return control.FinishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
@@ -616,6 +616,10 @@ func kubemarkTest(testArgs []string, dump, numNodes string) error {
 	defer control.XmlWrap(&suite, "Kubemark TearDown (Deferred)", func() error {
 		return control.FinishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
 	})
+
+	if err := control.XmlWrap(&suite, "IsUp", deploy.IsUp); err != nil {
+		return err
+	}
 
 	// Start kubemark cluster.
 	if err := control.XmlWrap(&suite, "Kubemark Up", func() error {
@@ -639,7 +643,49 @@ func kubemarkTest(testArgs []string, dump, numNodes string) error {
 	// Run tests on the kubemark cluster.
 	if err := control.XmlWrap(&suite, "Kubemark Test", func() error {
 		testArgs = util.SetFieldDefault(testArgs, "--ginkgo.focus", "starting\\s30\\pods")
-		return control.FinishRunning(exec.Command("./test/kubemark/run-e2e-tests.sh", testArgs...))
+
+		// detect master IP
+		if err := os.Setenv("MASTER_NAME", os.Getenv("INSTANCE_PREFIX")+"-kubemark-master"); err != nil {
+			return err
+		}
+
+		masterIP, err := control.Output(exec.Command(
+			"gcloud", "compute", "addresses", "describe",
+			os.Getenv("MASTER_NAME")+"-ip",
+			"--project="+o.gcpProject,
+			"--region="+o.gcpZone[:len(o.gcpZone)-2],
+			"--format=value(address)"))
+		if err != nil {
+			return fmt.Errorf("failed to get masterIP: %v", err)
+		} else {
+			if err := os.Setenv("KUBE_MASTER_IP", strings.TrimSpace(string(masterIP))); err != nil {
+				return err
+			}
+		}
+
+		if os.Getenv("ENABLE_KUBEMARK_CLUSTER_AUTOSCALER") == "true" {
+			testArgs = append(testArgs, "--kubemark-external-kubeconfig="+os.Getenv("DEFAULT_KUBECONFIG"))
+		}
+
+		cwd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+
+		// TODO(krzyzacy): unsure if the envs in kubemark/util.sh makes a difference to e2e tests
+		//                 will verify and remove (or uncomment) next
+		//util := os.Getenv("WORKSPACE") + "/kubernetes/cluster/kubemark/util.sh"
+		//testArgs = append([]string{"-c", "source", util, " ; ./hack/ginkgo-e2e.sh"}, testArgs...)
+		cmd := exec.Command("./hack/ginkgo-e2e.sh", testArgs...)
+		cmd.Env = append(
+			os.Environ(),
+			"KUBERNETES_PROVIDER=kubemark",
+			"KUBE_CONFIG_FILE=config-default.sh",
+			fmt.Sprintf("KUBECONFIG=%s/test/kubemark/resources/kubeconfig.kubemark", cwd),
+			"KUBE_MASTER_URL=https://"+os.Getenv("KUBE_MASTER_IP"),
+		)
+
+		return control.FinishRunning(cmd)
 	}); err != nil {
 		if dump != "" {
 			control.XmlWrap(&suite, "Kubemark MasterLogDump (--test failed)", func() error {
