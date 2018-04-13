@@ -4987,6 +4987,7 @@ presubmits:
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
+        - "--timeout=45"
 
   kubernetes/release:
   - name: pull-release-cluster-up
