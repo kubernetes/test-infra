@@ -3258,6 +3258,7 @@
   "ci-kubernetes-e2e-gce-large-performance": {
     "args": [
       "--cluster=gce-scale-cluster",
+      "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-large-performance.env",
       "--extract=ci/latest",
       "--gcp-master-image=gci",
@@ -3513,6 +3514,7 @@
     "args": [
       "--cluster=e2e-big-canary",
       "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability.env",
       "--extract=ci/latest",
       "--gcp-project=google.com:k8s-jenkins-scalability",
@@ -3550,6 +3552,7 @@
   "ci-kubernetes-e2e-gce-scale-performance": {
     "args": [
       "--cluster=gce-scale-cluster",
+      "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-scale-performance.env",
       "--extract=ci/latest",
       "--gcp-project=kubernetes-scale",
@@ -4844,6 +4847,7 @@
     "args": [
       "--cluster=e2e-big",
       "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability.env",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
@@ -4863,6 +4867,7 @@
     "args": [
       "--cluster=e2e-big-beta",
       "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-beta.env",
       "--extract=ci/k8s-beta",
       "--gcp-node-image=gci",
@@ -4881,7 +4886,8 @@
     "args": [
       "--cluster=e2e-big-stable1",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-stable1.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability.env",
       "--extract=ci/k8s-stable1",
       "--gcp-node-image=gci",
       "--gcp-project=k8s-e2e-gci-gce-scale-1-4",
@@ -4899,6 +4905,7 @@
     "args": [
       "--cluster=e2e-big-stable2",
       "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-release-1-7.env",
       "--extract=ci/k8s-stable2",
       "--gcp-node-image=gci",
@@ -12402,6 +12409,7 @@
       "--build=bazel",
       "--cluster=",
       "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability.env",
       "--extract=local",
       "--gcp-project=k8s-presubmit-scale",
@@ -12422,6 +12430,7 @@
       "--build=bazel",
       "--cluster=",
       "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-big-performance.env",
       "--extract=local",
       "--gcp-project=k8s-scale-testing",
@@ -12464,6 +12473,7 @@
       "--build=bazel",
       "--cluster=",
       "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-large-performance.env",
       "--extract=local",
       "--gcp-project=k8s-scale-testing",
