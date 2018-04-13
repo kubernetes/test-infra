@@ -113,13 +113,14 @@ def collect(project, age, resource, filt):
     return col
 
 
-def clear_resources(project, cols, resource):
+def clear_resources(project, cols, resource, rate_limit):
     """Clear a collection of resource, from collect func above.
 
     Args:
         project: The name of a gcp project.
         cols: A dict of collection of resource.
         resource: Definition of a type of gcloud resource.
+        rate_limit: how many resources to delete per gcloud delete call
     Returns:
         0 if no error
         1 if deletion command fails
@@ -133,7 +134,7 @@ def clear_resources(project, cols, resource):
 
         manage_key = {'Yes':'managed', 'No':'unmanaged'}
 
-        # construct the customized gcloud commend
+        # construct the customized gcloud command
         base = ['gcloud', resource.group, '-q', resource.name]
         if resource.subgroup:
             base.append(resource.subgroup)
@@ -149,11 +150,12 @@ def clear_resources(project, cols, resource):
                 base.append('--global')
 
         print 'going to delete %d %s' % (len(items), resource.name)
-        # try to delete at most 50 items at a time
-        for i in xrange(0, len(items), 50)
-            print 'Call %r' % base + list(items[i:i+50])
+        # try to delete at most $rate_limit items at a time
+        for idx in xrange(0, len(items), rate_limit):
+            clean = items[idx:idx+rate_limit]
+            print 'Call %r' % (base + list(clean))
             try:
-                subprocess.check_call(base + list(items[i:i+50]))
+                subprocess.check_call(base + list(clean))
             except subprocess.CalledProcessError as exc:
                 if not resource.tolerate:
                     err = 1
@@ -222,7 +224,7 @@ def clean_gke_cluster(project, age, filt):
     return err
 
 
-def main(project, days, hours, filt):
+def main(project, days, hours, filt, rate_limit):
     """ Clean up resources from a gcp project based on it's creation time
 
     Args:
@@ -242,7 +244,7 @@ def main(project, days, hours, filt):
         try:
             col = collect(project, age, res, filt)
             if col:
-                err |= clear_resources(project, col, res)
+                err |= clear_resources(project, col, res, rate_limit)
         except (subprocess.CalledProcessError, ValueError):
             err |= 1 # keep clean the other resource
             print >>sys.stderr, 'Fail to list resource %r from project %r' % (res.name, project)
@@ -277,6 +279,9 @@ if __name__ == '__main__':
         default=False,
         action='store_true',
         help='list but not delete resources')
+    PARSER.add_argument(
+        '--ratelimit', type=int, default=50,
+        help='Max number of resources to bulk clear in one gcloud delete call')
     ARGS = PARSER.parse_args()
 
     # We want to allow --days=0 and --hours=0, so check against None instead.
@@ -284,4 +289,4 @@ if __name__ == '__main__':
         print >>sys.stderr, 'must specify --days and/or --hours'
         sys.exit(1)
 
-    main(ARGS.project, ARGS.days or 0, ARGS.hours or 0, ARGS.filter)
+    main(ARGS.project, ARGS.days or 0, ARGS.hours or 0, ARGS.filter, ARGS.ratelimit)
