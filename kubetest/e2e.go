@@ -195,7 +195,7 @@ func run(deploy deployer, o options) error {
 				errs = util.AppendError(errs, err)
 			}
 			dep := deploy.(*dind.DindDeployer)
-			tester, err := dep.NewTester()
+			tester, err := dep.NewTester(o.focusRegex, o.skipRegex, o.ginkgoParallel.Get())
 			if err != nil {
 				return err
 			}
