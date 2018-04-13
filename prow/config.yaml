@@ -176,6 +176,7 @@ tide:
     kubeflow: squash
     kubernetes/charts: squash
     kubernetes/dashboard: squash
+    kubernetes/kube-deploy: squash
     kubernetes/website: squash
   target_url: https://prow.k8s.io/tide.html
 
