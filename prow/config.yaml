@@ -9479,7 +9479,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=110
+      - --timeout=200
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 
@@ -10469,7 +10469,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
-  # interval: 12h #expensive test, 
+  # interval: 12h #expensive test,
   cron: "0 0 31 2 *" # inactive, set to Feb.31st so it will never be triggered
   agent: kubernetes
   labels:
