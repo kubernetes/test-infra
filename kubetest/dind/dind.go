@@ -132,8 +132,6 @@ func (d *DindDeployer) NewTester(focusRegex, skipRegex string, parallelism int) 
 
 // Test just execs ginkgo. This will take more parameters in the future.
 func (t *Tester) Test() error {
-	//skipRegex := "--skip=(Feature)|(NFS)|(StatefulSet)|(Slow)|(Serial)"
-	//focusRegex := "--focus=\\[Conformance\\]"
 	args := []string{"--seed=1436380640", "--nodes=1"}
 	// Optionally add the focus and skip regexes.
 	if t.focusRegex != "" {
