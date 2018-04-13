@@ -14706,6 +14706,25 @@ periodics:
           cpu: 5
           memory: "8Gi"
 
+- interval: 1h
+  agent: kubernetes
+  name: maintenance-pull-scale-janitor
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=30
+      - --service-account=/etc/service-account/service-account.json
+      - --upload=gs://kubernetes-jenkins/logs
+      env:
+      image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      resources:
+        requests:
+          cpu: 5
+          memory: "8Gi"
+
 - name: metrics-bigquery
   interval: 24h
   agent: kubernetes

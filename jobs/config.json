@@ -11862,6 +11862,15 @@
       "sig-testing"
     ]
   },
+  "maintenance-pull-scale-janitor": {
+    "args": [
+      "--mode=scale"
+    ],
+    "scenario": "kubernetes_janitor",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "metrics-bigquery": {
     "args": [
       "test-infra/metrics/bigquery.py",
