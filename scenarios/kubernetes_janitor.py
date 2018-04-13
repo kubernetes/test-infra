@@ -140,7 +140,7 @@ def main(mode):
     """Run janitor for each project."""
     if mode == 'pr':
         check_predefine_jobs(PR_PROJECTS)
-    if mode == 'scale':
+    elif mode == 'scale':
         check_predefine_jobs(SCALE_PROJECT)
     else:
         check_ci_jobs()
