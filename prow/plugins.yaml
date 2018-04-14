@@ -346,11 +346,6 @@ plugins:
   - wip
   - yuks
 
-  kubernetes-sigs/cluster-api:
-  - approve
-  - blunderbuss
-  - trigger
-
   kubernetes-sigs/testing_frameworks:
   - approve
   - trigger
