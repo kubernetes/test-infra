@@ -92,6 +92,9 @@ branch-protection:
       protect-by-default: true
       require-contexts:
       - cla/linuxfoundation
+      repos:
+        cluster-api:
+          protect-by-default: true
 
 tide:
   queries:
@@ -162,6 +165,7 @@ tide:
     - do-not-merge/work-in-progress
     reviewApprovedRequired: true
   - repos:
+    - kubernetes-sigs/cluster-api
     - kubernetes-sigs/testing_frameworks
     - kubernetes-sigs/poseidon
     labels:
@@ -178,6 +182,7 @@ tide:
     kubernetes/dashboard: squash
     kubernetes/kube-deploy: squash
     kubernetes/website: squash
+    kubernetes-sigs/cluster-api: squash
   target_url: https://prow.k8s.io/tide.html
 
 push_gateway:

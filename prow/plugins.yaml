@@ -58,6 +58,7 @@ approve:
   implicit_self_approve: true
 - repos:
   - kubernetes-sigs
+  - kubernetes-sigs/cluster-api
   implicit_self_approve: true
 
 blockades:
@@ -345,6 +346,11 @@ plugins:
   - skip
   - wip
   - yuks
+
+  kubernetes-sigs/cluster-api:
+  - approve
+  - blunderbuss
+  - trigger
 
   kubernetes-sigs/testing_frameworks:
   - approve
