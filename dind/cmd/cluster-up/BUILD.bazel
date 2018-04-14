@@ -6,7 +6,8 @@ go_library(
     importpath = "k8s.io/test-infra/dind/cmd/cluster-up",
     visibility = ["//visibility:private"],
     deps = [
-        "//dind/pkg/cluster:go_default_library",
+        "//dind/pkg/cluster-up/cluster:go_default_library",
+        "//dind/pkg/cluster-up/options:go_default_library",
         "//dind/pkg/util:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
     ],
@@ -15,8 +16,8 @@ go_library(
 go_binary(
     name = "cluster-up",
     embed = [":go_default_library"],
-    visibility = ["//visibility:public"],
     pure = "on",
+    visibility = ["//visibility:public"],
 )
 
 filegroup(

@@ -18,10 +18,12 @@ package main
 
 import (
 	"flag"
+	"os"
 	"time"
 
 	"github.com/golang/glog"
-	"k8s.io/test-infra/dind/pkg/cluster"
+	"k8s.io/test-infra/dind/pkg/cluster-up/cluster"
+	"k8s.io/test-infra/dind/pkg/cluster-up/options"
 	"k8s.io/test-infra/dind/pkg/util"
 )
 
@@ -31,52 +33,37 @@ const (
 	timeout         = time.Duration(5) * time.Minute
 )
 
-var (
-	loadImage = true
-	nodeImage = "k8s.gcr.io/dind-node-amd64"
-	proxyAddr = ""
-	version   = ""
-	numNodes  = 4
-)
-
-func init() {
-	flag.BoolVar(&loadImage, "load-image", true, "If the image needs to be loaded from the file-system.")
-	flag.StringVar(&nodeImage, "node-image", nodeImage, "The node image to use.")
-	flag.StringVar(&proxyAddr, "proxy-addr", "", "The externally facing address for kubeadm to add to SAN.")
-	flag.StringVar(&version, "k8s-version", version, "The kubernetes version to spin up.")
-	flag.IntVar(&numNodes, "num-nodes", 4, "The number of nodes to make, including the master if applicable.")
-}
-
 func main() {
-	flag.Parse()
+	// Discard the error, because flag.CommandLine is already set to ExitOnError.
+	o, _ := options.New(flag.CommandLine, os.Args[1:])
 	defer glog.Flush()
 
 	// Dynamically lookup any arguments that weren't provided.
-	if version == "" {
+	if o.Version == "" {
 		v, err := util.DockerImageVersion()
 		if err != nil {
 			glog.Fatalf("Failed to load docker image version: %v", err)
 		}
-		version = v
+		o.Version = v
 	}
 
-	if proxyAddr == "" {
+	if o.ProxyAddr == "" {
 		p, err := util.NonLocalUnicastAddr("eth0")
 		if err != nil {
 			glog.Fatalf("Failed to determine external proxy address.")
 		}
-		proxyAddr = p
+		o.ProxyAddr = p
 	}
-	glog.Infof("External proxy for alt SAN is %s", proxyAddr)
+	glog.Infof("External proxy for alt SAN is %s", o.ProxyAddr)
 
 	// Create a cluster, and wait for it to come up.
-	c, err := cluster.New(numNodes, proxyAddr, nodeImage, "/var/kubernetes", "testnet", "/dind-node-bundle.tar", version, timeout)
+	c, err := cluster.New(o.NumNodes, o.ProxyAddr, o.DinDNodeImage, "/var/kubernetes", "testnet", "/dind-node-bundle.tar", o.Version, timeout)
 
 	if err != nil {
 		glog.Fatalf("Failed to create a dind cluster object: %v", err)
 	}
 	glog.Infof("Starting a cluster.")
-	if err := c.Up(loadImage); err != nil {
+	if err := c.Up(o.SideloadImage); err != nil {
 		glog.Fatalf("Failed to wait for cluster to come up: %v", err)
 	}
 	glog.Infof("Cluster is initialized.")

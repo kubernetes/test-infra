@@ -112,7 +112,7 @@ start_master ()
 start_cluster ()
 {
   mount --make-rshared /
-  /cluster-up -logtostderr --run-tests=false -v=2 2>&1
+  /cluster-up -logtostderr -v=2 2>&1
 }
 
 start_host()
