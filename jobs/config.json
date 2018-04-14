@@ -6310,6 +6310,26 @@
       "sig-scheduling"
     ]
   },
+  "ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable2": {
+    "args": [
+      "--check-leaked-resources",
+      "--deployment=gke",
+      "--extract=ci/k8s-stable2",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=gci",
+      "--gcp-project-type=gpu-project",
+      "--gcp-zone=us-west1-b",
+      "--gke-create-command=beta container clusters create --accelerator=type=nvidia-tesla-p100,count=2",
+      "--gke-environment=test",
+      "--provider=gke",
+      "--test_args=--ginkgo.focus=\\[Feature:GPUDevicePlugin\\] --minStartupPods=8",
+      "--timeout=180m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scheduling"
+    ]
+  },
   "ci-kubernetes-e2e-gke-device-plugin-gpu-stable1": {
     "args": [
       "--check-leaked-resources",
