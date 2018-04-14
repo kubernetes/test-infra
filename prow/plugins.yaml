@@ -58,7 +58,6 @@ approve:
   implicit_self_approve: true
 - repos:
   - kubernetes-sigs
-  - kubernetes-sigs/cluster-api
   implicit_self_approve: true
 
 blockades:
