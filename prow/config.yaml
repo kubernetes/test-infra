@@ -8243,19 +8243,6 @@ periodics:
 
 - interval: 30m
   agent: kubernetes
-  name: ci-kubernetes-e2e-gce-gci-qa-m63
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - args:
-      - --timeout=70
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180413-ff6991978-master
-
-- interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-m64
   labels:
     preset-service-account: true
@@ -8308,19 +8295,6 @@ periodics:
 
 - interval: 1h
   agent: kubernetes
-  name: ci-kubernetes-e2e-gce-gci-qa-serial-m63
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - args:
-      - --timeout=320
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180413-ff6991978-master
-
-- interval: 1h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-serial-m64
   labels:
     preset-service-account: true
@@ -8368,19 +8342,6 @@ periodics:
     containers:
     - args:
       - --timeout=320
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180413-ff6991978-master
-
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-gci-qa-slow-m63
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - args:
-      - --timeout=170
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180413-ff6991978-master
 
