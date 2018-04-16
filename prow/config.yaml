@@ -4970,6 +4970,31 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
 
   kubernetes-sigs/poseidon:
+  - name: pull-poseidon-bazel
+    agent: kubernetes
+    context: pull-poseidon-bazel
+    always_run: true
+    rerun_command: "/test pull-poseidon-bazel"
+    trigger: "(?m)^/test( all| pull-poseidon-bazel),?(\\s+|$)"
+    labels:
+      preset-service-account: true
+      preset-bazel-scratch-dir: true
+      preset-bazel-remote-cache-enabled: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180410-27f5a5388-1.10
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=45"
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "2Gi"
   - name: pull-poseidon-verify
     context: pull-poseidon-verify
     agent: kubernetes
