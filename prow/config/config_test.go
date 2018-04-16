@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -38,12 +39,16 @@ import (
 // config.json is the worst but contains useful information :-(
 type configJSON map[string]map[string]interface{}
 
+var configPath = flag.String("config", "../config.yaml", "Path to prow job config")
+var configJsonPath = flag.String("config-json", "../../jobs/config.json", "Path to prow job config")
+
 func (c configJSON) ScenarioForJob(jobName string) string {
 	if scenario, ok := c[jobName]["scenario"]; ok {
 		return scenario.(string)
 	}
 	return ""
 }
+
 func readConfigJSON(path string) (config configJSON, err error) {
 	raw, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -62,17 +67,24 @@ var c *Config
 var cj configJSON
 
 func TestMain(m *testing.M) {
-	conf, err := Load("../config.yaml")
+	if *configPath == "" {
+		fmt.Println("--config must set")
+		os.Exit(1)
+	}
+
+	conf, err := Load(*configPath)
 	if err != nil {
 		fmt.Printf("Could not load config: %v", err)
 		os.Exit(1)
 	}
 	c = conf
 
-	cj, err = readConfigJSON("../../jobs/config.json")
-	if err != nil {
-		fmt.Printf("Could not load jobs config: %v", err)
-		os.Exit(1)
+	if *configJsonPath != "" {
+		cj, err = readConfigJSON(*configJsonPath)
+		if err != nil {
+			fmt.Printf("Could not load jobs config: %v", err)
+			os.Exit(1)
+		}
 	}
 
 	os.Exit(m.Run())
