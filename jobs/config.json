@@ -12779,6 +12779,19 @@
       "sig-testing"
     ]
   },
+  "pull-poseidon-bazel": {
+    "args": [
+      "--build=//cmd/poseidon",
+      "--test=//... -//hack/... -//vendor/... -//test/e2e/...",
+      "--test-args=--build_tag_filters=-e2e",
+      "--test-args=--test_tag_filters=-e2e",
+      "--test-args=--flaky_test_attempts=3"
+    ],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-scheduling"
+    ]
+  },
   "pull-poseidon-verify": {
     "args": [
       "make",

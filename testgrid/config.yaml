@@ -2470,6 +2470,10 @@ test_groups:
 - name: pull-cadvisor-e2e
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cadvisor-e2e
   num_columns_recent: 20
+# Poseidon
+- name: pull-poseidon-bazel
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-poseidon-bazel
+  num_columns_recent: 20
 - name: pull-poseidon-verify
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-poseidon-verify
   num_columns_recent: 20
@@ -5576,8 +5580,6 @@ dashboards:
     test_group_name: pull-charts-e2e
   - name: cadvisor
     test_group_name: pull-cadvisor-e2e
-  - name: poseidon
-    test_group_name: pull-poseidon-verify
 
 - name: presubmits-kops
   dashboard_tab:
@@ -5597,6 +5599,13 @@ dashboards:
     test_group_name: pull-kops-verify-gofmt
   - name: verify-packages
     test_group_name: pull-kops-verify-packages
+
+- name: presubmits-poseidon
+  dashboard_tab:
+  - name: bazel
+    test_group_name: pull-poseidon-bazel
+  - name: verify
+    test_group_name: pull-poseidon-verify
 
 - name: istio
   dashboard_tab:
@@ -5703,6 +5712,7 @@ dashboard_groups:
   - presubmits-kubernetes-scalability
   - presubmits-test-infra
   - presubmits-kops
+  - presubmits-poseidon
   - presubmits-misc
 
 - name: sig-cli
