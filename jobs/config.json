@@ -1272,7 +1272,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-6724261826",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-beta",
       "--gcp-node-image=gci",
       "--gcp-project-type=ingress-project",
@@ -1294,7 +1293,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-0eda36b5c4",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-beta",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -1315,7 +1313,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-34cf3ed1e3",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-beta",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -1337,7 +1334,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-3ec9d97448",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-beta",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -1402,7 +1398,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-519f5e2df7",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable1",
       "--gcp-node-image=gci",
       "--gcp-project-type=ingress-project",
@@ -1424,7 +1419,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-c2db0160cf",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable1",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -1445,7 +1439,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-ef6e185752",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable1",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -1467,7 +1460,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-7d3ed76582",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable1",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -1510,7 +1502,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-5881f7ab7e",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable2",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -1532,7 +1523,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-df7ff40165",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable2",
       "--gcp-node-image=gci",
       "--gcp-project-type=ingress-project",
@@ -1554,7 +1544,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-c8c4b0ff1c",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable2",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -1575,7 +1564,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-9b5ed62f1f",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable2",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -1597,7 +1585,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-96f446fc82",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable2",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -1640,7 +1627,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-183d8deac8",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable3",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -1662,7 +1648,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-df914a9cd5",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable3",
       "--gcp-node-image=gci",
       "--gcp-project-type=ingress-project",
@@ -1684,7 +1669,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-4b7fa88c7e",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable3",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -1705,7 +1689,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-3154607d16",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable3",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -1727,7 +1710,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-694be857a6",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable3",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -1749,7 +1731,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-e629d25701",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-beta",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -1773,7 +1754,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-c41a7aaf03",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-beta",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -1797,7 +1777,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-d4e43e5c09",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-beta",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -1821,7 +1800,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-4ebf21441e",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -1845,7 +1823,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-eb37105e71",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-project=k8s-e2e-170223",
@@ -1870,7 +1847,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-52f5d909b5",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -1894,7 +1870,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-0cc7e0a4a8",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -1918,7 +1893,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-45011ec97a",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable1",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -1942,7 +1916,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-2d7a8aa9e6",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable1",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -1966,7 +1939,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-6a3a13513d",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable1",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -1990,7 +1962,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-981311ee2d",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable2",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -2014,7 +1985,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-ed00047953",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable2",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -2038,7 +2008,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-d29293ae78",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable2",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -2062,7 +2031,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-d19fb74eb5",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable3",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -2086,7 +2054,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-9b5cf462ff",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable3",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -2110,7 +2077,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-069c75dc09",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable3",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -2134,7 +2100,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-349504ad4b",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-beta",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -2158,7 +2123,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-ce1e942232",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-beta",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -2182,7 +2146,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-7c91d4db34",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-beta",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -2206,7 +2169,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-cd3f14e5ae",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -2230,7 +2192,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-16f7a6f1b2",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -2254,7 +2215,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-018ded2eb1",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -2278,7 +2238,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-26653b91cd",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable1",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -2302,7 +2261,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-12c21e8bb2",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable1",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -2326,7 +2284,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-603851a011",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable1",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -2350,7 +2307,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-860e3c0e94",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-beta",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -2374,7 +2330,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-85dd292325",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-beta",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -2398,7 +2353,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-2448497393",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-beta",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -2422,7 +2376,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-f76fffef8e",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -2446,7 +2399,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-b829ee97f8",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -2470,7 +2422,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-0eae043a2d",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -2494,7 +2445,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-63180d3429",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable1",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -2518,7 +2468,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-ba4378bb1a",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable1",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -2542,7 +2491,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-86260199f2",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable1",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -2566,7 +2514,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-fa64f85611",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable2",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -2590,7 +2537,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-f76dcc51ae",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable2",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -2614,7 +2560,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-58d04d5cd7",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable2",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -2638,7 +2583,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-28f4c52467",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable3",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -2662,7 +2606,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-9f6a2cfa0f",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable3",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -2686,7 +2629,6 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=test-3e0b31d18c",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable3",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -3207,6 +3149,7 @@
   "ci-kubernetes-e2e-gce-large-correctness": {
     "args": [
       "--cluster=gce-scale-cluster",
+      "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-large-correctness.env",
       "--extract=ci/latest",
       "--gcp-master-image=gci",
@@ -3228,6 +3171,7 @@
   "ci-kubernetes-e2e-gce-large-manual-down": {
     "args": [
       "--cluster=$USER-large-manual",
+      "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-large-manual-up.env",
       "--extract=ci/latest",
       "--gcp-nodes=1000",
@@ -3247,6 +3191,7 @@
     "args": [
       "--cluster=$USER-large-manual",
       "--down=false",
+      "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-large-manual-up.env",
       "--extract=ci/latest",
       "--gcp-master-image=gci",
@@ -3265,6 +3210,7 @@
   "ci-kubernetes-e2e-gce-large-performance": {
     "args": [
       "--cluster=gce-scale-cluster",
+      "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-large-performance.env",
       "--extract=ci/latest",
@@ -3540,6 +3486,7 @@
   "ci-kubernetes-e2e-gce-scale-correctness": {
     "args": [
       "--cluster=gce-scale-cluster",
+      "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-scale-correctness.env",
       "--extract=ci/latest",
       "--gcp-master-image=gci",
@@ -3561,6 +3508,7 @@
   "ci-kubernetes-e2e-gce-scale-performance": {
     "args": [
       "--cluster=gce-scale-cluster",
+      "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-scale-performance.env",
       "--extract=ci/latest",
@@ -3891,7 +3839,6 @@
     "args": [
       "--check-leaked-resources=false",
       "--cluster=test-1d0e56237d",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-beta",
       "--gcp-node-image=custom",
       "--gcp-project=ubuntu-os-gke-cloud-dev-tests",
@@ -3916,7 +3863,6 @@
     "args": [
       "--check-leaked-resources=false",
       "--cluster=test-6bbac58e9d",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-beta",
       "--gcp-node-image=custom",
       "--gcp-project=ubuntu-os-gke-cloud-dev-tests",
@@ -3941,7 +3887,6 @@
     "args": [
       "--check-leaked-resources=false",
       "--cluster=test-a8efc7dc1e",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-beta",
       "--gcp-node-image=custom",
       "--gcp-project=ubuntu-os-gke-cloud-dev-tests",
@@ -3966,7 +3911,6 @@
     "args": [
       "--check-leaked-resources=false",
       "--cluster=test-3b8f6466e9",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable1",
       "--gcp-node-image=custom",
       "--gcp-project=ubuntu-os-gke-cloud-dev-tests",
@@ -3991,7 +3935,6 @@
     "args": [
       "--check-leaked-resources=false",
       "--cluster=test-21b1dbcad3",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable1",
       "--gcp-node-image=custom",
       "--gcp-project=ubuntu-os-gke-cloud-dev-tests",
@@ -4016,7 +3959,6 @@
     "args": [
       "--check-leaked-resources=false",
       "--cluster=test-709fb85030",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable1",
       "--gcp-node-image=custom",
       "--gcp-project=ubuntu-os-gke-cloud-dev-tests",
@@ -4041,7 +3983,6 @@
     "args": [
       "--check-leaked-resources=false",
       "--cluster=test-e3f7439f85",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable2",
       "--gcp-node-image=custom",
       "--gcp-project=ubuntu-os-gke-cloud-dev-tests",
@@ -4066,7 +4007,6 @@
     "args": [
       "--check-leaked-resources=false",
       "--cluster=test-869bd83cc7",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable2",
       "--gcp-node-image=custom",
       "--gcp-project=ubuntu-os-gke-cloud-dev-tests",
@@ -4091,7 +4031,6 @@
     "args": [
       "--check-leaked-resources=false",
       "--cluster=test-a98f256c2b",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable2",
       "--gcp-node-image=custom",
       "--gcp-project=ubuntu-os-gke-cloud-dev-tests",
@@ -4116,7 +4055,6 @@
     "args": [
       "--check-leaked-resources=false",
       "--cluster=test-665fca7985",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable3",
       "--gcp-node-image=custom",
       "--gcp-project=ubuntu-os-gke-cloud-dev-tests",
@@ -4141,7 +4079,6 @@
     "args": [
       "--check-leaked-resources=false",
       "--cluster=test-0d4c6b9a5b",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable3",
       "--gcp-node-image=custom",
       "--gcp-project=ubuntu-os-gke-cloud-dev-tests",
@@ -4166,7 +4103,6 @@
     "args": [
       "--check-leaked-resources=false",
       "--cluster=test-72f5019039",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable3",
       "--gcp-node-image=custom",
       "--gcp-project=ubuntu-os-gke-cloud-dev-tests",
@@ -4191,7 +4127,6 @@
     "args": [
       "--check-leaked-resources=false",
       "--cluster=test-946c584740",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-beta",
       "--gcp-node-image=custom",
       "--gcp-project=ubuntu-os-gke-cloud-dev-tests",
@@ -4216,7 +4151,6 @@
     "args": [
       "--check-leaked-resources=false",
       "--cluster=test-4c74069865",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-beta",
       "--gcp-node-image=custom",
       "--gcp-project=ubuntu-os-gke-cloud-dev-tests",
@@ -4241,7 +4175,6 @@
     "args": [
       "--check-leaked-resources=false",
       "--cluster=test-009ca57a5d",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-beta",
       "--gcp-node-image=custom",
       "--gcp-project=ubuntu-os-gke-cloud-dev-tests",
@@ -4266,7 +4199,6 @@
     "args": [
       "--check-leaked-resources=false",
       "--cluster=test-6827b2df7c",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable1",
       "--gcp-node-image=custom",
       "--gcp-project=ubuntu-os-gke-cloud-dev-tests",
@@ -4291,7 +4223,6 @@
     "args": [
       "--check-leaked-resources=false",
       "--cluster=test-f49fb1d994",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable1",
       "--gcp-node-image=custom",
       "--gcp-project=ubuntu-os-gke-cloud-dev-tests",
@@ -4316,7 +4247,6 @@
     "args": [
       "--check-leaked-resources=false",
       "--cluster=test-eca67f767b",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable1",
       "--gcp-node-image=custom",
       "--gcp-project=ubuntu-os-gke-cloud-dev-tests",
@@ -4341,7 +4271,6 @@
     "args": [
       "--check-leaked-resources=false",
       "--cluster=test-532dba062e",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable2",
       "--gcp-node-image=custom",
       "--gcp-project=ubuntu-os-gke-cloud-dev-tests",
@@ -4366,7 +4295,6 @@
     "args": [
       "--check-leaked-resources=false",
       "--cluster=test-79194b4fe0",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable2",
       "--gcp-node-image=custom",
       "--gcp-project=ubuntu-os-gke-cloud-dev-tests",
@@ -4391,7 +4319,6 @@
     "args": [
       "--check-leaked-resources=false",
       "--cluster=test-bf27c33c25",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable2",
       "--gcp-node-image=custom",
       "--gcp-project=ubuntu-os-gke-cloud-dev-tests",
@@ -4416,7 +4343,6 @@
     "args": [
       "--check-leaked-resources=false",
       "--cluster=test-be0876f9fb",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable3",
       "--gcp-node-image=custom",
       "--gcp-project=ubuntu-os-gke-cloud-dev-tests",
@@ -4441,7 +4367,6 @@
     "args": [
       "--check-leaked-resources=false",
       "--cluster=test-896dd46063",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable3",
       "--gcp-node-image=custom",
       "--gcp-project=ubuntu-os-gke-cloud-dev-tests",
@@ -4466,7 +4391,6 @@
     "args": [
       "--check-leaked-resources=false",
       "--cluster=test-dae63501eb",
-      "--env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1",
       "--extract=ci/k8s-stable3",
       "--gcp-node-image=custom",
       "--gcp-project=ubuntu-os-gke-cloud-dev-tests",
