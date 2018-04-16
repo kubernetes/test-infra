@@ -34,17 +34,21 @@ function optionsForRepo(repo) {
     for (var i = 0; i < allBuilds.items.length; i++) {
         var build = allBuilds.items[i];
         opts.types[build.spec.type] = true;
-        opts.repos[build.spec.refs.repo] = true;
-        if (!repo || repo === build.spec.refs.repo) {
-            opts.jobs[build.spec.job] = true;
-            if (build.spec.type === "presubmit") {
-                opts.authors[build.spec.refs.pulls[0]['author']] = true;
-                opts.pulls[build.spec.refs.pulls[0]['number']] = true;
-                opts.states[build.status.state] = true;
+        
+        if (build.spec.type !== "periodic") {
+            opts.repos[build.spec.refs.repo] = true;
+
+            if (!repo || repo === build.spec.refs.repo) {
+                opts.jobs[build.spec.job] = true;
+                if (build.spec.type === "presubmit") {
+                    opts.authors[build.spec.refs.pulls[0]['author']] = true;
+                    opts.pulls[build.spec.refs.pulls[0]['number']] = true;
+                    opts.states[build.status.state] = true;
+                }
             }
         }
+        
     }
-
     return opts;
 }
 
@@ -378,11 +382,11 @@ function equalSelected(sel, t) {
 }
 
 function groupKey(build) {
-    return build.spec.refs.org + "/" +
-           build.spec.refs.repo + " " + 
-           build.spec.refs.pulls[0]['number'] + " " + 
-           build.spec.refs.base_ref + ":" + 
-           build.spec.refs.base_sha;
+    if (build.type === "presubmit" || build.type === "batch") {
+        const refs = build.spec.refs;
+        const pulls = refs.pulls.map(r => r.number + ':' + r.sha).join(',');
+        return `${refs.repo} ${refs.base_ref}:${refs.base_sha},${pulls}`;
+    }
 }
 
 function redraw(fz) {
@@ -456,41 +460,23 @@ function redraw(fz) {
     for (var i = 0, emitted = 0; i < allBuilds.items.length && emitted < 500; i++) {
         var build = allBuilds.items[i];
 
-        // assign default values 
-        var prop = { 
-            org: "",
-            repo: "",
-            base_ref: "", 
-            base_sha:"",
-            pulls: [
-                {
-                    "number": 0,
-                    "author": "",
-                    "sha": ""
-                }
-            ]
-        }
-        if ( Object.keys(build.spec.refs).length == 0){
-            build.spec.refs = prop;
-        } 
-
-        if (!build.spec.refs.hasOwnProperty("pulls")) {
-            build.spec.refs.pulls = prop.pulls;
-        }
-
-
         if (!equalSelected(typeSel, build.spec.type)) {
             continue;
         }
-        if (!equalSelected(repoSel, build.spec.refs.repo)) {
-            continue;
-        }
+
         if (!equalSelected(stateSel, build.status.state)) {
             continue;
         }
         if (!equalSelected(jobSel, build.spec.job)) {
             continue;
         }
+
+        if (build.spec.type !== "periodic") {
+            if (!equalSelected(repoSel, build.spec.refs.repo)) {
+                continue;
+            }
+        }
+
         if (build.spec.type === "presubmit") {
             if (!equalSelected(pullSel, build.spec.refs.pulls[0]['number'])) {
                 continue;
@@ -535,12 +521,11 @@ function redraw(fz) {
 
             if (build.spec.type === "periodic") {
                 r.appendChild(createTextCell(""));
-            } else if (build.repo.startsWith("http://") || build.repo.startsWith("https://") ) {
-                r.appendChild(createLinkCell(build.repo, build.repo, ""));
             } else {
                 r.appendChild(createLinkCell(build.spec.refs.repo, "https://github.com/"
                     + build.spec.refs.org + "/" + build.spec.refs.repo , ""));
             }
+
             if (build.spec.type === "presubmit") {
                 r.appendChild(prRevisionCell(build));
             } else if (build.spec.type === "batch") {
