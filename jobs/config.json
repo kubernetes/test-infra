@@ -3197,6 +3197,7 @@
       "--extract=ci/latest",
       "--gcp-master-image=gci",
       "--gcp-node-image=gci",
+      "--gcp-nodes=1000",
       "--gcp-project=k8s-scale-testing",
       "--gcp-zone=us-east1-a",
       "--provider=gce",
