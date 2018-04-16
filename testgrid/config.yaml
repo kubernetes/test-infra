@@ -183,6 +183,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kube-deploy-build
 - name: ci-kube-deploy-test
   gcs_prefix: kubernetes-jenkins/logs/ci-kube-deploy-test
+- name: ci-cluster-api-build
+  gcs_prefix: kubernetes-jenkins/logs/ci-cluster-api-build
+- name: ci-cluster-api-test
+  gcs_prefix: kubernetes-jenkins/logs/ci-cluster-api-test
 - name: ci-kubemci-image-push
   gcs_prefix: kubernetes-jenkins/logs/ci-kubemci-image-push
 - name: ci-kubernetes-build
@@ -2012,6 +2016,12 @@ test_groups:
   num_columns_recent: 20
 - name: pull-kube-deploy-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kube-deploy-test
+  num_columns_recent: 20
+- name: pull-cluster-api-build
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-build
+  num_columns_recent: 20
+- name: pull-cluster-api-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-test
   num_columns_recent: 20
 - name: pull-kubernetes-bazel-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel-build
@@ -4307,12 +4317,20 @@ dashboards:
 - name: sig-cluster-lifecycle-cluster-api
   dashboard_tab:
   - name: build
-    test_group_name: ci-kube-deploy-build
+    test_group_name: ci-cluster-api-build
   - name: unit tests
-    test_group_name: ci-kube-deploy-test
+    test_group_name: ci-cluster-api-test
   - name: pr-build
-    test_group_name: pull-kube-deploy-build
+    test_group_name: pull-cluster-api-build
   - name: pr-test
+    test_group_name: pull-cluster-api-test
+  - name: kube-deploy build
+    test_group_name: ci-kube-deploy-build
+  - name: kube-deploy unit tests
+    test_group_name: ci-kube-deploy-test
+  - name: kube-deploy pr-build
+    test_group_name: pull-kube-deploy-build
+  - name: kube-deploy pr-test
     test_group_name: pull-kube-deploy-test
 
 - name: sig-multicluster-cluster-registry
