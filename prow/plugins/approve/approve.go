@@ -91,6 +91,12 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		}
 		return "do not "
 	}
+	willNot := func(b bool) string {
+		if b {
+			return "will "
+		}
+		return "will not "
+	}
 
 	approveConfig := map[string]string{}
 	for _, repo := range enabledRepos {
@@ -99,7 +105,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", repo)
 		}
 		opts := optionsForRepo(config, parts[0], parts[1])
-		approveConfig[repo] = fmt.Sprintf("Pull requests %s require an associated issue.<br>Pull request authors %s implicitly approve their own PRs.", doNot(opts.IssueRequired), doNot(opts.ImplicitSelfApprove))
+		approveConfig[repo] = fmt.Sprintf("Pull requests %s require an associated issue.<br>Pull request authors %s implicitly approve their own PRs.<br>The /lgtm [cancel] command(s) %s act as approval.", doNot(opts.IssueRequired), doNot(opts.ImplicitSelfApprove), willNot(opts.LgtmActsAsApprove))
 	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: `The approve plugin implements a pull request approval process that manages the '` + approvedLabel + `' label and an approval notification comment. Approval is achieved when the set of users that have approved the PR is capable of approving every file changed by the PR. A user is able to approve a file if their username or an alias they belong to is listed in the 'approvers' section of an OWNERS file in the directory of the file or higher in the directory tree.
@@ -109,11 +115,11 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		Config: approveConfig,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
-		Usage:       "/(approve|lgtm) [no-issue|cancel]",
+		Usage:       "/approve [no-issue|cancel]",
 		Description: "Approves a pull request",
 		Featured:    true,
 		WhoCanUse:   "Users listed as 'approvers' in appropriate OWNERS files.",
-		Examples:    []string{"/approve", "/approve no-issue", "/lgtm", "/lgtm cancel"},
+		Examples:    []string{"/approve", "/approve no-issue"},
 	})
 	return pluginHelp, nil
 }
@@ -127,7 +133,8 @@ func handleGenericCommentEvent(pc plugins.PluginClient, ce github.GenericComment
 		return err
 	}
 
-	if !approvalCommandMatcher(botName)(&comment{Body: ce.Body, Author: ce.User.Login}) {
+	opts := optionsForRepo(pc.PluginConfig, ce.Repo.Owner.Login, ce.Repo.Name)
+	if !approvalCommandMatcher(botName, opts.LgtmActsAsApprove)(&comment{Body: ce.Body, Author: ce.User.Login}) {
 		return nil
 	}
 
@@ -288,7 +295,7 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, o
 	sort.SliceStable(comments, func(i, j int) bool {
 		return comments[i].CreatedAt.Before(comments[j].CreatedAt)
 	})
-	approveComments := filterComments(comments, approvalCommandMatcher(botName))
+	approveComments := filterComments(comments, approvalCommandMatcher(botName, opts.LgtmActsAsApprove))
 	addApprovers(&approversHandler, approveComments, pr.author)
 
 	for _, user := range pr.assignees {
@@ -358,14 +365,14 @@ func humanAddedApproved(ghc githubClient, log *logrus.Entry, org, repo string, n
 	}
 }
 
-func approvalCommandMatcher(botName string) func(*comment) bool {
+func approvalCommandMatcher(botName string, lgtmActsAsApprove bool) func(*comment) bool {
 	return func(c *comment) bool {
 		if c.Author == botName || isDeprecatedBot(c.Author) {
 			return false
 		}
 		for _, match := range commandRegex.FindAllStringSubmatch(c.Body, -1) {
 			cmd := strings.ToUpper(match[1])
-			if cmd == lgtmCommand || cmd == approveCommand {
+			if (cmd == lgtmCommand && lgtmActsAsApprove) || cmd == approveCommand {
 				return true
 			}
 		}
