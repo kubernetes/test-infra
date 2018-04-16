@@ -654,6 +654,16 @@ func prepareGcp(o *options) error {
 		return err
 	}
 	if o.provider == "gce" {
+		// To avoid failing large tests due to some flakes in starting nodes,
+		// allow for small percentage of nodes to not start during cluster startup.
+		if numNodes, err := strconv.Atoi(os.Getenv("NUM_NODES")); err == nil {
+			if os.Setenv("ALLOWED_NOTREADY_NODES", fmt.Sprintf("%d", numNodes/100)); err != nil {
+				log.Printf("Couldn't set ALLOWED_NOTREADY_NODES: %v", err)
+			}
+		} else {
+			log.Printf("Couldn't parse NUM_NODES: %v", err)
+		}
+
 		if distro := os.Getenv("KUBE_OS_DISTRIBUTION"); distro != "" {
 			log.Printf("Please use --gcp-master-image=%s --gcp-node-image=%s (instead of deprecated KUBE_OS_DISTRIBUTION)",
 				distro, distro)
