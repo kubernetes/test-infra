@@ -11097,6 +11097,7 @@
     "args": [
       "--cluster=kubemark-100-canary",
       "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-100-gce.env",
       "--extract=ci/latest",
       "--gcp-nodes=3",
@@ -11118,6 +11119,7 @@
     "args": [
       "--cluster=kubemark-100",
       "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-100-gce.env",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
@@ -11140,6 +11142,7 @@
     "args": [
       "--cluster=kubemark-5",
       "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-5-gce.env",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
@@ -11162,6 +11165,7 @@
     "args": [
       "--cluster=kubemark-latest",
       "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-5-gce.env",
       "--extract=ci/latest-1.9",
       "--gcp-nodes=1",
@@ -11183,6 +11187,7 @@
     "args": [
       "--cluster=prow-kubemark-canary",
       "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-5-gce.env",
       "--extract=ci/latest",
       "--extract-source",
@@ -11206,6 +11211,7 @@
     "args": [
       "--cluster=kubemark-500",
       "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-500-gce.env",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
@@ -11228,6 +11234,7 @@
     "args": [
       "--cluster=kubemark-5000",
       "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-gce-scale.env",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
@@ -11251,6 +11258,7 @@
     "args": [
       "--cluster=kubemark-100pods",
       "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-high-density-100-gce.env",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
@@ -12578,6 +12586,7 @@
       "--build=bazel",
       "--cluster=",
       "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env",
       "--env-file=jobs/env/pull-kubernetes-kubemark-e2e-gce.env",
       "--extract=local",
       "--gcp-node-image=gci",
@@ -12602,6 +12611,7 @@
       "--build",
       "--cluster=",
       "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-500-gce.env",
       "--extract=local",
       "--gcp-nodes=7",
@@ -12625,6 +12635,7 @@
       "--build=bazel",
       "--cluster=",
       "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env",
       "--env-file=jobs/env/pull-kubernetes-kubemark-e2e-gce.env",
       "--extract=local",
       "--gcp-node-image=gci",
@@ -12649,6 +12660,7 @@
       "--build",
       "--cluster=",
       "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-gce-scale.env",
       "--extract=local",
       "--gcp-nodes=82",
