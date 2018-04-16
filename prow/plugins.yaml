@@ -354,6 +354,10 @@ plugins:
   kubernetes-sigs/poseidon:
   - approve
 
+  kubernetes-sigs/cluster-api:
+  - approve
+  - trigger
+  
   containerd/cri:
   - assign
   - cla

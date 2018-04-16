@@ -140,6 +140,7 @@ tide:
     - kubernetes/steering
     - kubernetes/test-infra
     - kubernetes/website
+    - kubernetes-sigs/cluster-api
     labels:
     - lgtm
     - approved
@@ -178,6 +179,7 @@ tide:
     kubernetes/dashboard: squash
     kubernetes/kube-deploy: squash
     kubernetes/website: squash
+    kubernetes-sigs/cluster-api: squash
   target_url: https://prow.k8s.io/tide.html
 
 push_gateway:
@@ -4949,6 +4951,37 @@ presubmits:
       - emptyDir: {}
         name: auto-generated-docker-graph-volume-mount
     trigger: (?m)^/test pull-security-kubernetes-verify-prow,?(\s+|$)
+  kubernetes-sigs/cluster-api:
+  - name: pull-cluster-api-build
+    agent: kubernetes
+    always_run: true
+    context: pull-cluster-api-build
+    rerun_command: "/test pull-cluster-api-build"
+    trigger: "/test( all| pull-cluster-api-build)"
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+        args:
+        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+  - name: pull-cluster-api-test
+    agent: kubernetes
+    always_run: true
+    context: pull-cluster-api-test
+    rerun_command: "/test pull-cluster-api-test"
+    trigger: "/test( all| pull-cluster-api-test)"
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kube-deploy:v20180212-214c99406
+        args:
+        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
   kubernetes-sigs/testing_frameworks:
   - name: pull-frameworks-test
     context: pull-frameworks-test
@@ -5804,6 +5837,31 @@ periodics:
       env:
       - name: GOPATH
         value: /go
+
+- name: ci-cluster-api-build
+  interval: 1h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      args:
+      - "--repo=sigs.k8s.io/cluster-api"
+      - "--root=/go/src"
+      - "--upload=gs://kubernetes-jenkins/logs"
+- name: ci-cluster-api-test
+  interval: 1h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kube-deploy:v20180212-214c99406
+      args:
+      - "--repo=sigs.k8s.io/cluster-api"
+      - "--root=/go/src"
+      - "--upload=gs://kubernetes-jenkins/logs"
 
 - name: ci-containerd-build
   interval: 30m

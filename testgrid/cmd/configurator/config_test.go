@@ -369,6 +369,7 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 		"kubernetes/heapster",
 		"kubernetes/charts",
 		"kubernetes/kube-deploy",
+		"kubernetes-sigs/cluster-api",
 		"kubernetes-sigs/poseidon",
 		"tensorflow/minigo",
 	}) {
