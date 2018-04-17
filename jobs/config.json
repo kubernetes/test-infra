@@ -11764,7 +11764,7 @@
       "--deployment=gke",
       "--env=CLOUDSDK_CONTAINER_USE_V1_API=false",
       "--env=TAG=0.6.0",
-      "--extract=ci/latest-1.10",
+      "--extract=ci/latest",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-node-image=gci",
       "--gcp-project=istio-gke-addon-prow-e2e-test",
