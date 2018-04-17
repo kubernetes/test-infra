@@ -92,6 +92,9 @@ branch-protection:
       protect-by-default: true
       require-contexts:
       - cla/linuxfoundation
+      repos:
+        cluster-api:
+          protect-by-default: true
 
 tide:
   queries:
@@ -163,6 +166,7 @@ tide:
     - do-not-merge/work-in-progress
     reviewApprovedRequired: true
   - repos:
+    - kubernetes-sigs/cluster-api
     - kubernetes-sigs/testing_frameworks
     - kubernetes-sigs/poseidon
     labels:
