@@ -44,14 +44,22 @@ func NewDefaultFieldsFormatter(
 	return res
 }
 
-// Format implements logrus.Formatter's Format
+// Format implements logrus.Formatter's Format. We allocate a a new Fields
+// map in order to not modify the caller's Entry, as that is not a thread
+// safe operation.
 func (d *DefaultFieldsFormatter) Format(entry *logrus.Entry) ([]byte, error) {
-	if entry != nil {
-		for k, v := range d.DefaultFields {
-			if _, exists := entry.Data[k]; !exists {
-				entry.Data[k] = v
-			}
-		}
+	data := make(logrus.Fields, len(entry.Data)+len(d.DefaultFields))
+	for k, v := range d.DefaultFields {
+		data[k] = v
 	}
-	return d.WrappedFormatter.Format(entry)
+	for k, v := range entry.Data {
+		data[k] = v
+	}
+	return d.WrappedFormatter.Format(&logrus.Entry{
+		Logger:  entry.Logger,
+		Data:    data,
+		Time:    entry.Time,
+		Level:   entry.Level,
+		Message: entry.Message,
+	})
 }
