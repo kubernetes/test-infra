@@ -2491,6 +2491,18 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-dind-conformance
   num_columns_recent: 3
 
+# cloud-provider-openstack e2e conformance tests
+# name format: PR trigger ci-presubmit-${zuul-job-name}
+#              periodic strigger ci-periodic-${zuul-job-name}
+- name: ci-presubmit-cloud-provider-openstack-acceptance-test-e2e-conformance
+  gcs_prefix: kubernetes-openstack/pr-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance
+- name: ci-presubmit-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.10
+  gcs_prefix: kubernetes-openstack/pr-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.10
+- name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
+  gcs_prefix: kubernetes-openstack/periodic-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance
+- name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.10
+  gcs_prefix: kubernetes-openstack/periodic-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.10
+
 # Add New Testgroups Here
 
 #
@@ -2527,6 +2539,21 @@ dashboards:
   - name: local-e2e
     description: Runs conformance tests using kubetest with local-up-cluster
     test_group_name: ci-kubernetes-local-e2e
+
+- name: conformance-cloud-provider-openstack
+  dashboard_tab:
+  - name: presubmit-master
+    description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack
+    test_group_name: ci-presubmit-cloud-provider-openstack-acceptance-test-e2e-conformance
+  - name: presubmit-v1.10
+    description: Runs conformance tests using kubetest against kubernetes v1.10 with cloud-provider-openstack
+    test_group_name: ci-presubmit-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.10
+  - name: periodic-master
+    description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack
+    test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
+  - name: periodic-v1.10
+    description: Runs conformance tests using kubetest against kubernetes v1.10 with cloud-provider-openstack
+    test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.10
 
 - name: canonical-ubuntu1-k8sbeta
   dashboard_tab:
@@ -5804,3 +5831,4 @@ dashboard_groups:
   - conformance-all
   - conformance-gce
   - conformance-providerless
+  - conformance-cloud-provider-openstack
