@@ -452,7 +452,7 @@ func (sc *statusController) waitSync() {
 func (sc *statusController) sync(pool []PullRequest) {
 	sc.lastSyncStart = time.Now()
 
-	sinceTime := sc.lastSuccessfulQueryStart.Add(-time.Second)
+	sinceTime := sc.lastSuccessfulQueryStart.Add(-10 * time.Second)
 	query := sc.ca.Config().Tide.Queries.AllPRsSince(sinceTime)
 	queryStartTime := time.Now()
 	allPRs, err := search(sc.ghc, sc.logger, context.Background(), query)

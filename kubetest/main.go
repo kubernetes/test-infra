@@ -74,11 +74,13 @@ type options struct {
 	flushMemAfterBuild  bool
 	gcpCloudSdk         string
 	gcpMasterImage      string
+	gcpMasterSize       string
 	gcpNetwork          string
 	gcpNodeImage        string
 	gcpImageFamily      string
 	gcpImageProject     string
 	gcpNodes            string
+	gcpNodeSize         string
 	gcpProject          string
 	gcpProjectType      string
 	gcpServiceAccount   string
@@ -144,10 +146,12 @@ func defineFlags() *options {
 	flag.StringVar(&o.gcpRegion, "gcp-region", "", "For use with gcloud commands")
 	flag.StringVar(&o.gcpNetwork, "gcp-network", "", "Cluster network. Must be set for --deployment=gke (TODO: other deployments).")
 	flag.StringVar(&o.gcpMasterImage, "gcp-master-image", "", "Master image type (cos|debian on GCE, n/a on GKE)")
+	flag.StringVar(&o.gcpMasterSize, "gcp-master-size", "", "(--provider=gce only) Size of master to create (e.g n1-standard-1). Auto-calculated if left empty.")
 	flag.StringVar(&o.gcpNodeImage, "gcp-node-image", "", "Node image type (cos|container_vm on GKE, cos|debian on GCE)")
 	flag.StringVar(&o.gcpImageFamily, "image-family", "", "Node image family from which to use the latest image, required when --gcp-node-image=CUSTOM")
 	flag.StringVar(&o.gcpImageProject, "image-project", "", "Project containing node image family, required when --gcp-node-image=CUSTOM")
 	flag.StringVar(&o.gcpNodes, "gcp-nodes", "", "(--provider=gce only) Number of nodes to create.")
+	flag.StringVar(&o.gcpNodeSize, "gcp-node-size", "", "(--provider=gce only) Size of nodes to create (e.g n1-standard-1).")
 	flag.StringVar(&o.kubecfg, "kubeconfig", "", "The location of a kubeconfig file.")
 	flag.BoolVar(&o.kubemark, "kubemark", false, "If true, run kubemark tests.")
 	flag.StringVar(&o.kubemarkMasterSize, "kubemark-master-size", "", "Kubemark master size (only relevant if --kubemark=true). Auto-calculated based on '--kubemark-nodes' if left empty.")
@@ -641,6 +645,16 @@ func migrateGcpEnvAndOptions(o *options) error {
 			Name:   "--gcp-nodes",
 		},
 		{
+			Env:    "NODE_SIZE",
+			Option: &o.gcpNodeSize,
+			Name:   "--gcp-node-size",
+		},
+		{
+			Env:    "MASTER_SIZE",
+			Option: &o.gcpMasterSize,
+			Name:   "--gcp-master-size",
+		},
+		{
 			Env:      "CLOUDSDK_BUCKET",
 			Option:   &o.gcpCloudSdk,
 			Name:     "--gcp-cloud-sdk",
@@ -713,6 +727,12 @@ func prepareGcp(o *options) error {
 		}
 		if o.gcpNodes != "" {
 			return fmt.Errorf("--gcp-nodes cannot be set on GKE, use --gke-shape instead")
+		}
+		if o.gcpNodeSize != "" {
+			return fmt.Errorf("--gcp-node-size cannot be set on GKE, use --gke-shape instead")
+		}
+		if o.gcpMasterSize != "" {
+			return fmt.Errorf("--gcp-master-size cannot be set on GKE, where it's auto-computed")
 		}
 
 		// TODO(kubernetes/test-infra#3536): This is used by the

@@ -116,7 +116,7 @@ func cacheHandler(cache *diskcache.Cache) http.Handler {
 			"path":   r.URL.Path,
 		})
 		// parse and validate path
-		// the last segment should be a hash, and the
+		// the last segment should be a hash, and
 		// the second to last segment should be "ac" or "cas"
 		parts := strings.Split(r.URL.Path, "/")
 		if len(parts) < 3 {
