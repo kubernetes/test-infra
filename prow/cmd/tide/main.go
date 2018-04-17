@@ -111,6 +111,12 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting git client.")
 	}
 	defer gc.Clean()
+	// Get the bot's name in order to set credentials for the git client.
+	botName, err := ghcSync.BotName()
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting bot name.")
+	}
+	gc.SetCredentials(botName, oauthSecret)
 
 	c := tide.NewController(ghcSync, ghcStatus, kc, configAgent, gc, nil)
 	defer c.Shutdown()

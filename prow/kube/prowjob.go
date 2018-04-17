@@ -135,6 +135,9 @@ const (
 type GCSConfiguration struct {
 	// Bucket is the GCS bucket to upload to
 	Bucket string `json:"bucket,omitempty"`
+	// PathPrefix is an optional path that follows the
+	// bucket name and comes before any structure
+	PathPrefix string `json:"path_prefix,omitempty"`
 	// PathStrategy dictates how the org and repo are used
 	// when calculating the full path to an artifact in GCS
 	PathStrategy string `json:"path_strategy,omitempty"`
@@ -193,6 +196,12 @@ type Pull struct {
 	Number int    `json:"number,omitempty"`
 	Author string `json:"author,omitempty"`
 	SHA    string `json:"sha,omitempty"`
+
+	// Ref is git ref can be checked out for a change
+	// for example,
+	// github: pull/123/head
+	// gerrit: refs/changes/00/123/1
+	Ref string `json:"ref,omitempty"`
 }
 
 type Refs struct {
@@ -214,7 +223,13 @@ type Refs struct {
 func (r Refs) String() string {
 	rs := []string{fmt.Sprintf("%s:%s", r.BaseRef, r.BaseSHA)}
 	for _, pull := range r.Pulls {
-		rs = append(rs, fmt.Sprintf("%d:%s", pull.Number, pull.SHA))
+		ref := fmt.Sprintf("%d:%s", pull.Number, pull.SHA)
+
+		if pull.Ref != "" {
+			ref = fmt.Sprintf("%s:%s", ref, pull.Ref)
+		}
+
+		rs = append(rs, ref)
 	}
 	return strings.Join(rs, ",")
 }

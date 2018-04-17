@@ -36,7 +36,7 @@ var (
 	pickMustHaveMilestoneBody = fmt.Sprintf(pickMustHaveMilestoneFormat, cpCandidateLabel)
 )
 
-// PickMustHaveMilestone will remove the the cherrypick-candidate label from
+// PickMustHaveMilestone will remove the cherrypick-candidate label from
 // any PR that does not have a 'release' milestone set.
 type PickMustHaveMilestone struct{}
 
@@ -63,7 +63,7 @@ func (PickMustHaveMilestone) EachLoop() error { return nil }
 // RegisterOptions registers options for this munger; returns any that require a restart when changed.
 func (PickMustHaveMilestone) RegisterOptions(opts *options.Options) sets.String { return nil }
 
-// Munge is the workhorse the will actually make updates to the PR
+// Munge is the workhorse that will actually make updates to the PR
 func (PickMustHaveMilestone) Munge(obj *github.MungeObject) {
 	if !obj.IsPR() {
 		return

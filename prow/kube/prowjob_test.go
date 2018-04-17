@@ -62,6 +62,25 @@ func TestRefs(t *testing.T) {
 			},
 			expected: "foo:123,1:qwe,2:asd",
 		},
+		{
+			ref: Refs{
+				BaseRef: "foo",
+				BaseSHA: "123",
+				Pulls: []Pull{
+					{
+						Number: 1,
+						SHA:    "qwe",
+						Ref:    "refs/changes/00/1/1",
+					},
+					{
+						Number: 2,
+						SHA:    "asd",
+						Ref:    "refs/changes/00/1/2",
+					},
+				},
+			},
+			expected: "foo:123,1:qwe:refs/changes/00/1/1,2:asd:refs/changes/00/1/2",
+		},
 	}
 	for _, tc := range testcases {
 		actual := tc.ref.String()

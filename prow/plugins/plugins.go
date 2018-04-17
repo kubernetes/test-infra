@@ -298,6 +298,9 @@ type Approve struct {
 	// ImplicitSelfApprove indicates if authors implicitly approve their own PRs
 	// in the specified repos.
 	ImplicitSelfApprove bool `json:"implicit_self_approve,omitempty"`
+	// LgtmActsAsApprove indicates that the lgtm command should be used to
+	// indicate approval
+	LgtmActsAsApprove bool `json:"lgtm_acts_as_approve,omitempty"`
 }
 
 type Cat struct {

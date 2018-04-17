@@ -55,6 +55,9 @@ func (o Options) Run(extra map[string]gcs.UploadFunc) error {
 
 	var gcsPath string
 	jobBasePath := gcs.PathForSpec(spec, builder)
+	if o.PathPrefix != "" {
+		jobBasePath = path.Join(o.PathPrefix, jobBasePath)
+	}
 	if o.SubDir == "" {
 		gcsPath = jobBasePath
 	} else {
