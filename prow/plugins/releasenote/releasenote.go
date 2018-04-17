@@ -43,16 +43,13 @@ const (
 	releaseNoteNone           = "release-note-none"
 	releaseNoteActionRequired = "release-note-action-required"
 
-	releaseNoteFormat       = `Adding %s because the release note process has not been followed.`
-	releaseNoteSuffixFormat = `One of the following labels is required %q, %q, or %q.
-Please see: https://git.k8s.io/community/contributors/devel/pull-requests.md#write-release-notes-if-needed.`
+	releaseNoteFormat       = `Adding the "%s" label because no release-note block was detected, please follow our [release note process](https://git.k8s.io/community/contributors/contributors/guide/release-notes.md) to remove it.`
 	parentReleaseNoteFormat = `All 'parent' PRs of a cherry-pick PR must have one of the %q or %q labels, or this PR must follow the standard/parent release note labeling requirement.`
 
 	actionRequiredNote = "action required"
 )
 
 var (
-	releaseNoteSuffix         = fmt.Sprintf(releaseNoteSuffixFormat, releaseNote, releaseNoteActionRequired, releaseNoteNone)
 	releaseNoteBody           = fmt.Sprintf(releaseNoteFormat, releaseNoteLabelNeeded)
 	deprecatedReleaseNoteBody = fmt.Sprintf(releaseNoteFormat, deprecatedReleaseNoteLabelNeeded)
 	parentReleaseNoteBody     = fmt.Sprintf(parentReleaseNoteFormat, releaseNote, releaseNoteActionRequired)
@@ -229,7 +226,7 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 		if containsNoneCommand(comments) {
 			labelToAdd = releaseNoteNone
 		} else if !prLabels.Has(releaseNoteLabelNeeded) {
-			comment := plugins.FormatResponse(pr.PullRequest.User.Login, releaseNoteBody, releaseNoteSuffix)
+			comment := plugins.FormatSimpleResponse(pr.PullRequest.User.Login, releaseNoteBody)
 			if err := gc.CreateComment(org, repo, pr.Number, comment); err != nil {
 				log.WithError(err).Errorf("Failed to comment on %s/%s#%d with comment %q.", org, repo, pr.Number, comment)
 			}
