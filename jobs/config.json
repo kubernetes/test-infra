@@ -3117,6 +3117,7 @@
   "ci-kubernetes-e2e-gce-large-correctness": {
     "args": [
       "--cluster=gce-scale-cluster",
+      "--env=HEAPSTER_MACHINE_SIZE=n1-standard-8",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-large-correctness.env",
@@ -3160,6 +3161,7 @@
     "args": [
       "--cluster=$USER-large-manual",
       "--down=false",
+      "--env=HEAPSTER_MACHINE_SIZE=n1-standard-8",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-large-manual-up.env",
       "--extract=ci/latest",
@@ -3180,6 +3182,7 @@
   "ci-kubernetes-e2e-gce-large-performance": {
     "args": [
       "--cluster=gce-scale-cluster",
+      "--env=HEAPSTER_MACHINE_SIZE=n1-standard-8",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-large-performance.env",
@@ -3456,6 +3459,8 @@
   "ci-kubernetes-e2e-gce-scale-correctness": {
     "args": [
       "--cluster=gce-scale-cluster",
+      "--env=HEAPSTER_MACHINE_SIZE=n1-standard-16",
+      "--env=MASTER_MIN_CPU_ARCHITECTURE=Intel Broadwell",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-scale-correctness.env",
@@ -3479,6 +3484,8 @@
   "ci-kubernetes-e2e-gce-scale-performance": {
     "args": [
       "--cluster=gce-scale-cluster",
+      "--env=HEAPSTER_MACHINE_SIZE=n1-standard-16",
+      "--env=MASTER_MIN_CPU_ARCHITECTURE=Intel Broadwell",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-scale-performance.env",
@@ -12398,9 +12405,9 @@
     "args": [
       "--build=bazel",
       "--cluster=",
+      "--env=HEAPSTER_MACHINE_SIZE=n1-standard-4",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-big-performance.env",
       "--extract=local",
       "--gcp-nodes=500",
       "--gcp-project=k8s-scale-testing",
@@ -12443,6 +12450,7 @@
     "args": [
       "--build=bazel",
       "--cluster=",
+      "--env=HEAPSTER_MACHINE_SIZE=n1-standard-8",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-large-performance.env",
