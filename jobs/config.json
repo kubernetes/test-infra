@@ -3440,6 +3440,7 @@
   "ci-kubernetes-e2e-gce-scalability-canary": {
     "args": [
       "--cluster=e2e-big-canary",
+      "--env=TEST_CLUSTER_LOG_LEVEL=--v=2",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability.env",
@@ -3462,6 +3463,7 @@
       "--cluster=gce-scale-cluster",
       "--env=HEAPSTER_MACHINE_SIZE=n1-standard-16",
       "--env=MASTER_MIN_CPU_ARCHITECTURE=Intel Broadwell",
+      "--env=TEST_CLUSTER_LOG_LEVEL=--v=1",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env",
@@ -3488,6 +3490,7 @@
       "--cluster=gce-scale-cluster",
       "--env=HEAPSTER_MACHINE_SIZE=n1-standard-16",
       "--env=MASTER_MIN_CPU_ARCHITECTURE=Intel Broadwell",
+      "--env=TEST_CLUSTER_LOG_LEVEL=--v=1",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env",
@@ -4765,6 +4768,7 @@
   "ci-kubernetes-e2e-gci-gce-scalability": {
     "args": [
       "--cluster=e2e-big",
+      "--env=TEST_CLUSTER_LOG_LEVEL=--v=2",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability.env",
@@ -4786,9 +4790,9 @@
   "ci-kubernetes-e2e-gci-gce-scalability-beta": {
     "args": [
       "--cluster=e2e-big-beta",
+      "--env=TEST_CLUSTER_LOG_LEVEL=--v=2",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-beta.env",
       "--extract=ci/k8s-beta",
       "--gcp-node-image=gci",
       "--gcp-nodes=100",
@@ -4806,6 +4810,7 @@
   "ci-kubernetes-e2e-gci-gce-scalability-stable1": {
     "args": [
       "--cluster=e2e-big-stable1",
+      "--env=TEST_CLUSTER_LOG_LEVEL=--v=2",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-stable.env",
@@ -4826,6 +4831,7 @@
   "ci-kubernetes-e2e-gci-gce-scalability-stable2": {
     "args": [
       "--cluster=e2e-big-stable2",
+      "--env=TEST_CLUSTER_LOG_LEVEL=--v=2",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-stable.env",
@@ -11191,6 +11197,7 @@
   "ci-kubernetes-kubemark-500-gce": {
     "args": [
       "--cluster=kubemark-500",
+      "--env=TEST_CLUSTER_LOG_LEVEL=--v=2",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-500-gce.env",
@@ -11214,6 +11221,7 @@
   "ci-kubernetes-kubemark-gce-scale": {
     "args": [
       "--cluster=kubemark-5000",
+      "--env=TEST_CLUSTER_LOG_LEVEL=--v=2",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-gce-scale.env",
@@ -11238,6 +11246,7 @@
   "ci-kubernetes-kubemark-high-density-100-gce": {
     "args": [
       "--cluster=kubemark-100pods",
+      "--env=TEST_CLUSTER_LOG_LEVEL=--v=2",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-high-density-100-gce.env",
@@ -12386,6 +12395,7 @@
     "args": [
       "--build=bazel",
       "--cluster=",
+      "--env=TEST_CLUSTER_LOG_LEVEL=--v=2",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability.env",
@@ -12409,6 +12419,7 @@
       "--build=bazel",
       "--cluster=",
       "--env=HEAPSTER_MACHINE_SIZE=n1-standard-4",
+      "--env=TEST_CLUSTER_LOG_LEVEL=--v=2",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--extract=local",
@@ -12611,6 +12622,7 @@
     "args": [
       "--build",
       "--cluster=",
+      "--env=TEST_CLUSTER_LOG_LEVEL=--v=2",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-500-gce.env",
@@ -12660,6 +12672,7 @@
     "args": [
       "--build",
       "--cluster=",
+      "--env=TEST_CLUSTER_LOG_LEVEL=--v=2",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-gce-scale.env",
