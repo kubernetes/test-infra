@@ -106,7 +106,7 @@ func TestParseOpenAPI(t *testing.T) {
 	}
 }
 
-func TestParseAPILog(t *testing.T) {
+func TestParseE2eAPILog(t *testing.T) {
 	testCases := []struct {
 		Rawdata  io.Reader
 		Expected apiArray
@@ -133,7 +133,7 @@ I0919 15:34:14.943642    6611 round_trippers.go:414] GET https://k8s-api/api/v1/
 		},
 	}
 	for _, test := range testCases {
-		res := parseAPILog(test.Rawdata)
+		res := parseE2eAPILog(test.Rawdata)
 		if !equalAPIArray(res, test.Expected) {
 			t.Errorf("APILog did not match expected for test")
 			t.Errorf("Actual: %#v", res)

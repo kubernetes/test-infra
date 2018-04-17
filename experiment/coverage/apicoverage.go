@@ -100,15 +100,15 @@ func getOpenAPISpec(url string) apiArray {
 }
 
 //   I0919 15:34:14.943642    6611 round_trippers.go:414] GET https://172.27.138.63:6443/api/v1/namespaces/kube-system/replicationcontrollers
-var reAPILog = regexp.MustCompile(`round_trippers.go:\d+\] (GET|PUT|POST|DELETE|OPTIONS|HEAD|PATCH) (\S+)`)
+var reE2eAPILog = regexp.MustCompile(`round_trippers.go:\d+\] (GET|PUT|POST|DELETE|OPTIONS|HEAD|PATCH) (\S+)`)
 
-func parseAPILog(fp io.Reader) apiArray {
+func parseE2eAPILog(fp io.Reader) apiArray {
 	var apisLog apiArray
 	var err error
 
 	reader := bufio.NewReaderSize(fp, 4096)
 	for line := ""; err == nil; line, err = reader.ReadString('\n') {
-		result := reAPILog.FindSubmatch([]byte(line))
+		result := reE2eAPILog.FindSubmatch([]byte(line))
 		if len(result) == 0 {
 			continue
 		}
@@ -137,7 +137,7 @@ func getAPILog(restlog string) apiArray {
 	}
 	defer fp.Close()
 
-	return parseAPILog(fp)
+	return parseE2eAPILog(fp)
 }
 
 var reOpenapi = regexp.MustCompile(`({\S+?})`)
