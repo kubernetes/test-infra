@@ -63,30 +63,6 @@ func gatherOptions() options {
 	return o
 }
 
-func jobRequirements(jobs []config.Presubmit, after bool) []string {
-	var required []string
-	for _, j := range jobs {
-		// Does this job require a context or have kids that might need one?
-		if !after && !j.AlwaysRun && j.RunIfChanged == "" {
-			continue // No
-		}
-		if !j.SkipReport { // This job needs a context
-			required = append(required, j.Context)
-		}
-		// Check which children require contexts
-		required = append(required, jobRequirements(j.RunAfterSuccess, true)...)
-	}
-	return required
-}
-
-func repoRequirements(org, repo string, cfg config.Config) []string {
-	p, ok := cfg.Presubmits[org+"/"+repo]
-	if !ok {
-		return nil
-	}
-	return jobRequirements(p, false)
-}
-
 type Requirements struct {
 	Org      string
 	Repo     string
