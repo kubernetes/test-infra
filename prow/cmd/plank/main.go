@@ -69,27 +69,35 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
-	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
-	if err != nil {
-		logrus.WithError(err).Fatalf("Could not read oauth secret file.")
-	}
+	var oauthSecret string
+	var err error
+	if *githubTokenFile != "" {
+		oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
+		if err != nil {
+			logrus.WithError(err).Fatalf("Could not read oauth secret file.")
+		}
 
-	_, err = url.Parse(*githubEndpoint)
-	if err != nil {
-		logrus.WithError(err).Fatalf("Must specify a valid --github-endpoint URL.")
-	}
+		_, err = url.Parse(*githubEndpoint)
+		if err != nil {
+			logrus.WithError(err).Fatalf("Must specify a valid --github-endpoint URL.")
+		}
 
-	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
+		oauthSecret = string(bytes.TrimSpace(oauthSecretRaw))
+	}
 
 	var ghc *github.Client
 	var kc *kube.Client
 	var pkcs map[string]*kube.Client
 	if *dryRun {
-		ghc = github.NewDryRunClient(oauthSecret, *githubEndpoint)
+		if oauthSecret != "" {
+			ghc = github.NewDryRunClient(oauthSecret, *githubEndpoint)
+		}
 		kc = kube.NewFakeClient(*deckURL)
 		pkcs = map[string]*kube.Client{kube.DefaultClusterAlias: kc}
 	} else {
-		ghc = github.NewClient(oauthSecret, *githubEndpoint)
+		if oauthSecret != "" {
+			ghc = github.NewClient(oauthSecret, *githubEndpoint)
+		}
 		if *cluster == "" {
 			kc, err = kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 			if err != nil {
