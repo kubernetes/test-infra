@@ -134,10 +134,10 @@ func (c *Client) Clone(repo string) (*Repo, error) {
 	c.lockRepo(repo)
 	defer c.unlockRepo(repo)
 
-	remote := c.base + "/" + repo
+	base := c.base
 	user, pass := c.getCredentials()
 	if user != "" && pass != "" {
-		remote = fmt.Sprintf("https://%s:%s@%s/%s", user, pass, github, repo)
+		base = fmt.Sprintf("https://%s:%s@%s", user, pass, github)
 	}
 	cache := filepath.Join(c.dir, repo) + ".git"
 	if _, err := os.Stat(cache); os.IsNotExist(err) {
@@ -146,6 +146,7 @@ func (c *Client) Clone(repo string) (*Repo, error) {
 		if err := os.Mkdir(filepath.Dir(cache), os.ModePerm); err != nil && !os.IsExist(err) {
 			return nil, err
 		}
+		remote := fmt.Sprintf("%s/%s", base, repo)
 		if b, err := retryCmd(c.logger, "", c.git, "clone", "--mirror", remote, cache); err != nil {
 			return nil, fmt.Errorf("git cache clone error: %v. output: %s", err, string(b))
 		}
@@ -169,7 +170,7 @@ func (c *Client) Clone(repo string) (*Repo, error) {
 		Dir:    t,
 		logger: c.logger,
 		git:    c.git,
-		base:   c.base,
+		base:   base,
 		repo:   repo,
 		user:   user,
 		pass:   pass,

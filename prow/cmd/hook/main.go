@@ -164,6 +164,7 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting git client.")
 	}
+	defer gitClient.Clean()
 	// Get the bot's name in order to set credentials for the git client.
 	botName, err := githubClient.BotName()
 	if err != nil {
