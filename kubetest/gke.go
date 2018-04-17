@@ -45,6 +45,7 @@ const (
 
 var (
 	gkeAdditionalZones             = flag.String("gke-additional-zones", "", "(gke only) List of additional Google Compute Engine zones to use. Clusters are created symmetrically across zones by default, see --gke-shape for details.")
+	gkeNodeLocations               = flag.String("gke-node-locations", "", "(gke only) List of Google Compute Engine zones to use.")
 	gkeEnvironment                 = flag.String("gke-environment", "", "(gke only) Container API endpoint to use, one of 'test', 'staging', 'prod', or a custom https:// URL")
 	gkeShape                       = flag.String("gke-shape", `{"default":{"Nodes":3,"MachineType":"n1-standard-2"}}`, `(gke only) A JSON description of node pools to create. The node pool 'default' is required and used for initial cluster creation. All node pools are symmetric across zones, so the cluster total node count is {total nodes in --gke-shape} * {1 + (length of --gke-additional-zones)}. Example: '{"default":{"Nodes":999,"MachineType:":"n1-standard-1"},"heapster":{"Nodes":1, "MachineType":"n1-standard-8"}}`)
 	gkeCreateArgs                  = flag.String("gke-create-args", "", "(gke only) (deprecated, use a modified --gke-create-command') Additional arguments passed directly to 'gcloud container clusters create'")
@@ -74,6 +75,7 @@ type gkeDeployer struct {
 	region                      string
 	location                    string
 	additionalZones             string
+	nodeLocations               string
 	cluster                     string
 	shape                       map[string]gkeNodePool
 	network                     string
@@ -147,6 +149,7 @@ func newGKE(provider, project, zone, region, network, image, imageFamily, imageP
 	g.image = image
 
 	g.additionalZones = *gkeAdditionalZones
+	g.nodeLocations = *gkeNodeLocations
 
 	err := json.Unmarshal([]byte(*gkeShape), &g.shape)
 	if err != nil {
@@ -319,6 +322,15 @@ func (g *gkeDeployer) Up() error {
 			return fmt.Errorf("error setting MULTIZONE env variable: %v", err)
 		}
 
+	}
+	if g.nodeLocations != "" {
+		args = append(args, "--node-locations="+g.nodeLocations)
+		numNodeLocations := strings.Split(g.nodeLocations, ",")
+		if len(numNodeLocations) > 1 {
+			if err := os.Setenv("MULTIZONE", "true"); err != nil {
+				return fmt.Errorf("error setting MULTIZONE env variable: %v", err)
+			}
+		}
 	}
 	// TODO(zmerlynn): The version should be plumbed through Extract
 	// or a separate flag rather than magic env variables.
