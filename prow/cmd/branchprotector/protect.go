@@ -190,7 +190,7 @@ func (p *Protector) Protect() {
 
 	// Scan the branch-protection configuration
 	for orgName, org := range bp.Orgs {
-		if err := p.UpdateOrg(orgName, org, bp.Protect, bp.Contexts, bp.Pushers); err != nil {
+		if err := p.UpdateOrg(orgName, org, bp.Protect); err != nil {
 			p.errors.add(err)
 		}
 	}
@@ -211,25 +211,18 @@ func (p *Protector) Protect() {
 		}
 		orgName := parts[0]
 		repoName := parts[1]
-		repoReqs := repoRequirements(orgName, repoName, *p.cfg)
-		protect := len(repoReqs) > 0
-		if err := p.UpdateRepo(orgName, repoName, config.Repo{}, &protect, repoReqs, nil); err != nil {
+		protect := true
+		if err := p.UpdateRepo(orgName, repoName, config.Repo{}, &protect); err != nil {
 			p.errors.add(err)
 		}
 	}
 }
 
 // Update all repos in the org with the specified defaults
-func (p *Protector) UpdateOrg(orgName string, org config.Org, protect *bool, contexts, pushers []string) error {
+func (p *Protector) UpdateOrg(orgName string, org config.Org, protect *bool) error {
 	if org.Protect != nil {
 		protect = org.Protect
 	}
-
-	oc := append([]string(nil), contexts...)
-	oc = append(oc, org.Contexts...)
-
-	op := append([]string(nil), pushers...)
-	op = append(op, org.Pushers...)
 
 	var repos []string
 	if protect != nil {
@@ -249,7 +242,7 @@ func (p *Protector) UpdateOrg(orgName string, org config.Org, protect *bool, con
 	}
 
 	for _, repoName := range repos {
-		err := p.UpdateRepo(orgName, repoName, org.Repos[repoName], protect, oc, op)
+		err := p.UpdateRepo(orgName, repoName, org.Repos[repoName], protect)
 		if err != nil {
 			return err
 		}
@@ -258,19 +251,12 @@ func (p *Protector) UpdateOrg(orgName string, org config.Org, protect *bool, con
 }
 
 // Update all branches in the repo with the specified defaults
-func (p *Protector) UpdateRepo(orgName string, repo string, repoDefaults config.Repo, protect *bool, contexts, pushers []string) error {
+func (p *Protector) UpdateRepo(orgName string, repo string, repoDefaults config.Repo, protect *bool) error {
 	p.completedRepos[orgName+"/"+repo] = true
-
-	rc := append([]string(nil), contexts...)
-	rp := append([]string(nil), pushers...)
 
 	if repoDefaults.Protect != nil {
 		protect = repoDefaults.Protect
 	}
-	rc = append(rc, repoDefaults.Contexts...)
-	rp = append(rp, repoDefaults.Pushers...)
-
-	rc = append(rc, repoRequirements(orgName, repo, *p.cfg)...)
 
 	var branches []string
 	if protect != nil {
@@ -288,7 +274,7 @@ func (p *Protector) UpdateRepo(orgName string, repo string, repoDefaults config.
 	}
 
 	for _, branchName := range branches {
-		if err := p.UpdateBranch(orgName, repo, branchName, repoDefaults.Branches[branchName], protect, rc, rp); err != nil {
+		if err := p.UpdateBranch(orgName, repo, branchName, repoDefaults.Branches[branchName], protect); err != nil {
 			return fmt.Errorf("UpdateBranch(%s, %s, %s, ...) failed: %v", orgName, repo, branchName, err)
 		}
 	}
@@ -296,34 +282,27 @@ func (p *Protector) UpdateRepo(orgName string, repo string, repoDefaults config.
 }
 
 // Update the branch with the specified configuration
-func (p *Protector) UpdateBranch(orgName, repo string, branchName string, branchDefaults config.Branch, protect *bool, contexts, pushers []string) error {
-	bc := append([]string{}, contexts...)
-	bpush := append([]string{}, pushers...)
+func (p *Protector) UpdateBranch(orgName, repo string, branchName string, branchDefaults config.Branch, protect *bool) error {
 	if branchDefaults.Protect != nil {
 		protect = branchDefaults.Protect
 	}
-	bc = append(bc, branchDefaults.Contexts...)
-	bpush = append(bpush, branchDefaults.Pushers...)
 
-	if protect == nil {
-		return errors.New("protect should not be nil")
+	bp, err := p.cfg.GetBranchProtection(orgName, repo, branchName)
+	if err != nil {
+		log.Printf("unable to compute requirement for %s/%s@%s", orgName, repo, branchName)
+		p.errors.add(err)
 	}
-
-	prot := *protect
-
-	if len(bc) > 0 || len(bpush) > 0 {
-		if !prot {
-			return errors.New("setting pushers or contexts requires protection")
-		}
+	if bp == nil {
+		return nil
 	}
-
 	p.updates <- Requirements{
 		Org:      orgName,
 		Repo:     repo,
 		Branch:   branchName,
-		Protect:  prot,
-		Contexts: bc,
-		Pushers:  bpush,
+		Protect:  *bp.Protect,
+		Contexts: bp.Contexts,
+		Pushers:  bp.Pushers,
 	}
+
 	return nil
 }

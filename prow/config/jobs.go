@@ -101,6 +101,8 @@ type Presubmit struct {
 	Spec *v1.PodSpec `json:"spec,omitempty"`
 	// Run these jobs after successfully running this one.
 	RunAfterSuccess []Presubmit `json:"run_after_success"`
+	// Consider job optional for branch protection.
+	Optional bool `json:"optional,omitempty"`
 
 	Brancher
 
