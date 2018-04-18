@@ -265,6 +265,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-autoscaling-vpa-full
 - name: ci-kubernetes-e2e-gce-stackdriver
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stackdriver
+- name: ci-kubernetes-e2e-gce-prometheus
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-prometheus
 - name: ci-kubernetes-e2e-gce-large-correctness
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-large-correctness
   days_of_results: 60
@@ -2885,6 +2887,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
   - name: gce-stackdriver
     test_group_name: ci-kubernetes-e2e-gce-stackdriver
+  - name: gce-prometheus
+    test_group_name: ci-kubernetes-e2e-gce-prometheus
   - name: gci-gce-es-logging
     test_group_name: ci-kubernetes-e2e-gci-gce-es-logging
   - name: gci-gce-sd-logging
@@ -4459,6 +4463,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-stable1
     base_options: 'include-filter-by-regex=sig-instrumentation'
     description: 'sig-instrumentation gke stackdriver logging e2e tests for 1.9 branch with Ubuntu'
+  - name: gce-prometheus
+    test_group_name: ci-kubernetes-e2e-gce-prometheus
+    base_options: 'include-filter-by-regex=sig-instrumentation'
+    description: 'sig-instrumentation gce prometheus monitoring e2e tests for master branch'
 
 - name: sig-network-gce
   dashboard_tab:
