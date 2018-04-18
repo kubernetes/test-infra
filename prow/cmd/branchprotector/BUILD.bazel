@@ -27,11 +27,15 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
-    srcs = ["protect.go"],
+    srcs = [
+        "protect.go",
+        "request.go",
+    ],
     importpath = "k8s.io/test-infra/prow/cmd/branchprotector",
     visibility = ["//visibility:public"],
     deps = [
         "//prow/config:go_default_library",
+        "//prow/config/branchprotection:go_default_library",
         "//prow/github:go_default_library",
     ],
 )
@@ -40,11 +44,15 @@ go_test(
     name = "go_default_test",
     srcs = [
         "protect_test.go",
+        "request_test.go",
     ],
     embed = [":go_default_library"],
     deps = [
         "//prow/config:go_default_library",
+        "//prow/config/branchprotection:go_default_library",
         "//prow/github:go_default_library",
+        "//vendor/github.com/ghodss/yaml:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/diff:go_default_library",
     ],
 )
 
