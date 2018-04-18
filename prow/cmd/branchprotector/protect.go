@@ -265,7 +265,7 @@ func (p *Protector) UpdateBranch(orgName, repo string, branchName string, branch
 
 	bp, err := p.cfg.GetBranchProtection(orgName, repo, branchName)
 	if err != nil {
-		log.Printf("unable to compute requirement for %s/%s@%s", orgName, repo, branchName)
+		log.Printf("unable to compute requirement for %s/%s:%s", orgName, repo, branchName)
 		p.errors.add(err)
 	}
 	if bp == nil {
