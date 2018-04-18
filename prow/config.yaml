@@ -589,9 +589,6 @@ presubmits:
   - name: pull-ingress-gce-test
     agent: kubernetes
     context: pull-ingress-gce-test
-    branches:
-    - master
-    - mci-dev
     rerun_command: "/test pull-ingress-gce-test"
     trigger: "(?m)^/test( all| pull-ingress-gce-test),?(\\s+|$)"
     always_run: true
@@ -5427,8 +5424,6 @@ postsubmits:
   kubernetes/ingress-gce:
   - name: ci-ingress-gce-image-push
     agent: kubernetes
-    branches:
-    - master
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
@@ -5436,9 +5431,11 @@ postsubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180417-006059177-master
         args:
-        - "--repo=k8s.io/ingress-gce=master"
+        - "--repo=k8s.io/ingress-gce=$(PULL_REFS)"
         - "--root=/go/src/"
         - "--timeout=320"
+        - "--"
+        - "--env=VERSION=$(PULL_BASE_REF)"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
