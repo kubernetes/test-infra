@@ -38,14 +38,12 @@ query: |
           and job in ( /* only consider merge-blocking jobs */
             'pr:pull-kubernetes-bazel-build',
             'pr:pull-kubernetes-bazel-test',
-            'pr:pull-kubernetes-e2e-gce', /* 2017-10-17, replaced pull-kubernetes-e2e-gce-etcd3 */
-            'pr:pull-kubernetes-e2e-gce-etcd3',
+            'pr:pull-kubernetes-e2e-gce',
             'pr:pull-kubernetes-e2e-kops-aws',
-            'pr:pull-kubernetes-integration', /* 2018-02-28, renamed from pull-kubernetes-unit */
+            'pr:pull-kubernetes-integration',
             'pr:pull-kubernetes-kubemark-e2e-gce',
             'pr:pull-kubernetes-node-e2e',
-            'pr:pull-kubernetes-unit',
-            'pr:pull-kubernetes-typecheck', /* 2018-03-14, marked as required */
+            'pr:pull-kubernetes-typecheck',
             'pr:pull-kubernetes-verify',
           )
         having kind=='pull'
