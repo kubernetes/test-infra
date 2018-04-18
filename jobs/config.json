@@ -3173,6 +3173,7 @@
       "--extract=ci/latest",
       "--gcp-master-image=gci",
       "--gcp-node-image=gci",
+      "--gcp-nodes=2000",
       "--gcp-project=kubernetes-scale",
       "--gcp-zone=us-east1-a",
       "--provider=gce",
