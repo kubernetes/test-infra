@@ -3359,7 +3359,6 @@
   },
   "ci-kubernetes-e2e-gce-prometheus": {
     "args": [
-      "--check-leaked-resources",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-prometheus.env",
       "--extract=ci/latest",
       "--gcp-zone=us-central1-f",
