@@ -656,7 +656,6 @@
   "ci-ingress-gce-image-push": {
     "args": [
       "--env=REGISTRY=gcr.io/k8s-ingress-image-push",
-      "--env=VERSION=latest",
       "make",
       "push-e2e"
     ],
