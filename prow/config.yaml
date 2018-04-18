@@ -6383,6 +6383,42 @@ periodics:
       args:
       - "--timeout=340"
       - "--bare"
+- name: ci-ingress-gce-e2e-mci-dev
+  agent: kubernetes
+  interval: 60m
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180417-006059177-master
+      args:
+      - "--timeout=340"
+      - "--bare"
+- name: ci-ingress-gce-e2e-release-1-0
+  agent: kubernetes
+  interval: 480m
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180417-006059177-master
+      args:
+      - "--timeout=340"
+      - "--bare"
+- name: ci-ingress-gce-e2e-release-1-1
+  agent: kubernetes
+  interval: 240m
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180417-006059177-master
+      args:
+      - "--timeout=340"
+      - "--bare"
 - name: ci-ingress-gce-e2e-scale
   agent: kubernetes
   interval: 6h
