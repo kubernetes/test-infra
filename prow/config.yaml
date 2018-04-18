@@ -10850,7 +10850,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-large-performance-regional
   tags:
-  - "perfDashPrefix: gke-2kNodes-master"
+  - "perfDashPrefix: gke-2kNodes-master-regional"
   - "perfDashJobType: performance"
   labels:
     preset-service-account: true
