@@ -13,7 +13,7 @@
 # limitations under the License.
 
 IMAGE ?= gcr.io/k8s-test-infra-aws/aws-janitor
-VERSION = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
+VERSION ?= $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
 image:
 	CGO_ENABLED=0 go build k8s.io/test-infra/maintenance/aws-janitor
