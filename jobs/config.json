@@ -3356,6 +3356,21 @@
       "sig-cluster-lifecycle"
     ]
   },
+  "ci-kubernetes-e2e-gce-prometheus": {
+    "args": [
+      "--check-leaked-resources",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gce-prometheus.env",
+      "--extract=ci/latest",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Feature:PrometheusMonitoring\\] --minStartupPods=8",
+      "--timeout=50m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-instrumentation"
+    ]
+  },
   "ci-kubernetes-e2e-gce-scalability-canary": {
     "args": [
       "--cluster=e2e-big-canary",
