@@ -105,6 +105,8 @@ labels:
   - color: e11d21
     description: Indicates that a PR should not be merged because it's missing one of the release note labels that specify whether this PR should be considered when release notes are generated.
     name: do-not-merge/release-note-label-needed
+    previously:
+      - name: release-note-label-needed
     target: prs
     prowPlugin: release-note
     addedBy: prow
@@ -255,12 +257,6 @@ labels:
     target: prs
     prowPlugin: release-note
     addedBy: prow
-  - color: db5a64
-    name: release-note-label-needed
-    deleteAfter: 2018-04-16T00:00:00Z
-    description: This should be removed. Used to be added by a mungegithub munger which is no longer active. Consumed by submit-queue, but so is the replacement of `do-not-merge/release-note-label-needed`.
-    target: prs
-    addedBy: humans
   - color: c2e0c6
     description: Denotes a PR that doesn't merit a release note, and will be ignored when it comes time to generate release notes.
     name: release-note-none

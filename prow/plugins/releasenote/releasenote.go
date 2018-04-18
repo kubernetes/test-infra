@@ -33,11 +33,6 @@ import (
 const pluginName = "release-note"
 
 const (
-	// deprecatedReleaseNoteLabelNeeded is the previous version of the
-	// releaseNotLabelNeeded label, which we continue to honor for the
-	// time being
-	deprecatedReleaseNoteLabelNeeded = "release-note-label-needed"
-
 	releaseNoteLabelNeeded    = "do-not-merge/release-note-label-needed"
 	releaseNote               = "release-note"
 	releaseNoteNone           = "release-note-none"
@@ -50,9 +45,8 @@ const (
 )
 
 var (
-	releaseNoteBody           = fmt.Sprintf(releaseNoteFormat, releaseNoteLabelNeeded)
-	deprecatedReleaseNoteBody = fmt.Sprintf(releaseNoteFormat, deprecatedReleaseNoteLabelNeeded)
-	parentReleaseNoteBody     = fmt.Sprintf(parentReleaseNoteFormat, releaseNote, releaseNoteActionRequired)
+	releaseNoteBody       = fmt.Sprintf(releaseNoteFormat, releaseNoteLabelNeeded)
+	parentReleaseNoteBody = fmt.Sprintf(parentReleaseNoteFormat, releaseNote, releaseNoteActionRequired)
 
 	noteMatcherRE = regexp.MustCompile(`(?s)(?:Release note\*\*:\s*(?:<!--[^<>]*-->\s*)?` + "```(?:release-note)?|```release-note)(.+?)```")
 	cpRe          = regexp.MustCompile(`Cherry pick of #([[:digit:]]+) on release-([[:digit:]]+\.[[:digit:]]+).`)
@@ -61,7 +55,6 @@ var (
 	allRNLabels = []string{
 		releaseNoteNone,
 		releaseNoteActionRequired,
-		deprecatedReleaseNoteLabelNeeded,
 		releaseNoteLabelNeeded,
 		releaseNote,
 	}
@@ -274,8 +267,7 @@ func clearStaleComments(gc githubClient, log *logrus.Entry, pr *github.PullReque
 		func(c github.IssueComment) bool { // isStale function
 			return c.User.Login == botName &&
 				(strings.Contains(c.Body, releaseNoteBody) ||
-					strings.Contains(c.Body, parentReleaseNoteBody) ||
-					strings.Contains(c.Body, deprecatedReleaseNoteBody))
+					strings.Contains(c.Body, parentReleaseNoteBody))
 		},
 	)
 }
@@ -296,11 +288,6 @@ func ensureNoRelNoteNeededLabel(gc githubClient, log *logrus.Entry, pr *github.P
 	if prLabels.Has(releaseNoteLabelNeeded) {
 		if err := gc.RemoveLabel(org, repo, pr.Number, releaseNoteLabelNeeded); err != nil {
 			log.WithError(err).Errorf(format, releaseNoteLabelNeeded, org, repo, pr.Number)
-		}
-	}
-	if prLabels.Has(deprecatedReleaseNoteLabelNeeded) {
-		if err := gc.RemoveLabel(org, repo, pr.Number, deprecatedReleaseNoteLabelNeeded); err != nil {
-			log.WithError(err).Errorf(format, deprecatedReleaseNoteLabelNeeded, org, repo, pr.Number)
 		}
 	}
 }

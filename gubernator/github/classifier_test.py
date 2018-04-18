@@ -165,7 +165,7 @@ class CalculateTest(unittest.TestCase):
 
         expect(make_payload('alpha', needs_rebase=True), [],
             {'alpha': 'needs rebase'})
-        expect(make_payload('beta', labels={'release-note-label-needed'}), [],
+        expect(make_payload('beta', labels={'do-not-merge/release-note-label-needed'}), [],
             {'beta': 'needs release-note label'})
         expect(make_payload('gamma', status={'ci': ['failure', '', '']}), [],
             {'gamma': 'fix tests'})

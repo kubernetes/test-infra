@@ -81,16 +81,6 @@ func TestReleaseNoteComment(t *testing.T) {
 			addedLabel:    releaseNoteNone,
 		},
 		{
-			name:          "author release-note-none, has deprecated label",
-			action:        github.IssueCommentActionCreated,
-			isAuthor:      true,
-			commentBody:   "/release-note-none",
-			currentLabels: []string{releaseNoteLabelNeeded, deprecatedReleaseNoteLabelNeeded, "other"},
-
-			deletedLabels: []string{releaseNoteLabelNeeded, deprecatedReleaseNoteLabelNeeded},
-			addedLabel:    releaseNoteNone,
-		},
-		{
 			name:          "author release-note-none, trailing space.",
 			action:        github.IssueCommentActionCreated,
 			isAuthor:      true,
@@ -306,11 +296,11 @@ func TestReleaseNotePR(t *testing.T) {
 			issueComments: []string{"Release notes are great fun.", "Especially \n/release-note-none"},
 		},
 		{
-			name:          "LGTM with release-note-label-needed",
+			name:          "LGTM with do-not-merge/release-note-label-needed",
 			initialLabels: []string{lgtmLabel, releaseNoteLabelNeeded},
 		},
 		{
-			name:          "LGTM with release-note-label-needed, /release-note-none comment",
+			name:          "LGTM with do-not-merge/release-note-label-needed, /release-note-none comment",
 			initialLabels: []string{lgtmLabel, releaseNoteLabelNeeded},
 			issueComments: []string{"Release notes are great fun.", "Especially \n/release-note-none"},
 			labelsAdded:   []string{releaseNoteNone},
@@ -348,24 +338,24 @@ func TestReleaseNotePR(t *testing.T) {
 			body:          "```release-note\n action required```",
 		},
 		{
-			name:          "release-note and release-note-label-needed with no note",
+			name:          "release-note and do-not-merge/release-note-label-needed with no note",
 			initialLabels: []string{releaseNote, releaseNoteLabelNeeded},
 			labelsRemoved: []string{releaseNote},
 		},
 		{
-			name:          "release-note and release-note-label-needed with note",
+			name:          "release-note and do-not-merge/release-note-label-needed with note",
 			initialLabels: []string{releaseNote, releaseNoteLabelNeeded},
 			body:          "```release-note note  ```",
 			labelsRemoved: []string{releaseNoteLabelNeeded},
 		},
 		{
-			name:          "release-note-none and release-note-label-needed",
+			name:          "release-note-none and do-not-merge/release-note-label-needed",
 			initialLabels: []string{releaseNoteNone, releaseNoteLabelNeeded},
 			body:          "```release-note\nnone\n```",
 			labelsRemoved: []string{releaseNoteLabelNeeded},
 		},
 		{
-			name:          "release-note-action-required and release-note-label-needed",
+			name:          "release-note-action-required and do-not-merge/release-note-label-needed",
 			initialLabels: []string{releaseNoteActionRequired, releaseNoteLabelNeeded},
 			body:          "```release-note\nSomething something dark side. Something something ACTION REQUIRED.```",
 			labelsRemoved: []string{releaseNoteLabelNeeded},
