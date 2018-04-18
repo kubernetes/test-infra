@@ -379,7 +379,8 @@ type fgc struct {
 	merged    int
 	setStatus bool
 
-	expectedSHA string
+	expectedSHA    string
+	combinedStatus map[string]string
 }
 
 func (f *fgc) GetRef(o, r, ref string) (string, error) {
@@ -423,10 +424,12 @@ func (f *fgc) GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, 
 	if f.expectedSHA != ref {
 		return nil, errors.New("bad combined status request: incorrect sha")
 	}
+	var statuses []github.Status
+	for c, s := range f.combinedStatus {
+		statuses = append(statuses, github.Status{Context: c, State: s})
+	}
 	return &github.CombinedStatus{
-			Statuses: []github.Status{
-				{Context: "win"},
-			},
+			Statuses: statuses,
 		},
 		nil
 }
@@ -621,7 +624,7 @@ func TestExpectedStatus(t *testing.T) {
 			pool = map[string]PullRequest{"#0": {}}
 		}
 
-		state, desc := expectedStatus(queriesByRepo, &pr, pool)
+		state, desc := expectedStatus(queriesByRepo, &pr, pool, NewContextRegister(statusContext))
 		if state != tc.state {
 			t.Errorf("Expected status state %q, but got %q.", string(tc.state), string(state))
 		}
@@ -1000,11 +1003,14 @@ func TestPickBatch(t *testing.T) {
 		}
 		sp.prs = append(sp.prs, pr)
 	}
+	ca := &config.Agent{}
+	ca.Set(&config.Config{})
 	c := &Controller{
 		logger: logrus.WithField("component", "tide"),
 		gc:     gc,
+		ca:     ca,
 	}
-	prs, err := c.pickBatch(sp)
+	prs, err := c.pickBatch(sp, NewContextRegister(statusContext))
 	if err != nil {
 		t.Fatalf("Error from pickBatch: %v", err)
 	}
@@ -1255,7 +1261,8 @@ func TestTakeAction(t *testing.T) {
 			batchPending = []PullRequest{{}}
 		}
 		t.Logf("Test case: %s", tc.name)
-		if act, _, err := c.takeAction(sp, presubmits, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges)); err != nil {
+		cr := NewContextRegister(statusContext)
+		if act, _, err := c.takeAction(sp, presubmits, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges), cr); err != nil {
 			t.Errorf("Error in takeAction: %v", err)
 			continue
 		} else if act != tc.action {
@@ -1358,7 +1365,7 @@ func TestHeadContexts(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Logf("Running test case %q", tc.name)
-		fgc := &fgc{}
+		fgc := &fgc{combinedStatus: map[string]string{win: string(githubql.StatusStateSuccess)}}
 		if tc.expectAPICall {
 			fgc.expectedSHA = headSHA
 		}
@@ -1528,6 +1535,76 @@ func TestSync(t *testing.T) {
 			} else if !reflect.DeepEqual(*match, expected) {
 				t.Errorf("Expected pool %#v does not match actual pool %#v.", expected, *match)
 			}
+		}
+	}
+}
+
+func TestIsPassing(t *testing.T) {
+	yes := true
+	no := false
+	headSHA := "head"
+	success := string(githubql.StatusStateSuccess)
+	failure := string(githubql.StatusStateFailure)
+	testCases := []struct {
+		name             string
+		passing          bool
+		config           *config.Branch
+		combinedContexts map[string]string
+	}{
+		{
+			name:    "required checks disabled should not impact - passing",
+			passing: true,
+			config: &config.Branch{
+				Protect:  &no,
+				Contexts: []string{"c1", "c2", "c3"},
+			},
+			combinedContexts: map[string]string{"c1": success, "c2": success, statusContext: failure},
+		},
+		{
+			name:             "required checks disabled should not impact - failing",
+			passing:          false,
+			combinedContexts: map[string]string{"c1": success, "c2": failure},
+			config: &config.Branch{
+				Protect:  &no,
+				Contexts: []string{"c1", "c2", "c3"},
+			},
+		},
+		{
+			name:             "required checks used - passing",
+			passing:          true,
+			combinedContexts: map[string]string{"c1": success, "c2": failure, "c3": success},
+			config: &config.Branch{
+				Protect:  &yes,
+				Contexts: []string{"c1", "c3"},
+			},
+		},
+		{
+			name:             "required checks used - failing",
+			passing:          false,
+			combinedContexts: map[string]string{"c1": success, "c2": success},
+			config: &config.Branch{
+				Protect:  &yes,
+				Contexts: []string{"c1", "c2", "c3"},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		ghc := &fgc{
+			combinedStatus: tc.combinedContexts,
+			expectedSHA:    headSHA}
+		log := logrus.WithField("component", "tide")
+		_, err := log.String()
+		if err != nil {
+			t.Errorf("Failed to get log output before testing: %v", err)
+			t.FailNow()
+		}
+		cr := NewContextRegister(statusContext)
+		cr.RegisterRequiredContexts(findRequiredContexts(tc.config)...)
+		pr := PullRequest{HeadRefOID: githubql.String(headSHA)}
+		passing := isPassingTests(log, ghc, pr, cr)
+		if passing != tc.passing {
+			t.Errorf("%s: Expected %t got %t", tc.name, tc.passing, passing)
 		}
 	}
 }
@@ -1781,7 +1858,6 @@ func TestPresubmitsByPull(t *testing.T) {
 			fileChangesCache: tc.initialChangeCache,
 			ghc:              &fgc{},
 		}
-
 		presubmits, err := c.presubmitsByPull(sp)
 		if err != nil {
 			t.Fatalf("unexpected error from presubmitsByPull: %v", err)
@@ -1791,6 +1867,58 @@ func TestPresubmitsByPull(t *testing.T) {
 		}
 		if !reflect.DeepEqual(c.fileChangesCache, tc.expectedChangeCache) {
 			t.Errorf("expected file change cache: %v,\nbut got %v\n", tc.expectedChangeCache, c.fileChangesCache)
+		}
+	}
+}
+
+func TestFindRequiredContexts(t *testing.T) {
+	yes := true
+	no := false
+	testCases := []struct {
+		name    string
+		config  *config.Branch
+		results []string
+	}{
+		{
+			name: "no config",
+		},
+		{
+			name:   "config protect false missing context",
+			config: &config.Branch{Protect: &no},
+		},
+		{
+			name: "config existing context",
+			config: &config.Branch{
+				Protect:  &yes,
+				Contexts: []string{"c1", "c2", "c3"},
+			},
+			results: []string{"c1", "c2", "c3"},
+		},
+		{
+			name: "config existing context protect disabled",
+			config: &config.Branch{
+				Protect:  &no,
+				Contexts: []string{"c1", "c2", "c3"},
+			},
+		},
+		{
+			name: "config existing context nil protection",
+			config: &config.Branch{
+				Contexts: []string{"c1", "c2", "c3"},
+			},
+		},
+		{
+			name: "config missing context protect enabled",
+			config: &config.Branch{
+				Protect: &yes,
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		r := findRequiredContexts(tc.config)
+		if !reflect.DeepEqual(r, tc.results) {
+			t.Errorf("%s - expected contexts %v got %v", tc.name, tc.results, r)
 		}
 	}
 }
