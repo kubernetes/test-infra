@@ -89,7 +89,7 @@ labels:
     description: Indicates that a PR should not be merged because it touches files in blocked paths.
     name: do-not-merge/blocked-paths
     target: prs
-    prowPlugin: blockage
+    prowPlugin: blockade
     addedBy: prow
   - color: e11d21
     description: Indicates that a PR should not be merged into a release branch because the cherrypick-approved label is not present.
@@ -108,7 +108,7 @@ labels:
     previously:
       - name: release-note-label-needed
     target: prs
-    prowPlugin: release-note
+    prowPlugin: releasenote
     addedBy: prow
   - color: e11d21
     description: Indicates that a PR should not be merged because it is a work in progress, based on the presence of a '[wip]' prefix in the PR title.
@@ -249,19 +249,19 @@ labels:
     description: Denotes a PR that will be considered when it comes time to generate release notes.
     name: release-note
     target: prs
-    prowPlugin: release-note
+    prowPlugin: releasenote
     addedBy: prow
   - color: c2e0c6
     description: Denotes a PR that introduces potentially breaking changes that necessitate user action before upgrading to the release that includes these changes. These actions will be specifically called out when it comes time to generate release notes.
     name: release-note-action-required
     target: prs
-    prowPlugin: release-note
+    prowPlugin: releasenote
     addedBy: prow
   - color: c2e0c6
     description: Denotes a PR that doesn't merit a release note, and will be ignored when it comes time to generate release notes.
     name: release-note-none
     target: prs
-    prowPlugin: release-note
+    prowPlugin: releasenote
     addedBy: prow or member or author
   - color: eb6420
     description: Indicates that a PR doesn't need to be retested prior to merge. At present only submit-queue consumes this label. Unclear whether we're going to modify tide to respect this or not ([kubernetes/test-infra#5334](https://github.com/kubernetes/test-infra/issues/5334))
