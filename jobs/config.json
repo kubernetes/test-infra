@@ -11715,7 +11715,8 @@
   },
   "maintenance-pull-scale-janitor": {
     "args": [
-      "--mode=scale"
+      "--mode=scale",
+      "--ratelimit=5"
     ],
     "scenario": "kubernetes_janitor",
     "sigOwners": [

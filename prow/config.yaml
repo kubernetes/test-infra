@@ -14787,7 +14787,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=30
+      - --timeout=60
       - --service-account=/etc/service-account/service-account.json
       - --upload=gs://kubernetes-jenkins/logs
       env:
