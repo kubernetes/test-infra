@@ -84,18 +84,21 @@ func (b *Builder) Build() error {
 
 // Tester is capable of running tests against a dind cluster.
 type Tester struct {
-	kubecfg   string
-	ginkgo    string
-	e2etest   string
-	control   *process.Control
-	apiserver *kubernetes.Clientset
-	testArgs  *string
-	reportdir string
+	kubecfg     string
+	ginkgo      string
+	e2etest     string
+	control     *process.Control
+	apiserver   *kubernetes.Clientset
+	testArgs    []string
+	reportdir   string
+	focusRegex  string
+	skipRegex   string
+	parallelism int
 }
 
 // NewTester returns an object that knows how to test the cluster it deployed.
 //TODO(Q-Lee): the deployer interfact should have a NewTester or Test method.
-func (d *DindDeployer) NewTester() (*Tester, error) {
+func (d *DindDeployer) NewTester(focusRegex, skipRegex string, parallelism int) (*Tester, error) {
 	// Find the ginkgo and e2e.test artifacts we need. We'll cheat for now, and pull them from a known path.
 	// We only support dind from linux_amd64 anyway.
 	ginkgo := util.K8s("kubernetes", "bazel-bin", "vendor", "github.com", "onsi", "ginkgo", "ginkgo", "linux_amd64_stripped", "ginkgo")
@@ -114,24 +117,32 @@ func (d *DindDeployer) NewTester() (*Tester, error) {
 	}
 
 	return &Tester{
-		kubecfg:   d.RealKubecfg,
-		control:   d.control,
-		apiserver: d.apiserver,
-		testArgs:  d.testArgs,
-		e2etest:   e2etest,
-		ginkgo:    ginkgo,
-		reportdir: tmpdir,
+		kubecfg:     d.RealKubecfg,
+		control:     d.control,
+		apiserver:   d.apiserver,
+		testArgs:    d.testArgs,
+		e2etest:     e2etest,
+		ginkgo:      ginkgo,
+		reportdir:   tmpdir,
+		focusRegex:  focusRegex,
+		skipRegex:   skipRegex,
+		parallelism: parallelism,
 	}, nil
 }
 
 // Test just execs ginkgo. This will take more parameters in the future.
 func (t *Tester) Test() error {
-	skipRegex := "--skip=\"(Feature)|(NFS)|(StatefulSet)\""
-	focusRegex := "--focus=\".*\\[Conformance\\].*\""
-	args := []string{"--seed=1436380640", "--nodes=10", skipRegex, focusRegex, t.e2etest,
-		"--", "--kubeconfig", t.kubecfg, "--ginkgo.flakeAttempts=2", "--num-nodes=4", "--systemd-services=docker,kubelet",
-		"--report-dir", t.reportdir}
-	args = append(args, strings.Fields(*t.testArgs)...)
+	args := []string{"--seed=1436380640", "--nodes=1"}
+	// Optionally add the focus and skip regexes.
+	if t.focusRegex != "" {
+		args = append(args, "--focus="+t.focusRegex)
+	}
+	if t.skipRegex != "" {
+		args = append(args, "--skip="+t.skipRegex)
+	}
+
+	args = append(args, t.e2etest, "--", "--kubeconfig", t.kubecfg, "--ginkgo.flakeAttempts=2", fmt.Sprintf("--num-nodes=%d", t.parallelism), "--systemd-services=docker,kubelet", "--report-dir", t.reportdir)
+	args = append(args, t.testArgs...)
 	cmd := exec.Command(t.ginkgo, args...)
 	return t.control.FinishRunning(cmd)
 }
@@ -142,7 +153,7 @@ type DindDeployer struct {
 	containerID string
 	tmpdir      string
 	RealKubecfg string
-	testArgs    *string
+	testArgs    []string
 	docker      *client.Client
 	control     *process.Control
 	apiserver   *kubernetes.Clientset
@@ -171,7 +182,7 @@ func NewDeployer(kubecfg, image string, testArgs *string, control *process.Contr
 		tmpdir:   tmpdir,
 		docker:   docker,
 		control:  control,
-		testArgs: testArgs,
+		testArgs: strings.Fields(*testArgs),
 	}, nil
 }
 
@@ -185,7 +196,6 @@ func (d *DindDeployer) ensureImage() error {
 		d.image = "k8s.gcr.io/dind-cluster-amd64:" + tag
 	}
 	return nil
-
 }
 
 // Up synchronously starts a cluster, or times out.
@@ -193,7 +203,6 @@ func (d *DindDeployer) Up() error {
 	if err := d.ensureImage(); err != nil {
 		return err
 	}
-
 	ctx := context.Background()
 
 	resp, err := d.docker.ContainerCreate(ctx, &container.Config{
@@ -348,6 +357,47 @@ ApiserverLoop:
 	}
 	log.Printf("apiserver is now available")
 
+NodeHealthLoop:
+	// Wait for the expected number of nodes to be ready.
+	for {
+		log.Printf("Waiting for nodes....")
+		select {
+		case <-d.control.Interrupt.C:
+			return fmt.Errorf("timed out waiting for nodes to be ready from cluster container %s", d.containerID)
+		case <-pollCh:
+			nodes, err := d.apiserver.CoreV1().Nodes().List(metav1.ListOptions{})
+			if err != nil {
+				log.Printf("No response for nodes....")
+				continue
+			}
+			// TODO(Q-Lee): take this from a flag.
+			numNodes := 4
+
+			// Make sure we have at least the correct number of nodes.
+			if len(nodes.Items) < numNodes {
+				log.Printf("Not enough nodes....")
+				continue
+			}
+
+			// Make sure all nodes are ready.
+			healthyNodes := 0
+			for _, node := range nodes.Items {
+				for _, condition := range node.Status.Conditions {
+					if v1.NodeReady == condition.Type && v1.ConditionTrue == condition.Status {
+						healthyNodes++
+						break
+					}
+				}
+			}
+
+			if healthyNodes < numNodes {
+				log.Printf("Not enough healthy nodes....")
+				continue
+			}
+			log.Printf("All %d nodes are now healthy.", numNodes)
+			break NodeHealthLoop
+		}
+	}
 	return nil
 }
 

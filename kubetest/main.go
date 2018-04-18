@@ -72,6 +72,7 @@ type options struct {
 	extractSource       bool
 	federation          bool
 	flushMemAfterBuild  bool
+	focusRegex          string
 	gcpCloudSdk         string
 	gcpMasterImage      string
 	gcpMasterSize       string
@@ -105,6 +106,7 @@ type options struct {
 	runtimeConfig       string
 	save                string
 	skew                bool
+	skipRegex           string
 	soak                bool
 	soakDuration        time.Duration
 	sshUser             string
@@ -153,6 +155,8 @@ func defineFlags() *options {
 	flag.StringVar(&o.gcpNodes, "gcp-nodes", "", "(--provider=gce only) Number of nodes to create.")
 	flag.StringVar(&o.gcpNodeSize, "gcp-node-size", "", "(--provider=gce only) Size of nodes to create (e.g n1-standard-1).")
 	flag.StringVar(&o.kubecfg, "kubeconfig", "", "The location of a kubeconfig file.")
+	flag.StringVar(&o.focusRegex, "ginkgo-focus", "", "The ginkgo regex to focus. Currently only respected for (dind).")
+	flag.StringVar(&o.skipRegex, "ginkgo-skip", "", "The ginkgo regex to skip. Currently only respected for (dind).")
 	flag.BoolVar(&o.kubemark, "kubemark", false, "If true, run kubemark tests.")
 	flag.StringVar(&o.kubemarkMasterSize, "kubemark-master-size", "", "Kubemark master size (only relevant if --kubemark=true). Auto-calculated based on '--kubemark-nodes' if left empty.")
 	flag.StringVar(&o.kubemarkNodes, "kubemark-nodes", "5", "Number of kubemark nodes to start (only relevant if --kubemark=true).")

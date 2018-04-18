@@ -38,5 +38,6 @@ COPY dind-node-bundle.tar /
 COPY e2e.test /
 COPY ginkgo /
 COPY dind-test.sh /
+COPY cluster-up /
 
 ENTRYPOINT ["/init-wrapper.sh"]
