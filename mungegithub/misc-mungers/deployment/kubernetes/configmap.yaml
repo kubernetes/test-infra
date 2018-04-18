@@ -3,7 +3,7 @@ app: misc-mungers
 http-cache-dir: /cache/httpcache
 organization: kubernetes
 project: kubernetes
-pr-mungers: label-unapproved-picks,path-label,stale-green-ci,comment-deleter,milestone-maintainer
+pr-mungers: label-unapproved-picks,stale-green-ci,comment-deleter,milestone-maintainer
 state: open
 token-file: /etc/secret-volume/token
 period: 60s
@@ -26,7 +26,6 @@ required-retest-contexts: "\
   pull-kubernetes-verify"
 
 # munger specific options.
-path-label-config: "/etc/munge-config/path-label.txt"
 number-of-old-test-results: 5
 generated-files-config: .generated_files
 label-file: "/gitrepos/kubernetes/labels.yaml"
