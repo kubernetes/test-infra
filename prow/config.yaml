@@ -5306,8 +5306,6 @@ presubmits:
     rerun_command: "/test pull-test-infra-verify-labels"
     trigger: "/test pull-test-infra-verify-labels"
     run_if_changed: '^label_sync'
-    always_run: false # introduce job as non-blocking
-    skip_report: true # introduce job as non-blocking
     labels:
       preset-service-account: true
       preset-bazel-scratch-dir: true

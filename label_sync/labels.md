@@ -25,10 +25,10 @@ larger set of contributors to apply/remove them.
 
 | Name | Description | Added By | Prow Plugin |
 | ---- | ----------- | -------- | --- |
-| <a id="close/duplicate" href="#close/duplicate">`close/duplicate`</a> | TODO, see [kubernetes/test-infra#7251](https://github.com/kubernetes/test-infra/issues/7251)| humans | |
-| <a id="close/needs-information" href="#close/needs-information">`close/needs-information`</a> | TODO, see [kubernetes/test-infra#7251](https://github.com/kubernetes/test-infra/issues/7251)| humans | |
-| <a id="close/not-reproducible" href="#close/not-reproducible">`close/not-reproducible`</a> | TODO, see [kubernetes/test-infra#7251](https://github.com/kubernetes/test-infra/issues/7251)| humans | |
-| <a id="close/unresolved" href="#close/unresolved">`close/unresolved`</a> | TODO, see [kubernetes/test-infra#7251](https://github.com/kubernetes/test-infra/issues/7251)| humans | |
+| <a id="triage/duplicate" href="#triage/duplicate">`triage/duplicate`</a> | Indicates an issue is a duplicate of other open issue. The usage should be supported by adding triage findings as an issue comment. <br><br> This was previously `close/duplicate`, | humans | |
+| <a id="triage/needs-information" href="#triage/needs-information">`triage/needs-information`</a> | Indicates an issue needs more information in order to work on it. The usage should be supported by adding triage findings as an issue comment. <br><br> This was previously `close/needs-information`, | humans | |
+| <a id="triage/not-reproducible" href="#triage/not-reproducible">`triage/not-reproducible`</a> | Indicates an issue can not be reproduced as described. The usage should be supported by adding triage findings as an issue comment. <br><br> This was previously `close/not-reproducible`, | humans | |
+| <a id="triage/unresolved" href="#triage/unresolved">`triage/unresolved`</a> | Indicates an issue that can not be resolved. The usage should be supported by adding triage findings as an issue comment. <br><br> This was previously `close/unresolved`, | humans | |
 | <a id="committee/conduct" href="#committee/conduct">`committee/conduct`</a> | Denotes an issue or PR intended to be handled by the (as of yet non-existent) code of conduct committee.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="committee/steering" href="#committee/steering">`committee/steering`</a> | Denotes an issue or PR intended to be handled by the kubernetes steering committee.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="kind/bug" href="#kind/bug">`kind/bug`</a> | Categorizes issue or PR as related to a bug.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
