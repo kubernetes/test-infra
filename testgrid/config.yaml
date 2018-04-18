@@ -2444,7 +2444,7 @@ test_groups:
   num_failures_to_alert: 1
 - name: istio-periodic-e2e-gke-addon
   gcs_prefix: kubernetes-jenkins/logs/istio-periodic-e2e-gke-addon
-# gke 1.7-1.8; 1.8-1.9 staging upgrade
+# gke 1.7-1.8; 1.8-1.9; 1.9-1.10 staging upgrade
 # TODO(krzyzacy): don't pin version here, try let the version flow
 - name: ci-kubernetes-e2e-gke-staging-1-7-1-8-upgrade-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-7-1-8-upgrade-master
@@ -2460,6 +2460,14 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-cluster-new
 - name: ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-regional-cluster
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-regional-cluster
+- name: ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-master
+- name: ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-cluster
+- name: ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-cluster-new
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-cluster-new
+- name: ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-regional-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-regional-cluster
 - name: pull-kops-e2e-kubernetes-aws
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-e2e-kubernetes-aws
   num_columns_recent: 20
@@ -3148,6 +3156,14 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-cluster-new
   - name: gke-staging-1-8-1-9-upgrade-regional-cluster
     test_group_name: ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-regional-cluster
+  - name: gke-staging-1-9-1-10-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-master
+  - name: gke-staging-1-9-1-10-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-cluster
+  - name: gke-staging-1-9-1-10-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-cluster-new
+  - name: gke-staging-1-9-1-10-upgrade-regional-cluster
+    test_group_name: ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-regional-cluster
 
 - name: google-gke-prod
   dashboard_tab:
