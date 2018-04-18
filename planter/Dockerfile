@@ -61,4 +61,6 @@ RUN INSTALLER="bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh"; \
 RUN touch /etc/passwd && chmod a+rw /etc/passwd
 
 COPY ./entrypoint.sh /
+RUN chmod +rx /entrypoint.sh
+
 ENTRYPOINT ["/entrypoint.sh"]
