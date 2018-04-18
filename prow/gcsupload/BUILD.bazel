@@ -22,9 +22,17 @@ go_library(
 
 go_test(
     name = "go_default_test",
-    srcs = ["options_test.go"],
+    srcs = [
+        "options_test.go",
+        "run_test.go",
+    ],
     embed = [":go_default_library"],
-    deps = ["//prow/kube:go_default_library"],
+    deps = [
+        "//prow/kube:go_default_library",
+        "//prow/pod-utils/downwardapi:go_default_library",
+        "//prow/pod-utils/gcs:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/diff:go_default_library",
+    ],
 )
 
 filegroup(
