@@ -173,6 +173,7 @@ type PullRequestBranch struct {
 	Repo Repo   `json:"repo"`
 }
 
+// Label describes a GitHub label.
 type Label struct {
 	URL   string `json:"url"`
 	Name  string `json:"name"`
@@ -203,19 +204,23 @@ type PullRequestChange struct {
 
 // Repo contains general repository information.
 type Repo struct {
-	Owner    User   `json:"owner"`
-	Name     string `json:"name"`
-	FullName string `json:"full_name"`
-	HTMLURL  string `json:"html_url"`
-	Fork     bool   `json:"fork"`
+	Owner         User   `json:"owner"`
+	Name          string `json:"name"`
+	FullName      string `json:"full_name"`
+	HTMLURL       string `json:"html_url"`
+	Fork          bool   `json:"fork"`
+	DefaultBranch string `json:"default_branch"`
 }
 
+// Branch contains general branch information.
 type Branch struct {
 	Name      string `json:"name"`
 	Protected bool   `json:"protected"`
 }
 
-// https://developer.github.com/v3/repos/branches/#update-branch-protection
+// BranchProtectionRequest represents
+// protections in place for a branch.
+// See also: https://developer.github.com/v3/repos/branches/#update-branch-protection
 type BranchProtectionRequest struct {
 	RequiredStatusChecks       RequiredStatusChecks        `json:"required_status_checks"`
 	EnforceAdmins              bool                        `json:"enforce_admins"`
@@ -285,6 +290,7 @@ const (
 	IssueCommentActionDeleted                         = "deleted"
 )
 
+// IssueCommentEvent is what GitHub sends us when an issue comment is changed.
 type IssueCommentEvent struct {
 	Action  IssueCommentEventAction `json:"action"`
 	Issue   Issue                   `json:"issue"`
@@ -295,6 +301,7 @@ type IssueCommentEvent struct {
 	GUID string
 }
 
+// Issue represents general info about an issue.
 type Issue struct {
 	User      User      `json:"user"`
 	Number    int       `json:"number"`
@@ -312,6 +319,7 @@ type Issue struct {
 	PullRequest *struct{} `json:"pull_request,omitempty"`
 }
 
+// IsAssignee checks if a user is assigned to the issue.
 func (i Issue) IsAssignee(login string) bool {
 	for _, assignee := range i.Assignees {
 		if NormLogin(login) == NormLogin(assignee.Login) {
@@ -321,14 +329,17 @@ func (i Issue) IsAssignee(login string) bool {
 	return false
 }
 
+// IsAuthor checks if a user is the author of the issue.
 func (i Issue) IsAuthor(login string) bool {
 	return NormLogin(i.User.Login) == NormLogin(login)
 }
 
+// IsPullRequest checks if an issue is a pull request.
 func (i Issue) IsPullRequest() bool {
 	return i.PullRequest != nil
 }
 
+// HasLabel checks if an issue has a given label.
 func (i Issue) HasLabel(labelToFind string) bool {
 	for _, label := range i.Labels {
 		if strings.ToLower(label.Name) == strings.ToLower(labelToFind) {
@@ -338,6 +349,7 @@ func (i Issue) HasLabel(labelToFind string) bool {
 	return false
 }
 
+// IssueComment represents general info about an issue comment.
 type IssueComment struct {
 	ID        int       `json:"id,omitempty"`
 	Body      string    `json:"body"`
@@ -368,6 +380,7 @@ type IssuesSearchResult struct {
 	Issues []Issue `json:"items,omitempty"`
 }
 
+// PushEvent is what GitHub sends us when a user pushes to a repo.
 type PushEvent struct {
 	Ref     string   `json:"ref"`
 	Before  string   `json:"before"`
@@ -384,11 +397,13 @@ type PushEvent struct {
 	GUID string
 }
 
+// Branch returns the name of the branch to which the user pushed.
 func (pe PushEvent) Branch() string {
 	refs := strings.Split(pe.Ref, "/")
 	return refs[len(refs)-1]
 }
 
+// Commit represents general info about a commit.
 type Commit struct {
 	ID       string   `json:"id"`
 	Message  string   `json:"message"`
