@@ -10848,6 +10848,26 @@ periodics:
 
 - cron: "0 0 31 2 *" # manual job, set to Feb.31st so it will never be triggered
   agent: kubernetes
+  name: ci-kubernetes-e2e-gke-large-performance-regional
+  tags:
+  - "perfDashPrefix: gke-2kNodes-master"
+  - "perfDashJobType: performance"
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=540
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180417-006059177-master
+      resources:
+        requests:
+          cpu: 6
+          memory: "16Gi"
+
+- cron: "0 0 31 2 *" # manual job, set to Feb.31st so it will never be triggered
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-large-teardown
   labels:
     preset-service-account: true
