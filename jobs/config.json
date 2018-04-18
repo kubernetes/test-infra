@@ -4954,8 +4954,8 @@
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
       "--ginkgo-parallel",
-      "--gke-additional-zones=us-central1-a,us-central1-b",
       "--gke-environment=test",
+      "--gke-node-locations=us-central1-f,us-central1-a,us-central1-b",
       "--provider=gke",
       "--test_args=--gce-multizone=true --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--timeout=150m"
