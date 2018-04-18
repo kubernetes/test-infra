@@ -656,7 +656,7 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=",
-      "--env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-e2e-glbc-amd64:1.0",
+      "--env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-e2e-glbc-amd64:release-1.0",
       "--extract=ci/latest",
       "--gcp-project-type=ingress-project",
       "--ginkgo-parallel=1",
@@ -673,7 +673,7 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=",
-      "--env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-e2e-glbc-amd64:1.1",
+      "--env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-e2e-glbc-amd64:release-1.1",
       "--extract=ci/latest",
       "--gcp-project-type=ingress-project",
       "--ginkgo-parallel=1",
