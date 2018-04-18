@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"errors"
 	"flag"
+	"time"
 
 	"k8s.io/test-infra/prow/pod-utils/wrapper"
 )
@@ -28,8 +29,15 @@ import (
 // for defining the process being watched and
 // where in GCS an upload will land.
 type Options struct {
-	Args           []string `json:"args"`
-	TimeoutMinutes int      `json:"timeout_minutes"`
+	// Args is the process and args to run
+	Args []string `json:"args"`
+	// Timeout determines how long to wait before the
+	// entrypoint sends SIGINT to the process
+	Timeout time.Duration `json:"timeout"`
+	// GracePeriod determines how long to wait after
+	// sending SIGINT before the entrypoint sends
+	// SIGKILL.
+	GracePeriod time.Duration `json:"grace_period"`
 
 	*wrapper.Options
 }
@@ -64,7 +72,8 @@ func (o *Options) LoadConfig(config string) error {
 
 // BindOptions binds flags to options
 func (o *Options) BindOptions(flags *flag.FlagSet) {
-	flags.IntVar(&o.TimeoutMinutes, "timeout", DefaultTimeoutMinutes, "Timeout for the test command.")
+	flags.DurationVar(&o.Timeout, "timeout", DefaultTimeout, "Timeout for the test command.")
+	flags.DurationVar(&o.GracePeriod, "grace-period", DefaultGracePeriod, "Grace period after timeout for the test command.")
 	wrapper.BindOptions(o.Options, flags)
 }
 

@@ -35,9 +35,19 @@ const (
 	// indicate that we failed to start the wrapped command
 	InternalErrorCode = "127"
 
-	// DefaultTimeoutMinutes is the default timeout in minutes
-	// for the test process
-	DefaultTimeoutMinutes = 120
+	// DefaultTimeout is the default timeout for the test
+	// process before SIGINT is sent
+	DefaultTimeout = 120 * time.Minute
+
+	// DefaultGracePeriod is the default timeout for the test
+	// process after SIGINT is sent before SIGKILL is sent
+	DefaultGracePeriod = 15 * time.Second
+)
+
+var (
+	// errTimedOut is used as the command's error when the command
+	// is terminated after the timeout is reached
+	errTimedOut = errors.New("process timed out")
 )
 
 // Run executes the process as configured, writing the output
@@ -66,14 +76,9 @@ func (o Options) Run() error {
 		return fmt.Errorf("could not start the process: %v", err)
 	}
 
-	var timeoutMinutes int
-	if o.TimeoutMinutes == 0 {
-		timeoutMinutes = DefaultTimeoutMinutes
-	} else {
-		timeoutMinutes = o.TimeoutMinutes
-	}
-	timeout := time.Duration(timeoutMinutes) * time.Minute
+	timeout := time.Duration(optionOrDefault(o.Timeout, DefaultTimeout))
 	var commandErr error
+	cancelled := false
 	done := make(chan error)
 	go func() {
 		done <- command.Wait()
@@ -83,18 +88,34 @@ func (o Options) Run() error {
 		commandErr = err
 	case <-time.After(timeout):
 		logrus.Errorf("Process did not finish before %s timeout", timeout)
-		if err := command.Process.Kill(); err != nil {
-			logrus.WithError(err).Error("Could not kill process after timeout")
+		cancelled = true
+		if err := command.Process.Signal(os.Interrupt); err != nil {
+			logrus.WithError(err).Error("Could not interrupt process after timeout")
 		}
-		commandErr = errors.New("process timed out")
+		gracePeriod := time.Duration(optionOrDefault(o.GracePeriod, DefaultGracePeriod))
+		select {
+		case <-done:
+			logrus.Errorf("Process gracefully exited before %s grace period", gracePeriod)
+			// but we ignore the output error as we will want errTimedOut
+		case <-time.After(gracePeriod):
+			logrus.Errorf("Process did not exit before %s grace period", gracePeriod)
+			if err := command.Process.Kill(); err != nil {
+				logrus.WithError(err).Error("Could not kill process after grace period")
+			}
+		}
 	}
 
-	returnCode := "1"
-	if commandErr == nil {
-		returnCode = "0"
-	} else if exitErr, ok := err.(*exec.ExitError); ok {
-		if status, ok := exitErr.Sys().(syscall.WaitStatus); ok {
+	var returnCode string
+	if cancelled {
+		returnCode = InternalErrorCode
+		commandErr = errTimedOut
+	} else {
+		if status, ok := command.ProcessState.Sys().(syscall.WaitStatus); ok {
 			returnCode = strconv.Itoa(status.ExitStatus())
+		} else if commandErr == nil {
+			returnCode = "0"
+		} else {
+			returnCode = "1"
 		}
 	}
 
@@ -105,4 +126,14 @@ func (o Options) Run() error {
 		return fmt.Errorf("wrapped process failed with code %s: %v", returnCode, err)
 	}
 	return nil
+}
+
+// optionOrDefault defaults to a value if option
+// is the zero value
+func optionOrDefault(option, defaultValue time.Duration) time.Duration {
+	if option == 0 {
+		return defaultValue
+	}
+
+	return option
 }
