@@ -110,7 +110,8 @@ func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRe
 	}
 
 	pr := pre.PullRequest
-	if !pr.Merged || pr.MergeSHA == nil {
+
+	if !pr.Merged || pr.MergeSHA == nil || pr.Base.Repo.DefaultBranch != pr.Base.Ref {
 		return nil
 	}
 
