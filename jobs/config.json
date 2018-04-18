@@ -2894,7 +2894,7 @@
   "ci-kubernetes-e2e-gce-gci-qa-serial-m66": {
     "args": [
       "--check-leaked-resources",
-      "--extract=gci/gci-66/latest-1.8",
+      "--extract=gci/gci-66/latest-1.9",
       "--gcp-project-type=gci-qa-project",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
@@ -2940,7 +2940,7 @@
   "ci-kubernetes-e2e-gce-gci-qa-slow-m65": {
     "args": [
       "--check-leaked-resources",
-      "--extract=gci/gci-65",
+      "--extract=gci/gci-65/latest-1.8",
       "--gcp-project-type=gci-qa-project",
       "--gcp-zone=us-central1-f",
       "--ginkgo-parallel=25",
@@ -2956,7 +2956,7 @@
   "ci-kubernetes-e2e-gce-gci-qa-slow-m66": {
     "args": [
       "--check-leaked-resources",
-      "--extract=gci/gci-66",
+      "--extract=gci/gci-66/latest-1.9",
       "--gcp-project-type=gci-qa-project",
       "--gcp-zone=us-central1-f",
       "--ginkgo-parallel=25",
