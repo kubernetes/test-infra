@@ -66,6 +66,7 @@ var awsResourceTypes = []awsResourceType{
 	dhcpOptions{},
 	volumes{},
 	addresses{},
+	iamRoles{},
 }
 
 type awsResource interface {
@@ -75,6 +76,10 @@ type awsResource interface {
 	// intended to be globally unique across regions and accounts, so
 	// that works.
 	ARN() string
+
+	// ResourceKey() returns a per-resource key, because ARNs might conflict if two objects
+	// with the same name are created at different times (e.g. IAM roles)
+	ResourceKey() string
 }
 
 // awsResourceSet keeps track of the first time we saw a particular
@@ -122,24 +127,24 @@ func (s *awsResourceSet) Save(sess *session.Session, p *s3path) error {
 // on whether it should be deleted. If Mark(r) returns true, the TTL
 // has expired for r and it should be deleted.
 func (s *awsResourceSet) Mark(r awsResource) bool {
-	arn := r.ARN()
+	key := r.ResourceKey()
 	now := time.Now()
 
-	s.marked[arn] = true
-	if t, ok := s.firstSeen[arn]; ok {
+	s.marked[key] = true
+	if t, ok := s.firstSeen[key]; ok {
 		since := now.Sub(t)
 		if since > s.ttl {
-			s.swept = append(s.swept, arn)
+			s.swept = append(s.swept, key)
 			return true
 		}
-		glog.V(1).Infof("%s: seen for %v", r.ARN(), since)
+		glog.V(1).Infof("%s: seen for %v", key, since)
 		return false
 	}
-	s.firstSeen[arn] = now
-	glog.V(1).Infof("%s: first seen", r.ARN())
+	s.firstSeen[key] = now
+	glog.V(1).Infof("%s: first seen", key)
 	if s.ttl == 0 {
 		// If the TTL is 0, it should be deleted now.
-		s.swept = append(s.swept, arn)
+		s.swept = append(s.swept, key)
 		return true
 	}
 	return false
@@ -150,14 +155,14 @@ func (s *awsResourceSet) Mark(r awsResource) bool {
 // resources have been marked.
 func (s *awsResourceSet) MarkComplete() int {
 	var gone []string
-	for arn := range s.firstSeen {
-		if !s.marked[arn] {
-			gone = append(gone, arn)
+	for key := range s.firstSeen {
+		if !s.marked[key] {
+			gone = append(gone, key)
 		}
 	}
-	for _, arn := range gone {
-		glog.V(1).Infof("%s: deleted since last run", arn)
-		delete(s.firstSeen, arn)
+	for _, key := range gone {
+		glog.V(1).Infof("%s: deleted since last run", key)
+		delete(s.firstSeen, key)
 	}
 	if len(s.swept) > 0 {
 		glog.Errorf("%d resources swept: %v", len(s.swept), s.swept)
@@ -221,6 +226,10 @@ func (i instance) ARN() string {
 	return fmt.Sprintf("arn:aws:ec2:%s:%s:instance/%s", i.Region, i.Account, i.InstanceID)
 }
 
+func (i instance) ResourceKey() string {
+	return i.ARN()
+}
+
 // AutoScalingGroups: https://docs.aws.amazon.com/sdk-for-go/api/service/autoscaling/#AutoScaling.DescribeAutoScalingGroups
 
 type autoScalingGroups struct{}
@@ -276,6 +285,10 @@ func (asg autoScalingGroup) ARN() string {
 	return asg.ID
 }
 
+func (asg autoScalingGroup) ResourceKey() string {
+	return asg.ARN()
+}
+
 // LaunchConfigurations: http://docs.aws.amazon.com/sdk-for-go/api/service/autoscaling/#AutoScaling.DescribeLaunchConfigurations
 
 type launchConfigurations struct{}
@@ -315,6 +328,10 @@ type launchConfiguration struct {
 
 func (lc launchConfiguration) ARN() string {
 	return lc.ID
+}
+
+func (lc launchConfiguration) ResourceKey() string {
+	return lc.ARN()
 }
 
 // Subnets: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeSubnets
@@ -357,6 +374,10 @@ type subnet struct {
 
 func (sub subnet) ARN() string {
 	return fmt.Sprintf("arn:aws:ec2:%s:%s:subnet/%s", sub.Region, sub.Account, sub.ID)
+}
+
+func (sub subnet) ResourceKey() string {
+	return sub.ARN()
 }
 
 // SecurityGroups: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeSecurityGroups
@@ -441,6 +462,10 @@ func (sg securityGroup) ARN() string {
 	return fmt.Sprintf("arn:aws:ec2:%s:%s:security-group/%s", sg.Region, sg.Account, sg.ID)
 }
 
+func (sg securityGroup) ResourceKey() string {
+	return sg.ARN()
+}
+
 // InternetGateways: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeInternetGateways
 
 type internetGateways struct{}
@@ -508,6 +533,10 @@ func (ig internetGateway) ARN() string {
 	return fmt.Sprintf("arn:aws:ec2:%s:%s:internet-gateway/%s", ig.Region, ig.Account, ig.ID)
 }
 
+func (ig internetGateway) ResourceKey() string {
+	return ig.ARN()
+}
+
 // RouteTables: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeRouteTables
 
 type routeTables struct{}
@@ -563,6 +592,10 @@ func (rt routeTable) ARN() string {
 	return fmt.Sprintf("arn:aws:ec2:%s:%s:route-table/%s", rt.Region, rt.Account, rt.ID)
 }
 
+func (rt routeTable) ResourceKey() string {
+	return rt.ARN()
+}
+
 // VPCs: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeVpcs
 
 type vpcs struct{}
@@ -612,6 +645,10 @@ type vpc struct {
 
 func (vp vpc) ARN() string {
 	return fmt.Sprintf("arn:aws:ec2:%s:%s:vpc/%s", vp.Region, vp.Account, vp.ID)
+}
+
+func (vp vpc) ResourceKey() string {
+	return vp.ARN()
 }
 
 // DhcpOptions: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeDhcpOptions
@@ -718,6 +755,10 @@ func (dhcp dhcpOption) ARN() string {
 	return fmt.Sprintf("arn:aws:ec2:%s:%s:dhcp-option/%s", dhcp.Region, dhcp.Account, dhcp.ID)
 }
 
+func (dhcp dhcpOption) ResourceKey() string {
+	return dhcp.ARN()
+}
+
 // Volumes: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeVolumes
 
 type volumes struct{}
@@ -755,6 +796,10 @@ type volume struct {
 
 func (vol volume) ARN() string {
 	return fmt.Sprintf("arn:aws:ec2:%s:%s:volume/%s", vol.Region, vol.Account, vol.ID)
+}
+
+func (vol volume) ResourceKey() string {
+	return vol.ARN()
 }
 
 // Elastic IPs: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeAddresses
@@ -799,6 +844,57 @@ func (addr address) ARN() string {
 	// This ARN is a complete hallucination - there doesn't seem to be
 	// an ARN for elastic IPs.
 	return fmt.Sprintf("arn:aws:ec2:%s:%s:address/%s", addr.Region, addr.Account, addr.ID)
+}
+
+func (addr address) ResourceKey() string {
+	return addr.ARN()
+}
+
+// IAM Roles
+
+type iamRoles struct{}
+
+func (iamRoles) MarkAndSweep(sess *session.Session, acct string, region string, set *awsResourceSet) error {
+	svc := iam.New(sess, &aws.Config{Region: aws.String(region)})
+
+	var toDelete []*iamRole // Paged call, defer deletion until we have the whole list.
+	if err := svc.ListRolesPages(&iam.ListRolesInput{}, func(page *iam.ListRolesOutput, _ bool) bool {
+		for _, r := range page.Roles {
+			l := &iamRole{arn: aws.StringValue(r.Arn), roleID: aws.StringValue(r.RoleId), roleName: aws.StringValue(r.RoleName)}
+			if set.Mark(l) {
+				glog.Warningf("%s: deleting %T: %v", l.ARN(), r, r)
+				toDelete = append(toDelete, l)
+			}
+		}
+		return true
+	}); err != nil {
+		return err
+	}
+
+	for _, r := range toDelete {
+		_, err := svc.DeleteRole(
+			&iam.DeleteRoleInput{
+				RoleName: aws.String(r.roleName),
+			})
+		if err != nil {
+			glog.Warningf("%v: delete failed: %v", r.ARN(), err)
+		}
+	}
+	return nil
+}
+
+type iamRole struct {
+	arn      string
+	roleID   string
+	roleName string
+}
+
+func (lc iamRole) ARN() string {
+	return lc.arn
+}
+
+func (lc iamRole) ResourceKey() string {
+	return lc.roleID + "::" + lc.ARN()
 }
 
 // ARNs (used for uniquifying within our previous mark file)
