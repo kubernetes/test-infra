@@ -33,29 +33,20 @@ import (
 const pluginName = "release-note"
 
 const (
-	// deprecatedReleaseNoteLabelNeeded is the previous version of the
-	// releaseNotLabelNeeded label, which we continue to honor for the
-	// time being
-	deprecatedReleaseNoteLabelNeeded = "release-note-label-needed"
-
 	releaseNoteLabelNeeded    = "do-not-merge/release-note-label-needed"
 	releaseNote               = "release-note"
 	releaseNoteNone           = "release-note-none"
 	releaseNoteActionRequired = "release-note-action-required"
 
-	releaseNoteFormat       = `Adding %s because the release note process has not been followed.`
-	releaseNoteSuffixFormat = `One of the following labels is required %q, %q, or %q.
-Please see: https://git.k8s.io/community/contributors/devel/pull-requests.md#write-release-notes-if-needed.`
+	releaseNoteFormat       = `Adding the "%s" label because no release-note block was detected, please follow our [release note process](https://git.k8s.io/community/contributors/guide/release-notes.md) to remove it.`
 	parentReleaseNoteFormat = `All 'parent' PRs of a cherry-pick PR must have one of the %q or %q labels, or this PR must follow the standard/parent release note labeling requirement.`
 
 	actionRequiredNote = "action required"
 )
 
 var (
-	releaseNoteSuffix         = fmt.Sprintf(releaseNoteSuffixFormat, releaseNote, releaseNoteActionRequired, releaseNoteNone)
-	releaseNoteBody           = fmt.Sprintf(releaseNoteFormat, releaseNoteLabelNeeded)
-	deprecatedReleaseNoteBody = fmt.Sprintf(releaseNoteFormat, deprecatedReleaseNoteLabelNeeded)
-	parentReleaseNoteBody     = fmt.Sprintf(parentReleaseNoteFormat, releaseNote, releaseNoteActionRequired)
+	releaseNoteBody       = fmt.Sprintf(releaseNoteFormat, releaseNoteLabelNeeded)
+	parentReleaseNoteBody = fmt.Sprintf(parentReleaseNoteFormat, releaseNote, releaseNoteActionRequired)
 
 	noteMatcherRE = regexp.MustCompile(`(?s)(?:Release note\*\*:\s*(?:<!--[^<>]*-->\s*)?` + "```(?:release-note)?|```release-note)(.+?)```")
 	cpRe          = regexp.MustCompile(`Cherry pick of #([[:digit:]]+) on release-([[:digit:]]+\.[[:digit:]]+).`)
@@ -64,7 +55,6 @@ var (
 	allRNLabels = []string{
 		releaseNoteNone,
 		releaseNoteActionRequired,
-		deprecatedReleaseNoteLabelNeeded,
 		releaseNoteLabelNeeded,
 		releaseNote,
 	}
@@ -229,7 +219,7 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 		if containsNoneCommand(comments) {
 			labelToAdd = releaseNoteNone
 		} else if !prLabels.Has(releaseNoteLabelNeeded) {
-			comment := plugins.FormatResponse(pr.PullRequest.User.Login, releaseNoteBody, releaseNoteSuffix)
+			comment := plugins.FormatSimpleResponse(pr.PullRequest.User.Login, releaseNoteBody)
 			if err := gc.CreateComment(org, repo, pr.Number, comment); err != nil {
 				log.WithError(err).Errorf("Failed to comment on %s/%s#%d with comment %q.", org, repo, pr.Number, comment)
 			}
@@ -277,8 +267,7 @@ func clearStaleComments(gc githubClient, log *logrus.Entry, pr *github.PullReque
 		func(c github.IssueComment) bool { // isStale function
 			return c.User.Login == botName &&
 				(strings.Contains(c.Body, releaseNoteBody) ||
-					strings.Contains(c.Body, parentReleaseNoteBody) ||
-					strings.Contains(c.Body, deprecatedReleaseNoteBody))
+					strings.Contains(c.Body, parentReleaseNoteBody))
 		},
 	)
 }
@@ -299,11 +288,6 @@ func ensureNoRelNoteNeededLabel(gc githubClient, log *logrus.Entry, pr *github.P
 	if prLabels.Has(releaseNoteLabelNeeded) {
 		if err := gc.RemoveLabel(org, repo, pr.Number, releaseNoteLabelNeeded); err != nil {
 			log.WithError(err).Errorf(format, releaseNoteLabelNeeded, org, repo, pr.Number)
-		}
-	}
-	if prLabels.Has(deprecatedReleaseNoteLabelNeeded) {
-		if err := gc.RemoveLabel(org, repo, pr.Number, deprecatedReleaseNoteLabelNeeded); err != nil {
-			log.WithError(err).Errorf(format, deprecatedReleaseNoteLabelNeeded, org, repo, pr.Number)
 		}
 	}
 }
