@@ -353,6 +353,7 @@ plugins:
 
   kubernetes-sigs/poseidon:
   - approve
+  - trigger
 
   kubernetes-sigs/cluster-api:
   - approve
