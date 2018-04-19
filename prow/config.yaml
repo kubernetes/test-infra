@@ -14978,7 +14978,7 @@ periodics:
       env:
       - name: AWS_SHARED_CREDENTIALS_FILE
         value: /workspace/.aws/credentials
-      image: gcr.io/k8s-test-infra-aws/aws-janitor:v20180418-3b805980f
+      image: gcr.io/k8s-test-infra-aws/aws-janitor:v20180419-0d5b50232
       volumeMounts:
       - mountPath: /workspace/.aws
         name: aws-cred
