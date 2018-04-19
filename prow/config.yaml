@@ -7048,6 +7048,7 @@ periodics:
       - "--deployment=dind"
       - "--up"
       - "--test"
+      - "--ginkgo-focus=[Conformance]"
       - "--down"
       env:
       - name: DOCKER_IN_DOCKER_ENABLED
