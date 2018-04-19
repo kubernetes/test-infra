@@ -23,11 +23,11 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-type ContextChecker interface {
-	// IgnoreContext tells whether a context is optional.
-	IgnoreContext(context Context) bool
-	// MissingRequiredContexts tells if required contexts are missing from the list of contexts provided.
-	MissingRequiredContexts([]Context) []Context
+type contextChecker interface {
+	// ignoreContext tells whether a context is optional.
+	ignoreContext(context Context) bool
+	// missingRequiredContexts tells if required contexts are missing from the list of contexts provided.
+	missingRequiredContexts([]Context) []Context
 }
 
 // newExpectedContext creates a Context with Expected state.
@@ -40,28 +40,28 @@ func newExpectedContext(c string) Context {
 	}
 }
 
-// ContextRegister implements ContextChecker and allow registering of required and optional contexts.
-type ContextRegister struct {
+// contextRegister implements contextChecker and allow registering of required and optional contexts.
+type contextRegister struct {
 	lock               sync.RWMutex
 	required, optional sets.String
 }
 
-// NewContextRegister instantiates a new ContextRegister and register the optional contexts provided.
-func NewContextRegister(optional ...string) *ContextRegister {
-	r := ContextRegister{
+// newContextRegister instantiates a new contextRegister and register the optional contexts provided.
+func newContextRegister(optional ...string) *contextRegister {
+	r := contextRegister{
 		required: sets.NewString(),
 		optional: sets.NewString(),
 	}
-	r.RegisterOptionalContexts(optional...)
+	r.registerOptionalContexts(optional...)
 	return &r
 }
 
-// IgnoreContext checks whether a context can be ignored.
+// ignoreContext checks whether a context can be ignored.
 // Will return true if
 // - context is registered as optional
 // - required contexts are registered and the context provided is not required
 // Will return false otherwise. Every context is required.
-func (r *ContextRegister) IgnoreContext(c Context) bool {
+func (r *contextRegister) ignoreContext(c Context) bool {
 	if r.optional.Has(string(c.Context)) {
 		return true
 	}
@@ -71,8 +71,8 @@ func (r *ContextRegister) IgnoreContext(c Context) bool {
 	return false
 }
 
-// MissingRequiredContexts discard the optional contexts and only look of extra required contexts that are not provided.
-func (r *ContextRegister) MissingRequiredContexts(contexts []Context) []Context {
+// missingRequiredContexts discard the optional contexts and only look of extra required contexts that are not provided.
+func (r *contextRegister) missingRequiredContexts(contexts []Context) []Context {
 	if r.required.Len() == 0 {
 		return nil
 	}
@@ -87,16 +87,16 @@ func (r *ContextRegister) MissingRequiredContexts(contexts []Context) []Context 
 	return missingContexts
 }
 
-// RegisterOptionalContexts registers optional contexts
-func (r *ContextRegister) RegisterOptionalContexts(c ...string) {
+// registerOptionalContexts registers optional contexts
+func (r *contextRegister) registerOptionalContexts(c ...string) {
 	r.lock.Lock()
 	defer r.lock.Unlock()
 	r.optional.Insert(c...)
 }
 
-// RegisterRequiredContexts register required contexts.
+// registerRequiredContexts register required contexts.
 // Once required contexts are registered other contexts will be considered optional.
-func (r *ContextRegister) RegisterRequiredContexts(c ...string) {
+func (r *contextRegister) registerRequiredContexts(c ...string) {
 	r.lock.Lock()
 	defer r.lock.Unlock()
 	r.required.Insert(c...)

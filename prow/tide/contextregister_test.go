@@ -56,10 +56,10 @@ func TestContextRegisterIgnoreContext(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		cr := NewContextRegister(tc.optional...)
-		cr.RegisterRequiredContexts(tc.required...)
+		cr := newContextRegister(tc.optional...)
+		cr.registerRequiredContexts(tc.required...)
 		for i, c := range tc.contexts {
-			if cr.IgnoreContext(newExpectedContext(c)) != tc.results[i] {
+			if cr.ignoreContext(newExpectedContext(c)) != tc.results[i] {
 				t.Errorf("%s - ignoreContext for %s should return %t", tc.name, c, tc.results[i])
 			}
 		}
@@ -116,13 +116,13 @@ func TestContextRegisterMissingContexts(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		cr := NewContextRegister(tc.optional...)
-		cr.RegisterRequiredContexts(tc.required...)
+		cr := newContextRegister(tc.optional...)
+		cr.registerRequiredContexts(tc.required...)
 		var contexts []Context
 		for _, c := range tc.existingContexts {
 			contexts = append(contexts, newExpectedContext(c))
 		}
-		missingContexts := cr.MissingRequiredContexts(contexts)
+		missingContexts := cr.missingRequiredContexts(contexts)
 		m := contextsToSet(missingContexts)
 		if !m.Equal(sets.NewString(tc.expectedContexts...)) {
 			t.Errorf("%s - expected %v got %v", tc.name, tc.expectedContexts, missingContexts)

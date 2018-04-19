@@ -624,7 +624,7 @@ func TestExpectedStatus(t *testing.T) {
 			pool = map[string]PullRequest{"#0": {}}
 		}
 
-		state, desc := expectedStatus(queriesByRepo, &pr, pool, NewContextRegister(statusContext))
+		state, desc := expectedStatus(queriesByRepo, &pr, pool, newContextRegister(statusContext))
 		if state != tc.state {
 			t.Errorf("Expected status state %q, but got %q.", string(tc.state), string(state))
 		}
@@ -1010,7 +1010,7 @@ func TestPickBatch(t *testing.T) {
 		gc:     gc,
 		ca:     ca,
 	}
-	prs, err := c.pickBatch(sp, NewContextRegister(statusContext))
+	prs, err := c.pickBatch(sp, newContextRegister(statusContext))
 	if err != nil {
 		t.Fatalf("Error from pickBatch: %v", err)
 	}
@@ -1261,7 +1261,7 @@ func TestTakeAction(t *testing.T) {
 			batchPending = []PullRequest{{}}
 		}
 		t.Logf("Test case: %s", tc.name)
-		cr := NewContextRegister(statusContext)
+		cr := newContextRegister(statusContext)
 		if act, _, err := c.takeAction(sp, presubmits, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges), cr); err != nil {
 			t.Errorf("Error in takeAction: %v", err)
 			continue
@@ -1599,8 +1599,8 @@ func TestIsPassing(t *testing.T) {
 			t.Errorf("Failed to get log output before testing: %v", err)
 			t.FailNow()
 		}
-		cr := NewContextRegister(statusContext)
-		cr.RegisterRequiredContexts(findRequiredContexts(tc.config)...)
+		cr := newContextRegister(statusContext)
+		cr.registerRequiredContexts(findRequiredContexts(tc.config)...)
 		pr := PullRequest{HeadRefOID: githubql.String(headSHA)}
 		passing := isPassingTests(log, ghc, pr, cr)
 		if passing != tc.passing {

@@ -208,7 +208,7 @@ func byRepoAndNumber(prs []PullRequest) map[string]PullRequest {
 // Note: an empty diff can be returned if the reason that the PR does not match
 // the TideQuery is unknown. This can happen happen if this function's logic
 // does not match GitHub's and does not indicate that the PR matches the query.
-func requirementDiff(pr *PullRequest, q *config.TideQuery, cc ContextChecker) (string, int) {
+func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (string, int) {
 	const maxLabelChars = 50
 	var desc string
 	var diff int
@@ -320,7 +320,7 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc ContextChecker) (s
 // in order to generate a diff for the status description. We choose the query
 // for the repo that the PR is closest to meeting (as determined by the number
 // of unmet/violated requirements).
-func expectedStatus(queriesByRepo map[string]config.TideQueries, pr *PullRequest, pool map[string]PullRequest, cc ContextChecker) (string, string) {
+func expectedStatus(queriesByRepo map[string]config.TideQueries, pr *PullRequest, pool map[string]PullRequest, cc contextChecker) (string, string) {
 	if _, ok := pool[prKey(pr)]; !ok {
 		minDiffCount := -1
 		var minDiff string
@@ -371,7 +371,7 @@ func (sc *statusController) setStatuses(all, pool []PullRequest) {
 			log.WithError(err).Error("Getting head commit status contexts, skipping...")
 			return
 		}
-		cr := NewContextRegister(statusContext)
+		cr := newContextRegister(statusContext)
 		if sc.ca.Config().Tide.SkipOptionalContexts {
 			bp, err := sc.ca.Config().GetBranchProtection(
 				string(pr.Repository.Owner.Login),
@@ -381,7 +381,7 @@ func (sc *statusController) setStatuses(all, pool []PullRequest) {
 				log.WithError(err).Error("Getting branch protection")
 				return
 			}
-			cr.RegisterRequiredContexts(findRequiredContexts(bp)...)
+			cr.registerRequiredContexts(findRequiredContexts(bp)...)
 		}
 		wantState, wantDesc := expectedStatus(queriesByRepo, pr, poolM, cr)
 		var actualState githubql.StatusState
@@ -587,7 +587,7 @@ func toSimpleState(s kube.ProwJobState) simpleState {
 
 // isPassingTests returns whether or not all contexts set on the PR except for
 // the tide pool context are passing.
-func isPassingTests(log *logrus.Entry, ghc githubClient, pr PullRequest, cc ContextChecker) bool {
+func isPassingTests(log *logrus.Entry, ghc githubClient, pr PullRequest, cc contextChecker) bool {
 	log = log.WithFields(pr.logFields())
 	contexts, err := headContexts(log, ghc, &pr)
 	if err != nil {
@@ -603,21 +603,21 @@ func isPassingTests(log *logrus.Entry, ghc githubClient, pr PullRequest, cc Cont
 // If the branchProtection is set to only check for required checks, we will skip
 // all non-required tests. If required tests are missing from the list, they will be
 // added to the list of failed contexts.
-func unsuccessfulContexts(contexts []Context, cc ContextChecker) []Context {
+func unsuccessfulContexts(contexts []Context, cc contextChecker) []Context {
 	var failed []Context
 	for _, ctx := range contexts {
-		if cc.IgnoreContext(ctx) {
+		if cc.ignoreContext(ctx) {
 			continue
 		}
 		if ctx.State != githubql.StatusStateSuccess {
 			failed = append(failed, ctx)
 		}
 	}
-	failed = append(failed, cc.MissingRequiredContexts(contexts)...)
+	failed = append(failed, cc.missingRequiredContexts(contexts)...)
 	return failed
 }
 
-func pickSmallestPassingNumber(log *logrus.Entry, ghc githubClient, prs []PullRequest, cc ContextChecker) (bool, PullRequest) {
+func pickSmallestPassingNumber(log *logrus.Entry, ghc githubClient, prs []PullRequest, cc contextChecker) (bool, PullRequest) {
 	smallestNumber := -1
 	var smallestPR PullRequest
 	for _, pr := range prs {
@@ -767,7 +767,7 @@ func prNumbers(prs []PullRequest) []int {
 	return nums
 }
 
-func (c *Controller) pickBatch(sp subpool, cc ContextChecker) ([]PullRequest, error) {
+func (c *Controller) pickBatch(sp subpool, cc contextChecker) ([]PullRequest, error) {
 	r, err := c.gc.Clone(sp.org + "/" + sp.repo)
 	if err != nil {
 		return nil, err
@@ -910,7 +910,7 @@ func (c *Controller) trigger(sp subpool, presubmits map[int]sets.String, prs []P
 	return nil
 }
 
-func (c *Controller) takeAction(sp subpool, presubmits map[int]sets.String, batchPending, successes, pendings, nones, batchMerges []PullRequest, cc ContextChecker) (Action, []PullRequest, error) {
+func (c *Controller) takeAction(sp subpool, presubmits map[int]sets.String, batchPending, successes, pendings, nones, batchMerges []PullRequest, cc contextChecker) (Action, []PullRequest, error) {
 	// Merge the batch!
 	if len(batchMerges) > 0 {
 		return MergeBatch, batchMerges, c.mergePRs(sp, batchMerges)
@@ -997,13 +997,13 @@ func (c *Controller) syncSubpool(sp subpool) (Pool, error) {
 	if err != nil {
 		return Pool{}, fmt.Errorf("error determining required presubmits: %v", err)
 	}
-	cr := NewContextRegister(statusContext)
+	cr := newContextRegister(statusContext)
 	if c.ca.Config().Tide.SkipOptionalContexts {
 		bp, err := c.ca.Config().GetBranchProtection(sp.org, sp.repo, sp.branch)
 		if err != nil {
 			return Pool{}, fmt.Errorf("error parsing branch protection: %v", err)
 		}
-		cr.RegisterRequiredContexts(findRequiredContexts(bp)...)
+		cr.registerRequiredContexts(findRequiredContexts(bp)...)
 	}
 	successes, pendings, nones := accumulate(presubmits, sp.prs, sp.pjs)
 	batchMerge, batchPending := accumulateBatch(presubmits, sp.prs, sp.pjs)
