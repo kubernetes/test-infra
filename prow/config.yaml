@@ -13977,6 +13977,43 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180418-79a97ca02-master
 - interval: 6h
   agent: kubernetes
+  name: ci-kubernetes-gce-conformance-latest-1-10
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=220
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180418-79a97ca02-master
+- interval: 6h
+  agent: kubernetes
+  name: ci-kubernetes-gce-conformance-latest-1-8
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=220
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180418-79a97ca02-master
+- interval: 6h
+  agent: kubernetes
+  name: ci-kubernetes-gce-conformance-latest-1-9
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=220
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180418-79a97ca02-master
+
+- interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-gce-conformance-stable-1-10
   labels:
     preset-service-account: true
@@ -13998,9 +14035,7 @@ periodics:
     - args:
       - --timeout=220
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180418-79a97ca02-master
-
-
+      image: gcr.io/k8s-testimages/kubekins-e2e@sha256:773f00d30eca8fc577729f65102aed86febca82a7ce52fbfe6d38ce6a5d63ba0
 - interval: 6h
   agent: kubernetes
   name: ci-kubernetes-gce-conformance-stable-1-9
