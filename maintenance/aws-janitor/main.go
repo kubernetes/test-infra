@@ -66,6 +66,9 @@ var awsResourceTypes = []awsResourceType{
 	dhcpOptions{},
 	volumes{},
 	addresses{},
+
+	// Note that order matters here - we can't delete roles until we've deleted the profiles
+	iamInstanceProfiles{},
 	iamRoles{},
 }
 
@@ -922,6 +925,73 @@ func (r iamRole) ARN() string {
 
 func (r iamRole) ResourceKey() string {
 	return r.roleID + "::" + r.ARN()
+}
+
+// IAM Instance Profiles
+
+type iamInstanceProfiles struct{}
+
+func (iamInstanceProfiles) MarkAndSweep(sess *session.Session, acct string, region string, set *awsResourceSet) error {
+	svc := iam.New(sess, &aws.Config{Region: aws.String(region)})
+
+	var toDelete []*iamInstanceProfile // Paged call, defer deletion until we have the whole list.
+	if err := svc.ListInstanceProfilesPages(&iam.ListInstanceProfilesInput{}, func(page *iam.ListInstanceProfilesOutput, _ bool) bool {
+		for _, p := range page.InstanceProfiles {
+			// We treat an instance profile as managed if all its roles are
+			managed := true
+			if len(p.Roles) == 0 {
+				// Just in case...
+				managed = false
+			}
+			for _, r := range p.Roles {
+				if !roleIsManaged(r) {
+					managed = false
+				}
+			}
+			if !managed {
+				glog.Infof("ignoring unmanaged profile %s", aws.StringValue(p.Arn))
+				continue
+			}
+
+			o := &iamInstanceProfile{
+				arn:                 aws.StringValue(p.Arn),
+				instanceProfileID:   aws.StringValue(p.InstanceProfileId),
+				instanceProfileName: aws.StringValue(p.InstanceProfileName),
+			}
+			if set.Mark(o) {
+				glog.Warningf("%s: deleting %T: %v", o.ARN(), o, o)
+				toDelete = append(toDelete, o)
+			}
+		}
+		return true
+	}); err != nil {
+		return err
+	}
+
+	for _, o := range toDelete {
+		_, err := svc.DeleteInstanceProfile(
+			&iam.DeleteInstanceProfileInput{
+				InstanceProfileName: aws.String(o.instanceProfileName),
+			})
+		if err != nil {
+			glog.Warningf("%v: delete failed: %v", o.ARN(), err)
+		}
+	}
+	return nil
+}
+
+type iamInstanceProfile struct {
+	arn                 string
+	instanceProfileID   string
+	instanceProfileName string
+}
+
+func (p iamInstanceProfile) ARN() string {
+	return p.arn
+}
+
+func (p iamInstanceProfile) ResourceKey() string {
+	return p.instanceProfileID + "::" + p.ARN()
 }
 
 // ARNs (used for uniquifying within our previous mark file)
