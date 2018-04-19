@@ -11095,6 +11095,51 @@
       "sig-gcp"
     ]
   },
+  "ci-kubernetes-gce-conformance-stable-1-10": {
+    "args": [
+      "--extract=release/stable-1.10",
+      "--gcp-master-image=gci",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]",
+      "--timeout=200m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-gcp"
+    ]
+  },
+  "ci-kubernetes-gce-conformance-stable-1-8": {
+    "args": [
+      "--extract=release/stable-1.8",
+      "--gcp-master-image=gci",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]",
+      "--timeout=200m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-gcp"
+    ]
+  },
+  "ci-kubernetes-gce-conformance-stable-1-9": {
+    "args": [
+      "--extract=release/stable-1.9",
+      "--gcp-master-image=gci",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]",
+      "--timeout=200m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-gcp"
+    ]
+  },
   "ci-kubernetes-integration-beta": {
     "args": [
       "--branch=release-1.11",
