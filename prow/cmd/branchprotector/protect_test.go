@@ -23,6 +23,7 @@ import (
 	"strings"
 	"testing"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 )
@@ -78,113 +79,6 @@ func TestOptions_Validate(t *testing.T) {
 		}
 		if !testCase.expectedErr && err != nil {
 			t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
-		}
-	}
-}
-
-func TestJobRequirements(t *testing.T) {
-	cases := []struct {
-		name     string
-		config   []config.Presubmit
-		expected []string
-	}{
-		{
-			name: "basic",
-			config: []config.Presubmit{
-				{
-					Context:    "always-run",
-					AlwaysRun:  true,
-					SkipReport: false,
-				},
-				{
-					Context:      "run-if-changed",
-					RunIfChanged: "foo",
-					AlwaysRun:    false,
-					SkipReport:   false,
-				},
-				{
-					Context:    "optional",
-					AlwaysRun:  false,
-					SkipReport: false,
-				},
-			},
-			expected: []string{"always-run", "run-if-changed"},
-		},
-		{
-			name: "children",
-			config: []config.Presubmit{
-				{
-					Context:    "always-run",
-					AlwaysRun:  true,
-					SkipReport: false,
-					RunAfterSuccess: []config.Presubmit{
-						{
-							Context: "include-me",
-						},
-					},
-				},
-				{
-					Context:      "run-if-changed",
-					RunIfChanged: "foo",
-					SkipReport:   true,
-					AlwaysRun:    false,
-					RunAfterSuccess: []config.Presubmit{
-						{
-							Context: "me2",
-						},
-					},
-				},
-				{
-					Context:    "run-and-skip",
-					AlwaysRun:  true,
-					SkipReport: true,
-					RunAfterSuccess: []config.Presubmit{
-						{
-							Context: "also-me-3",
-						},
-					},
-				},
-				{
-					Context:    "optional",
-					AlwaysRun:  false,
-					SkipReport: false,
-					RunAfterSuccess: []config.Presubmit{
-						{
-							Context: "no thanks",
-						},
-					},
-				},
-				{
-					Context:    "hidden-grandpa",
-					AlwaysRun:  true,
-					SkipReport: true,
-					RunAfterSuccess: []config.Presubmit{
-						{
-							Context:    "hidden-parent",
-							SkipReport: true,
-							AlwaysRun:  false,
-							RunAfterSuccess: []config.Presubmit{
-								{
-									Context: "visible-kid",
-								},
-							},
-						},
-					},
-				},
-			},
-			expected: []string{
-				"always-run", "include-me",
-				"me2",
-				"also-me-3",
-				"visible-kid",
-			},
-		},
-	}
-
-	for _, tc := range cases {
-		actual := jobRequirements(tc.config, false)
-		if !reflect.DeepEqual(actual, tc.expected) {
-			t.Errorf("%s: actual %v != expected %v", tc.name, actual, tc.expected)
 		}
 	}
 }
@@ -664,9 +558,9 @@ func TestProtect(t *testing.T) {
 						switch {
 						case e.Protect != a.Protect:
 							t.Errorf("%s: %s/%s=%s actual protect %t != expected %t", tc.name, e.Org, e.Repo, e.Branch, a.Protect, e.Protect)
-						case len(e.Contexts) != len(a.Contexts), len(e.Contexts) > 0 && !reflect.DeepEqual(e.Contexts, a.Contexts):
+						case !sets.NewString(a.Contexts...).Equal(sets.NewString(e.Contexts...)):
 							t.Errorf("%s: %s/%s=%s actual contexts %v != expected %v", tc.name, e.Org, e.Repo, e.Branch, a.Contexts, e.Contexts)
-						case len(e.Pushers) != len(a.Pushers), len(e.Pushers) > 0 && !reflect.DeepEqual(e.Pushers, a.Pushers):
+						case !sets.NewString(a.Pushers...).Equal(sets.NewString(e.Pushers...)):
 							t.Errorf("%s: %s/%s=%s actual pushers %v != expected %v", tc.name, e.Org, e.Repo, e.Branch, a.Pushers, e.Pushers)
 						}
 						break
