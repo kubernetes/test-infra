@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -26,12 +27,56 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"time"
+
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/client"
 )
 
 var (
 	localUpTimeout = flag.Duration("local-up-timeout", 2*time.Minute, "(local only) Time limit between 'local-up-cluster.sh' and a response from the Kubernetes API.")
 )
+
+func removeAllContainers(cli *client.Client) {
+	// list all containers
+	listOptions := types.ContainerListOptions{
+		Quiet: true,
+		All:   true,
+	}
+	containers, err := cli.ContainerList(context.Background(), listOptions)
+	if err != nil {
+		log.Printf("Failed to list containers: %v\n", err)
+		return
+	}
+
+	// reverse sort by Creation time so we delete newest containers first
+	sort.Slice(containers, func(i, j int) bool {
+		return containers[i].Created > containers[j].Created
+	})
+
+	// stop then remove (which implicitly kills) each container
+	duration := time.Second * 1
+	removeOptions := types.ContainerRemoveOptions{
+		RemoveVolumes: true,
+		Force:         true,
+	}
+	for _, container := range containers {
+		log.Printf("Stopping container: %v %s with ID: %s\n",
+			container.Names, container.Image, container.ID)
+		err = cli.ContainerStop(context.Background(), container.ID, &duration)
+		if err != nil {
+			log.Printf("Error stopping container: %v\n", err)
+		}
+
+		log.Printf("Removing container: %v %s with ID: %s\n",
+			container.Names, container.Image, container.ID)
+		err = cli.ContainerRemove(context.Background(), container.ID, removeOptions)
+		if err != nil {
+			log.Printf("Error removing container: %v\n", err)
+		}
+	}
+}
 
 type localCluster struct {
 	tempDir    string
@@ -168,10 +213,13 @@ func (n localCluster) TestSetup() error {
 }
 
 func (n localCluster) Down() error {
-	err := control.FinishRunning(exec.Command("bash", "-c", "docker rm -f $(docker ps -a -q)"))
+	// create docker client
+	cli, err := client.NewEnvClient()
 	if err != nil {
-		log.Printf("unable to cleanup containers in docker: %v", err)
+		log.Printf("Docker containers cleanup, unable to create Docker client: %v", err)
 	}
+	// make sure all containers are removed
+	removeAllContainers(cli)
 	err = control.FinishRunning(exec.Command("pkill", "hyperkube"))
 	if err != nil {
 		log.Printf("unable to kill hyperkube processes: %v", err)
