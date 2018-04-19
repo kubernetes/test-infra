@@ -854,12 +854,39 @@ func (addr address) ResourceKey() string {
 
 type iamRoles struct{}
 
+// roleIsManaged checks if the role should be managed (and thus deleted) by us
+// In particular, we want to avoid "system" AWS roles or roles that might support test-infra
+func roleIsManaged(role *iam.Role) bool {
+	name := aws.StringValue(role.RoleName)
+	path := aws.StringValue(role.Path)
+
+	// Most AWS system roles are in a directory called `aws-service-role`
+	if strings.HasPrefix(path, "/aws-service-role/") {
+		return false
+	}
+
+	// kops roles have names start with `masters.` or `nodes.`
+	if strings.HasPrefix(name, "masters.") {
+		return true
+	}
+	if strings.HasPrefix(name, "nodes.") {
+		return true
+	}
+
+	glog.Infof("unknown role name=%q, path=%q; assuming not managed", name, path)
+	return false
+}
+
 func (iamRoles) MarkAndSweep(sess *session.Session, acct string, region string, set *awsResourceSet) error {
 	svc := iam.New(sess, &aws.Config{Region: aws.String(region)})
 
 	var toDelete []*iamRole // Paged call, defer deletion until we have the whole list.
 	if err := svc.ListRolesPages(&iam.ListRolesInput{}, func(page *iam.ListRolesOutput, _ bool) bool {
 		for _, r := range page.Roles {
+			if !roleIsManaged(r) {
+				continue
+			}
+
 			l := &iamRole{arn: aws.StringValue(r.Arn), roleID: aws.StringValue(r.RoleId), roleName: aws.StringValue(r.RoleName)}
 			if set.Mark(l) {
 				glog.Warningf("%s: deleting %T: %v", l.ARN(), r, r)
@@ -889,12 +916,12 @@ type iamRole struct {
 	roleName string
 }
 
-func (lc iamRole) ARN() string {
-	return lc.arn
+func (r iamRole) ARN() string {
+	return r.arn
 }
 
-func (lc iamRole) ResourceKey() string {
-	return lc.roleID + "::" + lc.ARN()
+func (r iamRole) ResourceKey() string {
+	return r.roleID + "::" + r.ARN()
 }
 
 // ARNs (used for uniquifying within our previous mark file)
