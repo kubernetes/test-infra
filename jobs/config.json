@@ -6729,7 +6729,7 @@
       "--gcp-project=kubernetes-scale",
       "--gcp-region=us-east1",
       "--gke-command-group=beta",
-      "--gke-environment=test",
+      "--gke-environment=staging",
       "--gke-node-locations=us-east1-a",
       "--gke-shape={\"default\":{\"Nodes\":3,\"MachineType\":\"n1-standard-1\"},\"heapster-pool\":{\"Nodes\":1,\"MachineType\":\"n1-standard-8\"}}",
       "--provider=gke",
