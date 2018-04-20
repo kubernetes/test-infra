@@ -360,7 +360,7 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 		"kubeflow/reporting",
 		"kubeflow/testing",
 		"kubeflow/tf-operator",
-		"kubeflow/hp-tuning",
+		"kubeflow/katib",
 		"kubernetes/kubernetes",
 		"kubernetes/test-infra",
 		"kubernetes/cluster-registry",

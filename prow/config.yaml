@@ -102,7 +102,7 @@ tide:
     - kubeflow/pytorch-operator
     - kubeflow/testing
     - kubeflow/tf-operator
-    - kubeflow/hp-tuning
+    - kubeflow/katib
     labels:
     - lgtm
     - approved
@@ -427,13 +427,13 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
-  kubeflow/hp-tuning:
-  - name: kubeflow-hp-tuning-presubmit
-    context: kubeflow-hp-tuning-presubmit
+  kubeflow/katib:
+  - name: kubeflow-katib-presubmit
+    context: kubeflow-katib-presubmit
     agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test kubeflow-hp-tuning-presubmit"
-    trigger: "(?m)^/test( all| kubeflow-hp-tuning-presubmit),?(\\s+|$)"
+    rerun_command: "/test kubeflow-katib-presubmit"
+    trigger: "(?m)^/test( all| kubeflow-katib-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
@@ -5495,8 +5495,8 @@ postsubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
-  kubeflow/hp-tuning:
-  - name: kubeflow-hp-tuning-postsubmit
+  kubeflow/katib:
+  - name: kubeflow-katib-postsubmit
     agent: kubernetes
     labels:
       preset-service-account: true
