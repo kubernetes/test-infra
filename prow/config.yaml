@@ -103,6 +103,7 @@ tide:
     - kubeflow/testing
     - kubeflow/tf-operator
     - kubeflow/katib
+    - kubeflow/experimental-kvc
     labels:
     - lgtm
     - approved
@@ -434,6 +435,22 @@ presubmits:
     always_run: true         # Run for every PR, or only when requested.
     rerun_command: "/test kubeflow-katib-presubmit"
     trigger: "(?m)^/test( all| kubeflow-katib-presubmit),?(\\s+|$)"
+    branches:
+    - master
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/experimental-kvc:
+  - name: kubeflow-experimental-kvc-presubmit
+    context: kubeflow-experimental-kvc-presubmit
+    agent: kubernetes
+    always_run: true         # Run for every PR, or only when requested.
+    rerun_command: "/test kubeflow-experimental-kvc-presubmit"
+    trigger: "(?m)^/test( all| kubeflow-experimental-kvc-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
@@ -5497,6 +5514,16 @@ postsubmits:
 
   kubeflow/katib:
   - name: kubeflow-katib-postsubmit
+    agent: kubernetes
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/experimental-kvc:
+  - name: kubeflow-experimental-kvc-postsubmit
     agent: kubernetes
     labels:
       preset-service-account: true
