@@ -163,6 +163,7 @@ tide:
     - do-not-merge/work-in-progress
     reviewApprovedRequired: true
   - repos:
+    - kubernetes-sigs/federation-v2
     - kubernetes-sigs/testing_frameworks
     - kubernetes-sigs/poseidon
     labels:
@@ -15554,4 +15555,3 @@ periodics:
       - "--repo=github.com/tensorflow/minigo=master"
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
-
