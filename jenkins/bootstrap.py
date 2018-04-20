@@ -53,6 +53,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import urllib2
 
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
 
@@ -569,7 +570,16 @@ def node():
     # TODO(fejta): jenkins sets the node name and our infra expect this value.
     # TODO(fejta): Consider doing something different here.
     if NODE_ENV not in os.environ:
-        os.environ[NODE_ENV] = ''.join(socket.gethostname().split('.')[:1])
+        host = socket.gethostname().split('.')[0]
+        try:
+            # Try reading the name of the VM we're running on, using the
+            # metadata server.
+            os.environ[NODE_ENV] = urllib2.urlopen(urllib2.Request(
+                'http://169.254.169.254/computeMetadata/v1/instance/name',
+                headers={'Metadata-Flavor': 'Google'})).read()
+            os.environ[POD_ENV] = host  # We also want to log this.
+        except IOError:  # Fallback.
+            os.environ[NODE_ENV] = host
     return os.environ[NODE_ENV]
 
 
@@ -698,6 +708,7 @@ HOME_ENV = 'HOME'
 JENKINS_HOME_ENV = 'JENKINS_HOME'
 JOB_ENV = 'JOB_NAME'
 NODE_ENV = 'NODE_NAME'
+POD_ENV = 'POD_NAME'
 SERVICE_ACCOUNT_ENV = 'GOOGLE_APPLICATION_CREDENTIALS'
 WORKSPACE_ENV = 'WORKSPACE'
 GCS_ARTIFACTS_ENV = 'GCS_ARTIFACTS_DIR'
@@ -1000,6 +1011,8 @@ def bootstrap(args):
         logging.info('Args: %s', ' '.join(pipes.quote(a) for a in sys.argv[1:]))
     logging.info('Bootstrap %s...', job)
     logging.info('Builder: %s', node())
+    if POD_ENV in os.environ:
+        logging.info('Pod: %s', os.environ[POD_ENV])
     if IMAGE_NAME_ENV in os.environ:
         logging.info('Image: %s', os.environ[IMAGE_NAME_ENV])
     build = build_name(started)
