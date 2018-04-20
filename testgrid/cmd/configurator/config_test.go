@@ -364,6 +364,7 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 		"kubeflow/experimental-kvc",
 		"kubeflow/experimental-seldon",
 		"kubeflow/experimental-beagle",
+		"kubeflow/caffe2-operator",
 		"kubernetes/kubernetes",
 		"kubernetes/test-infra",
 		"kubernetes/cluster-registry",

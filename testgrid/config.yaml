@@ -2013,6 +2013,11 @@ test_groups:
   num_columns_recent: 30
 - name: kubeflow-experimental-beagle-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_experimental-beagle/kubeflow-experimental-beagle-postsubmit
+- name: kubeflow-caffe2-operator-presubmit
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/kubeflow-caffe2-operator-presubmit
+  num_columns_recent: 30
+- name: kubeflow-caffe2-operator-postsubmit
+  gcs_prefix: kubernetes-jenkins/logs/kubeflow_caffe2-operator/kubeflow-caffe2-operator-postsubmit
 - name: tf-minigo-periodic
   gcs_prefix: kubernetes-jenkins/logs/tf-minigo-periodic
 - name: tf-minigo-presubmit
@@ -4319,6 +4324,12 @@ dashboards:
   - name: kubeflow-experimental-beagle-presubmit
     description: Presubmits for kubeflow/experimental-beagle.
     test_group_name: kubeflow-experimental-beagle-presubmit
+  - name: kubeflow-caffe2-operator-postsubmit
+    description: Postsubmit kubeflow/caffe2-operator.
+    test_group_name: kubeflow-caffe2-operator-postsubmit
+  - name: kubeflow-caffe2-operator-presubmit
+    description: Presubmits for kubeflow/caffe2-operator.
+    test_group_name: kubeflow-caffe2-operator-presubmit
   - name: spark-periodic-default-gke
     description: Periodic builds and testing of Apache Spark on default version of GKE.
     test_group_name: spark-periodic-default-gke

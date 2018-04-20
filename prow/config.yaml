@@ -106,6 +106,7 @@ tide:
     - kubeflow/experimental-kvc
     - kubeflow/experimental-seldon
     - kubeflow/experimental-beagle
+    - kubeflow/caffe2-operator
     labels:
     - lgtm
     - approved
@@ -485,6 +486,22 @@ presubmits:
     always_run: true         # Run for every PR, or only when requested.
     rerun_command: "/test kubeflow-experimental-beagle-presubmit"
     trigger: "(?m)^/test( all| kubeflow-experimental-beagle-presubmit),?(\\s+|$)"
+    branches:
+    - master
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/caffe2-operator:
+  - name: kubeflow-caffe2-operator-presubmit
+    context: kubeflow-caffe2-operator-presubmit
+    agent: kubernetes
+    always_run: true         # Run for every PR, or only when requested.
+    rerun_command: "/test kubeflow-caffe2-operator-presubmit"
+    trigger: "(?m)^/test( all| kubeflow-caffe2-operator-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
