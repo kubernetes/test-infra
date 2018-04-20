@@ -104,6 +104,7 @@ tide:
     - kubeflow/tf-operator
     - kubeflow/katib
     - kubeflow/experimental-kvc
+    - kubeflow/experimental-seldon
     labels:
     - lgtm
     - approved
@@ -451,6 +452,22 @@ presubmits:
     always_run: true         # Run for every PR, or only when requested.
     rerun_command: "/test kubeflow-experimental-kvc-presubmit"
     trigger: "(?m)^/test( all| kubeflow-experimental-kvc-presubmit),?(\\s+|$)"
+    branches:
+    - master
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/experimental-seldon:
+  - name: kubeflow-experimental-seldon-presubmit
+    context: kubeflow-experimental-seldon-presubmit
+    agent: kubernetes
+    always_run: true         # Run for every PR, or only when requested.
+    rerun_command: "/test kubeflow-experimental-seldon-presubmit"
+    trigger: "(?m)^/test( all| kubeflow-experimental-seldon-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:

@@ -1999,10 +1999,15 @@ test_groups:
 - name: kubeflow-katib-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_katib/kubeflow-katib-postsubmit
 - name: kubeflow-experimental-kvc-presubmit
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/kubeflow-katib-presubmit
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/kubeflow-experimental-kvc-presubmit
   num_columns_recent: 30
 - name: kubeflow-experimental-kvc-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_experimental-kvc/kubeflow-experimental-kvc-postsubmit
+- name: kubeflow-experimental-seldon-presubmit
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/kubeflow-experimental-seldon-presubmit
+  num_columns_recent: 30
+- name: kubeflow-experimental-seldon-postsubmit
+  gcs_prefix: kubernetes-jenkins/logs/kubeflow_experimental-seldon/kubeflow-experimental-seldon-postsubmit
 - name: tf-minigo-periodic
   gcs_prefix: kubernetes-jenkins/logs/tf-minigo-periodic
 - name: tf-minigo-presubmit
@@ -4297,6 +4302,12 @@ dashboards:
   - name: kubeflow-experimental-kvc-presubmit
     description: Presubmits for kubeflow/experimental-kvc.
     test_group_name: kubeflow-experimental-kvc-presubmit
+  - name: kubeflow-experimental-seldon-postsubmit
+    description: Postsubmit kubeflow/experimental-seldon.
+    test_group_name: kubeflow-experimental-seldon-postsubmit
+  - name: kubeflow-experimental-seldon-presubmit
+    description: Presubmits for kubeflow/experimental-seldon.
+    test_group_name: kubeflow-experimental-seldon-presubmit
   - name: spark-periodic-default-gke
     description: Periodic builds and testing of Apache Spark on default version of GKE.
     test_group_name: spark-periodic-default-gke
