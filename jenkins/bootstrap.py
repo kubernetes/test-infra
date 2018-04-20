@@ -322,6 +322,8 @@ def start(gsutil, paths, stamp, node_name, version, repos):
         if ref_has_shas(pull[1]):
             data['pull'] = pull[1]
         data['repos'] = repos_dict(repos)
+    if POD_ENV in os.environ:
+        data['metadata'] = {'pod': os.environ[POD_ENV]}
 
     gsutil.upload_json(paths.started, data)
     # Upload a link to the build path in the directory
@@ -486,6 +488,10 @@ def metadata(repos, artifacts, call):
     if repos:
         meta['repo'] = repos.main
         meta['repos'] = repos_dict(repos)
+
+    if POD_ENV in os.environ:
+        # HARDEN against metadata only being read from finished.
+        meta['pod'] = os.environ[POD_ENV]
 
     try:
         commit = call(['git', 'rev-parse', 'HEAD'], output=True)
@@ -1011,8 +1017,6 @@ def bootstrap(args):
         logging.info('Args: %s', ' '.join(pipes.quote(a) for a in sys.argv[1:]))
     logging.info('Bootstrap %s...', job)
     logging.info('Builder: %s', node())
-    if POD_ENV in os.environ:
-        logging.info('Pod: %s', os.environ[POD_ENV])
     if IMAGE_NAME_ENV in os.environ:
         logging.info('Image: %s', os.environ[IMAGE_NAME_ENV])
     build = build_name(started)
