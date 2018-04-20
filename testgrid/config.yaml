@@ -2521,7 +2521,7 @@ test_groups:
 - name: ci-kubernetes-gce-conformance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance
   num_columns_recent: 3
-  alert_stale_results_hours: 12
+  alert_stale_results_hours: 24
   num_failures_to_alert: 1
 - name: ci-kubernetes-gce-conformance-stable-1-10
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-stable-1-10
