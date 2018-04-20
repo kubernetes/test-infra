@@ -107,6 +107,7 @@ tide:
     - kubeflow/experimental-seldon
     - kubeflow/experimental-beagle
     - kubeflow/caffe2-operator
+    - kubeflow/reporting
     labels:
     - lgtm
     - approved
