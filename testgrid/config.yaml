@@ -2011,6 +2011,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/spark-periodic-latest-gke
 - name: ci-kinflate-periodic-default-gke
   gcs_prefix: kubernetes-jenkins/logs/ci-kinflate-periodic-default-gke
+- name: application-periodic-default-gke
+  gcs_prefix: kubernetes-jenkins/logs/application-periodic-default-gke
 # kube-proxy daemonset migration jobs
 - name: ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
@@ -4211,6 +4213,9 @@ dashboards:
     description: 'apps gce statefulset e2e tests for master branch'
   - name: charts-gce
     test_group_name: ci-kubernetes-charts-gce
+  - name: application-periodic-default-gke
+    description: Periodic builds and testing of the Application Type on GKE.
+    test_group_name: application-periodic-default-gke
 
 - name: sig-auth
   dashboard_tab:
