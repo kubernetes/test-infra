@@ -554,6 +554,8 @@ test_groups:
   num_failures_to_alert: 1
 - name: ci-kubernetes-local-e2e
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-local-e2e
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1 
 - name: ci-kubernetes-soak-cos-docker-validation
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-cos-docker-validation
 - name: ci-kubernetes-soak-gce-gci
@@ -2519,23 +2521,37 @@ test_groups:
 - name: ci-kubernetes-gce-conformance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance
   num_columns_recent: 3
+  alert_stale_results_hours: 12
+  num_failures_to_alert: 1
 - name: ci-kubernetes-gce-conformance-stable-1-10
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-stable-1-10
   num_columns_recent: 3
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1 
 - name: ci-kubernetes-gce-conformance-latest-1-10
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-latest-1-10
   num_columns_recent: 3
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1  
 - name: ci-kubernetes-gce-conformance-stable-1-9
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-stable-1-9
   num_columns_recent: 3
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1 
 - name: ci-kubernetes-gce-conformance-latest-1-9
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-latest-1-9
   num_columns_recent: 3
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1  
 - name: ci-kubernetes-gce-conformance-stable-1-8
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-stable-1-8
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1   
 - name: ci-kubernetes-gce-conformance-latest-1-8
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-latest-1-8
   num_columns_recent: 3
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1  
 - name: ci-kubernetes-dind-conformance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-dind-conformance
   num_columns_recent: 3
@@ -2545,12 +2561,20 @@ test_groups:
 #              periodic strigger ci-periodic-${zuul-job-name}
 - name: ci-presubmit-cloud-provider-openstack-acceptance-test-e2e-conformance
   gcs_prefix: kubernetes-openstack/pr-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1   
 - name: ci-presubmit-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.10
   gcs_prefix: kubernetes-openstack/pr-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.10
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1 
 - name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
   gcs_prefix: kubernetes-openstack/periodic-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1 
 - name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.10
   gcs_prefix: kubernetes-openstack/periodic-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.10
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1 
 
 # Add New Testgroups Here
 
