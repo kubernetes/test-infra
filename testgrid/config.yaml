@@ -2018,6 +2018,11 @@ test_groups:
   num_columns_recent: 30
 - name: kubeflow-caffe2-operator-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_caffe2-operator/kubeflow-caffe2-operator-postsubmit
+- name: kubeflow-website-presubmit
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/kubeflow-website-presubmit
+  num_columns_recent: 30
+- name: kubeflow-website-postsubmit
+  gcs_prefix: kubernetes-jenkins/logs/kubeflow_website/kubeflow-website-postsubmit
 - name: tf-minigo-periodic
   gcs_prefix: kubernetes-jenkins/logs/tf-minigo-periodic
 - name: tf-minigo-presubmit
@@ -4282,6 +4287,12 @@ dashboards:
   - name: kubeflow-pytorch-operator-presubmit
     description: Presubmits for kubeflow/pytorch-operator.
     test_group_name: kubeflow-pytorch-operator-presubmit
+  - name: kubeflow-website-postsubmit
+    description: Postsubmit kubeflow/website.
+    test_group_name: kubeflow-website-postsubmit
+  - name: kubeflow-website-presubmit
+    description: Presubmits for kubeflow/website.
+    test_group_name: kubeflow-website-presubmit
   - name: kubeflow-reporting-postsubmit
     description: Postsubmit kubeflow/reporting.
     test_group_name: kubeflow-reporting-postsubmit

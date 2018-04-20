@@ -108,6 +108,7 @@ tide:
     - kubeflow/experimental-beagle
     - kubeflow/caffe2-operator
     - kubeflow/reporting
+    - kubeflow/website
     labels:
     - lgtm
     - approved
@@ -393,6 +394,22 @@ presubmits:
     always_run: true         # Run for every PR, or only when requested.
     rerun_command: "/test kubeflow-reporting-presubmit"
     trigger: "(?m)^/test( all| kubeflow-reporting-presubmit),?(\\s+|$)"
+    branches:
+    - master
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/website:
+  - name: kubeflow-website-presubmit
+    context: kubeflow-website-presubmit
+    agent: kubernetes
+    always_run: true         # Run for every PR, or only when requested.
+    rerun_command: "/test kubeflow-website-presubmit"
+    trigger: "(?m)^/test( all| kubeflow-website-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
