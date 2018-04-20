@@ -1,4 +1,24 @@
 {
+  "application-periodic-default-gke": {
+    "args": [
+      "--check-leaked-resources",
+      "--cluster=",
+      "--deployment=gke",
+      "--extract=gke",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--gke-environment=prod",
+      "--provider=gke",
+      "--test=false",
+      "--test-cmd=../e2e/e2e-prow.sh",
+      "--test-cmd-name=spark-integration",
+      "--timeout=120m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-apps"
+    ]
+  },
   "ci-benchmark-scheduler-master": {
     "args": [
       "./hack/jenkins/benchmark-dockerized.sh",
@@ -13108,26 +13128,6 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-big-data"
-    ]
-  },
-  "application-periodic-default-gke": {
-    "args": [
-      "--check-leaked-resources",
-      "--cluster=",
-      "--deployment=gke",
-      "--extract=gke",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-f",
-      "--gke-environment=prod",
-      "--provider=gke",
-      "--test=false",
-      "--test-cmd=../e2e/e2e-prow.sh",
-      "--test-cmd-name=spark-integration",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-apps"
     ]
   },
   "tf-minigo-periodic": {
