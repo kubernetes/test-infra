@@ -105,6 +105,7 @@ tide:
     - kubeflow/katib
     - kubeflow/experimental-kvc
     - kubeflow/experimental-seldon
+    - kubeflow/experimental-beagle
     labels:
     - lgtm
     - approved
@@ -468,6 +469,22 @@ presubmits:
     always_run: true         # Run for every PR, or only when requested.
     rerun_command: "/test kubeflow-experimental-seldon-presubmit"
     trigger: "(?m)^/test( all| kubeflow-experimental-seldon-presubmit),?(\\s+|$)"
+    branches:
+    - master
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/experimental-beagle:
+  - name: kubeflow-experimental-beagle-presubmit
+    context: kubeflow-experimental-beagle-presubmit
+    agent: kubernetes
+    always_run: true         # Run for every PR, or only when requested.
+    rerun_command: "/test kubeflow-experimental-beagle-presubmit"
+    trigger: "(?m)^/test( all| kubeflow-experimental-beagle-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
