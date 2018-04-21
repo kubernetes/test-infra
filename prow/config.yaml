@@ -5559,6 +5559,16 @@ postsubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+  kubeflow/website:
+  - name: kubeflow-website-postsubmit
+    agent: kubernetes
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
   kubeflow/testing:
   - name: kubeflow-testing-postsubmit
     agent: kubernetes
@@ -5593,6 +5603,36 @@ postsubmits:
 
   kubeflow/experimental-kvc:
   - name: kubeflow-experimental-kvc-postsubmit
+    agent: kubernetes
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/experimental-seldon:
+  - name: kubeflow-experimental-seldon-postsubmit
+    agent: kubernetes
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/experimental-beagle:
+  - name: kubeflow-experimental-beagle-postsubmit
+    agent: kubernetes
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/caffe2-operator:
+  - name: kubeflow-caffe2-operator-postsubmit
     agent: kubernetes
     labels:
       preset-service-account: true
