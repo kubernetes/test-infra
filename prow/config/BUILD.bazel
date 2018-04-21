@@ -44,6 +44,8 @@ go_library(
     deps = [
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
+        "//prow/pod-utils/decorate:go_default_library",
+        "//prow/pod-utils/downwardapi:go_default_library",
         "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/github.com/gorilla/sessions:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",

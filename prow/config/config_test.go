@@ -957,7 +957,7 @@ func TestValidPresets(t *testing.T) {
 	}
 
 	for _, presubmit := range c.AllPresubmits(nil) {
-		if presubmit.Spec != nil {
+		if presubmit.Spec != nil && presubmit.DecorationConfig == nil {
 			if err := checkKubekinsPresets(presubmit.Name, presubmit.Spec, presubmit.Labels, validLabels); err != nil {
 				t.Errorf("Error in presubmit %q: %v", presubmit.Name, err)
 			}
@@ -966,7 +966,7 @@ func TestValidPresets(t *testing.T) {
 
 	for _, posts := range c.Postsubmits {
 		for _, postsubmit := range posts {
-			if postsubmit.Spec != nil {
+			if postsubmit.Spec != nil && postsubmit.DecorationConfig == nil {
 				if err := checkKubekinsPresets(postsubmit.Name, postsubmit.Spec, postsubmit.Labels, validLabels); err != nil {
 					t.Errorf("Error in postsubmit %q: %v", postsubmit.Name, err)
 				}
@@ -975,7 +975,7 @@ func TestValidPresets(t *testing.T) {
 	}
 
 	for _, periodic := range c.Periodics {
-		if periodic.Spec != nil {
+		if periodic.Spec != nil && periodic.DecorationConfig == nil {
 			if err := checkKubekinsPresets(periodic.Name, periodic.Spec, periodic.Labels, validLabels); err != nil {
 				t.Errorf("Error in periodic %q: %v", periodic.Name, err)
 			}

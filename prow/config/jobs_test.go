@@ -666,17 +666,6 @@ func TestMergePreset(t *testing.T) {
 		numVolMounts int
 	}{
 		{
-			name:      "no pod spec",
-			jobLabels: map[string]string{"foo": "bar"},
-			pod:       nil,
-			presets: []Preset{
-				{
-					Labels: map[string]string{"foo": "bar"},
-					Env:    []kube.EnvVar{{Name: "baz"}},
-				},
-			},
-		},
-		{
 			name:      "one volume",
 			jobLabels: map[string]string{"foo": "bar"},
 			pod:       &kube.PodSpec{},
@@ -777,34 +766,18 @@ func TestMergePreset(t *testing.T) {
 		},
 	}
 	for _, tc := range tcs {
-		conf := &Config{
-			Presets: tc.presets,
-			Periodics: []Periodic{
-				{
-					Name:     "foo",
-					Labels:   tc.jobLabels,
-					Agent:    string(kube.JenkinsAgent),
-					Interval: "1h",
-					Spec:     tc.pod,
-				},
-			},
-		}
-		if err := parseConfig(conf); err == nil && tc.shouldError {
-			t.Fatalf("For test \"%s\": expected error but got none.", tc.name)
+		if err := validatePresets("foo", tc.jobLabels, tc.pod, tc.presets); err == nil && tc.shouldError {
+			t.Errorf("For test \"%s\": expected error but got none.", tc.name)
 		} else if err != nil && !tc.shouldError {
-			t.Fatalf("For test \"%s\": expected no error but got %v.", tc.name, err)
+			t.Errorf("For test \"%s\": expected no error but got %v.", tc.name, err)
 		}
 		if tc.shouldError {
 			continue
 		}
-		pod := conf.Periodics[0].Spec
-		if pod == nil {
-			continue
+		if len(tc.pod.Volumes) != tc.numVol {
+			t.Errorf("For test \"%s\": wrong number of volumes. Got %d, expected %d.", tc.name, len(tc.pod.Volumes), tc.numVol)
 		}
-		if len(pod.Volumes) != tc.numVol {
-			t.Errorf("For test \"%s\": wrong number of volumes. Got %d, expected %d.", tc.name, len(pod.Volumes), tc.numVol)
-		}
-		for _, c := range pod.Containers {
+		for _, c := range tc.pod.Containers {
 			if len(c.VolumeMounts) != tc.numVolMounts {
 				t.Errorf("For test \"%s\": wrong number of volume mounts. Got %d, expected %d.", tc.name, len(c.VolumeMounts), tc.numVolMounts)
 			}

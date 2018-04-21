@@ -2185,6 +2185,10 @@ test_groups:
 - name: pull-test-infra-verify-config
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-config
   num_columns_recent: 20
+- name: pull-test-infra-verify-config-canary
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-config-canary
+  days_of_results: 1
+  num_columns_recent: 20
 - name: pull-test-infra-verify-deps
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-deps
   num_columns_recent: 20
@@ -5759,6 +5763,9 @@ dashboards:
     base_options: 'width=10'
   - name: verify-config
     test_group_name: pull-test-infra-verify-config
+    base_options: 'width=10'
+  - name: verify-config-canary
+    test_group_name: pull-test-infra-verify-config-canary
     base_options: 'width=10'
   - name: verify-deps
     test_group_name: pull-test-infra-verify-deps
