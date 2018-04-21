@@ -953,11 +953,7 @@ func (iamInstanceProfiles) MarkAndSweep(sess *session.Session, acct string, regi
 				continue
 			}
 
-			o := &iamInstanceProfile{
-				arn:                 aws.StringValue(p.Arn),
-				instanceProfileID:   aws.StringValue(p.InstanceProfileId),
-				instanceProfileName: aws.StringValue(p.InstanceProfileName),
-			}
+			o := &iamInstanceProfile{profile: p}
 			if set.Mark(o) {
 				glog.Warningf("%s: deleting %T: %v", o.ARN(), o, o)
 				toDelete = append(toDelete, o)
@@ -969,11 +965,7 @@ func (iamInstanceProfiles) MarkAndSweep(sess *session.Session, acct string, regi
 	}
 
 	for _, o := range toDelete {
-		_, err := svc.DeleteInstanceProfile(
-			&iam.DeleteInstanceProfileInput{
-				InstanceProfileName: aws.String(o.instanceProfileName),
-			})
-		if err != nil {
+		if err := o.delete(svc); err != nil {
 			glog.Warningf("%v: delete failed: %v", o.ARN(), err)
 		}
 	}
@@ -981,17 +973,42 @@ func (iamInstanceProfiles) MarkAndSweep(sess *session.Session, acct string, regi
 }
 
 type iamInstanceProfile struct {
-	arn                 string
-	instanceProfileID   string
-	instanceProfileName string
+	profile *iam.InstanceProfile
 }
 
 func (p iamInstanceProfile) ARN() string {
-	return p.arn
+	return aws.StringValue(p.profile.Arn)
 }
 
 func (p iamInstanceProfile) ResourceKey() string {
-	return p.instanceProfileID + "::" + p.ARN()
+	return aws.StringValue(p.profile.InstanceProfileId) + "::" + p.ARN()
+}
+
+func (p iamInstanceProfile) delete(svc *iam.IAM) error {
+	// We need to unlink the roles first, before we can delete the instance profile
+	{
+		for _, role := range p.profile.Roles {
+			request := &iam.RemoveRoleFromInstanceProfileInput{
+				InstanceProfileName: p.profile.InstanceProfileName,
+				RoleName:            role.RoleName,
+			}
+			if _, err := svc.RemoveRoleFromInstanceProfile(request); err != nil {
+				return fmt.Errorf("error removing role %q: %v", aws.StringValue(role.RoleName), err)
+			}
+		}
+	}
+
+	// Delete the instance profile
+	{
+		request := &iam.DeleteInstanceProfileInput{
+			InstanceProfileName: p.profile.InstanceProfileName,
+		}
+		if _, err := svc.DeleteInstanceProfile(request); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // ARNs (used for uniquifying within our previous mark file)
