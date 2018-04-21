@@ -1995,11 +1995,36 @@ test_groups:
   num_columns_recent: 30
 - name: kubeflow-tf-operator-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_tf-operator/kubeflow-tf-operator-postsubmit
-- name: kubeflow-hp-tuning-presubmit
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/kubeflow-hp-tuning-presubmit
+- name: kubeflow-katib-presubmit
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/kubeflow-katib-presubmit
   num_columns_recent: 30
-- name: kubeflow-hp-tuning-postsubmit
-  gcs_prefix: kubernetes-jenkins/logs/kubeflow_hp-tuning/kubeflow-hp-tuning-postsubmit
+- name: kubeflow-katib-postsubmit
+  gcs_prefix: kubernetes-jenkins/logs/kubeflow_katib/kubeflow-katib-postsubmit
+- name: kubeflow-experimental-kvc-presubmit
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/kubeflow-experimental-kvc-presubmit
+  num_columns_recent: 30
+- name: kubeflow-experimental-kvc-postsubmit
+  gcs_prefix: kubernetes-jenkins/logs/kubeflow_experimental-kvc/kubeflow-experimental-kvc-postsubmit
+- name: kubeflow-experimental-seldon-presubmit
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/kubeflow-experimental-seldon-presubmit
+  num_columns_recent: 30
+- name: kubeflow-experimental-seldon-postsubmit
+  gcs_prefix: kubernetes-jenkins/logs/kubeflow_experimental-seldon/kubeflow-experimental-seldon-postsubmit
+- name: kubeflow-experimental-beagle-presubmit
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/kubeflow-experimental-beagle-presubmit
+  num_columns_recent: 30
+- name: kubeflow-experimental-beagle-postsubmit
+  gcs_prefix: kubernetes-jenkins/logs/kubeflow_experimental-beagle/kubeflow-experimental-beagle-postsubmit
+- name: kubeflow-caffe2-operator-presubmit
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/kubeflow-caffe2-operator-presubmit
+  num_columns_recent: 30
+- name: kubeflow-caffe2-operator-postsubmit
+  gcs_prefix: kubernetes-jenkins/logs/kubeflow_caffe2-operator/kubeflow-caffe2-operator-postsubmit
+- name: kubeflow-website-presubmit
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/kubeflow-website-presubmit
+  num_columns_recent: 30
+- name: kubeflow-website-postsubmit
+  gcs_prefix: kubernetes-jenkins/logs/kubeflow_website/kubeflow-website-postsubmit
 - name: tf-minigo-periodic
   gcs_prefix: kubernetes-jenkins/logs/tf-minigo-periodic
 - name: tf-minigo-presubmit
@@ -4295,6 +4320,12 @@ dashboards:
   - name: kubeflow-pytorch-operator-presubmit
     description: Presubmits for kubeflow/pytorch-operator.
     test_group_name: kubeflow-pytorch-operator-presubmit
+  - name: kubeflow-website-postsubmit
+    description: Postsubmit kubeflow/website.
+    test_group_name: kubeflow-website-postsubmit
+  - name: kubeflow-website-presubmit
+    description: Presubmits for kubeflow/website.
+    test_group_name: kubeflow-website-presubmit
   - name: kubeflow-reporting-postsubmit
     description: Postsubmit kubeflow/reporting.
     test_group_name: kubeflow-reporting-postsubmit
@@ -4313,12 +4344,36 @@ dashboards:
   - name: kubeflow-tf-operator-presubmit
     description: Presubmits for kubeflow/tf-operator.
     test_group_name: kubeflow-tf-operator-presubmit
-  - name: kubeflow-hp-tuning-postsubmit
-    description: Postsubmit kubeflow/hp-tuning.
-    test_group_name: kubeflow-hp-tuning-postsubmit
-  - name: kubeflow-hp-tuning-presubmit
-    description: Presubmits for kubeflow/hp-tuning.
-    test_group_name: kubeflow-hp-tuning-presubmit
+  - name: kubeflow-katib-postsubmit
+    description: Postsubmit kubeflow/katib.
+    test_group_name: kubeflow-katib-postsubmit
+  - name: kubeflow-katib-presubmit
+    description: Presubmits for kubeflow/katib.
+    test_group_name: kubeflow-katib-presubmit
+  - name: kubeflow-experimental-kvc-postsubmit
+    description: Postsubmit kubeflow/experimental-kvc.
+    test_group_name: kubeflow-experimental-kvc-postsubmit
+  - name: kubeflow-experimental-kvc-presubmit
+    description: Presubmits for kubeflow/experimental-kvc.
+    test_group_name: kubeflow-experimental-kvc-presubmit
+  - name: kubeflow-experimental-seldon-postsubmit
+    description: Postsubmit kubeflow/experimental-seldon.
+    test_group_name: kubeflow-experimental-seldon-postsubmit
+  - name: kubeflow-experimental-seldon-presubmit
+    description: Presubmits for kubeflow/experimental-seldon.
+    test_group_name: kubeflow-experimental-seldon-presubmit
+  - name: kubeflow-experimental-beagle-postsubmit
+    description: Postsubmit kubeflow/experimental-beagle.
+    test_group_name: kubeflow-experimental-beagle-postsubmit
+  - name: kubeflow-experimental-beagle-presubmit
+    description: Presubmits for kubeflow/experimental-beagle.
+    test_group_name: kubeflow-experimental-beagle-presubmit
+  - name: kubeflow-caffe2-operator-postsubmit
+    description: Postsubmit kubeflow/caffe2-operator.
+    test_group_name: kubeflow-caffe2-operator-postsubmit
+  - name: kubeflow-caffe2-operator-presubmit
+    description: Presubmits for kubeflow/caffe2-operator.
+    test_group_name: kubeflow-caffe2-operator-presubmit
   - name: spark-periodic-default-gke
     description: Periodic builds and testing of Apache Spark on default version of GKE.
     test_group_name: spark-periodic-default-gke

@@ -102,7 +102,13 @@ tide:
     - kubeflow/pytorch-operator
     - kubeflow/testing
     - kubeflow/tf-operator
-    - kubeflow/hp-tuning
+    - kubeflow/katib
+    - kubeflow/experimental-kvc
+    - kubeflow/experimental-seldon
+    - kubeflow/experimental-beagle
+    - kubeflow/caffe2-operator
+    - kubeflow/reporting
+    - kubeflow/website
     labels:
     - lgtm
     - approved
@@ -398,6 +404,22 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+  kubeflow/website:
+  - name: kubeflow-website-presubmit
+    context: kubeflow-website-presubmit
+    agent: kubernetes
+    always_run: true         # Run for every PR, or only when requested.
+    rerun_command: "/test kubeflow-website-presubmit"
+    trigger: "(?m)^/test( all| kubeflow-website-presubmit),?(\\s+|$)"
+    branches:
+    - master
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
   kubeflow/testing:
   - name: kubeflow-testing-presubmit
     context: kubeflow-testing-presubmit
@@ -428,13 +450,77 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
-  kubeflow/hp-tuning:
-  - name: kubeflow-hp-tuning-presubmit
-    context: kubeflow-hp-tuning-presubmit
+  kubeflow/katib:
+  - name: kubeflow-katib-presubmit
+    context: kubeflow-katib-presubmit
     agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test kubeflow-hp-tuning-presubmit"
-    trigger: "(?m)^/test( all| kubeflow-hp-tuning-presubmit),?(\\s+|$)"
+    rerun_command: "/test kubeflow-katib-presubmit"
+    trigger: "(?m)^/test( all| kubeflow-katib-presubmit),?(\\s+|$)"
+    branches:
+    - master
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/experimental-kvc:
+  - name: kubeflow-experimental-kvc-presubmit
+    context: kubeflow-experimental-kvc-presubmit
+    agent: kubernetes
+    always_run: true         # Run for every PR, or only when requested.
+    rerun_command: "/test kubeflow-experimental-kvc-presubmit"
+    trigger: "(?m)^/test( all| kubeflow-experimental-kvc-presubmit),?(\\s+|$)"
+    branches:
+    - master
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/experimental-seldon:
+  - name: kubeflow-experimental-seldon-presubmit
+    context: kubeflow-experimental-seldon-presubmit
+    agent: kubernetes
+    always_run: true         # Run for every PR, or only when requested.
+    rerun_command: "/test kubeflow-experimental-seldon-presubmit"
+    trigger: "(?m)^/test( all| kubeflow-experimental-seldon-presubmit),?(\\s+|$)"
+    branches:
+    - master
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/experimental-beagle:
+  - name: kubeflow-experimental-beagle-presubmit
+    context: kubeflow-experimental-beagle-presubmit
+    agent: kubernetes
+    always_run: true         # Run for every PR, or only when requested.
+    rerun_command: "/test kubeflow-experimental-beagle-presubmit"
+    trigger: "(?m)^/test( all| kubeflow-experimental-beagle-presubmit),?(\\s+|$)"
+    branches:
+    - master
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/caffe2-operator:
+  - name: kubeflow-caffe2-operator-presubmit
+    context: kubeflow-caffe2-operator-presubmit
+    agent: kubernetes
+    always_run: true         # Run for every PR, or only when requested.
+    rerun_command: "/test kubeflow-caffe2-operator-presubmit"
+    trigger: "(?m)^/test( all| kubeflow-caffe2-operator-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
@@ -5518,6 +5604,16 @@ postsubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+  kubeflow/website:
+  - name: kubeflow-website-postsubmit
+    agent: kubernetes
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
   kubeflow/testing:
   - name: kubeflow-testing-postsubmit
     agent: kubernetes
@@ -5540,8 +5636,48 @@ postsubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
-  kubeflow/hp-tuning:
-  - name: kubeflow-hp-tuning-postsubmit
+  kubeflow/katib:
+  - name: kubeflow-katib-postsubmit
+    agent: kubernetes
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/experimental-kvc:
+  - name: kubeflow-experimental-kvc-postsubmit
+    agent: kubernetes
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/experimental-seldon:
+  - name: kubeflow-experimental-seldon-postsubmit
+    agent: kubernetes
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/experimental-beagle:
+  - name: kubeflow-experimental-beagle-postsubmit
+    agent: kubernetes
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/caffe2-operator:
+  - name: kubeflow-caffe2-operator-postsubmit
     agent: kubernetes
     labels:
       preset-service-account: true
