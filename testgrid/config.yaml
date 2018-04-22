@@ -1581,6 +1581,8 @@ test_groups:
   - configuration_value: node_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-kops-aws-encryption-provider
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-encryption-provider
 - name: ci-kubernetes-e2e-gce-cos-k8sstable2-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable2-serial
 - name: ci-kubernetes-e2e-gke-cos-k8sstable2-serial
@@ -3194,6 +3196,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-aws-imagecentos7
   - name: kops-aws-imageubuntu1604
     test_group_name: ci-kubernetes-e2e-kops-aws-imageubuntu1604
+  - name: kops-aws-encryption-provider
+    test_group_name: ci-kubernetes-e2e-kops-aws-encryption-provider
 
 - name: google-gce
   dashboard_tab:
