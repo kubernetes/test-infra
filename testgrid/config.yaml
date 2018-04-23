@@ -106,6 +106,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-statefulset
 - name: ci-cri-containerd-e2e-gci-gce-proto
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-proto
+- name: ci-containerd-soak-gci-gce
+  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-soak-gci-gce
 - name: ci-cri-containerd-e2e-gce-device-plugin-gpu
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gce-device-plugin-gpu
   alert_stale_results_hours: 24
@@ -4986,6 +4988,8 @@ dashboards:
   - name: pull-e2e-gci
     test_group_name: pull-kubernetes-e2e-containerd-gce
     base_options: 'width=10'
+  - name: soak-gci-gce
+    test_group_name: ci-containerd-soak-gci-gce
 
 - name: sig-node-cri
   dashboard_tab:

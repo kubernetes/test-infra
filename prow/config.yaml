@@ -6213,6 +6213,20 @@ periodics:
       - name: GOPATH
         value: /go
 
+- interval: 12h
+  agent: kubernetes
+  name: ci-containerd-soak-gci-gce
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --repo=github.com/containerd/cri=master
+      - --timeout=1220
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180418-79a97ca02-master
+
 - name: ci-cri-containerd-build
   interval: 30m
   agent: kubernetes
