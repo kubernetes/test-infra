@@ -136,6 +136,27 @@
       "sig-node"
     ]
   },
+  "ci-containerd-soak-gci-gce": {
+    "args": [
+      "--down=false",
+      "--env-file=jobs/env/ci-containerd-e2e-gce.env",
+      "--extract=ci/latest",
+      "--gcp-master-image=gci",
+      "--gcp-node-image=gci",
+      "--gcp-project=k8s-jkns-e2e-gci-gce-soak-1-4",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--save=gs://kubernetes-jenkins/soak/ci-containerd-soak-gci-gce",
+      "--soak",
+      "--test_args=--ginkgo.skip=\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --clean-start=true --minStartupPods=8",
+      "--timeout=1200m",
+      "--up=false"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
   "ci-cri-containerd-build": {
     "args": [
       "./test/build.sh"
