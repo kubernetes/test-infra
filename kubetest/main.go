@@ -92,6 +92,8 @@ type options struct {
 	kubemark            bool
 	kubemarkMasterSize  string
 	kubemarkNodes       string // TODO(fejta): switch to int after migration
+	kubeadmTests        bool
+	kubeadmTestArgs     string
 	logexporterGCSPath  string
 	metadataSources     string
 	multiClusters       multiClusterDeployment
@@ -160,6 +162,8 @@ func defineFlags() *options {
 	flag.BoolVar(&o.kubemark, "kubemark", false, "If true, run kubemark tests.")
 	flag.StringVar(&o.kubemarkMasterSize, "kubemark-master-size", "", "Kubemark master size (only relevant if --kubemark=true). Auto-calculated based on '--kubemark-nodes' if left empty.")
 	flag.StringVar(&o.kubemarkNodes, "kubemark-nodes", "5", "Number of kubemark nodes to start (only relevant if --kubemark=true).")
+	flag.BoolVar(&o.kubeadmTests, "kubeadm-tests", false, "Run the Kubeadm E2E tests")
+	flag.StringVar(&o.kubeadmTestArgs, "kubeadm-test-args", "", "Test args for kubeadm e2e tests")
 	flag.StringVar(&o.logexporterGCSPath, "logexporter-gcs-path", "", "Path to the GCS artifacts directory to dump logs from nodes. Logexporter gets enabled if this is non-empty")
 	flag.StringVar(&o.metadataSources, "metadata-sources", "images.json", "Comma-separated list of files inside ./artifacts to merge into metadata.json")
 	flag.Var(&o.multiClusters, "multi-clusters", "If set, bring up/down multiple clusters specified. Format is [Zone1:]Cluster1[,[ZoneN:]ClusterN]]*. Zone is optional and default zone is used if zone is not specified")

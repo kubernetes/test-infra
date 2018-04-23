@@ -213,6 +213,8 @@ func run(deploy deployer, o options) error {
 			errs = util.AppendError(errs, control.XmlWrap(&suite, "Test", func() error {
 				return tester.Test("", "")
 			}))
+		} else if o.kubeadmTests {
+			return kubeadmTest(o.testArgs, o.kubeadmTestArgs)
 		} else {
 			errs = util.AppendError(errs, control.XmlWrap(&suite, "kubectl version", getKubectlVersion))
 			if o.skew {
@@ -706,6 +708,18 @@ func kubemarkTest(testArgs []string, dump string, o options, deploy deployer) er
 	}
 
 	return nil
+}
+
+func kubeadmTest(testArgs, kubeadmTestArgs string) error {
+	runner := []string{
+		"run",
+		util.K8s("kubernetes", "test", "e2e_kubeadm", "runner", "local", "run_local.go"),
+		"--build",
+		fmt.Sprintf("--ginkgo-flags=%q", testArgs),
+		fmt.Sprintf("--test-flags=%q", kubeadmTestArgs),
+	}
+
+	return control.FinishRunning(exec.Command("go", runner...))
 }
 
 // Runs tests in the kubernetes_skew directory, appending --report-prefix flag to the run
