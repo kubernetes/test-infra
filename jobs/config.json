@@ -739,7 +739,7 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=",
-      "--env=GCE_GLBC_IMAGE=k8s.gcr.io/ingress-gce-glbc-amd64:v1.1.0",
+      "--env=GCE_GLBC_IMAGE=k8s.gcr.io/ingress-gce-glbc-amd64:v1.1.1",
       "--extract=ci/latest",
       "--gcp-project-type=ingress-project",
       "--gcp-zone=us-central1-f",
