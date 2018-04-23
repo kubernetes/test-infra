@@ -4486,7 +4486,7 @@
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-project=k8s-jkns-gci-autoscaling",
-      "--gcp-zone=us-central1-c",
+      "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Feature:CustomMetricsAutoscaling\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
       "--timeout=300m"
@@ -4521,7 +4521,7 @@
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-project=k8s-jkns-gci-autoscaling-migs",
-      "--gcp-zone=us-central1-c",
+      "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Feature:CustomMetricsAutoscaling\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
       "--timeout=300m"
@@ -5007,7 +5007,7 @@
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-node-image=gci",
       "--gcp-project=k8s-e2e-gci-gke-autoscaling",
-      "--gcp-zone=us-central1-c",
+      "--gcp-zone=us-central1-f",
       "--gke-environment=test",
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Feature:CustomMetricsAutoscaling\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
