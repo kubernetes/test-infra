@@ -262,14 +262,27 @@ class LocalMode(object):
         check_env(env, self.command, *args)
 
 
-def cluster_name(cluster, build):
+def cluster_name(cluster):
     """Return or select a cluster name."""
     if cluster:
         return cluster
-    # Create a suffix based on the build number. Append a random string to it for
-    # avoiding potential conflicts across different jobs' runs (see issue #7592).
-    suffix = build if len(build) < 10 else hashlib.md5(build).hexdigest()[:10]
-    return 'e2e-%s-%s' % (suffix, os.urandom(3).encode('hex'))
+    # Create a suffix based on the build number and job name.
+    # This ensures no conflict across runs of different jobs (see #7592).
+    # For PR jobs, we use PR number instead of build number to ensure the
+    # name is constant across different runs of the presubmit on the PR.
+    # This helps clean potentially leaked resources from earlier run that
+    # could've got evicted midway (see #7673).
+    job_type = os.getenv('JOB_TYPE')
+    if job_type == 'batch':
+        suffix = 'batch-%s' % os.getenv('BUILD_ID', 0)
+    elif job_type == 'presubmit':
+        suffix = '%s' % os.getenv('PULL_NUMBER', 0)
+    else:
+        suffix = '%s' % os.getenv('BUILD_ID', 0)
+    if len(suffix) > 10:
+        suffix = hashlib.md5(suffix).hexdigest()[:10]
+    job_hash = hashlib.md5(os.getenv('JOB_NAME', '')).hexdigest()[:5]
+    return 'e2e-%s-%s' % (suffix, job_hash)
 
 
 # TODO(krzyzacy): Move this into kubetest
@@ -520,7 +533,7 @@ def main(args):
     if args.provider:
         runner_args.append('--provider=%s' % args.provider)
 
-    cluster = cluster_name(args.cluster, os.getenv('BUILD_NUMBER', 0))
+    cluster = cluster_name(args.cluster)
     runner_args.append('--cluster=%s' % cluster)
     runner_args.append('--gcp-network=%s' % cluster)
     runner_args.extend(args.kubetest_args)
