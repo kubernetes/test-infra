@@ -712,6 +712,7 @@ GCE_KEY_ENV = 'JENKINS_GCE_SSH_PRIVATE_KEY_FILE'
 GUBERNATOR = 'https://k8s-gubernator.appspot.com/build'
 HOME_ENV = 'HOME'
 JENKINS_HOME_ENV = 'JENKINS_HOME'
+K8S_ENV = 'KUBERNETES_SERVICE_HOST'
 JOB_ENV = 'JOB_NAME'
 NODE_ENV = 'NODE_NAME'
 POD_ENV = 'POD_NAME'
@@ -914,6 +915,18 @@ def configure_ssh_key(ssh):
         os.unlink(fp.name)
 
 
+def maybe_upload_podspec(call, artifacts, gsutil, getenv):
+    """ Attempt to read our own podspec and upload it to the artifacts dir. """
+    if not getenv(K8S_ENV):
+        return  # we don't appear to be a pod
+    hostname = getenv('HOSTNAME')
+    if not hostname:
+        return
+    spec = call(['kubectl', 'get', '-oyaml', 'pods/' + hostname], output=True)
+    gsutil.upload_text(
+        os.path.join(artifacts, 'prow_podspec.yaml'), spec)
+
+
 def setup_root(call, root, repos, ssh, git_cache, clean):
     """Create root dir, checkout repo and cd into resulting dir."""
     if not os.path.exists(root):
@@ -1040,6 +1053,11 @@ def bootstrap(args):
 
     try:
         with configure_ssh_key(args.ssh):
+            setup_credentials(call, args.service_account, upload)
+            try:
+                maybe_upload_podspec(call, paths.artifacts, gsutil, os.getenv)
+            except subprocess.CalledProcessError, exc:
+                logging.error("unable to upload podspecs: %s", exc)
             setup_root(call, args.root, repos, args.ssh, args.git_cache, args.clean)
             logging.info('Configure environment...')
             if repos:
@@ -1047,7 +1065,6 @@ def bootstrap(args):
             else:
                 version = ''
             setup_magic_environment(job, call)
-            setup_credentials(call, args.service_account, upload)
             logging.info('Start %s at %s...', build, version)
             if upload:
                 start(gsutil, paths, started, node(), version, repos)
