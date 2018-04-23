@@ -902,11 +902,7 @@ func (iamRoles) MarkAndSweep(sess *session.Session, acct string, region string, 
 	}
 
 	for _, r := range toDelete {
-		_, err := svc.DeleteRole(
-			&iam.DeleteRoleInput{
-				RoleName: aws.String(r.roleName),
-			})
-		if err != nil {
+		if err := r.delete(svc); err != nil {
 			glog.Warningf("%v: delete failed: %v", r.ARN(), err)
 		}
 	}
@@ -925,6 +921,51 @@ func (r iamRole) ARN() string {
 
 func (r iamRole) ResourceKey() string {
 	return r.roleID + "::" + r.ARN()
+}
+
+func (r iamRole) delete(svc *iam.IAM) error {
+	roleName := r.roleName
+
+	var policyNames []string
+	{
+		request := &iam.ListRolePoliciesInput{
+			RoleName: aws.String(roleName),
+		}
+		err := svc.ListRolePoliciesPages(request, func(page *iam.ListRolePoliciesOutput, lastPage bool) bool {
+			for _, policyName := range page.PolicyNames {
+				policyNames = append(policyNames, aws.StringValue(policyName))
+			}
+			return true
+		})
+		if err != nil {
+			return fmt.Errorf("error listing IAM role policies for %q: %v", roleName, err)
+		}
+	}
+
+	for _, policyName := range policyNames {
+		glog.V(2).Infof("Deleting IAM role policy %q %q", roleName, policyName)
+		request := &iam.DeleteRolePolicyInput{
+			RoleName:   aws.String(roleName),
+			PolicyName: aws.String(policyName),
+		}
+		_, err := svc.DeleteRolePolicy(request)
+		if err != nil {
+			return fmt.Errorf("error deleting IAM role policy %q %q: %v", roleName, policyName, err)
+		}
+	}
+
+	{
+		glog.V(2).Infof("Deleting IAM role %q", roleName)
+		request := &iam.DeleteRoleInput{
+			RoleName: aws.String(roleName),
+		}
+		_, err := svc.DeleteRole(request)
+		if err != nil {
+			return fmt.Errorf("error deleting IAM role %q: %v", roleName, err)
+		}
+	}
+
+	return nil
 }
 
 // IAM Instance Profiles
