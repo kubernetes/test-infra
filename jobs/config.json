@@ -4724,6 +4724,23 @@
       "sig-network"
     ]
   },
+  "ci-kubernetes-e2e-gci-gce-kube-dns": {
+    "args": [
+      "--check-leaked-resources",
+      "--cluster=",
+      "--env=CLUSTER_DNS_CORE_DNS=false",
+      "--extract=ci/latest",
+      "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel=30",
+      "--provider=gce",
+      "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=150m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-network"
+    ]
+  },
   "ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds": {
     "args": [
       "--check-leaked-resources",
@@ -4895,6 +4912,24 @@
     "args": [
       "--check-leaked-resources",
       "--env=NODE_LOCAL_SSDS_EXT=1,scsi,fs",
+      "--extract=ci/latest",
+      "--gcp-master-image=gci",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=500m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-gcp"
+    ]
+  },
+  "ci-kubernetes-e2e-gci-gce-serial-kube-dns": {
+    "args": [
+      "--check-leaked-resources",
+      "--env=NODE_LOCAL_SSDS_EXT=1,scsi,fs",
+      "--env=CLUSTER_DNS_CORE_DNS=false",
       "--extract=ci/latest",
       "--gcp-master-image=gci",
       "--gcp-node-image=gci",
