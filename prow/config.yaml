@@ -15232,13 +15232,13 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=30
+      - --timeout=60
       - --service-account=/etc/service-account/service-account.json
       - --upload=gs://kubernetes-jenkins/logs
       env:
       - name: AWS_SHARED_CREDENTIALS_FILE
         value: /workspace/.aws/credentials
-      image: gcr.io/k8s-test-infra-aws/aws-janitor:v20180419-0d5b50232
+      image: gcr.io/k8s-test-infra-aws/aws-janitor:v20180423-371979a28
       volumeMounts:
       - mountPath: /workspace/.aws
         name: aws-cred
