@@ -142,6 +142,44 @@ I0919 15:34:14.943642    6611 round_trippers.go:414] GET https://k8s-api/api/v1/
 	}
 }
 
+func TestParseAPIServerLog(t *testing.T) {
+	testCases := []struct {
+		Rawdata  io.Reader
+		Expected apiArray
+	}{
+		{
+			Rawdata: bytes.NewReader(
+				[]byte(`
+I0413 12:10:56.612005       1 wrap.go:42] GET /api/v1/foo: (1.671974ms) 200
+I0413 12:10:56.661734       1 wrap.go:42] POST /api/v1/bar: (338.229ﾆ津郭) 403
+I0413 12:10:56.672006       1 wrap.go:42] PUT /apis/apiregistration.k8s.io/v1/apiservices/v1.apps/status: (1.671974ms) 200 [[kube-apiserver/v1.11.0 (linux/amd64) kubernetes/7297c1c] 127.0.0.1:44356]
+`)),
+			Expected: apiArray{
+				{Method: "GET", URL: "/api/v1/foo"},
+				{Method: "POST", URL: "/api/v1/bar"},
+				{Method: "PUT", URL: "/apis/apiregistration.k8s.io/v1/apiservices/v1.apps/status"},
+			},
+		},
+		{
+			Rawdata: bytes.NewReader(
+				[]byte(`
+I0413 12:10:56.612005       1 wrap.go:42] GET /api/v1/foo?other: (1.671974ms) 200
+`)),
+			Expected: apiArray{
+				{Method: "GET", URL: "/api/v1/foo"},
+			},
+		},
+	}
+	for _, test := range testCases {
+		res := parseAPIServerLog(test.Rawdata)
+		if !equalAPIArray(res, test.Expected) {
+			t.Errorf("APILog did not match expected for test")
+			t.Errorf("Actual: %#v", res)
+			t.Errorf("Expected: %#v", test.Expected)
+		}
+	}
+}
+
 func TestGetTestedAPIs(t *testing.T) {
 	testCases := []struct {
 		apisOpenapi apiArray
