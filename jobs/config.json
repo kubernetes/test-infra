@@ -774,28 +774,6 @@
       "sig-network"
     ]
   },
-  "ci-ingress-ipvs-gce-e2e": {
-    "args": [
-      "--check-leaked-resources",
-      "--cluster=",
-      "--env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-e2e-glbc-amd64:master",
-      "--env=KUBE_PROXY_MODE=ipvs",
-      "--extract=ci/latest",
-      "--gcp-node-image=ubuntu",
-      "--gcp-project-type=ingress-project",
-      "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel=1",
-      "--image-family=ubuntu-gke-1604-lts",
-      "--image-project=ubuntu-os-gke-cloud",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Ingress\\]",
-      "--timeout=320m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-network"
-    ]
-  },
   "ci-kinflate-periodic-default-gke": {
     "args": [
       "--check-leaked-resources",
@@ -4660,6 +4638,27 @@
       "--gcp-zone=asia-southeast1-a",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Feature:Ingress\\]|\\[Feature:NEG\\] --ginkgo.skip=\\[Unreleased\\]",
+      "--timeout=320m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-network"
+    ]
+  },
+  "ci-kubernetes-e2e-gci-gce-ingress-ipvs": {
+    "args": [
+      "--check-leaked-resources",
+      "--cluster=",
+      "--env=KUBE_PROXY_MODE=ipvs",
+      "--extract=ci/latest",
+      "--gcp-node-image=ubuntu",
+      "--gcp-project-type=ingress-project",
+      "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel=1",
+      "--image-family=ubuntu-gke-1604-lts",
+      "--image-project=ubuntu-os-gke-cloud",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Feature:Ingress\\]",
       "--timeout=320m"
     ],
     "scenario": "kubernetes_e2e",
