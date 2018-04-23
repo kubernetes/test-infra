@@ -1725,7 +1725,7 @@ presubmits:
         - "--"
         - "--build=dind"
         - "--deployment=dind"
-        - "--ginkgo-focus=[Conformance]"
+        - "--ginkgo-focus=\\[Conformance\\]"
         - "--ginkgo-skip=(DNS)|(NodeSelector)"
         - "--up"
         - "--test"
@@ -3565,7 +3565,7 @@ presubmits:
         - --
         - --build=dind
         - --deployment=dind
-        - --ginkgo-focus=[Conformance]
+        - --ginkgo-focus=\[Conformance\]
         - --ginkgo-skip=(DNS)|(NodeSelector)
         - --up
         - --test
@@ -7268,7 +7268,7 @@ periodics:
       - "--deployment=dind"
       - "--up"
       - "--test"
-      - "--ginkgo-focus=[Conformance]"
+      - "--ginkgo-focus=\\[Conformance\\]"
       - "--down"
       env:
       - name: DOCKER_IN_DOCKER_ENABLED
