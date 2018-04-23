@@ -11939,6 +11939,7 @@
       "--check-leaked-resources",
       "--cluster=",
       "--deployment=gke",
+      "--down=false",
       "--env=CLOUDSDK_CONTAINER_USE_V1_API=false",
       "--env=TAG=0.6.0",
       "--extract=ci/latest",
