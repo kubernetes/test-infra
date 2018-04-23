@@ -3170,7 +3170,7 @@
   "ci-kubernetes-e2e-gce-large-correctness": {
     "args": [
       "--cluster=gce-scale-cluster",
-      "--env=HEAPSTER_MACHINE_SIZE=n1-standard-8",
+      "--env=HEAPSTER_MACHINE_TYPE=n1-standard-8",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-large-correctness.env",
@@ -3212,7 +3212,7 @@
     "args": [
       "--cluster=$USER-large-manual",
       "--down=false",
-      "--env=HEAPSTER_MACHINE_SIZE=n1-standard-8",
+      "--env=HEAPSTER_MACHINE_TYPE=n1-standard-8",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env",
       "--extract=ci/latest",
@@ -3233,7 +3233,7 @@
   "ci-kubernetes-e2e-gce-large-performance": {
     "args": [
       "--cluster=gce-scale-cluster",
-      "--env=HEAPSTER_MACHINE_SIZE=n1-standard-8",
+      "--env=HEAPSTER_MACHINE_TYPE=n1-standard-8",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-large-performance.env",
@@ -3512,7 +3512,7 @@
   "ci-kubernetes-e2e-gce-scale-correctness": {
     "args": [
       "--cluster=gce-scale-cluster",
-      "--env=HEAPSTER_MACHINE_SIZE=n1-standard-16",
+      "--env=HEAPSTER_MACHINE_TYPE=n1-standard-16",
       "--env=MASTER_MIN_CPU_ARCHITECTURE=Intel Broadwell",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env",
@@ -3537,7 +3537,7 @@
   "ci-kubernetes-e2e-gce-scale-performance": {
     "args": [
       "--cluster=gce-scale-cluster",
-      "--env=HEAPSTER_MACHINE_SIZE=n1-standard-16",
+      "--env=HEAPSTER_MACHINE_TYPE=n1-standard-16",
       "--env=MASTER_MIN_CPU_ARCHITECTURE=Intel Broadwell",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env",
@@ -12582,7 +12582,7 @@
     "args": [
       "--build=bazel",
       "--cluster=",
-      "--env=HEAPSTER_MACHINE_SIZE=n1-standard-4",
+      "--env=HEAPSTER_MACHINE_TYPE=n1-standard-4",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env",
       "--extract=local",
@@ -12626,7 +12626,7 @@
     "args": [
       "--build=bazel",
       "--cluster=",
-      "--env=HEAPSTER_MACHINE_SIZE=n1-standard-8",
+      "--env=HEAPSTER_MACHINE_TYPE=n1-standard-8",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-large-performance.env",
