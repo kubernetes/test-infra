@@ -66,7 +66,7 @@ DEFAULT_AWS_ZONES = [
     'eu-west-3b',
     'eu-west-3c',
     'sa-east-1a',
-    'sa-east-1b',
+    #'sa-east-1b', AZ does not exist, so we're breaking the 3 AZs per region target here
     'sa-east-1c',
     'us-east-1a',
     'us-east-1b',
@@ -79,7 +79,7 @@ DEFAULT_AWS_ZONES = [
     #'us-east-2c', # no c4.large instances available
     'us-west-1a',
     'us-west-1b',
-    'us-west-1c',
+    #'us-west-1c', AZ does not exist, so we're breaking the 3 AZs per region target here
     'us-west-2a',
     'us-west-2b',
     'us-west-2c'
