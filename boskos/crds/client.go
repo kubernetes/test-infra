@@ -173,9 +173,9 @@ type ClientInterface interface {
 	NewCollection() Collection
 	// Create a new object
 	Create(obj Object) (Object, error)
-	// Update an existing object, fails if object does not exists
+	// Update an existing object, fails if object does not exist
 	Update(obj Object) (Object, error)
-	// Delete an existing object, fails if objects does not exists
+	// Delete an existing object, fails if objects does not exist
 	Delete(name string, options *v1.DeleteOptions) error
 	// Get an existing object
 	Get(name string) (Object, error)

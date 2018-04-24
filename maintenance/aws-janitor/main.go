@@ -66,6 +66,10 @@ var awsResourceTypes = []awsResourceType{
 	dhcpOptions{},
 	volumes{},
 	addresses{},
+
+	// Note that order matters here - we can't delete roles until we've deleted the profiles
+	iamInstanceProfiles{},
+	iamRoles{},
 }
 
 type awsResource interface {
@@ -75,6 +79,10 @@ type awsResource interface {
 	// intended to be globally unique across regions and accounts, so
 	// that works.
 	ARN() string
+
+	// ResourceKey() returns a per-resource key, because ARNs might conflict if two objects
+	// with the same name are created at different times (e.g. IAM roles)
+	ResourceKey() string
 }
 
 // awsResourceSet keeps track of the first time we saw a particular
@@ -122,24 +130,24 @@ func (s *awsResourceSet) Save(sess *session.Session, p *s3path) error {
 // on whether it should be deleted. If Mark(r) returns true, the TTL
 // has expired for r and it should be deleted.
 func (s *awsResourceSet) Mark(r awsResource) bool {
-	arn := r.ARN()
+	key := r.ResourceKey()
 	now := time.Now()
 
-	s.marked[arn] = true
-	if t, ok := s.firstSeen[arn]; ok {
+	s.marked[key] = true
+	if t, ok := s.firstSeen[key]; ok {
 		since := now.Sub(t)
 		if since > s.ttl {
-			s.swept = append(s.swept, arn)
+			s.swept = append(s.swept, key)
 			return true
 		}
-		glog.V(1).Infof("%s: seen for %v", r.ARN(), since)
+		glog.V(1).Infof("%s: seen for %v", key, since)
 		return false
 	}
-	s.firstSeen[arn] = now
-	glog.V(1).Infof("%s: first seen", r.ARN())
+	s.firstSeen[key] = now
+	glog.V(1).Infof("%s: first seen", key)
 	if s.ttl == 0 {
 		// If the TTL is 0, it should be deleted now.
-		s.swept = append(s.swept, arn)
+		s.swept = append(s.swept, key)
 		return true
 	}
 	return false
@@ -150,14 +158,14 @@ func (s *awsResourceSet) Mark(r awsResource) bool {
 // resources have been marked.
 func (s *awsResourceSet) MarkComplete() int {
 	var gone []string
-	for arn := range s.firstSeen {
-		if !s.marked[arn] {
-			gone = append(gone, arn)
+	for key := range s.firstSeen {
+		if !s.marked[key] {
+			gone = append(gone, key)
 		}
 	}
-	for _, arn := range gone {
-		glog.V(1).Infof("%s: deleted since last run", arn)
-		delete(s.firstSeen, arn)
+	for _, key := range gone {
+		glog.V(1).Infof("%s: deleted since last run", key)
+		delete(s.firstSeen, key)
 	}
 	if len(s.swept) > 0 {
 		glog.Errorf("%d resources swept: %v", len(s.swept), s.swept)
@@ -221,6 +229,10 @@ func (i instance) ARN() string {
 	return fmt.Sprintf("arn:aws:ec2:%s:%s:instance/%s", i.Region, i.Account, i.InstanceID)
 }
 
+func (i instance) ResourceKey() string {
+	return i.ARN()
+}
+
 // AutoScalingGroups: https://docs.aws.amazon.com/sdk-for-go/api/service/autoscaling/#AutoScaling.DescribeAutoScalingGroups
 
 type autoScalingGroups struct{}
@@ -276,6 +288,10 @@ func (asg autoScalingGroup) ARN() string {
 	return asg.ID
 }
 
+func (asg autoScalingGroup) ResourceKey() string {
+	return asg.ARN()
+}
+
 // LaunchConfigurations: http://docs.aws.amazon.com/sdk-for-go/api/service/autoscaling/#AutoScaling.DescribeLaunchConfigurations
 
 type launchConfigurations struct{}
@@ -315,6 +331,10 @@ type launchConfiguration struct {
 
 func (lc launchConfiguration) ARN() string {
 	return lc.ID
+}
+
+func (lc launchConfiguration) ResourceKey() string {
+	return lc.ARN()
 }
 
 // Subnets: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeSubnets
@@ -357,6 +377,10 @@ type subnet struct {
 
 func (sub subnet) ARN() string {
 	return fmt.Sprintf("arn:aws:ec2:%s:%s:subnet/%s", sub.Region, sub.Account, sub.ID)
+}
+
+func (sub subnet) ResourceKey() string {
+	return sub.ARN()
 }
 
 // SecurityGroups: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeSecurityGroups
@@ -441,6 +465,10 @@ func (sg securityGroup) ARN() string {
 	return fmt.Sprintf("arn:aws:ec2:%s:%s:security-group/%s", sg.Region, sg.Account, sg.ID)
 }
 
+func (sg securityGroup) ResourceKey() string {
+	return sg.ARN()
+}
+
 // InternetGateways: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeInternetGateways
 
 type internetGateways struct{}
@@ -508,6 +536,10 @@ func (ig internetGateway) ARN() string {
 	return fmt.Sprintf("arn:aws:ec2:%s:%s:internet-gateway/%s", ig.Region, ig.Account, ig.ID)
 }
 
+func (ig internetGateway) ResourceKey() string {
+	return ig.ARN()
+}
+
 // RouteTables: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeRouteTables
 
 type routeTables struct{}
@@ -563,6 +595,10 @@ func (rt routeTable) ARN() string {
 	return fmt.Sprintf("arn:aws:ec2:%s:%s:route-table/%s", rt.Region, rt.Account, rt.ID)
 }
 
+func (rt routeTable) ResourceKey() string {
+	return rt.ARN()
+}
+
 // VPCs: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeVpcs
 
 type vpcs struct{}
@@ -612,6 +648,10 @@ type vpc struct {
 
 func (vp vpc) ARN() string {
 	return fmt.Sprintf("arn:aws:ec2:%s:%s:vpc/%s", vp.Region, vp.Account, vp.ID)
+}
+
+func (vp vpc) ResourceKey() string {
+	return vp.ARN()
 }
 
 // DhcpOptions: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeDhcpOptions
@@ -718,6 +758,10 @@ func (dhcp dhcpOption) ARN() string {
 	return fmt.Sprintf("arn:aws:ec2:%s:%s:dhcp-option/%s", dhcp.Region, dhcp.Account, dhcp.ID)
 }
 
+func (dhcp dhcpOption) ResourceKey() string {
+	return dhcp.ARN()
+}
+
 // Volumes: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeVolumes
 
 type volumes struct{}
@@ -755,6 +799,10 @@ type volume struct {
 
 func (vol volume) ARN() string {
 	return fmt.Sprintf("arn:aws:ec2:%s:%s:volume/%s", vol.Region, vol.Account, vol.ID)
+}
+
+func (vol volume) ResourceKey() string {
+	return vol.ARN()
 }
 
 // Elastic IPs: https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#EC2.DescribeAddresses
@@ -799,6 +847,209 @@ func (addr address) ARN() string {
 	// This ARN is a complete hallucination - there doesn't seem to be
 	// an ARN for elastic IPs.
 	return fmt.Sprintf("arn:aws:ec2:%s:%s:address/%s", addr.Region, addr.Account, addr.ID)
+}
+
+func (addr address) ResourceKey() string {
+	return addr.ARN()
+}
+
+// IAM Roles
+
+type iamRoles struct{}
+
+// roleIsManaged checks if the role should be managed (and thus deleted) by us
+// In particular, we want to avoid "system" AWS roles or roles that might support test-infra
+func roleIsManaged(role *iam.Role) bool {
+	name := aws.StringValue(role.RoleName)
+	path := aws.StringValue(role.Path)
+
+	// Most AWS system roles are in a directory called `aws-service-role`
+	if strings.HasPrefix(path, "/aws-service-role/") {
+		return false
+	}
+
+	// kops roles have names start with `masters.` or `nodes.`
+	if strings.HasPrefix(name, "masters.") {
+		return true
+	}
+	if strings.HasPrefix(name, "nodes.") {
+		return true
+	}
+
+	glog.Infof("unknown role name=%q, path=%q; assuming not managed", name, path)
+	return false
+}
+
+func (iamRoles) MarkAndSweep(sess *session.Session, acct string, region string, set *awsResourceSet) error {
+	svc := iam.New(sess, &aws.Config{Region: aws.String(region)})
+
+	var toDelete []*iamRole // Paged call, defer deletion until we have the whole list.
+	if err := svc.ListRolesPages(&iam.ListRolesInput{}, func(page *iam.ListRolesOutput, _ bool) bool {
+		for _, r := range page.Roles {
+			if !roleIsManaged(r) {
+				continue
+			}
+
+			l := &iamRole{arn: aws.StringValue(r.Arn), roleID: aws.StringValue(r.RoleId), roleName: aws.StringValue(r.RoleName)}
+			if set.Mark(l) {
+				glog.Warningf("%s: deleting %T: %v", l.ARN(), r, r)
+				toDelete = append(toDelete, l)
+			}
+		}
+		return true
+	}); err != nil {
+		return err
+	}
+
+	for _, r := range toDelete {
+		if err := r.delete(svc); err != nil {
+			glog.Warningf("%v: delete failed: %v", r.ARN(), err)
+		}
+	}
+	return nil
+}
+
+type iamRole struct {
+	arn      string
+	roleID   string
+	roleName string
+}
+
+func (r iamRole) ARN() string {
+	return r.arn
+}
+
+func (r iamRole) ResourceKey() string {
+	return r.roleID + "::" + r.ARN()
+}
+
+func (r iamRole) delete(svc *iam.IAM) error {
+	roleName := r.roleName
+
+	var policyNames []string
+	{
+		request := &iam.ListRolePoliciesInput{
+			RoleName: aws.String(roleName),
+		}
+		err := svc.ListRolePoliciesPages(request, func(page *iam.ListRolePoliciesOutput, lastPage bool) bool {
+			for _, policyName := range page.PolicyNames {
+				policyNames = append(policyNames, aws.StringValue(policyName))
+			}
+			return true
+		})
+		if err != nil {
+			return fmt.Errorf("error listing IAM role policies for %q: %v", roleName, err)
+		}
+	}
+
+	for _, policyName := range policyNames {
+		glog.V(2).Infof("Deleting IAM role policy %q %q", roleName, policyName)
+		request := &iam.DeleteRolePolicyInput{
+			RoleName:   aws.String(roleName),
+			PolicyName: aws.String(policyName),
+		}
+		_, err := svc.DeleteRolePolicy(request)
+		if err != nil {
+			return fmt.Errorf("error deleting IAM role policy %q %q: %v", roleName, policyName, err)
+		}
+	}
+
+	{
+		glog.V(2).Infof("Deleting IAM role %q", roleName)
+		request := &iam.DeleteRoleInput{
+			RoleName: aws.String(roleName),
+		}
+		_, err := svc.DeleteRole(request)
+		if err != nil {
+			return fmt.Errorf("error deleting IAM role %q: %v", roleName, err)
+		}
+	}
+
+	return nil
+}
+
+// IAM Instance Profiles
+
+type iamInstanceProfiles struct{}
+
+func (iamInstanceProfiles) MarkAndSweep(sess *session.Session, acct string, region string, set *awsResourceSet) error {
+	svc := iam.New(sess, &aws.Config{Region: aws.String(region)})
+
+	var toDelete []*iamInstanceProfile // Paged call, defer deletion until we have the whole list.
+	if err := svc.ListInstanceProfilesPages(&iam.ListInstanceProfilesInput{}, func(page *iam.ListInstanceProfilesOutput, _ bool) bool {
+		for _, p := range page.InstanceProfiles {
+			// We treat an instance profile as managed if all its roles are
+			managed := true
+			if len(p.Roles) == 0 {
+				// Just in case...
+				managed = false
+			}
+			for _, r := range p.Roles {
+				if !roleIsManaged(r) {
+					managed = false
+				}
+			}
+			if !managed {
+				glog.Infof("ignoring unmanaged profile %s", aws.StringValue(p.Arn))
+				continue
+			}
+
+			o := &iamInstanceProfile{profile: p}
+			if set.Mark(o) {
+				glog.Warningf("%s: deleting %T: %v", o.ARN(), o, o)
+				toDelete = append(toDelete, o)
+			}
+		}
+		return true
+	}); err != nil {
+		return err
+	}
+
+	for _, o := range toDelete {
+		if err := o.delete(svc); err != nil {
+			glog.Warningf("%v: delete failed: %v", o.ARN(), err)
+		}
+	}
+	return nil
+}
+
+type iamInstanceProfile struct {
+	profile *iam.InstanceProfile
+}
+
+func (p iamInstanceProfile) ARN() string {
+	return aws.StringValue(p.profile.Arn)
+}
+
+func (p iamInstanceProfile) ResourceKey() string {
+	return aws.StringValue(p.profile.InstanceProfileId) + "::" + p.ARN()
+}
+
+func (p iamInstanceProfile) delete(svc *iam.IAM) error {
+	// We need to unlink the roles first, before we can delete the instance profile
+	{
+		for _, role := range p.profile.Roles {
+			request := &iam.RemoveRoleFromInstanceProfileInput{
+				InstanceProfileName: p.profile.InstanceProfileName,
+				RoleName:            role.RoleName,
+			}
+			if _, err := svc.RemoveRoleFromInstanceProfile(request); err != nil {
+				return fmt.Errorf("error removing role %q: %v", aws.StringValue(role.RoleName), err)
+			}
+		}
+	}
+
+	// Delete the instance profile
+	{
+		request := &iam.DeleteInstanceProfileInput{
+			InstanceProfileName: p.profile.InstanceProfileName,
+		}
+		if _, err := svc.DeleteInstanceProfile(request); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // ARNs (used for uniquifying within our previous mark file)

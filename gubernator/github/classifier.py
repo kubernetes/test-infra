@@ -433,7 +433,7 @@ def calculate_attention(distilled_events, payload):
 
     if payload.get('needs_rebase'):
         notify(author, 'needs rebase')
-    if 'release-note-label-needed' in payload['labels']:
+    if 'do-not-merge/release-note-label-needed' in payload['labels']:
         notify(author, 'needs release-note label')
 
     return attn

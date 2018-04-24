@@ -542,6 +542,7 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gce-scale-performance': 'ci-kubernetes-scale-*',
             'ci-kubernetes-e2e-gke-large-correctness': 'ci-kubernetes-scale-*',
             'ci-kubernetes-e2e-gke-large-performance': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-e2e-gke-large-performance-regional': 'ci-kubernetes-scale-*',
             'ci-kubernetes-e2e-gke-large-deploy': 'ci-kubernetes-scale-*',
             'ci-kubernetes-e2e-gke-large-teardown': 'ci-kubernetes-scale-*',
             'ci-kubernetes-e2e-gke-scale-correctness': 'ci-kubernetes-scale-*',

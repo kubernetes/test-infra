@@ -31,13 +31,13 @@ echo "Building node docker image from ${NODE_DIR}"
 cd ${KUBE_ROOT}
 
 # Build the debs
-bazel build //build/debs:debs
+bazel build //build/debs:debs --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
 
 # Build the docker containers
-bazel build //build:docker-artifacts
+bazel build //build:docker-artifacts --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
 
 # Build the addons configs.
-bazel build //cluster/addons:addon-srcs
+bazel build //cluster/addons:addon-srcs --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
 
 cd -
 

@@ -248,7 +248,12 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, e *github.Gener
 	if totalProblems == 1 {
 		s = ""
 	}
+
 	response := fmt.Sprintf("%d warning%s.", totalProblems, s)
+
+	if oldProblems != 0 {
+		response = fmt.Sprintf("%d unresolved warning%s and %d new warning%s.", oldProblems, s, newProblems, s)
+	}
 
 	return ghc.CreateReview(org, repo, e.Number, github.DraftReview{
 		Body:     plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, response),

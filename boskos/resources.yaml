@@ -365,7 +365,6 @@ resources:
   - k8s-jkns-e2e-gci-gce-1-6
   - k8s-jkns-e2e-gci-gce-alpha
   - k8s-jkns-e2e-gci-gce-alpha1-4
-  - k8s-jkns-e2e-gci-gce-soak-1-4
   - k8s-jkns-e2e-gke-ubuntu
   - k8s-jkns-e2e-gke-ubuntu-serial
   - k8s-jkns-e2e-gke-ubuntu-slow

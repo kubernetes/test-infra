@@ -31,7 +31,13 @@ filegroup(
 
 go_test(
     name = "go_default_test",
-    srcs = ["options_test.go"],
+    srcs = [
+        "options_test.go",
+        "run_test.go",
+    ],
     embed = [":go_default_library"],
-    deps = ["//prow/pod-utils/wrapper:go_default_library"],
+    deps = [
+        "//prow/pod-utils/wrapper:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+    ],
 )

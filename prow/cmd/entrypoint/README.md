@@ -16,8 +16,11 @@ as JSON in the `$ENTRYPOINT_OPTIONS` environment variable, which has the form:
         "/bin/ls",
         "-la"
     ],
-    "timeout_minutes": 10,
+    "timeout": 7200000000000,
+    "grace_period": 15000000000,
     "process_log": "/logs/process-log.txt",
     "marker_file": "/logs/marker-file.txt",
 }
 ```
+
+Note: the `"timeout"` and `"grace_period"` fields hold the duration in nanoseconds.

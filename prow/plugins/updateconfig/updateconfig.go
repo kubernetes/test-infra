@@ -110,7 +110,8 @@ func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRe
 	}
 
 	pr := pre.PullRequest
-	if !pr.Merged || pr.MergeSHA == nil {
+
+	if !pr.Merged || pr.MergeSHA == nil || pr.Base.Repo.DefaultBranch != pr.Base.Ref {
 		return nil
 	}
 
@@ -123,8 +124,16 @@ func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRe
 		return err
 	}
 
+	message := func(cm plugins.ConfigMapSpec, fileName string) string {
+		msg := fmt.Sprintf("`%s` configmap from file `%s`", cm.Name, fileName)
+		if cm.Namespace != "" {
+			msg = fmt.Sprintf("%s in namespace `%s`", msg, cm.Namespace)
+		}
+		return msg
+	}
+
 	// Are any of the changes files ones that define a configmap we want to update?
-	var updated []plugins.ConfigMapSpec
+	var updated []string
 	for _, change := range changes {
 		cm, ok := configMaps[change.Filename]
 		if !ok {
@@ -134,15 +143,7 @@ func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRe
 		if err := update(gc, kc, org, repo, *pr.MergeSHA, change.Filename, cm.Name, cm.Namespace); err != nil {
 			return err
 		}
-		updated = append(updated, cm)
-	}
-
-	message := func(cm plugins.ConfigMapSpec) string {
-		msg := fmt.Sprintf("%s configmap", cm.Name)
-		if cm.Namespace != "" {
-			msg = fmt.Sprintf("%s on namespace %s", msg, cm.Namespace)
-		}
-		return msg
+		updated = append(updated, message(cm, change.Filename))
 	}
 
 	var msg string
@@ -150,11 +151,11 @@ func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRe
 	case 0:
 		return nil
 	case 1:
-		msg = fmt.Sprintf("Updated the %s", message(updated[0]))
+		msg = fmt.Sprintf("Updated the %s", updated[0])
 	default:
 		msg = fmt.Sprintf("Updated the following %d configmaps:\n", n)
-		for _, cm := range updated {
-			msg += fmt.Sprintf("  * %s\n", message(cm))
+		for _, updateMsg := range updated {
+			msg += fmt.Sprintf("  * %s\n", updateMsg)
 		}
 	}
 

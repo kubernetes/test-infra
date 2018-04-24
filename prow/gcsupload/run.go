@@ -38,21 +38,35 @@ import (
 // to their destination in GCS, so the caller can
 // operate relative to the base of the GCS dir.
 func (o Options) Run(extra map[string]gcs.UploadFunc) error {
-	var builder gcs.RepoPathBuilder
-	switch o.PathStrategy {
-	case kube.PathStrategyExplicit:
-		builder = gcs.NewExplicitRepoPathBuilder()
-	case kube.PathStrategyLegacy:
-		builder = gcs.NewLegacyRepoPathBuilder(o.DefaultOrg, o.DefaultRepo)
-	case kube.PathStrategySingle:
-		builder = gcs.NewSingleDefaultRepoPathBuilder(o.DefaultOrg, o.DefaultRepo)
-	}
-
 	spec, err := downwardapi.ResolveSpecFromEnv() // TODO: pass in all the config instead of needing this?
 	if err != nil {
 		return fmt.Errorf("could not resolve job spec: %v", err)
 	}
 
+	uploadTargets := o.assembleTargets(spec, extra)
+
+	if !o.DryRun {
+		ctx := context.Background()
+		gcsClient, err := storage.NewClient(ctx, option.WithCredentialsFile(o.GcsCredentialsFile))
+		if err != nil {
+			return fmt.Errorf("could not connect to GCS: %v", err)
+		}
+
+		if err := gcs.Upload(gcsClient.Bucket(o.Bucket), uploadTargets); err != nil {
+			return fmt.Errorf("failed to upload to GCS: %v", err)
+		}
+	} else {
+		for destination := range uploadTargets {
+			logrus.WithField("dest", destination).Info("Would upload")
+		}
+	}
+
+	logrus.Info("Finished upload to GCS")
+	return nil
+}
+
+func (o Options) assembleTargets(spec *downwardapi.JobSpec, extra map[string]gcs.UploadFunc) map[string]gcs.UploadFunc {
+	builder := builderForStrategy(o.PathStrategy, o.DefaultOrg, o.DefaultRepo)
 	var gcsPath string
 	jobBasePath := gcs.PathForSpec(spec, builder)
 	if o.PathPrefix != "" {
@@ -101,24 +115,21 @@ func (o Options) Run(extra map[string]gcs.UploadFunc) error {
 		uploadTargets[path.Join(gcsPath, destination)] = upload
 	}
 
-	if !o.DryRun {
-		ctx := context.Background()
-		gcsClient, err := storage.NewClient(ctx, option.WithCredentialsFile(o.GcsCredentialsFile))
-		if err != nil {
-			return fmt.Errorf("could not connect to GCS: %v", err)
-		}
+	return uploadTargets
+}
 
-		if err := gcs.Upload(gcsClient.Bucket(o.Bucket), uploadTargets); err != nil {
-			return fmt.Errorf("failed to upload to GCS: %v", err)
-		}
-	} else {
-		for destination := range uploadTargets {
-			logrus.WithField("dest", destination).Info("Would upload")
-		}
+func builderForStrategy(strategy, defaultOrg, defaultRepo string) gcs.RepoPathBuilder {
+	var builder gcs.RepoPathBuilder
+	switch strategy {
+	case kube.PathStrategyExplicit:
+		builder = gcs.NewExplicitRepoPathBuilder()
+	case kube.PathStrategyLegacy:
+		builder = gcs.NewLegacyRepoPathBuilder(defaultOrg, defaultRepo)
+	case kube.PathStrategySingle:
+		builder = gcs.NewSingleDefaultRepoPathBuilder(defaultOrg, defaultRepo)
 	}
 
-	logrus.Info("Finished upload to GCS")
-	return nil
+	return builder
 }
 
 func gatherArtifacts(artifactDir, gcsPath, subDir string, uploadTargets map[string]gcs.UploadFunc) {

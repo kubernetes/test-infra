@@ -116,7 +116,7 @@ type IssueCreator struct {
 	// Issues are keyed by issue number.
 	allIssues map[int]*github.Issue
 
-	// ownerPath is the path the the test owners csv file or "" if no assignments or SIG areas should be used.
+	// ownerPath is the path the test owners csv file or "" if no assignments or SIG areas should be used.
 	ownerPath string
 	// maxSIGCount is the maximum number of SIG areas to include on a single github issue.
 	MaxSIGCount int
@@ -176,7 +176,7 @@ func (c *IssueCreator) initialize() error {
 }
 
 // CreateAndSync is the main workhorse function of IssueCreator. It initializes the IssueCreator,
-// asks each source for it's issues to sync, and syncs the issues.
+// asks each source for its issues to sync, and syncs the issues.
 func (c *IssueCreator) CreateAndSync() {
 	var err error
 	if err = c.initialize(); err != nil {

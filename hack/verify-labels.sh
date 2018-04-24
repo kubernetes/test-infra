@@ -27,6 +27,6 @@ DIFF=$(diff "${TMP_LABELS_DOCS}" "${TESTINFRA_ROOT}/label_sync/labels.md" || tru
 if [ ! -z "$DIFF" ]; then
     echo "${DIFF}"
     echo ""
-    echo "labels.yaml was updated without updating labels.md, please run 'hack/update-labels.sh'"
+    echo "FAILED: labels.yaml was updated without updating labels.md, please run 'hack/update-labels.sh'"
     exit 1
 fi

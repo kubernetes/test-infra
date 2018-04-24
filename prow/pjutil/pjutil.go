@@ -46,15 +46,19 @@ func NewProwJob(spec kube.ProwJobSpec, labels map[string]string) kube.ProwJob {
 
 // PresubmitSpec initializes a ProwJobSpec for a given presubmit job.
 func PresubmitSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
+	refs.PathAlias = p.PathAlias
 	pjs := kube.ProwJobSpec{
-		Type: kube.PresubmitJob,
-		Job:  p.Name,
-		Refs: &refs,
+		Type:      kube.PresubmitJob,
+		Job:       p.Name,
+		Refs:      &refs,
+		ExtraRefs: p.ExtraRefs,
 
 		Report:         !p.SkipReport,
 		Context:        p.Context,
 		RerunCommand:   p.RerunCommand,
 		MaxConcurrency: p.MaxConcurrency,
+
+		DecorationConfig: p.DecorationConfig,
 	}
 	pjs.Agent = kube.ProwJobAgent(p.Agent)
 	if pjs.Agent == kube.KubernetesAgent {
@@ -72,11 +76,16 @@ func PresubmitSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 
 // PostsubmitSpec initializes a ProwJobSpec for a given postsubmit job.
 func PostsubmitSpec(p config.Postsubmit, refs kube.Refs) kube.ProwJobSpec {
+	refs.PathAlias = p.PathAlias
 	pjs := kube.ProwJobSpec{
-		Type:           kube.PostsubmitJob,
-		Job:            p.Name,
-		Refs:           &refs,
+		Type:      kube.PostsubmitJob,
+		Job:       p.Name,
+		Refs:      &refs,
+		ExtraRefs: p.ExtraRefs,
+
 		MaxConcurrency: p.MaxConcurrency,
+
+		DecorationConfig: p.DecorationConfig,
 	}
 	pjs.Agent = kube.ProwJobAgent(p.Agent)
 	if pjs.Agent == kube.KubernetesAgent {
@@ -95,8 +104,11 @@ func PostsubmitSpec(p config.Postsubmit, refs kube.Refs) kube.ProwJobSpec {
 // PeriodicSpec initializes a ProwJobSpec for a given periodic job.
 func PeriodicSpec(p config.Periodic) kube.ProwJobSpec {
 	pjs := kube.ProwJobSpec{
-		Type: kube.PeriodicJob,
-		Job:  p.Name,
+		Type:      kube.PeriodicJob,
+		Job:       p.Name,
+		ExtraRefs: p.ExtraRefs,
+
+		DecorationConfig: p.DecorationConfig,
 	}
 	pjs.Agent = kube.ProwJobAgent(p.Agent)
 	if pjs.Agent == kube.KubernetesAgent {
@@ -115,10 +127,13 @@ func PeriodicSpec(p config.Periodic) kube.ProwJobSpec {
 // BatchSpec initializes a ProwJobSpec for a given batch job and ref spec.
 func BatchSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 	pjs := kube.ProwJobSpec{
-		Type:    kube.BatchJob,
-		Job:     p.Name,
-		Refs:    &refs,
-		Context: p.Context, // The Submit Queue's getCompleteBatches needs this.
+		Type:      kube.BatchJob,
+		Job:       p.Name,
+		Refs:      &refs,
+		ExtraRefs: p.ExtraRefs,
+		Context:   p.Context, // The Submit Queue's getCompleteBatches needs this.
+
+		DecorationConfig: p.DecorationConfig,
 	}
 	pjs.Agent = kube.ProwJobAgent(p.Agent)
 	if pjs.Agent == kube.KubernetesAgent {

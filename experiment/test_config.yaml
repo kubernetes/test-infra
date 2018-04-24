@@ -1031,7 +1031,6 @@ cloudProviders:
     - --check-leaked-resources
     - --provider=gce
     - --gcp-zone=us-central1-f
-    - --env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1
   gke:
     args:
     - --check-leaked-resources
@@ -1181,23 +1180,23 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180413-ff6991978-master
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180418-79a97ca02-master
   beta:
     args:
     - --repo=k8s.io/kubernetes=release-1.11
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180413-ff6991978-1.11
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180418-79a97ca02-1.11
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.10
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180413-ff6991978-1.10
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180418-79a97ca02-1.10
   stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.9
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180413-ff6991978-1.9
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180418-79a97ca02-1.9
   stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.8
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180413-ff6991978-1.8
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180418-79a97ca02-1.8
 
 nodeTestSuites:
   default:

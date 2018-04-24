@@ -53,7 +53,9 @@ conflicting_prs=()
 page=0
 while true; do
   page=$((page + 1))
-  open_prs=$("${GHCURL[@]}" "https://api.github.com/repos/${ORG}/${REPO}/pulls?base=master&per_page=100&page=${page}" | jq -r '.[].number')
+  # Select only PRs that have not been tagged as stale or rotten.
+  open_prs=$("${GHCURL[@]}" "https://api.github.com/repos/${ORG}/${REPO}/pulls?base=master&per_page=100&page=${page}" |\
+    jq -r '.[] | select(.labels | map(.name != "lifecycle/stale" and .name != "lifecycle/rotten") | all) | .number')
   [[ -z "${open_prs}" ]] && break
   for pr in ${open_prs}; do
     mergeable=$("${GHCURL[@]}" -sfSL "https://api.github.com/repos/${ORG}/${REPO}/pulls/${pr}" | jq -r '.mergeable')

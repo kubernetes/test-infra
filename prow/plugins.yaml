@@ -347,12 +347,17 @@ plugins:
   - wip
   - yuks
 
+  kubernetes-sigs/federation-v2:
+  - approve
+  - trigger
+
   kubernetes-sigs/testing_frameworks:
   - approve
   - trigger
 
   kubernetes-sigs/poseidon:
   - approve
+  - trigger
 
   kubernetes-sigs/cluster-api:
   - approve
