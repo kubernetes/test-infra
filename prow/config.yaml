@@ -11244,7 +11244,7 @@ periodics:
           cpu: 6
           memory: "16Gi"
 
-- interval: 1h
+- cron: '1 0 25 4 *' # Run at 00:01 UTC (02:01 CEST) on 25th April
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-large-performance-regional
   tags:
