@@ -993,6 +993,7 @@ func (c *Controller) presubmitsByPull(sp subpool) (map[int]sets.String, error) {
 }
 
 func (c *Controller) syncSubpool(sp subpool) (Pool, error) {
+	sp.log.Infof("Syncing subpool: %d PRs, %d PJs.", len(sp.prs), len(sp.pjs))
 	presubmits, err := c.presubmitsByPull(sp)
 	if err != nil {
 		return Pool{}, fmt.Errorf("error determining required presubmits: %v", err)

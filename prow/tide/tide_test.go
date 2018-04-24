@@ -1548,12 +1548,14 @@ func TestIsPassing(t *testing.T) {
 	testCases := []struct {
 		name             string
 		passing          bool
+		optional         []string
 		config           *config.Branch
 		combinedContexts map[string]string
 	}{
 		{
-			name:    "required checks disabled should not impact - passing",
-			passing: true,
+			name:     "required checks disabled should not impact - passing",
+			passing:  true,
+			optional: []string{statusContext},
 			config: &config.Branch{
 				Protect:  &no,
 				Contexts: []string{"c1", "c2", "c3"},
@@ -1563,6 +1565,7 @@ func TestIsPassing(t *testing.T) {
 		{
 			name:             "required checks disabled should not impact - failing",
 			passing:          false,
+			optional:         []string{"c4"},
 			combinedContexts: map[string]string{"c1": success, "c2": failure},
 			config: &config.Branch{
 				Protect:  &no,
@@ -1572,7 +1575,8 @@ func TestIsPassing(t *testing.T) {
 		{
 			name:             "required checks used - passing",
 			passing:          true,
-			combinedContexts: map[string]string{"c1": success, "c2": failure, "c3": success},
+			optional:         []string{"c4"},
+			combinedContexts: map[string]string{"c1": success, "c2": failure, "c3": success, "c4": failure},
 			config: &config.Branch{
 				Protect:  &yes,
 				Contexts: []string{"c1", "c3"},
@@ -1581,7 +1585,8 @@ func TestIsPassing(t *testing.T) {
 		{
 			name:             "required checks used - failing",
 			passing:          false,
-			combinedContexts: map[string]string{"c1": success, "c2": success},
+			optional:         []string{"c4"},
+			combinedContexts: map[string]string{"c1": success, "c2": success, "c4": success},
 			config: &config.Branch{
 				Protect:  &yes,
 				Contexts: []string{"c1", "c2", "c3"},
@@ -1599,7 +1604,7 @@ func TestIsPassing(t *testing.T) {
 			t.Errorf("Failed to get log output before testing: %v", err)
 			t.FailNow()
 		}
-		cr := newContextRegister(statusContext)
+		cr := newContextRegister(tc.optional...)
 		cr.registerRequiredContexts(findRequiredContexts(tc.config)...)
 		pr := PullRequest{HeadRefOID: githubql.String(headSHA)}
 		passing := isPassingTests(log, ghc, pr, cr)
