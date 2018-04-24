@@ -4940,7 +4940,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "sig-gcp"
+      "sig-network"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-sig-cli": {
