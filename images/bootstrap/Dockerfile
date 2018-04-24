@@ -22,6 +22,9 @@ RUN mkdir -p /workspace
 ENV WORKSPACE=/workspace \
     TERM=xterm
 
+# Cleanup unnecessary package(s)
+RUN echo 'Yes, do as I say!' | apt-get remove systemd
+
 # add env we can debug with the image name:tag
 ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}
@@ -115,7 +118,6 @@ ADD ["./barnacle/barnacle", "/usr/local/bin"]
 #
 # END: DOCKER IN DOCKER SETUP
 #
-
 
 # note the runner is also responsible for making docker in docker function if
 # env DOCKER_IN_DOCKER_ENABLED is set and similarly responsible for generating
