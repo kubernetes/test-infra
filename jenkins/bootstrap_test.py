@@ -72,15 +72,12 @@ class FakeSubprocess(object):
     def __init__(self):
         self.calls = []
         self.file_data = []
-        self.output = {}
 
     def __call__(self, cmd, *a, **kw):
         self.calls.append((cmd, a, kw))
         for arg in cmd:
             if arg.startswith('/') and os.path.exists(arg):
                 self.file_data.append(open(arg).read())
-        if kw.get('output') and self.output.get(cmd[0]):
-            return self.output[cmd[0]].pop(0)
 
 
 # pylint: disable=invalid-name
@@ -576,34 +573,6 @@ class GubernatorUriTest(unittest.TestCase):
             bootstrap.GUBERNATOR + '/blah/blah',
             bootstrap.gubernator_uri(self.create_path(uri)))
 
-
-class UploadPodspecTest(unittest.TestCase):
-    """ Tests for maybe_upload_podspec() """
-
-    def test_missing_env(self):
-        """ Missing env vars return without doing anything. """
-        # pylint: disable=no-self-use
-        bootstrap.maybe_upload_podspec(None, '', None, {}.get)
-        bootstrap.maybe_upload_podspec(None, '', None, {bootstrap.K8S_ENV: 'foo'}.get)
-        bootstrap.maybe_upload_podspec(None, '', None, {'HOSTNAME': 'blah'}.get)
-
-    def test_upload(self):
-        gsutil = FakeGSUtil()
-        call = FakeSubprocess()
-
-        output = 'type: gamma/example\n'
-        call.output['kubectl'] = [output]
-        artifacts = 'gs://bucket/logs/123/artifacts'
-        bootstrap.maybe_upload_podspec(
-            call, artifacts, gsutil,
-            {bootstrap.K8S_ENV: 'exists', 'HOSTNAME': 'abcd'}.get)
-
-        self.assertEqual(
-            call.calls,
-            [(['kubectl', 'get', '-oyaml', 'pods/abcd'], (), {'output': True})])
-        self.assertEqual(
-            gsutil.texts,
-            [(('%s/prow_podspec.yaml' % artifacts, output), {})])
 
 
 class AppendResultTest(unittest.TestCase):
