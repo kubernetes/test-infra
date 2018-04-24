@@ -825,7 +825,7 @@ def setup_magic_environment(job, call):
     # By default, Jenkins sets HOME to JENKINS_HOME, which is shared by all
     # jobs. To avoid collisions, set it to the cwd instead, but only when
     # running on Jenkins.
-    if os.environ.get(HOME_ENV, None) == os.environ.get(JENKINS_HOME_ENV, None):
+    if os.getenv(HOME_ENV) and os.getenv(HOME_ENV) == os.getenv(JENKINS_HOME_ENV):
         os.environ[HOME_ENV] = cwd
     # TODO(fejta): jenkins sets JOB_ENV and pieces of our infra expect this
     #              value. Consider making everything below here agnostic to the
@@ -1060,11 +1060,9 @@ def bootstrap(args):
                 logging.error("unable to upload podspecs: %s", exc)
             setup_root(call, args.root, repos, args.ssh, args.git_cache, args.clean)
             logging.info('Configure environment...')
-            if repos:
-                version = find_version(call)
-            else:
-                version = ''
             setup_magic_environment(job, call)
+            setup_credentials(call, args.service_account, upload)
+            version = find_version(call) if repos else ''
             logging.info('Start %s at %s...', build, version)
             if upload:
                 start(gsutil, paths, started, node(), version, repos)
