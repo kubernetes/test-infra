@@ -295,3 +295,28 @@ func (f *FakeClient) ListMilestones(org, repo string) ([]github.Milestone, error
 	}
 	return milestones, nil
 }
+
+func (f *FakeClient) GetTeamMembership(id int, user string) (*github.TeamMembership, error) {
+	teamMembership := map[int]*github.TeamMembership{
+		1: {
+			State: github.TeamMembershipStateActive,
+			Role:  github.TeamMembershipRoleMember,
+		},
+		2: {
+			State: github.TeamMembershipStateActive,
+			Role:  github.TeamMembershipRoleMaintainer,
+		},
+		3: {
+			State: github.TeamMembershipStatePending,
+			Role:  github.TeamMembershipRoleMember,
+		},
+	}
+	membership, ok := teamMembership[id]
+	if ok {
+		return membership, nil
+	}
+	return &github.TeamMembership{
+		State: github.TeamMembershipStateNone,
+		Role:  github.TeamMembershipRoleNone,
+	}, nil
+}

@@ -96,6 +96,7 @@ type githubClient interface {
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 	RemoveLabel(org, repo string, number int, label string) error
 	DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error
+	GetTeamMembership(id int, user string) (*github.TeamMembership, error)
 }
 
 type kubeClient interface {
@@ -175,7 +176,7 @@ func fileChangesGetter(ghc githubClient, org, repo string, num int) func() ([]st
 	}
 }
 
-func runOrSkipRequested(c client, pr *github.PullRequest, requestedJobs []config.Presubmit, forceRunContexts map[string]bool, body, eventGUID string) error {
+func runOrSkipRequested(c client, pr *github.PullRequest, requestedJobs []config.Presubmit, forceRunContexts map[string]bool, body, eventGUID string, commenter string) error {
 	org := pr.Base.Repo.Owner.Login
 	repo := pr.Base.Repo.Name
 	number := pr.Number
@@ -184,7 +185,6 @@ func runOrSkipRequested(c client, pr *github.PullRequest, requestedJobs []config
 	if err != nil {
 		return err
 	}
-
 	// Use a closure to lazily retrieve the file changes only if they are needed.
 	// We only have to fetch the changes if there is at least one RunIfChanged
 	// job that is not being force run (due to a `/retest` after a failure or
@@ -194,6 +194,20 @@ func runOrSkipRequested(c client, pr *github.PullRequest, requestedJobs []config
 	shouldRun := func(j config.Presubmit) (bool, error) {
 		if !j.RunsAgainstBranch(pr.Base.Ref) {
 			return false, nil
+		}
+		restrictedJobs, exists := c.Config.RestrictedJobs[fmt.Sprintf("%s/%s", org, repo)]
+		if exists {
+			for _, job := range restrictedJobs {
+				if j.Name == job.Name {
+					teamMembership, err := c.GitHubClient.GetTeamMembership(job.AuthorizedTeam, commenter)
+					if err != nil {
+						return false, err
+					}
+					if teamMembership.Role == github.TeamMembershipRoleNone || teamMembership.State != github.TeamMembershipStateActive {
+						return false, nil
+					}
+				}
+			}
 		}
 		if j.RunIfChanged == "" || forceRunContexts[j.Context] || j.TriggerMatches(body) {
 			return true, nil

@@ -527,6 +527,28 @@ type TeamMember struct {
 	Login string `json:"login"`
 }
 
+// TeamMembership is the membership info in a team.
+type TeamMembership struct {
+	Role  TeamMembershipRole  `json:"role"`
+	State TeamMembershipState `json:"state"`
+}
+
+type TeamMembershipRole string
+
+const (
+	TeamMembershipRoleMaintainer TeamMembershipRole = "maintainer"
+	TeamMembershipRoleMember                        = "member"
+	TeamMembershipRoleNone                          = "none"
+)
+
+type TeamMembershipState string
+
+const (
+	TeamMembershipStateActive  TeamMembershipState = "active"
+	TeamMembershipStatePending                     = "pending"
+	TeamMembershipStateNone                        = "none"
+)
+
 type GenericCommentEventAction string
 
 // Comments indicate values that are coerced to the specified value.

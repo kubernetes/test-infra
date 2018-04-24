@@ -179,7 +179,7 @@ func buildAll(c client, pr *github.PullRequest, eventGUID string) error {
 			matchingJobs = append(matchingJobs, job)
 		}
 	}
-	return runOrSkipRequested(c, pr, matchingJobs, nil, "", eventGUID)
+	return runOrSkipRequested(c, pr, matchingJobs, nil, "", eventGUID, "")
 }
 
 // clearStaleComments deletes old comments that are no longer applicable.
