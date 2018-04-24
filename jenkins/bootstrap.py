@@ -53,6 +53,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import urllib2
 
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
 
@@ -228,9 +229,10 @@ def auth_google_gerrit(git, call):
 
 def commit_date(git, commit, call):
     try:
-        return call([git, 'show', '-s', '--format=format:%ct', commit], output=True)
+        return call([git, 'show', '-s', '--format=format:%ct', commit],
+                    output=True, log_failures=False)
     except subprocess.CalledProcessError:
-        logging.warning('Failed to print commit date for %s', commit)
+        logging.warning('Unable to print commit date for %s', commit)
         return None
 
 def checkout(call, repo, repo_path, branch, pull, ssh='', git_cache='', clean=False):
@@ -321,6 +323,8 @@ def start(gsutil, paths, stamp, node_name, version, repos):
         if ref_has_shas(pull[1]):
             data['pull'] = pull[1]
         data['repos'] = repos_dict(repos)
+    if POD_ENV in os.environ:
+        data['metadata'] = {'pod': os.environ[POD_ENV]}
 
     gsutil.upload_json(paths.started, data)
     # Upload a link to the build path in the directory
@@ -486,6 +490,10 @@ def metadata(repos, artifacts, call):
         meta['repo'] = repos.main
         meta['repos'] = repos_dict(repos)
 
+    if POD_ENV in os.environ:
+        # HARDEN against metadata only being read from finished.
+        meta['pod'] = os.environ[POD_ENV]
+
     try:
         commit = call(['git', 'rev-parse', 'HEAD'], output=True)
         if commit:
@@ -569,7 +577,16 @@ def node():
     # TODO(fejta): jenkins sets the node name and our infra expect this value.
     # TODO(fejta): Consider doing something different here.
     if NODE_ENV not in os.environ:
-        os.environ[NODE_ENV] = ''.join(socket.gethostname().split('.')[:1])
+        host = socket.gethostname().split('.')[0]
+        try:
+            # Try reading the name of the VM we're running on, using the
+            # metadata server.
+            os.environ[NODE_ENV] = urllib2.urlopen(urllib2.Request(
+                'http://169.254.169.254/computeMetadata/v1/instance/name',
+                headers={'Metadata-Flavor': 'Google'})).read()
+            os.environ[POD_ENV] = host  # We also want to log this.
+        except IOError:  # Fallback.
+            os.environ[NODE_ENV] = host
     return os.environ[NODE_ENV]
 
 
@@ -696,8 +713,10 @@ GCE_KEY_ENV = 'JENKINS_GCE_SSH_PRIVATE_KEY_FILE'
 GUBERNATOR = 'https://k8s-gubernator.appspot.com/build'
 HOME_ENV = 'HOME'
 JENKINS_HOME_ENV = 'JENKINS_HOME'
+K8S_ENV = 'KUBERNETES_SERVICE_HOST'
 JOB_ENV = 'JOB_NAME'
 NODE_ENV = 'NODE_NAME'
+POD_ENV = 'POD_NAME'
 SERVICE_ACCOUNT_ENV = 'GOOGLE_APPLICATION_CREDENTIALS'
 WORKSPACE_ENV = 'WORKSPACE'
 GCS_ARTIFACTS_ENV = 'GCS_ARTIFACTS_DIR'
@@ -807,7 +826,7 @@ def setup_magic_environment(job, call):
     # By default, Jenkins sets HOME to JENKINS_HOME, which is shared by all
     # jobs. To avoid collisions, set it to the cwd instead, but only when
     # running on Jenkins.
-    if os.environ.get(HOME_ENV, None) == os.environ.get(JENKINS_HOME_ENV, None):
+    if os.getenv(HOME_ENV) and os.getenv(HOME_ENV) == os.getenv(JENKINS_HOME_ENV):
         os.environ[HOME_ENV] = cwd
     # TODO(fejta): jenkins sets JOB_ENV and pieces of our infra expect this
     #              value. Consider making everything below here agnostic to the
@@ -895,6 +914,18 @@ def configure_ssh_key(ssh):
             os.environ['GIT_SSH'] = old
     finally:
         os.unlink(fp.name)
+
+
+def maybe_upload_podspec(call, artifacts, gsutil, getenv):
+    """ Attempt to read our own podspec and upload it to the artifacts dir. """
+    if not getenv(K8S_ENV):
+        return  # we don't appear to be a pod
+    hostname = getenv('HOSTNAME')
+    if not hostname:
+        return
+    spec = call(['kubectl', 'get', '-oyaml', 'pods/' + hostname], output=True)
+    gsutil.upload_text(
+        os.path.join(artifacts, 'prow_podspec.yaml'), spec)
 
 
 def setup_root(call, root, repos, ssh, git_cache, clean):
@@ -1023,14 +1054,16 @@ def bootstrap(args):
 
     try:
         with configure_ssh_key(args.ssh):
+            setup_credentials(call, args.service_account, upload)
+            try:
+                maybe_upload_podspec(call, paths.artifacts, gsutil, os.getenv)
+            except subprocess.CalledProcessError, exc:
+                logging.error("unable to upload podspecs: %s", exc)
             setup_root(call, args.root, repos, args.ssh, args.git_cache, args.clean)
             logging.info('Configure environment...')
-            if repos:
-                version = find_version(call)
-            else:
-                version = ''
             setup_magic_environment(job, call)
             setup_credentials(call, args.service_account, upload)
+            version = find_version(call) if repos else ''
             logging.info('Start %s at %s...', build, version)
             if upload:
                 start(gsutil, paths, started, node(), version, repos)
