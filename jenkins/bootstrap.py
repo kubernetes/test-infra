@@ -53,6 +53,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import urllib2
 
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
 
@@ -321,6 +322,8 @@ def start(gsutil, paths, stamp, node_name, version, repos):
         if ref_has_shas(pull[1]):
             data['pull'] = pull[1]
         data['repos'] = repos_dict(repos)
+    if POD_ENV in os.environ:
+        data['metadata'] = {'pod': os.environ[POD_ENV]}
 
     gsutil.upload_json(paths.started, data)
     # Upload a link to the build path in the directory
@@ -486,6 +489,10 @@ def metadata(repos, artifacts, call):
         meta['repo'] = repos.main
         meta['repos'] = repos_dict(repos)
 
+    if POD_ENV in os.environ:
+        # HARDEN against metadata only being read from finished.
+        meta['pod'] = os.environ[POD_ENV]
+
     try:
         commit = call(['git', 'rev-parse', 'HEAD'], output=True)
         if commit:
@@ -569,7 +576,16 @@ def node():
     # TODO(fejta): jenkins sets the node name and our infra expect this value.
     # TODO(fejta): Consider doing something different here.
     if NODE_ENV not in os.environ:
-        os.environ[NODE_ENV] = ''.join(socket.gethostname().split('.')[:1])
+        host = socket.gethostname().split('.')[0]
+        try:
+            # Try reading the name of the VM we're running on, using the
+            # metadata server.
+            os.environ[NODE_ENV] = urllib2.urlopen(urllib2.Request(
+                'http://169.254.169.254/computeMetadata/v1/instance/name',
+                headers={'Metadata-Flavor': 'Google'})).read()
+            os.environ[POD_ENV] = host  # We also want to log this.
+        except IOError:  # Fallback.
+            os.environ[NODE_ENV] = host
     return os.environ[NODE_ENV]
 
 
@@ -696,8 +712,10 @@ GCE_KEY_ENV = 'JENKINS_GCE_SSH_PRIVATE_KEY_FILE'
 GUBERNATOR = 'https://k8s-gubernator.appspot.com/build'
 HOME_ENV = 'HOME'
 JENKINS_HOME_ENV = 'JENKINS_HOME'
+K8S_ENV = 'KUBERNETES_SERVICE_HOST'
 JOB_ENV = 'JOB_NAME'
 NODE_ENV = 'NODE_NAME'
+POD_ENV = 'POD_NAME'
 SERVICE_ACCOUNT_ENV = 'GOOGLE_APPLICATION_CREDENTIALS'
 WORKSPACE_ENV = 'WORKSPACE'
 GCS_ARTIFACTS_ENV = 'GCS_ARTIFACTS_DIR'
@@ -897,6 +915,18 @@ def configure_ssh_key(ssh):
         os.unlink(fp.name)
 
 
+def maybe_upload_podspec(call, artifacts, gsutil, getenv):
+    """ Attempt to read our own podspec and upload it to the artifacts dir. """
+    if not getenv(K8S_ENV):
+        return  # we don't appear to be a pod
+    hostname = getenv('HOSTNAME')
+    if not hostname:
+        return
+    spec = call(['kubectl', 'get', '-oyaml', 'pods/' + hostname], output=True)
+    gsutil.upload_text(
+        os.path.join(artifacts, 'prow_podspec.yaml'), spec)
+
+
 def setup_root(call, root, repos, ssh, git_cache, clean):
     """Create root dir, checkout repo and cd into resulting dir."""
     if not os.path.exists(root):
@@ -1023,6 +1053,11 @@ def bootstrap(args):
 
     try:
         with configure_ssh_key(args.ssh):
+            setup_credentials(call, args.service_account, upload)
+            try:
+                maybe_upload_podspec(call, paths.artifacts, gsutil, os.getenv)
+            except subprocess.CalledProcessError, exc:
+                logging.error("unable to upload podspecs: %s", exc)
             setup_root(call, args.root, repos, args.ssh, args.git_cache, args.clean)
             logging.info('Configure environment...')
             if repos:
@@ -1030,7 +1065,6 @@ def bootstrap(args):
             else:
                 version = ''
             setup_magic_environment(job, call)
-            setup_credentials(call, args.service_account, upload)
             logging.info('Start %s at %s...', build, version)
             if upload:
                 start(gsutil, paths, started, node(), version, repos)
