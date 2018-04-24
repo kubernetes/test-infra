@@ -6224,7 +6224,6 @@ periodics:
     - args:
       - --repo=github.com/containerd/cri=master
       - --timeout=1220
-      - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180418-79a97ca02-master
 
 - name: ci-cri-containerd-build
