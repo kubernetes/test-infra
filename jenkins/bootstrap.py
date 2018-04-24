@@ -229,9 +229,10 @@ def auth_google_gerrit(git, call):
 
 def commit_date(git, commit, call):
     try:
-        return call([git, 'show', '-s', '--format=format:%ct', commit], output=True)
+        return call([git, 'show', '-s', '--format=format:%ct', commit],
+                    output=True, log_failures=False)
     except subprocess.CalledProcessError:
-        logging.warning('Failed to print commit date for %s', commit)
+        logging.warning('Unable to print commit date for %s', commit)
         return None
 
 def checkout(call, repo, repo_path, branch, pull, ssh='', git_cache='', clean=False):
