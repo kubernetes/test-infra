@@ -9831,19 +9831,6 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180418-79a97ca02-master
 
-- interval: 4h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gce-kube-dns
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - args:
-      - --timeout=170
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180418-79a97ca02-master
-
 - interval: 30m
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-es-logging
@@ -9951,6 +9938,19 @@ periodics:
 - interval: 60m
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-ipvs
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=170
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180418-79a97ca02-master
+
+- interval: 4h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gci-gce-kube-dns
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
