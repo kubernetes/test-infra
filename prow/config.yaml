@@ -6354,7 +6354,7 @@ periodics:
     containers:
     - args:
       - "--repo=github.com/containerd/cri=master"
-      - "--timeout=110"
+      - "--timeout=340"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180418-79a97ca02-master
 
 - interval: 2h

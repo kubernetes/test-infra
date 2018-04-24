@@ -310,14 +310,15 @@
   "ci-cri-containerd-e2e-gci-gce-ingress": {
     "args": [
       "--check-leaked-resources",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-ingress.env",
       "--env-file=jobs/env/ci-cri-containerd-e2e-gce.env",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-project-type=ingress-project",
-      "--gcp-zone=us-central1-f",
+      "--gcp-zone=asia-southeast1-a",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Ingress\\] --ginkgo.skip=\\[Unreleased\\] --minStartupPods=8",
-      "--timeout=90m"
+      "--test_args=--ginkgo.focus=\\[Feature:Ingress\\]|\\[Feature:NEG\\] --ginkgo.skip=\\[Unreleased\\]",
+      "--timeout=320m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -661,8 +662,7 @@
       "--check-leaked-resources",
       "--cluster=",
       "--env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-e2e-glbc-amd64:master",
-      "--env=GCE_ALPHA_FEATURES=NetworkEndpointGroup",
-      "--env=KUBE_GCE_ENABLE_IP_ALIASES=true",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-ingress.env",
       "--extract=ci/latest",
       "--gcp-project-type=ingress-project",
       "--gcp-zone=asia-southeast1-a",
@@ -4652,8 +4652,7 @@
   "ci-kubernetes-e2e-gci-gce-ingress": {
     "args": [
       "--check-leaked-resources",
-      "--env=GCE_ALPHA_FEATURES=NetworkEndpointGroup",
-      "--env=KUBE_GCE_ENABLE_IP_ALIASES=true",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-ingress.env",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-project-type=ingress-project",

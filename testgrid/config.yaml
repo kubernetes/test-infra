@@ -4790,6 +4790,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-dns-coredns
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: containerd-e2e-gci-gce-ingress
+    test_group_name: ci-cri-containerd-e2e-gci-gce-ingress
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
 
 - name: sig-network-gke
   dashboard_tab:
