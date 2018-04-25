@@ -42,6 +42,12 @@ import json
 import subprocess
 from os import path
 
+
+# logs often contain ANSI escape sequences
+# https://stackoverflow.com/a/14693789
+ANSI_ESCAPE_RE = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
+
+
 # NOTE e2e logs use go's time.StampMilli ("Jan _2 15:04:05.000")
 # Example log line with a timestamp:
 # Jan 26 06:38:46.284: INFO: Running AfterSuite actions on all node
@@ -52,6 +58,10 @@ E2E_LOG_TIMESTAMP_RE = re.compile(r'(... .\d \d\d:\d\d:\d\d\.\d\d\d):.*')
 # SUCCESS! -- 123 Passed | 0 Failed | 0 Pending | 587 Skipped PASS
 # we match this to detect overall success
 E2E_LOG_SUCCESS_RE = re.compile(r'SUCCESS! -- .* PASS')
+
+
+def log_line_strip_escape_sequences(line):
+    return ANSI_ESCAPE_RE.sub('', line)
 
 def parse_e2e_log_line_timestamp(line, year):
     """parses a ginkgo e2e log line for the leading timestamp
@@ -84,13 +94,15 @@ def parse_e2e_logfile(file_handle, year):
     started = finished = None
     passed = False
     for line in file_handle:
+        line = log_line_strip_escape_sequences(line)
         # try to get a timestamp from each line, keep the first one as
         # start time, and the last one as finish time
         timestamp = parse_e2e_log_line_timestamp(line, year)
-        if started:
-            finished = timestamp
-        else:
-            started = timestamp
+        if timestamp:
+            if started:
+                finished = timestamp
+            else:
+                started = timestamp
         # if we found the ginkgo success line then the run passed
         is_success = E2E_LOG_SUCCESS_RE.match(line)
         if is_success:
