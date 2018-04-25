@@ -51,8 +51,8 @@ DEFAULT_AWS_ZONES = [
     'ap-southeast-2a',
     'ap-southeast-2b',
     'ap-southeast-2c',
-    'ca-central-1a',
-    'ca-central-1b',
+    #'ca-central-1a', no c4.large capacity 2018-04-25
+    #'ca-central-1b', no c4.large capacity 2018-04-25
     'eu-central-1a',
     'eu-central-1b',
     'eu-central-1c',
