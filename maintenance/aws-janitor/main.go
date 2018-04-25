@@ -102,7 +102,7 @@ type awsResourceSet struct {
 
 func LoadResourceSet(sess *session.Session, p *s3path, ttl time.Duration) (*awsResourceSet, error) {
 	s := &awsResourceSet{firstSeen: make(map[string]time.Time), marked: make(map[string]bool), ttl: ttl}
-	svc := s3.New(sess, &aws.Config{Region: aws.String(p.region)})
+	svc := s3Client(sess, p.region)
 	resp, err := svc.GetObject(&s3.GetObjectInput{Bucket: aws.String(p.bucket), Key: aws.String(p.key)})
 	if err != nil {
 		if awsErr, ok := err.(awserr.Error); ok && awsErr.Code() == "NoSuchKey" {
@@ -122,7 +122,7 @@ func (s *awsResourceSet) Save(sess *session.Session, p *s3path) error {
 	if err != nil {
 		return err
 	}
-	svc := s3.New(sess, &aws.Config{Region: aws.String(p.region)})
+	svc := s3Client(sess, p.region)
 	_, err = svc.PutObject(&s3.PutObjectInput{
 		Bucket:       aws.String(p.bucket),
 		Key:          aws.String(p.key),
@@ -184,7 +184,7 @@ func (s *awsResourceSet) MarkComplete() int {
 type instances struct{}
 
 func (instances) MarkAndSweep(sess *session.Session, acct string, region string, set *awsResourceSet) error {
-	svc := ec2.New(sess, &aws.Config{Region: aws.String(region)})
+	svc := ec2Client(sess, region)
 
 	inp := &ec2.DescribeInstancesInput{
 		Filters: []*ec2.Filter{
@@ -244,7 +244,7 @@ func (i instance) ResourceKey() string {
 type autoScalingGroups struct{}
 
 func (autoScalingGroups) MarkAndSweep(sess *session.Session, acct string, region string, set *awsResourceSet) error {
-	svc := autoscaling.New(sess, &aws.Config{Region: aws.String(region)})
+	svc := autoscalingClient(sess, region)
 
 	var toDelete []*autoScalingGroup // Paged call, defer deletion until we have the whole list.
 	if err := svc.DescribeAutoScalingGroupsPages(nil, func(page *autoscaling.DescribeAutoScalingGroupsOutput, _ bool) bool {
@@ -303,7 +303,7 @@ func (asg autoScalingGroup) ResourceKey() string {
 type launchConfigurations struct{}
 
 func (launchConfigurations) MarkAndSweep(sess *session.Session, acct string, region string, set *awsResourceSet) error {
-	svc := autoscaling.New(sess, &aws.Config{Region: aws.String(region)})
+	svc := autoscalingClient(sess, region)
 
 	var toDelete []*launchConfiguration // Paged call, defer deletion until we have the whole list.
 	if err := svc.DescribeLaunchConfigurationsPages(nil, func(page *autoscaling.DescribeLaunchConfigurationsOutput, _ bool) bool {
@@ -348,7 +348,7 @@ func (lc launchConfiguration) ResourceKey() string {
 type subnets struct{}
 
 func (subnets) MarkAndSweep(sess *session.Session, acct string, region string, set *awsResourceSet) error {
-	svc := ec2.New(sess, &aws.Config{Region: aws.String(region)})
+	svc := ec2Client(sess, region)
 
 	resp, err := svc.DescribeSubnets(&ec2.DescribeSubnetsInput{
 		Filters: []*ec2.Filter{
@@ -410,7 +410,7 @@ func addRefs(refs map[string][]*sgRef, id string, acct string, perms []*ec2.IpPe
 }
 
 func (securityGroups) MarkAndSweep(sess *session.Session, acct string, region string, set *awsResourceSet) error {
-	svc := ec2.New(sess, &aws.Config{Region: aws.String(region)})
+	svc := ec2Client(sess, region)
 
 	resp, err := svc.DescribeSecurityGroups(nil)
 	if err != nil {
@@ -480,7 +480,7 @@ func (sg securityGroup) ResourceKey() string {
 type internetGateways struct{}
 
 func (internetGateways) MarkAndSweep(sess *session.Session, acct string, region string, set *awsResourceSet) error {
-	svc := ec2.New(sess, &aws.Config{Region: aws.String(region)})
+	svc := ec2Client(sess, region)
 
 	resp, err := svc.DescribeInternetGateways(nil)
 	if err != nil {
@@ -551,7 +551,7 @@ func (ig internetGateway) ResourceKey() string {
 type routeTables struct{}
 
 func (routeTables) MarkAndSweep(sess *session.Session, acct string, region string, set *awsResourceSet) error {
-	svc := ec2.New(sess, &aws.Config{Region: aws.String(region)})
+	svc := ec2Client(sess, region)
 
 	resp, err := svc.DescribeRouteTables(nil)
 	if err != nil {
@@ -610,7 +610,7 @@ func (rt routeTable) ResourceKey() string {
 type vpcs struct{}
 
 func (vpcs) MarkAndSweep(sess *session.Session, acct string, region string, set *awsResourceSet) error {
-	svc := ec2.New(sess, &aws.Config{Region: aws.String(region)})
+	svc := ec2Client(sess, region)
 
 	resp, err := svc.DescribeVpcs(&ec2.DescribeVpcsInput{
 		Filters: []*ec2.Filter{
@@ -665,7 +665,7 @@ func (vp vpc) ResourceKey() string {
 type dhcpOptions struct{}
 
 func (dhcpOptions) MarkAndSweep(sess *session.Session, acct string, region string, set *awsResourceSet) error {
-	svc := ec2.New(sess, &aws.Config{Region: aws.String(region)})
+	svc := ec2Client(sess, region)
 
 	// This is a little gross, but I can't find an easier way to
 	// figure out the DhcpOptions associated with the default VPC.
@@ -773,7 +773,7 @@ func (dhcp dhcpOption) ResourceKey() string {
 type volumes struct{}
 
 func (volumes) MarkAndSweep(sess *session.Session, acct string, region string, set *awsResourceSet) error {
-	svc := ec2.New(sess, &aws.Config{Region: aws.String(region)})
+	svc := ec2Client(sess, region)
 
 	var toDelete []*volume // Paged call, defer deletion until we have the whole list.
 	if err := svc.DescribeVolumesPages(nil, func(page *ec2.DescribeVolumesOutput, _ bool) bool {
@@ -816,7 +816,7 @@ func (vol volume) ResourceKey() string {
 type addresses struct{}
 
 func (addresses) MarkAndSweep(sess *session.Session, acct string, region string, set *awsResourceSet) error {
-	svc := ec2.New(sess, &aws.Config{Region: aws.String(region)})
+	svc := ec2Client(sess, region)
 
 	resp, err := svc.DescribeAddresses(nil)
 	if err != nil {
@@ -887,7 +887,7 @@ func roleIsManaged(role *iam.Role) bool {
 }
 
 func (iamRoles) MarkAndSweep(sess *session.Session, acct string, region string, set *awsResourceSet) error {
-	svc := iam.New(sess, &aws.Config{Region: aws.String(region)})
+	svc := iamClient(sess, region)
 
 	var toDelete []*iamRole // Paged call, defer deletion until we have the whole list.
 	if err := svc.ListRolesPages(&iam.ListRolesInput{}, func(page *iam.ListRolesOutput, _ bool) bool {
@@ -979,7 +979,7 @@ func (r iamRole) delete(svc *iam.IAM) error {
 type iamInstanceProfiles struct{}
 
 func (iamInstanceProfiles) MarkAndSweep(sess *session.Session, acct string, region string, set *awsResourceSet) error {
-	svc := iam.New(sess, &aws.Config{Region: aws.String(region)})
+	svc := iamClient(sess, region)
 
 	var toDelete []*iamInstanceProfile // Paged call, defer deletion until we have the whole list.
 	if err := svc.ListInstanceProfilesPages(&iam.ListInstanceProfilesInput{}, func(page *iam.ListInstanceProfilesOutput, _ bool) bool {
@@ -1107,7 +1107,7 @@ func resourceRecordSetIsManaged(rrs *route53.ResourceRecordSet) bool {
 }
 
 func (route53ResourceRecordSets) MarkAndSweep(sess *session.Session, acct string, region string, set *awsResourceSet) error {
-	svc := route53.New(sess, &aws.Config{Region: aws.String(region)})
+	svc := route53Client(sess, region)
 
 	var listError error
 
@@ -1223,7 +1223,7 @@ func parseARN(s string) (*arn, error) {
 }
 
 func getAccount(sess *session.Session, region string) (string, error) {
-	svc := iam.New(sess, &aws.Config{Region: aws.String(region)})
+	svc := iamClient(sess, region)
 	resp, err := svc.GetUser(nil)
 	if err != nil {
 		return "", err
@@ -1249,7 +1249,7 @@ func getS3Path(sess *session.Session, s string) (*s3path, error) {
 	if url.Scheme != "s3" {
 		return nil, fmt.Errorf("Scheme %q != 's3'", url.Scheme)
 	}
-	svc := s3.New(sess, &aws.Config{Region: aws.String(defaultRegion)})
+	svc := s3Client(sess, defaultRegion)
 	resp, err := svc.GetBucketLocation(&s3.GetBucketLocationInput{Bucket: aws.String(url.Host)})
 	if err != nil {
 		return nil, err
@@ -1261,9 +1261,39 @@ func getS3Path(sess *session.Session, s string) (*s3path, error) {
 	return &s3path{region: region, bucket: url.Host, key: url.Path}, nil
 }
 
+func autoscalingClient(sess *session.Session, region string) *autoscaling.AutoScaling {
+	svc := autoscaling.New(sess, &aws.Config{Region: aws.String(region)})
+	AddLoggers(svc.Client)
+	return svc
+}
+
+func ec2Client(sess *session.Session, region string) *ec2.EC2 {
+	svc := ec2.New(sess, &aws.Config{Region: aws.String(region)})
+	AddLoggers(svc.Client)
+	return svc
+}
+
+func iamClient(sess *session.Session, region string) *iam.IAM {
+	svc := iam.New(sess, &aws.Config{Region: aws.String(region)})
+	AddLoggers(svc.Client)
+	return svc
+}
+
+func route53Client(sess *session.Session, region string) *route53.Route53 {
+	svc := route53.New(sess, &aws.Config{Region: aws.String(region)})
+	AddLoggers(svc.Client)
+	return svc
+}
+
+func s3Client(sess *session.Session, region string) *s3.S3 {
+	svc := s3.New(sess, &aws.Config{Region: aws.String(region)})
+	AddLoggers(svc.Client)
+	return svc
+}
+
 func getRegions(sess *session.Session) ([]string, error) {
 	var regions []string
-	svc := ec2.New(sess, &aws.Config{Region: aws.String(defaultRegion)})
+	svc := ec2Client(sess, defaultRegion)
 	resp, err := svc.DescribeRegions(nil)
 	if err != nil {
 		return nil, err
@@ -1313,7 +1343,7 @@ func main() {
 	}
 
 	for _, typ := range globalAwsResourceTypes {
-		if err := typ.MarkAndSweep(sess, acct, "us-east-1", res); err != nil {
+		if err := typ.MarkAndSweep(sess, acct, defaultRegion, res); err != nil {
 			glog.Errorf("error sweeping %T: %v", typ, err)
 			return
 		}

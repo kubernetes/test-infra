@@ -2,12 +2,17 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
-    srcs = ["main.go"],
+    srcs = [
+        "log.go",
+        "main.go",
+    ],
     importpath = "k8s.io/test-infra/maintenance/aws-janitor",
     visibility = ["//visibility:private"],
     deps = [
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/awserr:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/client:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/request:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/session:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/autoscaling:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
