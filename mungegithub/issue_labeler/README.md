@@ -5,7 +5,7 @@ kubernetes repository.
 The code uses the python-flask framework to bring up a webapp that handles POST
 requests containing two form fields: title and body.  
 
-The webapp listens on all ips on on port 5000.
+The webapp listens on all ips on port 5000.
 
 It passes those values to 2 pretrained machine learning models (SGDClassifier
 from sklearn with hinge loss and l2 regularizer for those interested).  The
