@@ -148,6 +148,9 @@ type Plank struct {
 	// PodPendingTimeout is after how long the controller will perform a garbage
 	// collection on pending pods. Defaults to one day.
 	PodPendingTimeout time.Duration `json:"-"`
+	// DefaultDecorationConfig are defaults for shared fields for ProwJobs
+	// that request to have their PodSpecs decorated
+	DefaultDecorationConfig *kube.DecorationConfig `json:"default_decoration_config,omitempty"`
 }
 
 // Gerrit is config for the gerrit controller.
@@ -263,6 +266,43 @@ func parseConfig(c *Config) error {
 	for _, vs := range c.Presubmits {
 		if err := SetRegexes(vs); err != nil {
 			return fmt.Errorf("could not set regex: %v", err)
+		}
+	}
+
+	if c.decorationRequested() {
+		if c.Plank.DefaultDecorationConfig == nil {
+			return errors.New("no default decoration config provided for plank")
+		}
+		if c.Plank.DefaultDecorationConfig.UtilityImages == nil {
+			return errors.New("no default decoration image pull specs provided for plank")
+		}
+		if c.Plank.DefaultDecorationConfig.GCSConfiguration == nil {
+			return errors.New("no default GCS decoration config provided for plank")
+		}
+		if c.Plank.DefaultDecorationConfig.GCSCredentialsSecret == "" {
+			return errors.New("no default GCS credentials secret provided for plank")
+		}
+
+		for _, vs := range c.Presubmits {
+			for i := range vs {
+				if vs[i].Decorate {
+					vs[i].DecorationConfig = setDecorationDefaults(vs[i].DecorationConfig, c.Plank.DefaultDecorationConfig)
+				}
+			}
+		}
+
+		for _, js := range c.Postsubmits {
+			for i := range js {
+				if js[i].Decorate {
+					js[i].DecorationConfig = setDecorationDefaults(js[i].DecorationConfig, c.Plank.DefaultDecorationConfig)
+				}
+			}
+		}
+
+		for i := range c.Periodics {
+			if c.Periodics[i].Decorate {
+				c.Periodics[i].DecorationConfig = setDecorationDefaults(c.Periodics[i].DecorationConfig, c.Plank.DefaultDecorationConfig)
+			}
 		}
 	}
 
@@ -503,6 +543,58 @@ func parseConfig(c *Config) error {
 
 	return nil
 }
+
+func (c *Config) decorationRequested() bool {
+	for _, vs := range c.Presubmits {
+		for i := range vs {
+			if vs[i].Decorate {
+				return true
+			}
+		}
+	}
+
+	for _, js := range c.Postsubmits {
+		for i := range js {
+			if js[i].Decorate {
+				return true
+			}
+		}
+	}
+
+	for i := range c.Periodics {
+		if c.Periodics[i].Decorate {
+			return true
+		}
+	}
+
+	return false
+}
+
+func setDecorationDefaults(provided, defaults *kube.DecorationConfig) *kube.DecorationConfig {
+	merged := &kube.DecorationConfig{}
+	if provided != nil {
+		merged = provided
+	}
+
+	if merged.Timeout == 0 {
+		merged.Timeout = defaults.Timeout
+	}
+	if merged.GracePeriod == 0 {
+		merged.GracePeriod = defaults.GracePeriod
+	}
+	if merged.UtilityImages == nil {
+		merged.UtilityImages = defaults.UtilityImages
+	}
+	if merged.GCSConfiguration == nil {
+		merged.GCSConfiguration = defaults.GCSConfiguration
+	}
+	if merged.GCSCredentialsSecret == "" {
+		merged.GCSCredentialsSecret = defaults.GCSCredentialsSecret
+	}
+
+	return merged
+}
+
 func validateLabels(name string, labels map[string]string) error {
 	for label := range labels {
 		for _, prowLabel := range decorate.Labels() {

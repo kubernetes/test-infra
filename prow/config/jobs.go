@@ -245,6 +245,9 @@ func (c *Config) MatchingPresubmits(fullRepoName, body string, testAll bool) []P
 }
 
 type UtilityConfig struct {
+	// Decorate determines if we decorate the PodSpec or not
+	Decorate bool `json:"decorate,omitempty"`
+
 	// PathAlias is the location under <root-dir>/src
 	// where the repository under test is cloned. If this
 	// is not set, <root-dir>/src/github.com/org/repo will
