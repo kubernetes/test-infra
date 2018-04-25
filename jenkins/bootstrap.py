@@ -1055,10 +1055,11 @@ def bootstrap(args):
     try:
         with configure_ssh_key(args.ssh):
             setup_credentials(call, args.service_account, upload)
-            try:
-                maybe_upload_podspec(call, paths.artifacts, gsutil, os.getenv)
-            except (OSError, subprocess.CalledProcessError), exc:
-                logging.error("unable to upload podspecs: %s", exc)
+            if upload:
+                try:
+                    maybe_upload_podspec(call, paths.artifacts, gsutil, os.getenv)
+                except (OSError, subprocess.CalledProcessError), exc:
+                    logging.error("unable to upload podspecs: %s", exc)
             setup_root(call, args.root, repos, args.ssh, args.git_cache, args.clean)
             logging.info('Configure environment...')
             setup_magic_environment(job, call)
