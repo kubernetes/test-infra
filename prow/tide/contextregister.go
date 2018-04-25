@@ -62,8 +62,8 @@ func newContextRegister(optional ...string) *contextRegister {
 // - required contexts are registered and the context provided is not required
 // Will return false otherwise. Every context is required.
 func (r *contextRegister) ignoreContext(c Context) bool {
-	r.lock.Lock()
-	defer r.lock.Unlock()
+	r.lock.RLock()
+	defer r.lock.RUnlock()
 	if r.optional.Has(string(c.Context)) {
 		return true
 	}
@@ -75,8 +75,8 @@ func (r *contextRegister) ignoreContext(c Context) bool {
 
 // missingRequiredContexts discard the optional contexts and only look of extra required contexts that are not provided.
 func (r *contextRegister) missingRequiredContexts(contexts []Context) []Context {
-	r.lock.Lock()
-	defer r.lock.Unlock()
+	r.lock.RLock()
+	defer r.lock.RUnlock()
 	if r.required.Len() == 0 {
 		return nil
 	}
