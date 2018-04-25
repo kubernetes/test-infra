@@ -6765,7 +6765,7 @@
       "--extract=ci/latest",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-node-image=gci",
-      "--gcp-project=kubernetes-scale",
+      "--gcp-project=k8s-scale-testing",
       "--gcp-region=us-east1",
       "--gke-command-group=beta",
       "--gke-environment=staging",
