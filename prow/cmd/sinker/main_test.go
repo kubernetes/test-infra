@@ -100,12 +100,16 @@ type fca struct {
 func newFakeConfigAgent() *fca {
 	return &fca{
 		c: &config.Config{
-			Sinker: config.Sinker{
-				MaxProwJobAge: maxProwJobAge,
-				MaxPodAge:     maxPodAge,
+			ProwConfig: config.ProwConfig{
+				Sinker: config.Sinker{
+					MaxProwJobAge: maxProwJobAge,
+					MaxPodAge:     maxPodAge,
+				},
 			},
-			Periodics: []config.Periodic{
-				{Name: "retester"},
+			JobConfig: config.JobConfig{
+				Periodics: []config.Periodic{
+					{Name: "retester"},
+				},
 			},
 		},
 	}

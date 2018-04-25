@@ -305,24 +305,28 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 		{
 			name: "no policy - use prow jobs",
 			config: Config{
-				BranchProtection: BranchProtection{
-					Policy: Policy{
-						Protect: &yes,
-						RequiredStatusChecks: &ContextPolicy{
-							Contexts: []string{"r1", "r2"},
+				ProwConfig: ProwConfig{
+					BranchProtection: BranchProtection{
+						Policy: Policy{
+							Protect: &yes,
+							RequiredStatusChecks: &ContextPolicy{
+								Contexts: []string{"r1", "r2"},
+							},
 						},
 					},
 				},
-				Presubmits: map[string][]Presubmit{
-					"org/repo": {
-						Presubmit{
-							Context:   "pr1",
-							AlwaysRun: true,
-						},
-						Presubmit{
-							Context:   "po1",
-							AlwaysRun: true,
-							Optional:  true,
+				JobConfig: JobConfig{
+					Presubmits: map[string][]Presubmit{
+						"org/repo": {
+							Presubmit{
+								Context:   "pr1",
+								AlwaysRun: true,
+							},
+							Presubmit{
+								Context:   "po1",
+								AlwaysRun: true,
+								Optional:  true,
+							},
 						},
 					},
 				},
@@ -335,11 +339,13 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 		{
 			name: "no policy no prow jobs defined - empty",
 			config: Config{
-				BranchProtection: BranchProtection{
-					Policy: Policy{
-						Protect: &yes,
-						RequiredStatusChecks: &ContextPolicy{
-							Contexts: []string{"r1", "r2"},
+				ProwConfig: ProwConfig{
+					BranchProtection: BranchProtection{
+						Policy: Policy{
+							Protect: &yes,
+							RequiredStatusChecks: &ContextPolicy{
+								Contexts: []string{"r1", "r2"},
+							},
 						},
 					},
 				},
@@ -352,10 +358,12 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 		{
 			name: "no branch protection",
 			config: Config{
-				Tide: Tide{
-					ContextOptions: TideContextPolicyOptions{
-						TideContextPolicy: TideContextPolicy{
-							FromBranchProtection: &yes,
+				ProwConfig: ProwConfig{
+					Tide: Tide{
+						ContextOptions: TideContextPolicyOptions{
+							TideContextPolicy: TideContextPolicy{
+								FromBranchProtection: &yes,
+							},
 						},
 					},
 				},
@@ -368,19 +376,21 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 		{
 			name: "invalid branch protection",
 			config: Config{
-				BranchProtection: BranchProtection{
-					Orgs: map[string]Org{
-						"org": {
-							Policy: Policy{
-								Protect: &no,
+				ProwConfig: ProwConfig{
+					BranchProtection: BranchProtection{
+						Orgs: map[string]Org{
+							"org": {
+								Policy: Policy{
+									Protect: &no,
+								},
 							},
 						},
 					},
-				},
-				Tide: Tide{
-					ContextOptions: TideContextPolicyOptions{
-						TideContextPolicy: TideContextPolicy{
-							FromBranchProtection: &yes,
+					Tide: Tide{
+						ContextOptions: TideContextPolicyOptions{
+							TideContextPolicy: TideContextPolicy{
+								FromBranchProtection: &yes,
+							},
 						},
 					},
 				},
@@ -393,12 +403,14 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 		{
 			name: "manually defined policy",
 			config: Config{
-				Tide: Tide{
-					ContextOptions: TideContextPolicyOptions{
-						TideContextPolicy: TideContextPolicy{
-							RequiredContexts:    []string{"r1"},
-							OptionalContexts:    []string{"o1"},
-							SkipUnknownContexts: &yes,
+				ProwConfig: ProwConfig{
+					Tide: Tide{
+						ContextOptions: TideContextPolicyOptions{
+							TideContextPolicy: TideContextPolicy{
+								RequiredContexts:    []string{"r1"},
+								OptionalContexts:    []string{"o1"},
+								SkipUnknownContexts: &yes,
+							},
 						},
 					},
 				},

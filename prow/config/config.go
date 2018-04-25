@@ -21,6 +21,8 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"text/template"
@@ -41,6 +43,11 @@ import (
 
 // Config is a read-only snapshot of the config.
 type Config struct {
+	JobConfig
+	ProwConfig
+}
+
+type JobConfig struct {
 	// Presets apply to all job types.
 	Presets []Preset `json:"presets,omitempty"`
 	// Full repo name (such as "kubernetes/kubernetes") -> list of jobs.
@@ -49,7 +56,9 @@ type Config struct {
 
 	// Periodics are not associated with any repo.
 	Periodics []Periodic `json:"periodics,omitempty"`
+}
 
+type ProwConfig struct {
 	Tide             Tide                  `json:"tide,omitempty"`
 	Plank            Plank                 `json:"plank,omitempty"`
 	Sinker           Sinker                `json:"sinker,omitempty"`
@@ -249,7 +258,76 @@ type Branding struct {
 }
 
 // Load loads and parses the config at path.
-func Load(path string) (*Config, error) {
+func Load(prowConfig, jobConfig string) (*Config, error) {
+	stat, err := os.Stat(prowConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	if stat.IsDir() {
+		return nil, fmt.Errorf("prowConfig cannot be a dir - %s", prowConfig)
+	}
+
+	nc, err := yamlToConfig(prowConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, fmt.Errorf("aaaa")
+
+	// TODO(krzyzacy): temporary allow empty jobconfig
+	//                 also temporary allow job config in prow config
+	if jobConfig == "" {
+		return nc, nil
+	}
+
+	stat, err = os.Stat(jobConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	if !stat.IsDir() {
+		// still support a single file
+		jobConfig, err := yamlToConfig(jobConfig)
+		if err != nil {
+			return nil, err
+		}
+		if err := nc.mergeJobConfig(jobConfig.JobConfig); err != nil {
+			return nil, err
+		}
+		return nc, nil
+	}
+
+	err = filepath.Walk(jobConfig, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			logrus.WithError(err).Errorf("Walking path %q.", path)
+			// bad file should not stop us from parsing the directory
+			return nil
+		}
+
+		if filepath.Ext(path) != ".yaml" {
+			return nil
+		}
+
+		if info.IsDir() {
+			return nil
+		}
+
+		subConfig, err := yamlToConfig(path)
+		if err != nil {
+			return err
+		}
+		return nc.mergeJobConfig(subConfig.JobConfig)
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	return nc, nil
+}
+
+// yamlToConfig converts a yaml file into a Config object
+func yamlToConfig(path string) (*Config, error) {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("error reading %s: %v", path, err)
@@ -262,6 +340,74 @@ func Load(path string) (*Config, error) {
 		return nil, err
 	}
 	return nc, nil
+}
+
+// mergeConfig merges two JobConfig together
+// It will try to merge:
+//	- Presubmits
+//	- Postsubmits
+// 	- Periodics
+//	- PodPresets
+func (c *Config) mergeJobConfig(jc JobConfig) error {
+	c.Presets = append(c.Presets, jc.Presets...)
+
+	c.Periodics = append(c.Periodics, jc.Periodics...)
+
+	for repo, jobs := range jc.Presubmits {
+		if _, ok := c.Presubmits[repo]; ok {
+			c.Presubmits[repo] = append(c.Presubmits[repo], jobs...)
+		}
+	}
+
+	for repo, jobs := range jc.Postsubmits {
+		if _, ok := c.Postsubmits[repo]; ok {
+			c.Postsubmits[repo] = append(c.Postsubmits[repo], jobs...)
+		}
+	}
+
+	// validate no duplicated presets
+	validLabels := map[string]string{}
+	for _, preset := range c.Presets {
+		for label, val := range preset.Labels {
+			if _, ok := validLabels[label]; ok {
+				return fmt.Errorf("Duplicated preset label : %s", label)
+			} else {
+				validLabels[label] = val
+			}
+		}
+	}
+
+	// validate no duplicated periodics
+	validPeriodics := map[string]bool{}
+	for _, p := range c.AllPeriodics() {
+		if _, ok := validPeriodics[p.Name]; ok {
+			return fmt.Errorf("Duplicated periodic job : %s", p.Name)
+		} else {
+			validPeriodics[p.Name] = true
+		}
+	}
+
+	// validate no duplicated presubmits
+	validPresubmits := map[string]bool{}
+	for _, p := range c.AllPresubmits(nil) {
+		if _, ok := validPresubmits[p.Name]; ok {
+			return fmt.Errorf("Duplicated presubmit job : %s", p.Name)
+		} else {
+			validPresubmits[p.Name] = true
+		}
+	}
+
+	// validate no duplicated postsubmits
+	validPostsubmits := map[string]bool{}
+	for _, p := range c.AllPostsubmits(nil) {
+		if _, ok := validPostsubmits[p.Name]; ok {
+			return fmt.Errorf("Duplicated postsubmit job : %s", p.Name)
+		} else {
+			validPostsubmits[p.Name] = true
+		}
+	}
+
+	return nil
 }
 
 func parseConfig(c *Config) error {

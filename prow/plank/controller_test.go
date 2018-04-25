@@ -78,15 +78,19 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
 
 	return &fca{
 		c: &config.Config{
-			Plank: config.Plank{
-				Controller: config.Controller{
-					JobURLTemplate: template.Must(template.New("test").Parse("{{.ObjectMeta.Name}}/{{.Status.State}}")),
-					MaxConcurrency: maxConcurrency,
-					MaxGoroutines:  20,
+			ProwConfig: config.ProwConfig{
+				Plank: config.Plank{
+					Controller: config.Controller{
+						JobURLTemplate: template.Must(template.New("test").Parse("{{.ObjectMeta.Name}}/{{.Status.State}}")),
+						MaxConcurrency: maxConcurrency,
+						MaxGoroutines:  20,
+					},
+					PodPendingTimeout: podPendingTimeout,
 				},
-				PodPendingTimeout: podPendingTimeout,
 			},
-			Presubmits: presubmitMap,
+			JobConfig: config.JobConfig{
+				Presubmits: presubmitMap,
+			},
 		},
 	}
 }
@@ -347,9 +351,11 @@ func TestTerminateDupes(t *testing.T) {
 		fkc := &fkc{pods: pods, prowjobs: tc.pjs}
 		fca := &fca{
 			c: &config.Config{
-				Plank: config.Plank{
-					Controller: config.Controller{
-						AllowCancellations: tc.allowCancellations,
+				ProwConfig: config.ProwConfig{
+					Plank: config.Plank{
+						Controller: config.Controller{
+							AllowCancellations: tc.allowCancellations,
+						},
 					},
 				},
 			},
