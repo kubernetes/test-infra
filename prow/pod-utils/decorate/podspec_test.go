@@ -239,6 +239,7 @@ func TestProwJobToPod(t *testing.T) {
 								{Name: "BUILD_ID", Value: "blabla"},
 								{Name: "BUILD_NUMBER", Value: "blabla"},
 								{Name: "ENTRYPOINT_OPTIONS", Value: `{"args":["/bin/thing","some","args"],"timeout":7200000000000,"grace_period":10000000000,"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt"}`},
+								{Name: "GOPATH", Value: "/home/prow/go"},
 								{Name: "JOB_NAME", Value: "job-name"},
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
 								{Name: "JOB_TYPE", Value: "presubmit"},
