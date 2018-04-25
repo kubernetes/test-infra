@@ -9896,6 +9896,11 @@
     ]
   },
   "ci-kubernetes-e2e-kops-aws-updown": {
+    "about": [
+      "This job runs some quick smoke tests, and publishes latest-ci-updown-green.txt",
+      "latest-ci-updown-green.txt is then picked up by most other kops e2e tests, including the PR builder job pull-kops-e2e-kubernetes-aws.",
+      "The idea is that if kops breaks at head, we won't run PR tests against that version, but will use the last-known-good version."
+    ],
     "args": [
       "--cluster=e2e-kops-aws-updown.test-cncf-aws.k8s.io",
       "--deployment=kops",
