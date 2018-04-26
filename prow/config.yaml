@@ -109,6 +109,7 @@ tide:
     - kubeflow/caffe2-operator
     - kubeflow/reporting
     - kubeflow/website
+    - kubeflow/kubebench
     labels:
     - lgtm
     - approved
@@ -521,6 +522,22 @@ presubmits:
     always_run: true         # Run for every PR, or only when requested.
     rerun_command: "/test kubeflow-caffe2-operator-presubmit"
     trigger: "(?m)^/test( all| kubeflow-caffe2-operator-presubmit),?(\\s+|$)"
+    branches:
+    - master
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/kubebench:
+  - name: kubeflow-kubebench-presubmit
+    context: kubeflow-kubebench-presubmit
+    agent: kubernetes
+    always_run: true         # Run for every PR, or only when requested.
+    rerun_command: "/test kubeflow-kubebench-presubmit"
+    trigger: "(?m)^/test( all| kubeflow-kubebench-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
@@ -5679,6 +5696,18 @@ postsubmits:
   kubeflow/caffe2-operator:
   - name: kubeflow-caffe2-operator-postsubmit
     agent: kubernetes
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/kubebench:
+  - name: kubeflow-kubebench-postsubmit
+    agent: kubernetes
+    branches:
+    - master
     labels:
       preset-service-account: true
     spec:
