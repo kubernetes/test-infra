@@ -5211,6 +5211,17 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=110"
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: docker-graph
+          mountPath: /docker-graph
+      volumes:
+      - name: docker-graph
+        emptyDir: {}
   - name: pull-poseidon-bazel
     agent: kubernetes
     context: pull-poseidon-bazel
