@@ -19,8 +19,8 @@ not make any attempt to preserve backwards compatibility.
 * `cmd/mkpj` creates `ProwJobs` using Prow configuration.
 * `cmd/mkpod` creates `Pods` from `ProwJobs`.
 * `cmd/clonerefs`, `cmd/initupload`, `cmd/gcsupload`, `cmd/entrypoint`, and
-  `cmd/sidecar` are small utilities used in `ProwJob`s created by `plank` as
-  `Pod`s. See [their README](./pod-utilities.md) for more information
+  `cmd/sidecar` are small utilities used in `ProwJobs` created by `plank` as
+  `Pods`. See [their README](./pod-utilities.md) for more information
 
 See also: [Life of a Prow Job](./architecture.md)
 
