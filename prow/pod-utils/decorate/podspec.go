@@ -41,6 +41,7 @@ const (
 	ArtifactsPath           = LogMountPath + "/artifacts"
 	CodeMountName           = "code"
 	CodeMountPath           = "/home/prow/go"
+	GopathEnv               = "GOPATH"
 	ToolsMountName          = "tools"
 	ToolsMountPath          = "/tools"
 	GcsCredentialsMountName = "gcs-credentials"
@@ -79,6 +80,7 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
 		spec.Containers[0].Env = append(spec.Containers[0].Env, env...)
 	} else {
 		rawEnv[ArtifactsEnv] = ArtifactsPath
+		rawEnv[GopathEnv] = CodeMountPath
 		logMount := kube.VolumeMount{
 			Name:      LogMountName,
 			MountPath: LogMountPath,

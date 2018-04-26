@@ -166,6 +166,11 @@ func TestAccumulateBatch(t *testing.T) {
 			},
 			merges: []int{1, 2},
 		},
+		{
+			name:    "no presubmits",
+			pulls:   []pull{{1, "a"}, {2, "b"}},
+			pending: false,
+		},
 	}
 	for _, test := range tests {
 		var pulls []PullRequest
@@ -341,6 +346,14 @@ func TestAccumulate(t *testing.T) {
 			successes: []int{8},
 			pendings:  []int{},
 			none:      []int{7},
+		},
+		{
+			pullRequests: map[int]string{7: "new", 8: "new"},
+			prowJobs:     []prowjob{},
+
+			successes: []int{8, 7},
+			pendings:  []int{},
+			none:      []int{},
 		},
 	}
 
@@ -1047,6 +1060,7 @@ func TestTakeAction(t *testing.T) {
 		pendings     []int
 		nones        []int
 		batchMerges  []int
+		presubmits   map[int]sets.String
 
 		merged            int
 		triggered         int
@@ -1061,6 +1075,7 @@ func TestTakeAction(t *testing.T) {
 			pendings:     []int{},
 			nones:        []int{},
 			batchMerges:  []int{},
+			presubmits:   map[int]sets.String{100: sets.NewString("foo", "if-changed")},
 
 			merged:    0,
 			triggered: 0,
@@ -1074,6 +1089,7 @@ func TestTakeAction(t *testing.T) {
 			pendings:     []int{1},
 			nones:        []int{0, 2},
 			batchMerges:  []int{},
+			presubmits:   map[int]sets.String{100: sets.NewString("foo", "if-changed")},
 
 			merged:    0,
 			triggered: 0,
@@ -1087,6 +1103,7 @@ func TestTakeAction(t *testing.T) {
 			pendings:     []int{},
 			nones:        []int{0, 2},
 			batchMerges:  []int{},
+			presubmits:   map[int]sets.String{100: sets.NewString("foo", "if-changed")},
 
 			merged:    0,
 			triggered: 0,
@@ -1100,6 +1117,7 @@ func TestTakeAction(t *testing.T) {
 			pendings:     []int{},
 			nones:        []int{0, 1, 2},
 			batchMerges:  []int{},
+			presubmits:   map[int]sets.String{100: sets.NewString("foo", "if-changed")},
 
 			merged:    0,
 			triggered: 1,
@@ -1113,6 +1131,7 @@ func TestTakeAction(t *testing.T) {
 			pendings:     []int{0},
 			nones:        []int{1, 2, 3},
 			batchMerges:  []int{},
+			presubmits:   map[int]sets.String{100: sets.NewString("foo", "if-changed")},
 
 			merged:            0,
 			triggered:         1,
@@ -1127,6 +1146,7 @@ func TestTakeAction(t *testing.T) {
 			pendings:     []int{},
 			nones:        []int{0},
 			batchMerges:  []int{},
+			presubmits:   map[int]sets.String{100: sets.NewString("foo", "if-changed")},
 
 			merged:    0,
 			triggered: 1,
@@ -1140,6 +1160,7 @@ func TestTakeAction(t *testing.T) {
 			pendings:     []int{},
 			nones:        []int{1, 2, 3},
 			batchMerges:  []int{},
+			presubmits:   map[int]sets.String{100: sets.NewString("foo", "if-changed")},
 
 			merged:    1,
 			triggered: 0,
@@ -1153,6 +1174,7 @@ func TestTakeAction(t *testing.T) {
 			pendings:     []int{2, 3},
 			nones:        []int{4, 5},
 			batchMerges:  []int{6, 7, 8},
+			presubmits:   map[int]sets.String{100: sets.NewString("foo", "if-changed")},
 
 			merged:    3,
 			triggered: 0,
@@ -1166,10 +1188,37 @@ func TestTakeAction(t *testing.T) {
 			pendings:     []int{},
 			nones:        []int{100},
 			batchMerges:  []int{},
+			presubmits:   map[int]sets.String{100: sets.NewString("foo", "if-changed")},
 
 			merged:    0,
 			triggered: 2,
 			action:    Trigger,
+		},
+		{
+			name: "no presubmits, merge",
+
+			batchPending: false,
+			successes:    []int{5, 4},
+			pendings:     []int{},
+			nones:        []int{},
+			batchMerges:  []int{},
+
+			merged:    1,
+			triggered: 0,
+			action:    Merge,
+		},
+		{
+			name: "no presubmits, wait",
+
+			batchPending: false,
+			successes:    []int{},
+			pendings:     []int{},
+			nones:        []int{},
+			batchMerges:  []int{},
+
+			merged:    0,
+			triggered: 0,
+			action:    Wait,
 		},
 	}
 
@@ -1193,9 +1242,10 @@ func TestTakeAction(t *testing.T) {
 			},
 		)
 		ca.Set(cfg)
-		presubmits := map[int]sets.String{100: sets.NewString("foo", "if-changed")}
-		for i := 0; i <= 8; i++ {
-			presubmits[i] = sets.NewString("foo")
+		if len(tc.presubmits) > 0 {
+			for i := 0; i <= 8; i++ {
+				tc.presubmits[i] = sets.NewString("foo")
+			}
 		}
 		lg, gc, err := localgit.New()
 		if err != nil {
@@ -1255,7 +1305,7 @@ func TestTakeAction(t *testing.T) {
 			batchPending = []PullRequest{{}}
 		}
 		t.Logf("Test case: %s", tc.name)
-		if act, _, err := c.takeAction(sp, presubmits, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges)); err != nil {
+		if act, _, err := c.takeAction(sp, tc.presubmits, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges)); err != nil {
 			t.Errorf("Error in takeAction: %v", err)
 			continue
 		} else if act != tc.action {

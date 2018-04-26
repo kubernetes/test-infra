@@ -41,6 +41,7 @@ import sys
 import threading
 
 from argparse import RawTextHelpFormatter
+import yaml
 
 # pylint: disable=invalid-name
 _log = logging.getLogger('check_project')
@@ -191,7 +192,7 @@ class Checker(object):
 
         boskos_path = None
         if boskos:
-            boskos_path = '%s/../boskos/resources.json' % os.path.dirname(__file__)
+            boskos_path = '%s/../boskos/resources.yaml' % os.path.dirname(__file__)
         projects = self.load_projects(
             '%s/../jobs/config.json' % os.path.dirname(__file__),
             boskos_path,
@@ -264,7 +265,8 @@ class Checker(object):
             return projects
 
         with open(boskos) as fp:
-            for rtype in json.loads(fp.read()):
+            config = yaml.load(fp.read())
+            for rtype in config['resources']:
                 if 'project' in rtype['type']:
                     for name in rtype['names']:
                         projects.add(name)

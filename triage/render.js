@@ -154,7 +154,7 @@ function sparkLinePath(arr, width, height) {
 
   // Full documentation here: https://www.w3.org/TR/SVG/paths.html#PathData
   // Basics:
-  // 0,0 is the the top left corner
+  // 0,0 is the top left corner
   // Commands:
   //    M x y: move to x, y
   //    h dx: move horizontally +/- dx

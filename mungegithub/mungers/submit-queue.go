@@ -162,7 +162,7 @@ type submitQueueMetadata struct {
 	ChartURL   string
 	HistoryURL string
 	// chartURL and historyURL are option storage locations. They are distinct from ChartURL and
-	// HistoryURL since the the public variables are used asynchronously by a fileserver and updates
+	// HistoryURL since the public variables are used asynchronously by a fileserver and updates
 	// to the options values should not cause a race condition.
 	chartURL   string
 	historyURL string
