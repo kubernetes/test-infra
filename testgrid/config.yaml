@@ -557,7 +557,7 @@ test_groups:
 - name: ci-kubernetes-local-e2e
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-local-e2e
   alert_stale_results_hours: 24
-  num_failures_to_alert: 1 
+  num_failures_to_alert: 1
 - name: ci-kubernetes-soak-cos-docker-validation
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-cos-docker-validation
 - name: ci-kubernetes-soak-gce-gci
@@ -2449,33 +2449,36 @@ test_groups:
 - name: circleci-e2e-simple
   gcs_prefix: istio-circleci/e2e-simple
   num_failures_to_alert: 5
+- name: circleci-e2e-pilot
+  gcs_prefix: istio-circleci/e2e-pilot
+  num_failures_to_alert: 5
+- name: circleci-e2e-pilot-noauth-v1alpha3-v2
+  gcs_prefix: istio-circleci/e2e-pilot-noauth-v1alpha3-v2
+  num_failures_to_alert: 5
+- name: circleci-e2e-galley
+  gcs_prefix: istio-circleci/e2e-galley
+  num_failures_to_alert: 5
+- name: circleci-test
+  gcs_prefix: istio-circleci/test
+  num_failures_to_alert: 5
+- name: circleci-racetest
+  gcs_prefix: istio-circleci/racetest
+  num_failures_to_alert: 5
 # Istio daily releases
+- name: daily-unit-tests
+  gcs_prefix: istio-prow/directory/daily-unit-tests
+  num_failures_to_alert: 1
 - name: daily-e2e-rbac-no_auth
   gcs_prefix: istio-prow/directory/daily-e2e-rbac-no_auth
   num_failures_to_alert: 1
 - name: daily-e2e-rbac-no_auth-default
   gcs_prefix: istio-prow/directory/daily-e2e-rbac-no_auth-default
   num_failures_to_alert: 1
-- name: daily-e2e-rbac-no_auth-skew
-  gcs_prefix: istio-prow/directory/daily-e2e-rbac-no_auth-skew
-  num_failures_to_alert: 1
 - name: daily-e2e-rbac-auth
   gcs_prefix: istio-prow/directory/daily-e2e-rbac-auth
   num_failures_to_alert: 1
 - name: daily-e2e-rbac-auth-default
   gcs_prefix: istio-prow/directory/daily-e2e-rbac-auth-default
-  num_failures_to_alert: 1
-- name: daily-e2e-rbac-auth-skew
-  gcs_prefix: istio-prow/directory/daily-e2e-rbac-auth-skew
-  num_failures_to_alert: 1
-- name: daily-e2e-cluster_wide-auth
-  gcs_prefix: istio-prow/directory/daily-e2e-cluster_wide-auth
-  num_failures_to_alert: 1
-- name: daily-e2e-cluster_wide-auth-default
-  gcs_prefix: istio-prow/directory/daily-e2e-cluster_wide-auth-default
-  num_failures_to_alert: 1
-- name: daily-e2e-cluster_wide-auth-skew
-  gcs_prefix: istio-prow/directory/daily-e2e-cluster_wide-auth-skew
   num_failures_to_alert: 1
 - name: istio-periodic-e2e-gke-addon
   gcs_prefix: kubernetes-jenkins/logs/istio-periodic-e2e-gke-addon
@@ -2558,31 +2561,31 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-stable-1-10
   num_columns_recent: 3
   alert_stale_results_hours: 24
-  num_failures_to_alert: 1 
+  num_failures_to_alert: 1
 - name: ci-kubernetes-gce-conformance-latest-1-10
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-latest-1-10
   num_columns_recent: 3
   alert_stale_results_hours: 24
-  num_failures_to_alert: 1  
+  num_failures_to_alert: 1
 - name: ci-kubernetes-gce-conformance-stable-1-9
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-stable-1-9
   num_columns_recent: 3
   alert_stale_results_hours: 24
-  num_failures_to_alert: 1 
+  num_failures_to_alert: 1
 - name: ci-kubernetes-gce-conformance-latest-1-9
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-latest-1-9
   num_columns_recent: 3
   alert_stale_results_hours: 24
-  num_failures_to_alert: 1  
+  num_failures_to_alert: 1
 - name: ci-kubernetes-gce-conformance-stable-1-8
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-stable-1-8
   alert_stale_results_hours: 24
-  num_failures_to_alert: 1   
+  num_failures_to_alert: 1
 - name: ci-kubernetes-gce-conformance-latest-1-8
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-latest-1-8
   num_columns_recent: 3
   alert_stale_results_hours: 24
-  num_failures_to_alert: 1  
+  num_failures_to_alert: 1
 - name: ci-kubernetes-dind-conformance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-dind-conformance
   num_columns_recent: 3
@@ -2593,19 +2596,19 @@ test_groups:
 - name: ci-presubmit-cloud-provider-openstack-acceptance-test-e2e-conformance
   gcs_prefix: kubernetes-openstack/pr-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance
   alert_stale_results_hours: 24
-  num_failures_to_alert: 1   
+  num_failures_to_alert: 1
 - name: ci-presubmit-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.10
   gcs_prefix: kubernetes-openstack/pr-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.10
   alert_stale_results_hours: 24
-  num_failures_to_alert: 1 
+  num_failures_to_alert: 1
 - name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
   gcs_prefix: kubernetes-openstack/periodic-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance
   alert_stale_results_hours: 24
-  num_failures_to_alert: 1 
+  num_failures_to_alert: 1
 - name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.10
   gcs_prefix: kubernetes-openstack/periodic-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.10
   alert_stale_results_hours: 24
-  num_failures_to_alert: 1 
+  num_failures_to_alert: 1
 
 # Add New Testgroups Here
 
@@ -5927,6 +5930,30 @@ dashboards:
     test_group_name: circleci-e2e-simple
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: circleci-e2e-pilot
+    test_group_name: circleci-e2e-pilot
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: circleci-e2e-pilot-noauth-v1alpha3-v2
+    test_group_name: circleci-e2e-pilot-noauth-v1alpha3-v2
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: circleci-e2e-galley
+    test_group_name: circleci-e2e-galley
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: circleci-test
+    test_group_name: circleci-test
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: circleci-racetest
+    test_group_name: circleci-racetest
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: daily-unit-tests
+    test_group_name: daily-unit-tests
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
   - name: daily-e2e-rbac-no_auth
     test_group_name: daily-e2e-rbac-no_auth
     alert_options:
@@ -5935,32 +5962,12 @@ dashboards:
     test_group_name: daily-e2e-rbac-no_auth-default
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
-  - name: daily-e2e-rbac-no_auth-skew
-    test_group_name: daily-e2e-rbac-no_auth-skew
-    alert_options:
-      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
   - name: daily-e2e-rbac-auth
     test_group_name: daily-e2e-rbac-auth
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
   - name: daily-e2e-rbac-auth-default
     test_group_name: daily-e2e-rbac-auth-default
-    alert_options:
-      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
-  - name: daily-e2e-rbac-auth-skew
-    test_group_name: daily-e2e-rbac-auth-skew
-    alert_options:
-      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
-  - name: daily-e2e-cluster_wide-auth
-    test_group_name: daily-e2e-cluster_wide-auth
-    alert_options:
-      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
-  - name: daily-e2e-cluster_wide-auth-default
-    test_group_name: daily-e2e-cluster_wide-auth-default
-    alert_options:
-      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
-  - name: daily-e2e-cluster_wide-auth-skew
-    test_group_name: daily-e2e-cluster_wide-auth-skew
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
   - name: istio-gke-addon
