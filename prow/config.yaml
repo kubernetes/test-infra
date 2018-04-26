@@ -5194,7 +5194,7 @@ presubmits:
         - "--root=/go/src"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=60"
+        - "--timeout=110"
   - name: pull-poseidon-bazel
     agent: kubernetes
     context: pull-poseidon-bazel
