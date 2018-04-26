@@ -274,6 +274,7 @@ def remove_system_out(data):
 
 def download_junit(db, threads, client_class):
     """Download junit results for builds without them."""
+    print("Downloading JUnit artifacts.")
     builds_to_grab = db.get_builds_missing_junit()
     pool = None
     if threads > 1:

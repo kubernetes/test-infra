@@ -34,7 +34,7 @@ class Database(object):
         self.db.executescript('''
             create table if not exists build(gcs_path primary key, started_json, finished_json, finished_time);
             create table if not exists file(path string primary key, data);
-            create table if not exists build_junit_grabbed(build_id integer primary key);
+            create table if not exists build_junit_missing(build_id integer primary key);
             create index if not exists build_finished_time_idx on build(finished_time)
             ''')
 
@@ -79,10 +79,11 @@ class Database(object):
                 'select 1 from build where gcs_path=? '
                 'and started_json=? and finished_json=?',
                 (build_dir, started_json, finished_json)).fetchone():
-            self.db.execute(
-                'replace into build values(?,?,?,?)',
+            rowid = self.db.execute(
+                'insert or replace into build values(?,?,?,?)',
                 (build_dir, started_json, finished_json,
-                 finished and finished.get('timestamp', None)))
+                 finished and finished.get('timestamp', None))).lastrowid
+            self.db.execute('insert into build_junit_missing values(?)', (rowid,))
             return True
         return False
 
@@ -90,9 +91,12 @@ class Database(object):
         """
         Return (rowid, path) for each build that hasn't enumerated junit files.
         """
+        # cleanup
+        self.db.execute('delete from build_junit_missing'
+                        ' where build_id not in (select rowid from build)')
         return self.db.execute(
             'select rowid, gcs_path from build'
-            ' where rowid not in (select build_id from build_junit_grabbed)'
+            ' where rowid in (select build_id from build_junit_missing)'
         ).fetchall()
 
     def insert_build_junits(self, build_id, junits):
@@ -102,7 +106,7 @@ class Database(object):
         for path, data in junits.iteritems():
             self.db.execute('replace into file values(?,?)',
                             (path, buffer(zlib.compress(data, 9))))
-        self.db.execute('insert into build_junit_grabbed values(?)', (build_id,))
+        self.db.execute('delete from build_junit_missing where build_id=?', (build_id,))
 
     ### make_json
 
