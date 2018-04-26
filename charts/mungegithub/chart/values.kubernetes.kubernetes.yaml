@@ -106,7 +106,6 @@ config:
   do-not-merge-milestones: ""
   admin-port: 9999
   chart-url: https://storage.googleapis.com/kubernetes-test-history/k8s-queue-health.svg
-  history-url: https://storage.googleapis.com/kubernetes-test-history/static/index.html
   prow-url: https://prow.k8s.io
   batch-enabled: true
   context-url: https://submit-queue.k8s.io

@@ -159,13 +159,11 @@ type submitQueueInterruptedObject struct {
 type submitQueueMetadata struct {
 	ProjectName string
 
-	ChartURL   string
-	HistoryURL string
-	// chartURL and historyURL are option storage locations. They are distinct from ChartURL and
-	// HistoryURL since the public variables are used asynchronously by a fileserver and updates
-	// to the options values should not cause a race condition.
-	chartURL   string
-	historyURL string
+	ChartURL string
+	// chartURL is an option storage location. It is distinct from ChartURL
+	// since the public variables are used asynchronously by a fileserver
+	// and updates to the options values should not cause a race condition.
+	chartURL string
 
 	RepoPullURL string
 	ProwURL     string
@@ -463,7 +461,6 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 	sq.githubE2ELastPRNum = -1
 
 	sq.Metadata.ChartURL = sq.Metadata.chartURL
-	sq.Metadata.HistoryURL = sq.Metadata.historyURL
 	sq.Metadata.ProwURL = sq.ProwURL
 	sq.Metadata.RepoPullURL = fmt.Sprintf("https://github.com/%s/%s/pulls/", config.Org, config.Project)
 	sq.Metadata.ProjectName = strings.Title(config.Project)
@@ -595,7 +592,6 @@ func (sq *SubmitQueue) RegisterOptions(opts *options.Options) sets.String {
 	opts.RegisterBool(&sq.FakeE2E, "fake-e2e", false, "Whether to use a fake for testing E2E stability.")
 	opts.RegisterStringSlice(&sq.DoNotMergeMilestones, "do-not-merge-milestones", []string{}, "List of milestones which, when applied, will cause the PR to not be merged.")
 	opts.RegisterInt(&sq.AdminPort, "admin-port", 9999, "If non-zero, will serve administrative actions on this port.")
-	opts.RegisterString(&sq.Metadata.historyURL, "history-url", "", "URL to access the submit-queue instance's health history.")
 	opts.RegisterString(&sq.Metadata.chartURL, "chart-url", "", "URL to access the submit-queue instance's health charts.")
 	opts.RegisterString(&sq.ProwURL, "prow-url", "", "Prow deployment base URL to read batch results and direct users to.")
 	opts.RegisterBool(&sq.BatchEnabled, "batch-enabled", false, "Do batch merges (requires prow/splice coordination).")
@@ -627,7 +623,6 @@ func (sq *SubmitQueue) RegisterOptions(opts *options.Options) sets.String {
 		"admin-port",    // Need to restart server on new port.
 		// For the following: need to restart fileserver.
 		"chart-url",
-		"history-url",
 		// For the following: need to re-initialize e2e which is used by other goroutines.
 		"fake-e2e",
 		"gcs-bucket",
