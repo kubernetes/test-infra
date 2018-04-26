@@ -11909,6 +11909,22 @@
       "sig-scalability"
     ]
   },
+  "ci-poseidon-e2e-gce": {
+    "args": [
+      "--check-leaked-resources",
+      "--cluster=",
+      "--extract=ci/latest",
+      "--gcp-node-image=ubuntu",
+      "--test=false",
+      "--test-cmd=./test/e2e-poseidon-gce.sh",
+      "--test-cmd-args=",
+      "--timeout=60m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scheduling"
+    ]
+  },
   "ci-test-infra-bazel": {
     "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
     "args": [],
