@@ -5175,6 +5175,25 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
 
   kubernetes-sigs/poseidon:
+  - name: ci-poseidon-e2e-gce
+    context: ci-poseidon-e2e-gce
+    always_run: true
+    rerun_command: "/test ci-poseidon-e2e-gce"
+    trigger: "(?m)^/test( all| ci-poseidon-e2e-gce),?(\\s+|$)"
+    agent: kubernetes
+    labels:
+      preset-service-account: true
+      preset-k8s-ssh: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180418-79a97ca02-master
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=110"
   - name: pull-poseidon-bazel
     agent: kubernetes
     context: pull-poseidon-bazel
@@ -5184,7 +5203,6 @@ presubmits:
     labels:
       preset-service-account: true
       preset-bazel-scratch-dir: true
-      preset-bazel-remote-cache-enabled: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180418-79a97ca02-1.10
@@ -5219,7 +5237,6 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
         - "--timeout=45"
-
   kubernetes/release:
   - name: pull-release-cluster-up
     agent: kubernetes
