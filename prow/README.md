@@ -124,7 +124,7 @@ used when updating deployments.
    explicitly when upgrading to a new version of these components if they were
    previously relying on the default. For more context, please see
    [this pull request.](https://github.com/kubernetes/test-infra/pull/4210)
- - *August 29, 2017* Configuration specific to plugins is now held in in the
+ - *August 29, 2017* Configuration specific to plugins is now held in the
    `plugins` `ConfigMap` and serialized in this repo in the `plugins.yaml` file.
    Cluster administrators upgrading to `hook:0.148` or newer should move
    plugin configuration from the main `ConfigMap`. For more context, please see
