@@ -72,6 +72,9 @@ jq filter to filter the data for the daily and latest files (`jqfilter`).
 *Optionally*: Include a jqfilter to extract influxdb timeseries measurements
 from the raw query results (`jqmeasurements`).
 
+Run `./bigquery.py --config configs/my-new-config.yaml` and verify that the
+output is what you expect.
+
 Add the new metric to the list above.
 
 After merging, find the new metric on GCS within 24 hours.

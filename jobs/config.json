@@ -12055,6 +12055,7 @@
   "metrics-bigquery": {
     "args": [
       "test-infra/metrics/bigquery.py",
+      "--bucket=gs://k8s-metrics",
       "--",
       "--backfill-days=90"
     ],
