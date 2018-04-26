@@ -619,6 +619,10 @@ func pickSmallestPassingNumber(log *logrus.Entry, ghc githubClient, prs []PullRe
 // testing, if any exist. It also returns a list of PRs currently being batch
 // tested.
 func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []kube.ProwJob) ([]PullRequest, []PullRequest) {
+	if len(presubmits) == 0 {
+		// Avoid accumulating batches when no presubmits are configured.
+		return nil, nil
+	}
 	prNums := make(map[int]PullRequest)
 	for _, pr := range prs {
 		prNums[int(pr.Number)] = pr
@@ -900,6 +904,10 @@ func (c *Controller) takeAction(sp subpool, presubmits map[int]sets.String, batc
 		if ok, pr := pickSmallestPassingNumber(sp.log, c.ghc, successes); ok {
 			return Merge, []PullRequest{pr}, c.mergePRs(sp, []PullRequest{pr})
 		}
+	}
+	// If no presubmits are configured, just wait.
+	if len(presubmits) == 0 {
+		return Wait, nil, nil
 	}
 	// If we have no serial jobs pending or successful, trigger one.
 	if len(nones) > 0 && len(pendings) == 0 && len(successes) == 0 {

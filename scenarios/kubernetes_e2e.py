@@ -51,22 +51,22 @@ DEFAULT_AWS_ZONES = [
     'ap-southeast-2a',
     'ap-southeast-2b',
     'ap-southeast-2c',
-    'ca-central-1a',
-    'ca-central-1b',
+    #'ca-central-1a', no c4.large capacity 2018-04-25
+    #'ca-central-1b', no c4.large capacity 2018-04-25
     'eu-central-1a',
     'eu-central-1b',
     'eu-central-1c',
     'eu-west-1a',
     'eu-west-1b',
     'eu-west-1c',
-    'eu-west-2a',
-    'eu-west-2b',
-    'eu-west-2c',
-    'eu-west-3a',
-    'eu-west-3b',
-    'eu-west-3c',
+    #'eu-west-2a', no c4.large capacity 2018-04-24
+    #'eu-west-2b', no c4.large capacity 2018-04-24
+    #'eu-west-2c', no c4.large capacity 2018-04-24
+    #'eu-west-3a', documented to not support c4 family
+    #'eu-west-3b', documented to not support c4 family
+    #'eu-west-3c', documented to not support c4 family
     'sa-east-1a',
-    'sa-east-1b',
+    #'sa-east-1b', AZ does not exist, so we're breaking the 3 AZs per region target here
     'sa-east-1c',
     'us-east-1a',
     'us-east-1b',
@@ -79,7 +79,7 @@ DEFAULT_AWS_ZONES = [
     #'us-east-2c', # no c4.large instances available
     'us-west-1a',
     'us-west-1b',
-    'us-west-1c',
+    #'us-west-1c', AZ does not exist, so we're breaking the 3 AZs per region target here
     'us-west-2a',
     'us-west-2b',
     'us-west-2c'

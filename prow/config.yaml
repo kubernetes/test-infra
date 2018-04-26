@@ -1176,8 +1176,8 @@ presubmits:
     context: pull-cri-containerd-build
     rerun_command: "/test pull-cri-containerd-build"
     trigger: "(?m)^/test( all| pull-cri-containerd-build),?(\\s+|$)"
-    branches:
-    - master
+    skip_branches:
+    - v0.1
     labels:
       preset-service-account: true
     spec:
@@ -1190,8 +1190,8 @@ presubmits:
     run_after_success:
     - name: pull-cri-containerd-node-e2e
       agent: kubernetes
-      branches:
-      - master
+      skip_branches:
+      - v0.1
       always_run: true
       skip_report: false
       max_concurrency: 8
@@ -1221,8 +1221,8 @@ presubmits:
     context: pull-cri-containerd-verify
     rerun_command: "/test pull-cri-containerd-verify"
     trigger: "(?m)^/test( all| pull-cri-containerd-verify),?(\\s+|$)"
-    branches:
-    - master
+    skip_branches:
+    - v0.1
     labels:
       preset-service-account: true
     spec:
@@ -11243,7 +11243,7 @@ periodics:
           cpu: 6
           memory: "16Gi"
 
-- cron: '1 0 25 4 *' # Run at 00:01 UTC (02:01 CEST) on 25th April
+- cron: '1 1 25 4 *' # Run at 01:01 UTC (03:01 CEST) on 25th April
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-large-performance-regional
   tags:

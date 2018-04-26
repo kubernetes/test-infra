@@ -15,6 +15,6 @@ limitations under the License.
 */
 
 // Package sidecar is a library that knows how to report on the
-// output of a process that writes it's output and exit code to
+// output of a process that writes its output and exit code to
 // disk
 package sidecar

@@ -36,7 +36,7 @@ type LogFinder interface {
 	FoundLog(branch, logString string, regexSearch bool) (bool, string)
 }
 
-// ClearPickAfterMerge will remove the the cherrypick-candidate label from
+// ClearPickAfterMerge will remove the cherrypick-candidate label from
 // any PR that does not have a 'release' milestone set.
 type ClearPickAfterMerge struct {
 	features *features.Features

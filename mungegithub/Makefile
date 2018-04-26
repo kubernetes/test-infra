@@ -14,7 +14,7 @@
 
 all: container
 
-# Path Prefix: the path the the mungegithub directory.
+# Path Prefix: the path of the mungegithub directory.
 DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
 CD := cd $(DIR) &&
 
