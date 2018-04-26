@@ -5177,7 +5177,6 @@ presubmits:
   kubernetes-sigs/poseidon:
   - name: ci-poseidon-e2e-gce
     context: ci-poseidon-e2e-gce
-    interval: 24h
     always_run: true
     rerun_command: "/test ci-poseidon-e2e-gce"
     trigger: "(?m)^/test( all| ci-poseidon-e2e-gce),?(\\s+|$)"
