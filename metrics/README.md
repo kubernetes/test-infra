@@ -45,6 +45,9 @@ jqmeasurements: |
 * build-stats - number of daily builds and pass rate
     - [Config](configs/build-stats.yaml)
     - [build-stats-latest.json](http://storage.googleapis.com/k8s-metrics/build-stats-latest.json)
+* presubmit-health - presubmit failure rate and timing across PRs
+    - [Config](configs/presubmit-health.yaml)
+    - [presubmit-health-latest.json](http://storage.googleapis.com/k8s-metrics/presubmit-health-latest.json)
 * failures - find jobs that have been failing the longest
     - [Config](configs/failures-config.yaml)
     - [failures-latest.json](http://storage.googleapis.com/k8s-metrics/failures-latest.json)
