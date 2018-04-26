@@ -5176,6 +5176,7 @@ presubmits:
 
   kubernetes-sigs/poseidon:
   - name: ci-poseidon-e2e-gce
+    context: ci-poseidon-e2e-gce
     interval: 24h
     always_run: true
     rerun_command: "/test ci-poseidon-e2e-gce"
@@ -5193,6 +5194,7 @@ presubmits:
         - "--root=/go/src"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=60"
   - name: pull-poseidon-bazel
     agent: kubernetes
     context: pull-poseidon-bazel
