@@ -2540,13 +2540,15 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cadvisor-e2e
   num_columns_recent: 20
 # Poseidon
+- name: ci-poseidon-e2e-gce
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/ci-poseidon-e2e-gce
+  num_columns_recent: 20
 - name: pull-poseidon-bazel
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-poseidon-bazel
   num_columns_recent: 20
 - name: pull-poseidon-verify
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-poseidon-verify
   num_columns_recent: 20
-
 
 # Prow hosted conformance tests
 - name: ci-kubernetes-gce-conformance
@@ -5900,6 +5902,8 @@ dashboards:
     test_group_name: pull-poseidon-bazel
   - name: verify
     test_group_name: pull-poseidon-verify
+  - name: e2e
+    test_group_name: ci-poseidon-e2e-gce
 
 - name: istio
   dashboard_tab:
