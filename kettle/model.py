@@ -50,17 +50,17 @@ class Database(object):
         """
         builds_have_paths = self.db.execute(
             'select gcs_path from build'
-            ' where gcs_path LIKE ?'
+            ' where gcs_path between ? and ?'
             ' and finished_json IS NOT NULL'
             ,
-            (jobs_dir + '%',)).fetchall()
+            (jobs_dir + '\x00', jobs_dir + '\x7f')).fetchall()
         path_tuple = lambda path: tuple(path[len(jobs_dir):].split('/')[-2:])
         builds_have = {path_tuple(path) for (path,) in builds_have_paths}
         for path, started_json in self.db.execute(
                 'select gcs_path, started_json from build'
-                ' where gcs_path LIKE ?'
+                ' where gcs_path between ? and ?'
                 ' and started_json IS NOT NULL and finished_json IS NULL',
-                (jobs_dir + '%',)):
+                (jobs_dir + '\x00', jobs_dir + '\x7f')):
             started = json.loads(started_json)
             if int(started['timestamp']) < time.time() - 60*60*24*5:
                 # over 5 days old, no need to try looking for finished any more.
