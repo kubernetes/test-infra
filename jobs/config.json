@@ -11915,9 +11915,9 @@
       "--cluster=",
       "--extract=ci/latest",
       "--gcp-node-image=ubuntu",
+      "--provider=gce",
       "--test=false",
-      "--test-cmd=./test/e2e-poseidon-gce.sh",
-      "--test-cmd-args=",
+      "--test-cmd=../test/e2e-poseidon-gce.sh",
       "--timeout=60m"
     ],
     "scenario": "kubernetes_e2e",
