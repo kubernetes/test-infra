@@ -30,6 +30,7 @@ spec:
         image: gcr.io/k8s-prow/tide:v20180426-4791572a4
         args:
         - --dry-run=false
+        - --github-endpoint=http://github-cache
         ports:
           - name: http
             containerPort: 8888

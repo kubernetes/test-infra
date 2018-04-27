@@ -32,6 +32,7 @@ spec:
         - --tot-url=http://tot
         - --build-cluster=/etc/cluster/cluster
         - --dry-run=false
+        - --github-endpoint=http://github-cache
         volumeMounts:
         - mountPath: /etc/cluster
           name: cluster

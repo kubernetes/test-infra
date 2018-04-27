@@ -38,6 +38,7 @@ spec:
         args:
         - --dry-run=false
         - --slack-token-file=/etc/slack/token
+        - --github-endpoint=http://github-cache
         ports:
           - name: http
             containerPort: 8888
