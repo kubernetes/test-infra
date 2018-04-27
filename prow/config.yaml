@@ -26,6 +26,8 @@ branch-protection:
       - cla/linuxfoundation
       repos:
         # BLACKLIST
+        website: #only `master` branch needs protection
+          protect-by-default: false
         # dashboard - kubernetes/test-infra#7525 need required reviews
         # WHITELIST
         charts:
