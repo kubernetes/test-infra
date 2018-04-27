@@ -22,7 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-type PolicyStruct struct {
+type Policy struct {
 	Protect *bool `json:"protect-by-default,omitempty"`
 	// TODO(fejta): add all protection options
 	Contexts []string `json:"require-contexts,omitempty"`
@@ -51,57 +51,45 @@ func unionStrings(parent, child []string) []string {
 }
 
 // apply returns a policy that merges the child into the parent
-func (parent PolicyStruct) Apply(child Policy) Policy {
-	p := parent.Get()
-	c := child.Get()
-	return PolicyStruct{
-		Protect:  selectBool(p.Protect, c.Protect),
-		Contexts: unionStrings(p.Contexts, c.Contexts),
-		Pushers:  unionStrings(p.Pushers, c.Pushers),
+func (parent Policy) Apply(child Policy) Policy {
+	return Policy{
+		Protect:  selectBool(parent.Protect, child.Protect),
+		Contexts: unionStrings(parent.Contexts, child.Contexts),
+		Pushers:  unionStrings(parent.Pushers, child.Pushers),
 	}
-}
-
-func (p PolicyStruct) Get() PolicyStruct {
-	return p
-}
-
-type Policy interface {
-	Apply(parent Policy) Policy
-	Get() PolicyStruct
 }
 
 // BranchProtection specifies the global branch protection policy
 type BranchProtection struct {
-	PolicyStruct
+	Policy
 	ProtectTested bool           `json:"protect-tested-repos,omitempty"`
 	Orgs          map[string]Org `json:"orgs,omitempty"`
 }
 
 type Org struct {
-	PolicyStruct
+	Policy
 	Repos map[string]Repo `json:"repos,omitempty"`
 }
 
 type Repo struct {
-	PolicyStruct
+	Policy
 	Branches map[string]Branch `json:"branches,omitempty"`
 }
 
 type Branch struct {
-	PolicyStruct
+	Policy
 }
 
-func (c *Config) GetBranchProtection(org, repo, branch string) (Policy, error) {
-	var policy Policy
-	policy = c.BranchProtection
+func (c *Config) GetBranchProtection(org, repo, branch string) (*Policy, error) {
+	policy := c.BranchProtection.Policy
 
 	if o, ok := c.BranchProtection.Orgs[org]; ok {
-		policy = policy.Apply(o)
+		policy = policy.Apply(o.Policy)
 		if r, ok := o.Repos[repo]; ok {
-			policy = policy.Apply(r)
+			policy = policy.Apply(r.Policy)
 			if b, ok := r.Branches[branch]; ok {
-				policy = policy.Apply(b)
-				if policy.Get().Protect == nil {
+				policy = policy.Apply(b.Policy)
+				if policy.Protect == nil {
 					return nil, fmt.Errorf("protect should not be nil")
 				}
 			}
@@ -113,10 +101,10 @@ func (c *Config) GetBranchProtection(org, repo, branch string) (Policy, error) {
 	// Automatically require any required prow jobs
 	if prowContexts := branchRequirements(org, repo, branch, c.Presubmits); len(prowContexts) > 0 {
 		// Error if protection is disabled
-		if policy.Get().Protect != nil && !*policy.Get().Protect {
+		if policy.Protect != nil && !*policy.Protect {
 			return nil, fmt.Errorf("required prow jobs require branch protection")
 		}
-		ps := PolicyStruct{
+		ps := Policy{
 			Contexts: prowContexts,
 			Protect:  nil,
 		}
@@ -128,17 +116,20 @@ func (c *Config) GetBranchProtection(org, repo, branch string) (Policy, error) {
 		policy = policy.Apply(ps)
 	}
 
-	got := policy.Get()
-	if got.Protect != nil && !*got.Protect {
-		if len(got.Contexts) > 0 {
+	if policy.Protect == nil {
+		return nil, nil
+	}
+
+	if policy.Protect != nil && !*policy.Protect {
+		if len(policy.Contexts) > 0 {
 			return nil, fmt.Errorf("required contexts requires branch protection")
 		}
-		if len(got.Pushers) > 0 {
+		if len(policy.Pushers) > 0 {
 			return nil, fmt.Errorf("push restrictions requires branch protection")
 		}
 	}
 
-	return policy, nil
+	return &policy, nil
 }
 
 func jobRequirements(jobs []Presubmit, branch string, after bool) []string {

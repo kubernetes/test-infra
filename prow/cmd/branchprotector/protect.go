@@ -275,9 +275,9 @@ func (p *Protector) UpdateBranch(orgName, repo string, branchName string, branch
 		Org:      orgName,
 		Repo:     repo,
 		Branch:   branchName,
-		Protect:  *bp.Get().Protect,
-		Contexts: bp.Get().Contexts,
-		Pushers:  bp.Get().Pushers,
+		Protect:  *bp.Protect,
+		Contexts: bp.Contexts,
+		Pushers:  bp.Pushers,
 	}
 
 	return nil

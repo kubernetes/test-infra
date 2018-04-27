@@ -29,19 +29,12 @@ var (
 	no  = &n
 )
 
-func fixup(policy Policy) PolicyStruct {
+func normalize(policy *Policy) {
 	if policy == nil {
-		return PolicyStruct{}
+		return
 	}
-	p := policy.Get()
-	if p.Protect != nil {
-		x := new(bool)
-		*x = *p.Protect
-		p.Protect = x
-	}
-	sort.Strings(p.Pushers)
-	sort.Strings(p.Contexts)
-	return p
+	sort.Strings(policy.Pushers)
+	sort.Strings(policy.Contexts)
 }
 
 func TestSelectBool(t *testing.T) {
@@ -123,26 +116,26 @@ func TestUnionStrings(t *testing.T) {
 func TestApply(t *testing.T) {
 	cases := []struct {
 		name     string
-		parent   PolicyStruct
-		child    PolicyStruct
-		expected PolicyStruct
+		parent   Policy
+		child    Policy
+		expected Policy
 	}{
 		{
 			name: "default policy",
 		},
 		{
 			name: "merge parent and child",
-			parent: PolicyStruct{
+			parent: Policy{
 				Protect:  yes,
 				Contexts: []string{"cP"},
 				Pushers:  []string{"pP"},
 			},
-			child: PolicyStruct{
+			child: Policy{
 				Protect:  no,
 				Contexts: []string{"cC"},
 				Pushers:  []string{"pC"},
 			},
-			expected: PolicyStruct{
+			expected: Policy{
 				Protect:  no,
 				Contexts: []string{"cP", "cC"},
 				Pushers:  []string{"pP", "pC"},
@@ -150,12 +143,12 @@ func TestApply(t *testing.T) {
 		},
 		{
 			name: "only parent",
-			parent: PolicyStruct{
+			parent: Policy{
 				Protect:  yes,
 				Contexts: []string{"cP"},
 				Pushers:  []string{"pP"},
 			},
-			expected: PolicyStruct{
+			expected: Policy{
 				Protect:  yes,
 				Contexts: []string{"cP"},
 				Pushers:  []string{"pP"},
@@ -163,12 +156,12 @@ func TestApply(t *testing.T) {
 		},
 		{
 			name: "only child",
-			child: PolicyStruct{
+			child: Policy{
 				Protect:  yes,
 				Contexts: []string{"cC"},
 				Pushers:  []string{"pC"},
 			},
-			expected: PolicyStruct{
+			expected: Policy{
 				Protect:  yes,
 				Contexts: []string{"cC"},
 				Pushers:  []string{"pC"},
@@ -178,8 +171,8 @@ func TestApply(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			actual := tc.parent.Apply(tc.child)
-			actual = fixup(actual)
-			tc.expected = fixup(tc.expected)
+			normalize(&actual)
+			normalize(&tc.expected)
 			if !reflect.DeepEqual(actual, tc.expected) {
 				t.Errorf("actual %v != expected %v", actual, tc.expected)
 			}
@@ -322,7 +315,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 		config            Config
 		org, repo, branch string
 		err               bool
-		expected          PolicyStruct
+		expected          *Policy
 	}{
 		{
 			name: "unprotected by default",
@@ -331,7 +324,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 			name: "undefined org not protected",
 			config: Config{
 				BranchProtection: BranchProtection{
-					PolicyStruct: PolicyStruct{
+					Policy: Policy{
 						Protect: yes,
 					},
 					Orgs: map[string]Org{
@@ -345,7 +338,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 			name: "protect via config default",
 			config: Config{
 				BranchProtection: BranchProtection{
-					PolicyStruct: PolicyStruct{
+					Policy: Policy{
 						Protect: yes,
 					},
 					Orgs: map[string]Org{
@@ -353,7 +346,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 					},
 				},
 			},
-			expected: PolicyStruct{Protect: yes},
+			expected: &Policy{Protect: yes},
 		},
 		{
 			name: "protect via org default",
@@ -361,14 +354,14 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 				BranchProtection: BranchProtection{
 					Orgs: map[string]Org{
 						"org": {
-							PolicyStruct: PolicyStruct{
+							Policy: Policy{
 								Protect: yes,
 							},
 						},
 					},
 				},
 			},
-			expected: PolicyStruct{Protect: yes},
+			expected: &Policy{Protect: yes},
 		},
 		{
 			name: "protect via repo default",
@@ -378,7 +371,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 						"org": {
 							Repos: map[string]Repo{
 								"repo": {
-									PolicyStruct: PolicyStruct{
+									Policy: Policy{
 										Protect: yes,
 									},
 								},
@@ -387,7 +380,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 					},
 				},
 			},
-			expected: PolicyStruct{Protect: yes},
+			expected: &Policy{Protect: yes},
 		},
 		{
 			name: "protect specific branch",
@@ -399,7 +392,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 								"repo": {
 									Branches: map[string]Branch{
 										"branch": {
-											PolicyStruct: PolicyStruct{
+											Policy: Policy{
 												Protect: yes,
 											},
 										},
@@ -410,24 +403,24 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 					},
 				},
 			},
-			expected: PolicyStruct{Protect: yes},
+			expected: &Policy{Protect: yes},
 		},
 		{
 			name: "ignore other org settings",
 			config: Config{
 				BranchProtection: BranchProtection{
-					PolicyStruct: PolicyStruct{
+					Policy: Policy{
 						Protect: no,
 					},
 					Orgs: map[string]Org{
 						"other": {
-							PolicyStruct: PolicyStruct{Protect: yes},
+							Policy: Policy{Protect: yes},
 						},
 						"org": {},
 					},
 				},
 			},
-			expected: PolicyStruct{Protect: no},
+			expected: &Policy{Protect: no},
 		},
 		{
 			name: "defined branches must make a protection decision",
@@ -452,7 +445,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 			name: "pushers require protection",
 			config: Config{
 				BranchProtection: BranchProtection{
-					PolicyStruct: PolicyStruct{
+					Policy: Policy{
 						Protect: no,
 						Pushers: []string{"oncall"},
 					},
@@ -467,7 +460,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 			name: "required contexts require protection",
 			config: Config{
 				BranchProtection: BranchProtection{
-					PolicyStruct: PolicyStruct{
+					Policy: Policy{
 						Protect:  no,
 						Contexts: []string{"test-foo"},
 					},
@@ -482,7 +475,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 			name: "Make required presubmits required",
 			config: Config{
 				BranchProtection: BranchProtection{
-					PolicyStruct: PolicyStruct{
+					Policy: Policy{
 						Protect:  yes,
 						Contexts: []string{"cla"},
 					},
@@ -500,7 +493,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 					},
 				},
 			},
-			expected: PolicyStruct{
+			expected: &Policy{
 				Protect:  yes,
 				Contexts: []string{"required presubmit", "cla"},
 			},
@@ -524,7 +517,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 					},
 				},
 			},
-			expected: PolicyStruct{
+			expected: &Policy{
 				Protect:  yes,
 				Contexts: []string{"required presubmit"},
 			},
@@ -533,7 +526,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 			name: "required presubmits require protection",
 			config: Config{
 				BranchProtection: BranchProtection{
-					PolicyStruct: PolicyStruct{
+					Policy: Policy{
 						Protect: no,
 					},
 					Orgs: map[string]Org{
@@ -580,7 +573,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 					ProtectTested: true,
 					Orgs: map[string]Org{
 						"org": {
-							PolicyStruct: PolicyStruct{
+							Policy: Policy{
 								Protect: yes,
 							},
 						},
@@ -597,7 +590,7 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 					},
 				},
 			},
-			expected: PolicyStruct{Protect: yes},
+			expected: &Policy{Protect: yes},
 		},
 	}
 
@@ -612,9 +605,9 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 			case err == nil && tc.err:
 				t.Errorf("failed to receive an error")
 			default:
-				actual = fixup(actual)
-				tc.expected = fixup(tc.expected)
-				if !reflect.DeepEqual(actual.Get(), tc.expected.Get()) {
+				normalize(actual)
+				normalize(tc.expected)
+				if !reflect.DeepEqual(actual, tc.expected) {
 					t.Errorf("actual %+v != expected %+v", actual, tc.expected)
 				}
 			}
