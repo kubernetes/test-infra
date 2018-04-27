@@ -148,6 +148,7 @@ tide:
     - kubernetes/test-infra
     - kubernetes/website
     - kubernetes-sigs/cluster-api
+    - kubernetes-sigs/application
     labels:
     - lgtm
     - approved
@@ -6086,7 +6087,7 @@ postsubmits:
         - "--upload=gs://kubernetes-jenkins/logs"
 
 periodics:
-- interval: 15m
+- interval: 2h
   agent: kubernetes
   name: application-periodic-default-gke
   labels:
@@ -6097,7 +6098,7 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180418-79a97ca02-master
       args:
       - "--job=$(JOB_NAME)"
-      - "--repo=github.com/foxish/application=master"
+      - "--repo=github.com/kubernetes-sigs/application=master"
       - "--upload=gs://kubernetes-jenkins/logs/"
       - "--timeout=150"
       env:
