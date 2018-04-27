@@ -121,6 +121,7 @@ func TestHandle(t *testing.T) {
 		name                       string
 		filesChanged               []string
 		reviewerCount              int
+		maxReviewerCount           int
 		expectedRequested          []string
 		alternateExpectedRequested []string
 	}{
@@ -173,6 +174,20 @@ func TestHandle(t *testing.T) {
 			reviewerCount:     1,
 			expectedRequested: []string{"bob", "ben"},
 		},
+		{
+			name:              "two files, 2 leaf reviewers, 1 common parent, request 1",
+			filesChanged:      []string{"a.go", "b.go"},
+			reviewerCount:     1,
+			expectedRequested: []string{"alice", "bob"},
+		},
+		{
+			name:                       "two files, 2 leaf reviewers, 1 common parent, request 1, limit 1",
+			filesChanged:               []string{"a.go", "b.go"},
+			reviewerCount:              1,
+			maxReviewerCount:           1,
+			expectedRequested:          []string{"alice"},
+			alternateExpectedRequested: []string{"bob"},
+		},
 	}
 	for _, tc := range testcases {
 		fghc := newFakeGithubClient(tc.filesChanged)
@@ -181,7 +196,7 @@ func TestHandle(t *testing.T) {
 			PullRequest: github.PullRequest{User: github.User{Login: "author"}},
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 		}
-		if err := handle(fghc, foc, logrus.WithField("plugin", pluginName), &tc.reviewerCount, nil, pre); err != nil {
+		if err := handle(fghc, foc, logrus.WithField("plugin", pluginName), &tc.reviewerCount, nil, tc.maxReviewerCount, pre); err != nil {
 			t.Errorf("[%s] unexpected error from handle: %v", tc.name, err)
 			continue
 		}
@@ -272,7 +287,7 @@ func TestHandleOld(t *testing.T) {
 			PullRequest: github.PullRequest{User: github.User{Login: "author"}},
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 		}
-		if err := handle(fghc, foc, logrus.WithField("plugin", pluginName), nil, &tc.reviewerCount, pre); err != nil {
+		if err := handle(fghc, foc, logrus.WithField("plugin", pluginName), nil, &tc.reviewerCount, 0, pre); err != nil {
 			t.Errorf("[%s] unexpected error from handle: %v", tc.name, err)
 			continue
 		}
