@@ -18,10 +18,174 @@ package config
 
 import (
 	"reflect"
+	"sort"
 	"testing"
-
-	"k8s.io/apimachinery/pkg/util/sets"
 )
+
+var (
+	y   = true
+	n   = false
+	yes = &y
+	no  = &n
+)
+
+func fixup(policy Policy) PolicyStruct {
+	if policy == nil {
+		return PolicyStruct{}
+	}
+	p := policy.Get()
+	if p.Protect != nil {
+		x := new(bool)
+		*x = *p.Protect
+		p.Protect = x
+	}
+	sort.Strings(p.Pushers)
+	sort.Strings(p.Contexts)
+	return p
+}
+
+func TestSelectBool(t *testing.T) {
+	cases := []struct {
+		name     string
+		parent   *bool
+		child    *bool
+		expected *bool
+	}{
+		{
+			name: "default is nil",
+		},
+		{
+			name:     "use child if set",
+			child:    yes,
+			expected: yes,
+		},
+		{
+			name:     "child overrides parent",
+			child:    yes,
+			parent:   no,
+			expected: yes,
+		},
+		{
+			name:     "use parent if child unset",
+			parent:   no,
+			expected: no,
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := selectBool(tc.parent, tc.child)
+			if !reflect.DeepEqual(actual, tc.expected) {
+				t.Errorf("actual %v != expected %v", actual, tc.expected)
+			}
+		})
+	}
+}
+
+func TestUnionStrings(t *testing.T) {
+	cases := []struct {
+		name     string
+		parent   []string
+		child    []string
+		expected []string
+	}{
+		{
+			name: "empty list",
+		},
+		{
+			name:     "all parent items",
+			parent:   []string{"hi", "there"},
+			expected: []string{"hi", "there"},
+		},
+		{
+			name:     "all child items",
+			child:    []string{"hi", "there"},
+			expected: []string{"hi", "there"},
+		},
+		{
+			name:     "both child and parent items, no duplicates",
+			child:    []string{"hi", "world"},
+			parent:   []string{"hi", "there"},
+			expected: []string{"hi", "there", "world"},
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := unionStrings(tc.parent, tc.child)
+			sort.Strings(actual)
+			sort.Strings(tc.expected)
+			if !reflect.DeepEqual(actual, tc.expected) {
+				t.Errorf("actual %v != expected %v", actual, tc.expected)
+			}
+		})
+	}
+}
+
+func TestApply(t *testing.T) {
+	cases := []struct {
+		name     string
+		parent   PolicyStruct
+		child    PolicyStruct
+		expected PolicyStruct
+	}{
+		{
+			name: "default policy",
+		},
+		{
+			name: "merge parent and child",
+			parent: PolicyStruct{
+				Protect:  yes,
+				Contexts: []string{"cP"},
+				Pushers:  []string{"pP"},
+			},
+			child: PolicyStruct{
+				Protect:  no,
+				Contexts: []string{"cC"},
+				Pushers:  []string{"pC"},
+			},
+			expected: PolicyStruct{
+				Protect:  no,
+				Contexts: []string{"cP", "cC"},
+				Pushers:  []string{"pP", "pC"},
+			},
+		},
+		{
+			name: "only parent",
+			parent: PolicyStruct{
+				Protect:  yes,
+				Contexts: []string{"cP"},
+				Pushers:  []string{"pP"},
+			},
+			expected: PolicyStruct{
+				Protect:  yes,
+				Contexts: []string{"cP"},
+				Pushers:  []string{"pP"},
+			},
+		},
+		{
+			name: "only child",
+			child: PolicyStruct{
+				Protect:  yes,
+				Contexts: []string{"cC"},
+				Pushers:  []string{"pC"},
+			},
+			expected: PolicyStruct{
+				Protect:  yes,
+				Contexts: []string{"cC"},
+				Pushers:  []string{"pC"},
+			},
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := tc.parent.Apply(tc.child)
+			actual = fixup(actual)
+			tc.expected = fixup(tc.expected)
+			if !reflect.DeepEqual(actual, tc.expected) {
+				t.Errorf("actual %v != expected %v", actual, tc.expected)
+			}
+		})
+	}
+}
 
 func TestJobRequirements(t *testing.T) {
 	cases := []struct {
@@ -153,76 +317,120 @@ func TestJobRequirements(t *testing.T) {
 }
 
 func TestConfig_GetBranchProtection(t *testing.T) {
-	yes := true
-	no := false
-	type orgRepoBranch struct {
-		org, repo, branch string
-	}
-	type expected struct {
-		b *Branch
-		e string
-	}
-
 	testCases := []struct {
-		name          string
-		config        Config
-		expected      []expected
-		orgRepoBranch []orgRepoBranch
+		name              string
+		config            Config
+		org, repo, branch string
+		err               bool
+		expected          PolicyStruct
 	}{
 		{
-			name:          "nothing",
-			orgRepoBranch: []orgRepoBranch{{"org", "repo", "branch"}},
-			expected:      []expected{{}},
+			name: "unprotected by default",
 		},
 		{
-			name:          "unknown org",
-			orgRepoBranch: []orgRepoBranch{{"unknown", "unknown", "master"}},
+			name: "undefined org not protected",
 			config: Config{
 				BranchProtection: BranchProtection{
-					Protect: &yes,
+					PolicyStruct: PolicyStruct{
+						Protect: yes,
+					},
 					Orgs: map[string]Org{
-						"unknown": {},
+						"other": {},
+						// org not present
 					},
 				},
 			},
-			expected: []expected{{b: &Branch{Protect: &yes}}},
 		},
 		{
-			name:          "protect org via config default",
-			orgRepoBranch: []orgRepoBranch{{"org", "repo", "branch"}},
+			name: "protect via config default",
 			config: Config{
 				BranchProtection: BranchProtection{
-					Protect: &yes,
+					PolicyStruct: PolicyStruct{
+						Protect: yes,
+					},
 					Orgs: map[string]Org{
 						"org": {},
 					},
 				},
 			},
-			expected: []expected{{b: &Branch{Protect: &yes}}},
+			expected: PolicyStruct{Protect: yes},
 		},
 		{
-			name: "protect this but not that org",
-			orgRepoBranch: []orgRepoBranch{
-				{"this", "repo", "branch"},
-				{"that", "repo", "branch"},
-			},
+			name: "protect via org default",
 			config: Config{
 				BranchProtection: BranchProtection{
-					Protect: &no,
 					Orgs: map[string]Org{
-						"this": {Protect: &yes},
-						"that": {},
+						"org": {
+							PolicyStruct: PolicyStruct{
+								Protect: yes,
+							},
+						},
 					},
 				},
 			},
-			expected: []expected{
-				{b: &Branch{Protect: &yes}},
-				{b: &Branch{Protect: &no}},
-			},
+			expected: PolicyStruct{Protect: yes},
 		},
 		{
-			name:          "require a defined branch to make a protection decision",
-			orgRepoBranch: []orgRepoBranch{{"org", "repo", "branch"}},
+			name: "protect via repo default",
+			config: Config{
+				BranchProtection: BranchProtection{
+					Orgs: map[string]Org{
+						"org": {
+							Repos: map[string]Repo{
+								"repo": {
+									PolicyStruct: PolicyStruct{
+										Protect: yes,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: PolicyStruct{Protect: yes},
+		},
+		{
+			name: "protect specific branch",
+			config: Config{
+				BranchProtection: BranchProtection{
+					Orgs: map[string]Org{
+						"org": {
+							Repos: map[string]Repo{
+								"repo": {
+									Branches: map[string]Branch{
+										"branch": {
+											PolicyStruct: PolicyStruct{
+												Protect: yes,
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: PolicyStruct{Protect: yes},
+		},
+		{
+			name: "ignore other org settings",
+			config: Config{
+				BranchProtection: BranchProtection{
+					PolicyStruct: PolicyStruct{
+						Protect: no,
+					},
+					Orgs: map[string]Org{
+						"other": {
+							PolicyStruct: PolicyStruct{Protect: yes},
+						},
+						"org": {},
+					},
+				},
+			},
+			expected: PolicyStruct{Protect: no},
+		},
+		{
+			name: "defined branches must make a protection decision",
 			config: Config{
 				BranchProtection: BranchProtection{
 					Orgs: map[string]Org{
@@ -238,171 +446,178 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 					},
 				},
 			},
-			expected: []expected{{e: "protect should not be nil"}},
+			err: true,
 		},
 		{
-			name:          "require pushers to set protection",
-			orgRepoBranch: []orgRepoBranch{{"org", "repo", "push"}},
+			name: "pushers require protection",
 			config: Config{
 				BranchProtection: BranchProtection{
-					Protect: &no,
-					Pushers: []string{"oncall"},
+					PolicyStruct: PolicyStruct{
+						Protect: no,
+						Pushers: []string{"oncall"},
+					},
 					Orgs: map[string]Org{
 						"org": {},
 					},
 				},
 			},
-			expected: []expected{{e: "setting pushers or contexts requires protection"}},
+			err: true,
 		},
 		{
-			name:          "require required contexts to set protection",
-			orgRepoBranch: []orgRepoBranch{{"org", "repo", "context"}},
+			name: "required contexts require protection",
 			config: Config{
 				BranchProtection: BranchProtection{
-					Protect:  &no,
-					Contexts: []string{"test-foo"},
+					PolicyStruct: PolicyStruct{
+						Protect:  no,
+						Contexts: []string{"test-foo"},
+					},
 					Orgs: map[string]Org{
 						"org": {},
 					},
 				},
 			},
-			expected: []expected{{e: "setting pushers or contexts requires protection"}},
+			err: true,
 		},
 		{
-			name: "protect org but skip a repo",
-			orgRepoBranch: []orgRepoBranch{
-				{"org", "repo1", "master"},
-				{"org", "repo1", "branch"},
-				{"org", "skip", "master"},
-			},
+			name: "Make required presubmits required",
 			config: Config{
 				BranchProtection: BranchProtection{
-					Protect: &no,
+					PolicyStruct: PolicyStruct{
+						Protect:  yes,
+						Contexts: []string{"cla"},
+					},
 					Orgs: map[string]Org{
-						"org": {
-							Protect: &yes,
-							Repos: map[string]Repo{
-								"skip": {
-									Protect: &no,
-								},
-							},
+						"org": {},
+					},
+				},
+				Presubmits: map[string][]Presubmit{
+					"org/repo": {
+						{
+							Name:      "required presubmit",
+							Context:   "required presubmit",
+							AlwaysRun: true,
 						},
 					},
 				},
 			},
-			expected: []expected{
-				{b: &Branch{Protect: &yes}},
-				{b: &Branch{Protect: &yes}},
-				{b: &Branch{Protect: &no}},
+			expected: PolicyStruct{
+				Protect:  yes,
+				Contexts: []string{"required presubmit", "cla"},
 			},
 		},
 		{
-			name:          "append contexts",
-			orgRepoBranch: []orgRepoBranch{{"org", "repo", "master"}},
+			name: "ProtectTested opts into protection",
 			config: Config{
 				BranchProtection: BranchProtection{
-					Protect:  &yes,
-					Contexts: []string{"config-presubmit"},
+					ProtectTested: true,
 					Orgs: map[string]Org{
-						"org": {
-							Contexts: []string{"org-presubmit"},
-							Repos: map[string]Repo{
-								"repo": {
-									Contexts: []string{"repo-presubmit"},
-									Branches: map[string]Branch{
-										"master": {
-											Contexts: []string{"branch-presubmit"},
-										},
-									},
-								},
-							},
+						"org": {},
+					},
+				},
+				Presubmits: map[string][]Presubmit{
+					"org/repo": {
+						{
+							Name:      "required presubmit",
+							Context:   "required presubmit",
+							AlwaysRun: true,
 						},
 					},
 				},
 			},
-			expected: []expected{
-				{
-					b: &Branch{
-						Protect:  &yes,
-						Contexts: []string{"config-presubmit", "org-presubmit", "repo-presubmit", "branch-presubmit"},
+			expected: PolicyStruct{
+				Protect:  yes,
+				Contexts: []string{"required presubmit"},
+			},
+		},
+		{
+			name: "required presubmits require protection",
+			config: Config{
+				BranchProtection: BranchProtection{
+					PolicyStruct: PolicyStruct{
+						Protect: no,
+					},
+					Orgs: map[string]Org{
+						"org": {},
+					},
+				},
+				Presubmits: map[string][]Presubmit{
+					"org/repo": {
+						{
+							Name:      "required presubmit",
+							Context:   "required presubmit",
+							AlwaysRun: true,
+						},
+					},
+				},
+			},
+			err: true,
+		},
+		{
+			name: "Optional presubmits do not force protection",
+			config: Config{
+				BranchProtection: BranchProtection{
+					ProtectTested: true,
+					Orgs: map[string]Org{
+						"org": {},
+					},
+				},
+				Presubmits: map[string][]Presubmit{
+					"org/repo": {
+						{
+							Name:      "optional presubmit",
+							Context:   "optional presubmit",
+							AlwaysRun: true,
+							Optional:  true,
+						},
 					},
 				},
 			},
 		},
 		{
-			name:          "append pushers",
-			orgRepoBranch: []orgRepoBranch{{"org", "repo", "master"}},
+			name: "Explicit configuration takes precedence over ProtectTested",
 			config: Config{
 				BranchProtection: BranchProtection{
-					Protect: &yes,
-					Pushers: []string{"config-team"},
+					ProtectTested: true,
 					Orgs: map[string]Org{
 						"org": {
-							Pushers: []string{"org-team"},
-							Repos: map[string]Repo{
-								"repo": {
-									Pushers: []string{"repo-team"},
-									Branches: map[string]Branch{
-										"master": {
-											Pushers: []string{"branch-team"},
-										},
-									},
-								},
+							PolicyStruct: PolicyStruct{
+								Protect: yes,
 							},
 						},
 					},
 				},
-			},
-			expected: []expected{
-				{
-					b: &Branch{
-						Protect: &yes,
-						Pushers: []string{"config-team", "org-team", "repo-team", "branch-team"},
+				Presubmits: map[string][]Presubmit{
+					"org/repo": {
+						{
+							Name:      "optional presubmit",
+							Context:   "optional presubmit",
+							AlwaysRun: true,
+							Optional:  true,
+						},
 					},
 				},
 			},
+			expected: PolicyStruct{Protect: yes},
 		},
-	}
-
-	cmpBranch := func(a, b *Branch) bool {
-		if a == nil {
-			if b == nil {
-				return true
-			}
-			return false
-		}
-		if b == nil {
-			return false
-		}
-		if !reflect.DeepEqual(a.Protect, b.Protect) {
-			return false
-		}
-		if !sets.NewString(a.Contexts...).Equal(sets.NewString(b.Contexts...)) {
-			return false
-		}
-		if !sets.NewString(a.Pushers...).Equal(sets.NewString(b.Pushers...)) {
-			return false
-		}
-		return true
 	}
 
 	for _, tc := range testCases {
-		for i, orb := range tc.orgRepoBranch {
-			actual, err := tc.config.GetBranchProtection(orb.org, orb.repo, orb.branch)
-			expectedBranch := tc.expected[i].b
-			expectedError := tc.expected[i].e
-			if err != nil {
-				if expectedError != err.Error() {
-					t.Errorf("%s - Expected error '%v' received '%v'", tc.name, expectedError, err)
+		t.Run(tc.name, func(t *testing.T) {
+			actual, err := tc.config.GetBranchProtection("org", "repo", "branch")
+			switch {
+			case err != nil:
+				if !tc.err {
+					t.Errorf("unexpected error: %v", err)
 				}
-			} else {
-				if expectedError != "" {
-					t.Errorf("%s - Expected error '%v' received '%v'", tc.name, expectedError, err)
+			case err == nil && tc.err:
+				t.Errorf("failed to receive an error")
+			default:
+				actual = fixup(actual)
+				tc.expected = fixup(tc.expected)
+				if !reflect.DeepEqual(actual.Get(), tc.expected.Get()) {
+					t.Errorf("actual %+v != expected %+v", actual, tc.expected)
 				}
 			}
-			if !cmpBranch(expectedBranch, actual) {
-				t.Errorf("%s - Expected %v received %v", tc.name, expectedBranch, actual)
-			}
-		}
+		})
 	}
 }
