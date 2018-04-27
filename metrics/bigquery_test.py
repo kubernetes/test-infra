@@ -129,6 +129,7 @@ class TestBigquery(unittest.TestCase):
         check('metric\n')
         check('met\ric')
         check('metric& invalid')
+        check('met-ric')
 
     def setUp(self):
         self.assertTrue(ARGS.jq)
