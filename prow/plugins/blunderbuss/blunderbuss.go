@@ -86,11 +86,12 @@ func handlePullRequest(pc plugins.PluginClient, pre github.PullRequestEvent) err
 		oc, pc.Logger,
 		pc.PluginConfig.Blunderbuss.ReviewerCount,
 		pc.PluginConfig.Blunderbuss.FileWeightCount,
+		pc.PluginConfig.Blunderbuss.MaxReviewerCount,
 		&pre,
 	)
 }
 
-func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, reviewerCount, oldReviewCount *int, pre *github.PullRequestEvent) error {
+func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, reviewerCount, oldReviewCount *int, maxReviewers int, pre *github.PullRequestEvent) error {
 	changes, err := ghc.GetPullRequestChanges(pre.Repo.Owner.Login, pre.Repo.Name, pre.Number)
 	if err != nil {
 		return fmt.Errorf("error getting PR changes: %v", err)
@@ -111,6 +112,9 @@ func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, reviewerCount,
 	}
 
 	if len(reviewers) > 0 {
+		if maxReviewers > 0 && len(reviewers) > maxReviewers {
+			reviewers = reviewers[:maxReviewers]
+		}
 		log.Infof("Requesting reviews from users %s.", reviewers)
 		return ghc.RequestReview(pre.Repo.Owner.Login, pre.Repo.Name, pre.Number, reviewers)
 	}
