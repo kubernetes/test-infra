@@ -14698,6 +14698,33 @@ periodics:
     - name: docker-graph
       emptyDir: {}
 
+- name: ci-kubernetes-local-e2e-containerized
+  agent: kubernetes
+  interval: 60m
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180418-79a97ca02-master
+      args:
+      - "--timeout=140"
+      - "--bare"
+      env:
+      - name: DOCKERIZE_KUBELET
+        value: true
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: docker-graph
+        mountPath: /docker-graph
+    volumes:
+    - name: docker-graph
+      emptyDir: {}
+
 - interval: 6h
   name: ci-kubernetes-multicluster-ingress-test
   agent: kubernetes

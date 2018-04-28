@@ -558,6 +558,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-local-e2e
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
+- name: ci-kubernetes-local-e2e-containerized
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-local-e2e-containerized
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1
 - name: ci-kubernetes-soak-cos-docker-validation
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-cos-docker-validation
 - name: ci-kubernetes-soak-gce-gci
@@ -2672,6 +2676,9 @@ dashboards:
   - name: "local-up-cluster, master (dev)"
     description: Runs conformance tests using kubetest with hack/local-up-cluster.sh
     test_group_name: ci-kubernetes-local-e2e
+  - name: "local-up-cluster-containerized, master (dev)"
+    description: Runs conformance tests using kubetest with hack/local-up-cluster.sh (containerized kubelet)
+    test_group_name: ci-kubernetes-local-e2e-containerized
   - name: "OpenStack, master (dev)"
     description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack
     test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
@@ -2729,6 +2736,9 @@ dashboards:
   - name: "local-up-cluster, master (dev)"
     description: Runs conformance tests using kubetest with local-up-cluster
     test_group_name: ci-kubernetes-local-e2e
+  - name: "local-up-cluster-containerized, master (dev)"
+    description: Runs conformance tests using kubetest with local-up-cluster (containerized kubelet)
+    test_group_name: ci-kubernetes-local-e2e-containerized
 
 - name: conformance-cloud-provider-openstack
   dashboard_tab:
@@ -5414,6 +5424,11 @@ dashboards:
   - name: ci-kubernetes-local-e2e
     description: Runs conformance tests using kubetest with local-up-cluster
     test_group_name: ci-kubernetes-local-e2e
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: ci-kubernetes-local-e2e-containerized
+    description: Runs conformance tests using kubetest with local-up-cluster (containerized kubelet)
+    test_group_name: ci-kubernetes-local-e2e-containerized
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: pull-kubernetes-local-e2e
