@@ -2700,6 +2700,7 @@ presubmits:
     context: pull-kubernetes-local-e2e-containerized
     rerun_command: "/test pull-kubernetes-local-e2e-containerized"
     trigger: "(?m)^/test pull-kubernetes-local-e2e-containerized,?(\\s+|$)"
+    run_if_changed: '^(pkg|cmd)/kubelet.*$'
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
@@ -4865,7 +4866,7 @@ presubmits:
     max_concurrency: 0
     name: pull-security-kubernetes-local-e2e-containerized
     rerun_command: /test pull-security-kubernetes-local-e2e-containerized
-    run_if_changed: ""
+    run_if_changed: ^(pkg|cmd)/kubelet.*$
     skip_report: false
     spec:
       containers:
