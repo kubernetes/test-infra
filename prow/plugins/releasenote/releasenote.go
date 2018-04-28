@@ -37,6 +37,7 @@ const (
 	releaseNote               = "release-note"
 	releaseNoteNone           = "release-note-none"
 	releaseNoteActionRequired = "release-note-action-required"
+        releaseNoteFeature        = "release-note-feature"
 
 	releaseNoteFormat       = `Adding the "%s" label because no release-note block was detected, please follow our [release note process](https://git.k8s.io/community/contributors/guide/release-notes.md) to remove it.`
 	parentReleaseNoteFormat = `All 'parent' PRs of a cherry-pick PR must have one of the %q or %q labels, or this PR must follow the standard/parent release note labeling requirement.`
@@ -57,11 +58,13 @@ var (
 		releaseNoteActionRequired,
 		releaseNoteLabelNeeded,
 		releaseNote,
+                releaseNoteFeature,
 	}
 
 	releaseNoteRe               = regexp.MustCompile(`(?mi)^/release-note\s*$`)
 	releaseNoteNoneRe           = regexp.MustCompile(`(?mi)^/release-note-none\s*$`)
 	releaseNoteActionRequiredRe = regexp.MustCompile(`(?mi)^/release-note-action-required\s*$`)
+        releaseNoteFeatureRe        = regexp.MustCompile(`(?mi)^/release-note-feature\s*$`)
 )
 
 func init() {
@@ -113,6 +116,8 @@ func handleComment(gc githubClient, log *logrus.Entry, ic github.IssueCommentEve
 		nl = releaseNote
 	case releaseNoteNoneRe.MatchString(ic.Comment.Body):
 		nl = releaseNoteNone
+	case releaseNoteFeatureRe.MatchString(ic.Comment.Body):
+		nl = releaseNoteFeature
 	case releaseNoteActionRequiredRe.MatchString(ic.Comment.Body):
 		nl = releaseNoteActionRequired
 	default:
@@ -120,9 +125,9 @@ func handleComment(gc githubClient, log *logrus.Entry, ic github.IssueCommentEve
 	}
 
 	// Emit deprecation warning for /release-note and /release-note-action-required.
-	if nl == releaseNote || nl == releaseNoteActionRequired {
-		format := "the `/%s` and `/%s` commands have been deprecated.\nPlease edit the `release-note` block in the PR body text to include the release note. If the release note requires additional action include the string `action required` in the release note. For example:\n````\n```release-note\nSome release note with action required.\n```\n````"
-		resp := fmt.Sprintf(format, releaseNote, releaseNoteActionRequired)
+	if nl == releaseNote || nl == releaseNoteActionRequired || nl == releaseNoteFeature {
+		format := "the `/%s`, `/%s` and `/%s` commands have been deprecated.\nPlease edit the `release-note` block in the PR body text to include the release note. If the release note requires additional action include the string `action required` in the release note. For example:\n````\n```release-note\nSome release note with action required.\n```\n````"
+		resp := fmt.Sprintf(format, releaseNote, releaseNoteActionRequired, releaseNoteFeature)
 		return gc.CreateComment(org, repo, number, plugins.FormatICResponse(ic.Comment, resp))
 	}
 
