@@ -325,7 +325,7 @@ func getReleaseNote(body string) string {
 }
 
 func releaseNoteAlreadyAdded(prLabels sets.String) bool {
-	return prLabels.HasAny(releaseNote, releaseNoteActionRequired, releaseNoteNone)
+	return prLabels.HasAny(releaseNote, releaseNoteActionRequired, releaseNoteNone, releaseNoteFeature)
 }
 
 func prMustFollowRelNoteProcess(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, prLabels sets.String, comment bool) bool {
@@ -351,7 +351,8 @@ func prMustFollowRelNoteProcess(gc githubClient, log *logrus.Entry, pr *github.P
 			continue
 		}
 		if !github.HasLabel(releaseNote, parentLabels) &&
-			!github.HasLabel(releaseNoteActionRequired, parentLabels) {
+			!github.HasLabel(releaseNoteActionRequired, parentLabels) &&
+				!github.HasLabel(releaseNoteFeature, parentLabels) {
 			notelessParents = append(notelessParents, "#"+strconv.Itoa(parent))
 		}
 	}
