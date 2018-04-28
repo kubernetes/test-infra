@@ -352,7 +352,7 @@ func prMustFollowRelNoteProcess(gc githubClient, log *logrus.Entry, pr *github.P
 		}
 		if !github.HasLabel(releaseNote, parentLabels) &&
 			!github.HasLabel(releaseNoteActionRequired, parentLabels) &&
-				!github.HasLabel(releaseNoteFeature, parentLabels) {
+			!github.HasLabel(releaseNoteFeature, parentLabels) {
 			notelessParents = append(notelessParents, "#"+strconv.Itoa(parent))
 		}
 	}
