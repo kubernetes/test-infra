@@ -37,7 +37,7 @@ const (
 	releaseNote               = "release-note"
 	releaseNoteNone           = "release-note-none"
 	releaseNoteActionRequired = "release-note-action-required"
-        releaseNoteFeature        = "release-note-feature"
+	releaseNoteFeature        = "release-note-feature"
 
 	releaseNoteFormat       = `Adding the "%s" label because no release-note block was detected, please follow our [release note process](https://git.k8s.io/community/contributors/guide/release-notes.md) to remove it.`
 	parentReleaseNoteFormat = `All 'parent' PRs of a cherry-pick PR must have one of the %q or %q labels, or this PR must follow the standard/parent release note labeling requirement.`
@@ -58,13 +58,13 @@ var (
 		releaseNoteActionRequired,
 		releaseNoteLabelNeeded,
 		releaseNote,
-                releaseNoteFeature,
+		releaseNoteFeature,
 	}
 
 	releaseNoteRe               = regexp.MustCompile(`(?mi)^/release-note\s*$`)
 	releaseNoteNoneRe           = regexp.MustCompile(`(?mi)^/release-note-none\s*$`)
 	releaseNoteActionRequiredRe = regexp.MustCompile(`(?mi)^/release-note-action-required\s*$`)
-        releaseNoteFeatureRe        = regexp.MustCompile(`(?mi)^/release-note-feature\s*$`)
+	releaseNoteFeatureRe        = regexp.MustCompile(`(?mi)^/release-note-feature\s*$`)
 )
 
 func init() {
