@@ -2745,15 +2745,23 @@ dashboards:
   - name: presubmit-master
     description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack
     test_group_name: ci-presubmit-cloud-provider-openstack-acceptance-test-e2e-conformance
+    alert_options:
+      alert_mail_to_addresses: 'davanum+testgrid@gmail.com'
   - name: presubmit-v1.10
     description: Runs conformance tests using kubetest against kubernetes v1.10 with cloud-provider-openstack
     test_group_name: ci-presubmit-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.10
+    alert_options:
+      alert_mail_to_addresses: 'davanum+testgrid@gmail.com'
   - name: periodic-master
     description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack
     test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
+    alert_options:
+      alert_mail_to_addresses: 'davanum+testgrid@gmail.com'
   - name: periodic-v1.10
     description: Runs conformance tests using kubetest against kubernetes v1.10 with cloud-provider-openstack
     test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.10
+    alert_options:
+      alert_mail_to_addresses: 'davanum+testgrid@gmail.com'
 
 - name: canonical-ubuntu1-k8sbeta
   dashboard_tab:
