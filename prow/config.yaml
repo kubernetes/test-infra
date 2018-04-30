@@ -88,6 +88,9 @@ branch-protection:
           protect-by-default: false
           require-contexts:
           - continuous-integration/travis-ci
+          branches:
+            master:
+              protect-by-default: true
     kubernetes-sigs:
       protect-by-default: true
       require-contexts:
