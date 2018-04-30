@@ -22,102 +22,114 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-type BranchProtection struct {
-	ProtectTested bool           `json:"protect-tested-repos,omitempty"`
-	Protect       *bool          `json:"protect-by-default,omitempty"`
-	Contexts      []string       `json:"require-contexts,omitempty"`
-	Pushers       []string       `json:"allow-push,omitempty"`
-	Orgs          map[string]Org `json:"orgs,omitempty"`
-}
-
-type Org struct {
-	Protect  *bool           `json:"protect-by-default,omitempty"`
-	Contexts []string        `json:"require-contexts,omitempty"`
-	Pushers  []string        `json:"allow-push,omitempty"`
-	Repos    map[string]Repo `json:"repos,omitempty"`
-}
-
-type Repo struct {
-	Protect  *bool             `json:"protect-by-default,omitempty"`
-	Contexts []string          `json:"require-contexts,omitempty"`
-	Pushers  []string          `json:"allow-push,omitempty"`
-	Branches map[string]Branch `json:"branches,omitempty"`
-}
-
-type Branch struct {
-	Protect  *bool    `json:"protect-by-default,omitempty"`
+type Policy struct {
+	Protect *bool `json:"protect-by-default,omitempty"`
+	// TODO(fejta): add all protection options
 	Contexts []string `json:"require-contexts,omitempty"`
 	Pushers  []string `json:"allow-push,omitempty"`
 }
 
-func (bp BranchProtection) isSet() bool {
-	switch {
-	case bp.ProtectTested:
-		return true
-	case bp.Protect != nil:
-		return true
-	case len(bp.Orgs) > 0:
-		return true
-	case len(bp.Pushers) > 0:
-		return true
-	default:
-		return false
+// selectBool returns the child argument if set, otherwise the parent
+func selectBool(parent, child *bool) *bool {
+	if child != nil {
+		return child
+	}
+	return parent
+}
+
+// unionStrings merges the parent and child items together
+func unionStrings(parent, child []string) []string {
+	if child == nil {
+		return parent
+	}
+	if parent == nil {
+		return child
+	}
+	s := sets.NewString(parent...)
+	s.Insert(child...)
+	return s.List()
+}
+
+// apply returns a policy that merges the child into the parent
+func (parent Policy) Apply(child Policy) Policy {
+	return Policy{
+		Protect:  selectBool(parent.Protect, child.Protect),
+		Contexts: unionStrings(parent.Contexts, child.Contexts),
+		Pushers:  unionStrings(parent.Pushers, child.Pushers),
 	}
 }
 
-func (c *Config) GetBranchProtection(org, repo, branch string) (*Branch, error) {
-	if !c.BranchProtection.isSet() {
+// BranchProtection specifies the global branch protection policy
+type BranchProtection struct {
+	Policy
+	ProtectTested bool           `json:"protect-tested-repos,omitempty"`
+	Orgs          map[string]Org `json:"orgs,omitempty"`
+}
+
+type Org struct {
+	Policy
+	Repos map[string]Repo `json:"repos,omitempty"`
+}
+
+type Repo struct {
+	Policy
+	Branches map[string]Branch `json:"branches,omitempty"`
+}
+
+type Branch struct {
+	Policy
+}
+
+func (c *Config) GetBranchProtection(org, repo, branch string) (*Policy, error) {
+	policy := c.BranchProtection.Policy
+
+	if o, ok := c.BranchProtection.Orgs[org]; ok {
+		policy = policy.Apply(o.Policy)
+		if r, ok := o.Repos[repo]; ok {
+			policy = policy.Apply(r.Policy)
+			if b, ok := r.Branches[branch]; ok {
+				policy = policy.Apply(b.Policy)
+				if policy.Protect == nil {
+					return nil, fmt.Errorf("protect should not be nil")
+				}
+			}
+		}
+	} else {
 		return nil, nil
 	}
 
-	var protect *bool
-	pushers := sets.NewString()
-	contexts := sets.NewString()
-
-	update := func(b *bool, c, p []string) {
-		if b != nil {
-			protect = b
-
+	// Automatically require any required prow jobs
+	if prowContexts := branchRequirements(org, repo, branch, c.Presubmits); len(prowContexts) > 0 {
+		// Error if protection is disabled
+		if policy.Protect != nil && !*policy.Protect {
+			return nil, fmt.Errorf("required prow jobs require branch protection")
 		}
-		pushers.Insert(p...)
-		contexts.Insert(c...)
-	}
-
-	if c.BranchProtection.ProtectTested {
-		// Adding ProwJobs
-		prowContexts := branchRequirements(org, repo, branch, c.Presubmits)
-		if len(prowContexts) > 0 {
+		ps := Policy{
+			Contexts: prowContexts,
+			Protect:  nil,
+		}
+		// Require protection by default if ProtectTested is true
+		if c.BranchProtection.ProtectTested {
 			yes := true
-			update(&yes, prowContexts, nil)
+			ps.Protect = &yes
+		}
+		policy = policy.Apply(ps)
+	}
+
+	if policy.Protect == nil {
+		return nil, nil
+	}
+
+	if policy.Protect != nil && !*policy.Protect {
+		if len(policy.Contexts) > 0 {
+			return nil, fmt.Errorf("required contexts requires branch protection")
+		}
+		if len(policy.Pushers) > 0 {
+			return nil, fmt.Errorf("push restrictions requires branch protection")
 		}
 	}
 
-	update(c.BranchProtection.Protect, c.BranchProtection.Contexts, c.BranchProtection.Pushers)
-	if orgP, exists := c.BranchProtection.Orgs[org]; exists {
-		update(orgP.Protect, orgP.Contexts, orgP.Pushers)
-		if repoP, exists := orgP.Repos[repo]; exists {
-			update(repoP.Protect, repoP.Contexts, repoP.Pushers)
-			if branchP, exists := repoP.Branches[branch]; exists {
-				update(branchP.Protect, branchP.Contexts, branchP.Pushers)
-			}
-		}
-	}
-
-	if protect == nil {
-		return nil, fmt.Errorf("protect should not be nil")
-	}
-
-	if contexts.Len() > 0 || pushers.Len() > 0 {
-		if !*protect {
-			return nil, fmt.Errorf("setting pushers or contexts requires protection")
-		}
-	}
-
-	return &Branch{
-		Protect:  protect,
-		Contexts: contexts.List(),
-		Pushers:  pushers.List(),
-	}, nil
+	return &policy, nil
 }
 
 func jobRequirements(jobs []Presubmit, branch string, after bool) []string {
