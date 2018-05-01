@@ -34,7 +34,7 @@ func makeRequest(policy branchprotection.Policy) github.BranchProtectionRequest 
 // makeChecks renders a ContextPolicy into the corresponding GitHub api object.
 func makeChecks(contexts []string) *github.RequiredStatusChecks {
 	if contexts == nil {
-		contexts = []string{}
+		return nil
 	}
 	return &github.RequiredStatusChecks{
 		Contexts: contexts,
@@ -44,7 +44,7 @@ func makeChecks(contexts []string) *github.RequiredStatusChecks {
 // makeRestrictions renders restrictions into the corresponding GitHub api object.
 func makeRestrictions(pushers []string) *github.Restrictions {
 	if pushers == nil {
-		pushers = []string{}
+		return nil
 	}
 	return &github.Restrictions{
 		Teams: pushers,
