@@ -24,7 +24,7 @@ CFSSL ?= R1.2
 # config for testing prior to rolling out to master / ongoing release
 ifeq ($(K8S), experimental)
 	GO = 1.10.1
-	BAZEL = 0.12.0
+	BAZEL = 0.13.0
 	CFSSL = R1.2
 endif
 
