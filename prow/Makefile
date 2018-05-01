@@ -23,33 +23,35 @@ GIT_VERSION              ?= 0.1
 # YYYYmmdd-commitish
 TAG = $(shell date -u +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 # HOOK_VERSION is the version of the hook image
-HOOK_VERSION             ?= $(TAG)
+HOOK_VERSION              ?= $(TAG)
 # SINKER_VERSION is the version of the sinker image
-SINKER_VERSION           ?= $(TAG)
+SINKER_VERSION            ?= $(TAG)
 # DECK_VERSION is the version of the deck image
-DECK_VERSION             ?= $(TAG)
+DECK_VERSION              ?= $(TAG)
 # SPLICE_VERSION is the version of the splice image
-SPLICE_VERSION           ?= $(TAG)
+SPLICE_VERSION            ?= $(TAG)
 # TOT_VERSION is the version of the tot image
-TOT_VERSION              ?= $(TAG)
+TOT_VERSION               ?= $(TAG)
 # HOROLOGIUM_VERSION is the version of the horologium image
-HOROLOGIUM_VERSION       ?= $(TAG)
+HOROLOGIUM_VERSION        ?= $(TAG)
 # PLANK_VERSION is the version of the plank image
-PLANK_VERSION            ?= $(TAG)
+PLANK_VERSION             ?= $(TAG)
 # JENKINS-OPERATOR_VERSION is the version of the jenkins-operator image
-JENKINS-OPERATOR_VERSION ?= $(TAG)
+JENKINS-OPERATOR_VERSION  ?= $(TAG)
 # TIDE_VERSION is the version of the tide image
-TIDE_VERSION             ?= $(TAG)
+TIDE_VERSION              ?= $(TAG)
 # CLONEREFS_VERSION is the version of the clonerefs image
-CLONEREFS_VERSION        ?= $(TAG)
+CLONEREFS_VERSION         ?= $(TAG)
 # INITUPLOAD_VERSION is the version of the initupload image
-INITUPLOAD_VERSION       ?= $(TAG)
+INITUPLOAD_VERSION        ?= $(TAG)
 # GCSUPLOAD_VERSION is the version of the gcsupload image
-GCSUPLOAD_VERSION        ?= $(TAG)
+GCSUPLOAD_VERSION         ?= $(TAG)
 # ENTRYPOINT_VERSION is the version of the entrypoint image
-ENTRYPOINT_VERSION       ?= $(TAG)
+ENTRYPOINT_VERSION        ?= $(TAG)
 # SIDECAR_VERSION is the version of the sidecar image
-SIDECAR_VERSION          ?= $(TAG)
+SIDECAR_VERSION           ?= $(TAG)
+# ARTIFACT-UPLOADER_VERSION is the version of the artifact uploader image
+ARTIFACT-UPLOADER_VERSION ?= $(TAG)
 
 # These are the usual GKE variables.
 PROJECT       ?= k8s-prow
@@ -237,4 +239,10 @@ sidecar-image: alpine-image
 	docker build -t "$(REGISTRY)/$(PROJECT)/sidecar:$(SIDECAR_VERSION)" $(DOCKER_LABELS) cmd/sidecar
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/sidecar:$(SIDECAR_VERSION)"
 
-.PHONY: clonerefs-image initupload-image gcsupload-image entrypoint-image sidecar-image
+artifact-uploader-image: alpine-image
+	CGO_ENABLED=0 go build -o cmd/artifact-uploader/artifact-uploader k8s.io/test-infra/prow/cmd/artifact-uploader
+	docker build -t "$(REGISTRY)/$(PROJECT)/artifact-uploader:$(ARTIFACT-UPLOADER_VERSION)" $(DOCKER_LABELS) cmd/artifact-uploader
+	$(PUSH) "$(REGISTRY)/$(PROJECT)/artifact-uploader:$(ARTIFACT-UPLOADER_VERSION)"
+
+.PHONY: clonerefs-image initupload-image gcsupload-image entrypoint-image sidecar-image artifact-uploader-image
+
