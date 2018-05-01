@@ -63,6 +63,12 @@ const (
 	// carries the job type (presubmit, postsubmit, periodic, batch)
 	// that the pod is running.
 	ProwJobTypeLabel = "prow.k8s.io/type"
+	// ProwJobIDLabel is added in pods created by prow and
+	// carries the ID of the ProwJob that the pod is fulfilling.
+	// We also name pods after the ProwJob that spawned them but
+	// this allows for multiple resources to be linked to one
+	// ProwJob.
+	ProwJobIDLabel = "prow.k8s.io/id"
 	// ProwJobAnnotation is added in pods created by prow and
 	// carries the name of the job that the pod is running. Since
 	// job names can be arbitrarily long, this is added as
