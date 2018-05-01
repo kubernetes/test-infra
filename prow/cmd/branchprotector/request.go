@@ -17,6 +17,8 @@ limitations under the License.
 package main
 
 import (
+	"log"
+
 	branchprotection "k8s.io/test-infra/prow/config"
 
 	"k8s.io/test-infra/prow/github"
@@ -25,29 +27,75 @@ import (
 // makeRequest renders a branch protection policy into the corresponding GitHub api request.
 func makeRequest(policy branchprotection.Policy) github.BranchProtectionRequest {
 	return github.BranchProtectionRequest{
-		RequiredStatusChecks: makeChecks(policy.Contexts),
-		Restrictions:         makeRestrictions(policy.Pushers),
+		EnforceAdmins:              makeAdmins(policy.Admins),
+		RequiredPullRequestReviews: makeReviews(policy.RequiredPullRequestReviews),
+		RequiredStatusChecks:       makeChecks(policy.RequiredStatusChecks),
+		Restrictions:               makeRestrictions(policy.Restrictions),
 	}
 
 }
 
+// makeAdmins returns true iff *val == true, else nil
+func makeAdmins(val *bool) *bool {
+	if v := makeBool(val); v {
+		return &v
+	}
+	return nil
+}
+
+// makeBool returns true iff *val == true
+func makeBool(val *bool) bool {
+	return val != nil && *val
+}
+
 // makeChecks renders a ContextPolicy into the corresponding GitHub api object.
-func makeChecks(contexts []string) *github.RequiredStatusChecks {
-	if contexts == nil {
+//
+// Returns nil when input policy is nil.
+// Otherwise returns non-nil Contexts (empty if unset) and Strict iff Strict is true
+func makeChecks(cp *branchprotection.ContextPolicy) *github.RequiredStatusChecks {
+	if cp == nil {
 		return nil
 	}
 	return &github.RequiredStatusChecks{
-		Contexts: contexts,
+		Contexts: append([]string{}, cp.Contexts...),
+		Strict:   makeBool(cp.Strict),
 	}
 }
 
 // makeRestrictions renders restrictions into the corresponding GitHub api object.
-func makeRestrictions(pushers []string) *github.Restrictions {
-	if pushers == nil {
+//
+// Returns nil when input restrictions is nil.
+// Otherwise Teams and Users are both non-nil (empty list if unset)
+func makeRestrictions(rp *branchprotection.Restrictions) *github.Restrictions {
+	if rp == nil {
 		return nil
 	}
 	return &github.Restrictions{
-		Teams: pushers,
-		Users: []string{},
+		Teams: append([]string{}, rp.Teams...),
+		Users: append([]string{}, rp.Users...),
 	}
+}
+
+// makeReviews renders review policy into the corresponding GitHub api object.
+//
+// Returns nil if the policy is nil, or approvals is nil or 0.
+func makeReviews(rp *branchprotection.ReviewPolicy) *github.RequiredPullRequestReviews {
+	switch {
+	case rp == nil:
+		return nil
+	case rp.Approvals == nil:
+		log.Println("WARNING: required_pull_request_reviews policy does not specify required_approving_review_count, disabling")
+		return nil
+	case *rp.Approvals == 0:
+		return nil
+	}
+	rprr := github.RequiredPullRequestReviews{
+		DismissStaleReviews:          makeBool(rp.DismissStale),
+		RequireCodeOwnerReviews:      makeBool(rp.RequireOwners),
+		RequiredApprovingReviewCount: *rp.Approvals,
+	}
+	if rp.DismissalRestrictions != nil {
+		rprr.DismissalRestrictions = *makeRestrictions(rp.DismissalRestrictions)
+	}
+	return &rprr
 }

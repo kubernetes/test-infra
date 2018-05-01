@@ -163,7 +163,7 @@ func (p *Protector) Protect() {
 
 	// Scan the branch-protection configuration
 	for orgName, org := range bp.Orgs {
-		if err := p.UpdateOrg(orgName, org, bp.Protect != nil); err != nil {
+		if err := p.UpdateOrg(orgName, org, bp.HasProtect()); err != nil {
 			p.errors.add(err)
 		}
 	}
@@ -193,7 +193,7 @@ func (p *Protector) Protect() {
 // Update all repos in the org with the specified defaults
 func (p *Protector) UpdateOrg(orgName string, org config.Org, allRepos bool) error {
 	var repos []string
-	allRepos = allRepos || org.Protect != nil
+	allRepos = allRepos || org.HasProtect()
 	if allRepos {
 		// Strongly opinionated org, configure every repo in the org.
 		rs, err := p.client.GetRepos(orgName, false)
@@ -222,7 +222,7 @@ func (p *Protector) UpdateOrg(orgName string, org config.Org, allRepos bool) err
 // Update all branches in the repo with the specified defaults
 func (p *Protector) UpdateRepo(orgName string, repo string, repoDefaults config.Repo, allBranches bool) error {
 	p.completedRepos[orgName+"/"+repo] = true
-	allBranches = allBranches || repoDefaults.Protect != nil
+	allBranches = allBranches || repoDefaults.HasProtect()
 
 	var branches []string
 	if allBranches {

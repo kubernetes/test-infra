@@ -28,6 +28,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 
 	"github.com/ghodss/yaml"
+	"k8s.io/apimachinery/pkg/util/diff"
 )
 
 func TestOptions_Validate(t *testing.T) {
@@ -240,6 +241,7 @@ func split(branch string) (string, string, string) {
 }
 
 func TestProtect(t *testing.T) {
+	yes := true
 
 	cases := []struct {
 		name     string
@@ -460,6 +462,107 @@ branch-protection:
 				},
 			},
 		},
+		{
+			name:     "all modern fields",
+			branches: []string{"all/modern=master"},
+			config: `
+branch-protection:
+  protect: true
+  enforce_admins: true
+  required_status_checks:
+    contexts:
+    - config-presubmit
+    strict: true
+  required_pull_request_reviews:
+    required_approving_review_count: 3
+    dismiss_stale: false
+    require_code_owner_reviews: true
+    dismissal_restrictions:
+      users:
+      - bob
+      - jane
+      teams:
+      - oncall
+      - sres
+  restrictions:
+    teams:
+    - config-team
+    users:
+    - cindy
+  orgs:
+    all:
+      required_status_checks:
+        contexts:
+        - org-presubmit
+      restrictions:
+        teams:
+        - org-team
+`,
+			expected: []Requirements{
+				{
+					Org:    "all",
+					Repo:   "modern",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &yes,
+						RequiredStatusChecks: &github.RequiredStatusChecks{
+							Strict:   true,
+							Contexts: []string{"config-presubmit", "org-presubmit"},
+						},
+						RequiredPullRequestReviews: &github.RequiredPullRequestReviews{
+							DismissStaleReviews:          false,
+							RequireCodeOwnerReviews:      true,
+							RequiredApprovingReviewCount: 3,
+							DismissalRestrictions: github.Restrictions{
+								Users: []string{"bob", "jane"},
+								Teams: []string{"oncall", "sres"},
+							},
+						},
+						Restrictions: &github.Restrictions{
+							Users: []string{"cindy"},
+							Teams: []string{"config-team", "org-team"},
+						},
+					},
+				},
+			},
+		},
+		{
+			name:     "modern/deprecated mixed",
+			branches: []string{"modern/deprecated=mixed"},
+			config: `
+branch-protection:
+  protect: false
+  required_status_checks:
+    contexts:
+    - config-presubmit
+  restrictions:
+    teams:
+    - config-team
+  orgs:
+    modern:
+      protect-by-default: true
+      allow-push:
+      - org-team
+      require-contexts:
+      - org-presubmit
+`,
+			expected: []Requirements{
+				{
+					Org:    "modern",
+					Repo:   "deprecated",
+					Branch: "mixed",
+					Request: &github.BranchProtectionRequest{
+						RequiredStatusChecks: &github.RequiredStatusChecks{
+							Contexts: []string{"config-presubmit", "org-presubmit"},
+						},
+						Restrictions: &github.Restrictions{
+							Users: []string{},
+							Teams: []string{"config-team", "org-team"},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range cases {
@@ -509,7 +612,7 @@ branch-protection:
 			}
 			errors := p.errors.errs
 			if len(errors) != tc.errors {
-				t.Errorf("actual errors %d != expected %d", len(errors), tc.errors)
+				t.Errorf("actual errors %d != expected %d: %v", len(errors), tc.errors, errors)
 			}
 			switch {
 			case len(actual) != len(tc.expected):
@@ -524,8 +627,7 @@ branch-protection:
 							fixup(&a)
 							fixup(&e)
 							if !reflect.DeepEqual(e, a) {
-								t.Errorf("bad policy actual %+v != expected %+v", a, e)
-								t.Errorf("%+v != actual %+v", *e.Request, *a.Request)
+								t.Errorf("actual != expected: %s", diff.ObjectDiff(a.Request, e.Request))
 							}
 							break
 						}

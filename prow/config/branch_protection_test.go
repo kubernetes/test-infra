@@ -20,6 +20,8 @@ import (
 	"reflect"
 	"sort"
 	"testing"
+
+	"k8s.io/apimachinery/pkg/util/diff"
 )
 
 var (
@@ -30,11 +32,10 @@ var (
 )
 
 func normalize(policy *Policy) {
-	if policy == nil {
+	if policy == nil || policy.RequiredStatusChecks == nil {
 		return
 	}
-	sort.Strings(policy.Pushers)
-	sort.Strings(policy.Contexts)
+	sort.Strings(policy.RequiredStatusChecks.Contexts)
 }
 
 func TestSelectBool(t *testing.T) {
@@ -67,6 +68,45 @@ func TestSelectBool(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			actual := selectBool(tc.parent, tc.child)
+			if !reflect.DeepEqual(actual, tc.expected) {
+				t.Errorf("actual %v != expected %v", actual, tc.expected)
+			}
+		})
+	}
+}
+
+func TestSelectInt(t *testing.T) {
+	one := 1
+	two := 2
+	cases := []struct {
+		name     string
+		parent   *int
+		child    *int
+		expected *int
+	}{
+		{
+			name: "default is nil",
+		},
+		{
+			name:     "use child if set",
+			child:    &one,
+			expected: &one,
+		},
+		{
+			name:     "child overrides parent",
+			child:    &one,
+			parent:   &two,
+			expected: &one,
+		},
+		{
+			name:     "use parent if child unset",
+			parent:   &two,
+			expected: &two,
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := selectInt(tc.parent, tc.child)
 			if !reflect.DeepEqual(actual, tc.expected) {
 				t.Errorf("actual %v != expected %v", actual, tc.expected)
 			}
@@ -113,7 +153,15 @@ func TestUnionStrings(t *testing.T) {
 	}
 }
 
-func TestApply(t *testing.T) {
+func TestApply(test *testing.T) {
+	t := true
+	f := false
+	basic := Policy{
+		Protect: &t,
+	}
+	ebasic := Policy{
+		Protect: &t,
+	}
 	cases := []struct {
 		name     string
 		parent   Policy
@@ -121,60 +169,123 @@ func TestApply(t *testing.T) {
 		expected Policy
 	}{
 		{
-			name: "default policy",
+			name:     "nil child",
+			parent:   basic,
+			expected: ebasic,
 		},
 		{
 			name: "merge parent and child",
 			parent: Policy{
-				Protect:  yes,
-				Contexts: []string{"cP"},
-				Pushers:  []string{"pP"},
+				Protect: &t,
 			},
 			child: Policy{
-				Protect:  no,
-				Contexts: []string{"cC"},
-				Pushers:  []string{"pC"},
+				Admins: &f,
 			},
 			expected: Policy{
-				Protect:  no,
-				Contexts: []string{"cP", "cC"},
-				Pushers:  []string{"pP", "pC"},
+				Protect: &t,
+				Admins:  &f,
 			},
 		},
 		{
-			name: "only parent",
+			name: "child overrides parent",
 			parent: Policy{
-				Protect:  yes,
-				Contexts: []string{"cP"},
-				Pushers:  []string{"pP"},
+				Protect: &t,
+			},
+			child: Policy{
+				Protect: &f,
 			},
 			expected: Policy{
-				Protect:  yes,
-				Contexts: []string{"cP"},
-				Pushers:  []string{"pP"},
+				Protect: &f,
 			},
 		},
 		{
-			name: "only child",
+			name: "append strings",
+			parent: Policy{
+				RequiredStatusChecks: &ContextPolicy{
+					Contexts: []string{"hello", "world"},
+				},
+			},
 			child: Policy{
-				Protect:  yes,
-				Contexts: []string{"cC"},
-				Pushers:  []string{"pC"},
+				RequiredStatusChecks: &ContextPolicy{
+					Contexts: []string{"world", "of", "thrones"},
+				},
 			},
 			expected: Policy{
-				Protect:  yes,
-				Contexts: []string{"cC"},
-				Pushers:  []string{"pC"},
+				RequiredStatusChecks: &ContextPolicy{
+					Contexts: []string{"hello", "of", "thrones", "world"},
+				},
+			},
+		},
+		{
+			name: "merge struct",
+			parent: Policy{
+				RequiredStatusChecks: &ContextPolicy{
+					Contexts: []string{"hi"},
+				},
+			},
+			child: Policy{
+				RequiredStatusChecks: &ContextPolicy{
+					Strict: &t,
+				},
+			},
+			expected: Policy{
+				RequiredStatusChecks: &ContextPolicy{
+					Contexts: []string{"hi"},
+					Strict:   &t,
+				},
+			},
+		},
+		{
+			name: "nil child struct",
+			parent: Policy{
+				RequiredStatusChecks: &ContextPolicy{
+					Strict: &f,
+				},
+			},
+			child: Policy{
+				Protect: &t,
+			},
+			expected: Policy{
+				RequiredStatusChecks: &ContextPolicy{
+					Strict: &f,
+				},
+				Protect: &t,
+			},
+		},
+		{
+			name: "nil parent struct",
+			child: Policy{
+				RequiredStatusChecks: &ContextPolicy{
+					Strict: &f,
+				},
+			},
+			parent: Policy{
+				Protect: &t,
+			},
+			expected: Policy{
+				RequiredStatusChecks: &ContextPolicy{
+					Strict: &f,
+				},
+				Protect: &t,
 			},
 		},
 	}
+
 	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			actual := tc.parent.Apply(tc.child)
+		test.Run(tc.name, func(test *testing.T) {
+			defer func() {
+				if r := recover(); r != nil {
+					test.Errorf("unexpected panic: %s", r)
+				}
+			}()
+			actual, err := tc.parent.Apply(tc.child)
+			if err != nil {
+				test.Fatalf("unexpected error: %v", err)
+			}
 			normalize(&actual)
 			normalize(&tc.expected)
 			if !reflect.DeepEqual(actual, tc.expected) {
-				t.Errorf("actual %v != expected %v", actual, tc.expected)
+				test.Errorf("bad merged policy:\n%s", diff.ObjectReflectDiff(tc.expected, actual))
 			}
 		})
 	}
@@ -447,7 +558,9 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 				BranchProtection: BranchProtection{
 					Policy: Policy{
 						Protect: no,
-						Pushers: []string{"oncall"},
+						Restrictions: &Restrictions{
+							Teams: []string{"oncall"},
+						},
 					},
 					Orgs: map[string]Org{
 						"org": {},
@@ -461,8 +574,10 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 			config: Config{
 				BranchProtection: BranchProtection{
 					Policy: Policy{
-						Protect:  no,
-						Contexts: []string{"test-foo"},
+						Protect: no,
+						RequiredStatusChecks: &ContextPolicy{
+							Contexts: []string{"test-foo"},
+						},
 					},
 					Orgs: map[string]Org{
 						"org": {},
@@ -476,8 +591,10 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 			config: Config{
 				BranchProtection: BranchProtection{
 					Policy: Policy{
-						Protect:  yes,
-						Contexts: []string{"cla"},
+						Protect: yes,
+						RequiredStatusChecks: &ContextPolicy{
+							Contexts: []string{"cla"},
+						},
 					},
 					Orgs: map[string]Org{
 						"org": {},
@@ -494,8 +611,10 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 				},
 			},
 			expected: &Policy{
-				Protect:  yes,
-				Contexts: []string{"required presubmit", "cla"},
+				Protect: yes,
+				RequiredStatusChecks: &ContextPolicy{
+					Contexts: []string{"required presubmit", "cla"},
+				},
 			},
 		},
 		{
@@ -518,8 +637,10 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 				},
 			},
 			expected: &Policy{
-				Protect:  yes,
-				Contexts: []string{"required presubmit"},
+				Protect: yes,
+				RequiredStatusChecks: &ContextPolicy{
+					Contexts: []string{"required presubmit"},
+				},
 			},
 		},
 		{
