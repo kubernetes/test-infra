@@ -97,6 +97,7 @@
     "service/autoscaling",
     "service/ec2",
     "service/iam",
+    "service/route53",
     "service/s3",
     "service/sts",
   ]
@@ -980,6 +981,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f7037007e132280c60b53d6a6649c4b34e3ae0526730304189a7b200471d4993"
+  inputs-digest = "5277a8933c3fe2588b2cbdc3d81d3c76fb6692599d51432cac28eca48b27374b"
   solver-name = "gps-cdcl"
   solver-version = 1
