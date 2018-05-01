@@ -26,6 +26,13 @@ import (
 	"k8s.io/test-infra/testgrid/util/gcs"
 )
 
+// NewOptions returns an empty Options with no nil fields
+func NewOptions() *Options {
+	return &Options{
+		GCSConfiguration: &kube.GCSConfiguration{},
+	}
+}
+
 // Options exposes the configuration necessary
 // for defining where in GCS an upload will land.
 type Options struct {
