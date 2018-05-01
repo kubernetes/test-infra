@@ -41,7 +41,7 @@ func FormatResponse(to, message, reason string) string {
 	return fmt.Sprintf(format, to, message, reason, AboutThisBotWithoutCommands)
 }
 
-// FormatSimpleReponse formats a response that does not warrant additional explanation in the
+// FormatSimpleResponse formats a response that does not warrant additional explanation in the
 // details section.
 func FormatSimpleResponse(to, message string) string {
 	format := `@%s: %s
