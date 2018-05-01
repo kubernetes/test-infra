@@ -15,7 +15,7 @@ There are three steps to consider:
 The `Kubernetes` git repository already provides most of the code needed to run the node e2e tests.
 Thus, all the effort reduces to running `Makefile` with a set of relevant parameters.
 With [#56250](https://github.com/kubernetes/kubernetes/pull/56250)
-merged we are able to run the tests over containerized Kubelet as well.
+merged we are able to run the tests over containerized `Kubelet` as well.
 
 Once all the tests are finished, the test results are expected to be published
 into a GCS bucket. At the same time, the GCS bucket needs to be registered
@@ -46,7 +46,7 @@ The RHEL requires the ``--cgroup-driver=systemd`` flag to be set.
 In this variant there are two steps required to do:
 
 1. build `hyperkube` docker image
-2. tell the node e2e tests to run the containerized variant with the hyperkube image
+2. tell the node e2e tests to run the containerized variant with the `hyperkube` image
 
 **Build hyperkube docker image**
 
@@ -74,7 +74,7 @@ make build VERSION=${IMAGE_TAG} ARCH=amd64 BASEIMAGE=rhel7
 ```
 
 The docker image tag is set to reflect the current commit in the `Kubernetes`
-repository. The `rhel7` images is used as the base docker image.
+repository. The `rhel7` image is used as the base docker image.
 Once run, image with the `hyperkube-amd64` name is built.
 
 **Running `Conformance` tests**
