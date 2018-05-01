@@ -20,6 +20,7 @@ package main
 
 import (
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"k8s.io/test-infra/prow/pod-utils/options"
 
 	"k8s.io/test-infra/prow/gcsupload"
@@ -41,7 +42,12 @@ func main() {
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "gcsupload"}),
 	)
 
-	if err := o.Run(map[string]gcs.UploadFunc{}); err != nil {
+	spec, err := downwardapi.ResolveSpecFromEnv()
+	if err != nil {
+		logrus.WithError(err).Fatal("Could not resolve job spec")
+	}
+
+	if err := o.Run(spec, map[string]gcs.UploadFunc{}); err != nil {
 		logrus.WithError(err).Fatal("Failed to upload to GCS")
 	}
 }
