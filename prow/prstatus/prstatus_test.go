@@ -96,7 +96,7 @@ func TestServeHTTPWithoutLogin(t *testing.T) {
 }
 
 func TestServeHTTPWithLogin(t *testing.T) {
-	repos := []string{"mock/repo", "kuberentes/test-infra", "foo/bar"}
+	repos := []string{"mock/repo", "kubernetes/test-infra", "foo/bar"}
 	mockCookieStore := sessions.NewCookieStore([]byte("secret-key"))
 	mockConfig := &config.GithubOAuthConfig{
 		CookieStore: mockCookieStore,
