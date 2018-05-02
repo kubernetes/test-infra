@@ -30,7 +30,7 @@ import (
 )
 
 func main() {
-	o := &initupload.Options{}
+	o := initupload.NewOptions()
 	if err := options.Load(o); err != nil {
 		logrus.Fatalf("Could not resolve options: %v", err)
 	}

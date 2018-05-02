@@ -28,7 +28,7 @@ import (
 )
 
 func main() {
-	o := &gcsupload.Options{}
+	o := gcsupload.NewOptions()
 	if err := options.Load(o); err != nil {
 		logrus.Fatalf("Could not resolve options: %v", err)
 	}
