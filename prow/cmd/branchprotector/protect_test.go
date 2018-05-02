@@ -85,7 +85,7 @@ func TestOptions_Validate(t *testing.T) {
 	}
 }
 
-type FakeClient struct {
+type fakeClient struct {
 	repos    map[string][]github.Repo
 	branches map[string][]github.Branch
 	pushers  map[string][]string
@@ -93,7 +93,7 @@ type FakeClient struct {
 	deleted  map[string]bool
 }
 
-func (c FakeClient) GetRepos(org string, user bool) ([]github.Repo, error) {
+func (c fakeClient) GetRepos(org string, user bool) ([]github.Repo, error) {
 	r, ok := c.repos[org]
 	if !ok {
 		return nil, fmt.Errorf("Unknown org: %s", org)
@@ -101,7 +101,7 @@ func (c FakeClient) GetRepos(org string, user bool) ([]github.Repo, error) {
 	return r, nil
 }
 
-func (c FakeClient) GetBranches(org, repo string) ([]github.Branch, error) {
+func (c fakeClient) GetBranches(org, repo string) ([]github.Branch, error) {
 	b, ok := c.branches[org+"/"+repo]
 	if !ok {
 		return nil, fmt.Errorf("Unknown repo: %s/%s", org, repo)
@@ -109,21 +109,22 @@ func (c FakeClient) GetBranches(org, repo string) ([]github.Branch, error) {
 	return b, nil
 }
 
-func (c *FakeClient) UpdateBranchProtection(org, repo, branch string, contexts, pushers []string) error {
+func (c *fakeClient) UpdateBranchProtection(org, repo, branch string, config github.BranchProtectionRequest) error {
 	if branch == "error" {
 		return errors.New("failed to update branch protection")
 	}
 	ctx := org + "/" + repo + "=" + branch
-	if len(pushers) > 0 {
-		c.pushers[ctx] = pushers
+	if config.RequiredStatusChecks != nil && len(config.RequiredStatusChecks.Contexts) > 0 {
+		c.contexts[ctx] = config.RequiredStatusChecks.Contexts
 	}
-	if len(contexts) > 0 {
-		c.contexts[ctx] = contexts
+
+	if config.Restrictions != nil && len(config.Restrictions.Teams) > 0 {
+		c.pushers[ctx] = config.Restrictions.Teams
 	}
 	return nil
 }
 
-func (c *FakeClient) RemoveBranchProtection(org, repo, branch string) error {
+func (c *fakeClient) RemoveBranchProtection(org, repo, branch string) error {
 	if branch == "error" {
 		return errors.New("failed to remove branch protection")
 	}
@@ -204,7 +205,7 @@ func TestConfigureBranches(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		fc := FakeClient{
+		fc := fakeClient{
 			deleted:  make(map[string]bool),
 			contexts: make(map[string][]string),
 			pushers:  make(map[string][]string),
@@ -492,7 +493,7 @@ branch-protection:
 				}
 				repos[org][repo] = true
 			}
-			fc := FakeClient{
+			fc := fakeClient{
 				deleted:  make(map[string]bool),
 				contexts: make(map[string][]string),
 				pushers:  make(map[string][]string),
