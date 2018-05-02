@@ -74,6 +74,7 @@ func TestProwJobToPod(t *testing.T) {
 					Labels: map[string]string{
 						kube.CreatedByProw:    "true",
 						kube.ProwJobTypeLabel: "presubmit",
+						kube.ProwJobIDLabel:   "pod",
 						"needstobe":           "inherited",
 					},
 					Annotations: map[string]string{
@@ -164,6 +165,7 @@ func TestProwJobToPod(t *testing.T) {
 					Labels: map[string]string{
 						kube.CreatedByProw:    "true",
 						kube.ProwJobTypeLabel: "presubmit",
+						kube.ProwJobIDLabel:   "pod",
 						"needstobe":           "inherited",
 					},
 					Annotations: map[string]string{

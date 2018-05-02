@@ -50,7 +50,7 @@ const (
 )
 
 func Labels() []string {
-	return []string{kube.ProwJobTypeLabel, kube.CreatedByProw}
+	return []string{kube.ProwJobTypeLabel, kube.CreatedByProw, kube.ProwJobIDLabel}
 }
 
 func VolumeMounts() []string {
@@ -237,6 +237,7 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
 	}
 	podLabels[kube.CreatedByProw] = "true"
 	podLabels[kube.ProwJobTypeLabel] = string(pj.Spec.Type)
+	podLabels[kube.ProwJobIDLabel] = pj.ObjectMeta.Name
 	return &v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   pj.ObjectMeta.Name,
