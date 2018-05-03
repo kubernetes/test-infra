@@ -257,6 +257,10 @@ type Refs struct {
 	// set, <root-dir>/src/github.com/org/repo will be
 	// used as the default.
 	PathAlias string `json:"path_alias,omitempty"`
+	// CloneURI is the URI that is used to clone the
+	// repository. If unset, will default to
+	// `https://github.com/org/repo.git`.
+	CloneURI string `json:"clone_uri,omitempty"`
 }
 
 func (r Refs) String() string {
