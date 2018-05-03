@@ -2461,6 +2461,9 @@ test_groups:
 - name: circleci-e2e-pilot
   gcs_prefix: istio-circleci/e2e-pilot
   num_failures_to_alert: 5
+- name: circleci-e2e-pilot-auth-v1alpha3-v2
+  gcs_prefix: istio-circleci/e2e-pilot-auth-v1alpha3-v2
+  num_failures_to_alert: 5
 - name: circleci-e2e-pilot-noauth-v1alpha3-v2
   gcs_prefix: istio-circleci/e2e-pilot-noauth-v1alpha3-v2
   num_failures_to_alert: 5
@@ -5970,6 +5973,10 @@ dashboards:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
   - name: circleci-e2e-pilot
     test_group_name: circleci-e2e-pilot
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: circleci-e2e-pilot-auth-v1alpha3-v2
+    test_group_name: circleci-e2e-pilot-auth-v1alpha3-v2
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
   - name: circleci-e2e-pilot-noauth-v1alpha3-v2
