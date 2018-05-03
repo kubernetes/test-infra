@@ -118,8 +118,8 @@
     "internal/version",
     "internal/wspace",
   ]
-  revision = "ff4d67f395b3f4d1dc9810eeceb61585fea252cb"
-  version = "0.10.1"
+  revision = "8bc6a862933eaa0d7431e15b308ceadc5729a6f9"
+  version = "0.11.0"
 
 [[projects]]
   name = "github.com/bazelbuild/buildtools"
@@ -968,6 +968,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f27b611ebf677de20305295f333690b98731c5f19f8059059b32a884ed61a945"
+  inputs-digest = "b7cd4091ef2023171dfbddb7325dab50faae32818ef830edb8bfa855d74545a6"
   solver-name = "gps-cdcl"
   solver-version = 1
