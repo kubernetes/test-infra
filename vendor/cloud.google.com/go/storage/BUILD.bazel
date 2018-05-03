@@ -18,6 +18,7 @@ go_library(
         "storage.go",
         "writer.go",
     ],
+    importmap = "vendor/cloud.google.com/go/storage",
     importpath = "cloud.google.com/go/storage",
     visibility = ["//visibility:public"],
     deps = [

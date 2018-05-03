@@ -6,6 +6,7 @@ go_library(
         "doc.go",
         "securecookie.go",
     ],
+    importmap = "vendor/github.com/gorilla/securecookie",
     importpath = "github.com/gorilla/securecookie",
     visibility = ["//visibility:public"],
 )

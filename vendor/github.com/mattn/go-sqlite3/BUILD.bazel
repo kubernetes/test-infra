@@ -11,43 +11,10 @@ go_library(
         "sqlite3-binding.c",
         "sqlite3-binding.h",
         "sqlite3_load_extension.go",
+        "sqlite3_other.go",
+        "sqlite3_windows.go",
         "sqlite3ext.h",
-    ] + select({
-        "@io_bazel_rules_go//go/platform:android": [
-            "sqlite3_other.go",
-        ],
-        "@io_bazel_rules_go//go/platform:darwin": [
-            "sqlite3_other.go",
-        ],
-        "@io_bazel_rules_go//go/platform:dragonfly": [
-            "sqlite3_other.go",
-        ],
-        "@io_bazel_rules_go//go/platform:freebsd": [
-            "sqlite3_other.go",
-        ],
-        "@io_bazel_rules_go//go/platform:linux": [
-            "sqlite3_other.go",
-        ],
-        "@io_bazel_rules_go//go/platform:nacl": [
-            "sqlite3_other.go",
-        ],
-        "@io_bazel_rules_go//go/platform:netbsd": [
-            "sqlite3_other.go",
-        ],
-        "@io_bazel_rules_go//go/platform:openbsd": [
-            "sqlite3_other.go",
-        ],
-        "@io_bazel_rules_go//go/platform:plan9": [
-            "sqlite3_other.go",
-        ],
-        "@io_bazel_rules_go//go/platform:solaris": [
-            "sqlite3_other.go",
-        ],
-        "@io_bazel_rules_go//go/platform:windows": [
-            "sqlite3_windows.go",
-        ],
-        "//conditions:default": [],
-    }),
+    ],
     cgo = True,
     clinkopts = select({
         "@io_bazel_rules_go//go/platform:linux": [
@@ -103,6 +70,7 @@ go_library(
         ],
         "//conditions:default": [],
     }),
+    importmap = "vendor/github.com/mattn/go-sqlite3",
     importpath = "github.com/mattn/go-sqlite3",
     visibility = ["//visibility:public"],
 )
