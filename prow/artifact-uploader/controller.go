@@ -32,10 +32,10 @@ import (
 	core "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
-	"k8s.io/test-infra/prow/pod-utils/decorate"
 
 	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/pod-utils/decorate"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 )

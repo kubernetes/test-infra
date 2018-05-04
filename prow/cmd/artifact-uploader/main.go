@@ -161,6 +161,6 @@ func main() {
 	)
 
 	if err := o.Run(); err != nil {
-		logrus.WithError(err).Fatal("Failed to push artifacts to GCS")
+		logrus.WithError(err).Fatal("Failed to run the GCS uploader controller")
 	}
 }
