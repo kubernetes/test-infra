@@ -85,9 +85,24 @@ branch-protection:
         test-infra:
           protect-by-default: true
         website:
-          protect-by-default: true
+          protect-by-default: false
           require-contexts:
           - continuous-integration/travis-ci
+          branches:
+            master:
+              protect-by-default: true
+            release-1.4:
+              protect-by-default: true
+            release-1.5:
+              protect-by-default: true
+            release-1.6:
+              protect-by-default: true
+            release-1.7:
+              protect-by-default: true
+            release-1.8:
+              protect-by-default: true
+            release-1.9:
+              protect-by-default: true
     kubernetes-sigs:
       protect-by-default: true
       require-contexts:
