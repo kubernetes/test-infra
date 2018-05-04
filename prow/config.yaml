@@ -1875,18 +1875,20 @@ presubmits:
     agent: kubernetes
     context: pull-kubernetes-e2e-containerd-gce
     rerun_command: "/test pull-kubernetes-e2e-containerd-gce"
-    trigger: "(?m)^/test pull-kubernetes-e2e-containerd-gce,?(\\s+|$)"
+    trigger: "(?m)^/test (containerd|pull-kubernetes-e2e-containerd-gce),?(\\s+|$)"
     always_run: false
     branches:
     - master
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
+      preset-bazel-scratch-dir: true
+      preset-bazel-remote-cache-enabled: true
     spec:
       containers:
       - args:
         - --root=/go/src
-        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --repo=github.com/containerd/cri
         - --upload=gs://kubernetes-jenkins/pr-logs
@@ -1895,6 +1897,9 @@ presubmits:
         securityContext:
           privileged: true
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180503-1fa9a8040-master
+        resources:
+          requests:
+            memory: "6Gi"
   - name: pull-kubernetes-e2e-gce
     agent: kubernetes
     context: pull-kubernetes-e2e-gce
@@ -3418,10 +3423,10 @@ presubmits:
     branches:
     - master
     always_run: false
-    max_concurrency: 8
+    max_concurrency: 12
     context: pull-kubernetes-node-e2e-containerd
     rerun_command: "/test pull-kubernetes-node-e2e-containerd"
-    trigger: "(?m)^/test pull-kubernetes-node-e2e-containerd,?(\\s+|$)"
+    trigger: "(?m)^/test (containerd|pull-kubernetes-node-e2e-containerd),?(\\s+|$)"
     labels:
       preset-service-account: true
       preset-k8s-ssh: true
@@ -3436,6 +3441,11 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=90"
+        - --
+        - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri"
+        resources:
+          requests:
+            memory: "6Gi"
 
   - name: pull-kubernetes-typecheck
     agent: kubernetes
@@ -4396,6 +4406,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-containerd-gce
     labels:
+      preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 0
@@ -4408,7 +4419,7 @@ presubmits:
       - args:
         - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
+        - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --repo=github.com/containerd/cri
         - --upload=gs://kubernetes-security-prow/pr-logs
@@ -4417,7 +4428,9 @@ presubmits:
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-containerd-gce
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180503-1fa9a8040-master
         name: ""
-        resources: {}
+        resources:
+          requests:
+            memory: 6Gi
         securityContext:
           privileged: true
         volumeMounts:
@@ -4428,7 +4441,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-e2e-containerd-gce,?(\s+|$)
+    trigger: (?m)^/test (containerd|pull-security-kubernetes-e2e-containerd-gce),?(\s+|$)
   - agent: kubernetes
     always_run: true
     cluster: security
@@ -6456,7 +6469,7 @@ presubmits:
     labels:
       preset-k8s-ssh: "true"
       preset-service-account: "true"
-    max_concurrency: 8
+    max_concurrency: 12
     name: pull-security-kubernetes-node-e2e-containerd
     rerun_command: /test pull-security-kubernetes-node-e2e-containerd
     run_if_changed: ""
@@ -6472,9 +6485,13 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=90
+        - --
+        - --node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180503-1fa9a8040-master
         name: ""
-        resources: {}
+        resources:
+          requests:
+            memory: 6Gi
         volumeMounts:
         - mountPath: /etc/ssh-security
           name: ssh-security
@@ -6483,7 +6500,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-node-e2e-containerd,?(\s+|$)
+    trigger: (?m)^/test (containerd|pull-security-kubernetes-node-e2e-containerd),?(\s+|$)
   - agent: kubernetes
     always_run: true
     cluster: security
