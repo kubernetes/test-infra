@@ -1,0 +1,29 @@
+package(default_visibility = ["//visibility:public"])
+
+sh_test(
+    name = "integration-mkpj",
+    srcs = ["integration-mkpj.sh"],
+    args = ["$(location //prow/cmd/mkpj) VALIDATE"],
+    data = [
+        "//prow/cmd/mkpj",
+        "//prow/test/data:all-srcs",
+    ],
+    tags = ["integration"],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//prow/test/data:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
