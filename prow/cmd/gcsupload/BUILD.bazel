@@ -18,6 +18,7 @@ go_binary(
     name = "gcsupload",
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
+    pure = "on",
 )
 
 filegroup(

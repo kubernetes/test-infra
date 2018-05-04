@@ -25,6 +25,7 @@ go_binary(
     name = "initupload",
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
+    pure = "on",
 )
 
 filegroup(

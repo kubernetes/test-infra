@@ -17,6 +17,7 @@ go_binary(
     name = "sidecar",
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
+    pure = "on",
 )
 
 filegroup(

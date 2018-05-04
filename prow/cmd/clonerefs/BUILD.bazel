@@ -25,6 +25,7 @@ go_binary(
     name = "clonerefs",
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
+    pure = "on",
 )
 
 filegroup(
