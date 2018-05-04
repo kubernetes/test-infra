@@ -32,6 +32,7 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 )
@@ -40,6 +41,11 @@ import (
 // and then post the status of that process and any artifacts
 // to cloud storage.
 func (o Options) Run() error {
+	spec, err := downwardapi.ResolveSpecFromEnv()
+	if err != nil {
+		return fmt.Errorf("could not resolve job spec: %v", err)
+	}
+
 	// If we are being asked to terminate by the kubelet but we have
 	// NOT seen the test process exit cleanly, we need a to start
 	// uploading artifacts to GCS immediately. If we notice the process
@@ -52,7 +58,7 @@ func (o Options) Run() error {
 		select {
 		case s := <-interrupt:
 			logrus.Errorf("Received an interrupt: %s", s)
-			o.doUpload(false)
+			o.doUpload(spec, false)
 		}
 	}()
 
@@ -113,10 +119,10 @@ func (o Options) Run() error {
 		passed = returnCode == 0 && err == nil
 	}
 
-	return o.doUpload(passed)
+	return o.doUpload(spec, passed)
 }
 
-func (o Options) doUpload(passed bool) error {
+func (o Options) doUpload(spec *downwardapi.JobSpec, passed bool) error {
 	uploadTargets := map[string]gcs.UploadFunc{
 		"build-log.txt": gcs.FileUpload(o.WrapperOptions.ProcessLog),
 	}
@@ -135,7 +141,7 @@ func (o Options) doUpload(passed bool) error {
 		uploadTargets["finished.json"] = gcs.DataUpload(bytes.NewBuffer(finishedData))
 	}
 
-	if err := o.GcsOptions.Run(uploadTargets); err != nil {
+	if err := o.GcsOptions.Run(spec, uploadTargets); err != nil {
 		return fmt.Errorf("failed to upload to GCS: %v", err)
 	}
 
