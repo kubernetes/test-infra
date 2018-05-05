@@ -32,7 +32,7 @@ VERSION_TAG = {
     '1.9': '1.9-v20171018-6ddbad97',
     '1.10': '1.10-v20180221-3655e24ae',
     # this is master, feature branches...
-    'default': '1.11-v20180402-74c08e269'
+    'default': '1.11-v20180504-30872f7f6'
 }
 
 
