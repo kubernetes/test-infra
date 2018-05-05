@@ -1015,6 +1015,30 @@
       "sig-release"
     ]
   },
+  "ci-kubernetes-cross-build-release-1-dot-10": {
+    "args": [
+      "--branch=release-1.10",
+      "--hyperkube",
+      "--registry=gcr.io/kubernetes-ci-images",
+      "--suffix=-cross"
+    ],
+    "scenario": "kubernetes_build",
+    "sigOwners": [
+      "sig-release"
+    ]
+  },
+  "ci-kubernetes-cross-build-release-1-dot-9": {
+    "args": [
+      "--branch=release-1.9",
+      "--hyperkube",
+      "--registry=gcr.io/kubernetes-ci-images",
+      "--suffix=-cross"
+    ],
+    "scenario": "kubernetes_build",
+    "sigOwners": [
+      "sig-release"
+    ]
+  },
   "ci-kubernetes-e2e-autoscaling-vpa-actuation": {
     "args": [
       "--check-leaked-resources",

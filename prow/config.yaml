@@ -8787,6 +8787,66 @@ periodics:
     - name: docker-graph
       emptyDir: {}
 
+- interval: 1h
+  name: ci-kubernetes-cross-build-release-1-dot-10
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+      args:
+      - --repo=k8s.io/kubernetes=release-1.10
+      - --repo=k8s.io/release
+      - --root=/go/src
+      - --timeout=120
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: docker-graph
+        mountPath: /docker-graph
+      resources:
+        requests:
+          cpu: 7
+          memory: "41Gi"
+    volumes:
+    - name: docker-graph
+      emptyDir: {}
+
+- interval: 1h
+  name: ci-kubernetes-cross-build-release-1-dot-9
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+      args:
+      - --repo=k8s.io/kubernetes=release-1.9
+      - --repo=k8s.io/release
+      - --root=/go/src
+      - --timeout=120
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: docker-graph
+        mountPath: /docker-graph
+      resources:
+        requests:
+          cpu: 7
+          memory: "41Gi"
+    volumes:
+    - name: docker-graph
+      emptyDir: {}
+
 - interval: 6h
   name: ci-kubernetes-dind-conformance
   agent: kubernetes
