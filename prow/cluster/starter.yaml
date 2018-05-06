@@ -7,7 +7,7 @@ kind: ConfigMap
 metadata:
   name: plugins
 data:
-  plugins:
+  plugins: ""
 ---
 apiVersion: v1
 kind: ConfigMap
