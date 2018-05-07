@@ -16789,7 +16789,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180504-baab65e5e-master
       args:
-      - --repo=istio.io/istio=master
+      - --repo=github.com/ostromart/istio=fortio-fix
       - --timeout=90
       - --root=/go/src
 
