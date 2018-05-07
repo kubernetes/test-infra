@@ -17,6 +17,7 @@ go_library(
         "yamlh.go",
         "yamlprivateh.go",
     ],
+    importmap = "vendor/github.com/go-yaml/yaml",
     importpath = "github.com/go-yaml/yaml",
     visibility = ["//visibility:public"],
 )

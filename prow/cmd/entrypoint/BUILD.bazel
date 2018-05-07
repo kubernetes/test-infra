@@ -30,5 +30,6 @@ filegroup(
 go_binary(
     name = "entrypoint",
     embed = [":go_default_library"],
+    pure = "on",
     visibility = ["//visibility:public"],
 )

@@ -23,6 +23,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"os/signal"
 	"strconv"
 	"syscall"
 	"time"
@@ -76,7 +77,13 @@ func (o Options) Run() error {
 		return fmt.Errorf("could not start the process: %v", err)
 	}
 
-	timeout := time.Duration(optionOrDefault(o.Timeout, DefaultTimeout))
+	// if we get asked to terminate we need to forward
+	// that to the wrapped process as if it timed out
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
+
+	timeout := optionOrDefault(o.Timeout, DefaultTimeout)
+	gracePeriod := optionOrDefault(o.GracePeriod, DefaultGracePeriod)
 	var commandErr error
 	cancelled := false
 	done := make(chan error)
@@ -89,20 +96,11 @@ func (o Options) Run() error {
 	case <-time.After(timeout):
 		logrus.Errorf("Process did not finish before %s timeout", timeout)
 		cancelled = true
-		if err := command.Process.Signal(os.Interrupt); err != nil {
-			logrus.WithError(err).Error("Could not interrupt process after timeout")
-		}
-		gracePeriod := time.Duration(optionOrDefault(o.GracePeriod, DefaultGracePeriod))
-		select {
-		case <-done:
-			logrus.Errorf("Process gracefully exited before %s grace period", gracePeriod)
-			// but we ignore the output error as we will want errTimedOut
-		case <-time.After(gracePeriod):
-			logrus.Errorf("Process did not exit before %s grace period", gracePeriod)
-			if err := command.Process.Kill(); err != nil {
-				logrus.WithError(err).Error("Could not kill process after grace period")
-			}
-		}
+		gracefullyTerminate(command, done, gracePeriod)
+	case s := <-interrupt:
+		logrus.Errorf("Entrypoint received interrupt: %v", s)
+		cancelled = true
+		gracefullyTerminate(command, done, gracePeriod)
 	}
 
 	var returnCode string
@@ -136,4 +134,20 @@ func optionOrDefault(option, defaultValue time.Duration) time.Duration {
 	}
 
 	return option
+}
+
+func gracefullyTerminate(command *exec.Cmd, done <-chan error, gracePeriod time.Duration) {
+	if err := command.Process.Signal(os.Interrupt); err != nil {
+		logrus.WithError(err).Error("Could not interrupt process after timeout")
+	}
+	select {
+	case <-done:
+		logrus.Errorf("Process gracefully exited before %s grace period", gracePeriod)
+		// but we ignore the output error as we will want errTimedOut
+	case <-time.After(gracePeriod):
+		logrus.Errorf("Process did not exit before %s grace period", gracePeriod)
+		if err := command.Process.Kill(); err != nil {
+			logrus.WithError(err).Error("Could not kill process after grace period")
+		}
+	}
 }

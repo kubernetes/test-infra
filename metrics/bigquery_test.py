@@ -62,7 +62,7 @@ class TestBigquery(unittest.TestCase):
 
         # Check that config files correlate with metrics listed in
         # test-infra/metrics/README.md.
-        with open('metrics/README.md') as readme_file:
+        with open(os.path.join(os.path.dirname(__file__), 'README.md')) as readme_file:
             readme = readme_file.read()
 
         readme_metrics = set(re.findall(
@@ -73,13 +73,13 @@ class TestBigquery(unittest.TestCase):
         if missing:
             self.fail(
                 'test-infra/metrics/README.md is missing entries for metrics: %s.'
-                % missing,
+                % ', '.join(sorted(missing)),
             )
         extra = readme_metrics - config_metrics
         if extra:
             self.fail(
                 'test-infra/metrics/README.md includes metrics that are missing config files: %s.'
-                % extra,
+                % ', '.join(sorted(extra)),
             )
 
         # Check that all configs are linked in readme.

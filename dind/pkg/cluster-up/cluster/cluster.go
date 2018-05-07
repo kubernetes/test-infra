@@ -142,7 +142,7 @@ func (c *Cluster) CreateDockerObjects() error {
 	}
 
 	// Create the master node.
-	if err := c.createMaster(); err != nil {
+	if err := c.createMaster("172.18.0.2"); err != nil {
 		return err
 	}
 
@@ -179,6 +179,14 @@ func (c *Cluster) createNetwork() error {
 		Driver:     "bridge",
 		Scope:      "local",
 		EnableIPv6: false,
+		IPAM: &network.IPAM{
+			Config: []network.IPAMConfig{
+				{
+					Subnet:  "172.18.0.0/16",
+					Gateway: "172.18.0.1",
+				},
+			},
+		},
 	})
 
 	if err != nil {
@@ -238,7 +246,7 @@ func (c *Cluster) createWorker(ip string) error {
 	return c.createNode(entrypoint, mounts, ntwk, nil, nil)
 }
 
-func (c *Cluster) createMaster() error {
+func (c *Cluster) createMaster(ip string) error {
 	entrypoint := []string{"/init-wrapper.sh", "master", c.externalProxy}
 	mounts := []mount.Mount{
 		{
@@ -259,7 +267,7 @@ func (c *Cluster) createMaster() error {
 		},
 	}
 	ntwk := network.EndpointSettings{
-		IPAddress: "",
+		IPAddress: ip,
 		NetworkID: c.networkID,
 	}
 

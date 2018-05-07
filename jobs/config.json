@@ -1,4 +1,24 @@
 {
+  "application-periodic-default-gke": {
+    "args": [
+      "--check-leaked-resources",
+      "--cluster=",
+      "--deployment=gke",
+      "--extract=gke",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--gke-environment=prod",
+      "--provider=gke",
+      "--test=false",
+      "--test-cmd=../e2e/e2e-prow.sh",
+      "--test-cmd-name=application-e2e",
+      "--timeout=120m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-apps"
+    ]
+  },
   "ci-benchmark-scheduler-master": {
     "args": [
       "./hack/jenkins/benchmark-dockerized.sh",
@@ -105,11 +125,32 @@
       "--deployment=node",
       "--gcp-project=cri-containerd-node-e2e",
       "--gcp-zone=us-central1-f",
-      "--node-test-args=--container-runtime=remote --container-runtime-endpoint=/run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
+      "--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]\" --flakeAttempts=2",
       "--timeout=65m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
+  "ci-containerd-soak-gci-gce": {
+    "args": [
+      "--down=false",
+      "--env-file=jobs/env/ci-containerd-e2e-gce.env",
+      "--extract=ci/latest",
+      "--gcp-master-image=gci",
+      "--gcp-node-image=gci",
+      "--gcp-project=k8s-jkns-e2e-gci-gce-soak-1-4",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--save=gs://kubernetes-jenkins/soak/ci-containerd-soak-gci-gce",
+      "--soak",
+      "--test_args=--ginkgo.skip=\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --clean-start=true --minStartupPods=8",
+      "--timeout=1200m",
+      "--up=false"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -269,14 +310,15 @@
   "ci-cri-containerd-e2e-gci-gce-ingress": {
     "args": [
       "--check-leaked-resources",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-ingress.env",
       "--env-file=jobs/env/ci-cri-containerd-e2e-gce.env",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-project-type=ingress-project",
-      "--gcp-zone=us-central1-f",
+      "--gcp-zone=asia-southeast1-a",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Ingress\\] --ginkgo.skip=\\[Unreleased\\] --minStartupPods=8",
-      "--timeout=90m"
+      "--test_args=--ginkgo.focus=\\[Feature:Ingress\\]|\\[Feature:NEG\\] --ginkgo.skip=\\[Unreleased\\]",
+      "--timeout=320m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -443,7 +485,7 @@
       "--deployment=node",
       "--gcp-project=cri-containerd-node-e2e",
       "--gcp-zone=us-central1-f",
-      "--node-test-args=--container-runtime=remote --container-runtime-endpoint=/run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
+      "--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]\" --flakeAttempts=2",
@@ -459,7 +501,7 @@
       "--deployment=node",
       "--gcp-project=cri-containerd-node-e2e",
       "--gcp-zone=us-central1-f",
-      "--node-test-args=--feature-gates=DynamicKubeletConfig=true --container-runtime=remote --container-runtime-endpoint=/run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
+      "--node-test-args=--feature-gates=DynamicKubeletConfig=true --container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=1 --skip=\"\\[Flaky\\]\"",
@@ -475,7 +517,7 @@
       "--deployment=node",
       "--gcp-project=cri-containerd-node-e2e",
       "--gcp-zone=us-central1-f",
-      "--node-test-args=--feature-gates=DynamicKubeletConfig=true --container-runtime=remote --container-runtime-endpoint=/run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
+      "--node-test-args=--feature-gates=DynamicKubeletConfig=true --container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=1 --focus=\"\\[Flaky\\]\"",
@@ -491,7 +533,7 @@
       "--deployment=node",
       "--gcp-project=cri-containerd-node-e2e",
       "--gcp-zone=us-central1-f",
-      "--node-test-args=--feature-gates=DynamicKubeletConfig=true,LocalStorageCapacityIsolation=true,PodPriority=true --container-runtime=remote --container-runtime-endpoint=/run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
+      "--node-test-args=--feature-gates=DynamicKubeletConfig=true,LocalStorageCapacityIsolation=true,PodPriority=true --container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=1 --focus=\"\\[Serial\\]\" --skip=\"\\[Flaky\\]|\\[Benchmark\\]|\\[Feature:Docker\\]\"",
@@ -601,7 +643,7 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=",
-      "--env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-e2e-glbc-amd64:latest",
+      "--env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-e2e-glbc-amd64:master",
       "--extract=ci/latest",
       "--gcp-project-type=ingress-project",
       "--gcp-zone=us-central1-f",
@@ -620,8 +662,7 @@
       "--check-leaked-resources",
       "--cluster=",
       "--env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-e2e-glbc-amd64:master",
-      "--env=GCE_ALPHA_FEATURES=NetworkEndpointGroup",
-      "--env=KUBE_GCE_ENABLE_IP_ALIASES=true",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-ingress.env",
       "--extract=ci/latest",
       "--gcp-project-type=ingress-project",
       "--gcp-zone=asia-southeast1-a",
@@ -644,7 +685,7 @@
       "--gcp-project-type=ingress-project",
       "--ginkgo-parallel=1",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Ingress\\]|",
+      "--test_args=--ginkgo.focus=\\[Feature:Ingress\\]",
       "--timeout=320m"
     ],
     "scenario": "kubernetes_e2e",
@@ -661,7 +702,7 @@
       "--gcp-project-type=ingress-project",
       "--ginkgo-parallel=1",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Ingress\\]|",
+      "--test_args=--ginkgo.focus=\\[Feature:Ingress\\]",
       "--timeout=320m"
     ],
     "scenario": "kubernetes_e2e",
@@ -678,7 +719,7 @@
       "--gcp-project-type=ingress-project",
       "--ginkgo-parallel=1",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Ingress\\]|",
+      "--test_args=--ginkgo.focus=\\[Feature:Ingress\\]",
       "--timeout=320m"
     ],
     "scenario": "kubernetes_e2e",
@@ -690,7 +731,7 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=",
-      "--env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-e2e-glbc-amd64:latest",
+      "--env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-e2e-glbc-amd64:master",
       "--extract=ci/latest",
       "--gcp-project=k8s-ingress-e2e-scale-backup",
       "--gcp-zone=us-central1-f",
@@ -719,35 +760,13 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=",
-      "--env=GCE_GLBC_IMAGE=k8s.gcr.io/ingress-gce-glbc-amd64:v1.1.0",
+      "--env=GCE_GLBC_IMAGE=k8s.gcr.io/ingress-gce-glbc-amd64:v1.1.1",
       "--extract=ci/latest",
       "--gcp-project-type=ingress-project",
       "--gcp-zone=us-central1-f",
       "--ginkgo-parallel",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Feature:IngressUpgrade\\]",
-      "--timeout=320m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-network"
-    ]
-  },
-  "ci-ingress-ipvs-gce-e2e": {
-    "args": [
-      "--check-leaked-resources",
-      "--cluster=",
-      "--env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-e2e-glbc-amd64:latest",
-      "--env=KUBE_PROXY_MODE=ipvs",
-      "--extract=ci/latest",
-      "--gcp-node-image=ubuntu",
-      "--gcp-project-type=ingress-project",
-      "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel=1",
-      "--image-family=ubuntu-gke-1604-lts",
-      "--image-project=ubuntu-os-gke-cloud",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Ingress\\]",
       "--timeout=320m"
     ],
     "scenario": "kubernetes_e2e",
@@ -766,7 +785,7 @@
       "--gke-environment=prod",
       "--provider=gke",
       "--test=false",
-      "--test-cmd=../cmd/kinflate/test/main.sh",
+      "--test-cmd=../cmd/kustomize/test/main.sh",
       "--test-cmd-args=/go/src/github.com/kinflate/example-ldap",
       "--test-cmd-name=kinflate-integration",
       "--timeout=120m"
@@ -821,7 +840,7 @@
   "ci-kubemci-ingress-conformance": {
     "args": [
       "--check-leaked-resources",
-      "--env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-e2e-glbc-amd64:latest",
+      "--env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-e2e-glbc-amd64:master",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-project-type=ingress-project",
@@ -3150,7 +3169,7 @@
   "ci-kubernetes-e2e-gce-large-correctness": {
     "args": [
       "--cluster=gce-scale-cluster",
-      "--env=HEAPSTER_MACHINE_SIZE=n1-standard-8",
+      "--env=HEAPSTER_MACHINE_TYPE=n1-standard-8",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-large-correctness.env",
@@ -3192,7 +3211,7 @@
     "args": [
       "--cluster=$USER-large-manual",
       "--down=false",
-      "--env=HEAPSTER_MACHINE_SIZE=n1-standard-8",
+      "--env=HEAPSTER_MACHINE_TYPE=n1-standard-8",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env",
       "--extract=ci/latest",
@@ -3213,7 +3232,7 @@
   "ci-kubernetes-e2e-gce-large-performance": {
     "args": [
       "--cluster=gce-scale-cluster",
-      "--env=HEAPSTER_MACHINE_SIZE=n1-standard-8",
+      "--env=HEAPSTER_MACHINE_TYPE=n1-standard-8",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-large-performance.env",
@@ -3492,7 +3511,7 @@
   "ci-kubernetes-e2e-gce-scale-correctness": {
     "args": [
       "--cluster=gce-scale-cluster",
-      "--env=HEAPSTER_MACHINE_SIZE=n1-standard-16",
+      "--env=HEAPSTER_MACHINE_TYPE=n1-standard-16",
       "--env=MASTER_MIN_CPU_ARCHITECTURE=Intel Broadwell",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env",
@@ -3517,7 +3536,7 @@
   "ci-kubernetes-e2e-gce-scale-performance": {
     "args": [
       "--cluster=gce-scale-cluster",
-      "--env=HEAPSTER_MACHINE_SIZE=n1-standard-16",
+      "--env=HEAPSTER_MACHINE_TYPE=n1-standard-16",
       "--env=MASTER_MIN_CPU_ARCHITECTURE=Intel Broadwell",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env",
@@ -4466,7 +4485,7 @@
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-project=k8s-jkns-gci-autoscaling",
-      "--gcp-zone=us-central1-c",
+      "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Feature:CustomMetricsAutoscaling\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
       "--timeout=300m"
@@ -4501,7 +4520,7 @@
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-project=k8s-jkns-gci-autoscaling-migs",
-      "--gcp-zone=us-central1-c",
+      "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Feature:CustomMetricsAutoscaling\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
       "--timeout=300m"
@@ -4611,14 +4630,34 @@
   "ci-kubernetes-e2e-gci-gce-ingress": {
     "args": [
       "--check-leaked-resources",
-      "--env=GCE_ALPHA_FEATURES=NetworkEndpointGroup",
-      "--env=KUBE_GCE_ENABLE_IP_ALIASES=true",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-ingress.env",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-project-type=ingress-project",
       "--gcp-zone=asia-southeast1-a",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Feature:Ingress\\]|\\[Feature:NEG\\] --ginkgo.skip=\\[Unreleased\\]",
+      "--timeout=320m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-network"
+    ]
+  },
+  "ci-kubernetes-e2e-gci-gce-ingress-ipvs": {
+    "args": [
+      "--check-leaked-resources",
+      "--cluster=",
+      "--env=KUBE_PROXY_MODE=ipvs",
+      "--extract=ci/latest",
+      "--gcp-node-image=ubuntu",
+      "--gcp-project-type=ingress-project",
+      "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel=1",
+      "--image-family=ubuntu-gke-1604-lts",
+      "--image-project=ubuntu-os-gke-cloud",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Feature:Ingress\\]",
       "--timeout=320m"
     ],
     "scenario": "kubernetes_e2e",
@@ -4987,7 +5026,7 @@
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-node-image=gci",
       "--gcp-project=k8s-e2e-gci-gke-autoscaling",
-      "--gcp-zone=us-central1-c",
+      "--gcp-zone=us-central1-f",
       "--gke-environment=test",
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Feature:CustomMetricsAutoscaling\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
@@ -6721,15 +6760,15 @@
   },
   "ci-kubernetes-e2e-gke-large-performance-regional": {
     "args": [
-      "--cluster=gke-scale-cluster",
+      "--cluster=gke-regional-cluster",
       "--deployment=gke",
       "--extract=ci/latest",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-node-image=gci",
-      "--gcp-project=kubernetes-scale",
+      "--gcp-project=k8s-scale-testing",
       "--gcp-region=us-east1",
       "--gke-command-group=beta",
-      "--gke-environment=test",
+      "--gke-environment=staging",
       "--gke-node-locations=us-east1-a",
       "--gke-shape={\"default\":{\"Nodes\":1999,\"MachineType\":\"n1-standard-1\"},\"heapster-pool\":{\"Nodes\":1,\"MachineType\":\"n1-standard-8\"}}",
       "--provider=gke",
@@ -7449,7 +7488,91 @@
       "--provider=gke",
       "--test_args=--gce-multizone=true --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]|Initializers|Dashboard --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
       "--timeout=900m",
-      "--upgrade_args=--gce-multizone=true --ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=gke-latest-1.8 --upgrade-image=gci"
+      "--upgrade_args=--gce-multizone=true --ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=gke-latest-1.9 --upgrade-image=gci"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
+  "ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-cluster": {
+    "args": [
+      "--check-leaked-resources",
+      "--check-version-skew=false",
+      "--deployment=gke",
+      "--extract=gke-latest-1.10",
+      "--extract=gke-latest-1.9",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--gke-environment=staging",
+      "--provider=gke",
+      "--test_args=--ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
+      "--timeout=900m",
+      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=gke-latest-1.10 --upgrade-image=gci"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
+  "ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-cluster-new": {
+    "args": [
+      "--check-leaked-resources",
+      "--check-version-skew=false",
+      "--deployment=gke",
+      "--extract=gke-latest-1.10",
+      "--extract=gke-latest-1.9",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--gke-environment=staging",
+      "--provider=gke",
+      "--skew",
+      "--timeout=900m",
+      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=gke-latest-1.10 --upgrade-image=gci"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
+  "ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-master": {
+    "args": [
+      "--check-leaked-resources",
+      "--check-version-skew=false",
+      "--deployment=gke",
+      "--extract=gke-latest-1.10",
+      "--extract=gke-latest-1.9",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--gke-environment=staging",
+      "--provider=gke",
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
+      "--timeout=900m",
+      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=gke-latest-1.10 --upgrade-image=gci"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
+  "ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-regional-cluster": {
+    "args": [
+      "--check-leaked-resources",
+      "--check-version-skew=false",
+      "--deployment=gke",
+      "--extract=gke-latest-1.10",
+      "--extract=gke-latest-1.9",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=gci",
+      "--gcp-region=us-central1",
+      "--gke-environment=staging",
+      "--provider=gke",
+      "--test_args=--gce-multizone=true --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]|Initializers|Dashboard --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
+      "--timeout=900m",
+      "--upgrade_args=--gce-multizone=true --ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=gke-latest-1.10 --upgrade-image=gci"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -11011,6 +11134,96 @@
       "sig-gcp"
     ]
   },
+  "ci-kubernetes-gce-conformance-latest-1-10": {
+    "args": [
+      "--extract=release/latest-1.10",
+      "--gcp-master-image=gci",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]",
+      "--timeout=200m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-gcp"
+    ]
+  },
+  "ci-kubernetes-gce-conformance-latest-1-8": {
+    "args": [
+      "--extract=release/latest-1.8",
+      "--gcp-master-image=gci",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]",
+      "--timeout=200m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-gcp"
+    ]
+  },
+  "ci-kubernetes-gce-conformance-latest-1-9": {
+    "args": [
+      "--extract=release/latest-1.9",
+      "--gcp-master-image=gci",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]",
+      "--timeout=200m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-gcp"
+    ]
+  },
+  "ci-kubernetes-gce-conformance-stable-1-10": {
+    "args": [
+      "--extract=release/stable-1.10",
+      "--gcp-master-image=gci",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]",
+      "--timeout=200m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-gcp"
+    ]
+  },
+  "ci-kubernetes-gce-conformance-stable-1-8": {
+    "args": [
+      "--extract=release/stable-1.8",
+      "--gcp-master-image=gci",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]",
+      "--timeout=200m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-gcp"
+    ]
+  },
+  "ci-kubernetes-gce-conformance-stable-1-9": {
+    "args": [
+      "--extract=release/stable-1.9",
+      "--gcp-master-image=gci",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]",
+      "--timeout=200m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-gcp"
+    ]
+  },
   "ci-kubernetes-integration-beta": {
     "args": [
       "--branch=release-1.11",
@@ -11262,6 +11475,21 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-testing"
+    ]
+  },
+  "ci-kubernetes-local-e2e-containerized": {
+    "args": [
+      "--deployment=local",
+      "--extract=ci/latest",
+      "--extract-source",
+      "--ginkgo-parallel=1",
+      "--provider=local",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]",
+      "--timeout=120m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
     ]
   },
   "ci-kubernetes-multicluster-ingress-test": {
@@ -11696,6 +11924,22 @@
       "sig-scalability"
     ]
   },
+  "ci-poseidon-e2e-gce": {
+    "args": [
+      "--check-leaked-resources",
+      "--cluster=",
+      "--extract=ci/latest",
+      "--gcp-node-image=ubuntu",
+      "--provider=gce",
+      "--test=false",
+      "--test-cmd=../test/e2e-poseidon-gce.sh",
+      "--timeout=60m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scheduling"
+    ]
+  },
   "ci-test-infra-bazel": {
     "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
     "args": [],
@@ -11745,6 +11989,7 @@
       "--check-leaked-resources",
       "--cluster=",
       "--deployment=gke",
+      "--down=false",
       "--env=CLOUDSDK_CONTAINER_USE_V1_API=false",
       "--env=TAG=0.6.0",
       "--extract=ci/latest",
@@ -11826,6 +12071,7 @@
     "args": [
       "test-infra/metrics/bigquery.py",
       "--",
+      "--bucket=gs://k8s-metrics",
       "--backfill-days=90"
     ],
     "scenario": "execute",
@@ -12054,7 +12300,7 @@
       "--deployment=node",
       "--gcp-project=cri-c8d-pr-node-e2e",
       "--gcp-zone=us-central1-f",
-      "--node-test-args=--container-runtime=remote --container-runtime-endpoint=/run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
+      "--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Slow\\]|\\[Serial\\]\" --flakeAttempts=2",
@@ -12323,9 +12569,10 @@
     "args": [
       "--build=bazel",
       "--cluster=",
-      "--env-file=jobs/env/ci-cri-containerd-e2e-gce.env",
+      "--env-file=jobs/env/pull-kubernetes-e2e.env",
+      "--env-file=jobs/env/pull-kubernetes-e2e-gce.env",
+      "--env-file=jobs/env/pull-kubernetes-e2e-containerd-gce.env",
       "--extract=local",
-      "--gcp-master-image=gci",
       "--gcp-node-image=gci",
       "--gcp-project=k8s-c8d-pr-e2e",
       "--gcp-zone=us-central1-f",
@@ -12388,7 +12635,7 @@
     "args": [
       "--build=bazel",
       "--cluster=",
-      "--env=HEAPSTER_MACHINE_SIZE=n1-standard-4",
+      "--env=HEAPSTER_MACHINE_TYPE=n1-standard-4",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env",
       "--extract=local",
@@ -12432,7 +12679,7 @@
     "args": [
       "--build=bazel",
       "--cluster=",
-      "--env=HEAPSTER_MACHINE_SIZE=n1-standard-8",
+      "--env=HEAPSTER_MACHINE_TYPE=n1-standard-8",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-large-performance.env",
@@ -12723,8 +12970,7 @@
       "--deployment=node",
       "--gcp-project=k8s-c8d-pr-node-e2e",
       "--gcp-zone=us-central1-f",
-      "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri",
-      "--node-test-args=--container-runtime=remote --container-runtime-endpoint=/run/containerd/containerd.sock --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
+      "--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Slow\\]|\\[Serial\\]\" --flakeAttempts=2",

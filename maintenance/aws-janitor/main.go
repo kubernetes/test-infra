@@ -66,6 +66,9 @@ var awsResourceTypes = []awsResourceType{
 	dhcpOptions{},
 	volumes{},
 	addresses{},
+
+	// Note that order matters here - we can't delete roles until we've deleted the profiles
+	iamInstanceProfiles{},
 	iamRoles{},
 }
 
@@ -854,12 +857,39 @@ func (addr address) ResourceKey() string {
 
 type iamRoles struct{}
 
+// roleIsManaged checks if the role should be managed (and thus deleted) by us
+// In particular, we want to avoid "system" AWS roles or roles that might support test-infra
+func roleIsManaged(role *iam.Role) bool {
+	name := aws.StringValue(role.RoleName)
+	path := aws.StringValue(role.Path)
+
+	// Most AWS system roles are in a directory called `aws-service-role`
+	if strings.HasPrefix(path, "/aws-service-role/") {
+		return false
+	}
+
+	// kops roles have names start with `masters.` or `nodes.`
+	if strings.HasPrefix(name, "masters.") {
+		return true
+	}
+	if strings.HasPrefix(name, "nodes.") {
+		return true
+	}
+
+	glog.Infof("unknown role name=%q, path=%q; assuming not managed", name, path)
+	return false
+}
+
 func (iamRoles) MarkAndSweep(sess *session.Session, acct string, region string, set *awsResourceSet) error {
 	svc := iam.New(sess, &aws.Config{Region: aws.String(region)})
 
 	var toDelete []*iamRole // Paged call, defer deletion until we have the whole list.
 	if err := svc.ListRolesPages(&iam.ListRolesInput{}, func(page *iam.ListRolesOutput, _ bool) bool {
 		for _, r := range page.Roles {
+			if !roleIsManaged(r) {
+				continue
+			}
+
 			l := &iamRole{arn: aws.StringValue(r.Arn), roleID: aws.StringValue(r.RoleId), roleName: aws.StringValue(r.RoleName)}
 			if set.Mark(l) {
 				glog.Warningf("%s: deleting %T: %v", l.ARN(), r, r)
@@ -872,11 +902,7 @@ func (iamRoles) MarkAndSweep(sess *session.Session, acct string, region string, 
 	}
 
 	for _, r := range toDelete {
-		_, err := svc.DeleteRole(
-			&iam.DeleteRoleInput{
-				RoleName: aws.String(r.roleName),
-			})
-		if err != nil {
+		if err := r.delete(svc); err != nil {
 			glog.Warningf("%v: delete failed: %v", r.ARN(), err)
 		}
 	}
@@ -889,12 +915,141 @@ type iamRole struct {
 	roleName string
 }
 
-func (lc iamRole) ARN() string {
-	return lc.arn
+func (r iamRole) ARN() string {
+	return r.arn
 }
 
-func (lc iamRole) ResourceKey() string {
-	return lc.roleID + "::" + lc.ARN()
+func (r iamRole) ResourceKey() string {
+	return r.roleID + "::" + r.ARN()
+}
+
+func (r iamRole) delete(svc *iam.IAM) error {
+	roleName := r.roleName
+
+	var policyNames []string
+	{
+		request := &iam.ListRolePoliciesInput{
+			RoleName: aws.String(roleName),
+		}
+		err := svc.ListRolePoliciesPages(request, func(page *iam.ListRolePoliciesOutput, lastPage bool) bool {
+			for _, policyName := range page.PolicyNames {
+				policyNames = append(policyNames, aws.StringValue(policyName))
+			}
+			return true
+		})
+		if err != nil {
+			return fmt.Errorf("error listing IAM role policies for %q: %v", roleName, err)
+		}
+	}
+
+	for _, policyName := range policyNames {
+		glog.V(2).Infof("Deleting IAM role policy %q %q", roleName, policyName)
+		request := &iam.DeleteRolePolicyInput{
+			RoleName:   aws.String(roleName),
+			PolicyName: aws.String(policyName),
+		}
+		_, err := svc.DeleteRolePolicy(request)
+		if err != nil {
+			return fmt.Errorf("error deleting IAM role policy %q %q: %v", roleName, policyName, err)
+		}
+	}
+
+	{
+		glog.V(2).Infof("Deleting IAM role %q", roleName)
+		request := &iam.DeleteRoleInput{
+			RoleName: aws.String(roleName),
+		}
+		_, err := svc.DeleteRole(request)
+		if err != nil {
+			return fmt.Errorf("error deleting IAM role %q: %v", roleName, err)
+		}
+	}
+
+	return nil
+}
+
+// IAM Instance Profiles
+
+type iamInstanceProfiles struct{}
+
+func (iamInstanceProfiles) MarkAndSweep(sess *session.Session, acct string, region string, set *awsResourceSet) error {
+	svc := iam.New(sess, &aws.Config{Region: aws.String(region)})
+
+	var toDelete []*iamInstanceProfile // Paged call, defer deletion until we have the whole list.
+	if err := svc.ListInstanceProfilesPages(&iam.ListInstanceProfilesInput{}, func(page *iam.ListInstanceProfilesOutput, _ bool) bool {
+		for _, p := range page.InstanceProfiles {
+			// We treat an instance profile as managed if all its roles are
+			managed := true
+			if len(p.Roles) == 0 {
+				// Just in case...
+				managed = false
+			}
+			for _, r := range p.Roles {
+				if !roleIsManaged(r) {
+					managed = false
+				}
+			}
+			if !managed {
+				glog.Infof("ignoring unmanaged profile %s", aws.StringValue(p.Arn))
+				continue
+			}
+
+			o := &iamInstanceProfile{profile: p}
+			if set.Mark(o) {
+				glog.Warningf("%s: deleting %T: %v", o.ARN(), o, o)
+				toDelete = append(toDelete, o)
+			}
+		}
+		return true
+	}); err != nil {
+		return err
+	}
+
+	for _, o := range toDelete {
+		if err := o.delete(svc); err != nil {
+			glog.Warningf("%v: delete failed: %v", o.ARN(), err)
+		}
+	}
+	return nil
+}
+
+type iamInstanceProfile struct {
+	profile *iam.InstanceProfile
+}
+
+func (p iamInstanceProfile) ARN() string {
+	return aws.StringValue(p.profile.Arn)
+}
+
+func (p iamInstanceProfile) ResourceKey() string {
+	return aws.StringValue(p.profile.InstanceProfileId) + "::" + p.ARN()
+}
+
+func (p iamInstanceProfile) delete(svc *iam.IAM) error {
+	// We need to unlink the roles first, before we can delete the instance profile
+	{
+		for _, role := range p.profile.Roles {
+			request := &iam.RemoveRoleFromInstanceProfileInput{
+				InstanceProfileName: p.profile.InstanceProfileName,
+				RoleName:            role.RoleName,
+			}
+			if _, err := svc.RemoveRoleFromInstanceProfile(request); err != nil {
+				return fmt.Errorf("error removing role %q: %v", aws.StringValue(role.RoleName), err)
+			}
+		}
+	}
+
+	// Delete the instance profile
+	{
+		request := &iam.DeleteInstanceProfileInput{
+			InstanceProfileName: p.profile.InstanceProfileName,
+		}
+		if _, err := svc.DeleteInstanceProfile(request); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // ARNs (used for uniquifying within our previous mark file)

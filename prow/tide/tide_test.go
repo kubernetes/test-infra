@@ -166,6 +166,11 @@ func TestAccumulateBatch(t *testing.T) {
 			},
 			merges: []int{1, 2},
 		},
+		{
+			name:    "no presubmits",
+			pulls:   []pull{{1, "a"}, {2, "b"}},
+			pending: false,
+		},
 	}
 	for _, test := range tests {
 		var pulls []PullRequest
@@ -341,6 +346,14 @@ func TestAccumulate(t *testing.T) {
 			successes: []int{8},
 			pendings:  []int{},
 			none:      []int{7},
+		},
+		{
+			pullRequests: map[int]string{7: "new", 8: "new"},
+			prowJobs:     []prowjob{},
+
+			successes: []int{8, 7},
+			pendings:  []int{},
+			none:      []int{},
 		},
 	}
 
@@ -1053,6 +1066,7 @@ func TestTakeAction(t *testing.T) {
 		pendings     []int
 		nones        []int
 		batchMerges  []int
+		presubmits   map[int]sets.String
 
 		merged            int
 		triggered         int
@@ -1067,6 +1081,7 @@ func TestTakeAction(t *testing.T) {
 			pendings:     []int{},
 			nones:        []int{},
 			batchMerges:  []int{},
+			presubmits:   map[int]sets.String{100: sets.NewString("foo", "if-changed")},
 
 			merged:    0,
 			triggered: 0,
@@ -1080,6 +1095,7 @@ func TestTakeAction(t *testing.T) {
 			pendings:     []int{1},
 			nones:        []int{0, 2},
 			batchMerges:  []int{},
+			presubmits:   map[int]sets.String{100: sets.NewString("foo", "if-changed")},
 
 			merged:    0,
 			triggered: 0,
@@ -1093,6 +1109,7 @@ func TestTakeAction(t *testing.T) {
 			pendings:     []int{},
 			nones:        []int{0, 2},
 			batchMerges:  []int{},
+			presubmits:   map[int]sets.String{100: sets.NewString("foo", "if-changed")},
 
 			merged:    0,
 			triggered: 0,
@@ -1106,6 +1123,7 @@ func TestTakeAction(t *testing.T) {
 			pendings:     []int{},
 			nones:        []int{0, 1, 2},
 			batchMerges:  []int{},
+			presubmits:   map[int]sets.String{100: sets.NewString("foo", "if-changed")},
 
 			merged:    0,
 			triggered: 1,
@@ -1119,6 +1137,7 @@ func TestTakeAction(t *testing.T) {
 			pendings:     []int{0},
 			nones:        []int{1, 2, 3},
 			batchMerges:  []int{},
+			presubmits:   map[int]sets.String{100: sets.NewString("foo", "if-changed")},
 
 			merged:            0,
 			triggered:         1,
@@ -1133,6 +1152,7 @@ func TestTakeAction(t *testing.T) {
 			pendings:     []int{},
 			nones:        []int{0},
 			batchMerges:  []int{},
+			presubmits:   map[int]sets.String{100: sets.NewString("foo", "if-changed")},
 
 			merged:    0,
 			triggered: 1,
@@ -1146,6 +1166,7 @@ func TestTakeAction(t *testing.T) {
 			pendings:     []int{},
 			nones:        []int{1, 2, 3},
 			batchMerges:  []int{},
+			presubmits:   map[int]sets.String{100: sets.NewString("foo", "if-changed")},
 
 			merged:    1,
 			triggered: 0,
@@ -1159,6 +1180,7 @@ func TestTakeAction(t *testing.T) {
 			pendings:     []int{2, 3},
 			nones:        []int{4, 5},
 			batchMerges:  []int{6, 7, 8},
+			presubmits:   map[int]sets.String{100: sets.NewString("foo", "if-changed")},
 
 			merged:    3,
 			triggered: 0,
@@ -1172,10 +1194,37 @@ func TestTakeAction(t *testing.T) {
 			pendings:     []int{},
 			nones:        []int{100},
 			batchMerges:  []int{},
+			presubmits:   map[int]sets.String{100: sets.NewString("foo", "if-changed")},
 
 			merged:    0,
 			triggered: 2,
 			action:    Trigger,
+		},
+		{
+			name: "no presubmits, merge",
+
+			batchPending: false,
+			successes:    []int{5, 4},
+			pendings:     []int{},
+			nones:        []int{},
+			batchMerges:  []int{},
+
+			merged:    1,
+			triggered: 0,
+			action:    Merge,
+		},
+		{
+			name: "no presubmits, wait",
+
+			batchPending: false,
+			successes:    []int{},
+			pendings:     []int{},
+			nones:        []int{},
+			batchMerges:  []int{},
+
+			merged:    0,
+			triggered: 0,
+			action:    Wait,
 		},
 	}
 
@@ -1199,9 +1248,10 @@ func TestTakeAction(t *testing.T) {
 			},
 		)
 		ca.Set(cfg)
-		presubmits := map[int]sets.String{100: sets.NewString("foo", "if-changed")}
-		for i := 0; i <= 8; i++ {
-			presubmits[i] = sets.NewString("foo")
+		if len(tc.presubmits) > 0 {
+			for i := 0; i <= 8; i++ {
+				tc.presubmits[i] = sets.NewString("foo")
+			}
 		}
 		lg, gc, err := localgit.New()
 		if err != nil {
@@ -1262,7 +1312,7 @@ func TestTakeAction(t *testing.T) {
 		}
 		t.Logf("Test case: %s", tc.name)
 		cr := newContextRegister(statusContext)
-		if act, _, err := c.takeAction(sp, presubmits, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges), cr); err != nil {
+		if act, _, err := c.takeAction(sp, tc.presubmits, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges), cr); err != nil {
 			t.Errorf("Error in takeAction: %v", err)
 			continue
 		} else if act != tc.action {
@@ -1549,14 +1599,14 @@ func TestIsPassing(t *testing.T) {
 		name             string
 		passing          bool
 		optional         []string
-		config           *config.Branch
+		config           *config.Policy
 		combinedContexts map[string]string
 	}{
 		{
 			name:     "required checks disabled should not impact - passing",
 			passing:  true,
 			optional: []string{statusContext},
-			config: &config.Branch{
+			config: &config.Policy{
 				Protect:  &no,
 				Contexts: []string{"c1", "c2", "c3"},
 			},
@@ -1567,7 +1617,7 @@ func TestIsPassing(t *testing.T) {
 			passing:          false,
 			optional:         []string{"c4"},
 			combinedContexts: map[string]string{"c1": success, "c2": failure},
-			config: &config.Branch{
+			config: &config.Policy{
 				Protect:  &no,
 				Contexts: []string{"c1", "c2", "c3"},
 			},
@@ -1577,7 +1627,7 @@ func TestIsPassing(t *testing.T) {
 			passing:          true,
 			optional:         []string{"c4"},
 			combinedContexts: map[string]string{"c1": success, "c2": failure, "c3": success, "c4": failure},
-			config: &config.Branch{
+			config: &config.Policy{
 				Protect:  &yes,
 				Contexts: []string{"c1", "c3"},
 			},
@@ -1587,7 +1637,7 @@ func TestIsPassing(t *testing.T) {
 			passing:          false,
 			optional:         []string{"c4"},
 			combinedContexts: map[string]string{"c1": success, "c2": success, "c4": success},
-			config: &config.Branch{
+			config: &config.Policy{
 				Protect:  &yes,
 				Contexts: []string{"c1", "c2", "c3"},
 			},
@@ -1881,7 +1931,7 @@ func TestFindRequiredContexts(t *testing.T) {
 	no := false
 	testCases := []struct {
 		name    string
-		config  *config.Branch
+		config  *config.Policy
 		results []string
 	}{
 		{
@@ -1889,11 +1939,11 @@ func TestFindRequiredContexts(t *testing.T) {
 		},
 		{
 			name:   "config protect false missing context",
-			config: &config.Branch{Protect: &no},
+			config: &config.Policy{Protect: &no},
 		},
 		{
 			name: "config existing context",
-			config: &config.Branch{
+			config: &config.Policy{
 				Protect:  &yes,
 				Contexts: []string{"c1", "c2", "c3"},
 			},
@@ -1901,20 +1951,20 @@ func TestFindRequiredContexts(t *testing.T) {
 		},
 		{
 			name: "config existing context protect disabled",
-			config: &config.Branch{
+			config: &config.Policy{
 				Protect:  &no,
 				Contexts: []string{"c1", "c2", "c3"},
 			},
 		},
 		{
 			name: "config existing context nil protection",
-			config: &config.Branch{
+			config: &config.Policy{
 				Contexts: []string{"c1", "c2", "c3"},
 			},
 		},
 		{
 			name: "config missing context protect enabled",
-			config: &config.Branch{
+			config: &config.Policy{
 				Protect: &yes,
 			},
 		},

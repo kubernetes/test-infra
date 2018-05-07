@@ -25,10 +25,16 @@ import (
 	"time"
 
 	"k8s.io/test-infra/prow/pod-utils/clone"
+	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 )
 
 func (o Options) Run() error {
+	spec, err := downwardapi.ResolveSpecFromEnv()
+	if err != nil {
+		return fmt.Errorf("could not resolve job spec: %v", err)
+	}
+
 	var cloneRecords []clone.Record
 	data, err := ioutil.ReadFile(o.Log)
 	if err != nil {
@@ -81,7 +87,7 @@ func (o Options) Run() error {
 		}
 	}
 
-	if err := o.Options.Run(uploadTargets); err != nil {
+	if err := o.Options.Run(spec, uploadTargets); err != nil {
 		return fmt.Errorf("failed to upload to GCS: %v", err)
 	}
 

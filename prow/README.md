@@ -19,8 +19,8 @@ not make any attempt to preserve backwards compatibility.
 * `cmd/mkpj` creates `ProwJobs` using Prow configuration.
 * `cmd/mkpod` creates `Pods` from `ProwJobs`.
 * `cmd/clonerefs`, `cmd/initupload`, `cmd/gcsupload`, `cmd/entrypoint`, and
-  `cmd/sidecar` are small utilities used in `ProwJob`s created by `plank` as
-  `Pod`s. See [their README](./pod-utilities.md) for more information
+  `cmd/sidecar` are small utilities used in `ProwJobs` created by `plank` as
+  `Pods`. See [their README](./pod-utilities.md) for more information
 
 See also: [Life of a Prow Job](./architecture.md)
 
@@ -124,7 +124,7 @@ used when updating deployments.
    explicitly when upgrading to a new version of these components if they were
    previously relying on the default. For more context, please see
    [this pull request.](https://github.com/kubernetes/test-infra/pull/4210)
- - *August 29, 2017* Configuration specific to plugins is now held in in the
+ - *August 29, 2017* Configuration specific to plugins is now held in the
    `plugins` `ConfigMap` and serialized in this repo in the `plugins.yaml` file.
    Cluster administrators upgrading to `hook:0.148` or newer should move
    plugin configuration from the main `ConfigMap`. For more context, please see

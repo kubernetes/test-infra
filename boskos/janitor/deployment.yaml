@@ -6,7 +6,7 @@ metadata:
     app: boskos-janitor
   namespace: test-pods
 spec:
-  replicas: 5  # 5 distributed janitor instances
+  replicas: 3  # 3 distributed janitor instances for gke
   template:
     metadata:
       labels:
@@ -18,7 +18,7 @@ spec:
         image: gcr.io/k8s-testimages/janitor:v20180402-43203f868
         args:
         - --service-account=/etc/service-account/service-account.json
-        - --resource-type=gce-project,gke-project,gci-qa-project,gpu-project,ingress-project
+        - --resource-type=gke-project
         - --pool-size=20
         volumeMounts:
         - mountPath: /etc/service-account
@@ -28,3 +28,35 @@ spec:
       - name: service
         secret:
           secretName: service-account
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: boskos-janitor-nongke
+  labels:
+    app: boskos-janitor-nongke
+  namespace: test-pods
+spec:
+  replicas: 4  # 4 distributed janitor instances
+  template:
+    metadata:
+      labels:
+        app: boskos-janitor-nongke
+    spec:
+      terminationGracePeriodSeconds: 300
+      containers:
+      - name: boskos-janitor-nongke
+        image: gcr.io/k8s-testimages/janitor:v20180402-43203f868
+        args:
+        - --service-account=/etc/service-account/service-account.json
+        - --resource-type=gce-project,gci-qa-project,gpu-project,ingress-project
+        - --pool-size=20
+        volumeMounts:
+        - mountPath: /etc/service-account
+          name: service
+          readOnly: true
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+

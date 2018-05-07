@@ -31,6 +31,13 @@ const (
 	JSONConfigEnvVar = "INITUPLOAD_OPTIONS"
 )
 
+// NewOptions returns an empty Options with no nil fields
+func NewOptions() *Options {
+	return &Options{
+		Options: gcsupload.NewOptions(),
+	}
+}
+
 type Options struct {
 	*gcsupload.Options
 

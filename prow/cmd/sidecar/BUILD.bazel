@@ -16,6 +16,7 @@ go_library(
 go_binary(
     name = "sidecar",
     embed = [":go_default_library"],
+    pure = "on",
     visibility = ["//visibility:public"],
 )
 

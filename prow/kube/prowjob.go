@@ -63,6 +63,12 @@ const (
 	// carries the job type (presubmit, postsubmit, periodic, batch)
 	// that the pod is running.
 	ProwJobTypeLabel = "prow.k8s.io/type"
+	// ProwJobIDLabel is added in pods created by prow and
+	// carries the ID of the ProwJob that the pod is fulfilling.
+	// We also name pods after the ProwJob that spawned them but
+	// this allows for multiple resources to be linked to one
+	// ProwJob.
+	ProwJobIDLabel = "prow.k8s.io/id"
 	// ProwJobAnnotation is added in pods created by prow and
 	// carries the name of the job that the pod is running. Since
 	// job names can be arbitrarily long, this is added as
@@ -99,14 +105,6 @@ type ProwJobSpec struct {
 	// need to be cloned, determined from config
 	ExtraRefs []*Refs `json:"extra_refs,omitempty"`
 
-	// Timeout is how long the pod utilities will wait
-	// before aborting a job with SIGINT. Only applicable
-	// if decorating the PodSpec.
-	Timeout time.Duration `json:"timeout,omitempty"`
-	// GracePeriod is how long the pod utilities will wait
-	// after sending SIGINT to send SIGKILL when aborting
-	// a job. Only applicable if decorating the PodSpec.
-	GracePeriod time.Duration `json:"grace_period,omitempty"`
 	// Report determines if the result of this job should
 	// be posted as a status on GitHub
 	Report bool `json:"report,omitempty"`
@@ -124,9 +122,45 @@ type ProwJobSpec struct {
 	// a Kubernetes agent
 	PodSpec *v1.PodSpec `json:"pod_spec,omitempty"`
 
+	// DecorationConfig holds configuration options for
+	// decorating PodSpecs that users provide
+	DecorationConfig *DecorationConfig `json:"decoration_config,omitempty"`
+
 	// RunAfterSuccess are jobs that should be triggered if
 	// this job runs and does not fail
 	RunAfterSuccess []ProwJobSpec `json:"run_after_success,omitempty"`
+}
+
+type DecorationConfig struct {
+	// Timeout is how long the pod utilities will wait
+	// before aborting a job with SIGINT.
+	Timeout time.Duration `json:"timeout,omitempty"`
+	// GracePeriod is how long the pod utilities will wait
+	// after sending SIGINT to send SIGKILL when aborting
+	// a job. Only applicable if decorating the PodSpec.
+	GracePeriod time.Duration `json:"grace_period,omitempty"`
+	// UtilityImages holds pull specs for utility container
+	// images used to decorate a PodSpec.
+	UtilityImages *UtilityImages `json:"utility_images,omitempty"`
+	// GCSConfiguration holds options for pushing logs and
+	// artifacts to GCS from a job.
+	GCSConfiguration *GCSConfiguration `json:"gcs_configuration,omitempty"`
+	// GCSCredentialsSecret is the name of the Kubernetes secret
+	// that holds GCS push credentials
+	GCSCredentialsSecret string `json:"gcs_credentials_secret,omitempty"`
+}
+
+// UtilityImages holds pull specs for the utility images
+// to be used for a job
+type UtilityImages struct {
+	// CloneRefs is the pull spec used for the clonerefs utility
+	CloneRefs string `json:"clonerefs,omitempty"`
+	// InitUpload is the pull spec used for the initupload utility
+	InitUpload string `json:"initupload,omitempty"`
+	// Entrypoint is the pull spec used for the entrypoint utility
+	Entrypoint string `json:"entrypoint,omitempty"`
+	// sidecar is the pull spec used for the sidecar utility
+	Sidecar string `json:"sidecar,omitempty"`
 }
 
 const (

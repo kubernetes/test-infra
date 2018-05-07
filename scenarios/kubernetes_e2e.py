@@ -33,51 +33,56 @@ import time
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
 
 # The zones below are the zones available in the CNCF account (in theory, zones vary by account)
-# We comment out zones below because we want to stay proportional to the limits
-# We do one zone for every 10 t2.medium instances allowed
+# We aim for 3 zones per region to try to maintain even spreading.
+# We also remove a few zones where our preferred instance type is not available,
+# though really this needs a better fix (likely in kops)
 DEFAULT_AWS_ZONES = [
-    #'ap-northeast-1a', # insufficient quota
-    #'ap-northeast-1c', # insufficient quota
-    #'ap-northeast-2a', # insufficient quota
-    #'ap-northeast-2b', # insufficient quota
+    'ap-northeast-1a',
+    'ap-northeast-1c',
+    'ap-northeast-1d',
+    'ap-northeast-2a',
+    #'ap-northeast-2a' - AZ does not exist, so we're breaking the 3 AZs per region target here
+    'ap-northeast-2c',
     #'ap-south-1a', # no c4.large instances available
     #'ap-south-1b', # no c4.large instances available
-    #'ap-southeast-1a', # insufficient quota
-    #'ap-southeast-1b', # insufficient quota
-    #'ap-southeast-1c', # insufficient quota
-    #'ap-southeast-2a', # insufficient quota
-    #'ap-southeast-2b', # insufficient quota
-    #'ap-southeast-2c', # insufficient quota
-    #'ca-central-1a', # insufficient quota
-    #'ca-central-1b', # insufficient quota
-    #'eu-central-1a', # insufficient quota
-    #'eu-central-1b', # insufficient quota
-    #'eu-central-1c', # insufficient quota
-    #'eu-west-1a', # insufficient quota
-    #'eu-west-1b', # insufficient quota
-    #'eu-west-1c', # insufficient quota
-    #'eu-west-2a', # insufficient quota
-    #'eu-west-2b', # insufficient quota
-    #'eu-west-2c', # insufficient quota
-    #'eu-west-3a', # insufficient quota
-    #'eu-west-3b', # insufficient quota
-    #'eu-west-3c', # insufficient quota
-    #'sa-east-1a', # insufficient quota
-    #'sa-east-1c' # insufficient quota
+    'ap-southeast-1a',
+    'ap-southeast-1b',
+    'ap-southeast-1c',
+    'ap-southeast-2a',
+    'ap-southeast-2b',
+    'ap-southeast-2c',
+    #'ca-central-1a', no c4.large capacity 2018-04-25
+    #'ca-central-1b', no c4.large capacity 2018-04-25
+    'eu-central-1a',
+    'eu-central-1b',
+    'eu-central-1c',
+    'eu-west-1a',
+    'eu-west-1b',
+    'eu-west-1c',
+    #'eu-west-2a', no c4.large capacity 2018-04-24
+    #'eu-west-2b', no c4.large capacity 2018-04-24
+    #'eu-west-2c', no c4.large capacity 2018-04-24
+    #'eu-west-3a', documented to not support c4 family
+    #'eu-west-3b', documented to not support c4 family
+    #'eu-west-3c', documented to not support c4 family
+    'sa-east-1a',
+    #'sa-east-1b', AZ does not exist, so we're breaking the 3 AZs per region target here
+    'sa-east-1c',
     'us-east-1a',
     'us-east-1b',
-    #'us-east-1c', # limiting to 2 zones to not overallocate
-    #'us-east-1d', # limiting to 2 zones to not overallocate
-    #'us-east-1e', # limiting to 2 zones to not overallocate
-    #'us-east-1f', # limiting to 2 zones to not overallocate
+    'us-east-1c',
+    #'us-east-1d', # limiting to 3 zones to not overallocate
+    #'us-east-1e', # limiting to 3 zones to not overallocate
+    #'us-east-1f', # limiting to 3 zones to not overallocate
     #'us-east-2a', # no c4.large instances available
     #'us-east-2b', # no c4.large instances available
     #'us-east-2c', # no c4.large instances available
     'us-west-1a',
-    #'us-west-1b', # overall limit is 10 instances
+    'us-west-1b',
+    #'us-west-1c', AZ does not exist, so we're breaking the 3 AZs per region target here
     'us-west-2a',
     'us-west-2b',
-    #'us-west-2c' # limiting to 2 zones to not overallocate
+    'us-west-2c'
 ]
 
 def test_infra(*paths):
@@ -257,14 +262,27 @@ class LocalMode(object):
         check_env(env, self.command, *args)
 
 
-def cluster_name(cluster, build):
+def cluster_name(cluster):
     """Return or select a cluster name."""
     if cluster:
         return cluster
-    # Create a suffix based on the build number. Append a random string to it for
-    # avoiding potential conflicts across different jobs' runs (see issue #7592).
-    suffix = build if len(build) < 10 else hashlib.md5(build).hexdigest()[:10]
-    return 'e2e-%s-%s' % (suffix, os.urandom(3).encode('hex'))
+    # Create a suffix based on the build number and job name.
+    # This ensures no conflict across runs of different jobs (see #7592).
+    # For PR jobs, we use PR number instead of build number to ensure the
+    # name is constant across different runs of the presubmit on the PR.
+    # This helps clean potentially leaked resources from earlier run that
+    # could've got evicted midway (see #7673).
+    job_type = os.getenv('JOB_TYPE')
+    if job_type == 'batch':
+        suffix = 'batch-%s' % os.getenv('BUILD_ID', 0)
+    elif job_type == 'presubmit':
+        suffix = '%s' % os.getenv('PULL_NUMBER', 0)
+    else:
+        suffix = '%s' % os.getenv('BUILD_ID', 0)
+    if len(suffix) > 10:
+        suffix = hashlib.md5(suffix).hexdigest()[:10]
+    job_hash = hashlib.md5(os.getenv('JOB_NAME', '')).hexdigest()[:5]
+    return 'e2e-%s-%s' % (suffix, job_hash)
 
 
 # TODO(krzyzacy): Move this into kubetest
@@ -515,7 +533,7 @@ def main(args):
     if args.provider:
         runner_args.append('--provider=%s' % args.provider)
 
-    cluster = cluster_name(args.cluster, os.getenv('BUILD_NUMBER', 0))
+    cluster = cluster_name(args.cluster)
     runner_args.append('--cluster=%s' % cluster)
     runner_args.append('--gcp-network=%s' % cluster)
     runner_args.extend(args.kubetest_args)

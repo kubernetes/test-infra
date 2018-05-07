@@ -76,7 +76,7 @@ start_worker ()
   docker tag k8s.gcr.io/kube-proxy:$(cat /docker_version) k8s.gcr.io/kube-proxy-amd64:$(cat /docker_version)
 
   # Start kubeadm.
-  /usr/bin/kubeadm join --token=abcdef.abcdefghijklmnop --discovery-token-unsafe-skip-ca-verification=true --ignore-preflight-errors=all 172.17.0.2:6443 2>&1
+  /usr/bin/kubeadm join --token=abcdef.abcdefghijklmnop --discovery-token-unsafe-skip-ca-verification=true --ignore-preflight-errors=all 172.18.0.2:6443 2>&1
 }
 
 start_master ()
