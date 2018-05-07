@@ -624,6 +624,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-deploy
 - name: ci-kubernetes-cross-build
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-cross-build
+- name: ci-kubernetes-cross-build-release-1-dot-10
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-cross-build-release-1-dot-10
+- name: ci-kubernetes-cross-build-release-1-dot-9
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-cross-build-release-1-dot-9
 - name: ci-kubernetes-node-kubelet-alpha
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-alpha
   test_name_config:
@@ -3910,6 +3914,10 @@ dashboards:
   dashboard_tab:
   - name: cross-build
     test_group_name: ci-kubernetes-cross-build
+  - name: cross-build-1.10
+    test_group_name: ci-kubernetes-cross-build-release-1-dot-10
+  - name: cross-build-1.9
+    test_group_name: ci-kubernetes-cross-build-release-1-dot-9
   - name: kops-build
     test_group_name: ci-kops-build
   - name: debian-unstable

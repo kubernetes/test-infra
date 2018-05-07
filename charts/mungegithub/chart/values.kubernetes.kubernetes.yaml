@@ -41,6 +41,8 @@ config:
     ci-kubernetes-bazel-test,\
     ci-kubernetes-build,\
     ci-kubernetes-cross-build,\
+    ci-kubernetes-cross-build-release-1-dot-9,\
+    ci-kubernetes-cross-build-release-1-dot-10,\
     ci-kubernetes-e2e-gci-gce-garbage,\
     ci-kubernetes-e2e-gce-etcd3,\
     ci-kubernetes-e2e-gce-examples,\
