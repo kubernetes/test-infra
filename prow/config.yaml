@@ -119,7 +119,7 @@ tide:
     - kubeflow/tf-operator
     - kubeflow/katib
     - kubeflow/experimental-kvc
-    - kubeflow/experimental-seldon
+    - kubeflow/example-seldon
     - kubeflow/experimental-beagle
     - kubeflow/caffe2-operator
     - kubeflow/reporting
