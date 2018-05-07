@@ -786,7 +786,6 @@
       "--provider=gke",
       "--test=false",
       "--test-cmd=../cmd/kustomize/test/main.sh",
-      "--test-cmd-args=/go/src/github.com/kinflate/example-ldap",
       "--test-cmd-name=kinflate-integration",
       "--timeout=120m"
     ],

@@ -8320,8 +8320,6 @@ periodics:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
       - "--repo=k8s.io/kubectl"
-      - "--repo=github.com/kinflate/example-ldap-customized"
-      - "--repo=github.com/kinflate/example-ldap"
       - "--upload=gs://kubernetes-jenkins/logs/"
       - "--timeout=150"
 
