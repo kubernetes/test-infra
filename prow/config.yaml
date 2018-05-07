@@ -2051,7 +2051,7 @@ presubmits:
     rerun_command: "/test pull-kubernetes-e2e-gce-100-performance"
     trigger: "(?m)^/test (all|pull-kubernetes-e2e-gce-100-performance),?(\\s+|$)"
     always_run: true
-    skip_report: true
+    skip_report: false
     max_concurrency: 12
     branches:
     - master
@@ -2870,7 +2870,7 @@ presubmits:
   - name: pull-kubernetes-kubemark-e2e-gce-big
     agent: kubernetes
     always_run: true
-    skip_report: true
+    skip_report: false
     max_concurrency: 12
     skip_branches:
     - release-1.10  # per-release image
@@ -2915,7 +2915,7 @@ presubmits:
   - name: pull-kubernetes-kubemark-e2e-gce-big
     agent: kubernetes
     always_run: true
-    skip_report: true
+    skip_report: false
     max_concurrency: 12
     branches:
     - release-1.10  # per-release image
@@ -2958,7 +2958,7 @@ presubmits:
   - name: pull-kubernetes-kubemark-e2e-gce-big
     agent: kubernetes
     always_run: true
-    skip_report: true
+    skip_report: false
     max_concurrency: 12
     branches:
     - release-1.9  # per-release image
@@ -3001,6 +3001,7 @@ presubmits:
   - name: pull-kubernetes-kubemark-e2e-gce-big
     agent: kubernetes
     always_run: false
+    skip_report: false
     max_concurrency: 12
     branches:
     - release-1.8
@@ -4656,7 +4657,7 @@ presubmits:
     name: pull-security-kubernetes-e2e-gce-100-performance
     rerun_command: /test pull-security-kubernetes-e2e-gce-100-performance
     run_if_changed: ""
-    skip_report: true
+    skip_report: false
     spec:
       containers:
       - args:
@@ -5785,7 +5786,7 @@ presubmits:
     - release-1.10
     - release-1.9
     - release-1.8
-    skip_report: true
+    skip_report: false
     spec:
       containers:
       - args:
@@ -5836,7 +5837,7 @@ presubmits:
     name: pull-security-kubernetes-kubemark-e2e-gce-big
     rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce-big
     run_if_changed: ""
-    skip_report: true
+    skip_report: false
     spec:
       containers:
       - args:
@@ -5887,7 +5888,7 @@ presubmits:
     name: pull-security-kubernetes-kubemark-e2e-gce-big
     rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce-big
     run_if_changed: ""
-    skip_report: true
+    skip_report: false
     spec:
       containers:
       - args:
