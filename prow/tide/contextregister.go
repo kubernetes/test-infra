@@ -21,6 +21,7 @@ import (
 
 	"github.com/shurcooL/githubql"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/config"
 )
 
 type contextChecker interface {
@@ -42,18 +43,49 @@ func newExpectedContext(c string) Context {
 
 // contextRegister implements contextChecker and allow registering of required and optional contexts.
 type contextRegister struct {
-	lock               sync.RWMutex
-	required, optional sets.String
+	lock                sync.RWMutex
+	required, optional  sets.String
+	skipUnknownContexts bool
 }
 
-// newContextRegister instantiates a new contextRegister and register the optional contexts provided.
-func newContextRegister(optional ...string) *contextRegister {
-	r := contextRegister{
-		required: sets.NewString(),
-		optional: sets.NewString(),
+// newContextRegister instantiates a new contextRegister and register tide as optional by default
+// and uses Prow Config to find optional and required tests, as well as skipUnknownContexts.
+func newContextRegister(skipUnknownContexts bool) *contextRegister {
+	r := &contextRegister{
+		required:            sets.NewString(),
+		optional:            sets.NewString(),
+		skipUnknownContexts: skipUnknownContexts,
 	}
+	r.registerOptionalContexts(statusContext)
+	return r
+}
+
+// newContextRegisterFromPolicy instantiates a new contextRegister and register tide as optional by default
+// and uses Prow Config to find optional and required tests, as well as skipUnknownContexts.
+func newContextRegisterFromPolicy(policy *config.Policy) *contextRegister {
+	r := newContextRegister(false)
+	if policy != nil {
+		r.skipUnknownContexts = policy.SkipUnknownContexts
+		if policy.Protect != nil && *policy.Protect {
+			r.registerRequiredContexts(policy.Contexts...)
+		} else if r.skipUnknownContexts {
+			r.registerRequiredContexts(policy.Contexts...)
+		}
+	}
+	return r
+}
+
+// newContextRegisterFromPolicy instantiates a new contextRegister and register tide as optional by default
+// and uses Prow Config to find optional and required tests, as well as skipUnknownContexts.
+func newContextRegisterFromConfig(org, repo, branch string, c *config.Config) (*contextRegister, error) {
+	policy, err := c.GetBranchProtection(org, repo, branch)
+	if err != nil {
+		return nil, err
+	}
+	_, optional := config.BranchRequirements(org, repo, branch, c.Presubmits)
+	r := newContextRegisterFromPolicy(policy)
 	r.registerOptionalContexts(optional...)
-	return &r
+	return r, nil
 }
 
 // ignoreContext checks whether a context can be ignored.
@@ -67,7 +99,10 @@ func (r *contextRegister) ignoreContext(c Context) bool {
 	if r.optional.Has(string(c.Context)) {
 		return true
 	}
-	if r.required.Len() > 0 && !r.required.Has(string(c.Context)) {
+	if r.required.Has(string(c.Context)) {
+		return false
+	}
+	if r.skipUnknownContexts {
 		return true
 	}
 	return false

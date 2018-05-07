@@ -298,11 +298,11 @@ func TestJobRequirements(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		masterActual := jobRequirements(tc.config, "master", false)
+		masterActual, _ := jobRequirements(tc.config, "master", false)
 		if !reflect.DeepEqual(masterActual, tc.masterExpected) {
 			t.Errorf("branch: master - %s: actual %v != expected %v", tc.name, masterActual, tc.masterExpected)
 		}
-		otherActual := jobRequirements(tc.config, "other", false)
+		otherActual, _ := jobRequirements(tc.config, "other", false)
 		if !reflect.DeepEqual(masterActual, tc.masterExpected) {
 			t.Errorf("branch: other - %s: actual %v != expected %v", tc.name, otherActual, tc.otherExpected)
 		}

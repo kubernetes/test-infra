@@ -64,10 +64,6 @@ type Tide struct {
 	// controller to handle org/repo:branch pools. Defaults to 20. Needs to be a
 	// positive number.
 	MaxGoroutines int `json:"max_goroutines,omitempty"`
-
-	// SkipOptionalContexts will use BranchProtection configuration options to know
-	// which contexts can be skipped in order to merge a PR.
-	SkipOptionalContexts bool `json:"skip_optional_contexts,omitempty"`
 }
 
 // MergeMethod returns the merge method to use for a repo. The default of merge is

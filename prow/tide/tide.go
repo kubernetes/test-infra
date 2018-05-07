@@ -139,14 +139,6 @@ type Pool struct {
 	Target []PullRequest
 }
 
-// findRequiredContexts from a Branch protection
-func findRequiredContexts(bp *config.Policy) []string {
-	if bp == nil || bp.Protect == nil || !*bp.Protect {
-		return nil
-	}
-	return bp.Contexts
-}
-
 // NewController makes a Controller out of the given clients.
 func NewController(ghcSync, ghcStatus *github.Client, kc *kube.Client, ca *config.Agent, gc *git.Client, logger *logrus.Entry) *Controller {
 	if logger == nil {
@@ -371,17 +363,14 @@ func (sc *statusController) setStatuses(all, pool []PullRequest) {
 			log.WithError(err).Error("Getting head commit status contexts, skipping...")
 			return
 		}
-		cr := newContextRegister(statusContext)
-		if sc.ca.Config().Tide.SkipOptionalContexts {
-			bp, err := sc.ca.Config().GetBranchProtection(
-				string(pr.Repository.Owner.Login),
-				string(pr.Repository.Name),
-				string(pr.BaseRef.Name))
-			if err != nil {
-				log.WithError(err).Error("Getting branch protection")
-				return
-			}
-			cr.registerRequiredContexts(findRequiredContexts(bp)...)
+		cr, err := newContextRegisterFromConfig(
+			string(pr.Repository.Owner.Login),
+			string(pr.Repository.Name),
+			string(pr.BaseRef.Name),
+			sc.ca.Config())
+		if err != nil {
+			log.WithError(err).Error("Getting branch protection")
+			return
 		}
 		wantState, wantDesc := expectedStatus(queriesByRepo, pr, poolM, cr)
 		var actualState githubql.StatusState
@@ -1006,13 +995,9 @@ func (c *Controller) syncSubpool(sp subpool) (Pool, error) {
 	if err != nil {
 		return Pool{}, fmt.Errorf("error determining required presubmits: %v", err)
 	}
-	cr := newContextRegister(statusContext)
-	if c.ca.Config().Tide.SkipOptionalContexts {
-		bp, err := c.ca.Config().GetBranchProtection(sp.org, sp.repo, sp.branch)
-		if err != nil {
-			return Pool{}, fmt.Errorf("error parsing branch protection: %v", err)
-		}
-		cr.registerRequiredContexts(findRequiredContexts(bp)...)
+	cr, err := newContextRegisterFromConfig(sp.org, sp.repo, sp.branch, c.ca.Config())
+	if err != nil {
+		return Pool{}, fmt.Errorf("error parsing branch protection: %v", err)
 	}
 	successes, pendings, nones := accumulate(presubmits, sp.prs, sp.pjs)
 	batchMerge, batchPending := accumulateBatch(presubmits, sp.prs, sp.pjs)

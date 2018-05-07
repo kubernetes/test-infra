@@ -17,46 +17,78 @@ limitations under the License.
 package tide
 
 import (
+	"reflect"
 	"testing"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/config"
 )
 
 func TestContextRegisterIgnoreContext(t *testing.T) {
 	testCases := []struct {
-		name               string
-		required, optional []string
-		contexts           []string
-		results            []bool
+		name                string
+		skipUnknownContexts bool
+		required, optional  []string
+		contexts            []string
+		results             []bool
 	}{
 		{
-			name:     "only optional contexts registered",
+			name:     "only optional contexts registered - skipUnknownContexts false",
 			contexts: []string{"c1", "o1", "o2"},
 			optional: []string{"o1", "o2"},
 			results:  []bool{false, true, true},
 		},
 		{
-			name:     "no contexts registered",
+			name:     "no contexts registered - skipUnknownContexts false",
 			contexts: []string{"t2"},
 			results:  []bool{false},
 		},
 		{
-			name:     "only required contexts registered",
+			name:     "only required contexts registered - skipUnknownContexts false",
 			required: []string{"c1", "c2", "c3"},
 			contexts: []string{"c1", "c2", "c3", "t1"},
-			results:  []bool{false, false, false, true},
+			results:  []bool{false, false, false, false},
 		},
 		{
-			name:     "optional and required contexts registered",
+			name:     "optional and required contexts registered - skipUnknownContexts false",
 			optional: []string{"o1", "o2"},
 			required: []string{"c1", "c2", "c3"},
 			contexts: []string{"o1", "o2", "c1", "c2", "c3", "t1"},
-			results:  []bool{true, true, false, false, false, true},
+			results:  []bool{true, true, false, false, false, false},
+		},
+		{
+			name:                "only optional contexts registered - skipUnknownContexts true",
+			contexts:            []string{"c1", "o1", "o2"},
+			optional:            []string{"o1", "o2"},
+			skipUnknownContexts: true,
+			results:             []bool{true, true, true},
+		},
+		{
+			name:                "no contexts registered - skipUnknownContexts true",
+			contexts:            []string{"t2"},
+			skipUnknownContexts: true,
+			results:             []bool{true},
+		},
+		{
+			name:                "only required contexts registered - skipUnknownContexts true",
+			required:            []string{"c1", "c2", "c3"},
+			contexts:            []string{"c1", "c2", "c3", "t1"},
+			skipUnknownContexts: true,
+			results:             []bool{false, false, false, true},
+		},
+		{
+			name:                "optional and required contexts registered - skipUnknownContexts true",
+			optional:            []string{"o1", "o2"},
+			required:            []string{"c1", "c2", "c3"},
+			contexts:            []string{"o1", "o2", "c1", "c2", "c3", "t1"},
+			skipUnknownContexts: true,
+			results:             []bool{true, true, false, false, false, true},
 		},
 	}
 
 	for _, tc := range testCases {
-		cr := newContextRegister(tc.optional...)
+		cr := newContextRegister(tc.skipUnknownContexts)
+		cr.registerOptionalContexts(tc.optional...)
 		cr.registerRequiredContexts(tc.required...)
 		for i, c := range tc.contexts {
 			if cr.ignoreContext(newExpectedContext(c)) != tc.results[i] {
@@ -77,6 +109,7 @@ func contextsToSet(contexts []Context) sets.String {
 func TestContextRegisterMissingContexts(t *testing.T) {
 	testCases := []struct {
 		name                               string
+		skipUnknownContexts                bool
 		required, optional                 []string
 		existingContexts, expectedContexts []string
 	}{
@@ -116,7 +149,8 @@ func TestContextRegisterMissingContexts(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		cr := newContextRegister(tc.optional...)
+		cr := newContextRegister(tc.skipUnknownContexts)
+		cr.registerOptionalContexts(tc.optional...)
 		cr.registerRequiredContexts(tc.required...)
 		var contexts []Context
 		for _, c := range tc.existingContexts {
@@ -126,6 +160,60 @@ func TestContextRegisterMissingContexts(t *testing.T) {
 		m := contextsToSet(missingContexts)
 		if !m.Equal(sets.NewString(tc.expectedContexts...)) {
 			t.Errorf("%s - expected %v got %v", tc.name, tc.expectedContexts, missingContexts)
+		}
+	}
+}
+
+func TestNewContextRegisterFromPolicy(t *testing.T) {
+	yes := true
+	no := false
+	testCases := []struct {
+		name    string
+		config  *config.Policy
+		results []string
+	}{
+		{
+			name: "no config",
+		},
+		{
+			name:   "config protect false missing context",
+			config: &config.Policy{Protect: &no},
+		},
+		{
+			name: "config existing context",
+			config: &config.Policy{
+				Protect:  &yes,
+				Contexts: []string{"c1", "c2", "c3"},
+			},
+			results: []string{"c1", "c2", "c3"},
+		},
+		{
+			name: "config existing context protect disabled",
+			config: &config.Policy{
+				Protect:  &no,
+				Contexts: []string{"c1", "c2", "c3"},
+			},
+		},
+		{
+			name: "config existing context nil protection",
+			config: &config.Policy{
+				Contexts: []string{"c1", "c2", "c3"},
+			},
+		},
+		{
+			name: "config missing context protect enabled",
+			config: &config.Policy{
+				Protect: &yes,
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		r := newContextRegisterFromPolicy(tc.config)
+		expected := newContextRegister(false)
+		expected.registerRequiredContexts(tc.results...)
+		if !reflect.DeepEqual(r, expected) {
+			t.Errorf("%s - expected contexts %v got %v", tc.name, expected, r)
 		}
 	}
 }

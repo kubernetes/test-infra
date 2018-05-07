@@ -637,7 +637,7 @@ func TestExpectedStatus(t *testing.T) {
 			pool = map[string]PullRequest{"#0": {}}
 		}
 
-		state, desc := expectedStatus(queriesByRepo, &pr, pool, newContextRegister(statusContext))
+		state, desc := expectedStatus(queriesByRepo, &pr, pool, newContextRegister(false))
 		if state != tc.state {
 			t.Errorf("Expected status state %q, but got %q.", string(tc.state), string(state))
 		}
@@ -1023,7 +1023,7 @@ func TestPickBatch(t *testing.T) {
 		gc:     gc,
 		ca:     ca,
 	}
-	prs, err := c.pickBatch(sp, newContextRegister(statusContext))
+	prs, err := c.pickBatch(sp, newContextRegister(false))
 	if err != nil {
 		t.Fatalf("Error from pickBatch: %v", err)
 	}
@@ -1311,7 +1311,7 @@ func TestTakeAction(t *testing.T) {
 			batchPending = []PullRequest{{}}
 		}
 		t.Logf("Test case: %s", tc.name)
-		cr := newContextRegister(statusContext)
+		cr := newContextRegister(false)
 		if act, _, err := c.takeAction(sp, tc.presubmits, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges), cr); err != nil {
 			t.Errorf("Error in takeAction: %v", err)
 			continue
@@ -1603,9 +1603,8 @@ func TestIsPassing(t *testing.T) {
 		combinedContexts map[string]string
 	}{
 		{
-			name:     "required checks disabled should not impact - passing",
-			passing:  true,
-			optional: []string{statusContext},
+			name:    "required checks disabled should not impact - passing",
+			passing: true,
 			config: &config.Policy{
 				Protect:  &no,
 				Contexts: []string{"c1", "c2", "c3"},
@@ -1623,8 +1622,8 @@ func TestIsPassing(t *testing.T) {
 			},
 		},
 		{
-			name:             "required checks used - passing",
-			passing:          true,
+			name:             "required checks used - failing because of missing contexts",
+			passing:          false,
 			optional:         []string{"c4"},
 			combinedContexts: map[string]string{"c1": success, "c2": failure, "c3": success, "c4": failure},
 			config: &config.Policy{
@@ -1642,6 +1641,49 @@ func TestIsPassing(t *testing.T) {
 				Contexts: []string{"c1", "c2", "c3"},
 			},
 		},
+		{
+			name:    "unprotected but using required checks and skipping unlisted - passing",
+			passing: false,
+			config: &config.Policy{
+				Protect:             &no,
+				Contexts:            []string{"c1", "c2", "c3"},
+				SkipUnknownContexts: true,
+			},
+			combinedContexts: map[string]string{"c1": success, "c2": success, statusContext: failure},
+		},
+		{
+			name:             "unprotected but using required checks disabled and skipping unlisted - failing",
+			passing:          false,
+			optional:         []string{"c4"},
+			combinedContexts: map[string]string{"c1": success, "c2": failure},
+			config: &config.Policy{
+				Protect:             &no,
+				Contexts:            []string{"c1", "c2"},
+				SkipUnknownContexts: true,
+			},
+		},
+		{
+			name:             "unprotected but using required checks used and skipping unlisted - passing",
+			passing:          true,
+			optional:         []string{"c4"},
+			combinedContexts: map[string]string{"c1": success, "c2": failure, "c3": success, "c4": failure},
+			config: &config.Policy{
+				Protect:             &yes,
+				Contexts:            []string{"c1", "c3"},
+				SkipUnknownContexts: true,
+			},
+		},
+		{
+			name:             "protected required checks used and skipping unlisted - failing",
+			passing:          false,
+			optional:         []string{"c4"},
+			combinedContexts: map[string]string{"c1": success, "c2": success, "c4": success},
+			config: &config.Policy{
+				Protect:             &yes,
+				Contexts:            []string{"c1", "c2", "c3"},
+				SkipUnknownContexts: true,
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -1654,8 +1696,8 @@ func TestIsPassing(t *testing.T) {
 			t.Errorf("Failed to get log output before testing: %v", err)
 			t.FailNow()
 		}
-		cr := newContextRegister(tc.optional...)
-		cr.registerRequiredContexts(findRequiredContexts(tc.config)...)
+		cr := newContextRegisterFromPolicy(tc.config)
+		cr.registerOptionalContexts(tc.optional...)
 		pr := PullRequest{HeadRefOID: githubql.String(headSHA)}
 		passing := isPassingTests(log, ghc, pr, cr)
 		if passing != tc.passing {
@@ -1922,58 +1964,6 @@ func TestPresubmitsByPull(t *testing.T) {
 		}
 		if !reflect.DeepEqual(c.fileChangesCache, tc.expectedChangeCache) {
 			t.Errorf("expected file change cache: %v,\nbut got %v\n", tc.expectedChangeCache, c.fileChangesCache)
-		}
-	}
-}
-
-func TestFindRequiredContexts(t *testing.T) {
-	yes := true
-	no := false
-	testCases := []struct {
-		name    string
-		config  *config.Policy
-		results []string
-	}{
-		{
-			name: "no config",
-		},
-		{
-			name:   "config protect false missing context",
-			config: &config.Policy{Protect: &no},
-		},
-		{
-			name: "config existing context",
-			config: &config.Policy{
-				Protect:  &yes,
-				Contexts: []string{"c1", "c2", "c3"},
-			},
-			results: []string{"c1", "c2", "c3"},
-		},
-		{
-			name: "config existing context protect disabled",
-			config: &config.Policy{
-				Protect:  &no,
-				Contexts: []string{"c1", "c2", "c3"},
-			},
-		},
-		{
-			name: "config existing context nil protection",
-			config: &config.Policy{
-				Contexts: []string{"c1", "c2", "c3"},
-			},
-		},
-		{
-			name: "config missing context protect enabled",
-			config: &config.Policy{
-				Protect: &yes,
-			},
-		},
-	}
-
-	for _, tc := range testCases {
-		r := findRequiredContexts(tc.config)
-		if !reflect.DeepEqual(r, tc.results) {
-			t.Errorf("%s - expected contexts %v got %v", tc.name, tc.results, r)
 		}
 	}
 }
