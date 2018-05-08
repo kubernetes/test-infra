@@ -32,6 +32,7 @@ import (
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
+	"k8s.io/test-infra/prow/config/org"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
@@ -49,12 +50,13 @@ type Config struct {
 	// Periodics are not associated with any repo.
 	Periodics []Periodic `json:"periodics,omitempty"`
 
-	Tide             Tide             `json:"tide,omitempty"`
-	Plank            Plank            `json:"plank,omitempty"`
-	Sinker           Sinker           `json:"sinker,omitempty"`
-	Deck             Deck             `json:"deck,omitempty"`
-	BranchProtection BranchProtection `json:"branch-protection,omitempty"`
-	Gerrit           Gerrit           `json:"gerrit,omitempty"`
+	Tide             Tide                  `json:"tide,omitempty"`
+	Plank            Plank                 `json:"plank,omitempty"`
+	Sinker           Sinker                `json:"sinker,omitempty"`
+	Deck             Deck                  `json:"deck,omitempty"`
+	BranchProtection BranchProtection      `json:"branch-protection,omitempty"`
+	Orgs             map[string]org.Config `json:"orgs,omitempty"`
+	Gerrit           Gerrit                `json:"gerrit,omitempty"`
 
 	// TODO: Move this out of the main config.
 	JenkinsOperators []JenkinsOperator `json:"jenkins_operators,omitempty"`

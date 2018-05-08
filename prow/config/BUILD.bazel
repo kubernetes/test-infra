@@ -43,6 +43,7 @@ go_library(
     ],
     importpath = "k8s.io/test-infra/prow/config",
     deps = [
+        "//prow/config/org:go_default_library",
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/pod-utils/decorate:go_default_library",
@@ -67,6 +68,9 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//prow/config/org:all-srcs",
+    ],
     tags = ["automanaged"],
 )
