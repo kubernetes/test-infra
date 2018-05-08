@@ -312,11 +312,11 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery) (string, int) {
 // in order to generate a diff for the status description. We choose the query
 // for the repo that the PR is closest to meeting (as determined by the number
 // of unmet/violated requirements).
-func expectedStatus(queriesByRepo map[string]config.TideQueries, pr *PullRequest, pool map[string]PullRequest) (string, string) {
+func expectedStatus(queryMap config.QueryMap, pr *PullRequest, pool map[string]PullRequest) (string, string) {
 	if _, ok := pool[prKey(pr)]; !ok {
 		minDiffCount := -1
 		var minDiff string
-		for _, q := range queriesByRepo[string(pr.Repository.NameWithOwner)] {
+		for _, q := range queryMap.ForRepo(string(pr.Repository.Owner.Login), string(pr.Repository.Name)) {
 			diff, diffCount := requirementDiff(pr, &q)
 			if minDiffCount == -1 || diffCount < minDiffCount {
 				minDiffCount = diffCount
@@ -352,7 +352,7 @@ func targetUrl(c *config.Agent, pr *PullRequest, log *logrus.Entry) string {
 
 func (sc *statusController) setStatuses(all, pool []PullRequest) {
 	poolM := byRepoAndNumber(pool)
-	queriesByRepo := sc.ca.Config().Tide.Queries.ByRepo()
+	queryMap := sc.ca.Config().Tide.Queries.QueryMap()
 	processed := sets.NewString()
 
 	process := func(pr *PullRequest) {
@@ -365,7 +365,7 @@ func (sc *statusController) setStatuses(all, pool []PullRequest) {
 			return
 		}
 
-		wantState, wantDesc := expectedStatus(queriesByRepo, pr, poolM)
+		wantState, wantDesc := expectedStatus(queryMap, pr, poolM)
 		var actualState githubql.StatusState
 		var actualDesc string
 		for _, ctx := range contexts {

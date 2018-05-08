@@ -85,9 +85,8 @@ func (t *Tide) MergeMethod(org, repo string) github.PullRequestMergeType {
 
 // TideQuery is turned into a GitHub search query. See the docs for details:
 // https://help.github.com/articles/searching-issues-and-pull-requests/
-// If we choose to add orgs then be sure to update the logic for listing all
-// PRs in the tide package.
 type TideQuery struct {
+	Orgs  []string `json:"orgs,omitempty"`
 	Repos []string `json:"repos,omitempty"`
 
 	ExcludedBranches []string `json:"excludedBranches,omitempty"`
@@ -101,6 +100,9 @@ type TideQuery struct {
 
 func (tq *TideQuery) Query() string {
 	toks := []string{"is:pr", "state:open"}
+	for _, o := range tq.Orgs {
+		toks = append(toks, fmt.Sprintf("org:\"%s\"", o))
+	}
 	for _, r := range tq.Repos {
 		toks = append(toks, fmt.Sprintf("repo:\"%s\"", r))
 	}
@@ -127,9 +129,14 @@ func (tq *TideQuery) Query() string {
 func (tqs TideQueries) AllPRsSince(t time.Time) string {
 	toks := []string{"is:pr", "state:open"}
 
+	orgs := sets.NewString()
 	repos := sets.NewString()
 	for i := range tqs {
+		orgs.Insert(tqs[i].Orgs...)
 		repos.Insert(tqs[i].Repos...)
+	}
+	for _, o := range orgs.List() {
+		toks = append(toks, fmt.Sprintf("org:\"%s\"", o))
 	}
 	for _, r := range repos.List() {
 		toks = append(toks, fmt.Sprintf("repo:\"%s\"", r))
@@ -143,13 +150,25 @@ func (tqs TideQueries) AllPRsSince(t time.Time) string {
 	return strings.Join(toks, " ")
 }
 
-// ByRepo returns a mapping from "org/repo" -> TideQueries that apply to that repo.
-func (tqs TideQueries) ByRepo() map[string]TideQueries {
+// QueryMap is a mapping from ("org/repo" or "org") -> TideQueries that
+// apply to that org or repo.
+type QueryMap map[string]TideQueries
+
+// QueryMap creates a QueryMap from TideQueries
+func (tqs TideQueries) QueryMap() QueryMap {
 	res := make(map[string]TideQueries)
 	for _, tq := range tqs {
+		for _, org := range tq.Orgs {
+			res[org] = append(res[org], tq)
+		}
 		for _, repo := range tq.Repos {
 			res[repo] = append(res[repo], tq)
 		}
 	}
 	return res
+}
+
+// ForRepo returns the tide queries that apply to a repo.
+func (q QueryMap) ForRepo(org, repo string) TideQueries {
+	return append(append(TideQueries(nil), q[org]...), q[fmt.Sprintf("%s/%s", org, repo)]...)
 }

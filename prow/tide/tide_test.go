@@ -589,7 +589,7 @@ func TestExpectedStatus(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Logf("Test Case: %q\n", tc.name)
-		queriesByRepo := map[string]config.TideQueries{
+		queriesByRepo := config.QueryMap(map[string]config.TideQueries{
 			"": {
 				config.TideQuery{
 					ExcludedBranches: tc.branchBlacklist,
@@ -601,7 +601,7 @@ func TestExpectedStatus(t *testing.T) {
 					Labels: []string{"1", "2", "3", "4", "5", "6", "7"}, // lots of requirements
 				},
 			},
-		}
+		})
 		var pr PullRequest
 		pr.BaseRef = struct {
 			Name   githubql.String
