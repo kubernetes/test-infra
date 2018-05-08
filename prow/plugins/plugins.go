@@ -189,8 +189,11 @@ type ExternalPlugin struct {
 type Blunderbuss struct {
 	// ReviewerCount is the minimum number of reviewers to request
 	// reviews from. Defaults to requesting reviews from 2 reviewers
-	// if none of the given options is set.
+	// if FileWeightCount is not set.
 	ReviewerCount *int `json:"request_count,omitempty"`
+	// MaxReviewerCount is the maximum number of reviewers to request
+	// reviews from. Defaults to 0 meaning no limit.
+	MaxReviewerCount int `json:"max_request_count,omitempty"`
 	// FileWeightCount is the maximum number of reviewers to request
 	// reviews from. Selects reviewers based on file weighting.
 	// This and request_count are mutually exclusive options.

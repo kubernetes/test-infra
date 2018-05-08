@@ -222,10 +222,11 @@ def get_builds(db, jobs_dir, metadata, threads, client_class):
     gcs = client_class(jobs_dir, metadata)
 
     print('Loading builds from %s' % jobs_dir)
+    sys.stdout.flush()
 
     builds_have = db.get_existing_builds(jobs_dir)
-    if builds_have:
-        print('already have %d builds' % len(builds_have))
+    print('already have %d builds' % len(builds_have))
+    sys.stdout.flush()
 
     jobs_and_builds = gcs.get_builds(builds_have)
     pool = None
@@ -274,6 +275,8 @@ def remove_system_out(data):
 
 def download_junit(db, threads, client_class):
     """Download junit results for builds without them."""
+    print("Downloading JUnit artifacts.")
+    sys.stdout.flush()
     builds_to_grab = db.get_builds_missing_junit()
     pool = None
     if threads > 1:

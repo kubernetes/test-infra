@@ -5,6 +5,8 @@ go_library(
     srcs = [
         "bridge.go",
         "cmd.go",
+        "cmd_unix.go",
+        "cmd_windows.go",
         "constraints.go",
         "deduce.go",
         "discovery.go",
@@ -39,42 +41,8 @@ go_library(
         "version.go",
         "version_queue.go",
         "version_unifier.go",
-    ] + select({
-        "@io_bazel_rules_go//go/platform:android": [
-            "cmd_unix.go",
-        ],
-        "@io_bazel_rules_go//go/platform:darwin": [
-            "cmd_unix.go",
-        ],
-        "@io_bazel_rules_go//go/platform:dragonfly": [
-            "cmd_unix.go",
-        ],
-        "@io_bazel_rules_go//go/platform:freebsd": [
-            "cmd_unix.go",
-        ],
-        "@io_bazel_rules_go//go/platform:linux": [
-            "cmd_unix.go",
-        ],
-        "@io_bazel_rules_go//go/platform:nacl": [
-            "cmd_unix.go",
-        ],
-        "@io_bazel_rules_go//go/platform:netbsd": [
-            "cmd_unix.go",
-        ],
-        "@io_bazel_rules_go//go/platform:openbsd": [
-            "cmd_unix.go",
-        ],
-        "@io_bazel_rules_go//go/platform:plan9": [
-            "cmd_unix.go",
-        ],
-        "@io_bazel_rules_go//go/platform:solaris": [
-            "cmd_unix.go",
-        ],
-        "@io_bazel_rules_go//go/platform:windows": [
-            "cmd_windows.go",
-        ],
-        "//conditions:default": [],
-    }),
+    ],
+    importmap = "vendor/github.com/golang/dep/gps",
     importpath = "github.com/golang/dep/gps",
     visibility = ["//visibility:public"],
     deps = [

@@ -553,6 +553,31 @@ func (g *gkeDeployer) getClusterFirewall() (string, error) {
 	return "e2e-ports-" + g.instanceGroups[0].uniq, nil
 }
 
+// This function ensures that all firewall-rules are deleted from specific network.
+// We also want to keep in logs that there were some resources leaking.
+func (g *gkeDeployer) cleanupNetworkFirewalls() (int, error) {
+	fws, err := exec.Command("gcloud", "compute", "firewall-rules", "list",
+		"--format=value(name)",
+		"--project="+g.project,
+		"--filter=network:"+g.network).Output()
+	if err != nil {
+		return 0, fmt.Errorf("firewall rules list failed: %s", util.ExecError(err))
+	}
+	if len(fws) > 0 {
+		fwList := strings.Split(strings.TrimSpace(string(fws)), "\n")
+		log.Printf("Network %s has %v undeleted firewall rules %v", g.network, len(fwList), fwList)
+		commandArgs := []string{"compute", "firewall-rules", "delete", "-q"}
+		commandArgs = append(commandArgs, fwList...)
+		commandArgs = append(commandArgs, "--project="+g.project)
+		errFirewall := control.FinishRunning(exec.Command("gcloud", commandArgs...))
+		if errFirewall != nil {
+			return 0, fmt.Errorf("error deleting firewall: %v", errFirewall)
+		}
+		return len(fwList), nil
+	}
+	return 0, nil
+}
+
 func (g *gkeDeployer) Down() error {
 	firewall, err := g.getClusterFirewall()
 	if err != nil {
@@ -566,8 +591,14 @@ func (g *gkeDeployer) Down() error {
 		"gcloud", g.containerArgs("clusters", "delete", "-q", g.cluster,
 			"--project="+g.project,
 			g.location)...))
-	errFirewall := control.FinishRunning(exec.Command("gcloud", "compute", "firewall-rules", "delete", "-q", firewall,
-		"--project="+g.project))
+	var errFirewall error
+	if control.FinishRunning(exec.Command("gcloud", "compute", "firewall-rules", "describe", firewall,
+		"--project="+g.project,
+		"--format=value(name)")) == nil {
+		errFirewall = control.FinishRunning(exec.Command("gcloud", "compute", "firewall-rules", "delete", "-q", firewall,
+			"--project="+g.project))
+	}
+	numLeakedFWRules, errCleanFirewalls := g.cleanupNetworkFirewalls()
 	var errSubnet error
 	if g.subnetwork != "" {
 		errSubnet = control.FinishRunning(exec.Command("gcloud", "compute", "networks", "subnets", "delete", "-q", g.subnetwork,
@@ -581,11 +612,17 @@ func (g *gkeDeployer) Down() error {
 	if errFirewall != nil {
 		return fmt.Errorf("error deleting firewall: %v", errFirewall)
 	}
+	if errCleanFirewalls != nil {
+		return fmt.Errorf("error cleaning-up firewalls: %v", errCleanFirewalls)
+	}
 	if errSubnet != nil {
 		return fmt.Errorf("error deleting subnetwork: %v", errSubnet)
 	}
 	if errNetwork != nil {
 		return fmt.Errorf("error deleting network: %v", errNetwork)
+	}
+	if numLeakedFWRules > 0 {
+		return fmt.Errorf("leaked firewall rules!")
 	}
 	return nil
 }

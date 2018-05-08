@@ -1239,7 +1239,8 @@ func TestRemoveBranchProtection(t *testing.T) {
 
 func TestUpdateBranchProtection(t *testing.T) {
 	cases := []struct {
-		name     string
+		name string
+		// TODO(fejta): expand beyond contexts/pushers
 		contexts []string
 		pushers  []string
 		err      bool
@@ -1249,36 +1250,6 @@ func TestUpdateBranchProtection(t *testing.T) {
 			contexts: []string{"foo-pr-test", "other"},
 			pushers:  []string{"movers", "awesome-team", "shakers"},
 			err:      false,
-		},
-		{
-			name:     "empty contexts",
-			contexts: []string{"foo-pr-test", "other"},
-			pushers:  []string{},
-			err:      false,
-		},
-		{
-			name:     "empty pushers",
-			contexts: []string{},
-			pushers:  []string{"movers", "awesome-team", "shakers"},
-			err:      false,
-		},
-		{
-			name:     "nil contexts",
-			contexts: nil,
-			pushers:  []string{"movers", "awesome-team", "shakers"},
-			err:      true,
-		},
-		{
-			name:     "nil pushers",
-			contexts: []string{"foo-pr-test", "other"},
-			pushers:  nil,
-			err:      true,
-		},
-		{
-			name:     "nil both",
-			contexts: nil,
-			pushers:  nil,
-			err:      true,
 		},
 	}
 
@@ -1336,7 +1307,14 @@ func TestUpdateBranchProtection(t *testing.T) {
 		defer ts.Close()
 		c := getClient(ts.URL)
 
-		err := c.UpdateBranchProtection("org", "repo", "master", tc.contexts, tc.pushers)
+		err := c.UpdateBranchProtection("org", "repo", "master", BranchProtectionRequest{
+			RequiredStatusChecks: &RequiredStatusChecks{
+				Contexts: tc.contexts,
+			},
+			Restrictions: &Restrictions{
+				Teams: tc.pushers,
+			},
+		})
 		if tc.err && err == nil {
 			t.Errorf("%s: expected error failed to occur", tc.name)
 		}

@@ -350,7 +350,7 @@ func complete(o *options) error {
 			log.Printf("deploy %v, GetClusterCreated failed: %v", o.deployment, err)
 		} else {
 			if time.Now().After(created.Add(o.soakDuration)) {
-				// flip up on - which will tear down previous custer and start a new one
+				// flip up on - which will tear down previous cluster and start a new one
 				log.Printf("Previous soak cluster created at %v, will recreate the cluster", created)
 				o.up = true
 			}

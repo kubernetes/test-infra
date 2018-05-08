@@ -854,30 +854,13 @@ func (c *Client) RemoveBranchProtection(org, repo, branch string) error {
 	return err
 }
 
-func (c *Client) UpdateBranchProtection(org, repo, branch string, requiredContexts []string, pushers []string) error {
-	c.log("UpdateBranchProtection", org, repo, branch, requiredContexts, pushers)
-	if requiredContexts == nil {
-		return errors.New("requiredContexts cannot be nil")
-	}
-	if pushers == nil {
-		return errors.New("pushers cannot be nil")
-	}
+func (c *Client) UpdateBranchProtection(org, repo, branch string, config BranchProtectionRequest) error {
+	c.log("UpdateBranchProtection", org, repo, branch, config)
 	_, err := c.request(&request{
-		method: http.MethodPut,
-		path:   fmt.Sprintf("%s/repos/%s/%s/branches/%s/protection", c.base, org, repo, branch),
-		requestBody: BranchProtectionRequest{
-			RequiredStatusChecks: RequiredStatusChecks{
-				Strict:   false,
-				Contexts: requiredContexts,
-			},
-			EnforceAdmins:              false,
-			RequiredPullRequestReviews: nil,
-			Restrictions: Restrictions{
-				Teams: pushers,
-				Users: []string{},
-			},
-		},
-		exitCodes: []int{200},
+		method:      http.MethodPut,
+		path:        fmt.Sprintf("%s/repos/%s/%s/branches/%s/protection", c.base, org, repo, branch),
+		requestBody: config,
+		exitCodes:   []int{200},
 	}, nil)
 	return err
 }

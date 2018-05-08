@@ -129,7 +129,7 @@ func main() {
 
 type client interface {
 	RemoveBranchProtection(org, repo, branch string) error
-	UpdateBranchProtection(org, repo, branch string, contexts, pushers []string) error
+	UpdateBranchProtection(org, repo, branch string, config github.BranchProtectionRequest) error
 	GetBranches(org, repo string) ([]github.Branch, error)
 	GetRepos(org string, user bool) ([]github.Repo, error)
 }
@@ -151,9 +151,13 @@ func (p *Protector) ConfigureBranches() {
 				p.errors.add(fmt.Errorf("remove %s/%s=%s protection failed: %v", r.Org, r.Repo, r.Branch, err))
 			}
 		} else {
-			err := p.client.UpdateBranchProtection(r.Org, r.Repo, r.Branch, r.Contexts, r.Pushers)
+			req := makeRequest(config.Policy{
+				Pushers:  r.Pushers,
+				Contexts: r.Contexts,
+			})
+			err := p.client.UpdateBranchProtection(r.Org, r.Repo, r.Branch, req)
 			if err != nil {
-				p.errors.add(fmt.Errorf("update %s/%s=%s protection failed: %v", r.Org, r.Repo, r.Branch, err))
+				p.errors.add(fmt.Errorf("update %s/%s=%s protection to %v failed: %v", r.Org, r.Repo, r.Branch, req, err))
 			}
 		}
 	}

@@ -118,8 +118,8 @@
     "internal/version",
     "internal/wspace",
   ]
-  revision = "ff4d67f395b3f4d1dc9810eeceb61585fea252cb"
-  version = "0.10.1"
+  revision = "8bc6a862933eaa0d7431e15b308ceadc5729a6f9"
+  version = "0.11.0"
 
 [[projects]]
   name = "github.com/bazelbuild/buildtools"
@@ -217,15 +217,6 @@
   packages = ["."]
   revision = "0dadbb0345b35ec7ef35e228dabb8de89a65bf52"
   version = "v0.3.2"
-
-[[projects]]
-  name = "github.com/emicklei/go-restful"
-  packages = [
-    ".",
-    "log",
-  ]
-  revision = "2dd44038f0b95ae693b266c5f87593b5d2fdd78d"
-  version = "v2.5.0"
 
 [[projects]]
   name = "github.com/fsnotify/fsnotify"
@@ -475,12 +466,6 @@
   version = "1.1.2"
 
 [[projects]]
-  name = "github.com/juju/ratelimit"
-  packages = ["."]
-  revision = "59fac5042749a5afb9af70e813da1dd5474f0167"
-  version = "1.0.1"
-
-[[projects]]
   branch = "master"
   name = "github.com/kubernetes/repo-infra"
   packages = ["kazel"]
@@ -713,6 +698,12 @@
   revision = "eb22672bea55af56d225d4e35405f4d2e9f062a0"
 
 [[projects]]
+  branch = "master"
+  name = "golang.org/x/time"
+  packages = ["rate"]
+  revision = "fbb02b2291d28baffd63558aa44b4b56f178d650"
+
+[[projects]]
   name = "golang.org/x/tools"
   packages = [
     "go/gcexportdata",
@@ -811,7 +802,7 @@
   revision = "a83829b6f1293c91addabc89d0571c246397bbf4"
 
 [[projects]]
-  branch = "master"
+  branch = "release-1.10"
   name = "k8s.io/api"
   packages = [
     "admissionregistration/v1alpha1",
@@ -843,7 +834,7 @@
     "storage/v1alpha1",
     "storage/v1beta1",
   ]
-  revision = "fbe336854453ac8e27bffe14e1964555245cbd05"
+  revision = "590a9173e3b65d74e907fcfd94b78465cf314760"
 
 [[projects]]
   branch = "master"
@@ -858,7 +849,7 @@
   revision = "e4d9f6c01342df2d731be47146016a52d1a623ed"
 
 [[projects]]
-  branch = "release-1.9"
+  branch = "release-1.10"
   name = "k8s.io/apimachinery"
   packages = [
     "pkg/api/equality",
@@ -867,7 +858,7 @@
     "pkg/api/resource",
     "pkg/apis/meta/v1",
     "pkg/apis/meta/v1/unstructured",
-    "pkg/apis/meta/v1alpha1",
+    "pkg/apis/meta/v1beta1",
     "pkg/conversion",
     "pkg/conversion/queryparams",
     "pkg/fields",
@@ -899,13 +890,13 @@
     "pkg/watch",
     "third_party/forked/golang/reflect",
   ]
-  revision = "180eddb345a5be3a157cea1c624700ad5bd27b8f"
+  revision = "01bc873149a1802eb74df583613872d126449ed5"
 
 [[projects]]
-  branch = "release-1.9"
+  branch = "release-1.10"
   name = "k8s.io/apiserver"
   packages = ["pkg/util/flag"]
-  revision = "91e14f394e4796abf5a994a349a222e7081d86b6"
+  revision = "0841753fc26e934b715ca7a83dced5bcb721245a"
 
 [[projects]]
   name = "k8s.io/client-go"
@@ -941,7 +932,10 @@
     "kubernetes/typed/storage/v1",
     "kubernetes/typed/storage/v1alpha1",
     "kubernetes/typed/storage/v1beta1",
+    "pkg/apis/clientauthentication",
+    "pkg/apis/clientauthentication/v1alpha1",
     "pkg/version",
+    "plugin/pkg/client/auth/exec",
     "rest",
     "rest/watch",
     "tools/auth",
@@ -957,19 +951,13 @@
     "util/homedir",
     "util/integer",
   ]
-  revision = "78700dec6369ba22221b72770783300f143df150"
-  version = "v6.0.0"
+  revision = "23781f4d6632d88e869066eaebb743857aa1ef9b"
+  version = "v7.0.0"
 
 [[projects]]
   name = "k8s.io/contrib"
   packages = ["test-utils/utils"]
   revision = "8f0f928c68f2c76ade9c1ee0249ae5cea5673cac"
-
-[[projects]]
-  branch = "master"
-  name = "k8s.io/kube-openapi"
-  packages = ["pkg/common"]
-  revision = "a07b7bbb58e7fdc5144f8d7046331d29fc9ad3b3"
 
 [[projects]]
   branch = "master"
@@ -980,6 +968,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f7037007e132280c60b53d6a6649c4b34e3ae0526730304189a7b200471d4993"
+  inputs-digest = "b7cd4091ef2023171dfbddb7325dab50faae32818ef830edb8bfa855d74545a6"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -23,11 +23,8 @@ the different services interact.
   - Triage clusters together similar failures
   - Search for test failures across jobs
   - Filter down failures in a specific regex of tests and/or jobs
-* [Test history](https://go.k8s.io/test-history) is a deprecated tool
-  - Use the triage dashboard instead
-  - Summarizes the last 24 hours of testing
-  - See [Kettle](kettle) and the corresponding [bigquery metrics](metrics) that largely supplement this information
-
+* [Velodrome metrics](http://velodrome.k8s.io/dashboard/db/bigquery-metrics?orgId=1) track job and test health.
+  - [Kettle](kettle) does collection, [metrics](metrics) does reporting, and [velodrome](velodrome) is the frontend.
 
 ## Automated testing
 

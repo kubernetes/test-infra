@@ -195,6 +195,7 @@ resources:
   - k8s-jkns-gke-serial-1-6
   - k8s-jkns-gke-slow-1-3
   - k8s-jkns-gke-slow-1-6
+  - k8s-jkns-gke-soak
   - k8s-jkns-gke-ubuntu
   - k8s-jkns-gke-ubuntu-1-6
   - k8s-jkns-gke-ubuntu-1-6-alpha
@@ -289,6 +290,14 @@ resources:
   - gce-up-c1-3-g1-4-up-clu
   - gce-up-c1-3-g1-4-up-clu-n
   - gce-up-c1-3-g1-4-up-mas
+  - gce-up-c1-3-glat-up-clu-n
+  - gce-up-c1-4-glat-up-clu
+  - gce-up-c1-4-glat-up-clu-n
+  - gce-up-c1-4-glat-up-mas
+  - gce-up-g1-3-clat-up-clu-n
+  - gce-up-g1-4-clat-up-clu
+  - gce-up-g1-4-glat-up-clu-n
+  - gce-up-g1-4-glat-up-mas
   - gce-up-glat-up-etcd
   - k8s-boskos-gce-project-01
   - k8s-boskos-gce-project-02
@@ -333,11 +342,13 @@ resources:
   - k8s-gce-reboot-1-5
   - k8s-gce-serial-1-5
   - k8s-gce-slow-1-5
+  - k8s-gce-soak-1-5
   - k8s-gce-upg-1-5-1-6-up-clu
   - k8s-gce-upg-1-5-1-6-up-clu-n
   - k8s-gce-upg-1-5-1-6-up-mas
   - k8s-gci-gce-ingress1-5
   - k8s-gci-gce-reboot-1-5
+  - k8s-gci-gce-soak-1-5
   - k8s-jenkins-charts
   - k8s-jenkins-cvm
   - k8s-jenkins-garbagecollector
@@ -390,8 +401,10 @@ resources:
   - k8s-jkns-gce-slow-1-3
   - k8s-jkns-gce-slow-1-4
   - k8s-jkns-gce-slow-1-6
+  - k8s-jkns-gce-soak
   - k8s-jkns-gce-soak-1-2
   - k8s-jkns-gce-soak-1-4
+  - k8s-jkns-gce-soak-2
   - k8s-jkns-gce-taintevict
   - k8s-jkns-gce-ubuntu-1-6
   - k8s-jkns-gce-ubuntu-1-6-serial
@@ -424,6 +437,7 @@ resources:
   - k8s-jkns-gci-gke-reboot-1-4
   - k8s-jkns-gke-reboot-1-4
   - k8s-jkns-gke-slow-1-4
+  - k8s-jkns-pr-cnry-e2e-gce-fdrtn
   - k8s-jkns-pr-gci-bld-e2e-gce-fd
   - k8s-jkns-pr-kubeadm
   - k8s-jnks-gci-autoscaling

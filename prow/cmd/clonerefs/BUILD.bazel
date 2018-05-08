@@ -24,6 +24,7 @@ go_image(
 go_binary(
     name = "clonerefs",
     embed = [":go_default_library"],
+    pure = "on",
     visibility = ["//visibility:public"],
 )
 

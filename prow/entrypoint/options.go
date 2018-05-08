@@ -25,6 +25,13 @@ import (
 	"k8s.io/test-infra/prow/pod-utils/wrapper"
 )
 
+// NewOptions returns an empty Options with no nil fields
+func NewOptions() *Options {
+	return &Options{
+		Options: &wrapper.Options{},
+	}
+}
+
 // Options exposes the configuration necessary
 // for defining the process being watched and
 // where in GCS an upload will land.

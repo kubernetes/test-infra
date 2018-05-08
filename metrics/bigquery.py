@@ -21,6 +21,7 @@ import calendar
 import glob
 import json
 import os
+import pipes
 import re
 import subprocess
 import sys
@@ -32,17 +33,21 @@ import requests
 import yaml
 
 
-def check(*cmd, **keyargs):
+def check(cmd, **kwargs):
     """Logs and runs the command, raising on errors."""
-    print >>sys.stderr, 'Run:', cmd
+    print >>sys.stderr, 'Run:', ' '.join(pipes.quote(c) for c in cmd),
+    if hasattr(kwargs.get('stdout'), 'name'):
+        print >>sys.stderr, ' > %s' % kwargs['stdout'].name
+    else:
+        print
     # If 'stdin' keyword arg is a string run command and communicate string to stdin
-    if 'stdin' in keyargs and isinstance(keyargs['stdin'], str):
-        in_string = keyargs['stdin']
-        keyargs['stdin'] = subprocess.PIPE
-        proc = subprocess.Popen(*cmd, **keyargs)
+    if 'stdin' in kwargs and isinstance(kwargs['stdin'], str):
+        in_string = kwargs['stdin']
+        kwargs['stdin'] = subprocess.PIPE
+        proc = subprocess.Popen(cmd, **kwargs)
         proc.communicate(input=in_string)
         return
-    subprocess.check_call(*cmd, **keyargs)
+    subprocess.check_call(cmd, **kwargs)
 
 
 def validate_metric_name(name):
@@ -66,7 +71,7 @@ class BigQuerier(object):
             raise ValueError('project', project)
         self.project = project
         if not bucket_path:
-            raise ValueError('bucket_path', bucket_path)
+            print >>sys.stderr, 'Not uploading results, no bucket specified.'
         self.prefix = bucket_path
 
         self.influx = influx_client
@@ -78,9 +83,11 @@ class BigQuerier(object):
             'bq', 'query', '--format=prettyjson',
             '--project_id=%s' % self.project,
             '-n100000',  # Results may have more than 100 rows
+            query,
         ]
         with open(out_filename, 'w') as out_file:
-            check(cmd, stdin=query, stdout=out_file)
+            check(cmd, stdout=out_file)
+            print  # bq doesn't output a trailing newline
 
     def jq_upload(self, config, data_filename):
         """Filters a data file with jq and uploads the results to GCS."""
@@ -97,13 +104,6 @@ class BigQuerier(object):
         jq_point = config.get('measurements', {}).get('jq', None)
         if not jq_point:
             return
-        if not self.influx:
-            print >>sys.stderr, (
-                'Skipping influxdb upload of metric %s, no db configured.\n'
-                % config['metric']
-            )
-            return
-
         do_jq(jq_point, data_filename, points)
         with open(points) as points_file:
             try:
@@ -111,6 +111,12 @@ class BigQuerier(object):
             except ValueError:
                 print >>sys.stderr, "No influxdb points to upload.\n"
                 return
+        if not self.influx:
+            print >>sys.stderr, (
+                'Skipping influxdb upload of metric %s, no db configured.\n'
+                % config['metric']
+            )
+            return
         points = [ints_to_floats(point) for point in points]
         self.influx.write_points(points, time_precision='s', batch_size=100)
 
@@ -120,7 +126,7 @@ class BigQuerier(object):
 
         self.update_query(config)
         self.do_query(config['query'], raw)
-        self.copy(raw, os.path.join(self.prefix, config['metric'], raw))
+        self.copy(raw, os.path.join(config['metric'], raw))
 
         consumer_error = False
         for consumer in [self.jq_upload, self.influx_upload]:
@@ -141,6 +147,8 @@ class BigQuerier(object):
 
     def copy(self, src, dest):
         """Use gsutil to copy src to <bucket_path>/dest with minimal caching."""
+        if not self.prefix:
+            return  # no destination
         dest = os.path.join(self.prefix, dest)
         check(['gsutil', '-h', 'Cache-Control:max-age=60', 'cp', src, dest])
 
@@ -264,7 +272,6 @@ if __name__ == '__main__':
         help='Charge the specified account for bigquery usage.')
     PARSER.add_argument(
         '--bucket',
-        default='gs://k8s-metrics',
         help='Upload results to the specified gcs bucket.')
     PARSER.add_argument(
         '--backfill-days',

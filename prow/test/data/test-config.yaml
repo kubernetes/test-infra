@@ -1,0 +1,66 @@
+plank:
+  default_decoration_config:
+    timeout: 7200000000000 # 2h
+    grace_period: 15000000000 # 15s
+    utility_images:
+      clonerefs: "clonerefs:default"
+      initupload: "initupload:default"
+      entrypoint: "entrypoint:default"
+      sidecar: "sidecar:default"
+    gcs_configuration:
+      bucket: "default-bucket"
+      path_strategy: "legacy"
+      default_org: "kubernetes"
+      default_repo: "kubernetes"
+    gcs_credentials_secret: "default-service-account"
+presubmits:
+  test-org/test-repo:
+  - name: kubernetes-no-decoration
+    agent: kubernetes
+    always_run: true
+    context: kubernetes-no-decoration
+    rerun_command: "/test kubernetes-no-decoration"
+    trigger: "(?m)^/test( all| kubernetes-no-decoration),?(\\s+|$)"
+    spec:
+      containers:
+      - image: golang:latest
+        args:
+        - "test"
+        - "./..."
+  - name: kubernetes-defaulted-decoration
+    agent: kubernetes
+    always_run: true
+    context: kubernetes-defaulted-decoration
+    rerun_command: "/test kubernetes-defaulted-decoration"
+    trigger: "(?m)^/test( all| kubernetes-defaulted-decoration),?(\\s+|$)"
+    decorate: true
+    spec:
+      containers:
+      - image: golang:latest
+        args:
+        - "test"
+        - "./..."
+  - name: kubernetes-explicit-decoration
+    agent: kubernetes
+    always_run: true
+    context: kubernetes-explicit-decoration
+    rerun_command: "/test kubernetes-explicit-decoration"
+    trigger: "(?m)^/test( all| kubernetes-explicit-decoration),?(\\s+|$)"
+    decorate: true
+    timeout: 1
+    grace_period: 1
+    utility_images:
+      clonerefs: "clonerefs:explicit"
+      initupload: "initupload:explicit"
+      entrypoint: "entrypoint:explicit"
+      sidecar: "sidecar:explicit"
+    gcs_configuration:
+      bucket: "explicit-bucket"
+      path_strategy: "explicit"
+    gcs_credentials_secret: "explicit-service-account"
+    spec:
+      containers:
+      - image: golang:latest
+        args:
+        - "test"
+        - "./..."

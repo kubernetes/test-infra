@@ -37,12 +37,7 @@ import (
 // a parameter and will have the prefix prepended
 // to their destination in GCS, so the caller can
 // operate relative to the base of the GCS dir.
-func (o Options) Run(extra map[string]gcs.UploadFunc) error {
-	spec, err := downwardapi.ResolveSpecFromEnv() // TODO: pass in all the config instead of needing this?
-	if err != nil {
-		return fmt.Errorf("could not resolve job spec: %v", err)
-	}
-
+func (o Options) Run(spec *downwardapi.JobSpec, extra map[string]gcs.UploadFunc) error {
 	uploadTargets := o.assembleTargets(spec, extra)
 
 	if !o.DryRun {

@@ -3,40 +3,19 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
+        "atime_darwin.go",
+        "atime_dragonfly.go",
+        "atime_freebsd.go",
+        "atime_linux.go",
+        "atime_nacl.go",
+        "atime_netbsd.go",
+        "atime_openbsd.go",
+        "atime_plan9.go",
+        "atime_solaris.go",
+        "atime_windows.go",
         "stat.go",
-    ] + select({
-        "@io_bazel_rules_go//go/platform:darwin": [
-            "atime_darwin.go",
-        ],
-        "@io_bazel_rules_go//go/platform:dragonfly": [
-            "atime_dragonfly.go",
-        ],
-        "@io_bazel_rules_go//go/platform:freebsd": [
-            "atime_freebsd.go",
-        ],
-        "@io_bazel_rules_go//go/platform:linux": [
-            "atime_linux.go",
-        ],
-        "@io_bazel_rules_go//go/platform:nacl": [
-            "atime_nacl.go",
-        ],
-        "@io_bazel_rules_go//go/platform:netbsd": [
-            "atime_netbsd.go",
-        ],
-        "@io_bazel_rules_go//go/platform:openbsd": [
-            "atime_openbsd.go",
-        ],
-        "@io_bazel_rules_go//go/platform:plan9": [
-            "atime_plan9.go",
-        ],
-        "@io_bazel_rules_go//go/platform:solaris": [
-            "atime_solaris.go",
-        ],
-        "@io_bazel_rules_go//go/platform:windows": [
-            "atime_windows.go",
-        ],
-        "//conditions:default": [],
-    }),
+    ],
+    importmap = "vendor/github.com/djherbis/atime",
     importpath = "github.com/djherbis/atime",
     visibility = ["//visibility:public"],
 )

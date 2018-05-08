@@ -7,8 +7,7 @@ by comparing the e2e test log and swagger spec of k8s.
 
 Run e2e tests with API operation detail(-v=8 option):
 ```
-$ go run hack/e2e.go -- -v --test \
-  --test_args="--ginkgo.focus=[Conformance] -v=8" > api.log
+$ kubetest --test --test_args="--ginkgo.focus=\[Conformance\] -v=8" | tee api.log
 ```
 Then run the tool:
 ```
