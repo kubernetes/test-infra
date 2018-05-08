@@ -21,6 +21,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/github"
 )
@@ -169,6 +171,43 @@ func (tqs TideQueries) QueryMap() QueryMap {
 }
 
 // ForRepo returns the tide queries that apply to a repo.
-func (q QueryMap) ForRepo(org, repo string) TideQueries {
-	return append(append(TideQueries(nil), q[org]...), q[fmt.Sprintf("%s/%s", org, repo)]...)
+func (qm QueryMap) ForRepo(org, repo string) TideQueries {
+	qs := TideQueries(nil)
+	qs = append(qs, qm[org]...)
+	qs = append(qs, qm[fmt.Sprintf("%s/%s", org, repo)]...)
+	return qs
+}
+
+func (tq *TideQuery) Validate() error {
+	for o := range tq.Orgs {
+		if strings.Contains(tq.Orgs[o], "/") {
+			return fmt.Errorf("orgs[%d]: %q contains a '/' which is not valid", o, tq.Orgs[o])
+		}
+		if len(tq.Orgs[o]) == 0 {
+			return fmt.Errorf("orgs[%d]: is an empty string", o)
+		}
+	}
+
+	for r := range tq.Repos {
+		parts := strings.Split(tq.Repos[r], "/")
+		if len(parts) != 2 || len(parts[0]) == 0 || len(parts[1]) == 0 {
+			return fmt.Errorf("repos[%d]: %q is not of the form \"org/repo\"", r, tq.Repos[r])
+		}
+		for o := range tq.Orgs {
+			if tq.Orgs[o] == parts[0] {
+				return fmt.Errorf("repos[%d]: %q is already included via orgs[%d]: %q", r, tq.Repos[r], o, tq.Orgs[o])
+			}
+		}
+	}
+
+	if invalids := sets.NewString(tq.Labels...).Intersection(sets.NewString(tq.MissingLabels...)); len(invalids) > 0 {
+		return fmt.Errorf("the labels: %q are both required and forbidden", invalids.List())
+	}
+
+	// Warnings
+	if len(tq.ExcludedBranches) > 0 && len(tq.IncludedBranches) > 0 {
+		logrus.Warning("Smell: Both included and excluded branches are specified (excluded branches have no effect).")
+	}
+
+	return nil
 }
