@@ -735,9 +735,9 @@ func TestSetStatuses(t *testing.T) {
 				},
 			}
 		}
-		var pool []PullRequest
+		pool := make(map[string]PullRequest)
 		if tc.inPool {
-			pool = []PullRequest{pr}
+			pool[prKey(&pr)] = pr
 		}
 		fc := &fgc{}
 		ca := &config.Agent{}
@@ -859,14 +859,14 @@ func TestDividePool(t *testing.T) {
 		ghc:    fc,
 		logger: logrus.WithField("component", "tide"),
 	}
-	var pulls []PullRequest
+	pulls := make(map[string]PullRequest)
 	for _, p := range testPulls {
 		npr := PullRequest{Number: githubql.Int(p.number)}
 		npr.BaseRef.Name = githubql.String(p.branch)
 		npr.BaseRef.Prefix = "refs/heads/"
 		npr.Repository.Name = githubql.String(p.repo)
 		npr.Repository.Owner.Login = githubql.String(p.org)
-		pulls = append(pulls, npr)
+		pulls[prKey(&npr)] = npr
 	}
 	var pjs []kube.ProwJob
 	for _, pj := range testPJs {
@@ -1525,6 +1525,18 @@ func TestSync(t *testing.T) {
 		{
 			name: "1 mergeable, 1 unmergeable (same pool)",
 			prs:  []PullRequest{mergeableA, unmergeableA},
+			expectedPools: []Pool{{
+				Org:        "org",
+				Repo:       "repo",
+				Branch:     "A",
+				SuccessPRs: []PullRequest{mergeableA},
+				Action:     Merge,
+				Target:     []PullRequest{mergeableA},
+			}},
+		},
+		{
+			name: "1 mergeable PR (satisfies multiple queries)",
+			prs:  []PullRequest{mergeableA, mergeableA},
 			expectedPools: []Pool{{
 				Org:        "org",
 				Repo:       "repo",
