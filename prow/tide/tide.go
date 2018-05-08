@@ -1128,7 +1128,7 @@ type PullRequest struct {
 		}
 		// Request the 'last' 4 commits hoping that one of them is the logically 'last'
 		// commit with OID matching HeadRefOID. If we don't find it we have to use an
-		// an additional API token. (see the 'headContexts' func for details)
+		// additional API token. (see the 'headContexts' func for details)
 		// We can't raise this too much or we could hit the limit of 50,000 nodes
 		// per query: https://developer.github.com/v4/guides/resource-limitations/#node-limit
 	} `graphql:"commits(last: 4)"`

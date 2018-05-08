@@ -8,6 +8,7 @@ go_library(
         "threadsafe.go",
         "threadunsafe.go",
     ],
+    importmap = "vendor/github.com/deckarep/golang-set",
     importpath = "github.com/deckarep/golang-set",
     visibility = ["//visibility:public"],
 )

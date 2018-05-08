@@ -2,10 +2,10 @@
 #
 # Possible bucket metadata:
 #   contact: github name to contact
-#   prefix: the identifier used for this bucket on the test-history dashboard.
+#   prefix: the identifier prefixed to jobs from this bucket.
 #   sequential: an optional boolean that indicates whether test runs in this
 #     bucket are numbered sequentially. This is used for an optimization in the
-#     test-history collection phase, and defaults to true.
+#     collection phase, and defaults to true.
 
 gs://kubernetes-jenkins/logs/:
   contact: "fejta"

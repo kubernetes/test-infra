@@ -12,6 +12,7 @@ go_library(
     deps = [
         "//prow/gcsupload:go_default_library",
         "//prow/pod-utils/clone:go_default_library",
+        "//prow/pod-utils/downwardapi:go_default_library",
         "//prow/pod-utils/gcs:go_default_library",
     ],
 )

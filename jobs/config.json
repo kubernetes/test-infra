@@ -785,8 +785,7 @@
       "--gke-environment=prod",
       "--provider=gke",
       "--test=false",
-      "--test-cmd=../cmd/kinflate/test/main.sh",
-      "--test-cmd-args=/go/src/github.com/kinflate/example-ldap",
+      "--test-cmd=../cmd/kustomize/test/main.sh",
       "--test-cmd-name=kinflate-integration",
       "--timeout=120m"
     ],
@@ -840,7 +839,7 @@
   "ci-kubemci-ingress-conformance": {
     "args": [
       "--check-leaked-resources",
-      "--env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-e2e-glbc-amd64:latest",
+      "--env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-e2e-glbc-amd64:master",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-project-type=ingress-project",
@@ -11477,6 +11476,21 @@
       "sig-testing"
     ]
   },
+  "ci-kubernetes-local-e2e-containerized": {
+    "args": [
+      "--deployment=local",
+      "--extract=ci/latest",
+      "--extract-source",
+      "--ginkgo-parallel=1",
+      "--provider=local",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]",
+      "--timeout=120m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
   "ci-kubernetes-multicluster-ingress-test": {
     "args": [
       "make",
@@ -11909,6 +11923,22 @@
       "sig-scalability"
     ]
   },
+  "ci-poseidon-e2e-gce": {
+    "args": [
+      "--check-leaked-resources",
+      "--cluster=",
+      "--extract=ci/latest",
+      "--gcp-node-image=ubuntu",
+      "--provider=gce",
+      "--test=false",
+      "--test-cmd=../test/e2e-poseidon-gce.sh",
+      "--timeout=60m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scheduling"
+    ]
+  },
   "ci-test-infra-bazel": {
     "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
     "args": [],
@@ -12040,6 +12070,7 @@
     "args": [
       "test-infra/metrics/bigquery.py",
       "--",
+      "--bucket=gs://k8s-metrics",
       "--backfill-days=90"
     ],
     "scenario": "execute",
@@ -12537,9 +12568,10 @@
     "args": [
       "--build=bazel",
       "--cluster=",
-      "--env-file=jobs/env/ci-cri-containerd-e2e-gce.env",
+      "--env-file=jobs/env/pull-kubernetes-e2e.env",
+      "--env-file=jobs/env/pull-kubernetes-e2e-gce.env",
+      "--env-file=jobs/env/pull-kubernetes-e2e-containerd-gce.env",
       "--extract=local",
-      "--gcp-master-image=gci",
       "--gcp-node-image=gci",
       "--gcp-project=k8s-c8d-pr-e2e",
       "--gcp-zone=us-central1-f",
@@ -12937,8 +12969,7 @@
       "--deployment=node",
       "--gcp-project=k8s-c8d-pr-node-e2e",
       "--gcp-zone=us-central1-f",
-      "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri",
-      "--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
+      "--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Slow\\]|\\[Serial\\]\" --flakeAttempts=2",

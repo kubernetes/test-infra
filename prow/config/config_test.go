@@ -24,9 +24,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"reflect"
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -957,7 +959,7 @@ func TestValidPresets(t *testing.T) {
 	}
 
 	for _, presubmit := range c.AllPresubmits(nil) {
-		if presubmit.Spec != nil && presubmit.DecorationConfig == nil {
+		if presubmit.Spec != nil && !presubmit.Decorate {
 			if err := checkKubekinsPresets(presubmit.Name, presubmit.Spec, presubmit.Labels, validLabels); err != nil {
 				t.Errorf("Error in presubmit %q: %v", presubmit.Name, err)
 			}
@@ -966,7 +968,7 @@ func TestValidPresets(t *testing.T) {
 
 	for _, posts := range c.Postsubmits {
 		for _, postsubmit := range posts {
-			if postsubmit.Spec != nil && postsubmit.DecorationConfig == nil {
+			if postsubmit.Spec != nil && !postsubmit.Decorate {
 				if err := checkKubekinsPresets(postsubmit.Name, postsubmit.Spec, postsubmit.Labels, validLabels); err != nil {
 					t.Errorf("Error in postsubmit %q: %v", postsubmit.Name, err)
 				}
@@ -975,10 +977,193 @@ func TestValidPresets(t *testing.T) {
 	}
 
 	for _, periodic := range c.Periodics {
-		if periodic.Spec != nil && periodic.DecorationConfig == nil {
+		if periodic.Spec != nil && !periodic.Decorate {
 			if err := checkKubekinsPresets(periodic.Name, periodic.Spec, periodic.Labels, validLabels); err != nil {
 				t.Errorf("Error in periodic %q: %v", periodic.Name, err)
 			}
+		}
+	}
+}
+
+func TestDecorationDefaulting(t *testing.T) {
+	defaults := &kube.DecorationConfig{
+		Timeout:     1 * time.Minute,
+		GracePeriod: 10 * time.Second,
+		UtilityImages: &kube.UtilityImages{
+			CloneRefs:  "clonerefs",
+			InitUpload: "iniupload",
+			Entrypoint: "entrypoint",
+			Sidecar:    "sidecar",
+		},
+		GCSConfiguration: &kube.GCSConfiguration{
+			Bucket:       "bucket",
+			PathPrefix:   "prefix",
+			PathStrategy: kube.PathStrategyLegacy,
+			DefaultOrg:   "org",
+			DefaultRepo:  "repo",
+		},
+		GCSCredentialsSecret: "secretName",
+	}
+
+	var testCases = []struct {
+		name     string
+		provided *kube.DecorationConfig
+		expected *kube.DecorationConfig
+	}{
+		{
+			name:     "nothing provided",
+			provided: &kube.DecorationConfig{},
+			expected: &kube.DecorationConfig{
+				Timeout:     1 * time.Minute,
+				GracePeriod: 10 * time.Second,
+				UtilityImages: &kube.UtilityImages{
+					CloneRefs:  "clonerefs",
+					InitUpload: "iniupload",
+					Entrypoint: "entrypoint",
+					Sidecar:    "sidecar",
+				},
+				GCSConfiguration: &kube.GCSConfiguration{
+					Bucket:       "bucket",
+					PathPrefix:   "prefix",
+					PathStrategy: kube.PathStrategyLegacy,
+					DefaultOrg:   "org",
+					DefaultRepo:  "repo",
+				},
+				GCSCredentialsSecret: "secretName",
+			},
+		},
+		{
+			name: "timeout provided",
+			provided: &kube.DecorationConfig{
+				Timeout: 10 * time.Minute,
+			},
+			expected: &kube.DecorationConfig{
+				Timeout:     10 * time.Minute,
+				GracePeriod: 10 * time.Second,
+				UtilityImages: &kube.UtilityImages{
+					CloneRefs:  "clonerefs",
+					InitUpload: "iniupload",
+					Entrypoint: "entrypoint",
+					Sidecar:    "sidecar",
+				},
+				GCSConfiguration: &kube.GCSConfiguration{
+					Bucket:       "bucket",
+					PathPrefix:   "prefix",
+					PathStrategy: kube.PathStrategyLegacy,
+					DefaultOrg:   "org",
+					DefaultRepo:  "repo",
+				},
+				GCSCredentialsSecret: "secretName",
+			},
+		},
+		{
+			name: "grace period provided",
+			provided: &kube.DecorationConfig{
+				GracePeriod: 10 * time.Hour,
+			},
+			expected: &kube.DecorationConfig{
+				Timeout:     1 * time.Minute,
+				GracePeriod: 10 * time.Hour,
+				UtilityImages: &kube.UtilityImages{
+					CloneRefs:  "clonerefs",
+					InitUpload: "iniupload",
+					Entrypoint: "entrypoint",
+					Sidecar:    "sidecar",
+				},
+				GCSConfiguration: &kube.GCSConfiguration{
+					Bucket:       "bucket",
+					PathPrefix:   "prefix",
+					PathStrategy: kube.PathStrategyLegacy,
+					DefaultOrg:   "org",
+					DefaultRepo:  "repo",
+				},
+				GCSCredentialsSecret: "secretName",
+			},
+		},
+		{
+			name: "utility images provided",
+			provided: &kube.DecorationConfig{
+				UtilityImages: &kube.UtilityImages{
+					CloneRefs:  "clonerefs-special",
+					InitUpload: "iniupload-special",
+					Entrypoint: "entrypoint-special",
+					Sidecar:    "sidecar-special",
+				},
+			},
+			expected: &kube.DecorationConfig{
+				Timeout:     1 * time.Minute,
+				GracePeriod: 10 * time.Second,
+				UtilityImages: &kube.UtilityImages{
+					CloneRefs:  "clonerefs-special",
+					InitUpload: "iniupload-special",
+					Entrypoint: "entrypoint-special",
+					Sidecar:    "sidecar-special",
+				},
+				GCSConfiguration: &kube.GCSConfiguration{
+					Bucket:       "bucket",
+					PathPrefix:   "prefix",
+					PathStrategy: kube.PathStrategyLegacy,
+					DefaultOrg:   "org",
+					DefaultRepo:  "repo",
+				},
+				GCSCredentialsSecret: "secretName",
+			},
+		},
+		{
+			name: "gcs configuration provided",
+			provided: &kube.DecorationConfig{
+				GCSConfiguration: &kube.GCSConfiguration{
+					Bucket:       "bucket-1",
+					PathPrefix:   "prefix-2",
+					PathStrategy: kube.PathStrategyExplicit,
+				},
+			},
+			expected: &kube.DecorationConfig{
+				Timeout:     1 * time.Minute,
+				GracePeriod: 10 * time.Second,
+				UtilityImages: &kube.UtilityImages{
+					CloneRefs:  "clonerefs",
+					InitUpload: "iniupload",
+					Entrypoint: "entrypoint",
+					Sidecar:    "sidecar",
+				},
+				GCSConfiguration: &kube.GCSConfiguration{
+					Bucket:       "bucket-1",
+					PathPrefix:   "prefix-2",
+					PathStrategy: kube.PathStrategyExplicit,
+				},
+				GCSCredentialsSecret: "secretName",
+			},
+		},
+		{
+			name: "secret name provided",
+			provided: &kube.DecorationConfig{
+				GCSCredentialsSecret: "somethingSecret",
+			},
+			expected: &kube.DecorationConfig{
+				Timeout:     1 * time.Minute,
+				GracePeriod: 10 * time.Second,
+				UtilityImages: &kube.UtilityImages{
+					CloneRefs:  "clonerefs",
+					InitUpload: "iniupload",
+					Entrypoint: "entrypoint",
+					Sidecar:    "sidecar",
+				},
+				GCSConfiguration: &kube.GCSConfiguration{
+					Bucket:       "bucket",
+					PathPrefix:   "prefix",
+					PathStrategy: kube.PathStrategyLegacy,
+					DefaultOrg:   "org",
+					DefaultRepo:  "repo",
+				},
+				GCSCredentialsSecret: "somethingSecret",
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		if actual, expected := setDecorationDefaults(testCase.provided, defaults), testCase.expected; !reflect.DeepEqual(actual, expected) {
+			t.Errorf("%s: expected defaulted config %v but got %v", testCase.name, expected, actual)
 		}
 	}
 }
