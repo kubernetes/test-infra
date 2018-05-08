@@ -88,9 +88,8 @@ func TestOptions_Validate(t *testing.T) {
 type fakeClient struct {
 	repos    map[string][]github.Repo
 	branches map[string][]github.Branch
-	pushers  map[string][]string
-	contexts map[string][]string
 	deleted  map[string]bool
+	updated  map[string]github.BranchProtectionRequest
 }
 
 func (c fakeClient) GetRepos(org string, user bool) ([]github.Repo, error) {
@@ -113,14 +112,11 @@ func (c *fakeClient) UpdateBranchProtection(org, repo, branch string, config git
 	if branch == "error" {
 		return errors.New("failed to update branch protection")
 	}
+	if c.updated == nil {
+		c.updated = map[string]github.BranchProtectionRequest{}
+	}
 	ctx := org + "/" + repo + "=" + branch
-	if config.RequiredStatusChecks != nil && len(config.RequiredStatusChecks.Contexts) > 0 {
-		c.contexts[ctx] = config.RequiredStatusChecks.Contexts
-	}
-
-	if config.Restrictions != nil && len(config.Restrictions.Teams) > 0 {
-		c.pushers[ctx] = config.Restrictions.Teams
-	}
+	c.updated[ctx] = config
 	return nil
 }
 
@@ -128,88 +124,90 @@ func (c *fakeClient) RemoveBranchProtection(org, repo, branch string) error {
 	if branch == "error" {
 		return errors.New("failed to remove branch protection")
 	}
+	if c.deleted == nil {
+		c.deleted = map[string]bool{}
+	}
 	ctx := org + "/" + repo + "=" + branch
 	c.deleted[ctx] = true
 	return nil
 }
 
 func TestConfigureBranches(t *testing.T) {
+	yes := true
+
+	prot := github.BranchProtectionRequest{}
+	diffprot := github.BranchProtectionRequest{
+		EnforceAdmins: &yes,
+	}
+
 	cases := []struct {
-		name     string
-		updates  []Requirements
-		deletes  []string
-		contexts map[string][]string
-		pushers  map[string][]string
-		errors   int
+		name    string
+		updates []Requirements
+		deletes map[string]bool
+		sets    map[string]github.BranchProtectionRequest
+		errors  int
 	}{
 		{
 			name: "remove-protection",
 			updates: []Requirements{
-				{Org: "one", Repo: "1", Branch: "delete", Protect: false},
-				{Org: "one", Repo: "1", Branch: "remove", Protect: false},
-				{Org: "two", Repo: "2", Branch: "remove", Protect: false},
+				{Org: "one", Repo: "1", Branch: "delete", Request: nil},
+				{Org: "one", Repo: "1", Branch: "remove", Request: nil},
+				{Org: "two", Repo: "2", Branch: "remove", Request: nil},
 			},
-			deletes: []string{"one/1=delete", "one/1=remove", "two/2=remove"},
+			deletes: map[string]bool{
+				"one/1=delete": true,
+				"one/1=remove": true,
+				"two/2=remove": true,
+			},
 		},
 		{
 			name: "error-remove-protection",
 			updates: []Requirements{
-				{Org: "one", Repo: "1", Branch: "error", Protect: false},
+				{Org: "one", Repo: "1", Branch: "error", Request: nil},
 			},
 			errors: 1,
 		},
 		{
 			name: "update-protection-context",
 			updates: []Requirements{
-				{Org: "one", Repo: "1", Branch: "master", Protect: true, Contexts: []string{"this-context", "that-context"}},
-				{Org: "one", Repo: "1", Branch: "other", Protect: true, Contexts: []string{"hello", "world"}},
+				{
+					Org:     "one",
+					Repo:    "1",
+					Branch:  "master",
+					Request: &prot,
+				},
+				{
+					Org:     "one",
+					Repo:    "1",
+					Branch:  "other",
+					Request: &diffprot,
+				},
 			},
-			contexts: map[string][]string{
-				"one/1=master": {"this-context", "that-context"},
-				"one/1=other":  {"hello", "world"},
-			},
-		},
-		{
-			name: "update-protection-pushers",
-			updates: []Requirements{
-				{Org: "one", Repo: "1", Branch: "master", Protect: true, Pushers: []string{"admins", "oncall"}},
-				{Org: "one", Repo: "1", Branch: "other", Protect: true, Pushers: []string{"me", "myself", "I"}},
-			},
-			pushers: map[string][]string{
-				"one/1=master": {"admins", "oncall"},
-				"one/1=other":  {"me", "myself", "I"},
+			sets: map[string]github.BranchProtectionRequest{
+				"one/1=master": prot,
+				"one/1=other":  diffprot,
 			},
 		},
 		{
 			name: "complex",
 			updates: []Requirements{
-				{Org: "one", Repo: "1", Branch: "master", Protect: true, Pushers: []string{"admins", "oncall"}},
-				{Org: "one", Repo: "1", Branch: "remove", Protect: false},
-				{Org: "two", Repo: "2", Branch: "push-and-context", Protect: true, Pushers: []string{"team"}, Contexts: []string{"presubmit"}},
-				{Org: "three", Repo: "3", Branch: "push-and-context", Protect: true, Pushers: []string{"team"}, Contexts: []string{"presubmit"}},
-				{Org: "four", Repo: "4", Branch: "error", Protect: true, Pushers: []string{"team"}, Contexts: []string{"presubmit"}},
-				{Org: "five", Repo: "5", Branch: "error", Protect: false},
+				{Org: "update", Repo: "1", Branch: "master", Request: &prot},
+				{Org: "update", Repo: "2", Branch: "error", Request: &prot},
+				{Org: "remove", Repo: "3", Branch: "master", Request: nil},
+				{Org: "remove", Repo: "4", Branch: "error", Request: nil},
 			},
-			errors:  2, // four and five
-			deletes: []string{"one/1=remove"},
-			pushers: map[string][]string{
-				"one/1=master":             {"admins", "oncall"},
-				"two/2=push-and-context":   {"team"},
-				"three/3=push-and-context": {"team"},
+			errors: 2, // four and five
+			deletes: map[string]bool{
+				"remove/3=master": true,
 			},
-			contexts: map[string][]string{
-				"two/2=push-and-context":   {"presubmit"},
-				"three/3=push-and-context": {"presubmit"},
+			sets: map[string]github.BranchProtectionRequest{
+				"update/1=master": prot,
 			},
 		},
 	}
 
 	for _, tc := range cases {
-		fc := fakeClient{
-			deleted:  make(map[string]bool),
-			contexts: make(map[string][]string),
-			pushers:  make(map[string][]string),
-		}
+		fc := fakeClient{}
 		p := Protector{
 			client:  &fc,
 			updates: make(chan Requirements),
@@ -224,33 +222,13 @@ func TestConfigureBranches(t *testing.T) {
 		if len(errs) != tc.errors {
 			t.Errorf("%s: %d errors != expected %d: %v", tc.name, len(errs), tc.errors, errs)
 		}
-		if len(fc.deleted) != len(tc.deletes) {
-			t.Errorf("%s: wrong number of deletes %d not expected %d: %v", tc.name, len(fc.deleted), len(tc.deletes), fc.deleted)
+		if !reflect.DeepEqual(fc.deleted, tc.deletes) {
+			t.Errorf("%s: deletes %v != expected %v", tc.name, fc.deleted, tc.deletes)
 		}
-		for _, d := range tc.deletes {
-			if fc.deleted[d] != true {
-				t.Errorf("%s: did not delete %s", tc.name, d)
-			}
+		if !reflect.DeepEqual(fc.updated, tc.sets) {
+			t.Errorf("%s: updates %v != expected %v", tc.name, fc.updated, tc.sets)
 		}
 
-		if len(fc.contexts) != len(tc.contexts) {
-			t.Errorf("%s: wrong number of contexts %d not expected %d: %v", tc.name, len(fc.contexts), len(tc.contexts), fc.contexts)
-		}
-		for branch, actual := range fc.contexts {
-			e := tc.contexts[branch]
-			if !reflect.DeepEqual(actual, e) {
-				t.Errorf("%s: for %s actual %v != expected %v", tc.name, branch, actual, e)
-			}
-		}
-		if len(fc.pushers) != len(tc.pushers) {
-			t.Errorf("%s: wrong number of pushers %d not expected %d: %v", tc.name, len(fc.pushers), len(tc.pushers), fc.pushers)
-		}
-		for branch, actual := range fc.pushers {
-			e := tc.pushers[branch]
-			if !reflect.DeepEqual(actual, e) {
-				t.Errorf("%s: for %s actual %v != expected %v", tc.name, branch, actual, e)
-			}
-		}
 	}
 }
 
@@ -262,8 +240,6 @@ func split(branch string) (string, string, string) {
 }
 
 func TestProtect(t *testing.T) {
-	yes := true
-	no := false
 
 	cases := []struct {
 		name     string
@@ -287,31 +263,31 @@ branch-protection:
 		},
 		{
 			name:     "protect org via config default",
-			branches: []string{"org/repo1=master", "org/repo1=branch", "org/repo2=master"},
+			branches: []string{"cfgdef/repo1=master", "cfgdef/repo1=branch", "cfgdef/repo2=master"},
 			config: `
 branch-protection:
   protect-by-default: true
   orgs:
-    org:
+    cfgdef:
 `,
 			expected: []Requirements{
 				{
-					Org:     "org",
+					Org:     "cfgdef",
 					Repo:    "repo1",
 					Branch:  "master",
-					Protect: yes,
+					Request: &github.BranchProtectionRequest{},
 				},
 				{
-					Org:     "org",
+					Org:     "cfgdef",
 					Repo:    "repo1",
 					Branch:  "branch",
-					Protect: yes,
+					Request: &github.BranchProtectionRequest{},
 				},
 				{
-					Org:     "org",
+					Org:     "cfgdef",
 					Repo:    "repo2",
 					Branch:  "master",
-					Protect: yes,
+					Request: &github.BranchProtectionRequest{},
 				},
 			},
 		},
@@ -331,13 +307,13 @@ branch-protection:
 					Org:     "this",
 					Repo:    "yes",
 					Branch:  "master",
-					Protect: yes,
+					Request: &github.BranchProtectionRequest{},
 				},
 				{
 					Org:     "that",
 					Repo:    "no",
 					Branch:  "master",
-					Protect: no,
+					Request: nil,
 				},
 			},
 		},
@@ -399,19 +375,19 @@ branch-protection:
 					Org:     "org",
 					Repo:    "repo1",
 					Branch:  "master",
-					Protect: yes,
+					Request: &github.BranchProtectionRequest{},
 				},
 				{
 					Org:     "org",
 					Repo:    "repo1",
 					Branch:  "branch",
-					Protect: yes,
+					Request: &github.BranchProtectionRequest{},
 				},
 				{
 					Org:     "org",
 					Repo:    "skip",
 					Branch:  "master",
-					Protect: no,
+					Request: nil,
 				},
 			},
 		},
@@ -438,11 +414,14 @@ branch-protection:
 `,
 			expected: []Requirements{
 				{
-					Org:      "org",
-					Repo:     "repo",
-					Branch:   "master",
-					Protect:  yes,
-					Contexts: []string{"config-presubmit", "org-presubmit", "repo-presubmit", "branch-presubmit"},
+					Org:    "org",
+					Repo:   "repo",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						RequiredStatusChecks: &github.RequiredStatusChecks{
+							Contexts: []string{"config-presubmit", "org-presubmit", "repo-presubmit", "branch-presubmit"},
+						},
+					},
 				},
 			},
 		},
@@ -469,11 +448,15 @@ branch-protection:
 `,
 			expected: []Requirements{
 				{
-					Org:     "org",
-					Repo:    "repo",
-					Branch:  "master",
-					Protect: yes,
-					Pushers: []string{"config-team", "org-team", "repo-team", "branch-team"},
+					Org:    "org",
+					Repo:   "repo",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						Restrictions: &github.Restrictions{
+							Users: []string{},
+							Teams: []string{"config-team", "org-team", "repo-team", "branch-team"},
+						},
+					},
 				},
 			},
 		},
@@ -494,11 +477,8 @@ branch-protection:
 				repos[org][repo] = true
 			}
 			fc := fakeClient{
-				deleted:  make(map[string]bool),
-				contexts: make(map[string][]string),
-				pushers:  make(map[string][]string),
 				branches: branches,
-				repos:    make(map[string][]github.Repo),
+				repos:    map[string][]github.Repo{},
 			}
 			for org, r := range repos {
 				for rname := range r {
@@ -533,6 +513,7 @@ branch-protection:
 			}
 			switch {
 			case len(actual) != len(tc.expected):
+				t.Errorf("%+v %+v", cfg.BranchProtection, actual)
 				t.Errorf("actual updates %v != expected %v", actual, tc.expected)
 			default:
 				for _, a := range actual {
@@ -543,7 +524,8 @@ branch-protection:
 							fixup(&a)
 							fixup(&e)
 							if !reflect.DeepEqual(e, a) {
-								t.Errorf("bad policy actual %v != expected %v", a, e)
+								t.Errorf("bad policy actual %+v != expected %+v", a, e)
+								t.Errorf("%+v != actual %+v", *e.Request, *a.Request)
 							}
 							break
 						}
@@ -558,17 +540,15 @@ branch-protection:
 }
 
 func fixup(r *Requirements) {
-	if r == nil {
+	if r == nil || r.Request == nil {
 		return
 	}
-	if len(r.Contexts) == 0 {
-		r.Contexts = nil
-	} else {
-		sort.Strings(r.Contexts)
+	req := r.Request
+	if req.RequiredStatusChecks != nil {
+		sort.Strings(req.RequiredStatusChecks.Contexts)
 	}
-	if len(r.Pushers) == 0 {
-		r.Pushers = nil
-	} else {
-		sort.Strings(r.Pushers)
+	if restr := req.Restrictions; restr != nil {
+		sort.Strings(restr.Teams)
+		sort.Strings(restr.Users)
 	}
 }
