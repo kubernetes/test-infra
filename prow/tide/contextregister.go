@@ -65,12 +65,15 @@ func newContextRegister(skipUnknownContexts bool) *contextRegister {
 func newContextRegisterFromPolicy(policy *config.Policy) *contextRegister {
 	r := newContextRegister(false)
 	if policy != nil {
-		r.skipUnknownContexts = policy.SkipUnknownContexts
+		if policy.SkipUnknownContexts != nil {
+			r.skipUnknownContexts = *policy.SkipUnknownContexts
+		}
 		if policy.Protect != nil && *policy.Protect {
 			r.registerRequiredContexts(policy.Contexts...)
 		} else if r.skipUnknownContexts {
 			r.registerRequiredContexts(policy.Contexts...)
 		}
+
 	}
 	return r
 }

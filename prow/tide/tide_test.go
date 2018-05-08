@@ -1647,7 +1647,7 @@ func TestIsPassing(t *testing.T) {
 			config: &config.Policy{
 				Protect:             &no,
 				Contexts:            []string{"c1", "c2", "c3"},
-				SkipUnknownContexts: true,
+				SkipUnknownContexts: &yes,
 			},
 			combinedContexts: map[string]string{"c1": success, "c2": success, statusContext: failure},
 		},
@@ -1659,7 +1659,7 @@ func TestIsPassing(t *testing.T) {
 			config: &config.Policy{
 				Protect:             &no,
 				Contexts:            []string{"c1", "c2"},
-				SkipUnknownContexts: true,
+				SkipUnknownContexts: &yes,
 			},
 		},
 		{
@@ -1670,7 +1670,7 @@ func TestIsPassing(t *testing.T) {
 			config: &config.Policy{
 				Protect:             &yes,
 				Contexts:            []string{"c1", "c3"},
-				SkipUnknownContexts: true,
+				SkipUnknownContexts: &yes,
 			},
 		},
 		{
@@ -1681,7 +1681,7 @@ func TestIsPassing(t *testing.T) {
 			config: &config.Policy{
 				Protect:             &yes,
 				Contexts:            []string{"c1", "c2", "c3"},
-				SkipUnknownContexts: true,
+				SkipUnknownContexts: &yes,
 			},
 		},
 	}

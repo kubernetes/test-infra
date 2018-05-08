@@ -29,7 +29,7 @@ type Policy struct {
 	Pushers  []string `json:"allow-push,omitempty"`
 	// SkipUnknownContexts will consider undefined contexts in Prow Config
 	// (Presubmits and branch protection) to be optional for a merge by Tide.
-	SkipUnknownContexts bool `json:"skip-unknown-contexts,omitempty"`
+	SkipUnknownContexts *bool `json:"skip-unknown-contexts,omitempty"`
 }
 
 // selectBool returns the child argument if set, otherwise the parent
@@ -59,6 +59,7 @@ func (parent Policy) Apply(child Policy) Policy {
 		Protect:  selectBool(parent.Protect, child.Protect),
 		Contexts: unionStrings(parent.Contexts, child.Contexts),
 		Pushers:  unionStrings(parent.Pushers, child.Pushers),
+		SkipUnknownContexts: selectBool(parent.SkipUnknownContexts, child.SkipUnknownContexts),
 	}
 }
 
