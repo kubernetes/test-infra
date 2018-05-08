@@ -70,12 +70,12 @@ tide:
 
 ### Branch Protection Options
 Branch Protection options are use to enforce github branch protection.
-A PR will be merged when all required checks are passing, meaning we will skip optional contexts.
+A PR will be merged when all checks are passing. If we want to skip unknown checks (ie checks that are not in Prow Config), we can set skip-unknown-contexts to true. This option can be set globally or per org, repo and branch.
 
 Example:
 
 ```yaml
-tide:
-  ...
-  skip_optional_contexts: true
+branch-protection:
+  # Tell Tide to merge when unspecified contexts are pending or failing
+  skip-unknown-contexts: true
 ```
