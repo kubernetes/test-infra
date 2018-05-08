@@ -392,7 +392,8 @@ type fgc struct {
 	merged    int
 	setStatus bool
 
-	expectedSHA string
+	expectedSHA    string
+	combinedStatus map[string]string
 }
 
 func (f *fgc) GetRef(o, r, ref string) (string, error) {
@@ -436,10 +437,12 @@ func (f *fgc) GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, 
 	if f.expectedSHA != ref {
 		return nil, errors.New("bad combined status request: incorrect sha")
 	}
+	var statuses []github.Status
+	for c, s := range f.combinedStatus {
+		statuses = append(statuses, github.Status{Context: c, State: s})
+	}
 	return &github.CombinedStatus{
-			Statuses: []github.Status{
-				{Context: "win"},
-			},
+			Statuses: statuses,
 		},
 		nil
 }
@@ -634,7 +637,7 @@ func TestExpectedStatus(t *testing.T) {
 			pool = map[string]PullRequest{"#0": {}}
 		}
 
-		state, desc := expectedStatus(queriesByRepo, &pr, pool)
+		state, desc := expectedStatus(queriesByRepo, &pr, pool, newContextRegister(false))
 		if state != tc.state {
 			t.Errorf("Expected status state %q, but got %q.", string(tc.state), string(state))
 		}
@@ -1013,11 +1016,14 @@ func TestPickBatch(t *testing.T) {
 		}
 		sp.prs = append(sp.prs, pr)
 	}
+	ca := &config.Agent{}
+	ca.Set(&config.Config{})
 	c := &Controller{
 		logger: logrus.WithField("component", "tide"),
 		gc:     gc,
+		ca:     ca,
 	}
-	prs, err := c.pickBatch(sp)
+	prs, err := c.pickBatch(sp, newContextRegister(false))
 	if err != nil {
 		t.Fatalf("Error from pickBatch: %v", err)
 	}
@@ -1305,7 +1311,8 @@ func TestTakeAction(t *testing.T) {
 			batchPending = []PullRequest{{}}
 		}
 		t.Logf("Test case: %s", tc.name)
-		if act, _, err := c.takeAction(sp, tc.presubmits, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges)); err != nil {
+		cr := newContextRegister(false)
+		if act, _, err := c.takeAction(sp, tc.presubmits, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges), cr); err != nil {
 			t.Errorf("Error in takeAction: %v", err)
 			continue
 		} else if act != tc.action {
@@ -1408,7 +1415,7 @@ func TestHeadContexts(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Logf("Running test case %q", tc.name)
-		fgc := &fgc{}
+		fgc := &fgc{combinedStatus: map[string]string{win: string(githubql.StatusStateSuccess)}}
 		if tc.expectAPICall {
 			fgc.expectedSHA = headSHA
 		}
@@ -1578,6 +1585,123 @@ func TestSync(t *testing.T) {
 			} else if !reflect.DeepEqual(*match, expected) {
 				t.Errorf("Expected pool %#v does not match actual pool %#v.", expected, *match)
 			}
+		}
+	}
+}
+
+func TestIsPassing(t *testing.T) {
+	yes := true
+	no := false
+	headSHA := "head"
+	success := string(githubql.StatusStateSuccess)
+	failure := string(githubql.StatusStateFailure)
+	testCases := []struct {
+		name             string
+		passing          bool
+		optional         []string
+		config           *config.Policy
+		combinedContexts map[string]string
+	}{
+		{
+			name:    "required checks disabled should not impact - passing",
+			passing: true,
+			config: &config.Policy{
+				Protect:  &no,
+				Contexts: []string{"c1", "c2", "c3"},
+			},
+			combinedContexts: map[string]string{"c1": success, "c2": success, statusContext: failure},
+		},
+		{
+			name:             "required checks disabled should not impact - failing",
+			passing:          false,
+			optional:         []string{"c4"},
+			combinedContexts: map[string]string{"c1": success, "c2": failure},
+			config: &config.Policy{
+				Protect:  &no,
+				Contexts: []string{"c1", "c2", "c3"},
+			},
+		},
+		{
+			name:             "required checks used - failing because of missing contexts",
+			passing:          false,
+			optional:         []string{"c4"},
+			combinedContexts: map[string]string{"c1": success, "c2": failure, "c3": success, "c4": failure},
+			config: &config.Policy{
+				Protect:  &yes,
+				Contexts: []string{"c1", "c3"},
+			},
+		},
+		{
+			name:             "required checks used - failing",
+			passing:          false,
+			optional:         []string{"c4"},
+			combinedContexts: map[string]string{"c1": success, "c2": success, "c4": success},
+			config: &config.Policy{
+				Protect:  &yes,
+				Contexts: []string{"c1", "c2", "c3"},
+			},
+		},
+		{
+			name:    "unprotected but using required checks and skipping unlisted - passing",
+			passing: false,
+			config: &config.Policy{
+				Protect:             &no,
+				Contexts:            []string{"c1", "c2", "c3"},
+				SkipUnknownContexts: &yes,
+			},
+			combinedContexts: map[string]string{"c1": success, "c2": success, statusContext: failure},
+		},
+		{
+			name:             "unprotected but using required checks disabled and skipping unlisted - failing",
+			passing:          false,
+			optional:         []string{"c4"},
+			combinedContexts: map[string]string{"c1": success, "c2": failure},
+			config: &config.Policy{
+				Protect:             &no,
+				Contexts:            []string{"c1", "c2"},
+				SkipUnknownContexts: &yes,
+			},
+		},
+		{
+			name:             "unprotected but using required checks used and skipping unlisted - passing",
+			passing:          true,
+			optional:         []string{"c4"},
+			combinedContexts: map[string]string{"c1": success, "c2": failure, "c3": success, "c4": failure},
+			config: &config.Policy{
+				Protect:             &yes,
+				Contexts:            []string{"c1", "c3"},
+				SkipUnknownContexts: &yes,
+			},
+		},
+		{
+			name:             "protected required checks used and skipping unlisted - failing",
+			passing:          false,
+			optional:         []string{"c4"},
+			combinedContexts: map[string]string{"c1": success, "c2": success, "c4": success},
+			config: &config.Policy{
+				Protect:             &yes,
+				Contexts:            []string{"c1", "c2", "c3"},
+				SkipUnknownContexts: &yes,
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		ghc := &fgc{
+			combinedStatus: tc.combinedContexts,
+			expectedSHA:    headSHA}
+		log := logrus.WithField("component", "tide")
+		_, err := log.String()
+		if err != nil {
+			t.Errorf("Failed to get log output before testing: %v", err)
+			t.FailNow()
+		}
+		cr := newContextRegisterFromPolicy(tc.config)
+		cr.registerOptionalContexts(tc.optional...)
+		pr := PullRequest{HeadRefOID: githubql.String(headSHA)}
+		passing := isPassingTests(log, ghc, pr, cr)
+		if passing != tc.passing {
+			t.Errorf("%s: Expected %t got %t", tc.name, tc.passing, passing)
 		}
 	}
 }
@@ -1831,7 +1955,6 @@ func TestPresubmitsByPull(t *testing.T) {
 			fileChangesCache: tc.initialChangeCache,
 			ghc:              &fgc{},
 		}
-
 		presubmits, err := c.presubmitsByPull(sp)
 		if err != nil {
 			t.Fatalf("unexpected error from presubmitsByPull: %v", err)

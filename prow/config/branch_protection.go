@@ -27,6 +27,9 @@ type Policy struct {
 	// TODO(fejta): add all protection options
 	Contexts []string `json:"require-contexts,omitempty"`
 	Pushers  []string `json:"allow-push,omitempty"`
+	// SkipUnknownContexts will consider undefined contexts in Prow Config
+	// (Presubmits and branch protection) to be optional for a merge by Tide.
+	SkipUnknownContexts *bool `json:"skip-unknown-contexts,omitempty"`
 }
 
 // selectBool returns the child argument if set, otherwise the parent
@@ -53,9 +56,10 @@ func unionStrings(parent, child []string) []string {
 // apply returns a policy that merges the child into the parent
 func (parent Policy) Apply(child Policy) Policy {
 	return Policy{
-		Protect:  selectBool(parent.Protect, child.Protect),
-		Contexts: unionStrings(parent.Contexts, child.Contexts),
-		Pushers:  unionStrings(parent.Pushers, child.Pushers),
+		Protect:             selectBool(parent.Protect, child.Protect),
+		Contexts:            unionStrings(parent.Contexts, child.Contexts),
+		Pushers:             unionStrings(parent.Pushers, child.Pushers),
+		SkipUnknownContexts: selectBool(parent.SkipUnknownContexts, child.SkipUnknownContexts),
 	}
 }
 
@@ -76,6 +80,7 @@ type Repo struct {
 	Branches map[string]Branch `json:"branches,omitempty"`
 }
 
+// TODO(fejta): Remove Branch and only use Policy ?
 type Branch struct {
 	Policy
 }
@@ -99,7 +104,7 @@ func (c *Config) GetBranchProtection(org, repo, branch string) (*Policy, error) 
 	}
 
 	// Automatically require any required prow jobs
-	if prowContexts := branchRequirements(org, repo, branch, c.Presubmits); len(prowContexts) > 0 {
+	if prowContexts, _ := BranchRequirements(org, repo, branch, c.Presubmits); len(prowContexts) > 0 {
 		// Error if protection is disabled
 		if policy.Protect != nil && !*policy.Protect {
 			return nil, fmt.Errorf("required prow jobs require branch protection")
@@ -132,8 +137,7 @@ func (c *Config) GetBranchProtection(org, repo, branch string) (*Policy, error) 
 	return &policy, nil
 }
 
-func jobRequirements(jobs []Presubmit, branch string, after bool) []string {
-	var required []string
+func jobRequirements(jobs []Presubmit, branch string, after bool) (required, optional []string) {
 	for _, j := range jobs {
 		if !j.Brancher.RunsAgainstBranch(branch) {
 			continue
@@ -142,19 +146,24 @@ func jobRequirements(jobs []Presubmit, branch string, after bool) []string {
 		if !after && !j.AlwaysRun && j.RunIfChanged == "" {
 			continue // No
 		}
-		if !j.SkipReport && !j.Optional { // This job needs a context
+		if j.ContextRequired() { // This job needs a context
 			required = append(required, j.Context)
+		} else {
+			optional = append(optional, j.Context)
 		}
 		// Check which children require contexts
-		required = append(required, jobRequirements(j.RunAfterSuccess, branch, true)...)
+		r, o := jobRequirements(j.RunAfterSuccess, branch, true)
+		required = append(required, r...)
+		optional = append(optional, o...)
 	}
-	return required
+	return
 }
 
-func branchRequirements(org, repo, branch string, presubmits map[string][]Presubmit) []string {
+// BranchRequirements returns required and optional presubmits prow jobs for a given org, repo branch.
+func BranchRequirements(org, repo, branch string, presubmits map[string][]Presubmit) (required, optional []string) {
 	p, ok := presubmits[org+"/"+repo]
 	if !ok {
-		return nil
+		return
 	}
 	return jobRequirements(p, branch, false)
 }

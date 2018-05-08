@@ -22,6 +22,8 @@ branch-protection:
           # Ensure that the extra-process-followed github status context passes.
           # In addition, adds any required prow jobs (aka always_run: true)
           require-contexts: ["extra-process-followed"]
+          # Tell Tide to merge when unspecified contexts are pending or failing
+          skip-unknown-contexts: true
 
 presubmits:
   kubernetes/test-infra:
@@ -79,6 +81,8 @@ branch-protection:
               protect-by-default: true
               # Require the foo status context
               require-contexts: ["foo"]
+              # Tell Tide to merge when unspecified contexts are pending or failing
+              skip-unknown-contexts: true
     different-org:
       # Inherits protect-by-default: true setting from above
 ```
