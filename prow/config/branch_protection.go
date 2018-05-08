@@ -56,9 +56,9 @@ func unionStrings(parent, child []string) []string {
 // apply returns a policy that merges the child into the parent
 func (parent Policy) Apply(child Policy) Policy {
 	return Policy{
-		Protect:  selectBool(parent.Protect, child.Protect),
-		Contexts: unionStrings(parent.Contexts, child.Contexts),
-		Pushers:  unionStrings(parent.Pushers, child.Pushers),
+		Protect:             selectBool(parent.Protect, child.Protect),
+		Contexts:            unionStrings(parent.Contexts, child.Contexts),
+		Pushers:             unionStrings(parent.Pushers, child.Pushers),
 		SkipUnknownContexts: selectBool(parent.SkipUnknownContexts, child.SkipUnknownContexts),
 	}
 }
