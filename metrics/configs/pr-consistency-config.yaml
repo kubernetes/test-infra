@@ -41,11 +41,12 @@ query: |
           and job in ( /* only consider merge-blocking jobs */
             'pr:pull-kubernetes-bazel-build',
             'pr:pull-kubernetes-bazel-test',
-            'pr:pull-kubernetes-e2e-gce-etcd3',
+            'pr:pull-kubernetes-e2e-gce',
             'pr:pull-kubernetes-e2e-kops-aws',
+            'pr:pull-kubernetes-integration',
             'pr:pull-kubernetes-kubemark-e2e-gce',
             'pr:pull-kubernetes-node-e2e',
-            'pr:pull-kubernetes-unit',
+            'pr:pull-kubernetes-typecheck',
             'pr:pull-kubernetes-verify',
           )
       )
