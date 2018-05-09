@@ -249,6 +249,7 @@
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
+      "--runtime-config=api/all=true",
       "--test_args=--ginkgo.focus=\\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8",
       "--timeout=180m"
     ],
@@ -4451,6 +4452,7 @@
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
+      "--runtime-config=api/all=true",
       "--test_args=--ginkgo.focus=\\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8",
       "--timeout=180m"
     ],
