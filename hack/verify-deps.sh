@@ -21,6 +21,9 @@ TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
 cd "${TESTINFRA_ROOT}"
 
 _tmpdir="$(mktemp -d -t verify-deps.XXXXXX)"
+cd "${_tmpdir}"
+_tmpdir="$(pwd)"
+
 trap "rm -rf ${_tmpdir}" EXIT
 
 _tmp_gopath="${_tmpdir}/go"
