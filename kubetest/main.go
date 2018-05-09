@@ -235,25 +235,14 @@ type publisher interface {
 	Publish() error
 }
 
-// testBuilder is implemented by deployers that want to customize how the e2e tests are run
-type testBuilder interface {
-	// BuildTester builds the appropriate Tester object for running tests
-	BuildTester(o *options) (Tester, error)
-}
-
-// Tester is implemented by runners that run our tests
-type Tester interface {
-	Run(control *process.Control, args []string) error
-}
-
 func getDeployer(o *options) (deployer, error) {
 	switch o.deployment {
 	case "bash":
 		return newBash(&o.clusterIPRange), nil
 	case "conformance":
-		return conformance.NewDeployer(o.kubecfg, &o.testArgs, control)
+		return conformance.NewDeployer(o.kubecfg)
 	case "dind":
-		return dind.NewDeployer(o.kubecfg, o.dindImage, &o.testArgs, control)
+		return dind.NewDeployer(o.kubecfg, o.dindImage, control)
 	case "gke":
 		return newGKE(o.provider, o.gcpProject, o.gcpZone, o.gcpRegion, o.gcpNetwork, o.gcpNodeImage, o.gcpImageFamily, o.gcpImageProject, o.cluster, &o.testArgs, &o.upgradeArgs)
 	case "kops":

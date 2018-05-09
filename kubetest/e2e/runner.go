@@ -17,6 +17,7 @@ limitations under the License.
 package e2e
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -29,8 +30,8 @@ import (
 	"k8s.io/test-infra/kubetest/process"
 )
 
-// Tester runs e2e tests directly (by calling ginkgo)
-type Tester struct {
+// GinkgoTester runs e2e tests directly (by calling ginkgo)
+type GinkgoTester struct {
 	// Required
 	Kubeconfig string
 	Provider   string
@@ -61,13 +62,24 @@ type Tester struct {
 	NumNodes              int
 	ReportDir             string
 	ReportPrefix          string
+
+	// Other ginkgo options
+	FocusRegex      string
+	SkipRegex       string
+	Seed            int
+	SystemdServices []string
 }
 
-// NewTester returns a new instance of Tester
-func NewTester() *Tester {
-	t := &Tester{
+// NewGinkgoTester returns a new instance of GinkgoTester
+func NewGinkgoTester(o *BuildTesterOptions) *GinkgoTester {
+	t := &GinkgoTester{
 		FlakeAttempts: 1,
 	}
+
+	t.GinkgoParallel = o.Parallelism
+	t.FocusRegex = o.FocusRegex
+	t.SkipRegex = o.SkipRegex
+
 	return t
 }
 
@@ -90,8 +102,40 @@ func (a *args) addInt(flagName string, value int) {
 	a.values = append(a.values, fmt.Sprintf("--%s=%d", flagName, value))
 }
 
+// validate checks that fields are set sanely
+func (t *GinkgoTester) validate() error {
+	if t.Kubeconfig == "" {
+		return errors.New("Kubeconfig cannot be empty")
+	}
+
+	if t.Provider == "" {
+		return errors.New("Provider cannot be empty")
+	}
+
+	if t.KubeRoot == "" {
+		return errors.New("Kuberoot cannot be empty")
+	}
+
+	if t.GinkgoParallel <= 0 {
+		return errors.New("GinkgoParallel must be at least 1")
+	}
+
+	// Check that our files and folders exist.
+	if t.ReportDir != "" {
+		if _, err := os.Stat(t.ReportDir); err != nil {
+			return fmt.Errorf("ReportDir %s must exist before tests are run: %v", t.ReportDir, err)
+		}
+	}
+
+	return nil
+}
+
 // Run executes the test (calling ginkgo)
-func (t *Tester) Run(control *process.Control, extraArgs []string) error {
+func (t *GinkgoTester) Run(control *process.Control, extraArgs []string) error {
+	if err := t.validate(); err != nil {
+		return fmt.Errorf("configuration error in GinkgoTester: %v", err)
+	}
+
 	ginkgoPath, err := t.findBinary("ginkgo")
 	if err != nil {
 		return err
@@ -102,11 +146,20 @@ func (t *Tester) Run(control *process.Control, extraArgs []string) error {
 	}
 
 	a := &args{}
-	a.values = []string{
-		fmt.Sprintf("--nodes=%d", t.GinkgoParallel),
+
+	if t.Seed != 0 {
+		a.addInt("seed", t.Seed)
+	}
+
+	a.addIfNonEmpty("focus", t.FocusRegex)
+	a.addIfNonEmpty("skip", t.SkipRegex)
+
+	a.addInt("nodes", t.GinkgoParallel)
+
+	a.values = append(a.values, []string{
 		e2eTest,
 		"--",
-	}
+	}...)
 
 	a.addIfNonEmpty("kubeconfig", t.Kubeconfig)
 	a.addInt("ginkgo.flakeAttempts", t.FlakeAttempts)
@@ -136,6 +189,8 @@ func (t *Tester) Run(control *process.Control, extraArgs []string) error {
 	a.addIfNonEmpty("report-dir", t.ReportDir)
 	a.addIfNonEmpty("report-prefix", t.ReportPrefix)
 
+	a.addIfNonEmpty("systemd-services", strings.Join(t.SystemdServices, ","))
+
 	ginkgoArgs := append(a.values, extraArgs...)
 
 	cmd := exec.Command(ginkgoPath, ginkgoArgs...)
@@ -148,7 +203,7 @@ func (t *Tester) Run(control *process.Control, extraArgs []string) error {
 // findBinary finds a file by name, from a list of well-known output locations
 // When multiple matches are found, the most recent will be returned
 // Based on kube::util::find-binary from kubernetes/kubernetes
-func (t *Tester) findBinary(name string) (string, error) {
+func (t *GinkgoTester) findBinary(name string) (string, error) {
 	kubeRoot := t.KubeRoot
 
 	locations := []string{

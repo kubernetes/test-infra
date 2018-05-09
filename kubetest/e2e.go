@@ -27,8 +27,7 @@ import (
 	"strings"
 	"time"
 
-	"k8s.io/test-infra/kubetest/conformance"
-	"k8s.io/test-infra/kubetest/dind"
+	"k8s.io/test-infra/kubetest/e2e"
 	"k8s.io/test-infra/kubetest/process"
 	"k8s.io/test-infra/kubetest/util"
 )
@@ -191,56 +190,33 @@ func run(deploy deployer, o options) error {
 			errs = util.AppendError(errs, control.XmlWrap(&suite, "Node Tests", func() error {
 				return nodeTest(nodeArgs, o.testArgs, o.nodeTestArgs, o.gcpProject, o.gcpZone)
 			}))
-		} else if o.deployment == "dind" {
-			if err := control.XmlWrap(&suite, "IsUp", deploy.IsUp); err != nil {
-				errs = util.AppendError(errs, err)
-			}
-			dep := deploy.(*dind.DindDeployer)
-			tester, err := dep.NewTester(o.focusRegex, o.skipRegex, o.ginkgoParallel.Get())
-			if err != nil {
-				return err
-			}
-			errs = util.AppendError(errs, control.XmlWrap(&suite, "Test", func() error {
-				return tester.Test()
-			}))
-		} else if o.deployment == "conformance" {
-			if err := control.XmlWrap(&suite, "IsUp", deploy.IsUp); err != nil {
-				errs = util.AppendError(errs, err)
-			}
-			tester, err := conformance.NewTester("", "", o.kubecfg, "", &o.testArgs, control)
-			if err != nil {
-				return err
-			}
-			errs = util.AppendError(errs, control.XmlWrap(&suite, "Test", func() error {
-				return tester.Test("", "")
-			}))
 		} else {
-			errs = util.AppendError(errs, control.XmlWrap(&suite, "kubectl version", getKubectlVersion))
-			if o.skew {
-				errs = util.AppendError(errs, control.XmlWrap(&suite, "SkewTest", func() error {
-					return skewTest(testArgs, "skew", o.checkSkew)
+			if o.deployment != "dind" && o.deployment != "conformance" {
+				errs = util.AppendError(errs, control.XmlWrap(&suite, "kubectl version", getKubectlVersion))
+				if o.skew {
+					errs = util.AppendError(errs, control.XmlWrap(&suite, "SkewTest", func() error {
+						return skewTest(testArgs, "skew", o.checkSkew)
+					}))
+				}
+			}
+
+			if err := control.XmlWrap(&suite, "IsUp", deploy.IsUp); err != nil {
+				errs = util.AppendError(errs, err)
+			} else if o.federation {
+				errs = util.AppendError(errs, control.XmlWrap(&suite, "FederationTest", func() error {
+					return federationTest(testArgs)
 				}))
 			} else {
-				if err := control.XmlWrap(&suite, "IsUp", deploy.IsUp); err != nil {
+				var tester e2e.Tester
+				tester = &GinkgoScriptTester{}
+				if testBuilder, ok := deploy.(e2e.TestBuilder); ok {
+					tester, err = testBuilder.BuildTester(toBuildTesterOptions(&o))
 					errs = util.AppendError(errs, err)
-				} else {
-					if o.federation {
-						errs = util.AppendError(errs, control.XmlWrap(&suite, "FederationTest", func() error {
-							return federationTest(testArgs)
-						}))
-					} else {
-						var tester Tester
-						tester = &GinkgoScriptTester{}
-						if testBuilder, ok := deploy.(testBuilder); ok {
-							tester, err = testBuilder.BuildTester(&o)
-							errs = util.AppendError(errs, err)
-						}
-						if tester != nil {
-							errs = util.AppendError(errs, control.XmlWrap(&suite, "Test", func() error {
-								return tester.Run(control, testArgs)
-							}))
-						}
-					}
+				}
+				if tester != nil {
+					errs = util.AppendError(errs, control.XmlWrap(&suite, "Test", func() error {
+						return tester.Run(control, testArgs)
+					}))
 				}
 			}
 		}
@@ -748,4 +724,13 @@ type GinkgoScriptTester struct {
 // Run executes ./hack/ginkgo-e2e.sh
 func (t *GinkgoScriptTester) Run(control *process.Control, testArgs []string) error {
 	return control.FinishRunning(exec.Command("./hack/ginkgo-e2e.sh", testArgs...))
+}
+
+// toBuildTesterOptions builds the BuildTesterOptions data structure for passing to BuildTester
+func toBuildTesterOptions(o *options) *e2e.BuildTesterOptions {
+	return &e2e.BuildTesterOptions{
+		FocusRegex:  o.focusRegex,
+		SkipRegex:   o.skipRegex,
+		Parallelism: o.ginkgoParallel.Get(),
+	}
 }

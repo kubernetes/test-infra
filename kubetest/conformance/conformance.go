@@ -20,16 +20,14 @@ package conformance
 import (
 	"fmt"
 	"os"
-	"os/exec"
-	"strings"
 	"time"
 
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/test-infra/kubetest/e2e"
 	"k8s.io/test-infra/kubetest/process"
-	"k8s.io/test-infra/kubetest/util"
 )
 
 // Tester runs conformance tests against a given cluster.
@@ -42,78 +40,44 @@ type Tester struct {
 	control   *process.Control
 }
 
-// NewTester returns an object that knows how to test the cluster it deployed.
-func NewTester(e2etest, ginkgo, kubecfg, reportdir string, testArgs *string, control *process.Control) (*Tester, error) {
-	// Find the ginkgo and e2e.test artifacts we need. We'll cheat for now, and pull them from a known path.
-	if e2etest == "" {
-		e2etest = util.K8s("kubernetes", "bazel-bin", "test", "e2e", "e2e.test")
-	}
-	if ginkgo == "" {
-		ginkgo = util.K8s("kubernetes", "bazel-bin", "vendor", "github.com", "onsi", "ginkgo", "ginkgo", "linux_amd64_stripped", "ginkgo")
+// BuildTester returns an object that knows how to test the cluster it deployed.
+func (d *Deployer) BuildTester(o *e2e.BuildTesterOptions) (e2e.Tester, error) {
+	reportdir, err := os.Getwd()
+	if err != nil {
+		return nil, err
 	}
 
-	if reportdir == "" {
-		var err error
-		reportdir, err = os.Getwd()
-		if err != nil {
-			return nil, err
-		}
+	if o.FocusRegex == "" {
+		o.FocusRegex = "\".*\""
+	}
+	if o.SkipRegex == "" {
+		o.SkipRegex = "\".*(Feature)|(NFS)|(StatefulSet).*\""
 	}
 
-	// Check that our files and folders exist.
-	if _, err := os.Stat(e2etest); err != nil {
-		return nil, fmt.Errorf("e2e.test not found at %s, build before tests (--build=e2e): %v", e2etest, err)
-	}
-	if _, err := os.Stat(ginkgo); err != nil {
-		return nil, fmt.Errorf("ginkgo not found at %s, build before tests (--build=e2e): %v", ginkgo, err)
-	}
-	if _, err := os.Stat(reportdir); err != nil {
-		return nil, fmt.Errorf("reportdir %s must exist before tests are run: %v", reportdir, err)
-	}
+	t := e2e.NewGinkgoTester(o)
 
-	return &Tester{
-		e2etest:   e2etest,
-		ginkgo:    ginkgo,
-		kubecfg:   kubecfg,
-		reportdir: reportdir,
-		testArgs:  testArgs,
-		control:   control,
-	}, nil
-}
+	t.Seed = 1436380640
+	t.GinkgoParallel = 10
+	t.Kubeconfig = d.kubecfg
+	t.FlakeAttempts = 2
+	t.NumNodes = 4
+	t.SystemdServices = []string{"docker", "kubelet"}
+	t.ReportDir = reportdir
 
-// Test just execs ginkgo. This will take more parameters in the future.
-func (t *Tester) Test(focus, skip string) error {
-	// Overwrite the conformance focus and skip args if specified.
-	focusRegex := "\".*\""
-	skipRegex := "\".*(Feature)|(NFS)|(StatefulSet).*\""
-	if focus == "" {
-		focusRegex = focus
-	}
-	if skip == "" {
-		skipRegex = skip
-	}
-	focusArg := fmt.Sprintf("--focus=%s", focusRegex)
-	skipArg := fmt.Sprintf("--skip=%s", skipRegex)
-
-	// Execute ginkgo, which in turn executes e2e.test.
-	args := []string{"--seed=1436380640", "--nodes=10", focusArg, skipArg, t.e2etest,
-		"--", "--kubeconfig", t.kubecfg, "--ginkgo.flakeAttempts=2", "--num-nodes=4", "--systemd-services=docker,kubelet",
-		"--report-dir", t.reportdir}
-	args = append(args, strings.Fields(*t.testArgs)...)
-	cmd := exec.Command(t.ginkgo, args...)
-	return t.control.FinishRunning(cmd)
+	return t, nil
 }
 
 // Deployer returns a deployer stub that expects a cluster to already exist.
 type Deployer struct {
 	kubecfg   string
-	testArgs  *string
-	control   *process.Control
 	apiserver *kubernetes.Clientset
 }
 
+// Deployer implements e2e.TestBuilder, overriding testing
+var _ e2e.TestBuilder = &Deployer{}
+
 // NewDeployer returns a new Deployer.
-func NewDeployer(kubecfg string, testArgs *string, control *process.Control) (*Deployer, error) {
+func NewDeployer(kubecfg string) (*Deployer, error) {
 	// The easiest thing to do is just load the altereted kubecfg from the file we wrote.
 	config, err := clientcmd.BuildConfigFromFlags("", kubecfg)
 	if err != nil {
@@ -127,8 +91,6 @@ func NewDeployer(kubecfg string, testArgs *string, control *process.Control) (*D
 	return &Deployer{
 		kubecfg:   kubecfg,
 		apiserver: apiserver,
-		control:   control,
-		testArgs:  testArgs,
 	}, nil
 }
 

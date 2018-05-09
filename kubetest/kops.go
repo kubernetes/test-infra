@@ -540,9 +540,8 @@ func (k kops) BuildTester(o *e2e.BuildTesterOptions) (e2e.Tester, error) {
 
 	log.Printf("running ginkgo tests directly")
 
-	t := e2e.NewTester()
+	t := e2e.NewGinkgoTester(o)
 	t.KubeRoot = "."
-	t.GinkgoParallel = o.ginkgoParallel.Get()
 
 	t.Kubeconfig = k.kubecfg
 	t.Provider = k.provider
@@ -621,8 +620,8 @@ func (k *kops) runKopsDump() (*kopsDump, error) {
 // kops deployer implements publisher
 var _ publisher = &kops{}
 
-// kops deployer implements testBuilder
-var _ testBuilder = &kops{}
+// kops deployer implements e2e.TestBuilder
+var _ e2e.TestBuilder = &kops{}
 
 // Publish will publish a success file, it is called if the tests were successful
 func (k kops) Publish() error {
