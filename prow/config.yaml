@@ -14814,20 +14814,6 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180504-baab65e5e-master
 
-- interval: 1h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-kops-gce-ginkgodirect
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-      imagePullPolicy: Always
-
 - interval: 30m
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-gce-ha

@@ -531,10 +531,10 @@ func (k kops) TestSetup() error {
 	return nil
 }
 
-// BuildTester returns a standard ginkgo-script tester, unless KUBETEST_RUN_GINKGO_DIRECT=y, when we build an e2e.Tester
-func (k kops) BuildTester(o *options) (Tester, error) {
-	// Temporary env var while we debug direct execution of ginkgo
-	if os.Getenv("KUBETEST_RUN_GINKGO_DIRECT") != "y" {
+// BuildTester returns a standard ginkgo-script tester, except for GCE where we build an e2e.Tester
+func (k kops) BuildTester(o *e2e.BuildTesterOptions) (e2e.Tester, error) {
+	// Start by only enabling this on GCE
+	if !k.isGoogleCloud() {
 		return &GinkgoScriptTester{}, nil
 	}
 
