@@ -14,10 +14,10 @@
 # limitations under the License.
 
 
-# Run dep ensure and generate bazel rules.
+# Run dep ensure, generate bazel rules and do additional pruning.
 #
 # Usage:
-#   update-deps.sh <ARGS>
+#   update-dep.sh <ARGS>
 #
 # The args are sent to dep ensure -v <ARGS>
 
@@ -38,4 +38,6 @@ rm -rf vendor/github.com/golang/dep/internal/fs/testdata
 bazel run //:dep -- ensure -v "$@"
 rm -rf vendor/github.com/golang/dep/internal/fs/testdata
 hack/update-bazel.sh
+hack/prune-libraries.sh --fix
+hack/update-bazel.sh  # Update child :all-srcs in case parent was deleted
 echo SUCCESS
