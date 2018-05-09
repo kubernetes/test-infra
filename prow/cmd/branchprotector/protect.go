@@ -21,13 +21,15 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/url"
 	"strings"
 	"sync"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/logrusutil"
+
+	"github.com/sirupsen/logrus"
 )
 
 type options struct {
@@ -77,25 +79,29 @@ type Errors struct {
 
 func (e *Errors) add(err error) {
 	e.lock.Lock()
-	log.Println(err)
+	logrus.Info(err)
 	defer e.lock.Unlock()
 	e.errs = append(e.errs, err)
 }
 
 func main() {
+	logrus.SetFormatter(
+		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "branchprotector"}),
+	)
+
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 
 	cfg, err := config.Load(o.config)
 	if err != nil {
-		log.Fatalf("Failed to load --config=%s: %v", o.config, err)
+		logrus.WithError(err).Fatalf("Failed to load --config=%s", o.config)
 	}
 
 	b, err := ioutil.ReadFile(o.token)
 	if err != nil {
-		log.Fatalf("cannot read --token: %v", err)
+		logrus.WithError(err).Fatalf("cannot read --token=%s", o.token)
 	}
 
 	var c *github.Client
@@ -120,8 +126,11 @@ func main() {
 	p.Protect()
 	close(p.updates)
 	errors := <-p.done
-	if len(errors) > 0 {
-		log.Fatalf("Encountered %d errors protecting branches: %v", len(errors), errors)
+	if n := len(errors); n > 0 {
+		for i, err := range errors {
+			logrus.WithError(err).Error(i)
+		}
+		logrus.Fatalf("Encountered %d errors protecting branches", n)
 	}
 }
 
@@ -179,8 +188,8 @@ func (p *Protector) Protect() {
 			continue
 		}
 		parts := strings.Split(repo, "/")
-		if len(parts) != 2 {
-			log.Fatalf("Bad repo: %s", repo)
+		if len(parts) != 2 { // TODO(fejta): use a strong type here instead
+			logrus.Fatalf("Bad repo: %s", repo)
 		}
 		orgName := parts[0]
 		repoName := parts[1]
@@ -251,8 +260,7 @@ func (p *Protector) UpdateRepo(orgName string, repo string, repoDefaults config.
 func (p *Protector) UpdateBranch(orgName, repo string, branchName string, branchDefaults config.Branch) error {
 	bp, err := p.cfg.GetBranchProtection(orgName, repo, branchName)
 	if err != nil {
-		log.Printf("unable to compute requirement for %s/%s:%s", orgName, repo, branchName)
-		p.errors.add(err)
+		return err
 	}
 	if bp == nil || bp.Protect == nil {
 		return nil

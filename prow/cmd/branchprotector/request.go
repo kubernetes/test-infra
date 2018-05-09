@@ -17,11 +17,10 @@ limitations under the License.
 package main
 
 import (
-	"log"
-
 	branchprotection "k8s.io/test-infra/prow/config"
-
 	"k8s.io/test-infra/prow/github"
+
+	"github.com/sirupsen/logrus"
 )
 
 // makeRequest renders a branch protection policy into the corresponding GitHub api request.
@@ -84,7 +83,7 @@ func makeReviews(rp *branchprotection.ReviewPolicy) *github.RequiredPullRequestR
 	case rp == nil:
 		return nil
 	case rp.Approvals == nil:
-		log.Println("WARNING: required_pull_request_reviews policy does not specify required_approving_review_count, disabling")
+		logrus.Warn("WARNING: required_pull_request_reviews policy does not specify required_approving_review_count, disabling")
 		return nil
 	case *rp.Approvals == 0:
 		return nil

@@ -24,11 +24,11 @@ import (
 	"strings"
 	"testing"
 
+	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 
 	"github.com/ghodss/yaml"
-	"k8s.io/apimachinery/pkg/util/diff"
 )
 
 func TestOptions_Validate(t *testing.T) {

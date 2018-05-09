@@ -19,9 +19,10 @@ package config
 import (
 	"errors"
 	"fmt"
-	"log"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+
+	"github.com/sirupsen/logrus"
 )
 
 // Policy for the config/org/repo/branch.
@@ -169,7 +170,7 @@ func (parent Policy) Apply(child Policy) (Policy, error) {
 	} else if old {
 		if !parent.deprecatedWarning {
 			parent.deprecatedWarning = true
-			log.Printf("WARNING: protect-by-default, require-contexts, allow-push are deprecated. Please replace them before July 2018")
+			logrus.Warn("WARNING: protect-by-default, require-contexts, allow-push are deprecated. Please replace them before July 2018")
 		}
 		d := child.deprecatedPolicy
 		child = Policy{
