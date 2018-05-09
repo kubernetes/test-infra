@@ -24,7 +24,7 @@ status to the specified log file. Clone records have the form:
         "commands": [
             {
                 "command": "git init",
-                "output": "Reinitialized existing Git repository in /go/src/k8s.io/kubernetes/.git/"
+                "output": "Reinitialized existing Git repository in /go/src/k8s.io/kubernetes/.git/",
                 "error": ""
             }
         ]
