@@ -37,6 +37,8 @@ import (
 )
 
 const (
+	TestContainerName = "test"
+
 	inClusterBaseURL = "https://kubernetes.default"
 	maxRetries       = 8
 	retryDelay       = 2 * time.Second
@@ -524,7 +526,8 @@ func (c *Client) CreatePod(p v1.Pod) (Pod, error) {
 func (c *Client) GetLog(pod string) ([]byte, error) {
 	c.log("GetLog", pod)
 	return c.requestRetry(&request{
-		path: fmt.Sprintf("/api/v1/namespaces/%s/pods/%s/log", c.namespace, pod),
+		path:  fmt.Sprintf("/api/v1/namespaces/%s/pods/%s/log", c.namespace, pod),
+		query: map[string]string{"container": TestContainerName},
 	})
 }
 
