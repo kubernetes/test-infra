@@ -28,6 +28,7 @@ var testQuery = TideQuery{
 	Repos:                  []string{"k/k", "k/t-i"},
 	Labels:                 []string{"lgtm", "approved"},
 	MissingLabels:          []string{"foo"},
+	Milestone:              "milestone",
 	ReviewApprovedRequired: true,
 }
 
@@ -46,6 +47,7 @@ func TestTideQuery(t *testing.T) {
 	checkTok("label:\"lgtm\"")
 	checkTok("label:\"approved\"")
 	checkTok("-label:\"foo\"")
+	checkTok("milestone:\"milestone\"")
 	checkTok("review:approved")
 }
 
@@ -87,6 +89,7 @@ func TestAllPRsSince(t *testing.T) {
 	checkTok("label:\"approved\"", false)
 	checkTok("label:\"mergeable\"", false)
 	checkTok("-label:\"foo\"", false)
+	checkTok("milestone:\"milestone\"", false)
 	checkTok("review:approved", false)
 	checkTok("updated:>=2015-03-07T11:06:39Z", true)
 
