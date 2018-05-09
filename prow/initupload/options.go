@@ -66,6 +66,7 @@ func (o *Options) LoadConfig(config string) error {
 
 // BindOptions binds flags to options
 func (o *Options) BindOptions(flags *flag.FlagSet) {
+	flags.StringVar(&o.Log, "clone-log", "", "Path to the clone records log")
 	gcsupload.BindOptions(o.Options, flags)
 }
 
