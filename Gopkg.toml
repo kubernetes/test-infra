@@ -1,5 +1,6 @@
 # Gopkg.toml for k8s.io/test-infra
 
+# Updating this list likely also requires updating hack/prune-libraries.sh.
 required = [
   "github.com/bazelbuild/bazel-gazelle/cmd/gazelle",
   "github.com/client9/misspell/cmd/misspell",
