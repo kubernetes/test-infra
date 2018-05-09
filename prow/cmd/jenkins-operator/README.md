@@ -128,7 +128,7 @@ The Jenkins operator acts as a Kubernetes client since it manages ProwJobs
 backed by Jenkins builds. It is expected to run as a pod inside a Kubernetes
 cluster and so it uses the in-cluster client config.
 
-## Gihub integration
+## Github integration
 
 The operator needs to talk to Github for updating commit statuses and
 adding comments about failed tests. Note that this functionality may
