@@ -39,11 +39,11 @@ var (
 )
 
 func init() {
-	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
+	plugins.RegisterGenericCommentHandler(pluginName, handleGenericCommentEvent, helpProvider)
 	plugins.RegisterPullRequestHandler(pluginName, func(pc plugins.PluginClient, pe github.PullRequestEvent) error {
 		return handlePullRequest(pc.GitHubClient, pe, pc.Logger)
 	}, helpProvider)
-	plugins.RegisterReviewEventHandler(pluginName, handlePullRequestReview, helpProvider)
+	plugins.RegisterReviewEventHandler(pluginName, handlePullRequestReviewEvent, helpProvider)
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
@@ -75,11 +75,15 @@ type githubClient interface {
 	BotName() (string, error)
 }
 
-func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
-	return handle(pc.GitHubClient, pc.PluginConfig, pc.OwnersClient, pc.Logger, &e)
+func handleGenericCommentEvent(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+	return handleGenericComment(pc.GitHubClient, pc.Logger, e)
 }
 
-func handle(gc githubClient, config *plugins.Configuration, ownersClient repoowners.Interface, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handlePullRequestReviewEvent(pc plugins.PluginClient, e github.ReviewEvent) error{
+	return handlePullRequestReview(pc.GitHubClient, pc.Logger, e)
+}
+
+func handleGenericComment(gc githubClient, log *logrus.Entry, e github.GenericCommentEvent) error {
 	author := e.User.Login
 	issueAuthor := e.IssueAuthor.Login
 	repo := e.Repo
@@ -87,8 +91,6 @@ func handle(gc githubClient, config *plugins.Configuration, ownersClient repoown
 	number := e.Number
 	body := e.Body
 	htmlURL := e.HTMLURL
-	log := pc.Logger
-	gc := pc.GitHubClient
 
 	// Only consider open PRs and new comments.
 	if !e.IsPR || e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
@@ -117,7 +119,7 @@ func handle(gc githubClient, config *plugins.Configuration, ownersClient repoown
 	return handle(wantLGTM, author, issueAuthor, repo, assignees, number, body, htmlURL, gc, log)
 }
 
-func handlePullRequestReview(pc plugins.PluginClient, e github.ReviewEvent) error {
+func handlePullRequestReview(gc githubClient, log *logrus.Entry, e github.ReviewEvent) error {
 	author := e.Review.User.Login
 	issueAuthor := e.PullRequest.User.Login
 	repo := e.Repo
@@ -128,15 +130,16 @@ func handlePullRequestReview(pc plugins.PluginClient, e github.ReviewEvent) erro
 
 	// If we review with Approve, add lgtm if necessary.
 	// If we review with Request Changes, remove lgtm if necessary.
+	// Comments in the review body can also add or remove LGTM, as with a generic comment.
 	wantLGTM := false
-	if e.Review.State == "approve" {
+	if e.Review.State == "approve" || lgtmRe.MatchString(body) {
 		wantLGTM = true
-	} else if lgtmCancelRe.MatchString(e.Body) {
+	} else if e.Review.State == "request_changes" || lgtmCancelRe.MatchString(body){
 		wantLGTM = false
 	} else {
 		return nil
 	}
-	return handle(wantLGTM, author, issueAuthor, repo, assignees, number, body, htmlURL, pc.GitHubClient, pc.Logger)
+	return handle(wantLGTM, author, issueAuthor, repo, assignees, number, body, htmlURL, gc, log)
 }
 
 func handle(wantLGTM bool, author string, issueAuthor string, repo github.Repo, assignees []github.User, number int, body string, htmlURL string, gc githubClient, log *logrus.Entry) error {
@@ -209,7 +212,25 @@ func handle(wantLGTM bool, author string, issueAuthor string, repo github.Repo, 
 		return gc.RemoveLabel(org, repoName, number, lgtmLabel)
 	} else if !hasLGTM && wantLGTM {
 		log.Info("Adding LGTM label.")
-		return gc.AddLabel(org, repoName, number, lgtmLabel)
+		if err := gc.AddLabel(org, repoName, number, lgtmLabel); err != nil {
+			return err
+		}
+		// Delete the LGTM removed noti after the LGTM label is added.
+		botname, err := gc.BotName()
+		if err != nil {
+			log.WithError(err).Errorf("Failed to get bot name.")
+		}
+		comments, err := gc.ListIssueComments(org, repoName, number)
+		if err != nil {
+			log.WithError(err).Errorf("Failed to get the list of issue comments on %s/%s#%d.", org, repoName, number)
+		}
+		for _, comment := range comments {
+			if comment.User.Login == botname && comment.Body == removeLGTMLabelNoti {
+				if err := gc.DeleteComment(org, repoName, comment.ID); err != nil {
+					log.WithError(err).Errorf("Failed to delete comment from %s/%s#%d, ID:%d.", org, repoName, number, comment.ID)
+				}
+			}
+		}
 	}
 	return nil
 }
