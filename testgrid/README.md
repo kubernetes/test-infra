@@ -1,5 +1,13 @@
 # Testgrid
 
+### Table of Contents
+* [Configuration](#configuration)
+* [Advanced Configuration](#advanced-configuration)
+* [Using the Client](#using-the-client)
+* [Unit Testing](#unit-testing)
+* [Merging Changes](#merging-changes)
+
+
 The testgrid site is accessible at https://testgrid.k8s.io. The site is
 configured by [`config.yaml`].
 Updates to the config are automatically tested and pushed to production.
@@ -250,7 +258,7 @@ test_groups:
 
 Here are some quick tips and clarifications for using the TestGrid site!
 
-## Tab Statuses
+### Tab Statuses
 
 TestGrid assigns dashboard tabs a status based on recent test runs.
 
@@ -258,6 +266,20 @@ TestGrid assigns dashboard tabs a status based on recent test runs.
  *  **FAILING**: One or more consistent failures in recent test runs.
  *  **FLAKY**: The tab is neither PASSING nor FAILING. There is at least one
     recent failed result that is not a consistent failure.
+
+### Summary Widget
+
+You can get a small widget showing the status of your dashboard tab, based on
+the tab statuses above! For example:
+
+`sig-testing-misc#bazel`: [![sig-testing-misc/bazel](https://amerai-imagefix-dot-k8s-testgrid.appspot.com/q/summary/sig-testing-misc/bazel/tests_status?style=svg)](https://k8s-testgrid.appspot.com/sig-testing-misc/bazel)
+
+Inline it with:
+
+```
+<!-- Inline with a link to your tab -->
+[![<dashboard_name>/<tab_name>](https://k8s-testgrid.appspot.com/q/summary/<dashboard_name>/<tab_name>/tests_status?style=svg)](https://k8s-testgrid.appspot.com/<dashboard_name>#<tab_name>)
+```
 
 ### Customizing Test Result Sizes
 
@@ -307,7 +329,7 @@ clicking on the test name (shown as a triangle on the left). Under **Options**:
         target3
     ```
 
-## Sorting Tests
+### Sorting Tests
 
 Under **Options**
 
@@ -317,6 +339,7 @@ Under **Options**
     before tests with a lower flakiness score. The flakiness score, which is not
     reported, is based on the number of transitions from passing to failing (and
     vice versa) with more weight given to more recent transitions.
+*   **Sort by Name**: Sort alphabetically.
 
 ## Unit testing
 
