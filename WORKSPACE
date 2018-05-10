@@ -70,8 +70,8 @@ docker_pull(
 
 docker_pull(
     name = "git-base",
-    # 0.1 as of 2017/11/29
-    digest = "sha256:92423bd3b24b0274198bb90c00e91b70d81c32e1d6bd26af30c00ca9f5faeb74",
+    # 0.2 as of 2018/05/10
+    digest = "sha256:3eaeff9a2c35a50c3a0af7ef7cf26ea73e6fd966f54ef3dfe79d4ffb45805112",
     registry = "gcr.io",
     repository = "k8s-prow/git",
 )
