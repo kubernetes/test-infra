@@ -22,6 +22,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"strings"
 	"text/template"
 
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -47,6 +48,9 @@ type Options struct {
 
 	// GitRefs are the refs to clone
 	GitRefs []*kube.Refs `json:"refs"`
+	// KeyFiles are files containing SSH keys to be used
+	// when cloning. Will be added to `ssh-agent`.
+	KeyFiles []string `json:"key_files,omitempty"`
 
 	// MaxParallelWorkers determines how many repositories
 	// can be cloned in parallel. If 0, interpreted as no
@@ -57,6 +61,7 @@ type Options struct {
 	refs      gitRefs
 	clonePath orgRepoFormat
 	cloneURI  orgRepoFormat
+	keys      stringSlice
 }
 
 // Validate ensures that the configuration options are valid
@@ -118,6 +123,7 @@ func (o *Options) BindOptions(flags *flag.FlagSet) {
 // Complete internalizes command line arguments
 func (o *Options) Complete(args []string) {
 	o.GitRefs = o.refs.gitRefs
+	o.KeyFiles = o.keys.data
 
 	for _, ref := range o.GitRefs {
 		alias, err := o.clonePath.Execute(OrgRepo{Org: ref.Org, Repo: ref.Repo})
@@ -142,6 +148,7 @@ func BindOptions(options *Options, fs *flag.FlagSet) {
 	fs.StringVar(&options.GitUserName, "git-user-name", DefaultGitUserName, "Username to set in git config")
 	fs.StringVar(&options.GitUserEmail, "git-user-email", DefaultGitUserEmail, "Email to set in git config")
 	fs.Var(&options.refs, "repo", "Mapping of Git URI to refs to check out, can be provided more than once")
+	fs.Var(&options.keys, "ssh-key", "Path to SSH key to enable during cloning, can be provided more than once")
 	fs.Var(&options.clonePath, "clone-alias", "Format string for the path to clone to")
 	fs.Var(&options.cloneURI, "uri-prefix", "Format string for the URI prefix to clone from")
 	fs.IntVar(&options.MaxParallelWorkers, "max-workers", 0, "Maximum number of parallel workers, unset for unlimited.")
@@ -171,6 +178,20 @@ func (r *gitRefs) Set(value string) error {
 		return err
 	}
 	r.gitRefs = append(r.gitRefs, gitRef)
+	return nil
+}
+
+type stringSlice struct {
+	data []string
+}
+
+func (r *stringSlice) String() string {
+	return strings.Join(r.data, ",")
+}
+
+// Set records the value passed
+func (r *stringSlice) Set(value string) error {
+	r.data = append(r.data, value)
 	return nil
 }
 

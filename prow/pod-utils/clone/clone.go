@@ -29,7 +29,7 @@ import (
 
 // Run clones the refs under the prescribed directory and optionally
 // configures the git username and email in the repository as well.
-func Run(refs *kube.Refs, dir, gitUserName, gitUserEmail string) Record {
+func Run(refs *kube.Refs, dir, gitUserName, gitUserEmail string, env []string) Record {
 	logrus.WithFields(logrus.Fields{"refs": refs}).Info("Cloning refs")
 	record := Record{Refs: refs}
 	repositoryURI := fmt.Sprintf("https://github.com/%s/%s.git", refs.Org, refs.Repo)
@@ -44,15 +44,15 @@ func Run(refs *kube.Refs, dir, gitUserName, gitUserEmail string) Record {
 		},
 	}
 
-	commands = append(commands, shellCloneCommand(cloneDir, "git", "init"))
+	commands = append(commands, shellCloneCommand(cloneDir, env, "git", "init"))
 	if gitUserName != "" {
-		commands = append(commands, shellCloneCommand(cloneDir, "git", "config", "user.name", gitUserName))
+		commands = append(commands, shellCloneCommand(cloneDir, env, "git", "config", "user.name", gitUserName))
 	}
 	if gitUserEmail != "" {
-		commands = append(commands, shellCloneCommand(cloneDir, "git", "config", "user.email", gitUserEmail))
+		commands = append(commands, shellCloneCommand(cloneDir, env, "git", "config", "user.email", gitUserEmail))
 	}
-	commands = append(commands, shellCloneCommand(cloneDir, "git", "fetch", repositoryURI, "--tags", "--prune"))
-	commands = append(commands, shellCloneCommand(cloneDir, "git", "fetch", repositoryURI, refs.BaseRef))
+	commands = append(commands, shellCloneCommand(cloneDir, env, "git", "fetch", repositoryURI, "--tags", "--prune"))
+	commands = append(commands, shellCloneCommand(cloneDir, env, "git", "fetch", repositoryURI, refs.BaseRef))
 
 	var target string
 	if refs.BaseSHA != "" {
@@ -66,23 +66,23 @@ func Run(refs *kube.Refs, dir, gitUserName, gitUserEmail string) Record {
 	// are on the branch we are syncing, we check out the SHA
 	// first and reset the branch second, then check out the
 	// branch we just reset to be in the correct final state
-	commands = append(commands, shellCloneCommand(cloneDir, "git", "checkout", target))
-	commands = append(commands, shellCloneCommand(cloneDir, "git", "branch", "--force", refs.BaseRef, target))
-	commands = append(commands, shellCloneCommand(cloneDir, "git", "checkout", refs.BaseRef))
+	commands = append(commands, shellCloneCommand(cloneDir, env, "git", "checkout", target))
+	commands = append(commands, shellCloneCommand(cloneDir, env, "git", "branch", "--force", refs.BaseRef, target))
+	commands = append(commands, shellCloneCommand(cloneDir, env, "git", "checkout", refs.BaseRef))
 
 	for _, prRef := range refs.Pulls {
 		ref := fmt.Sprintf("pull/%d/head", prRef.Number)
 		if prRef.Ref != "" {
 			ref = prRef.Ref
 		}
-		commands = append(commands, shellCloneCommand(cloneDir, "git", "fetch", repositoryURI, ref))
+		commands = append(commands, shellCloneCommand(cloneDir, env, "git", "fetch", repositoryURI, ref))
 		var prCheckout string
 		if prRef.SHA != "" {
 			prCheckout = prRef.SHA
 		} else {
 			prCheckout = "FETCH_HEAD"
 		}
-		commands = append(commands, shellCloneCommand(cloneDir, "git", "merge", prCheckout))
+		commands = append(commands, shellCloneCommand(cloneDir, env, "git", "merge", prCheckout))
 	}
 
 	for _, command := range commands {
@@ -116,10 +116,11 @@ func PathForRefs(baseDir string, refs *kube.Refs) string {
 
 type cloneCommand func() (string, string, error)
 
-func shellCloneCommand(dir, command string, args ...string) cloneCommand {
+func shellCloneCommand(dir string, env []string, command string, args ...string) cloneCommand {
 	output := bytes.Buffer{}
 	cmd := exec.Command(command, args...)
 	cmd.Dir = dir
+	cmd.Env = append(cmd.Env, env...)
 	cmd.Stdout = &output
 	cmd.Stderr = &output
 

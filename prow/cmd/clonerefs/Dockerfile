@@ -16,4 +16,5 @@ FROM gcr.io/k8s-prow/git:0.2
 LABEL maintainer="skuznets@redhat.com"
 
 COPY clonerefs /clonerefs
+COPY ssh_config /etc/ssh/ssh_config
 ENTRYPOINT ["/clonerefs"]
