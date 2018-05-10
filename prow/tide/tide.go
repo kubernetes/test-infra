@@ -102,7 +102,7 @@ type statusController struct {
 	lastSuccessfulQueryStart time.Time
 
 	sync.Mutex
-	poolPRs []PullRequest
+	poolPRs map[string]PullRequest
 }
 
 // Action represents what actions the controller can take. It will take
@@ -319,11 +319,11 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery) (string, int) {
 // in order to generate a diff for the status description. We choose the query
 // for the repo that the PR is closest to meeting (as determined by the number
 // of unmet/violated requirements).
-func expectedStatus(queriesByRepo map[string]config.TideQueries, pr *PullRequest, pool map[string]PullRequest) (string, string) {
+func expectedStatus(queryMap config.QueryMap, pr *PullRequest, pool map[string]PullRequest) (string, string) {
 	if _, ok := pool[prKey(pr)]; !ok {
 		minDiffCount := -1
 		var minDiff string
-		for _, q := range queriesByRepo[string(pr.Repository.NameWithOwner)] {
+		for _, q := range queryMap.ForRepo(string(pr.Repository.Owner.Login), string(pr.Repository.Name)) {
 			diff, diffCount := requirementDiff(pr, &q)
 			if minDiffCount == -1 || diffCount < minDiffCount {
 				minDiffCount = diffCount
@@ -357,9 +357,8 @@ func targetUrl(c *config.Agent, pr *PullRequest, log *logrus.Entry) string {
 	return link
 }
 
-func (sc *statusController) setStatuses(all, pool []PullRequest) {
-	poolM := byRepoAndNumber(pool)
-	queriesByRepo := sc.ca.Config().Tide.Queries.ByRepo()
+func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullRequest) {
+	queryMap := sc.ca.Config().Tide.Queries.QueryMap()
 	processed := sets.NewString()
 
 	process := func(pr *PullRequest) {
@@ -372,7 +371,7 @@ func (sc *statusController) setStatuses(all, pool []PullRequest) {
 			return
 		}
 
-		wantState, wantDesc := expectedStatus(queriesByRepo, pr, poolM)
+		wantState, wantDesc := expectedStatus(queryMap, pr, pool)
 		var actualState githubql.StatusState
 		var actualDesc string
 		for _, ctx := range contexts {
@@ -414,7 +413,7 @@ func (sc *statusController) setStatuses(all, pool []PullRequest) {
 	// This would be unlikely to occur, could only occur if the status update sync
 	// period is longer than the main sync period, and would only result in a
 	// missing tide status context on a successfully merged PR.
-	for key, poolPR := range poolM {
+	for key, poolPR := range pool {
 		if !processed.Has(key) {
 			process(&poolPR)
 		}
@@ -456,7 +455,7 @@ func (sc *statusController) waitSync() {
 	}
 }
 
-func (sc *statusController) sync(pool []PullRequest) {
+func (sc *statusController) sync(pool map[string]PullRequest) {
 	sc.lastSyncStart = time.Now()
 
 	sinceTime := sc.lastSuccessfulQueryStart.Add(-10 * time.Second)
@@ -476,7 +475,7 @@ func (sc *statusController) sync(pool []PullRequest) {
 func (c *Controller) Sync() error {
 	ctx := context.Background()
 	c.logger.Info("Building tide pool.")
-	var pool []PullRequest
+	pool := make(map[string]PullRequest)
 	for _, q := range c.ca.Config().Tide.Queries {
 		poolPRs, err := search(c.ghc, c.logger, ctx, q.Query())
 		if err != nil {
@@ -485,7 +484,7 @@ func (c *Controller) Sync() error {
 		for _, pr := range poolPRs {
 			// Only keep PRs that are mergeable or haven't had mergeability computed.
 			if pr.Mergeable != githubql.MergeableStateConflicting {
-				pool = append(pool, pr)
+				pool[prKey(&pr)] = pr
 			}
 		}
 	}
@@ -1037,7 +1036,7 @@ type subpool struct {
 
 // dividePool splits up the list of pull requests and prow jobs into a group
 // per repo and branch. It only keeps ProwJobs that match the latest branch.
-func (c *Controller) dividePool(pool []PullRequest, pjs []kube.ProwJob) (chan subpool, error) {
+func (c *Controller) dividePool(pool map[string]PullRequest, pjs []kube.ProwJob) (chan subpool, error) {
 	sps := make(map[string]*subpool)
 	for _, pr := range pool {
 		org := string(pr.Repository.Owner.Login)
