@@ -301,6 +301,13 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery) (string, int) {
 		}
 	}
 
+	if q.Milestone != "" && (pr.Milestone == nil || string(pr.Milestone.Title) != q.Milestone) {
+		diff++
+		if desc == "" {
+			desc = fmt.Sprintf(" Must be in milestone %s.", q.Milestone)
+		}
+	}
+
 	// TODO(cjwagner): List reviews (states:[APPROVED], first: 1) as part of open
 	// PR query.
 
@@ -1137,6 +1144,9 @@ type PullRequest struct {
 			Name githubql.String
 		}
 	} `graphql:"labels(first: 10)"`
+	Milestone *struct {
+		Title githubql.String
+	}
 }
 
 type Commit struct {

@@ -466,6 +466,7 @@ func TestExpectedStatus(t *testing.T) {
 		branchWhitelist []string
 		branchBlacklist []string
 		labels          []string
+		milestone       string
 		contexts        []Context
 		inPool          bool
 
@@ -539,10 +540,11 @@ func TestExpectedStatus(t *testing.T) {
 			desc:  fmt.Sprintf(statusNotInPool, " Merging to branch bad is forbidden."),
 		},
 		{
-			name:     "only failed tide context",
-			labels:   neededLabels,
-			contexts: []Context{{Context: githubql.String(statusContext), State: githubql.StatusStateError}},
-			inPool:   false,
+			name:      "only failed tide context",
+			labels:    neededLabels,
+			milestone: "v1.0",
+			contexts:  []Context{{Context: githubql.String(statusContext), State: githubql.StatusStateError}},
+			inPool:    false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, ""),
@@ -569,10 +571,21 @@ func TestExpectedStatus(t *testing.T) {
 			desc:  fmt.Sprintf(statusNotInPool, " Jobs job-name, other-job-name have not succeeded."),
 		},
 		{
-			name:     "unknown requirement",
-			labels:   neededLabels,
-			contexts: []Context{{Context: githubql.String("job-name"), State: githubql.StatusStateSuccess}},
-			inPool:   false,
+			name:      "wrong milestone",
+			labels:    neededLabels,
+			milestone: "v1.1",
+			contexts:  []Context{{Context: githubql.String("job-name"), State: githubql.StatusStateSuccess}},
+			inPool:    false,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " Must be in milestone v1.0."),
+		},
+		{
+			name:      "unknown requirement",
+			labels:    neededLabels,
+			milestone: "v1.0",
+			contexts:  []Context{{Context: githubql.String("job-name"), State: githubql.StatusStateSuccess}},
+			inPool:    false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, ""),
@@ -596,6 +609,7 @@ func TestExpectedStatus(t *testing.T) {
 					IncludedBranches: tc.branchWhitelist,
 					Labels:           neededLabels,
 					MissingLabels:    forbiddenLabels,
+					Milestone:        "v1.0",
 				},
 				config.TideQuery{
 					Labels: []string{"1", "2", "3", "4", "5", "6", "7"}, // lots of requirements
@@ -628,6 +642,11 @@ func TestExpectedStatus(t *testing.T) {
 					},
 				},
 			)
+		}
+		if tc.milestone != "" {
+			pr.Milestone = &struct {
+				Title githubql.String
+			}{githubql.String(tc.milestone)}
 		}
 		var pool map[string]PullRequest
 		if tc.inPool {

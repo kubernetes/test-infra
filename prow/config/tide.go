@@ -96,6 +96,8 @@ type TideQuery struct {
 	Labels        []string `json:"labels,omitempty"`
 	MissingLabels []string `json:"missingLabels,omitempty"`
 
+	Milestone string `json:"milestone,omitempty"`
+
 	ReviewApprovedRequired bool `json:"reviewApprovedRequired,omitempty"`
 }
 
@@ -115,6 +117,9 @@ func (tq *TideQuery) Query() string {
 	}
 	for _, l := range tq.MissingLabels {
 		toks = append(toks, fmt.Sprintf("-label:\"%s\"", l))
+	}
+	if tq.Milestone != "" {
+		toks = append(toks, fmt.Sprintf("milestone:\"%s\"", tq.Milestone))
 	}
 	if tq.ReviewApprovedRequired {
 		toks = append(toks, "review:approved")
