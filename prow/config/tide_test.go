@@ -25,9 +25,11 @@ import (
 )
 
 var testQuery = TideQuery{
+	Orgs:                   []string{"org"},
 	Repos:                  []string{"k/k", "k/t-i"},
 	Labels:                 []string{"lgtm", "approved"},
 	MissingLabels:          []string{"foo"},
+	Milestone:              "milestone",
 	ReviewApprovedRequired: true,
 }
 
@@ -41,11 +43,13 @@ func TestTideQuery(t *testing.T) {
 
 	checkTok("is:pr")
 	checkTok("state:open")
+	checkTok("org:\"org\"")
 	checkTok("repo:\"k/k\"")
 	checkTok("repo:\"k/t-i\"")
 	checkTok("label:\"lgtm\"")
 	checkTok("label:\"approved\"")
 	checkTok("-label:\"foo\"")
+	checkTok("milestone:\"milestone\"")
 	checkTok("review:approved")
 }
 
@@ -73,6 +77,7 @@ func TestAllPRsSince(t *testing.T) {
 	queries := TideQueries([]TideQuery{
 		testQuery,
 		{
+			Orgs:   []string{"foo"},
 			Repos:  []string{"k/foo"},
 			Labels: []string{"lgtm", "mergeable"},
 		},
@@ -80,6 +85,8 @@ func TestAllPRsSince(t *testing.T) {
 	q = " " + queries.AllPRsSince(testTime) + " "
 	checkTok("is:pr", true)
 	checkTok("state:open", true)
+	checkTok("org:\"org\"", true)
+	checkTok("org:\"foo\"", true)
 	checkTok("repo:\"k/k\"", true)
 	checkTok("repo:\"k/t-i\"", true)
 	checkTok("repo:\"k/foo\"", true)
@@ -87,6 +94,7 @@ func TestAllPRsSince(t *testing.T) {
 	checkTok("label:\"approved\"", false)
 	checkTok("label:\"mergeable\"", false)
 	checkTok("-label:\"foo\"", false)
+	checkTok("milestone:\"milestone\"", false)
 	checkTok("review:approved", false)
 	checkTok("updated:>=2015-03-07T11:06:39Z", true)
 

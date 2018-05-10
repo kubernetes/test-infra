@@ -32,6 +32,7 @@ import (
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
+	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
@@ -517,11 +518,18 @@ func parseConfig(c *Config) error {
 	if c.Tide.MaxGoroutines <= 0 {
 		return fmt.Errorf("tide has invalid max_goroutines (%d), it needs to be a positive number", c.Tide.MaxGoroutines)
 	}
-	for i, q := range c.Tide.Queries {
-		for _, repo := range q.Repos {
-			if parts := strings.Split(repo, "/"); len(parts) != 2 {
-				return fmt.Errorf("invalid org/repo provided in tide.queries[%d].repos: %s", i, repo)
-			}
+
+	for name, method := range c.Tide.MergeType {
+		if method != github.MergeMerge &&
+			method != github.MergeRebase &&
+			method != github.MergeSquash {
+			return fmt.Errorf("Merge type %q for %s is not a valid type", method, name)
+		}
+	}
+
+	for i, tq := range c.Tide.Queries {
+		if err := tq.Validate(); err != nil {
+			return fmt.Errorf("Tide query (index %d) is invalid: %v.", i, err)
 		}
 	}
 

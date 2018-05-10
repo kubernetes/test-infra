@@ -466,6 +466,7 @@ func TestExpectedStatus(t *testing.T) {
 		branchWhitelist []string
 		branchBlacklist []string
 		labels          []string
+		milestone       string
 		contexts        []Context
 		inPool          bool
 
@@ -539,10 +540,11 @@ func TestExpectedStatus(t *testing.T) {
 			desc:  fmt.Sprintf(statusNotInPool, " Merging to branch bad is forbidden."),
 		},
 		{
-			name:     "only failed tide context",
-			labels:   neededLabels,
-			contexts: []Context{{Context: githubql.String(statusContext), State: githubql.StatusStateError}},
-			inPool:   false,
+			name:      "only failed tide context",
+			labels:    neededLabels,
+			milestone: "v1.0",
+			contexts:  []Context{{Context: githubql.String(statusContext), State: githubql.StatusStateError}},
+			inPool:    false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, ""),
@@ -569,10 +571,21 @@ func TestExpectedStatus(t *testing.T) {
 			desc:  fmt.Sprintf(statusNotInPool, " Jobs job-name, other-job-name have not succeeded."),
 		},
 		{
-			name:     "unknown requirement",
-			labels:   neededLabels,
-			contexts: []Context{{Context: githubql.String("job-name"), State: githubql.StatusStateSuccess}},
-			inPool:   false,
+			name:      "wrong milestone",
+			labels:    neededLabels,
+			milestone: "v1.1",
+			contexts:  []Context{{Context: githubql.String("job-name"), State: githubql.StatusStateSuccess}},
+			inPool:    false,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " Must be in milestone v1.0."),
+		},
+		{
+			name:      "unknown requirement",
+			labels:    neededLabels,
+			milestone: "v1.0",
+			contexts:  []Context{{Context: githubql.String("job-name"), State: githubql.StatusStateSuccess}},
+			inPool:    false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, ""),
@@ -589,19 +602,20 @@ func TestExpectedStatus(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Logf("Test Case: %q\n", tc.name)
-		queriesByRepo := map[string]config.TideQueries{
+		queriesByRepo := config.QueryMap(map[string]config.TideQueries{
 			"": {
 				config.TideQuery{
 					ExcludedBranches: tc.branchBlacklist,
 					IncludedBranches: tc.branchWhitelist,
 					Labels:           neededLabels,
 					MissingLabels:    forbiddenLabels,
+					Milestone:        "v1.0",
 				},
 				config.TideQuery{
 					Labels: []string{"1", "2", "3", "4", "5", "6", "7"}, // lots of requirements
 				},
 			},
-		}
+		})
 		var pr PullRequest
 		pr.BaseRef = struct {
 			Name   githubql.String
@@ -628,6 +642,11 @@ func TestExpectedStatus(t *testing.T) {
 					},
 				},
 			)
+		}
+		if tc.milestone != "" {
+			pr.Milestone = &struct {
+				Title githubql.String
+			}{githubql.String(tc.milestone)}
 		}
 		var pool map[string]PullRequest
 		if tc.inPool {
@@ -735,9 +754,9 @@ func TestSetStatuses(t *testing.T) {
 				},
 			}
 		}
-		var pool []PullRequest
+		pool := make(map[string]PullRequest)
 		if tc.inPool {
-			pool = []PullRequest{pr}
+			pool[prKey(&pr)] = pr
 		}
 		fc := &fgc{}
 		ca := &config.Agent{}
@@ -859,14 +878,14 @@ func TestDividePool(t *testing.T) {
 		ghc:    fc,
 		logger: logrus.WithField("component", "tide"),
 	}
-	var pulls []PullRequest
+	pulls := make(map[string]PullRequest)
 	for _, p := range testPulls {
 		npr := PullRequest{Number: githubql.Int(p.number)}
 		npr.BaseRef.Name = githubql.String(p.branch)
 		npr.BaseRef.Prefix = "refs/heads/"
 		npr.Repository.Name = githubql.String(p.repo)
 		npr.Repository.Owner.Login = githubql.String(p.org)
-		pulls = append(pulls, npr)
+		pulls[prKey(&npr)] = npr
 	}
 	var pjs []kube.ProwJob
 	for _, pj := range testPJs {
@@ -1525,6 +1544,18 @@ func TestSync(t *testing.T) {
 		{
 			name: "1 mergeable, 1 unmergeable (same pool)",
 			prs:  []PullRequest{mergeableA, unmergeableA},
+			expectedPools: []Pool{{
+				Org:        "org",
+				Repo:       "repo",
+				Branch:     "A",
+				SuccessPRs: []PullRequest{mergeableA},
+				Action:     Merge,
+				Target:     []PullRequest{mergeableA},
+			}},
+		},
+		{
+			name: "1 mergeable PR (satisfies multiple queries)",
+			prs:  []PullRequest{mergeableA, mergeableA},
 			expectedPools: []Pool{{
 				Org:        "org",
 				Repo:       "repo",

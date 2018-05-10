@@ -24,8 +24,100 @@ import (
 	"k8s.io/test-infra/prow/github"
 )
 
-func TestMakeRequest(t *testing.T) {
+func TestMakeBool(t *testing.T) {
+	yes := true
+	no := false
+	cases := []struct {
+		input    *bool
+		expected bool
+	}{
+		{
+			input:    nil,
+			expected: false,
+		},
+		{
+			input:    &no,
+			expected: false,
+		},
+		{
+			input:    &yes,
+			expected: true,
+		},
+	}
+	for _, tc := range cases {
+		if actual := makeBool(tc.input); actual != tc.expected {
+			t.Errorf("%v: actual %v != expected %t", tc.input, actual, tc.expected)
+		}
+	}
+}
 
+func TestMakeReviews(t *testing.T) {
+	zero := 0
+	three := 3
+	one := 1
+	yes := true
+	cases := []struct {
+		name     string
+		input    *branchprotection.ReviewPolicy
+		expected *github.RequiredPullRequestReviews
+	}{
+		{
+			name: "nil returns nil",
+		},
+		{
+			name: "nil apporvals returns nil",
+			input: &branchprotection.ReviewPolicy{
+				Approvals: nil,
+			},
+		},
+		{
+			name: "0 approvals returns nil",
+			input: &branchprotection.ReviewPolicy{
+				Approvals: &zero,
+			},
+		},
+		{
+			name: "approvals set",
+			input: &branchprotection.ReviewPolicy{
+				Approvals: &three,
+			},
+			expected: &github.RequiredPullRequestReviews{
+				RequiredApprovingReviewCount: 3,
+			},
+		},
+		{
+			name: "set all",
+			input: &branchprotection.ReviewPolicy{
+				Approvals:     &one,
+				RequireOwners: &yes,
+				DismissStale:  &yes,
+				DismissalRestrictions: &branchprotection.Restrictions{
+					Users: []string{"fred", "jane"},
+					Teams: []string{"megacorp", "startup"},
+				},
+			},
+			expected: &github.RequiredPullRequestReviews{
+				RequiredApprovingReviewCount: 1,
+				RequireCodeOwnerReviews:      true,
+				DismissStaleReviews:          true,
+				DismissalRestrictions: github.Restrictions{
+					Teams: []string{"megacorp", "startup"},
+					Users: []string{"fred", "jane"},
+				},
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		actual := makeReviews(tc.input)
+		if !reflect.DeepEqual(actual, tc.expected) {
+			t.Errorf("%s: actual %v != expected %v", tc.name, actual, tc.expected)
+		}
+	}
+}
+
+func TestMakeRequest(t *testing.T) {
+	yes := true
 	cases := []struct {
 		name     string
 		policy   branchprotection.Policy
@@ -35,12 +127,44 @@ func TestMakeRequest(t *testing.T) {
 			name: "Empty works",
 		},
 		{
-			name:   "teams != nil => users != nil",
-			policy: branchprotection.Policy{Pushers: []string{"hello"}},
+			name: "teams != nil => users != nil",
+			policy: branchprotection.Policy{
+				Restrictions: &branchprotection.Restrictions{
+					Teams: []string{"hello"},
+				},
+			},
 			expected: github.BranchProtectionRequest{
 				Restrictions: &github.Restrictions{
 					Teams: []string{"hello"},
 					Users: []string{},
+				},
+			},
+		},
+		{
+			name: "users != nil => teams != nil",
+			policy: branchprotection.Policy{
+				Restrictions: &branchprotection.Restrictions{
+					Users: []string{"there"},
+				},
+			},
+			expected: github.BranchProtectionRequest{
+				Restrictions: &github.Restrictions{
+					Users: []string{"there"},
+					Teams: []string{},
+				},
+			},
+		},
+		{
+			name: "Strict => Contexts != nil",
+			policy: branchprotection.Policy{
+				RequiredStatusChecks: &branchprotection.ContextPolicy{
+					Strict: &yes,
+				},
+			},
+			expected: github.BranchProtectionRequest{
+				RequiredStatusChecks: &github.RequiredStatusChecks{
+					Strict:   true,
+					Contexts: []string{},
 				},
 			},
 		},

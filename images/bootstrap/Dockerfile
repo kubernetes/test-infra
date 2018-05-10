@@ -35,6 +35,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     file \
     git \
     jq \
+    mercurial \
     openssh-client \
     pkg-config \
     python \
