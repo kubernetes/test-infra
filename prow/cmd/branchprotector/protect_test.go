@@ -24,11 +24,11 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ghodss/yaml"
 	"k8s.io/apimachinery/pkg/util/diff"
+
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
-
-	"github.com/ghodss/yaml"
 )
 
 func TestOptions_Validate(t *testing.T) {
@@ -523,6 +523,39 @@ branch-protection:
 							Teams: []string{"config-team", "org-team"},
 						},
 					},
+				},
+			},
+		},
+		{
+			name:     "child cannot disable parent policy by default",
+			branches: []string{"parent/child=unprotected"},
+			config: `
+branch-protection:
+  protect: true
+  enforce_admins: true
+  orgs:
+    parent:
+      protect: false
+`,
+			errors: 1,
+		},
+		{
+			name:     "child disables parent",
+			branches: []string{"parent/child=unprotected"},
+			config: `
+branch-protection:
+  allow_disabled_policies: true
+  protect: true
+  enforce_admins: true
+  orgs:
+    parent:
+      protect: false
+`,
+			expected: []Requirements{
+				{
+					Org:    "parent",
+					Repo:   "child",
+					Branch: "unprotected",
 				},
 			},
 		},
