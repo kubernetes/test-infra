@@ -131,6 +131,7 @@ func TestProwJobToPod(t *testing.T) {
 						DefaultRepo:  "kubernetes",
 					},
 					GCSCredentialsSecret: "secret-name",
+					SshKeySecrets:        []string{"ssh-1", "ssh-2"},
 				},
 				Agent: kube.KubernetesAgent,
 				Refs: &kube.Refs{
@@ -180,7 +181,7 @@ func TestProwJobToPod(t *testing.T) {
 							Image:   "clonerefs:tag",
 							Command: []string{"/clonerefs"},
 							Env: []v1.EnvVar{
-								{Name: "CLONEREFS_OPTIONS", Value: `{"src_root":"/home/prow/go","log":"/logs/clone.json","git_user_name":"ci-robot","git_user_email":"ci-robot@k8s.io","refs":[{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}]}`},
+								{Name: "CLONEREFS_OPTIONS", Value: `{"src_root":"/home/prow/go","log":"/logs/clone.json","git_user_name":"ci-robot","git_user_email":"ci-robot@k8s.io","refs":[{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}],"key_files":["/secrets/ssh/ssh-1","/secrets/ssh/ssh-2"]}`},
 							},
 							VolumeMounts: []v1.VolumeMount{
 								{
@@ -190,6 +191,14 @@ func TestProwJobToPod(t *testing.T) {
 								{
 									Name:      "code",
 									MountPath: "/home/prow/go",
+								},
+								{
+									Name:      "ssh-keys-ssh-1",
+									MountPath: "/secrets/ssh/ssh-1",
+								},
+								{
+									Name:      "ssh-keys-ssh-2",
+									MountPath: "/secrets/ssh/ssh-2",
 								},
 							},
 						},
@@ -290,6 +299,22 @@ func TestProwJobToPod(t *testing.T) {
 						},
 					},
 					Volumes: []v1.Volume{
+						{
+							Name: "ssh-keys-ssh-1",
+							VolumeSource: v1.VolumeSource{
+								Secret: &v1.SecretVolumeSource{
+									SecretName: "ssh-1",
+								},
+							},
+						},
+						{
+							Name: "ssh-keys-ssh-2",
+							VolumeSource: v1.VolumeSource{
+								Secret: &v1.SecretVolumeSource{
+									SecretName: "ssh-2",
+								},
+							},
+						},
 						{
 							Name: "logs",
 							VolumeSource: v1.VolumeSource{

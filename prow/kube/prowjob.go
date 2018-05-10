@@ -148,6 +148,9 @@ type DecorationConfig struct {
 	// GCSCredentialsSecret is the name of the Kubernetes secret
 	// that holds GCS push credentials
 	GCSCredentialsSecret string `json:"gcs_credentials_secret,omitempty"`
+	// SshKeySecrets are the names of Kubernetes secrets that contain
+	// SSK keys which should be used during the cloning process
+	SshKeySecrets []string `json:"ssh_key_secrets,omitempty"`
 }
 
 // UtilityImages holds pull specs for the utility images

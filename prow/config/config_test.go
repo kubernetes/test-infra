@@ -992,6 +992,7 @@ func TestDecorationDefaulting(t *testing.T) {
 			DefaultRepo:  "repo",
 		},
 		GCSCredentialsSecret: "secretName",
+		SshKeySecrets:        []string{"first", "second"},
 	}
 
 	var testCases = []struct {
@@ -1019,6 +1020,7 @@ func TestDecorationDefaulting(t *testing.T) {
 					DefaultRepo:  "repo",
 				},
 				GCSCredentialsSecret: "secretName",
+				SshKeySecrets:        []string{"first", "second"},
 			},
 		},
 		{
@@ -1043,6 +1045,7 @@ func TestDecorationDefaulting(t *testing.T) {
 					DefaultRepo:  "repo",
 				},
 				GCSCredentialsSecret: "secretName",
+				SshKeySecrets:        []string{"first", "second"},
 			},
 		},
 		{
@@ -1067,6 +1070,7 @@ func TestDecorationDefaulting(t *testing.T) {
 					DefaultRepo:  "repo",
 				},
 				GCSCredentialsSecret: "secretName",
+				SshKeySecrets:        []string{"first", "second"},
 			},
 		},
 		{
@@ -1096,6 +1100,7 @@ func TestDecorationDefaulting(t *testing.T) {
 					DefaultRepo:  "repo",
 				},
 				GCSCredentialsSecret: "secretName",
+				SshKeySecrets:        []string{"first", "second"},
 			},
 		},
 		{
@@ -1122,6 +1127,7 @@ func TestDecorationDefaulting(t *testing.T) {
 					PathStrategy: kube.PathStrategyExplicit,
 				},
 				GCSCredentialsSecret: "secretName",
+				SshKeySecrets:        []string{"first", "second"},
 			},
 		},
 		{
@@ -1146,6 +1152,32 @@ func TestDecorationDefaulting(t *testing.T) {
 					DefaultRepo:  "repo",
 				},
 				GCSCredentialsSecret: "somethingSecret",
+				SshKeySecrets:        []string{"first", "second"},
+			},
+		},
+		{
+			name: "ssh secrets provided",
+			provided: &kube.DecorationConfig{
+				SshKeySecrets: []string{"my", "special"},
+			},
+			expected: &kube.DecorationConfig{
+				Timeout:     1 * time.Minute,
+				GracePeriod: 10 * time.Second,
+				UtilityImages: &kube.UtilityImages{
+					CloneRefs:  "clonerefs",
+					InitUpload: "iniupload",
+					Entrypoint: "entrypoint",
+					Sidecar:    "sidecar",
+				},
+				GCSConfiguration: &kube.GCSConfiguration{
+					Bucket:       "bucket",
+					PathPrefix:   "prefix",
+					PathStrategy: kube.PathStrategyLegacy,
+					DefaultOrg:   "org",
+					DefaultRepo:  "repo",
+				},
+				GCSCredentialsSecret: "secretName",
+				SshKeySecrets:        []string{"my", "special"},
 			},
 		},
 	}
