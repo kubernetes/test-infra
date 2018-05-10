@@ -535,8 +535,12 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-new-cos-gke
 - name: ci-kubernetes-e2e-new-cos-gke-k8sstable1
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-new-cos-gke-k8sstable1
+- name: ci-kubernetes-e2e-new-cos-gke-k8sstable1-compare
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-new-cos-gke-k8sstable1-compare
 - name: ci-kubernetes-e2e-new-cos-gke-k8sstable1-alpha-features
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-new-cos-gke-k8sstable1-alpha-features
+- name: ci-kubernetes-e2e-new-cos-gke-k8sstable1-alpha-features-compare
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-new-cos-gke-k8sstable1-alpha-features-compare
 - name: ci-kubernetes-kubemark-100-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-100-gce
   num_failures_to_alert: 1
@@ -3293,8 +3297,12 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-slow
   - name: gke-new-cos-1.10
     test_group_name: ci-kubernetes-e2e-new-cos-gke-k8sstable1
+  - name: gke-new-cos-1.10-compare
+    test_group_name: ci-kubernetes-e2e-new-cos-gke-k8sstable1-compare
   - name: gke-new-cos-alpha-features-1.10
     test_group_name: ci-kubernetes-e2e-new-cos-gke-k8sstable1-alpha-features
+  - name: gke-new-cos-alpha-features-1.10-compare
+    test_group_name: ci-kubernetes-e2e-new-cos-gke-k8sstable1-alpha-features-compare
 
 - name: google-gke-stackdriver
   dashboard_tab:
