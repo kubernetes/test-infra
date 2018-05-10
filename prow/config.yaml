@@ -1740,7 +1740,7 @@ presubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+      - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -1778,7 +1778,7 @@ presubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+      - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -2642,7 +2642,7 @@ presubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+      - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -3510,7 +3510,7 @@ presubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+      - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -4239,7 +4239,7 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+        image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
         name: ""
         resources:
           requests:
@@ -4286,7 +4286,7 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+        image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
         name: ""
         resources:
           requests:
@@ -5499,7 +5499,7 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+        image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
         name: ""
         resources:
           requests:
@@ -6590,7 +6590,7 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+        image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
         name: ""
         resources:
           requests:
@@ -7648,7 +7648,7 @@ periodics:
     preset-cadvisor-docker-credential: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+    - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
       args:
       - --repo=github.com/google/cadvisor
       - --root=/go/src
@@ -8157,7 +8157,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+    - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
       args:
       - --repo=k8s.io/federation=master
       - --repo=k8s.io/release
@@ -8574,7 +8574,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+    - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
       args:
       - --repo=k8s.io/kubernetes
       - --repo=k8s.io/release
@@ -8604,7 +8604,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+    - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
       args:
       - --repo=k8s.io/kubernetes=release-1.11
       - --repo=k8s.io/release
@@ -8634,7 +8634,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+    - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
       args:
       - --repo=k8s.io/release
       - --root=/go/src
@@ -8663,7 +8663,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+    - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
       args:
       - --repo=k8s.io/kubernetes=release-1.10
       - --repo=k8s.io/release
@@ -8693,7 +8693,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+    - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
       args:
       - --repo=k8s.io/kubernetes=release-1.9
       - --repo=k8s.io/release
@@ -8723,7 +8723,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+    - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
       args:
       - --repo=k8s.io/kubernetes=release-1.8
       - --repo=k8s.io/release
@@ -8767,7 +8767,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+    - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
       args:
       - --repo=k8s.io/kubernetes
       - --repo=k8s.io/release
@@ -15764,7 +15764,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+    - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
       args:
       - --repo=k8s.io/kubernetes=release-1.8
       - --repo=k8s.io/release
@@ -15879,7 +15879,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+    - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
       args:
       - "--repo=k8s.io/kubernetes=release-1.11"
       - "--timeout=100"
@@ -15906,7 +15906,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+    - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
       args:
       - "--repo=k8s.io/kubernetes"
       - "--timeout=100"
@@ -15933,7 +15933,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+    - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
       args:
       - "--repo=k8s.io/kubernetes=release-1.10"
       - "--timeout=100"
@@ -15960,7 +15960,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+    - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
       args:
       - "--repo=k8s.io/kubernetes=release-1.9"
       - "--timeout=100"
@@ -15987,7 +15987,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+    - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
       args:
       - "--repo=k8s.io/kubernetes=release-1.8"
       - "--timeout=100"
@@ -16575,7 +16575,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+    - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
       args:
       - "--repo=k8s.io/kubernetes=release-1.11"
       - "--timeout=75"
@@ -16602,7 +16602,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+    - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
       args:
       - "--repo=k8s.io/kubernetes"
       - "--timeout=75"
@@ -16629,7 +16629,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+    - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
       args:
       - "--repo=k8s.io/kubernetes=release-1.10"
       - "--timeout=75"
@@ -16656,7 +16656,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+    - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
       args:
       - "--repo=k8s.io/kubernetes=release-1.9"
       - "--timeout=75"
@@ -16683,7 +16683,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180215-b2a89850e
+    - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
       args:
       - "--repo=k8s.io/kubernetes=release-1.8"
       - "--timeout=75"
