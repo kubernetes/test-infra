@@ -64,12 +64,10 @@ func gatherOptions() options {
 }
 
 type Requirements struct {
-	Org      string
-	Repo     string
-	Branch   string
-	Protect  bool
-	Contexts []string
-	Pushers  []string
+	Org     string
+	Repo    string
+	Branch  string
+	Request *github.BranchProtectionRequest
 }
 
 type Errors struct {
@@ -144,21 +142,16 @@ type Protector struct {
 }
 
 func (p *Protector) ConfigureBranches() {
-	for r := range p.updates {
-		if !r.Protect {
-			err := p.client.RemoveBranchProtection(r.Org, r.Repo, r.Branch)
-			if err != nil {
-				p.errors.add(fmt.Errorf("remove %s/%s=%s protection failed: %v", r.Org, r.Repo, r.Branch, err))
+	for u := range p.updates {
+		if u.Request == nil {
+			if err := p.client.RemoveBranchProtection(u.Org, u.Repo, u.Branch); err != nil {
+				p.errors.add(fmt.Errorf("remove %s/%s=%s protection failed: %v", u.Org, u.Repo, u.Branch, err))
 			}
-		} else {
-			req := makeRequest(config.Policy{
-				Pushers:  r.Pushers,
-				Contexts: r.Contexts,
-			})
-			err := p.client.UpdateBranchProtection(r.Org, r.Repo, r.Branch, req)
-			if err != nil {
-				p.errors.add(fmt.Errorf("update %s/%s=%s protection to %v failed: %v", r.Org, r.Repo, r.Branch, req, err))
-			}
+			continue
+		}
+
+		if err := p.client.UpdateBranchProtection(u.Org, u.Repo, u.Branch, *u.Request); err != nil {
+			p.errors.add(fmt.Errorf("update %s/%s=%s protection to %v failed: %v", u.Org, u.Repo, u.Branch, *u.Request, err))
 		}
 	}
 	p.done <- p.errors.errs
@@ -170,7 +163,7 @@ func (p *Protector) Protect() {
 
 	// Scan the branch-protection configuration
 	for orgName, org := range bp.Orgs {
-		if err := p.UpdateOrg(orgName, org, bp.Protect); err != nil {
+		if err := p.UpdateOrg(orgName, org, bp.Protect != nil); err != nil {
 			p.errors.add(err)
 		}
 	}
@@ -191,21 +184,17 @@ func (p *Protector) Protect() {
 		}
 		orgName := parts[0]
 		repoName := parts[1]
-		protect := true
-		if err := p.UpdateRepo(orgName, repoName, config.Repo{}, &protect); err != nil {
+		if err := p.UpdateRepo(orgName, repoName, config.Repo{}, true); err != nil {
 			p.errors.add(err)
 		}
 	}
 }
 
 // Update all repos in the org with the specified defaults
-func (p *Protector) UpdateOrg(orgName string, org config.Org, protect *bool) error {
-	if org.Protect != nil {
-		protect = org.Protect
-	}
-
+func (p *Protector) UpdateOrg(orgName string, org config.Org, allRepos bool) error {
 	var repos []string
-	if protect != nil {
+	allRepos = allRepos || org.Protect != nil
+	if allRepos {
 		// Strongly opinionated org, configure every repo in the org.
 		rs, err := p.client.GetRepos(orgName, false)
 		if err != nil {
@@ -222,7 +211,7 @@ func (p *Protector) UpdateOrg(orgName string, org config.Org, protect *bool) err
 	}
 
 	for _, repoName := range repos {
-		err := p.UpdateRepo(orgName, repoName, org.Repos[repoName], protect)
+		err := p.UpdateRepo(orgName, repoName, org.Repos[repoName], allRepos)
 		if err != nil {
 			return err
 		}
@@ -231,15 +220,12 @@ func (p *Protector) UpdateOrg(orgName string, org config.Org, protect *bool) err
 }
 
 // Update all branches in the repo with the specified defaults
-func (p *Protector) UpdateRepo(orgName string, repo string, repoDefaults config.Repo, protect *bool) error {
+func (p *Protector) UpdateRepo(orgName string, repo string, repoDefaults config.Repo, allBranches bool) error {
 	p.completedRepos[orgName+"/"+repo] = true
-
-	if repoDefaults.Protect != nil {
-		protect = repoDefaults.Protect
-	}
+	allBranches = allBranches || repoDefaults.Protect != nil
 
 	var branches []string
-	if protect != nil {
+	if allBranches {
 		bs, err := p.client.GetBranches(orgName, repo)
 		if err != nil {
 			return fmt.Errorf("GetBranches(%s, %s) failed: %v", orgName, repo, err)
@@ -254,7 +240,7 @@ func (p *Protector) UpdateRepo(orgName string, repo string, repoDefaults config.
 	}
 
 	for _, branchName := range branches {
-		if err := p.UpdateBranch(orgName, repo, branchName, repoDefaults.Branches[branchName], protect); err != nil {
+		if err := p.UpdateBranch(orgName, repo, branchName, repoDefaults.Branches[branchName]); err != nil {
 			return fmt.Errorf("UpdateBranch(%s, %s, %s, ...) failed: %v", orgName, repo, branchName, err)
 		}
 	}
@@ -262,26 +248,25 @@ func (p *Protector) UpdateRepo(orgName string, repo string, repoDefaults config.
 }
 
 // Update the branch with the specified configuration
-func (p *Protector) UpdateBranch(orgName, repo string, branchName string, branchDefaults config.Branch, protect *bool) error {
-	if branchDefaults.Protect != nil {
-		protect = branchDefaults.Protect
-	}
-
+func (p *Protector) UpdateBranch(orgName, repo string, branchName string, branchDefaults config.Branch) error {
 	bp, err := p.cfg.GetBranchProtection(orgName, repo, branchName)
 	if err != nil {
 		log.Printf("unable to compute requirement for %s/%s:%s", orgName, repo, branchName)
 		p.errors.add(err)
 	}
-	if bp == nil {
+	if bp == nil || bp.Protect == nil {
 		return nil
 	}
+	var req *github.BranchProtectionRequest
+	if *bp.Protect {
+		r := makeRequest(*bp)
+		req = &r
+	}
 	p.updates <- Requirements{
-		Org:      orgName,
-		Repo:     repo,
-		Branch:   branchName,
-		Protect:  *bp.Protect,
-		Contexts: bp.Contexts,
-		Pushers:  bp.Pushers,
+		Org:     orgName,
+		Repo:    repo,
+		Branch:  branchName,
+		Request: req,
 	}
 
 	return nil

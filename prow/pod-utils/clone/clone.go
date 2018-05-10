@@ -32,7 +32,10 @@ import (
 func Run(refs *kube.Refs, dir, gitUserName, gitUserEmail string) Record {
 	logrus.WithFields(logrus.Fields{"refs": refs}).Info("Cloning refs")
 	record := Record{Refs: refs}
-	repositoryURL := fmt.Sprintf("https://github.com/%s/%s.git", refs.Org, refs.Repo)
+	repositoryURI := fmt.Sprintf("https://github.com/%s/%s.git", refs.Org, refs.Repo)
+	if refs.CloneURI != "" {
+		repositoryURI = refs.CloneURI
+	}
 	cloneDir := PathForRefs(dir, refs)
 
 	commands := []cloneCommand{
@@ -48,8 +51,8 @@ func Run(refs *kube.Refs, dir, gitUserName, gitUserEmail string) Record {
 	if gitUserEmail != "" {
 		commands = append(commands, shellCloneCommand(cloneDir, "git", "config", "user.email", gitUserEmail))
 	}
-	commands = append(commands, shellCloneCommand(cloneDir, "git", "fetch", repositoryURL, "--tags", "--prune"))
-	commands = append(commands, shellCloneCommand(cloneDir, "git", "fetch", repositoryURL, refs.BaseRef))
+	commands = append(commands, shellCloneCommand(cloneDir, "git", "fetch", repositoryURI, "--tags", "--prune"))
+	commands = append(commands, shellCloneCommand(cloneDir, "git", "fetch", repositoryURI, refs.BaseRef))
 
 	var target string
 	if refs.BaseSHA != "" {
@@ -72,7 +75,7 @@ func Run(refs *kube.Refs, dir, gitUserName, gitUserEmail string) Record {
 		if prRef.Ref != "" {
 			ref = prRef.Ref
 		}
-		commands = append(commands, shellCloneCommand(cloneDir, "git", "fetch", repositoryURL, ref))
+		commands = append(commands, shellCloneCommand(cloneDir, "git", "fetch", repositoryURI, ref))
 		var prCheckout string
 		if prRef.SHA != "" {
 			prCheckout = prRef.SHA

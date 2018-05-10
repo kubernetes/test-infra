@@ -2120,7 +2120,7 @@ func (obj *MungeObject) MergePR(who string) bool {
 	)
 
 	// The github API https://developer.github.com/v3/pulls/#merge-a-pull-request-merge-button indicates
-	// we will only get the bellow error if we provided a particular sha to merge PUT. We aren't doing that
+	// we will only get the below error if we provided a particular sha to merge PUT. We aren't doing that
 	// so our best guess is that the API also provides this error message when it is recalulating
 	// "mergeable". So if we get this error, check "IsPRMergeable()" which should sleep just a bit until
 	// github is finished calculating. If my guess is correct, that also means we should be able to

@@ -297,7 +297,7 @@ func dupeRequest(original *http.Request) *http.Request {
 	return r2
 }
 
-// serve with handler but map extensionless URLs to to the default
+// serve with handler but map extensionless URLs to the default
 func defaultExtension(extension string, h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if len(r.URL.Path) > 0 &&

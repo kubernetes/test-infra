@@ -22,6 +22,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"text/template"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/kube"
@@ -53,8 +54,9 @@ type Options struct {
 	MaxParallelWorkers int `json:"max_parallel_workers,omitempty"`
 
 	// used to hold flag values
-	refs    gitRefs
-	aliases pathAliases
+	refs      gitRefs
+	clonePath orgRepoFormat
+	cloneURI  orgRepoFormat
 }
 
 // Validate ensures that the configuration options are valid
@@ -117,12 +119,18 @@ func (o *Options) BindOptions(flags *flag.FlagSet) {
 func (o *Options) Complete(args []string) {
 	o.GitRefs = o.refs.gitRefs
 
-	for _, pathAlias := range o.aliases.aliases {
-		for _, ref := range o.GitRefs {
-			if pathAlias.Org == ref.Org && pathAlias.Repo == ref.Repo {
-				ref.PathAlias = pathAlias.Path
-			}
+	for _, ref := range o.GitRefs {
+		alias, err := o.clonePath.Execute(OrgRepo{Org: ref.Org, Repo: ref.Repo})
+		if err != nil {
+			panic(err)
 		}
+		ref.PathAlias = alias
+
+		alias, err = o.cloneURI.Execute(OrgRepo{Org: ref.Org, Repo: ref.Repo})
+		if err != nil {
+			panic(err)
+		}
+		ref.CloneURI = alias
 	}
 }
 
@@ -134,7 +142,8 @@ func BindOptions(options *Options, fs *flag.FlagSet) {
 	fs.StringVar(&options.GitUserName, "git-user-name", DefaultGitUserName, "Username to set in git config")
 	fs.StringVar(&options.GitUserEmail, "git-user-email", DefaultGitUserEmail, "Email to set in git config")
 	fs.Var(&options.refs, "repo", "Mapping of Git URI to refs to check out, can be provided more than once")
-	fs.Var(&options.aliases, "clone-alias", "Mapping of org and repo to path to clone to, can be provided more than once")
+	fs.Var(&options.clonePath, "clone-alias", "Format string for the path to clone to")
+	fs.Var(&options.cloneURI, "uri-prefix", "Format string for the URI prefix to clone from")
 	fs.IntVar(&options.MaxParallelWorkers, "max-workers", 0, "Maximum number of parallel workers, unset for unlimited.")
 }
 
@@ -165,26 +174,37 @@ func (r *gitRefs) Set(value string) error {
 	return nil
 }
 
-type pathAliases struct {
-	aliases []ClonePathAlias
+type orgRepoFormat struct {
+	raw    string
+	format *template.Template
 }
 
-func (a *pathAliases) String() string {
-	representation := bytes.Buffer{}
-	for _, resolver := range a.aliases {
-		fmt.Fprint(&representation, resolver.String())
-	}
-	return representation.String()
+func (a *orgRepoFormat) String() string {
+	return a.raw
 }
 
-// Set parses out path aliases from user input
-func (a *pathAliases) Set(value string) error {
-	resolver, err := ParseAliases(value)
+// Set parses out overrides from user input
+func (a *orgRepoFormat) Set(value string) error {
+	templ, err := template.New("format").Parse(value)
 	if err != nil {
 		return err
 	}
-	a.aliases = append(a.aliases, resolver)
+	a.raw = value
+	a.format = templ
 	return nil
+}
+
+type OrgRepo struct {
+	Org, Repo string
+}
+
+func (a *orgRepoFormat) Execute(data OrgRepo) (string, error) {
+	if a.format != nil {
+		output := bytes.Buffer{}
+		err := a.format.Execute(&output, data)
+		return output.String(), err
+	}
+	return "", nil
 }
 
 // Encode will encode the set of options in the format that

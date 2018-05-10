@@ -125,20 +125,21 @@ branch-protection:
 tide:
   queries:
   - repos:
+    - kubeflow/batch-predict
+    - kubeflow/caffe2-operator
     - kubeflow/community
     - kubeflow/examples
-    - kubeflow/kubeflow
-    - kubeflow/pytorch-operator
-    - kubeflow/testing
-    - kubeflow/tf-operator
-    - kubeflow/katib
-    - kubeflow/experimental-kvc
     - kubeflow/example-seldon
     - kubeflow/experimental-beagle
-    - kubeflow/caffe2-operator
-    - kubeflow/reporting
-    - kubeflow/website
+    - kubeflow/experimental-kvc
+    - kubeflow/katib
     - kubeflow/kubebench
+    - kubeflow/kubeflow
+    - kubeflow/pytorch-operator
+    - kubeflow/reporting
+    - kubeflow/testing
+    - kubeflow/tf-operator
+    - kubeflow/website
     labels:
     - lgtm
     - approved
@@ -15035,6 +15036,46 @@ periodics:
       - "--repo=k8s.io/kubernetes=master"
       - "--timeout=320"
       - "--upload=gs://kubernetes-jenkins/logs"
+
+- interval: 1h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-new-cos-gke
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180503-1fa9a8040-master
+
+- interval: 1h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-new-cos-gke-k8sstable1
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180503-1fa9a8040-master
+
+- interval: 1h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-new-cos-gke-k8sstable1-alpha-features
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=200
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180503-1fa9a8040-master
+
 - name: ci-kubernetes-e2e-node-canary
   interval: 1h
   agent: kubernetes

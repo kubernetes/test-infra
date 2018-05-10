@@ -19,7 +19,7 @@ as JSON in the `$ENTRYPOINT_OPTIONS` environment variable, which has the form:
     "timeout": 7200000000000,
     "grace_period": 15000000000,
     "process_log": "/logs/process-log.txt",
-    "marker_file": "/logs/marker-file.txt",
+    "marker_file": "/logs/marker-file.txt"
 }
 ```
 

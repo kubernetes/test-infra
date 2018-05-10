@@ -233,7 +233,12 @@ type RequiredStatusChecks struct {
 	Contexts []string `json:"contexts"`
 }
 
-type RequiredPullRequestReviews struct{}
+type RequiredPullRequestReviews struct {
+	DismissalRestrictions        Restrictions `json:"dismissal_restrictions"`
+	DismissStaleReviews          bool         `json:"dismiss_stale_reviews"`
+	RequireCodeOwnerReviews      bool         `json:"require_code_owner_reviews"`
+	RequiredApprovingReviewCount int          `json:"required_approving_review_count"`
+}
 
 type Restrictions struct {
 	Users []string `json:"users"`

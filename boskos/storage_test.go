@@ -53,7 +53,7 @@ func TestAddDelete(t *testing.T) {
 		}
 		items, err := s.List()
 		if err != nil {
-			t.Errorf("unable to to list resources, %v", err)
+			t.Errorf("unable to list resources, %v", err)
 		}
 		var rResources []common.Resource
 		for _, i := range items {
@@ -76,7 +76,7 @@ func TestAddDelete(t *testing.T) {
 		}
 		eResources, err := s.List()
 		if err != nil {
-			t.Errorf("unable to to list resources, %v", err)
+			t.Errorf("unable to list resources, %v", err)
 		}
 		if len(eResources) != 0 {
 			t.Error("list should return an empty list")

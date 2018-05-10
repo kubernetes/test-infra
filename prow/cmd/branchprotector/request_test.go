@@ -17,20 +17,41 @@ limitations under the License.
 package main
 
 import (
+	"reflect"
 	"testing"
 
 	branchprotection "k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/github"
 )
 
 func TestMakeRequest(t *testing.T) {
-	actual := makeRequest(branchprotection.Policy{})
-	if actual.RequiredStatusChecks.Contexts == nil {
-		t.Errorf("contexts must be non-nil (use an empty list for nil)")
+
+	cases := []struct {
+		name     string
+		policy   branchprotection.Policy
+		expected github.BranchProtectionRequest
+	}{
+		{
+			name: "Empty works",
+		},
+		{
+			name:   "teams != nil => users != nil",
+			policy: branchprotection.Policy{Pushers: []string{"hello"}},
+			expected: github.BranchProtectionRequest{
+				Restrictions: &github.Restrictions{
+					Teams: []string{"hello"},
+					Users: []string{},
+				},
+			},
+		},
 	}
-	if actual.Restrictions.Teams == nil {
-		t.Errorf("users must be non-nil (use an empty list for nil)")
-	}
-	if actual.Restrictions.Users == nil {
-		t.Errorf("users must be non-nil (use an empty list for nil)")
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := makeRequest(tc.policy)
+			expected := tc.expected
+			if !reflect.DeepEqual(actual, expected) {
+				t.Errorf("actual %+v != expected %+v", actual, expected)
+			}
+		})
 	}
 }
