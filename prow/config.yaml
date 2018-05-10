@@ -201,6 +201,7 @@ tide:
     - do-not-merge/work-in-progress
     reviewApprovedRequired: true
   - repos:
+    - kubernetes/kube-openapi
     - kubernetes-sigs/federation-v2
     - kubernetes-sigs/testing_frameworks
     - kubernetes-sigs/poseidon
