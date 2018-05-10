@@ -16834,7 +16834,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180509-390060182-master
       args:
-      - --repo=github.com/ostromart/istio=fortio-fix
+      - --repo=github.com/ostromart/istio=k8s-prow-test
       - --timeout=90
       - --root=/go/src
 
