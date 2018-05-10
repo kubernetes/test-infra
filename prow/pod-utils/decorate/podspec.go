@@ -35,7 +35,6 @@ import (
 )
 
 const (
-	TestContainerName       = "test"
 	LogMountName            = "logs"
 	LogMountPath            = "/logs"
 	ArtifactsEnv            = "ARTIFACTS"
@@ -75,7 +74,7 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
 
 	spec := pj.Spec.PodSpec.DeepCopy()
 	spec.RestartPolicy = "Never"
-	spec.Containers[0].Name = TestContainerName
+	spec.Containers[0].Name = kube.TestContainerName
 
 	if pj.Spec.DecorationConfig == nil {
 		spec.Containers[0].Env = append(spec.Containers[0].Env, env...)

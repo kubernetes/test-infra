@@ -35,7 +35,6 @@ import (
 
 	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/pod-utils/decorate"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 )
@@ -94,7 +93,7 @@ func NewController(client core.CoreV1Interface, prowJobClient *kube.Client, gcsC
 func findFinishedContainers(old, new []api.ContainerStatus) []string {
 	var containerNames []string
 	for _, oldInitContainer := range old {
-		if oldInitContainer.Name == decorate.TestContainerName {
+		if oldInitContainer.Name == kube.TestContainerName {
 			// logs from the test container will be uploaded by the
 			// sidecar, so we do not need to worry about them here
 			continue
