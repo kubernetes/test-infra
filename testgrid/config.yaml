@@ -2457,7 +2457,24 @@ test_groups:
 - name: istio-e2e-cluster_wide-auth
   gcs_prefix: istio-prow/e2e-cluster_wide-auth
   num_failures_to_alert: 1
-# Istio CircleCI
+# Istio CircleCI Presubmits
+- name: circleci-e2e-mixer-presubmit
+  gcs_prefix: istio-circleci/presubmit/e2e-mixer
+- name: circleci-e2e-simple-presubmit
+  gcs_prefix: istio-circleci/presubmit/e2e-simple
+- name: circleci-e2e-pilot-presubmit
+  gcs_prefix: istio-circleci/presubmit/e2e-pilot
+- name: circleci-e2e-pilot-auth-v1alpha3-v2-presubmit
+  gcs_prefix: istio-circleci/presubmit/e2e-pilot-auth-v1alpha3-v2
+- name: circleci-e2e-pilot-noauth-v1alpha3-v2-presubmit
+  gcs_prefix: istio-circleci/presubmit/e2e-pilot-noauth-v1alpha3-v2
+- name: circleci-e2e-galley-presubmit
+  gcs_prefix: istio-circleci/presubmit/e2e-galley
+- name: circleci-test-presubmit
+  gcs_prefix: istio-circleci/presubmit/test
+- name: circleci-racetest-presubmit
+  gcs_prefix: istio-circleci/presubmit/racetest
+# Istio CircleCI Postsubmits
 - name: circleci-e2e-mixer
   gcs_prefix: istio-circleci/e2e-mixer
   num_failures_to_alert: 5
@@ -5957,7 +5974,26 @@ dashboards:
   - name: e2e
     test_group_name: ci-poseidon-e2e-gce
 
-- name: istio
+- name: istio-presubmits
+  dashboard_tab:
+  - name: circleci-e2e-mixer-presubmit
+    test_group_name: circleci-e2e-mixer-presubmit
+  - name: circleci-e2e-simple-presubmit
+    test_group_name: circleci-e2e-simple-presubmit
+  - name: circleci-e2e-pilot-presubmit
+    test_group_name: circleci-e2e-pilot-presubmit
+  - name: circleci-e2e-pilot-auth-v1alpha3-v2-presubmit
+    test_group_name: circleci-e2e-pilot-auth-v1alpha3-v2-presubmit
+  - name: circleci-e2e-pilot-noauth-v1alpha3-v2-presubmit
+    test_group_name: circleci-e2e-pilot-noauth-v1alpha3-v2-presubmit
+  - name: circleci-e2e-galley-presubmit
+    test_group_name: circleci-e2e-galley-presubmit
+  - name: circleci-test-presubmit
+    test_group_name: circleci-test-presubmit
+  - name: circleci-racetest-presubmit
+    test_group_name: circleci-racetest-presubmit
+
+- name: istio-postsubmits
   dashboard_tab:
   - name: istio-postsubmit
     test_group_name: istio-istio-postsubmit
@@ -6027,6 +6063,32 @@ dashboards:
     test_group_name: daily-e2e-rbac-auth-default
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+
+- name: istio-daily
+  dashboard_tab:
+  - name: daily-unit-tests
+    test_group_name: daily-unit-tests
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: daily-e2e-rbac-no_auth
+    test_group_name: daily-e2e-rbac-no_auth
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: daily-e2e-rbac-no_auth-default
+    test_group_name: daily-e2e-rbac-no_auth-default
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: daily-e2e-rbac-auth
+    test_group_name: daily-e2e-rbac-auth
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: daily-e2e-rbac-auth-default
+    test_group_name: daily-e2e-rbac-auth-default
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+
+- name: istio-gke
+  dashboard_tab:
   - name: istio-gke-addon
     test_group_name: istio-periodic-e2e-gke-addon
 
@@ -6060,6 +6122,13 @@ dashboard_groups:
   - google-gke-prod
   - google-soak
   - google-unit
+
+- name: istio
+  dashboard_names:
+  - istio-daily
+  - istio-gke
+  - istio-postsubmits
+  - istio-presubmits
 
 - name: presubmits
   dashboard_names:
