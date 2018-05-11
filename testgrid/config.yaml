@@ -1465,8 +1465,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-8-on-1-9
 - name: ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
-- name: periodic-kubernetes-e2e-debs-pushed
-  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-debs-pushed
+- name: periodic-kubernetes-e2e-packages-pushed
+  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-packages-pushed
 # upgrade CI tests
 - name: ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
@@ -3595,6 +3595,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce
   - name: kubeadm-gce-selfhosting
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-selfhosting
+  - name: periodic-kubernetes-e2e-packages-pushed
+    test_group_name: periodic-kubernetes-e2e-packages-pushed
 
 - name: sig-release-1.11-all
   dashboard_tab:
@@ -3770,8 +3772,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-10
   - name: ci-gce-kubeadm-upgrade-1.9-1.10
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
-  - name: periodic-kubernetes-e2e-debs-pushed
-    test_group_name: periodic-kubernetes-e2e-debs-pushed
+  - name: periodic-kubernetes-e2e-packages-pushed
+    test_group_name: periodic-kubernetes-e2e-packages-pushed
   - name: gci-gce-1.10
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-default
   - name: gci-gce-slow-1.10
@@ -3976,6 +3978,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-9
   - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1.8-1.9
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9
+  - name: periodic-kubernetes-e2e-packages-pushed
+    test_group_name: periodic-kubernetes-e2e-packages-pushed
   - name: kubelet-1.9
     test_group_name: ci-kubernetes-node-kubelet-stable2
   - name: gci-gce-release-1.9
@@ -4607,8 +4611,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
   - name: kubeadm-gce-1.10
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-10
-  - name: periodic-kubernetes-e2e-debs-pushed
-    test_group_name: periodic-kubernetes-e2e-debs-pushed
+  - name: periodic-kubernetes-e2e-packages-pushed
+    test_group_name: periodic-kubernetes-e2e-packages-pushed
   - name: kubeadm-gce-stable-on-master
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
   - name: kubeadm-gce-upgrade-stable-master

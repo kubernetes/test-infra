@@ -17181,7 +17181,7 @@ periodics:
 
 - interval: 24h
   agent: kubernetes
-  name: periodic-kubernetes-e2e-debs-pushed
+  name: periodic-kubernetes-e2e-packages-pushed
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
