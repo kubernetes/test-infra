@@ -424,6 +424,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-alpha-features
 - name: ci-kubernetes-e2e-gci-gke-autoscaling
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-autoscaling
+- name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-autoscaling-gpu
 - name: ci-kubernetes-e2e-gci-gke-autoscaling-regional
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-autoscaling-regional
 - name: ci-kubernetes-e2e-gci-gke-autoscaling-hpa
@@ -4474,6 +4476,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-autoscaling-migs
   - name: gci-gke-autoscaling
     test_group_name: ci-kubernetes-e2e-gci-gke-autoscaling
+  - name: gci-gke-autoscaling-gpu
+    test_group_name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu
   - name: gci-gke-autoscaling-regional
     test_group_name: ci-kubernetes-e2e-gci-gke-autoscaling-regional
   - name: gke-ubuntu1-k8sbeta-autoscaling
