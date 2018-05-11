@@ -130,6 +130,7 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
 			},
 		}
 
+		var sshKeyMode int32 = 0400 // this is octal, so symbolic ref is `u+r`
 		var sshKeysMounts []kube.VolumeMount
 		var sshKeysVolumes []kube.Volume
 		var sshKeyPaths []string
@@ -140,12 +141,14 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
 			sshKeysMounts = append(sshKeysMounts, kube.VolumeMount{
 				Name:      name,
 				MountPath: keyPath,
+				ReadOnly:  true,
 			})
 			sshKeysVolumes = append(sshKeysVolumes, kube.Volume{
 				Name: name,
 				VolumeSource: kube.VolumeSource{
 					Secret: &kube.SecretSource{
-						SecretName: secret,
+						SecretName:  secret,
+						DefaultMode: &sshKeyMode,
 					},
 				},
 			})

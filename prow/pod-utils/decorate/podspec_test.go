@@ -29,6 +29,7 @@ import (
 )
 
 func TestProwJobToPod(t *testing.T) {
+	var sshKeyMode int32 = 0400
 	tests := []struct {
 		podName string
 		buildID string
@@ -195,10 +196,12 @@ func TestProwJobToPod(t *testing.T) {
 								{
 									Name:      "ssh-keys-ssh-1",
 									MountPath: "/secrets/ssh/ssh-1",
+									ReadOnly:  true,
 								},
 								{
 									Name:      "ssh-keys-ssh-2",
 									MountPath: "/secrets/ssh/ssh-2",
+									ReadOnly:  true,
 								},
 							},
 						},
@@ -303,7 +306,8 @@ func TestProwJobToPod(t *testing.T) {
 							Name: "ssh-keys-ssh-1",
 							VolumeSource: v1.VolumeSource{
 								Secret: &v1.SecretVolumeSource{
-									SecretName: "ssh-1",
+									SecretName:  "ssh-1",
+									DefaultMode: &sshKeyMode,
 								},
 							},
 						},
@@ -311,7 +315,8 @@ func TestProwJobToPod(t *testing.T) {
 							Name: "ssh-keys-ssh-2",
 							VolumeSource: v1.VolumeSource{
 								Secret: &v1.SecretVolumeSource{
-									SecretName: "ssh-2",
+									SecretName:  "ssh-2",
+									DefaultMode: &sshKeyMode,
 								},
 							},
 						},
