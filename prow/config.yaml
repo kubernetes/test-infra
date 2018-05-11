@@ -11727,7 +11727,7 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180510-540e0e395-master
 
-- interval: 30m
+- interval: 4h
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu
   labels:

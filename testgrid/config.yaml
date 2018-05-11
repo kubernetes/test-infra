@@ -4258,6 +4258,11 @@ dashboards:
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gke-device-plugin-gpu-autoscaling
+    test_group_name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gce-device-plugin-gpu-cri-containerd
     test_group_name: ci-cri-containerd-e2e-gce-device-plugin-gpu
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
