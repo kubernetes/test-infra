@@ -6055,26 +6055,6 @@ dashboards:
     test_group_name: circleci-racetest
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
-  - name: daily-unit-tests
-    test_group_name: daily-unit-tests
-    alert_options:
-      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
-  - name: daily-e2e-rbac-no_auth
-    test_group_name: daily-e2e-rbac-no_auth
-    alert_options:
-      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
-  - name: daily-e2e-rbac-no_auth-default
-    test_group_name: daily-e2e-rbac-no_auth-default
-    alert_options:
-      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
-  - name: daily-e2e-rbac-auth
-    test_group_name: daily-e2e-rbac-auth
-    alert_options:
-      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
-  - name: daily-e2e-rbac-auth-default
-    test_group_name: daily-e2e-rbac-auth-default
-    alert_options:
-      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
 
 - name: istio-daily
   dashboard_tab:
