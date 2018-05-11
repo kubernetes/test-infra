@@ -7847,7 +7847,7 @@
       "--image-project=ubuntu-os-gke-cloud-devel",
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Feature:ClusterSizeAutoscalingScaleUp\\]|\\[Feature:ClusterSizeAutoscalingScaleDown\\]|\\[Feature:ClusterSizeAutoscalingScaleWithNAP\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
-      "--timeout=420m"
+      "--timeout=600m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8077,7 +8077,7 @@
       "--image-project=ubuntu-os-gke-cloud-devel",
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Feature:ClusterSizeAutoscalingScaleUp\\]|\\[Feature:ClusterSizeAutoscalingScaleDown\\]|\\[Feature:ClusterSizeAutoscalingScaleWithNAP\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
-      "--timeout=420m"
+      "--timeout=600m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8307,7 +8307,7 @@
       "--image-project=ubuntu-os-gke-cloud-devel",
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Feature:ClusterSizeAutoscalingScaleUp\\]|\\[Feature:ClusterSizeAutoscalingScaleDown\\]|\\[Feature:ClusterSizeAutoscalingScaleWithNAP\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
-      "--timeout=420m"
+      "--timeout=600m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8537,7 +8537,7 @@
       "--image-project=ubuntu-os-gke-cloud-devel",
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Feature:ClusterSizeAutoscalingScaleUp\\]|\\[Feature:ClusterSizeAutoscalingScaleDown\\]|\\[Feature:ClusterSizeAutoscalingScaleWithNAP\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
-      "--timeout=420m"
+      "--timeout=600m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8767,7 +8767,7 @@
       "--image-project=ubuntu-os-gke-cloud-devel",
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Feature:ClusterSizeAutoscalingScaleUp\\]|\\[Feature:ClusterSizeAutoscalingScaleDown\\]|\\[Feature:ClusterSizeAutoscalingScaleWithNAP\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
-      "--timeout=420m"
+      "--timeout=600m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8997,7 +8997,7 @@
       "--image-project=ubuntu-os-gke-cloud-devel",
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Feature:ClusterSizeAutoscalingScaleUp\\]|\\[Feature:ClusterSizeAutoscalingScaleDown\\]|\\[Feature:ClusterSizeAutoscalingScaleWithNAP\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
-      "--timeout=420m"
+      "--timeout=600m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -9227,7 +9227,7 @@
       "--image-project=ubuntu-os-gke-cloud-devel",
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Feature:ClusterSizeAutoscalingScaleUp\\]|\\[Feature:ClusterSizeAutoscalingScaleDown\\]|\\[Feature:ClusterSizeAutoscalingScaleWithNAP\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
-      "--timeout=420m"
+      "--timeout=600m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -9457,7 +9457,7 @@
       "--image-project=ubuntu-os-gke-cloud-devel",
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Feature:ClusterSizeAutoscalingScaleUp\\]|\\[Feature:ClusterSizeAutoscalingScaleDown\\]|\\[Feature:ClusterSizeAutoscalingScaleWithNAP\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
-      "--timeout=420m"
+      "--timeout=600m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [

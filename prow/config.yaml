@@ -13505,7 +13505,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=440
+      - --timeout=620
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180510-540e0e395-master
 - tags:
@@ -13640,7 +13640,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=440
+      - --timeout=620
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180510-540e0e395-master
 - tags:
@@ -13775,7 +13775,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=440
+      - --timeout=620
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180510-540e0e395-master
 - tags:
@@ -13910,7 +13910,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=440
+      - --timeout=620
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180510-540e0e395-master
 - tags:
@@ -14045,7 +14045,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=440
+      - --timeout=620
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180510-540e0e395-master
 - tags:
@@ -14180,7 +14180,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=440
+      - --timeout=620
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180510-540e0e395-master
 - tags:
@@ -14315,7 +14315,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=440
+      - --timeout=620
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180510-540e0e395-master
 - tags:
@@ -14450,7 +14450,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=440
+      - --timeout=620
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180510-540e0e395-master
 - tags:
