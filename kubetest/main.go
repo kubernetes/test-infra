@@ -747,6 +747,12 @@ func prepareGcp(o *options) error {
 			// "container_vm", e2es understand "debian".
 			nod = "debian"
 		}
+		if nod == "cos_containerd" {
+			// gcloud container clusters create understands
+			// "cos_containerd", e2es only understand
+			// "gci"/"cos",
+			nod = "gci"
+		}
 		os.Setenv("NODE_OS_DISTRIBUTION", nod)
 	}
 	if o.gcpProject == "" {
