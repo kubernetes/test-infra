@@ -98,7 +98,10 @@ Three places need to be configured in order to use sharding:
 
 For example, one would set the following options:
 * `--label-selector=master=jenkins-master` in a Jenkins operator.
-* `label_selector=master=jenkins-master` in the Prow config.
+
+This option forces the operator to list all ProwJobs with `master=jenkins-master`.
+
+* `label_selector: master=jenkins-master` in the Prow config.
 ```yaml
 jenkins_operators:
 - label_selector: master=jenkins-master
@@ -106,6 +109,10 @@ jenkins_operators:
   max_goroutines: 20
   allow_cancellations: true
 ```
+
+`jenkins_operators` in the Prow config can be read by multiple running operators
+and based on `label_selector`, each operator knows which config stanza does it
+need to use. Thus, `--label-selector` and `label_selector` need to match exactly.
 
 * `labels: jenkins-master` in the job config.
 
@@ -121,6 +128,8 @@ presubmits:
     rerun_command: "/test unit"
     trigger: "((?m)^/test( all| unit),?(\\s+|$))"
 ```
+
+Labels in the job config are set in ProwJobs during their creation.
 
 ## Kubernetes client
 
