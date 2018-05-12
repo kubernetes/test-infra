@@ -200,7 +200,7 @@ func byRepoAndNumber(prs []PullRequest) map[string]PullRequest {
 // Note: an empty diff can be returned if the reason that the PR does not match
 // the TideQuery is unknown. This can happen happen if this function's logic
 // does not match GitHub's and does not indicate that the PR matches the query.
-func requirementDiff(pr *PullRequest, q *config.TideQuery) (string, int) {
+func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (string, int) {
 	const maxLabelChars = 50
 	var desc string
 	var diff int
@@ -285,7 +285,7 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery) (string, int) {
 	var contexts []string
 	for _, commit := range pr.Commits.Nodes {
 		if commit.Commit.OID == pr.HeadRefOID {
-			for _, ctx := range unsuccessfulContexts(commit.Commit.Status.Contexts) {
+			for _, ctx := range unsuccessfulContexts(commit.Commit.Status.Contexts, cc) {
 				contexts = append(contexts, string(ctx.Context))
 			}
 		}
@@ -319,12 +319,12 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery) (string, int) {
 // in order to generate a diff for the status description. We choose the query
 // for the repo that the PR is closest to meeting (as determined by the number
 // of unmet/violated requirements).
-func expectedStatus(queryMap config.QueryMap, pr *PullRequest, pool map[string]PullRequest) (string, string) {
+func expectedStatus(queryMap config.QueryMap, pr *PullRequest, pool map[string]PullRequest, cc contextChecker) (string, string) {
 	if _, ok := pool[prKey(pr)]; !ok {
 		minDiffCount := -1
 		var minDiff string
 		for _, q := range queryMap.ForRepo(string(pr.Repository.Owner.Login), string(pr.Repository.Name)) {
-			diff, diffCount := requirementDiff(pr, &q)
+			diff, diffCount := requirementDiff(pr, &q, cc)
 			if minDiffCount == -1 || diffCount < minDiffCount {
 				minDiffCount = diffCount
 				minDiff = diff
@@ -363,15 +363,23 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 
 	process := func(pr *PullRequest) {
 		processed.Insert(prKey(pr))
-
 		log := sc.logger.WithFields(pr.logFields())
 		contexts, err := headContexts(log, sc.ghc, pr)
 		if err != nil {
 			log.WithError(err).Error("Getting head commit status contexts, skipping...")
 			return
 		}
+		cr, err := newContextRegisterFromConfig(
+			string(pr.Repository.Owner.Login),
+			string(pr.Repository.Name),
+			string(pr.BaseRef.Name),
+			sc.ca.Config())
+		if err != nil {
+			log.WithError(err).Error("setting up context register")
+			return
+		}
 
-		wantState, wantDesc := expectedStatus(queryMap, pr, pool)
+		wantState, wantDesc := expectedStatus(queryMap, pr, pool, cr)
 		var actualState githubql.StatusState
 		var actualDesc string
 		for _, ctx := range contexts {
@@ -575,7 +583,7 @@ func toSimpleState(s kube.ProwJobState) simpleState {
 
 // isPassingTests returns whether or not all contexts set on the PR except for
 // the tide pool context are passing.
-func isPassingTests(log *logrus.Entry, ghc githubClient, pr PullRequest) bool {
+func isPassingTests(log *logrus.Entry, ghc githubClient, pr PullRequest, cc contextChecker) bool {
 	log = log.WithFields(pr.logFields())
 	contexts, err := headContexts(log, ghc, &pr)
 	if err != nil {
@@ -583,26 +591,29 @@ func isPassingTests(log *logrus.Entry, ghc githubClient, pr PullRequest) bool {
 		// If we can't get the status of the commit, assume that it is failing.
 		return false
 	}
-	return len(unsuccessfulContexts(contexts)) == 0
+	return len(unsuccessfulContexts(contexts, cc)) == 0
 }
 
-// unsuccessfulContexts determines which contexts from the list are failed that
-// we care about. For instance, we do not care about our own context.
-func unsuccessfulContexts(contexts []Context) []Context {
+// unsuccessfulContexts determines which contexts from the list that we care about are
+// failed. For instance, we do not care about our own context.
+// If the branchProtection is set to only check for required checks, we will skip
+// all non-required tests. If required tests are missing from the list, they will be
+// added to the list of failed contexts.
+func unsuccessfulContexts(contexts []Context, cc contextChecker) []Context {
 	var failed []Context
 	for _, ctx := range contexts {
-		if string(ctx.Context) == statusContext {
+		if cc.isOptional(ctx) {
 			continue
 		}
 		if ctx.State != githubql.StatusStateSuccess {
 			failed = append(failed, ctx)
 		}
 	}
-
+	failed = append(failed, cc.missingRequiredContexts(contexts)...)
 	return failed
 }
 
-func pickSmallestPassingNumber(log *logrus.Entry, ghc githubClient, prs []PullRequest) (bool, PullRequest) {
+func pickSmallestPassingNumber(log *logrus.Entry, ghc githubClient, prs []PullRequest, cc contextChecker) (bool, PullRequest) {
 	smallestNumber := -1
 	var smallestPR PullRequest
 	for _, pr := range prs {
@@ -612,7 +623,7 @@ func pickSmallestPassingNumber(log *logrus.Entry, ghc githubClient, prs []PullRe
 		if len(pr.Commits.Nodes) < 1 {
 			continue
 		}
-		if !isPassingTests(log, ghc, pr) {
+		if !isPassingTests(log, ghc, pr, cc) {
 			continue
 		}
 		smallestNumber = int(pr.Number)
@@ -756,7 +767,7 @@ func prNumbers(prs []PullRequest) []int {
 	return nums
 }
 
-func (c *Controller) pickBatch(sp subpool) ([]PullRequest, error) {
+func (c *Controller) pickBatch(sp subpool, cc contextChecker) ([]PullRequest, error) {
 	r, err := c.gc.Clone(sp.org + "/" + sp.repo)
 	if err != nil {
 		return nil, err
@@ -780,7 +791,7 @@ func (c *Controller) pickBatch(sp subpool) ([]PullRequest, error) {
 
 	var res []PullRequest
 	for _, pr := range sp.prs {
-		if !isPassingTests(sp.log, c.ghc, pr) {
+		if !isPassingTests(sp.log, c.ghc, pr, cc) {
 			continue
 		}
 		if ok, err := r.Merge(string(pr.HeadRefOID)); err != nil {
@@ -899,7 +910,7 @@ func (c *Controller) trigger(sp subpool, presubmits map[int]sets.String, prs []P
 	return nil
 }
 
-func (c *Controller) takeAction(sp subpool, presubmits map[int]sets.String, batchPending, successes, pendings, nones, batchMerges []PullRequest) (Action, []PullRequest, error) {
+func (c *Controller) takeAction(sp subpool, presubmits map[int]sets.String, batchPending, successes, pendings, nones, batchMerges []PullRequest, cc contextChecker) (Action, []PullRequest, error) {
 	// Merge the batch!
 	if len(batchMerges) > 0 {
 		return MergeBatch, batchMerges, c.mergePRs(sp, batchMerges)
@@ -907,7 +918,7 @@ func (c *Controller) takeAction(sp subpool, presubmits map[int]sets.String, batc
 	// Do not merge PRs while waiting for a batch to complete. We don't want to
 	// invalidate the old batch result.
 	if len(successes) > 0 && len(batchPending) == 0 {
-		if ok, pr := pickSmallestPassingNumber(sp.log, c.ghc, successes); ok {
+		if ok, pr := pickSmallestPassingNumber(sp.log, c.ghc, successes, cc); ok {
 			return Merge, []PullRequest{pr}, c.mergePRs(sp, []PullRequest{pr})
 		}
 	}
@@ -917,13 +928,13 @@ func (c *Controller) takeAction(sp subpool, presubmits map[int]sets.String, batc
 	}
 	// If we have no serial jobs pending or successful, trigger one.
 	if len(nones) > 0 && len(pendings) == 0 && len(successes) == 0 {
-		if ok, pr := pickSmallestPassingNumber(sp.log, c.ghc, nones); ok {
+		if ok, pr := pickSmallestPassingNumber(sp.log, c.ghc, nones, cc); ok {
 			return Trigger, []PullRequest{pr}, c.trigger(sp, presubmits, []PullRequest{pr})
 		}
 	}
 	// If we have no batch, trigger one.
 	if len(sp.prs) > 1 && len(batchPending) == 0 {
-		batch, err := c.pickBatch(sp)
+		batch, err := c.pickBatch(sp, cc)
 		if err != nil {
 			return Wait, nil, err
 		}
@@ -950,7 +961,7 @@ func (c *Controller) presubmitsByPull(sp subpool) (map[int]sets.String, error) {
 	}()
 
 	for _, ps := range c.ca.Config().Presubmits[sp.org+"/"+sp.repo] {
-		if ps.SkipReport || !ps.RunsAgainstBranch(sp.branch) {
+		if !ps.ContextRequired() || !ps.RunsAgainstBranch(sp.branch) {
 			continue
 		}
 
@@ -991,6 +1002,10 @@ func (c *Controller) syncSubpool(sp subpool) (Pool, error) {
 	if err != nil {
 		return Pool{}, fmt.Errorf("error determining required presubmits: %v", err)
 	}
+	cr, err := newContextRegisterFromConfig(sp.org, sp.repo, sp.branch, c.ca.Config())
+	if err != nil {
+		return Pool{}, fmt.Errorf("error parsing branch protection: %v", err)
+	}
 	successes, pendings, nones := accumulate(presubmits, sp.prs, sp.pjs)
 	batchMerge, batchPending := accumulateBatch(presubmits, sp.prs, sp.pjs)
 	sp.log.WithFields(logrus.Fields{
@@ -1000,8 +1015,7 @@ func (c *Controller) syncSubpool(sp subpool) (Pool, error) {
 		"batch-passing": prNumbers(batchMerge),
 		"batch-pending": prNumbers(batchPending),
 	}).Info("Subpool accumulated.")
-
-	act, targets, err := c.takeAction(sp, presubmits, batchPending, successes, pendings, nones, batchMerge)
+	act, targets, err := c.takeAction(sp, presubmits, batchPending, successes, pendings, nones, batchMerge, cr)
 	sp.log.WithFields(logrus.Fields{
 		"action":  string(act),
 		"targets": prNumbers(targets),
@@ -1212,7 +1226,6 @@ func headContexts(log *logrus.Entry, ghc githubClient, pr *PullRequest) ([]Conte
 	if err != nil {
 		return nil, fmt.Errorf("failed to get the combined status: %v", err)
 	}
-
 	contexts := make([]Context, 0, len(combined.Statuses))
 	for _, status := range combined.Statuses {
 		contexts = append(

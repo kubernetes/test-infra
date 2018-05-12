@@ -17,6 +17,7 @@ limitations under the License.
 package config
 
 import (
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -151,6 +152,269 @@ func TestMergeMethod(t *testing.T) {
 	for _, test := range testcases {
 		if ti.MergeMethod(test.org, test.repo) != test.expected {
 			t.Errorf("Expected merge method %q but got %q for %s/%s", test.expected, ti.MergeMethod(test.org, test.repo), test.org, test.repo)
+		}
+	}
+}
+
+func TestParseTideContextPolicyOptions(t *testing.T) {
+	yes := true
+	no := false
+	org, repo, branch := "org", "repo", "branch"
+	testCases := []struct {
+		name     string
+		config   TideContextPolicyOptions
+		expected TideContextPolicy
+	}{
+		{
+			name: "empty",
+		},
+		{
+			name: "global config",
+			config: TideContextPolicyOptions{
+				Policy: TideContextPolicy{
+					FromBranchProtection: &yes,
+					SkipUnknownContexts:  &yes,
+					RequiredContexts:     []string{"r1"},
+					OptionalContexts:     []string{"o1"},
+				},
+			},
+			expected: TideContextPolicy{
+				SkipUnknownContexts:  &yes,
+				RequiredContexts:     []string{"r1"},
+				OptionalContexts:     []string{"o1"},
+				FromBranchProtection: &yes,
+			},
+		},
+		{
+			name: "org config",
+			config: TideContextPolicyOptions{
+				Policy: TideContextPolicy{
+					RequiredContexts:     []string{"r1"},
+					OptionalContexts:     []string{"o1"},
+					FromBranchProtection: &no,
+				},
+				Orgs: map[string]TideOrgContextPolicy{
+					"org": {
+						Policy: TideContextPolicy{
+							SkipUnknownContexts:  &yes,
+							RequiredContexts:     []string{"r2"},
+							OptionalContexts:     []string{"o2"},
+							FromBranchProtection: &yes,
+						},
+					},
+				},
+			},
+			expected: TideContextPolicy{
+				SkipUnknownContexts:  &yes,
+				RequiredContexts:     []string{"r1", "r2"},
+				OptionalContexts:     []string{"o1", "o2"},
+				FromBranchProtection: &yes,
+			},
+		},
+		{
+			name: "repo config",
+			config: TideContextPolicyOptions{
+				Policy: TideContextPolicy{
+					RequiredContexts:     []string{"r1"},
+					OptionalContexts:     []string{"o1"},
+					FromBranchProtection: &no,
+				},
+				Orgs: map[string]TideOrgContextPolicy{
+					"org": {
+						Policy: TideContextPolicy{
+							SkipUnknownContexts:  &no,
+							RequiredContexts:     []string{"r2"},
+							OptionalContexts:     []string{"o2"},
+							FromBranchProtection: &no,
+						},
+						Repos: map[string]TideRepoContextPolicy{
+							"repo": {
+								Policy: TideContextPolicy{
+									SkipUnknownContexts:  &yes,
+									RequiredContexts:     []string{"r3"},
+									OptionalContexts:     []string{"o3"},
+									FromBranchProtection: &yes,
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: TideContextPolicy{
+				SkipUnknownContexts:  &yes,
+				RequiredContexts:     []string{"r1", "r2", "r3"},
+				OptionalContexts:     []string{"o1", "o2", "o3"},
+				FromBranchProtection: &yes,
+			},
+		},
+		{
+			name: "branch config",
+			config: TideContextPolicyOptions{
+				Policy: TideContextPolicy{
+					RequiredContexts: []string{"r1"},
+					OptionalContexts: []string{"o1"},
+				},
+				Orgs: map[string]TideOrgContextPolicy{
+					"org": {
+						Policy: TideContextPolicy{
+							RequiredContexts: []string{"r2"},
+							OptionalContexts: []string{"o2"},
+						},
+						Repos: map[string]TideRepoContextPolicy{
+							"repo": {
+								Policy: TideContextPolicy{
+									RequiredContexts: []string{"r3"},
+									OptionalContexts: []string{"o3"},
+								},
+								Branches: map[string]TideContextPolicy{
+									"branch": {
+										RequiredContexts: []string{"r4"},
+										OptionalContexts: []string{"o4"},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: TideContextPolicy{
+				RequiredContexts: []string{"r1", "r2", "r3", "r4"},
+				OptionalContexts: []string{"o1", "o2", "o3", "o4"},
+			},
+		},
+	}
+	for _, tc := range testCases {
+		policy := parseTideContextPolicyOptions(org, repo, branch, tc.config)
+		if !reflect.DeepEqual(policy, tc.expected) {
+			t.Errorf("%s - expected %v got %v", tc.name, tc.expected, policy)
+		}
+	}
+}
+
+func TestConfigGetTideContextPolicy(t *testing.T) {
+	yes := true
+	no := false
+	org, repo, branch := "org", "repo", "branch"
+	testCases := []struct {
+		name     string
+		config   Config
+		expected TideContextPolicy
+		error    string
+	}{
+		{
+			name: "no policy - use prow jobs",
+			config: Config{
+				BranchProtection: BranchProtection{
+					Policy: Policy{
+						Protect: &yes,
+						RequiredStatusChecks: &ContextPolicy{
+							Contexts: []string{"r1", "r2"},
+						},
+					},
+				},
+				Presubmits: map[string][]Presubmit{
+					"org/repo": {
+						Presubmit{
+							Context:   "pr1",
+							AlwaysRun: true,
+						},
+						Presubmit{
+							Context:   "po1",
+							AlwaysRun: true,
+							Optional:  true,
+						},
+					},
+				},
+			},
+			expected: TideContextPolicy{
+				RequiredContexts: []string{"pr1"},
+				OptionalContexts: []string{"po1"},
+			},
+		},
+		{
+			name: "no policy no prow jobs defined - empty",
+			config: Config{
+				BranchProtection: BranchProtection{
+					Policy: Policy{
+						Protect: &yes,
+						RequiredStatusChecks: &ContextPolicy{
+							Contexts: []string{"r1", "r2"},
+						},
+					},
+				},
+			},
+			expected: TideContextPolicy{
+				RequiredContexts: []string{},
+				OptionalContexts: []string{},
+			},
+		},
+		{
+			name: "no branch protection",
+			config: Config{
+				Tide: Tide{
+					ContextOptions: TideContextPolicyOptions{
+						Policy: TideContextPolicy{
+							FromBranchProtection: &yes,
+						},
+					},
+				},
+			},
+			error: "branch protection is not set",
+		},
+		{
+			name: "invalid branch protection",
+			config: Config{
+				BranchProtection: BranchProtection{
+					Orgs: map[string]Org{
+						"org": {
+							Policy: Policy{
+								Protect: &no,
+							},
+						},
+					},
+				},
+				Tide: Tide{
+					ContextOptions: TideContextPolicyOptions{
+						Policy: TideContextPolicy{
+							FromBranchProtection: &yes,
+						},
+					},
+				},
+			},
+			error: "branch protection is invalid",
+		},
+		{
+			name: "manually defined policy",
+			config: Config{
+				Tide: Tide{
+					ContextOptions: TideContextPolicyOptions{
+						Policy: TideContextPolicy{
+							RequiredContexts:    []string{"r1"},
+							OptionalContexts:    []string{"o1"},
+							SkipUnknownContexts: &yes,
+						},
+					},
+				},
+			},
+			expected: TideContextPolicy{
+				RequiredContexts:    []string{"r1"},
+				OptionalContexts:    []string{"o1"},
+				SkipUnknownContexts: &yes,
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		p, err := tc.config.GetTideContextPolicy(org, repo, branch)
+		if !reflect.DeepEqual(p, tc.expected) {
+			t.Errorf("%s - expected contexts %v got %v", tc.name, tc.expected, p)
+		}
+		if err != nil {
+			if err.Error() != tc.error {
+				t.Errorf("%s - expected error %v got %v", tc.name, tc.error, err.Error())
+			}
+		} else if tc.error != "" {
+			t.Errorf("%s - expected error %v got %v", tc.name, tc.error, err.Error())
 		}
 	}
 }

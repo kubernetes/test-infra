@@ -17,6 +17,7 @@ limitations under the License.
 package config
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -30,6 +31,31 @@ import (
 const timeFormatISO8601 = "2006-01-02T15:04:05Z"
 
 type TideQueries []TideQuery
+
+type TideContextPolicy struct {
+	// whether to consider unknown contexts optional (skip) or required.
+	SkipUnknownContexts *bool    `json:"skip-unknown-contexts,omitempty"`
+	RequiredContexts    []string `json:"required-contexts,omitempty"`
+	OptionalContexts    []string `json:"optional-contexts,omitempty"`
+	// Infer required and optional jobs from Branch Protection configuration
+	FromBranchProtection *bool `json:"from-branch-protection,omitempty"`
+}
+
+type TideOrgContextPolicy struct {
+	Policy TideContextPolicy                `json:"policy,omitempty"`
+	Repos  map[string]TideRepoContextPolicy `json:"repos,omitempty"`
+}
+
+type TideRepoContextPolicy struct {
+	Policy   TideContextPolicy            `json:"policy,omitempty"`
+	Branches map[string]TideContextPolicy `json:"branches,omitempty"`
+}
+
+type TideContextPolicyOptions struct {
+	Policy TideContextPolicy `json:"policy,omitempty"`
+	// Github Orgs
+	Orgs map[string]TideOrgContextPolicy `json:"orgs,omitempty"`
+}
 
 // Tide is config for the tide pool.
 type Tide struct {
@@ -66,6 +92,12 @@ type Tide struct {
 	// controller to handle org/repo:branch pools. Defaults to 20. Needs to be a
 	// positive number.
 	MaxGoroutines int `json:"max_goroutines,omitempty"`
+
+	// TideContextPolicyOptions defines merge options for context. If not set it will infer
+	// the required and optional contexts from the prow jobs configured and use the github
+	// combined status; otherwise it may apply the branch protection setting or let user
+	// define their own options in case branch protection is not used.
+	ContextOptions TideContextPolicyOptions `json:"context_options,omitempty"`
 }
 
 // MergeMethod returns the merge method to use for a repo. The default of merge is
@@ -215,4 +247,73 @@ func (tq *TideQuery) Validate() error {
 	}
 
 	return nil
+}
+
+func mergeTideContextPolicyConfig(a, b TideContextPolicy) TideContextPolicy {
+	mergeBool := func(a, b *bool) *bool {
+		if b == nil {
+			return a
+		}
+		return b
+	}
+	c := TideContextPolicy{}
+	c.FromBranchProtection = mergeBool(c.FromBranchProtection, b.FromBranchProtection)
+	c.SkipUnknownContexts = mergeBool(a.SkipUnknownContexts, b.SkipUnknownContexts)
+	required := sets.NewString(a.RequiredContexts...)
+	optional := sets.NewString(a.OptionalContexts...)
+	required.Insert(b.RequiredContexts...)
+	optional.Insert(b.OptionalContexts...)
+	c.RequiredContexts = required.List()
+	c.OptionalContexts = optional.List()
+	return c
+}
+
+func parseTideContextPolicyOptions(org, repo, branch string, options TideContextPolicyOptions) TideContextPolicy {
+	option := options.Policy
+	if o, ok := options.Orgs[org]; ok {
+		option = mergeTideContextPolicyConfig(option, o.Policy)
+		if r, ok := o.Repos[repo]; ok {
+			option = mergeTideContextPolicyConfig(option, r.Policy)
+			if b, ok := r.Branches[branch]; ok {
+				option = mergeTideContextPolicyConfig(option, b)
+			}
+		}
+	}
+	return option
+}
+
+// GetTideContextPolicy parses the prow config to find context merge options.
+// If none are set, it will use the prow jobs configured and use the default github combined status.
+// Otherwise if set it will use the branch protection setting, or the listed jobs.
+func (c Config) GetTideContextPolicy(org, repo, branch string) (TideContextPolicy, error) {
+	options := parseTideContextPolicyOptions(org, repo, branch, c.Tide.ContextOptions)
+	// Adding required and optional contexts from options
+	required := sets.NewString(options.RequiredContexts...)
+	optional := sets.NewString(options.OptionalContexts...)
+
+	// automatically generate required and optional entries for Prow Jobs
+	prowRequired, prowOptional := BranchRequirements(org, repo, branch, c.Presubmits)
+	required.Insert(prowRequired...)
+	optional.Insert(prowOptional...)
+
+	// Using Branch protection configuration
+	if options.FromBranchProtection != nil && *options.FromBranchProtection {
+		bp, err := c.GetBranchProtection(org, repo, branch)
+		if err != nil {
+			return TideContextPolicy{}, err
+		}
+		if bp == nil {
+			return TideContextPolicy{}, errors.New("branch protection is not set")
+		}
+		if bp.Protect == nil || !*bp.Protect || bp.RequiredStatusChecks == nil {
+			return TideContextPolicy{}, errors.New("branch protection is invalid")
+		}
+		required.Insert(bp.RequiredStatusChecks.Contexts...)
+	}
+
+	return TideContextPolicy{
+		RequiredContexts:    required.List(),
+		OptionalContexts:    optional.List(),
+		SkipUnknownContexts: options.SkipUnknownContexts,
+	}, nil
 }
