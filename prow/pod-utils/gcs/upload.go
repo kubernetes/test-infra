@@ -75,7 +75,7 @@ func FileUpload(file string) UploadFunc {
 		uploadErr := DataUpload(reader)(obj)
 		closeErr := reader.Close()
 
-		return errorutil.NewAggregate([]error{uploadErr, closeErr})
+		return errorutil.NewAggregate(uploadErr, closeErr)
 	}
 }
 
@@ -87,6 +87,6 @@ func DataUpload(src io.Reader) UploadFunc {
 		_, copyErr := io.Copy(writer, src)
 		closeErr := writer.Close()
 
-		return errorutil.NewAggregate([]error{copyErr, closeErr})
+		return errorutil.NewAggregate(copyErr, closeErr)
 	}
 }

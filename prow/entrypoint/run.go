@@ -28,6 +28,8 @@ import (
 	"syscall"
 	"time"
 
+	"k8s.io/test-infra/prow/errorutil"
+
 	"github.com/sirupsen/logrus"
 )
 
@@ -51,14 +53,26 @@ var (
 	errTimedOut = errors.New("process timed out")
 )
 
-// Run executes the process as configured, writing the output
-// to the process log and the exit code to the marker file on
-// exit.
+// Run creates the artifact directory then executes the process as configured,
+// writing the output to the process log and the exit code to the marker file
+// on exit.
 func (o Options) Run() error {
+	if o.ArtifactDir != "" {
+		if err := os.MkdirAll(o.ArtifactDir, os.ModePerm); err != nil {
+			return errorutil.NewAggregate(
+				fmt.Errorf("could not create artifact directory(%s): %v", o.ArtifactDir, err),
+				o.mark(InternalErrorCode),
+			)
+		}
+	}
 	processLogFile, err := os.Create(o.ProcessLog)
 	if err != nil {
-		return fmt.Errorf("could not open output process logfile: %v", err)
+		return errorutil.NewAggregate(
+			fmt.Errorf("could not create process logfile(%s): %v", o.ProcessLog, err),
+			o.mark(InternalErrorCode),
+		)
 	}
+
 	output := io.MultiWriter(os.Stdout, processLogFile)
 	logrus.SetOutput(output)
 
@@ -71,10 +85,10 @@ func (o Options) Run() error {
 	command.Stderr = output
 	command.Stdout = output
 	if err := command.Start(); err != nil {
-		if err := ioutil.WriteFile(o.MarkerFile, []byte(InternalErrorCode), os.ModePerm); err != nil {
-			return fmt.Errorf("could not write to marker file: %v", err)
-		}
-		return fmt.Errorf("could not start the process: %v", err)
+		return errorutil.NewAggregate(
+			fmt.Errorf("could not start the process: %v", err),
+			o.mark(InternalErrorCode),
+		)
 	}
 
 	// if we get asked to terminate we need to forward
@@ -102,6 +116,9 @@ func (o Options) Run() error {
 		cancelled = true
 		gracefullyTerminate(command, done, gracePeriod)
 	}
+	// Close the process logfile before writing the marker file to avoid racing
+	// with the sidecar container.
+	processLogFile.Close()
 
 	var returnCode string
 	if cancelled {
@@ -114,14 +131,15 @@ func (o Options) Run() error {
 			returnCode = "0"
 		} else {
 			returnCode = "1"
+			commandErr = fmt.Errorf("wrapped process failed: %v", commandErr)
 		}
 	}
+	return errorutil.NewAggregate(commandErr, o.mark(returnCode))
+}
 
-	if err := ioutil.WriteFile(o.MarkerFile, []byte(returnCode), os.ModePerm); err != nil {
-		return fmt.Errorf("could not write return code to marker file: %v", err)
-	}
-	if commandErr != nil {
-		return fmt.Errorf("wrapped process failed with code %s: %v", returnCode, err)
+func (o *Options) mark(exitCode string) error {
+	if err := ioutil.WriteFile(o.MarkerFile, []byte(exitCode), os.ModePerm); err != nil {
+		return fmt.Errorf("could not write to marker file(%s): %v", o.MarkerFile, err)
 	}
 	return nil
 }

@@ -18,6 +18,7 @@ package errorutil
 
 import (
 	"fmt"
+	"strings"
 )
 
 // Aggregate represents an object that contains multiple errors, but does not
@@ -25,6 +26,7 @@ import (
 type Aggregate interface {
 	error
 	Errors() []error
+	Strings() []string
 }
 
 // NewAggregate converts a slice of errors into an Aggregate interface, which
@@ -32,7 +34,7 @@ type Aggregate interface {
 // this returns nil.
 // It will check if any of the element of input error list is nil, to avoid
 // nil pointer panic when call Error().
-func NewAggregate(errlist []error) Aggregate {
+func NewAggregate(errlist ...error) Aggregate {
 	if len(errlist) == 0 {
 		return nil
 	}
@@ -60,15 +62,21 @@ func (agg aggregate) Error() string {
 		// This should never happen, really.
 		return ""
 	}
-	if len(agg) == 1 {
-		return agg[0].Error()
+	return fmt.Sprintf("[%s]", strings.Join(agg.Strings(), ", "))
+}
+
+// Strings flattens the aggregate (and any sub aggregates) into a
+// slice of strings.
+func (agg aggregate) Strings() []string {
+	strs := make([]string, 0, len(agg))
+	for _, e := range agg {
+		if subAgg, ok := e.(aggregate); ok {
+			strs = append(strs, subAgg.Strings()...)
+		} else {
+			strs = append(strs, e.Error())
+		}
 	}
-	result := fmt.Sprintf("[%s", agg[0].Error())
-	for i := 1; i < len(agg); i++ {
-		result += fmt.Sprintf(", %s", agg[i].Error())
-	}
-	result += "]"
-	return result
+	return strs
 }
 
 // Errors is part of the Aggregate interface.
