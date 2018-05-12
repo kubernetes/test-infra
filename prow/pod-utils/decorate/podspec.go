@@ -18,6 +18,7 @@ package decorate
 
 import (
 	"fmt"
+	"path"
 	"sort"
 
 	"k8s.io/api/core/v1"
@@ -46,6 +47,8 @@ const (
 	ToolsMountPath          = "/tools"
 	GcsCredentialsMountName = "gcs-credentials"
 	GcsCredentialsMountPath = "/secrets/gcs"
+	SshKeysMountNamePrefix  = "ssh-keys"
+	SshKeysMountPathPrefix  = "/secrets/ssh"
 )
 
 func Labels() []string {
@@ -127,6 +130,30 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
 			},
 		}
 
+		var sshKeyMode int32 = 0400 // this is octal, so symbolic ref is `u+r`
+		var sshKeysMounts []kube.VolumeMount
+		var sshKeysVolumes []kube.Volume
+		var sshKeyPaths []string
+		for _, secret := range pj.Spec.DecorationConfig.SshKeySecrets {
+			name := fmt.Sprintf("%s-%s", SshKeysMountNamePrefix, secret)
+			keyPath := path.Join(SshKeysMountPathPrefix, secret)
+			sshKeyPaths = append(sshKeyPaths, keyPath)
+			sshKeysMounts = append(sshKeysMounts, kube.VolumeMount{
+				Name:      name,
+				MountPath: keyPath,
+				ReadOnly:  true,
+			})
+			sshKeysVolumes = append(sshKeysVolumes, kube.Volume{
+				Name: name,
+				VolumeSource: kube.VolumeSource{
+					Secret: &kube.SecretSource{
+						SecretName:  secret,
+						DefaultMode: &sshKeyMode,
+					},
+				},
+			})
+		}
+
 		cloneLog := fmt.Sprintf("%s/clone.json", LogMountPath)
 		var refs []*kube.Refs
 		refs = append(refs, pj.Spec.Refs)
@@ -137,6 +164,7 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
 			GitUserName:  clonerefs.DefaultGitUserName,
 			GitUserEmail: clonerefs.DefaultGitUserEmail,
 			GitRefs:      refs,
+			KeyFiles:     sshKeyPaths,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("could not encode clone configuration as JSON: %v", err)
@@ -164,7 +192,7 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
 				Image:        pj.Spec.DecorationConfig.UtilityImages.CloneRefs,
 				Command:      []string{"/clonerefs"},
 				Env:          kubeEnv(map[string]string{clonerefs.JSONConfigEnvVar: cloneConfigEnv}),
-				VolumeMounts: []kube.VolumeMount{logMount, codeMount},
+				VolumeMounts: append([]kube.VolumeMount{logMount, codeMount}, sshKeysMounts...),
 			},
 			{
 				Name:    "initupload",
@@ -227,7 +255,7 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
 			}),
 			VolumeMounts: []kube.VolumeMount{logMount, gcsCredentialsMount},
 		})
-		spec.Volumes = append(spec.Volumes, logVolume, codeVolume, toolsVolume, gcsCredentialsVolume)
+		spec.Volumes = append(spec.Volumes, append(sshKeysVolumes, logVolume, codeVolume, toolsVolume, gcsCredentialsVolume)...)
 	}
 
 	podLabels := make(map[string]string)
