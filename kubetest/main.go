@@ -394,6 +394,8 @@ func complete(o *options) error {
 				if fedErr != nil || err != nil {
 					os.Exit(1)
 				}
+
+				os.Exit(2)
 			}
 		}()
 	}
