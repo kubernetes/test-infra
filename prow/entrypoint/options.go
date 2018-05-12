@@ -45,6 +45,11 @@ type Options struct {
 	// sending SIGINT before the entrypoint sends
 	// SIGKILL.
 	GracePeriod time.Duration `json:"grace_period"`
+	// ArtifactDir is a directory where test processes can dump artifacts
+	// for upload to persistent storage (courtesy of sidecar).
+	// If specified, it is created by entrypoint before starting the test process.
+	// May be ignored if not using sidecar.
+	ArtifactDir string `json:"artifact_dir,omitempty"`
 
 	*wrapper.Options
 }
@@ -81,6 +86,7 @@ func (o *Options) LoadConfig(config string) error {
 func (o *Options) BindOptions(flags *flag.FlagSet) {
 	flags.DurationVar(&o.Timeout, "timeout", DefaultTimeout, "Timeout for the test command.")
 	flags.DurationVar(&o.GracePeriod, "grace-period", DefaultGracePeriod, "Grace period after timeout for the test command.")
+	flags.StringVar(&o.ArtifactDir, "artifact-dir", "", "directory where test artifacts should be placed for upload to persistent storage")
 	wrapper.BindOptions(o.Options, flags)
 }
 

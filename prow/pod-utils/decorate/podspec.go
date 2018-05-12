@@ -222,6 +222,7 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
 			Options:     &wrapperOptions,
 			Timeout:     pj.Spec.DecorationConfig.Timeout,
 			GracePeriod: pj.Spec.DecorationConfig.GracePeriod,
+			ArtifactDir: ArtifactsPath,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("could not encode entrypoint configuration as JSON: %v", err)
@@ -237,6 +238,7 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
 		spec.Containers[0].Env = append(spec.Containers[0].Env, kubeEnv(allEnv)...)
 		spec.Containers[0].VolumeMounts = append(spec.Containers[0].VolumeMounts, logMount, codeMount, toolsMount)
 
+		gcsOptions.Items = append(gcsOptions.Items, ArtifactsPath)
 		sidecarConfigEnv, err := sidecar.Encode(sidecar.Options{
 			GcsOptions:     &gcsOptions,
 			WrapperOptions: &wrapperOptions,
