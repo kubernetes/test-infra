@@ -102,6 +102,16 @@ node_repositories(package_json = ["//triage:package.json"])
 
 load(":test_infra.bzl", "http_archive_with_pkg_path")
 
+new_http_archive(
+    name = "shellcheck",
+    urls = ["https://storage.googleapis.com/shellcheck/shellcheck-v0.4.7.linux.x86_64.tar.xz"],
+    sha256 = "deeea92a4d3a9c5b16ba15210d9c1ab84a2e12e29bf856427700afd896bbdc93",
+    strip_prefix = "shellcheck-v0.4.7",
+    build_file_content = """
+exports_files(["shellcheck"])
+    """,
+)
+
 http_archive_with_pkg_path(
     name = "ruamel_yaml",
     build_file_content = """
