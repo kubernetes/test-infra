@@ -1188,3 +1188,34 @@ func TestDecorationDefaulting(t *testing.T) {
 		}
 	}
 }
+
+func TestBranchProtection(t *testing.T) {
+	cases := []struct {
+		org    string
+		repo   string
+		branch string
+	}{
+		{
+			org:    "kubernetes",
+			repo:   "test-infra",
+			branch: "all-branches",
+		},
+		{
+			org:    "kubernetes-sigs",
+			repo:   "any-repo",
+			branch: "any-branch",
+		},
+	}
+	for _, tc := range cases {
+		policy, err := c.GetBranchProtection(tc.org, tc.repo, tc.branch)
+		if err != nil {
+			t.Errorf("%s/%s=%s: unexpected error: %v", tc.org, tc.repo, tc.branch, err)
+		}
+		if policy.Protect == nil || !*policy.Protect {
+			t.Errorf("%s/%s=%s: unprotected: %v", tc.org, tc.repo, tc.branch, policy.Protect)
+		}
+		if !sets.NewString(policy.RequiredStatusChecks.Contexts...).Has("cla/linuxfoundation") {
+			t.Errorf("%s/%s=%s: missing cla/linuxfoundation", tc.org, tc.repo, tc.branch)
+		}
+	}
+}

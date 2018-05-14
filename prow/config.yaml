@@ -35,93 +35,99 @@ branch-protection:
   allow_disabled_policies: true  # TODO(fejta): remove, needed by k/website
   orgs:
     kubernetes:
-      # TODO(fejta): build blacklist and then protect-by-default
-      # protect-by-default: true
-      require-contexts:
-      - cla/linuxfoundation
+      # TODO(fejta): build blacklist and then protect
+      # protect: true
+      required_status_checks:
+        contexts:
+        - cla/linuxfoundation
       repos:
         # BLACKLIST
         # dashboard - kubernetes/test-infra#7525 need required reviews
         # WHITELIST
         charts:
-          protect-by-default: true
-          require-contexts:
-          - ci/circleci
+          protect: true
+          required_status_checks:
+            contexts:
+            - ci/circleci
         cloud-provider-aws:
-          protect-by-default: true
+          protect: true
         cloud-provider-azure:
-          protect-by-default: true
+          protect: true
         cloud-provider-gcp:
-          protect-by-default: true
+          protect: true
         cloud-provider-openstack:
-          protect-by-default: true
+          protect: true
         cluster-registry:
-          protect-by-default: true
+          protect: true
         community:
-          protect-by-default: true
+          protect: true
         contrib:
-          protect-by-default: true
+          protect: true
         examples:
-          protect-by-default: true
+          protect: true
         features:
-          protect-by-default: true
+          protect: true
         federation:
-          protect-by-default: true
+          protect: true
         gengo:
-          protect-by-default: true
+          protect: true
         heapster:
-          protect-by-default: true
+          protect: true
         ingress-nginx:
-          protect-by-default: true
+          protect: true
         kops:
-          protect-by-default: true
+          protect: true
         kubectl:
-          protect-by-default: true
-          require-contexts:
-          - continuous-integration/travis-ci
+          protect: true
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
         kubernetes-template-project:
-          protect-by-default: true
+          protect: true
         kube-state-metrics:
-          protect-by-default: true
+          protect: true
         kube-deploy:
-          protect-by-default: true
+          protect: true
         minikube:
-          protect-by-default: true
+          protect: true
         node-problem-detector:
-          protect-by-default: true
+          protect: true
         repo-infra:
-          protect-by-default: true
-          require-contexts:
-          - continuous-integration/travis-ci
+          protect: true
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
         sig-release:
-          protect-by-default: true
+          protect: true
         steering:
-          protect-by-default: true
+          protect: true
         test-infra:
-          protect-by-default: true
+          protect: true
         website:
-          protect-by-default: false
-          require-contexts:
-          - continuous-integration/travis-ci
+          protect: false # TODO(fejta): protect all branches soon
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
           branches:
             master:
-              protect-by-default: true
+              protect: true
             release-1.4:
-              protect-by-default: true
+              protect: true
             release-1.5:
-              protect-by-default: true
+              protect: true
             release-1.6:
-              protect-by-default: true
+              protect: true
             release-1.7:
-              protect-by-default: true
+              protect: true
             release-1.8:
-              protect-by-default: true
+              protect: true
             release-1.9:
-              protect-by-default: true
+              protect: true
     kubernetes-sigs:
-      protect-by-default: true
-      require-contexts:
-      - cla/linuxfoundation
+      protect: true
+      required_status_checks:
+        contexts:
+        - cla/linuxfoundation
 
 tide:
   queries:
