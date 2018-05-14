@@ -52,10 +52,9 @@ class JUnitParser(object):
         elif child.find('failure') is not None:
             time = float(child.attrib['time'])
             out = []
-            for param in child.findall('system-out'):
-                out.append(param.text)
-            for param in child.findall('system-err'):
-                out.append(param.text)
+            for param in child.findall('system-out') + child.findall('system-err'):
+                if param.text:
+                    out.append(param.text)
             for param in child.findall('failure'):
                 self.failed.append((name, time, param.text, filename, '\n'.join(out)))
         else:
