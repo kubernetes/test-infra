@@ -12273,9 +12273,9 @@
       "sig-testing"
     ]
   },
-  "periodic-kubernetes-e2e-debs-pushed": {
+  "periodic-kubernetes-e2e-packages-pushed": {
     "args": [
-      "./tests/e2e/pinned_releases.sh"
+      "./tests/e2e/verify_packages_published.sh"
     ],
     "scenario": "execute",
     "sigOwners": [
