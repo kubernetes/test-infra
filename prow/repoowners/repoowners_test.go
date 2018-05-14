@@ -93,6 +93,7 @@ func getTestClient(
 	includeAliases bool,
 	ownersDirBlacklistDefault []string,
 	ownersDirBlacklistByRepo map[string][]string,
+	extraBranchesAndFiles map[string]map[string][]byte,
 ) (*Client, func(), error) {
 	testAliasesFile := map[string][]byte{
 		"OWNERS_ALIASES": []byte("aliases:\n  Best-approvers:\n  - carl\n  - cjwagner\n  best-reviewers:\n  - Carl\n  - BOB"),
@@ -103,20 +104,35 @@ func getTestClient(
 		return nil, nil, err
 	}
 	if err := localGit.MakeFakeRepo("org", "repo"); err != nil {
-		return nil, nil, fmt.Errorf("Error making fake repo: %v", err)
+		return nil, nil, fmt.Errorf("cannot make fake repo: %v", err)
 	}
 	if err := localGit.AddCommit("org", "repo", files); err != nil {
-		return nil, nil, fmt.Errorf("Error adding initial commit: %v", err)
+		return nil, nil, fmt.Errorf("cannot add initial commit: %v", err)
 	}
 	if includeAliases {
 		if err := localGit.AddCommit("org", "repo", testAliasesFile); err != nil {
-			return nil, nil, fmt.Errorf("Error adding OWNERS_ALIASES commit: %v", err)
+			return nil, nil, fmt.Errorf("cannot add OWNERS_ALIASES commit: %v", err)
+		}
+	}
+	if len(extraBranchesAndFiles) > 0 {
+		for branch, extraFiles := range extraBranchesAndFiles {
+			if err := localGit.CheckoutNewBranch("org", "repo", branch); err != nil {
+				return nil, nil, err
+			}
+			if len(extraFiles) > 0 {
+				if err := localGit.AddCommit("org", "repo", extraFiles); err != nil {
+					return nil, nil, fmt.Errorf("cannot add commit: %v", err)
+				}
+			}
+		}
+		if err := localGit.Checkout("org", "repo", "master"); err != nil {
+			return nil, nil, err
 		}
 	}
 
 	return &Client{
 			git:    git,
-			ghc:    &fakegithub.FakeClient{Collaborators: []string{"cjwagner", "k8s-ci-robot", "alice", "bob", "carl", "mml"}},
+			ghc:    &fakegithub.FakeClient{Collaborators: []string{"cjwagner", "k8s-ci-robot", "alice", "bob", "carl", "mml", "maggie"}},
 			logger: logrus.WithField("client", "repoowners"),
 			cache:  make(map[string]cacheEntry),
 
@@ -176,13 +192,13 @@ func TestOwnersDirBlacklist(t *testing.T) {
 	}
 
 	getRepoOwnersWithBlacklist := func(t *testing.T, defaults []string, byRepo map[string][]string) *RepoOwners {
-		client, cleanup, err := getTestClient(testFiles, true, true, defaults, byRepo)
+		client, cleanup, err := getTestClient(testFiles, true, true, defaults, byRepo, nil)
 		if err != nil {
 			t.Fatalf("Error creating test client: %v.", err)
 		}
 		defer cleanup()
 
-		ro, err := client.LoadRepoOwners("org", "repo")
+		ro, err := client.LoadRepoOwners("org", "repo", "master")
 		if err != nil {
 			t.Fatalf("Unexpected error loading RepoOwners: %v.", err)
 		}
@@ -243,13 +259,13 @@ func TestOwnersRegexpFiltering(t *testing.T) {
 		"re/b/md.md":   sets.NewString("re/all"),
 	}
 
-	client, cleanup, err := getTestClient(testFilesRe, true, true, nil, nil)
+	client, cleanup, err := getTestClient(testFilesRe, true, true, nil, nil, nil)
 	if err != nil {
 		t.Fatalf("Error creating test client: %v.", err)
 	}
 	defer cleanup()
 
-	ro, err := client.LoadRepoOwners("org", "repo")
+	ro, err := client.LoadRepoOwners("org", "repo", "master")
 	if err != nil {
 		t.Fatalf("Unexpected error loading RepoOwners: %v.", err)
 	}
@@ -261,11 +277,18 @@ func TestOwnersRegexpFiltering(t *testing.T) {
 	}
 }
 
+func strP(str string) *string {
+	return &str
+}
+
 func TestLoadRepoOwners(t *testing.T) {
 	tests := []struct {
 		name              string
 		mdEnabled         bool
 		aliasesFileExists bool
+		// used for testing OWNERS from a branch different from master
+		branch                *string
+		extraBranchesAndFiles map[string]map[string][]byte
 
 		expectedApprovers, expectedReviewers, expectedLabels map[string]map[string]sets.String
 
@@ -342,17 +365,78 @@ func TestLoadRepoOwners(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:   "OWNERS from non-default branch",
+			branch: strP("release-1.10"),
+			extraBranchesAndFiles: map[string]map[string][]byte{
+				"release-1.10": {
+					"src/doc/OWNERS": []byte("approvers:\n - maggie\n"),
+				},
+			},
+			expectedApprovers: map[string]map[string]sets.String{
+				"":                    patternAll("cjwagner"),
+				"src":                 patternAll(),
+				"src/dir":             patternAll("bob"),
+				"src/dir/conformance": patternAll("mml"),
+				"src/doc":             patternAll("maggie"),
+			},
+			expectedReviewers: map[string]map[string]sets.String{
+				"":        patternAll("alice", "bob"),
+				"src/dir": patternAll("alice", "cjwagner"),
+			},
+			expectedLabels: map[string]map[string]sets.String{
+				"":        patternAll("EVERYTHING"),
+				"src/dir": patternAll("src-code"),
+			},
+			expectedOptions: map[string]dirOptions{
+				"src/dir/conformance": {
+					NoParentOwners: true,
+				},
+			},
+		},
+		{
+			name:   "OWNERS from master branch while release branch diverges",
+			branch: strP("master"),
+			extraBranchesAndFiles: map[string]map[string][]byte{
+				"release-1.10": {
+					"src/doc/OWNERS": []byte("approvers:\n - maggie\n"),
+				},
+			},
+			expectedApprovers: map[string]map[string]sets.String{
+				"":                    patternAll("cjwagner"),
+				"src":                 patternAll(),
+				"src/dir":             patternAll("bob"),
+				"src/dir/conformance": patternAll("mml"),
+			},
+			expectedReviewers: map[string]map[string]sets.String{
+				"":        patternAll("alice", "bob"),
+				"src/dir": patternAll("alice", "cjwagner"),
+			},
+			expectedLabels: map[string]map[string]sets.String{
+				"":        patternAll("EVERYTHING"),
+				"src/dir": patternAll("src-code"),
+			},
+			expectedOptions: map[string]dirOptions{
+				"src/dir/conformance": {
+					NoParentOwners: true,
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
-		client, cleanup, err := getTestClient(testFiles, test.mdEnabled, test.aliasesFileExists, nil, nil)
+		client, cleanup, err := getTestClient(testFiles, test.mdEnabled, test.aliasesFileExists, nil, nil, test.extraBranchesAndFiles)
 		if err != nil {
 			t.Errorf("[%s] Error creating test client: %v.", test.name, err)
 			continue
 		}
 		defer cleanup()
 
-		ro, err := client.LoadRepoOwners("org", "repo")
+		base := "master"
+		if test.branch != nil {
+			base = *test.branch
+		}
+		ro, err := client.LoadRepoOwners("org", "repo", base)
 		if err != nil {
 			t.Errorf("[%s] Unexpected error loading RepoOwners: %v.", test.name, err)
 			continue
@@ -398,8 +482,12 @@ func TestLoadRepoOwners(t *testing.T) {
 
 func TestLoadRepoAliases(t *testing.T) {
 	tests := []struct {
-		name                string
-		aliasFileExists     bool
+		name string
+
+		aliasFileExists       bool
+		branch                *string
+		extraBranchesAndFiles map[string]map[string][]byte
+
 		expectedRepoAliases RepoAliases
 	}{
 		{
@@ -415,15 +503,35 @@ func TestLoadRepoAliases(t *testing.T) {
 				"best-reviewers": sets.NewString("carl", "bob"),
 			},
 		},
+		{
+			name: "Aliases file from non-default branch",
+
+			aliasFileExists: true,
+			branch:          strP("release-1.10"),
+			extraBranchesAndFiles: map[string]map[string][]byte{
+				"release-1.10": {
+					"OWNERS_ALIASES": []byte("aliases:\n  Best-approvers:\n  - carl\n  - cjwagner\n  best-reviewers:\n  - Carl\n  - BOB\n  - maggie"),
+				},
+			},
+
+			expectedRepoAliases: RepoAliases{
+				"best-approvers": sets.NewString("carl", "cjwagner"),
+				"best-reviewers": sets.NewString("carl", "bob", "maggie"),
+			},
+		},
 	}
 	for _, test := range tests {
-		client, cleanup, err := getTestClient(testFiles, false, test.aliasFileExists, nil, nil)
+		client, cleanup, err := getTestClient(testFiles, false, test.aliasFileExists, nil, nil, test.extraBranchesAndFiles)
 		if err != nil {
 			t.Errorf("[%s] Error creating test client: %v.", test.name, err)
 			continue
 		}
 
-		got, err := client.LoadRepoAliases("org", "repo")
+		branch := "master"
+		if test.branch != nil {
+			branch = *test.branch
+		}
+		got, err := client.LoadRepoAliases("org", "repo", branch)
 		if err != nil {
 			t.Errorf("[%s] Unexpected error loading RepoAliases: %v.", test.name, err)
 			cleanup()

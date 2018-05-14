@@ -134,10 +134,12 @@ type RepoOwners struct {
 // LoadRepoAliases returns an up-to-date RepoAliases struct for the specified repo.
 // If the repo does not have an aliases file then an empty alias map is returned with no error.
 // Note: The returned RepoAliases should be treated as read only.
-func (c *Client) LoadRepoAliases(org, repo string) (RepoAliases, error) {
-	log := c.logger.WithFields(logrus.Fields{"org": org, "repo": repo})
-	fullName := fmt.Sprintf("%s/%s", org, repo)
-	sha, err := c.ghc.GetRef(org, repo, "heads/master")
+func (c *Client) LoadRepoAliases(org, repo, base string) (RepoAliases, error) {
+	log := c.logger.WithFields(logrus.Fields{"org": org, "repo": repo, "base": base})
+	cloneRef := fmt.Sprintf("%s/%s", org, repo)
+	fullName := fmt.Sprintf("%s:%s", cloneRef, base)
+
+	sha, err := c.ghc.GetRef(org, repo, fmt.Sprintf("heads/%s", base))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get current SHA for %s: %v", fullName, err)
 	}
@@ -147,11 +149,14 @@ func (c *Client) LoadRepoAliases(org, repo string) (RepoAliases, error) {
 	entry, ok := c.cache[fullName]
 	if !ok || entry.sha != sha {
 		// entry is non-existent or stale.
-		gitRepo, err := c.git.Clone(fullName)
+		gitRepo, err := c.git.Clone(cloneRef)
 		if err != nil {
-			return nil, fmt.Errorf("failed to clone %s: %v", fullName, err)
+			return nil, fmt.Errorf("failed to clone %s: %v", cloneRef, err)
 		}
 		defer gitRepo.Clean()
+		if err := gitRepo.Checkout(base); err != nil {
+			return nil, err
+		}
 
 		entry.aliases = loadAliasesFrom(gitRepo.Dir, log)
 		entry.sha = sha
@@ -163,12 +168,13 @@ func (c *Client) LoadRepoAliases(org, repo string) (RepoAliases, error) {
 
 // LoadRepoOwners returns an up-to-date RepoOwners struct for the specified repo.
 // Note: The returned *RepoOwners should be treated as read only.
-func (c *Client) LoadRepoOwners(org, repo string) (*RepoOwners, error) {
-	log := c.logger.WithFields(logrus.Fields{"org": org, "repo": repo})
-
-	fullName := fmt.Sprintf("%s/%s", org, repo)
+func (c *Client) LoadRepoOwners(org, repo, base string) (*RepoOwners, error) {
+	log := c.logger.WithFields(logrus.Fields{"org": org, "repo": repo, "base": base})
+	cloneRef := fmt.Sprintf("%s/%s", org, repo)
+	fullName := fmt.Sprintf("%s:%s", cloneRef, base)
 	mdYaml := c.mdYAMLEnabled(org, repo)
-	sha, err := c.ghc.GetRef(org, repo, "heads/master")
+
+	sha, err := c.ghc.GetRef(org, repo, fmt.Sprintf("heads/%s", base))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get current SHA for %s: %v", fullName, err)
 	}
@@ -177,11 +183,14 @@ func (c *Client) LoadRepoOwners(org, repo string) (*RepoOwners, error) {
 	defer c.lock.Unlock()
 	entry, ok := c.cache[fullName]
 	if !ok || entry.sha != sha || entry.owners == nil || entry.owners.enableMDYAML != mdYaml {
-		gitRepo, err := c.git.Clone(fullName)
+		gitRepo, err := c.git.Clone(cloneRef)
 		if err != nil {
-			return nil, fmt.Errorf("failed to clone %s: %v", fullName, err)
+			return nil, fmt.Errorf("failed to clone %s: %v", cloneRef, err)
 		}
 		defer gitRepo.Clean()
+		if err := gitRepo.Checkout(base); err != nil {
+			return nil, err
+		}
 
 		if entry.aliases == nil || entry.sha != sha {
 			// aliases must be loaded
