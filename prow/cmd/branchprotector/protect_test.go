@@ -244,11 +244,12 @@ func TestProtect(t *testing.T) {
 	yes := true
 
 	cases := []struct {
-		name     string
-		branches []string
-		config   string
-		expected []Requirements
-		errors   int
+		name             string
+		branches         []string
+		startUnprotected bool
+		config           string
+		expected         []Requirements
+		errors           int
 	}{
 		{
 			name: "nothing",
@@ -596,6 +597,28 @@ branch-protection:
 				},
 			},
 		},
+		{
+			name:     "do not unprotect unprotected",
+			branches: []string{"protect/update=master", "unprotected/skip=master"},
+			config: `
+branch-protection:
+  protect: true
+  orgs:
+    protect:
+      protect: true
+    unprotected:
+      protect: false
+`,
+			startUnprotected: true,
+			expected: []Requirements{
+				{
+					Org:     "protect",
+					Repo:    "update",
+					Branch:  "master",
+					Request: &github.BranchProtectionRequest{},
+				},
+			},
+		},
 	}
 
 	for _, tc := range cases {
@@ -605,7 +628,10 @@ branch-protection:
 			for _, b := range tc.branches {
 				org, repo, branch := split(b)
 				k := org + "/" + repo
-				branches[k] = append(branches[k], github.Branch{Name: branch})
+				branches[k] = append(branches[k], github.Branch{
+					Name:      branch,
+					Protected: !tc.startUnprotected,
+				})
 				r := repos[org]
 				if r == nil {
 					repos[org] = make(map[string]bool)
