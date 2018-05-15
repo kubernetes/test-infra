@@ -231,8 +231,16 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
 		allEnv[entrypoint.JSONConfigEnvVar] = entrypointConfigEnv
 
 		spec.Containers[0].Command = []string{entrypointLocation}
-		if pj.Spec.Type != kube.PeriodicJob {
-			spec.Containers[0].WorkingDir = clone.PathForRefs(CodeMountPath, pj.Spec.Refs)
+		var checkoutRefs *kube.Refs
+		if pj.Spec.Type == kube.PeriodicJob {
+			if len(pj.Spec.ExtraRefs) > 0 {
+				checkoutRefs = pj.Spec.ExtraRefs[0]
+			}
+		} else {
+			checkoutRefs = pj.Spec.Refs
+		}
+		if checkoutRefs != nil {
+			spec.Containers[0].WorkingDir = clone.PathForRefs(CodeMountPath, checkoutRefs)
 		}
 		spec.Containers[0].Args = []string{}
 		spec.Containers[0].Env = append(spec.Containers[0].Env, kubeEnv(allEnv)...)
