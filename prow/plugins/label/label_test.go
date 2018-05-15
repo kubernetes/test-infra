@@ -48,6 +48,7 @@ func TestLabel(t *testing.T) {
 		name                  string
 		body                  string
 		commenter             string
+		extraLabels           []string
 		expectedNewLabels     []string
 		expectedRemovedLabels []string
 		repoLabels            []string
@@ -351,6 +352,66 @@ func TestLabel(t *testing.T) {
 			expectedRemovedLabels: formatLabels("area/ruby", "kind/srv", "priority/l", "priority/m"),
 			commenter:             orgMember,
 		},
+		{
+			name:                  "Do nothing with empty /label command",
+			body:                  "/label",
+			extraLabels:           []string{"orchestrator/foo", "orchestrator/bar"},
+			repoLabels:            []string{"orchestrator/foo"},
+			issueLabels:           []string{},
+			expectedNewLabels:     []string{},
+			expectedRemovedLabels: []string{},
+			commenter:             orgMember,
+		},
+		{
+			name:                  "Do nothing with empty /remove-label command",
+			body:                  "/remove-label",
+			extraLabels:           []string{"orchestrator/foo", "orchestrator/bar"},
+			repoLabels:            []string{"orchestrator/foo"},
+			issueLabels:           []string{},
+			expectedNewLabels:     []string{},
+			expectedRemovedLabels: []string{},
+			commenter:             orgMember,
+		},
+		{
+			name:                  "Add custom label",
+			body:                  "/label orchestrator/foo",
+			extraLabels:           []string{"orchestrator/foo", "orchestrator/bar"},
+			repoLabels:            []string{"orchestrator/foo"},
+			issueLabels:           []string{},
+			expectedNewLabels:     formatLabels("orchestrator/foo"),
+			expectedRemovedLabels: []string{},
+			commenter:             orgMember,
+		},
+		{
+			name:                  "Cannot add missing custom label",
+			body:                  "/label orchestrator/foo",
+			extraLabels:           []string{"orchestrator/jar", "orchestrator/bar"},
+			repoLabels:            []string{"orchestrator/foo"},
+			issueLabels:           []string{},
+			expectedNewLabels:     []string{},
+			expectedRemovedLabels: []string{},
+			commenter:             orgMember,
+		},
+		{
+			name:                  "Remove custom label",
+			body:                  "/remove-label orchestrator/foo",
+			extraLabels:           []string{"orchestrator/foo", "orchestrator/bar"},
+			repoLabels:            []string{"orchestrator/foo"},
+			issueLabels:           []string{"orchestrator/foo"},
+			expectedNewLabels:     []string{},
+			expectedRemovedLabels: formatLabels("orchestrator/foo"),
+			commenter:             orgMember,
+		},
+		{
+			name:                  "Cannot remove missing custom label",
+			body:                  "/remove-label orchestrator/jar",
+			extraLabels:           []string{"orchestrator/foo", "orchestrator/bar"},
+			repoLabels:            []string{"orchestrator/foo"},
+			issueLabels:           []string{"orchestrator/foo"},
+			expectedNewLabels:     []string{},
+			expectedRemovedLabels: []string{},
+			commenter:             orgMember,
+		},
 	}
 
 	for _, tc := range testcases {
@@ -374,7 +435,7 @@ func TestLabel(t *testing.T) {
 			Repo:   github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 			User:   github.User{Login: tc.commenter},
 		}
-		err := handle(fakeClient, logrus.WithField("plugin", pluginName), e)
+		err := handle(fakeClient, logrus.WithField("plugin", pluginName), tc.extraLabels, e)
 		if err != nil {
 			t.Errorf("For case %s, didn't expect error from label test: %v", tc.name, err)
 			continue

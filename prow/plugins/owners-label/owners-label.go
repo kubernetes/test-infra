@@ -57,7 +57,7 @@ func handlePullRequest(pc plugins.PluginClient, pre github.PullRequestEvent) err
 		return nil
 	}
 
-	oc, err := pc.OwnersClient.LoadRepoOwners(pre.Repo.Owner.Login, pre.Repo.Name)
+	oc, err := pc.OwnersClient.LoadRepoOwners(pre.Repo.Owner.Login, pre.Repo.Name, pre.PullRequest.Base.Ref)
 	if err != nil {
 		return fmt.Errorf("error loading RepoOwners: %v", err)
 	}

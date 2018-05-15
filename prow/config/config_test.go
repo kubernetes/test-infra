@@ -992,6 +992,7 @@ func TestDecorationDefaulting(t *testing.T) {
 			DefaultRepo:  "repo",
 		},
 		GCSCredentialsSecret: "secretName",
+		SshKeySecrets:        []string{"first", "second"},
 	}
 
 	var testCases = []struct {
@@ -1019,6 +1020,7 @@ func TestDecorationDefaulting(t *testing.T) {
 					DefaultRepo:  "repo",
 				},
 				GCSCredentialsSecret: "secretName",
+				SshKeySecrets:        []string{"first", "second"},
 			},
 		},
 		{
@@ -1043,6 +1045,7 @@ func TestDecorationDefaulting(t *testing.T) {
 					DefaultRepo:  "repo",
 				},
 				GCSCredentialsSecret: "secretName",
+				SshKeySecrets:        []string{"first", "second"},
 			},
 		},
 		{
@@ -1067,6 +1070,7 @@ func TestDecorationDefaulting(t *testing.T) {
 					DefaultRepo:  "repo",
 				},
 				GCSCredentialsSecret: "secretName",
+				SshKeySecrets:        []string{"first", "second"},
 			},
 		},
 		{
@@ -1096,6 +1100,7 @@ func TestDecorationDefaulting(t *testing.T) {
 					DefaultRepo:  "repo",
 				},
 				GCSCredentialsSecret: "secretName",
+				SshKeySecrets:        []string{"first", "second"},
 			},
 		},
 		{
@@ -1122,6 +1127,7 @@ func TestDecorationDefaulting(t *testing.T) {
 					PathStrategy: kube.PathStrategyExplicit,
 				},
 				GCSCredentialsSecret: "secretName",
+				SshKeySecrets:        []string{"first", "second"},
 			},
 		},
 		{
@@ -1146,6 +1152,32 @@ func TestDecorationDefaulting(t *testing.T) {
 					DefaultRepo:  "repo",
 				},
 				GCSCredentialsSecret: "somethingSecret",
+				SshKeySecrets:        []string{"first", "second"},
+			},
+		},
+		{
+			name: "ssh secrets provided",
+			provided: &kube.DecorationConfig{
+				SshKeySecrets: []string{"my", "special"},
+			},
+			expected: &kube.DecorationConfig{
+				Timeout:     1 * time.Minute,
+				GracePeriod: 10 * time.Second,
+				UtilityImages: &kube.UtilityImages{
+					CloneRefs:  "clonerefs",
+					InitUpload: "iniupload",
+					Entrypoint: "entrypoint",
+					Sidecar:    "sidecar",
+				},
+				GCSConfiguration: &kube.GCSConfiguration{
+					Bucket:       "bucket",
+					PathPrefix:   "prefix",
+					PathStrategy: kube.PathStrategyLegacy,
+					DefaultOrg:   "org",
+					DefaultRepo:  "repo",
+				},
+				GCSCredentialsSecret: "secretName",
+				SshKeySecrets:        []string{"my", "special"},
 			},
 		},
 	}
@@ -1153,6 +1185,37 @@ func TestDecorationDefaulting(t *testing.T) {
 	for _, testCase := range testCases {
 		if actual, expected := setDecorationDefaults(testCase.provided, defaults), testCase.expected; !reflect.DeepEqual(actual, expected) {
 			t.Errorf("%s: expected defaulted config %v but got %v", testCase.name, expected, actual)
+		}
+	}
+}
+
+func TestBranchProtection(t *testing.T) {
+	cases := []struct {
+		org    string
+		repo   string
+		branch string
+	}{
+		{
+			org:    "kubernetes",
+			repo:   "test-infra",
+			branch: "all-branches",
+		},
+		{
+			org:    "kubernetes-sigs",
+			repo:   "any-repo",
+			branch: "any-branch",
+		},
+	}
+	for _, tc := range cases {
+		policy, err := c.GetBranchProtection(tc.org, tc.repo, tc.branch)
+		if err != nil {
+			t.Errorf("%s/%s=%s: unexpected error: %v", tc.org, tc.repo, tc.branch, err)
+		}
+		if policy.Protect == nil || !*policy.Protect {
+			t.Errorf("%s/%s=%s: unprotected: %v", tc.org, tc.repo, tc.branch, policy.Protect)
+		}
+		if !sets.NewString(policy.RequiredStatusChecks.Contexts...).Has("cla/linuxfoundation") {
+			t.Errorf("%s/%s=%s: missing cla/linuxfoundation", tc.org, tc.repo, tc.branch)
 		}
 	}
 }

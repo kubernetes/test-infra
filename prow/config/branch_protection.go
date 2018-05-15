@@ -20,9 +20,8 @@ import (
 	"errors"
 	"fmt"
 
-	"k8s.io/apimachinery/pkg/util/sets"
-
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 // Policy for the config/org/repo/branch.
@@ -201,8 +200,9 @@ func (parent Policy) Apply(child Policy) (Policy, error) {
 // BranchProtection specifies the global branch protection policy
 type BranchProtection struct {
 	Policy
-	ProtectTested bool           `json:"protect-tested-repos,omitempty"`
-	Orgs          map[string]Org `json:"orgs,omitempty"`
+	ProtectTested         bool           `json:"protect-tested-repos,omitempty"`
+	Orgs                  map[string]Org `json:"orgs,omitempty"`
+	AllowDisabledPolicies bool           `json:"allow_disabled_policies,omitempty"`
 
 	warned bool // warn if deprecated fields are use
 }
@@ -279,8 +279,14 @@ func (c *Config) GetBranchProtection(org, repo, branch string) (*Policy, error) 
 		// Ensure that protection is false => no protection settings
 		var old *bool
 		old, policy.Protect = policy.Protect, old
-		if policy.defined() {
-			return nil, fmt.Errorf("%s/%s:%s requires Protect==true: %v", org, repo, branch, policy)
+		switch {
+		case policy.defined() && bp.AllowDisabledPolicies:
+			logrus.Warnf("%s/%s=%s defines a policy but has protect: false", org, repo, branch)
+			policy = Policy{
+				Protect: policy.Protect,
+			}
+		case policy.defined():
+			return nil, fmt.Errorf("%s/%s=%s defines a policy, which requires protect: true", org, repo, branch)
 		}
 		policy.Protect = old
 	}

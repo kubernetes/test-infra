@@ -24,11 +24,11 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ghodss/yaml"
 	"k8s.io/apimachinery/pkg/util/diff"
+
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
-
-	"github.com/ghodss/yaml"
 )
 
 func TestOptions_Validate(t *testing.T) {
@@ -244,11 +244,12 @@ func TestProtect(t *testing.T) {
 	yes := true
 
 	cases := []struct {
-		name     string
-		branches []string
-		config   string
-		expected []Requirements
-		errors   int
+		name             string
+		branches         []string
+		startUnprotected bool
+		config           string
+		expected         []Requirements
+		errors           int
 	}{
 		{
 			name: "nothing",
@@ -527,6 +528,39 @@ branch-protection:
 			},
 		},
 		{
+			name:     "child cannot disable parent policy by default",
+			branches: []string{"parent/child=unprotected"},
+			config: `
+branch-protection:
+  protect: true
+  enforce_admins: true
+  orgs:
+    parent:
+      protect: false
+`,
+			errors: 1,
+		},
+		{
+			name:     "child disables parent",
+			branches: []string{"parent/child=unprotected"},
+			config: `
+branch-protection:
+  allow_disabled_policies: true
+  protect: true
+  enforce_admins: true
+  orgs:
+    parent:
+      protect: false
+`,
+			expected: []Requirements{
+				{
+					Org:    "parent",
+					Repo:   "child",
+					Branch: "unprotected",
+				},
+			},
+		},
+		{
 			name:     "modern/deprecated mixed",
 			branches: []string{"modern/deprecated=mixed"},
 			config: `
@@ -563,6 +597,28 @@ branch-protection:
 				},
 			},
 		},
+		{
+			name:     "do not unprotect unprotected",
+			branches: []string{"protect/update=master", "unprotected/skip=master"},
+			config: `
+branch-protection:
+  protect: true
+  orgs:
+    protect:
+      protect: true
+    unprotected:
+      protect: false
+`,
+			startUnprotected: true,
+			expected: []Requirements{
+				{
+					Org:     "protect",
+					Repo:    "update",
+					Branch:  "master",
+					Request: &github.BranchProtectionRequest{},
+				},
+			},
+		},
 	}
 
 	for _, tc := range cases {
@@ -572,7 +628,10 @@ branch-protection:
 			for _, b := range tc.branches {
 				org, repo, branch := split(b)
 				k := org + "/" + repo
-				branches[k] = append(branches[k], github.Branch{Name: branch})
+				branches[k] = append(branches[k], github.Branch{
+					Name:      branch,
+					Protected: !tc.startUnprotected,
+				})
 				r := repos[org]
 				if r == nil {
 					repos[org] = make(map[string]bool)

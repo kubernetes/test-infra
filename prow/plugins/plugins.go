@@ -170,6 +170,7 @@ type Configuration struct {
 	RequireSIG    RequireSIG    `json:"requiresig,omitempty"`
 	SigMention    SigMention    `json:"sigmention,omitempty"`
 	Cat           Cat           `json:"cat,omitempty"`
+	Label         *Label        `json:"label,omitempty"`
 }
 
 // ExternalPlugin holds configuration for registering an external
@@ -309,6 +310,12 @@ type Approve struct {
 type Cat struct {
 	// Path to file containing an api key for thecatapi.com
 	KeyPath string `json:"key_path,omitempty"`
+}
+
+type Label struct {
+	// AdditionalLabels is a set of additional labels enabled for use
+	// on top of the existing "kind/*", "priority/*", and "area/*" labels.
+	AdditionalLabels []string `json:"additional_labels"`
 }
 
 type Trigger struct {
