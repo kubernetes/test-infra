@@ -355,6 +355,33 @@ presets:
   env:
   - name: BAZEL_REMOTE_CACHE_ENABLED
     value: "true"
+- labels:
+    preset-cloud-provider-azure-account: true
+  env:
+  - name: IMAGE_REGISTRY
+    value: kaicr1.azurecr.io
+  - name: K8S_AZURE_ACCOUNT_CONFIG
+    value: /etc/cloud-provider-azure-account/account.env
+  volumes:
+  - name: cloud-provider-azure-account-cloud
+    secret:
+      secretName: cloud-provider-azure-account
+      items:
+      - key: account.env
+        path: account.env
+  - name: cloud-provider-azure-account-registry
+    secret:
+      secretName: cloud-provider-azure-account
+      items:
+      - key: registry.json
+        path: config.json
+  volumeMounts:
+  - name: cloud-provider-azure-account-cloud
+    mountPath: /etc/cloud-provider-azure-account
+    readOnly: true
+  - name: cloud-provider-azure-account-registry
+    mountPath: /root/.docker
+    readOnly: true
 
 presubmits:
   google/cadvisor:
@@ -616,6 +643,37 @@ presubmits:
         emptyDir: {}
 
   kubernetes/cloud-provider-azure:
+  - name: pull-cloud-provider-azure-e2e
+    agent: kubernetes
+    always_run: false
+    context: pull-cloud-provider-azure-e2e
+    rerun_command: "/test pull-cloud-provider-azure-e2e"
+    trigger: "(?m)^/test pull-cloud-provider-azure-e2e,?(\\s+|$)"
+    branches:
+    - master
+    labels:
+      preset-service-account: true
+      preset-cloud-provider-azure-account: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--timeout=100"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: 'true'
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /docker-graph
+          name: auto-generated-docker-graph-volume-mount
+      volumes:
+      - name: auto-generated-docker-graph-volume-mount
+        emptyDir: {}
+
   - name: pull-cloud-provider-azure-lint
     agent: kubernetes
     always_run: true
