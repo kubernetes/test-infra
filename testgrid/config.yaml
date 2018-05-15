@@ -2363,20 +2363,12 @@ test_groups:
 - name: ci-daisy-e2e
   gcs_prefix: compute-image-tools-test/logs/ci-daisy-e2e
 # Cluster registry
-- name: pull-cluster-registry-verify-bazel
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-registry-verify-bazel
-  num_columns_recent: 20
 - name: pull-cluster-registry-verify-gensrc
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-registry-verify-gensrc
   num_columns_recent: 20
 - name: pull-cluster-registry-verify-gosrc
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-registry-verify-gosrc
   num_columns_recent: 20
-- name: pull-cluster-registry-bazel
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-registry-bazel
-  num_columns_recent: 20
-- name: cluster-registry-nightly
-  gcs_prefix: kubernetes-jenkins/logs/cluster-registry-nightly
 # k8s-beta (active release branch) jobs
 - name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sbeta-default
@@ -4668,11 +4660,6 @@ dashboards:
   - name: kube-deploy pr-test
     test_group_name: pull-kube-deploy-test
 
-- name: sig-multicluster-cluster-registry
-  dashboard_tab:
-  - name: nightly
-    test_group_name: cluster-registry-nightly
-
 - name: sig-multicluster-federation-gce-old
   dashboard_tab:
   - name: gce-1.8
@@ -5935,12 +5922,6 @@ dashboards:
 
 - name: presubmits-cluster-registry
   dashboard_tab:
-  - name: bazel
-    test_group_name: pull-cluster-registry-bazel
-    base_options: 'width=10'
-  - name: verify-bazel
-    test_group_name: pull-cluster-registry-verify-bazel
-    base_options: 'width=10'
   - name: verify-gensrc
     test_group_name: pull-cluster-registry-verify-gensrc
     base_options: 'width=10'
@@ -6161,7 +6142,6 @@ dashboard_groups:
 
 - name: sig-multicluster
   dashboard_names:
-  - sig-multicluster-cluster-registry
   - sig-multicluster-federation-gce-old
   - sig-multicluster-federation-gce
   - sig-multicluster-kubemci
