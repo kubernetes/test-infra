@@ -5018,6 +5018,26 @@
       "sig-autoscaling"
     ]
   },
+  "ci-kubernetes-e2e-gci-gke-autoscaling-gpu": {
+    "args": [
+      "--check-leaked-resources",
+      "--cluster=ca-gpu",
+      "--deployment=gke",
+      "--extract=ci/latest",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=gci",
+      "--gcp-project-type=gpu-project",
+      "--gcp-zone=us-west1-b",
+      "--gke-environment=test",
+      "--provider=gke",
+      "--test_args=--ginkgo.focus=\\[Feature:ClusterSizeAutoscalingGpu\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
+      "--timeout=150m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-autoscaling"
+    ]
+  },
   "ci-kubernetes-e2e-gci-gke-autoscaling-hpa": {
     "args": [
       "--check-leaked-resources",
@@ -6703,6 +6723,8 @@
       "--gcp-project=kubernetes-scale",
       "--gcp-zone=us-east1-a",
       "--ginkgo-parallel=30",
+      "--gke-command-group=beta",
+      "--gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork=ip-alias-subnet --cluster-ipv4-cidr=/12 --services-ipv4-cidr=/19",
       "--gke-environment=test",
       "--gke-shape={\"default\":{\"Nodes\":2000,\"MachineType\":\"g1-small\"},\"heapster-pool\":{\"Nodes\":1,\"MachineType\":\"n1-standard-8\"}}",
       "--provider=gke",
@@ -6725,7 +6747,8 @@
       "--gcp-node-image=gci",
       "--gcp-project=k8s-scale-testing",
       "--gcp-zone=us-east1-a",
-      "--gke-custom-subnet=gke-large-deploy-custom-subnet --region=us-east1 --range=10.0.0.0/19",
+      "--gke-command-group=beta",
+      "--gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork=ip-alias-subnet --cluster-ipv4-cidr=/11 --services-ipv4-cidr=/18",
       "--gke-environment=test",
       "--gke-shape={\"default\":{\"Nodes\":4999,\"MachineType\":\"g1-small\"},\"heapster-pool\":{\"Nodes\":1,\"MachineType\":\"n1-standard-16\"}}",
       "--provider=gke",
@@ -6747,6 +6770,8 @@
       "--gcp-node-image=gci",
       "--gcp-project=kubernetes-scale",
       "--gcp-zone=us-east1-a",
+      "--gke-command-group=beta",
+      "--gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork=ip-alias-subnet --cluster-ipv4-cidr=/12 --services-ipv4-cidr=/19",
       "--gke-environment=test",
       "--gke-shape={\"default\":{\"Nodes\":1999,\"MachineType\":\"n1-standard-1\"},\"heapster-pool\":{\"Nodes\":1,\"MachineType\":\"n1-standard-8\"}}",
       "--provider=gke",
@@ -7013,7 +7038,8 @@
       "--gcp-project=kubernetes-scale",
       "--gcp-zone=us-east1-a",
       "--ginkgo-parallel=30",
-      "--gke-custom-subnet=gke-scale-cluster-custom-subnet --region=us-east1 --range=10.0.0.0/19",
+      "--gke-command-group=beta",
+      "--gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork=ip-alias-subnet --cluster-ipv4-cidr=/11 --services-ipv4-cidr=/18",
       "--gke-environment=test",
       "--gke-shape={\"default\":{\"Nodes\":3999,\"MachineType\":\"g1-small\"},\"heapster-pool\":{\"Nodes\":1,\"MachineType\":\"n1-standard-16\"}}",
       "--provider=gke",
@@ -7827,7 +7853,7 @@
       "--image-project=ubuntu-os-gke-cloud-devel",
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Feature:ClusterSizeAutoscalingScaleUp\\]|\\[Feature:ClusterSizeAutoscalingScaleDown\\]|\\[Feature:ClusterSizeAutoscalingScaleWithNAP\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
-      "--timeout=420m"
+      "--timeout=600m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8057,7 +8083,7 @@
       "--image-project=ubuntu-os-gke-cloud-devel",
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Feature:ClusterSizeAutoscalingScaleUp\\]|\\[Feature:ClusterSizeAutoscalingScaleDown\\]|\\[Feature:ClusterSizeAutoscalingScaleWithNAP\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
-      "--timeout=420m"
+      "--timeout=600m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8287,7 +8313,7 @@
       "--image-project=ubuntu-os-gke-cloud-devel",
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Feature:ClusterSizeAutoscalingScaleUp\\]|\\[Feature:ClusterSizeAutoscalingScaleDown\\]|\\[Feature:ClusterSizeAutoscalingScaleWithNAP\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
-      "--timeout=420m"
+      "--timeout=600m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8517,7 +8543,7 @@
       "--image-project=ubuntu-os-gke-cloud-devel",
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Feature:ClusterSizeAutoscalingScaleUp\\]|\\[Feature:ClusterSizeAutoscalingScaleDown\\]|\\[Feature:ClusterSizeAutoscalingScaleWithNAP\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
-      "--timeout=420m"
+      "--timeout=600m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8747,7 +8773,7 @@
       "--image-project=ubuntu-os-gke-cloud-devel",
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Feature:ClusterSizeAutoscalingScaleUp\\]|\\[Feature:ClusterSizeAutoscalingScaleDown\\]|\\[Feature:ClusterSizeAutoscalingScaleWithNAP\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
-      "--timeout=420m"
+      "--timeout=600m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8977,7 +9003,7 @@
       "--image-project=ubuntu-os-gke-cloud-devel",
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Feature:ClusterSizeAutoscalingScaleUp\\]|\\[Feature:ClusterSizeAutoscalingScaleDown\\]|\\[Feature:ClusterSizeAutoscalingScaleWithNAP\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
-      "--timeout=420m"
+      "--timeout=600m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -9207,7 +9233,7 @@
       "--image-project=ubuntu-os-gke-cloud-devel",
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Feature:ClusterSizeAutoscalingScaleUp\\]|\\[Feature:ClusterSizeAutoscalingScaleDown\\]|\\[Feature:ClusterSizeAutoscalingScaleWithNAP\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
-      "--timeout=420m"
+      "--timeout=600m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -9437,7 +9463,7 @@
       "--image-project=ubuntu-os-gke-cloud-devel",
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Feature:ClusterSizeAutoscalingScaleUp\\]|\\[Feature:ClusterSizeAutoscalingScaleDown\\]|\\[Feature:ClusterSizeAutoscalingScaleWithNAP\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
-      "--timeout=420m"
+      "--timeout=600m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -10331,6 +10357,48 @@
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8",
       "--timeout=180m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-gcp"
+    ]
+  },
+  "ci-kubernetes-e2e-new-cos-gke-k8sstable1-alpha-features-compare": {
+    "args": [
+      "--check-leaked-resources",
+      "--cluster=",
+      "--deployment=gke",
+      "--extract=ci/k8s-stable1",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel",
+      "--gke-create-command=container clusters create --quiet --enable-kubernetes-alpha",
+      "--gke-environment=test",
+      "--provider=gke",
+      "--test_args=--ginkgo.focus=\\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8",
+      "--timeout=180m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-gcp"
+    ]
+  },
+  "ci-kubernetes-e2e-new-cos-gke-k8sstable1-compare": {
+    "args": [
+      "--check-leaked-resources",
+      "--cluster=",
+      "--deployment=gke",
+      "--extract=ci/k8s-stable1",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel",
+      "--gke-create-command=container clusters create --quiet --enable-kubernetes-alpha",
+      "--gke-environment=test",
+      "--provider=gke",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=50m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -12211,9 +12279,9 @@
       "sig-testing"
     ]
   },
-  "periodic-kubernetes-e2e-debs-pushed": {
+  "periodic-kubernetes-e2e-packages-pushed": {
     "args": [
-      "./tests/e2e/pinned_releases.sh"
+      "./tests/e2e/verify_packages_published.sh"
     ],
     "scenario": "execute",
     "sigOwners": [

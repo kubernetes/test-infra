@@ -29,6 +29,7 @@ import (
 )
 
 func TestProwJobToPod(t *testing.T) {
+	var sshKeyMode int32 = 0400
 	tests := []struct {
 		podName string
 		buildID string
@@ -131,6 +132,7 @@ func TestProwJobToPod(t *testing.T) {
 						DefaultRepo:  "kubernetes",
 					},
 					GCSCredentialsSecret: "secret-name",
+					SshKeySecrets:        []string{"ssh-1", "ssh-2"},
 				},
 				Agent: kube.KubernetesAgent,
 				Refs: &kube.Refs{
@@ -180,7 +182,7 @@ func TestProwJobToPod(t *testing.T) {
 							Image:   "clonerefs:tag",
 							Command: []string{"/clonerefs"},
 							Env: []v1.EnvVar{
-								{Name: "CLONEREFS_OPTIONS", Value: `{"src_root":"/home/prow/go","log":"/logs/clone.json","git_user_name":"ci-robot","git_user_email":"ci-robot@k8s.io","refs":[{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}]}`},
+								{Name: "CLONEREFS_OPTIONS", Value: `{"src_root":"/home/prow/go","log":"/logs/clone.json","git_user_name":"ci-robot","git_user_email":"ci-robot@k8s.io","refs":[{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}],"key_files":["/secrets/ssh/ssh-1","/secrets/ssh/ssh-2"]}`},
 							},
 							VolumeMounts: []v1.VolumeMount{
 								{
@@ -190,6 +192,16 @@ func TestProwJobToPod(t *testing.T) {
 								{
 									Name:      "code",
 									MountPath: "/home/prow/go",
+								},
+								{
+									Name:      "ssh-keys-ssh-1",
+									MountPath: "/secrets/ssh/ssh-1",
+									ReadOnly:  true,
+								},
+								{
+									Name:      "ssh-keys-ssh-2",
+									MountPath: "/secrets/ssh/ssh-2",
+									ReadOnly:  true,
 								},
 							},
 						},
@@ -240,7 +252,7 @@ func TestProwJobToPod(t *testing.T) {
 								{Name: "ARTIFACTS", Value: "/logs/artifacts"},
 								{Name: "BUILD_ID", Value: "blabla"},
 								{Name: "BUILD_NUMBER", Value: "blabla"},
-								{Name: "ENTRYPOINT_OPTIONS", Value: `{"args":["/bin/thing","some","args"],"timeout":7200000000000,"grace_period":10000000000,"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt"}`},
+								{Name: "ENTRYPOINT_OPTIONS", Value: `{"args":["/bin/thing","some","args"],"timeout":7200000000000,"grace_period":10000000000,"artifact_dir":"/logs/artifacts","process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt"}`},
 								{Name: "GOPATH", Value: "/home/prow/go"},
 								{Name: "JOB_NAME", Value: "job-name"},
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
@@ -275,7 +287,7 @@ func TestProwJobToPod(t *testing.T) {
 							Command: []string{"/sidecar"},
 							Env: []v1.EnvVar{
 								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
-								{Name: "SIDECAR_OPTIONS", Value: `{"gcs_options":{"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false},"wrapper_options":{"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt"}}`},
+								{Name: "SIDECAR_OPTIONS", Value: `{"gcs_options":{"items":["/logs/artifacts"],"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false},"wrapper_options":{"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt"}}`},
 							},
 							VolumeMounts: []v1.VolumeMount{
 								{
@@ -290,6 +302,24 @@ func TestProwJobToPod(t *testing.T) {
 						},
 					},
 					Volumes: []v1.Volume{
+						{
+							Name: "ssh-keys-ssh-1",
+							VolumeSource: v1.VolumeSource{
+								Secret: &v1.SecretVolumeSource{
+									SecretName:  "ssh-1",
+									DefaultMode: &sshKeyMode,
+								},
+							},
+						},
+						{
+							Name: "ssh-keys-ssh-2",
+							VolumeSource: v1.VolumeSource{
+								Secret: &v1.SecretVolumeSource{
+									SecretName:  "ssh-2",
+									DefaultMode: &sshKeyMode,
+								},
+							},
+						},
 						{
 							Name: "logs",
 							VolumeSource: v1.VolumeSource{
@@ -330,7 +360,7 @@ func TestProwJobToPod(t *testing.T) {
 			t.Errorf("unexpected error: %v", err)
 		}
 		if !equality.Semantic.DeepEqual(got, test.expected) {
-			t.Errorf("expected pod:\n%s", diff.ObjectReflectDiff(test.expected, got))
+			t.Errorf("expected pod diff:\n%s", diff.ObjectReflectDiff(test.expected, got))
 		}
 	}
 }

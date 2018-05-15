@@ -70,6 +70,7 @@ filegroup(
         "//prow/cmd/jenkins-operator:all-srcs",
         "//prow/cmd/mkpj:all-srcs",
         "//prow/cmd/mkpod:all-srcs",
+        "//prow/cmd/peribolos:all-srcs",
         "//prow/cmd/phony:all-srcs",
         "//prow/cmd/plank:all-srcs",
         "//prow/cmd/sidecar:all-srcs",

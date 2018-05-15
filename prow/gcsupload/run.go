@@ -62,11 +62,11 @@ func (o Options) Run(spec *downwardapi.JobSpec, extra map[string]gcs.UploadFunc)
 
 func (o Options) assembleTargets(spec *downwardapi.JobSpec, extra map[string]gcs.UploadFunc) map[string]gcs.UploadFunc {
 	builder := builderForStrategy(o.PathStrategy, o.DefaultOrg, o.DefaultRepo)
-	var gcsPath string
 	jobBasePath := gcs.PathForSpec(spec, builder)
 	if o.PathPrefix != "" {
 		jobBasePath = path.Join(o.PathPrefix, jobBasePath)
 	}
+	var gcsPath string
 	if o.SubDir == "" {
 		gcsPath = jobBasePath
 	} else {
@@ -139,13 +139,13 @@ func gatherArtifacts(artifactDir, gcsPath, subDir string, uploadTargets map[stri
 		// this error as we can be certain it won't occur and best-
 		// effort upload is OK in any case
 		if relPath, err := filepath.Rel(artifactDir, fspath); err == nil {
-			destination := path.Join(subDir, relPath)
+			destination := path.Join(gcsPath, subDir, relPath)
 			if _, exists := uploadTargets[destination]; exists {
 				logrus.Warnf("Encountered duplicate upload of %s, skipping...", destination)
 				return nil
 			}
 			logrus.Printf("Found %s in artifact directory. Uploading as %s\n", fspath, destination)
-			uploadTargets[path.Join(gcsPath, destination)] = gcs.FileUpload(fspath)
+			uploadTargets[destination] = gcs.FileUpload(fspath)
 		} else {
 			logrus.Warnf("Encountered error in relative path calculation for %s under %s: %v", fspath, artifactDir, err)
 		}

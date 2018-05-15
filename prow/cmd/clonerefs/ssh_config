@@ -1,0 +1,5 @@
+Host github.com
+  HostName github.com
+  User git
+  UserKnownHostsFile /dev/null
+  StrictHostKeyChecking no

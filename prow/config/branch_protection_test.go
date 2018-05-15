@@ -587,6 +587,30 @@ func TestConfig_GetBranchProtection(t *testing.T) {
 			err: true,
 		},
 		{
+			name: "child policy with defined parent can disable protection",
+			config: Config{
+				BranchProtection: BranchProtection{
+					AllowDisabledPolicies: true,
+					Policy: Policy{
+						Protect: yes,
+						Restrictions: &Restrictions{
+							Teams: []string{"oncall"},
+						},
+					},
+					Orgs: map[string]Org{
+						"org": {
+							Policy: Policy{
+								Protect: no,
+							},
+						},
+					},
+				},
+			},
+			expected: &Policy{
+				Protect: no,
+			},
+		},
+		{
 			name: "Make required presubmits required",
 			config: Config{
 				BranchProtection: BranchProtection{

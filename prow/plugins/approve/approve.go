@@ -53,6 +53,7 @@ var (
 )
 
 type githubClient interface {
+	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
@@ -138,7 +139,12 @@ func handleGenericCommentEvent(pc plugins.PluginClient, ce github.GenericComment
 		return nil
 	}
 
-	ro, err := pc.OwnersClient.LoadRepoOwners(ce.Repo.Owner.Login, ce.Repo.Name)
+	pr, err := pc.GitHubClient.GetPullRequest(ce.Repo.Owner.Login, ce.Repo.Name, ce.Number)
+	if err != nil {
+		return err
+	}
+
+	ro, err := pc.OwnersClient.LoadRepoOwners(ce.Repo.Owner.Login, ce.Repo.Name, pr.Base.Ref)
 	if err != nil {
 		return err
 	}
@@ -179,7 +185,7 @@ func handlePullRequestEvent(pc plugins.PluginClient, pre github.PullRequestEvent
 		return nil
 	}
 
-	ro, err := pc.OwnersClient.LoadRepoOwners(pre.Repo.Owner.Login, pre.Repo.Name)
+	ro, err := pc.OwnersClient.LoadRepoOwners(pre.Repo.Owner.Login, pre.Repo.Name, pre.PullRequest.Base.Ref)
 	if err != nil {
 		return err
 	}

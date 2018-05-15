@@ -424,6 +424,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-alpha-features
 - name: ci-kubernetes-e2e-gci-gke-autoscaling
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-autoscaling
+- name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-autoscaling-gpu
 - name: ci-kubernetes-e2e-gci-gke-autoscaling-regional
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-autoscaling-regional
 - name: ci-kubernetes-e2e-gci-gke-autoscaling-hpa
@@ -535,8 +537,12 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-new-cos-gke
 - name: ci-kubernetes-e2e-new-cos-gke-k8sstable1
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-new-cos-gke-k8sstable1
+- name: ci-kubernetes-e2e-new-cos-gke-k8sstable1-compare
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-new-cos-gke-k8sstable1-compare
 - name: ci-kubernetes-e2e-new-cos-gke-k8sstable1-alpha-features
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-new-cos-gke-k8sstable1-alpha-features
+- name: ci-kubernetes-e2e-new-cos-gke-k8sstable1-alpha-features-compare
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-new-cos-gke-k8sstable1-alpha-features-compare
 - name: ci-kubernetes-kubemark-100-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-100-gce
   num_failures_to_alert: 1
@@ -1459,8 +1465,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-8-on-1-9
 - name: ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
-- name: periodic-kubernetes-e2e-debs-pushed
-  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-debs-pushed
+- name: periodic-kubernetes-e2e-packages-pushed
+  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-packages-pushed
 # upgrade CI tests
 - name: ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
@@ -2457,7 +2463,24 @@ test_groups:
 - name: istio-e2e-cluster_wide-auth
   gcs_prefix: istio-prow/e2e-cluster_wide-auth
   num_failures_to_alert: 1
-# Istio CircleCI
+# Istio CircleCI Presubmits
+- name: circleci-e2e-mixer-presubmit
+  gcs_prefix: istio-circleci/presubmit/e2e-mixer
+- name: circleci-e2e-simple-presubmit
+  gcs_prefix: istio-circleci/presubmit/e2e-simple
+- name: circleci-e2e-pilot-presubmit
+  gcs_prefix: istio-circleci/presubmit/e2e-pilot
+- name: circleci-e2e-pilot-auth-v1alpha3-v2-presubmit
+  gcs_prefix: istio-circleci/presubmit/e2e-pilot-auth-v1alpha3-v2
+- name: circleci-e2e-pilot-noauth-v1alpha3-v2-presubmit
+  gcs_prefix: istio-circleci/presubmit/e2e-pilot-noauth-v1alpha3-v2
+- name: circleci-e2e-galley-presubmit
+  gcs_prefix: istio-circleci/presubmit/e2e-galley
+- name: circleci-test-presubmit
+  gcs_prefix: istio-circleci/presubmit/test
+- name: circleci-racetest-presubmit
+  gcs_prefix: istio-circleci/presubmit/racetest
+# Istio CircleCI Postsubmits
 - name: circleci-e2e-mixer
   gcs_prefix: istio-circleci/e2e-mixer
   num_failures_to_alert: 5
@@ -3293,8 +3316,12 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-slow
   - name: gke-new-cos-1.10
     test_group_name: ci-kubernetes-e2e-new-cos-gke-k8sstable1
+  - name: gke-new-cos-1.10-compare
+    test_group_name: ci-kubernetes-e2e-new-cos-gke-k8sstable1-compare
   - name: gke-new-cos-alpha-features-1.10
     test_group_name: ci-kubernetes-e2e-new-cos-gke-k8sstable1-alpha-features
+  - name: gke-new-cos-alpha-features-1.10-compare
+    test_group_name: ci-kubernetes-e2e-new-cos-gke-k8sstable1-alpha-features-compare
 
 - name: google-gke-stackdriver
   dashboard_tab:
@@ -3568,6 +3595,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce
   - name: kubeadm-gce-selfhosting
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-selfhosting
+  - name: periodic-kubernetes-e2e-packages-pushed
+    test_group_name: periodic-kubernetes-e2e-packages-pushed
 
 - name: sig-release-1.11-all
   dashboard_tab:
@@ -3743,8 +3772,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-10
   - name: ci-gce-kubeadm-upgrade-1.9-1.10
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
-  - name: periodic-kubernetes-e2e-debs-pushed
-    test_group_name: periodic-kubernetes-e2e-debs-pushed
+  - name: periodic-kubernetes-e2e-packages-pushed
+    test_group_name: periodic-kubernetes-e2e-packages-pushed
   - name: gci-gce-1.10
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-default
   - name: gci-gce-slow-1.10
@@ -3949,6 +3978,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-9
   - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1.8-1.9
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9
+  - name: periodic-kubernetes-e2e-packages-pushed
+    test_group_name: periodic-kubernetes-e2e-packages-pushed
   - name: kubelet-1.9
     test_group_name: ci-kubernetes-node-kubelet-stable2
   - name: gci-gce-release-1.9
@@ -4231,6 +4262,11 @@ dashboards:
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gke-device-plugin-gpu-autoscaling
+    test_group_name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gce-device-plugin-gpu-cri-containerd
     test_group_name: ci-cri-containerd-e2e-gce-device-plugin-gpu
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
@@ -4449,6 +4485,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-autoscaling-migs
   - name: gci-gke-autoscaling
     test_group_name: ci-kubernetes-e2e-gci-gke-autoscaling
+  - name: gci-gke-autoscaling-gpu
+    test_group_name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu
   - name: gci-gke-autoscaling-regional
     test_group_name: ci-kubernetes-e2e-gci-gke-autoscaling-regional
   - name: gke-ubuntu1-k8sbeta-autoscaling
@@ -4578,8 +4616,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
   - name: kubeadm-gce-1.10
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-10
-  - name: periodic-kubernetes-e2e-debs-pushed
-    test_group_name: periodic-kubernetes-e2e-debs-pushed
+  - name: periodic-kubernetes-e2e-packages-pushed
+    test_group_name: periodic-kubernetes-e2e-packages-pushed
   - name: kubeadm-gce-stable-on-master
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
   - name: kubeadm-gce-upgrade-stable-master
@@ -5957,7 +5995,26 @@ dashboards:
   - name: e2e
     test_group_name: ci-poseidon-e2e-gce
 
-- name: istio
+- name: istio-presubmits
+  dashboard_tab:
+  - name: circleci-e2e-mixer-presubmit
+    test_group_name: circleci-e2e-mixer-presubmit
+  - name: circleci-e2e-simple-presubmit
+    test_group_name: circleci-e2e-simple-presubmit
+  - name: circleci-e2e-pilot-presubmit
+    test_group_name: circleci-e2e-pilot-presubmit
+  - name: circleci-e2e-pilot-auth-v1alpha3-v2-presubmit
+    test_group_name: circleci-e2e-pilot-auth-v1alpha3-v2-presubmit
+  - name: circleci-e2e-pilot-noauth-v1alpha3-v2-presubmit
+    test_group_name: circleci-e2e-pilot-noauth-v1alpha3-v2-presubmit
+  - name: circleci-e2e-galley-presubmit
+    test_group_name: circleci-e2e-galley-presubmit
+  - name: circleci-test-presubmit
+    test_group_name: circleci-test-presubmit
+  - name: circleci-racetest-presubmit
+    test_group_name: circleci-racetest-presubmit
+
+- name: istio-postsubmits
   dashboard_tab:
   - name: istio-postsubmit
     test_group_name: istio-istio-postsubmit
@@ -6007,6 +6064,9 @@ dashboards:
     test_group_name: circleci-racetest
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+
+- name: istio-daily
+  dashboard_tab:
   - name: daily-unit-tests
     test_group_name: daily-unit-tests
     alert_options:
@@ -6027,6 +6087,9 @@ dashboards:
     test_group_name: daily-e2e-rbac-auth-default
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+
+- name: istio-gke
+  dashboard_tab:
   - name: istio-gke-addon
     test_group_name: istio-periodic-e2e-gke-addon
 
@@ -6060,6 +6123,13 @@ dashboard_groups:
   - google-gke-prod
   - google-soak
   - google-unit
+
+- name: istio
+  dashboard_names:
+  - istio-daily
+  - istio-gke
+  - istio-postsubmits
+  - istio-presubmits
 
 - name: presubmits
   dashboard_names:
