@@ -32,7 +32,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-if [[ $# < 2 ]]; then
+if [[ $# -lt 2 ]]; then
   echo "Usage: $0 <ORG> <REPO>" >&2
   exit 1
 fi
@@ -65,7 +65,7 @@ while true; do
   done
 done
 
-if [[ -z "${conflicting_prs[@]:-}" ]]; then
+if [[ -z "${conflicting_prs[*]}" ]]; then
   echo "# No PRs with conflicts found." >&2
   exit
 fi
@@ -73,7 +73,7 @@ fi
 echo "# ${#conflicting_prs[@]} conflicting PRs found" >&2
 
 tmpdir=$(mktemp -d)
-trap "rm -rf ${tmpdir}" EXIT
+trap 'rm -rf ${tmpdir}' EXIT
 
 echo "# Cloning git repo ${ORG}/${REPO}" >&2
 git clone -q "https://github.com/${ORG}/${REPO}" "${tmpdir}"
@@ -81,7 +81,7 @@ cd "${tmpdir}"
 git config merge.renameLimit 999999
 
 echo "# Reporting conflicts" >&2
-for pr in ${conflicting_prs[@]}; do
+for pr in "${conflicting_prs[@]}"; do
   # Create a branch to attempt the merge
   git branch -q merge-test master
   # Checkout that branch
@@ -93,7 +93,8 @@ for pr in ${conflicting_prs[@]}; do
   git merge --ff FETCH_HEAD --strategy resolve >/dev/null 2>/dev/null || true
   echo "* ${ORG}/${REPO}/pull/${pr}:"
   # Report files that are conflicting
-  PAGER=cat git diff --name-only --diff-filter=UXB
+  export PAGER
+  PAGER="cat git diff --name-only --diff-filter=UXB"
   # Abort so we can reset
   git merge --abort >/dev/null 2>/dev/null || true
   git reset -q --hard

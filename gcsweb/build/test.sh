@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/bin/ash
+# shellcheck shell=dash
 
 # Copyright 2016 The Kubernetes Authors.
 #
@@ -20,15 +21,17 @@ set -o pipefail
 
 export CGO_ENABLED=0
 
-TARGETS=$(for d in "$@"; do echo ./$d/...; done)
+TARGETS=$(for d in "$@"; do echo "./$d/..."; done)
 
 echo "Running tests:"
+# shellcheck disable=SC2086
 go test -i -installsuffix "static" ${TARGETS}
+# shellcheck disable=SC2086
 go test -installsuffix "static" ${TARGETS}
 echo
 
 echo -n "Checking gofmt: "
-ERRS=$(find "$@" -type f -name \*.go | xargs gofmt -l 2>&1 || true)
+ERRS=$(find "$@" -type f -name \*.go -0 | xargs -0 gofmt -l 2>&1 || true)
 if [ -n "${ERRS}" ]; then
     echo "FAIL - the following files need to be gofmt'ed:"
     for e in ${ERRS}; do
@@ -41,6 +44,7 @@ echo "PASS"
 echo
 
 echo -n "Checking go vet: "
+# shellcheck disable=SC2086
 ERRS=$(go vet ${TARGETS} 2>&1 || true)
 if [ -n "${ERRS}" ]; then
     echo "FAIL"

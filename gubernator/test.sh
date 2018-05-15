@@ -13,4 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-nosetests --with-gae --gae-lib-root=${GAE_ROOT} "${@:-.}"
+nosetests --with-gae --gae-lib-root="${GAE_ROOT}" "${@:-.}"

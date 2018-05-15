@@ -15,7 +15,7 @@
 # limitations under the License.
 
 set -exu
-cd $(dirname $0)
+cd "$(dirname "$0")"
 
 if [[ -e ${GOOGLE_APPLICATION_CREDENTIALS-} ]]; then
   gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
@@ -26,11 +26,11 @@ fi
 date
 # cat << '#'
 table_mtime=$(bq --format=json show 'k8s-gubernator:build.week' | jq -r '(.lastModifiedTime|tonumber)/1000|floor' )
-if [[ ! -e triage_builds.json ]] || [ $(stat -c%Y triage_builds.json) -lt $table_mtime ]; then
-  echo "UPDATING" $table_mtime
+if [[ ! -e triage_builds.json ]] || [ "$(stat -c%Y triage_builds.json)" -lt "$table_mtime" ]; then
+  echo "UPDATING" "$table_mtime"
   bq --headless --format=json query -n 1000000 "select path, timestamp_to_sec(started) started, elapsed, tests_run, tests_failed, result, executor, job, number from [k8s-gubernator:build.week]" > triage_builds.json
   # this query can be too large to stream, so split it up
-  four_days_ago=$(($table_mtime - 86400 * 4))
+  four_days_ago=$((table_mtime - 86400 * 4))
   bq --headless --format=json query -n 10000000 "select path build, test.name name, test.failure_text failure_text from [k8s-gubernator:build.week] where test.failed and timestamp_to_sec(started) < $four_days_ago" > triage_tests_1.json
   bq --headless --format=json query -n 10000000 "select path build, test.name name, test.failure_text failure_text from [k8s-gubernator:build.week] where test.failed and timestamp_to_sec(started) >= $four_days_ago" > triage_tests_2.json
   rm -f failed*.json

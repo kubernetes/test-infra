@@ -18,7 +18,7 @@
 
 cd "$( dirname "${BASH_SOURCE[0]}" )" || exit 1
 config="$( mktemp )"
-trap "rm ${config}" EXIT
+trap 'rm ${config}' EXIT
 
 cp ./config.yaml "${config}"
 ./update_config.py ./../prow/config.yaml ./../config/jobs "${config}"
