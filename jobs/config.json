@@ -12097,15 +12097,6 @@
       "sig-testing"
     ]
   },
-  "cluster-registry-nightly": {
-    "args": [
-      "./hack/release.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-multicluster"
-    ]
-  },
   "fake-branch": {
     "args": [
       "./fake/fake-branch.sh"
@@ -12386,25 +12377,6 @@
     "scenario": "execute",
     "sigOwners": [
       "sig-cluster-lifecycle"
-    ]
-  },
-  "pull-cluster-registry-bazel": {
-    "args": [
-      "--build=//examples/...",
-      "--test=//... -//vendor/... -//cmd/clusterregistry:push-clusterregistry-image -//pkg/client/..."
-    ],
-    "scenario": "kubernetes_bazel",
-    "sigOwners": [
-      "sig-multicluster"
-    ]
-  },
-  "pull-cluster-registry-verify-bazel": {
-    "args": [
-      "./hack/verify-bazel.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-multicluster"
     ]
   },
   "pull-cluster-registry-verify-gensrc": {
