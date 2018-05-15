@@ -249,6 +249,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-stable2
   alert_stale_results_hours: 24
   num_failures_to_alert: 4 # Runs every 6h. Alert when it's been failing for a day.
+- name: ci-kubernetes-e2e-gci-gce-alpha-enabled-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-alpha-enabled-default
 - name: ci-kubernetes-e2e-gci-gce-alpha-features
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-alpha-features
 - name: ci-kubernetes-e2e-gci-gce-autoscaling
@@ -3116,6 +3118,8 @@ dashboards:
   dashboard_tab:
   - name: gci-gce
     test_group_name: ci-kubernetes-e2e-gci-gce
+  - name: gci-gce-alpha-enabled-default
+    test_group_name: ci-kubernetes-e2e-gci-gce-alpha-enabled-default
   - name: gci-gce-alpha-features
     test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
   - name: gce-stackdriver
