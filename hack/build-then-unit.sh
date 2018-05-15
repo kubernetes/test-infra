@@ -18,14 +18,8 @@
 
 res=0
 
-bazel build //...
-if [[ $? -ne 0 ]]; then
-    res=1
-fi
+bazel build //... || res=1
 
-bazel test //... --config=unit
-if [[ $? -ne 0 ]]; then
-    res=1
-fi
+bazel test //... --config=unit || res=1
 
 exit $res

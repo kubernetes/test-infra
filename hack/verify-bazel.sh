@@ -18,7 +18,6 @@ set -o nounset
 set -o pipefail
 
 TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
-TMP_GOPATH=$(mktemp -d)
 cd "${TESTINFRA_ROOT}"
 
 OUTPUT_GOBIN="${TESTINFRA_ROOT}/_output/bin"

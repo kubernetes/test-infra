@@ -24,7 +24,7 @@ _tmpdir="$(mktemp -d -t verify-deps.XXXXXX)"
 cd "${_tmpdir}"
 _tmpdir="$(pwd)"
 
-trap "rm -rf ${_tmpdir}" EXIT
+trap 'rm -rf ${_tmpdir}' EXIT
 
 _tmp_gopath="${_tmpdir}/go"
 _tmp_testinfra_root="${_tmp_gopath}/src/k8s.io/test-infra"

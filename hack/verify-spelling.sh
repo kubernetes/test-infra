@@ -17,11 +17,17 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+shopt -s extglob globstar
+
 misspell=
 while getopts "m:" opt; do
   case "${opt}" in
     m)
       misspell="${OPTARG}"
+      ;;
+    *)
+      echo "usage: $0 [-m misspell]"
+      exit 1
       ;;
   esac
 done
@@ -46,4 +52,4 @@ find -L . -type f -not \( \
     -o -path '*/static/*' \
     -o -path '*/third_party/*' \
     \) -prune \
-  \) | xargs "${misspell}" -error
+  \) -print0 | xargs -0 "${misspell}" -error

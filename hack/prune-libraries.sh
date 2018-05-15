@@ -19,6 +19,10 @@
 
 # By default just checks for extra libraries, run with --fix to make changes.
 
+# TODO: rewrite this in Python, or fix this!
+# SC2086: Double quote to prevent globbing and word splitting.
+# SC2046: Quote this to prevent word splitting.
+# shellcheck disable=SC2086,SC2046
 
 set -o nounset
 set -o errexit
@@ -35,9 +39,9 @@ REQUIRED=(
 )
 
 # darwin is great
-SED=sed
+SED="sed"
 if which gsed &>/dev/null; then
-  SED=gsed
+  SED="gsed"
 fi
 if ! ($SED --version 2>&1 | grep -q GNU); then
   echo "!!! GNU sed is required.  If on OS X, use 'brew install gnu-sed'." >&2
@@ -49,7 +53,7 @@ unused-go-libraries() {
   # of vendor eventually depends on.
   required_items=( "${REQUIRED[@]/#/+ }" )
   echo "Looking for //vendor targets that no one outside of //vendor depends on..." >&2
-  bazel query "kind('go_library rule', //vendor/... -deps(//... -//vendor/... ${required_items[@]}))"
+  bazel query "kind('go_library rule', //vendor/... -deps(//... -//vendor/... ${required_items[*]}))"
 }
 
 # Output this:source.go that:file.txt sources of //this //that targets
@@ -60,25 +64,24 @@ target-sources() {
 }
 
 sources() {
-  local t
   for j in $(target-sources "${@}"); do
     case "$(target-name "$j")" in
       LICENSE*|PATENTS*|*.md)  # Keep these files
         continue
         ;;
     esac
-    echo $(package-name "${j:2}")/$(target-name $j)
+    echo "$(package-name "${j:2}")/$(target-name "$j")"
   done
 }
 
 # Convert //foo:and/bar:stuff to //foo:and/bar
 package-name() {
-  echo ${1%:*}
+  echo "${1%:*}"
 }
 
 # Convert //foo:and/bar:stuff to stuff
 target-name() {
-  echo ${1##*:}
+  echo "${1##*:}"
 }
 
 # Find every package that directly depends on //foo:all-srcs
@@ -91,14 +94,14 @@ all-srcs-refs() {
 # Convert //foo/bar:stuff //this //foo/bar:stuff to //foo/bar //this
 packages() {
   (for i in "$@"; do
-    echo $(package-name "${i}")
+    package-name "${i}"
   done) | sort -u
 }
 
 # Convert //foo //bar to foo/BUILD bar/BUILD.bazel (whichever exist)
 builds() {
   for i in "${@}"; do
-    echo $(ls ${i:2}/{BUILD,BUILD.bazel} 2>/dev/null)
+    ls "${i:2}"/{BUILD,BUILD.bazel} 2>/dev/null
   done
 }
 
@@ -107,7 +110,7 @@ builds() {
 #   remove-all-srcs <targets-to-remove> <remove-from-packages>
 remove-all-srcs() {
   for b in $1; do
-    $SED -i -e "\|${b}:all-srcs|d" $(builds $2)
+    $SED -i -e "\\|${b}:all-srcs|d" $(builds $2)
   done
 }
 
@@ -115,7 +118,7 @@ remove-all-srcs() {
 remove_unused_go_libraries_finished=
 # Remove every go_library() target from workspace with no one depending on it.
 remove-unused-go-libraries() {
-  local libraries deps
+  local deps
   deps="$(unused-go-libraries)"
   if [[ -z "$deps" ]]; then
     echo "All remaining go libraries are alive" >&2

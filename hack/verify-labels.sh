@@ -22,8 +22,7 @@ TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
 TMP_LABELS_DOCS=$(mktemp)
 TMP_LABELS_CSS=$(mktemp)
 trap 'rm -f "${TMP_LABELS_DOCS}" & rm -f "${TMP_LABELS_CSS}"' EXIT
-LABELS_DOCS_OUTPUT="${TMP_LABELS_DOCS}" LABELS_CSS_OUTPUT="${TMP_LABELS_CSS}" ${TESTINFRA_ROOT}/hack/update-labels.sh
-
+LABELS_DOCS_OUTPUT="${TMP_LABELS_DOCS}" LABELS_CSS_OUTPUT="${TMP_LABELS_CSS}" "${TESTINFRA_ROOT}"/hack/update-labels.sh
 
 DIFF=$(diff "${TMP_LABELS_DOCS}" "${TESTINFRA_ROOT}/label_sync/labels.md" || true)
 if [ ! -z "$DIFF" ]; then

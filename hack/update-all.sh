@@ -18,7 +18,7 @@ set -o nounset
 set -o pipefail
 
 TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
-${TESTINFRA_ROOT}/hack/update-bazel.sh
-${TESTINFRA_ROOT}/hack/update-gofmt.sh
-${TESTINFRA_ROOT}/hack/update-config.sh
-${TESTINFRA_ROOT}/hack/update-labels.sh
+"${TESTINFRA_ROOT}"/hack/update-bazel.sh
+"${TESTINFRA_ROOT}"/hack/update-gofmt.sh
+"${TESTINFRA_ROOT}"/hack/update-config.sh
+"${TESTINFRA_ROOT}"/hack/update-labels.sh

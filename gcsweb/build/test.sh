@@ -1,5 +1,4 @@
 #!/bin/ash
-# shellcheck shell=dash
 
 # Copyright 2016 The Kubernetes Authors.
 #
@@ -14,6 +13,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+# shellcheck shell=dash
 
 set -o errexit
 set -o nounset
@@ -31,7 +32,7 @@ go test -installsuffix "static" ${TARGETS}
 echo
 
 echo -n "Checking gofmt: "
-ERRS=$(find "$@" -type f -name \*.go -0 | xargs -0 gofmt -l 2>&1 || true)
+ERRS=$(find "$@" -type f -name \*.go -print0 | xargs -0 gofmt -l 2>&1 || true)
 if [ -n "${ERRS}" ]; then
     echo "FAIL - the following files need to be gofmt'ed:"
     for e in ${ERRS}; do
