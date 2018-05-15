@@ -5028,7 +5028,7 @@
       "--gke-environment=test",
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Feature:ClusterSizeAutoscalingScaleUp\\]|\\[Feature:ClusterSizeAutoscalingScaleDown\\]|\\[Feature:ClusterSizeAutoscalingScaleWithNAP\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
-      "--timeout=420m"
+      "--timeout=600m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
