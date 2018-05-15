@@ -20,14 +20,15 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
-for i in {1..10}; do
+for _ in {1..10}; do
   echo 'WARNING: kops-e2e-runner.sh is deprecated, migrate logic to kubetest'
 done
 
 if [[ -z "${KOPS_BASE_URL:-}" ]]; then
   readonly KOPS_LATEST=${KOPS_LATEST:-"latest-ci.txt"}
   readonly LATEST_URL="https://storage.googleapis.com/kops-ci/bin/${KOPS_LATEST}"
-  export KOPS_BASE_URL=$(curl -fsS --retry 3 "${LATEST_URL}")
+  export KOPS_BASE_URL
+  KOPS_BASE_URL=$(curl -fsS --retry 3 "${LATEST_URL}")
   if [[ -z "${KOPS_BASE_URL}" ]]; then
     echo "Can't fetch kops latest URL" >&2
     exit 1
@@ -40,9 +41,9 @@ chmod +x "/workspace/kops"
 # Get kubectl on the path (works after e2e-runner.sh:unpack_binaries)
 export PRIORITY_PATH="${WORKSPACE}/kubernetes/platforms/linux/amd64"
 
-e2e_args=( \
-  --deployment=kops \
-  --kops=/workspace/kops \
+e2e_args=(
+  "--deployment=kops"
+  "--kops=/workspace/kops"
 )
 
 # TODO(zmerlynn): This is duplicating some logic in e2e-runner.sh, but
@@ -56,7 +57,7 @@ if [[ "${KOPS_DEPLOY_LATEST_KUBE:-}" =~ ^[yY]$ ]]; then
   fi
   readonly KOPS_KUBE_RELEASE_URL=${KOPS_KUBE_RELEASE_URL:-"https://storage.googleapis.com/kubernetes-release-dev/ci"}
 
-  e2e_args+=(--kops-kubernetes-version="${KOPS_KUBE_RELEASE_URL}/${KOPS_KUBE_LATEST}")
+  e2e_args+=("--kops-kubernetes-version=${KOPS_KUBE_RELEASE_URL}/${KOPS_KUBE_LATEST}")
 fi
 
 EXTERNAL_IP=$(curl -SsL -H 'Metadata-Flavor: Google' 'http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip' || true)
@@ -67,7 +68,7 @@ if [[ -z "${EXTERNAL_IP}" ]]; then
   echo
   EXTERNAL_IP=$(curl 'http://v4.ifconfig.co')
 fi
-e2e_args+=(--kops-admin-access="${EXTERNAL_IP}/32")
+e2e_args+=("--kops-admin-access=${EXTERNAL_IP}/32")
 
 # Define a custom instance lister for cluster/log-dump/log-dump.sh.
 function log_dump_custom_get_instances() {
