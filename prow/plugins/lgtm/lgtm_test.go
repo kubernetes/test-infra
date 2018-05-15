@@ -127,11 +127,13 @@ func TestLGTMComment(t *testing.T) {
 			shouldComment: true,
 		},
 		{
-			name:         "lgtm cancel by author",
-			body:         "/lgtm cancel",
-			commenter:    "author",
-			hasLGTM:      true,
-			shouldToggle: true,
+			name:          "lgtm cancel by author",
+			body:          "/lgtm cancel",
+			commenter:     "author",
+			hasLGTM:       true,
+			shouldToggle:  true,
+			shouldAssign:  false,
+			shouldComment: false,
 		},
 		{
 			name:          "lgtm comment by non-reviewer",
@@ -253,7 +255,7 @@ func TestLGTMComment(t *testing.T) {
 			User:        github.User{Login: tc.commenter},
 			IssueAuthor: github.User{Login: "author"},
 			Number:      5,
-			Assignees:   []github.User{{Login: "author"}, {Login: "reviewer1"}, {Login: "reviewer2"}},
+			Assignees:   []github.User{{Login: "reviewer1"}, {Login: "reviewer2"}},
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 			HTMLURL:     "<url>",
 		}
@@ -395,7 +397,7 @@ func TestLGTMCommentWithLGTMNoti(t *testing.T) {
 			User:        github.User{Login: tc.commenter},
 			IssueAuthor: github.User{Login: "author"},
 			Number:      5,
-			Assignees:   []github.User{{Login: "author"}, {Login: "reviewer1"}, {Login: "reviewer2"}},
+			Assignees:   []github.User{{Login: "reviewer1"}, {Login: "reviewer2"}},
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 			HTMLURL:     "<url>",
 		}
@@ -509,6 +511,24 @@ func TestLGTMFromApproveReview(t *testing.T) {
 			shouldComment: true,
 			shouldAssign:  false,
 		},
+		{
+			name:          "Comment review by issue author, no lgtm on pr",
+			state:         "comment",
+			reviewer:      "author",
+			hasLGTM:       false,
+			shouldToggle:  false,
+			shouldComment: false,
+			shouldAssign:  false,
+		},
+		{
+			name:          "Comment review by issue author, lgtm on pr",
+			state:         "comment",
+			reviewer:      "author",
+			hasLGTM:       true,
+			shouldToggle:  false,
+			shouldComment: false,
+			shouldAssign:  false,
+		},
 	}
 	for _, tc := range testcases {
 		fc := &fakegithub.FakeClient{
@@ -516,7 +536,7 @@ func TestLGTMFromApproveReview(t *testing.T) {
 		}
 		e := &github.ReviewEvent{
 			Review:      github.Review{Body: tc.body, State: tc.state, HTMLURL: "<url>", User: github.User{Login: tc.reviewer}},
-			PullRequest: github.PullRequest{User: github.User{Login: "author"}, Assignees: []github.User{{Login: "author"}, {Login: "reviewer1"}, {Login: "reviewer2"}}, Number: 5},
+			PullRequest: github.PullRequest{User: github.User{Login: "author"}, Assignees: []github.User{{Login: "reviewer1"}, {Login: "reviewer2"}}, Number: 5},
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 		}
 		if tc.hasLGTM {

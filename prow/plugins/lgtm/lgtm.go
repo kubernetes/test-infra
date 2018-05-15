@@ -79,7 +79,7 @@ func handleGenericCommentEvent(pc plugins.PluginClient, e github.GenericCommentE
 	return handleGenericComment(pc.GitHubClient, pc.Logger, e)
 }
 
-func handlePullRequestReviewEvent(pc plugins.PluginClient, e github.ReviewEvent) error{
+func handlePullRequestReviewEvent(pc plugins.PluginClient, e github.ReviewEvent) error {
 	return handlePullRequestReview(pc.GitHubClient, pc.Logger, e)
 }
 
@@ -130,11 +130,10 @@ func handlePullRequestReview(gc githubClient, log *logrus.Entry, e github.Review
 
 	// If we review with Approve, add lgtm if necessary.
 	// If we review with Request Changes, remove lgtm if necessary.
-	// Comments in the review body can also add or remove LGTM, as with a generic comment.
 	wantLGTM := false
-	if e.Review.State == "approve" || lgtmRe.MatchString(body) {
+	if e.Review.State == "approve" {
 		wantLGTM = true
-	} else if e.Review.State == "request_changes" || lgtmCancelRe.MatchString(body){
+	} else if e.Review.State == "request_changes" {
 		wantLGTM = false
 	} else {
 		return nil
@@ -201,12 +200,9 @@ func handle(wantLGTM bool, author string, issueAuthor string, repo github.Repo, 
 	if err != nil {
 		log.WithError(err).Errorf("Failed to get the labels on %s/%s#%d.", org, repoName, number)
 	}
-	for _, candidate := range labels {
-		if candidate.Name == lgtmLabel {
-			hasLGTM = true
-			break
-		}
-	}
+
+	hasLGTM = github.HasLabel(lgtmLabel, labels)
+
 	if hasLGTM && !wantLGTM {
 		log.Info("Removing LGTM label.")
 		return gc.RemoveLabel(org, repoName, number, lgtmLabel)
