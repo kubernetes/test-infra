@@ -17,7 +17,7 @@
 if [[ -z "${1}" ]]; then
   echo "Usage: $(basename "${0}") </path/to/foo-service-account.json>"
   echo '  Visit https://console.developers.google.com/iam-admin/serviceaccounts/project'
-  echo '  Create and download the json key for a service accout with storage-rw scope'
+  echo '  Create and download the json key for a service account with storage-rw scope'
   exit 1
 fi
 
