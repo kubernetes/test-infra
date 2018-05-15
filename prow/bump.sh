@@ -51,7 +51,7 @@ if [[ "${new_version}" == *-dirty ]]; then
   exit 1
 fi
 
-cd "$(dirname "${BASH_SOURCE}")"
+cd "$(dirname "${BASH_SOURCE[0]}")"
 
 # Determine what images we need to update
 echo -n "images: " >&2

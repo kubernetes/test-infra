@@ -16,5 +16,5 @@
 # This script updates the Gubernator configuration
 # file to keep it in sync with Prow.
 
-cd "$( dirname "${BASH_SOURCE[0]}" )"
+cd "$( dirname "${BASH_SOURCE[0]}" )" || exit 1
 ./update_config.py ./../prow/config.yaml ./config.yaml

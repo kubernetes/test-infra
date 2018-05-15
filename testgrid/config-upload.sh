@@ -20,7 +20,7 @@ set -o xtrace
 
 for output in gs://k8s-testgrid-canary/config gs://k8s-testgrid/config; do
   bazel run //testgrid/cmd/configurator -- \
-    --yaml="$(realpath "$(dirname "${BASH_SOURCE}")"/config.yaml)" \
+    --yaml="$(realpath "$(dirname "${BASH_SOURCE[0]}")"/config.yaml)" \
     --output="${output}" \
     --oneshot
 done

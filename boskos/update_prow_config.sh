@@ -22,7 +22,7 @@ set -o pipefail
 # Script triggered by prow postsubmit job
 # Update boskos configmap in prow
 
-TREE="$(dirname ${BASH_SOURCE[0]})/.."
+TREE="$(dirname "${BASH_SOURCE[0]}")/.."
 
 if [[ -a "${PROW_SERVICE_ACCOUNT:-}" ]] ; then
 	gcloud auth activate-service-account --key-file="${PROW_SERVICE_ACCOUNT}"

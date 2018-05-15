@@ -20,7 +20,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-ROOT=$(dirname "${BASH_SOURCE}")/..
+ROOT=$(dirname "${BASH_SOURCE[0]}")/..
 
 function print_file() {
   grep "export" "${1}" | cut -f2 -d" " | cut -f1 -d"=" | sort

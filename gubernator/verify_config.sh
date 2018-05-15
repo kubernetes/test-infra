@@ -16,7 +16,7 @@
 # This script verifies the Gubernator configuration
 # file is in sync with Prow.
 
-cd "$( dirname "${BASH_SOURCE[0]}" )"
+cd "$( dirname "${BASH_SOURCE[0]}" )" || exit 1
 config="$( mktemp )"
 trap "rm ${config}" EXIT
 

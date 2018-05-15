@@ -138,7 +138,7 @@ remove-unused-go-libraries() {
   # Packages with //unused-package:all-srcs references
   all_srcs_packs=$(all-srcs-refs $unused_packs)
 
-  pushd "$(dirname ${BASH_SOURCE})/.."
+  pushd "$(dirname "${BASH_SOURCE[0]}")/.."
   remove-all-srcs "$unused_packs" "$all_srcs_packs"
   rm -f $unused_files $(builds $unused_packs)
   popd
