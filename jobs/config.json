@@ -775,26 +775,6 @@
       "sig-network"
     ]
   },
-  "ci-kinflate-periodic-default-gke": {
-    "args": [
-      "--check-leaked-resources",
-      "--cluster=",
-      "--deployment=gke",
-      "--extract=gke",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-f",
-      "--gke-environment=prod",
-      "--provider=gke",
-      "--test=false",
-      "--test-cmd=../cmd/kustomize/test/main.sh",
-      "--test-cmd-name=kinflate-integration",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
-    ]
-  },
   "ci-kops-build": {
     "args": [
       "make",
@@ -12045,6 +12025,26 @@
     "scenario": "kubernetes_verify",
     "sigOwners": [
       "sig-testing"
+    ]
+  },
+  "ci-kustomize-periodic-default-gke": {
+    "args": [
+      "--check-leaked-resources",
+      "--cluster=",
+      "--deployment=gke",
+      "--extract=gke",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--gke-environment=prod",
+      "--provider=gke",
+      "--test=false",
+      "--test-cmd=demos/integration_tests.sh",
+      "--test-cmd-name=kustomize-integration",
+      "--timeout=120m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cli"
     ]
   },
   "ci-perf-tests-e2e-gce-clusterloader": {

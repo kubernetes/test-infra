@@ -8333,22 +8333,6 @@ periodics:
       args:
       - "--timeout=340"
       - "--bare"
-- interval: 2h
-  agent: kubernetes
-  name: ci-kinflate-periodic-default-gke
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--root=/go/src"
-      - "--repo=k8s.io/kubectl"
-      - "--upload=gs://kubernetes-jenkins/logs/"
-      - "--timeout=150"
-
 - interval: 30m
   name: ci-kops-build
   agent: kubernetes
@@ -16775,6 +16759,22 @@ periodics:
     volumes:
     - name: docker-graph
       emptyDir: {}
+
+- interval: 2h
+  agent: kubernetes
+  name: ci-kustomize-periodic-default-gke
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
+      args:
+      - "--job=$(JOB_NAME)"
+      - "--root=/go/src"
+      - "--repo=github.com/kubernetes-sigs/kustomize"
+      - "--upload=gs://kubernetes-jenkins/logs/"
+      - "--timeout=150"
 
 - name: ci-perf-tests-e2e-gce-clusterloader
   interval: 2h

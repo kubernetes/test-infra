@@ -2061,8 +2061,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/spark-periodic-default-gke
 - name: spark-periodic-latest-gke
   gcs_prefix: kubernetes-jenkins/logs/spark-periodic-latest-gke
-- name: ci-kinflate-periodic-default-gke
-  gcs_prefix: kubernetes-jenkins/logs/ci-kinflate-periodic-default-gke
+- name: ci-kustomize-periodic-default-gke
+  gcs_prefix: kubernetes-jenkins/logs/ci-kustomize-periodic-default-gke
 - name: application-periodic-default-gke
   gcs_prefix: kubernetes-jenkins/logs/application-periodic-default-gke
 # kube-proxy daemonset migration jobs
@@ -4594,9 +4594,9 @@ dashboards:
 
 - name: sig-cli-misc
   dashboard_tab:
-  - name: kinflate-periodic-default-gke
-    description: Periodic integration testing of kinflate.
-    test_group_name: ci-kinflate-periodic-default-gke
+  - name: kustomize-periodic-default-gke
+    description: Periodic integration testing of kustomize.
+    test_group_name: ci-kustomize-periodic-default-gke
 
 - name: sig-cluster-lifecycle-all
   dashboard_tab:
