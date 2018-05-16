@@ -324,9 +324,9 @@ type Approve struct {
 	// LgtmActsAsApprove indicates that the lgtm command should be used to
 	// indicate approval
 	LgtmActsAsApprove bool `json:"lgtm_acts_as_approve,omitempty"`
-	// ReviewActsAsApprove indicates that GitHub review state should be used to
-	// indicate approval.
-	ReviewActsAsApprove bool `json:"review_acts_as_approve,omitempty"`
+	// ReviewActsAsLgtm indicates that a Github review of "approve" or "request changes"
+	// acts as adding or removing the lgtm label
+	ReviewActsAsLgtm bool `json::review_acts_as_lgtm,omitempty`
 }
 
 type Cat struct {
