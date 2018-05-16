@@ -467,12 +467,6 @@ resources:
   - k8s-gci-boskos-18
   - k8s-gci-boskos-19
   - k8s-gci-boskos-20
-  - kubekins-gce-gci-ci-1-4
-  - kubekins-gce-gci-ci-1-5
-  - kubekins-gce-gci-ci-serial-1-4
-  - kubekins-gce-gci-ci-serial-1-5
-  - kubekins-gce-gci-ci-slow-1-4
-  - kubekins-gce-gci-ci-slow-1-5
   state: dirty
   type: gci-qa-project
 - names:
