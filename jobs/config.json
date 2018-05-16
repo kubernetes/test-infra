@@ -3181,7 +3181,7 @@
       "--gcp-zone=us-east1-a",
       "--ginkgo-parallel=40",
       "--provider=gce",
-      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[DisabledForLargeClusters\\] --allowed-not-ready-nodes=20 --node-schedulable-timeout=60m --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
+      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[DisabledForLargeClusters\\] --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
       "--timeout=390m",
       "--use-logexporter"
     ],
@@ -3221,7 +3221,7 @@
       "--gcp-project=k8s-scale-testing",
       "--gcp-zone=us-east1-a",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --allowed-not-ready-nodes=10 --node-schedulable-timeout=60m",
+      "--test_args=--ginkgo.focus=\\[Feature:Empty\\]",
       "--timeout=300m"
     ],
     "scenario": "kubernetes_e2e",
@@ -3243,7 +3243,7 @@
       "--gcp-project=kubernetes-scale",
       "--gcp-zone=us-east1-a",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --allowed-not-ready-nodes=20 --node-schedulable-timeout=60m --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
       "--timeout=510m",
       "--use-logexporter"
     ],
@@ -3499,7 +3499,7 @@
       "--gcp-project=google.com:k8s-jenkins-scalability",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --kube-api-content-type=application/vnd.kubernetes.protobuf --allowed-not-ready-nodes=1 --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true --output-print-type=json --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --kube-api-content-type=application/vnd.kubernetes.protobuf --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true --output-print-type=json --minStartupPods=8",
       "--timeout=120m",
       "--use-logexporter"
     ],
@@ -3524,7 +3524,7 @@
       "--gcp-zone=us-east1-a",
       "--ginkgo-parallel=40",
       "--provider=gce",
-      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[DisabledForLargeClusters\\] --allowed-not-ready-nodes=50 --node-schedulable-timeout=90m --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
+      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[DisabledForLargeClusters\\] --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
       "--timeout=570m",
       "--use-logexporter"
     ],
@@ -3546,7 +3546,7 @@
       "--gcp-project=kubernetes-scale",
       "--gcp-zone=us-east1-a",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --allowed-not-ready-nodes=50 --node-schedulable-timeout=90m --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
       "--timeout=1290m",
       "--use-logexporter"
     ],
@@ -4845,7 +4845,7 @@
       "--gcp-project=k8s-e2e-gce-scalability-1-1",
       "--gcp-zone=us-east1-b",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --kube-api-content-type=application/vnd.kubernetes.protobuf --allowed-not-ready-nodes=1 --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true --output-print-type=json --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --kube-api-content-type=application/vnd.kubernetes.protobuf --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true --output-print-type=json --minStartupPods=8",
       "--timeout=120m"
     ],
     "scenario": "kubernetes_e2e",
@@ -6745,7 +6745,7 @@
       "--gke-environment=test",
       "--gke-shape={\"default\":{\"Nodes\":2000,\"MachineType\":\"g1-small\"},\"heapster-pool\":{\"Nodes\":1,\"MachineType\":\"n1-standard-8\"}}",
       "--provider=gke",
-      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[DisabledForLargeClusters\\] --allowed-not-ready-nodes=20 --node-schedulable-timeout=60m --minStartupPods=8",
+      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[DisabledForLargeClusters\\] --minStartupPods=8",
       "--timeout=450m",
       "--use-logexporter"
     ],
@@ -6769,7 +6769,7 @@
       "--gke-environment=test",
       "--gke-shape={\"default\":{\"Nodes\":4999,\"MachineType\":\"g1-small\"},\"heapster-pool\":{\"Nodes\":1,\"MachineType\":\"n1-standard-16\"}}",
       "--provider=gke",
-      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --allowed-not-ready-nodes=50 --node-schedulable-timeout=60m --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --minStartupPods=8",
       "--timeout=1200m",
       "--use-logexporter"
     ],
@@ -6792,7 +6792,7 @@
       "--gke-environment=test",
       "--gke-shape={\"default\":{\"Nodes\":1999,\"MachineType\":\"n1-standard-1\"},\"heapster-pool\":{\"Nodes\":1,\"MachineType\":\"n1-standard-8\"}}",
       "--provider=gke",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --allowed-not-ready-nodes=20 --node-schedulable-timeout=60m",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\]",
       "--timeout=510m",
       "--use-logexporter"
     ],
@@ -6815,7 +6815,7 @@
       "--gke-node-locations=us-east1-a",
       "--gke-shape={\"default\":{\"Nodes\":1999,\"MachineType\":\"n1-standard-1\"},\"heapster-pool\":{\"Nodes\":1,\"MachineType\":\"n1-standard-8\"}}",
       "--provider=gke",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --allowed-not-ready-nodes=20 --node-schedulable-timeout=60m",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\]",
       "--timeout=510m",
       "--use-logexporter"
     ],
@@ -7060,7 +7060,7 @@
       "--gke-environment=test",
       "--gke-shape={\"default\":{\"Nodes\":3999,\"MachineType\":\"g1-small\"},\"heapster-pool\":{\"Nodes\":1,\"MachineType\":\"n1-standard-16\"}}",
       "--provider=gke",
-      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[DisabledForLargeClusters\\] --allowed-not-ready-nodes=40 --node-schedulable-timeout=90m --minStartupPods=8",
+      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[DisabledForLargeClusters\\] --minStartupPods=8",
       "--timeout=630m",
       "--use-logexporter"
     ],
@@ -12755,7 +12755,7 @@
       "--gcp-zone=us-east1-b",
       "--provider=gce",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-100-performance",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --allowed-not-ready-nodes=1 --node-schedulable-timeout=10m --minStartupPods=8 --gather-resource-usage=true --gather-metrics-at-teardown=true",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --minStartupPods=8 --gather-resource-usage=true --gather-metrics-at-teardown=true",
       "--timeout=100m",
       "--use-logexporter"
     ],
@@ -12777,7 +12777,7 @@
       "--gcp-zone=us-east1-a",
       "--provider=gce",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-big-performance",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --allowed-not-ready-nodes=5 --node-schedulable-timeout=10m --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
       "--timeout=240m",
       "--use-logexporter"
     ],
@@ -12822,7 +12822,7 @@
       "--gcp-zone=us-east1-a",
       "--provider=gce",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-large-performance",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --allowed-not-ready-nodes=20 --node-schedulable-timeout=60m --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
       "--timeout=540m",
       "--use-logexporter"
     ],
