@@ -266,6 +266,10 @@ plugins:
   kubernetes/kubernetes-template-project:
   - approve
 
+  kubernetes/kube-openapi:
+  - approve
+  - blunderbuss
+  
   kubernetes/kube-state-metrics:
   - approve
   - blunderbuss
