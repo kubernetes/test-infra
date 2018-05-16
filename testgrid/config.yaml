@@ -2494,9 +2494,11 @@ test_groups:
   gcs_prefix: istio-circleci/e2e-galley
   num_failures_to_alert: 5
 - name: circleci-test
+  days_of_results: 3
   gcs_prefix: istio-circleci/test
   num_failures_to_alert: 5
 - name: circleci-racetest
+  days_of_results: 3
   gcs_prefix: istio-circleci/racetest
   num_failures_to_alert: 5
 # Istio daily releases
