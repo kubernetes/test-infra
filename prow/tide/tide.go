@@ -1004,7 +1004,7 @@ func (c *Controller) syncSubpool(sp subpool) (Pool, error) {
 	}
 	cr, err := newContextRegisterFromConfig(sp.org, sp.repo, sp.branch, c.ca.Config())
 	if err != nil {
-		return Pool{}, fmt.Errorf("error parsing branch protection: %v", err)
+		return Pool{}, fmt.Errorf("error parsing tide context options: %v", err)
 	}
 	successes, pendings, nones := accumulate(presubmits, sp.prs, sp.pjs)
 	batchMerge, batchPending := accumulateBatch(presubmits, sp.prs, sp.pjs)

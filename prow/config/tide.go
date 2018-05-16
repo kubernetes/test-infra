@@ -249,7 +249,15 @@ func (tq *TideQuery) Validate() error {
 	return nil
 }
 
-func mergeTideContextPolicyConfig(a, b TideContextPolicy) TideContextPolicy {
+func (c *TideContextPolicy) Validate() error {
+	inter := sets.NewString(c.RequiredContexts...).Intersection(sets.NewString(c.OptionalContexts...))
+	if inter.Len() > 0 {
+		return fmt.Errorf("contexts %s are defined has required and optional", strings.Join(inter.List(), ", "))
+	}
+	return nil
+}
+
+func mergeTideContextPolicy(a, b TideContextPolicy) TideContextPolicy {
 	mergeBool := func(a, b *bool) *bool {
 		if b == nil {
 			return a
@@ -257,25 +265,29 @@ func mergeTideContextPolicyConfig(a, b TideContextPolicy) TideContextPolicy {
 		return b
 	}
 	c := TideContextPolicy{}
-	c.FromBranchProtection = mergeBool(c.FromBranchProtection, b.FromBranchProtection)
+	c.FromBranchProtection = mergeBool(a.FromBranchProtection, b.FromBranchProtection)
 	c.SkipUnknownContexts = mergeBool(a.SkipUnknownContexts, b.SkipUnknownContexts)
 	required := sets.NewString(a.RequiredContexts...)
 	optional := sets.NewString(a.OptionalContexts...)
 	required.Insert(b.RequiredContexts...)
 	optional.Insert(b.OptionalContexts...)
-	c.RequiredContexts = required.List()
-	c.OptionalContexts = optional.List()
+	if required.Len() > 0 {
+		c.RequiredContexts = required.List()
+	}
+	if optional.Len() > 0 {
+		c.OptionalContexts = optional.List()
+	}
 	return c
 }
 
 func parseTideContextPolicyOptions(org, repo, branch string, options TideContextPolicyOptions) TideContextPolicy {
 	option := options.Policy
 	if o, ok := options.Orgs[org]; ok {
-		option = mergeTideContextPolicyConfig(option, o.Policy)
+		option = mergeTideContextPolicy(option, o.Policy)
 		if r, ok := o.Repos[repo]; ok {
-			option = mergeTideContextPolicyConfig(option, r.Policy)
+			option = mergeTideContextPolicy(option, r.Policy)
 			if b, ok := r.Branches[branch]; ok {
-				option = mergeTideContextPolicyConfig(option, b)
+				option = mergeTideContextPolicy(option, b)
 			}
 		}
 	}
@@ -305,15 +317,18 @@ func (c Config) GetTideContextPolicy(org, repo, branch string) (TideContextPolic
 		if bp == nil {
 			return TideContextPolicy{}, errors.New("branch protection is not set")
 		}
-		if bp.Protect == nil || !*bp.Protect || bp.RequiredStatusChecks == nil {
-			return TideContextPolicy{}, errors.New("branch protection is invalid")
+		if bp.Protect == nil || *bp.Protect {
+			required.Insert(bp.RequiredStatusChecks.Contexts...)
 		}
-		required.Insert(bp.RequiredStatusChecks.Contexts...)
 	}
 
-	return TideContextPolicy{
+	t := TideContextPolicy{
 		RequiredContexts:    required.List(),
 		OptionalContexts:    optional.List(),
 		SkipUnknownContexts: options.SkipUnknownContexts,
-	}, nil
+	}
+	if err := t.Validate(); err != nil {
+		return t, err
+	}
+	return t, nil
 }

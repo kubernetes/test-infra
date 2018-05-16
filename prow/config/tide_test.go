@@ -381,7 +381,10 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 					},
 				},
 			},
-			error: "branch protection is invalid",
+			expected: TideContextPolicy{
+				RequiredContexts: []string{},
+				OptionalContexts: []string{},
+			},
 		},
 		{
 			name: "manually defined policy",
@@ -414,7 +417,153 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 				t.Errorf("%s - expected error %v got %v", tc.name, tc.error, err.Error())
 			}
 		} else if tc.error != "" {
-			t.Errorf("%s - expected error %v got %v", tc.name, tc.error, err.Error())
+			t.Errorf("%s - expected error %v got nil", tc.name, tc.error)
+		}
+	}
+}
+
+func TestMergeTideContextPolicyConfig(t *testing.T) {
+	yes := true
+	no := false
+	testCases := []struct {
+		name    string
+		a, b, c TideContextPolicy
+	}{
+		{
+			name: "all empty",
+		},
+		{
+			name: "empty a",
+			b: TideContextPolicy{
+				SkipUnknownContexts:  &yes,
+				FromBranchProtection: &no,
+				RequiredContexts:     []string{"r1"},
+				OptionalContexts:     []string{"o1"},
+			},
+			c: TideContextPolicy{
+				SkipUnknownContexts:  &yes,
+				FromBranchProtection: &no,
+				RequiredContexts:     []string{"r1"},
+				OptionalContexts:     []string{"o1"},
+			},
+		},
+		{
+			name: "empty b",
+			a: TideContextPolicy{
+				SkipUnknownContexts:  &yes,
+				FromBranchProtection: &no,
+				RequiredContexts:     []string{"r1"},
+				OptionalContexts:     []string{"o1"},
+			},
+			c: TideContextPolicy{
+				SkipUnknownContexts:  &yes,
+				FromBranchProtection: &no,
+				RequiredContexts:     []string{"r1"},
+				OptionalContexts:     []string{"o1"},
+			},
+		},
+		{
+			name: "merging unset boolean",
+			a: TideContextPolicy{
+				FromBranchProtection: &no,
+				RequiredContexts:     []string{"r1"},
+				OptionalContexts:     []string{"o1"},
+			},
+			b: TideContextPolicy{
+				SkipUnknownContexts: &yes,
+				RequiredContexts:    []string{"r2"},
+				OptionalContexts:    []string{"o2"},
+			},
+			c: TideContextPolicy{
+				SkipUnknownContexts:  &yes,
+				FromBranchProtection: &no,
+				RequiredContexts:     []string{"r1", "r2"},
+				OptionalContexts:     []string{"o1", "o2"},
+			},
+		},
+		{
+			name: "merging unset contexts in a",
+			a: TideContextPolicy{
+				FromBranchProtection: &no,
+				SkipUnknownContexts:  &yes,
+			},
+			b: TideContextPolicy{
+				FromBranchProtection: &yes,
+				SkipUnknownContexts:  &no,
+				RequiredContexts:     []string{"r1"},
+				OptionalContexts:     []string{"o1"},
+			},
+			c: TideContextPolicy{
+				FromBranchProtection: &yes,
+				SkipUnknownContexts:  &no,
+				RequiredContexts:     []string{"r1"},
+				OptionalContexts:     []string{"o1"},
+			},
+		},
+		{
+			name: "merging unset contexts in b",
+			a: TideContextPolicy{
+				FromBranchProtection: &yes,
+				SkipUnknownContexts:  &no,
+				RequiredContexts:     []string{"r1"},
+				OptionalContexts:     []string{"o1"},
+			},
+			b: TideContextPolicy{
+				FromBranchProtection: &no,
+				SkipUnknownContexts:  &yes,
+			},
+			c: TideContextPolicy{
+				FromBranchProtection: &no,
+				SkipUnknownContexts:  &yes,
+				RequiredContexts:     []string{"r1"},
+				OptionalContexts:     []string{"o1"},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		c := mergeTideContextPolicy(tc.a, tc.b)
+		if !reflect.DeepEqual(c, tc.c) {
+			t.Errorf("%s - expected %v got %v", tc.name, tc.c, c)
+		}
+	}
+}
+
+func TestTideQuery_Validate(t *testing.T) {
+	testCases := []struct {
+		name   string
+		t      TideContextPolicy
+		failed bool
+	}{
+		{
+			name: "good policy",
+			t: TideContextPolicy{
+				OptionalContexts: []string{"o1"},
+				RequiredContexts: []string{"r1"},
+			},
+		},
+		{
+			name: "good policy",
+			t: TideContextPolicy{
+				OptionalContexts: []string{"c1"},
+				RequiredContexts: []string{"c1"},
+			},
+			failed: true,
+		},
+		{
+			name: "good policy",
+			t: TideContextPolicy{
+				OptionalContexts: []string{"c1", "c2", "c3", "c4"},
+				RequiredContexts: []string{"c1", "c4"},
+			},
+			failed: true,
+		},
+	}
+	for _, tc := range testCases {
+		err := tc.t.Validate()
+		failed := err != nil
+		if failed != tc.failed {
+			t.Errorf("%s - expected %b got %v", tc.name, tc.failed, err)
 		}
 	}
 }
