@@ -3499,7 +3499,7 @@
       "--gcp-project=google.com:k8s-jenkins-scalability",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true --output-print-type=json",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true",
       "--timeout=120m",
       "--use-logexporter"
     ],
@@ -4825,7 +4825,7 @@
       "--gcp-project=k8s-jenkins-gci-scalability",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true --output-print-type=json",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true",
       "--timeout=120m",
       "--use-logexporter"
     ],
@@ -4845,7 +4845,7 @@
       "--gcp-project=k8s-e2e-gce-scalability-1-1",
       "--gcp-zone=us-east1-b",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true --output-print-type=json",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true",
       "--timeout=120m"
     ],
     "scenario": "kubernetes_e2e",
@@ -4864,7 +4864,7 @@
       "--gcp-project=k8s-e2e-gci-gce-scale-1-4",
       "--gcp-zone=us-east1-b",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true --output-print-type=json",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true",
       "--timeout=120m"
     ],
     "scenario": "kubernetes_e2e",
@@ -4883,7 +4883,7 @@
       "--gcp-project=k8s-e2e-gci-gce-scale-1-4",
       "--gcp-zone=us-east1-b",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true --output-print-type=json",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true",
       "--timeout=120m"
     ],
     "scenario": "kubernetes_e2e",
@@ -11442,7 +11442,7 @@
       "--kubemark-nodes=100",
       "--provider=gce",
       "--test=false",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true",
       "--timeout=240m"
     ],
     "scenario": "kubernetes_e2e",
@@ -11465,7 +11465,7 @@
       "--kubemark-nodes=100",
       "--provider=gce",
       "--test=false",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true",
       "--timeout=240m"
     ],
     "scenario": "kubernetes_e2e",
@@ -11487,7 +11487,7 @@
       "--kubemark-nodes=5",
       "--provider=gce",
       "--test=false",
-      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
+      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true --gather-metrics-at-teardown=true",
       "--timeout=60m"
     ],
     "scenario": "kubernetes_e2e",
@@ -11508,7 +11508,7 @@
       "--kubemark-nodes=5",
       "--provider=gce",
       "--test=false",
-      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
+      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true --gather-metrics-at-teardown=true",
       "--timeout=60m"
     ],
     "scenario": "kubernetes_e2e",
@@ -11531,7 +11531,7 @@
       "--kubemark-nodes=5",
       "--provider=gce",
       "--test=false",
-      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
+      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true --gather-metrics-at-teardown=true",
       "--timeout=60m"
     ],
     "scenario": "kubernetes_e2e",
@@ -11555,7 +11555,7 @@
       "--kubemark-nodes=500",
       "--provider=gce",
       "--test=false",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true",
       "--timeout=70m"
     ],
     "scenario": "kubernetes_e2e",
@@ -11578,7 +11578,7 @@
       "--kubemark-nodes=5000",
       "--provider=gce",
       "--test=false",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true",
       "--timeout=1080m",
       "--use-logexporter"
     ],
@@ -11603,7 +11603,7 @@
       "--kubemark-nodes=600",
       "--provider=gce",
       "--test=false",
-      "--test_args=--ginkgo.focus=\\[Feature:HighDensityPerformance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
+      "--test_args=--ginkgo.focus=\\[Feature:HighDensityPerformance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true",
       "--timeout=280m"
     ],
     "scenario": "kubernetes_e2e",
@@ -12980,7 +12980,7 @@
       "--provider=gce",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-big",
       "--test=false",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true",
       "--timeout=100m"
     ],
     "scenario": "kubernetes_e2e",
@@ -13028,7 +13028,7 @@
       "--provider=gce",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-scale",
       "--test=false",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true",
       "--timeout=1200m"
     ],
     "scenario": "kubernetes_e2e",
