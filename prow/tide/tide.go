@@ -64,6 +64,13 @@ type githubClient interface {
 	Query(context.Context, interface{}, map[string]interface{}) error
 }
 
+type contextChecker interface {
+	// IsOptional tells whether a context is optional.
+	IsOptional(string) bool
+	// MissingRequiredContexts tells if required contexts are missing from the list of contexts provided.
+	MissingRequiredContexts([]string) []string
+}
+
 // Controller knows how to sync PRs and PJs.
 type Controller struct {
 	logger *logrus.Entry
@@ -187,6 +194,35 @@ func byRepoAndNumber(prs []PullRequest) map[string]PullRequest {
 		m[key] = pr
 	}
 	return m
+}
+
+// newExpectedContext creates a Context with Expected state.
+func newExpectedContext(c string) Context {
+	return Context{
+		Context:     githubql.String(c),
+		State:       githubql.StatusStateExpected,
+		Description: githubql.String(""),
+	}
+}
+
+// newContextCheckerFromConfig instantiates a new contextChecker and register tide as optional by default
+// and uses Prow Config to find optional and required tests, as well as skipUnknownContexts.
+func newContextCheckerFromConfig(org, repo, branch string, c *config.Config) (contextChecker, error) {
+	policy, err := c.GetTideContextPolicy(org, repo, branch)
+	if err != nil {
+		return nil, err
+	}
+	policy.RegisterOptionalContexts(statusContext)
+	return &policy, nil
+}
+
+// contextsToStrings converts a list Context to a list of string
+func contextsToStrings(contexts []Context) []string {
+	var names []string
+	for _, c := range contexts {
+		names = append(names, string(c.Context))
+	}
+	return names
 }
 
 // requirementDiff calculates the diff between a PR and a TideQuery.
@@ -369,7 +405,7 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 			log.WithError(err).Error("Getting head commit status contexts, skipping...")
 			return
 		}
-		cr, err := newContextRegisterFromConfig(
+		cr, err := newContextCheckerFromConfig(
 			string(pr.Repository.Owner.Login),
 			string(pr.Repository.Name),
 			string(pr.BaseRef.Name),
@@ -602,14 +638,17 @@ func isPassingTests(log *logrus.Entry, ghc githubClient, pr PullRequest, cc cont
 func unsuccessfulContexts(contexts []Context, cc contextChecker) []Context {
 	var failed []Context
 	for _, ctx := range contexts {
-		if cc.isOptional(ctx) {
+		if cc.IsOptional(string(ctx.Context)) {
 			continue
 		}
 		if ctx.State != githubql.StatusStateSuccess {
 			failed = append(failed, ctx)
 		}
 	}
-	failed = append(failed, cc.missingRequiredContexts(contexts)...)
+	for _, c := range cc.MissingRequiredContexts(contextsToStrings(contexts)) {
+		failed = append(failed, newExpectedContext(c))
+	}
+
 	return failed
 }
 
@@ -1002,7 +1041,7 @@ func (c *Controller) syncSubpool(sp subpool) (Pool, error) {
 	if err != nil {
 		return Pool{}, fmt.Errorf("error determining required presubmits: %v", err)
 	}
-	cr, err := newContextRegisterFromConfig(sp.org, sp.repo, sp.branch, c.ca.Config())
+	cr, err := newContextCheckerFromConfig(sp.org, sp.repo, sp.branch, c.ca.Config())
 	if err != nil {
 		return Pool{}, fmt.Errorf("error parsing tide context options: %v", err)
 	}

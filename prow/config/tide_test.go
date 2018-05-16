@@ -22,6 +22,7 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/github"
 )
 
@@ -563,7 +564,134 @@ func TestTideQuery_Validate(t *testing.T) {
 		err := tc.t.Validate()
 		failed := err != nil
 		if failed != tc.failed {
-			t.Errorf("%s - expected %b got %v", tc.name, tc.failed, err)
+			t.Errorf("%s - expected %v got %v", tc.name, tc.failed, err)
+		}
+	}
+}
+
+func TestTideContextPolicy_IsOptional(t *testing.T) {
+	testCases := []struct {
+		name                string
+		skipUnknownContexts bool
+		required, optional  []string
+		contexts            []string
+		results             []bool
+	}{
+		{
+			name:     "only optional contexts registered - skipUnknownContexts false",
+			contexts: []string{"c1", "o1", "o2"},
+			optional: []string{"o1", "o2"},
+			results:  []bool{false, true, true},
+		},
+		{
+			name:     "no contexts registered - skipUnknownContexts false",
+			contexts: []string{"t2"},
+			results:  []bool{false},
+		},
+		{
+			name:     "only required contexts registered - skipUnknownContexts false",
+			required: []string{"c1", "c2", "c3"},
+			contexts: []string{"c1", "c2", "c3", "t1"},
+			results:  []bool{false, false, false, false},
+		},
+		{
+			name:     "optional and required contexts registered - skipUnknownContexts false",
+			optional: []string{"o1", "o2"},
+			required: []string{"c1", "c2", "c3"},
+			contexts: []string{"o1", "o2", "c1", "c2", "c3", "t1"},
+			results:  []bool{true, true, false, false, false, false},
+		},
+		{
+			name:                "only optional contexts registered - skipUnknownContexts true",
+			contexts:            []string{"c1", "o1", "o2"},
+			optional:            []string{"o1", "o2"},
+			skipUnknownContexts: true,
+			results:             []bool{true, true, true},
+		},
+		{
+			name:                "no contexts registered - skipUnknownContexts true",
+			contexts:            []string{"t2"},
+			skipUnknownContexts: true,
+			results:             []bool{true},
+		},
+		{
+			name:                "only required contexts registered - skipUnknownContexts true",
+			required:            []string{"c1", "c2", "c3"},
+			contexts:            []string{"c1", "c2", "c3", "t1"},
+			skipUnknownContexts: true,
+			results:             []bool{false, false, false, true},
+		},
+		{
+			name:                "optional and required contexts registered - skipUnknownContexts true",
+			optional:            []string{"o1", "o2"},
+			required:            []string{"c1", "c2", "c3"},
+			contexts:            []string{"o1", "o2", "c1", "c2", "c3", "t1"},
+			skipUnknownContexts: true,
+			results:             []bool{true, true, false, false, false, true},
+		},
+	}
+
+	for _, tc := range testCases {
+		cp := TideContextPolicy{SkipUnknownContexts: &tc.skipUnknownContexts}
+		cp.RegisterOptionalContexts(tc.optional...)
+		cp.RegisterRequiredContexts(tc.required...)
+		for i, c := range tc.contexts {
+			if cp.IsOptional(c) != tc.results[i] {
+				t.Errorf("%s - IsOptional for %s should return %t", tc.name, c, tc.results[i])
+			}
+		}
+	}
+}
+
+func TestTideContextPolicy_MissingRequiredContexts(t *testing.T) {
+	testCases := []struct {
+		name                               string
+		skipUnknownContexts                bool
+		required, optional                 []string
+		existingContexts, expectedContexts []string
+	}{
+		{
+			name:             "no contexts registered",
+			existingContexts: []string{"c1", "c2"},
+		},
+		{
+			name:             "optional contexts registered / no missing contexts",
+			optional:         []string{"o1", "o2", "o3"},
+			existingContexts: []string{"c1", "c2"},
+		},
+		{
+			name:             "required  contexts registered / missing contexts",
+			required:         []string{"c1", "c2", "c3"},
+			existingContexts: []string{"c1", "c2"},
+			expectedContexts: []string{"c3"},
+		},
+		{
+			name:             "required contexts registered / no missing contexts",
+			required:         []string{"c1", "c2", "c3"},
+			existingContexts: []string{"c1", "c2", "c3"},
+		},
+		{
+			name:             "optional and required contexts registered / missing contexts",
+			optional:         []string{"o1", "o2", "o3"},
+			required:         []string{"c1", "c2", "c3"},
+			existingContexts: []string{"c1", "c2"},
+			expectedContexts: []string{"c3"},
+		},
+		{
+			name:             "optional and required contexts registered / no missing contexts",
+			optional:         []string{"o1", "o2", "o3"},
+			required:         []string{"c1", "c2"},
+			existingContexts: []string{"c1", "c2", "c4"},
+		},
+	}
+
+	for _, tc := range testCases {
+		cp := TideContextPolicy{SkipUnknownContexts: &tc.skipUnknownContexts}
+		cp.RegisterOptionalContexts(tc.optional...)
+		cp.RegisterRequiredContexts(tc.required...)
+		missingContexts := cp.MissingRequiredContexts(tc.existingContexts)
+		if !sets.NewString(missingContexts...).Equal(sets.NewString(tc.expectedContexts...)) {
+			t.Errorf("%s - expected %v got %v", tc.name, tc.expectedContexts, missingContexts)
 		}
 	}
 }

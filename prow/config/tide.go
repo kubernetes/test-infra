@@ -332,3 +332,52 @@ func (c Config) GetTideContextPolicy(org, repo, branch string) (TideContextPolic
 	}
 	return t, nil
 }
+
+// IsOptional checks whether a context can be ignored.
+// Will return true if
+// - context is registered as optional
+// - required contexts are registered and the context provided is not required
+// Will return false otherwise. Every context is required.
+func (cp *TideContextPolicy) IsOptional(c string) bool {
+	if sets.NewString(cp.OptionalContexts...).Has(c) {
+		return true
+	}
+	if sets.NewString(cp.RequiredContexts...).Has(c) {
+		return false
+	}
+	if cp.SkipUnknownContexts != nil && *cp.SkipUnknownContexts {
+		return true
+	}
+	return false
+}
+
+// MissingRequiredContexts discard the optional contexts and only look of extra required contexts that are not provided.
+func (cp *TideContextPolicy) MissingRequiredContexts(contexts []string) []string {
+	if len(cp.RequiredContexts) == 0 {
+		return nil
+	}
+	existingContexts := sets.NewString()
+	for _, c := range contexts {
+		existingContexts.Insert(c)
+	}
+	var missingContexts []string
+	for c := range sets.NewString(cp.RequiredContexts...).Difference(existingContexts) {
+		missingContexts = append(missingContexts, c)
+	}
+	return missingContexts
+}
+
+// RegisterOptionalContexts registers optional contexts
+func (cp *TideContextPolicy) RegisterOptionalContexts(c ...string) {
+	o := sets.NewString(cp.OptionalContexts...)
+	o.Insert(c...)
+	cp.OptionalContexts = o.List()
+}
+
+// RegisterRequiredContexts register required contexts.
+// Once required contexts are registered other contexts will be considered optional.
+func (cp *TideContextPolicy) RegisterRequiredContexts(c ...string) {
+	r := sets.NewString(cp.RequiredContexts...)
+	r.Insert(c...)
+	cp.RequiredContexts = r.List()
+}
