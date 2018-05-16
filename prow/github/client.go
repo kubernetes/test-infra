@@ -60,7 +60,7 @@ type Client struct {
 	gqlc     gqlClient
 	client   httpClient
 	token    string
-	base     string
+	bases    []string
 	dry      bool
 	fake     bool
 	throttle throttler
@@ -70,7 +70,7 @@ type Client struct {
 	email   string
 }
 
-const (
+var (
 	maxRetries    = 8
 	max404Retries = 2
 	maxSleepTime  = 2 * time.Minute
@@ -177,14 +177,19 @@ func (c *Client) Throttle(hourlyTokens, burst int) {
 }
 
 // NewClient creates a new fully operational GitHub client.
-func NewClient(token, base string) *Client {
+// 'token' is the GitHub access token to use.
+// 'bases' is a ';' delimited array of endpoints to use in order of preference.
+//   An endpoint is used when all preceding endpoints have returned a conn err.
+//   This should be used when using the ghproxy GitHub proxy cache to allow
+//   this client to bypass the cache if it is temporarily unavailable.
+func NewClient(token, bases string) *Client {
 	return &Client{
 		logger: logrus.WithField("client", "github"),
 		time:   &standardTime{},
 		gqlc:   githubql.NewClient(oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token}))),
 		client: &http.Client{},
 		token:  token,
-		base:   base,
+		bases:  strings.Split(bases, ";"),
 		dry:    false,
 	}
 }
@@ -192,14 +197,19 @@ func NewClient(token, base string) *Client {
 // NewDryRunClient creates a new client that will not perform mutating actions
 // such as setting statuses or commenting, but it will still query GitHub and
 // use up API tokens.
-func NewDryRunClient(token, base string) *Client {
+// 'token' is the GitHub access token to use.
+// 'bases' is a ';' delimited array of endpoints to use in order of preference.
+//   An endpoint is used when all preceding endpoints have returned a conn err.
+//   This should be used when using the ghproxy GitHub proxy cache to allow
+//   this client to bypass the cache if it is temporarily unavailable.
+func NewDryRunClient(token, bases string) *Client {
 	return &Client{
 		logger: logrus.WithField("client", "github"),
 		time:   &standardTime{},
 		gqlc:   githubql.NewClient(oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token}))),
 		client: &http.Client{},
 		token:  token,
-		base:   base,
+		bases:  strings.Split(bases, ";"),
 		dry:    true,
 	}
 }
@@ -296,6 +306,7 @@ func (c *Client) requestRaw(r *request) (int, []byte, error) {
 // ratelimit exceeded, and retries 404s a couple times.
 // This function closes the response body iff it also returns an error.
 func (c *Client) requestRetry(method, path, accept string, body interface{}) (*http.Response, error) {
+	var hostIndex int
 	var resp *http.Response
 	var err error
 	backoff := initialDelay
@@ -303,7 +314,7 @@ func (c *Client) requestRetry(method, path, accept string, body interface{}) (*h
 		if retries > 0 && resp != nil {
 			resp.Body.Close()
 		}
-		resp, err = c.doRequest(method, path, accept, body)
+		resp, err = c.doRequest(method, c.bases[hostIndex]+path, accept, body)
 		if err == nil {
 			if resp.StatusCode == 404 && retries < max404Retries {
 				// Retry 404s a couple times. Sometimes GitHub is inconsistent in
@@ -349,6 +360,8 @@ func (c *Client) requestRetry(method, path, accept string, body interface{}) (*h
 				backoff *= 2
 			}
 		} else {
+			// Connection problem. Try a different host.
+			hostIndex = (hostIndex + 1) % len(c.bases)
 			c.time.Sleep(backoff)
 			backoff *= 2
 		}
@@ -388,7 +401,7 @@ func (c *Client) getUserData() error {
 	var u User
 	_, err := c.request(&request{
 		method:    http.MethodGet,
-		path:      fmt.Sprintf("%s/user", c.base),
+		path:      "/user",
 		exitCodes: []int{200},
 	}, &u)
 	if err != nil {
@@ -433,7 +446,7 @@ func (c *Client) IsMember(org, user string) (bool, error) {
 	}
 	code, err := c.request(&request{
 		method:    http.MethodGet,
-		path:      fmt.Sprintf("%s/orgs/%s/members/%s", c.base, org, user),
+		path:      fmt.Sprintf("/orgs/%s/members/%s", org, user),
 		exitCodes: []int{204, 404, 302},
 	}, nil)
 	if err != nil {
@@ -486,7 +499,7 @@ func (c *Client) CreateComment(org, repo string, number int, comment string) err
 	}
 	_, err := c.request(&request{
 		method:      http.MethodPost,
-		path:        fmt.Sprintf("%s/repos/%s/%s/issues/%d/comments", c.base, org, repo, number),
+		path:        fmt.Sprintf("/repos/%s/%s/issues/%d/comments", org, repo, number),
 		requestBody: &ic,
 		exitCodes:   []int{201},
 	}, nil)
@@ -498,7 +511,7 @@ func (c *Client) DeleteComment(org, repo string, ID int) error {
 	c.log("DeleteComment", org, repo, ID)
 	_, err := c.request(&request{
 		method:    http.MethodDelete,
-		path:      fmt.Sprintf("%s/repos/%s/%s/issues/comments/%d", c.base, org, repo, ID),
+		path:      fmt.Sprintf("/repos/%s/%s/issues/comments/%d", org, repo, ID),
 		exitCodes: []int{204},
 	}, nil)
 	return err
@@ -511,7 +524,7 @@ func (c *Client) EditComment(org, repo string, ID int, comment string) error {
 	}
 	_, err := c.request(&request{
 		method:      http.MethodPatch,
-		path:        fmt.Sprintf("%s/repos/%s/%s/issues/comments/%d", c.base, org, repo, ID),
+		path:        fmt.Sprintf("/repos/%s/%s/issues/comments/%d", org, repo, ID),
 		requestBody: &ic,
 		exitCodes:   []int{200},
 	}, nil)
@@ -523,7 +536,7 @@ func (c *Client) CreateCommentReaction(org, repo string, ID int, reaction string
 	r := Reaction{Content: reaction}
 	_, err := c.request(&request{
 		method:      http.MethodPost,
-		path:        fmt.Sprintf("%s/repos/%s/%s/issues/comments/%d/reactions", c.base, org, repo, ID),
+		path:        fmt.Sprintf("/repos/%s/%s/issues/comments/%d/reactions", org, repo, ID),
 		accept:      "application/vnd.github.squirrel-girl-preview",
 		exitCodes:   []int{201},
 		requestBody: &r,
@@ -536,7 +549,7 @@ func (c *Client) CreateIssueReaction(org, repo string, ID int, reaction string) 
 	r := Reaction{Content: reaction}
 	_, err := c.request(&request{
 		method:      http.MethodPost,
-		path:        fmt.Sprintf("%s/repos/%s/%s/issues/%d/reactions", c.base, org, repo, ID),
+		path:        fmt.Sprintf("/repos/%s/%s/issues/%d/reactions", org, repo, ID),
 		accept:      "application/vnd.github.squirrel-girl-preview",
 		requestBody: &r,
 		exitCodes:   []int{200, 201},
@@ -571,9 +584,9 @@ func (c *Client) DeleteStaleComments(org, repo string, number int, comments []Is
 // results.  An error is returned if encountered in making calls to
 // github or marshalling objects.
 func (c *Client) readPaginatedResults(path, accept string, newObj func() interface{}, accumulate func(interface{})) error {
-	url := fmt.Sprintf("%s%s?per_page=100", c.base, path)
-	for url != "" {
-		resp, err := c.requestRetry(http.MethodGet, url, accept, nil)
+	pagedPath := fmt.Sprintf("%s?per_page=100", path)
+	for {
+		resp, err := c.requestRetry(http.MethodGet, pagedPath, accept, nil)
 		if err != nil {
 			return err
 		}
@@ -594,7 +607,15 @@ func (c *Client) readPaginatedResults(path, accept string, newObj func() interfa
 
 		accumulate(obj)
 
-		url = parseLinks(resp.Header.Get("Link"))["next"]
+		link := parseLinks(resp.Header.Get("Link"))["next"]
+		if link == "" {
+			break
+		}
+		u, err := url.Parse(link)
+		if err != nil {
+			return fmt.Errorf("failed to parse 'next' link: %v", err)
+		}
+		pagedPath = u.RequestURI()
 	}
 	return nil
 }
@@ -630,7 +651,7 @@ func (c *Client) GetPullRequest(org, repo string, number int) (*PullRequest, err
 	var pr PullRequest
 	_, err := c.request(&request{
 		method:    http.MethodGet,
-		path:      fmt.Sprintf("%s/repos/%s/%s/pulls/%d", c.base, org, repo, number),
+		path:      fmt.Sprintf("/repos/%s/%s/pulls/%d", org, repo, number),
 		exitCodes: []int{200},
 	}, &pr)
 	return &pr, err
@@ -642,7 +663,7 @@ func (c *Client) GetPullRequestPatch(org, repo string, number int) ([]byte, erro
 	_, patch, err := c.requestRaw(&request{
 		accept:    "application/vnd.github.VERSION.patch",
 		method:    http.MethodGet,
-		path:      fmt.Sprintf("%s/repos/%s/%s/pulls/%d", c.base, org, repo, number),
+		path:      fmt.Sprintf("/repos/%s/%s/pulls/%d", org, repo, number),
 		exitCodes: []int{200},
 	})
 	return patch, err
@@ -673,7 +694,7 @@ func (c *Client) CreatePullRequest(org, repo, title, body, head, base string, ca
 	}
 	_, err := c.request(&request{
 		method:      http.MethodPost,
-		path:        fmt.Sprintf("%s/repos/%s/%s/pulls", c.base, org, repo),
+		path:        fmt.Sprintf("/repos/%s/%s/pulls", org, repo),
 		requestBody: &data,
 		exitCodes:   []int{201},
 	}, &resp)
@@ -762,7 +783,7 @@ func (c *Client) CreateStatus(org, repo, sha string, s Status) error {
 	c.log("CreateStatus", org, repo, sha, s)
 	_, err := c.request(&request{
 		method:      http.MethodPost,
-		path:        fmt.Sprintf("%s/repos/%s/%s/statuses/%s", c.base, org, repo, sha),
+		path:        fmt.Sprintf("/repos/%s/%s/statuses/%s", org, repo, sha),
 		requestBody: &s,
 		exitCodes:   []int{201},
 	}, nil)
@@ -775,7 +796,7 @@ func (c *Client) ListStatuses(org, repo, ref string) ([]Status, error) {
 	var statuses []Status
 	_, err := c.request(&request{
 		method:    http.MethodGet,
-		path:      fmt.Sprintf("%s/repos/%s/%s/statuses/%s", c.base, org, repo, ref),
+		path:      fmt.Sprintf("/repos/%s/%s/statuses/%s", org, repo, ref),
 		exitCodes: []int{200},
 	}, &statuses)
 	return statuses, err
@@ -788,7 +809,7 @@ func (c *Client) GetRepo(owner, name string) (Repo, error) {
 	var repo Repo
 	_, err := c.request(&request{
 		method:    http.MethodGet,
-		path:      fmt.Sprintf("%s/repos/%s/%s", c.base, owner, name),
+		path:      fmt.Sprintf("/repos/%s/%s", owner, name),
 		exitCodes: []int{200},
 	}, &repo)
 	return repo, err
@@ -804,9 +825,9 @@ func (c *Client) GetRepos(org string, isUser bool) ([]Repo, error) {
 		return repos, nil
 	}
 	if isUser {
-		nextURL = fmt.Sprintf("%s/users/%s/repos", c.base, org)
+		nextURL = fmt.Sprintf("/users/%s/repos", org)
 	} else {
-		nextURL = fmt.Sprintf("%s/orgs/%s/repos", c.base, org)
+		nextURL = fmt.Sprintf("/orgs/%s/repos", org)
 	}
 	for nextURL != "" {
 		resp, err := c.requestRetry(http.MethodGet, nextURL, "", nil)
@@ -838,7 +859,7 @@ func (c *Client) GetBranches(org, repo string) ([]Branch, error) {
 	var branches []Branch
 	_, err := c.request(&request{
 		method:    http.MethodGet,
-		path:      fmt.Sprintf("%s/repos/%s/%s/branches", c.base, org, repo),
+		path:      fmt.Sprintf("/repos/%s/%s/branches", org, repo),
 		exitCodes: []int{200},
 	}, &branches)
 	return branches, err
@@ -848,7 +869,7 @@ func (c *Client) RemoveBranchProtection(org, repo, branch string) error {
 	c.log("RemoveBranchProtection", org, repo, branch)
 	_, err := c.request(&request{
 		method:    http.MethodDelete,
-		path:      fmt.Sprintf("%s/repos/%s/%s/branches/%s/protection", c.base, org, repo, branch),
+		path:      fmt.Sprintf("/repos/%s/%s/branches/%s/protection", org, repo, branch),
 		exitCodes: []int{204},
 	}, nil)
 	return err
@@ -858,7 +879,7 @@ func (c *Client) UpdateBranchProtection(org, repo, branch string, config BranchP
 	c.log("UpdateBranchProtection", org, repo, branch, config)
 	_, err := c.request(&request{
 		method:      http.MethodPut,
-		path:        fmt.Sprintf("%s/repos/%s/%s/branches/%s/protection", c.base, org, repo, branch),
+		path:        fmt.Sprintf("/repos/%s/%s/branches/%s/protection", org, repo, branch),
 		requestBody: config,
 		exitCodes:   []int{200},
 	}, nil)
@@ -870,7 +891,7 @@ func (c *Client) AddRepoLabel(org, repo, label, color string) error {
 	c.log("AddRepoLabel", org, repo, label, color)
 	_, err := c.request(&request{
 		method:      http.MethodPost,
-		path:        fmt.Sprintf("%s/repos/%s/%s/labels", c.base, org, repo),
+		path:        fmt.Sprintf("/repos/%s/%s/labels", org, repo),
 		requestBody: Label{Name: label, Color: color},
 		exitCodes:   []int{201},
 	}, nil)
@@ -882,7 +903,7 @@ func (c *Client) UpdateRepoLabel(org, repo, label, name, color string) error {
 	c.log("UpdateRepoLabel", org, repo, label, name, color)
 	_, err := c.request(&request{
 		method:      http.MethodPatch,
-		path:        fmt.Sprintf("%s/repos/%s/%s/labels/%s", c.base, org, repo, label),
+		path:        fmt.Sprintf("/repos/%s/%s/labels/%s", org, repo, label),
 		requestBody: Label{Name: name, Color: color},
 		exitCodes:   []int{200},
 	}, nil)
@@ -894,7 +915,7 @@ func (c *Client) DeleteRepoLabel(org, repo, label string) error {
 	c.log("DeleteRepoLabel", org, repo, label)
 	_, err := c.request(&request{
 		method:      http.MethodDelete,
-		path:        fmt.Sprintf("%s/repos/%s/%s/labels/%s", c.base, org, repo, label),
+		path:        fmt.Sprintf("/repos/%s/%s/labels/%s", org, repo, label),
 		requestBody: Label{Name: label},
 		exitCodes:   []int{204},
 	}, nil)
@@ -907,7 +928,7 @@ func (c *Client) GetCombinedStatus(org, repo, ref string) (*CombinedStatus, erro
 	var combinedStatus CombinedStatus
 	_, err := c.request(&request{
 		method:    http.MethodGet,
-		path:      fmt.Sprintf("%s/repos/%s/%s/commits/%s/status", c.base, org, repo, ref),
+		path:      fmt.Sprintf("/repos/%s/%s/commits/%s/status", org, repo, ref),
 		exitCodes: []int{200},
 	}, &combinedStatus)
 	return &combinedStatus, err
@@ -949,7 +970,7 @@ func (c *Client) AddLabel(org, repo string, number int, label string) error {
 	c.log("AddLabel", org, repo, number, label)
 	_, err := c.request(&request{
 		method:      http.MethodPost,
-		path:        fmt.Sprintf("%s/repos/%s/%s/issues/%d/labels", c.base, org, repo, number),
+		path:        fmt.Sprintf("/repos/%s/%s/issues/%d/labels", org, repo, number),
 		requestBody: []string{label},
 		exitCodes:   []int{200},
 	}, nil)
@@ -976,7 +997,7 @@ func (c *Client) RemoveLabel(org, repo string, number int, label string) error {
 	c.log("RemoveLabel", org, repo, number, label)
 	code, body, err := c.requestRaw(&request{
 		method: http.MethodDelete,
-		path:   fmt.Sprintf("%s/repos/%s/%s/issues/%d/labels/%s", c.base, org, repo, number, label),
+		path:   fmt.Sprintf("/repos/%s/%s/issues/%d/labels/%s", org, repo, number, label),
 		// GitHub sometimes returns 200 for this call, which is a bug on their end.
 		// Do not expect a 404 exit code and handle it separately because we need
 		// to introspect the request's response body.
@@ -1029,7 +1050,7 @@ func (c *Client) AssignIssue(org, repo string, number int, logins []string) erro
 	var i Issue
 	_, err := c.request(&request{
 		method:      http.MethodPost,
-		path:        fmt.Sprintf("%s/repos/%s/%s/issues/%d/assignees", c.base, org, repo, number),
+		path:        fmt.Sprintf("/repos/%s/%s/issues/%d/assignees", org, repo, number),
 		requestBody: map[string][]string{"assignees": logins},
 		exitCodes:   []int{201},
 	}, &i)
@@ -1066,7 +1087,7 @@ func (c *Client) UnassignIssue(org, repo string, number int, logins []string) er
 	var i Issue
 	_, err := c.request(&request{
 		method:      http.MethodDelete,
-		path:        fmt.Sprintf("%s/repos/%s/%s/issues/%d/assignees", c.base, org, repo, number),
+		path:        fmt.Sprintf("/repos/%s/%s/issues/%d/assignees", org, repo, number),
 		requestBody: map[string][]string{"assignees": logins},
 		exitCodes:   []int{200},
 	}, &i)
@@ -1093,7 +1114,7 @@ func (c *Client) CreateReview(org, repo string, number int, r DraftReview) error
 	c.log("CreateReview", org, repo, number, r)
 	_, err := c.request(&request{
 		method:      http.MethodPost,
-		path:        fmt.Sprintf("%s/repos/%s/%s/pulls/%d/reviews", c.base, org, repo, number),
+		path:        fmt.Sprintf("/repos/%s/%s/pulls/%d/reviews", org, repo, number),
 		accept:      "application/vnd.github.black-cat-preview+json",
 		requestBody: r,
 		exitCodes:   []int{200},
@@ -1106,7 +1127,7 @@ func (c *Client) tryRequestReview(org, repo string, number int, logins []string)
 	var pr PullRequest
 	return c.request(&request{
 		method:      http.MethodPost,
-		path:        fmt.Sprintf("%s/repos/%s/%s/pulls/%d/requested_reviewers", c.base, org, repo, number),
+		path:        fmt.Sprintf("/repos/%s/%s/pulls/%d/requested_reviewers", org, repo, number),
 		accept:      "application/vnd.github.black-cat-preview+json",
 		requestBody: map[string][]string{"reviewers": logins},
 		exitCodes:   []int{http.StatusCreated /*201*/},
@@ -1151,7 +1172,7 @@ func (c *Client) UnrequestReview(org, repo string, number int, logins []string) 
 	var pr PullRequest
 	_, err := c.request(&request{
 		method:      http.MethodDelete,
-		path:        fmt.Sprintf("%s/repos/%s/%s/pulls/%d/requested_reviewers", c.base, org, repo, number),
+		path:        fmt.Sprintf("/repos/%s/%s/pulls/%d/requested_reviewers", org, repo, number),
 		accept:      "application/vnd.github.black-cat-preview+json",
 		requestBody: map[string][]string{"reviewers": logins},
 		exitCodes:   []int{http.StatusOK /*200*/},
@@ -1183,7 +1204,7 @@ func (c *Client) CloseIssue(org, repo string, number int) error {
 	c.log("CloseIssue", org, repo, number)
 	_, err := c.request(&request{
 		method:      http.MethodPatch,
-		path:        fmt.Sprintf("%s/repos/%s/%s/issues/%d", c.base, org, repo, number),
+		path:        fmt.Sprintf("/repos/%s/%s/issues/%d", org, repo, number),
 		requestBody: map[string]string{"state": "closed"},
 		exitCodes:   []int{200},
 	}, nil)
@@ -1223,7 +1244,7 @@ func (c *Client) ReopenIssue(org, repo string, number int) error {
 	c.log("ReopenIssue", org, repo, number)
 	_, err := c.request(&request{
 		method:      http.MethodPatch,
-		path:        fmt.Sprintf("%s/repos/%s/%s/issues/%d", c.base, org, repo, number),
+		path:        fmt.Sprintf("/repos/%s/%s/issues/%d", org, repo, number),
 		requestBody: map[string]string{"state": "open"},
 		exitCodes:   []int{200},
 	}, nil)
@@ -1236,7 +1257,7 @@ func (c *Client) ClosePR(org, repo string, number int) error {
 	c.log("ClosePR", org, repo, number)
 	_, err := c.request(&request{
 		method:      http.MethodPatch,
-		path:        fmt.Sprintf("%s/repos/%s/%s/pulls/%d", c.base, org, repo, number),
+		path:        fmt.Sprintf("/repos/%s/%s/pulls/%d", org, repo, number),
 		requestBody: map[string]string{"state": "closed"},
 		exitCodes:   []int{200},
 	}, nil)
@@ -1249,7 +1270,7 @@ func (c *Client) ReopenPR(org, repo string, number int) error {
 	c.log("ReopenPR", org, repo, number)
 	_, err := c.request(&request{
 		method:      http.MethodPatch,
-		path:        fmt.Sprintf("%s/repos/%s/%s/pulls/%d", c.base, org, repo, number),
+		path:        fmt.Sprintf("/repos/%s/%s/pulls/%d", org, repo, number),
 		requestBody: map[string]string{"state": "open"},
 		exitCodes:   []int{200},
 	}, nil)
@@ -1264,7 +1285,7 @@ func (c *Client) GetRef(org, repo, ref string) (string, error) {
 	}
 	_, err := c.request(&request{
 		method:    http.MethodGet,
-		path:      fmt.Sprintf("%s/repos/%s/%s/git/refs/%s", c.base, org, repo, ref),
+		path:      fmt.Sprintf("/repos/%s/%s/git/refs/%s", org, repo, ref),
 		exitCodes: []int{200},
 	}, &res)
 	return res.Object["sha"], err
@@ -1279,7 +1300,7 @@ func (c *Client) GetRef(org, repo, ref string) (string, error) {
 // See https://help.github.com/articles/searching-issues-and-pull-requests/ for details.
 func (c *Client) FindIssues(query, sort string, asc bool) ([]Issue, error) {
 	c.log("FindIssues", query)
-	path := fmt.Sprintf("%s/search/issues?q=%s", c.base, url.QueryEscape(query))
+	path := fmt.Sprintf("/search/issues?q=%s", url.QueryEscape(query))
 	if sort != "" {
 		path += "&sort=" + url.QueryEscape(sort)
 		if asc {
@@ -1309,7 +1330,7 @@ func (e *FileNotFound) Error() string {
 func (c *Client) GetFile(org, repo, filepath, commit string) ([]byte, error) {
 	c.log("GetFile", org, repo, filepath, commit)
 
-	url := fmt.Sprintf("%s/repos/%s/%s/contents/%s", c.base, org, repo, filepath)
+	url := fmt.Sprintf("/repos/%s/%s/contents/%s", org, repo, filepath)
 	if commit != "" {
 		url = fmt.Sprintf("%s?ref=%s", url, commit)
 	}
@@ -1434,7 +1455,7 @@ func (c *Client) Merge(org, repo string, pr int, details MergeDetails) error {
 	ge := githubError{}
 	ec, err := c.request(&request{
 		method:      http.MethodPut,
-		path:        fmt.Sprintf("%s/repos/%s/%s/pulls/%d/merge", c.base, org, repo, pr),
+		path:        fmt.Sprintf("/repos/%s/%s/pulls/%d/merge", org, repo, pr),
 		requestBody: &details,
 		exitCodes:   []int{200, 405, 409},
 	}, &ge)
@@ -1494,7 +1515,7 @@ func (c *Client) CreateFork(owner, repo string) error {
 	c.log("CreateFork", owner, repo)
 	_, err := c.request(&request{
 		method:    http.MethodPost,
-		path:      fmt.Sprintf("%s/repos/%s/%s/forks", c.base, owner, repo),
+		path:      fmt.Sprintf("/repos/%s/%s/forks", owner, repo),
 		exitCodes: []int{202},
 	}, nil)
 	return err
@@ -1566,7 +1587,7 @@ func (c *Client) ClearMilestone(org, repo string, num int) error {
 	}{}
 	_, err := c.request(&request{
 		method:      http.MethodPatch,
-		path:        fmt.Sprintf("%s/repos/%v/%v/issues/%d", c.base, org, repo, num),
+		path:        fmt.Sprintf("/repos/%v/%v/issues/%d", org, repo, num),
 		requestBody: &issue,
 		exitCodes:   []int{200},
 	}, nil)
@@ -1583,7 +1604,7 @@ func (c *Client) SetMilestone(org, repo string, issueNum, milestoneNum int) erro
 
 	_, err := c.request(&request{
 		method:      http.MethodPatch,
-		path:        fmt.Sprintf("%s/repos/%v/%v/issues/%d", c.base, org, repo, issueNum),
+		path:        fmt.Sprintf("/repos/%v/%v/issues/%d", org, repo, issueNum),
 		requestBody: &issue,
 		exitCodes:   []int{200},
 	}, nil)
