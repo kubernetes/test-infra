@@ -3146,6 +3146,21 @@
       "sig-cluster-lifecycle"
     ]
   },
+  "ci-kubernetes-e2e-gce-influxdb": {
+    "args": [
+      "--check-leaked-resources",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gce-influxdb.env",
+      "--extract=ci/latest",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Feature:InfluxdbMonitoring\\]",
+      "--timeout=50m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-instrumentation"
+    ]
+  },
   "ci-kubernetes-e2e-gce-large-correctness": {
     "args": [
       "--cluster=gce-scale-cluster",

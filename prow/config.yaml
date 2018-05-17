@@ -10438,6 +10438,19 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
 
+- interval: 30m
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gce-influxdb
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
+
 - cron: '1 6 * * 2,4,6' # Run at 22:01PST on Mon,Wed,Fri (06:01 UTC Tue,Thur,Sat)
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-large-correctness
