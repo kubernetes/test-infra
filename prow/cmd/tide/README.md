@@ -148,15 +148,17 @@ tide:
       org:
         required-contexts:
         - "check-required-for-all-repos"
-        repo:
-          required-contexts:
-           - "check-required-for-all-branches"
-          branch:
-            from-branch-protection: false
+        repos:
+	  repo:
             required-contexts:
-            - "required_test"
-            optional-contexts:
-            - "optional_test"
+             - "check-required-for-all-branches"
+            branches:
+              branch:
+                from-branch-protection: false
+                required-contexts:
+                - "required_test"
+                optional-contexts:
+                - "optional_test"
 
 ```
 
