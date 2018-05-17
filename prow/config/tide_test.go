@@ -17,10 +17,12 @@ limitations under the License.
 package config
 
 import (
+	"reflect"
 	"strings"
 	"testing"
 	"time"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/github"
 )
 
@@ -151,6 +153,549 @@ func TestMergeMethod(t *testing.T) {
 	for _, test := range testcases {
 		if ti.MergeMethod(test.org, test.repo) != test.expected {
 			t.Errorf("Expected merge method %q but got %q for %s/%s", test.expected, ti.MergeMethod(test.org, test.repo), test.org, test.repo)
+		}
+	}
+}
+
+func TestParseTideContextPolicyOptions(t *testing.T) {
+	yes := true
+	no := false
+	org, repo, branch := "org", "repo", "branch"
+	testCases := []struct {
+		name     string
+		config   TideContextPolicyOptions
+		expected TideContextPolicy
+	}{
+		{
+			name: "empty",
+		},
+		{
+			name: "global config",
+			config: TideContextPolicyOptions{
+				TideContextPolicy: TideContextPolicy{
+					FromBranchProtection: &yes,
+					SkipUnknownContexts:  &yes,
+					RequiredContexts:     []string{"r1"},
+					OptionalContexts:     []string{"o1"},
+				},
+			},
+			expected: TideContextPolicy{
+				SkipUnknownContexts:  &yes,
+				RequiredContexts:     []string{"r1"},
+				OptionalContexts:     []string{"o1"},
+				FromBranchProtection: &yes,
+			},
+		},
+		{
+			name: "org config",
+			config: TideContextPolicyOptions{
+				TideContextPolicy: TideContextPolicy{
+					RequiredContexts:     []string{"r1"},
+					OptionalContexts:     []string{"o1"},
+					FromBranchProtection: &no,
+				},
+				Orgs: map[string]TideOrgContextPolicy{
+					"org": {
+						TideContextPolicy: TideContextPolicy{
+							SkipUnknownContexts:  &yes,
+							RequiredContexts:     []string{"r2"},
+							OptionalContexts:     []string{"o2"},
+							FromBranchProtection: &yes,
+						},
+					},
+				},
+			},
+			expected: TideContextPolicy{
+				SkipUnknownContexts:  &yes,
+				RequiredContexts:     []string{"r1", "r2"},
+				OptionalContexts:     []string{"o1", "o2"},
+				FromBranchProtection: &yes,
+			},
+		},
+		{
+			name: "repo config",
+			config: TideContextPolicyOptions{
+				TideContextPolicy: TideContextPolicy{
+					RequiredContexts:     []string{"r1"},
+					OptionalContexts:     []string{"o1"},
+					FromBranchProtection: &no,
+				},
+				Orgs: map[string]TideOrgContextPolicy{
+					"org": {
+						TideContextPolicy: TideContextPolicy{
+							SkipUnknownContexts:  &no,
+							RequiredContexts:     []string{"r2"},
+							OptionalContexts:     []string{"o2"},
+							FromBranchProtection: &no,
+						},
+						Repos: map[string]TideRepoContextPolicy{
+							"repo": {
+								TideContextPolicy: TideContextPolicy{
+									SkipUnknownContexts:  &yes,
+									RequiredContexts:     []string{"r3"},
+									OptionalContexts:     []string{"o3"},
+									FromBranchProtection: &yes,
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: TideContextPolicy{
+				SkipUnknownContexts:  &yes,
+				RequiredContexts:     []string{"r1", "r2", "r3"},
+				OptionalContexts:     []string{"o1", "o2", "o3"},
+				FromBranchProtection: &yes,
+			},
+		},
+		{
+			name: "branch config",
+			config: TideContextPolicyOptions{
+				TideContextPolicy: TideContextPolicy{
+					RequiredContexts: []string{"r1"},
+					OptionalContexts: []string{"o1"},
+				},
+				Orgs: map[string]TideOrgContextPolicy{
+					"org": {
+						TideContextPolicy: TideContextPolicy{
+							RequiredContexts: []string{"r2"},
+							OptionalContexts: []string{"o2"},
+						},
+						Repos: map[string]TideRepoContextPolicy{
+							"repo": {
+								TideContextPolicy: TideContextPolicy{
+									RequiredContexts: []string{"r3"},
+									OptionalContexts: []string{"o3"},
+								},
+								Branches: map[string]TideContextPolicy{
+									"branch": {
+										RequiredContexts: []string{"r4"},
+										OptionalContexts: []string{"o4"},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: TideContextPolicy{
+				RequiredContexts: []string{"r1", "r2", "r3", "r4"},
+				OptionalContexts: []string{"o1", "o2", "o3", "o4"},
+			},
+		},
+	}
+	for _, tc := range testCases {
+		policy := parseTideContextPolicyOptions(org, repo, branch, tc.config)
+		if !reflect.DeepEqual(policy, tc.expected) {
+			t.Errorf("%s - expected %v got %v", tc.name, tc.expected, policy)
+		}
+	}
+}
+
+func TestConfigGetTideContextPolicy(t *testing.T) {
+	yes := true
+	no := false
+	org, repo, branch := "org", "repo", "branch"
+	testCases := []struct {
+		name     string
+		config   Config
+		expected TideContextPolicy
+		error    string
+	}{
+		{
+			name: "no policy - use prow jobs",
+			config: Config{
+				BranchProtection: BranchProtection{
+					Policy: Policy{
+						Protect: &yes,
+						RequiredStatusChecks: &ContextPolicy{
+							Contexts: []string{"r1", "r2"},
+						},
+					},
+				},
+				Presubmits: map[string][]Presubmit{
+					"org/repo": {
+						Presubmit{
+							Context:   "pr1",
+							AlwaysRun: true,
+						},
+						Presubmit{
+							Context:   "po1",
+							AlwaysRun: true,
+							Optional:  true,
+						},
+					},
+				},
+			},
+			expected: TideContextPolicy{
+				RequiredContexts: []string{"pr1"},
+				OptionalContexts: []string{"po1"},
+			},
+		},
+		{
+			name: "no policy no prow jobs defined - empty",
+			config: Config{
+				BranchProtection: BranchProtection{
+					Policy: Policy{
+						Protect: &yes,
+						RequiredStatusChecks: &ContextPolicy{
+							Contexts: []string{"r1", "r2"},
+						},
+					},
+				},
+			},
+			expected: TideContextPolicy{
+				RequiredContexts: []string{},
+				OptionalContexts: []string{},
+			},
+		},
+		{
+			name: "no branch protection",
+			config: Config{
+				Tide: Tide{
+					ContextOptions: TideContextPolicyOptions{
+						TideContextPolicy: TideContextPolicy{
+							FromBranchProtection: &yes,
+						},
+					},
+				},
+			},
+			error: "branch protection is not set",
+		},
+		{
+			name: "invalid branch protection",
+			config: Config{
+				BranchProtection: BranchProtection{
+					Orgs: map[string]Org{
+						"org": {
+							Policy: Policy{
+								Protect: &no,
+							},
+						},
+					},
+				},
+				Tide: Tide{
+					ContextOptions: TideContextPolicyOptions{
+						TideContextPolicy: TideContextPolicy{
+							FromBranchProtection: &yes,
+						},
+					},
+				},
+			},
+			expected: TideContextPolicy{
+				RequiredContexts: []string{},
+				OptionalContexts: []string{},
+			},
+		},
+		{
+			name: "manually defined policy",
+			config: Config{
+				Tide: Tide{
+					ContextOptions: TideContextPolicyOptions{
+						TideContextPolicy: TideContextPolicy{
+							RequiredContexts:    []string{"r1"},
+							OptionalContexts:    []string{"o1"},
+							SkipUnknownContexts: &yes,
+						},
+					},
+				},
+			},
+			expected: TideContextPolicy{
+				RequiredContexts:    []string{"r1"},
+				OptionalContexts:    []string{"o1"},
+				SkipUnknownContexts: &yes,
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		p, err := tc.config.GetTideContextPolicy(org, repo, branch)
+		if !reflect.DeepEqual(p, tc.expected) {
+			t.Errorf("%s - expected contexts %v got %v", tc.name, tc.expected, p)
+		}
+		if err != nil {
+			if err.Error() != tc.error {
+				t.Errorf("%s - expected error %v got %v", tc.name, tc.error, err.Error())
+			}
+		} else if tc.error != "" {
+			t.Errorf("%s - expected error %v got nil", tc.name, tc.error)
+		}
+	}
+}
+
+func TestMergeTideContextPolicyConfig(t *testing.T) {
+	yes := true
+	no := false
+	testCases := []struct {
+		name    string
+		a, b, c TideContextPolicy
+	}{
+		{
+			name: "all empty",
+		},
+		{
+			name: "empty a",
+			b: TideContextPolicy{
+				SkipUnknownContexts:  &yes,
+				FromBranchProtection: &no,
+				RequiredContexts:     []string{"r1"},
+				OptionalContexts:     []string{"o1"},
+			},
+			c: TideContextPolicy{
+				SkipUnknownContexts:  &yes,
+				FromBranchProtection: &no,
+				RequiredContexts:     []string{"r1"},
+				OptionalContexts:     []string{"o1"},
+			},
+		},
+		{
+			name: "empty b",
+			a: TideContextPolicy{
+				SkipUnknownContexts:  &yes,
+				FromBranchProtection: &no,
+				RequiredContexts:     []string{"r1"},
+				OptionalContexts:     []string{"o1"},
+			},
+			c: TideContextPolicy{
+				SkipUnknownContexts:  &yes,
+				FromBranchProtection: &no,
+				RequiredContexts:     []string{"r1"},
+				OptionalContexts:     []string{"o1"},
+			},
+		},
+		{
+			name: "merging unset boolean",
+			a: TideContextPolicy{
+				FromBranchProtection: &no,
+				RequiredContexts:     []string{"r1"},
+				OptionalContexts:     []string{"o1"},
+			},
+			b: TideContextPolicy{
+				SkipUnknownContexts: &yes,
+				RequiredContexts:    []string{"r2"},
+				OptionalContexts:    []string{"o2"},
+			},
+			c: TideContextPolicy{
+				SkipUnknownContexts:  &yes,
+				FromBranchProtection: &no,
+				RequiredContexts:     []string{"r1", "r2"},
+				OptionalContexts:     []string{"o1", "o2"},
+			},
+		},
+		{
+			name: "merging unset contexts in a",
+			a: TideContextPolicy{
+				FromBranchProtection: &no,
+				SkipUnknownContexts:  &yes,
+			},
+			b: TideContextPolicy{
+				FromBranchProtection: &yes,
+				SkipUnknownContexts:  &no,
+				RequiredContexts:     []string{"r1"},
+				OptionalContexts:     []string{"o1"},
+			},
+			c: TideContextPolicy{
+				FromBranchProtection: &yes,
+				SkipUnknownContexts:  &no,
+				RequiredContexts:     []string{"r1"},
+				OptionalContexts:     []string{"o1"},
+			},
+		},
+		{
+			name: "merging unset contexts in b",
+			a: TideContextPolicy{
+				FromBranchProtection: &yes,
+				SkipUnknownContexts:  &no,
+				RequiredContexts:     []string{"r1"},
+				OptionalContexts:     []string{"o1"},
+			},
+			b: TideContextPolicy{
+				FromBranchProtection: &no,
+				SkipUnknownContexts:  &yes,
+			},
+			c: TideContextPolicy{
+				FromBranchProtection: &no,
+				SkipUnknownContexts:  &yes,
+				RequiredContexts:     []string{"r1"},
+				OptionalContexts:     []string{"o1"},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		c := mergeTideContextPolicy(tc.a, tc.b)
+		if !reflect.DeepEqual(c, tc.c) {
+			t.Errorf("%s - expected %v got %v", tc.name, tc.c, c)
+		}
+	}
+}
+
+func TestTideQuery_Validate(t *testing.T) {
+	testCases := []struct {
+		name   string
+		t      TideContextPolicy
+		failed bool
+	}{
+		{
+			name: "good policy",
+			t: TideContextPolicy{
+				OptionalContexts: []string{"o1"},
+				RequiredContexts: []string{"r1"},
+			},
+		},
+		{
+			name: "good policy",
+			t: TideContextPolicy{
+				OptionalContexts: []string{"c1"},
+				RequiredContexts: []string{"c1"},
+			},
+			failed: true,
+		},
+		{
+			name: "good policy",
+			t: TideContextPolicy{
+				OptionalContexts: []string{"c1", "c2", "c3", "c4"},
+				RequiredContexts: []string{"c1", "c4"},
+			},
+			failed: true,
+		},
+	}
+	for _, tc := range testCases {
+		err := tc.t.Validate()
+		failed := err != nil
+		if failed != tc.failed {
+			t.Errorf("%s - expected %v got %v", tc.name, tc.failed, err)
+		}
+	}
+}
+
+func TestTideContextPolicy_IsOptional(t *testing.T) {
+	testCases := []struct {
+		name                string
+		skipUnknownContexts bool
+		required, optional  []string
+		contexts            []string
+		results             []bool
+	}{
+		{
+			name:     "only optional contexts registered - skipUnknownContexts false",
+			contexts: []string{"c1", "o1", "o2"},
+			optional: []string{"o1", "o2"},
+			results:  []bool{false, true, true},
+		},
+		{
+			name:     "no contexts registered - skipUnknownContexts false",
+			contexts: []string{"t2"},
+			results:  []bool{false},
+		},
+		{
+			name:     "only required contexts registered - skipUnknownContexts false",
+			required: []string{"c1", "c2", "c3"},
+			contexts: []string{"c1", "c2", "c3", "t1"},
+			results:  []bool{false, false, false, false},
+		},
+		{
+			name:     "optional and required contexts registered - skipUnknownContexts false",
+			optional: []string{"o1", "o2"},
+			required: []string{"c1", "c2", "c3"},
+			contexts: []string{"o1", "o2", "c1", "c2", "c3", "t1"},
+			results:  []bool{true, true, false, false, false, false},
+		},
+		{
+			name:                "only optional contexts registered - skipUnknownContexts true",
+			contexts:            []string{"c1", "o1", "o2"},
+			optional:            []string{"o1", "o2"},
+			skipUnknownContexts: true,
+			results:             []bool{true, true, true},
+		},
+		{
+			name:                "no contexts registered - skipUnknownContexts true",
+			contexts:            []string{"t2"},
+			skipUnknownContexts: true,
+			results:             []bool{true},
+		},
+		{
+			name:                "only required contexts registered - skipUnknownContexts true",
+			required:            []string{"c1", "c2", "c3"},
+			contexts:            []string{"c1", "c2", "c3", "t1"},
+			skipUnknownContexts: true,
+			results:             []bool{false, false, false, true},
+		},
+		{
+			name:                "optional and required contexts registered - skipUnknownContexts true",
+			optional:            []string{"o1", "o2"},
+			required:            []string{"c1", "c2", "c3"},
+			contexts:            []string{"o1", "o2", "c1", "c2", "c3", "t1"},
+			skipUnknownContexts: true,
+			results:             []bool{true, true, false, false, false, true},
+		},
+	}
+
+	for _, tc := range testCases {
+		cp := TideContextPolicy{
+			SkipUnknownContexts: &tc.skipUnknownContexts,
+			RequiredContexts:    tc.required,
+			OptionalContexts:    tc.optional,
+		}
+		for i, c := range tc.contexts {
+			if cp.IsOptional(c) != tc.results[i] {
+				t.Errorf("%s - IsOptional for %s should return %t", tc.name, c, tc.results[i])
+			}
+		}
+	}
+}
+
+func TestTideContextPolicy_MissingRequiredContexts(t *testing.T) {
+	testCases := []struct {
+		name                               string
+		skipUnknownContexts                bool
+		required, optional                 []string
+		existingContexts, expectedContexts []string
+	}{
+		{
+			name:             "no contexts registered",
+			existingContexts: []string{"c1", "c2"},
+		},
+		{
+			name:             "optional contexts registered / no missing contexts",
+			optional:         []string{"o1", "o2", "o3"},
+			existingContexts: []string{"c1", "c2"},
+		},
+		{
+			name:             "required  contexts registered / missing contexts",
+			required:         []string{"c1", "c2", "c3"},
+			existingContexts: []string{"c1", "c2"},
+			expectedContexts: []string{"c3"},
+		},
+		{
+			name:             "required contexts registered / no missing contexts",
+			required:         []string{"c1", "c2", "c3"},
+			existingContexts: []string{"c1", "c2", "c3"},
+		},
+		{
+			name:             "optional and required contexts registered / missing contexts",
+			optional:         []string{"o1", "o2", "o3"},
+			required:         []string{"c1", "c2", "c3"},
+			existingContexts: []string{"c1", "c2"},
+			expectedContexts: []string{"c3"},
+		},
+		{
+			name:             "optional and required contexts registered / no missing contexts",
+			optional:         []string{"o1", "o2", "o3"},
+			required:         []string{"c1", "c2"},
+			existingContexts: []string{"c1", "c2", "c4"},
+		},
+	}
+
+	for _, tc := range testCases {
+		cp := TideContextPolicy{
+			SkipUnknownContexts: &tc.skipUnknownContexts,
+			RequiredContexts:    tc.required,
+			OptionalContexts:    tc.optional,
+		}
+		missingContexts := cp.MissingRequiredContexts(tc.existingContexts)
+		if !sets.NewString(missingContexts...).Equal(sets.NewString(tc.expectedContexts...)) {
+			t.Errorf("%s - expected %v got %v", tc.name, tc.expectedContexts, missingContexts)
 		}
 	}
 }

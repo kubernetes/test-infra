@@ -254,7 +254,7 @@ func (c *Config) GetBranchProtection(org, repo, branch string) (*Policy, error) 
 	}
 
 	// Automatically require any required prow jobs
-	if prowContexts := branchRequirements(org, repo, branch, c.Presubmits); len(prowContexts) > 0 {
+	if prowContexts, _ := BranchRequirements(org, repo, branch, c.Presubmits); len(prowContexts) > 0 {
 		// Error if protection is disabled
 		if policy.Protect != nil && !*policy.Protect {
 			return nil, fmt.Errorf("required prow jobs require branch protection")
@@ -297,8 +297,8 @@ func (c *Config) GetBranchProtection(org, repo, branch string) (*Policy, error) 
 	return &policy, nil
 }
 
-func jobRequirements(jobs []Presubmit, branch string, after bool) []string {
-	var required []string
+func jobRequirements(jobs []Presubmit, branch string, after bool) ([]string, []string) {
+	var required, optional []string
 	for _, j := range jobs {
 		if !j.Brancher.RunsAgainstBranch(branch) {
 			continue
@@ -307,19 +307,24 @@ func jobRequirements(jobs []Presubmit, branch string, after bool) []string {
 		if !after && !j.AlwaysRun && j.RunIfChanged == "" {
 			continue // No
 		}
-		if !j.SkipReport && !j.Optional { // This job needs a context
+		if j.ContextRequired() { // This job needs a context
 			required = append(required, j.Context)
+		} else {
+			optional = append(optional, j.Context)
 		}
 		// Check which children require contexts
-		required = append(required, jobRequirements(j.RunAfterSuccess, branch, true)...)
+		r, o := jobRequirements(j.RunAfterSuccess, branch, true)
+		required = append(required, r...)
+		optional = append(optional, o...)
 	}
-	return required
+	return required, optional
 }
 
-func branchRequirements(org, repo, branch string, presubmits map[string][]Presubmit) []string {
+// BranchRequirements returns required and optional presubmits prow jobs for a given org, repo branch.
+func BranchRequirements(org, repo, branch string, presubmits map[string][]Presubmit) ([]string, []string) {
 	p, ok := presubmits[org+"/"+repo]
 	if !ok {
-		return nil
+		return nil, nil
 	}
 	return jobRequirements(p, branch, false)
 }
