@@ -42,7 +42,7 @@ branch-protection:
         - cla/linuxfoundation
       repos:
         # BLACKLIST
-        # dashboard - kubernetes/test-infra#7525 need required reviews
+        # TODO(fejta): add yourself here
         # WHITELIST
         charts:
           protect: true
@@ -63,6 +63,10 @@ branch-protection:
           protect: true
         contrib:
           protect: true
+        dashboard:
+          protect: true
+          required_pull_request_reviews:
+            required_approving_review_count: 1
         examples:
           protect: true
         features:
