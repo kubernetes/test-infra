@@ -12038,7 +12038,7 @@
       "--gke-environment=prod",
       "--provider=gke",
       "--test=false",
-      "--test-cmd=./demos/integration_tests.sh",
+      "--test-cmd=../demos/integration_tests.sh",
       "--test-cmd-name=kustomize-integration",
       "--timeout=120m"
     ],
