@@ -115,7 +115,7 @@ class AppTest(TestBase):
         'pull_request': {
             'number': 123,
             'head': {'sha': 'cafe'},
-            'updated_at': '2016-07-07T02:03:12Z',
+            'updated_at': '2016-07-07T02:03:12+00:00',
             'state': 'open',
             'user': {'login': 'rmmh'},
             'assignees': [{'login': 'spxtr'}],
