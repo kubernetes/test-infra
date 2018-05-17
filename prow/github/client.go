@@ -182,14 +182,14 @@ func (c *Client) Throttle(hourlyTokens, burst int) {
 //   An endpoint is used when all preceding endpoints have returned a conn err.
 //   This should be used when using the ghproxy GitHub proxy cache to allow
 //   this client to bypass the cache if it is temporarily unavailable.
-func NewClient(token, bases string) *Client {
+func NewClient(token string, bases []string) *Client {
 	return &Client{
 		logger: logrus.WithField("client", "github"),
 		time:   &standardTime{},
 		gqlc:   githubql.NewClient(oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token}))),
 		client: &http.Client{},
 		token:  token,
-		bases:  strings.Split(bases, ";"),
+		bases:  bases,
 		dry:    false,
 	}
 }
@@ -202,14 +202,14 @@ func NewClient(token, bases string) *Client {
 //   An endpoint is used when all preceding endpoints have returned a conn err.
 //   This should be used when using the ghproxy GitHub proxy cache to allow
 //   this client to bypass the cache if it is temporarily unavailable.
-func NewDryRunClient(token, bases string) *Client {
+func NewDryRunClient(token string, bases []string) *Client {
 	return &Client{
 		logger: logrus.WithField("client", "github"),
 		time:   &standardTime{},
 		gqlc:   githubql.NewClient(oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token}))),
 		client: &http.Client{},
 		token:  token,
-		bases:  strings.Split(bases, ";"),
+		bases:  bases,
 		dry:    true,
 	}
 }

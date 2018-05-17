@@ -104,7 +104,7 @@ func TestRetryBase(t *testing.T) {
 	defer ts.Close()
 	c := getClient(ts.URL)
 	// One good endpoint:
-	c.bases = NewClient("", c.bases[0]).bases
+	c.bases = []string{c.bases[0]}
 	resp, err := c.requestRetry(http.MethodGet, "/", "", nil)
 	if err != nil {
 		t.Errorf("Error from request: %v", err)
@@ -112,7 +112,7 @@ func TestRetryBase(t *testing.T) {
 		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
 	}
 	// Bad endpoint followed by good endpoint:
-	c.bases = NewClient("", "not-a-valid-base;"+c.bases[0]).bases
+	c.bases = []string{"not-a-valid-base", c.bases[0]}
 	resp, err = c.requestRetry(http.MethodGet, "/", "", nil)
 	if err != nil {
 		t.Errorf("Error from request: %v", err)
@@ -120,7 +120,7 @@ func TestRetryBase(t *testing.T) {
 		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
 	}
 	// One bad endpoint:
-	c.bases = NewClient("", "not-a-valid-base").bases
+	c.bases = []string{"not-a-valid-base"}
 	resp, err = c.requestRetry(http.MethodGet, "/", "", nil)
 	if err == nil {
 		t.Error("Expected an error from a request to an invalid base, but succeeded!?")

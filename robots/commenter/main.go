@@ -35,6 +35,7 @@ import (
 	"text/template"
 	"time"
 
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 )
 
@@ -55,7 +56,9 @@ const (
 )
 
 func flagOptions() options {
-	o := options{}
+	o := options{
+		endpoint: flagutil.NewStrings("https://api.github.com"),
+	}
 	flag.StringVar(&o.query, "query", "", "See https://help.github.com/articles/searching-issues-and-pull-requests/")
 	flag.DurationVar(&o.updated, "updated", 2*time.Hour, "Filter to issues unmodified for at least this long if set")
 	flag.BoolVar(&o.includeClosed, "include-closed", false, "Match closed issues if set")
@@ -63,7 +66,7 @@ func flagOptions() options {
 	flag.StringVar(&o.comment, "comment", "", "Append the following comment to matching issues")
 	flag.BoolVar(&o.useTemplate, "template", false, TemplateHelp)
 	flag.IntVar(&o.ceiling, "ceiling", 3, "Maximum number of issues to modify, 0 for infinite")
-	flag.StringVar(&o.endpoint, "endpoint", "https://api.github.com", "GitHub's API endpoint")
+	flag.Var(&o.endpoint, "endpoint", "GitHub's API endpoint")
 	flag.StringVar(&o.token, "token", "", "Path to github token")
 	flag.Parse()
 	return o
@@ -84,7 +87,7 @@ type options struct {
 	useTemplate   bool
 	query         string
 	sort          string
-	endpoint      string
+	endpoint      flagutil.Strings
 	token         string
 	updated       time.Duration
 	confirm       bool
@@ -143,17 +146,19 @@ func main() {
 	if err != nil {
 		log.Fatalf("cannot read --token: %v", err)
 	}
-	_, err = url.Parse(o.endpoint)
-	if err != nil {
-		log.Fatal("Must specify a valid --endpoint URL.")
+	for _, ep := range o.endpoint.Strings() {
+		_, err = url.Parse(ep)
+		if err != nil {
+			log.Fatalf("Invalid --endpoint URL %q: %v.", ep, err)
+		}
 	}
 
 	var c client
 	tok := strings.TrimSpace(string(b))
 	if o.confirm {
-		c = github.NewClient(tok, o.endpoint)
+		c = github.NewClient(tok, o.endpoint.Strings())
 	} else {
-		c = github.NewDryRunClient(tok, o.endpoint)
+		c = github.NewDryRunClient(tok, o.endpoint.Strings())
 	}
 
 	query, err := makeQuery(o.query, o.includeClosed, o.updated)

@@ -37,6 +37,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/kube"
@@ -59,7 +60,7 @@ type options struct {
 	caCertFile             string
 	csrfProtect            bool
 
-	githubEndpoint  string
+	githubEndpoint  flagutil.Strings
 	githubTokenFile string
 	dryRun          bool
 }
@@ -88,7 +89,9 @@ func (o *options) Validate() error {
 }
 
 func gatherOptions() options {
-	o := options{}
+	o := options{
+		githubEndpoint: flagutil.NewStrings("https://api.github.com"),
+	}
 	flag.StringVar(&o.configPath, "config-path", "/etc/config/config", "Path to config.yaml.")
 	flag.StringVar(&o.selector, "label-selector", kube.EmptySelector, "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
 	flag.StringVar(&o.totURL, "tot-url", "", "Tot URL")
@@ -103,7 +106,7 @@ func gatherOptions() options {
 	flag.StringVar(&o.caCertFile, "ca-cert-file", "", "Path to a PEM-encoded CA certificate file.")
 	flag.BoolVar(&o.csrfProtect, "csrf-protect", false, "Request a CSRF protection token from Jenkins that will be used in all subsequent requests to Jenkins.")
 
-	flag.StringVar(&o.githubEndpoint, "github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
+	flag.Var(&o.githubEndpoint, "github-endpoint", "GitHub's API endpoint.")
 	flag.StringVar(&o.githubTokenFile, "github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
 	flag.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub/Kubernetes/Jenkins.")
 	flag.Parse()
@@ -174,17 +177,19 @@ func main() {
 	}
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
-	_, err = url.Parse(o.githubEndpoint)
-	if err != nil {
-		logrus.WithError(err).Fatal("Must specify a valid --github-endpoint URL.")
+	for _, ep := range o.githubEndpoint.Strings() {
+		_, err = url.Parse(ep)
+		if err != nil {
+			logrus.WithError(err).Fatalf("Invalid --endpoint URL %q.", ep)
+		}
 	}
 
 	var ghc *github.Client
 	if o.dryRun {
-		ghc = github.NewDryRunClient(oauthSecret, o.githubEndpoint)
+		ghc = github.NewDryRunClient(oauthSecret, o.githubEndpoint.Strings())
 		kc = kube.NewFakeClient(o.deckURL)
 	} else {
-		ghc = github.NewClient(oauthSecret, o.githubEndpoint)
+		ghc = github.NewClient(oauthSecret, o.githubEndpoint.Strings())
 	}
 
 	c, err := jenkins.NewController(kc, jc, ghc, nil, configAgent, o.totURL, o.selector)

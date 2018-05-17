@@ -28,6 +28,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp/externalplugins"
@@ -36,12 +37,16 @@ import (
 var (
 	port              = flag.Int("port", 8888, "Port to listen on.")
 	dryRun            = flag.Bool("dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
-	githubEndpoint    = flag.String("github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
+	githubEndpoint    = flagutil.NewStrings("https://api.github.com")
 	githubTokenFile   = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
 	webhookSecretFile = flag.String("hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	prowAssignments   = flag.Bool("use-prow-assignments", true, "Use prow commands to assign cherrypicked PRs.")
 	allowAll          = flag.Bool("allow-all", false, "Allow anybody to use automated cherrypicks by skipping Github organization membership checks.")
 )
+
+func init() {
+	flag.Var(&githubEndpoint, "github-endpoint", "GitHub's API endpoint.")
+}
 
 func main() {
 	flag.Parse()
@@ -67,14 +72,16 @@ func main() {
 	}
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
-	_, err = url.Parse(*githubEndpoint)
-	if err != nil {
-		log.WithError(err).Fatal("Must specify a valid --github-endpoint URL.")
+	for _, ep := range githubEndpoint.Strings() {
+		_, err = url.Parse(ep)
+		if err != nil {
+			logrus.WithError(err).Fatalf("Invalid --endpoint URL %q.", ep)
+		}
 	}
 
-	githubClient := github.NewClient(oauthSecret, *githubEndpoint)
+	githubClient := github.NewClient(oauthSecret, githubEndpoint.Strings())
 	if *dryRun {
-		githubClient = github.NewDryRunClient(oauthSecret, *githubEndpoint)
+		githubClient = github.NewDryRunClient(oauthSecret, githubEndpoint.Strings())
 	}
 
 	gitClient, err := git.NewClient()

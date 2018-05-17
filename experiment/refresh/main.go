@@ -21,6 +21,7 @@ import (
 	"bytes"
 	"errors"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -31,6 +32,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp/externalplugins"
 )
@@ -41,16 +43,25 @@ var (
 	dryRun            = flag.Bool("dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	webhookSecretFile = flag.String("hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	githubTokenFile   = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
-	githubEndpoint    = flag.String("github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
+	githubEndpoint    = flagutil.NewStrings("https://api.github.com")
 	prowURL           = flag.String("prow-url", "", "Prow frontend URL.")
 )
+
+func init() {
+	flag.Var(&githubEndpoint, "github-endpoint", "GitHub's API endpoint.")
+}
 
 func validateFlags() error {
 	if *prowURL == "" {
 		return errors.New("--prow-url needs to be specified")
 	}
-	_, err := url.Parse(*githubEndpoint)
-	return err
+	for _, ep := range githubEndpoint.Strings() {
+		_, err := url.Parse(ep)
+		if err != nil {
+			return fmt.Errorf("Invalid --endpoint URL %q: %v.", ep, err)
+		}
+	}
+	return nil
 }
 
 func main() {
@@ -86,9 +97,9 @@ func main() {
 	}
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
-	ghc := github.NewClient(oauthSecret, *githubEndpoint)
+	ghc := github.NewClient(oauthSecret, githubEndpoint.Strings())
 	if *dryRun {
-		ghc = github.NewDryRunClient(oauthSecret, *githubEndpoint)
+		ghc = github.NewDryRunClient(oauthSecret, githubEndpoint.Strings())
 	}
 
 	server := &Server{

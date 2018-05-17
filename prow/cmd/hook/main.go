@@ -31,6 +31,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/hook"
@@ -53,7 +54,7 @@ type options struct {
 	dryRun  bool
 	deckURL string
 
-	githubEndpoint  string
+	githubEndpoint  flagutil.Strings
 	githubTokenFile string
 
 	webhookSecretFile string
@@ -68,7 +69,9 @@ func (o *options) Validate() error {
 }
 
 func gatherOptions() options {
-	o := options{}
+	o := options{
+		githubEndpoint: flagutil.NewStrings("https://api.github.com"),
+	}
 	flag.IntVar(&o.port, "port", 8888, "Port to listen on.")
 
 	flag.StringVar(&o.configPath, "config-path", "/etc/config/config", "Path to config.yaml.")
@@ -78,7 +81,7 @@ func gatherOptions() options {
 	flag.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	flag.StringVar(&o.deckURL, "deck-url", "", "Deck URL for read-only access to the cluster.")
 
-	flag.StringVar(&o.githubEndpoint, "github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
+	flag.Var(&o.githubEndpoint, "github-endpoint", "GitHub's API endpoint.")
 	flag.StringVar(&o.githubTokenFile, "github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
 
 	flag.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
@@ -125,18 +128,20 @@ func main() {
 		teamToken = string(bytes.TrimSpace(teamTokenRaw))
 	}
 
-	_, err = url.Parse(o.githubEndpoint)
-	if err != nil {
-		logrus.WithError(err).Fatal("Must specify a valid --github-endpoint URL.")
+	for _, ep := range o.githubEndpoint.Strings() {
+		_, err = url.Parse(ep)
+		if err != nil {
+			logrus.WithError(err).Fatalf("Invalid --endpoint URL %q.", ep)
+		}
 	}
 
 	var githubClient *github.Client
 	var kubeClient *kube.Client
 	if o.dryRun {
-		githubClient = github.NewDryRunClient(oauthSecret, o.githubEndpoint)
+		githubClient = github.NewDryRunClient(oauthSecret, o.githubEndpoint.Strings())
 		kubeClient = kube.NewFakeClient(o.deckURL)
 	} else {
-		githubClient = github.NewClient(oauthSecret, o.githubEndpoint)
+		githubClient = github.NewClient(oauthSecret, o.githubEndpoint.Strings())
 		if o.cluster == "" {
 			kubeClient, err = kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 			if err != nil {
