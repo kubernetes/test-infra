@@ -42,17 +42,17 @@ type TideContextPolicy struct {
 }
 
 type TideOrgContextPolicy struct {
-	Policy TideContextPolicy                `json:"policy,omitempty"`
-	Repos  map[string]TideRepoContextPolicy `json:"repos,omitempty"`
+	TideContextPolicy
+	Repos map[string]TideRepoContextPolicy `json:"repos,omitempty"`
 }
 
 type TideRepoContextPolicy struct {
-	Policy   TideContextPolicy            `json:"policy,omitempty"`
+	TideContextPolicy
 	Branches map[string]TideContextPolicy `json:"branches,omitempty"`
 }
 
 type TideContextPolicyOptions struct {
-	Policy TideContextPolicy `json:"policy,omitempty"`
+	TideContextPolicy
 	// Github Orgs
 	Orgs map[string]TideOrgContextPolicy `json:"orgs,omitempty"`
 }
@@ -281,11 +281,11 @@ func mergeTideContextPolicy(a, b TideContextPolicy) TideContextPolicy {
 }
 
 func parseTideContextPolicyOptions(org, repo, branch string, options TideContextPolicyOptions) TideContextPolicy {
-	option := options.Policy
+	option := options.TideContextPolicy
 	if o, ok := options.Orgs[org]; ok {
-		option = mergeTideContextPolicy(option, o.Policy)
+		option = mergeTideContextPolicy(option, o.TideContextPolicy)
 		if r, ok := o.Repos[repo]; ok {
-			option = mergeTideContextPolicy(option, r.Policy)
+			option = mergeTideContextPolicy(option, r.TideContextPolicy)
 			if b, ok := r.Branches[branch]; ok {
 				option = mergeTideContextPolicy(option, b)
 			}
@@ -365,19 +365,4 @@ func (cp *TideContextPolicy) MissingRequiredContexts(contexts []string) []string
 		missingContexts = append(missingContexts, c)
 	}
 	return missingContexts
-}
-
-// RegisterOptionalContexts registers optional contexts
-func (cp *TideContextPolicy) RegisterOptionalContexts(c ...string) {
-	o := sets.NewString(cp.OptionalContexts...)
-	o.Insert(c...)
-	cp.OptionalContexts = o.List()
-}
-
-// RegisterRequiredContexts register required contexts.
-// Once required contexts are registered other contexts will be considered optional.
-func (cp *TideContextPolicy) RegisterRequiredContexts(c ...string) {
-	r := sets.NewString(cp.RequiredContexts...)
-	r.Insert(c...)
-	cp.RequiredContexts = r.List()
 }

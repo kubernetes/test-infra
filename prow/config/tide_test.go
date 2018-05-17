@@ -172,7 +172,7 @@ func TestParseTideContextPolicyOptions(t *testing.T) {
 		{
 			name: "global config",
 			config: TideContextPolicyOptions{
-				Policy: TideContextPolicy{
+				TideContextPolicy: TideContextPolicy{
 					FromBranchProtection: &yes,
 					SkipUnknownContexts:  &yes,
 					RequiredContexts:     []string{"r1"},
@@ -189,14 +189,14 @@ func TestParseTideContextPolicyOptions(t *testing.T) {
 		{
 			name: "org config",
 			config: TideContextPolicyOptions{
-				Policy: TideContextPolicy{
+				TideContextPolicy: TideContextPolicy{
 					RequiredContexts:     []string{"r1"},
 					OptionalContexts:     []string{"o1"},
 					FromBranchProtection: &no,
 				},
 				Orgs: map[string]TideOrgContextPolicy{
 					"org": {
-						Policy: TideContextPolicy{
+						TideContextPolicy: TideContextPolicy{
 							SkipUnknownContexts:  &yes,
 							RequiredContexts:     []string{"r2"},
 							OptionalContexts:     []string{"o2"},
@@ -215,14 +215,14 @@ func TestParseTideContextPolicyOptions(t *testing.T) {
 		{
 			name: "repo config",
 			config: TideContextPolicyOptions{
-				Policy: TideContextPolicy{
+				TideContextPolicy: TideContextPolicy{
 					RequiredContexts:     []string{"r1"},
 					OptionalContexts:     []string{"o1"},
 					FromBranchProtection: &no,
 				},
 				Orgs: map[string]TideOrgContextPolicy{
 					"org": {
-						Policy: TideContextPolicy{
+						TideContextPolicy: TideContextPolicy{
 							SkipUnknownContexts:  &no,
 							RequiredContexts:     []string{"r2"},
 							OptionalContexts:     []string{"o2"},
@@ -230,7 +230,7 @@ func TestParseTideContextPolicyOptions(t *testing.T) {
 						},
 						Repos: map[string]TideRepoContextPolicy{
 							"repo": {
-								Policy: TideContextPolicy{
+								TideContextPolicy: TideContextPolicy{
 									SkipUnknownContexts:  &yes,
 									RequiredContexts:     []string{"r3"},
 									OptionalContexts:     []string{"o3"},
@@ -251,19 +251,19 @@ func TestParseTideContextPolicyOptions(t *testing.T) {
 		{
 			name: "branch config",
 			config: TideContextPolicyOptions{
-				Policy: TideContextPolicy{
+				TideContextPolicy: TideContextPolicy{
 					RequiredContexts: []string{"r1"},
 					OptionalContexts: []string{"o1"},
 				},
 				Orgs: map[string]TideOrgContextPolicy{
 					"org": {
-						Policy: TideContextPolicy{
+						TideContextPolicy: TideContextPolicy{
 							RequiredContexts: []string{"r2"},
 							OptionalContexts: []string{"o2"},
 						},
 						Repos: map[string]TideRepoContextPolicy{
 							"repo": {
-								Policy: TideContextPolicy{
+								TideContextPolicy: TideContextPolicy{
 									RequiredContexts: []string{"r3"},
 									OptionalContexts: []string{"o3"},
 								},
@@ -354,7 +354,7 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 			config: Config{
 				Tide: Tide{
 					ContextOptions: TideContextPolicyOptions{
-						Policy: TideContextPolicy{
+						TideContextPolicy: TideContextPolicy{
 							FromBranchProtection: &yes,
 						},
 					},
@@ -376,7 +376,7 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 				},
 				Tide: Tide{
 					ContextOptions: TideContextPolicyOptions{
-						Policy: TideContextPolicy{
+						TideContextPolicy: TideContextPolicy{
 							FromBranchProtection: &yes,
 						},
 					},
@@ -392,7 +392,7 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 			config: Config{
 				Tide: Tide{
 					ContextOptions: TideContextPolicyOptions{
-						Policy: TideContextPolicy{
+						TideContextPolicy: TideContextPolicy{
 							RequiredContexts:    []string{"r1"},
 							OptionalContexts:    []string{"o1"},
 							SkipUnknownContexts: &yes,
@@ -632,9 +632,11 @@ func TestTideContextPolicy_IsOptional(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		cp := TideContextPolicy{SkipUnknownContexts: &tc.skipUnknownContexts}
-		cp.RegisterOptionalContexts(tc.optional...)
-		cp.RegisterRequiredContexts(tc.required...)
+		cp := TideContextPolicy{
+			SkipUnknownContexts: &tc.skipUnknownContexts,
+			RequiredContexts:    tc.required,
+			OptionalContexts:    tc.optional,
+		}
 		for i, c := range tc.contexts {
 			if cp.IsOptional(c) != tc.results[i] {
 				t.Errorf("%s - IsOptional for %s should return %t", tc.name, c, tc.results[i])
@@ -686,9 +688,11 @@ func TestTideContextPolicy_MissingRequiredContexts(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		cp := TideContextPolicy{SkipUnknownContexts: &tc.skipUnknownContexts}
-		cp.RegisterOptionalContexts(tc.optional...)
-		cp.RegisterRequiredContexts(tc.required...)
+		cp := TideContextPolicy{
+			SkipUnknownContexts: &tc.skipUnknownContexts,
+			RequiredContexts:    tc.required,
+			OptionalContexts:    tc.optional,
+		}
 		missingContexts := cp.MissingRequiredContexts(tc.existingContexts)
 		if !sets.NewString(missingContexts...).Equal(sets.NewString(tc.expectedContexts...)) {
 			t.Errorf("%s - expected %v got %v", tc.name, tc.expectedContexts, missingContexts)

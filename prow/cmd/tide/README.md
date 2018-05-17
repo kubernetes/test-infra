@@ -140,21 +140,23 @@ tide:
     - needs-rebase
 
   context_options:
-    policy:
-      # Use branch protection options to define required and optional contexts
-      from-branch-protection: true
-      # Treat unknown contexts as optional
-      skip-unknown-contexts: true
+    # Use branch protection options to define required and optional contexts
+    from-branch-protection: true
+    # Treat unknown contexts as optional
+    skip-unknown-contexts: true
     orgs:
       org:
+        required-contexts:
+        - "check-required-for-all-repos"
         repo:
+          required-contexts:
+           - "check-required-for-all-branches"
           branch:
-            policy:
-              from-branch-protection: false
-              required-contexts:
-              - "required_test"
-              optional-contexts:
-              - "optional_test"
+            from-branch-protection: false
+            required-contexts:
+            - "required_test"
+            optional-contexts:
+            - "optional_test"
 
 ```
 

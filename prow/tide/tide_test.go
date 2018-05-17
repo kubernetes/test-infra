@@ -656,7 +656,7 @@ func TestExpectedStatus(t *testing.T) {
 			pool = map[string]PullRequest{"#0": {}}
 		}
 
-		state, desc := expectedStatus(queriesByRepo, &pr, pool, &config.TideContextPolicy{OptionalContexts: []string{statusContext}})
+		state, desc := expectedStatus(queriesByRepo, &pr, pool, &config.TideContextPolicy{})
 		if state != tc.state {
 			t.Errorf("Expected status state %q, but got %q.", string(tc.state), string(state))
 		}
@@ -1730,7 +1730,6 @@ func TestIsPassing(t *testing.T) {
 			t.Errorf("Failed to get log output before testing: %v", err)
 			t.FailNow()
 		}
-		tc.config.RegisterOptionalContexts(statusContext)
 		pr := PullRequest{HeadRefOID: githubql.String(headSHA)}
 		passing := isPassingTests(log, ghc, pr, &tc.config)
 		if passing != tc.passing {

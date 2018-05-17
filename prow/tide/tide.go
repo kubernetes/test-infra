@@ -205,17 +205,6 @@ func newExpectedContext(c string) Context {
 	}
 }
 
-// newContextCheckerFromConfig instantiates a new contextChecker and register tide as optional by default
-// and uses Prow Config to find optional and required tests, as well as skipUnknownContexts.
-func newContextCheckerFromConfig(org, repo, branch string, c *config.Config) (contextChecker, error) {
-	policy, err := c.GetTideContextPolicy(org, repo, branch)
-	if err != nil {
-		return nil, err
-	}
-	policy.RegisterOptionalContexts(statusContext)
-	return &policy, nil
-}
-
 // contextsToStrings converts a list Context to a list of string
 func contextsToStrings(contexts []Context) []string {
 	var names []string
@@ -405,17 +394,16 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 			log.WithError(err).Error("Getting head commit status contexts, skipping...")
 			return
 		}
-		cr, err := newContextCheckerFromConfig(
+		cr, err := sc.ca.Config().GetTideContextPolicy(
 			string(pr.Repository.Owner.Login),
 			string(pr.Repository.Name),
-			string(pr.BaseRef.Name),
-			sc.ca.Config())
+			string(pr.BaseRef.Name))
 		if err != nil {
 			log.WithError(err).Error("setting up context register")
 			return
 		}
 
-		wantState, wantDesc := expectedStatus(queryMap, pr, pool, cr)
+		wantState, wantDesc := expectedStatus(queryMap, pr, pool, &cr)
 		var actualState githubql.StatusState
 		var actualDesc string
 		for _, ctx := range contexts {
@@ -638,6 +626,9 @@ func isPassingTests(log *logrus.Entry, ghc githubClient, pr PullRequest, cc cont
 func unsuccessfulContexts(contexts []Context, cc contextChecker) []Context {
 	var failed []Context
 	for _, ctx := range contexts {
+		if string(ctx.Context) == statusContext {
+			continue
+		}
 		if cc.IsOptional(string(ctx.Context)) {
 			continue
 		}
@@ -1041,7 +1032,7 @@ func (c *Controller) syncSubpool(sp subpool) (Pool, error) {
 	if err != nil {
 		return Pool{}, fmt.Errorf("error determining required presubmits: %v", err)
 	}
-	cr, err := newContextCheckerFromConfig(sp.org, sp.repo, sp.branch, c.ca.Config())
+	cr, err := c.ca.Config().GetTideContextPolicy(sp.org, sp.repo, sp.branch)
 	if err != nil {
 		return Pool{}, fmt.Errorf("error parsing tide context options: %v", err)
 	}
@@ -1054,7 +1045,7 @@ func (c *Controller) syncSubpool(sp subpool) (Pool, error) {
 		"batch-passing": prNumbers(batchMerge),
 		"batch-pending": prNumbers(batchPending),
 	}).Info("Subpool accumulated.")
-	act, targets, err := c.takeAction(sp, presubmits, batchPending, successes, pendings, nones, batchMerge, cr)
+	act, targets, err := c.takeAction(sp, presubmits, batchPending, successes, pendings, nones, batchMerge, &cr)
 	sp.log.WithFields(logrus.Fields{
 		"action":  string(act),
 		"targets": prNumbers(targets),
