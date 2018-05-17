@@ -186,10 +186,10 @@ func main() {
 
 	var ghc *github.Client
 	if o.dryRun {
-		ghc = github.NewDryRunClient(oauthSecret, o.githubEndpoint.Strings())
+		ghc = github.NewDryRunClient(oauthSecret, o.githubEndpoint.Strings()...)
 		kc = kube.NewFakeClient(o.deckURL)
 	} else {
-		ghc = github.NewClient(oauthSecret, o.githubEndpoint.Strings())
+		ghc = github.NewClient(oauthSecret, o.githubEndpoint.Strings()...)
 	}
 
 	c, err := jenkins.NewController(kc, jc, ghc, nil, configAgent, o.totURL, o.selector)

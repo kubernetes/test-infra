@@ -148,7 +148,7 @@ func main() {
 		log.Fatalf("cannot read file specified by --ghtoken: %v", err)
 	}
 
-	gc := github.NewClient(token, []string{o.githubEndpoint})
+	gc := github.NewClient(token, o.githubEndpoint)
 
 	pr, err := gc.GetPullRequest(o.org, o.repo, o.num)
 	if err != nil {

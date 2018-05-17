@@ -79,9 +79,9 @@ func main() {
 		}
 	}
 
-	githubClient := github.NewClient(oauthSecret, githubEndpoint.Strings())
+	githubClient := github.NewClient(oauthSecret, githubEndpoint.Strings()...)
 	if *dryRun {
-		githubClient = github.NewDryRunClient(oauthSecret, githubEndpoint.Strings())
+		githubClient = github.NewDryRunClient(oauthSecret, githubEndpoint.Strings()...)
 	}
 
 	gitClient, err := git.NewClient()

@@ -89,9 +89,9 @@ func main() {
 		log.WithError(err).Fatalf("Error loading plugin config from %q.", *pluginConfig)
 	}
 
-	githubClient := github.NewClient(oauthSecret, githubEndpoint.Strings())
+	githubClient := github.NewClient(oauthSecret, githubEndpoint.Strings()...)
 	if *dryRun {
-		githubClient = github.NewDryRunClient(oauthSecret, githubEndpoint.Strings())
+		githubClient = github.NewDryRunClient(oauthSecret, githubEndpoint.Strings()...)
 	}
 	githubClient.Throttle(360, 360)
 

@@ -97,9 +97,9 @@ func main() {
 	}
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
-	ghc := github.NewClient(oauthSecret, githubEndpoint.Strings())
+	ghc := github.NewClient(oauthSecret, githubEndpoint.Strings()...)
 	if *dryRun {
-		ghc = github.NewDryRunClient(oauthSecret, githubEndpoint.Strings())
+		ghc = github.NewDryRunClient(oauthSecret, githubEndpoint.Strings()...)
 	}
 
 	server := &Server{

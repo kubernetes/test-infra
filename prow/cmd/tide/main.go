@@ -86,12 +86,12 @@ func main() {
 	var ghcSync, ghcStatus *github.Client
 	var kc *kube.Client
 	if *dryRun {
-		ghcSync = github.NewDryRunClient(oauthSecret, githubEndpoint.Strings())
-		ghcStatus = github.NewDryRunClient(oauthSecret, githubEndpoint.Strings())
+		ghcSync = github.NewDryRunClient(oauthSecret, githubEndpoint.Strings()...)
+		ghcStatus = github.NewDryRunClient(oauthSecret, githubEndpoint.Strings()...)
 		kc = kube.NewFakeClient(*deckURL)
 	} else {
-		ghcSync = github.NewClient(oauthSecret, githubEndpoint.Strings())
-		ghcStatus = github.NewClient(oauthSecret, githubEndpoint.Strings())
+		ghcSync = github.NewClient(oauthSecret, githubEndpoint.Strings()...)
+		ghcStatus = github.NewClient(oauthSecret, githubEndpoint.Strings()...)
 		if *cluster == "" {
 			kc, err = kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 			if err != nil {

@@ -156,9 +156,9 @@ func main() {
 	var c client
 	tok := strings.TrimSpace(string(b))
 	if o.confirm {
-		c = github.NewClient(tok, o.endpoint.Strings())
+		c = github.NewClient(tok, o.endpoint.Strings()...)
 	} else {
-		c = github.NewDryRunClient(tok, o.endpoint.Strings())
+		c = github.NewDryRunClient(tok, o.endpoint.Strings()...)
 	}
 
 	query, err := makeQuery(o.query, o.includeClosed, o.updated)

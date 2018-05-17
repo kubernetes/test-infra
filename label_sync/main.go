@@ -518,7 +518,7 @@ type client interface {
 	GetRepoLabels(string, string) ([]github.Label, error)
 }
 
-func newClient(tokenPath string, hosts []string, dryRun bool) (client, error) {
+func newClient(tokenPath string, dryRun bool, hosts ...string) (client, error) {
 	if tokenPath == "" {
 		return nil, errors.New("--token unset")
 	}
@@ -529,9 +529,9 @@ func newClient(tokenPath string, hosts []string, dryRun bool) (client, error) {
 	oauthSecret := string(bytes.TrimSpace(b))
 
 	if dryRun {
-		return github.NewDryRunClient(oauthSecret, hosts), nil
+		return github.NewDryRunClient(oauthSecret, hosts...), nil
 	}
-	c := github.NewClient(oauthSecret, hosts)
+	c := github.NewClient(oauthSecret, hosts...)
 	c.Throttle(300, 100) // 300 hourly tokens, bursts of 100
 	return c, nil
 }
@@ -562,7 +562,7 @@ func main() {
 			logrus.WithError(err).Fatalf("failed to write docs using docs-template %s to docs-output %s", *docsTemplate, *docsOutput)
 		}
 	case *action == "sync":
-		githubClient, err := newClient(*token, endpoint.Strings(), !*confirm)
+		githubClient, err := newClient(*token, !*confirm, endpoint.Strings()...)
 		if err != nil {
 			logrus.WithError(err).Fatal("failed to create client")
 		}

@@ -97,13 +97,13 @@ func main() {
 	var pkcs map[string]*kube.Client
 	if *dryRun {
 		if oauthSecret != "" {
-			ghc = github.NewDryRunClient(oauthSecret, githubEndpoint.Strings())
+			ghc = github.NewDryRunClient(oauthSecret, githubEndpoint.Strings()...)
 		}
 		kc = kube.NewFakeClient(*deckURL)
 		pkcs = map[string]*kube.Client{kube.DefaultClusterAlias: kc}
 	} else {
 		if oauthSecret != "" {
-			ghc = github.NewClient(oauthSecret, githubEndpoint.Strings())
+			ghc = github.NewClient(oauthSecret, githubEndpoint.Strings()...)
 		}
 		if *cluster == "" {
 			kc, err = kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)

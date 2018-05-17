@@ -178,11 +178,11 @@ func (c *Client) Throttle(hourlyTokens, burst int) {
 
 // NewClient creates a new fully operational GitHub client.
 // 'token' is the GitHub access token to use.
-// 'bases' is a ';' delimited array of endpoints to use in order of preference.
+// 'bases' is a variadic slice of endpoints to use in order of preference.
 //   An endpoint is used when all preceding endpoints have returned a conn err.
 //   This should be used when using the ghproxy GitHub proxy cache to allow
 //   this client to bypass the cache if it is temporarily unavailable.
-func NewClient(token string, bases []string) *Client {
+func NewClient(token string, bases ...string) *Client {
 	return &Client{
 		logger: logrus.WithField("client", "github"),
 		time:   &standardTime{},
@@ -198,11 +198,11 @@ func NewClient(token string, bases []string) *Client {
 // such as setting statuses or commenting, but it will still query GitHub and
 // use up API tokens.
 // 'token' is the GitHub access token to use.
-// 'bases' is a ';' delimited array of endpoints to use in order of preference.
+// 'bases' is a variadic slice of endpoints to use in order of preference.
 //   An endpoint is used when all preceding endpoints have returned a conn err.
 //   This should be used when using the ghproxy GitHub proxy cache to allow
 //   this client to bypass the cache if it is temporarily unavailable.
-func NewDryRunClient(token string, bases []string) *Client {
+func NewDryRunClient(token string, bases ...string) *Client {
 	return &Client{
 		logger: logrus.WithField("client", "github"),
 		time:   &standardTime{},

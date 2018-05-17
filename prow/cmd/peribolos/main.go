@@ -96,9 +96,9 @@ func main() {
 	var c *github.Client
 	tok := strings.TrimSpace(string(b))
 	if o.confirm {
-		c = github.NewClient(tok, o.endpoint.Strings())
+		c = github.NewClient(tok, o.endpoint.Strings()...)
 	} else {
-		c = github.NewDryRunClient(tok, o.endpoint.Strings())
+		c = github.NewDryRunClient(tok, o.endpoint.Strings()...)
 	}
 	c.Throttle(300, 100) // 300 hourly tokens, bursts of 100
 
