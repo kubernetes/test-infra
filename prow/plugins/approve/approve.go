@@ -35,11 +35,13 @@ import (
 const (
 	pluginName = "approve"
 
-	approveCommand  = "APPROVE"
-	approvedLabel   = "approved"
-	lgtmCommand     = "LGTM"
-	cancelArgument  = "cancel"
-	noIssueArgument = "no-issue"
+	approveCommand              = "APPROVE"
+	approvedLabel               = "approved"
+	lgtmCommand                 = "LGTM"
+	cancelArgument              = "cancel"
+	noIssueArgument             = "no-issue"
+	approvedReviewState         = "APPROVED"
+	requestedChangesReviewState = "CHANGES_REQUESTED"
 )
 
 var (
@@ -135,7 +137,7 @@ func handleGenericCommentEvent(pc plugins.PluginClient, ce github.GenericComment
 	}
 
 	opts := optionsForRepo(pc.PluginConfig, ce.Repo.Owner.Login, ce.Repo.Name)
-	if !approvalCommandMatcher(botName, opts.LgtmActsAsApprove)(&comment{Body: ce.Body, Author: ce.User.Login}) {
+	if !approvalCommandMatcher(botName, opts.LgtmActsAsApprove, opts.ReviewActsAsApprove)(&comment{Body: ce.Body, Author: ce.User.Login}) {
 		return nil
 	}
 
@@ -228,12 +230,14 @@ func findAssociatedIssue(body string) int {
 // The algorithm goes as:
 // - Initially, we build an approverSet
 //   - Go through all comments in order of creation.
-//		 - (Issue/PR comments, PR review comments, and PR review bodies are considered as comments)
-//	 - If anyone said "/approve" or "/lgtm", add them to approverSet.
+//     - (Issue/PR comments, PR review comments, and PR review bodies are considered as comments)
+//   - If anyone said "/approve", add them to approverSet.
+//   - If anyone said "/lgtm" AND LgtmActsAsApprove is enabled, add them to approverSet.
+//   - If anyone created an approved review AND ReviewActsAsApprove is enabled, add them to approverSet.
 // - Then, for each file, we see if any approver of this file is in approverSet and keep track of files without approval
 //   - An approver of a file is defined as:
 //     - Someone listed as an "approver" in an OWNERS file in the files directory OR
-//     - in one of the file's parent directorie
+//     - in one of the file's parent directories
 // - Iff all files have been approved, the bot will add the "approved" label.
 // - Iff a cancel command is found, that reviewer will be removed from the approverSet
 // 	and the munger will remove the approved label if it has been applied
@@ -301,8 +305,8 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, o
 	sort.SliceStable(comments, func(i, j int) bool {
 		return comments[i].CreatedAt.Before(comments[j].CreatedAt)
 	})
-	approveComments := filterComments(comments, approvalCommandMatcher(botName, opts.LgtmActsAsApprove))
-	addApprovers(&approversHandler, approveComments, pr.author)
+	approveComments := filterComments(comments, approvalCommandMatcher(botName, opts.LgtmActsAsApprove, opts.ReviewActsAsApprove))
+	addApprovers(&approversHandler, approveComments, pr.author, opts.ReviewActsAsApprove)
 
 	for _, user := range pr.assignees {
 		approversHandler.AddAssignees(user.Login)
@@ -371,10 +375,17 @@ func humanAddedApproved(ghc githubClient, log *logrus.Entry, org, repo string, n
 	}
 }
 
-func approvalCommandMatcher(botName string, lgtmActsAsApprove bool) func(*comment) bool {
+func approvalCommandMatcher(botName string, lgtmActsAsApprove bool, reviewActsAsApprove bool) func(*comment) bool {
 	return func(c *comment) bool {
 		if c.Author == botName || isDeprecatedBot(c.Author) {
 			return false
+		}
+
+		// consider reviews in either approved OR requested changes states as
+		// approval commands. Reviews in requested changes states will be
+		// interpreted as cancelled approvals.
+		if reviewActsAsApprove && (c.ReviewState == approvedReviewState || c.ReviewState == requestedChangesReviewState) {
+			return true
 		}
 		for _, match := range commandRegex.FindAllStringSubmatch(c.Body, -1) {
 			cmd := strings.ToUpper(match[1])
@@ -407,12 +418,25 @@ func updateNotification(org, project string, latestNotification *comment, approv
 // addApprovers iterates through the list of comments on a PR
 // and identifies all of the people that have said /approve and adds
 // them to the Approvers.  The function uses the latest approve or cancel comment
-// to determine the Users intention
-func addApprovers(approversHandler *approvers.Approvers, approveComments []*comment, author string) {
+// to determine the Users intention. A review in requested changes state is
+// considered a cancel.
+func addApprovers(approversHandler *approvers.Approvers, approveComments []*comment, author string, reviewActsAsApprove bool) {
 	for _, c := range approveComments {
 		if c.Author == "" {
 			continue
 		}
+
+		if reviewActsAsApprove && c.ReviewState == approvedReviewState {
+			approversHandler.AddApprover(
+				c.Author,
+				c.HTMLURL,
+				false,
+			)
+		}
+		if reviewActsAsApprove && c.ReviewState == requestedChangesReviewState {
+			approversHandler.RemoveApprover(c.Author)
+		}
+
 		for _, match := range commandRegex.FindAllStringSubmatch(c.Body, -1) {
 			name := strings.ToUpper(match[1])
 			if name != approveCommand && name != lgtmCommand {
@@ -473,11 +497,12 @@ func strInSlice(str string, slice []string) bool {
 }
 
 type comment struct {
-	Body      string
-	Author    string
-	CreatedAt time.Time
-	HTMLURL   string
-	ID        int
+	Body        string
+	Author      string
+	CreatedAt   time.Time
+	HTMLURL     string
+	ID          int
+	ReviewState string
 }
 
 func commentFromIssueComment(ic *github.IssueComment) *comment {
@@ -527,11 +552,12 @@ func commentFromReview(review *github.Review) *comment {
 		return nil
 	}
 	return &comment{
-		Body:      review.Body,
-		Author:    review.User.Login,
-		CreatedAt: review.SubmittedAt,
-		HTMLURL:   review.HTMLURL,
-		ID:        review.ID,
+		Body:        review.Body,
+		Author:      review.User.Login,
+		CreatedAt:   review.SubmittedAt,
+		HTMLURL:     review.HTMLURL,
+		ID:          review.ID,
+		ReviewState: review.State,
 	}
 }
 
