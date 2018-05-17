@@ -3161,7 +3161,7 @@
       "--gcp-zone=us-east1-a",
       "--ginkgo-parallel=40",
       "--provider=gce",
-      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[DisabledForLargeClusters\\] --gather-resource-usage=master --gather-metrics-at-teardown=master",
+      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[DisabledForLargeClusters\\]",
       "--timeout=390m",
       "--use-logexporter"
     ],
@@ -3504,7 +3504,7 @@
       "--gcp-zone=us-east1-a",
       "--ginkgo-parallel=40",
       "--provider=gce",
-      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[DisabledForLargeClusters\\] --gather-resource-usage=master --gather-metrics-at-teardown=master",
+      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[DisabledForLargeClusters\\]",
       "--timeout=570m",
       "--use-logexporter"
     ],
