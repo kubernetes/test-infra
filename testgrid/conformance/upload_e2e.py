@@ -127,22 +127,31 @@ def testgrid_started_json_contents(start_time):
         'timestamp': started
     })
 
-def testgrid_finished_json_contents(finish_time, passed):
+def testgrid_finished_json_contents(finish_time, passed, metadata):
     """returns the string contents of a testgrid finished.json file
 
     Args:
         finish_time (datetime.datetime)
         passed (bool)
+        metadata (str)
 
     Returns:
         contents (str)
     """
     finished = datetime_to_unix(finish_time)
     result = 'SUCCESS' if passed else 'FAILURE'
-    return json.dumps({
+    if metadata:
+        return json.dumps({
         'timestamp': finished,
+        'metadata': {
+            'testrun': metadata},
         'result': result
-    })
+        })
+    else:
+        return json.dumps({
+            'timestamp': finished,
+            'result': result
+        })
 
 def upload_string(gcs_path, text):
     """Uploads text to gcs_path"""
@@ -188,11 +197,16 @@ def parse_args(cli_args=None):
         help='path to the test log file, should contain the ginkgo output',
         required=True,
     )
+    parser.add_argument(
+        '--metadata',
+        help='optional information used to describe the test run. E.g. Test run post master upgrade.',
+        default=str(),
+    )
     return parser.parse_args(args=cli_args)
 
 def main(cli_args):
     args = parse_args(cli_args)
-    log, junit, year, bucket = args.log, args.junit, args.year, args.bucket
+    log, junit, year, bucket, metadata = args.log, args.junit, args.year, args.bucket, args.metadata
 
     # parse the e2e.log for start time, finish time, and success
     with open(log) as file_handle:
@@ -200,7 +214,7 @@ def main(cli_args):
 
     # convert parsed results to testgrid json metadata blobs
     started_json = testgrid_started_json_contents(started)
-    finished_json = testgrid_finished_json_contents(finished, passed)
+    finished_json = testgrid_finished_json_contents(finished, passed, metadata)
 
     # use timestamp as build ID
     gcs_dir = bucket + '/' + str(datetime_to_unix(started))
