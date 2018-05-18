@@ -79,9 +79,10 @@ def get_git_cache(k8s):
 
 def branch_to_tag(branch):
     verify_branch = re.match(r'release-(\d+\.\d+)', branch)
-    if not verify_branch:
-        return VERSION_TAG['default']
-    return VERSION_TAG[verify_branch.group(1)]
+    key = 'default'
+    if verify_branch:
+        key = verify_branch.group(1)
+    return VERSION_TAG[key]
 
 
 def main(branch, script, force, on_prow):
