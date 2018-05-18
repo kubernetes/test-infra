@@ -33,6 +33,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -48,11 +49,15 @@ var (
 	buildCluster = flag.String("build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
 	selector     = flag.String("label-selector", kube.EmptySelector, "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
 
-	githubEndpoint  = flag.String("github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
+	githubEndpoint  = flagutil.NewStrings("https://api.github.com")
 	githubTokenFile = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
 	dryRun          = flag.Bool("dry-run", true, "Whether or not to make mutating API calls to GitHub.")
 	deckURL         = flag.String("deck-url", "", "Deck URL for read-only access to the cluster.")
 )
+
+func init() {
+	flag.Var(&githubEndpoint, "github-endpoint", "GitHub's API endpoint.")
+}
 
 func main() {
 	flag.Parse()
@@ -77,9 +82,11 @@ func main() {
 			logrus.WithError(err).Fatalf("Could not read oauth secret file.")
 		}
 
-		_, err = url.Parse(*githubEndpoint)
-		if err != nil {
-			logrus.WithError(err).Fatalf("Must specify a valid --github-endpoint URL.")
+		for _, ep := range githubEndpoint.Strings() {
+			_, err = url.Parse(ep)
+			if err != nil {
+				logrus.WithError(err).Fatalf("Invalid --endpoint URL %q.", ep)
+			}
 		}
 
 		oauthSecret = string(bytes.TrimSpace(oauthSecretRaw))
@@ -90,13 +97,13 @@ func main() {
 	var pkcs map[string]*kube.Client
 	if *dryRun {
 		if oauthSecret != "" {
-			ghc = github.NewDryRunClient(oauthSecret, *githubEndpoint)
+			ghc = github.NewDryRunClient(oauthSecret, githubEndpoint.Strings()...)
 		}
 		kc = kube.NewFakeClient(*deckURL)
 		pkcs = map[string]*kube.Client{kube.DefaultClusterAlias: kc}
 	} else {
 		if oauthSecret != "" {
-			ghc = github.NewClient(oauthSecret, *githubEndpoint)
+			ghc = github.NewClient(oauthSecret, githubEndpoint.Strings()...)
 		}
 		if *cluster == "" {
 			kc, err = kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)

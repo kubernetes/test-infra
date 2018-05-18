@@ -28,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/diff"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 )
 
@@ -42,7 +43,7 @@ func TestOptions_Validate(t *testing.T) {
 			opt: options{
 				config:   "dummy",
 				token:    "fake",
-				endpoint: "https://api.github.com",
+				endpoint: flagutil.NewStrings("https://api.github.com"),
 			},
 			expectedErr: false,
 		},
@@ -51,7 +52,7 @@ func TestOptions_Validate(t *testing.T) {
 			opt: options{
 				config:   "",
 				token:    "fake",
-				endpoint: "https://api.github.com",
+				endpoint: flagutil.NewStrings("https://api.github.com"),
 			},
 			expectedErr: true,
 		},
@@ -60,7 +61,7 @@ func TestOptions_Validate(t *testing.T) {
 			opt: options{
 				config:   "dummy",
 				token:    "",
-				endpoint: "https://api.github.com",
+				endpoint: flagutil.NewStrings("https://api.github.com"),
 			},
 			expectedErr: true,
 		},
@@ -69,7 +70,7 @@ func TestOptions_Validate(t *testing.T) {
 			opt: options{
 				config:   "dummy",
 				token:    "fake",
-				endpoint: ":",
+				endpoint: flagutil.NewStrings(":"),
 			},
 			expectedErr: true,
 		},

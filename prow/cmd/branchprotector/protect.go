@@ -26,6 +26,7 @@ import (
 	"sync"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/logrusutil"
 
@@ -36,7 +37,7 @@ type options struct {
 	config   string
 	token    string
 	confirm  bool
-	endpoint string
+	endpoint flagutil.Strings
 }
 
 func (o *options) Validate() error {
@@ -48,18 +49,23 @@ func (o *options) Validate() error {
 		return errors.New("empty --github-token-path")
 	}
 
-	if _, err := url.Parse(o.endpoint); err != nil {
-		return fmt.Errorf("invalid --endpoint URL: %v", err)
+	for _, ep := range o.endpoint.Strings() {
+		_, err := url.Parse(ep)
+		if err != nil {
+			return fmt.Errorf("Invalid --endpoint URL %q: %v.", ep, err)
+		}
 	}
 
 	return nil
 }
 
 func gatherOptions() options {
-	o := options{}
+	o := options{
+		endpoint: flagutil.NewStrings("https://api.github.com"),
+	}
 	flag.StringVar(&o.config, "config-path", "", "Path to prow config.yaml")
 	flag.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
-	flag.StringVar(&o.endpoint, "github-endpoint", "https://api.github.com", "Github api endpoint, may differ for enterprise")
+	flag.Var(&o.endpoint, "github-endpoint", "Github api endpoint, may differ for enterprise")
 	flag.StringVar(&o.token, "github-token-path", "", "Path to github token")
 	flag.Parse()
 	return o
@@ -107,9 +113,9 @@ func main() {
 	var c *github.Client
 	tok := strings.TrimSpace(string(b))
 	if o.confirm {
-		c = github.NewClient(tok, o.endpoint)
+		c = github.NewClient(tok, o.endpoint.Strings()...)
 	} else {
-		c = github.NewDryRunClient(tok, o.endpoint)
+		c = github.NewDryRunClient(tok, o.endpoint.Strings()...)
 	}
 	c.Throttle(300, 100) // 300 hourly tokens, bursts of 100
 

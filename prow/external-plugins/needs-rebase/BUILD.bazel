@@ -32,6 +32,7 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//prow/external-plugins/needs-rebase/plugin:go_default_library",
+        "//prow/flagutil:go_default_library",
         "//prow/github:go_default_library",
         "//prow/hook:go_default_library",
         "//prow/pluginhelp/externalplugins:go_default_library",

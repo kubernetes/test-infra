@@ -52,7 +52,7 @@ func getClient(url string) *Client {
 				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 			},
 		},
-		base: url,
+		bases: []string{url},
 	}
 }
 
@@ -68,7 +68,7 @@ func TestRequestRateLimit(t *testing.T) {
 	defer ts.Close()
 	c := getClient(ts.URL)
 	c.time = tc
-	resp, err := c.requestRetry(http.MethodGet, c.base, "", nil)
+	resp, err := c.requestRetry(http.MethodGet, "/", "", nil)
 	if err != nil {
 		t.Errorf("Error from request: %v", err)
 	} else if resp.StatusCode != 200 {
@@ -88,11 +88,42 @@ func TestRetry404(t *testing.T) {
 	defer ts.Close()
 	c := getClient(ts.URL)
 	c.time = tc
-	resp, err := c.requestRetry(http.MethodGet, c.base, "", nil)
+	resp, err := c.requestRetry(http.MethodGet, "/", "", nil)
 	if err != nil {
 		t.Errorf("Error from request: %v", err)
 	} else if resp.StatusCode != 200 {
 		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
+	}
+}
+
+func TestRetryBase(t *testing.T) {
+	defer func(orig time.Duration) { initialDelay = orig }(initialDelay)
+	initialDelay = time.Microsecond
+
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	// One good endpoint:
+	c.bases = []string{c.bases[0]}
+	resp, err := c.requestRetry(http.MethodGet, "/", "", nil)
+	if err != nil {
+		t.Errorf("Error from request: %v", err)
+	} else if resp.StatusCode != 200 {
+		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
+	}
+	// Bad endpoint followed by good endpoint:
+	c.bases = []string{"not-a-valid-base", c.bases[0]}
+	resp, err = c.requestRetry(http.MethodGet, "/", "", nil)
+	if err != nil {
+		t.Errorf("Error from request: %v", err)
+	} else if resp.StatusCode != 200 {
+		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
+	}
+	// One bad endpoint:
+	c.bases = []string{"not-a-valid-base"}
+	resp, err = c.requestRetry(http.MethodGet, "/", "", nil)
+	if err == nil {
+		t.Error("Expected an error from a request to an invalid base, but succeeded!?")
 	}
 }
 
