@@ -180,7 +180,9 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 
 	cloneLog := fmt.Sprintf("%s/clone.json", LogMountPath)
 	var refs []*kube.Refs
-	refs = append(refs, pj.Spec.Refs)
+	if pj.Spec.Refs != nil {
+		refs = append(refs, pj.Spec.Refs)
+	}
 	refs = append(refs, pj.Spec.ExtraRefs...)
 	cloneConfigEnv, err := clonerefs.Encode(clonerefs.Options{
 		SrcRoot:      CodeMountPath,
