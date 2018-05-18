@@ -153,12 +153,13 @@ type Protector struct {
 func (p *Protector) ConfigureBranches() {
 	for u := range p.updates {
 		if u.Request == nil {
+			logrus.Infof("Removing branch protection for %s/%s=%s", u.Org, u.Repo, u.Branch)
 			if err := p.client.RemoveBranchProtection(u.Org, u.Repo, u.Branch); err != nil {
 				p.errors.add(fmt.Errorf("remove %s/%s=%s protection failed: %v", u.Org, u.Repo, u.Branch, err))
 			}
 			continue
 		}
-
+		logrus.Infof("Updating branch protection for %s/%s=%s", u.Org, u.Repo, u.Branch)
 		if err := p.client.UpdateBranchProtection(u.Org, u.Repo, u.Branch, *u.Request); err != nil {
 			p.errors.add(fmt.Errorf("update %s/%s=%s protection to %v failed: %v", u.Org, u.Repo, u.Branch, *u.Request, err))
 		}
@@ -238,7 +239,7 @@ func (p *Protector) UpdateRepo(orgName string, repo string, repoDefaults config.
 	}
 	for _, branch := range branches {
 		bn := branch.Name
-		if err := p.UpdateBranch(orgName, repo, bn, branch.Protected); err != nil {
+		if err := p.UpdateBranch(orgName, repo, bn); err != nil {
 			return fmt.Errorf("UpdateBranch(%s, %s, %s, %t) failed: %v", orgName, repo, bn, branch.Protected, err)
 		}
 	}
@@ -246,20 +247,16 @@ func (p *Protector) UpdateRepo(orgName string, repo string, repoDefaults config.
 }
 
 // Update the branch with the specified configuration
-func (p *Protector) UpdateBranch(orgName, repo string, branchName string, protected bool) error {
+func (p *Protector) UpdateBranch(orgName, repo string, branchName string) error {
 	bp, err := p.cfg.GetBranchProtection(orgName, repo, branchName)
 	if err != nil {
 		return err
 	}
-	if bp == nil || bp.Protect == nil {
-		return nil
-	}
-	if !protected && !*bp.Protect {
-		logrus.Infof("%s/%s=%s: already unprotected", orgName, repo, branchName)
+	if bp == nil {
 		return nil
 	}
 	var req *github.BranchProtectionRequest
-	if *bp.Protect {
+	if bp.Protect != nil && *bp.Protect {
 		r := makeRequest(*bp)
 		req = &r
 	}
