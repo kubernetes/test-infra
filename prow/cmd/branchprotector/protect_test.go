@@ -598,28 +598,6 @@ branch-protection:
 				},
 			},
 		},
-		{
-			name:     "do not unprotect unprotected",
-			branches: []string{"protect/update=master", "unprotected/skip=master"},
-			config: `
-branch-protection:
-  protect: true
-  orgs:
-    protect:
-      protect: true
-    unprotected:
-      protect: false
-`,
-			startUnprotected: true,
-			expected: []Requirements{
-				{
-					Org:     "protect",
-					Repo:    "update",
-					Branch:  "master",
-					Request: &github.BranchProtectionRequest{},
-				},
-			},
-		},
 	}
 
 	for _, tc := range cases {
