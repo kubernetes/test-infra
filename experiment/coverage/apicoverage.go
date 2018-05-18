@@ -40,6 +40,7 @@ var (
 	outputCoveredAPIs = flag.Bool("output-covered-apis", false, "Output the list of covered APIs")
 	minCoverage       = flag.Int("minimum-coverage", 0, "This command fails if the number of covered APIs is less than this option ratio(percent)")
 	restLog           = flag.String("restlog", "", "File path to REST API operation log of Kubernetes")
+	logType           = flag.String("logtype", "e2e", "Type of REST API operation log of Kubernetes(e2e, apiserver)")
 )
 
 type apiData struct {
@@ -100,20 +101,48 @@ func getOpenAPISpec(url string) apiArray {
 }
 
 //   I0919 15:34:14.943642    6611 round_trippers.go:414] GET https://172.27.138.63:6443/api/v1/namespaces/kube-system/replicationcontrollers
-var reAPILog = regexp.MustCompile(`round_trippers.go:\d+\] (GET|PUT|POST|DELETE|OPTIONS|HEAD|PATCH) (\S+)`)
+var reE2eAPILog = regexp.MustCompile(`round_trippers.go:\d+\] (GET|PUT|POST|DELETE|OPTIONS|HEAD|PATCH) (\S+)`)
 
-func parseAPILog(fp io.Reader) apiArray {
+func parseE2eAPILog(fp io.Reader) apiArray {
 	var apisLog apiArray
 	var err error
 
 	reader := bufio.NewReaderSize(fp, 4096)
 	for line := ""; err == nil; line, err = reader.ReadString('\n') {
-		result := reAPILog.FindSubmatch([]byte(line))
+		result := reE2eAPILog.FindSubmatch([]byte(line))
 		if len(result) == 0 {
 			continue
 		}
 		method := strings.ToUpper(string(result[1]))
 		rawurl := string(result[2])
+		parsedURL, err := url.Parse(rawurl)
+		if err != nil {
+			log.Fatal(err)
+		}
+		api := apiData{
+			Method: method,
+			URL:    parsedURL.Path,
+		}
+		apisLog = append(apisLog, api)
+	}
+	return apisLog
+}
+
+//   I0413 12:10:56.612005       1 wrap.go:42] PUT /apis/apiregistration.k8s.io/v1/apiservices/v1.apps/status: (1.671974ms) 200 [[kube-apiserver/v1.11.0 (linux/amd64) kubernetes/7297c1c] 127.0.0.1:44356]
+var reAPIServerLog = regexp.MustCompile(`wrap.go:\d+\] (GET|PUT|POST|DELETE|OPTIONS|HEAD|PATCH) (\S+)`)
+
+func parseAPIServerLog(fp io.Reader) apiArray {
+	var apisLog apiArray
+	var err error
+
+	reader := bufio.NewReaderSize(fp, 4096)
+	for line := ""; err == nil; line, err = reader.ReadString('\n') {
+		result := reAPIServerLog.FindSubmatch([]byte(line))
+		if len(result) == 0 {
+			continue
+		}
+		method := strings.ToUpper(string(result[1]))
+		rawurl := strings.Replace(string(result[2]), ":", "", 1)
 		parsedURL, err := url.Parse(rawurl)
 		if err != nil {
 			log.Fatal(err)
@@ -137,7 +166,11 @@ func getAPILog(restlog string) apiArray {
 	}
 	defer fp.Close()
 
-	return parseAPILog(fp)
+	if *logType == "e2e" {
+		return parseE2eAPILog(fp)
+	} else {
+		return parseAPIServerLog(fp)
+	}
 }
 
 var reOpenapi = regexp.MustCompile(`({\S+?})`)
@@ -241,6 +274,9 @@ func main() {
 	flag.Parse()
 	if len(*restLog) == 0 {
 		glog.Fatal("need to set '--restlog'")
+	}
+	if *logType != "e2e" && *logType != "apiserver" {
+		glog.Fatal("need to specify e2e or apiserver with '--logtype'")
 	}
 
 	apisOpenapi := getOpenAPISpec(*openAPIFile)

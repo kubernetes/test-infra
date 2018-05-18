@@ -91,7 +91,6 @@ def path_to_group_name(path):
         path = re.sub(r'/pull/([^/]+/)?\d+/', '/directory/', path)
     for test_group in config.get('test_groups', []):
         if path in test_group['query']:
-            print test_group['query']
             return test_group['name'][0]
 
 

@@ -93,13 +93,38 @@ The field to search token correspondence is based on the following mapping:
 
 Every PR that need to be rebased is filtered from the pool before processing
 
+
+### Context Policy Options
+
+A PR will be merged when all checks are passing. With this option you can customize
+which contexts are required or optional.
+
+By default, required and optional contexts will be derived from Prow Job Config.
+This allows to find if required checks are missing from the github combined status.
+
+If `branch-protection` config is defined, it can be used to know which test needs
+be passing to merge a PR.
+
+When branch protection is not used, required and optional contexts can be defined
+globally, or at the org, repo or branch level.
+
+If we want to skip unknown checks (ie checks that are not defined in Prow Config), we can set
+`skip-unknown-contexts` to true. This option can be set globally or per org,
+repo and branch.
+
+**Important**: If this option is not set and no prow jobs are defined tide will trust the github
+combined status and will assume that all checks are required (except tide).
+
+
 ### Example
 
 ```yaml
 tide:
   merge_method:
     kubeflow/community: squash
+
   target_url: https://prow.k8s.io/tide.html
+
   queries:
   - repos:
     - kubeflow/community
@@ -113,6 +138,28 @@ tide:
     - do-not-merge/work-in-progress
     - needs-ok-to-test
     - needs-rebase
+
+  context_options:
+    # Use branch protection options to define required and optional contexts
+    from-branch-protection: true
+    # Treat unknown contexts as optional
+    skip-unknown-contexts: true
+    orgs:
+      org:
+        required-contexts:
+        - "check-required-for-all-repos"
+        repos:
+	  repo:
+            required-contexts:
+             - "check-required-for-all-branches"
+            branches:
+              branch:
+                from-branch-protection: false
+                required-contexts:
+                - "required_test"
+                optional-contexts:
+                - "optional_test"
+
 ```
 
 **Explanation**: The component starts periodically querying all PRs in `github.com/kubeflow/community` and

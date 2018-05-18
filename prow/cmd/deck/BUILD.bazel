@@ -42,6 +42,7 @@ go_binary(
 go_test(
     name = "go_default_test",
     srcs = [
+        "badge_test.go",
         "jobs_test.go",
         "main_test.go",
         "tide_test.go",
@@ -61,6 +62,7 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = [
+        "badge.go",
         "jobs.go",
         "main.go",
         "pluginhelp.go",

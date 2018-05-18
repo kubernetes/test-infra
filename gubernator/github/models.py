@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 import datetime
 import json
 
@@ -58,7 +59,15 @@ class GithubWebhookRaw(ndb.Model):
 
 
 def from_iso8601(t):
-    return t and datetime.datetime.strptime(t, '%Y-%m-%dT%H:%M:%SZ')
+    if not t:
+        return t
+    if t.endswith('Z'):
+        return datetime.datetime.strptime(t, '%Y-%m-%dT%H:%M:%SZ')
+    elif t.endswith('+00:00'):
+        return datetime.datetime.strptime(t, '%Y-%m-%dT%H:%M:%S+00:00')
+    else:
+        logging.warning('unparseable time value: %s', t)
+        return None
 
 
 def make_kwargs(body, fields):

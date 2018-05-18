@@ -218,6 +218,14 @@ func (ps Presubmit) TriggerMatches(body string) bool {
 	return ps.re.MatchString(body)
 }
 
+// ContextRequired checks whether a context is required from github points of view (required check).
+func (ps Presubmit) ContextRequired() bool {
+	if ps.Optional || ps.SkipReport {
+		return false
+	}
+	return true
+}
+
 type ChangedFilesProvider func() ([]string, error)
 
 func matching(j Presubmit, body string, testAll bool) []Presubmit {

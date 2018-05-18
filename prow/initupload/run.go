@@ -44,15 +44,18 @@ func (o Options) Run() error {
 		return fmt.Errorf("could not unmarshal clone records: %v", err)
 	}
 
+	// Do not read from cloneLog directly.
+	// Instead create multiple readers from cloneLog so it can be uploaded to
+	// both clone-log.txt and build-log.txt on failure.
+	cloneLog := bytes.Buffer{}
 	failed := false
-	buildLog := bytes.Buffer{}
 	for _, record := range cloneRecords {
-		buildLog.WriteString(clone.FormatRecord(record))
+		cloneLog.WriteString(clone.FormatRecord(record))
 		failed = failed || record.Failed
 	}
 
 	uploadTargets := map[string]gcs.UploadFunc{
-		"clone-log.txt":      gcs.DataUpload(&buildLog),
+		"clone-log.txt":      gcs.DataUpload(bytes.NewReader(cloneLog.Bytes())),
 		"clone-records.json": gcs.FileUpload(o.Log),
 	}
 
@@ -65,7 +68,7 @@ func (o Options) Run() error {
 	if err != nil {
 		return fmt.Errorf("could not marshal starting data: %v", err)
 	} else {
-		uploadTargets["started.json"] = gcs.DataUpload(bytes.NewBuffer(startedData))
+		uploadTargets["started.json"] = gcs.DataUpload(bytes.NewReader(startedData))
 	}
 
 	if failed {
@@ -82,8 +85,8 @@ func (o Options) Run() error {
 		if err != nil {
 			return fmt.Errorf("could not marshal finishing data: %v", err)
 		} else {
-			uploadTargets["build-log.txt"] = gcs.DataUpload(&buildLog)
-			uploadTargets["finished.json"] = gcs.DataUpload(bytes.NewBuffer(finishedData))
+			uploadTargets["build-log.txt"] = gcs.DataUpload(bytes.NewReader(cloneLog.Bytes()))
+			uploadTargets["finished.json"] = gcs.DataUpload(bytes.NewReader(finishedData))
 		}
 	}
 
