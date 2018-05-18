@@ -16,12 +16,14 @@ branch-protection:
       repos:
         test-infra:
           # Protect all branches in kubernetes/test-infra
-          protect-by-default: true
+          protect: true
           # Always allow the org's oncall-team to push
-          pushers: ["oncall-team"]
+          restrictions:
+            teams: ["oncall-team"]
           # Ensure that the extra-process-followed github status context passes.
           # In addition, adds any required prow jobs (aka always_run: true)
-          require-contexts: ["extra-process-followed"]
+          required_status_checks:
+            contexts: ["extra-process-followed"]
 
 presubmits:
   kubernetes/test-infra:
@@ -54,41 +56,89 @@ editor and then send out a PR. When the PR merges prow pushes the updated config
 
 ### Advanced configuration
 
-See [`branch_protection.go`] for a complete list of fields allowed
-inside `branch-protection`.  It is possible to define a policy at the
+
+#### Fields
+
+See [`branch_protection.go`] and Github's [protection api] for a complete list of fields allowed
+inside `branch-protection` and their meanings. The format is:
+
+```yaml
+branch-protection:
+  # default policy here
+  orgs:
+    foo:
+      # this is the foo org policy
+      protect: true  # enable protection
+      enforce_admins: true  # rules apply to admins
+      required_pull_request_reviews:
+        dismiss_stale_reviews: false # automatically dismiss old reviews
+        dismissal_restrictions: # allow review dismissals
+          users:
+          - her
+          - him
+          teams:
+          - them
+          - those
+        require_code_owner_reviews: true  # require a code owner approval
+        required_approving_review_count: 1 # number of approvals
+      required_status_checks:
+        strict: false # require pr branch to be up to date
+        contexts: # checks which must be green to merge
+        - foo
+        - bar
+      restrictions: # restrict who can push to the repo
+        users:
+        - her
+        - him
+        teams:
+        - them
+        - those
+```
+
+
+
+#### Scope
+
+
+It is possible to define a policy at the
 `branch-protection`, `org`, `repo` or `branch` level. For example:
 
 ```yaml
 branch-protection:
   # Protect unless overridden
-  protect-by-default: true
+  protect: true
   # If protected, always require the cla status context
-  require-contexts: ["cla"]
+  required_status_checks:
+    contexts: ["cla"]
   orgs:
     unprotected-org:
       # Disable protection unless overridden (overrides parent setting of true)
-      protect-by-default: false
+      protect: false
       repos:
         protected-repo:
           # Inherit protect-by-default config from parent
           # If protected, always require the tested status context
-          require-contexts: ["tested"]
+          required_status_checks:
+            contexts: ["tested"]
           branches:
             secure:
               # Protect the secure branch (overrides inhereted parent setting of false)
-              protect-by-default: true
+              protect: true
               # Require the foo status context
-              require-contexts: ["foo"]
+              required_status_checks:
+                contexts: ["foo"]
     different-org:
       # Inherits protect-by-default: true setting from above
 ```
 
-Any `pushers` and `require-contexts` defined at the parent level are appended to
-child levels. The `protect-by-default` setting inherits from the parent if
-`null` (default) otherwise a child setting overrides the parent setting.
+The general rule for how to compute child values is:
+  * If the child value is `null` or missing, inherit the parent value.
+  * Otherwise:
+    -   List values (like `contexts`), create a union of the parent and child lists.
+    -   For bool/int values (like `protect`), the child value replaces the parent value.
 
 So in the example above:
-  * The `secure` branch `unprotected-org/protected-repo`
+  * The `secure` branch in `unprotected-org/protected-repo`
     - enables protection (set a branch level)
     - requires `foo` `tested` `cla` [status contexts]
       (the latter two are appended by ancestors)
@@ -160,7 +210,7 @@ job resource.
 
 
 [`bazel`]: https://bazel.build
-[`branch_protection.go`]: branch_protection.go
+[`branch_protection.go`]: /prow/config/branch_protection.go
 [`config.yaml`]: /prow/config.yaml
 [github branch protection]: https://help.github.com/articles/about-protected-branches/
 [`oneshot-job.yaml`]: oneshot-job.yaml
@@ -169,3 +219,4 @@ job resource.
 [`prow/bump.sh`]: /prow/bump.sh
 [`prow/cluster/branchprotector_cronjob.yaml`]: /prow/cluster/branchprotector_cronjob.yaml
 [status contexts]: https://developer.github.com/v3/repos/statuses/#create-a-status
+[protection api]: https://developer.github.com/v3/repos/branches/#update-branch-protection
