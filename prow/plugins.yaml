@@ -95,6 +95,9 @@ blockades:
   - ^events/elections/2017
   explanation: "These files are historical, and from events that have already occurred."
 
+blunderbuss:
+  max_request_count: 2
+
 cat:
   key_path: /etc/cat-api/api-key
 heart:
