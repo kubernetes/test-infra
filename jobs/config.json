@@ -7525,9 +7525,9 @@
       "--gcp-region=us-central1",
       "--gke-environment=staging",
       "--provider=gke",
-      "--test_args=--gce-multizone=true --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]|Initializers|Dashboard --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh",
+      "--test_args=--gce-multizone=true --gce-multimaster=true --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]|Initializers|Dashboard --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh",
       "--timeout=900m",
-      "--upgrade_args=--gce-multizone=true --ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=gke-latest-1.9 --upgrade-image=gci"
+      "--upgrade_args=--gce-multizone=true --gce-multimaster=true --ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=gke-latest-1.9 --upgrade-image=gci"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -7609,9 +7609,9 @@
       "--gcp-region=us-central1",
       "--gke-environment=staging",
       "--provider=gke",
-      "--test_args=--gce-multizone=true --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]|Initializers|Dashboard --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh",
+      "--test_args=--gce-multizone=true --gce-multimaster=true --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]|Initializers|Dashboard --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh",
       "--timeout=900m",
-      "--upgrade_args=--gce-multizone=true --ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=gke-latest-1.10 --upgrade-image=gci"
+      "--upgrade_args=--gce-multizone=true --gce-multimaster=true --ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=gke-latest-1.10 --upgrade-image=gci"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
