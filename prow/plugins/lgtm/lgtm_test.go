@@ -21,11 +21,61 @@ import (
 	"testing"
 
 	"github.com/sirupsen/logrus"
-
 	"k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/util/sets"
+
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/repoowners"
 )
+
+type fakeOwnersClient struct {
+	approvers map[string]sets.String
+	reviewers map[string]sets.String
+}
+
+var _ repoowners.Interface = &fakeOwnersClient{}
+
+func (f *fakeOwnersClient) LoadRepoAliases(org, repo, base string) (repoowners.RepoAliases, error) {
+	return nil, nil
+}
+
+func (f *fakeOwnersClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwnerInterface, error) {
+	return &fakeRepoOwners{approvers: f.approvers, reviewers: f.reviewers}, nil
+}
+
+type fakeRepoOwners struct {
+	approvers map[string]sets.String
+	reviewers map[string]sets.String
+}
+
+var _ repoowners.RepoOwnerInterface = &fakeRepoOwners{}
+
+func (f *fakeRepoOwners) FindApproverOwnersForFile(path string) string  { return "" }
+func (f *fakeRepoOwners) FindReviewersOwnersForFile(path string) string { return "" }
+func (f *fakeRepoOwners) FindLabelsForFile(path string) sets.String     { return nil }
+func (f *fakeRepoOwners) IsNoParentOwners(path string) bool             { return false }
+func (f *fakeRepoOwners) LeafApprovers(path string) sets.String         { return nil }
+func (f *fakeRepoOwners) Approvers(path string) sets.String             { return f.approvers[path] }
+func (f *fakeRepoOwners) LeafReviewers(path string) sets.String         { return nil }
+func (f *fakeRepoOwners) Reviewers(path string) sets.String             { return f.reviewers[path] }
+
+var approvers = map[string]sets.String{
+	"doc/README.md": {
+		"cjwagner": {},
+		"jessica":  {},
+	},
+}
+
+var reviewers = map[string]sets.String{
+	"doc/README.md": {
+		"alice": {},
+		"bob":   {},
+		"mark":  {},
+		"sam":   {},
+	},
+}
 
 func TestLGTMComment(t *testing.T) {
 	var testcases = []struct {
@@ -36,6 +86,9 @@ func TestLGTMComment(t *testing.T) {
 		shouldToggle  bool
 		shouldComment bool
 		shouldAssign  bool
+		skipCollab    bool
+		prs           map[int]*github.PullRequest
+		changes       map[int][]github.PullRequestChange
 	}{
 		{
 			name:         "non-lgtm comment",
@@ -164,10 +217,33 @@ func TestLGTMComment(t *testing.T) {
 			hasLGTM:      false,
 			shouldToggle: false,
 		},
+		{
+			name:         "lgtm comment, based off OWNERS only",
+			body:         "/lgtm",
+			commenter:    "sam",
+			hasLGTM:      false,
+			shouldToggle: true,
+			skipCollab:   true,
+			prs: map[int]*github.PullRequest{
+				5: {
+					Base: github.PullRequestBranch{
+						Ref: "master",
+					},
+				},
+			},
+			changes: map[int][]github.PullRequestChange{
+				5: {
+					{Filename: "doc/README.md"},
+				},
+			},
+		},
 	}
 	for _, tc := range testcases {
+		t.Logf("Running scenario %q", tc.name)
 		fc := &fakegithub.FakeClient{
-			IssueComments: make(map[int][]github.IssueComment),
+			IssueComments:      make(map[int][]github.IssueComment),
+			PullRequests:       tc.prs,
+			PullRequestChanges: tc.changes,
 		}
 		e := &github.GenericCommentEvent{
 			Action:      github.GenericCommentActionCreated,
@@ -184,8 +260,13 @@ func TestLGTMComment(t *testing.T) {
 		if tc.hasLGTM {
 			fc.LabelsAdded = []string{"org/repo#5:" + lgtmLabel}
 		}
-		if err := handle(fc, logrus.WithField("plugin", pluginName), e); err != nil {
-			t.Errorf("For case %s, didn't expect error from lgtmComment: %v", tc.name, err)
+		oc := &fakeOwnersClient{approvers: approvers, reviewers: reviewers}
+		pc := &plugins.Configuration{}
+		if tc.skipCollab {
+			pc.Owners.SkipCollaborators = []string{"org/repo"}
+		}
+		if err := handle(fc, pc, oc, logrus.WithField("plugin", pluginName), e); err != nil {
+			t.Errorf("didn't expect error from lgtmComment: %v", err)
 			continue
 		}
 		if tc.shouldAssign {
@@ -197,34 +278,34 @@ func TestLGTMComment(t *testing.T) {
 				}
 			}
 			if !found || len(fc.AssigneesAdded) != 1 {
-				t.Errorf("For case %s, should have assigned %s but added assignees are %s", tc.name, tc.commenter, fc.AssigneesAdded)
+				t.Errorf("should have assigned %s but added assignees are %s", tc.commenter, fc.AssigneesAdded)
 			}
 		} else if len(fc.AssigneesAdded) != 0 {
-			t.Errorf("For case %s, should not have assigned anyone but assigned %s", tc.name, fc.AssigneesAdded)
+			t.Errorf("should not have assigned anyone but assigned %s", fc.AssigneesAdded)
 		}
 		if tc.shouldToggle {
 			if tc.hasLGTM {
 				if len(fc.LabelsRemoved) == 0 {
-					t.Errorf("For case %s, should have removed LGTM.", tc.name)
+					t.Errorf("should have removed LGTM.")
 				} else if len(fc.LabelsAdded) > 1 {
-					t.Errorf("For case %s, should not have added LGTM.", tc.name)
+					t.Errorf("should not have added LGTM.")
 				}
 			} else {
 				if len(fc.LabelsAdded) == 0 {
-					t.Errorf("For case %s, should have added LGTM.", tc.name)
+					t.Errorf("should have added LGTM.")
 				} else if len(fc.LabelsRemoved) > 0 {
-					t.Errorf("For case %s, should not have removed LGTM.", tc.name)
+					t.Errorf("should not have removed LGTM.")
 				}
 			}
 		} else if len(fc.LabelsRemoved) > 0 {
-			t.Errorf("For case %s, should not have removed LGTM.", tc.name)
+			t.Errorf("should not have removed LGTM.")
 		} else if (tc.hasLGTM && len(fc.LabelsAdded) > 1) || (!tc.hasLGTM && len(fc.LabelsAdded) > 0) {
-			t.Errorf("For case %s, should not have added LGTM.", tc.name)
+			t.Errorf("should not have added LGTM.")
 		}
 		if tc.shouldComment && len(fc.IssueComments[5]) != 1 {
-			t.Errorf("For case %s, should have commented.", tc.name)
+			t.Errorf("should have commented.")
 		} else if !tc.shouldComment && len(fc.IssueComments[5]) != 0 {
-			t.Errorf("For case %s, should not have commented.", tc.name)
+			t.Errorf("should not have commented.")
 		}
 	}
 }
@@ -324,7 +405,9 @@ func TestLGTMCommentWithLGTMNoti(t *testing.T) {
 			Body: removeLGTMLabelNoti,
 		}
 		fc.IssueComments[5] = append(fc.IssueComments[5], ic)
-		if err := handle(fc, logrus.WithField("plugin", pluginName), e); err != nil {
+		oc := &fakeOwnersClient{approvers: approvers, reviewers: reviewers}
+		pc := &plugins.Configuration{}
+		if err := handle(fc, pc, oc, logrus.WithField("plugin", pluginName), e); err != nil {
 			t.Errorf("For case %s, didn't expect error from lgtmComment: %v", tc.name, err)
 			continue
 		}

@@ -122,7 +122,7 @@ type PluginClient struct {
 	KubeClient   *kube.Client
 	GitClient    *git.Client
 	SlackClient  *slack.Client
-	OwnersClient *repoowners.Client
+	OwnersClient repoowners.Interface
 
 	CommentPruner *commentpruner.EventClient
 
@@ -217,6 +217,11 @@ type Owners struct {
 		---
 	*/
 	MDYAMLRepos []string `json:"mdyamlrepos,omitempty"`
+
+	// SkipCollaborators disables collaborator cross-checks and forces both
+	// the approve and lgtm plugins to use solely OWNERS files for access
+	// control in the provided repos.
+	SkipCollaborators []string `json:"skip_collaborators,omitempty"`
 }
 
 func (pa *PluginAgent) MDYAMLEnabled(org, repo string) bool {
@@ -227,7 +232,16 @@ func (pa *PluginAgent) MDYAMLEnabled(org, repo string) bool {
 		}
 	}
 	return false
+}
 
+func (pa *PluginAgent) SkipCollaborators(org, repo string) bool {
+	full := fmt.Sprintf("%s/%s", org, repo)
+	for _, elem := range pa.Config().Owners.SkipCollaborators {
+		if elem == org || elem == full {
+			return true
+		}
+	}
+	return false
 }
 
 // RequireSIG specifies configuration for the require-sig plugin.

@@ -177,6 +177,7 @@ func main() {
 	ownersClient := repoowners.NewClient(
 		gitClient, githubClient,
 		configAgent, pluginAgent.MDYAMLEnabled,
+		pluginAgent.SkipCollaborators,
 	)
 
 	pluginAgent.PluginClient = plugins.PluginClient{

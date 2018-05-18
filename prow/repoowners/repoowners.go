@@ -83,6 +83,15 @@ type configGetter interface {
 	Config() *prowConf.Config
 }
 
+// Interface is an interface to work with OWNERS files.
+type Interface interface {
+	LoadRepoAliases(org, repo, base string) (RepoAliases, error)
+	LoadRepoOwners(org, repo, base string) (RepoOwnerInterface, error)
+}
+
+// Client is an implementation of the Interface.
+var _ Interface = &Client{}
+
 type Client struct {
 	configGetter configGetter
 
@@ -90,7 +99,8 @@ type Client struct {
 	ghc    githubClient
 	logger *logrus.Entry
 
-	mdYAMLEnabled func(org, repo string) bool
+	mdYAMLEnabled     func(org, repo string) bool
+	skipCollaborators func(org, repo string) bool
 
 	lock  sync.Mutex
 	cache map[string]cacheEntry
@@ -101,6 +111,7 @@ func NewClient(
 	ghc *github.Client,
 	configGetter *prowConf.Agent,
 	mdYAMLEnabled func(org, repo string) bool,
+	skipCollaborators func(org, repo string) bool,
 ) *Client {
 	return &Client{
 		git:    gc,
@@ -108,13 +119,28 @@ func NewClient(
 		logger: logrus.WithField("client", "repoowners"),
 		cache:  make(map[string]cacheEntry),
 
-		mdYAMLEnabled: mdYAMLEnabled,
+		mdYAMLEnabled:     mdYAMLEnabled,
+		skipCollaborators: skipCollaborators,
 
 		configGetter: configGetter,
 	}
 }
 
 type RepoAliases map[string]sets.String
+
+type RepoOwnerInterface interface {
+	FindApproverOwnersForFile(path string) string
+	FindReviewersOwnersForFile(path string) string
+	FindLabelsForFile(path string) sets.String
+	IsNoParentOwners(path string) bool
+	LeafApprovers(path string) sets.String
+	Approvers(path string) sets.String
+	LeafReviewers(path string) sets.String
+	Reviewers(path string) sets.String
+}
+
+// RepoOwners implements RepoOwnerInterface
+var _ RepoOwnerInterface = &RepoOwners{}
 
 type RepoOwners struct {
 	RepoAliases
@@ -168,7 +194,7 @@ func (c *Client) LoadRepoAliases(org, repo, base string) (RepoAliases, error) {
 
 // LoadRepoOwners returns an up-to-date RepoOwners struct for the specified repo.
 // Note: The returned *RepoOwners should be treated as read only.
-func (c *Client) LoadRepoOwners(org, repo, base string) (*RepoOwners, error) {
+func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwnerInterface, error) {
 	log := c.logger.WithFields(logrus.Fields{"org": org, "repo": repo, "base": base})
 	cloneRef := fmt.Sprintf("%s/%s", org, repo)
 	fullName := fmt.Sprintf("%s:%s", cloneRef, base)
@@ -212,6 +238,11 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (*RepoOwners, error) {
 		}
 		entry.sha = sha
 		c.cache[fullName] = entry
+	}
+
+	if c.skipCollaborators(org, repo) {
+		log.Debugf("Skipping collaborator checks for %s/%s", org, repo)
+		return entry.owners, nil
 	}
 
 	var owners *RepoOwners
