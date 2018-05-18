@@ -23,6 +23,15 @@ gcloud container --project "${PROJECT}" clusters create prow \
   --zone "${ZONE}" --machine-type n1-standard-4 --num-nodes 2
 ```
 
+## Create cluster role bindings
+As of 1.8 Kubernetes uses [Role-Based Access Control (“RBAC”)](https://kubernetes.io/docs/admin/authorization/rbac/) 
+to drive authorization decisions, allowing admins to dynamically configure policies. 
+To create cluster resources you need to grant a user admin role in all namespaces for the cluster.
+
+```sh
+kubectl create clusterrolebinding cluster-admin-binding-"${USER}" --clusterrole=cluster-admin --user="${USER}"
+```
+
 ## Create the GitHub secrets
 
 You will need two secrets to talk to GitHub. The `hmac-token` is the token that
