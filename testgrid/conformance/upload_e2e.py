@@ -41,6 +41,7 @@ import argparse
 import json
 import subprocess
 from os import path
+import glob
 
 
 # logs often contain ANSI escape sequences
@@ -144,19 +145,23 @@ def testgrid_finished_json_contents(finish_time, passed):
         'result': result
     })
 
-def upload_string(gcs_path, text):
-    """Uploads text to gcs_path"""
+def upload_string(gcs_path, text, dry):
+    """Uploads text to gcs_path if dry is False, otherwise just prints"""
     cmd = ['gsutil', '-q', '-h', 'Content-Type:text/plain', 'cp', '-', gcs_path]
     print >>sys.stderr, 'Run:', cmd, 'stdin=%s'%text
+    if dry:
+        return
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
     proc.communicate(input=text)
     if proc.returncode != 0:
         raise RuntimeError("Failed to upload with exit code: %d" % proc.returncode)
 
-def upload_file(gcs_path, file_path):
-    """Uploads file at file_path to gcs_path"""
+def upload_file(gcs_path, file_path, dry):
+    """Uploads file at file_path to gcs_path if dry is False, otherwise just prints"""
     cmd = ['gsutil', '-q', '-h', 'Content-Type:text/plain', 'cp', file_path, gcs_path]
     print >>sys.stderr, 'Run:', cmd
+    if dry:
+        return
     proc = subprocess.Popen(cmd)
     proc.communicate()
     if proc.returncode != 0:
@@ -180,7 +185,7 @@ def parse_args(cli_args=None):
     )
     parser.add_argument(
         '--junit',
-        help='path to the junit xml results file',
+        help='path or glob expression to the junit xml results file(s)',
         required=True,
     )
     parser.add_argument(
@@ -188,11 +193,24 @@ def parse_args(cli_args=None):
         help='path to the test log file, should contain the ginkgo output',
         required=True,
     )
+    parser.add_argument(
+        '--dry-run',
+        help='if set, do not actually upload anything, only print actions',
+        required=False,
+        action='store_true',
+    )
     return parser.parse_args(args=cli_args)
 
 def main(cli_args):
     args = parse_args(cli_args)
-    log, junit, year, bucket = args.log, args.junit, args.year, args.bucket
+    log, year, bucket, dry = args.log, args.year, args.bucket, args.dry_run
+
+    # find the matching junit files, there should be at least one for a useful
+    # testgrid entry
+    junits = glob.glob(args.junit)
+    if not junits:
+        print 'No matching JUnit files found!'
+        sys.exit(-1)
 
     # parse the e2e.log for start time, finish time, and success
     with open(log) as file_handle:
@@ -207,11 +225,11 @@ def main(cli_args):
 
     # upload metadata, log, junit to testgrid
     print 'Uploading entry to: %s' % gcs_dir
-    upload_string(gcs_dir+'/started.json', started_json)
-    upload_string(gcs_dir+'/finished.json', finished_json)
-    upload_file(gcs_dir+'/build-log.txt', log)
-    upload_file(gcs_dir+'/artifacts/'+path.basename(junit), junit)
-
+    upload_string(gcs_dir+'/started.json', started_json, dry)
+    upload_string(gcs_dir+'/finished.json', finished_json, dry)
+    upload_file(gcs_dir+'/build-log.txt', log, dry)
+    for junit_file in junits:
+        upload_file(gcs_dir+'/artifacts/'+path.basename(junit_file), junit_file, dry)
     print 'Done.'
 
 if __name__ == '__main__':
