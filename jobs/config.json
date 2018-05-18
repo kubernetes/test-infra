@@ -2936,6 +2936,7 @@
     "args": [
       "--cluster=$USER-large-manual",
       "--down=false",
+      "--env=CLUSTER_DNS_CORE_DNS=true",
       "--env=HEAPSTER_MACHINE_TYPE=n1-standard-8",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env",
@@ -2946,7 +2947,7 @@
       "--gcp-project=k8s-scale-testing",
       "--gcp-zone=us-east1-a",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Empty\\]",
+      "--test_args=--ginkgo.focus=\\[Feature:PerformanceDNS\\]",
       "--timeout=300m"
     ],
     "scenario": "kubernetes_e2e",
