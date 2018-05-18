@@ -21,6 +21,4 @@ shopt -s extglob globstar
 
 cd "$(dirname "$0")/.."
 
-PATH=$PATH:$PWD/external/shellcheck/
-
 shellcheck !(bazel-*|third_party|vendor|dind)/**/*.sh

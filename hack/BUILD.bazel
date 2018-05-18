@@ -27,16 +27,6 @@ sh_test(
 )
 
 sh_test(
-    name = "verify-shellcheck",
-    srcs = ["verify-shellcheck.sh"],
-    data = [
-        "//:all-srcs",
-        "@shellcheck",
-    ],
-    tags = ["lint"],
-)
-
-sh_test(
     name = "verify-spelling",
     srcs = ["verify-spelling.sh"],
     args = ["-m $(location //vendor/github.com/client9/misspell/cmd/misspell)"],
@@ -52,7 +42,6 @@ test_suite(
     tags = ["lint"],
     tests = [
         "verify-pylint",
-        "verify-shellcheck",
         "verify_boilerplate",
     ],
 )
