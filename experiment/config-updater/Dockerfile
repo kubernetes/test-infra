@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM docker.io/openshift/origin:latest
+FROM docker.io/openshift/origin:v3.9
 LABEL maintainer="dthau@redhat.com"
 
 ENV GIT_COMMITTER_NAME=developer \
