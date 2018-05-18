@@ -215,7 +215,8 @@ type Repo struct {
 // Branch contains general branch information.
 type Branch struct {
 	Name      string `json:"name"`
-	Protected bool   `json:"protected"`
+	Protected bool   `json:"protected"` // only included for ?protection=true requests
+	// TODO(fejta): consider including undocumented protection key
 }
 
 // BranchProtectionRequest represents

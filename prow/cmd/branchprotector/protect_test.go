@@ -102,10 +102,26 @@ func (c fakeClient) GetRepos(org string, user bool) ([]github.Repo, error) {
 	return r, nil
 }
 
-func (c fakeClient) GetBranches(org, repo string) ([]github.Branch, error) {
+func (c fakeClient) GetBranches(org, repo string, onlyProtected bool) ([]github.Branch, error) {
 	b, ok := c.branches[org+"/"+repo]
 	if !ok {
 		return nil, fmt.Errorf("Unknown repo: %s/%s", org, repo)
+	}
+	var out []github.Branch
+	if onlyProtected {
+		for _, item := range b {
+			if !item.Protected {
+				continue
+			}
+			out = append(out, item)
+		}
+	} else {
+		// when !onlyProtected, github does not set Protected
+		// match that behavior here to ensure we handle this correctly
+		for _, item := range b {
+			item.Protected = false
+			out = append(out, item)
+		}
 	}
 	return b, nil
 }
