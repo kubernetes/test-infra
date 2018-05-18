@@ -857,6 +857,7 @@ func (c *Client) RemoveBranchProtection(org, repo, branch string) error {
 func (c *Client) UpdateBranchProtection(org, repo, branch string, config BranchProtectionRequest) error {
 	c.log("UpdateBranchProtection", org, repo, branch, config)
 	_, err := c.request(&request{
+		accept:      "application/vnd.github.luke-cage-preview+json", // for required_approving_review_count
 		method:      http.MethodPut,
 		path:        fmt.Sprintf("%s/repos/%s/%s/branches/%s/protection", c.base, org, repo, branch),
 		requestBody: config,
