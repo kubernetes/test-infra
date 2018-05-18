@@ -22,6 +22,7 @@ We use this with [Prow](./../prow), to set it up we do the following:
    - for k8s.io (running on GKE) this is:
    ```
    gcloud beta container node-pools create greenhouse --cluster=prow --project=k8s-prow-builds --zone=us-central1-f --node-taints=dedicated=greenhouse:NoSchedule --node-labels=dedicated=greenhouse --machine-type=n1-standard-32 --num-nodes=1
+   ```
    - if you're not on GKE you'll probably want to pick a node to dedicate and do something like:
    ```
    kubectl label nodes $GREENHOUSE_NODE_NAME dedicated=greenhouse
