@@ -2968,7 +2968,7 @@
       "--gcp-project=kubernetes-scale",
       "--gcp-zone=us-east1-a",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=master --gather-metrics-at-teardown=master",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\]|\\[Feature:PerformanceDNS\\] --gather-resource-usage=master --gather-metrics-at-teardown=master",
       "--timeout=510m",
       "--use-logexporter"
     ],
@@ -3224,7 +3224,7 @@
       "--gcp-project=google.com:k8s-jenkins-scalability",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\]|\\[Feature:PerformanceDNS\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true",
       "--timeout=120m",
       "--use-logexporter"
     ],
@@ -3272,7 +3272,7 @@
       "--gcp-project=kubernetes-scale",
       "--gcp-zone=us-east1-a",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=master --gather-metrics-at-teardown=master",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\]|\\[Feature:PerformanceDNS\\] --gather-resource-usage=master --gather-metrics-at-teardown=master",
       "--timeout=1290m",
       "--use-logexporter"
     ],
@@ -12480,7 +12480,7 @@
       "--gcp-zone=us-east1-b",
       "--provider=gce",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-100-performance",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\]|\\[Feature:PerformanceDNS\\] --gather-resource-usage=true --gather-metrics-at-teardown=true",
       "--timeout=100m",
       "--use-logexporter"
     ],
@@ -12502,7 +12502,7 @@
       "--gcp-zone=us-east1-a",
       "--provider=gce",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-big-performance",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=master --gather-metrics-at-teardown=master",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\]|\\[Feature:PerformanceDNS\\] --gather-resource-usage=master --gather-metrics-at-teardown=master",
       "--timeout=240m",
       "--use-logexporter"
     ],
@@ -12547,7 +12547,7 @@
       "--gcp-zone=us-east1-a",
       "--provider=gce",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-large-performance",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=master --gather-metrics-at-teardown=master",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\]|\\[Feature:PerformanceDNS\\] --gather-resource-usage=master --gather-metrics-at-teardown=master",
       "--timeout=540m",
       "--use-logexporter"
     ],
