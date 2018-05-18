@@ -162,6 +162,7 @@ func prodOnlyMain(o options, mux *http.ServeMux) *http.ServeMux {
 	// setup prod only handlers
 	mux.Handle("/data.js", gziphandler.GzipHandler(handleData(ja)))
 	mux.Handle("/prowjobs.js", gziphandler.GzipHandler(handleProwJobs(ja)))
+	mux.Handle("/badge.svg", gziphandler.GzipHandler(handleBadge(ja)))
 	mux.Handle("/log", gziphandler.GzipHandler(handleLog(ja)))
 	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(kc)))
 	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(configAgent)))
@@ -384,6 +385,22 @@ func handleData(ja *JobAgent) http.HandlerFunc {
 		} else {
 			fmt.Fprint(w, string(jd))
 		}
+	}
+}
+
+func handleBadge(ja *JobAgent) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		setHeadersNoCaching(w)
+		wantJobs := r.URL.Query().Get("jobs")
+		if wantJobs == "" {
+			http.Error(w, "missing jobs query parameter", http.StatusBadRequest)
+			return
+		}
+		w.Header().Set("Content-Type", "image/svg+xml")
+
+		allJobs := ja.ProwJobs()
+		_, _, svg := renderBadge(pickLatestJobs(allJobs, wantJobs))
+		w.Write(svg)
 	}
 }
 
