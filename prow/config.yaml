@@ -42,7 +42,7 @@ branch-protection:
         - cla/linuxfoundation
       repos:
         # BLACKLIST
-        # dashboard - kubernetes/test-infra#7525 need required reviews
+        # TODO(fejta): add yourself here
         # WHITELIST
         charts:
           protect: true
@@ -63,6 +63,10 @@ branch-protection:
           protect: true
         contrib:
           protect: true
+        dashboard:
+          protect: true
+          required_pull_request_reviews:
+            required_approving_review_count: 1
         examples:
           protect: true
         features:
@@ -208,6 +212,7 @@ tide:
     - do-not-merge/work-in-progress
     reviewApprovedRequired: true
   - repos:
+    - kubernetes/kube-openapi
     - kubernetes-sigs/federation-v2
     - kubernetes-sigs/testing_frameworks
     - kubernetes-sigs/poseidon
@@ -355,6 +360,33 @@ presets:
   env:
   - name: BAZEL_REMOTE_CACHE_ENABLED
     value: "true"
+- labels:
+    preset-cloud-provider-azure-account: true
+  env:
+  - name: IMAGE_REGISTRY
+    value: kaicr1.azurecr.io
+  - name: K8S_AZURE_ACCOUNT_CONFIG
+    value: /etc/cloud-provider-azure-account/account.env
+  volumes:
+  - name: cloud-provider-azure-account-cloud
+    secret:
+      secretName: cloud-provider-azure-account
+      items:
+      - key: account.env
+        path: account.env
+  - name: cloud-provider-azure-account-registry
+    secret:
+      secretName: cloud-provider-azure-account
+      items:
+      - key: registry.json
+        path: config.json
+  volumeMounts:
+  - name: cloud-provider-azure-account-cloud
+    mountPath: /etc/cloud-provider-azure-account
+    readOnly: true
+  - name: cloud-provider-azure-account-registry
+    mountPath: /root/.docker
+    readOnly: true
 
 presubmits:
   google/cadvisor:
@@ -616,6 +648,37 @@ presubmits:
         emptyDir: {}
 
   kubernetes/cloud-provider-azure:
+  - name: pull-cloud-provider-azure-e2e
+    agent: kubernetes
+    always_run: false
+    context: pull-cloud-provider-azure-e2e
+    rerun_command: "/test pull-cloud-provider-azure-e2e"
+    trigger: "(?m)^/test pull-cloud-provider-azure-e2e,?(\\s+|$)"
+    branches:
+    - master
+    labels:
+      preset-service-account: true
+      preset-cloud-provider-azure-account: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--timeout=100"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: 'true'
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /docker-graph
+          name: auto-generated-docker-graph-volume-mount
+      volumes:
+      - name: auto-generated-docker-graph-volume-mount
+        emptyDir: {}
+
   - name: pull-cloud-provider-azure-lint
     agent: kubernetes
     always_run: true
@@ -1129,52 +1192,6 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
 
   kubernetes/cluster-registry:
-  - name: pull-cluster-registry-bazel
-    agent: kubernetes
-    context: pull-cluster-registry-bazel
-    always_run: true
-    rerun_command: "/test pull-cluster-registry-bazel"
-    trigger: "(?m)^/test( all| pull-cluster-registry-bazel),?(\\s+|$)"
-    labels:
-      preset-service-account: true
-      preset-bazel-scratch-dir: true
-      preset-bazel-remote-cache-enabled: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-1.10
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "2Gi"
-  - name: pull-cluster-registry-verify-bazel
-    agent: kubernetes
-    context: pull-cluster-registry-verify-bazel
-    always_run: true
-    rerun_command: "/test pull-cluster-registry-verify-bazel"
-    trigger: "(?m)^/test( all| pull-cluster-registry-verify-bazel),?(\\s+|$)"
-    labels:
-      preset-service-account: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "2Gi"
   - name: pull-cluster-registry-verify-gensrc
     agent: kubernetes
     context: pull-cluster-registry-verify-gensrc
@@ -2058,7 +2075,7 @@ presubmits:
     rerun_command: "/test pull-kubernetes-e2e-gce-100-performance"
     trigger: "(?m)^/test (all|pull-kubernetes-e2e-gce-100-performance),?(\\s+|$)"
     always_run: true
-    skip_report: true
+    skip_report: false
     max_concurrency: 12
     branches:
     - master
@@ -2877,7 +2894,7 @@ presubmits:
   - name: pull-kubernetes-kubemark-e2e-gce-big
     agent: kubernetes
     always_run: true
-    skip_report: true
+    skip_report: false
     max_concurrency: 12
     skip_branches:
     - release-1.10  # per-release image
@@ -2922,7 +2939,7 @@ presubmits:
   - name: pull-kubernetes-kubemark-e2e-gce-big
     agent: kubernetes
     always_run: true
-    skip_report: true
+    skip_report: false
     max_concurrency: 12
     branches:
     - release-1.10  # per-release image
@@ -2965,7 +2982,7 @@ presubmits:
   - name: pull-kubernetes-kubemark-e2e-gce-big
     agent: kubernetes
     always_run: true
-    skip_report: true
+    skip_report: false
     max_concurrency: 12
     branches:
     - release-1.9  # per-release image
@@ -3008,6 +3025,7 @@ presubmits:
   - name: pull-kubernetes-kubemark-e2e-gce-big
     agent: kubernetes
     always_run: false
+    skip_report: false
     max_concurrency: 12
     branches:
     - release-1.8
@@ -4663,7 +4681,7 @@ presubmits:
     name: pull-security-kubernetes-e2e-gce-100-performance
     rerun_command: /test pull-security-kubernetes-e2e-gce-100-performance
     run_if_changed: ""
-    skip_report: true
+    skip_report: false
     spec:
       containers:
       - args:
@@ -5792,7 +5810,7 @@ presubmits:
     - release-1.10
     - release-1.9
     - release-1.8
-    skip_report: true
+    skip_report: false
     spec:
       containers:
       - args:
@@ -5843,7 +5861,7 @@ presubmits:
     name: pull-security-kubernetes-kubemark-e2e-gce-big
     rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce-big
     run_if_changed: ""
-    skip_report: true
+    skip_report: false
     spec:
       containers:
       - args:
@@ -5894,7 +5912,7 @@ presubmits:
     name: pull-security-kubernetes-kubemark-e2e-gce-big
     rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce-big
     run_if_changed: ""
-    skip_report: true
+    skip_report: false
     spec:
       containers:
       - args:
@@ -8319,22 +8337,6 @@ periodics:
       args:
       - "--timeout=340"
       - "--bare"
-- interval: 2h
-  agent: kubernetes
-  name: ci-kinflate-periodic-default-gke
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--root=/go/src"
-      - "--repo=k8s.io/kubectl"
-      - "--upload=gs://kubernetes-jenkins/logs/"
-      - "--timeout=150"
-
 - interval: 30m
   name: ci-kops-build
   agent: kubernetes
@@ -10440,6 +10442,19 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
 
+- interval: 30m
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gce-influxdb
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
+
 - cron: '1 6 * * 2,4,6' # Run at 22:01PST on Mon,Wed,Fri (06:01 UTC Tue,Thur,Sat)
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-large-correctness
@@ -11308,6 +11323,19 @@ periodics:
 
 - interval: 30m
   agent: kubernetes
+  name: ci-kubernetes-e2e-gci-gce-alpha-enabled-default
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=100
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
+
+- interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-alpha-features
   labels:
     preset-service-account: true
@@ -11729,7 +11757,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=440
+      - --timeout=620
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
 
@@ -16749,6 +16777,22 @@ periodics:
     - name: docker-graph
       emptyDir: {}
 
+- interval: 2h
+  agent: kubernetes
+  name: ci-kustomize-periodic-default-gke
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
+      args:
+      - "--job=$(JOB_NAME)"
+      - "--root=/go/src"
+      - "--repo=github.com/kubernetes-sigs/kustomize"
+      - "--upload=gs://kubernetes-jenkins/logs/"
+      - "--timeout=150"
+
 - name: ci-perf-tests-e2e-gce-clusterloader
   interval: 2h
   agent: kubernetes
@@ -16823,27 +16867,6 @@ periodics:
     - name: service
       secret:
         secretName: triage-service-account
-
-- cron: "1 5 * * *" # Run at 21:01PST daily (05:01 UTC)
-  agent: kubernetes
-  name: cluster-registry-nightly
-  labels:
-    preset-service-account: true
-    preset-bazel-scratch-dir: true
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-1.10
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--repo=k8s.io/cluster-registry=master"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      # Bazel needs privileged mode in order to sandbox builds.
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          memory: "2Gi"
 
 - name: issue-creator
   agent: kubernetes

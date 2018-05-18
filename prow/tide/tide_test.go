@@ -392,7 +392,8 @@ type fgc struct {
 	merged    int
 	setStatus bool
 
-	expectedSHA string
+	expectedSHA    string
+	combinedStatus map[string]string
 }
 
 func (f *fgc) GetRef(o, r, ref string) (string, error) {
@@ -436,10 +437,12 @@ func (f *fgc) GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, 
 	if f.expectedSHA != ref {
 		return nil, errors.New("bad combined status request: incorrect sha")
 	}
+	var statuses []github.Status
+	for c, s := range f.combinedStatus {
+		statuses = append(statuses, github.Status{Context: c, State: s})
+	}
 	return &github.CombinedStatus{
-			Statuses: []github.Status{
-				{Context: "win"},
-			},
+			Statuses: statuses,
 		},
 		nil
 }
@@ -653,7 +656,7 @@ func TestExpectedStatus(t *testing.T) {
 			pool = map[string]PullRequest{"#0": {}}
 		}
 
-		state, desc := expectedStatus(queriesByRepo, &pr, pool)
+		state, desc := expectedStatus(queriesByRepo, &pr, pool, &config.TideContextPolicy{})
 		if state != tc.state {
 			t.Errorf("Expected status state %q, but got %q.", string(tc.state), string(state))
 		}
@@ -1032,11 +1035,14 @@ func TestPickBatch(t *testing.T) {
 		}
 		sp.prs = append(sp.prs, pr)
 	}
+	ca := &config.Agent{}
+	ca.Set(&config.Config{})
 	c := &Controller{
 		logger: logrus.WithField("component", "tide"),
 		gc:     gc,
+		ca:     ca,
 	}
-	prs, err := c.pickBatch(sp)
+	prs, err := c.pickBatch(sp, &config.TideContextPolicy{})
 	if err != nil {
 		t.Fatalf("Error from pickBatch: %v", err)
 	}
@@ -1324,7 +1330,8 @@ func TestTakeAction(t *testing.T) {
 			batchPending = []PullRequest{{}}
 		}
 		t.Logf("Test case: %s", tc.name)
-		if act, _, err := c.takeAction(sp, tc.presubmits, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges)); err != nil {
+		cr := &config.TideContextPolicy{}
+		if act, _, err := c.takeAction(sp, tc.presubmits, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges), cr); err != nil {
 			t.Errorf("Error in takeAction: %v", err)
 			continue
 		} else if act != tc.action {
@@ -1427,7 +1434,7 @@ func TestHeadContexts(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Logf("Running test case %q", tc.name)
-		fgc := &fgc{}
+		fgc := &fgc{combinedStatus: map[string]string{win: string(githubql.StatusStateSuccess)}}
 		if tc.expectAPICall {
 			fgc.expectedSHA = headSHA
 		}
@@ -1609,6 +1616,124 @@ func TestSync(t *testing.T) {
 			} else if !reflect.DeepEqual(*match, expected) {
 				t.Errorf("Expected pool %#v does not match actual pool %#v.", expected, *match)
 			}
+		}
+	}
+}
+
+func TestIsPassing(t *testing.T) {
+	yes := true
+	no := false
+	headSHA := "head"
+	success := string(githubql.StatusStateSuccess)
+	failure := string(githubql.StatusStateFailure)
+	testCases := []struct {
+		name             string
+		passing          bool
+		config           config.TideContextPolicy
+		combinedContexts map[string]string
+	}{
+		{
+			name:             "empty policy - success (trust combined status)",
+			passing:          true,
+			combinedContexts: map[string]string{"c1": success, "c2": success, statusContext: failure},
+		},
+		{
+			name:             "empty policy - failure because of failed context c4 (trust combined status)",
+			passing:          false,
+			combinedContexts: map[string]string{"c1": success, "c2": success, "c3": failure, statusContext: failure},
+		},
+		{
+			name:    "passing (trust combined status)",
+			passing: true,
+			config: config.TideContextPolicy{
+				RequiredContexts:    []string{"c1", "c2", "c3"},
+				SkipUnknownContexts: &no,
+			},
+			combinedContexts: map[string]string{"c1": success, "c2": success, "c3": success, statusContext: failure},
+		},
+		{
+			name:    "failing because of missing required check c3",
+			passing: false,
+			config: config.TideContextPolicy{
+				RequiredContexts: []string{"c1", "c2", "c3"},
+			},
+			combinedContexts: map[string]string{"c1": success, "c2": success, statusContext: failure},
+		},
+		{
+			name:             "failing because of failed context c2",
+			passing:          false,
+			combinedContexts: map[string]string{"c1": success, "c2": failure},
+			config: config.TideContextPolicy{
+				RequiredContexts: []string{"c1", "c2", "c3"},
+				OptionalContexts: []string{"c4"},
+			},
+		},
+		{
+			name:    "passing because of failed context c4 is optional",
+			passing: true,
+
+			combinedContexts: map[string]string{"c1": success, "c2": success, "c3": success, "c4": failure},
+			config: config.TideContextPolicy{
+				RequiredContexts: []string{"c1", "c2", "c3"},
+				OptionalContexts: []string{"c4"},
+			},
+		},
+		{
+			name:    "skipping unknown contexts - failing because of missing required context c3",
+			passing: false,
+			config: config.TideContextPolicy{
+				RequiredContexts:    []string{"c1", "c2", "c3"},
+				SkipUnknownContexts: &yes,
+			},
+			combinedContexts: map[string]string{"c1": success, "c2": success, statusContext: failure},
+		},
+		{
+			name:             "skipping unknown contexts - failing because c2 is failing",
+			passing:          false,
+			combinedContexts: map[string]string{"c1": success, "c2": failure},
+			config: config.TideContextPolicy{
+				RequiredContexts:    []string{"c1", "c2"},
+				OptionalContexts:    []string{"c4"},
+				SkipUnknownContexts: &yes,
+			},
+		},
+		{
+			name:             "skipping unknown contexts - passing because c4 is optional",
+			passing:          true,
+			combinedContexts: map[string]string{"c1": success, "c2": success, "c3": success, "c4": failure},
+			config: config.TideContextPolicy{
+				RequiredContexts:    []string{"c1", "c3"},
+				OptionalContexts:    []string{"c4"},
+				SkipUnknownContexts: &yes,
+			},
+		},
+		{
+			name:    "skipping unknown contexts - passing because c4 is optional and c5 is unknown",
+			passing: true,
+
+			combinedContexts: map[string]string{"c1": success, "c2": success, "c3": success, "c4": failure, "c5": failure},
+			config: config.TideContextPolicy{
+				RequiredContexts:    []string{"c1", "c3"},
+				OptionalContexts:    []string{"c4"},
+				SkipUnknownContexts: &yes,
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		ghc := &fgc{
+			combinedStatus: tc.combinedContexts,
+			expectedSHA:    headSHA}
+		log := logrus.WithField("component", "tide")
+		_, err := log.String()
+		if err != nil {
+			t.Errorf("Failed to get log output before testing: %v", err)
+			t.FailNow()
+		}
+		pr := PullRequest{HeadRefOID: githubql.String(headSHA)}
+		passing := isPassingTests(log, ghc, pr, &tc.config)
+		if passing != tc.passing {
+			t.Errorf("%s: Expected %t got %t", tc.name, tc.passing, passing)
 		}
 	}
 }
@@ -1862,7 +1987,6 @@ func TestPresubmitsByPull(t *testing.T) {
 			fileChangesCache: tc.initialChangeCache,
 			ghc:              &fgc{},
 		}
-
 		presubmits, err := c.presubmitsByPull(sp)
 		if err != nil {
 			t.Fatalf("unexpected error from presubmitsByPull: %v", err)

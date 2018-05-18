@@ -51,6 +51,7 @@ func TestLabel(t *testing.T) {
 		extraLabels           []string
 		expectedNewLabels     []string
 		expectedRemovedLabels []string
+		expectedBotComment    bool
 		repoLabels            []string
 		issueLabels           []string
 	}
@@ -252,6 +253,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
 		},
 		{
 			name:                  "Remove Area Label when no such Label on Issue",
@@ -261,6 +263,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+			expectedBotComment:    true,
 		},
 		{
 			name:                  "Remove Area Label",
@@ -324,6 +327,7 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("priority/low", "priority/high", "kind/api-server", "area/infra"),
 			commenter:             orgMember,
+			expectedBotComment:    true,
 		},
 		{
 			name:                  "Add and Remove Label at the same time",
@@ -415,6 +419,7 @@ func TestLabel(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		t.Logf("Running scenario %q", tc.name)
 		sort.Strings(tc.expectedNewLabels)
 		fakeClient := &fakegithub.FakeClient{
 			Issues:         make([]github.Issue, 1),
@@ -437,7 +442,7 @@ func TestLabel(t *testing.T) {
 		}
 		err := handle(fakeClient, logrus.WithField("plugin", pluginName), tc.extraLabels, e)
 		if err != nil {
-			t.Errorf("For case %s, didn't expect error from label test: %v", tc.name, err)
+			t.Errorf("didn't expect error from label test: %v", err)
 			continue
 		}
 
@@ -449,13 +454,19 @@ func TestLabel(t *testing.T) {
 		sort.Strings(expectLabels)
 		sort.Strings(fakeClient.LabelsAdded)
 		if !reflect.DeepEqual(expectLabels, fakeClient.LabelsAdded) {
-			t.Errorf("(%s): Expected the labels %q to be added, but %q were added.", tc.name, expectLabels, fakeClient.LabelsAdded)
+			t.Errorf("expected the labels %q to be added, but %q were added.", expectLabels, fakeClient.LabelsAdded)
 		}
 
 		sort.Strings(tc.expectedRemovedLabels)
 		sort.Strings(fakeClient.LabelsRemoved)
 		if !reflect.DeepEqual(tc.expectedRemovedLabels, fakeClient.LabelsRemoved) {
-			t.Errorf("(%s): Expected the labels %q to be removed, but %q were removed.", tc.name, tc.expectedRemovedLabels, fakeClient.LabelsRemoved)
+			t.Errorf("expected the labels %q to be removed, but %q were removed.", tc.expectedRemovedLabels, fakeClient.LabelsRemoved)
+		}
+		if len(fakeClient.IssueCommentsAdded) > 0 && !tc.expectedBotComment {
+			t.Errorf("unexpected bot comments: %#v", fakeClient.IssueCommentsAdded)
+		}
+		if len(fakeClient.IssueCommentsAdded) == 0 && tc.expectedBotComment {
+			t.Error("expected a bot comment but got none")
 		}
 	}
 }

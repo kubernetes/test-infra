@@ -249,6 +249,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-stable2
   alert_stale_results_hours: 24
   num_failures_to_alert: 4 # Runs every 6h. Alert when it's been failing for a day.
+- name: ci-kubernetes-e2e-gci-gce-alpha-enabled-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-alpha-enabled-default
 - name: ci-kubernetes-e2e-gci-gce-alpha-features
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-alpha-features
 - name: ci-kubernetes-e2e-gci-gce-autoscaling
@@ -273,6 +275,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stackdriver
 - name: ci-kubernetes-e2e-gce-prometheus
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-prometheus
+- name: ci-kubernetes-e2e-gce-influxdb
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-influxdb
 - name: ci-kubernetes-e2e-gce-large-correctness
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-large-correctness
   days_of_results: 60
@@ -2059,8 +2063,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/spark-periodic-default-gke
 - name: spark-periodic-latest-gke
   gcs_prefix: kubernetes-jenkins/logs/spark-periodic-latest-gke
-- name: ci-kinflate-periodic-default-gke
-  gcs_prefix: kubernetes-jenkins/logs/ci-kinflate-periodic-default-gke
+- name: ci-kustomize-periodic-default-gke
+  gcs_prefix: kubernetes-jenkins/logs/ci-kustomize-periodic-default-gke
 - name: application-periodic-default-gke
   gcs_prefix: kubernetes-jenkins/logs/application-periodic-default-gke
 # kube-proxy daemonset migration jobs
@@ -2361,20 +2365,12 @@ test_groups:
 - name: ci-daisy-e2e
   gcs_prefix: compute-image-tools-test/logs/ci-daisy-e2e
 # Cluster registry
-- name: pull-cluster-registry-verify-bazel
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-registry-verify-bazel
-  num_columns_recent: 20
 - name: pull-cluster-registry-verify-gensrc
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-registry-verify-gensrc
   num_columns_recent: 20
 - name: pull-cluster-registry-verify-gosrc
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-registry-verify-gosrc
   num_columns_recent: 20
-- name: pull-cluster-registry-bazel
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-registry-bazel
-  num_columns_recent: 20
-- name: cluster-registry-nightly
-  gcs_prefix: kubernetes-jenkins/logs/cluster-registry-nightly
 # k8s-beta (active release branch) jobs
 - name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sbeta-default
@@ -2500,9 +2496,11 @@ test_groups:
   gcs_prefix: istio-circleci/e2e-galley
   num_failures_to_alert: 5
 - name: circleci-test
+  days_of_results: 3
   gcs_prefix: istio-circleci/test
   num_failures_to_alert: 5
 - name: circleci-racetest
+  days_of_results: 3
   gcs_prefix: istio-circleci/racetest
   num_failures_to_alert: 5
 # Istio daily releases
@@ -3116,12 +3114,16 @@ dashboards:
   dashboard_tab:
   - name: gci-gce
     test_group_name: ci-kubernetes-e2e-gci-gce
+  - name: gci-gce-alpha-enabled-default
+    test_group_name: ci-kubernetes-e2e-gci-gce-alpha-enabled-default
   - name: gci-gce-alpha-features
     test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
   - name: gce-stackdriver
     test_group_name: ci-kubernetes-e2e-gce-stackdriver
   - name: gce-prometheus
     test_group_name: ci-kubernetes-e2e-gce-prometheus
+  - name: gce-influxdb
+    test_group_name: ci-kubernetes-e2e-gce-influxdb
   - name: gci-gce-es-logging
     test_group_name: ci-kubernetes-e2e-gci-gce-es-logging
   - name: gci-gce-sd-logging
@@ -4596,9 +4598,9 @@ dashboards:
 
 - name: sig-cli-misc
   dashboard_tab:
-  - name: kinflate-periodic-default-gke
-    description: Periodic integration testing of kinflate.
-    test_group_name: ci-kinflate-periodic-default-gke
+  - name: kustomize-periodic-default-gke
+    description: Periodic integration testing of kustomize.
+    test_group_name: ci-kustomize-periodic-default-gke
 
 - name: sig-cluster-lifecycle-all
   dashboard_tab:
@@ -4663,11 +4665,6 @@ dashboards:
     test_group_name: pull-kube-deploy-build
   - name: kube-deploy pr-test
     test_group_name: pull-kube-deploy-test
-
-- name: sig-multicluster-cluster-registry
-  dashboard_tab:
-  - name: nightly
-    test_group_name: cluster-registry-nightly
 
 - name: sig-multicluster-federation-gce-old
   dashboard_tab:
@@ -4774,6 +4771,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-prometheus
     base_options: 'include-filter-by-regex=sig-instrumentation'
     description: 'sig-instrumentation gce prometheus monitoring e2e tests for master branch'
+  - name: gce-influxdb
+    test_group_name: ci-kubernetes-e2e-gce-influxdb
+    base_options: 'include-filter-by-regex=sig-instrumentation'
+    description: 'sig-instrumentation gce influxdb monitoring e2e tests for master branch'
 
 - name: sig-network-gce
   dashboard_tab:
@@ -5931,12 +5932,6 @@ dashboards:
 
 - name: presubmits-cluster-registry
   dashboard_tab:
-  - name: bazel
-    test_group_name: pull-cluster-registry-bazel
-    base_options: 'width=10'
-  - name: verify-bazel
-    test_group_name: pull-cluster-registry-verify-bazel
-    base_options: 'width=10'
   - name: verify-gensrc
     test_group_name: pull-cluster-registry-verify-gensrc
     base_options: 'width=10'
@@ -6157,7 +6152,6 @@ dashboard_groups:
 
 - name: sig-multicluster
   dashboard_names:
-  - sig-multicluster-cluster-registry
   - sig-multicluster-federation-gce-old
   - sig-multicluster-federation-gce
   - sig-multicluster-kubemci

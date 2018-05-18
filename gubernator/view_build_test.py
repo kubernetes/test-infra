@@ -108,6 +108,19 @@ class ParseJunitTest(unittest.TestCase):
             [(failures[0][0], 0.0, 'not well-formed (invalid token): line 1, column 0',
               'junit_filename.xml', '')])
 
+    def test_empty_output(self):
+        results = self.parse("""
+            <testsuites>
+                <testsuite name="k8s.io/suite">
+                    <testcase name="TestBad" time="0.1">
+                        <failure>something bad</failure>
+                        <system-out></system-out>
+                    </testcase>
+                </testsuite>
+            </testsuites>""")
+        self.assertEqual(results['failed'], [(
+            'k8s.io/suite TestBad', 0.1, 'something bad', "junit_filename.xml", "")])
+
 class BuildTest(main_test.TestBase):
     # pylint: disable=too-many-public-methods
 

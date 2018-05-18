@@ -296,6 +296,7 @@ func TestJobRequirements(t *testing.T) {
 		name                          string
 		config                        []Presubmit
 		masterExpected, otherExpected []string
+		masterOptional, otherOptional []string
 	}{
 		{
 			name: "basic",
@@ -312,22 +313,29 @@ func TestJobRequirements(t *testing.T) {
 					SkipReport:   false,
 				},
 				{
-					Context:    "optional",
+					Context:    "not-always",
 					AlwaysRun:  false,
 					SkipReport: false,
+				},
+				{
+					Context:    "skip-report",
+					AlwaysRun:  true,
+					SkipReport: true,
+					Brancher: Brancher{
+						SkipBranches: []string{"master"},
+					},
 				},
 				{
 					Context:    "optional",
 					AlwaysRun:  true,
 					SkipReport: false,
 					Optional:   true,
-					Brancher: Brancher{
-						SkipBranches: []string{"master"},
-					},
 				},
 			},
 			masterExpected: []string{"always-run", "run-if-changed"},
+			masterOptional: []string{"optional"},
 			otherExpected:  []string{"always-run", "run-if-changed"},
+			otherOptional:  []string{"skip-report", "optional"},
 		},
 		{
 			name: "children",
@@ -379,9 +387,12 @@ func TestJobRequirements(t *testing.T) {
 					SkipReport: true,
 					RunAfterSuccess: []Presubmit{
 						{
-							Context:    "hidden-parent",
-							SkipReport: true,
-							AlwaysRun:  false,
+							Context:   "hidden-parent",
+							Optional:  true,
+							AlwaysRun: false,
+							Brancher: Brancher{
+								Branches: []string{"master"},
+							},
 							RunAfterSuccess: []Presubmit{
 								{
 									Context: "visible-kid",
@@ -400,22 +411,37 @@ func TestJobRequirements(t *testing.T) {
 				"also-me-3",
 				"visible-kid",
 			},
+			masterOptional: []string{
+				"run-if-changed",
+				"run-and-skip",
+				"hidden-grandpa",
+				"hidden-parent"},
 			otherExpected: []string{
 				"always-run", "include-me",
 				"me2",
 				"also-me-3",
 			},
+			otherOptional: []string{
+				"run-if-changed",
+				"run-and-skip",
+				"hidden-grandpa"},
 		},
 	}
 
 	for _, tc := range cases {
-		masterActual := jobRequirements(tc.config, "master", false)
+		masterActual, masterOptional := jobRequirements(tc.config, "master", false)
 		if !reflect.DeepEqual(masterActual, tc.masterExpected) {
 			t.Errorf("branch: master - %s: actual %v != expected %v", tc.name, masterActual, tc.masterExpected)
 		}
-		otherActual := jobRequirements(tc.config, "other", false)
+		if !reflect.DeepEqual(masterOptional, tc.masterOptional) {
+			t.Errorf("branch: master - optional - %s: actual %v != expected %v", tc.name, masterOptional, tc.masterOptional)
+		}
+		otherActual, otherOptional := jobRequirements(tc.config, "other", false)
 		if !reflect.DeepEqual(masterActual, tc.masterExpected) {
 			t.Errorf("branch: other - %s: actual %v != expected %v", tc.name, otherActual, tc.otherExpected)
+		}
+		if !reflect.DeepEqual(otherOptional, tc.otherOptional) {
+			t.Errorf("branch: other - optional - %s: actual %v != expected %v", tc.name, otherOptional, tc.otherOptional)
 		}
 	}
 }

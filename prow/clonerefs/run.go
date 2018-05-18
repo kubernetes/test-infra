@@ -38,7 +38,11 @@ func (o Options) Run() error {
 		var err error
 		env, err = addSSHKeys(o.KeyFiles)
 		if err != nil {
-			return fmt.Errorf("failed to add SSH keys: %v", err)
+			logrus.WithError(err).Error("Failed to add SSH keys.")
+			// Continue on error. Clones will fail with an appropriate error message
+			// that initupload can consume whereas quiting without writing the clone
+			// record log is silent and results in an errored prow job instead of a
+			// failed one.
 		}
 	}
 
