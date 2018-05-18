@@ -2656,6 +2656,40 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
+  - name: pull-kubernetes-e2e-kops-aws-coredns
+    agent: kubernetes
+    branches:
+    - release-1.10  # per-release image
+    max_concurrency: 12
+    always_run: true
+    context: pull-kubernetes-e2e-kops-aws-coredns
+    rerun_command: "/test pull-kubernetes-e2e-kops-aws-coredns"
+    trigger: "(?m)^/test( all| pull-kubernetes-e2e-kops-aws-coredns),?(\\s+|$)"
+    labels:
+      preset-service-account: true
+      preset-aws-ssh: true
+      preset-aws-credential: true
+      preset-bazel-remote-cache-enabled: true
+      preset-bazel-scratch-dir: true
+    spec:
+      kubeDNS:
+        provider: CoreDNS
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-1.10
+        args:
+        - --root=/go/src
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=k8s.io/release"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=75"
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
   - name: pull-kubernetes-integration
     agent: kubernetes
     always_run: true
@@ -14662,6 +14696,22 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
+
+- interval: 30m
+  agent: kubernetes
+  name: ci-kubernetes-e2e-kops-aws-coredns
+  labels:
+    preset-service-account: true
+    preset-aws-ssh: true
+    preset-aws-credential: true
+  spec:
+    kubeDNS:
+      provider: CoreDNS
+    containers:
+    - args:
+      - --timeout=140
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180322-179eac85b-master
 
 - interval: 1h
   agent: kubernetes

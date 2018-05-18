@@ -209,6 +209,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws
 - name: ci-kubernetes-e2e-kops-aws-canary
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-canary
+- name: ci-kubernetes-e2e-kops-aws-coredns
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-coredns
 - name: ci-kubernetes-e2e-kops-aws-networking-kopeio-vxlan
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-networking-kopeio-vxlan
 - name: ci-kubernetes-e2e-kops-aws-sig-cli
@@ -2145,6 +2147,8 @@ test_groups:
   num_columns_recent: 20
 - name: pull-kubernetes-e2e-kops-aws
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-kops-aws
+- name: pull-kubernetes-e2e-kops-aws-coredns
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-kops-aws-coredns
   num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
@@ -5826,6 +5830,9 @@ dashboards:
     base_options: 'width=10'
     alert_options:
       alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
+  - name: pull-kubernetes-e2e-kops-aws-coredns
+    test_group_name: pull-kubernetes-e2e-kops-aws-coredns
+    base_options: 'width=10'
   - name: pull-kubernetes-kubemark-e2e-gce
     test_group_name: pull-kubernetes-kubemark-e2e-gce
     base_options: 'width=10'

@@ -9759,6 +9759,23 @@
       "sig-aws"
     ]
   },
+  "ci-kubernetes-e2e-kops-aws-coredns": {
+    "args": [
+      "--aws",
+      "--cluster=e2e-kops-aws.test-cncf-aws.k8s.io",
+      "--env-file=jobs/platform/kops_aws.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws-coredns.env",
+      "--extract=ci/latest",
+      "--ginkgo-parallel",
+      "--provider=aws",
+      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
+      "--timeout=120m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-aws"
+    ]
+  },
   "ci-kubernetes-e2e-kops-aws-ena-nvme": {
     "args": [
       "--cluster=e2e-kops-aws-ena-nvme.test-cncf-aws.k8s.io",
@@ -12910,6 +12927,27 @@
       "--ginkgo-parallel",
       "--provider=aws",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kops-aws",
+      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
+      "--timeout=55m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-aws"
+    ]
+  },
+  "pull-kubernetes-e2e-kops-aws-coredns": {
+    "args": [
+      "--aws",
+      "--aws-cluster-domain=test-cncf-aws.k8s.io",
+      "--build=bazel",
+      "--check-leaked-resources=false",
+      "--cluster=",
+      "--env-file=jobs/platform/kops_aws.env",
+      "--env-file=jobs/env/pull-kubernetes-e2e-kops-aws-coredns.env",
+      "--extract=local",
+      "--ginkgo-parallel",
+      "--provider=aws",
+      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kops-aws-coredns",
       "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
       "--timeout=55m"
     ],
