@@ -37,6 +37,8 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: ghproxy
+  labels:
+    app: ghproxy
 spec:
   replicas: 1 
   template:
@@ -45,7 +47,7 @@ spec:
         app: ghproxy
     spec:
       containers:
-      - name: gh-proxy
+      - name: ghproxy
         image: gcr.io/k8s-testimages/ghproxy:latest
         imagePullPolicy: Always
         args:
@@ -61,3 +63,11 @@ spec:
       - name: cache
         persistentVolumeClaim:
           claimName: ghproxy
+      # run on our dedicated node
+      tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "ghproxy"
+        effect: "NoSchedule"
+      nodeSelector:
+        dedicated: "ghproxy"
