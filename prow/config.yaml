@@ -120,6 +120,8 @@ branch-protection:
           required_status_checks:
             contexts:
             - continuous-integration/travis-ci
+        kubernetes-anywhere:
+          protect: true
         kubernetes-template-project:
           protect: true
         minikube:
