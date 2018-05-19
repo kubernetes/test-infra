@@ -49,6 +49,13 @@ branch-protection:
           required_status_checks:
             contexts:
             - ci/circleci
+        client-go:
+          protect: true
+          restrictions:
+            users:
+            - k8s-publishing-bot
+            teams:
+            - kubernetes/client-go-maintainers
         cloud-provider-aws:
           protect: true
         cloud-provider-azure:
