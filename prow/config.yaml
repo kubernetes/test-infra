@@ -122,6 +122,8 @@ branch-protection:
             - continuous-integration/travis-ci
         kubernetes-anywhere:
           protect: true
+        kubernetes-bootcamp:
+          protect: true
         kubernetes-template-project:
           protect: true
         minikube:
