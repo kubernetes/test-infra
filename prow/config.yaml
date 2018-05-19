@@ -102,6 +102,13 @@ branch-protection:
           protect: true
         ingress-nginx:
           protect: true
+        kompose:
+          protect: true
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+          required_pull_request_reviews:
+            required_approving_review_count: 1
         kops:
           protect: true
         kube-deploy:
