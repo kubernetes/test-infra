@@ -81,16 +81,16 @@ branch-protection:
           protect: true
         kops:
           protect: true
+        kube-deploy:
+          protect: true
+        kube-state-metrics:
+          protect: true
         kubectl:
           protect: true
           required_status_checks:
             contexts:
             - continuous-integration/travis-ci
         kubernetes-template-project:
-          protect: true
-        kube-state-metrics:
-          protect: true
-        kube-deploy:
           protect: true
         minikube:
           protect: true
