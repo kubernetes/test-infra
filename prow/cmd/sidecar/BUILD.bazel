@@ -18,6 +18,7 @@ go_image(
     name = "image",
     base = "@git-base//image",
     binary = ":sidecar",
+    directory = "/",
     visibility = ["//visibility:public"],
 )
 
