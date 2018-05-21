@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
       - name: tide
-        image: gcr.io/k8s-prow/tide:v20180521-1a2aa962d
+        image: gcr.io/k8s-prow/tide:v20180521-f8caf9625
         args:
         - --dry-run=false
         ports:
