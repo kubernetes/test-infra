@@ -36,6 +36,7 @@ import (
 	"github.com/shurcooL/githubql"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 type timeClient interface {
@@ -856,13 +857,36 @@ func (c *Client) GetRepos(org string, isUser bool) ([]Repo, error) {
 
 func (c *Client) GetBranches(org, repo string) ([]Branch, error) {
 	c.log("GetBranches", org, repo)
-	var branches []Branch
-	_, err := c.request(&request{
+	var allBranches, protectedBranches []Branch
+	var err error
+	_, err = c.request(&request{
 		method:    http.MethodGet,
 		path:      fmt.Sprintf("/repos/%s/%s/branches", org, repo),
 		exitCodes: []int{200},
-	}, &branches)
-	return branches, err
+	}, &allBranches)
+	if err != nil {
+		return nil, err
+	}
+	// the list branch api does not set protected parameter on the response.
+	// Doing another call to only get protected repos
+	_, err = c.request(&request{
+		method:    http.MethodGet,
+		path:      fmt.Sprintf("/repos/%s/%s/branches?protected=true", org, repo),
+		exitCodes: []int{200},
+	}, &protectedBranches)
+	if err != nil {
+		return nil, err
+	}
+	protectedBranchesSet := sets.NewString()
+	for _, b := range protectedBranches {
+		protectedBranchesSet.Insert(b.Name)
+	}
+	for i, b := range allBranches {
+		if protectedBranchesSet.Has(b.Name) {
+			allBranches[i].Protected = true
+		}
+	}
+	return allBranches, err
 }
 
 func (c *Client) RemoveBranchProtection(org, repo, branch string) error {
