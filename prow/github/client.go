@@ -577,14 +577,25 @@ func (c *Client) DeleteStaleComments(org, repo string, number int, comments []Is
 	return nil
 }
 
-// readPaginatedResults iterates over all objects in the paginated
-// result indicated by the given url.  The newObj function should
-// return a new slice of the expected type, and the accumulate
-// function should accept that populated slice for each page of
-// results.  An error is returned if encountered in making calls to
-// github or marshalling objects.
+// readPaginatedResults iterates over all objects in the paginated result indicated by the given url.
+//
+// newObj() should return a new slice of the expected type
+// accumulate() should accept that populated slice for each page of results.
+//
+// Returns an error any call to github or object marshalling fails.
 func (c *Client) readPaginatedResults(path, accept string, newObj func() interface{}, accumulate func(interface{})) error {
-	pagedPath := fmt.Sprintf("%s?per_page=100", path)
+	values := url.Values{
+		"per_page": []string{"100"},
+	}
+	return c.readPaginatedResultsWithValues(path, values, accept, newObj, accumulate)
+}
+
+// readPaginatedResultsWithValues is an override that allows control over the query string.
+func (c *Client) readPaginatedResultsWithValues(path string, values url.Values, accept string, newObj func() interface{}, accumulate func(interface{})) error {
+	pagedPath := path
+	if len(values) > 0 {
+		pagedPath += "?" + values.Encode()
+	}
 	for {
 		resp, err := c.requestRetry(http.MethodGet, pagedPath, accept, nil)
 		if err != nil {
@@ -815,6 +826,9 @@ func (c *Client) GetRepo(owner, name string) (Repo, error) {
 	return repo, err
 }
 
+// GetRepos returns all repos in an org.
+//
+// This call uses multiple API tokens when results are paginated.
 func (c *Client) GetRepos(org string, isUser bool) ([]Repo, error) {
 	c.log("GetRepos", org, isUser)
 	var (
@@ -829,40 +843,49 @@ func (c *Client) GetRepos(org string, isUser bool) ([]Repo, error) {
 	} else {
 		nextURL = fmt.Sprintf("/orgs/%s/repos", org)
 	}
-	for nextURL != "" {
-		resp, err := c.requestRetry(http.MethodGet, nextURL, "", nil)
-		if err != nil {
-			return nil, err
-		}
-		defer resp.Body.Close()
-		if resp.StatusCode < 200 || resp.StatusCode > 299 {
-			return nil, fmt.Errorf("return code not 2XX: %s", resp.Status)
-		}
-
-		b, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		var reps []Repo
-		if err := json.Unmarshal(b, &reps); err != nil {
-			return nil, err
-		}
-		repos = append(repos, reps...)
-		nextURL = parseLinks(resp.Header.Get("Link"))["next"]
+	err := c.readPaginatedResults(
+		nextURL, // path
+		"",      // accept
+		func() interface{} { // newObj
+			return &[]Repo{}
+		},
+		func(obj interface{}) { // accumulate
+			repos = append(repos, *(obj.(*[]Repo))...)
+		},
+	)
+	if err != nil {
+		return nil, err
 	}
 	return repos, nil
 }
 
-func (c *Client) GetBranches(org, repo string) ([]Branch, error) {
+// GetBranches returns all branches in the repo.
+//
+// If onlyProtected is true it will only return repos with protection enabled,
+// and branch.Protected will be true. Otherwise Protected is the default value (false).
+//
+// This call uses multiple API tokens when results are paginated.
+func (c *Client) GetBranches(org, repo string, onlyProtected bool) ([]Branch, error) {
 	c.log("GetBranches", org, repo)
 	var branches []Branch
-	_, err := c.request(&request{
-		method:    http.MethodGet,
-		path:      fmt.Sprintf("/repos/%s/%s/branches", org, repo),
-		exitCodes: []int{200},
-	}, &branches)
-	return branches, err
+	err := c.readPaginatedResultsWithValues(
+		fmt.Sprintf("/repos/%s/%s/branches", org, repo),
+		url.Values{
+			"protected": []string{strconv.FormatBool(onlyProtected)},
+			"per_page":  []string{"100"},
+		},
+		"",
+		func() interface{} { // newObj
+			return &[]Branch{}
+		},
+		func(obj interface{}) {
+			branches = append(branches, *(obj.(*[]Branch))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return branches, nil
 }
 
 func (c *Client) RemoveBranchProtection(org, repo, branch string) error {

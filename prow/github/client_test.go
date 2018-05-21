@@ -1234,7 +1234,7 @@ func TestGetBranches(t *testing.T) {
 	})
 	defer ts.Close()
 	c := getClient(ts.URL)
-	branches, err := c.GetBranches("org", "repo")
+	branches, err := c.GetBranches("org", "repo", true)
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	} else if len(branches) != 2 {
