@@ -473,8 +473,8 @@ branch-protection:
 					Branch: "master",
 					Request: &github.BranchProtectionRequest{
 						Restrictions: &github.Restrictions{
-							Users: []string{},
-							Teams: []string{"config-team", "org-team", "repo-team", "branch-team"},
+							Users: &[]string{},
+							Teams: &[]string{"config-team", "org-team", "repo-team", "branch-team"},
 						},
 					},
 				},
@@ -532,13 +532,13 @@ branch-protection:
 							RequireCodeOwnerReviews:      true,
 							RequiredApprovingReviewCount: 3,
 							DismissalRestrictions: github.Restrictions{
-								Users: []string{"bob", "jane"},
-								Teams: []string{"oncall", "sres"},
+								Users: &[]string{"bob", "jane"},
+								Teams: &[]string{"oncall", "sres"},
 							},
 						},
 						Restrictions: &github.Restrictions{
-							Users: []string{"cindy"},
-							Teams: []string{"config-team", "org-team"},
+							Users: &[]string{"cindy"},
+							Teams: &[]string{"config-team", "org-team"},
 						},
 					},
 				},
@@ -607,8 +607,8 @@ branch-protection:
 							Contexts: []string{"config-presubmit", "org-presubmit"},
 						},
 						Restrictions: &github.Restrictions{
-							Users: []string{},
-							Teams: []string{"config-team", "org-team"},
+							Users: &[]string{},
+							Teams: &[]string{"config-team", "org-team"},
 						},
 					},
 				},
@@ -726,7 +726,7 @@ func fixup(r *Requirements) {
 		sort.Strings(req.RequiredStatusChecks.Contexts)
 	}
 	if restr := req.Restrictions; restr != nil {
-		sort.Strings(restr.Teams)
-		sort.Strings(restr.Users)
+		sort.Strings(*restr.Teams)
+		sort.Strings(*restr.Users)
 	}
 }

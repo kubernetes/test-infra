@@ -69,9 +69,11 @@ func makeRestrictions(rp *branchprotection.Restrictions) *github.Restrictions {
 	if rp == nil {
 		return nil
 	}
+	teams := append([]string{}, rp.Teams...)
+	users := append([]string{}, rp.Users...)
 	return &github.Restrictions{
-		Teams: append([]string{}, rp.Teams...),
-		Users: append([]string{}, rp.Users...),
+		Teams: &teams,
+		Users: &users,
 	}
 }
 
