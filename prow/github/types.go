@@ -241,9 +241,14 @@ type RequiredPullRequestReviews struct {
 	RequiredApprovingReviewCount int          `json:"required_approving_review_count"`
 }
 
+// Restrictions tells github to restrict an activity to people/teams.
+//
+// Use *[]string in order to distinguish unset and empty list.
+// This is needed by dismissal_restrictions to distinguish
+// do not restrict (empty object) and restrict everyone (nil user/teams list)
 type Restrictions struct {
-	Users []string `json:"users"`
-	Teams []string `json:"teams"`
+	Users *[]string `json:"users,omitempty"`
+	Teams *[]string `json:"teams,omitempty"`
 }
 
 // IssueEventAction enumerates the triggers for this

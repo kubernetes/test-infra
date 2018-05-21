@@ -1301,10 +1301,12 @@ func TestUpdateBranchProtection(t *testing.T) {
 				t.Errorf("Could not unmarshal request: %v", err)
 			}
 			switch {
+			case bpr.Restrictions != nil && bpr.Restrictions.Teams == nil:
+				t.Errorf("Teams unset")
 			case len(bpr.RequiredStatusChecks.Contexts) != len(tc.contexts):
 				t.Errorf("Bad contexts: %v", bpr.RequiredStatusChecks.Contexts)
-			case len(bpr.Restrictions.Teams) != len(tc.pushers):
-				t.Errorf("Bad teams: %v", bpr.Restrictions.Teams)
+			case len(*bpr.Restrictions.Teams) != len(tc.pushers):
+				t.Errorf("Bad teams: %v", *bpr.Restrictions.Teams)
 			default:
 				mc := map[string]bool{}
 				for _, k := range tc.contexts {
@@ -1324,7 +1326,7 @@ func TestUpdateBranchProtection(t *testing.T) {
 					mp[k] = true
 				}
 				missing = nil
-				for _, k := range bpr.Restrictions.Teams {
+				for _, k := range *bpr.Restrictions.Teams {
 					if mp[k] != true {
 						missing = append(missing, k)
 					}
@@ -1343,7 +1345,7 @@ func TestUpdateBranchProtection(t *testing.T) {
 				Contexts: tc.contexts,
 			},
 			Restrictions: &Restrictions{
-				Teams: tc.pushers,
+				Teams: &tc.pushers,
 			},
 		})
 		if tc.err && err == nil {

@@ -101,8 +101,8 @@ func TestMakeReviews(t *testing.T) {
 				RequireCodeOwnerReviews:      true,
 				DismissStaleReviews:          true,
 				DismissalRestrictions: github.Restrictions{
-					Teams: []string{"megacorp", "startup"},
-					Users: []string{"fred", "jane"},
+					Teams: &[]string{"megacorp", "startup"},
+					Users: &[]string{"fred", "jane"},
 				},
 			},
 		},
@@ -135,8 +135,8 @@ func TestMakeRequest(t *testing.T) {
 			},
 			expected: github.BranchProtectionRequest{
 				Restrictions: &github.Restrictions{
-					Teams: []string{"hello"},
-					Users: []string{},
+					Teams: &[]string{"hello"},
+					Users: &[]string{},
 				},
 			},
 		},
@@ -149,8 +149,8 @@ func TestMakeRequest(t *testing.T) {
 			},
 			expected: github.BranchProtectionRequest{
 				Restrictions: &github.Restrictions{
-					Users: []string{"there"},
-					Teams: []string{},
+					Users: &[]string{"there"},
+					Teams: &[]string{},
 				},
 			},
 		},
