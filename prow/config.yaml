@@ -49,6 +49,13 @@ branch-protection:
           required_status_checks:
             contexts:
             - ci/circleci
+        client-go:
+          protect: true
+          restrictions:
+            users:
+            - k8s-publishing-bot
+            teams:
+            - kubernetes/client-go-maintainers
         cloud-provider-aws:
           protect: true
         cloud-provider-azure:
@@ -67,6 +74,14 @@ branch-protection:
           protect: true
           required_pull_request_reviews:
             required_approving_review_count: 1
+        dns:
+          protect: true
+          required_status_checks:
+            strict: true
+            contexts:
+            - continuous-integration/travis-ci
+          required_pull_request_reviews:
+            required_approving_review_count: 1
         examples:
           protect: true
         features:
@@ -75,22 +90,46 @@ branch-protection:
           protect: true
         gengo:
           protect: true
+        git-sync:
+          protect: true
+          enforce_admins: true
+          required_status_checks:
+            strict: true
+          restrictions: # only allow admins
+            users: []
+            teams: []
         heapster:
           protect: true
         ingress-nginx:
           protect: true
+        kompose:
+          protect: true
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+          required_pull_request_reviews:
+            required_approving_review_count: 1
         kops:
+          protect: true
+        kube-deploy:
+          protect: true
+        kube-state-metrics:
           protect: true
         kubectl:
           protect: true
           required_status_checks:
             contexts:
             - continuous-integration/travis-ci
+        kubernetes:
+          protect: true
+          restrictions: # only allow admins
+            users: []
+            teams: []
+        kubernetes-anywhere:
+          protect: true
+        kubernetes-bootcamp:
+          protect: true
         kubernetes-template-project:
-          protect: true
-        kube-state-metrics:
-          protect: true
-        kube-deploy:
           protect: true
         minikube:
           protect: true
@@ -107,6 +146,13 @@ branch-protection:
           protect: true
         test-infra:
           protect: true
+        utils:
+          protect: true
+          required_pull_request_reviews:
+            required_approving_review_count: 1
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
         website:
           protect: false # TODO(fejta): protect all branches soon
           required_status_checks:
