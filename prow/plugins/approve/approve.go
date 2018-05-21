@@ -37,11 +37,11 @@ const (
 
 	approveCommand              = "APPROVE"
 	approvedLabel               = "approved"
-	lgtmCommand                 = "LGTM"
-	cancelArgument              = "cancel"
-	noIssueArgument             = "no-issue"
 	approvedReviewState         = "APPROVED"
-	requestedChangesReviewState = "CHANGES_REQUESTED"
+	cancelArgument              = "cancel"
+	changesRequestedReviewState = "CHANGES_REQUESTED"
+	lgtmCommand                 = "LGTM"
+	noIssueArgument             = "no-issue"
 )
 
 var (
@@ -384,7 +384,7 @@ func approvalCommandMatcher(botName string, lgtmActsAsApprove bool, reviewActsAs
 		// consider reviews in either approved OR requested changes states as
 		// approval commands. Reviews in requested changes states will be
 		// interpreted as cancelled approvals.
-		if reviewActsAsApprove && (c.ReviewState == approvedReviewState || c.ReviewState == requestedChangesReviewState) {
+		if reviewActsAsApprove && (c.ReviewState == approvedReviewState || c.ReviewState == changesRequestedReviewState) {
 			return true
 		}
 		for _, match := range commandRegex.FindAllStringSubmatch(c.Body, -1) {
@@ -433,7 +433,7 @@ func addApprovers(approversHandler *approvers.Approvers, approveComments []*comm
 				false,
 			)
 		}
-		if reviewActsAsApprove && c.ReviewState == requestedChangesReviewState {
+		if reviewActsAsApprove && c.ReviewState == changesRequestedReviewState {
 			approversHandler.RemoveApprover(c.Author)
 		}
 
