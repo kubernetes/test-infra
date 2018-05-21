@@ -275,10 +275,11 @@ func newGKE(provider, project, zone, region, network, image, imageFamily, imageP
 
 func (g *gkeDeployer) Up() error {
 	// Create network if it doesn't exist.
-	if err := control.FinishRunning(exec.Command("gcloud", "compute", "networks", "describe", g.network,
+	if control.NoOutput(exec.Command("gcloud", "compute", "networks", "describe", g.network,
 		"--project="+g.project,
-		"--format=value(name)")); err != nil {
+		"--format=value(name)")) != nil {
 		// Assume error implies non-existent.
+		log.Printf("Couldn't describe network '%s', assuming it doesn't exist and creating it", g.network)
 		if err := control.FinishRunning(exec.Command("gcloud", "compute", "networks", "create", g.network,
 			"--project="+g.project,
 			"--subnet-mode=auto")); err != nil {
@@ -486,12 +487,13 @@ func (g *gkeDeployer) ensureFirewall() error {
 	if err != nil {
 		return fmt.Errorf("error getting unique firewall: %v", err)
 	}
-	if control.FinishRunning(exec.Command("gcloud", "compute", "firewall-rules", "describe", firewall,
+	if control.NoOutput(exec.Command("gcloud", "compute", "firewall-rules", "describe", firewall,
 		"--project="+g.project,
 		"--format=value(name)")) == nil {
 		// Assume that if this unique firewall exists, it's good to go.
 		return nil
 	}
+	log.Printf("Couldn't describe firewall '%s', assuming it doesn't exist and creating it", firewall)
 
 	tagOut, err := exec.Command("gcloud", "compute", "instances", "list",
 		"--project="+g.project,
@@ -592,11 +594,14 @@ func (g *gkeDeployer) Down() error {
 			"--project="+g.project,
 			g.location)...))
 	var errFirewall error
-	if control.FinishRunning(exec.Command("gcloud", "compute", "firewall-rules", "describe", firewall,
+	if control.NoOutput(exec.Command("gcloud", "compute", "firewall-rules", "describe", firewall,
 		"--project="+g.project,
 		"--format=value(name)")) == nil {
+		log.Printf("Found rules for firewall '%s', deleting them", firewall)
 		errFirewall = control.FinishRunning(exec.Command("gcloud", "compute", "firewall-rules", "delete", "-q", firewall,
 			"--project="+g.project))
+	} else {
+		log.Printf("Found no rules for firewall '%s', assuming resources are clean", firewall)
 	}
 	numLeakedFWRules, errCleanFirewalls := g.cleanupNetworkFirewalls()
 	var errSubnet error
