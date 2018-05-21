@@ -370,6 +370,9 @@ plugins:
   kubernetes-sigs/cluster-api:
   - approve
   - trigger
+
+  kubernetes-sigs/application:
+  - approve
   
   containerd/cri:
   - assign
