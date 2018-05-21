@@ -37,5 +37,7 @@ This directory contains tooling for displaying [kubernetes conformance test](htt
 
 5. Authenticate [the gcloud sdk](https://cloud.google.com/sdk/downloads) / [gsutil](https://cloud.google.com/storage/docs/gsutil) to your GCS bucket
 
-6. run `upload_e2e.py --junit=<path to junit_01.xml> --log=<path to log file> --bucket=gs://your-bucket` (optionally supplying `--year=YYYY`, otherwise the current year on the host is assumed when parsing timestamps)
+6. run `upload_e2e.py --junit=<path to junit_01.xml> --log=<path to log file> --bucket=gs://your-bucket`. Optionally you can supply the following
+  * --year=YYYY, otherwise the current year on the host is assumed when parsing timestamps
+  * --metadata='dictionary of additional key-value pairs that can be displayed to the user'. E.g: --metadata='{"testrun": "Run after master upgrade"}'.For more details please see [metadata for finished.json](https://github.com/kubernetes/test-infra/tree/master/gubernator#job-artifact-gcs-layout) and custom [column headers in TestGrid](https://github.com/kubernetes/test-infra/blob/master/testgrid/README.md#column-headers).
 
