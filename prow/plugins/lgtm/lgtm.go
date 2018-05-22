@@ -70,7 +70,6 @@ func optionsForRepo(config *plugins.Configuration, org, repo string) *plugins.Lg
 		}
 		return &config.Lgtm[i]
 	}
-	// Default to no issue required and no implicit self approval.
 	return &plugins.Lgtm{}
 }
 func strInSlice(str string, slice []string) bool {
