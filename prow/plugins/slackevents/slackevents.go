@@ -61,7 +61,12 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", repo)
 		}
 		if mw := getMergeWarning(config.Slack.MergeWarnings, parts[0], parts[1]); mw != nil {
-			configInfo[repo] = fmt.Sprintf("In this repo merges are considered manual and trigger manual merge warnings if the user who merged is not a member of this whitelist: %s.<br>Warnings are sent to the following Slack channels: %s.", strings.Join(mw.WhiteList, ", "), strings.Join(mw.Channels, ", "))
+			configInfo[repo] = fmt.Sprintf("In this repo merges are considered "+
+				"manual and trigger manual merge warnings if the user who merged is not "+
+				"a member of this universal whitelist: %s or merged to a branch they "+
+				"are not specifically whitelisted for: %#v.<br>Warnings are sent to the "+
+				"following Slack channels: %s.", strings.Join(mw.WhiteList, ", "),
+				mw.BranchWhiteList, strings.Join(mw.Channels, ", "))
 		} else {
 			configInfo[repo] = "There are no manual merge warnings configured for this repo."
 		}
@@ -97,7 +102,7 @@ func notifyOnSlackIfManualMerge(pc client, pe github.PushEvent) error {
 	//Fetch MergeWarning for the repo we received the merge event.
 	if mw := getMergeWarning(pc.SlackConfig.MergeWarnings, pe.Repo.Owner.Login, pe.Repo.Name); mw != nil {
 		//If the MergeWarning whitelist has the merge user then no need to send a message.
-		if !stringInArray(pe.Pusher.Name, mw.WhiteList) && !stringInArray(pe.Sender.Login, mw.WhiteList) {
+		if wl := !isWhiteListed(mw, pe); wl {
 			message := fmt.Sprintf("*Warning:* %s (<@%s>) manually merged %s", pe.Sender.Login, pe.Sender.Login, pe.Compare)
 			for _, channel := range mw.Channels {
 				if err := pc.SlackClient.WriteMessage(message, channel); err != nil {
@@ -107,6 +112,13 @@ func notifyOnSlackIfManualMerge(pc client, pe github.PushEvent) error {
 		}
 	}
 	return nil
+}
+
+func isWhiteListed(mw *plugins.MergeWarning, pe github.PushEvent) bool {
+	bwl := mw.BranchWhiteList[pe.Branch()]
+	inWhiteList := stringInArray(pe.Pusher.Name, mw.WhiteList) || stringInArray(pe.Sender.Login, mw.WhiteList)
+	inBranchWhiteList := stringInArray(pe.Pusher.Name, bwl) || stringInArray(pe.Sender.Login, bwl)
+	return inWhiteList || inBranchWhiteList
 }
 
 func getMergeWarning(mergeWarnings []plugins.MergeWarning, org, repo string) *plugins.MergeWarning {

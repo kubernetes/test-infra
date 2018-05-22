@@ -391,6 +391,8 @@ type MergeWarning struct {
 	Channels []string `json:"channels,omitempty"`
 	// A slack event is published if the user is not part of the WhiteList.
 	WhiteList []string `json:"whitelist,omitempty"`
+	// A slack event is published if the user is not on the branch whitelist
+	BranchWhiteList map[string][]string `json:"branch_whitelist,omitempty"`
 }
 
 // TriggerFor finds the Trigger for a repo, if one exists
