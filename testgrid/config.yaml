@@ -3866,6 +3866,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
   - name: ci-gce-kubeadm-1.11
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-11
+  - name: rhel-aws-containerized-kubelet-node-e2e-conformance-1.11
+    test_group_name: ci-kubernetes-conformance-node-e2e-containerized-rhel
 
 - name: sig-release-1.10-all
   dashboard_tab:
