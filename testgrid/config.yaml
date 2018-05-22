@@ -68,6 +68,13 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
+- name: ci-kubernetes-node-kubelet-features
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-features
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
 - name: ci-kubernetes-node-kubelet-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-serial
   test_name_config:
@@ -137,6 +144,13 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
+- name: ci-cri-containerd-node-e2e-features
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-node-e2e-features
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
 - name: ci-cri-containerd-node-e2e-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-node-e2e-serial
   test_name_config:
@@ -165,8 +179,17 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
+- name: ci-containerd-node-e2e-features
+  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-node-e2e-features
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
 - name: ci-docker-node-conformance
   gcs_prefix: kubernetes-jenkins/logs/ci-docker-node-conformance
+- name: ci-docker-node-legacy
+  gcs_prefix: kubernetes-jenkins/logs/ci-docker-node-legacy
 - name: ci-docker-node-features
   gcs_prefix: kubernetes-jenkins/logs/ci-docker-node-features
 - name: ci-ingress-gce-image-push
@@ -619,6 +642,13 @@ test_groups:
     name_format: '%s [%s]'
 - name: ci-kubernetes-node-kubelet-beta
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-beta
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
+- name: ci-kubernetes-node-kubelet-beta-features
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-beta-features
   test_name_config:
     name_elements:
     - target_config: Tests name
@@ -3617,6 +3647,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-aws-beta
   - name: kubelet-1.11
     test_group_name: ci-kubernetes-node-kubelet-beta
+  - name: kubelet-1.11-features
+    test_group_name: ci-kubernetes-node-kubelet-beta-features
   - name: gce-scalability-1.11
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-beta
   # TODO(bentheelder) (1.11 test-infra lead) create those jobs
@@ -4963,6 +4995,8 @@ dashboards:
     test_group_name: ci-cri-containerd-build
   - name: node-e2e
     test_group_name: ci-cri-containerd-node-e2e
+  - name: node-e2e-features
+    test_group_name: ci-cri-containerd-node-e2e-features
   - name: e2e-gci
     test_group_name: ci-cri-containerd-e2e-gci-gce
   - name: e2e-ubuntu
@@ -4971,6 +5005,8 @@ dashboards:
     test_group_name: ci-containerd-build
   - name: containerd-node-e2e
     test_group_name: ci-containerd-node-e2e
+  - name: containerd-node-e2e-features
+    test_group_name: ci-containerd-node-e2e-features
   - name: containerd-e2e-gci
     test_group_name: ci-containerd-e2e-gci-gce
   - name: containerd-e2e-ubuntu
@@ -5028,6 +5064,8 @@ dashboards:
     test_group_name: ci-docker-node-conformance
   - name: sig-node-docker-node-features
     test_group_name: ci-docker-node-features
+  - name: sig-node-docker-node-legacy
+    test_group_name: ci-docker-node-legacy
 
 - name: sig-node-cadvisor
   dashboard_tab:
@@ -5183,6 +5221,8 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet-benchmark
   - name: kubelet
     test_group_name: ci-kubernetes-node-kubelet
+  - name: kubelet-features
+    test_group_name: ci-kubernetes-node-kubelet-features
   - name: kubelet-serial-gce-e2e
     test_group_name: ci-kubernetes-node-kubelet-serial
   - name: kubelet-flaky-gce-e2e

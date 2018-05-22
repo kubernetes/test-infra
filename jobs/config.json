@@ -128,7 +128,23 @@
       "--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
       "--node-tests=true",
       "--provider=gce",
-      "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]\" --flakeAttempts=2",
+      "--test_args=--nodes=8 --focus=\"\\[NodeConformance\\]\" --skip=\"\\[Flaky\\]|\\[Serial\\]\" --flakeAttempts=2",
+      "--timeout=65m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
+  "ci-containerd-node-e2e-features": {
+    "args": [
+      "--deployment=node",
+      "--gcp-project=cri-containerd-node-e2e",
+      "--gcp-zone=us-central1-f",
+      "--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
+      "--node-tests=true",
+      "--provider=gce",
+      "--test_args=--nodes=8 --focus=\"\\[NodeFeature:.+\\]\" --skip=\"\\[Flaky\\]|\\[Serial\\]\" --flakeAttempts=2",
       "--timeout=65m"
     ],
     "scenario": "kubernetes_e2e",
@@ -489,7 +505,7 @@
       "--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
       "--node-tests=true",
       "--provider=gce",
-      "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]\" --flakeAttempts=2",
+      "--test_args=--nodes=8 --focus=\"\\[NodeConformance\\]\" --skip=\"\\[Flaky\\]|\\[Serial\\]\" --flakeAttempts=2",
       "--timeout=65m"
     ],
     "scenario": "kubernetes_e2e",
@@ -506,6 +522,22 @@
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=1 --skip=\"\\[Flaky\\]\"",
+      "--timeout=65m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
+  "ci-cri-containerd-node-e2e-features": {
+    "args": [
+      "--deployment=node",
+      "--gcp-project=cri-containerd-node-e2e",
+      "--gcp-zone=us-central1-f",
+      "--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
+      "--node-tests=true",
+      "--provider=gce",
+      "--test_args=--nodes=8 --focus=\"\\[NodeFeature:.+\\]\" --skip=\"\\[Flaky\\]|\\[Serial\\]\" --flakeAttempts=2",
       "--timeout=65m"
     ],
     "scenario": "kubernetes_e2e",
@@ -537,7 +569,7 @@
       "--node-test-args=--feature-gates=DynamicKubeletConfig=true,LocalStorageCapacityIsolation=true,PodPriority=true --container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
       "--node-tests=true",
       "--provider=gce",
-      "--test_args=--nodes=1 --focus=\"\\[Serial\\]\" --skip=\"\\[Flaky\\]|\\[Benchmark\\]|\\[Feature:Docker\\]\"",
+      "--test_args=--nodes=1 --focus=\"\\[Serial\\]|\\[NodeFeature:.+\\]\" --skip=\"\\[Flaky\\]\"",
       "--timeout=180m"
     ],
     "scenario": "kubernetes_e2e",
@@ -553,7 +585,7 @@
       "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
       "--node-tests=true",
       "--provider=gce",
-      "--test_args=--nodes=8 --focus=\"\\[Conformance\\]\" --skip=\"\\[Flaky\\]|\\[Serial\\]|\\[Feature:.+\\]\"",
+      "--test_args=--nodes=8 --focus=\"\\[NodeConformance\\]\" --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
       "--timeout=65m"
     ],
     "scenario": "kubernetes_e2e",
@@ -569,7 +601,23 @@
       "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
       "--node-tests=true",
       "--provider=gce",
-      "--test_args=--nodes=8 --focus=\"\\[Feature:.+\\]\" --skip=\"\\[Flaky\\]|\\[Serial\\]|\\[Conformance\\]\"",
+      "--test_args=--nodes=8 --focus=\"\\[NodeFeature:.+\\]\" --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
+      "--timeout=180m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
+  "ci-docker-node-legacy": {
+    "args": [
+      "--deployment=node",
+      "--gcp-zone=us-central1-f",
+      "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml",
+      "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
+      "--node-tests=true",
+      "--provider=gce",
+      "--test_args=--nodes=1 --focus=\"\\[Legacy:Docker\\]\" --skip=\"\\[Flaky\\]\"",
       "--timeout=180m"
     ],
     "scenario": "kubernetes_e2e",
@@ -10156,7 +10204,7 @@
       "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
       "--node-tests=true",
       "--provider=gce",
-      "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
+      "--test_args=--nodes=8 --focus=\"\\[NodeConformance\\]\" --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
       "--timeout=90m"
     ],
     "scenario": "kubernetes_e2e",
@@ -11393,7 +11441,7 @@
       "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
       "--node-tests=true",
       "--provider=gce",
-      "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
+      "--test_args=--nodes=8 --focus=\"\\[NodeConformance\\]\" --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
       "--timeout=65m"
     ],
     "scenario": "kubernetes_e2e",
@@ -11410,7 +11458,7 @@
       "--node-test-args=--feature-gates=AllAlpha=true,RotateKubeletServerCertificate=false --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
       "--node-tests=true",
       "--provider=gce",
-      "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
+      "--test_args=--nodes=8 --focus=\"\\[NodeConformance\\]|\\[NodeAlphaFeature:.+\\]\" --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
       "--timeout=65m"
     ],
     "scenario": "kubernetes_e2e",
@@ -11444,7 +11492,24 @@
       "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
       "--node-tests=true",
       "--provider=gce",
-      "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
+      "--test_args=--nodes=8 --focus=\"\\[NodeConformance\\]\" --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
+      "--timeout=65m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
+  "ci-kubernetes-node-kubelet-beta-features": {
+    "args": [
+      "--deployment=node",
+      "--gcp-project=k8s-jkns-ci-node-e2e",
+      "--gcp-zone=us-central1-f",
+      "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml",
+      "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
+      "--node-tests=true",
+      "--provider=gce",
+      "--test_args=--nodes=8 --focus=\"\\[NodeFeature:.+\\]\" --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
       "--timeout=65m"
     ],
     "scenario": "kubernetes_e2e",
@@ -11461,7 +11526,24 @@
       "--node-test-args=--feature-gates=DynamicKubeletConfig=true --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
       "--node-tests=true",
       "--provider=gce",
-      "--test_args=--nodes=1 --skip=\"\\[Flaky\\]\"",
+      "--test_args=--nodes=1 --focus=\"\\[NodeConformance\\]\" --skip=\"\\[Flaky\\]\"",
+      "--timeout=65m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
+  "ci-kubernetes-node-kubelet-features": {
+    "args": [
+      "--deployment=node",
+      "--gcp-project=k8s-jkns-ci-node-e2e",
+      "--gcp-zone=us-central1-f",
+      "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml",
+      "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
+      "--node-tests=true",
+      "--provider=gce",
+      "--test_args=--nodes=8 --focus=\"\\[NodeFeature:.+\\]\" --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
       "--timeout=65m"
     ],
     "scenario": "kubernetes_e2e",
@@ -11495,7 +11577,7 @@
       "--node-test-args=--feature-gates=DynamicKubeletConfig=true,PodPriority=true,LocalStorageCapacityIsolation=true --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
       "--node-tests=true",
       "--provider=gce",
-      "--test_args=--nodes=1 --focus=\"\\[Serial\\]\" --skip=\"\\[Flaky\\]|\\[Benchmark\\]\"",
+      "--test_args=--nodes=1 --focus=\"\\[Serial\\]|\\[NodeFeature:.+\\]\" --skip=\"\\[Flaky\\]\"",
       "--timeout=220m"
     ],
     "scenario": "kubernetes_e2e",
@@ -12161,7 +12243,7 @@
       "--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
       "--node-tests=true",
       "--provider=gce",
-      "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Slow\\]|\\[Serial\\]\" --flakeAttempts=2",
+      "--test_args=--nodes=8 --focus=\"\\[NodeConformance\\]\" --skip=\"\\[Flaky\\]|\\[Slow\\]|\\[Serial\\]\" --flakeAttempts=2",
       "--timeout=65m"
     ],
     "scenario": "kubernetes_e2e",
@@ -12815,7 +12897,7 @@
       "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
       "--node-tests=true",
       "--provider=gce",
-      "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Slow\\]|\\[Serial\\]\" --flakeAttempts=2",
+      "--test_args=--nodes=8 --focus=\"\\[NodeConformance\\]\" --skip=\"\\[Flaky\\]|\\[Slow\\]|\\[Serial\\]\" --flakeAttempts=2",
       "--timeout=65m"
     ],
     "scenario": "kubernetes_e2e",
@@ -12831,7 +12913,7 @@
       "--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
       "--node-tests=true",
       "--provider=gce",
-      "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Slow\\]|\\[Serial\\]\" --flakeAttempts=2",
+      "--test_args=--nodes=8 --focus=\"\\[NodeConformance\\]\" --skip=\"\\[Flaky\\]|\\[Slow\\]|\\[Serial\\]\" --flakeAttempts=2",
       "--timeout=65m"
     ],
     "scenario": "kubernetes_e2e",
