@@ -96,7 +96,7 @@ type githubClient interface {
 }
 
 func handleGenericCommentEvent(pc plugins.PluginClient, e github.GenericCommentEvent) error {
-	return handleGenericComment(pc.GitHubClient, pc.Logger, e)
+	return handleGenericComment(pc.GitHubClient, pc.PluginConfig, pc.OwnersClient, pc.Logger, e)
 }
 
 func handlePullRequestReviewEvent(pc plugins.PluginClient, e github.ReviewEvent) error {
@@ -110,10 +110,10 @@ func handlePullRequestReviewEvent(pc plugins.PluginClient, e github.ReviewEvent)
 	if lgtmRe.MatchString(e.Review.Body) || lgtmCancelRe.MatchString(e.Review.Body) {
 		return nil
 	}
-	return handlePullRequestReview(pc.GitHubClient, pc.Logger, e)
+	return handlePullRequestReview(pc.GitHubClient, pc.PluginConfig, pc.OwnersClient, pc.Logger, e)
 }
 
-func handleGenericComment(gc githubClient, log *logrus.Entry, e github.GenericCommentEvent) error {
+func handleGenericComment(gc githubClient, config *plugins.Configuration, ownersClient repoowners.Interface, log *logrus.Entry, e github.GenericCommentEvent) error {
 	author := e.User.Login
 	issueAuthor := e.IssueAuthor.Login
 	repo := e.Repo
@@ -146,10 +146,10 @@ func handleGenericComment(gc githubClient, log *logrus.Entry, e github.GenericCo
 		return gc.CreateComment(repo.Owner.Login, repo.Name, number, plugins.FormatResponseRaw(body, htmlURL, author, resp))
 	}
 
-	return handle(wantLGTM, author, issueAuthor, repo, assignees, number, body, htmlURL, gc, log)
+	return handle(wantLGTM, config, ownersClient, author, issueAuthor, repo, assignees, number, body, htmlURL, gc, log)
 }
 
-func handlePullRequestReview(gc githubClient, log *logrus.Entry, e github.ReviewEvent) error {
+func handlePullRequestReview(gc githubClient, config *plugins.Configuration, ownersClient repoowners.Interface, log *logrus.Entry, e github.ReviewEvent) error {
 	author := e.Review.User.Login
 	issueAuthor := e.PullRequest.User.Login
 	repo := e.Repo
@@ -168,10 +168,10 @@ func handlePullRequestReview(gc githubClient, log *logrus.Entry, e github.Review
 	} else {
 		return nil
 	}
-	return handle(wantLGTM, author, issueAuthor, repo, assignees, number, body, htmlURL, gc, log)
+	return handle(wantLGTM, config, ownersClient, author, issueAuthor, repo, assignees, number, body, htmlURL, gc, log)
 }
 
-func handle(wantLGTM bool, author string, issueAuthor string, repo github.Repo, assignees []github.User, number int, body string, htmlURL string, gc githubClient, log *logrus.Entry) error {
+func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowners.Interface, author string, issueAuthor string, repo github.Repo, assignees []github.User, number int, body string, htmlURL string, gc githubClient, log *logrus.Entry) error {
 	org := repo.Owner.Login
 	repoName := repo.Name
 
@@ -191,15 +191,15 @@ func handle(wantLGTM bool, author string, issueAuthor string, repo github.Repo, 
 	if isAuthor && wantLGTM {
 		resp := "you cannot LGTM your own PR."
 		log.Infof("Commenting with \"%s\".", resp)
-		return gc.CreateComment(org, repoName, number, plugins.FormatResponseRaw(e.Body, htmlURL, author, resp))
+		return gc.CreateComment(org, repoName, number, plugins.FormatResponseRaw(body, htmlURL, author, resp))
 	} else if !isAuthor && !isAssignee && !skipCollaborators {
 		log.Infof("Assigning %s/%s#%d to %s", org, repoName, number, author)
 		if err := gc.AssignIssue(org, repoName, number, []string{author}); err != nil {
 			msg := "assigning you to the PR failed"
-			if ok, merr := gc.IsMember(org, author); merr == nil && !ok {
-				msg = fmt.Sprintf("only %s org members may be assigned issues", org)
+			if ok, merr := gc.IsCollaborator(org, repoName, author); merr == nil && !ok {
+				msg = fmt.Sprintf("only %s/%s repo collaborators may be assigned issues", org, repo)
 			} else if merr != nil {
-				log.WithError(merr).Errorf("Failed IsMember(%s, %s)", org, author)
+				log.WithError(merr).Errorf("Failed IsCollaborator(%s, %s)", org, author)
 			} else {
 				log.WithError(err).Errorf("Failed AssignIssue(%s, %s, %d, %s)", org, repoName, number, author)
 			}
@@ -208,19 +208,19 @@ func handle(wantLGTM bool, author string, issueAuthor string, repo github.Repo, 
 			return gc.CreateComment(org, repoName, number, plugins.FormatResponseRaw(body, htmlURL, author, resp))
 		}
 	} else if !isAuthor && skipCollaborators {
-		log.Debugf("Skipping collaborator checks and loading OWNERS for %s/%s#%d", org, repo, e.Number)
-		ro, err := loadRepoOwners(gc, ownersClient, org, repo, e.Number)
+		log.Debugf("Skipping collaborator checks and loading OWNERS for %s/%s#%d", org, repoName, number)
+		ro, err := loadRepoOwners(gc, ownersClient, org, repoName, number)
 		if err != nil {
 			return err
 		}
-		filenames, err := getChangedFiles(gc, org, repo, e.Number)
+		filenames, err := getChangedFiles(gc, org, repoName, number)
 		if err != nil {
 			return err
 		}
-		if !loadReviewers(ro, filenames).Has(github.NormLogin(commentAuthor)) {
+		if !loadReviewers(ro, filenames).Has(author) {
 			resp := "adding LGTM is restricted to approvers and reviewers in OWNERS files."
 			log.Infof("Reply to /lgtm request with comment: \"%s\"", resp)
-			return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, commentAuthor, resp))
+			return gc.CreateComment(org, repoName, number, plugins.FormatResponseRaw(body, htmlURL, author, resp))
 		}
 	}
 

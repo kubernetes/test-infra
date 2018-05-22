@@ -262,18 +262,13 @@ func TestLGTMComment(t *testing.T) {
 		if tc.hasLGTM {
 			fc.LabelsAdded = []string{"org/repo#5:" + lgtmLabel}
 		}
-<<<<<<< HEAD
 		oc := &fakeOwnersClient{approvers: approvers, reviewers: reviewers}
 		pc := &plugins.Configuration{}
 		if tc.skipCollab {
 			pc.Owners.SkipCollaborators = []string{"org/repo"}
 		}
-		if err := handle(fc, pc, oc, logrus.WithField("plugin", pluginName), e); err != nil {
+		if err := handleGenericComment(fc, pc, oc, logrus.WithField("plugin", pluginName), *e); err != nil {
 			t.Errorf("didn't expect error from lgtmComment: %v", err)
-=======
-		if err := handleGenericComment(fc, logrus.WithField("plugin", pluginName), *e); err != nil {
-			t.Errorf("For case %s, didn't expect error from lgtmComment: %v", tc.name, err)
->>>>>>> Adding test cases and a test run for new handler function.
 			continue
 		}
 		if tc.shouldAssign {
@@ -412,13 +407,9 @@ func TestLGTMCommentWithLGTMNoti(t *testing.T) {
 			Body: removeLGTMLabelNoti,
 		}
 		fc.IssueComments[5] = append(fc.IssueComments[5], ic)
-<<<<<<< HEAD
 		oc := &fakeOwnersClient{approvers: approvers, reviewers: reviewers}
 		pc := &plugins.Configuration{}
-		if err := handle(fc, pc, oc, logrus.WithField("plugin", pluginName), e); err != nil {
-=======
-		if err := handleGenericComment(fc, logrus.WithField("plugin", pluginName), *e); err != nil {
->>>>>>> Adding test cases and a test run for new handler function.
+		if err := handleGenericComment(fc, pc, oc, logrus.WithField("plugin", pluginName), *e); err != nil {
 			t.Errorf("For case %s, didn't expect error from lgtmComment: %v", tc.name, err)
 			continue
 		}
@@ -542,7 +533,9 @@ func TestLGTMFromApproveReview(t *testing.T) {
 		if tc.hasLGTM {
 			fc.LabelsAdded = []string{"org/repo#5:" + lgtmLabel}
 		}
-		if err := handlePullRequestReview(fc, logrus.WithField("plugin", pluginName), *e); err != nil {
+		oc := &fakeOwnersClient{approvers: approvers, reviewers: reviewers}
+		pc := &plugins.Configuration{}
+		if err := handlePullRequestReview(fc, pc, oc, logrus.WithField("plugin", pluginName), *e); err != nil {
 			t.Errorf("For case %s, didn't expect error from pull request review: %v", tc.name, err)
 			continue
 		}
