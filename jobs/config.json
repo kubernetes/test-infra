@@ -12480,6 +12480,7 @@
       "--gcp-zone=us-east1-b",
       "--provider=gce",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-100-performance",
+      "--tear-down-previous",
       "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true",
       "--timeout=100m",
       "--use-logexporter"
@@ -12502,6 +12503,7 @@
       "--gcp-zone=us-east1-a",
       "--provider=gce",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-big-performance",
+      "--tear-down-previous",
       "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=master --gather-metrics-at-teardown=master",
       "--timeout=240m",
       "--use-logexporter"
