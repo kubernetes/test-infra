@@ -52,11 +52,11 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		Description: "The lgtm plugin manages the application and removal of the 'lgtm' (Looks Good To Me) label which is typically used to gate merging.",
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
-		Usage:       "/lgtm [cancel]",
+		Usage:       "/lgtm [cancel] or Github Review action",
 		Description: "Adds or removes the 'lgtm' label which is typically used to gate merging.",
 		Featured:    true,
-		WhoCanUse:   "Collaborators on the repository. '/lgtm cancel' can be used additionally by the PR author.",
-		Examples:    []string{"/lgtm", "/lgtm cancel"},
+		WhoCanUse:   "Members of the organization that owns the repository. '/lgtm cancel' can be used additionally by the PR author.",
+		Examples:    []string{"/lgtm", "/lgtm cancel", "toggle the Review button to 'Approve' or 'Request Changes' in the github GUI" },
 	})
 	return pluginHelp, nil
 }
@@ -80,6 +80,12 @@ func handleGenericCommentEvent(pc plugins.PluginClient, e github.GenericCommentE
 }
 
 func handlePullRequestReviewEvent(pc plugins.PluginClient, e github.ReviewEvent) error {
+
+	// If the review event body contains an '/lgtm' or '/lgtm cancel' comment,
+	// skip handling the review event
+	if lgtmRe.MatchString(e.body) || lgtmCancelRe.MatchString(e.body){
+		return nil
+	}
 	return handlePullRequestReview(pc.GitHubClient, pc.Logger, e)
 }
 

@@ -171,6 +171,7 @@ type Configuration struct {
 	SigMention    SigMention    `json:"sigmention,omitempty"`
 	Cat           Cat           `json:"cat,omitempty"`
 	Label         *Label        `json:"label,omitempty"`
+	Lgtm          []Lgtm        `json:"lgtm,omitempty"`
 }
 
 // ExternalPlugin holds configuration for registering an external
@@ -324,6 +325,14 @@ type Approve struct {
 	// LgtmActsAsApprove indicates that the lgtm command should be used to
 	// indicate approval
 	LgtmActsAsApprove bool `json:"lgtm_acts_as_approve,omitempty"`
+}
+
+type Lgtm struct {
+	// Repos is either of the form org/repos or just org.
+	Repos []string `json:"repos,omitempty"`
+	// ReviewActsAsLgtm indicates that a Github review of "approve" or "request changes"
+	// acts as adding or removing the lgtm label
+	ReviewActsAsLgtm bool `json:"review_acts_as_lgtm,omitempty"`
 }
 
 type Cat struct {
