@@ -56,9 +56,30 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		Description: "Adds or removes the 'lgtm' label which is typically used to gate merging.",
 		Featured:    true,
 		WhoCanUse:   "Members of the organization that owns the repository. '/lgtm cancel' can be used additionally by the PR author.",
-		Examples:    []string{"/lgtm", "/lgtm cancel", "toggle the Review button to 'Approve' or 'Request Changes' in the github GUI" },
+		Examples:    []string{"/lgtm", "/lgtm cancel", "toggle the Review button to 'Approve' or 'Request Changes' in the github GUI"},
 	})
 	return pluginHelp, nil
+}
+
+// optionsForRepo gets the plugins.Lgtm struct that is applicable to the indicated repo.
+func optionsForRepo(config *plugins.Configuration, org, repo string) *plugins.Lgtm {
+	fullName := fmt.Sprintf("%s/%s", org, repo)
+	for i := range config.Lgtm {
+		if !strInSlice(org, config.Lgtm[i].Repos) && !strInSlice(fullName, config.Lgtm[i].Repos) {
+			continue
+		}
+		return &config.Lgtm[i]
+	}
+	// Default to no issue required and no implicit self approval.
+	return &plugins.Lgtm{}
+}
+func strInSlice(str string, slice []string) bool {
+	for _, elem := range slice {
+		if elem == str {
+			return true
+		}
+	}
+	return false
 }
 
 type githubClient interface {
@@ -80,10 +101,14 @@ func handleGenericCommentEvent(pc plugins.PluginClient, e github.GenericCommentE
 }
 
 func handlePullRequestReviewEvent(pc plugins.PluginClient, e github.ReviewEvent) error {
-
+	// If ReviewActsAsLgtm is disabled, ignore review event.
+	opts := optionsForRepo(pc.PluginConfig, e.Repo.Owner.Login, e.Repo.Name)
+	if !opts.ReviewActsAsLgtm {
+		return nil
+	}
 	// If the review event body contains an '/lgtm' or '/lgtm cancel' comment,
 	// skip handling the review event
-	if lgtmRe.MatchString(e.body) || lgtmCancelRe.MatchString(e.body){
+	if lgtmRe.MatchString(e.Review.Body) || lgtmCancelRe.MatchString(e.Review.Body) {
 		return nil
 	}
 	return handlePullRequestReview(pc.GitHubClient, pc.Logger, e)
