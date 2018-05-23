@@ -52,6 +52,16 @@ func TestOptions_Validate(t *testing.T) {
 					},
 				},
 			},
+			expectedErr: false,
+		},
+		{
+			name: "missing path strategy",
+			input: Options{
+				Options: &gcsupload.Options{
+					DryRun:           true,
+					GCSConfiguration: &kube.GCSConfiguration{},
+				},
+			},
 			expectedErr: true,
 		},
 	}
