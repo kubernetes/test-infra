@@ -176,7 +176,7 @@ def file_memoize(description, name):
 
 
 @file_memoize('loading failed tests', 'failed.json')
-def load_failures(builds_file, tests_file):
+def load_failures(builds_file, tests_files):
     builds = {}
     for build in json.load(open(builds_file)):
         if not build['started'] or not build['number']:
@@ -189,8 +189,9 @@ def load_failures(builds_file, tests_file):
         builds[build['path']] = build
 
     failed_tests = {}
-    for test in json.load(open(tests_file)):
-        failed_tests.setdefault(test['name'], []).append(test)
+    for tests_file in tests_files:
+        for test in json.load(open(tests_file)):
+            failed_tests.setdefault(test['name'], []).append(test)
     for tests in failed_tests.itervalues():
         tests.sort(key=lambda t: t['build'])
 
@@ -501,7 +502,7 @@ def render_slice(data, builds, prefix='', owner=''):
 def parse_args(args):
     parser = argparse.ArgumentParser()
     parser.add_argument('builds', help='builds.json file from BigQuery')
-    parser.add_argument('tests', help='tests.json file from BigQuery')
+    parser.add_argument('tests', help='tests.json file from BigQuery', nargs='+')
     parser.add_argument('--previous', help='previous output', type=argparse.FileType('r'))
     parser.add_argument('--owners', help='test owner SIGs', type=argparse.FileType('r'))
     parser.add_argument('--output', default='failure_data.json')

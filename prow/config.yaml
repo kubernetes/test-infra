@@ -16664,6 +16664,7 @@ periodics:
 - name: ci-test-infra-triage
   interval: 1h
   agent: kubernetes
+  decorate: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/triage:latest
