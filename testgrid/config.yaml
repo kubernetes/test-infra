@@ -2435,8 +2435,8 @@ test_groups:
   gcs_prefix: istio-prow/directory/e2e-simpleTests
 - name: e2e-bookInfoTests
   gcs_prefix: istio-prow/directory/e2e-bookInfoTests
-- name: e2e-bookInfoTests-v1alpha3
-  gcs_prefix: istio-prow/directory/e2e-bookInfoTests-v1alpha3
+- name: e2e-bookInfoTests-envoyv2-v1alpha3
+  gcs_prefix: istio-prow/directory/e2e-bookInfoTests-envoyv2-v1alpha3
 # Istio CircleCI Presubmits
 - name: circleci-e2e-mixer-presubmit
   gcs_prefix: istio-circleci/presubmit/e2e-mixer
@@ -5943,8 +5943,8 @@ dashboards:
     test_group_name: e2e-simpleTests
   - name: e2e-bookInfoTests
     test_group_name: e2e-bookInfoTests
-  - name: e2e-bookInfoTests-v1alpha3
-    test_group_name: e2e-bookInfoTests-v1alpha3
+  - name: e2e-bookInfoTests-envoyv2-v1alpha3
+    test_group_name: e2e-bookInfoTests-envoyv2-v1alpha3
   - name: circleci-e2e-mixer-presubmit
     test_group_name: circleci-e2e-mixer-presubmit
   - name: circleci-e2e-simple-presubmit
