@@ -5,7 +5,7 @@ its exit code; when the exit code has been written, this utility uploads a statu
 from the process and any other specified artifacts to cloud storage. The utility will exit with the
 exit code of the wrapped process or otherwise non-zero if the utility has a fatal error.
 
-This utility is intended to be used with [`entrypoint`](./../sidecar/README.md), which will
+This utility is intended to be used with [`entrypoint`](./../entrypoint/README.md), which will
 write the files watched by this utility.
 
 `sidecar` can be configured by either passing in flags or by specifying a full set of options
