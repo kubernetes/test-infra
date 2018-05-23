@@ -2329,7 +2329,34 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
-
+  - name: pull-kubernetes-e2e-gce-large-performance-coredns
+    agent: kubernetes
+    context: pull-kubernetes-e2e-gce-large-performance-coredns
+    rerun_command: "/test pull-kubernetes-e2e-gce-large-performance-coredns"
+    trigger: "(?m)^/test pull-kubernetes-e2e-gce-large-performance-coredns,?(\\s+|$)"
+    always_run: false
+    max_concurrency: 1
+    branches:
+    - master
+    labels:
+      preset-service-account: true
+      preset-k8s-ssh: true
+      preset-bazel-scratch-dir: true
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=570
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
+        resources:
+          requests:
+            memory: "6Gi"
   - name: pull-kubernetes-e2e-gke
     agent: kubernetes
     context: pull-kubernetes-e2e-gke
