@@ -12706,6 +12706,7 @@
       "--kubemark-nodes=500",
       "--provider=gce",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-big",
+      "--tear-down-previous",
       "--test=false",
       "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true",
       "--timeout=100m"
