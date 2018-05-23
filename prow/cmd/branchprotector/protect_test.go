@@ -28,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/diff"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 )
 
@@ -42,7 +43,7 @@ func TestOptions_Validate(t *testing.T) {
 			opt: options{
 				config:   "dummy",
 				token:    "fake",
-				endpoint: "https://api.github.com",
+				endpoint: flagutil.NewStrings("https://api.github.com"),
 			},
 			expectedErr: false,
 		},
@@ -51,7 +52,7 @@ func TestOptions_Validate(t *testing.T) {
 			opt: options{
 				config:   "",
 				token:    "fake",
-				endpoint: "https://api.github.com",
+				endpoint: flagutil.NewStrings("https://api.github.com"),
 			},
 			expectedErr: true,
 		},
@@ -60,7 +61,7 @@ func TestOptions_Validate(t *testing.T) {
 			opt: options{
 				config:   "dummy",
 				token:    "",
-				endpoint: "https://api.github.com",
+				endpoint: flagutil.NewStrings("https://api.github.com"),
 			},
 			expectedErr: true,
 		},
@@ -69,7 +70,7 @@ func TestOptions_Validate(t *testing.T) {
 			opt: options{
 				config:   "dummy",
 				token:    "fake",
-				endpoint: ":",
+				endpoint: flagutil.NewStrings(":"),
 			},
 			expectedErr: true,
 		},
@@ -101,10 +102,26 @@ func (c fakeClient) GetRepos(org string, user bool) ([]github.Repo, error) {
 	return r, nil
 }
 
-func (c fakeClient) GetBranches(org, repo string) ([]github.Branch, error) {
+func (c fakeClient) GetBranches(org, repo string, onlyProtected bool) ([]github.Branch, error) {
 	b, ok := c.branches[org+"/"+repo]
 	if !ok {
 		return nil, fmt.Errorf("Unknown repo: %s/%s", org, repo)
+	}
+	var out []github.Branch
+	if onlyProtected {
+		for _, item := range b {
+			if !item.Protected {
+				continue
+			}
+			out = append(out, item)
+		}
+	} else {
+		// when !onlyProtected, github does not set Protected
+		// match that behavior here to ensure we handle this correctly
+		for _, item := range b {
+			item.Protected = false
+			out = append(out, item)
+		}
 	}
 	return b, nil
 }
@@ -456,8 +473,8 @@ branch-protection:
 					Branch: "master",
 					Request: &github.BranchProtectionRequest{
 						Restrictions: &github.Restrictions{
-							Users: []string{},
-							Teams: []string{"config-team", "org-team", "repo-team", "branch-team"},
+							Users: &[]string{},
+							Teams: &[]string{"config-team", "org-team", "repo-team", "branch-team"},
 						},
 					},
 				},
@@ -515,13 +532,13 @@ branch-protection:
 							RequireCodeOwnerReviews:      true,
 							RequiredApprovingReviewCount: 3,
 							DismissalRestrictions: github.Restrictions{
-								Users: []string{"bob", "jane"},
-								Teams: []string{"oncall", "sres"},
+								Users: &[]string{"bob", "jane"},
+								Teams: &[]string{"oncall", "sres"},
 							},
 						},
 						Restrictions: &github.Restrictions{
-							Users: []string{"cindy"},
-							Teams: []string{"config-team", "org-team"},
+							Users: &[]string{"cindy"},
+							Teams: &[]string{"config-team", "org-team"},
 						},
 					},
 				},
@@ -590,8 +607,8 @@ branch-protection:
 							Contexts: []string{"config-presubmit", "org-presubmit"},
 						},
 						Restrictions: &github.Restrictions{
-							Users: []string{},
-							Teams: []string{"config-team", "org-team"},
+							Users: &[]string{},
+							Teams: &[]string{"config-team", "org-team"},
 						},
 					},
 				},
@@ -709,7 +726,7 @@ func fixup(r *Requirements) {
 		sort.Strings(req.RequiredStatusChecks.Contexts)
 	}
 	if restr := req.Restrictions; restr != nil {
-		sort.Strings(restr.Teams)
-		sort.Strings(restr.Users)
+		sort.Strings(*restr.Teams)
+		sort.Strings(*restr.Users)
 	}
 }

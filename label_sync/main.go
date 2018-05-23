@@ -33,6 +33,7 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 )
 
@@ -84,7 +85,7 @@ type RepoUpdates map[string][]Update
 var (
 	debug        = flag.Bool("debug", false, "Turn on debug to be more verbose")
 	confirm      = flag.Bool("confirm", false, "Make mutating API calls to GitHub.")
-	endpoint     = flag.String("endpoint", "https://api.github.com", "GitHub's API endpoint")
+	endpoint     = flagutil.NewStrings("https://api.github.com")
 	labelsPath   = flag.String("config", "", "Path to labels.yaml")
 	onlyRepos    = flag.String("only", "", "Only look at the following comma separated org/repos")
 	orgs         = flag.String("orgs", "", "Comma separated list of orgs to sync")
@@ -94,6 +95,10 @@ var (
 	docsTemplate = flag.String("docs-template", "", "Path to template file for label docs")
 	docsOutput   = flag.String("docs-output", "", "Path to output file for docs")
 )
+
+func init() {
+	flag.Var(&endpoint, "endpoint", "GitHub's API endpoint")
+}
 
 func pathExists(path string) bool {
 	_, err := os.Stat(path)
@@ -513,7 +518,7 @@ type client interface {
 	GetRepoLabels(string, string) ([]github.Label, error)
 }
 
-func newClient(tokenPath, host string, dryRun bool) (client, error) {
+func newClient(tokenPath string, dryRun bool, hosts ...string) (client, error) {
 	if tokenPath == "" {
 		return nil, errors.New("--token unset")
 	}
@@ -524,9 +529,9 @@ func newClient(tokenPath, host string, dryRun bool) (client, error) {
 	oauthSecret := string(bytes.TrimSpace(b))
 
 	if dryRun {
-		return github.NewDryRunClient(oauthSecret, host), nil
+		return github.NewDryRunClient(oauthSecret, hosts...), nil
 	}
-	c := github.NewClient(oauthSecret, host)
+	c := github.NewClient(oauthSecret, hosts...)
 	c.Throttle(300, 100) // 300 hourly tokens, bursts of 100
 	return c, nil
 }
@@ -557,7 +562,7 @@ func main() {
 			logrus.WithError(err).Fatalf("failed to write docs using docs-template %s to docs-output %s", *docsTemplate, *docsOutput)
 		}
 	case *action == "sync":
-		githubClient, err := newClient(*token, *endpoint, !*confirm)
+		githubClient, err := newClient(*token, !*confirm, endpoint.Strings()...)
 		if err != nil {
 			logrus.WithError(err).Fatal("failed to create client")
 		}

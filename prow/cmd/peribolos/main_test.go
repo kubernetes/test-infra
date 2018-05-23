@@ -20,6 +20,8 @@ import (
 	"flag"
 	"reflect"
 	"testing"
+
+	"k8s.io/test-infra/prow/flagutil"
 )
 
 func TestOptions(t *testing.T) {
@@ -46,7 +48,7 @@ func TestOptions(t *testing.T) {
 			expected: &options{
 				config:   "foo",
 				token:    "bar",
-				endpoint: defaultEndpoint,
+				endpoint: flagutil.NewStrings(defaultEndpoint),
 			},
 		},
 		{
@@ -55,7 +57,7 @@ func TestOptions(t *testing.T) {
 			expected: &options{
 				config:   "foo",
 				token:    "bar",
-				endpoint: "weird://url",
+				endpoint: flagutil.NewStrings("weird://url"),
 				confirm:  true,
 			},
 		},

@@ -32,6 +32,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/hook"
 	"k8s.io/test-infra/prow/pluginhelp/externalplugins"
@@ -42,11 +43,15 @@ var (
 	port              = flag.Int("port", 8888, "Port to listen on.")
 	dryRun            = flag.Bool("dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	pluginConfig      = flag.String("plugin-config", "/etc/plugins/plugins", "Path to plugin config file.")
-	githubEndpoint    = flag.String("github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
+	githubEndpoint    = flagutil.NewStrings("https://api.github.com")
 	githubTokenFile   = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
 	webhookSecretFile = flag.String("hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	updatePeriod      = flag.Duration("update-period", time.Hour*24, "Period duration for periodic scans of all PRs.")
 )
+
+func init() {
+	flag.Var(&githubEndpoint, "github-endpoint", "GitHub's API endpoint.")
+}
 
 func main() {
 	flag.Parse()
@@ -72,9 +77,11 @@ func main() {
 	}
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
-	_, err = url.Parse(*githubEndpoint)
-	if err != nil {
-		log.WithError(err).Fatal("Must specify a valid --github-endpoint URL.")
+	for _, ep := range githubEndpoint.Strings() {
+		_, err = url.Parse(ep)
+		if err != nil {
+			logrus.WithError(err).Fatalf("Invalid --endpoint URL %q.", ep)
+		}
 	}
 
 	pa := &plugins.PluginAgent{}
@@ -82,9 +89,9 @@ func main() {
 		log.WithError(err).Fatalf("Error loading plugin config from %q.", *pluginConfig)
 	}
 
-	githubClient := github.NewClient(oauthSecret, *githubEndpoint)
+	githubClient := github.NewClient(oauthSecret, githubEndpoint.Strings()...)
 	if *dryRun {
-		githubClient = github.NewDryRunClient(oauthSecret, *githubEndpoint)
+		githubClient = github.NewDryRunClient(oauthSecret, githubEndpoint.Strings()...)
 	}
 	githubClient.Throttle(360, 360)
 

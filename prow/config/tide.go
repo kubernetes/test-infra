@@ -17,7 +17,6 @@ limitations under the License.
 package config
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -312,12 +311,10 @@ func (c Config) GetTideContextPolicy(org, repo, branch string) (TideContextPolic
 	if options.FromBranchProtection != nil && *options.FromBranchProtection {
 		bp, err := c.GetBranchProtection(org, repo, branch)
 		if err != nil {
-			return TideContextPolicy{}, err
-		}
-		if bp == nil {
-			return TideContextPolicy{}, errors.New("branch protection is not set")
-		}
-		if bp.Protect == nil || *bp.Protect {
+			logrus.WithError(err).Warningf("Error getting branch protection for %s/%s+%s", org, repo, branch)
+		} else if bp == nil {
+			logrus.Warningf("branch protection not set for %s/%s+%s", org, repo, branch)
+		} else if bp.Protect != nil && *bp.Protect {
 			required.Insert(bp.RequiredStatusChecks.Contexts...)
 		}
 	}
