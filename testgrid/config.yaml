@@ -75,6 +75,13 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
+- name: ci-kubernetes-node-kubelet-orphans
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-orphans
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
 - name: ci-kubernetes-node-kubelet-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-serial
   test_name_config:
@@ -5223,6 +5230,8 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet
   - name: kubelet-features
     test_group_name: ci-kubernetes-node-kubelet-features
+  - name: kubelet-orphans
+    test_group_name: ci-kubernetes-node-kubelet-orphans
   - name: kubelet-serial-gce-e2e
     test_group_name: ci-kubernetes-node-kubelet-serial
   - name: kubelet-flaky-gce-e2e
