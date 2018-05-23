@@ -25,6 +25,8 @@ import (
 )
 
 func TestOptions(t *testing.T) {
+	weirdFlags := flagutil.NewStrings(defaultEndpoint)
+	weirdFlags.Set("weird://url") // no error possible
 	cases := []struct {
 		name     string
 		args     []string
@@ -57,7 +59,7 @@ func TestOptions(t *testing.T) {
 			expected: &options{
 				config:   "foo",
 				token:    "bar",
-				endpoint: flagutil.NewStrings("weird://url"),
+				endpoint: weirdFlags,
 				confirm:  true,
 			},
 		},
@@ -73,7 +75,7 @@ func TestOptions(t *testing.T) {
 		case err != nil && tc.expected != nil:
 			t.Errorf("%s: unexpected error: %v", tc.name, err)
 		case tc.expected != nil && !reflect.DeepEqual(*tc.expected, actual):
-			t.Errorf("%s: actual %v != expected %v", tc.name, actual, tc.expected)
+			t.Errorf("%s: actual %v != expected %v", tc.name, actual, *tc.expected)
 		}
 	}
 
