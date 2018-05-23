@@ -2097,6 +2097,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-large-performance
   days_of_results: 60
   num_columns_recent: 20
+- name: pull-kubernetes-e2e-gce-large-performance-coredns
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-large-performance-coredns
+  days_of_results: 60
+  num_columns_recent: 20
 - name: pull-kubernetes-e2e-gce-device-plugin-gpu
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-device-plugin-gpu
   num_columns_recent: 20
@@ -5803,6 +5807,9 @@ dashboards:
     base_options: 'width=10'
   - name: pull-kubernetes-e2e-gce-large-performance
     test_group_name: pull-kubernetes-e2e-gce-large-performance
+    base_options: 'width=10'
+  - name: pull-kubernetes-e2e-gce-large-performance-coredns
+    test_group_name: pull-kubernetes-e2e-gce-large-performance-coredns
     base_options: 'width=10'
   - name: pull-kubernetes-kubemark-e2e-gce-big
     test_group_name: pull-kubernetes-kubemark-e2e-gce-big
