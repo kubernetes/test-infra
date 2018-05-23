@@ -33,6 +33,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
@@ -50,9 +51,13 @@ var (
 	configPath = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
 	cluster    = flag.String("cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
 
-	githubEndpoint  = flag.String("github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
+	githubEndpoint  = flagutil.NewStrings("https://api.github.com")
 	githubTokenFile = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
 )
+
+func init() {
+	flag.Var(&githubEndpoint, "github-endpoint", "GitHub's API endpoint.")
+}
 
 func main() {
 	flag.Parse()
@@ -71,20 +76,22 @@ func main() {
 	}
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
-	_, err = url.Parse(*githubEndpoint)
-	if err != nil {
-		logrus.WithError(err).Fatalf("Must specify a valid --github-endpoint URL.")
+	for _, ep := range githubEndpoint.Strings() {
+		_, err = url.Parse(ep)
+		if err != nil {
+			logrus.WithError(err).Fatalf("Invalid --endpoint URL %q.", ep)
+		}
 	}
 
 	var ghcSync, ghcStatus *github.Client
 	var kc *kube.Client
 	if *dryRun {
-		ghcSync = github.NewDryRunClient(oauthSecret, *githubEndpoint)
-		ghcStatus = github.NewDryRunClient(oauthSecret, *githubEndpoint)
+		ghcSync = github.NewDryRunClient(oauthSecret, githubEndpoint.Strings()...)
+		ghcStatus = github.NewDryRunClient(oauthSecret, githubEndpoint.Strings()...)
 		kc = kube.NewFakeClient(*deckURL)
 	} else {
-		ghcSync = github.NewClient(oauthSecret, *githubEndpoint)
-		ghcStatus = github.NewClient(oauthSecret, *githubEndpoint)
+		ghcSync = github.NewClient(oauthSecret, githubEndpoint.Strings()...)
+		ghcStatus = github.NewClient(oauthSecret, githubEndpoint.Strings()...)
 		if *cluster == "" {
 			kc, err = kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 			if err != nil {

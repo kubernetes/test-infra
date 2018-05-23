@@ -32,6 +32,7 @@ go_image(
     name = "image",
     base = "@git-base//image",
     binary = ":entrypoint",
+    directory = "/",
     visibility = ["//visibility:public"],
 )
 

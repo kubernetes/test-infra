@@ -19,11 +19,14 @@ We use this with [Prow](./../prow), to set it up we do the following:
  - Install [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) and [bazel](https://bazel.build/) and Point `KUBECONFIG` at your cluster.
    - for k8s.io use `make -C prow get-build-cluster-credentials`
  - Create a dedicated node. We use a GKE node-pool with a single node. Tag this node with label `dedicated=greenhouse` and taint `dedicated=greenhouse:NoSchedule` so your other tasks don't schedule on it.
-   - for k8s.io this is:
+   - for k8s.io (running on GKE) this is:
    ```
-   gcloud beta container node-pools create greenhouse --cluster=prow --project=k8s-prow-builds --zone=us-central1-f --node-taints dedicated=greenhouse:NoSchedule --machine-type=n1-standard-32 --num-nodes=1
-   kubectl label nodes $(kubectl get no | grep greenhouse | cut -d" " -f1) dedicated=greenhouse
-   kubectl taint nodes $(kubectl get no | grep greenhouse | cut -d" " -f1) dedicated=greenhouse:NoSchedule
+   gcloud beta container node-pools create greenhouse --cluster=prow --project=k8s-prow-builds --zone=us-central1-f --node-taints=dedicated=greenhouse:NoSchedule --node-labels=dedicated=greenhouse --machine-type=n1-standard-32 --num-nodes=1
+   ```
+   - if you're not on GKE you'll probably want to pick a node to dedicate and do something like:
+   ```
+   kubectl label nodes $GREENHOUSE_NODE_NAME dedicated=greenhouse
+   kubectl taint nodes $GREENHOUSE_NODE_NAME dedicated=greenhouse:NoSchedule
    ```
  - Create the Kubernetes service so jobs can talk to it conveniently: `kubectl apply -f greenhouse/service.yaml`
  - Create a `StorageClass` / `PersistentVolumeClaim` for fast cache storage, we use `kubectl apply -f greenhouse/gce-fast-storage.yaml` for 3TB of pd-ssd storage

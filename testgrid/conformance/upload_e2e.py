@@ -128,18 +128,26 @@ def testgrid_started_json_contents(start_time):
         'timestamp': started
     })
 
-def testgrid_finished_json_contents(finish_time, passed):
+def testgrid_finished_json_contents(finish_time, passed, metadata):
     """returns the string contents of a testgrid finished.json file
 
     Args:
         finish_time (datetime.datetime)
         passed (bool)
+        metadata (str)
 
     Returns:
         contents (str)
     """
     finished = datetime_to_unix(finish_time)
     result = 'SUCCESS' if passed else 'FAILURE'
+    if metadata:
+        testdata = json.loads(metadata)
+        return json.dumps({
+            'timestamp': finished,
+            'result': result,
+            'metadata': testdata
+        })
     return json.dumps({
         'timestamp': finished,
         'result': result
@@ -199,6 +207,11 @@ def parse_args(cli_args=None):
         required=False,
         action='store_true',
     )
+    parser.add_argument(
+        '--metadata',
+        help='dictionary of additional key-value pairs that can be displayed to the user.',
+        default=str(),
+    )
     return parser.parse_args(args=cli_args)
 
 def main(cli_args):
@@ -218,7 +231,7 @@ def main(cli_args):
 
     # convert parsed results to testgrid json metadata blobs
     started_json = testgrid_started_json_contents(started)
-    finished_json = testgrid_finished_json_contents(finished, passed)
+    finished_json = testgrid_finished_json_contents(finished, passed, args.metadata)
 
     # use timestamp as build ID
     gcs_dir = bucket + '/' + str(datetime_to_unix(started))

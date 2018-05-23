@@ -467,12 +467,6 @@ resources:
   - k8s-gci-boskos-18
   - k8s-gci-boskos-19
   - k8s-gci-boskos-20
-  - kubekins-gce-gci-ci-1-4
-  - kubekins-gce-gci-ci-1-5
-  - kubekins-gce-gci-ci-serial-1-4
-  - kubekins-gce-gci-ci-serial-1-5
-  - kubekins-gce-gci-ci-slow-1-4
-  - kubekins-gce-gci-ci-slow-1-5
   state: dirty
   type: gci-qa-project
 - names:
@@ -480,6 +474,11 @@ resources:
   - k8s-gke-gpu-boskos-03
   - k8s-gke-gpu-boskos-04
   - k8s-gke-gpu-boskos-05
+  - k8s-gke-gpu-boskos-06
+  - k8s-gke-gpu-boskos-07
+  - k8s-gke-gpu-boskos-08
+  - k8s-gke-gpu-boskos-09
+  - k8s-gke-gpu-boskos-10
   - k8s-jkns-e2e-gce-gpus
   - k8s-jkns-e2e-gce-gpus-1-7
   - k8s-jkns-e2e-gce-gpus-beta

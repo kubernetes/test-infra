@@ -34,6 +34,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/cmd/hook",
     deps = [
         "//prow/config:go_default_library",
+        "//prow/flagutil:go_default_library",
         "//prow/git:go_default_library",
         "//prow/github:go_default_library",
         "//prow/hook:go_default_library",

@@ -52,7 +52,7 @@ func getClient(url string) *Client {
 				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 			},
 		},
-		base: url,
+		bases: []string{url},
 	}
 }
 
@@ -68,7 +68,7 @@ func TestRequestRateLimit(t *testing.T) {
 	defer ts.Close()
 	c := getClient(ts.URL)
 	c.time = tc
-	resp, err := c.requestRetry(http.MethodGet, c.base, "", nil)
+	resp, err := c.requestRetry(http.MethodGet, "/", "", nil)
 	if err != nil {
 		t.Errorf("Error from request: %v", err)
 	} else if resp.StatusCode != 200 {
@@ -88,11 +88,42 @@ func TestRetry404(t *testing.T) {
 	defer ts.Close()
 	c := getClient(ts.URL)
 	c.time = tc
-	resp, err := c.requestRetry(http.MethodGet, c.base, "", nil)
+	resp, err := c.requestRetry(http.MethodGet, "/", "", nil)
 	if err != nil {
 		t.Errorf("Error from request: %v", err)
 	} else if resp.StatusCode != 200 {
 		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
+	}
+}
+
+func TestRetryBase(t *testing.T) {
+	defer func(orig time.Duration) { initialDelay = orig }(initialDelay)
+	initialDelay = time.Microsecond
+
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	// One good endpoint:
+	c.bases = []string{c.bases[0]}
+	resp, err := c.requestRetry(http.MethodGet, "/", "", nil)
+	if err != nil {
+		t.Errorf("Error from request: %v", err)
+	} else if resp.StatusCode != 200 {
+		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
+	}
+	// Bad endpoint followed by good endpoint:
+	c.bases = []string{"not-a-valid-base", c.bases[0]}
+	resp, err = c.requestRetry(http.MethodGet, "/", "", nil)
+	if err != nil {
+		t.Errorf("Error from request: %v", err)
+	} else if resp.StatusCode != 200 {
+		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
+	}
+	// One bad endpoint:
+	c.bases = []string{"not-a-valid-base"}
+	resp, err = c.requestRetry(http.MethodGet, "/", "", nil)
+	if err == nil {
+		t.Error("Expected an error from a request to an invalid base, but succeeded!?")
 	}
 }
 
@@ -1203,7 +1234,7 @@ func TestGetBranches(t *testing.T) {
 	})
 	defer ts.Close()
 	c := getClient(ts.URL)
-	branches, err := c.GetBranches("org", "repo")
+	branches, err := c.GetBranches("org", "repo", true)
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	} else if len(branches) != 2 {
@@ -1270,10 +1301,12 @@ func TestUpdateBranchProtection(t *testing.T) {
 				t.Errorf("Could not unmarshal request: %v", err)
 			}
 			switch {
+			case bpr.Restrictions != nil && bpr.Restrictions.Teams == nil:
+				t.Errorf("Teams unset")
 			case len(bpr.RequiredStatusChecks.Contexts) != len(tc.contexts):
 				t.Errorf("Bad contexts: %v", bpr.RequiredStatusChecks.Contexts)
-			case len(bpr.Restrictions.Teams) != len(tc.pushers):
-				t.Errorf("Bad teams: %v", bpr.Restrictions.Teams)
+			case len(*bpr.Restrictions.Teams) != len(tc.pushers):
+				t.Errorf("Bad teams: %v", *bpr.Restrictions.Teams)
 			default:
 				mc := map[string]bool{}
 				for _, k := range tc.contexts {
@@ -1293,7 +1326,7 @@ func TestUpdateBranchProtection(t *testing.T) {
 					mp[k] = true
 				}
 				missing = nil
-				for _, k := range bpr.Restrictions.Teams {
+				for _, k := range *bpr.Restrictions.Teams {
 					if mp[k] != true {
 						missing = append(missing, k)
 					}
@@ -1312,7 +1345,7 @@ func TestUpdateBranchProtection(t *testing.T) {
 				Contexts: tc.contexts,
 			},
 			Restrictions: &Restrictions{
-				Teams: tc.pushers,
+				Teams: &tc.pushers,
 			},
 		})
 		if tc.err && err == nil {

@@ -360,7 +360,10 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 					},
 				},
 			},
-			error: "branch protection is not set",
+			expected: TideContextPolicy{
+				RequiredContexts: []string{},
+				OptionalContexts: []string{},
+			},
 		},
 		{
 			name: "invalid branch protection",

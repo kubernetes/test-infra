@@ -5,6 +5,7 @@ go_image(
     name = "image",
     base = "@alpine-base//image",
     binary = ":initupload",
+    directory = "/",
     visibility = ["//visibility:public"],
 )
 

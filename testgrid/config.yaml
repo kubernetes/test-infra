@@ -309,14 +309,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-flaky
 - name: ci-kubernetes-e2e-gci-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce
-- name: ci-kubernetes-e2e-gce-gci-ci-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-ci-master
-- name: ci-kubernetes-e2e-gce-gci-ci-serial-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-ci-serial-master
-- name: ci-kubernetes-e2e-gce-gci-ci-slow-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-ci-slow-master
-- name: ci-kubernetes-e2e-gce-gci-qa-m64
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m64
 - name: ci-kubernetes-e2e-gce-gci-qa-m65
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m65
 - name: ci-kubernetes-e2e-gce-gci-qa-m66
@@ -325,26 +317,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m67
 - name: ci-kubernetes-e2e-gce-gci-qa-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-master
-- name: ci-kubernetes-e2e-gce-gci-qa-serial-m64
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-serial-m64
-- name: ci-kubernetes-e2e-gce-gci-qa-serial-m65
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-serial-m65
-- name: ci-kubernetes-e2e-gce-gci-qa-serial-m66
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-serial-m66
-- name: ci-kubernetes-e2e-gce-gci-qa-serial-m67
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-serial-m67
-- name: ci-kubernetes-e2e-gce-gci-qa-serial-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-serial-master
-- name: ci-kubernetes-e2e-gce-gci-qa-slow-m64
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-slow-m64
-- name: ci-kubernetes-e2e-gce-gci-qa-slow-m65
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-slow-m65
-- name: ci-kubernetes-e2e-gce-gci-qa-slow-m66
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-slow-m66
-- name: ci-kubernetes-e2e-gce-gci-qa-slow-m67
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-slow-m67
-- name: ci-kubernetes-e2e-gce-gci-qa-slow-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-slow-master
 - name: ci-kubernetes-e2e-gci-gce-scalability
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability
   num_failures_to_alert: 1
@@ -578,8 +550,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-local-e2e-containerized
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
-- name: ci-kubernetes-soak-cos-docker-validation
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-cos-docker-validation
 - name: ci-kubernetes-soak-gce-gci
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-gci
 - name: ci-kubernetes-soak-gke-gci
@@ -1432,13 +1402,6 @@ test_groups:
   gcs_prefix: kubernetes-multiarch-e2e-results/logs/kubeadm-luxas-scaleway-arm64
 - name: periodic-multi-platform-kubeadm-packet-arm64
   gcs_prefix: kubernetes-multiarch-e2e-results/logs/kubeadm-luxas-packet-arm64
-# docker
-- name: ci-kubernetes-e2e-cos-docker-validation
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-docker-validation
-- name: ci-kubernetes-e2e-cos-docker-validation-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-docker-validation-serial
-- name: ci-kubernetes-e2e-cos-docker-validation-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-docker-validation-slow
 # garbage collector tests
 - name: ci-kubernetes-e2e-gci-gce-garbage
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-garbage
@@ -3099,17 +3062,6 @@ dashboards:
   - name: kops-aws-imageubuntu1604
     test_group_name: ci-kubernetes-e2e-kops-aws-imageubuntu1604
 
-- name: google-docker
-  dashboard_tab:
-  - name: e2e-cos
-    test_group_name: ci-kubernetes-e2e-cos-docker-validation
-  - name: e2e-cos-serial
-    test_group_name: ci-kubernetes-e2e-cos-docker-validation-serial
-  - name: e2e-cos-slow
-    test_group_name: ci-kubernetes-e2e-cos-docker-validation-slow
-  - name: soak-cos
-    test_group_name: ci-kubernetes-soak-cos-docker-validation
-
 - name: google-gce
   dashboard_tab:
   - name: gci-gce
@@ -3194,14 +3146,6 @@ dashboards:
 # If you are going to make a change here, kindly cc @kubernetes/goog-image.
 - name: google-gci-dev
   dashboard_tab:
-  - name: ci-master
-    test_group_name: ci-kubernetes-e2e-gce-gci-ci-master
-  - name: ci-serial-master
-    test_group_name: ci-kubernetes-e2e-gce-gci-ci-serial-master
-  - name: ci-slow-master
-    test_group_name: ci-kubernetes-e2e-gce-gci-ci-slow-master
-  - name: qa-m64
-    test_group_name: ci-kubernetes-e2e-gce-gci-qa-m64
   - name: qa-m65
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-m65
   - name: qa-m66
@@ -3210,26 +3154,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-m67
   - name: qa-master
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-master
-  - name: qa-serial-m64
-    test_group_name: ci-kubernetes-e2e-gce-gci-qa-serial-m64
-  - name: qa-serial-m65
-    test_group_name: ci-kubernetes-e2e-gce-gci-qa-serial-m65
-  - name: qa-serial-m66
-    test_group_name: ci-kubernetes-e2e-gce-gci-qa-serial-m66
-  - name: qa-serial-m67
-    test_group_name: ci-kubernetes-e2e-gce-gci-qa-serial-m67
-  - name: qa-serial-master
-    test_group_name: ci-kubernetes-e2e-gce-gci-qa-serial-master
-  - name: qa-slow-m64
-    test_group_name: ci-kubernetes-e2e-gce-gci-qa-slow-m64
-  - name: qa-slow-m65
-    test_group_name: ci-kubernetes-e2e-gce-gci-qa-slow-m65
-  - name: qa-slow-m66
-    test_group_name: ci-kubernetes-e2e-gce-gci-qa-slow-m66
-  - name: qa-slow-m67
-    test_group_name: ci-kubernetes-e2e-gce-gci-qa-slow-m67
-  - name: qa-slow-master
-    test_group_name: ci-kubernetes-e2e-gce-gci-qa-slow-master
   - name: ci-gke-master
     test_group_name: ci-kubernetes-e2e-gke-gci-ci-master
 # END google-gci-dev
@@ -6108,7 +6032,6 @@ dashboard_groups:
 - name: google
   dashboard_names:
   - google-aws
-  - google-docker
   - google-gce
   - google-gci
   - google-gci-dev

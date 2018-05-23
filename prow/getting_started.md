@@ -23,6 +23,15 @@ gcloud container --project "${PROJECT}" clusters create prow \
   --zone "${ZONE}" --machine-type n1-standard-4 --num-nodes 2
 ```
 
+## Create cluster role bindings
+As of 1.8 Kubernetes uses [Role-Based Access Control (“RBAC”)](https://kubernetes.io/docs/admin/authorization/rbac/) 
+to drive authorization decisions, allowing admins to dynamically configure policies. 
+To create cluster resources you need to grant a user admin role in all namespaces for the cluster.
+
+```sh
+kubectl create clusterrolebinding cluster-admin-binding-"${USER}" --clusterrole=cluster-admin --user="${USER}"
+```
+
 ## Create the GitHub secrets
 
 You will need two secrets to talk to GitHub. The `hmac-token` is the token that
@@ -189,6 +198,21 @@ update-config: get-cluster-credentials
 
 Presubmits and postsubmits are triggered by the `trigger` plugin. Be sure to
 enable that plugin by adding it to the list you created in the last section.
+
+By default, services are not granted permission to run these jobs. Run the
+following to grant permission to all services to create and run Prow Jobs (NOTE: This
+command grants a permissive policy to _all_ services in the cluster. We do this
+because the only services running in the prow starter are ones that we have
+written and trust. This is not the recommended policy for most clusters.
+See [RBAC documentation](https://kubernetes.io/docs/admin/authorization/rbac/) for more details):
+
+```
+kubectl create clusterrolebinding permissive-binding \
+  --clusterrole=cluster-admin \
+  --user=admin \
+  --user=kubelet \
+  --group=system:serviceaccounts
+```
 
 Now when you open a PR it will automatically run the presubmit that you added
 to this file. You can see it on your prow dashboard. Once you are happy that it
