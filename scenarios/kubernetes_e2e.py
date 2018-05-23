@@ -262,7 +262,7 @@ class LocalMode(object):
         check_env(env, self.command, *args)
 
 
-def cluster_name(cluster):
+def cluster_name(cluster, tear_down_previous=False):
     """Return or select a cluster name."""
     if cluster:
         return cluster
@@ -275,7 +275,7 @@ def cluster_name(cluster):
     job_type = os.getenv('JOB_TYPE')
     if job_type == 'batch':
         suffix = 'batch-%s' % os.getenv('BUILD_ID', 0)
-    elif job_type == 'presubmit':
+    elif job_type == 'presubmit' and tear_down_previous:
         suffix = '%s' % os.getenv('PULL_NUMBER', 0)
     else:
         suffix = '%s' % os.getenv('BUILD_ID', 0)
@@ -533,7 +533,7 @@ def main(args):
     if args.provider:
         runner_args.append('--provider=%s' % args.provider)
 
-    cluster = cluster_name(args.cluster)
+    cluster = cluster_name(args.cluster, args.tear_down_previous)
     runner_args.append('--cluster=%s' % cluster)
     runner_args.append('--gcp-network=%s' % cluster)
     runner_args.extend(args.kubetest_args)
@@ -635,6 +635,9 @@ def create_parser():
         '--down', default='true', help='If we need to tear down the e2e cluster')
     parser.add_argument(
         '--up', default='true', help='If we need to bring up a e2e cluster')
+    parser.add_argument(
+        '--tear-down-previous', action='store_true',
+        help='If we need to tear down previous e2e cluster')
     parser.add_argument(
         '--use-logexporter',
         action='store_true',
