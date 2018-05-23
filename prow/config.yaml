@@ -189,6 +189,7 @@ tide:
     - kubeflow/example-seldon
     - kubeflow/experimental-beagle
     - kubeflow/experimental-kvc
+    - kubeflow/internal-acls
     - kubeflow/katib
     - kubeflow/kubebench
     - kubeflow/kubeflow
