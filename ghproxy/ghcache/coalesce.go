@@ -22,6 +22,8 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"sync"
+
+	"github.com/sirupsen/logrus"
 )
 
 // requestCoalescer allows concurrent requests for the same URI to share a
@@ -64,7 +66,9 @@ func (r *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) 
 	waiter, ok := r.keys[key]
 	if ok {
 		// Earlier request in flight. Wait for it's response.
-		defer req.Body.Close() // Since we won't pass the request we must close it.
+		if req.Body != nil {
+			defer req.Body.Close() // Since we won't pass the request we must close it.
+		}
 		waiter.L.Lock()
 		r.Unlock()
 		waiter.waiting = true
@@ -81,10 +85,12 @@ func (r *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) 
 		// Earlier request completed.
 
 		if waiter.err != nil {
+			// Don't log the error, it will be logged by requester.
 			return nil, waiter.err
 		}
 		resp, err := http.ReadResponse(bufio.NewReader(bytes.NewBuffer(waiter.resp)), nil)
 		if err != nil {
+			logrus.WithField("cache-key", key).WithError(err).Error("Error loading response.")
 			return nil, err
 		}
 
@@ -117,6 +123,7 @@ func (r *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) 
 	waiter.L.Unlock()
 
 	if err != nil {
+		logrus.WithField("cache-key", key).WithError(err).Error("Error from cache transport layer.")
 		return nil, err
 	}
 	cacheMode = cacheResponseMode(resp.Header)

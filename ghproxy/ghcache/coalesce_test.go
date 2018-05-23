@@ -39,8 +39,6 @@ type testDelegate struct {
 }
 
 func (t *testDelegate) RoundTrip(req *http.Request) (*http.Response, error) {
-	defer req.Body.Close()
-
 	t.hitsLock.Lock()
 	t.hits[req.URL.Path] += 1
 	t.hitsLock.Unlock()
@@ -101,7 +99,7 @@ func runRequest(t *testing.T, rt http.RoundTripper, uri string, immediate bool) 
 		if err != nil {
 			res <- err
 		}
-		req, err := http.NewRequest(http.MethodGet, u.String(), bytes.NewBufferString(""))
+		req, err := http.NewRequest(http.MethodGet, u.String(), nil)
 		if err != nil {
 			res <- err
 		}

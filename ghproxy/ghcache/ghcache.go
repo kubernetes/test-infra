@@ -34,6 +34,7 @@ import (
 	"github.com/gregjones/httpcache/diskcache"
 	"github.com/peterbourgon/diskv"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/sirupsen/logrus"
 )
 
 // Cache response modes describe how ghcache fulfilled a request.
@@ -93,18 +94,21 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 	etag := req.Header.Get("if-none-match")
 	// Don't modify request, just pass to delegate.
 	resp, err := u.delegate.RoundTrip(req)
-	if err == nil {
-		if resp.StatusCode >= 400 {
-			// Don't store errors. They can't be revalidated to save API tokens.
-			resp.Header.Set("Cache-Control", "no-store")
-		} else {
-			resp.Header.Set("Cache-Control", "no-cache")
-		}
-		if etag != "" {
-			resp.Header.Set("X-Conditional-Request", etag)
-		}
+	if err != nil {
+		logrus.WithField("cache-key", req.URL.String()).WithError(err).Error("Error from upstream (GitHub).")
+		return nil, err
 	}
-	return resp, err
+
+	if resp.StatusCode >= 400 {
+		// Don't store errors. They can't be revalidated to save API tokens.
+		resp.Header.Set("Cache-Control", "no-store")
+	} else {
+		resp.Header.Set("Cache-Control", "no-cache")
+	}
+	if etag != "" {
+		resp.Header.Set("X-Conditional-Request", etag)
+	}
+	return resp, nil
 }
 
 // NewDiskCache creates a GitHub cache RoundTripper that is backed by a disk
