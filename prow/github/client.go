@@ -910,35 +910,38 @@ func (c *Client) UpdateBranchProtection(org, repo, branch string, config BranchP
 	return err
 }
 
-// Adds Label label/color to given org/repo
-func (c *Client) AddRepoLabel(org, repo, label, color string) error {
-	c.log("AddRepoLabel", org, repo, label, color)
+// AddRepoLabel adds a defined label given org/repo
+func (c *Client) AddRepoLabel(org, repo, label, description, color string) error {
+	c.log("AddRepoLabel", org, repo, label, description, color)
 	_, err := c.request(&request{
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("/repos/%s/%s/labels", org, repo),
-		requestBody: Label{Name: label, Color: color},
+		accept:      "application/vnd.github.symmetra-preview+json", // allow the description field -- https://developer.github.com/changes/2018-02-22-label-description-search-preview/
+		requestBody: Label{Name: label, Description: description, Color: color},
 		exitCodes:   []int{201},
 	}, nil)
 	return err
 }
 
-// Updates org/repo label to new name and color
-func (c *Client) UpdateRepoLabel(org, repo, label, name, color string) error {
-	c.log("UpdateRepoLabel", org, repo, label, name, color)
+// UpdateRepoLabel updates a org/repo label to new name, description, and color
+func (c *Client) UpdateRepoLabel(org, repo, label, newName, description, color string) error {
+	c.log("UpdateRepoLabel", org, repo, label, newName, color)
 	_, err := c.request(&request{
 		method:      http.MethodPatch,
 		path:        fmt.Sprintf("/repos/%s/%s/labels/%s", org, repo, label),
-		requestBody: Label{Name: name, Color: color},
+		accept:      "application/vnd.github.symmetra-preview+json", // allow the description field -- https://developer.github.com/changes/2018-02-22-label-description-search-preview/
+		requestBody: Label{Name: newName, Description: description, Color: color},
 		exitCodes:   []int{200},
 	}, nil)
 	return err
 }
 
-// Delete label in org/repo
+// DeleteRepoLabel deletes a label in org/repo
 func (c *Client) DeleteRepoLabel(org, repo, label string) error {
 	c.log("DeleteRepoLabel", org, repo, label)
 	_, err := c.request(&request{
 		method:      http.MethodDelete,
+		accept:      "application/vnd.github.symmetra-preview+json", // allow the description field -- https://developer.github.com/changes/2018-02-22-label-description-search-preview/
 		path:        fmt.Sprintf("/repos/%s/%s/labels/%s", org, repo, label),
 		requestBody: Label{Name: label},
 		exitCodes:   []int{204},
