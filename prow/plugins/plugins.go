@@ -175,6 +175,7 @@ type Configuration struct {
 	Label         *Label               `json:"label,omitempty"`
 	Lgtm          []Lgtm               `json:"lgtm,omitempty"`
 	Welcome       Welcome              `json:"welcome,omitempty"`
+	MergeBlocker  MergeBlocker         `json:"merge-blocker,omitempty"`
 }
 
 // ExternalPlugin holds configuration for registering an external
@@ -189,6 +190,15 @@ type ExternalPlugin struct {
 	// server to the external plugin. If no events are specified,
 	// everything is sent.
 	Events []string `json:"events,omitempty"`
+}
+
+type MergeBlocker struct {
+	// ID of the github team allowed to use the `/merge-blocker` command.
+	// You can curl the following endpoint in order to determine the ID of your
+	// team:
+	// curl -H "Authorization: token <token>" https://api.github.com/orgs/<org-name>/teams
+	TeamID   int    `json:"team-id,omitempty"`
+	TeamName string `json:"team-name,omitempty"`
 }
 
 type Blunderbuss struct {
