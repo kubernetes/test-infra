@@ -2330,7 +2330,34 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
-
+  - name: pull-kubernetes-e2e-gce-large-performance-coredns
+    agent: kubernetes
+    context: pull-kubernetes-e2e-gce-large-performance-coredns
+    rerun_command: "/test pull-kubernetes-e2e-gce-large-performance-coredns"
+    trigger: "(?m)^/test pull-kubernetes-e2e-gce-large-performance-coredns,?(\\s+|$)"
+    always_run: false
+    max_concurrency: 1
+    branches:
+    - master
+    labels:
+      preset-service-account: true
+      preset-k8s-ssh: true
+      preset-bazel-scratch-dir: true
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=570
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
+        resources:
+          requests:
+            memory: "6Gi"
   - name: pull-kubernetes-e2e-gke
     agent: kubernetes
     context: pull-kubernetes-e2e-gke
@@ -5018,6 +5045,48 @@ presubmits:
           defaultMode: 256
           secretName: ssh-security
     trigger: (?m)^/test pull-security-kubernetes-e2e-gce-large-performance,?(\s+|$)
+  - agent: kubernetes
+    always_run: false
+    branches:
+    - master
+    cluster: security
+    context: pull-security-kubernetes-e2e-gce-large-performance-coredns
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    max_concurrency: 1
+    name: pull-security-kubernetes-e2e-gce-large-performance-coredns
+    rerun_command: /test pull-security-kubernetes-e2e-gce-large-performance-coredns
+    run_if_changed: ""
+    skip_report: false
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --root=/go/src
+        - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-security-prow/pr-logs
+        - --timeout=570
+        - --
+        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-large-performance-coredns
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
+        name: ""
+        resources:
+          requests:
+            memory: 6Gi
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test pull-security-kubernetes-e2e-gce-large-performance-coredns,?(\s+|$)
   - agent: kubernetes
     always_run: false
     cluster: security
