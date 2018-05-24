@@ -22,7 +22,7 @@ docker_push(
 
 go_image(
     name = "image",
-    base = "@distroless-base//image",
+    base = "@alpine-base//image",
     embed = [":go_default_library"],
     pure = "on",
 )
