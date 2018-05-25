@@ -350,6 +350,180 @@ func TestProwJobToPod(t *testing.T) {
 				},
 			},
 		},
+		{
+			podName: "pod",
+			buildID: "blabla",
+			labels:  map[string]string{"needstobe": "inherited"},
+			pjSpec: kube.ProwJobSpec{
+				Type: kube.PeriodicJob,
+				Job:  "job-name",
+				DecorationConfig: &kube.DecorationConfig{
+					Timeout:     120 * time.Minute,
+					GracePeriod: 10 * time.Second,
+					UtilityImages: &kube.UtilityImages{
+						CloneRefs:  "clonerefs:tag",
+						InitUpload: "initupload:tag",
+						Entrypoint: "entrypoint:tag",
+						Sidecar:    "sidecar:tag",
+					},
+					GCSConfiguration: &kube.GCSConfiguration{
+						Bucket:       "my-bucket",
+						PathStrategy: "legacy",
+						DefaultOrg:   "kubernetes",
+						DefaultRepo:  "kubernetes",
+					},
+					GCSCredentialsSecret: "secret-name",
+					SshKeySecrets:        []string{"ssh-1", "ssh-2"},
+				},
+				Agent: kube.KubernetesAgent,
+				PodSpec: &v1.PodSpec{
+					Containers: []v1.Container{
+						{
+							Image:   "tester",
+							Command: []string{"/bin/thing"},
+							Args:    []string{"some", "args"},
+							Env: []v1.EnvVar{
+								{Name: "MY_ENV", Value: "rocks"},
+							},
+						},
+					},
+				},
+			},
+			expected: &v1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "pod",
+					Labels: map[string]string{
+						kube.CreatedByProw:    "true",
+						kube.ProwJobTypeLabel: "periodic",
+						kube.ProwJobIDLabel:   "pod",
+						"needstobe":           "inherited",
+					},
+					Annotations: map[string]string{
+						kube.ProwJobAnnotation: "job-name",
+					},
+				},
+				Spec: v1.PodSpec{
+					RestartPolicy: "Never",
+					InitContainers: []v1.Container{
+						{
+							Name:    "initupload",
+							Image:   "initupload:tag",
+							Command: []string{"/initupload"},
+							Env: []v1.EnvVar{
+								{Name: "INITUPLOAD_OPTIONS", Value: `{"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false}`},
+								{Name: "JOB_SPEC", Value: `{"type":"periodic","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{}}`},
+							},
+							VolumeMounts: []kube.VolumeMount{
+								{
+									Name:      "logs",
+									MountPath: "/logs",
+								},
+								{
+									Name:      "gcs-credentials",
+									MountPath: "/secrets/gcs",
+								},
+							},
+						},
+						{
+							Name:    "place-tools",
+							Image:   "entrypoint:tag",
+							Command: []string{"/bin/cp"},
+							Args: []string{
+								"/entrypoint",
+								"/tools/entrypoint",
+							},
+							VolumeMounts: []kube.VolumeMount{
+								{
+									Name:      "tools",
+									MountPath: "/tools",
+								},
+							},
+						},
+					},
+					Containers: []v1.Container{
+						{
+							Name:    "test",
+							Image:   "tester",
+							Command: []string{"/tools/entrypoint"},
+							Args:    []string{},
+							Env: []v1.EnvVar{
+								{Name: "MY_ENV", Value: "rocks"},
+								{Name: "ARTIFACTS", Value: "/logs/artifacts"},
+								{Name: "BUILD_ID", Value: "blabla"},
+								{Name: "BUILD_NUMBER", Value: "blabla"},
+								{Name: "ENTRYPOINT_OPTIONS", Value: `{"args":["/bin/thing","some","args"],"timeout":7200000000000,"grace_period":10000000000,"artifact_dir":"/logs/artifacts","process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt"}`},
+								{Name: "GOPATH", Value: "/home/prow/go"},
+								{Name: "JOB_NAME", Value: "job-name"},
+								{Name: "JOB_SPEC", Value: `{"type":"periodic","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{}}`},
+								{Name: "JOB_TYPE", Value: "periodic"},
+								{Name: "PROW_JOB_ID", Value: "pod"},
+							},
+							VolumeMounts: []v1.VolumeMount{
+								{
+									Name:      "logs",
+									MountPath: "/logs",
+								},
+								{
+									Name:      "code",
+									MountPath: "/home/prow/go",
+								},
+								{
+									Name:      "tools",
+									MountPath: "/tools",
+								},
+							},
+						},
+						{
+							Name:    "sidecar",
+							Image:   "sidecar:tag",
+							Command: []string{"/sidecar"},
+							Env: []v1.EnvVar{
+								{Name: "JOB_SPEC", Value: `{"type":"periodic","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{}}`},
+								{Name: "SIDECAR_OPTIONS", Value: `{"gcs_options":{"items":["/logs/artifacts"],"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false},"wrapper_options":{"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt"}}`},
+							},
+							VolumeMounts: []v1.VolumeMount{
+								{
+									Name:      "logs",
+									MountPath: "/logs",
+								},
+								{
+									Name:      "gcs-credentials",
+									MountPath: "/secrets/gcs",
+								},
+							},
+						},
+					},
+					Volumes: []v1.Volume{
+						{
+							Name: "logs",
+							VolumeSource: v1.VolumeSource{
+								EmptyDir: &v1.EmptyDirVolumeSource{},
+							},
+						},
+						{
+							Name: "code",
+							VolumeSource: v1.VolumeSource{
+								EmptyDir: &v1.EmptyDirVolumeSource{},
+							},
+						},
+						{
+							Name: "tools",
+							VolumeSource: v1.VolumeSource{
+								EmptyDir: &v1.EmptyDirVolumeSource{},
+							},
+						},
+						{
+							Name: "gcs-credentials",
+							VolumeSource: v1.VolumeSource{
+								Secret: &v1.SecretVolumeSource{
+									SecretName: "secret-name",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for i, test := range tests {
