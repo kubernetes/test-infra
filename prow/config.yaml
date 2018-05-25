@@ -208,6 +208,7 @@ tide:
     - needs-ok-to-test
     - needs-rebase
   - repos:
+    - kubernetes/client-go
     - kubernetes/cloud-provider-aws
     - kubernetes/cloud-provider-azure
     - kubernetes/cloud-provider-gcp
