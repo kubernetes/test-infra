@@ -549,8 +549,9 @@ func dumpFederationLogs(location string) error {
 }
 
 func perfTest() error {
-	// Run perf tests
-	cmdline := util.K8s("perf-tests", "clusterloader", "run-e2e.sh")
+	// Run Perf-tests -ClusterLoader, DNS and Network Test
+	// PR- https://github.com/kubernetes/perf-tests/pull/101
+	cmdline := util.K8s("perf-tests","run-e2e.sh")
 	if err := control.FinishRunning(exec.Command(cmdline)); err != nil {
 		return err
 	}
