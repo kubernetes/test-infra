@@ -84,6 +84,7 @@ type state struct {
 
 func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleGenericCommentEvent, helpProvider)
+	plugins.RegisterReviewEventHandler(pluginName, handleReviewEvent, helpProvider)
 	plugins.RegisterPullRequestHandler(pluginName, handlePullRequestEvent, helpProvider)
 }
 
@@ -108,7 +109,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", repo)
 		}
 		opts := optionsForRepo(config, parts[0], parts[1])
-		approveConfig[repo] = fmt.Sprintf("Pull requests %s require an associated issue.<br>Pull request authors %s implicitly approve their own PRs.<br>The /lgtm [cancel] command(s) %s act as approval.", doNot(opts.IssueRequired), doNot(opts.ImplicitSelfApprove), willNot(opts.LgtmActsAsApprove))
+		approveConfig[repo] = fmt.Sprintf("Pull requests %s require an associated issue.<br>Pull request authors %s implicitly approve their own PRs.<br>The /lgtm [cancel] command(s) %s act as approval.<br>A GitHub approved or changes requested review %s act as approval or cancel respectively.", doNot(opts.IssueRequired), doNot(opts.ImplicitSelfApprove), willNot(opts.LgtmActsAsApprove), willNot(opts.ReviewActsAsApprove))
 	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: `The approve plugin implements a pull request approval process that manages the '` + approvedLabel + `' label and an approval notification comment. Approval is achieved when the set of users that have approved the PR is capable of approving every file changed by the PR. A user is able to approve a file if their username or an alias they belong to is listed in the 'approvers' section of an OWNERS file in the directory of the file or higher in the directory tree.
@@ -169,6 +170,63 @@ func handleGenericComment(log *logrus.Entry, ghc githubClient, repo approvers.Re
 			htmlURL:   ce.IssueHTMLURL,
 		},
 	)
+}
+
+// handleReviewEvent should only handle reviews that have no approval command.
+// Reviews with approval commands will be handled by handleGenericCommentEvent.
+func handleReviewEvent(pc plugins.PluginClient, re github.ReviewEvent) error {
+	botName, err := pc.GitHubClient.BotName()
+	if err != nil {
+		return err
+	}
+
+	opts := optionsForRepo(pc.PluginConfig, re.Repo.Owner.Login, re.Repo.Name)
+
+	// Check for an approval command is in the body. If one exists, let the
+	// genericCommentEventHandler handle this event. Approval commands override
+	// review state.
+	if approvalCommandMatcher(botName, opts.LgtmActsAsApprove, opts.ReviewActsAsApprove)(&comment{Body: re.Review.Body, Author: re.Review.User.Login}) {
+		return nil
+	}
+
+	// Check for an approval command via review state. If none exists, don't
+	// handle this event.
+	if !approvalCommandMatcher(botName, opts.LgtmActsAsApprove, opts.ReviewActsAsApprove)(&comment{Author: re.Review.User.Login, ReviewState: re.Review.State}) {
+		pc.Logger.Errorf("found incorrect state: %#v", re.Review)
+		return nil
+	}
+
+	// This is a valid review state command. Get the pull request and handle it.
+	pr, err := pc.GitHubClient.GetPullRequest(re.Repo.Owner.Login, re.Repo.Name, re.PullRequest.Number)
+	if err != nil {
+		pc.Logger.Error(err)
+		return err
+	}
+
+	ro, err := pc.OwnersClient.LoadRepoOwners(re.Repo.Owner.Login, re.Repo.Name, pr.Base.Ref)
+	if err != nil {
+		return err
+	}
+	return handleReview(pc.Logger, pc.GitHubClient, ro, pc.PluginConfig, &re)
+}
+
+func handleReview(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, config *plugins.Configuration, re *github.ReviewEvent) error {
+	return handle(
+		log,
+		ghc,
+		repo,
+		optionsForRepo(config, re.Repo.Owner.Login, re.Repo.Name),
+		&state{
+			org:       re.Repo.Owner.Login,
+			repo:      re.Repo.Name,
+			number:    re.PullRequest.Number,
+			body:      re.Review.Body,
+			author:    re.Review.User.Login,
+			assignees: re.PullRequest.Assignees,
+			htmlURL:   re.PullRequest.HTMLURL,
+		},
+	)
+
 }
 
 func handlePullRequestEvent(pc plugins.PluginClient, pre github.PullRequestEvent) error {
@@ -384,7 +442,8 @@ func approvalCommandMatcher(botName string, lgtmActsAsApprove bool, reviewActsAs
 		// consider reviews in either approved OR requested changes states as
 		// approval commands. Reviews in requested changes states will be
 		// interpreted as cancelled approvals.
-		if reviewActsAsApprove && (c.ReviewState == approvedReviewState || c.ReviewState == changesRequestedReviewState) {
+		state := strings.ToUpper(c.ReviewState)
+		if reviewActsAsApprove && (state == approvedReviewState || state == changesRequestedReviewState) {
 			return true
 		}
 		for _, match := range commandRegex.FindAllStringSubmatch(c.Body, -1) {
