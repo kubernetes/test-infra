@@ -7847,6 +7847,26 @@ periodics:
       - name: GOPATH
         value: /go
 
+- name: ci-containerd-node-e2e-features
+  interval: 1h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes
+      - --repo=github.com/containerd/cri=master
+      - --timeout=90
+      - --
+      - "--node-args=--image-config-file=test/containerd/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri"
+      env:
+      - name: GOPATH
+        value: /go
+
 - interval: 12h
   agent: kubernetes
   name: ci-containerd-soak-gci-gce
@@ -8148,6 +8168,26 @@ periodics:
         value: /go
 
 
+- name: ci-cri-containerd-node-e2e-features
+  interval: 1h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes
+      - --repo=github.com/containerd/cri=master
+      - --timeout=90
+      - --
+      - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri"
+      env:
+      - name: GOPATH
+        value: /go
+
 - name: ci-cri-containerd-node-e2e-flaky
   interval: 2h
   agent: kubernetes
@@ -8222,6 +8262,22 @@ periodics:
       - name: GOPATH
         value: /go
 
+- name: ci-docker-node-legacy
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --timeout=200
+      - --root=/go/src
+      env:
+      - name: GOPATH
+        value: /go
 
 - interval: 1h
   name: ci-federation-build
@@ -16259,6 +16315,23 @@ periodics:
       - name: GOPATH
         value: /go
 
+- name: ci-kubernetes-node-kubelet-beta-features
+  interval: 1h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
+      args:
+      - --repo=k8s.io/kubernetes=release-1.11
+      - --timeout=90
+      - --root=/go/src
+      env:
+      - name: GOPATH
+        value: /go
+
 - name: ci-kubernetes-node-kubelet-conformance
   interval: 2h
   agent: kubernetes
@@ -16276,8 +16349,42 @@ periodics:
       - name: GOPATH
         value: /go
 
+- name: ci-kubernetes-node-kubelet-features
+  interval: 1h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --timeout=90
+      - --root=/go/src
+      env:
+      - name: GOPATH
+        value: /go
+
 - name: ci-kubernetes-node-kubelet-flaky
   interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --timeout=90
+      - --root=/go/src
+      env:
+      - name: GOPATH
+        value: /go
+
+- name: ci-kubernetes-node-kubelet-orphans
+  interval: 12h
   agent: kubernetes
   labels:
     preset-service-account: true
