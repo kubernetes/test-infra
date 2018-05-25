@@ -16394,7 +16394,7 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
       args:
       - --repo=k8s.io/kubernetes=master
-      - --timeout=90
+      - --timeout=400
       - --root=/go/src
       env:
       - name: GOPATH

@@ -11578,7 +11578,7 @@
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=1 --skip=\"\\[Flaky\\]|\\[NodeConformance\\]|\\[NodeFeature:.+\\]|\\[NodeSpecialFeature:.+\\]|\\[NodeAlphaFeature:.+\\]|\\[Legacy:.+\\]\"",
-      "--timeout=65m"
+      "--timeout=300m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
