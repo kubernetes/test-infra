@@ -12818,7 +12818,7 @@
       "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
       "--node-tests=true",
       "--provider=gce",
-      "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Slow\\]|\\[Serial\\]\" --flakeAttempts=2",
+      "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Slow\\]|\\[Serial\\]|\\[Feature:.+\\]\" --flakeAttempts=2",
       "--timeout=65m"
     ],
     "scenario": "kubernetes_e2e",
