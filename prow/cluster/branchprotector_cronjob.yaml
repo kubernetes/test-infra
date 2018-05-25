@@ -19,6 +19,8 @@ spec:
             - --config-path=/etc/config/config
             - --github-token-path=/etc/github/oauth
             - --confirm
+            - --github-endpoint=http://ghproxy
+            - --github-endpoint=https://api.github.com
             volumeMounts:
             - name: oauth
               mountPath: /etc/github
