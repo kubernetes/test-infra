@@ -175,6 +175,9 @@ plugins:
   - blunderbuss
   - trigger
 
+  kubernetes/client-go:
+  - approve
+
   kubernetes/cloud-provider-aws:
   - approve
   - blunderbuss
