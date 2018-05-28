@@ -1449,8 +1449,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-selfhosting
 - name: ci-kubernetes-e2e-kubeadm-gce-ipvs
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-ipvs
-- name: ci-kubernetes-e2e-kubeadm-gce-cni-calico
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-cni-calico
 - name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-cni-flannel
 - name: ci-kubernetes-e2e-kubeadm-gce-dns-coredns
@@ -4606,8 +4604,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce
   - name: kubeadm-gce-selfhosting
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-selfhosting
-  - name: kubeadm-gce-cni-calico
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-cni-calico
   - name: kubeadm-gce-cni-flannel
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
   - name: kubeadm-gce-dns-coredns
@@ -4846,10 +4842,6 @@ dashboards:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: kubeadm-gce-ipvs
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-ipvs
-    alert_options:
-      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: kubeadm-gce-cni-calico
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-cni-calico
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: kubeadm-gce-cni-flannel

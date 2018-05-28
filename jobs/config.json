@@ -9912,25 +9912,6 @@
       "sig-cluster-lifecycle"
     ]
   },
-  "ci-kubernetes-e2e-kubeadm-gce-cni-calico": {
-    "args": [
-      "--cluster=",
-      "--deployment=kubernetes-anywhere",
-      "--extract=ci/latest-bazel",
-      "--gcp-zone=us-central1-f",
-      "--kubeadm=ci",
-      "--kubernetes-anywhere-cni=calico",
-      "--kubernetes-anywhere-kubelet-ci-version=latest-bazel",
-      "--kubernetes-anywhere-kubernetes-version=ci-cross/latest",
-      "--provider=kubernetes-anywhere",
-      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\]",
-      "--timeout=300m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
   "ci-kubernetes-e2e-kubeadm-gce-cni-flannel": {
     "args": [
       "--cluster=",
