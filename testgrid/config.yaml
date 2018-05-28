@@ -1461,12 +1461,16 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-9
 - name: ci-kubernetes-e2e-kubeadm-gce-1-10
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-10
+- name: ci-kubernetes-e2e-kubeadm-gce-1-11
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-11
 - name: ci-kubernetes-e2e-kubeadm-gce-1-8-on-1-9
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-8-on-1-9
 - name: ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
 - name: periodic-kubernetes-e2e-packages-pushed
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-packages-pushed
+- name: ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
 # upgrade CI tests
 - name: ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
@@ -1476,6 +1480,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9
 - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
+- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11
 # charts tests
 - name: ci-kubernetes-charts-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-charts-gce
@@ -3706,6 +3712,12 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet-beta-features
   - name: gce-scalability-1.11
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-beta
+  - name: gce-kubeadm-1.10-on-1.11
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
+  - name: ci-gce-kubeadm-1.11
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-11
+  - name: gce-kubeadm-upgrade-1.10-1.11
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11
   # TODO(bentheelder) (1.11 test-infra lead) create those jobs
   #- name: bazel-build-1.11
   #  test_group_name: ci-kubernetes-bazel-build-1-11
@@ -3715,12 +3727,6 @@ dashboards:
   #  test_group_name: periodic-kubernetes-bazel-build-1-11
   #- name: periodic-bazel-test-1.11
   #  test_group_name: periodic-kubernetes-bazel-test-1-11
-  #- name: gce-kubeadm-1.10-on-1.11
-  #  test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
-  #- name: ci-gce-kubeadm-1.11
-  #  test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-11
-  #- name: gce-kubeadm-upgrade-1.10-1.11
-  #  test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11
 
 - name: sig-release-1.11-blocking
   dashboard_tab:
@@ -4676,6 +4682,12 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-10
   - name: periodic-kubernetes-e2e-packages-pushed
     test_group_name: periodic-kubernetes-e2e-packages-pushed
+  - name: gce-kubeadm-1.10-on-1.11
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
+  - name: ci-gce-kubeadm-1.11
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-11
+  - name: gce-kubeadm-upgrade-1.10-1.11
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11
   - name: kubeadm-gce-stable-on-master
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
   - name: kubeadm-gce-upgrade-stable-master
