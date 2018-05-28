@@ -143,7 +143,9 @@ func writeTemplate(templatePath string, outputPath string, data interface{}) err
 	return nil
 }
 
-// Ensures that no two label names (including previous names) have the same lowercase value.
+// validate runs checks to ensure the label inputs are valid
+// It ensures that no two label names (including previous names) have the same
+// lowercase value, and that the description is not over 100 characters.
 func validate(labels []Label, parent string, seen map[string]string) error {
 	for _, l := range labels {
 		name := strings.ToLower(l.Name)
@@ -154,6 +156,9 @@ func validate(labels []Label, parent string, seen map[string]string) error {
 		seen[name] = path
 		if err := validate(l.Previously, path, seen); err != nil {
 			return err
+		}
+		if len(l.Description) > 99 { // github limits the description field to 100 chars
+			return fmt.Errorf("description for %s is too long", name)
 		}
 	}
 	return nil
