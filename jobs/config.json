@@ -82,6 +82,16 @@
       "sig-node"
     ]
   },
+  "ci-containerd-build-1-1": {
+    "args": [
+      "--env=DEPLOY_DIR=containerd/release-1.1",
+      "/go/src/github.com/containerd/cri/test/containerd/build.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
   "ci-containerd-e2e-gci-gce": {
     "args": [
       "--check-leaked-resources",
@@ -96,6 +106,27 @@
       "--ginkgo-parallel=30",
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]",
+      "--timeout=50m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
+  "ci-containerd-e2e-gci-gce-1-1": {
+    "args": [
+      "--check-leaked-resources",
+      "--env=KUBE_MASTER_EXTRA_METADATA=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.1/env",
+      "--env=KUBE_NODE_EXTRA_METADATA=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.1/env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce.env",
+      "--env-file=jobs/env/ci-cri-containerd-e2e-gce.env",
+      "--extract=ci/latest-1.10",
+      "--gcp-node-image=gci",
+      "--gcp-nodes=4",
+      "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel=30",
+      "--provider=gce",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--timeout=50m"
     ],
     "scenario": "kubernetes_e2e",
