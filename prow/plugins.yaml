@@ -44,6 +44,7 @@ approve:
   - kubernetes/ingress-nginx
   - kubernetes/kops
   - kubernetes/kube-deploy
+  - kubernetes/kubeadm
   - kubernetes/kubectl
   - kubernetes/kubernetes
   - kubernetes/kubernetes-template-project
@@ -253,6 +254,9 @@ plugins:
   - approve
   - blunderbuss
   - trigger
+
+  kubernetes/kubeadm:
+  - approve
 
   kubernetes/kubectl:
   - approve
