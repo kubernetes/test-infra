@@ -2843,6 +2843,22 @@
       "sig-gcp"
     ]
   },
+  "ci-kubernetes-e2e-gce-gci-qa-m68": {
+    "args": [
+      "--check-leaked-resources",
+      "--extract=gci/gci-68",
+      "--gcp-project-type=gci-qa-project",
+      "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel=25",
+      "--provider=gce",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]",
+      "--timeout=50m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-gcp"
+    ]
+  },
   "ci-kubernetes-e2e-gce-gci-qa-master": {
     "args": [
       "--check-leaked-resources",

@@ -10262,6 +10262,19 @@ periodics:
 
 - interval: 30m
   agent: kubernetes
+  name: ci-kubernetes-e2e-gce-gci-qa-m68
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
+
+- interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-master
   labels:
     preset-service-account: true
