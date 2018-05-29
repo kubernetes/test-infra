@@ -225,9 +225,11 @@ tide:
     - kubernetes/heapster
     - kubernetes/ingress-nginx
     - kubernetes/kops
-    - kubernetes/kubernetes-template-project
-    - kubernetes/kube-state-metrics
     - kubernetes/kube-deploy
+    - kubernetes/kube-openapi
+    - kubernetes/kube-state-metrics
+    - kubernetes/kubeadm
+    - kubernetes/kubernetes-template-project
     - kubernetes/minikube
     - kubernetes/node-problem-detector
     - kubernetes/perf-tests
@@ -260,7 +262,6 @@ tide:
     - do-not-merge/work-in-progress
     reviewApprovedRequired: true
   - repos:
-    - kubernetes/kube-openapi
     - kubernetes-sigs/federation-v2
     - kubernetes-sigs/testing_frameworks
     - kubernetes-sigs/poseidon
