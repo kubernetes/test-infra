@@ -345,6 +345,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m66
 - name: ci-kubernetes-e2e-gce-gci-qa-m67
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m67
+- name: ci-kubernetes-e2e-gce-gci-qa-m68
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m68
 - name: ci-kubernetes-e2e-gce-gci-qa-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-master
 - name: ci-kubernetes-e2e-gci-gce-scalability
@@ -3202,6 +3204,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-m66
   - name: qa-m67
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-m67
+  - name: qa-m68
+    test_group_name: ci-kubernetes-e2e-gce-gci-qa-m68
   - name: qa-master
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-master
   - name: ci-gke-master
