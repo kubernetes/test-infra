@@ -2618,6 +2618,11 @@ test_groups:
   num_columns_recent: 3
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
+- name: ci-kubernetes-gce-conformance-latest-1-11
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-latest-1-11
+  num_columns_recent: 3
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1
 - name: ci-kubernetes-gce-conformance-latest-1-10
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-latest-1-10
   num_columns_recent: 3
@@ -2685,6 +2690,12 @@ dashboards:
     # TODO(bentheelder): there's probably a more appropriate alias to alert this to
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-engprod+alerts@google.com'
+  - name: "GCE, v1.11 (dev)"
+    description: Runs conformance tests using kubetest against kubernetes release 1.11 branch on GCE
+    test_group_name: ci-kubernetes-gce-conformance-latest-1-11
+    # TODO(bentheelder): there's probably a more appropriate alias to alert this to
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-engprod+alerts@google.com'
   - name: "GCE, v1.10 (dev)"
     description: Runs conformance tests using kubetest against kubernetes release 1.10 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-10
@@ -2736,6 +2747,12 @@ dashboards:
   - name: "GCE, master (dev)"
     description: Runs conformance tests using kubetest against latest kubernetes master CI build on GCE
     test_group_name: ci-kubernetes-gce-conformance
+  - name: "GCE, v1.11 (dev)"
+    description: Runs conformance tests using kubetest against kubernetes release 1.11 branch on GCE
+    test_group_name: ci-kubernetes-gce-conformance-latest-1-11
+    # TODO(bentheelder): there's probably a more appropriate alias to alert this to
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-engprod+alerts@google.com'
   - name: "GCE, v1.10 (release)"
     description: Runs conformance tests using kubetest against kubernetes release 1.10 stable tag on GCE
     test_group_name: ci-kubernetes-gce-conformance-stable-1-10
@@ -3541,6 +3558,9 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gke
   - name: aws
     test_group_name: ci-kubernetes-e2e-kops-aws
+  - name: "Conformance - GCE"
+    description: Runs conformance tests using kubetest against latest kubernetes master CI build on GCE
+    test_group_name: ci-kubernetes-gce-conformance
   - name: gce-device-plugin-gpu
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
   - name: gke-device-plugin-gpu
@@ -3586,6 +3606,9 @@ dashboards:
     test_group_name: ci-kubernetes-verify-beta
   - name: integration-1.11
     test_group_name: ci-kubernetes-integration-beta
+  - name: "Conformance - GCE"
+    description: Runs conformance tests using kubetest against latest kubernetes master CI build on GCE
+    test_group_name: ci-kubernetes-gce-conformance
   - name: gce-1.11
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
   - name: gce-reboot-1.11
@@ -3684,6 +3707,9 @@ dashboards:
     test_group_name: ci-kubernetes-verify-beta
   - name: integration-1.11
     test_group_name: ci-kubernetes-integration-beta
+  - name: "Conformance - GCE"
+    description: Runs conformance tests using kubetest against kubernetes release 1.11 branch on GCE
+    test_group_name: ci-kubernetes-gce-conformance-latest-1-11
   - name: gce-1.11
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
   - name: gce-reboot-1.11
@@ -3740,6 +3766,9 @@ dashboards:
     test_group_name: ci-kubernetes-verify-stable1
   - name: integration-1.10
     test_group_name: ci-kubernetes-integration-stable1
+  - name: "Conformance - GCE"
+    description: Runs conformance tests using kubetest against kubernetes release 1.10 branch on GCE
+    test_group_name: ci-kubernetes-gce-conformance-latest-1-10
   - name: bazel-build-1.10
     test_group_name: ci-kubernetes-bazel-build-1-10
   - name: bazel-test-1.10
@@ -3837,6 +3866,9 @@ dashboards:
     test_group_name: ci-kubernetes-verify-stable1
   - name: integration-1.10
     test_group_name: ci-kubernetes-integration-stable1
+  - name: "Conformance - GCE"
+    description: Runs conformance tests using kubetest against kubernetes release 1.10 branch on GCE
+    test_group_name: ci-kubernetes-gce-conformance-latest-1-10
   - name: bazel-build-1.10
     test_group_name: ci-kubernetes-bazel-build-1-10
   - name: bazel-test-1.10
@@ -3948,6 +3980,9 @@ dashboards:
     test_group_name: ci-kubernetes-verify-stable2
   - name: integration-1.9
     test_group_name: ci-kubernetes-integration-stable2
+  - name: "Conformance - GCE"
+    description: Runs conformance tests using kubetest against kubernetes release 1.9 branch on GCE
+    test_group_name: ci-kubernetes-gce-conformance-latest-1-9
   - name: bazel-build-1.9
     test_group_name: periodic-kubernetes-bazel-build-1-9
   - name: bazel-test-1.9
@@ -4012,6 +4047,9 @@ dashboards:
     test_group_name: ci-kubernetes-verify-stable2
   - name: integration-1.9
     test_group_name: ci-kubernetes-integration-stable2
+  - name: "Conformance - GCE"
+    description: Runs conformance tests using kubetest against kubernetes release 1.9 branch on GCE
+    test_group_name: ci-kubernetes-gce-conformance-latest-1-9
   - name: gce-kubeadm-1.7-on-1.9
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8-on-1-9
   - name: ci-gce-kubeadm-1.9
@@ -4057,6 +4095,9 @@ dashboards:
     test_group_name: ci-kubernetes-verify-stable3
   - name: integration-1.8
     test_group_name: ci-kubernetes-integration-stable3
+  - name: "Conformance - GCE"
+    description: Runs conformance tests using kubetest against kubernetes release 1.8 branch on GCE
+    test_group_name: ci-kubernetes-gce-conformance-latest-1-8
   - name: federation-build-1.8
     test_group_name: ci-kubernetes-federation-build-1-8
   - name: kops-aws-release-1.8
@@ -4118,6 +4159,9 @@ dashboards:
     test_group_name: ci-kubernetes-verify-stable3
   - name: integration-1.8
     test_group_name: ci-kubernetes-integration-stable3
+  - name: "Conformance - GCE"
+    description: Runs conformance tests using kubetest against kubernetes release 1.8 branch on GCE
+    test_group_name: ci-kubernetes-gce-conformance-latest-1-8
   - name: ci-gce-kubeadm-1.8
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8
   - name: kubelet-1.8
