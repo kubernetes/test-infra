@@ -3561,6 +3561,9 @@ dashboards:
   - name: "Conformance - GCE"
     description: Runs conformance tests using kubetest against latest kubernetes master CI build on GCE
     test_group_name: ci-kubernetes-gce-conformance
+  - name: "Conformance - OpenStack"
+    description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack
+    test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
   - name: gce-device-plugin-gpu
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
   - name: gke-device-plugin-gpu
@@ -3607,8 +3610,9 @@ dashboards:
   - name: integration-1.11
     test_group_name: ci-kubernetes-integration-beta
   - name: "Conformance - GCE"
-    description: Runs conformance tests using kubetest against latest kubernetes master CI build on GCE
-    test_group_name: ci-kubernetes-gce-conformance
+    description: Runs conformance tests using kubetest against latest kubernetes release 1.11 branch on GCE
+    test_group_name: ci-kubernetes-gce-conformance-latest-1-11
+  # TODO(aishsundar) (Add 1.11 OpenStack Conformance results to release dashboard)
   - name: gce-1.11
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
   - name: gce-reboot-1.11
@@ -3710,6 +3714,7 @@ dashboards:
   - name: "Conformance - GCE"
     description: Runs conformance tests using kubetest against kubernetes release 1.11 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-11
+  # TODO(aishsundar) (Add 1.11 OpenStack Conformance results to release dashboard)
   - name: gce-1.11
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
   - name: gce-reboot-1.11
@@ -3769,6 +3774,9 @@ dashboards:
   - name: "Conformance - GCE"
     description: Runs conformance tests using kubetest against kubernetes release 1.10 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-10
+  - name: "Conformance - OpenStack"
+    description: Runs conformance tests using kubetest against kubernetes v1.10 with cloud-provider-openstack
+    test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.10
   - name: bazel-build-1.10
     test_group_name: ci-kubernetes-bazel-build-1-10
   - name: bazel-test-1.10
@@ -3869,6 +3877,9 @@ dashboards:
   - name: "Conformance - GCE"
     description: Runs conformance tests using kubetest against kubernetes release 1.10 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-10
+  - name: "Conformance - OpenStack"
+    description: Runs conformance tests using kubetest against kubernetes v1.10 with cloud-provider-openstack
+    test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.10
   - name: bazel-build-1.10
     test_group_name: ci-kubernetes-bazel-build-1-10
   - name: bazel-test-1.10
