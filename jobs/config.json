@@ -11040,7 +11040,7 @@
   },
   "ci-kubernetes-gce-conformance-latest-1-10": {
     "args": [
-      "--extract=release/latest-1.10",
+      "--extract=ci/latest-1.10",
       "--gcp-master-image=gci",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -11070,7 +11070,7 @@
   },
   "ci-kubernetes-gce-conformance-latest-1-8": {
     "args": [
-      "--extract=release/latest-1.8",
+      "--extract=ci/latest-1.8",
       "--gcp-master-image=gci",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -11085,7 +11085,7 @@
   },
   "ci-kubernetes-gce-conformance-latest-1-9": {
     "args": [
-      "--extract=release/latest-1.9",
+      "--extract=ci/latest-1.9",
       "--gcp-master-image=gci",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
