@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:v20180521-f8caf9625
+        image: gcr.io/k8s-prow/plank:v20180529-e9431eaa3
         args:
         - --tot-url=http://tot
         - --build-cluster=/etc/cluster/cluster
