@@ -386,6 +386,9 @@ plugins:
 
   kubernetes-sigs/application:
   - approve
+
+  kubernetes-sigs/kubeadm-dind-cluster:
+  - approve
   
   containerd/cri:
   - assign

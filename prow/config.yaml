@@ -263,6 +263,7 @@ tide:
     reviewApprovedRequired: true
   - repos:
     - kubernetes-sigs/federation-v2
+    - kubernetes-sigs/kubeadm-dind-cluster
     - kubernetes-sigs/testing_frameworks
     - kubernetes-sigs/poseidon
     labels:
