@@ -273,8 +273,6 @@ func Load(prowConfig, jobConfig string) (*Config, error) {
 		return nil, err
 	}
 
-	return nil, fmt.Errorf("aaaa")
-
 	// TODO(krzyzacy): temporary allow empty jobconfig
 	//                 also temporary allow job config in prow config
 	if jobConfig == "" {
