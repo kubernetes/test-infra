@@ -2053,6 +2053,9 @@ test_groups:
 - name: tf-minigo-presubmit
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/tf-minigo-presubmit
   num_columns_recent: 30
+- name: pull-tf-minigo-cc
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-tf-minigo-cc
+  num_columns_recent: 30
 - name: tf-minigo-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/tensorflow_minigo/tf-minigo-postsubmit
 - name: spark-periodic-default-gke
@@ -4532,8 +4535,11 @@ dashboards:
     description: Postsubmit tests for Minigo.
     test_group_name: tf-minigo-postsubmit
   - name: tf-minigo-presubmit
-    description: Presumbit tests for Minigo.
+    description: Python presumbit tests for Minigo.
     test_group_name: tf-minigo-presubmit
+  - name: pull-tf-minigo-cc
+    description: C++ presubmit tests for Minigo.
+    test_group_name: pull-tf-minigo-cc
 
 - name: sig-autoscaling-cluster-autoscaler
   dashboard_tab:
