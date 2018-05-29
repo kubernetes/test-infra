@@ -297,10 +297,10 @@ func rename(repo string, previous, wanted Label) Update {
 	return Update{Why: "rename", Current: &previous, Wanted: &wanted, repo: repo}
 }
 
-// Update the label color
-func recolor(repo string, label Label) Update {
-	logrus.WithField("repo", repo).WithField("label", label.Name).WithField("color", label.Color).Info("recolor")
-	return Update{Why: "recolor", Current: &label, Wanted: &label, repo: repo}
+// Update the label color/description
+func change(repo string, label Label) Update {
+	logrus.WithField("repo", repo).WithField("label", label.Name).WithField("color", label.Color).Info("change")
+	return Update{Why: "change", Current: &label, Wanted: &label, repo: repo}
 }
 
 // Migrate labels to another label
@@ -348,7 +348,7 @@ func SyncLabels(config Configuration, repos RepoLabels) (RepoUpdates, error) {
 		// Convert github.Label to Label
 		var labels []Label
 		for _, l := range repoLabels {
-			labels = append(labels, Label{Name: l.Name, Color: l.Color})
+			labels = append(labels, Label{Name: l.Name, Description: l.Description, Color: l.Color})
 		}
 		// Check for any duplicate labels
 		if err := validate(labels, "", make(map[string]string)); err != nil {
@@ -375,7 +375,7 @@ func SyncLabels(config Configuration, repos RepoLabels) (RepoUpdates, error) {
 				continue
 			}
 			// What do we want to migrate it to?
-			desired := Label{Name: l.parent.Name, Color: l.parent.Color}
+			desired := Label{Name: l.parent.Name, Description: l.Description, Color: l.parent.Color}
 			desiredName := strings.ToLower(l.parent.Name)
 			// Does the new label exist?
 			_, found = current[desiredName]
@@ -396,7 +396,9 @@ func SyncLabels(config Configuration, repos RepoLabels) (RepoUpdates, error) {
 			case l.Name != cur.Name:
 				actions = append(actions, rename(repo, cur, l))
 			case l.Color != cur.Color:
-				actions = append(actions, recolor(repo, l))
+				actions = append(actions, change(repo, l))
+			case l.Description != cur.Description:
+				actions = append(actions, change(repo, l))
 			}
 		}
 
@@ -452,12 +454,12 @@ func (ru RepoUpdates) DoUpdates(org string, gc client) error {
 				logrus.WithField("org", org).WithField("repo", repo).WithField("why", update.Why).Debug("running update")
 				switch update.Why {
 				case "missing":
-					err := gc.AddRepoLabel(org, repo, update.Wanted.Name, update.Wanted.Color)
+					err := gc.AddRepoLabel(org, repo, update.Wanted.Name, update.Wanted.Description, update.Wanted.Color)
 					if err != nil {
 						errChan <- err
 					}
-				case "recolor", "rename":
-					err := gc.UpdateRepoLabel(org, repo, update.Current.Name, update.Wanted.Name, update.Wanted.Color)
+				case "change", "rename":
+					err := gc.UpdateRepoLabel(org, repo, update.Current.Name, update.Wanted.Name, update.Wanted.Description, update.Wanted.Color)
 					if err != nil {
 						errChan <- err
 					}
@@ -508,8 +510,8 @@ func (ru RepoUpdates) DoUpdates(org string, gc client) error {
 }
 
 type client interface {
-	AddRepoLabel(org, repo, name, color string) error
-	UpdateRepoLabel(org, repo, currentName, newName, color string) error
+	AddRepoLabel(org, repo, name, description, color string) error
+	UpdateRepoLabel(org, repo, currentName, newName, description, color string) error
 	DeleteRepoLabel(org, repo, label string) error
 	AddLabel(org, repo string, number int, label string) error
 	RemoveLabel(org, repo string, number int, label string) error
