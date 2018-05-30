@@ -207,8 +207,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-e2e-release-1-0
 - name: ci-ingress-gce-e2e-release-1-1
   gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-e2e-release-1-1
-- name: ci-ingress-gce-e2e-mci-dev
-  gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-e2e-mci-dev
 - name: ci-ingress-gce-e2e-scale
   gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-e2e-scale
 - name: ci-ingress-gce-upgrade-e2e
@@ -380,8 +378,6 @@ test_groups:
 - name: ci-kubernetes-e2e-gci-gce-ingress-manual-network
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ingress-manual-network
   alert_stale_results_hours: 24
-- name: ci-kubernetes-e2e-gci-gce-ingress-ipvs
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ingress-ipvs
 - name: ci-kubernetes-e2e-gce-multizone
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-multizone
 - name: ci-kubernetes-e2e-gci-gce-statefulset
@@ -4845,10 +4841,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-ingress
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: gci-gce-ingress-ipvs
-    test_group_name: ci-kubernetes-e2e-gci-gce-ingress-ipvs
-    alert_options:
-      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gce-ingress-manual-network
     test_group_name: ci-kubernetes-e2e-gci-gce-ingress-manual-network
     alert_options:
@@ -5032,10 +5024,6 @@ dashboards:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: ingress-gce-e2e-release-1.1
     test_group_name: ci-ingress-gce-e2e-release-1-1
-    alert_options:
-      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: ingress-gce-e2e-mci-dev
-    test_group_name: ci-ingress-gce-e2e-mci-dev
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: ingress-gce-e2e-scale
