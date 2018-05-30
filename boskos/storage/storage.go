@@ -79,8 +79,8 @@ func (im *inMemoryStore) Update(i common.Item) error {
 }
 
 func (im *inMemoryStore) Get(name string) (common.Item, error) {
-	im.lock.Lock()
-	defer im.lock.Unlock()
+	im.lock.RLock()
+	defer im.lock.RUnlock()
 	i, ok := im.items[name]
 	if !ok {
 		return nil, fmt.Errorf("cannot find item %s", name)
@@ -89,8 +89,8 @@ func (im *inMemoryStore) Get(name string) (common.Item, error) {
 }
 
 func (im *inMemoryStore) List() ([]common.Item, error) {
-	im.lock.Lock()
-	defer im.lock.Unlock()
+	im.lock.RLock()
+	defer im.lock.RUnlock()
 	var items []common.Item
 	for _, i := range im.items {
 		items = append(items, i)
