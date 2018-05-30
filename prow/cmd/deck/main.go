@@ -170,6 +170,7 @@ func prodOnlyMain(o options, mux *http.ServeMux) *http.ServeMux {
 	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(configAgent)))
 	mux.Handle("/branding.js", gziphandler.GzipHandler(handleBranding(configAgent)))
 	mux.Handle("/favicon.ico", gziphandler.GzipHandler(handleFavicon(configAgent)))
+	mux.Handle("/view", gziphandler.GzipHandler(handleJobView(ja)))
 
 	if o.hookURL != "" {
 		mux.Handle("/plugin-help.js",
@@ -404,6 +405,14 @@ func handleBadge(ja *jobs.JobAgent) http.HandlerFunc {
 		allJobs := ja.ProwJobs()
 		_, _, svg := renderBadge(pickLatestJobs(allJobs, wantJobs))
 		w.Write(svg)
+	}
+}
+
+func handleJobView() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// TODO (paulangton): get artifacts from GCS, pass to spyglass
+		// include GCS path if possible in request so page is reproducible after prow deletes it
+		// Separate artifact fetching into its own package
 	}
 }
 
