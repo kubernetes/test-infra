@@ -969,7 +969,7 @@ func (c *Client) getLabels(path string) ([]Label, error) {
 	}
 	err := c.readPaginatedResults(
 		path,
-		"",
+		"application/vnd.github.symmetra-preview+json", // allow the description field -- https://developer.github.com/changes/2018-02-22-label-description-search-preview/
 		func() interface{} {
 			return &[]Label{}
 		},
