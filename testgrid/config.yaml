@@ -2662,12 +2662,20 @@ test_groups:
   gcs_prefix: kubernetes-openstack/pr-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.10
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
+- name: ci-presubmit-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.11
+  gcs_prefix: kubernetes-openstack/pr-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.11
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1
 - name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
   gcs_prefix: kubernetes-openstack/periodic-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
 - name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.10
   gcs_prefix: kubernetes-openstack/periodic-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.10
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1
+- name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.11
+  gcs_prefix: kubernetes-openstack/periodic-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.11
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
 
@@ -2741,6 +2749,9 @@ dashboards:
   - name: "OpenStack, v1.10 (dev)"
     description: Runs conformance tests using kubetest against kubernetes from the release-1.10 branch with cloud-provider-openstack
     test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.10
+  - name: "OpenStack, v1.11 (dev)"
+    description: Runs conformance tests using kubetest against kubernetes from the release-1.11 branch with cloud-provider-openstack
+    test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.11
 
 - name: conformance-gce
   dashboard_tab:
@@ -2814,6 +2825,11 @@ dashboards:
     test_group_name: ci-presubmit-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.10
     alert_options:
       alert_mail_to_addresses: 'davanum+testgrid@gmail.com'
+  - name: presubmit-v1.11
+    description: Runs conformance tests using kubetest against kubernetes v1.11 with cloud-provider-openstack
+    test_group_name: ci-presubmit-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.11
+    alert_options:
+      alert_mail_to_addresses: 'davanum+testgrid@gmail.com'
   - name: periodic-master
     description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack
     test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
@@ -2822,6 +2838,11 @@ dashboards:
   - name: periodic-v1.10
     description: Runs conformance tests using kubetest against kubernetes v1.10 with cloud-provider-openstack
     test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.10
+    alert_options:
+      alert_mail_to_addresses: 'davanum+testgrid@gmail.com'
+  - name: periodic-v1.11
+    description: Runs conformance tests using kubetest against kubernetes v1.11 with cloud-provider-openstack
+    test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.11
     alert_options:
       alert_mail_to_addresses: 'davanum+testgrid@gmail.com'
 
@@ -3612,7 +3633,9 @@ dashboards:
   - name: "Conformance - GCE"
     description: Runs conformance tests using kubetest against latest kubernetes release 1.11 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-11
-  # TODO(aishsundar) (Add 1.11 OpenStack Conformance results to release dashboard)
+  - name: "Conformance - OpenStack"
+    description: Runs conformance tests using kubetest against kubernetes v1.11 with cloud-provider-openstack
+    test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.11
   - name: gce-1.11
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
   - name: gce-reboot-1.11
@@ -3714,7 +3737,9 @@ dashboards:
   - name: "Conformance - GCE"
     description: Runs conformance tests using kubetest against kubernetes release 1.11 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-11
-  # TODO(aishsundar) (Add 1.11 OpenStack Conformance results to release dashboard)
+  - name: "Conformance - OpenStack"
+    description: Runs conformance tests using kubetest against kubernetes v1.11 with cloud-provider-openstack
+    test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.11
   - name: gce-1.11
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
   - name: gce-reboot-1.11
