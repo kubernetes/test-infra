@@ -38,8 +38,9 @@ import (
 // config.json is the worst but contains useful information :-(
 type configJSON map[string]map[string]interface{}
 
-var configPath = flag.String("config", "../config.yaml", "Path to prow job config")
-var configJsonPath = flag.String("config-json", "../../jobs/config.json", "Path to prow job config")
+var configPath = flag.String("config", "../config.yaml", "Path to prow config")
+var jobConfigPath = flag.String("job-config", "", "Path to prow job config")
+var configJSONPath = flag.String("config-json", "../../jobs/config.json", "Path to prow job config")
 
 func (c configJSON) ScenarioForJob(jobName string) string {
 	if scenario, ok := c[jobName]["scenario"]; ok {
@@ -71,15 +72,15 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 
-	conf, err := Load(*configPath)
+	conf, err := Load(*configPath, *jobConfigPath)
 	if err != nil {
 		fmt.Printf("Could not load config: %v", err)
 		os.Exit(1)
 	}
 	c = conf
 
-	if *configJsonPath != "" {
-		cj, err = readConfigJSON(*configJsonPath)
+	if *configJSONPath != "" {
+		cj, err = readConfigJSON(*configJSONPath)
 		if err != nil {
 			fmt.Printf("Could not load jobs config: %v", err)
 			os.Exit(1)
@@ -917,9 +918,9 @@ func checkKubekinsPresets(jobName string, spec *v1.PodSpec, labels, validLabels 
 
 	for key, val := range labels {
 		if validVal, ok := validLabels[key]; !ok {
-			return fmt.Errorf("Label %s is not a valid preset label", key)
+			return fmt.Errorf("label %s is not a valid preset label", key)
 		} else if validVal != val {
-			return fmt.Errorf("Label %s does not have valid value, have %s, expect %s", key, val, validVal)
+			return fmt.Errorf("label %s does not have valid value, have %s, expect %s", key, val, validVal)
 		}
 	}
 

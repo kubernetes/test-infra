@@ -47,6 +47,7 @@ type Config struct {
 	ProwConfig
 }
 
+// JobConfig is config for all prow jobs
 type JobConfig struct {
 	// Presets apply to all job types.
 	Presets []Preset `json:"presets,omitempty"`
@@ -58,6 +59,7 @@ type JobConfig struct {
 	Periodics []Periodic `json:"periodics,omitempty"`
 }
 
+// ProwConfig is config for all prow controllers
 type ProwConfig struct {
 	Tide             Tide                  `json:"tide,omitempty"`
 	Plank            Plank                 `json:"plank,omitempty"`
@@ -298,7 +300,7 @@ func Load(prowConfig, jobConfig string) (*Config, error) {
 
 	err = filepath.Walk(jobConfig, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			logrus.WithError(err).Errorf("Walking path %q.", path)
+			logrus.WithError(err).Errorf("walking path %q.", path)
 			// bad file should not stop us from parsing the directory
 			return nil
 		}
@@ -368,10 +370,9 @@ func (c *Config) mergeJobConfig(jc JobConfig) error {
 	for _, preset := range c.Presets {
 		for label, val := range preset.Labels {
 			if _, ok := validLabels[label]; ok {
-				return fmt.Errorf("Duplicated preset label : %s", label)
-			} else {
-				validLabels[label] = val
+				return fmt.Errorf("duplicated preset label : %s", label)
 			}
+			validLabels[label] = val
 		}
 	}
 
@@ -379,30 +380,27 @@ func (c *Config) mergeJobConfig(jc JobConfig) error {
 	validPeriodics := map[string]bool{}
 	for _, p := range c.AllPeriodics() {
 		if _, ok := validPeriodics[p.Name]; ok {
-			return fmt.Errorf("Duplicated periodic job : %s", p.Name)
-		} else {
-			validPeriodics[p.Name] = true
+			return fmt.Errorf("duplicated periodic job : %s", p.Name)
 		}
+		validPeriodics[p.Name] = true
 	}
 
 	// validate no duplicated presubmits
 	validPresubmits := map[string]bool{}
 	for _, p := range c.AllPresubmits(nil) {
 		if _, ok := validPresubmits[p.Name]; ok {
-			return fmt.Errorf("Duplicated presubmit job : %s", p.Name)
-		} else {
-			validPresubmits[p.Name] = true
+			return fmt.Errorf("duplicated presubmit job : %s", p.Name)
 		}
+		validPresubmits[p.Name] = true
 	}
 
 	// validate no duplicated postsubmits
 	validPostsubmits := map[string]bool{}
 	for _, p := range c.AllPostsubmits(nil) {
 		if _, ok := validPostsubmits[p.Name]; ok {
-			return fmt.Errorf("Duplicated postsubmit job : %s", p.Name)
-		} else {
-			validPostsubmits[p.Name] = true
+			return fmt.Errorf("duplicated postsubmit job : %s", p.Name)
 		}
+		validPostsubmits[p.Name] = true
 	}
 
 	return nil
