@@ -16803,7 +16803,7 @@ periodics:
     - name: token
       secret:
         secretName: fejta-bot-token
-- interval: 2h
+- cron: "0 0 31 2 *" # inactive, set to Feb.31st so it will never be triggered
   agent: kubernetes
   name: istio-periodic-e2e-gke-addon
   labels:
