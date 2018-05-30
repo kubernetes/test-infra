@@ -11568,7 +11568,7 @@
       "--node-test-args=--feature-gates=DynamicKubeletConfig=true,PodPriority=true,LocalStorageCapacityIsolation=true --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
       "--node-tests=true",
       "--provider=gce",
-      "--test_args=--nodes=1 --focus=\"\\[Serial\\]\" --skip=\"\\[Flaky\\]\"",
+      "--test_args=--nodes=1 --focus=\"\\[Serial\\]\" --skip=\"\\[Flaky\\]|\\[Benchmark\\]|\\[NodeSpecialFeature:.+\\]\"",
       "--timeout=220m"
     ],
     "scenario": "kubernetes_e2e",
