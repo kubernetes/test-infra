@@ -45,12 +45,12 @@ DEFAULT_AWS_ZONES = [
     'ap-northeast-2c',
     #'ap-south-1a', # no c4.large instances available
     #'ap-south-1b', # no c4.large instances available
-    'ap-southeast-1a',
-    'ap-southeast-1b',
-    'ap-southeast-1c',
-    'ap-southeast-2a',
-    'ap-southeast-2b',
-    'ap-southeast-2c',
+    #'ap-southeast-1a', # cluster up flake
+    #'ap-southeast-1b', # cluster up flake
+    #'ap-southeast-1c', # cluster up flake
+    #'ap-southeast-2a', # cluster up flake
+    #'ap-southeast-2b', # cluster up flake
+    #'ap-southeast-2c', # cluster up flake
     #'ca-central-1a', no c4.large capacity 2018-04-25
     #'ca-central-1b', no c4.large capacity 2018-04-25
     'eu-central-1a',
