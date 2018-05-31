@@ -119,23 +119,8 @@ branch-protection:
 
 tide:
   queries:
-  - repos:
-    - kubeflow/batch-predict
-    - kubeflow/caffe2-operator
-    - kubeflow/community
-    - kubeflow/examples
-    - kubeflow/example-seldon
-    - kubeflow/experimental-beagle
-    - kubeflow/experimental-kvc
-    - kubeflow/internal-acls
-    - kubeflow/katib
-    - kubeflow/kubebench
-    - kubeflow/kubeflow
-    - kubeflow/pytorch-operator
-    - kubeflow/reporting
-    - kubeflow/testing
-    - kubeflow/tf-operator
-    - kubeflow/website
+  - orgs:
+    - kubeflow
     labels:
     - lgtm
     - approved
