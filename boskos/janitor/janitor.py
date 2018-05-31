@@ -26,34 +26,34 @@ import sys
 
 
 # A resource that need to be cleared.
-Resource = collections.namedtuple('Resource', 'group name subgroup condition managed tolerate')
+Resource = collections.namedtuple('Resource', 'group name subgroup condition managed tolerate bulk_delete')
 DEMOLISH_ORDER = [
     # [WARNING FROM KRZYZACY] : TOUCH THIS WITH CARE!
     # ORDER REALLY MATTERS HERE!
 
     # compute resources
-    Resource('compute', 'instances', None, 'zone', None, False),
-    Resource('compute', 'addresses', None, 'region', None, False),
-    Resource('compute', 'disks', None, 'zone', None, False),
-    Resource('compute', 'firewall-rules', None, None, None, False),
-    Resource('compute', 'routes', None, None, None, False),
-    Resource('compute', 'forwarding-rules', None, 'region', None, False),
-    Resource('compute', 'target-http-proxies', None, None, None, False),
-    Resource('compute', 'target-https-proxies', None, None, None, False),
-    Resource('compute', 'url-maps', None, None, None, False),
-    Resource('compute', 'backend-services', None, 'region', None, False),
-    Resource('compute', 'target-pools', None, 'region', None, False),
-    Resource('compute', 'health-checks', None, None, None, False),
-    Resource('compute', 'http-health-checks', None, None, None, False),
-    Resource('compute', 'instance-groups', None, 'zone', 'Yes', False),
-    Resource('compute', 'instance-groups', None, 'zone', 'No', False),
-    Resource('compute', 'instance-templates', None, None, None, False),
-    Resource('compute', 'networks', 'subnets', 'region', None, True),
-    Resource('compute', 'networks', None, '', None, False),
-    Resource('compute', 'routes', None, None, None, False),
+    Resource('compute', 'instances', None, 'zone', None, False, True),
+    Resource('compute', 'addresses', None, 'region', None, False, True),
+    Resource('compute', 'disks', None, 'zone', None, False, True),
+    Resource('compute', 'firewall-rules', None, None, None, False, True),
+    Resource('compute', 'routes', None, None, None, False, True),
+    Resource('compute', 'forwarding-rules', None, 'region', None, False, True),
+    Resource('compute', 'target-http-proxies', None, None, None, False, True),
+    Resource('compute', 'target-https-proxies', None, None, None, False, True),
+    Resource('compute', 'url-maps', None, None, None, False, True),
+    Resource('compute', 'backend-services', None, 'region', None, False, True),
+    Resource('compute', 'target-pools', None, 'region', None, False, True),
+    Resource('compute', 'health-checks', None, None, None, False, True),
+    Resource('compute', 'http-health-checks', None, None, None, False, True),
+    Resource('compute', 'instance-groups', None, 'zone', 'Yes', False, True),
+    Resource('compute', 'instance-groups', None, 'zone', 'No', False, True),
+    Resource('compute', 'instance-templates', None, None, None, False, True),
+    Resource('compute', 'networks', 'subnets', 'region', None, True, True),
+    Resource('compute', 'networks', None, '', None, False, True),
+    Resource('compute', 'routes', None, None, None, False, True),
 
     # logging resources
-    Resource('logging', 'sinks', None, None, None, False),
+    Resource('logging', 'sinks', None, None, None, False, False),
 ]
 
 
@@ -138,6 +138,12 @@ def clear_resources(project, cols, resource, rate_limit):
         1 if deletion command fails
     """
     err = 0
+
+    # delete one resource at a time, if there's no api support
+    # aka, logging sinks for example
+    if not resource.bulk_delete:
+        rate_limit = 1
+
     for col, items in cols.items():
         if ARGS.dryrun:
             print ('Resource type %r(%r) to be deleted: %r' %
