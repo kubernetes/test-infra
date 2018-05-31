@@ -193,7 +193,7 @@ func TestHttpResponse(t *testing.T) {
 		Number:     5,
 		IssueState: "open",
 	}
-	if err := handle(fc, logrus.WithField("plugin", pluginName), e, &realClowder{url: ts.URL}); err != nil {
+	if err := handle(fc, logrus.WithField("plugin", pluginName), e, &realClowder{url: ts.URL}, func() {}); err != nil {
 		t.Errorf("didn't expect error: %v", err)
 		return
 	}
@@ -281,7 +281,7 @@ func TestCats(t *testing.T) {
 			IssueState: tc.state,
 			IsPR:       tc.pr,
 		}
-		err := handle(fc, logrus.WithField("plugin", pluginName), e, fakeClowder("tubbs"))
+		err := handle(fc, logrus.WithField("plugin", pluginName), e, fakeClowder("tubbs"), func() {})
 		if !tc.shouldError && err != nil {
 			t.Errorf("%s: didn't expect error: %v", tc.name, err)
 			continue
