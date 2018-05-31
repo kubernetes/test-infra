@@ -147,6 +147,18 @@ labels:
     prowPlugin: label
     addedBy: anyone
   - color: c7def8
+    description: Categorizes issue or PR as related to cleaning up code, process, or technical debt.
+    name: kind/cleanup
+    target: both
+    prowPlugin: label
+    addedBy: anyone
+  - color: c7def8
+    description: Categorizes issue or PR as related to design.
+    name: kind/design
+    target: both
+    prowPlugin: label
+    addedBy: anyone
+  - color: c7def8
     description: Categorizes issue or PR as related to documentation.
     name: kind/documentation
     target: both
@@ -157,6 +169,13 @@ labels:
     name: kind/feature
     previously:
       - name: enhancement
+      - name: kind/enhancement
+    target: both
+    prowPlugin: label
+    addedBy: anyone
+  - color: f7c6c7
+    description: Categorizes issue or PR as related to a flaky test.
+    name: kind/flake
     target: both
     prowPlugin: label
     addedBy: anyone
