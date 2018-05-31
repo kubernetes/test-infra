@@ -26,7 +26,8 @@ import sys
 
 
 # A resource that need to be cleared.
-Resource = collections.namedtuple('Resource', 'group name subgroup condition managed tolerate bulk_delete')
+Resource = collections.namedtuple(
+    'Resource', 'group name subgroup condition managed tolerate bulk_delete')
 DEMOLISH_ORDER = [
     # [WARNING FROM KRZYZACY] : TOUCH THIS WITH CARE!
     # ORDER REALLY MATTERS HERE!
