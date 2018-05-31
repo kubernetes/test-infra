@@ -267,6 +267,16 @@ func (f *FakeClient) ListTeamMembers(teamID int) ([]github.TeamMember, error) {
 	return []github.TeamMember{{Login: "sig-lead"}}, nil
 }
 
+func (f *FakeClient) IsCollaborator(org, repo, login string) (bool, error) {
+	normed := github.NormLogin(login)
+	for _, collab := range f.Collaborators {
+		if github.NormLogin(collab) == normed {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 func (f *FakeClient) ListCollaborators(org, repo string) ([]github.User, error) {
 	result := make([]github.User, 0, len(f.Collaborators))
 	for _, login := range f.Collaborators {

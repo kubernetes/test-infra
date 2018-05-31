@@ -1504,9 +1504,42 @@ func (c *Client) Merge(org, repo string, pr int, details MergeDetails) error {
 	return nil
 }
 
-// ListCollaborators gets a list of all users who have access to a repo (and can become assignees
-// or requested reviewers). This includes, org members with access, outside collaborators, and org
-// owners.
+// IsCollaborator returns whether or not the user is a collaborator of the repo.
+// From GitHub's API reference:
+// For organization-owned repositories, the list of collaborators includes
+// outside collaborators, organization members that are direct collaborators,
+// organization members with access through team memberships, organization
+// members with access through default organization permissions, and
+// organization owners.
+// https://developer.github.com/v3/repos/collaborators/
+func (c *Client) IsCollaborator(org, repo, user string) (bool, error) {
+	c.log("IsCollaborator", org, user)
+	if org == user {
+		// Make it possible to run a couple of plugins on personal repos.
+		return true, nil
+	}
+	code, err := c.request(&request{
+		method: http.MethodGet,
+		// This accept header enables the nested teams preview.
+		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
+		accept:    "application/vnd.github.hellcat-preview+json",
+		path:      fmt.Sprintf("/repos/%s/%s/collaborators/%s", org, repo, user),
+		exitCodes: []int{204, 404, 302},
+	}, nil)
+	if err != nil {
+		return false, err
+	}
+	if code == 204 {
+		return true, nil
+	} else if code == 404 {
+		return false, nil
+	}
+	return false, fmt.Errorf("unexpected status: %d", code)
+}
+
+// ListCollaborators gets a list of all users who have access to a repo (and
+// can become assignees or requested reviewers).
+// See 'IsCollaborator' for more details.
 func (c *Client) ListCollaborators(org, repo string) ([]User, error) {
 	c.log("ListCollaborators", org, repo)
 	if c.fake {

@@ -54,14 +54,14 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		Usage:       "/lgtm [cancel]",
 		Description: "Adds or removes the 'lgtm' label which is typically used to gate merging.",
 		Featured:    true,
-		WhoCanUse:   "Members of the organization that owns the repository. '/lgtm cancel' can be used additionally by the PR author.",
+		WhoCanUse:   "Collaborators on the repository. '/lgtm cancel' can be used additionally by the PR author.",
 		Examples:    []string{"/lgtm", "/lgtm cancel"},
 	})
 	return pluginHelp, nil
 }
 
 type githubClient interface {
-	IsMember(owner, login string) (bool, error)
+	IsCollaborator(owner, repo, login string) (bool, error)
 	AddLabel(owner, repo string, number int, label string) error
 	AssignIssue(owner, repo string, number int, assignees []string) error
 	CreateComment(owner, repo string, number int, comment string) error
@@ -121,10 +121,10 @@ func handle(gc githubClient, config *plugins.Configuration, ownersClient repoown
 		log.Infof("Assigning %s/%s#%d to %s", org, repo, e.Number, commentAuthor)
 		if err := gc.AssignIssue(org, repo, e.Number, []string{commentAuthor}); err != nil {
 			msg := "assigning you to the PR failed"
-			if ok, merr := gc.IsMember(org, commentAuthor); merr == nil && !ok {
-				msg = fmt.Sprintf("only %s org members may be assigned issues", org)
+			if ok, merr := gc.IsCollaborator(org, repo, commentAuthor); merr == nil && !ok {
+				msg = fmt.Sprintf("only %s/%s repo collaborators may be assigned issues", org, repo)
 			} else if merr != nil {
-				log.WithError(merr).Errorf("Failed IsMember(%s, %s)", org, commentAuthor)
+				log.WithError(merr).Errorf("Failed IsCollaborator(%s, %s, %s)", org, repo, commentAuthor)
 			} else {
 				log.WithError(err).Errorf("Failed AssignIssue(%s, %s, %d, %s)", org, repo, e.Number, commentAuthor)
 			}
