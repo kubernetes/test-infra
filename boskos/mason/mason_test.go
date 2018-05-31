@@ -114,6 +114,16 @@ func (fb *fakeBoskos) UpdateAll(state string) error {
 	return nil
 }
 
+func (fb *fakeBoskos) ReleaseAll(state string) error {
+	// not used in this test
+	return nil
+}
+
+func (fb *fakeBoskos) SyncAll() error {
+	// not used in this test
+	return nil
+}
+
 func TestRecycleLeasedResources(t *testing.T) {
 	tc := testConfig{
 		"type1": {
