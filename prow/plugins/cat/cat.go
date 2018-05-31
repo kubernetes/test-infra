@@ -157,7 +157,13 @@ func (r *realClowder) readCat(category string) (string, error) {
 	if err = xml.NewDecoder(resp.Body).Decode(&a); err != nil {
 		return "", err
 	}
-
+	// checking size, GitHub doesn't support big images
+	toobig, err := github.ImageTooBig(a.Image)
+	if err != nil {
+		return "", err
+	} else if toobig {
+		return "", errors.New("unsupported cat :( size too big: " + a.Image)
+	}
 	return a.Format()
 }
 
