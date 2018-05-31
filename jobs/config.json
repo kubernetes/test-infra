@@ -11984,7 +11984,7 @@
       "--env=TAG=0.6.0",
       "--extract=ci/latest",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-node-image=UBUNTU",
+      "--gcp-node-image=ubuntu",
       "--gcp-project=istio-gke-addon-prow-e2e-test",
       "--gcp-zone=us-central1-f",
       "--gke-command-group=alpha",
