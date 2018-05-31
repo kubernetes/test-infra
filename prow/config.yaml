@@ -7084,6 +7084,33 @@ presubmits:
             memory: "2Gi"
 
   tensorflow/minigo:
+  - name: pull-tf-minigo-cc
+    agent: kubernetes
+    always_run: true
+    skip_report: true
+    #context: pull-tf-minigo-cc
+    branches:
+    - master
+    rerun_command: "/test pull-tf-minigo-cc"
+    trigger: "(?m)^/test( all| pull-tf-minigo-cc),?(\\s+|$)"
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/tensor-go/cc-base:latest
+        command:
+        - /bin/bash
+        - -c
+        args:
+        # Copy tensorflow libraries into repo, test with board_size=9, test with board_size=19.
+        - "cp -r /app/cc/tensorflow ./cc/tensorflow && bazel test cc:all --compilation_mode=dbg --define=board_size=9 && bazel test cc:all --compilation_mode=dbg --define=board_size=19"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "2Gi"
+      imagePullSecrets:
+      - name: minigo-image-pull
+
   - name: tf-minigo-presubmit
     context: tf-minigo-presubmit
     agent: kubernetes

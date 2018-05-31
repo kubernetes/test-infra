@@ -91,7 +91,7 @@ func TestPresubmits(t *testing.T) {
 				t.Errorf("Job %v needs a name.", job)
 				continue
 			}
-			if job.Context == "" {
+			if !job.SkipReport && job.Context == "" {
 				t.Errorf("Job %s needs a context.", job.Name)
 			}
 			if job.RerunCommand == "" || job.Trigger == "" {
