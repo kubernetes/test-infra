@@ -51,6 +51,7 @@ var (
 )
 
 func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
+	defer s.wg.Done()
 	l = l.WithFields(logrus.Fields{
 		github.OrgLogField:  re.Repo.Owner.Login,
 		github.RepoLogField: re.Repo.Name,
@@ -61,7 +62,9 @@ func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
 	})
 	l.Infof("Review %s.", re.Action)
 	for p, h := range s.Plugins.ReviewEventHandlers(re.PullRequest.Base.Repo.Owner.Login, re.PullRequest.Base.Repo.Name) {
+		s.wg.Add(1)
 		go func(p string, h plugins.ReviewEventHandler) {
+			defer s.wg.Done()
 			pc := s.Plugins.PluginClient
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
@@ -103,6 +106,7 @@ func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
 }
 
 func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewCommentEvent) {
+	defer s.wg.Done()
 	l = l.WithFields(logrus.Fields{
 		github.OrgLogField:  rce.Repo.Owner.Login,
 		github.RepoLogField: rce.Repo.Name,
@@ -113,7 +117,9 @@ func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewComm
 	})
 	l.Infof("Review comment %s.", rce.Action)
 	for p, h := range s.Plugins.ReviewCommentEventHandlers(rce.PullRequest.Base.Repo.Owner.Login, rce.PullRequest.Base.Repo.Name) {
+		s.wg.Add(1)
 		go func(p string, h plugins.ReviewCommentEventHandler) {
+			defer s.wg.Done()
 			pc := s.Plugins.PluginClient
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
@@ -155,6 +161,7 @@ func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewComm
 }
 
 func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEvent) {
+	defer s.wg.Done()
 	l = l.WithFields(logrus.Fields{
 		github.OrgLogField:  pr.Repo.Owner.Login,
 		github.RepoLogField: pr.Repo.Name,
@@ -164,7 +171,9 @@ func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEv
 	})
 	l.Infof("Pull request %s.", pr.Action)
 	for p, h := range s.Plugins.PullRequestHandlers(pr.PullRequest.Base.Repo.Owner.Login, pr.PullRequest.Base.Repo.Name) {
+		s.wg.Add(1)
 		go func(p string, h plugins.PullRequestHandler) {
+			defer s.wg.Done()
 			pc := s.Plugins.PluginClient
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
@@ -208,6 +217,7 @@ func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEv
 }
 
 func (s *Server) handlePushEvent(l *logrus.Entry, pe github.PushEvent) {
+	defer s.wg.Done()
 	l = l.WithFields(logrus.Fields{
 		github.OrgLogField:  pe.Repo.Owner.Name,
 		github.RepoLogField: pe.Repo.Name,
@@ -216,7 +226,9 @@ func (s *Server) handlePushEvent(l *logrus.Entry, pe github.PushEvent) {
 	})
 	l.Info("Push event.")
 	for p, h := range s.Plugins.PushEventHandlers(pe.Repo.Owner.Name, pe.Repo.Name) {
+		s.wg.Add(1)
 		go func(p string, h plugins.PushEventHandler) {
+			defer s.wg.Done()
 			pc := s.Plugins.PluginClient
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
@@ -229,6 +241,7 @@ func (s *Server) handlePushEvent(l *logrus.Entry, pe github.PushEvent) {
 }
 
 func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
+	defer s.wg.Done()
 	l = l.WithFields(logrus.Fields{
 		github.OrgLogField:  i.Repo.Owner.Login,
 		github.RepoLogField: i.Repo.Name,
@@ -238,7 +251,9 @@ func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
 	})
 	l.Infof("Issue %s.", i.Action)
 	for p, h := range s.Plugins.IssueHandlers(i.Repo.Owner.Login, i.Repo.Name) {
+		s.wg.Add(1)
 		go func(p string, h plugins.IssueHandler) {
+			defer s.wg.Done()
 			pc := s.Plugins.PluginClient
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
@@ -282,6 +297,7 @@ func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
 }
 
 func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueCommentEvent) {
+	defer s.wg.Done()
 	l = l.WithFields(logrus.Fields{
 		github.OrgLogField:  ic.Repo.Owner.Login,
 		github.RepoLogField: ic.Repo.Name,
@@ -291,7 +307,9 @@ func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueComment
 	})
 	l.Infof("Issue comment %s.", ic.Action)
 	for p, h := range s.Plugins.IssueCommentHandlers(ic.Repo.Owner.Login, ic.Repo.Name) {
+		s.wg.Add(1)
 		go func(p string, h plugins.IssueCommentHandler) {
+			defer s.wg.Done()
 			pc := s.Plugins.PluginClient
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
@@ -333,6 +351,7 @@ func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueComment
 }
 
 func (s *Server) handleStatusEvent(l *logrus.Entry, se github.StatusEvent) {
+	defer s.wg.Done()
 	l = l.WithFields(logrus.Fields{
 		github.OrgLogField:  se.Repo.Owner.Login,
 		github.RepoLogField: se.Repo.Name,
@@ -343,7 +362,9 @@ func (s *Server) handleStatusEvent(l *logrus.Entry, se github.StatusEvent) {
 	})
 	l.Infof("Status description %s.", se.Description)
 	for p, h := range s.Plugins.StatusEventHandlers(se.Repo.Owner.Login, se.Repo.Name) {
+		s.wg.Add(1)
 		go func(p string, h plugins.StatusEventHandler) {
+			defer s.wg.Done()
 			pc := s.Plugins.PluginClient
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
@@ -372,7 +393,9 @@ func genericCommentAction(action string) github.GenericCommentEventAction {
 
 func (s *Server) handleGenericComment(l *logrus.Entry, ce *github.GenericCommentEvent) {
 	for p, h := range s.Plugins.GenericCommentHandlers(ce.Repo.Owner.Login, ce.Repo.Name) {
+		s.wg.Add(1)
 		go func(p string, h plugins.GenericCommentHandler) {
+			defer s.wg.Done()
 			pc := s.Plugins.PluginClient
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
