@@ -199,6 +199,25 @@ func (m *Mason) convertConfig(configEntry *common.ResourcesConfig) (Masonable, e
 	return fn(configEntry.Config.Content)
 }
 
+func (m *Mason) garbageCollect(req requirements) {
+	names := []string{req.resource.Name}
+
+	for _, resources := range req.fulfillment {
+		for _, r := range resources {
+			if r != nil {
+				names = append(names, r.Name)
+			}
+		}
+	}
+
+	for _, name := range names {
+		if err := m.client.ReleaseOne(name, common.Dirty); err != nil {
+			logrus.WithError(err).Errorf("Unable to release leased resource %s", name)
+		}
+	}
+
+}
+
 func (m *Mason) cleanAll(ctx context.Context) {
 	defer func() {
 		logrus.Info("Exiting cleanAll Thread")
@@ -210,19 +229,8 @@ func (m *Mason) cleanAll(ctx context.Context) {
 			return
 		case req := <-m.fulfilled:
 			if err := m.cleanOne(&req.resource, req.fulfillment); err != nil {
-				logrus.WithError(err).Errorf("unable to clean resource")
-				err = m.client.ReleaseOne(req.resource.Name, common.Dirty)
-				if err != nil {
-					logrus.WithError(err).Errorf("Unable to release resource %s", req.resource.Name)
-				}
-				for _, resources := range req.fulfillment {
-					for _, r := range resources {
-						err = m.client.ReleaseOne(r.Name, common.Dirty)
-						if err != nil {
-							logrus.WithError(err).Errorf("Unable to release leased resource %s", r.Name)
-						}
-					}
-				}
+				logrus.WithError(err).Errorf("unable to clean resource %s", req.resource.Name)
+				m.garbageCollect(req)
 			} else {
 				m.cleaned <- req
 			}
@@ -270,7 +278,8 @@ func (m *Mason) freeAll(ctx context.Context) {
 			return
 		case req := <-m.cleaned:
 			if err := m.freeOne(&req.resource); err != nil {
-				m.cleaned <- req
+				logrus.WithError(err).Errorf("failed to free up resource %s", req.resource.Name)
+				m.garbageCollect(req)
 			}
 		}
 	}
