@@ -129,7 +129,9 @@ slack:
         release-1.9:
             - mbohlool # 1.9 patch release manager
         release-1.10:
-            - calebamiles # 1.10 branch manager
+            - maciekpytel # 1.10 patch release manager
+        release-1.11:
+            - calebamiles # 1.11 branch manager
         feature-serverside-apply:
             - lavalamp # feature-serverside-apply "branch manager"
   - repos:
@@ -285,7 +287,7 @@ plugins:
   kubernetes/kube-openapi:
   - approve
   - blunderbuss
-  
+
   kubernetes/kube-state-metrics:
   - approve
   - blunderbuss
@@ -389,7 +391,7 @@ plugins:
 
   kubernetes-sigs/kubeadm-dind-cluster:
   - approve
-  
+
   containerd/cri:
   - assign
   - cla
