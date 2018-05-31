@@ -12579,7 +12579,6 @@
       "--env-file=jobs/env/pull-kubernetes-e2e-gce.env",
       "--extract=local",
       "--gcp-node-image=gci",
-      "--gcp-project=k8s-jkns-pr-gce-etcd3",
       "--gcp-zone=us-central1-f",
       "--ginkgo-parallel=30",
       "--provider=gce",
