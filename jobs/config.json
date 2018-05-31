@@ -82,12 +82,45 @@
       "sig-node"
     ]
   },
+  "ci-containerd-build-1-1": {
+    "args": [
+      "--env=DEPLOY_DIR=containerd/release-1.1",
+      "/go/src/github.com/containerd/cri/test/containerd/build.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
   "ci-containerd-e2e-gci-gce": {
     "args": [
       "--check-leaked-resources",
+      "--env=KUBE_MASTER_EXTRA_METADATA=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env",
+      "--env=KUBE_NODE_EXTRA_METADATA=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce.env",
-      "--env-file=jobs/env/ci-containerd-e2e-gce.env",
+      "--env-file=jobs/env/ci-cri-containerd-e2e-gce.env",
       "--extract=ci/latest",
+      "--gcp-node-image=gci",
+      "--gcp-nodes=4",
+      "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel=30",
+      "--provider=gce",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=50m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
+  "ci-containerd-e2e-gci-gce-1-1": {
+    "args": [
+      "--check-leaked-resources",
+      "--env=KUBE_MASTER_EXTRA_METADATA=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.1/env",
+      "--env=KUBE_NODE_EXTRA_METADATA=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.1/env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce.env",
+      "--env-file=jobs/env/ci-cri-containerd-e2e-gce.env",
+      "--extract=ci/latest-1.10",
       "--gcp-node-image=gci",
       "--gcp-nodes=4",
       "--gcp-zone=us-central1-f",
@@ -104,7 +137,9 @@
   "ci-containerd-e2e-ubuntu-gce": {
     "args": [
       "--check-leaked-resources",
-      "--env-file=jobs/env/ci-containerd-e2e-gce.env",
+      "--env=KUBE_MASTER_EXTRA_METADATA=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env",
+      "--env=KUBE_NODE_EXTRA_METADATA=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env",
+      "--env-file=jobs/env/ci-cri-containerd-e2e-gce.env",
       "--extract=ci/latest",
       "--gcp-node-image=ubuntu",
       "--gcp-zone=us-central1-f",
@@ -136,6 +171,22 @@
       "sig-node"
     ]
   },
+  "ci-containerd-node-e2e-1-1": {
+    "args": [
+      "--deployment=node",
+      "--gcp-project=cri-containerd-node-e2e",
+      "--gcp-zone=us-central1-f",
+      "--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
+      "--node-tests=true",
+      "--provider=gce",
+      "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]\" --flakeAttempts=2",
+      "--timeout=65m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
   "ci-containerd-node-e2e-features": {
     "args": [
       "--deployment=node",
@@ -155,7 +206,9 @@
   "ci-containerd-soak-gci-gce": {
     "args": [
       "--down=false",
-      "--env-file=jobs/env/ci-containerd-e2e-gce.env",
+      "--env=KUBE_MASTER_EXTRA_METADATA=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env",
+      "--env=KUBE_NODE_EXTRA_METADATA=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env",
+      "--env-file=jobs/env/ci-cri-containerd-e2e-gce.env",
       "--extract=ci/latest",
       "--gcp-master-image=gci",
       "--gcp-node-image=gci",

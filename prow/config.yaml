@@ -1258,7 +1258,7 @@ presubmits:
           - "--upload=gs://kubernetes-jenkins/pr-logs"
           - "--timeout=90"
           - "--"
-          - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri --node-env=PULL_REFS=$(PULL_REFS)"
+          - "--node-args=--image-config-file=image-config.yaml --image-config-dir=/workspace/test-infra/jobs/e2e_node/containerd/cri-master -node-env=PULL_REFS=$(PULL_REFS)"
 
   - name: pull-cri-containerd-verify
     agent: kubernetes
@@ -3470,7 +3470,7 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=90"
         - --
-        - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri"
+        - "--node-args=--image-config-file=image-config.yaml --image-config-dir=/workspace/test-infra/jobs/e2e_node/containerd/cri-master"
         resources:
           requests:
             memory: "6Gi"
@@ -6514,7 +6514,7 @@ presubmits:
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=90
         - --
-        - --node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri
+        - --node-args=--image-config-file=image-config.yaml --image-config-dir=/workspace/test-infra/jobs/e2e_node/containerd/cri-master
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
         name: ""
         resources:
@@ -7726,6 +7726,20 @@ periodics:
       - "--root=/go/src"
       - "--upload=gs://kubernetes-jenkins/logs"
 
+- name: ci-containerd-build-1-1
+  interval: 30m
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180510-540e0e395-experimental
+      args:
+      - "--repo=github.com/containerd/containerd=release/1.1"
+      - "--repo=github.com/containerd/cri=release/1.0"
+      - "--root=/go/src"
+      - "--upload=gs://kubernetes-jenkins/logs"
+
 - interval: 1h
   agent: kubernetes
   name: ci-containerd-e2e-gci-gce
@@ -7738,6 +7752,19 @@ periodics:
       - "--repo=github.com/containerd/cri=master"
       - "--timeout=70"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
+
+- interval: 1h
+  agent: kubernetes
+  name: ci-containerd-e2e-gci-gce-1-1
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - "--repo=github.com/containerd/cri=release/1.0"
+      - "--timeout=70"
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180510-540e0e395-master
 
 - interval: 1h
   agent: kubernetes
@@ -7767,7 +7794,27 @@ periodics:
       - --repo=github.com/containerd/cri=master
       - --timeout=90
       - --
-      - "--node-args=--image-config-file=test/containerd/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri"
+      - "--node-args=--image-config-file=image-config.yaml --image-config-dir=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master"
+      env:
+      - name: GOPATH
+        value: /go
+
+- name: ci-containerd-node-e2e-1-1
+  interval: 1h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180510-540e0e395-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes=release-1.10
+      - --repo=github.com/containerd/cri=release/1.0
+      - --timeout=90
+      - --
+      - "--node-args=--image-config-file=image-config.yaml --image-config-dir=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.1"
       env:
       - name: GOPATH
         value: /go
@@ -7787,7 +7834,7 @@ periodics:
       - --repo=github.com/containerd/cri=master
       - --timeout=90
       - --
-      - "--node-args=--image-config-file=test/containerd/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri"
+      - "--node-args=--image-config-file=image-config.yaml --image-config-dir=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master"
       env:
       - name: GOPATH
         value: /go
@@ -8067,7 +8114,7 @@ periodics:
       - --repo=github.com/containerd/cri=master
       - --timeout=90
       - --
-      - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri"
+      - "--node-args=--image-config-file=image-config.yaml --image-config-dir=/workspace/test-infra/jobs/e2e_node/containerd/cri-master"
       env:
       - name: GOPATH
         value: /go
@@ -8087,7 +8134,7 @@ periodics:
       - --repo=github.com/containerd/cri=master
       - --timeout=90
       - --
-      - "--node-args=--image-config-file=test/e2e_node/benchmark-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri"
+      - "--node-args=--image-config-file=benchmark-config.yaml --image-config-dir=/workspace/test-infra/jobs/e2e_node/containerd/cri-master"
       env:
       - name: GOPATH
         value: /go
@@ -8108,7 +8155,7 @@ periodics:
       - --repo=github.com/containerd/cri=master
       - --timeout=90
       - --
-      - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri"
+      - "--node-args=--image-config-file=benchmark-config.yaml --image-config-dir=/workspace/test-infra/jobs/e2e_node/containerd/cri-master"
       env:
       - name: GOPATH
         value: /go
@@ -8128,7 +8175,7 @@ periodics:
       - --repo=github.com/containerd/cri=master
       - --timeout=140
       - --
-      - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri"
+      - "--node-args=--image-config-file=image-config.yaml --image-config-dir=/workspace/test-infra/jobs/e2e_node/containerd/cri-master"
       env:
       - name: GOPATH
         value: /go
@@ -8148,7 +8195,7 @@ periodics:
       - --repo=github.com/containerd/cri=master
       - --timeout=240
       - --
-      - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri"
+      - "--node-args=--image-config-file=image-config.yaml --image-config-dir=/workspace/test-infra/jobs/e2e_node/containerd/cri-master"
       env:
       - name: GOPATH
         value: /go
