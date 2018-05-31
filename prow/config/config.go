@@ -327,6 +327,9 @@ func parseConfig(c *Config) error {
 		if err := validateLabels(v.Name, v.Labels); err != nil {
 			return err
 		}
+		if err := validateTriggering(v); err != nil {
+			return err
+		}
 	}
 
 	// Validate postsubmits.
@@ -695,6 +698,18 @@ func validatePodSpec(name string, jobType kube.ProwJobType, spec *v1.PodSpec) er
 				return fmt.Errorf("job %s attempted to add a Prow-controlled volume %s", name, volume.Name)
 			}
 		}
+	}
+
+	return nil
+}
+
+func validateTriggering(job Presubmit) error {
+	if job.AlwaysRun && job.RunIfChanged != "" {
+		return fmt.Errorf("job %s is set to always run but also declares run_if_changed targets, which are mutually exclusive", job.Name)
+	}
+
+	if !job.SkipReport && job.Context == "" {
+		return fmt.Errorf("job %s is set to report but has no context configured", job.Name)
 	}
 
 	return nil
