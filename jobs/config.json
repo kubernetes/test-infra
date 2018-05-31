@@ -9800,24 +9800,6 @@
       "sig-cluster-lifecycle"
     ]
   },
-  "ci-kubernetes-e2e-kubeadm-gce-1-11": {
-    "args": [
-      "--cluster=",
-      "--deployment=kubernetes-anywhere",
-      "--extract=ci/latest-bazel-1.11",
-      "--gcp-zone=us-central1-f",
-      "--kubeadm=ci",
-      "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.11",
-      "--kubernetes-anywhere-kubernetes-version=ci/latest-1.11",
-      "--provider=kubernetes-anywhere",
-      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
-      "--timeout=300m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
   "ci-kubernetes-e2e-kubeadm-gce-1-10": {
     "args": [
       "--cluster=",
@@ -9827,6 +9809,42 @@
       "--kubeadm=ci",
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.10",
       "--kubernetes-anywhere-kubernetes-version=ci/latest-1.10",
+      "--provider=kubernetes-anywhere",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\]",
+      "--timeout=300m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
+  "ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11": {
+    "args": [
+      "--cluster=",
+      "--deployment=kubernetes-anywhere",
+      "--extract=ci/latest-bazel-1.10",
+      "--gcp-zone=us-central1-f",
+      "--kubeadm=ci",
+      "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.10",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest-1.10",
+      "--provider=kubernetes-anywhere",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
+      "--timeout=300m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
+  "ci-kubernetes-e2e-kubeadm-gce-1-11": {
+    "args": [
+      "--cluster=",
+      "--deployment=kubernetes-anywhere",
+      "--extract=ci/latest-bazel-1.11",
+      "--gcp-zone=us-central1-f",
+      "--kubeadm=ci",
+      "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.11",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest-1.11",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
@@ -9882,25 +9900,7 @@
       "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.9",
       "--kubernetes-anywhere-kubernetes-version=ci/latest-1.9",
       "--provider=kubernetes-anywhere",
-      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
-      "--timeout=300m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
-  "ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11": {
-    "args": [
-      "--cluster=",
-      "--deployment=kubernetes-anywhere",
-      "--extract=ci/latest-bazel-1.10",
-      "--gcp-zone=us-central1-f",
-      "--kubeadm=ci",
-      "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.10",
-      "--kubernetes-anywhere-kubernetes-version=ci/latest-1.10",
-      "--provider=kubernetes-anywhere",
-      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\]",
       "--timeout=300m"
     ],
     "scenario": "kubernetes_e2e",
@@ -10020,6 +10020,28 @@
       "sig-cluster-lifecycle"
     ]
   },
+  "ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11": {
+    "args": [
+      "--cluster=",
+      "--deployment=kubernetes-anywhere",
+      "--extract=release/latest-1.11",
+      "--extract=ci/latest-bazel-1.10",
+      "--gcp-zone=us-central1-f",
+      "--kubeadm=periodic",
+      "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.10",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest-1.10",
+      "--kubernetes-anywhere-upgrade-method=upgrade",
+      "--provider=kubernetes-anywhere",
+      "--skew",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
+      "--timeout=300m",
+      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=release/latest-1.10"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
   "ci-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9": {
     "args": [
       "--cluster=",
@@ -10055,29 +10077,7 @@
       "--kubernetes-anywhere-upgrade-method=upgrade",
       "--provider=kubernetes-anywhere",
       "--skew",
-      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
-      "--timeout=300m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=release/latest-1.10"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
-  "ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11": {
-    "args": [
-      "--cluster=",
-      "--deployment=kubernetes-anywhere",
-      "--extract=release/latest-1.11",
-      "--extract=ci/latest-bazel-1.10",
-      "--gcp-zone=us-central1-f",
-      "--kubeadm=periodic",
-      "--kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.10",
-      "--kubernetes-anywhere-kubernetes-version=ci/latest-1.10",
-      "--kubernetes-anywhere-upgrade-method=upgrade",
-      "--provider=kubernetes-anywhere",
-      "--skew",
-      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\]",
       "--timeout=300m",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=release/latest-1.10"
     ],
