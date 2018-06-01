@@ -634,6 +634,22 @@ presubmits:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
 
+  kubeflow/mpi-operator:
+  - name: kubeflow-mpi-operator-presubmit
+    context: kubeflow-mpi-operator-presubmit
+    agent: kubernetes
+    always_run: true         # Run for every PR, or only when requested.
+    rerun_command: "/test kubeflow-mpi-operator-presubmit"
+    trigger: "(?m)^/test( all| kubeflow-mpi-operator-presubmit),?(\\s+|$)"
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
   kubernetes/charts:
   - name: pull-charts-e2e
     agent: kubernetes
@@ -7306,6 +7322,18 @@ postsubmits:
 
   kubeflow/kubebench:
   - name: kubeflow-kubebench-postsubmit
+    agent: kubernetes
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
+
+  kubeflow/mpi-operator:
+  - name: kubeflow-mpi-operator-postsubmit
     agent: kubernetes
     branches:
     - master
