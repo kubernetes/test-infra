@@ -40,16 +40,40 @@ branch-protection:
         contexts:
         - cla/linuxfoundation
       repos:
+        api:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        apiextensions-apiserver:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        apimachinery:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        apiserver:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         charts:
           required_status_checks:
             contexts:
             - ci/circleci
         client-go:
           restrictions:
-            users:
-            - k8s-publishing-bot
+            users: []
             teams:
-            - kubernetes/client-go-maintainers
+            - stage-bots
+        code-generator:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         dashboard:
           required_pull_request_reviews:
             required_approving_review_count: 1
@@ -81,10 +105,30 @@ branch-protection:
           restrictions: # only allow admins
             users: []
             teams: []
+        kube-aggregator:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        metrics:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         repo-infra:
           required_status_checks:
             contexts:
             - continuous-integration/travis-ci
+        sample-apiserver:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        sample-controller:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         utils:
           required_pull_request_reviews:
             required_approving_review_count: 1
