@@ -16888,7 +16888,7 @@ periodics:
   agent: kubernetes
   name: istio-periodic-e2e-gke-addon
   labels:
-    preset-gke-alpha-service: "true"
+    preset-istio-service: "true"
     preset-k8s-ssh: "true"
   spec:
     containers:
