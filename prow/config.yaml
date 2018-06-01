@@ -10130,8 +10130,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
 
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
-  # interval: 2h
-  cron: "0 0 31 2 *" # inactive, set to Feb.31st so it will never be triggered
+  interval: 2h
   agent: kubernetes
   labels:
     preset-service-account: true
@@ -12343,8 +12342,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
-  # interval: 2h
-  cron: "0 0 31 2 *" # inactive, set to Feb.31st so it will never be triggered
+  interval: 2h
   agent: kubernetes
   labels:
     preset-service-account: true
@@ -12383,8 +12381,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
-  # interval: 12h #expensive test,
-  cron: "0 0 31 2 *" # inactive, set to Feb.31st so it will never be triggered
+  interval: 12h #expensive test
   agent: kubernetes
   labels:
     preset-service-account: true
