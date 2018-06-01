@@ -47,6 +47,8 @@ spec:
       containers:
       - name: metrics
         image: gcr.io/k8s-testimages/metrics:v20180402-43203f868
+        args:
+        - --resource-type=gce-project,gke-project,gci-qa-project,gpu-project,ingress-project,istio-project
         ports:
           - containerPort: 8080
             protocol: TCP

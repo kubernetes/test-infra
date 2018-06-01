@@ -18,8 +18,10 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -30,58 +32,46 @@ import (
 )
 
 type prometheusMetrics struct {
-	GceStats map[string]prometheus.Gauge
-	GkeStats map[string]prometheus.Gauge
+	BoskosState map[string]map[string]prometheus.Gauge
 }
 
 var (
 	promMetrics = prometheusMetrics{
-		GceStats: map[string]prometheus.Gauge{
-			common.Free: prometheus.NewGauge(prometheus.GaugeOpts{
-				Name: "boskos_gce_project_free",
-				Help: "Number of free gce-project",
-			}),
-			common.Busy: prometheus.NewGauge(prometheus.GaugeOpts{
-				Name: "boskos_gce_project_busy",
-				Help: "Number of busy gce-project",
-			}),
-			common.Dirty: prometheus.NewGauge(prometheus.GaugeOpts{
-				Name: "boskos_gce_project_dirty",
-				Help: "Number of dirty gce-project",
-			}),
-			common.Cleaning: prometheus.NewGauge(prometheus.GaugeOpts{
-				Name: "boskos_gce_project_cleaning",
-				Help: "Number of cleaning gce-project",
-			}),
-		},
-		GkeStats: map[string]prometheus.Gauge{
-			common.Free: prometheus.NewGauge(prometheus.GaugeOpts{
-				Name: "boskos_gke_project_free",
-				Help: "Number of free gke-project",
-			}),
-			common.Busy: prometheus.NewGauge(prometheus.GaugeOpts{
-				Name: "boskos_gke_project_busy",
-				Help: "Number of busy gke-project",
-			}),
-			common.Dirty: prometheus.NewGauge(prometheus.GaugeOpts{
-				Name: "boskos_gke_project_dirty",
-				Help: "Number of dirty gke-project",
-			}),
-			common.Cleaning: prometheus.NewGauge(prometheus.GaugeOpts{
-				Name: "boskos_gke_project_cleaning",
-				Help: "Number of cleaning gke-project",
-			}),
-		},
+		BoskosState: map[string]map[string]prometheus.Gauge{},
 	}
+	resources common.ResTypes
 )
 
 func init() {
-	for _, gce := range promMetrics.GceStats {
-		prometheus.MustRegister(gce)
+	flag.Var(&resources, "resource-type", "comma-separated list of resources need to have metrics collected")
+}
+
+func init_prometheus() {
+	for _, resource := range resources {
+		promMetrics.BoskosState[resource] = map[string]prometheus.Gauge{
+			common.Free: prometheus.NewGauge(prometheus.GaugeOpts{
+				Name: fmt.Sprintf("boskos_%s_%s", strings.Replace(resource, "-", "_", -1), common.Free),
+				Help: fmt.Sprintf("Number of %s %s", common.Free, resource),
+			}),
+			common.Busy: prometheus.NewGauge(prometheus.GaugeOpts{
+				Name: fmt.Sprintf("boskos_%s_%s", strings.Replace(resource, "-", "_", -1), common.Busy),
+				Help: fmt.Sprintf("Number of %s %s", common.Busy, resource),
+			}),
+			common.Dirty: prometheus.NewGauge(prometheus.GaugeOpts{
+				Name: fmt.Sprintf("boskos_%s_%s", strings.Replace(resource, "-", "_", -1), common.Dirty),
+				Help: fmt.Sprintf("Number of %s %s", common.Dirty, resource),
+			}),
+			common.Cleaning: prometheus.NewGauge(prometheus.GaugeOpts{
+				Name: fmt.Sprintf("boskos_%s_%s", strings.Replace(resource, "-", "_", -1), common.Cleaning),
+				Help: fmt.Sprintf("Number of %s %s", common.Cleaning, resource),
+			}),
+		}
 	}
 
-	for _, gke := range promMetrics.GkeStats {
-		prometheus.MustRegister(gke)
+	for _, gauges := range promMetrics.BoskosState {
+		for _, gauge := range gauges {
+			prometheus.MustRegister(gauge)
+		}
 	}
 }
 
@@ -89,6 +79,9 @@ func main() {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	boskos := client.NewClient("Metrics", "http://boskos")
 	logrus.Infof("Initialzied boskos client!")
+
+	flag.Parse()
+	init_prometheus()
 
 	http.Handle("/prometheus", promhttp.Handler())
 	http.Handle("/", handleMetric(boskos))
@@ -107,25 +100,17 @@ func main() {
 }
 
 func update(boskos *client.Client) error {
-	gce, err := boskos.Metric("gce-project")
-	if err != nil {
-		return fmt.Errorf("fail to get metric for gce-project : %v", err)
+	for _, resource := range resources {
+		metric, err := boskos.Metric(resource)
+		if err != nil {
+			return fmt.Errorf("fail to get metric for %s : %v", resource, err)
+		}
+
+		promMetrics.BoskosState[resource][common.Free].Set(float64(metric.Current[common.Free]))
+		promMetrics.BoskosState[resource][common.Busy].Set(float64(metric.Current[common.Busy]))
+		promMetrics.BoskosState[resource][common.Dirty].Set(float64(metric.Current[common.Dirty]))
+		promMetrics.BoskosState[resource][common.Cleaning].Set(float64(metric.Current[common.Cleaning]))
 	}
-
-	promMetrics.GceStats[common.Free].Set(float64(gce.Current[common.Free]))
-	promMetrics.GceStats[common.Busy].Set(float64(gce.Current[common.Busy]))
-	promMetrics.GceStats[common.Dirty].Set(float64(gce.Current[common.Dirty]))
-	promMetrics.GceStats[common.Cleaning].Set(float64(gce.Current[common.Cleaning]))
-
-	gke, err := boskos.Metric("gke-project")
-	if err != nil {
-		return fmt.Errorf("fail to get metric for gke-project : %v", err)
-	}
-
-	promMetrics.GkeStats[common.Free].Set(float64(gke.Current[common.Free]))
-	promMetrics.GkeStats[common.Busy].Set(float64(gke.Current[common.Busy]))
-	promMetrics.GkeStats[common.Dirty].Set(float64(gke.Current[common.Dirty]))
-	promMetrics.GkeStats[common.Cleaning].Set(float64(gke.Current[common.Cleaning]))
 
 	return nil
 }
