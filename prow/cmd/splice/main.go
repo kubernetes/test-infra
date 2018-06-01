@@ -280,7 +280,7 @@ func main() {
 	defer splicer.cleanup()
 
 	configAgent := &config.Agent{}
-	if err := configAgent.Start(*configPath); err != nil {
+	if err := configAgent.Start(*configPath, ""); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 

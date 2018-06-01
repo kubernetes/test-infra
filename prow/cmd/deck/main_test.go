@@ -251,9 +251,11 @@ func TestTide(t *testing.T) {
 	}))
 	ca := &config.Agent{}
 	ca.Set(&config.Config{
-		Tide: config.Tide{
-			Queries: []config.TideQuery{
-				{Repos: []string{"kubernetes/test-infra"}},
+		ProwConfig: config.ProwConfig{
+			Tide: config.Tide{
+				Queries: []config.TideQuery{
+					{Repos: []string{"kubernetes/test-infra"}},
+				},
 			},
 		},
 	})

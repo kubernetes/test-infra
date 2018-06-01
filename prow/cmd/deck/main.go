@@ -128,7 +128,7 @@ func main() {
 func prodOnlyMain(o options, mux *http.ServeMux) *http.ServeMux {
 	// setup config agent, pod log clients etc.
 	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath); err != nil {
+	if err := configAgent.Start(o.configPath, ""); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
