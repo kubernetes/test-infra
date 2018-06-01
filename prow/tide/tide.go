@@ -38,6 +38,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
+	"k8s.io/test-infra/prow/tide/blockers"
 )
 
 type kubeClient interface {
@@ -88,6 +89,7 @@ const (
 	TriggerBatch        = "TRIGGER_BATCH"
 	Merge               = "MERGE"
 	MergeBatch          = "MERGE_BATCH"
+	PoolBlocked         = "POOL_BLOCKED"
 )
 
 // Pool represents information about a tide pool. There is one for every
@@ -108,8 +110,9 @@ type Pool struct {
 	BatchPending []PullRequest
 
 	// Which action did we last take, and to what target(s), if any.
-	Action Action
-	Target []PullRequest
+	Action   Action
+	Target   []PullRequest
+	Blockers []blockers.Blocker
 }
 
 // NewController makes a Controller out of the given clients.
@@ -178,7 +181,7 @@ func contextsToStrings(contexts []Context) []string {
 // Sync runs one sync iteration.
 func (c *Controller) Sync() error {
 	ctx := context.Background()
-	c.logger.Info("Building tide pool.")
+	c.logger.Debug("Building tide pool.")
 	pool := make(map[string]PullRequest)
 	for _, q := range c.ca.Config().Tide.Queries {
 		poolPRs, err := search(c.ghc, c.logger, ctx, q.Query())
@@ -202,11 +205,21 @@ func (c *Controller) Sync() error {
 	c.sc.Unlock()
 
 	var pjs []kube.ProwJob
+	var blocks blockers.Blockers
 	var err error
 	if len(pool) > 0 {
 		pjs, err = c.kc.ListProwJobs(kube.EmptySelector)
 		if err != nil {
 			return err
+		}
+
+		if label := c.ca.Config().Tide.BlockerLabel; label != "" {
+			c.logger.Debugf("Searching for blocking issues (label %q).", label)
+			orgs, repos := c.ca.Config().Tide.Queries.OrgsAndRepos()
+			blocks, err = blockers.FindAll(c.ghc, c.logger, label, orgs, repos)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	sps, err := c.dividePool(pool, pjs)
@@ -226,7 +239,8 @@ func (c *Controller) Sync() error {
 		go func() {
 			defer wg.Done()
 			for sp := range sps {
-				if pool, err := c.syncSubpool(sp); err != nil {
+				spBlocks := blocks.GetApplicable(sp.org, sp.repo, sp.branch)
+				if pool, err := c.syncSubpool(sp, spBlocks); err != nil {
 					sp.log.WithError(err).Errorf("Error syncing subpool.")
 				} else {
 					poolChan <- pool
@@ -698,7 +712,7 @@ func (c *Controller) presubmitsByPull(sp subpool) (map[int]sets.String, error) {
 	return presubmits, nil
 }
 
-func (c *Controller) syncSubpool(sp subpool) (Pool, error) {
+func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, error) {
 	sp.log.Infof("Syncing subpool: %d PRs, %d PJs.", len(sp.prs), len(sp.pjs))
 	presubmits, err := c.presubmitsByPull(sp)
 	if err != nil {
@@ -717,12 +731,19 @@ func (c *Controller) syncSubpool(sp subpool) (Pool, error) {
 		"batch-passing": prNumbers(batchMerge),
 		"batch-pending": prNumbers(batchPending),
 	}).Info("Subpool accumulated.")
-	act, targets, err := c.takeAction(sp, presubmits, batchPending, successes, pendings, nones, batchMerge, &cr)
+
+	var act Action
+	var targets []PullRequest
+	if len(blocks) > 0 {
+		act = PoolBlocked
+	} else {
+		act, targets, err = c.takeAction(sp, presubmits, batchPending, successes, pendings, nones, batchMerge, &cr)
+	}
+
 	sp.log.WithFields(logrus.Fields{
 		"action":  string(act),
 		"targets": prNumbers(targets),
 	}).Info("Subpool synced.")
-
 	return Pool{
 			Org:    sp.org,
 			Repo:   sp.repo,
@@ -734,8 +755,9 @@ func (c *Controller) syncSubpool(sp subpool) (Pool, error) {
 
 			BatchPending: batchPending,
 
-			Action: act,
-			Target: targets,
+			Action:   act,
+			Target:   targets,
+			Blockers: blocks,
 		},
 		err
 }
@@ -821,7 +843,7 @@ func search(ghc githubClient, log *logrus.Entry, ctx context.Context, q string) 
 		}
 		vars["searchCursor"] = githubql.NewString(sq.Search.PageInfo.EndCursor)
 	}
-	log.Infof("Search for query \"%s\" cost %d point(s). %d remaining.", q, totalCost, remaining)
+	log.Debugf("Search for query \"%s\" cost %d point(s). %d remaining.", q, totalCost, remaining)
 	return ret, nil
 }
 
@@ -858,7 +880,7 @@ type PullRequest struct {
 		Nodes []struct {
 			Name githubql.String
 		}
-	} `graphql:"labels(first: 10)"`
+	} `graphql:"labels(first: 100)"`
 	Milestone *struct {
 		Title githubql.String
 	}
