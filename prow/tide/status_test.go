@@ -403,7 +403,7 @@ func TestTargetUrl(t *testing.T) {
 
 	for _, tc := range testcases {
 		ca := &config.Agent{}
-		ca.Set(&config.Config{Tide: tc.config})
+		ca.Set(&config.Config{ProwConfig: config.ProwConfig{Tide: tc.config}})
 		log := logrus.WithField("controller", "status-update")
 		if actual, expected := targetUrl(ca, tc.pr, log), tc.expectedUrl; actual != expected {
 			t.Errorf("%s: expected target URL %s but got %s", tc.name, expected, actual)

@@ -328,6 +328,194 @@ periodics:
 			expectError: true,
 		},
 		{
+			name:       "one presubmit, no context",
+			prowConfig: ``,
+			jobConfigs: []string{
+				`
+presubmits:
+  foo/bar:
+  - agent: kubernetes
+    name: presubmit-bar
+    spec:
+      containers:
+      - image: alpine`,
+			},
+			expectError: true,
+		},
+		{
+			name:       "one presubmit, ok",
+			prowConfig: ``,
+			jobConfigs: []string{
+				`
+presubmits:
+  foo/bar:
+  - agent: kubernetes
+    name: presubmit-bar
+    context: bar
+    spec:
+      containers:
+      - image: alpine`,
+			},
+		},
+		{
+			name:       "two presubmits",
+			prowConfig: ``,
+			jobConfigs: []string{
+				`
+presubmits:
+  foo/bar:
+  - agent: kubernetes
+    name: presubmit-bar
+    context: bar
+    spec:
+      containers:
+      - image: alpine`,
+				`
+presubmits:
+  foo/baz:
+  - agent: kubernetes
+    name: presubmit-baz
+    context: baz
+    spec:
+      containers:
+      - image: alpine`,
+			},
+		},
+		{
+			name:       "dup presubmits, one file",
+			prowConfig: ``,
+			jobConfigs: []string{
+				`
+presubmits:
+  foo/bar:
+  - agent: kubernetes
+    name: presubmit-bar
+    context: bar
+    spec:
+      containers:
+      - image: alpine
+  - agent: kubernetes
+    name: presubmit-bar
+    context: bar
+    spec:
+      containers:
+      - image: alpine`,
+			},
+		},
+		{
+			name:       "dup presubmits, two files",
+			prowConfig: ``,
+			jobConfigs: []string{
+				`
+presubmits:
+  foo/bar:
+  - interval: 10m
+    agent: kubernetes
+    name: presubmit-bar
+    context: bar
+    spec:
+      containers:
+      - image: alpine`,
+				`
+presubmits:
+  foo/bar:
+  - interval: 10m
+    agent: kubernetes
+    context: bar
+    name: presubmit-bar
+    spec:
+      containers:
+      - image: alpine`,
+			},
+			expectError: true,
+		},
+		{
+			name:       "one postsubmit, ok",
+			prowConfig: ``,
+			jobConfigs: []string{
+				`
+postsubmits:
+  foo/bar:
+  - agent: kubernetes
+    name: postsubmit-bar
+    spec:
+      containers:
+      - image: alpine`,
+			},
+		},
+		{
+			name:       "two postsubmits",
+			prowConfig: ``,
+			jobConfigs: []string{
+				`
+postsubmits:
+  foo/bar:
+  - agent: kubernetes
+    name: postsubmit-bar
+    context: bar
+    spec:
+      containers:
+      - image: alpine`,
+				`
+postsubmits:
+  foo/baz:
+  - agent: kubernetes
+    name: postsubmit-baz
+    context: baz
+    spec:
+      containers:
+      - image: alpine`,
+			},
+		},
+		{
+			name:       "dup postsubmits, one file",
+			prowConfig: ``,
+			jobConfigs: []string{
+				`
+postsubmits:
+  foo/bar:
+  - agent: kubernetes
+    name: postsubmit-bar
+    context: bar
+    spec:
+      containers:
+      - image: alpine
+  - agent: kubernetes
+    name: postsubmit-bar
+    context: bar
+    spec:
+      containers:
+      - image: alpine`,
+			},
+		},
+		{
+			name:       "dup postsubmits, two files",
+			prowConfig: ``,
+			jobConfigs: []string{
+				`
+postsubmits:
+  foo/bar:
+  - interval: 10m
+    agent: kubernetes
+    name: postsubmit-bar
+    context: bar
+    spec:
+      containers:
+      - image: alpine`,
+				`
+postsubmits:
+  foo/bar:
+  - interval: 10m
+    agent: kubernetes
+    context: bar
+    name: postsubmit-bar
+    spec:
+      containers:
+      - image: alpine`,
+			},
+			expectError: true,
+		},
+		{
 			name: "overwrite PodNamespace",
 			prowConfig: `
 pod_namespace: test`,

@@ -353,18 +353,6 @@ func (c *Config) mergeJobConfig(jc JobConfig) error {
 
 	c.Periodics = append(c.Periodics, jc.Periodics...)
 
-	for repo, jobs := range jc.Presubmits {
-		if _, ok := c.Presubmits[repo]; ok {
-			c.Presubmits[repo] = append(c.Presubmits[repo], jobs...)
-		}
-	}
-
-	for repo, jobs := range jc.Postsubmits {
-		if _, ok := c.Postsubmits[repo]; ok {
-			c.Postsubmits[repo] = append(c.Postsubmits[repo], jobs...)
-		}
-	}
-
 	// validate no duplicated presets
 	validLabels := map[string]string{}
 	for _, preset := range c.Presets {
@@ -385,22 +373,50 @@ func (c *Config) mergeJobConfig(jc JobConfig) error {
 		validPeriodics[p.Name] = true
 	}
 
-	// validate no duplicated presubmits
+	// validate no presubmit with same name exists cross multiple files
 	validPresubmits := map[string]bool{}
 	for _, p := range c.AllPresubmits(nil) {
-		if _, ok := validPresubmits[p.Name]; ok {
-			return fmt.Errorf("duplicated presubmit job : %s", p.Name)
-		}
 		validPresubmits[p.Name] = true
 	}
 
-	// validate no duplicated postsubmits
+	if c.Presubmits == nil {
+		c.Presubmits = make(map[string][]Presubmit)
+	}
+
+	for repo, jobs := range jc.Presubmits {
+		if _, ok := c.Presubmits[repo]; ok {
+			for _, job := range jobs {
+				if _, ok := validPresubmits[job.Name]; ok {
+					return fmt.Errorf("duplicated presubmit job across multiple files : %s", job.Name)
+				}
+			}
+			c.Presubmits[repo] = append(c.Presubmits[repo], jobs...)
+		} else {
+			c.Presubmits[repo] = jobs
+		}
+	}
+
+	// validate no postsubmit with same name exists cross multiple files
 	validPostsubmits := map[string]bool{}
 	for _, p := range c.AllPostsubmits(nil) {
-		if _, ok := validPostsubmits[p.Name]; ok {
-			return fmt.Errorf("duplicated postsubmit job : %s", p.Name)
-		}
 		validPostsubmits[p.Name] = true
+	}
+
+	if c.Postsubmits == nil {
+		c.Postsubmits = make(map[string][]Postsubmit)
+	}
+
+	for repo, jobs := range jc.Postsubmits {
+		if _, ok := c.Postsubmits[repo]; ok {
+			for _, job := range jobs {
+				if _, ok := validPostsubmits[job.Name]; ok {
+					return fmt.Errorf("duplicated postsubmit job across multiple files : %s", job.Name)
+				}
+			}
+			c.Postsubmits[repo] = append(c.Postsubmits[repo], jobs...)
+		} else {
+			c.Postsubmits[repo] = jobs
+		}
 	}
 
 	return nil

@@ -7757,7 +7757,7 @@ periodics:
   interval: 30m
   agent: kubernetes
   labels:
-    preset-service-account: true
+    preset-service-account: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180510-540e0e395-experimental
@@ -7784,8 +7784,8 @@ periodics:
   agent: kubernetes
   name: ci-containerd-e2e-gci-gce-1-1
   labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
   spec:
     containers:
     - args:
@@ -7830,8 +7830,8 @@ periodics:
   interval: 1h
   agent: kubernetes
   labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180510-540e0e395-master
