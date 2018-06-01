@@ -92,9 +92,12 @@ func (f *fghc) ListIssueComments(org, repo string, number int) ([]github.IssueCo
 	return f.prComments, nil
 }
 
-func (f *fghc) ListOrgMembers(org string) ([]github.TeamMember, error) {
+func (f *fghc) ListOrgMembers(org, role string) ([]github.TeamMember, error) {
 	f.Lock()
 	defer f.Unlock()
+	if role != "all" {
+		return nil, fmt.Errorf("all is only supported role, not: %s", role)
+	}
 	return f.orgMembers, nil
 }
 

@@ -467,16 +467,22 @@ func (c *Client) IsMember(org, user string) (bool, error) {
 // user is also a member of this organization then both concealed and public members
 // will be returned.
 //
+// Role options are "all", "admin" and "member"
+//
 // https://developer.github.com/v3/orgs/members/#members-list
-func (c *Client) ListOrgMembers(org string) ([]TeamMember, error) {
-	c.log("ListOrgMembers", org)
+func (c *Client) ListOrgMembers(org, role string) ([]TeamMember, error) {
+	c.log("ListOrgMembers", org, role)
 	if c.fake {
 		return nil, nil
 	}
 	path := fmt.Sprintf("/orgs/%s/members", org)
 	var teamMembers []TeamMember
-	err := c.readPaginatedResults(
+	err := c.readPaginatedResultsWithValues(
 		path,
+		url.Values{
+			"per_page": []string{"100"},
+			"role":     []string{role},
+		},
 		"",
 		func() interface{} {
 			return &[]TeamMember{}
@@ -489,6 +495,41 @@ func (c *Client) ListOrgMembers(org string) ([]TeamMember, error) {
 		return nil, err
 	}
 	return teamMembers, nil
+}
+
+// UpdateOrgMembership invites a user to the org and/or updates their permission level.
+//
+// If the user is not already a member, this will invite them.
+// This will also change the role to/from admin, on either the invitation or membership setting.
+//
+// https://developer.github.com/v3/orgs/members/#add-or-update-organization-membership
+func (c *Client) UpdateOrgMembership(org, user string, admin bool) (*OrgMembership, error) {
+	c.log("UpdateOrgMembership", org, user, admin)
+	om := OrgMembership{}
+	if admin {
+		om.Role = RoleAdmin
+	}
+
+	_, err := c.request(&request{
+		method:      http.MethodPut,
+		path:        fmt.Sprintf("/orgs/%s/memberships/%s", org, user),
+		requestBody: &om,
+		exitCodes:   []int{204},
+	}, &om)
+	return &om, err
+}
+
+// RemoveOrgMembership removes the user from the org.
+//
+// https://developer.github.com/v3/orgs/members/#remove-organization-membership
+func (c *Client) RemoveOrgMembership(org, user string) error {
+	c.log("RemoveOrgMembership", org, user)
+	_, err := c.request(&request{
+		method:    http.MethodDelete,
+		path:      fmt.Sprintf("/orgs/%s/memberships/%s", org, user),
+		exitCodes: []int{204},
+	}, nil)
+	return err
 }
 
 // CreateComment creates a comment on the issue.
