@@ -95,8 +95,8 @@
   "ci-containerd-e2e-gci-gce": {
     "args": [
       "--check-leaked-resources",
-      "--env=KUBE_MASTER_EXTRA_METADATA=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env",
-      "--env=KUBE_NODE_EXTRA_METADATA=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env",
+      "--env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env",
+      "--env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce.env",
       "--env-file=jobs/env/ci-cri-containerd-e2e-gce.env",
       "--extract=ci/latest",
@@ -116,8 +116,8 @@
   "ci-containerd-e2e-gci-gce-1-1": {
     "args": [
       "--check-leaked-resources",
-      "--env=KUBE_MASTER_EXTRA_METADATA=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.1/env",
-      "--env=KUBE_NODE_EXTRA_METADATA=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.1/env",
+      "--env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.1/env",
+      "--env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.1/env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce.env",
       "--env-file=jobs/env/ci-cri-containerd-e2e-gce.env",
       "--extract=ci/latest-1.10",
@@ -137,8 +137,8 @@
   "ci-containerd-e2e-ubuntu-gce": {
     "args": [
       "--check-leaked-resources",
-      "--env=KUBE_MASTER_EXTRA_METADATA=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env",
-      "--env=KUBE_NODE_EXTRA_METADATA=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env",
+      "--env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env",
+      "--env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env",
       "--env-file=jobs/env/ci-cri-containerd-e2e-gce.env",
       "--extract=ci/latest",
       "--gcp-node-image=ubuntu",
@@ -206,8 +206,8 @@
   "ci-containerd-soak-gci-gce": {
     "args": [
       "--down=false",
-      "--env=KUBE_MASTER_EXTRA_METADATA=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env",
-      "--env=KUBE_NODE_EXTRA_METADATA=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env",
+      "--env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env",
+      "--env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env",
       "--env-file=jobs/env/ci-cri-containerd-e2e-gce.env",
       "--extract=ci/latest",
       "--gcp-master-image=gci",
