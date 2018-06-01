@@ -7131,8 +7131,7 @@ presubmits:
   - name: pull-tf-minigo-cc
     agent: kubernetes
     always_run: true
-    skip_report: true
-    #context: pull-tf-minigo-cc
+    context: pull-tf-minigo-cc
     branches:
     - master
     rerun_command: "/test pull-tf-minigo-cc"
