@@ -154,7 +154,7 @@ func main() {
 			}
 		}
 	}()
-	logrus.Fatal(server.ListenAndServe())
+	logrus.WithError(server.ListenAndServe()).Warn("Tide HTTP server stopped.")
 }
 
 func sync(c *tide.Controller) {

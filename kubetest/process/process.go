@@ -364,7 +364,14 @@ func (c *Control) Output(cmd *exec.Cmd) ([]byte, error) {
 	cmd.Stdout = &stdout
 	err := c.FinishRunning(cmd)
 	return stdout.Bytes(), err
+}
 
+// ignores all output from the command, potentially timing out in the process.
+func (c *Control) NoOutput(cmd *exec.Cmd) error {
+	var void bytes.Buffer
+	cmd.Stdout = &void
+	cmd.Stderr = &void
+	return c.FinishRunning(cmd)
 }
 
 // Get the process group to kill the entire main/child process

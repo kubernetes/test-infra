@@ -393,9 +393,10 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 		pj.Status.JenkinsBuildID = strconv.Itoa(jb.Number)
 		var b bytes.Buffer
 		if err := c.config().JobURLTemplate.Execute(&b, &pj); err != nil {
-			return fmt.Errorf("error executing URL template: %v", err)
+			c.log.Errorf("error executing URL template: %v", err)
+		} else {
+			pj.Status.URL = b.String()
 		}
-		pj.Status.URL = b.String()
 	}
 	// Report to Github.
 	reports <- pj

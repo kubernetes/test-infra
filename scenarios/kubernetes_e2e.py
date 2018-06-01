@@ -40,28 +40,28 @@ DEFAULT_AWS_ZONES = [
     'ap-northeast-1a',
     'ap-northeast-1c',
     'ap-northeast-1d',
-    'ap-northeast-2a',
+    #'ap-northeast-2a', InsufficientInstanceCapacity for c4.large 2018-05-30
     #'ap-northeast-2a' - AZ does not exist, so we're breaking the 3 AZs per region target here
-    'ap-northeast-2c',
-    #'ap-south-1a', # no c4.large instances available
-    #'ap-south-1b', # no c4.large instances available
-    'ap-southeast-1a',
-    'ap-southeast-1b',
-    'ap-southeast-1c',
-    'ap-southeast-2a',
-    'ap-southeast-2b',
-    'ap-southeast-2c',
-    #'ca-central-1a', no c4.large capacity 2018-04-25
-    #'ca-central-1b', no c4.large capacity 2018-04-25
+    #'ap-northeast-2c', InsufficientInstanceCapacity for c4.large 2018-05-30
+    #'ap-south-1a', InsufficientInstanceCapacity for c4.large 2018-05-30
+    #'ap-south-1b', InsufficientInstanceCapacity for c4.large 2018-05-30
+    #'ap-southeast-1a', InsufficientInstanceCapacity for c4.large 2018-05-30
+    #'ap-southeast-1b', InsufficientInstanceCapacity for c4.large 2018-05-30
+    #'ap-southeast-1c', InsufficientInstanceCapacity for c4.large 2018-05-30
+    #'ap-southeast-2a', InsufficientInstanceCapacity for c4.large 2018-05-30
+    #'ap-southeast-2b', InsufficientInstanceCapacity for c4.large 2018-05-30
+    #'ap-southeast-2c', InsufficientInstanceCapacity for c4.large 2018-05-30
+    #'ca-central-1a', InsufficientInstanceCapacity for c4.large 2018-05-30
+    #'ca-central-1b', InsufficientInstanceCapacity for c4.large 2018-05-30
     'eu-central-1a',
     'eu-central-1b',
     'eu-central-1c',
     'eu-west-1a',
     'eu-west-1b',
     'eu-west-1c',
-    #'eu-west-2a', no c4.large capacity 2018-04-24
-    #'eu-west-2b', no c4.large capacity 2018-04-24
-    #'eu-west-2c', no c4.large capacity 2018-04-24
+    #'eu-west-2a', InsufficientInstanceCapacity for c4.large 2018-05-30
+    #'eu-west-2b', InsufficientInstanceCapacity for c4.large 2018-05-30
+    #'eu-west-2c', InsufficientInstanceCapacity for c4.large 2018-05-30
     #'eu-west-3a', documented to not support c4 family
     #'eu-west-3b', documented to not support c4 family
     #'eu-west-3c', documented to not support c4 family
@@ -74,9 +74,9 @@ DEFAULT_AWS_ZONES = [
     #'us-east-1d', # limiting to 3 zones to not overallocate
     #'us-east-1e', # limiting to 3 zones to not overallocate
     #'us-east-1f', # limiting to 3 zones to not overallocate
-    #'us-east-2a', # no c4.large instances available
-    #'us-east-2b', # no c4.large instances available
-    #'us-east-2c', # no c4.large instances available
+    #'us-east-2a', InsufficientInstanceCapacity for c4.large 2018-05-30
+    #'us-east-2b', InsufficientInstanceCapacity for c4.large 2018-05-30
+    #'us-east-2c', InsufficientInstanceCapacity for c4.large 2018-05-30
     'us-west-1a',
     'us-west-1b',
     #'us-west-1c', AZ does not exist, so we're breaking the 3 AZs per region target here
@@ -262,7 +262,7 @@ class LocalMode(object):
         check_env(env, self.command, *args)
 
 
-def cluster_name(cluster):
+def cluster_name(cluster, tear_down_previous=False):
     """Return or select a cluster name."""
     if cluster:
         return cluster
@@ -275,7 +275,7 @@ def cluster_name(cluster):
     job_type = os.getenv('JOB_TYPE')
     if job_type == 'batch':
         suffix = 'batch-%s' % os.getenv('BUILD_ID', 0)
-    elif job_type == 'presubmit':
+    elif job_type == 'presubmit' and tear_down_previous:
         suffix = '%s' % os.getenv('PULL_NUMBER', 0)
     else:
         suffix = '%s' % os.getenv('BUILD_ID', 0)
@@ -533,7 +533,7 @@ def main(args):
     if args.provider:
         runner_args.append('--provider=%s' % args.provider)
 
-    cluster = cluster_name(args.cluster)
+    cluster = cluster_name(args.cluster, args.tear_down_previous)
     runner_args.append('--cluster=%s' % cluster)
     runner_args.append('--gcp-network=%s' % cluster)
     runner_args.extend(args.kubetest_args)
@@ -635,6 +635,9 @@ def create_parser():
         '--down', default='true', help='If we need to tear down the e2e cluster')
     parser.add_argument(
         '--up', default='true', help='If we need to bring up a e2e cluster')
+    parser.add_argument(
+        '--tear-down-previous', action='store_true',
+        help='If we need to tear down previous e2e cluster')
     parser.add_argument(
         '--use-logexporter',
         action='store_true',

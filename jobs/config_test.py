@@ -551,7 +551,9 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gce': 'ci-kubernetes-e2e-gce-*',
             'ci-kubernetes-e2e-gce-canary': 'ci-kubernetes-e2e-gce-*',
             'ci-kubernetes-node-kubelet-serial': 'ci-kubernetes-node-kubelet-*',
+            'ci-kubernetes-node-kubelet-orphans': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-serial-cpu-manager': 'ci-kubernetes-node-kubelet-*',
+            'ci-kubernetes-node-kubelet-features': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-flaky': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-conformance': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-benchmark': 'ci-kubernetes-node-kubelet-*',
@@ -561,13 +563,17 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-node-kubelet-stable3': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-alpha': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-beta': 'ci-kubernetes-node-kubelet-*',
+            'ci-kubernetes-node-kubelet-beta-features': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-non-cri-1-6': 'ci-kubernetes-node-kubelet-*',
             # The cri-containerd validation node e2e jobs intentionally share projects.
             'ci-cri-containerd-node-e2e': 'cri-containerd-node-e2e-*',
             'ci-cri-containerd-node-e2e-serial': 'cri-containerd-node-e2e-*',
+            'ci-cri-containerd-node-e2e-features': 'cri-containerd-node-e2e-*',
             'ci-cri-containerd-node-e2e-flaky': 'cri-containerd-node-e2e-*',
             'ci-cri-containerd-node-e2e-benchmark': 'cri-containerd-node-e2e-*',
             'ci-containerd-node-e2e': 'cri-containerd-node-e2e-*',
+            'ci-containerd-node-e2e-1-1': 'cri-containerd-node-e2e-*',
+            'ci-containerd-node-e2e-features': 'cri-containerd-node-e2e-*',
             # ci-cri-containerd-e2e-gce-stackdriver intentionally share projects with
             # ci-kubernetes-e2e-gce-stackdriver.
             'ci-kubernetes-e2e-gce-stackdriver': 'k8s-jkns-e2e-gce-stackdriver',

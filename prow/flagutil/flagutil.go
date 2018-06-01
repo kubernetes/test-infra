@@ -43,6 +43,7 @@ func (s *Strings) String() string {
 // Set records the value passed
 func (s *Strings) Set(value string) error {
 	if !s.beenSet {
+		s.beenSet = true
 		// Value is being set, don't use default.
 		s.vals = nil
 	}

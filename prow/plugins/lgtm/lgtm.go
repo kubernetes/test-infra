@@ -142,7 +142,7 @@ func handle(gc githubClient, config *plugins.Configuration, ownersClient repoown
 		if err != nil {
 			return err
 		}
-		if !loadReviewers(ro, filenames).Has(commentAuthor) {
+		if !loadReviewers(ro, filenames).Has(github.NormLogin(commentAuthor)) {
 			resp := "adding LGTM is restricted to approvers and reviewers in OWNERS files."
 			log.Infof("Reply to /lgtm request with comment: \"%s\"", resp)
 			return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, commentAuthor, resp))

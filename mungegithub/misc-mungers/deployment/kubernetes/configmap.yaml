@@ -33,5 +33,5 @@ label-file: "/gitrepos/kubernetes/labels.yaml"
 alias-file: "/gitrepos/kubernetes/OWNERS_ALIASES"
 use-reviewers: true
 # milestone-maintainer
-milestone-modes: v1.8=dev,v1.9=dev,v1.10=dev,v1.11=dev
-milestone-freeze-date: "TBD"
+milestone-modes: v1.8=dev,v1.9=dev,v1.10=dev,v1.11=slush
+milestone-freeze-date: "Tuesday, June 5th"

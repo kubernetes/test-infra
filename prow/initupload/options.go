@@ -18,7 +18,6 @@ package initupload
 
 import (
 	"encoding/json"
-	"errors"
 	"flag"
 
 	"k8s.io/test-infra/prow/gcsupload"
@@ -41,16 +40,9 @@ func NewOptions() *Options {
 type Options struct {
 	*gcsupload.Options
 
-	// Log is the log file to which clone records are written
-	Log string `json:"log"`
-}
-
-func (o *Options) Validate() error {
-	if o.Log == "" {
-		return errors.New("the path to the clone records log was not provided")
-	}
-
-	return o.Options.Validate()
+	// Log is the log file to which clone records are written.
+	// If unspecified, no clone records are uploaded.
+	Log string `json:"log,omitempty"`
 }
 
 // ConfigVar exposes the environment variable used

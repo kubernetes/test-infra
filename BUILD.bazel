@@ -43,6 +43,7 @@ filegroup(
         "//gcsweb/cmd/gcsweb:all-srcs",
         "//gcsweb/pkg/version:all-srcs",
         "//ghclient:all-srcs",
+        "//ghproxy:all-srcs",
         "//greenhouse:all-srcs",
         "//hack:all-srcs",
         "//images/bootstrap/barnacle:all-srcs",

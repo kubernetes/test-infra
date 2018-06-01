@@ -20,6 +20,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
@@ -175,16 +176,79 @@ func TestFormat(t *testing.T) {
 
 // Medium integration test (depends on ability to open a TCP port)
 func TestHttpResponse(t *testing.T) {
-	img := "http://localhost?kind=url"
+	// create test cases for handling content length of images
+	contentLength := make(map[string]string)
+	contentLength["/cat.jpg"] = "717987"
+	contentLength["/bigcat.jpg"] = "12647753"
+
+	// fake server for images
+	ts2 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if s, ok := contentLength[r.URL.Path]; ok {
+			body := "binary image"
+			w.Header().Set("Content-Length", s)
+			io.WriteString(w, body)
+		} else {
+			t.Errorf("Cannot find content length for %s", r.URL.Path)
+		}
+	}))
+	defer ts2.Close()
+
+	// create test cases for handling http responses
+	img := ts2.URL + "/cat.jpg"
+	bigimg := ts2.URL + "/bigcat.jpg"
 	src := "http://localhost?kind=source_url"
+	validResponse := fmt.Sprintf(`<response><data><images><image><url>%s</url><source_url>%s</source_url></image></images></data></response>`, img, src)
+	var testcases = []struct {
+		name     string
+		path     string
+		response string
+		isValid  bool
+	}{
+		{
+			name:     "valid",
+			path:     "/valid",
+			response: fmt.Sprintf(`<response><data><images><image><url>%s</url><source_url>%s</source_url></image></images></data></response>`, img, src),
+			isValid:  true,
+		},
+		{
+			name:     "image too big",
+			path:     "/too-big",
+			response: fmt.Sprintf(`<response><data><images><image><url>%s</url><source_url>%s</source_url></image></images></data></response>`, bigimg, src),
+			isValid:  false,
+		},
+	}
+
+	// fake server for image urls
+	pathToResponse := make(map[string]string)
+	for _, testcase := range testcases {
+		pathToResponse[testcase.path] = testcase.response
+	}
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, `<response><data><images><image><url>%s</url><source_url>%s</source_url></image></images></data></response>`, img, src)
+		if r, ok := pathToResponse[r.URL.Path]; ok {
+			io.WriteString(w, r)
+		} else {
+			io.WriteString(w, validResponse)
+		}
 	}))
 	defer ts.Close()
+
+	// github fake client
 	fc := &fakegithub.FakeClient{
 		IssueComments: make(map[int][]github.IssueComment),
 	}
 
+	// run test for each case
+	for _, testcase := range testcases {
+		fakemeow := &realClowder{url: ts.URL + testcase.path}
+		cat, err := fakemeow.readCat(*category)
+		if testcase.isValid && err != nil {
+			t.Errorf("For case %s, didn't expect error: %v", testcase.name, err)
+		} else if !testcase.isValid && err == nil {
+			t.Errorf("For case %s, expected error, received cat: %s", testcase.name, cat)
+		}
+	}
+
+	// fully test handling a comment
 	comment := "/meow"
 
 	e := &github.GenericCommentEvent{
@@ -193,7 +257,7 @@ func TestHttpResponse(t *testing.T) {
 		Number:     5,
 		IssueState: "open",
 	}
-	if err := handle(fc, logrus.WithField("plugin", pluginName), e, &realClowder{url: ts.URL}); err != nil {
+	if err := handle(fc, logrus.WithField("plugin", pluginName), e, &realClowder{url: ts.URL}, func() {}); err != nil {
 		t.Errorf("didn't expect error: %v", err)
 		return
 	}
@@ -281,7 +345,7 @@ func TestCats(t *testing.T) {
 			IssueState: tc.state,
 			IsPR:       tc.pr,
 		}
-		err := handle(fc, logrus.WithField("plugin", pluginName), e, fakeClowder("tubbs"))
+		err := handle(fc, logrus.WithField("plugin", pluginName), e, fakeClowder("tubbs"), func() {})
 		if !tc.shouldError && err != nil {
 			t.Errorf("%s: didn't expect error: %v", tc.name, err)
 			continue

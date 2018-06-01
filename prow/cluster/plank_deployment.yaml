@@ -27,11 +27,13 @@ spec:
     spec:
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:v20180521-f8caf9625
+        image: gcr.io/k8s-prow/plank:v20180529-e9431eaa3
         args:
         - --tot-url=http://tot
         - --build-cluster=/etc/cluster/cluster
         - --dry-run=false
+        - --github-endpoint=http://ghproxy
+        - --github-endpoint=https://api.github.com
         volumeMounts:
         - mountPath: /etc/cluster
           name: cluster
