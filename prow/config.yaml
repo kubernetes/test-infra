@@ -14777,8 +14777,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180418-95176fe00
@@ -14791,8 +14791,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180418-95176fe00
@@ -14929,8 +14929,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180418-95176fe00
