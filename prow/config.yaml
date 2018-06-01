@@ -14776,6 +14776,34 @@ periodics:
 
 # TODO(bentheelder): switch ci-kubernetes-bazel-build to 100% periodic,
 # like the other build job once we don't have run_after_success
+- name: ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180418-95176fe00
+      args:
+      - "--repo=k8s.io/kubernetes=release-1.11"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
+
+- name: ci-kubernetes-e2e-kubeadm-gce-1-11
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180418-95176fe00
+      args:
+      - "--repo=k8s.io/kubernetes=release-1.11"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
+
 - name: ci-kubernetes-e2e-kubeadm-gce-1-8
   interval: 12h
   agent: kubernetes
@@ -14897,6 +14925,20 @@ periodics:
     - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180511-d60cfb374
       args:
       - "--repo=k8s.io/kubernetes=master"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
+
+- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180418-95176fe00
+      args:
+      - "--repo=k8s.io/kubernetes=release-1.11"
       - "--timeout=320"
       - "--upload=gs://kubernetes-jenkins/logs"
 
