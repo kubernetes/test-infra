@@ -24,7 +24,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
 	"sort"
 	"strings"
 	"sync"
@@ -39,15 +38,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
-)
-
-const (
-	statusContext string = "tide"
-	statusInPool         = "In merge pool."
-	// statusNotInPool is a format string used when a PR is not in a tide pool.
-	// The '%s' field is populated with the reason why the PR is not in a
-	// tide pool or the empty string if the reason is unknown. See requirementDiff.
-	statusNotInPool = "Not mergeable.%s"
+	"k8s.io/test-infra/prow/tide/blockers"
 )
 
 type kubeClient interface {
@@ -88,30 +79,6 @@ type Controller struct {
 	fileChangesCache map[string][]string
 }
 
-type statusController struct {
-	logger *logrus.Entry
-	ca     *config.Agent
-	ghc    githubClient
-
-	// newPoolPending is a size 1 chan that signals that the main Tide loop has
-	// updated the 'poolPRs' field with a freshly updated pool.
-	newPoolPending chan bool
-	// shutDown is used to signal to the main controller that the statusController
-	// has completed processing after newPoolPending is closed.
-	shutDown chan bool
-
-	// lastSyncStart is used to ensure that the status update period is at least
-	// the minimum status update period.
-	lastSyncStart time.Time
-	// lastSuccessfulQueryStart is used to only list PRs that have changed since
-	// we last successfully listed PRs in order to make status context updates
-	// cheaper.
-	lastSuccessfulQueryStart time.Time
-
-	sync.Mutex
-	poolPRs map[string]PullRequest
-}
-
 // Action represents what actions the controller can take. It will take
 // exactly one action each sync.
 type Action string
@@ -122,6 +89,7 @@ const (
 	TriggerBatch        = "TRIGGER_BATCH"
 	Merge               = "MERGE"
 	MergeBatch          = "MERGE_BATCH"
+	PoolBlocked         = "POOL_BLOCKED"
 )
 
 // Pool represents information about a tide pool. There is one for every
@@ -142,8 +110,9 @@ type Pool struct {
 	BatchPending []PullRequest
 
 	// Which action did we last take, and to what target(s), if any.
-	Action Action
-	Target []PullRequest
+	Action   Action
+	Target   []PullRequest
+	Blockers []blockers.Blocker
 }
 
 // NewController makes a Controller out of the given clients.
@@ -175,11 +144,6 @@ func NewController(ghcSync, ghcStatus *github.Client, kc *kube.Client, ca *confi
 // Controller.Sync() should not be used after this function is called.
 func (c *Controller) Shutdown() {
 	c.sc.shutdown()
-}
-
-func (sc *statusController) shutdown() {
-	close(sc.newPoolPending)
-	<-sc.shutDown
 }
 
 func prKey(pr *PullRequest) string {
@@ -214,299 +178,10 @@ func contextsToStrings(contexts []Context) []string {
 	return names
 }
 
-// requirementDiff calculates the diff between a PR and a TideQuery.
-// This diff is defined with a string that describes some subset of the
-// differences and an integer counting the total number of differences.
-// The diff count should always reflect the total number of differences between
-// the current state of the PR and the query, but the message returned need not
-// attempt to convey all of that information if some differences are more severe.
-// For instance, we need to convey that a PR is open against a forbidden branch
-// more than we need to detail which status contexts are failed against the PR.
-// Note: an empty diff can be returned if the reason that the PR does not match
-// the TideQuery is unknown. This can happen happen if this function's logic
-// does not match GitHub's and does not indicate that the PR matches the query.
-func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (string, int) {
-	const maxLabelChars = 50
-	var desc string
-	var diff int
-	// Drops labels if needed to fit the description text area, but keep at least 1.
-	truncate := func(labels []string) []string {
-		i := 1
-		chars := len(labels[0])
-		for ; i < len(labels); i++ {
-			if chars+len(labels[i]) > maxLabelChars {
-				break
-			}
-			chars += len(labels[i]) + 2 // ", "
-		}
-		return labels[:i]
-	}
-
-	for _, excludedBranch := range q.ExcludedBranches {
-		if string(pr.BaseRef.Name) == excludedBranch {
-			desc = fmt.Sprintf(" Merging to branch %s is forbidden.", pr.BaseRef.Name)
-			diff = 1
-		}
-	}
-
-	// if no whitelist is configured, the target is OK by default
-	targetBranchWhitelisted := len(q.IncludedBranches) == 0
-	for _, includedBranch := range q.IncludedBranches {
-		if string(pr.BaseRef.Name) == includedBranch {
-			targetBranchWhitelisted = true
-		}
-	}
-
-	if !targetBranchWhitelisted {
-		desc = fmt.Sprintf(" Merging to branch %s is forbidden.", pr.BaseRef.Name)
-		diff += 1
-	}
-
-	var missingLabels []string
-	for _, l1 := range q.Labels {
-		var found bool
-		for _, l2 := range pr.Labels.Nodes {
-			if string(l2.Name) == l1 {
-				found = true
-				break
-			}
-		}
-		if !found {
-			missingLabels = append(missingLabels, l1)
-		}
-	}
-	diff += len(missingLabels)
-	if desc == "" && len(missingLabels) > 0 {
-		sort.Strings(missingLabels)
-		trunced := truncate(missingLabels)
-		if len(trunced) == 1 {
-			desc = fmt.Sprintf(" Needs %s label.", trunced[0])
-		} else {
-			desc = fmt.Sprintf(" Needs %s labels.", strings.Join(trunced, ", "))
-		}
-	}
-
-	var presentLabels []string
-	for _, l1 := range q.MissingLabels {
-		for _, l2 := range pr.Labels.Nodes {
-			if string(l2.Name) == l1 {
-				presentLabels = append(presentLabels, l1)
-				break
-			}
-		}
-	}
-	diff += len(presentLabels)
-	if desc == "" && len(presentLabels) > 0 {
-		sort.Strings(presentLabels)
-		trunced := truncate(presentLabels)
-		if len(trunced) == 1 {
-			desc = fmt.Sprintf(" Should not have %s label.", trunced[0])
-		} else {
-			desc = fmt.Sprintf(" Should not have %s labels.", strings.Join(trunced, ", "))
-		}
-	}
-
-	// fixing label issues takes precedence over status contexts
-	var contexts []string
-	for _, commit := range pr.Commits.Nodes {
-		if commit.Commit.OID == pr.HeadRefOID {
-			for _, ctx := range unsuccessfulContexts(commit.Commit.Status.Contexts, cc) {
-				contexts = append(contexts, string(ctx.Context))
-			}
-		}
-	}
-	diff += len(contexts)
-	if desc == "" && len(contexts) > 0 {
-		sort.Strings(contexts)
-		trunced := truncate(contexts)
-		if len(trunced) == 1 {
-			desc = fmt.Sprintf(" Job %s has not succeeded.", trunced[0])
-		} else {
-			desc = fmt.Sprintf(" Jobs %s have not succeeded.", strings.Join(trunced, ", "))
-		}
-	}
-
-	if q.Milestone != "" && (pr.Milestone == nil || string(pr.Milestone.Title) != q.Milestone) {
-		diff++
-		if desc == "" {
-			desc = fmt.Sprintf(" Must be in milestone %s.", q.Milestone)
-		}
-	}
-
-	// TODO(cjwagner): List reviews (states:[APPROVED], first: 1) as part of open
-	// PR query.
-
-	return desc, diff
-}
-
-// Returns expected status state and description.
-// If a PR is not mergeable, we have to select a TideQuery to compare it against
-// in order to generate a diff for the status description. We choose the query
-// for the repo that the PR is closest to meeting (as determined by the number
-// of unmet/violated requirements).
-func expectedStatus(queryMap config.QueryMap, pr *PullRequest, pool map[string]PullRequest, cc contextChecker) (string, string) {
-	if _, ok := pool[prKey(pr)]; !ok {
-		minDiffCount := -1
-		var minDiff string
-		for _, q := range queryMap.ForRepo(string(pr.Repository.Owner.Login), string(pr.Repository.Name)) {
-			diff, diffCount := requirementDiff(pr, &q, cc)
-			if minDiffCount == -1 || diffCount < minDiffCount {
-				minDiffCount = diffCount
-				minDiff = diff
-			}
-		}
-		return github.StatusPending, fmt.Sprintf(statusNotInPool, minDiff)
-	}
-	return github.StatusSuccess, statusInPool
-}
-
-// targetUrl determines the URL used for more details in the status
-// context on GitHub. If no PR dashboard is configured, we will use
-// the administrative Prow overview.
-func targetUrl(c *config.Agent, pr *PullRequest, log *logrus.Entry) string {
-	var link string
-	if tideUrl := c.Config().Tide.TargetURL; tideUrl != "" {
-		link = tideUrl
-	} else if baseUrl := c.Config().Tide.PRStatusBaseUrl; baseUrl != "" {
-		parsedUrl, err := url.Parse(baseUrl)
-		if err != nil {
-			log.WithError(err).Error("Failed to parse PR status base URL")
-		} else {
-			prQuery := fmt.Sprintf("is:pr repo:%s author:%s head:%s", pr.Repository.NameWithOwner, pr.Author.Login, pr.HeadRefName)
-			values := parsedUrl.Query()
-			values.Set("query", prQuery)
-			parsedUrl.RawQuery = values.Encode()
-			link = parsedUrl.String()
-		}
-	}
-	return link
-}
-
-func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullRequest) {
-	queryMap := sc.ca.Config().Tide.Queries.QueryMap()
-	processed := sets.NewString()
-
-	process := func(pr *PullRequest) {
-		processed.Insert(prKey(pr))
-		log := sc.logger.WithFields(pr.logFields())
-		contexts, err := headContexts(log, sc.ghc, pr)
-		if err != nil {
-			log.WithError(err).Error("Getting head commit status contexts, skipping...")
-			return
-		}
-		cr, err := sc.ca.Config().GetTideContextPolicy(
-			string(pr.Repository.Owner.Login),
-			string(pr.Repository.Name),
-			string(pr.BaseRef.Name))
-		if err != nil {
-			log.WithError(err).Error("setting up context register")
-			return
-		}
-
-		wantState, wantDesc := expectedStatus(queryMap, pr, pool, &cr)
-		var actualState githubql.StatusState
-		var actualDesc string
-		for _, ctx := range contexts {
-			if string(ctx.Context) == statusContext {
-				actualState = ctx.State
-				actualDesc = string(ctx.Description)
-			}
-		}
-		if wantState != strings.ToLower(string(actualState)) || wantDesc != actualDesc {
-			if err := sc.ghc.CreateStatus(
-				string(pr.Repository.Owner.Login),
-				string(pr.Repository.Name),
-				string(pr.HeadRefOID),
-				github.Status{
-					Context:     statusContext,
-					State:       wantState,
-					Description: wantDesc,
-					TargetURL:   targetUrl(sc.ca, pr, log),
-				}); err != nil {
-				log.WithError(err).Errorf(
-					"Failed to set status context from %q to %q.",
-					string(actualState),
-					wantState,
-				)
-			}
-		}
-	}
-
-	for _, pr := range all {
-		process(&pr)
-	}
-	// The list of all open PRs may not contain a PR if it was merged before we
-	// listed all open PRs. To prevent a new PR that starts in the pool and
-	// immediately merges from missing a tide status context we need to ensure that
-	// every PR in the pool is processed even if it doesn't appear in all.
-	//
-	// Note: We could still fail to update a status context if the statusController
-	// falls behind the main Tide sync loop by multiple loops (if we are lapped).
-	// This would be unlikely to occur, could only occur if the status update sync
-	// period is longer than the main sync period, and would only result in a
-	// missing tide status context on a successfully merged PR.
-	for key, poolPR := range pool {
-		if !processed.Has(key) {
-			process(&poolPR)
-		}
-	}
-}
-
-func (sc *statusController) run() {
-	for {
-		// wait for a new pool
-		if !<-sc.newPoolPending {
-			// chan was closed
-			break
-		}
-		sc.waitSync()
-	}
-	close(sc.shutDown)
-}
-
-// waitSync waits until the minimum status update period has elapsed then syncs,
-// returning the sync start time.
-// If newPoolPending is closed while waiting (indicating a shutdown request)
-// this function returns immediately without syncing.
-func (sc *statusController) waitSync() {
-	// wait for the min sync period time to elapse if needed.
-	wait := time.After(time.Until(sc.lastSyncStart.Add(sc.ca.Config().Tide.StatusUpdatePeriod)))
-	for {
-		select {
-		case <-wait:
-			sc.Lock()
-			pool := sc.poolPRs
-			sc.Unlock()
-			sc.sync(pool)
-			return
-		case more := <-sc.newPoolPending:
-			if !more {
-				return
-			}
-		}
-	}
-}
-
-func (sc *statusController) sync(pool map[string]PullRequest) {
-	sc.lastSyncStart = time.Now()
-
-	sinceTime := sc.lastSuccessfulQueryStart.Add(-10 * time.Second)
-	query := sc.ca.Config().Tide.Queries.AllPRsSince(sinceTime)
-	queryStartTime := time.Now()
-	allPRs, err := search(sc.ghc, sc.logger, context.Background(), query)
-	if err != nil {
-		sc.logger.WithError(err).Errorf("Searching for open PRs.")
-		return
-	}
-	// We were able to find all open PRs so update the last successful query time.
-	sc.lastSuccessfulQueryStart = queryStartTime
-	sc.setStatuses(allPRs, pool)
-}
-
 // Sync runs one sync iteration.
 func (c *Controller) Sync() error {
 	ctx := context.Background()
-	c.logger.Info("Building tide pool.")
+	c.logger.Debug("Building tide pool.")
 	pool := make(map[string]PullRequest)
 	for _, q := range c.ca.Config().Tide.Queries {
 		poolPRs, err := search(c.ghc, c.logger, ctx, q.Query())
@@ -530,11 +205,21 @@ func (c *Controller) Sync() error {
 	c.sc.Unlock()
 
 	var pjs []kube.ProwJob
+	var blocks blockers.Blockers
 	var err error
 	if len(pool) > 0 {
 		pjs, err = c.kc.ListProwJobs(kube.EmptySelector)
 		if err != nil {
 			return err
+		}
+
+		if label := c.ca.Config().Tide.BlockerLabel; label != "" {
+			c.logger.Debugf("Searching for blocking issues (label %q).", label)
+			orgs, repos := c.ca.Config().Tide.Queries.OrgsAndRepos()
+			blocks, err = blockers.FindAll(c.ghc, c.logger, label, orgs, repos)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	sps, err := c.dividePool(pool, pjs)
@@ -554,7 +239,8 @@ func (c *Controller) Sync() error {
 		go func() {
 			defer wg.Done()
 			for sp := range sps {
-				if pool, err := c.syncSubpool(sp); err != nil {
+				spBlocks := blocks.GetApplicable(sp.org, sp.repo, sp.branch)
+				if pool, err := c.syncSubpool(sp, spBlocks); err != nil {
 					sp.log.WithError(err).Errorf("Error syncing subpool.")
 				} else {
 					poolChan <- pool
@@ -1026,7 +712,7 @@ func (c *Controller) presubmitsByPull(sp subpool) (map[int]sets.String, error) {
 	return presubmits, nil
 }
 
-func (c *Controller) syncSubpool(sp subpool) (Pool, error) {
+func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, error) {
 	sp.log.Infof("Syncing subpool: %d PRs, %d PJs.", len(sp.prs), len(sp.pjs))
 	presubmits, err := c.presubmitsByPull(sp)
 	if err != nil {
@@ -1045,12 +731,19 @@ func (c *Controller) syncSubpool(sp subpool) (Pool, error) {
 		"batch-passing": prNumbers(batchMerge),
 		"batch-pending": prNumbers(batchPending),
 	}).Info("Subpool accumulated.")
-	act, targets, err := c.takeAction(sp, presubmits, batchPending, successes, pendings, nones, batchMerge, &cr)
+
+	var act Action
+	var targets []PullRequest
+	if len(blocks) > 0 {
+		act = PoolBlocked
+	} else {
+		act, targets, err = c.takeAction(sp, presubmits, batchPending, successes, pendings, nones, batchMerge, &cr)
+	}
+
 	sp.log.WithFields(logrus.Fields{
 		"action":  string(act),
 		"targets": prNumbers(targets),
 	}).Info("Subpool synced.")
-
 	return Pool{
 			Org:    sp.org,
 			Repo:   sp.repo,
@@ -1062,8 +755,9 @@ func (c *Controller) syncSubpool(sp subpool) (Pool, error) {
 
 			BatchPending: batchPending,
 
-			Action: act,
-			Target: targets,
+			Action:   act,
+			Target:   targets,
+			Blockers: blocks,
 		},
 		err
 }
@@ -1149,7 +843,7 @@ func search(ghc githubClient, log *logrus.Entry, ctx context.Context, q string) 
 		}
 		vars["searchCursor"] = githubql.NewString(sq.Search.PageInfo.EndCursor)
 	}
-	log.Infof("Search for query \"%s\" cost %d point(s). %d remaining.", q, totalCost, remaining)
+	log.Debugf("Search for query \"%s\" cost %d point(s). %d remaining.", q, totalCost, remaining)
 	return ret, nil
 }
 
@@ -1186,7 +880,7 @@ type PullRequest struct {
 		Nodes []struct {
 			Name githubql.String
 		}
-	} `graphql:"labels(first: 10)"`
+	} `graphql:"labels(first: 100)"`
 	Milestone *struct {
 		Title githubql.String
 	}

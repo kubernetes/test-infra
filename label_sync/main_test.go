@@ -46,16 +46,16 @@ func TestSyncLabels(t *testing.T) {
 		{
 			name: "Duplicate wanted label",
 			config: Configuration{Labels: []Label{
-				{Name: "lab1", Color: "deadbe"},
-				{Name: "lab1", Color: "befade"},
+				{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
+				{Name: "lab1", Description: "Test Label 1", Color: "befade"},
 			}},
 			expectedError: true,
 		},
 		{
 			name: "Required label has non unique labels when downcased",
 			config: Configuration{Labels: []Label{
-				{Name: "lab1", Color: "deadbe"},
-				{Name: "LAB1", Color: "deadbe"},
+				{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
+				{Name: "LAB1", Description: "Test Label 2", Color: "deadbe"},
 			}},
 			expectedError: true,
 		},
@@ -63,8 +63,8 @@ func TestSyncLabels(t *testing.T) {
 			name: "Duplicate label on repo1",
 			current: RepoLabels{
 				"repo1": {
-					{Name: "lab1", Color: "deadbe"},
-					{Name: "lab1", Color: "befade"},
+					{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
+					{Name: "lab1", Description: "Test Label 1", Color: "befade"},
 				},
 			},
 			expectedError: true,
@@ -73,8 +73,8 @@ func TestSyncLabels(t *testing.T) {
 			name: "Non unique label on repo1 when downcased",
 			current: RepoLabels{
 				"repo1": {
-					{Name: "lab1", Color: "deadbe"},
-					{Name: "LAB1", Color: "deadbe"},
+					{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
+					{Name: "LAB1", Description: "Test Label 2", Color: "deadbe"},
 				},
 			},
 			expectedError: true,
@@ -82,154 +82,170 @@ func TestSyncLabels(t *testing.T) {
 		{
 			name: "Non unique label but on different repos - allowed",
 			current: RepoLabels{
-				"repo1": {{Name: "lab1", Color: "deadbe"}},
-				"repo2": {{Name: "lab1", Color: "deadbe"}},
+				"repo1": {{Name: "lab1", Description: "Test Label 1", Color: "deadbe"}},
+				"repo2": {{Name: "lab1", Description: "Test Label 1", Color: "deadbe"}},
 			},
 		},
 		{
 			name: "Repo has exactly all wanted labels",
 			config: Configuration{Labels: []Label{
-				{Name: "lab1", Color: "deadbe"},
+				{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
 			}},
 			current: RepoLabels{
 				"repo1": {
-					{Name: "lab1", Color: "deadbe"},
+					{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
 				},
 			},
 		},
 		{
 			name: "Repo has label with wrong color",
 			config: Configuration{Labels: []Label{
-				{Name: "lab1", Color: "deadbe"},
+				{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
 			}},
 			current: RepoLabels{
 				"repo1": {
-					{Name: "lab1", Color: "bebeef"},
+					{Name: "lab1", Description: "Test Label 1", Color: "bebeef"},
 				},
 			},
 			expectedUpdates: RepoUpdates{
 				"repo1": {
-					{Why: "recolor", Current: &Label{Name: "lab1", Color: "deadbe"}, Wanted: &Label{Name: "lab1", Color: "deadbe"}},
+					{Why: "change", Current: &Label{Name: "lab1", Description: "Test Label 1", Color: "deadbe"}, Wanted: &Label{Name: "lab1", Description: "Test Label 1", Color: "deadbe"}},
+				},
+			},
+		},
+		{
+			name: "Repo has label with wrong description",
+			config: Configuration{Labels: []Label{
+				{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
+			}},
+			current: RepoLabels{
+				"repo1": {
+					{Name: "lab1", Description: "Test Label 5", Color: "deadbe"},
+				},
+			},
+			expectedUpdates: RepoUpdates{
+				"repo1": {
+					{Why: "change", Current: &Label{Name: "lab1", Description: "Test Label 1", Color: "deadbe"}, Wanted: &Label{Name: "lab1", Description: "Test Label 1", Color: "deadbe"}},
 				},
 			},
 		},
 		{
 			name: "Repo has label with wrong name (different case)",
 			config: Configuration{Labels: []Label{
-				{Name: "Lab1", Color: "deadbe"},
+				{Name: "Lab1", Description: "Test Label 1", Color: "deadbe"},
 			}},
 			current: RepoLabels{
 				"repo1": {
-					{Name: "laB1", Color: "deadbe"},
+					{Name: "laB1", Description: "Test Label 1", Color: "deadbe"},
 				},
 			},
 			expectedUpdates: RepoUpdates{
 				"repo1": {
-					{Why: "rename", Wanted: &Label{Name: "Lab1", Color: "deadbe"}, Current: &Label{Name: "laB1", Color: "deadbe"}},
+					{Why: "rename", Wanted: &Label{Name: "Lab1", Description: "Test Label 1", Color: "deadbe"}, Current: &Label{Name: "laB1", Description: "Test Label 1", Color: "deadbe"}},
 				},
 			},
 		},
 		{
 			name: "old name",
 			config: Configuration{Labels: []Label{
-				{Name: "current", Color: "blue", Previously: []Label{{Name: "old", Color: "gray"}}},
+				{Name: "current", Description: "Test Label 1", Color: "blue", Previously: []Label{{Name: "old", Description: "Test Label 1", Color: "gray"}}},
 			}},
 			current: RepoLabels{
-				"no current": {{Name: "old", Color: "much gray"}},
+				"no current": {{Name: "old", Description: "Test Label 1", Color: "much gray"}},
 				"has current": {
-					{Name: "old", Color: "gray"},
-					{Name: "current", Color: "blue"},
+					{Name: "old", Description: "Test Label 1", Color: "gray"},
+					{Name: "current", Description: "Test Label 1", Color: "blue"},
 				},
 			},
 			expectedUpdates: RepoUpdates{
 				"no current": {
-					{Why: "rename", Current: &Label{Name: "old", Color: "much gray"}, Wanted: &Label{Name: "current", Color: "blue"}},
+					{Why: "rename", Current: &Label{Name: "old", Description: "Test Label 1", Color: "much gray"}, Wanted: &Label{Name: "current", Description: "Test Label 1", Color: "blue"}},
 				},
 				"has current": {
-					{Why: "migrate", Current: &Label{Name: "old", Color: "gray"}, Wanted: &Label{Name: "current", Color: "blue"}},
+					{Why: "migrate", Current: &Label{Name: "old", Description: "Test Label 1", Color: "gray"}, Wanted: &Label{Name: "current", Description: "Test Label 1", Color: "blue"}},
 				},
 			},
 		},
 		{
 			name: "Repo is missing a label",
 			config: Configuration{Labels: []Label{
-				{Name: "Lab1", Color: "deadbe"},
+				{Name: "Lab1", Description: "Test Label 1", Color: "deadbe"},
 			}},
 			current: RepoLabels{
 				"repo1": {},
 			},
 			expectedUpdates: RepoUpdates{
 				"repo1": {
-					{Why: "missing", Wanted: &Label{Name: "Lab1", Color: "deadbe"}},
+					{Why: "missing", Wanted: &Label{Name: "Lab1", Description: "Test Label 1", Color: "deadbe"}},
 				},
 			},
 		},
 		{
 			name: "Repo is missing multiple labels, and expected labels order is changed",
 			config: Configuration{Labels: []Label{
-				{Name: "Lab1", Color: "deadbe"},
-				{Name: "Lab2", Color: "000000"},
-				{Name: "Lab3", Color: "ffffff"},
+				{Name: "Lab1", Description: "Test Label 1", Color: "deadbe"},
+				{Name: "Lab2", Description: "Test Label 2", Color: "000000"},
+				{Name: "Lab3", Description: "Test Label 3", Color: "ffffff"},
 			}},
 			current: RepoLabels{
 				"repo1": {},
-				"repo2": {{Name: "Lab2", Color: "000000"}},
+				"repo2": {{Name: "Lab2", Description: "Test Label 2", Color: "000000"}},
 			},
 			expectedUpdates: RepoUpdates{
 				"repo2": {
-					{Why: "missing", Wanted: &Label{Name: "Lab3", Color: "ffffff"}},
-					{Why: "missing", Wanted: &Label{Name: "Lab1", Color: "deadbe"}},
+					{Why: "missing", Wanted: &Label{Name: "Lab3", Description: "Test Label 3", Color: "ffffff"}},
+					{Why: "missing", Wanted: &Label{Name: "Lab1", Description: "Test Label 1", Color: "deadbe"}},
 				},
 				"repo1": {
-					{Why: "missing", Wanted: &Label{Color: "000000", Name: "Lab2"}},
-					{Why: "missing", Wanted: &Label{Name: "Lab3", Color: "ffffff"}},
-					{Why: "missing", Wanted: &Label{Name: "Lab1", Color: "deadbe"}},
+					{Why: "missing", Wanted: &Label{Color: "000000", Name: "Lab2", Description: "Test Label 2"}},
+					{Why: "missing", Wanted: &Label{Name: "Lab3", Description: "Test Label 3", Color: "ffffff"}},
+					{Why: "missing", Wanted: &Label{Name: "Lab1", Description: "Test Label 1", Color: "deadbe"}},
 				},
 			},
 		},
 		{
 			name: "Multiple repos complex case",
 			config: Configuration{Labels: []Label{
-				{Name: "priority/P0", Color: "ff0000"},
-				{Name: "lgtm", Color: "00ff00"},
+				{Name: "priority/P0", Description: "P0 Priority", Color: "ff0000"},
+				{Name: "lgtm", Description: "LGTM", Color: "00ff00"},
 			}},
 			current: RepoLabels{
 				"repo1": {
-					{Name: "Priority/P0", Color: "ee3333"},
-					{Name: "LGTM", Color: "00ff00"},
+					{Name: "Priority/P0", Description: "P0 Priority", Color: "ee3333"},
+					{Name: "LGTM", Description: "LGTM", Color: "00ff00"},
 				},
 				"repo2": {
-					{Name: "priority/P0", Color: "ee3333"},
-					{Name: "lgtm", Color: "00ff00"},
+					{Name: "priority/P0", Description: "P0 Priority", Color: "ee3333"},
+					{Name: "lgtm", Description: "LGTM", Color: "00ff00"},
 				},
 				"repo3": {
-					{Name: "PRIORITY/P0", Color: "ff0000"},
-					{Name: "lgtm", Color: "0000ff"},
+					{Name: "PRIORITY/P0", Description: "P0 Priority", Color: "ff0000"},
+					{Name: "lgtm", Description: "LGTM", Color: "0000ff"},
 				},
 				"repo4": {
-					{Name: "priority/P0", Color: "ff0000"},
+					{Name: "priority/P0", Description: "P0 Priority", Color: "ff0000"},
 				},
 				"repo5": {
-					{Name: "lgtm", Color: "00ff00"},
+					{Name: "lgtm", Description: "LGTM", Color: "00ff00"},
 				},
 			},
 			expectedUpdates: RepoUpdates{
 				"repo1": {
-					{Why: "rename", Wanted: &Label{Name: "priority/P0", Color: "ff0000"}, Current: &Label{Name: "Priority/P0", Color: "ee3333"}},
-					{Why: "rename", Wanted: &Label{Name: "lgtm", Color: "00ff00"}, Current: &Label{Name: "LGTM", Color: "00ff00"}},
+					{Why: "rename", Wanted: &Label{Name: "priority/P0", Description: "P0 Priority", Color: "ff0000"}, Current: &Label{Name: "Priority/P0", Description: "P0 Priority", Color: "ee3333"}},
+					{Why: "rename", Wanted: &Label{Name: "lgtm", Description: "LGTM", Color: "00ff00"}, Current: &Label{Name: "LGTM", Description: "LGTM", Color: "00ff00"}},
 				},
 				"repo2": {
-					{Why: "recolor", Current: &Label{Name: "priority/P0", Color: "ff0000"}, Wanted: &Label{Name: "priority/P0", Color: "ff0000"}},
+					{Why: "change", Current: &Label{Name: "priority/P0", Description: "P0 Priority", Color: "ff0000"}, Wanted: &Label{Name: "priority/P0", Description: "P0 Priority", Color: "ff0000"}},
 				},
 				"repo3": {
-					{Why: "rename", Wanted: &Label{Name: "priority/P0", Color: "ff0000"}, Current: &Label{Name: "PRIORITY/P0", Color: "ff0000"}},
-					{Why: "recolor", Current: &Label{Name: "lgtm", Color: "00ff00"}, Wanted: &Label{Name: "lgtm", Color: "00ff00"}},
+					{Why: "rename", Wanted: &Label{Name: "priority/P0", Description: "P0 Priority", Color: "ff0000"}, Current: &Label{Name: "PRIORITY/P0", Description: "P0 Priority", Color: "ff0000"}},
+					{Why: "change", Current: &Label{Name: "lgtm", Description: "LGTM", Color: "00ff00"}, Wanted: &Label{Name: "lgtm", Description: "LGTM", Color: "00ff00"}},
 				},
 				"repo4": {
-					{Why: "missing", Wanted: &Label{Name: "lgtm", Color: "00ff00"}},
+					{Why: "missing", Wanted: &Label{Name: "lgtm", Description: "LGTM", Color: "00ff00"}},
 				},
 				"repo5": {
-					{Why: "missing", Wanted: &Label{Name: "priority/P0", Color: "ff0000"}},
+					{Why: "missing", Wanted: &Label{Name: "priority/P0", Description: "P0 Priority", Color: "ff0000"}},
 				},
 			},
 		},
@@ -305,9 +321,9 @@ func TestLoadYAML(t *testing.T) {
 		{
 			path: "labels_example.yaml",
 			expected: Configuration{Labels: []Label{
-				{Name: "lgtm", Color: "green"},
-				{Name: "priority/P0", Color: "red", Previously: []Label{{Name: "P0", Color: "blue"}}},
-				{Name: "dead-label", DeleteAfter: &d},
+				{Name: "lgtm", Description: "LGTM", Color: "green"},
+				{Name: "priority/P0", Description: "P0 Priority", Color: "red", Previously: []Label{{Name: "P0", Description: "P0 Priority", Color: "blue"}}},
+				{Name: "dead-label", Description: "Delete Me :)", DeleteAfter: &d},
 			}},
 			ok: true,
 		},

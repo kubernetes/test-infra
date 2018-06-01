@@ -175,9 +175,10 @@ type PullRequestBranch struct {
 
 // Label describes a GitHub label.
 type Label struct {
-	URL   string `json:"url"`
-	Name  string `json:"name"`
-	Color string `json:"color"`
+	URL         string `json:"url"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Color       string `json:"color"`
 }
 
 // PullRequestFileStatus enumerates the statuses for this webhook payload type.

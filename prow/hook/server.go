@@ -23,6 +23,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -43,6 +44,8 @@ type Server struct {
 	// c is an http client used for dispatching events
 	// to external plugin services.
 	c http.Client
+	// Tracks running handlers for graceful shutdown
+	wg sync.WaitGroup
 }
 
 // ServeHTTP validates an incoming webhook and puts it into the event channel.
@@ -147,6 +150,7 @@ func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.
 		}
 		i.GUID = eventGUID
 		srcRepo = i.Repo.FullName
+		s.wg.Add(1)
 		go s.handleIssueEvent(l, i)
 	case "issue_comment":
 		var ic github.IssueCommentEvent
@@ -155,6 +159,7 @@ func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.
 		}
 		ic.GUID = eventGUID
 		srcRepo = ic.Repo.FullName
+		s.wg.Add(1)
 		go s.handleIssueCommentEvent(l, ic)
 	case "pull_request":
 		var pr github.PullRequestEvent
@@ -163,6 +168,7 @@ func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.
 		}
 		pr.GUID = eventGUID
 		srcRepo = pr.Repo.FullName
+		s.wg.Add(1)
 		go s.handlePullRequestEvent(l, pr)
 	case "pull_request_review":
 		var re github.ReviewEvent
@@ -171,6 +177,7 @@ func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.
 		}
 		re.GUID = eventGUID
 		srcRepo = re.Repo.FullName
+		s.wg.Add(1)
 		go s.handleReviewEvent(l, re)
 	case "pull_request_review_comment":
 		var rce github.ReviewCommentEvent
@@ -179,6 +186,7 @@ func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.
 		}
 		rce.GUID = eventGUID
 		srcRepo = rce.Repo.FullName
+		s.wg.Add(1)
 		go s.handleReviewCommentEvent(l, rce)
 	case "push":
 		var pe github.PushEvent
@@ -187,6 +195,7 @@ func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.
 		}
 		pe.GUID = eventGUID
 		srcRepo = pe.Repo.FullName
+		s.wg.Add(1)
 		go s.handlePushEvent(l, pe)
 	case "status":
 		var se github.StatusEvent
@@ -195,6 +204,7 @@ func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.
 		}
 		se.GUID = eventGUID
 		srcRepo = se.Repo.FullName
+		s.wg.Add(1)
 		go s.handleStatusEvent(l, se)
 	}
 	// Demux events only to external plugins that require this event.
@@ -247,7 +257,9 @@ func (s *Server) needDemux(eventType, srcRepo string) []plugins.ExternalPlugin {
 func (s *Server) demuxExternal(l *logrus.Entry, externalPlugins []plugins.ExternalPlugin, payload []byte, h http.Header) {
 	h.Set("User-Agent", "ProwHook")
 	for _, p := range externalPlugins {
+		s.wg.Add(1)
 		go func(p plugins.ExternalPlugin) {
+			defer s.wg.Done()
 			if err := s.dispatch(p.Endpoint, payload, h); err != nil {
 				l.WithError(err).WithField("external-plugin", p.Name).Error("Error dispatching event to external plugin.")
 			} else {
@@ -278,6 +290,12 @@ func (s *Server) dispatch(endpoint string, payload []byte, h http.Header) error 
 		return fmt.Errorf("response has status %q and body %q", resp.Status, string(rb))
 	}
 	return nil
+}
+
+// Implements a graceful shutdown protool. Handles all requests sent before receiving shutdown signal.
+func (s *Server) GracefulShutdown() {
+	s.wg.Wait() // Handle remaining requests
+	return
 }
 
 func (s *Server) do(req *http.Request) (*http.Response, error) {

@@ -164,7 +164,7 @@ func validateVolumesAndMounts(name string, spec *v1.PodSpec, t *testing.T) {
 }
 
 func checkContext(t *testing.T, repo string, p Presubmit) {
-	if p.Name != p.Context {
+	if !p.SkipReport && p.Name != p.Context {
 		t.Errorf("Context does not match job name: %s in %s", p.Name, repo)
 	}
 	for _, c := range p.RunAfterSuccess {

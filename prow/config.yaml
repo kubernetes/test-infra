@@ -35,119 +35,57 @@ branch-protection:
   allow_disabled_policies: true  # TODO(fejta): remove, needed by k/website
   orgs:
     kubernetes:
-      # TODO(fejta): build blacklist and then protect
-      # protect: true
+      protect: true
       required_status_checks:
         contexts:
         - cla/linuxfoundation
       repos:
-        # BLACKLIST
-        # TODO(fejta): add yourself here
-        # WHITELIST
         charts:
-          protect: true
           required_status_checks:
             contexts:
             - ci/circleci
         client-go:
-          protect: true
           restrictions:
             users:
             - k8s-publishing-bot
             teams:
             - kubernetes/client-go-maintainers
-        cloud-provider-aws:
-          protect: true
-        cloud-provider-azure:
-          protect: true
-        cloud-provider-gcp:
-          protect: true
-        cloud-provider-openstack:
-          protect: true
-        cluster-registry:
-          protect: true
-        community:
-          protect: true
-        contrib:
-          protect: true
         dashboard:
-          protect: true
           required_pull_request_reviews:
             required_approving_review_count: 1
         dns:
-          protect: true
           required_status_checks:
             strict: true
             contexts:
             - continuous-integration/travis-ci
           required_pull_request_reviews:
             required_approving_review_count: 1
-        examples:
-          protect: true
-        features:
-          protect: true
-        federation:
-          protect: true
-        gengo:
-          protect: true
         git-sync:
-          protect: true
           enforce_admins: true
           required_status_checks:
             strict: true
           restrictions: # only allow admins
             users: []
             teams: []
-        heapster:
-          protect: true
-        ingress-nginx:
-          protect: true
         kompose:
-          protect: true
           required_status_checks:
             contexts:
             - continuous-integration/travis-ci
           required_pull_request_reviews:
             required_approving_review_count: 1
-        kops:
-          protect: true
-        kube-deploy:
-          protect: true
-        kube-state-metrics:
-          protect: true
         kubectl:
-          protect: true
           required_status_checks:
             contexts:
             - continuous-integration/travis-ci
         kubernetes:
-          protect: true
           restrictions: # only allow admins
             users: []
             teams: []
-        kubernetes-anywhere:
-          protect: true
-        kubernetes-bootcamp:
-          protect: true
-        kubernetes-template-project:
-          protect: true
-        minikube:
-          protect: true
-        node-problem-detector:
-          protect: true
         repo-infra:
-          protect: true
           required_status_checks:
             contexts:
             - continuous-integration/travis-ci
-        sig-release:
-          protect: true
-        steering:
-          protect: true
-        test-infra:
-          protect: true
         utils:
-          protect: true
           required_pull_request_reviews:
             required_approving_review_count: 1
           required_status_checks:
@@ -181,22 +119,8 @@ branch-protection:
 
 tide:
   queries:
-  - repos:
-    - kubeflow/batch-predict
-    - kubeflow/caffe2-operator
-    - kubeflow/community
-    - kubeflow/examples
-    - kubeflow/example-seldon
-    - kubeflow/experimental-beagle
-    - kubeflow/experimental-kvc
-    - kubeflow/katib
-    - kubeflow/kubebench
-    - kubeflow/kubeflow
-    - kubeflow/pytorch-operator
-    - kubeflow/reporting
-    - kubeflow/testing
-    - kubeflow/tf-operator
-    - kubeflow/website
+  - orgs:
+    - kubeflow
     labels:
     - lgtm
     - approved
@@ -207,6 +131,7 @@ tide:
     - needs-ok-to-test
     - needs-rebase
   - repos:
+    - kubernetes/client-go
     - kubernetes/cloud-provider-aws
     - kubernetes/cloud-provider-azure
     - kubernetes/cloud-provider-gcp
@@ -223,9 +148,11 @@ tide:
     - kubernetes/heapster
     - kubernetes/ingress-nginx
     - kubernetes/kops
-    - kubernetes/kubernetes-template-project
-    - kubernetes/kube-state-metrics
     - kubernetes/kube-deploy
+    - kubernetes/kube-openapi
+    - kubernetes/kube-state-metrics
+    - kubernetes/kubeadm
+    - kubernetes/kubernetes-template-project
     - kubernetes/minikube
     - kubernetes/node-problem-detector
     - kubernetes/perf-tests
@@ -258,8 +185,8 @@ tide:
     - do-not-merge/work-in-progress
     reviewApprovedRequired: true
   - repos:
-    - kubernetes/kube-openapi
     - kubernetes-sigs/federation-v2
+    - kubernetes-sigs/kubeadm-dind-cluster
     - kubernetes-sigs/testing_frameworks
     - kubernetes-sigs/poseidon
     labels:
@@ -1331,7 +1258,7 @@ presubmits:
           - "--upload=gs://kubernetes-jenkins/pr-logs"
           - "--timeout=90"
           - "--"
-          - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri --node-env=PULL_REFS=$(PULL_REFS)"
+          - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml -node-env=PULL_REFS=$(PULL_REFS)"
 
   - name: pull-cri-containerd-verify
     agent: kubernetes
@@ -3543,7 +3470,7 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=90"
         - --
-        - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri"
+        - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml"
         resources:
           requests:
             memory: "6Gi"
@@ -6587,7 +6514,7 @@ presubmits:
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=90
         - --
-        - --node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri
+        - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
         name: ""
         resources:
@@ -7157,6 +7084,33 @@ presubmits:
             memory: "2Gi"
 
   tensorflow/minigo:
+  - name: pull-tf-minigo-cc
+    agent: kubernetes
+    always_run: true
+    skip_report: true
+    #context: pull-tf-minigo-cc
+    branches:
+    - master
+    rerun_command: "/test pull-tf-minigo-cc"
+    trigger: "(?m)^/test( all| pull-tf-minigo-cc),?(\\s+|$)"
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/tensor-go/cc-base:latest
+        command:
+        - /bin/bash
+        - -c
+        args:
+        # Copy tensorflow libraries into repo, test with board_size=9, test with board_size=19.
+        - "cp -r /app/cc/tensorflow ./cc/tensorflow && bazel test cc:all --compilation_mode=dbg --define=board_size=9 && bazel test cc:all --compilation_mode=dbg --define=board_size=19"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "2Gi"
+      imagePullSecrets:
+      - name: minigo-image-pull
+
   - name: tf-minigo-presubmit
     context: tf-minigo-presubmit
     agent: kubernetes
@@ -7799,6 +7753,20 @@ periodics:
       - "--root=/go/src"
       - "--upload=gs://kubernetes-jenkins/logs"
 
+- name: ci-containerd-build-1-1
+  interval: 30m
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180510-540e0e395-experimental
+      args:
+      - "--repo=github.com/containerd/containerd=release/1.1"
+      - "--repo=github.com/containerd/cri=release/1.0"
+      - "--root=/go/src"
+      - "--upload=gs://kubernetes-jenkins/logs"
+
 - interval: 1h
   agent: kubernetes
   name: ci-containerd-e2e-gci-gce
@@ -7811,6 +7779,19 @@ periodics:
       - "--repo=github.com/containerd/cri=master"
       - "--timeout=70"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
+
+- interval: 1h
+  agent: kubernetes
+  name: ci-containerd-e2e-gci-gce-1-1
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - "--repo=github.com/containerd/cri=release/1.0"
+      - "--timeout=70"
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180510-540e0e395-master
 
 - interval: 1h
   agent: kubernetes
@@ -7840,7 +7821,47 @@ periodics:
       - --repo=github.com/containerd/cri=master
       - --timeout=90
       - --
-      - "--node-args=--image-config-file=test/containerd/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri"
+      - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/image-config.yaml"
+      env:
+      - name: GOPATH
+        value: /go
+
+- name: ci-containerd-node-e2e-1-1
+  interval: 1h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180510-540e0e395-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes=release-1.10
+      - --repo=github.com/containerd/cri=release/1.0
+      - --timeout=90
+      - --
+      - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.1/image-config.yaml"
+      env:
+      - name: GOPATH
+        value: /go
+
+- name: ci-containerd-node-e2e-features
+  interval: 1h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes
+      - --repo=github.com/containerd/cri=master
+      - --timeout=90
+      - --
+      - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/image-config.yaml"
       env:
       - name: GOPATH
         value: /go
@@ -8120,7 +8141,7 @@ periodics:
       - --repo=github.com/containerd/cri=master
       - --timeout=90
       - --
-      - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri"
+      - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml"
       env:
       - name: GOPATH
         value: /go
@@ -8140,11 +8161,31 @@ periodics:
       - --repo=github.com/containerd/cri=master
       - --timeout=90
       - --
-      - "--node-args=--image-config-file=test/e2e_node/benchmark-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri"
+      - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/benchmark-config.yaml"
       env:
       - name: GOPATH
         value: /go
 
+
+- name: ci-cri-containerd-node-e2e-features
+  interval: 1h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes
+      - --repo=github.com/containerd/cri=master
+      - --timeout=90
+      - --
+      - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml"
+      env:
+      - name: GOPATH
+        value: /go
 
 - name: ci-cri-containerd-node-e2e-flaky
   interval: 2h
@@ -8161,7 +8202,7 @@ periodics:
       - --repo=github.com/containerd/cri=master
       - --timeout=140
       - --
-      - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri"
+      - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml"
       env:
       - name: GOPATH
         value: /go
@@ -8181,7 +8222,7 @@ periodics:
       - --repo=github.com/containerd/cri=master
       - --timeout=240
       - --
-      - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri"
+      - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml"
       env:
       - name: GOPATH
         value: /go
@@ -8220,6 +8261,22 @@ periodics:
       - name: GOPATH
         value: /go
 
+- name: ci-docker-node-legacy
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --timeout=200
+      - --root=/go/src
+      env:
+      - name: GOPATH
+        value: /go
 
 - interval: 1h
   name: ci-federation-build
@@ -8312,18 +8369,6 @@ periodics:
       - "--timeout=340"
       - "--bare"
 - name: ci-ingress-gce-e2e
-  agent: kubernetes
-  interval: 60m
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
-      args:
-      - "--timeout=340"
-      - "--bare"
-- name: ci-ingress-gce-e2e-mci-dev
   agent: kubernetes
   interval: 60m
   labels:
@@ -10085,8 +10130,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
 
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
-  # interval: 2h
-  cron: "0 0 31 2 *" # inactive, set to Feb.31st so it will never be triggered
+  interval: 2h
   agent: kubernetes
   labels:
     preset-service-account: true
@@ -10192,6 +10236,19 @@ periodics:
 - interval: 30m
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-m67
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
+
+- interval: 30m
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gce-gci-qa-m68
   labels:
     preset-service-account: true
     preset-k8s-ssh: true
@@ -11314,19 +11371,6 @@ periodics:
       - --timeout=340
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
-
-- name: ci-kubernetes-e2e-gci-gce-ingress-ipvs
-  agent: kubernetes
-  interval: 60m
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
-      args:
-      - "--timeout=340"
-      - "--bare"
 - interval: 60m
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-ingress-manual-network
@@ -12298,8 +12342,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
-  # interval: 2h
-  cron: "0 0 31 2 *" # inactive, set to Feb.31st so it will never be triggered
+  interval: 2h
   agent: kubernetes
   labels:
     preset-service-account: true
@@ -12338,8 +12381,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
-  # interval: 12h #expensive test,
-  cron: "0 0 31 2 *" # inactive, set to Feb.31st so it will never be triggered
+  interval: 12h #expensive test
   agent: kubernetes
   labels:
     preset-service-account: true
@@ -12675,7 +12717,7 @@ periodics:
           cpu: 6
           memory: "16Gi"
 
-- cron: '1 1 25 4 *' # Run at 01:01 UTC (03:01 CEST) on 25th April
+- cron: '1 1 2 6 *' # Run at 01:01 UTC (03:01 CEST) on 2nd June
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-large-performance-regional
   tags:
@@ -14731,6 +14773,34 @@ periodics:
 
 # TODO(bentheelder): switch ci-kubernetes-bazel-build to 100% periodic,
 # like the other build job once we don't have run_after_success
+- name: ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180418-95176fe00
+      args:
+      - "--repo=k8s.io/kubernetes=release-1.11"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
+
+- name: ci-kubernetes-e2e-kubeadm-gce-1-11
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180418-95176fe00
+      args:
+      - "--repo=k8s.io/kubernetes=release-1.11"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
+
 - name: ci-kubernetes-e2e-kubeadm-gce-1-8
   interval: 12h
   agent: kubernetes
@@ -14788,19 +14858,6 @@ periodics:
       - "--timeout=320"
       - "--upload=gs://kubernetes-jenkins/logs"
 
-- name: ci-kubernetes-e2e-kubeadm-gce-cni-calico
-  interval: 6h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-    preset-k8s-ssh: true
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180511-d60cfb374
-      args:
-      - "--repo=k8s.io/kubernetes=master"
-      - "--timeout=320"
-      - "--upload=gs://kubernetes-jenkins/logs"
 - name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
   interval: 6h
   agent: kubernetes
@@ -14865,6 +14922,20 @@ periodics:
     - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180511-d60cfb374
       args:
       - "--repo=k8s.io/kubernetes=master"
+      - "--timeout=320"
+      - "--upload=gs://kubernetes-jenkins/logs"
+
+- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180418-95176fe00
+      args:
+      - "--repo=k8s.io/kubernetes=release-1.11"
       - "--timeout=320"
       - "--upload=gs://kubernetes-jenkins/logs"
 
@@ -15712,6 +15783,18 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
 - interval: 6h
   agent: kubernetes
+  name: ci-kubernetes-gce-conformance-latest-1-11
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - args:
+      - --timeout=220
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
+- interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-gce-conformance-latest-1-8
   labels:
     preset-service-account: true
@@ -16257,8 +16340,42 @@ periodics:
       - name: GOPATH
         value: /go
 
+- name: ci-kubernetes-node-kubelet-beta-features
+  interval: 1h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
+      args:
+      - --repo=k8s.io/kubernetes=release-1.11
+      - --timeout=90
+      - --root=/go/src
+      env:
+      - name: GOPATH
+        value: /go
+
 - name: ci-kubernetes-node-kubelet-conformance
   interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --timeout=90
+      - --root=/go/src
+      env:
+      - name: GOPATH
+        value: /go
+
+- name: ci-kubernetes-node-kubelet-features
+  interval: 1h
   agent: kubernetes
   labels:
     preset-service-account: true
@@ -16286,6 +16403,23 @@ periodics:
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
+      - --root=/go/src
+      env:
+      - name: GOPATH
+        value: /go
+
+- name: ci-kubernetes-node-kubelet-orphans
+  interval: 12h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --timeout=400
       - --root=/go/src
       env:
       - name: GOPATH
@@ -16705,6 +16839,7 @@ periodics:
     - name: token
       secret:
         secretName: fejta-bot-token
+
 - interval: 2h
   agent: kubernetes
   name: istio-periodic-e2e-gke-addon

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+FROM gcr.io/k8s-testimages/gcloud-in-go:v20180531-04d09b20c
 LABEL maintainer="senlu@google.com"
 
 ADD ["janitor", \

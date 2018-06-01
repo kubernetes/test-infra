@@ -71,6 +71,21 @@ func TestPush(t *testing.T) {
 	pushEvManual.Pusher.Name = "Jester Tester"
 	pushEvManual.Pusher.Email = "tester@users.noreply.github.com"
 	pushEvManual.Sender.Login = "tester"
+	pushEvManual.Ref = "refs/head/master"
+
+	pushEvManualBranchWhiteListed := pushEv
+	pushEvManualBranchWhiteListed.Pusher.Name = "Warren Teened"
+	pushEvManualBranchWhiteListed.Pusher.Email = "wteened@users.noreply.github.com"
+	pushEvManualBranchWhiteListed.Sender.Login = "wteened"
+	pushEvManualBranchWhiteListed.Ref = "refs/head/warrens-branch"
+
+	pushEvManualNotBranchWhiteListed := pushEvManualBranchWhiteListed
+	pushEvManualNotBranchWhiteListed.Ref = "refs/head/master"
+
+	noMessages := map[string][]string{}
+	stdWarningMessages := map[string][]string{
+		"sig-contribex":  {"*Warning:* tester (<@tester>) manually merged https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...045a6dca0784"},
+		"kubernetes-dev": {"*Warning:* tester (<@tester>) manually merged https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...045a6dca0784"}}
 
 	type testCase struct {
 		name             string
@@ -80,16 +95,24 @@ func TestPush(t *testing.T) {
 
 	testcases := []testCase{
 		{
-			name:    "If PR merged manually by a user we send message to sig-contribex and kubernetes-dev.",
-			pushReq: pushEvManual,
-			expectedMessages: map[string][]string{
-				"sig-contribex":  {"*Warning:* tester (<@tester>) manually merged https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...045a6dca0784"},
-				"kubernetes-dev": {"*Warning:* tester (<@tester>) manually merged https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...045a6dca0784"}},
+			name:             "If PR merged manually by a user we send message to sig-contribex and kubernetes-dev.",
+			pushReq:          pushEvManual,
+			expectedMessages: stdWarningMessages,
 		},
 		{
 			name:             "If PR merged by k8s merge bot we should NOT send message to sig-contribex and kubernetes-dev.",
 			pushReq:          pushEv,
-			expectedMessages: map[string][]string{},
+			expectedMessages: noMessages,
+		},
+		{
+			name:             "If PR merged by a user not in the whitelist but in THIS branch whitelist, we should NOT send a message to sig-contrib-ax and kubernetes-dev.",
+			pushReq:          pushEvManualBranchWhiteListed,
+			expectedMessages: noMessages,
+		},
+		{
+			name:             "If PR merged by a user not in the whitelist, in a branch whitelist, but not THIS branch whitelist, we should send a message to sig-contrib-ax and kubernetes-dev.",
+			pushReq:          pushEvManualBranchWhiteListed,
+			expectedMessages: noMessages,
 		},
 	}
 
@@ -100,6 +123,9 @@ func TestPush(t *testing.T) {
 					Repos:     []string{"kubernetes/kubernetes"},
 					Channels:  []string{"kubernetes-dev", "sig-contribex"},
 					WhiteList: []string{"k8s-merge-robot"},
+					BranchWhiteList: map[string][]string{
+						"warrens-branch": {"wteened"},
+					},
 				},
 			},
 		},

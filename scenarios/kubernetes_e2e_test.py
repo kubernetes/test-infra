@@ -135,6 +135,24 @@ class ClusterNameTest(unittest.TestCase):
         if len(actual) > 32:  # Some firewall names consume half the quota
             self.fail('Name should be short: %s' % actual)
 
+    def test_name_presubmit(self):
+        """Return the build number if name is empty."""
+        name = ''
+        build = '1984'
+        pr = '12345'
+        os.environ['BUILD_ID'] = build
+        os.environ['JOB_TYPE'] = 'presubmit'
+        os.environ['PULL_NUMBER'] = pr
+        actual = kubernetes_e2e.cluster_name(name, False)
+        self.assertTrue(actual)
+        self.assertIn(build, actual)
+        self.assertNotIn(pr, actual)
+
+        actual = kubernetes_e2e.cluster_name(name, True)
+        self.assertTrue(actual)
+        self.assertIn(pr, actual)
+        self.assertNotIn(build, actual)
+
 
 class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-methods
     """Test for e2e scenario."""

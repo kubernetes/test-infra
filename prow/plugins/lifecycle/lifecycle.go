@@ -37,7 +37,6 @@ var (
 
 func init() {
 	plugins.RegisterGenericCommentHandler("lifecycle", lifecycleHandleGenericComment, help)
-	logrus.SetLevel(logrus.DebugLevel)
 }
 
 func help(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
@@ -125,9 +124,7 @@ func handleOne(gc lifecycleClient, log *logrus.Entry, e *github.GenericCommentEv
 	// Let's start simple and allow anyone to add/remove frozen, stale, putrid, rotten labels.
 	// Adjust if we find evidence of the community abusing these labels.
 	if remove {
-		log.Infof("/remove-%s", cmd)
 		return gc.RemoveLabel(org, repo, number, lbl)
 	}
-	log.Infof("/%s", cmd)
 	return gc.AddLabel(org, repo, number, lbl)
 }
