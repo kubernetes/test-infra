@@ -2052,7 +2052,7 @@ function MdGestureHandler() {
       return null;
     },
 
-    // Called from $mdGesture.register when an element reigsters itself with a handler.
+    // Called from $mdGesture.register when an element registers itself with a handler.
     // Store the options the user gave on the DOMElement itself. These options will
     // be retrieved with getNearestParent when the handler starts.
     registerElement: function (element, options) {
@@ -7864,7 +7864,7 @@ angular.module('material.components.chips', [
 
     /** @constructor */
     function DateLocaleProvider() {
-      /** Array of full month names. E.g., ['January', 'Febuary', ...] */
+      /** Array of full month names. E.g., ['January', 'February', ...] */
       this.months = null;
 
       /** Array of abbreviated month names. E.g., ['Jan', 'Feb', ...] */
@@ -15408,7 +15408,7 @@ function SidenavFocusDirective() {
  *
  * @param {expression=} md-is-open A model bound to whether the sidenav is opened.
  * @param {string=} md-component-id componentId to use with $mdSidenav service.
- * @param {expression=} md-is-locked-open When this expression evalutes to true,
+ * @param {expression=} md-is-locked-open When this expression evaluates to true,
  * the sidenav 'locks open': it falls into the content's flow instead
  * of appearing over it. This overrides the `md-is-open` attribute.
  *
@@ -20723,7 +20723,7 @@ MdChipsCtrl.prototype.hasFocus = function () {
    *
    *   <ul>Validation
    *     <li>allow a validation callback</li>
-   *     <li>hilighting style for invalid chips</li>
+   *     <li>highlighting style for invalid chips</li>
    *   </ul>
    *
    *   <ul>Item mutation
@@ -22364,7 +22364,7 @@ MenuController.$inject = ["$mdMenu", "$attrs", "$element", "$scope", "$mdUtil", 
  *
  * When a menu opens, it is important that the content aligns with the trigger element.
  * Failure to align menus can result in jarring experiences for users as content
- * suddenly shifts. To help with this, `md-menu` provides serveral APIs to help
+ * suddenly shifts. To help with this, `md-menu` provides several APIs to help
  * with alignment.
  *
  * ### Target Mode
@@ -22456,7 +22456,7 @@ MenuController.$inject = ["$mdMenu", "$attrs", "$element", "$scope", "$mdUtil", 
  *
  * @param {string} md-position-mode The position mode in the form of
  *           `x`, `y`. Default value is `target`,`target`. Right now the `x` axis
- *           also suppports `target-right`.
+ *           also supports `target-right`.
  * @param {string} md-offset An offset to apply to the dropdown after positioning
  *           `x`, `y`. Default value is `0`,`0`.
  *
