@@ -12043,7 +12043,7 @@
       "--extract=ci/latest",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-node-image=ubuntu",
-      "--gcp-project=istio-gke-addon-prow-e2e-test",
+      "--gcp-project-type=istio-project",
       "--gcp-zone=us-central1-f",
       "--gke-command-group=alpha",
       "--gke-create-command=container clusters create --quiet --num-nodes=4 --no-enable-legacy-authorization --addons=Istio --istio-config=auth=NONE",
