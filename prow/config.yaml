@@ -7161,7 +7161,7 @@ presubmits:
         - -c
         args:
         # Copy tensorflow libraries into repo, test with board_size=9, test with board_size=19.
-        - "cp -r /app/cc/tensorflow ./cc/tensorflow && bazel test cc:all --compilation_mode=dbg --define=board_size=9 && bazel test cc:all --compilation_mode=dbg --define=board_size=19"
+        - "cp -r /app/cc/tensorflow ./cc/tensorflow && bazel test cc:all --test_output=errors --compilation_mode=dbg --define=board_size=9 && bazel test cc:all --test_output=errors --compilation_mode=dbg --define=board_size=19"
         securityContext:
           privileged: true
         resources:
