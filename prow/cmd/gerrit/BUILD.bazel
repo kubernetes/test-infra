@@ -20,7 +20,7 @@ container_push(
     format = "Docker",
     image = ":image",
     registry = "gcr.io",
-    repository = "gke-prow/gerrit",
+    repository = "gob-prow/gerrit",
     stamp = True,
     tag = "latest",
 )
