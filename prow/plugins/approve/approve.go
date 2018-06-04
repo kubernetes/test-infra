@@ -72,6 +72,7 @@ type githubClient interface {
 type state struct {
 	org    string
 	repo   string
+	branch string
 	number int
 
 	body      string
@@ -150,10 +151,10 @@ func handleGenericCommentEvent(pc plugins.PluginClient, ce github.GenericComment
 	if err != nil {
 		return err
 	}
-	return handleGenericComment(pc.Logger, pc.GitHubClient, ro, pc.PluginConfig, &ce)
+	return handleGenericComment(pc.Logger, pc.GitHubClient, ro, pc.PluginConfig, &ce, pr.Base.Ref)
 }
 
-func handleGenericComment(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, config *plugins.Configuration, ce *github.GenericCommentEvent) error {
+func handleGenericComment(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, config *plugins.Configuration, ce *github.GenericCommentEvent, branch string) error {
 	return handle(
 		log,
 		ghc,
@@ -162,6 +163,7 @@ func handleGenericComment(log *logrus.Entry, ghc githubClient, repo approvers.Re
 		&state{
 			org:       ce.Repo.Owner.Login,
 			repo:      ce.Repo.Name,
+			branch:    branch,
 			number:    ce.Number,
 			body:      ce.IssueBody,
 			author:    ce.IssueAuthor.Login,
@@ -203,6 +205,7 @@ func handlePullRequest(log *logrus.Entry, ghc githubClient, repo approvers.RepoI
 		&state{
 			org:       pre.Repo.Owner.Login,
 			repo:      pre.Repo.Name,
+			branch:    pre.PullRequest.Base.Ref,
 			number:    pre.Number,
 			body:      pre.PullRequest.Body,
 			author:    pre.PullRequest.User.Login,
@@ -314,7 +317,7 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, o
 
 	notifications := filterComments(commentsFromIssueComments, notificationMatcher(botName))
 	latestNotification := getLast(notifications)
-	newMessage := updateNotification(pr.org, pr.repo, latestNotification, approversHandler)
+	newMessage := updateNotification(pr.org, pr.repo, pr.branch, latestNotification, approversHandler)
 	if newMessage != nil {
 		for _, notif := range notifications {
 			if err := ghc.DeleteComment(pr.org, pr.repo, notif.ID); err != nil {
@@ -407,8 +410,8 @@ func notificationMatcher(botName string) func(*comment) bool {
 	}
 }
 
-func updateNotification(org, project string, latestNotification *comment, approversHandler approvers.Approvers) *string {
-	message := approvers.GetMessage(approversHandler, org, project)
+func updateNotification(org, project, branch string, latestNotification *comment, approversHandler approvers.Approvers) *string {
+	message := approvers.GetMessage(approversHandler, org, project, branch)
 	if message == nil || (latestNotification != nil && strings.Contains(latestNotification.Body, *message)) {
 		return nil
 	}

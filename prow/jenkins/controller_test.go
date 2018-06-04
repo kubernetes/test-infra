@@ -72,16 +72,20 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int, operators []config.Jen
 
 	ca := &fca{
 		c: &config.Config{
-			JenkinsOperators: []config.JenkinsOperator{
-				{
-					Controller: config.Controller{
-						JobURLTemplate: template.Must(template.New("test").Parse("{{.Status.PodName}}/{{.Status.State}}")),
-						MaxConcurrency: maxConcurrency,
-						MaxGoroutines:  20,
+			ProwConfig: config.ProwConfig{
+				JenkinsOperators: []config.JenkinsOperator{
+					{
+						Controller: config.Controller{
+							JobURLTemplate: template.Must(template.New("test").Parse("{{.Status.PodName}}/{{.Status.State}}")),
+							MaxConcurrency: maxConcurrency,
+							MaxGoroutines:  20,
+						},
 					},
 				},
 			},
-			Presubmits: presubmitMap,
+			JobConfig: config.JobConfig{
+				Presubmits: presubmitMap,
+			},
 		},
 	}
 	if len(operators) > 0 {

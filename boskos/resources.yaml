@@ -512,6 +512,7 @@ resources:
   - k8s-ingress-boskos-20
   state: dirty
   type: ingress-project
-
-
-
+- names:
+  - istio-gke-addon-prow-e2e-test
+  state: dirty
+  type: istio-project

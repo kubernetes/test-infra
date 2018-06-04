@@ -74,7 +74,7 @@ func main() {
 	}
 
 	ca := &config.Agent{}
-	if err := ca.Start(o.configPath); err != nil {
+	if err := ca.Start(o.configPath, ""); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 

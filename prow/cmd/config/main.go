@@ -51,7 +51,7 @@ func main() {
 		}
 	}
 	if o.configPath != "" {
-		if _, err := config.Load(o.configPath); err != nil {
+		if _, err := config.Load(o.configPath, ""); err != nil {
 			fmt.Fprintf(os.Stderr, "Error reading %s: %v.", o.configPath, err)
 			foundError = true
 		}

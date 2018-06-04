@@ -308,8 +308,10 @@ func TestQueryChange(t *testing.T) {
 
 		fca := &fca{
 			c: &config.Config{
-				Gerrit: config.Gerrit{
-					RateLimit: tc.limit,
+				ProwConfig: config.ProwConfig{
+					Gerrit: config.Gerrit{
+						RateLimit: tc.limit,
+					},
 				},
 			},
 		}
@@ -397,10 +399,12 @@ func TestProcessChange(t *testing.T) {
 	for _, tc := range testcases {
 		fca := &fca{
 			c: &config.Config{
-				Presubmits: map[string][]config.Presubmit{
-					"gerrit/test-infra": {
-						{
-							Name: "test-foo",
+				JobConfig: config.JobConfig{
+					Presubmits: map[string][]config.Presubmit{
+						"gerrit/test-infra": {
+							{
+								Name: "test-foo",
+							},
 						},
 					},
 				},

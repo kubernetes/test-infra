@@ -11,6 +11,7 @@ go_test(
     srcs = [
         "branch_protection_test.go",
         "config_test.go",
+        "job_config_test.go",
         "jobs_test.go",
         "tide_test.go",
     ],

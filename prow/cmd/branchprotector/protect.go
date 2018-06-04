@@ -100,7 +100,7 @@ func main() {
 		logrus.Fatal(err)
 	}
 
-	cfg, err := config.Load(o.config)
+	cfg, err := config.Load(o.config, "")
 	if err != nil {
 		logrus.WithError(err).Fatalf("Failed to load --config=%s", o.config)
 	}

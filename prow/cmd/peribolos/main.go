@@ -83,7 +83,7 @@ func main() {
 		log.Fatalf("This program is not yet implemented")
 	}
 
-	cfg, err := config.Load(o.config)
+	cfg, err := config.Load(o.config, "")
 	if err != nil {
 		log.Fatalf("Failed to load --config=%s: %v", o.config, err)
 	}

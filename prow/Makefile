@@ -21,7 +21,7 @@ ALPINE_VERSION           ?= 0.1
 GIT_VERSION              ?= 0.2
 
 # YYYYmmdd-commitish
-TAG = $(shell date -u +v%Y%m%d)-$(shell git describe --tags --always --dirty)
+TAG := $(shell date -u +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 # HOOK_VERSION is the version of the hook image
 HOOK_VERSION              ?= $(TAG)
 # SINKER_VERSION is the version of the sinker image
@@ -63,7 +63,7 @@ CLUSTER       ?= prow
 REGISTRY ?= gcr.io
 PUSH     ?= docker push
 
-DOCKER_LABELS=--label io.k8s.prow.git-describe="$(shell git describe --tags --always --dirty)"
+DOCKER_LABELS:=--label io.k8s.prow.git-describe="$(shell git describe --tags --always --dirty)"
 
 update-config: get-cluster-credentials
 	kubectl create configmap config --from-file=config=config.yaml --dry-run -o yaml | kubectl replace configmap config -f -

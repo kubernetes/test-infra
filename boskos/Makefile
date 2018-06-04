@@ -18,7 +18,7 @@ CLUSTER ?= prow
 NAMESPACE ?= test-pods
 HUB ?= gcr.io/k8s-testimages
 
-TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
+TAG := $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
 boskos:
 	go build k8s.io/test-infra/boskos/
