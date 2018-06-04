@@ -72,8 +72,8 @@ It can consist of the following dictionary of fields:
 * `repos`: List of queried repositories.
 * `labels`: List of labels any given PR must posses.
 * `missingLabels`: List of labels any given PR must not posses.
-* `excludedBranches`: List of branches that get excluded when quering the `repos`.
-* `includedBranches`: List of branches that get included when quering the `repos`.
+* `excludedBranches`: List of branches that get excluded when querying the `repos`.
+* `includedBranches`: List of branches that get included when querying the `repos`.
 * `reviewApprovedRequired`: If set, each PR in the query must have review approved.
 
 Under the hood, a query constructed from the fields follows rules described in
