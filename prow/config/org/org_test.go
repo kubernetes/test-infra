@@ -59,7 +59,7 @@ func TestRepoPermissionLevel(t *testing.T) {
 		err := json.Unmarshal([]byte("\""+tc.input+"\""), &actual)
 		switch {
 		case err == nil && tc.expected == nil:
-			t.Errorf("%s: failed to receieve an error", tc.input)
+			t.Errorf("%s: failed to receive an error", tc.input)
 		case err != nil && tc.expected != nil:
 			t.Errorf("%s: unexpected error: %v", tc.input, err)
 		case err == nil && *tc.expected != actual:
@@ -98,7 +98,7 @@ func TestPrivacy(t *testing.T) {
 		err := json.Unmarshal([]byte("\""+tc.input+"\""), &actual)
 		switch {
 		case err == nil && tc.expected == nil:
-			t.Errorf("%s: failed to receieve an error", tc.input)
+			t.Errorf("%s: failed to receive an error", tc.input)
 		case err != nil && tc.expected != nil:
 			t.Errorf("%s: unexpected error: %v", tc.input, err)
 		case err == nil && *tc.expected != actual:
