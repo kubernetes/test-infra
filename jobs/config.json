@@ -622,8 +622,8 @@
       "--node-test-args=--feature-gates=DynamicKubeletConfig=true,LocalStorageCapacityIsolation=true,PodPriority=true --container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\"",
       "--node-tests=true",
       "--provider=gce",
-      "--test_args=--nodes=1 --focus=\"\\[Serial\\]|\\[NodeFeature:.+\\]\" --skip=\"\\[Flaky\\]\"",
-      "--timeout=180m"
+      "--test_args=--nodes=1 --focus=\"\\[Serial\\]\" --skip=\"\\[Flaky\\]|\\[Benchmark\\]|\\[NodeSpecialFeature:.+\\]|\\[NodeAlphaFeature:.+\\]\"",
+      "--timeout=220m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
