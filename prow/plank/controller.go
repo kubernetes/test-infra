@@ -222,6 +222,7 @@ func (c *Controller) Sync() error {
 		for report := range reportCh {
 			if err := reportlib.Report(c.ghc, reportTemplate, report); err != nil {
 				reportErrs = append(reportErrs, err)
+				c.log.WithFields(pjutil.ProwJobFields(&report)).WithError(err).Warn("Failed to report ProwJob status")
 			}
 		}
 	}
@@ -407,7 +408,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 
 	var b bytes.Buffer
 	if err := c.ca.Config().Plank.JobURLTemplate.Execute(&b, &pj); err != nil {
-		c.log.Errorf("error executing URL template: %v", err)
+		c.log.WithFields(pjutil.ProwJobFields(&pj)).Errorf("error executing URL template: %v", err)
 	} else {
 		pj.Status.URL = b.String()
 	}
@@ -462,7 +463,7 @@ func (c *Controller) syncTriggeredJob(pj kube.ProwJob, pm map[string]kube.Pod, r
 		pj.Status.Description = "Job triggered."
 		var b bytes.Buffer
 		if err := c.ca.Config().Plank.JobURLTemplate.Execute(&b, &pj); err != nil {
-			c.log.Errorf("error executing URL template: %v", err)
+			c.log.WithFields(pjutil.ProwJobFields(&pj)).Errorf("error executing URL template: %v", err)
 		} else {
 			pj.Status.URL = b.String()
 		}

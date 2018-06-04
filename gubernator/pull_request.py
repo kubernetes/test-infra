@@ -31,10 +31,9 @@ def builds_to_table(jobs):
     def commit(started):
         if 'pull' in started:
             return started['pull'].split(':')[-1]
-        elif 'version' in started:
+        if 'version' in started:
             return started['version'].split('+')[-1]
-        else:
-            return 'unknown'
+        return 'unknown'
 
     # Compute the headings first -- versions and their maximum build counts.
 

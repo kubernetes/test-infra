@@ -81,7 +81,7 @@ func main() {
 	}
 
 	configAgent := &config.Agent{}
-	if err := configAgent.Start(*configPath); err != nil {
+	if err := configAgent.Start(*configPath, ""); err != nil {
 		log.WithError(err).Fatal("Error starting config agent.")
 	}
 

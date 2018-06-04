@@ -207,6 +207,11 @@ plugins:
   - blunderbuss
   - trigger
 
+  kubernetes/cloud-provider-vsphere:
+  - approve
+  - blunderbuss
+  - trigger
+
   kubernetes/cluster-registry:
   - approve
   - trigger
