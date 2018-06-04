@@ -33,10 +33,10 @@ KUBECONFIG ?= $(HOME)/.kube/config
 TARGET ?= kubernetes
 
 TOKEN ?= "./token"
-token64=$(shell base64 $(TOKEN))
+token64:=$(shell base64 $(TOKEN))
 
 HOOKSECRET ?= "./hook-secret"
-hooksecret64=$(shell base64 $(HOOKSECRET))
+hooksecret64:=$(shell base64 $(HOOKSECRET))
 
 READONLY ?= true
 

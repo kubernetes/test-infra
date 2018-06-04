@@ -13,7 +13,7 @@
 # limitations under the License.
 
 IMG = gcr.io/k8s-testimages/bazelbuild
-TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
+TAG := $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
 # TODO(bentheelder): retire some of these as they become unnecessary
 LATEST_BAZEL_VERSION=0.10.0

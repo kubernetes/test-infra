@@ -1250,7 +1250,14 @@ func TestSync(t *testing.T) {
 		fgc := &fgc{prs: tc.prs}
 		fkc := &fkc{}
 		ca := &config.Agent{}
-		ca.Set(&config.Config{Tide: config.Tide{Queries: []config.TideQuery{{}}, MaxGoroutines: 4}})
+		ca.Set(&config.Config{
+			ProwConfig: config.ProwConfig{
+				Tide: config.Tide{
+					Queries:       []config.TideQuery{{}},
+					MaxGoroutines: 4,
+				},
+			},
+		})
 		sc := &statusController{
 			logger:         logrus.WithField("controller", "status-update"),
 			ghc:            fgc,

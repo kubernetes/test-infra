@@ -13,7 +13,7 @@
 # limitations under the License.
 
 IMG = gcr.io/k8s-testimages/kubekins-test
-TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
+TAG := $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 VERSIONS := $(wildcard ./Dockerfile-*)
 
 do_build = \
