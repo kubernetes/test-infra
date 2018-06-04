@@ -12966,7 +12966,7 @@
       "--deployment=local",
       "--ginkgo-parallel=1",
       "--provider=local",
-      "--test_args=--ginkgo.focus=\\[Conformance\\]",
+      "--test_args=--ginkgo.focus=\"\\[Conformance\\]|\\[Containerized\\]\" --ginkgo.skip=\"\\[Disruptive\\]\"",
       "--timeout=120m"
     ],
     "scenario": "kubernetes_e2e",
