@@ -2705,6 +2705,10 @@ test_groups:
   num_failures_to_alert: 1
 
 # Add New Testgroups Here
+- name: ci-kubernetes-e2e-gce-coredns-performance
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-coredns-performance
+- name: ci-kubernetes-e2e-gce-kubedns-performance
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-kubedns-performance
 
 #
 # Start dashboards
@@ -4990,6 +4994,10 @@ dashboards:
     test_group_name: ci-cri-containerd-e2e-gci-gce-ingress
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: gce-coredns-performance
+    test_group_name: ci-kubernetes-e2e-gce-coredns-performance
+  - name: gce-kubedns-performance
+    test_group_name: ci-kubernetes-e2e-gce-kubedns-performance
 
 - name: sig-network-gke
   dashboard_tab:
