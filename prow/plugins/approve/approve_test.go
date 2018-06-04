@@ -145,13 +145,14 @@ func (fr fakeRepo) IsNoParentOwners(path string) bool {
 	return false
 }
 
-func TestHandleGenericComment(t *testing.T) {
+func TestHandle(t *testing.T) {
 	// This function does not need to test IsApproved, that is tested in approvers/approvers_test.go.
 
 	// includes tests with mixed case usernames
 	// includes tests with stale notifications
 	tests := []struct {
 		name          string
+		branch        string
 		prBody        string
 		hasLabel      bool
 		humanApproved bool
@@ -906,6 +907,39 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 </details>
 <!-- META={"approvers":[]} -->`,
 		},
+		{
+			name:                "different branch, initial notification (approved)",
+			branch:              "dev",
+			hasLabel:            false,
+			files:               []string{"c/c.go"},
+			comments:            []github.IssueComment{},
+			reviews:             []github.Review{},
+			selfApprove:         true,
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: false,
+
+			expectDelete:  false,
+			expectToggle:  true,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+<details >
+Needs approval from an approver in each of these files:
+
+- ~~[c/OWNERS](https://github.com/org/repo/blob/dev/c/OWNERS)~~ [cjwagner]
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":[]} -->`,
+		},
 	}
 
 	fr := fakeRepo{
@@ -929,6 +963,10 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 
 	for _, test := range tests {
 		fghc := newFakeGithubClient(test.hasLabel, test.humanApproved, test.files, test.comments, test.reviews)
+		branch := "master"
+		if test.branch != "" {
+			branch = test.branch
+		}
 
 		if err := handle(
 			logrus.WithField("plugin", "approve"),
@@ -944,6 +982,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			&state{
 				org:       "org",
 				repo:      "repo",
+				branch:    branch,
 				number:    1,
 				body:      test.prBody,
 				author:    "cjwagner",

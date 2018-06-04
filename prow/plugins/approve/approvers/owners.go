@@ -415,14 +415,25 @@ func (ap Approvers) UnapprovedFiles() sets.String {
 }
 
 // UnapprovedFiles returns owners files that still need approval
-func (ap Approvers) GetFiles(org, project string) []File {
+func (ap Approvers) GetFiles(org, project, branch string) []File {
 	allOwnersFiles := []File{}
 	filesApprovers := ap.GetFilesApprovers()
 	for _, fn := range ap.owners.GetOwnersSet().List() {
 		if len(filesApprovers[fn]) == 0 {
-			allOwnersFiles = append(allOwnersFiles, UnapprovedFile{fn, org, project})
+			allOwnersFiles = append(allOwnersFiles, UnapprovedFile{
+				filepath: fn,
+				org:      org,
+				project:  project,
+				branch:   branch,
+			})
 		} else {
-			allOwnersFiles = append(allOwnersFiles, ApprovedFile{fn, filesApprovers[fn], org, project})
+			allOwnersFiles = append(allOwnersFiles, ApprovedFile{
+				filepath:  fn,
+				approvers: filesApprovers[fn],
+				org:       org,
+				project:   project,
+				branch:    branch,
+			})
 		}
 	}
 
@@ -518,12 +529,14 @@ type ApprovedFile struct {
 	approvers sets.String
 	org       string
 	project   string
+	branch    string
 }
 
 type UnapprovedFile struct {
 	filepath string
 	org      string
 	project  string
+	branch   string
 }
 
 func (a ApprovedFile) String() string {
@@ -531,7 +544,7 @@ func (a ApprovedFile) String() string {
 	if strings.HasSuffix(a.filepath, ".md") {
 		fullOwnersPath = a.filepath
 	}
-	link := fmt.Sprintf("https://github.com/%s/%s/blob/master/%v", a.org, a.project, fullOwnersPath)
+	link := fmt.Sprintf("https://github.com/%s/%s/blob/%s/%v", a.org, a.project, a.branch, fullOwnersPath)
 	return fmt.Sprintf("- ~~[%s](%s)~~ [%v]\n", fullOwnersPath, link, strings.Join(a.approvers.List(), ","))
 }
 
@@ -540,7 +553,7 @@ func (ua UnapprovedFile) String() string {
 	if strings.HasSuffix(ua.filepath, ".md") {
 		fullOwnersPath = ua.filepath
 	}
-	link := fmt.Sprintf("https://github.com/%s/%s/blob/master/%v", ua.org, ua.project, fullOwnersPath)
+	link := fmt.Sprintf("https://github.com/%s/%s/blob/%s/%v", ua.org, ua.project, ua.branch, fullOwnersPath)
 	return fmt.Sprintf("- **[%s](%s)**\n", fullOwnersPath, link)
 }
 
@@ -563,7 +576,7 @@ func GenerateTemplate(templ, name string, data interface{}) (string, error) {
 // 	- a suggested list of people from each OWNERS files that can fully approve the PR
 // 	- how an approver can indicate their approval
 // 	- how an approver can cancel their approval
-func GetMessage(ap Approvers, org, project string) *string {
+func GetMessage(ap Approvers, org, project, branch string) *string {
 	message, err := GenerateTemplate(`{{if (and (not .ap.RequirementsMet) (call .ap.ManuallyApproved )) }}
 Approval requirements bypassed by manually added approval.
 
@@ -599,10 +612,10 @@ The pull request process is described [here](https://git.k8s.io/community/contri
 <details {{if (and (not .ap.AreFilesApproved) (not (call .ap.ManuallyApproved))) }}open{{end}}>
 Needs approval from an approver in each of these files:
 
-{{range .ap.GetFiles .org .project}}{{.}}{{end}}
+{{range .ap.GetFiles .org .project .branch}}{{.}}{{end}}
 Approvers can indicate their approval by writing `+"`/approve`"+` in a comment
 Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
-</details>`, "message", map[string]interface{}{"ap": ap, "org": org, "project": project})
+</details>`, "message", map[string]interface{}{"ap": ap, "org": org, "project": project, "branch": branch})
 	if err != nil {
 		ap.owners.log.WithError(err).Errorf("Error generating message.")
 		return nil
