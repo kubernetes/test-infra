@@ -1447,6 +1447,27 @@ func (c *Client) ListTeamMembers(id int) ([]TeamMember, error) {
 	return teamMembers, nil
 }
 
+// GetTeamMembership gets the membership status of a user for the given team id
+func (c *Client) GetTeamMembership(id int, user string) (*TeamMembership, error) {
+	c.log("ListTeamMembers", id, user)
+	var teamMembership TeamMembership
+	statusCode, err := c.request(&request{
+		method: http.MethodGet,
+		path:   fmt.Sprintf("/teams/%d/memberships/%s", id, user),
+		accept:// This accept header enables the nested teams preview.
+		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
+		"application/vnd.github.hellcat-preview+json",
+		exitCodes: []int{200},
+	}, &teamMembership)
+	if err != nil {
+		return nil, err
+	}
+	if statusCode == 404 {
+		return &TeamMembership{Role: TeamMembershipRoleNone, State: TeamMembershipStateNone}, nil
+	}
+	return &teamMembership, err
+}
+
 // MergeDetails contains desired properties of the merge.
 // See https://developer.github.com/v3/pulls/#merge-a-pull-request-merge-button
 type MergeDetails struct {

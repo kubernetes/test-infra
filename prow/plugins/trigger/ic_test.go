@@ -40,18 +40,20 @@ func TestHandleIssueComment(t *testing.T) {
 	var testcases = []struct {
 		name string
 
-		Author        string
-		Body          string
-		State         string
-		IsPR          bool
-		Branch        string
-		ShouldBuild   bool
-		ShouldReport  bool
-		HasOkToTest   bool
-		IsOkToTest    bool
-		StartsExactly string
-		Presubmits    map[string][]config.Presubmit
-		IssueLabels   []github.Label
+		Author             string
+		Body               string
+		State              string
+		IsPR               bool
+		Branch             string
+		ShouldBuild        bool
+		ShouldReport       bool
+		HasOkToTest        bool
+		IsOkToTest         bool
+		StartsExactly      string
+		Presubmits         map[string][]config.Presubmit
+		IssueLabels        []github.Label
+		NeedsAuthorization bool
+		RestrictedJobs     map[string][]config.RestrictedJob
 	}{
 		{
 			name: "Not a PR.",
@@ -435,6 +437,165 @@ func TestHandleIssueComment(t *testing.T) {
 			},
 			ShouldReport: true,
 		},
+		{
+			name:   "Don't run test if commenter not authorized.",
+			Author: "t",
+			Body:   "/test all",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						Name:    "jyb",
+						Context: "pull-jyb",
+						Trigger: `/test jyb`,
+					},
+				},
+			},
+			RestrictedJobs: map[string][]config.RestrictedJob{
+				"org/repo": {
+					{
+						Name:           "jyb",
+						AuthorizedTeam: 1000,
+					},
+				},
+			},
+			ShouldBuild:        false,
+			ShouldReport:       false,
+			NeedsAuthorization: true,
+		},
+		{
+			name:   "Dont run test if commenter has pending membership in authorized team.",
+			Author: "t",
+			Body:   "/test all",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						Name:    "jyb",
+						Context: "pull-jyb",
+						Trigger: `/test jyb`,
+					},
+				},
+			},
+			RestrictedJobs: map[string][]config.RestrictedJob{
+				"org/repo": {
+					{
+						Name:           "jyb",
+						AuthorizedTeam: 3,
+					},
+				},
+			},
+			ShouldBuild:        false,
+			ShouldReport:       false,
+			NeedsAuthorization: true,
+		},
+		{
+			name:   "Don't run test invoked by all even if commenter has active membership in authorized team.",
+			Author: "t",
+			Body:   "/test all",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						Name:    "jyb",
+						Context: "pull-jyb",
+						Trigger: `/test jyb`,
+					},
+				},
+			},
+			RestrictedJobs: map[string][]config.RestrictedJob{
+				"org/repo": {
+					{
+						Name:           "jyb",
+						AuthorizedTeam: 1,
+					},
+				},
+			},
+			ShouldBuild:        false,
+			ShouldReport:       false,
+			NeedsAuthorization: true,
+		},
+		{
+			name:   "Run test invoked by name if commenter is an active member in authorized team.",
+			Author: "t",
+			Body:   "/test jyb",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						Name:    "jyb",
+						Context: "pull-jyb",
+						Trigger: `/test jyb`,
+					},
+				},
+			},
+			RestrictedJobs: map[string][]config.RestrictedJob{
+				"org/repo": {
+					{
+						Name:           "jyb",
+						AuthorizedTeam: 1,
+					},
+				},
+			},
+			ShouldBuild:        true,
+			NeedsAuthorization: true,
+		},
+		{
+			name:   "Run test invoked by name if commenter is an active maintainer in authorized team.",
+			Author: "t",
+			Body:   "/test jyb",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						Name:    "jyb",
+						Context: "pull-jyb",
+						Trigger: `/test jyb`,
+					},
+				},
+			},
+			RestrictedJobs: map[string][]config.RestrictedJob{
+				"org/repo": {
+					{
+						Name:           "jyb",
+						AuthorizedTeam: 2,
+					},
+				},
+			},
+			ShouldBuild:        true,
+			NeedsAuthorization: true,
+		},
+		{
+			name:   "Run even if there is a restricted job of same name for a different repo",
+			Author: "t",
+			Body:   "/test jyb",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						Name:    "jyb",
+						Context: "pull-jyb",
+						Trigger: `/test jyb`,
+					},
+				},
+			},
+			RestrictedJobs: map[string][]config.RestrictedJob{
+				"nonorg/depo": {
+					{
+						Name:           "jyb",
+						AuthorizedTeam: 2,
+					},
+				},
+			},
+			ShouldBuild:        true,
+			NeedsAuthorization: true,
+		},
 	}
 	for _, tc := range testcases {
 		t.Logf("running scenario %q", tc.name)
@@ -499,6 +660,11 @@ func TestHandleIssueComment(t *testing.T) {
 			}
 		}
 		c.Config.SetPresubmits(presubmits)
+
+		restrictedJobs := tc.RestrictedJobs
+		if restrictedJobs != nil {
+			c.Config.RestrictedJobs = restrictedJobs
+		}
 
 		var pr *struct{}
 		if tc.IsPR {

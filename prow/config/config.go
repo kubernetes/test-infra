@@ -99,6 +99,17 @@ type ProwConfig struct {
 	// OwnersDirBlacklist is used to configure which directories to ignore when
 	// searching for OWNERS{,_ALIAS} files in a repo.
 	OwnersDirBlacklist OwnersDirBlacklist `json:"owners_dir_blacklist,omitempty"`
+
+	// RestrictedJobs are used to specify a list of jobs that only an authorized team can run.
+	// Full repo name (such as "kubernetes/kubernetes") -> list of jobs
+	RestrictedJobs map[string][]RestrictedJob `json:"restricted_jobs"`
+}
+
+type RestrictedJob struct {
+	// eg kubernetes-pull-build-test-e2e-gce
+	Name string `json:"name"`
+	// The GitHub team id that is authorized to trigger this job.
+	AuthorizedTeam int `json:"authorized_team"`
 }
 
 // OwnersDirBlacklist is used to configure which directories to ignore when

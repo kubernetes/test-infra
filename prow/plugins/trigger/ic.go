@@ -134,5 +134,5 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 		}
 	}
 
-	return runOrSkipRequested(c, pr, requestedJobs, forceRunContexts, ic.Comment.Body, ic.GUID)
+	return runOrSkipRequested(c, pr, requestedJobs, forceRunContexts, ic.Comment.Body, ic.GUID, ic.Comment.User.Login)
 }
