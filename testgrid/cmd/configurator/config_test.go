@@ -346,7 +346,7 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 
 	jobs := make(map[string]bool)
 
-	prowConfig, err := prow_config.Load(prowPath, "")
+	prowConfig, err := prow_config.Load(prowPath)
 	if err != nil {
 		t.Fatalf("Could not load prow configs: %v\n", err)
 	}
@@ -367,7 +367,6 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 		"kubeflow/caffe2-operator",
 		"kubeflow/website",
 		"kubeflow/kubebench",
-		"kubeflow/mpi-operator",
 		"kubernetes/kubernetes",
 		"kubernetes/test-infra",
 		"kubernetes/cluster-registry",

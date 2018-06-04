@@ -1,5 +1,5 @@
 # Please set IMG
-TAG := $(shell date +v%Y%m%d)
+TAG = $(shell date +v%Y%m%d)
 
 all: push
 

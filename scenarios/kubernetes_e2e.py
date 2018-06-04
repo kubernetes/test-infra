@@ -41,7 +41,7 @@ DEFAULT_AWS_ZONES = [
     'ap-northeast-1c',
     'ap-northeast-1d',
     #'ap-northeast-2a', InsufficientInstanceCapacity for c4.large 2018-05-30
-    #'ap-northeast-2b' - AZ does not exist, so we're breaking the 3 AZs per region target here
+    #'ap-northeast-2a' - AZ does not exist, so we're breaking the 3 AZs per region target here
     #'ap-northeast-2c', InsufficientInstanceCapacity for c4.large 2018-05-30
     #'ap-south-1a', InsufficientInstanceCapacity for c4.large 2018-05-30
     #'ap-south-1b', InsufficientInstanceCapacity for c4.large 2018-05-30

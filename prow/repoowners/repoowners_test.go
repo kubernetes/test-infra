@@ -79,11 +79,9 @@ type testConfigGetter struct {
 
 func (c testConfigGetter) Config() *prowConf.Config {
 	return &prowConf.Config{
-		ProwConfig: prowConf.ProwConfig{
-			OwnersDirBlacklist: prowConf.OwnersDirBlacklist{
-				Repos:   c.repoBlacklist,
-				Default: c.defaultBlacklist,
-			},
+		OwnersDirBlacklist: prowConf.OwnersDirBlacklist{
+			Repos:   c.repoBlacklist,
+			Default: c.defaultBlacklist,
 		},
 	}
 }

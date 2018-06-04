@@ -4840,7 +4840,7 @@
       "sig-autoscaling"
     ]
   },
-  "ci-kubernetes-e2e-gci-gke-autoscaling-gpu-k80": {
+  "ci-kubernetes-e2e-gci-gke-autoscaling-gpu": {
     "args": [
       "--check-leaked-resources",
       "--cluster=ca-gpu",
@@ -4852,47 +4852,7 @@
       "--gcp-zone=us-west1-b",
       "--gke-environment=test",
       "--provider=gke",
-      "--test_args=--ginkgo.focus=\\[GpuType:nvidia-tesla-k80\\].*\\[Feature:ClusterSizeAutoscalingGpu\\] --ginkgo.skip=\\[Flaky\\]",
-      "--timeout=150m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-autoscaling"
-    ]
-  },
-  "ci-kubernetes-e2e-gci-gke-autoscaling-gpu-p100": {
-    "args": [
-      "--check-leaked-resources",
-      "--cluster=ca-gpu",
-      "--deployment=gke",
-      "--extract=ci/latest",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-node-image=gci",
-      "--gcp-project-type=gpu-project",
-      "--gcp-zone=us-west1-b",
-      "--gke-environment=test",
-      "--provider=gke",
-      "--test_args=--ginkgo.focus=\\[GpuType:nvidia-tesla-p100\\].*\\[Feature:ClusterSizeAutoscalingGpu\\] --ginkgo.skip=\\[Flaky\\]",
-      "--timeout=150m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-autoscaling"
-    ]
-  },
-  "ci-kubernetes-e2e-gci-gke-autoscaling-gpu-v100": {
-    "args": [
-      "--check-leaked-resources",
-      "--cluster=ca-gpu",
-      "--deployment=gke",
-      "--extract=ci/latest",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-node-image=gci",
-      "--gcp-project=k8s-gke-gpu-boskos-v100",
-      "--gcp-zone=us-west1-b",
-      "--gke-environment=test",
-      "--provider=gke",
-      "--test_args=--ginkgo.focus=\\[GpuType:nvidia-tesla-v100\\].*\\[Feature:ClusterSizeAutoscalingGpu\\] --ginkgo.skip=\\[Flaky\\]",
+      "--test_args=--ginkgo.focus=\\[Feature:ClusterSizeAutoscalingGpu\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
       "--timeout=150m"
     ],
     "scenario": "kubernetes_e2e",
@@ -12083,7 +12043,7 @@
       "--extract=ci/latest",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-node-image=ubuntu",
-      "--gcp-project-type=istio-project",
+      "--gcp-project=istio-gke-addon-prow-e2e-test",
       "--gcp-zone=us-central1-f",
       "--gke-command-group=alpha",
       "--gke-create-command=container clusters create --quiet --num-nodes=4 --no-enable-legacy-authorization --addons=Istio --istio-config=auth=NONE",

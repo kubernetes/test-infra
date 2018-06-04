@@ -13,7 +13,7 @@
 # limitations under the License.
 
 IMG = gcr.io/k8s-testimages/kubekins-e2e
-TAG := $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
+TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
 # kubernetes master branch config
 K8S ?= master

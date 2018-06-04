@@ -588,8 +588,6 @@ class JobTest(unittest.TestCase):
             # kubemark presubmits
             'pull-kubernetes-kubemark-e2e-gce-canary':'k8s-jkns-pr-kubemark',
             'pull-kubernetes-kubemark-e2e-gce':'k8s-jkns-pr-kubemark',
-            # gpu+autoscaling jobs intentionally share projects with gpu tests
-            'ci-kubernetes-e2e-gci-gke-autoscaling-gpu-v100': 'ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu-v100',
         }
         # pylint: enable=line-too-long
         projects = collections.defaultdict(set)

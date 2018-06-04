@@ -13,7 +13,7 @@
 # limitations under the License.
 
 IMG = gcr.io/k8s-testimages/triage
-TAG := $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
+TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
 build:
 	docker build -t $(IMG):$(TAG) .

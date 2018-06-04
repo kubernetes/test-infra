@@ -224,7 +224,6 @@ func (c *Controller) Sync() error {
 	for report := range reportCh {
 		if err := reportlib.Report(c.ghc, reportTemplate, report); err != nil {
 			reportErrs = append(reportErrs, err)
-			c.log.WithFields(pjutil.ProwJobFields(&report)).WithError(err).Warn("Failed to report ProwJob status")
 		}
 	}
 
@@ -394,7 +393,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 		pj.Status.JenkinsBuildID = strconv.Itoa(jb.Number)
 		var b bytes.Buffer
 		if err := c.config().JobURLTemplate.Execute(&b, &pj); err != nil {
-			c.log.WithFields(pjutil.ProwJobFields(&pj)).Errorf("error executing URL template: %v", err)
+			c.log.Errorf("error executing URL template: %v", err)
 		} else {
 			pj.Status.URL = b.String()
 		}
