@@ -222,6 +222,7 @@ func (c *Controller) Sync() error {
 		for report := range reportCh {
 			if err := reportlib.Report(c.ghc, reportTemplate, report); err != nil {
 				reportErrs = append(reportErrs, err)
+				c.log.WithFields(pjutil.ProwJobFields(&report)).WithError(err).Warn("Failed to report ProwJob status")
 			}
 		}
 	}
