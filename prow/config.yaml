@@ -703,7 +703,7 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
-          value: 'true'
+          value: "true"
         securityContext:
           privileged: true
         volumeMounts:
@@ -9283,7 +9283,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=130
+      - --timeout=170
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
 - tags:
@@ -9373,7 +9373,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=130
+      - --timeout=170
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
 - tags:
@@ -9463,7 +9463,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=130
+      - --timeout=170
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
 - tags:
@@ -9553,7 +9553,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=130
+      - --timeout=170
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
 - tags:
@@ -12029,7 +12029,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=130
+      - --timeout=170
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
 - tags:
@@ -12104,7 +12104,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=130
+      - --timeout=170
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
 - tags:
@@ -12179,7 +12179,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=130
+      - --timeout=170
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
 - tags:
@@ -12254,7 +12254,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=130
+      - --timeout=170
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
 - tags:
@@ -13575,7 +13575,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=130
+      - --timeout=170
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
 - tags:
@@ -13710,7 +13710,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=130
+      - --timeout=170
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
 - tags:
@@ -13845,7 +13845,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=130
+      - --timeout=170
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
 - tags:
@@ -13980,7 +13980,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=130
+      - --timeout=170
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
 - tags:
@@ -14115,7 +14115,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=130
+      - --timeout=170
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
 - tags:
@@ -14250,7 +14250,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=130
+      - --timeout=170
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
 - tags:
@@ -14385,7 +14385,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=130
+      - --timeout=170
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
 - tags:
@@ -14520,7 +14520,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=130
+      - --timeout=170
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
 - tags:
