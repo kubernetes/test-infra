@@ -11703,7 +11703,33 @@ periodics:
 
 - interval: 4h
   agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu
+  name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu-k80
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=170
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
+
+- interval: 4h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu-p100
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=170
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
+
+- interval: 4h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu-v100
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"

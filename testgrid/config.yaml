@@ -439,8 +439,12 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-alpha-features
 - name: ci-kubernetes-e2e-gci-gke-autoscaling
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-autoscaling
-- name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-autoscaling-gpu
+- name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu-k80
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-autoscaling-gpu-k80
+- name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu-p100
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-autoscaling-gpu-p100
+- name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu-v100
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-autoscaling-gpu-v100
 - name: ci-kubernetes-e2e-gci-gke-autoscaling-regional
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-autoscaling-regional
 - name: ci-kubernetes-e2e-gci-gke-autoscaling-hpa
@@ -4345,8 +4349,18 @@ dashboards:
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
-  - name: gke-device-plugin-gpu-autoscaling
-    test_group_name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu
+  - name: gke-device-plugin-gpu-autoscaling-k80
+    test_group_name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu-k80
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gke-device-plugin-gpu-autoscaling-p100
+    test_group_name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu-p100
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gke-device-plugin-gpu-autoscaling-v100
+    test_group_name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu-v100
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
@@ -4577,8 +4591,12 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-autoscaling-migs
   - name: gci-gke-autoscaling
     test_group_name: ci-kubernetes-e2e-gci-gke-autoscaling
-  - name: gci-gke-autoscaling-gpu
-    test_group_name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu
+  - name: gci-gke-autoscaling-gpu-k80
+    test_group_name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu-k80
+  - name: gci-gke-autoscaling-gpu-p100
+    test_group_name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu-p100
+  - name: gci-gke-autoscaling-gpu-v100
+    test_group_name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu-v100
   - name: gci-gke-autoscaling-regional
     test_group_name: ci-kubernetes-e2e-gci-gke-autoscaling-regional
   - name: gke-ubuntu1-k8sbeta-autoscaling
