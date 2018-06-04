@@ -10417,7 +10417,7 @@
       "--node-test-args=--feature-gates=DynamicKubeletConfig=true",
       "--node-tests=true",
       "--provider=gce",
-      "--test_args=--nodes=1 --skip=\"\\[Flaky\\]|\\[Serial\\]|\\[NodeAlphaFeature:.+\\]\"",
+      "--test_args=--nodes=1 --focus=\"\\[Serial\\]\" --skip=\"\\[Flaky\\]|\\[Benchmark\\]|\\[NodeAlphaFeature:.+\\]\"",
       "--timeout=180m"
     ],
     "scenario": "kubernetes_e2e",
@@ -10642,7 +10642,7 @@
       "--node-test-args=--feature-gates=DynamicKubeletConfig=true",
       "--node-tests=true",
       "--provider=gce",
-      "--test_args=--nodes=1 --skip=\"\\[Flaky\\]|\\[Serial\\]|\\[NodeAlphaFeature:.+\\]\"",
+      "--test_args=--nodes=1 --focus=\"\\[Serial\\]\" --skip=\"\\[Flaky\\]|\\[Benchmark\\]|\\[NodeAlphaFeature:.+\\]\"",
       "--timeout=180m"
     ],
     "scenario": "kubernetes_e2e",
