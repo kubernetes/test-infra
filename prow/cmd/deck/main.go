@@ -480,7 +480,7 @@ func handleLog(lc logClient) http.HandlerFunc {
 		log, err := lc.GetJobLog(job, id)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Log not found: %v", err), http.StatusNotFound)
-			logrus.WithError(err).Warning("Error returned.")
+			logrus.WithError(err).Warning("Log not found.")
 			return
 		}
 		if _, err = w.Write(log); err != nil {
@@ -522,7 +522,7 @@ func handleRerun(kc pjClient) http.HandlerFunc {
 		pj, err := kc.GetProwJob(name)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("ProwJob not found: %v", err), http.StatusNotFound)
-			logrus.WithError(err).Warning("Error returned.")
+			logrus.WithError(err).Warning("ProwJob not found.")
 			return
 		}
 		pjutil := pjutil.NewProwJob(pj.Spec, pj.ObjectMeta.Labels)
