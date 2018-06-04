@@ -56,15 +56,19 @@ func (ca *Agent) Start(prowConfig, jobConfig string) error {
 					continue
 				}
 
-				jobConfig, err := os.Stat(jobConfig)
-				if err != nil {
-					logrus.WithField("jobConfig", jobConfig).WithError(err).Error("Error loading job configs.")
-					continue
-				}
-
 				recentModTime := prowStat.ModTime()
-				if jobConfig.ModTime().After(recentModTime) {
-					recentModTime = jobConfig.ModTime()
+
+				// TODO(krzyzacy): allow empty jobConfig till fully migrate config to subdirs
+				if jobConfig != "" {
+					jobConfigStat, err := os.Stat(jobConfig)
+					if err != nil {
+						logrus.WithField("jobConfig", jobConfig).WithError(err).Error("Error loading job configs.")
+						continue
+					}
+
+					if jobConfigStat.ModTime().After(recentModTime) {
+						recentModTime = jobConfigStat.ModTime()
+					}
 				}
 
 				if !recentModTime.After(lastModTime) {
