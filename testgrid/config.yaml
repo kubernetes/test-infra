@@ -755,6 +755,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build-1-9
 - name: ci-kubernetes-bazel-build-1-10
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build-1-10
+- name: ci-kubernetes-bazel-build-1-11
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build-1-11
 - name: ci-kubernetes-bazel-test
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test
 - name: ci-kubernetes-bazel-test-1-8
@@ -763,6 +765,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test-1-9
 - name: ci-kubernetes-bazel-test-1-10
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test-1-10
+- name: ci-kubernetes-bazel-test-1-11
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test-1-11
 - name: ci-test-infra-bazel
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-bazel
 # Tectonic (contact: @ethernetdan on GitHub)
@@ -1519,12 +1523,16 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-9
 - name: periodic-kubernetes-bazel-test-1-10
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-10
+- name: periodic-kubernetes-bazel-test-1-11
+  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-11
 - name: periodic-kubernetes-bazel-build-1-8
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-8
 - name: periodic-kubernetes-bazel-build-1-9
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-9
 - name: periodic-kubernetes-bazel-build-1-10
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-10
+- name: periodic-kubernetes-bazel-build-1-11
+  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-11
 - name: periodic-test-infra-stale
   gcs_prefix: kubernetes-jenkins/logs/periodic-test-infra-stale
 - name: periodic-test-infra-rotten
@@ -3474,6 +3482,8 @@ dashboards:
     test_group_name: ci-kubernetes-bazel-build-1-9
   - name: bazel-build-1.10
     test_group_name: ci-kubernetes-bazel-build-1-10
+  - name: bazel-build-1.11
+    test_group_name: ci-kubernetes-bazel-build-1-11
   - name: bazel-test
     test_group_name: ci-kubernetes-bazel-test
   - name: bazel-test-1.8
@@ -3482,6 +3492,8 @@ dashboards:
     test_group_name: ci-kubernetes-bazel-test-1-9
   - name: bazel-test-1.10
     test_group_name: ci-kubernetes-bazel-test-1-10
+  - name: bazel-test-1.11
+    test_group_name: ci-kubernetes-bazel-test-1-11
   - name: integration-master
     test_group_name: ci-kubernetes-integration-master
   - name: integration-1.8
@@ -3745,15 +3757,14 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-11
   - name: gce-kubeadm-upgrade-1.10-1.11
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11
-  # TODO(bentheelder) (1.11 test-infra lead) create those jobs
-  #- name: bazel-build-1.11
-  #  test_group_name: ci-kubernetes-bazel-build-1-11
-  #- name: bazel-test-1.11
-  #  test_group_name: ci-kubernetes-bazel-test-1-11
-  #- name: periodic-bazel-build-1.11
-  #  test_group_name: periodic-kubernetes-bazel-build-1-11
-  #- name: periodic-bazel-test-1.11
-  #  test_group_name: periodic-kubernetes-bazel-test-1-11
+  - name: bazel-build-1.11
+    test_group_name: ci-kubernetes-bazel-build-1-11
+  - name: bazel-test-1.11
+    test_group_name: ci-kubernetes-bazel-test-1-11
+  - name: periodic-bazel-build-1.11
+    test_group_name: periodic-kubernetes-bazel-build-1-11
+  - name: periodic-bazel-test-1.11
+    test_group_name: periodic-kubernetes-bazel-test-1-11
 
 - name: sig-release-1.11-blocking
   dashboard_tab:
@@ -3803,19 +3814,18 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet-beta
   - name: gce-scalability-1.11
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-beta
-  # TODO(bentheelder) (1.11 test-infra lead) create those jobs
-  #- name: bazel-build-1.11
-  #  test_group_name: ci-kubernetes-bazel-build-1-10
-  #- name: bazel-test-1.11
-  #  test_group_name: ci-kubernetes-bazel-test-1-10
-  #- name: periodic-bazel-build-1.11
-  #  test_group_name: periodic-kubernetes-bazel-build-1-10
-  #- name: periodic-bazel-test-1.11
-  #  test_group_name: periodic-kubernetes-bazel-test-1-10
-  #- name: gce-kubeadm-1.10-on-1.11
-  #  test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
-  #- name: ci-gce-kubeadm-1.11
-  #  test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-11
+  - name: bazel-build-1.11
+    test_group_name: ci-kubernetes-bazel-build-1-11
+  - name: bazel-test-1.11
+    test_group_name: ci-kubernetes-bazel-test-1-11
+  - name: periodic-bazel-build-1.11
+    test_group_name: periodic-kubernetes-bazel-build-1-11
+  - name: periodic-bazel-test-1.11
+    test_group_name: periodic-kubernetes-bazel-test-1-11
+  - name: gce-kubeadm-1.10-on-1.11
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
+  - name: ci-gce-kubeadm-1.11
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-11
 
 - name: sig-release-1.10-all
   dashboard_tab:
