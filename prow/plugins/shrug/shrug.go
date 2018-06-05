@@ -23,6 +23,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -47,7 +48,22 @@ type event struct {
 }
 
 func init() {
-	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, nil)
+	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
+}
+
+func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+	// The Config field is omitted because this plugin is not configurable.
+	pluginHelp := &pluginhelp.PluginHelp{
+		Description: shrugLabel,
+	}
+	pluginHelp.AddCommand(pluginhelp.Command{
+		Usage:       "/[un]shrug",
+		Description: shrugLabel,
+		Featured:    false,
+		WhoCanUse:   "Anyone, " + shrugLabel,
+		Examples:    []string{"/shrug", "/unshrug"},
+	})
+	return pluginHelp, nil
 }
 
 type githubClient interface {
