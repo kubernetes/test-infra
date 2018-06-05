@@ -160,7 +160,7 @@ type Configuration struct {
 
 	// Built-in plugins specific configuration.
 	Triggers      []Trigger     `json:"triggers,omitempty"`
-	Heart         Heart         `json:"heart,omitempty"`
+	Heart         *Heart        `json:"heart,omitempty"`
 	Milestone     Milestone     `json:"milestone,omitempty"`
 	Slack         Slack         `json:"slack,omitempty"`
 	ConfigUpdater ConfigUpdater `json:"config_updater,omitempty"`
