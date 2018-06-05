@@ -452,7 +452,7 @@ function createJobStatus(builds) {
     if (state === "unknown") {
         arrowIcon.classList.add("hidden");
         const p = document.createElement("P");
-        p.textContent = "Test results for this PR are not in our record but you can always find them on PR's Github page. Sorry for any convenience!";
+        p.textContent = "Test results for this PR are not in our record but you can always find them on PR's GitHub page. Sorry for any inconvenience!";
 
         status.appendChild(document.createTextNode(statusText));
         status.appendChild(createStatusHelp("No test found", [p]));
