@@ -138,7 +138,7 @@ func handleGenericCommentEvent(pc plugins.PluginClient, ce github.GenericComment
 	}
 
 	opts := optionsForRepo(pc.PluginConfig, ce.Repo.Owner.Login, ce.Repo.Name)
-	if !approvalCommandMatcher(botName, opts.LgtmActsAsApprove, opts.ReviewActsAsApprove)(&comment{Body: ce.Body, Author: ce.User.Login}) {
+	if !isApprovalCommand(botName, opts.LgtmActsAsApprove, &comment{Body: ce.Body, Author: ce.User.Login}) {
 		return nil
 	}
 
@@ -185,14 +185,13 @@ func handleReviewEvent(pc plugins.PluginClient, re github.ReviewEvent) error {
 	// Check for an approval command is in the body. If one exists, let the
 	// genericCommentEventHandler handle this event. Approval commands override
 	// review state.
-	if approvalCommandMatcher(botName, opts.LgtmActsAsApprove, opts.ReviewActsAsApprove)(&comment{Body: re.Review.Body, Author: re.Review.User.Login}) {
+	if isApprovalCommand(botName, opts.LgtmActsAsApprove, &comment{Body: re.Review.Body, Author: re.Review.User.Login}) {
 		return nil
 	}
 
 	// Check for an approval command via review state. If none exists, don't
 	// handle this event.
-	if !approvalCommandMatcher(botName, opts.LgtmActsAsApprove, opts.ReviewActsAsApprove)(&comment{Author: re.Review.User.Login, ReviewState: re.Review.State}) {
-		pc.Logger.Errorf("found incorrect state: %#v", re.Review)
+	if !isApprovalState(botName, opts.ReviewActsAsApprove, &comment{Author: re.Review.User.Login, ReviewState: re.Review.State}) {
 		return nil
 	}
 
@@ -363,7 +362,7 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, o
 	sort.SliceStable(comments, func(i, j int) bool {
 		return comments[i].CreatedAt.Before(comments[j].CreatedAt)
 	})
-	approveComments := filterComments(comments, approvalCommandMatcher(botName, opts.LgtmActsAsApprove, opts.ReviewActsAsApprove))
+	approveComments := filterComments(comments, approvalMatcher(botName, opts.LgtmActsAsApprove, opts.ReviewActsAsApprove))
 	addApprovers(&approversHandler, approveComments, pr.author, opts.ReviewActsAsApprove)
 
 	for _, user := range pr.assignees {
@@ -433,27 +432,39 @@ func humanAddedApproved(ghc githubClient, log *logrus.Entry, org, repo string, n
 	}
 }
 
-func approvalCommandMatcher(botName string, lgtmActsAsApprove bool, reviewActsAsApprove bool) func(*comment) bool {
+func approvalMatcher(botName string, lgtmActsAsApprove, reviewActsAsApprove bool) func(*comment) bool {
 	return func(c *comment) bool {
-		if c.Author == botName || isDeprecatedBot(c.Author) {
-			return false
-		}
+		return isApprovalCommand(botName, lgtmActsAsApprove, c) || isApprovalState(botName, reviewActsAsApprove, c)
+	}
+}
 
-		// consider reviews in either approved OR requested changes states as
-		// approval commands. Reviews in requested changes states will be
-		// interpreted as cancelled approvals.
-		state := strings.ToUpper(c.ReviewState)
-		if reviewActsAsApprove && (state == approvedReviewState || state == changesRequestedReviewState) {
-			return true
-		}
-		for _, match := range commandRegex.FindAllStringSubmatch(c.Body, -1) {
-			cmd := strings.ToUpper(match[1])
-			if (cmd == lgtmCommand && lgtmActsAsApprove) || cmd == approveCommand {
-				return true
-			}
-		}
+func isApprovalCommand(botName string, lgtmActsAsApprove bool, c *comment) bool {
+	if c.Author == botName || isDeprecatedBot(c.Author) {
 		return false
 	}
+
+	for _, match := range commandRegex.FindAllStringSubmatch(c.Body, -1) {
+		cmd := strings.ToUpper(match[1])
+		if (cmd == lgtmCommand && lgtmActsAsApprove) || cmd == approveCommand {
+			return true
+		}
+	}
+	return false
+}
+
+func isApprovalState(botName string, reviewActsAsApprove bool, c *comment) bool {
+	if c.Author == botName || isDeprecatedBot(c.Author) {
+		return false
+	}
+
+	// consider reviews in either approved OR requested changes states as
+	// approval commands. Reviews in requested changes states will be
+	// interpreted as cancelled approvals.
+	state := strings.ToUpper(c.ReviewState)
+	if reviewActsAsApprove && (state == approvedReviewState || state == changesRequestedReviewState) {
+		return true
+	}
+	return false
 }
 
 func notificationMatcher(botName string) func(*comment) bool {
