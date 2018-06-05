@@ -934,6 +934,14 @@
       "sig-testing"
     ]
   },
+  "ci-kubernetes-bazel-build-1-11": {
+    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
+    "args": [],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "ci-kubernetes-bazel-build-1-8": {
     "args": [
       "--build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/... //vendor/k8s.io/...",
@@ -961,6 +969,14 @@
     ]
   },
   "ci-kubernetes-bazel-test-1-10": {
+    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
+    "args": [],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
+  "ci-kubernetes-bazel-test-1-11": {
     "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
     "args": [],
     "scenario": "kubernetes_bazel",
@@ -12228,6 +12244,14 @@
       "sig-testing"
     ]
   },
+  "periodic-kubernetes-bazel-build-1-11": {
+    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
+    "args": [],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "periodic-kubernetes-bazel-build-1-8": {
     "args": [
       "--build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/... //vendor/k8s.io/...",
@@ -12247,6 +12271,14 @@
     ]
   },
   "periodic-kubernetes-bazel-test-1-10": {
+    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
+    "args": [],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
+  "periodic-kubernetes-bazel-test-1-11": {
     "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
     "args": [],
     "scenario": "kubernetes_bazel",

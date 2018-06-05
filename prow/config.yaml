@@ -7507,7 +7507,35 @@ postsubmits:
         resources:
           requests:
             memory: "6Gi"
-
+  - name: ci-kubernetes-bazel-build-1-11
+    agent: kubernetes
+    branches:
+    - release-1.11
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-1.10
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/logs"
+        - "--timeout=60"
+        - "--" # end bootstrap args, scenario args below
+        - "--build=//... -//vendor/..."
+        - "--release=//build/release-tars"
+        - "--gcs=gs://kubernetes-release-dev/ci"
+        - "--version-suffix=-bazel"
+        - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel-1.11.txt"
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
   - name: ci-kubernetes-bazel-build-1-9
     agent: kubernetes
     branches:
@@ -7540,6 +7568,36 @@ postsubmits:
     agent: kubernetes
     branches:
     - release-1.10
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-1.10
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/logs"
+        - "--timeout=60"
+        - "--" # end bootstrap args, scenario args below
+        - "--test=//... -//build/... -//vendor/..."
+        - "--manual-test=//hack:verify-all"
+        - "--test-args=--config=unit"
+        - "--test-args=--build_tag_filters=-e2e,-integration"
+        - "--test-args=--test_tag_filters=-e2e,-integration"
+        - "--test-args=--flaky_test_attempts=3"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
+
+  - name: ci-kubernetes-bazel-test-1-11
+    agent: kubernetes
+    branches:
+    - release-1.11
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -8625,6 +8683,36 @@ periodics:
       - "--gcs=gs://kubernetes-release-dev/ci"
       - "--version-suffix=-bazel"
       - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel-1.10.txt"
+      # Bazel needs privileged mode in order to sandbox builds.
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "6Gi"
+
+# TODO(krzyzacy) Stablize per branch bazel build|test jobs
+- name: ci-kubernetes-bazel-build-1-11
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-1.10
+      args:
+      - "--job=$(JOB_NAME)"
+      - "--repo=k8s.io/kubernetes=release-1.11"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--timeout=60"
+      - "--" # end bootstrap args, scenario args below
+      - "--build=//... -//vendor/..."
+      - "--release=//build/release-tars"
+      - "--gcs=gs://kubernetes-release-dev/ci"
+      - "--version-suffix=-bazel"
+      - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel-1.11.txt"
       # Bazel needs privileged mode in order to sandbox builds.
       securityContext:
         privileged: true
@@ -17154,6 +17242,37 @@ periodics:
         requests:
           memory: "6Gi"
 
+- name: periodic-kubernetes-bazel-build-1-11
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-1.10
+      args:
+      - "--job=$(JOB_NAME)"
+      - "--repo=k8s.io/kubernetes=release-1.11"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--" # end bootstrap args, scenario args below
+      - "--build=//... -//vendor/..."
+      - "--release=//build/release-tars"
+      env:
+      # TODO(bentheelder): switch to kubernetes_execute_bazel and consider dropping this
+      - name: REPO_OWNER
+        value: kubernetes
+      - name: REPO_NAME
+        value: kubernetes
+      # Bazel needs privileged mode in order to sandbox builds.
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "6Gi"
+
 - name: periodic-kubernetes-bazel-build-1-8
   interval: 6h
   agent: kubernetes
@@ -17212,6 +17331,41 @@ periodics:
       - --root=/go/src
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes=release-1.10"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--" # end bootstrap args, scenario args below
+      - "--test=//... -//build/... -//vendor/..."
+      - "--manual-test=//hack:verify-all"
+      - "--test-args=--config=unit"
+      - "--test-args=--build_tag_filters=-e2e,-integration"
+      - "--test-args=--test_tag_filters=-e2e,-integration"
+      - "--test-args=--flaky_test_attempts=3"
+      env:
+      # TODO(bentheelder): switch to kubernetes_execute_bazel and consider dropping this
+      - name: REPO_OWNER
+        value: kubernetes
+      - name: REPO_NAME
+        value: kubernetes
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "6Gi"
+
+- name: periodic-kubernetes-bazel-test-1-11
+  interval: 6h
+  agent: kubernetes
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-1.10
+      args:
+      - --root=/go/src
+      - "--job=$(JOB_NAME)"
+      - "--repo=k8s.io/kubernetes=release-1.11"
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--" # end bootstrap args, scenario args below
