@@ -7517,7 +7517,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.11
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -7604,7 +7604,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.11
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -8700,7 +8700,7 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.10
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.11
       args:
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes=release-1.11"
@@ -17251,7 +17251,7 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.10
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.111
       args:
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes=release-1.11"
@@ -17361,7 +17361,7 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.10
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.11
       args:
       - --root=/go/src
       - "--job=$(JOB_NAME)"
