@@ -46,7 +46,7 @@ func init() {
 	flag.Var(&resources, "resource-type", "comma-separated list of resources need to have metrics collected")
 }
 
-func init_prometheus() {
+func initMetrics() {
 	for _, resource := range resources {
 		promMetrics.BoskosState[resource] = map[string]prometheus.Gauge{
 			common.Free: prometheus.NewGauge(prometheus.GaugeOpts{
@@ -81,7 +81,7 @@ func main() {
 	logrus.Infof("Initialzied boskos client!")
 
 	flag.Parse()
-	init_prometheus()
+	initMetrics()
 
 	http.Handle("/prometheus", promhttp.Handler())
 	http.Handle("/", handleMetric(boskos))
