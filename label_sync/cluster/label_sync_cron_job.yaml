@@ -32,7 +32,7 @@ spec:
               args:
               - --config=/etc/config/labels.yaml
               - --confirm=true
-              - --orgs=kubernetes
+              - --orgs=kubernetes,kubernetes-sigs
               - --token=/etc/github/oauth
               volumeMounts:
               - name: oauth
@@ -49,4 +49,3 @@ spec:
           - name: config
             configMap:
               name: label-config
-

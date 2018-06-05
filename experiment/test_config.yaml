@@ -760,7 +760,7 @@ jobs:
     args:
     - --gcp-project=cos-image-validation
     - --node-test-args=--feature-gates=DynamicKubeletConfig=true
-    - --test_args=--nodes=1 --skip="\[Flaky\]|\[Serial\]|\[NodeAlphaFeature:.+\]"
+    - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosbeta-k8sbeta-default:
     interval: 2h
@@ -813,7 +813,7 @@ jobs:
     args:
     - --gcp-project=k8s-test-39a894cbd4
     - --node-test-args=--feature-gates=DynamicKubeletConfig=true
-    - --test_args=--nodes=1 --skip="\[Flaky\]|\[Serial\]|\[NodeAlphaFeature:.+\]"
+    - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosstable1-k8sbeta-default:
     interval: 2h
@@ -1112,7 +1112,7 @@ testSuites:
   ingress:
     args:
     - --gcp-project-type=ingress-project
-    - --timeout=110m
+    - --timeout=150m
     - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
   reboot:
     args:

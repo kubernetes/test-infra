@@ -44,8 +44,8 @@ PROW_CONFIG_TEMPLATE = """
     interval:
     agent: kubernetes
     labels:
-      preset-service-account: true
-      preset-k8s-ssh: true
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
     name:
     spec:
       containers:

@@ -1121,6 +1121,26 @@ func TestListTeamMembers(t *testing.T) {
 	}
 }
 
+func TestIsCollaborator(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/collaborators/person" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		http.Error(w, "204 No Content", http.StatusNoContent)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	mem, err := c.IsCollaborator("k8s", "kuber", "person")
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if !mem {
+		t.Errorf("Should be member.")
+	}
+}
+
 func TestListCollaborators(t *testing.T) {
 	ts := simpleTestServer(t, "/repos/org/repo/collaborators", []User{{Login: "foo"}, {Login: "bar"}})
 	defer ts.Close()

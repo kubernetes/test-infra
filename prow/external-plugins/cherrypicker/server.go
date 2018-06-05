@@ -51,7 +51,7 @@ type githubClient interface {
 	GetRepo(owner, name string) (github.Repo, error)
 	IsMember(org, user string) (bool, error)
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
-	ListOrgMembers(org string) ([]github.TeamMember, error)
+	ListOrgMembers(org, role string) ([]github.TeamMember, error)
 }
 
 func HelpProvider(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
@@ -272,7 +272,7 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 	// Figure out membership.
 	if !s.allowAll {
 		// TODO: Possibly cache this.
-		members, err := s.ghc.ListOrgMembers(org)
+		members, err := s.ghc.ListOrgMembers(org, "all")
 		if err != nil {
 			return err
 		}
