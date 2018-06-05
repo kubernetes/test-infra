@@ -1,43 +1,67 @@
 # Display Conformance Tests with Testgrid
 
-This directory contains tooling for displaying [kubernetes conformance test](https://github.com/cncf/k8s-conformance) results on [testgrid](../README.md).
+This directory contains tooling for uploading [Kubernetes Conformance test](https://github.com/cncf/k8s-conformance) results for display / monitoring on [TestGrid](../README.md).
 
+Federated conformance test results are hosted on the TestGrid [conformance dashboards](https://k8s-testgrid.appspot.com/conformance-all), including the "all" dashboard, and specific sub-dashboards, see [the TestGrid README](../README.md#dashboards) for details on dashboards.  
 
-## Using
+All Kuberentes cluster providers are invited to post results from their conformance test jobs and results from reliable continuous integration against the release branches may even be used as a signal by the Kubernetes release team in the [release-blocking dashboards](https://k8s-testgrid.appspot.com/sig-release-master-blocking).
 
-1. First you will need to set up a publicly readable GCS bucket per [contributing test results](https://github.com/kubernetes/test-infra/blob/master/docs/contributing-test-results.md#contributing-test-results).
+## Usage Guide
 
-2. Make a PR to test-infra adding your bucket to the testgrid config (again see [contributing test results](https://github.com/kubernetes/test-infra/blob/master/docs/contributing-test-results.md#contributing-test-results)).
+1. First you will need to set up a publicly readable GCS bucket per [contributing test results](https://github.com/kubernetes/test-infra/blob/master/docs/contributing-test-results.md#contributing-test-results) to host your jobs' results.  
+If you cannot or do not want to set up a GCS bucket and only wish to post conformance test results, please contact [@BenTheElder](https://github.com/BenTheElder) or more generally [the gke-kubernetes-engprod team](mailto:gke-kubernetes-engprod@google.com) to arrange for a Google [GKE](https://cloud.google.com/kubernetes-engine/) EngProd provided / maintained bucket for hosting your results.
 
-3. Run the conformance tests, you can do this by:
+2. Make a PR to test-infra adding your bucket to the TestGrid config (again see [contributing test results](https://github.com/kubernetes/test-infra/blob/master/docs/contributing-test-results.md#contributing-test-results)).
 
- - [following the official guide](https://github.com/cncf/k8s-conformance/blob/master/instructions.md#running)
+3. Setup a job in your CI system to run the conformance tests. To use [`upload_e2e.py`](./upload_e2e.py) the job environment must have `python` (v2.X) and `gcloud` / `gsutil` commands. For the gcloud CLI see [Installing the Google Cloud SDK](https://cloud.google.com/sdk/downloads).
 
- - or using [kubetest](https://github.com/kubernetes/test-infra/tree/master/kubetest):
-   - cd to a Kubernetes source tree for the release you wish to test
-   - run `make quick-release` to build the test binaries
+This job will need to:
+   - `a)` setup a cluster from the kubernetes release / branch you want to test
+   - `b)` run the conformance tests
+   - `c)` obtain the JUnit .xml results and ginkgo (e2e test runner) log output
+   - `d)` upload the results to the GCS bucket
+
+Setting up the test cluster in `a)` is provider specific and not currently covered here.
+
+For running the conformance tests and obtaining the result files (`b)` and `c)`) you have the following options:
+
+ - follow [the official conformance testing guide's instructions](https://github.com/cncf/k8s-conformance/blob/master/instructions.md#running) to run and obtain the result files
+
+ - or use [kubetest](https://github.com/kubernetes/test-infra/tree/master/kubetest):
+   - cd to a Kubernetes source tree (git clone) for the release you wish to test, using something like:  
+   ```sh
+   git clone https://github.com/kubernetes/kubernetes.git && cd kubernetes && git checkout release-1.11
+   ```
+   - run `make WHAT=test/e2e.test` to build the test binaries
    - make sure `kubectl` / `$KUBECONFIG` is authed to your cluster
-   - run kubetest with:
+   - run [kubetest](https://github.com/kubernetes/test-infra/tree/master/kubetest) with:
     ```sh
     export KUBERNETES_CONFORMANCE_TEST=y
     kubetest --provider=skeleton \
              --test --test_args="--ginkgo.focus=\[Conformance\]" \ 
              --dump=./_artifacts | tee ./e2e.log
     ```
+   - You can then find the log file and JUnit at `./e2e.log` and `./_artifacts/junit_01.xml` respectively.
 
- - or using [Heptio Scanner](https://scanner.heptio.com/)
+ - or use the [Sonobuouy CLI](https://github.com/heptio/sonobuoy#using-the-cli) to run the tests and then obtain a "snapshot" with the official instructions [when run locally](https://github.com/heptio/sonobuoy#download-and-run). You can then get the e2e log and JUnit from the snapshot (see the [plugins section](https://github.com/heptio/sonobuoy/blob/master/docs/snapshot.md#plugins) of the snapshot documentation)
 
-4. Obtain the log file and JUnit xml output.
+For uploading the results (`d)`) you can use the tooling provided here (or build your own mimicking it), to use `upload_e2e.py` provide the following required flags:
+- `--junit` -- The path to the JUnit result file(s): `--junit=/path/to/junit/result/file/junit_01.xml`
+  - note that this flag accepts [glob patterns](https://en.wikipedia.org/wiki/Glob_(programming)), E.g. `--junit=./artifacts/junit_*.xml`
 
- - With the above kubetest command you can find the log file and JUnit at `./e2e.log` and `./_artifacts/junit_01.xml` respectively.
+- `--log` -- The path to the ginkgo log file / test output:
+ `--log=/path/to/e2e.log`
 
- - For [Sonobuouy](https://github.com/heptio/sonobuoy) run locally you can obtain a "snapshot" with the official instructions [when run locally](https://github.com/heptio/sonobuoy#download-and-run). You can then get the e2e log and junit from the snapshot (see the [plugins section](https://github.com/heptio/sonobuoy/blob/master/docs/snapshot.md#plugins) of the snapshot documentation)
+- `--bucket` -- The upload prefix, which should include the GCS bucket as well as the job name, E.g. `gs://k8s-conformance-openstack/periodic-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.11/` like: `--bucket=gs://your-bucket/your-job`
 
- - For Sonobuoy run via Heptio Scanner you can click "download test report" and extract the log and junit files.
+You can optionally also provide:  
+- `--key-file` -- A Google Cloud [service account](https://cloud.google.com/iam/docs/service-accounts) keyfile, used to automatically authenticate to GCS. Otherwise you will need to authenticate with [`gcloud auth`](https://cloud.google.com/sdk/gcloud/reference/auth/) in some other part of your CI to use this tool.
+Specify like:
+`--key-file=/path/to-key-file.json`
+  - If you are using a GKE EngProd provided bucket, we've provided you with this file, otherwise see [Create and Manage Service Accounts](https://cloud.google.com/iam/docs/managing-service-accounts), [Create and manage Service Account Keys](https://cloud.google.com/iam/docs/creating-managing-service-account-keys), and [Cloud Storage IAM Roles](https://cloud.google.com/storage/docs/access-control/iam-roles) for docs on setting up your own service account with upload access to the bucket and creating a credentials file for it.
 
-5. Authenticate [the gcloud sdk](https://cloud.google.com/sdk/downloads) / [gsutil](https://cloud.google.com/storage/docs/gsutil) to your GCS bucket
+- `--year` -- The year in which the logfile was produced, otherwise the current year on the host machine is assumed when parsing timestamps for the job's start / finish time. E.g. `--year=2018`
 
-6. run `upload_e2e.py --junit=<path to junit_01.xml> --log=<path to log file> --bucket=gs://your-bucket`. Optionally you can supply the following
-  * --year=YYYY, otherwise the current year on the host is assumed when parsing timestamps
-  * --metadata='dictionary of additional key-value pairs that can be displayed to the user'. E.g: --metadata='{"testrun": "Run after master upgrade"}'.For more details please see [metadata for finished.json](https://github.com/kubernetes/test-infra/tree/master/gubernator#job-artifact-gcs-layout) and custom [column headers in TestGrid](https://github.com/kubernetes/test-infra/blob/master/testgrid/README.md#column-headers).
+- `--metadata` -- A JSON dict of metadata key-value pairs that can be displayed in custom TestGrid column headers. E.g. `--metadata='{"version": 52e0b2617ffec85d467f96de34d47e9bb407f880"}'`. 
+  - For more details please see [metadata for finished.json](https://github.com/kubernetes/test-infra/tree/master/gubernator#job-artifact-gcs-layout) and custom [column headers in TestGrid](https://github.com/kubernetes/test-infra/blob/master/testgrid/README.md#column-headers). 
 
