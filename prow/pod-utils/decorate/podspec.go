@@ -161,7 +161,8 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 		refs = append(refs, pj.Spec.Refs)
 	}
 	refs = append(refs, pj.Spec.ExtraRefs...)
-	if len(refs) > 0 {
+	willCloneRefs := len(refs) > 0 && !pj.Spec.DecorationConfig.SkipCloning
+	if willCloneRefs {
 		var sshKeyMode int32 = 0400 // this is octal, so symbolic ref is `u+r`
 		var sshKeysMounts []kube.VolumeMount
 		var sshKeyPaths []string
@@ -212,10 +213,14 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 		GcsCredentialsFile: fmt.Sprintf("%s/service-account.json", GcsCredentialsMountPath),
 		DryRun:             false,
 	}
-	initUploadConfigEnv, err := initupload.Encode(initupload.Options{
-		Log:     cloneLog,
+
+	initUploadOptions := initupload.Options{
 		Options: &gcsOptions,
-	})
+	}
+	if willCloneRefs {
+		initUploadOptions.Log = cloneLog
+	}
+	initUploadConfigEnv, err := initupload.Encode(initUploadOptions)
 	if err != nil {
 		return fmt.Errorf("could not encode initupload configuration as JSON: %v", err)
 	}
@@ -260,12 +265,9 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 	allEnv[entrypoint.JSONConfigEnvVar] = entrypointConfigEnv
 
 	spec.Containers[0].Command = []string{entrypointLocation}
-	if len(refs) > 0 {
-		spec.Containers[0].WorkingDir = clone.PathForRefs(CodeMountPath, refs[0])
-	}
 	spec.Containers[0].Args = []string{}
 	spec.Containers[0].Env = append(spec.Containers[0].Env, kubeEnv(allEnv)...)
-	spec.Containers[0].VolumeMounts = append(spec.Containers[0].VolumeMounts, logMount, codeMount, toolsMount)
+	spec.Containers[0].VolumeMounts = append(spec.Containers[0].VolumeMounts, logMount, toolsMount)
 
 	gcsOptions.Items = append(gcsOptions.Items, ArtifactsPath)
 	sidecarConfigEnv, err := sidecar.Encode(sidecar.Options{
@@ -286,7 +288,13 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 		}),
 		VolumeMounts: []kube.VolumeMount{logMount, gcsCredentialsMount},
 	})
-	spec.Volumes = append(spec.Volumes, append(sshKeysVolumes, logVolume, codeVolume, toolsVolume, gcsCredentialsVolume)...)
+	spec.Volumes = append(spec.Volumes, logVolume, toolsVolume, gcsCredentialsVolume)
+
+	if willCloneRefs {
+		spec.Containers[0].WorkingDir = clone.PathForRefs(CodeMountPath, refs[0])
+		spec.Containers[0].VolumeMounts = append(spec.Containers[0].VolumeMounts, codeMount)
+		spec.Volumes = append(spec.Volumes, append(sshKeysVolumes, codeVolume)...)
+	}
 
 	return nil
 }

@@ -283,7 +283,10 @@ func (a RepoAliases) ExpandAliases(logins sets.String) sets.String {
 func loadAliasesFrom(baseDir string, log *logrus.Entry) RepoAliases {
 	path := filepath.Join(baseDir, aliasesFileName)
 	b, err := ioutil.ReadFile(path)
-	if err != nil {
+	if os.IsNotExist(err) {
+		log.WithError(err).Infof("No alias file exists at %q. Using empty alias map.", path)
+		return nil
+	} else if err != nil {
 		log.WithError(err).Warnf("Failed to read alias file %q. Using empty alias map.", path)
 		return nil
 	}

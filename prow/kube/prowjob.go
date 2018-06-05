@@ -151,6 +151,9 @@ type DecorationConfig struct {
 	// SshKeySecrets are the names of Kubernetes secrets that contain
 	// SSK keys which should be used during the cloning process
 	SshKeySecrets []string `json:"ssh_key_secrets,omitempty"`
+	// SkipCloning determines if we should clone source code in the
+	// initcontainers for jobs that specify refs
+	SkipCloning bool `json:"skip_cloning,omitempty"`
 }
 
 // UtilityImages holds pull specs for the utility images

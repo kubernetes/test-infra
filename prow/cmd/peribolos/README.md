@@ -33,7 +33,7 @@ orgs:
     - bob
     admins:
     - carl
-    
+
     # team settings
     teams:
       node:
@@ -67,14 +67,16 @@ This config will:
   - Set node's description and privacy setting.
   - Rename the backend team to node
   - Add anne as a member and jane as a maintainer to node
-  - Similar things for another-team (detailed elided)
+  - Similar things for another-team (details elided)
 
 Note that any fields missing from the config will not be managed by peribolos. So if description is missing from the org setting, the current value will remain.
 
 For more details please see GitHub documentation around [edit org], [update org membership], [edit team], [update team membership].
 
 
+[`config.yaml`]: /prow/config.yaml
 [edit team]: https://developer.github.com/v3/teams/#edit-team
+[edit org]: https://developer.github.com/v3/orgs/#edit-an-organization
 [peribolos]: https://en.wikipedia.org/wiki/Peribolos
 [update org membership]: https://developer.github.com/v3/orgs/members/#add-or-update-organization-membership
 [update team membership]: https://developer.github.com/v3/teams/members/#add-or-update-team-membership

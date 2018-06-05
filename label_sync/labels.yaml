@@ -28,6 +28,7 @@ labels:
     target: both
     previously:
       - name: close/duplicate
+      - name: duplicate
     addedBy: humans
   - color: d455d0
     description: Indicates an issue needs more information in order to work on it.
@@ -44,10 +45,21 @@ labels:
     target: both
     addedBy: humans
   - color: d455d0
-    description: Indicates an issue that can not be resolved.
+    description: Indicates an issue that is a support question.
+    name: triage/support
+    previously:
+      - name: close/support
+      - name: kind/support
+      - name: question
+    target: both
+    addedBy: humans
+  - color: d455d0
+    description: Indicates an issue that can not or will not be resolved.
     name: triage/unresolved
     previously:
       - name: close/unresolved
+      - name: invalid
+      - name: wontfix
     target: both
     addedBy: humans
   - color: c0ff4a
@@ -110,18 +122,39 @@ labels:
     target: prs
     prowPlugin: wip
     addedBy: prow
+  - color: 7057ff
+    description: Denotes an issue ready for a new contributor, according to the "help wanted" guidelines.
+    name: 'good first issue'
+    previously:
+      - name: for-new-contributors
+    target: issues
+    prowPlugin: help
+    addedBy: anyone
   - color: 006b75
     description: Denotes an issue that needs help from a contributor. Must meet "help wanted" guidelines.
     name: 'help wanted'
     previously:
       - name: help-wanted
-      - name: for-new-contributors
     target: issues
     prowPlugin: help
     addedBy: anyone
   - color: e11d21
     description: Categorizes issue or PR as related to a bug.
     name: kind/bug
+    previously:
+      - name: bug
+    target: both
+    prowPlugin: label
+    addedBy: anyone
+  - color: c7def8
+    description: Categorizes issue or PR as related to cleaning up code, process, or technical debt.
+    name: kind/cleanup
+    target: both
+    prowPlugin: label
+    addedBy: anyone
+  - color: c7def8
+    description: Categorizes issue or PR as related to design.
+    name: kind/design
     target: both
     prowPlugin: label
     addedBy: anyone
@@ -134,6 +167,15 @@ labels:
   - color: c7def8
     description: Categorizes issue or PR as related to a new feature.
     name: kind/feature
+    previously:
+      - name: enhancement
+      - name: kind/enhancement
+    target: both
+    prowPlugin: label
+    addedBy: anyone
+  - color: f7c6c7
+    description: Categorizes issue or PR as related to a flaky test.
+    name: kind/flake
     target: both
     prowPlugin: label
     addedBy: anyone
