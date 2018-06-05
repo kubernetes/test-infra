@@ -1286,7 +1286,7 @@
   },
   "ci-kubernetes-e2e-gce-coredns-performance": {
     "args": [
-      "--cluster=gce-coredns-performance",
+      "--cluster=gce-coredns-perf",
       "--env=CLUSTER_DNS_CORE_DNS=true",
       "--extract=ci/latest",
       "--gcp-master-image=gci",
@@ -3011,7 +3011,7 @@
   },
   "ci-kubernetes-e2e-gce-kubedns-performance": {
     "args": [
-      "--cluster=gce-kubedns-performance",
+      "--cluster=gce-kubedns-perf",
       "--env=CLUSTER_DNS_CORE_DNS=false",
       "--extract=ci/latest",
       "--gcp-master-image=gci",
