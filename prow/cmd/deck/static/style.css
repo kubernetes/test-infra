@@ -852,3 +852,83 @@ Plugin Help style
     }
 
 }
+
+/*
+ * Job overview style sheet
+ */
+.job-card {
+    align-self: center;
+    flex-shrink: 0;
+    justify-content: center;
+    margin: 4px 0;
+}
+
+.job-card.mdl-card {
+    border: 1px solid #e5e5e5;
+    max-width: 1200px;
+    min-width: 500px;
+    width: 100%;
+}
+
+.job-card > .mdl-card__title.title-state-success {
+    background: rgba(67, 160, 71, 0.5);
+}
+
+.job-card > .mdl-card__title.title-state-failure {
+    background: rgba(239,83,80,0.5);
+}
+
+.job-card > .mdl-card__title.title-state-pending {
+    background: rgba(255,213,79,0.5);
+}
+
+.job-card > .mdl-card__title.title-state-triggered {
+    background: rgba(67, 160, 71, 0.5);
+}
+
+.job-card > .mdl-card__title.title-state-aborted {
+    background: rgba(193,193,193,0.5);
+}
+
+.job-card > .mdl-card__title.title-state-error {
+    background: rgba(239,83,80,0.5);
+}
+
+.job-card .material-icons {
+    margin-right: 8px;
+}
+
+.time-column {
+    vertical-align: top;
+}
+
+.code-table-container {
+    overflow: auto;
+    overflow-y: hidden;
+    border: 1px solid rgb(244, 244, 244);
+    border-radius: 2px;
+    box-shadow: rgb(224, 224, 224) 0px 0px 4px 0px;
+}
+
+.code-row {
+    border-top-style: none;
+}
+
+.line-number {
+    text-align: right;
+    font-family: monospace;
+    padding: 0px 10px;
+    min-width: 25px;
+}
+
+.line-code {
+    white-space: pre;
+    font-family: monospace;
+    overflow: visible;
+    overflow-wrap: normal;
+    padding: 0px 10px;
+}
+
+.line-code.highlight {
+    background-color: #ffffb3;
+}
