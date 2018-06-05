@@ -4,12 +4,12 @@ This directory contains tooling for uploading [Kubernetes Conformance test](http
 
 Federated conformance test results are hosted on the TestGrid [conformance dashboards](https://k8s-testgrid.appspot.com/conformance-all), including the "all" dashboard, and specific sub-dashboards, see [the TestGrid README](../README.md#dashboards) for details on dashboards.  
 
-All Kuberentes cluster providers are invited to post results from their conformance test jobs and results from reliable continuous integration against the release branches may even be used as a signal by the Kubernetes release team in the [release-blocking dashboards](https://k8s-testgrid.appspot.com/sig-release-master-blocking).
+All Kubernetes cluster providers are invited to post results from their conformance test jobs and results from reliable continuous integration against the release branches may even be used as a signal by the Kubernetes release team in the [release-blocking dashboards](https://k8s-testgrid.appspot.com/sig-release-master-blocking).
 
 ## Usage Guide
 
 1. First you will need to set up a publicly readable GCS bucket per [contributing test results](https://github.com/kubernetes/test-infra/blob/master/docs/contributing-test-results.md#contributing-test-results) to host your jobs' results.  
-If you cannot or do not want to set up a GCS bucket and only wish to post conformance test results, please contact [@BenTheElder](https://github.com/BenTheElder) or more generally [the gke-kubernetes-engprod team](mailto:gke-kubernetes-engprod@google.com) to arrange for a Google [GKE](https://cloud.google.com/kubernetes-engine/) EngProd provided / maintained bucket for hosting your results.
+If you cannot or do not want to set up a GCS bucket and only wish to post conformance test results, please contact [@BenTheElder](https://github.com/BenTheElder) or more generally [the gke-kubernetes-engprod team](mailto:gke-kubernetes-engprod@google.com) to arrange for a Google [GKE](https://cloud.google.com/kubernetes-engine/) EngProd provided / maintained bucket for hosting your results. A bucket will be provided following the [playbook](./creating-a-bucket.md) for this.
 
 2. Make a PR to test-infra adding your bucket to the TestGrid config (again see [contributing test results](https://github.com/kubernetes/test-infra/blob/master/docs/contributing-test-results.md#contributing-test-results)).
 
