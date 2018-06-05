@@ -31,7 +31,7 @@ var (
 )
 
 func init() {
-	flag.Var(&rTypes, "resource-type", "comma-separated list of resources need to be cleaned up")
+	flag.Var(&rTypes, "resource-type", "comma-separated list of resources need to be reset")
 }
 
 func main() {
