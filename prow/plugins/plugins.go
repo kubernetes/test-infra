@@ -487,7 +487,9 @@ func (pa *PluginAgent) Load(path string) error {
 	if len(np.Plugins) == 0 {
 		logrus.Warn("no plugins specified-- check syntax?")
 	}
-
+	if err := validateConfig(np); err != nil {
+		return err
+	}
 	// Defaulting should run before validation.
 	np.setDefaults()
 	if err := validatePlugins(np.Plugins); err != nil {
@@ -503,7 +505,6 @@ func (pa *PluginAgent) Load(path string) error {
 	if err := compileRegexps(np); err != nil {
 		return err
 	}
-
 	pa.Set(np)
 	return nil
 }
@@ -512,6 +513,20 @@ func (pa *PluginAgent) Config() *Configuration {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 	return pa.configuration
+}
+
+// validateConfig ensure that the configuration
+// doesn't contain any nil struct
+func validateConfig(config *Configuration) error {
+	var errors []string
+	if config.Heart != nil {
+		errors = append(errors, fmt.Errorf("nil struct: heart"))
+	}
+
+	if len(errors) > 0 {
+		return fmt.Errorf("Empty configurations:\n\t%v", strings.Join(errors, "\n\t"))
+	}
+	return nil
 }
 
 // validatePlugins will return error if

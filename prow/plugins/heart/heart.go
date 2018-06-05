@@ -51,9 +51,6 @@ func init() {
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// The {WhoCanUse, Usage, Examples} fields are omitted because this plugin is not triggered with commands.
-	if config.Heart == nil {
-		return nil, fmt.Errorf("Nil struct")
-	}
 	return &pluginhelp.PluginHelp{
 			Description: "The heart plugin celebrates certain Github actions with the reaction emojis. Emojis are added to merge notifications left by mungegithub's submit-queue and to pull requests that make additions to OWNERS files.",
 			Config: map[string]string{
@@ -85,9 +82,6 @@ func getClient(pc plugins.PluginClient) client {
 }
 
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
-	if pc.PluginConfig.Heart == nil {
-		return fmt.Errorf("Nil struct")
-	}
 	return handleIC(getClient(pc), pc.PluginConfig.Heart.Adorees, ic)
 }
 
