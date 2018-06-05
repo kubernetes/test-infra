@@ -108,7 +108,7 @@ the `exta_refs` field.
 
 ### Why use Pod Utilities?
 
-Writing a ProwJob that uses the Pod Utilites is much easier than writing one
+Writing a ProwJob that uses the Pod Utilities is much easier than writing one
 that doesn't because the Pod Utilities will transparently handle many of the
 tasks the job would otherwise need to do in order to prepare its environment
 and output more than pass/fail. Historically, this was achieved by wrapping
