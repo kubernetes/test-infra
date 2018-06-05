@@ -2364,6 +2364,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew-serial
 - name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster-new
+- name: ci-kubernetes-e2e-gce-stable2-stable1-gpu-upgrade
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable2-stable1-gpu-upgrade
 - name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable2-stable1-upgrade-master
 - name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster-new
@@ -4027,6 +4029,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster
   - name: gce-1.9-1.10-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster-new
+  - name: gce-1.9-1.10-upgrade-gpu
+    test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-gpu-upgrade
   - name: gce-1.10-1.9-downgrade-cluster
     test_group_name: ci-kubernetes-e2e-gce-stable1-stable2-downgrade-cluster
   - name: gce-1.10-1.9-downgrade-cluster-parallel
@@ -4375,6 +4379,11 @@ dashboards:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-device-plugin-gpu-autoscaling-v100
     test_group_name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu-v100
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gce-1.9-1.10-gpu-upgrade
+    test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-gpu-upgrade
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
