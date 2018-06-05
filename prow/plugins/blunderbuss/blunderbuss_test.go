@@ -70,8 +70,22 @@ func (c *fakeGithubClient) GetPullRequestChanges(org, repo string, num int) ([]g
 
 type fakeOwnersClient struct {
 	owners        map[string]string
+	approvers     map[string]sets.String
+	leafApprovers map[string]sets.String
 	reviewers     map[string]sets.String
 	leafReviewers map[string]sets.String
+}
+
+func (foc *fakeOwnersClient) Approvers(path string) sets.String {
+	return foc.approvers[path]
+}
+
+func (foc *fakeOwnersClient) LeafApprovers(path string) sets.String {
+	return foc.leafApprovers[path]
+}
+
+func (foc *fakeOwnersClient) FindApproverOwnersForFile(path string) string {
+	return foc.owners[path]
 }
 
 func (foc *fakeOwnersClient) Reviewers(path string) sets.String {
@@ -86,38 +100,34 @@ func (foc *fakeOwnersClient) FindReviewersOwnersForFile(path string) string {
 	return foc.owners[path]
 }
 
-// TestHandle tests that the handle function requests reviews from the correct number of unique users.
-func TestHandle(t *testing.T) {
-	foc := &fakeOwnersClient{
-		owners: map[string]string{
-			"a.go":  "1",
-			"b.go":  "2",
-			"bb.go": "3",
-			"c.go":  "4",
+var (
+	owners = map[string]string{
+		"a.go":  "1",
+		"b.go":  "2",
+		"bb.go": "3",
+		"c.go":  "4",
 
-			"e.go":  "5",
-			"ee.go": "5",
-		},
-		reviewers: map[string]sets.String{
-			"a.go": sets.NewString("al"),
-			"b.go": sets.NewString("al"),
-			"c.go": sets.NewString("charles"),
-
-			"e.go":  sets.NewString("erick", "evan"),
-			"ee.go": sets.NewString("erick", "evan"),
-		},
-		leafReviewers: map[string]sets.String{
-			"a.go":  sets.NewString("alice"),
-			"b.go":  sets.NewString("bob"),
-			"bb.go": sets.NewString("bob", "ben"),
-			"c.go":  sets.NewString("cole", "carl", "chad"),
-
-			"e.go":  sets.NewString("erick", "ellen"),
-			"ee.go": sets.NewString("erick", "ellen"),
-		},
+		"e.go":  "5",
+		"ee.go": "5",
 	}
+	reviewers = map[string]sets.String{
+		"a.go": sets.NewString("al"),
+		"b.go": sets.NewString("al"),
+		"c.go": sets.NewString("charles"),
 
-	var testcases = []struct {
+		"e.go":  sets.NewString("erick", "evan"),
+		"ee.go": sets.NewString("erick", "evan"),
+	}
+	leafReviewers = map[string]sets.String{
+		"a.go":  sets.NewString("alice"),
+		"b.go":  sets.NewString("bob"),
+		"bb.go": sets.NewString("bob", "ben"),
+		"c.go":  sets.NewString("cole", "carl", "chad"),
+
+		"e.go":  sets.NewString("erick", "ellen"),
+		"ee.go": sets.NewString("erick", "ellen"),
+	}
+	testcases = []struct {
 		name                       string
 		filesChanged               []string
 		reviewerCount              int
@@ -189,6 +199,18 @@ func TestHandle(t *testing.T) {
 			alternateExpectedRequested: []string{"bob"},
 		},
 	}
+)
+
+// TestHandleWithExcludeApprovers tests that the handle function requests
+// reviews from the correct number of unique users when ExcludeApprovers is
+// true.
+func TestHandleWithExcludeApproversOnlyReviewers(t *testing.T) {
+	foc := &fakeOwnersClient{
+		owners:        owners,
+		reviewers:     reviewers,
+		leafReviewers: leafReviewers,
+	}
+
 	for _, tc := range testcases {
 		fghc := newFakeGithubClient(tc.filesChanged)
 		pre := &github.PullRequestEvent{
@@ -196,7 +218,163 @@ func TestHandle(t *testing.T) {
 			PullRequest: github.PullRequest{User: github.User{Login: "author"}},
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 		}
-		if err := handle(fghc, foc, logrus.WithField("plugin", pluginName), &tc.reviewerCount, nil, tc.maxReviewerCount, pre); err != nil {
+		if err := handle(fghc, foc, logrus.WithField("plugin", pluginName), &tc.reviewerCount, nil, tc.maxReviewerCount, true, pre); err != nil {
+			t.Errorf("[%s] unexpected error from handle: %v", tc.name, err)
+			continue
+		}
+
+		sort.Strings(fghc.requested)
+		sort.Strings(tc.expectedRequested)
+		sort.Strings(tc.alternateExpectedRequested)
+		if !reflect.DeepEqual(fghc.requested, tc.expectedRequested) {
+			if len(tc.alternateExpectedRequested) > 0 {
+				if !reflect.DeepEqual(fghc.requested, tc.alternateExpectedRequested) {
+					t.Errorf("[%s] expected the requested reviewers to be %q or %q, but got %q.", tc.name, tc.expectedRequested, tc.alternateExpectedRequested, fghc.requested)
+				}
+				continue
+			}
+			t.Errorf("[%s] expected the requested reviewers to be %q, but got %q.", tc.name, tc.expectedRequested, fghc.requested)
+		}
+	}
+}
+
+// TestHandleWithoutExcludeApprovers verifies that behavior is the same
+// when ExcludeApprovers is false and only approvers exist in the OWNERS files.
+// The owners fixture and test cases should always be the same as the ones in
+// TestHandleWithExcludeApprovers.
+func TestHandleWithoutExcludeApproversNoReviewers(t *testing.T) {
+	foc := &fakeOwnersClient{
+		owners:        owners,
+		approvers:     reviewers,
+		leafApprovers: leafReviewers,
+	}
+
+	for _, tc := range testcases {
+		fghc := newFakeGithubClient(tc.filesChanged)
+		pre := &github.PullRequestEvent{
+			Number:      5,
+			PullRequest: github.PullRequest{User: github.User{Login: "author"}},
+			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
+		}
+		if err := handle(fghc, foc, logrus.WithField("plugin", pluginName), &tc.reviewerCount, nil, tc.maxReviewerCount, false, pre); err != nil {
+			t.Errorf("[%s] unexpected error from handle: %v", tc.name, err)
+			continue
+		}
+
+		sort.Strings(fghc.requested)
+		sort.Strings(tc.expectedRequested)
+		sort.Strings(tc.alternateExpectedRequested)
+		if !reflect.DeepEqual(fghc.requested, tc.expectedRequested) {
+			if len(tc.alternateExpectedRequested) > 0 {
+				if !reflect.DeepEqual(fghc.requested, tc.alternateExpectedRequested) {
+					t.Errorf("[%s] expected the requested reviewers to be %q or %q, but got %q.", tc.name, tc.expectedRequested, tc.alternateExpectedRequested, fghc.requested)
+				}
+				continue
+			}
+			t.Errorf("[%s] expected the requested reviewers to be %q, but got %q.", tc.name, tc.expectedRequested, fghc.requested)
+		}
+	}
+}
+
+func TestHandleWithoutExcludeApproversMixed(t *testing.T) {
+	foc := &fakeOwnersClient{
+		owners: map[string]string{
+			"a.go":  "1",
+			"b.go":  "2",
+			"bb.go": "3",
+			"c.go":  "4",
+
+			"e.go":  "5",
+			"ee.go": "5",
+		},
+		approvers: map[string]sets.String{
+			"a.go": sets.NewString("al"),
+			"b.go": sets.NewString("jeff"),
+			"c.go": sets.NewString("jeff"),
+
+			"e.go":  sets.NewString(),
+			"ee.go": sets.NewString("larry"),
+		},
+		leafApprovers: map[string]sets.String{
+			"a.go": sets.NewString("alice"),
+			"b.go": sets.NewString("brad"),
+			"c.go": sets.NewString("evan"),
+
+			"e.go":  sets.NewString("erick", "evan"),
+			"ee.go": sets.NewString("erick", "evan"),
+		},
+		reviewers: map[string]sets.String{
+			"a.go": sets.NewString("al"),
+			"b.go": sets.NewString(),
+			"c.go": sets.NewString("charles"),
+
+			"e.go":  sets.NewString("erick", "evan"),
+			"ee.go": sets.NewString("erick", "evan"),
+		},
+		leafReviewers: map[string]sets.String{
+			"a.go":  sets.NewString("alice"),
+			"b.go":  sets.NewString("bob"),
+			"bb.go": sets.NewString("bob", "ben"),
+			"c.go":  sets.NewString("cole", "carl", "chad"),
+
+			"e.go":  sets.NewString("erick", "ellen"),
+			"ee.go": sets.NewString("erick", "ellen"),
+		},
+	}
+
+	var testcases = []struct {
+		name                       string
+		filesChanged               []string
+		reviewerCount              int
+		maxReviewerCount           int
+		expectedRequested          []string
+		alternateExpectedRequested []string
+	}{
+		{
+			name:              "1 file, 1 leaf reviewer, 1 leaf approver, 1 approver, request 3",
+			filesChanged:      []string{"b.go"},
+			reviewerCount:     3,
+			expectedRequested: []string{"bob", "brad", "jeff"},
+		},
+		{
+			name:              "1 file, 1 leaf reviewer, 1 leaf approver, 1 approver, request 1, limit 1",
+			filesChanged:      []string{"b.go"},
+			reviewerCount:     1,
+			expectedRequested: []string{"bob"},
+		},
+		{
+			name:              "2 file, 2 leaf reviewers, 1 parent reviewers, 1 leaf approver, 1 approver, request 5",
+			filesChanged:      []string{"a.go", "b.go"},
+			reviewerCount:     5,
+			expectedRequested: []string{"alice", "bob", "al", "brad", "jeff"},
+		},
+		{
+			name:              "1 file, 1 leaf reviewer+approver, 1 reviewer+approver, request 3",
+			filesChanged:      []string{"a.go"},
+			reviewerCount:     3,
+			expectedRequested: []string{"alice", "al"},
+		},
+		{
+			name:              "1 file, 2 leaf reviewers, request 2",
+			filesChanged:      []string{"e.go"},
+			reviewerCount:     2,
+			expectedRequested: []string{"erick", "ellen"},
+		},
+		{
+			name:              "2 files, 2 leaf+parent reviewers, 1 parent reviewer, 1 parent approver, request 4",
+			filesChanged:      []string{"e.go", "ee.go"},
+			reviewerCount:     4,
+			expectedRequested: []string{"erick", "ellen", "evan", "larry"},
+		},
+	}
+	for _, tc := range testcases {
+		fghc := newFakeGithubClient(tc.filesChanged)
+		pre := &github.PullRequestEvent{
+			Number:      5,
+			PullRequest: github.PullRequest{User: github.User{Login: "author"}},
+			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
+		}
+		if err := handle(fghc, foc, logrus.WithField("plugin", pluginName), &tc.reviewerCount, nil, tc.maxReviewerCount, false, pre); err != nil {
 			t.Errorf("[%s] unexpected error from handle: %v", tc.name, err)
 			continue
 		}
@@ -287,7 +465,7 @@ func TestHandleOld(t *testing.T) {
 			PullRequest: github.PullRequest{User: github.User{Login: "author"}},
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 		}
-		if err := handle(fghc, foc, logrus.WithField("plugin", pluginName), nil, &tc.reviewerCount, 0, pre); err != nil {
+		if err := handle(fghc, foc, logrus.WithField("plugin", pluginName), nil, &tc.reviewerCount, 0, false, pre); err != nil {
 			t.Errorf("[%s] unexpected error from handle: %v", tc.name, err)
 			continue
 		}
