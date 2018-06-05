@@ -131,7 +131,6 @@ func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, reviewerCount,
 			return err
 		}
 		if missing := *reviewerCount - len(reviewers); missing > 0 {
-			log.Warnf("Not enough reviewers found in OWNERS files for files touched by this PR. %d/%d reviewers found.", len(reviewers), *reviewerCount)
 			if !excludeApprovers {
 				// Attempt to use approvers as additional reviewers. This must use
 				// reviewerCount instead of missing because owners can be both reviewers
@@ -144,15 +143,18 @@ func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, reviewerCount,
 				}
 				combinedReviewers := sets.NewString(reviewers...)
 				combinedReviewers.Insert(approvers...)
-				log.Warnf("Added %d approvers as reviewers. %d/%d reviewers found.", combinedReviewers.Len()-len(reviewers), combinedReviewers.Len(), *reviewerCount)
+				log.Infof("Added %d approvers as reviewers. %d/%d reviewers found.", combinedReviewers.Len()-len(reviewers), combinedReviewers.Len(), *reviewerCount)
 				reviewers = combinedReviewers.List()
 			}
+		}
+		if missing := *reviewerCount - len(reviewers); missing > 0 {
+			log.Warnf("Not enough reviewers found in OWNERS files for files touched by this PR. %d/%d reviewers found.", len(reviewers), *reviewerCount)
 		}
 	}
 
 	if len(reviewers) > 0 {
 		if maxReviewers > 0 && len(reviewers) > maxReviewers {
-			log.Warnf("Limiting request of %d reviewers to %d maxReviewers.", len(reviewers), maxReviewers)
+			log.Infof("Limiting request of %d reviewers to %d maxReviewers.", len(reviewers), maxReviewers)
 			reviewers = reviewers[:maxReviewers]
 		}
 		log.Infof("Requesting reviews from users %s.", reviewers)
