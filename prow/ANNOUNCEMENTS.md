@@ -2,6 +2,8 @@
 
 New features added to each components:
 
+ - *June 05, 2018* `blunderbuss` plugin may now suggest approvers in addition
+   to reviewers. Use `exclude_approvers: true` to revert to previous behavior.
  - *April 10, 2018* `cla` plugin now supports `/check-cla` command 
    to force rechecking of the CLA status.
  - *February 1, 2018* `updateconfig` will now update any configmap on merge
