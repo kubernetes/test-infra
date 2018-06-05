@@ -3354,6 +3354,21 @@
       "sig-cluster-lifecycle"
     ]
   },
+  "ci-kubernetes-e2e-gce-pod-preemption": {
+    "args": [
+      "--check-leaked-resources",
+      "--env=KUBE_FEATURE_GATES=PodPriority=true",
+      "--extract=ci/latest",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Feature:PodPreemption\\] --minStartupPods=8",
+      "--timeout=180m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scheduling"
+    ]
+  },
   "ci-kubernetes-e2e-gce-prometheus": {
     "args": [
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-prometheus.env",
