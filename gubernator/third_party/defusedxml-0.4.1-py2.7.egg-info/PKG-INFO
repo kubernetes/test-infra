@@ -666,7 +666,7 @@ Description: ===================================================
         ---
         
         PHP's SimpleXML API is vulnerable to quadratic entity expansion and loads
-        entites from local and remote resources. The option ``LIBXML_NONET`` disables
+        entities from local and remote resources. The option ``LIBXML_NONET`` disables
         network access but still allows local file access. ``LIBXML_NOENT`` seems to
         have no effect on entity expansion in PHP 5.4.6.
         
@@ -827,7 +827,7 @@ Description: ===================================================
         - Rename defusedxml.lxml.check_dtd() to check_docinfo()
         - Unify argument names in callbacks
         - Add arguments and formatted representation to exceptions
-        - Add forbid_external argument to all functions and classs
+        - Add forbid_external argument to all functions and classes
         - More tests
         - LOTS of documentation
         - Add example code for other languages (Ruby, Perl, PHP) and parsers (Genshi)
