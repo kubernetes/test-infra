@@ -6,6 +6,8 @@ Federated conformance test results are hosted on the TestGrid [conformance dashb
 
 All Kubernetes cluster providers are invited to post results from their conformance test jobs and results from reliable continuous integration against the release branches may even be used as a signal by the Kubernetes release team in the [release-blocking dashboards](https://k8s-testgrid.appspot.com/sig-release-master-blocking).
 
+For the original design doc and further details on the motivation please see [design.md](./design.md).
+
 ## Usage Guide
 
 1. First you will need to set up a publicly readable GCS bucket per [contributing test results](https://github.com/kubernetes/test-infra/blob/master/docs/contributing-test-results.md#contributing-test-results) to host your jobs' results.  
