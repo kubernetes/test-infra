@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
@@ -32,6 +33,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/golang/glog"
 )
@@ -66,10 +68,14 @@ var awsResourceTypes = []awsResourceType{
 	dhcpOptions{},
 	volumes{},
 	addresses{},
+}
 
-	// Note that order matters here - we can't delete roles until we've deleted the profiles
+// Non-regional AWS resource types, in dependency order
+var globalAwsResourceTypes = []awsResourceType{
 	iamInstanceProfiles{},
 	iamRoles{},
+
+	route53ResourceRecordSets{},
 }
 
 type awsResource interface {
@@ -1052,6 +1058,135 @@ func (p iamInstanceProfile) delete(svc *iam.IAM) error {
 	return nil
 }
 
+// Route53
+
+type route53ResourceRecordSets struct{}
+
+// zoneIsManaged checks if the zone should be managed (and thus have records deleted) by us
+func zoneIsManaged(z *route53.HostedZone) bool {
+	// TODO: Move to a tag on the zone?
+	name := aws.StringValue(z.Name)
+	if "test-cncf-aws.k8s.io." == name {
+		return true
+	}
+
+	glog.Infof("unknown zone %q; ignoring", name)
+	return false
+}
+
+var managedNameRegexes = []*regexp.Regexp{
+	// e.g. api.e2e-61246-dba53.test-cncf-aws.k8s.io.
+	regexp.MustCompile(`^api\.e2e-[0-9]+-`),
+
+	// e.g. api.internal.e2e-61246-dba53.test-cncf-aws.k8s.io.
+	regexp.MustCompile(`^api\.internal\.e2e-[0-9]+-`),
+
+	// e.g. etcd-b.internal.e2e-61246-dba53.test-cncf-aws.k8s.io.
+	regexp.MustCompile(`^etcd-[a-z]\.internal\.e2e-[0-9]+-`),
+
+	// e.g. etcd-events-b.internal.e2e-61246-dba53.test-cncf-aws.k8s.io.
+	regexp.MustCompile(`^etcd-events-[a-z]\.internal\.e2e-[0-9]+-`),
+}
+
+// resourceRecordSetIsManaged checks if the resource record should be managed (and thus deleted) by us
+func resourceRecordSetIsManaged(rrs *route53.ResourceRecordSet) bool {
+	if "A" != aws.StringValue(rrs.Type) {
+		return false
+	}
+
+	name := aws.StringValue(rrs.Name)
+
+	for _, managedNameRegex := range managedNameRegexes {
+		if managedNameRegex.MatchString(name) {
+			return true
+		}
+	}
+
+	glog.Infof("ignoring unmanaged name %q", name)
+	return false
+}
+
+func (route53ResourceRecordSets) MarkAndSweep(sess *session.Session, acct string, region string, set *awsResourceSet) error {
+	svc := route53.New(sess, &aws.Config{Region: aws.String(region)})
+
+	var listError error
+
+	err := svc.ListHostedZonesPages(&route53.ListHostedZonesInput{}, func(zones *route53.ListHostedZonesOutput, _ bool) bool {
+		for _, z := range zones.HostedZones {
+			if !zoneIsManaged(z) {
+				continue
+			}
+
+			// Because route53 has such low rate limits, we collect the changes per-zone, to minimize API calls
+
+			var toDelete []*route53ResourceRecordSet
+
+			err := svc.ListResourceRecordSetsPages(&route53.ListResourceRecordSetsInput{HostedZoneId: z.Id}, func(records *route53.ListResourceRecordSetsOutput, _ bool) bool {
+				for _, rrs := range records.ResourceRecordSets {
+					if !resourceRecordSetIsManaged(rrs) {
+						continue
+					}
+
+					o := &route53ResourceRecordSet{zone: z, obj: rrs}
+					if set.Mark(o) {
+						glog.Warningf("%s: deleting %T: %v", o.ARN(), rrs, rrs)
+						toDelete = append(toDelete, o)
+					}
+				}
+				return true
+			})
+			if err != nil {
+				listError = err
+				return false
+			}
+
+			var changes []*route53.Change
+			for _, rrs := range toDelete {
+				change := &route53.Change{
+					Action:            aws.String(route53.ChangeActionDelete),
+					ResourceRecordSet: rrs.obj,
+				}
+
+				changes = append(changes, change)
+			}
+
+			if len(changes) != 0 {
+				deleteRequest := &route53.ChangeResourceRecordSetsInput{
+					HostedZoneId: z.Id,
+					ChangeBatch:  &route53.ChangeBatch{Changes: changes},
+				}
+
+				if _, err := svc.ChangeResourceRecordSets(deleteRequest); err != nil {
+					glog.Warningf("unable to delete DNS records: %v", err)
+				}
+			}
+		}
+		return true
+	})
+
+	if listError != nil {
+		return listError
+	}
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type route53ResourceRecordSet struct {
+	zone *route53.HostedZone
+	obj  *route53.ResourceRecordSet
+}
+
+func (r route53ResourceRecordSet) ARN() string {
+	return "route53::" + aws.StringValue(r.zone.Id) + "::" + aws.StringValue(r.obj.Type) + "::" + aws.StringValue(r.obj.Name)
+}
+
+func (r route53ResourceRecordSet) ResourceKey() string {
+	return r.ARN()
+}
+
 // ARNs (used for uniquifying within our previous mark file)
 
 type arn struct {
@@ -1176,6 +1311,14 @@ func main() {
 			}
 		}
 	}
+
+	for _, typ := range globalAwsResourceTypes {
+		if err := typ.MarkAndSweep(sess, acct, "us-east-1", res); err != nil {
+			glog.Errorf("error sweeping %T: %v", typ, err)
+			return
+		}
+	}
+
 	swept := res.MarkComplete()
 	if err := res.Save(sess, s3p); err != nil {
 		glog.Fatalf("error saving %q: %v", *path, err)
