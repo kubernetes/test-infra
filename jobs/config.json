@@ -12803,6 +12803,27 @@
       "sig-scalability"
     ]
   },
+  "pull-kubernetes-e2e-gce-100-performance-coredns": {
+    "args": [
+      "--build=bazel",
+      "--cluster=",
+      "--env=CLUSTER_DNS_CORE_DNS=true",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-tiny.env",
+      "--extract=local",
+      "--gcp-project=k8s-presubmit-scale",
+      "--gcp-zone=us-east1-b",
+      "--provider=gce",
+      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-100-performance-coredns",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --allowed-not-ready-nodes=1 --node-schedulable-timeout=10m --minStartupPods=8 --gather-resource-usage=true --gather-metrics-at-teardown=true",
+      "--timeout=100m",
+      "--use-logexporter"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scalability"
+    ]
+  },
   "pull-kubernetes-e2e-gce-big-performance": {
     "args": [
       "--build=bazel",

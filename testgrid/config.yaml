@@ -2159,6 +2159,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-100-performance
   days_of_results: 60
   num_columns_recent: 20
+- name: pull-kubernetes-e2e-gce-100-performance-coredns
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-100-performance
+  days_of_results: 60
+  num_columns_recent: 20
 - name: pull-kubernetes-e2e-gce-big-performance
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-big-performance
   days_of_results: 60
@@ -6015,6 +6019,9 @@ dashboards:
 - name: presubmits-kubernetes-scalability
   dashboard_tab:
   - name: pull-kubernetes-e2e-gce-100-performance
+    test_group_name: pull-kubernetes-e2e-gce-100-performance
+    base_options: 'width=10'
+  - name: pull-kubernetes-e2e-gce-100-performance-coredns
     test_group_name: pull-kubernetes-e2e-gce-100-performance
     base_options: 'width=10'
   - name: pull-kubernetes-e2e-gce-big-performance

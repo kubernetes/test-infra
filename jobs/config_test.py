@@ -532,6 +532,7 @@ class JobTest(unittest.TestCase):
             'pull-kubernetes-kubemark-e2e-gce-big': 'ci-kubernetes-scale-*',
             'pull-kubernetes-kubemark-e2e-gce-scale': 'ci-kubernetes-scale-*',
             'pull-kubernetes-e2e-gce-100-performance': 'ci-kubernetes-scale-*',
+            'pull-kubernetes-e2e-gce-100-performance-coredns': 'ci-kubernetes-scale-*',
             'pull-kubernetes-e2e-gce-big-performance': 'ci-kubernetes-scale-*',
             'pull-kubernetes-e2e-gce-large-performance': 'ci-kubernetes-scale-*',
             'ci-kubernetes-e2e-gce-large-manual-up': 'ci-kubernetes-scale-*',
