@@ -95,6 +95,14 @@ type githubClient interface {
 	BotName() (string, error)
 }
 
+// reviewCtx contains information about each review event
+type reviewCtx struct {
+	author, issueAuthor, body, htmlURL string
+	repo                               github.Repo
+	assignees                          []github.User
+	number                             int
+}
+
 func handleGenericCommentEvent(pc plugins.PluginClient, e github.GenericCommentEvent) error {
 	return handleGenericComment(pc.GitHubClient, pc.PluginConfig, pc.OwnersClient, pc.Logger, e)
 }
@@ -114,13 +122,15 @@ func handlePullRequestReviewEvent(pc plugins.PluginClient, e github.ReviewEvent)
 }
 
 func handleGenericComment(gc githubClient, config *plugins.Configuration, ownersClient repoowners.Interface, log *logrus.Entry, e github.GenericCommentEvent) error {
-	author := e.User.Login
-	issueAuthor := e.IssueAuthor.Login
-	repo := e.Repo
-	assignees := e.Assignees
-	number := e.Number
-	body := e.Body
-	htmlURL := e.HTMLURL
+	rc := reviewCtx{
+		author:      e.User.Login,
+		issueAuthor: e.IssueAuthor.Login,
+		body:        e.Body,
+		htmlURL:     e.HTMLURL,
+		repo:        e.Repo,
+		assignees:   e.Assignees,
+		number:      e.Number,
+	}
 
 	// Only consider open PRs and new comments.
 	if !e.IsPR || e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
@@ -130,33 +140,35 @@ func handleGenericComment(gc githubClient, config *plugins.Configuration, owners
 	// If we create an "/lgtm" comment, add lgtm if necessary.
 	// If we create a "/lgtm cancel" comment, remove lgtm if necessary.
 	wantLGTM := false
-	if lgtmRe.MatchString(body) {
+	if lgtmRe.MatchString(rc.body) {
 		wantLGTM = true
-	} else if lgtmCancelRe.MatchString(body) {
+	} else if lgtmCancelRe.MatchString(rc.body) {
 		wantLGTM = false
 	} else {
 		return nil
 	}
 
 	// Author cannot LGTM own PR
-	isAuthor := author == issueAuthor
+	isAuthor := rc.author == rc.issueAuthor
 	if isAuthor && wantLGTM {
 		resp := "you cannot LGTM your own PR."
 		log.Infof("Commenting with \"%s\".", resp)
-		return gc.CreateComment(repo.Owner.Login, repo.Name, number, plugins.FormatResponseRaw(body, htmlURL, author, resp))
+		return gc.CreateComment(rc.repo.Owner.Login, rc.repo.Name, rc.number, plugins.FormatResponseRaw(rc.body, rc.htmlURL, rc.author, resp))
 	}
 
-	return handle(wantLGTM, config, ownersClient, author, issueAuthor, repo, assignees, number, body, htmlURL, gc, log)
+	return handle(wantLGTM, config, ownersClient, rc, gc, log)
 }
 
 func handlePullRequestReview(gc githubClient, config *plugins.Configuration, ownersClient repoowners.Interface, log *logrus.Entry, e github.ReviewEvent) error {
-	author := e.Review.User.Login
-	issueAuthor := e.PullRequest.User.Login
-	repo := e.Repo
-	assignees := e.PullRequest.Assignees
-	number := e.PullRequest.Number
-	body := e.Review.Body
-	htmlURL := e.Review.HTMLURL
+	rc := reviewCtx{
+		author:      e.Review.User.Login,
+		issueAuthor: e.PullRequest.User.Login,
+		repo:        e.Repo,
+		assignees:   e.PullRequest.Assignees,
+		number:      e.PullRequest.Number,
+		body:        e.Review.Body,
+		htmlURL:     e.Review.HTMLURL,
+	}
 
 	// If we review with Approve, add lgtm if necessary.
 	// If we review with Request Changes, remove lgtm if necessary.
@@ -168,12 +180,19 @@ func handlePullRequestReview(gc githubClient, config *plugins.Configuration, own
 	} else {
 		return nil
 	}
-	return handle(wantLGTM, config, ownersClient, author, issueAuthor, repo, assignees, number, body, htmlURL, gc, log)
+	return handle(wantLGTM, config, ownersClient, rc, gc, log)
 }
 
-func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowners.Interface, author string, issueAuthor string, repo github.Repo, assignees []github.User, number int, body string, htmlURL string, gc githubClient, log *logrus.Entry) error {
-	org := repo.Owner.Login
-	repoName := repo.Name
+func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowners.Interface, rc reviewCtx, gc githubClient, log *logrus.Entry) error {
+	author := rc.author
+	issueAuthor := rc.issueAuthor
+	repo := rc.repo
+	assignees := rc.assignees
+	number := rc.number
+	body := rc.body
+	htmlURL := rc.htmlURL
+	org := rc.repo.Owner.Login
+	repoName := rc.repo.Name
 
 	// Determine if reviewer is already assigned
 	isAssignee := false
