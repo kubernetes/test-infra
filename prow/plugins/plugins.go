@@ -519,8 +519,8 @@ func (pa *PluginAgent) Config() *Configuration {
 // doesn't contain any nil struct
 func validateConfig(config *Configuration) error {
 	var errors []string
-	if config.Heart != nil {
-		errors = append(errors, fmt.Errorf("nil struct: heart"))
+	if config.Heart == nil {
+		errors = append(errors, "nil struct: heart")
 	}
 
 	if len(errors) > 0 {
