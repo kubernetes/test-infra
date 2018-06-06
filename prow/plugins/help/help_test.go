@@ -86,6 +86,62 @@ func TestLabel(t *testing.T) {
 			expectedRemovedLabels: []string{},
 			issueLabels:           []string{},
 		},
+		{
+			name:                  "Want to remove helpLabel and goodFirstIssueLabel, have helpLabel and goodFirstIssueLabel",
+			body:                  "/remove-help",
+			expectedNewLabels:     []string{},
+			expectedRemovedLabels: formatLabels(helpLabel, goodFirstIssueLabel),
+			issueLabels:           []string{helpLabel, goodFirstIssueLabel},
+		},
+		{
+			name:                  "Want to add goodFirstIssueLabel and helpLabel, don't have both",
+			body:                  "/good-first-issue",
+			expectedNewLabels:     formatLabels(helpLabel, goodFirstIssueLabel),
+			expectedRemovedLabels: []string{},
+			issueLabels:           []string{},
+		},
+		{
+			name:                  "Want to add goodFirstIssueLabel and helpLabel, don't have goodFirstIssueLabel but have helpLabel",
+			body:                  "/good-first-issue",
+			expectedNewLabels:     formatLabels(goodFirstIssueLabel),
+			expectedRemovedLabels: []string{},
+			issueLabels:           []string{helpLabel},
+		},
+		{
+			name:                  "Want to add goodFirstIssueLabel and helpLabel, have both",
+			body:                  "/good-first-issue",
+			expectedNewLabels:     []string{},
+			expectedRemovedLabels: []string{},
+			issueLabels:           []string{helpLabel, goodFirstIssueLabel},
+		},
+		{
+			name:                  "Want to remove goodFirstIssueLabel, have helpLabel and goodFirstIssueLabel",
+			body:                  "/remove-good-first-issue",
+			expectedNewLabels:     []string{},
+			expectedRemovedLabels: formatLabels(goodFirstIssueLabel),
+			issueLabels:           []string{helpLabel, goodFirstIssueLabel},
+		},
+		{
+			name:                  "Want to remove goodFirstIssueLabel, have goodFirstIssueLabel",
+			body:                  "/remove-good-first-issue",
+			expectedNewLabels:     []string{},
+			expectedRemovedLabels: formatLabels(goodFirstIssueLabel),
+			issueLabels:           []string{goodFirstIssueLabel},
+		},
+		{
+			name:                  "Want to remove goodFirstIssueLabel, have helpLabel but don't have goodFirstIssueLabel",
+			body:                  "/remove-good-first-issue",
+			expectedNewLabels:     []string{},
+			expectedRemovedLabels: []string{},
+			issueLabels:           []string{helpLabel},
+		},
+		{
+			name:                  "Want to remove goodFirstIssueLabel, but don't have it",
+			body:                  "/remove-good-first-issue",
+			expectedNewLabels:     []string{},
+			expectedRemovedLabels: []string{},
+			issueLabels:           []string{},
+		},
 	}
 
 	for _, tc := range testcases {
@@ -93,7 +149,7 @@ func TestLabel(t *testing.T) {
 		fakeClient := &fakegithub.FakeClient{
 			Issues:         make([]github.Issue, 1),
 			IssueComments:  make(map[int][]github.IssueComment),
-			ExistingLabels: []string{helpLabel},
+			ExistingLabels: []string{helpLabel, goodFirstIssueLabel},
 			LabelsAdded:    []string{},
 			LabelsRemoved:  []string{},
 		}
