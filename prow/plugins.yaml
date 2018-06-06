@@ -357,6 +357,10 @@ plugins:
   - lifecycle
   - size
 
+  kubernetes-incubator/service-catalog:
+  - cat
+  - dog
+
   kubernetes-sigs:
   - assign
   - blunderbuss
