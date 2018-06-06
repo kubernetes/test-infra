@@ -17133,7 +17133,7 @@ periodics:
       env:
       - name: AWS_SHARED_CREDENTIALS_FILE
         value: /workspace/.aws/credentials
-      image: gcr.io/k8s-test-infra-aws/aws-janitor:v20180423-84aece590
+      image: gcr.io/k8s-test-infra-aws/aws-janitor:v20180606-bb012b637
       volumeMounts:
       - mountPath: /workspace/.aws
         name: aws-cred
