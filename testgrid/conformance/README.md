@@ -1,19 +1,24 @@
 # Display Conformance Tests with Testgrid
 
-This directory contains tooling for uploading [Kubernetes Conformance test](https://github.com/cncf/k8s-conformance) results for display / monitoring on [TestGrid](../README.md).
+This directory contains tooling for uploading [Kubernetes Conformance test](https://github.com/cncf/k8s-conformance) results for display / monitoring on [TestGrid](../README.md), a tool used heavily by [the core kubernetes project](https://github.com/kubernetes/kubernetes) to monitor test results, particularly as part of the release process.
 
-Federated conformance test results are hosted on the TestGrid [conformance dashboards](https://k8s-testgrid.appspot.com/conformance-all), including the "all" dashboard, and specific sub-dashboards, see [the TestGrid README](../README.md#dashboards) for details on dashboards.  
+Federated conformance test results are hosted on the TestGrid [conformance dashboards](https://k8s-testgrid.appspot.com/conformance-all), including the "all" dashboard, and specific sub-dashboards, see [the TestGrid README](../README.md#dashboards) for details on dashboards. Generally we are aiming to have a dashboard here for each provider E.g. "[conformance-cloud-provider-openstack](https://k8s-testgrid.appspot.com/conformance-cloud-provider-openstack)" as well as [a cross-vendor dashboard](https://k8s-testgrid.appspot.com/conformance-all) to track project wide conformance. 
 
 All Kubernetes cluster providers are invited to post results from their conformance test jobs and results from reliable continuous integration against the release branches may even be used as a signal by the Kubernetes release team in the [release-blocking dashboards](https://k8s-testgrid.appspot.com/sig-release-master-blocking).
+
+The release team has caught actual conformance test regressions using these dashboards just in the first month or so of setting up GCE / OpenStack conformance on TestGrid, and had them fixed before the Kubernetes 1.11 release.
 
 For the original design doc and further details on the motivation please see [design.md](./design.md).
 
 ## Usage Guide
 
 1. First you will need to set up a publicly readable GCS bucket per [contributing test results](https://github.com/kubernetes/test-infra/blob/master/docs/contributing-test-results.md#contributing-test-results) to host your jobs' results.  
-If you cannot or do not want to set up a GCS bucket and only wish to post conformance test results, please contact [@BenTheElder](https://github.com/BenTheElder) or more generally [the gke-kubernetes-engprod team](mailto:gke-kubernetes-engprod@google.com) to arrange for a Google [GKE](https://cloud.google.com/kubernetes-engine/) EngProd provided / maintained bucket for hosting your results. A bucket will be provided following the [playbook](./creating-a-bucket.md) for this.
+If you cannot or do not want to set up a GCS bucket and only wish to post conformance test results, please contact [@BenTheElder](https://github.com/BenTheElder) or more generally [the gke-kubernetes-engprod team](mailto:gke-kubernetes-engprod@google.com) to arrange for a Google [GKE](https://cloud.google.com/kubernetes-engine/) EngProd provided / maintained bucket for hosting your results. A bucket will be provided following the [playbook](./creating-a-bucket.md) for this.  
+If you'd like to post other kinds of tests or unrelated content, please consider following the playbook yourself to create your own bucket.
 
 2. Make a PR to test-infra adding your bucket to the TestGrid config (again see [contributing test results](https://github.com/kubernetes/test-infra/blob/master/docs/contributing-test-results.md#contributing-test-results)).
+
+- See The following PR from setting up the initial OpenStack bucket: [#7670](https://github.com/kubernetes/test-infra/pull/7670) 
 
 3. Setup a job in your CI system to run the conformance tests. To use [`upload_e2e.py`](./upload_e2e.py) the job environment must have `python` (v2.X) and `gcloud` / `gsutil` commands. For the gcloud CLI see [Installing the Google Cloud SDK](https://cloud.google.com/sdk/downloads).
 
