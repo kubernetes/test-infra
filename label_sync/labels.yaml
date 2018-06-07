@@ -365,6 +365,12 @@ labels:
     prowPlugin: label
     addedBy: anyone
   - color: d2b48c
+    description: Categorizes an issue or PR as relevant to sig-cloud-provider.
+    name: sig/cloud-provider
+    target: both
+    prowPlugin: label
+    addedBy: anyone
+  - color: d2b48c
     description: Categorizes an issue or PR as relevant to sig-cluster-lifecycle.
     name: sig/cluster-lifecycle
     target: both
