@@ -522,16 +522,13 @@ func (pa *PluginAgent) Load(path string) error {
 	if err := yaml.Unmarshal(b, np); err != nil {
 		return err
 	}
-
-	if err := ensureConfig(np); err != nil {
-		return err
-	}
-
 	if len(np.Plugins) == 0 {
 		logrus.Warn("no plugins specified-- check syntax?")
 	}
+	if err := ensureConfig(np); err != nil {
+		return err
+	}
 	// Defaulting should run before validation.
-
 	np.setDefaults()
 	if err := validatePlugins(np.Plugins); err != nil {
 		return err
@@ -559,12 +556,17 @@ func (pa *PluginAgent) Config() *Configuration {
 	return pa.configuration
 }
 
-// validateConfig ensure that the configuration
-// doesn't contain any nil struct
+// ensureConfig ensure that the configuration
+// doesn't contain any nil value
 func ensureConfig(config *Configuration) error {
 	var errors []string
-	if config.Heart == nil {
-		errors = append(errors, "nil struct: heart")
+	for _, configuration := range config.Plugins {
+		for _, plugin := range configuration {
+			if plugin == "heart" && config.Heart == nil {
+				errors = append(errors, "nil struct: heart")
+			}
+			//TODO: Rest of plugins
+		}
 	}
 
 	if len(errors) > 0 {
