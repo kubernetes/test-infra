@@ -175,6 +175,10 @@ func handleGenericComment(log *logrus.Entry, ghc githubClient, repo approvers.Re
 // handleReviewEvent should only handle reviews that have no approval command.
 // Reviews with approval commands will be handled by handleGenericCommentEvent.
 func handleReviewEvent(pc plugins.PluginClient, re github.ReviewEvent) error {
+	if re.Action != github.ReviewActionSubmitted {
+		return nil
+	}
+
 	botName, err := pc.GitHubClient.BotName()
 	if err != nil {
 		return err
