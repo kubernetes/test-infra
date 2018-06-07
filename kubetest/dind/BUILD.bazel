@@ -9,6 +9,7 @@ go_library(
     importpath = "k8s.io/test-infra/kubetest/dind",
     visibility = ["//visibility:public"],
     deps = [
+        "//kubetest/e2e:go_default_library",
         "//kubetest/process:go_default_library",
         "//kubetest/util:go_default_library",
         "//vendor/github.com/docker/docker/api/types:go_default_library",
