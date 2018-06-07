@@ -206,8 +206,10 @@ tide:
     - kubernetes/steering
     - kubernetes/test-infra
     - kubernetes/website
-    - kubernetes-sigs/cluster-api
     - kubernetes-sigs/application
+    - kubernetes-sigs/cluster-api
+    - kubernetes-sigs/controller-runtime
+    - kubernetes-sigs/kubebuilder
     labels:
     - lgtm
     - approved
