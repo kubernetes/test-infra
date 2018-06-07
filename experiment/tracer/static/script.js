@@ -111,7 +111,7 @@ var controller = {
     /* 
       A valid PR link has 4 params. The params are: org, repo, pr number and pull 
       Although the length of urlParser is 5 because of split('/'). 
-      It splits the url into an array of params with the seperator "/" so it retuns 5.
+      It splits the url into an array of params with the separator "/" so it returns 5.
     */
     if (urlParser.length !== PARAMS) {
       this.setMessage(logger.options.messages.invalidParams, urlParser);

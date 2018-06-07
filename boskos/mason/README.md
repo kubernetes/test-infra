@@ -95,7 +95,7 @@ dirty such Janitor can clean them up as an example. It then put the virtual reso
 
 ### Fullfilling Thread
 
-The fullfilling thread will look at the config resource needs, and will acquire the necessary resources.
+The fulfilling thread will look at the config resource needs, and will acquire the necessary resources.
 Once a resource is acquired it will update the virtual resource LEASED_RESOURCES user data. Once all resources
 are acquired, it will be put on the cleaning queue.
 

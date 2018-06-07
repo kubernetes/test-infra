@@ -33,7 +33,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// ReadHandler should be implemeted by cache users for use with Cache.Get
+// ReadHandler should be implemented by cache users for use with Cache.Get
 type ReadHandler func(exists bool, contents io.ReadSeeker) error
 
 // Cache implements disk backed cache storage
