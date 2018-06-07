@@ -25,6 +25,7 @@ spec:
       labels:
         app: tide
     spec:
+      # serviceAccountName: "tide" # Uncomment for use with RBAC
       containers:
       - name: tide
         image: gcr.io/k8s-prow/tide:v20180529-e9431eaa3
