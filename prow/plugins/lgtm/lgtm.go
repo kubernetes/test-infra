@@ -55,7 +55,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		Usage:       "/lgtm [cancel] or Github Review action",
 		Description: "Adds or removes the 'lgtm' label which is typically used to gate merging.",
 		Featured:    true,
-		WhoCanUse:   "Members of the organization that owns the repository. '/lgtm cancel' can be used additionally by the PR author.",
+		WhoCanUse:   "Collaborators on the repository. '/lgtm cancel' can be used additionally by the PR author.",
 		Examples:    []string{"/lgtm", "/lgtm cancel", "toggle the Review button to 'Approve' or 'Request Changes' in the github GUI"},
 	})
 	return pluginHelp, nil
