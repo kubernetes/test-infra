@@ -19,7 +19,6 @@ package lifecycle
 import (
 	"reflect"
 	"testing"
-	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -27,109 +26,183 @@ import (
 )
 
 type fakeClient struct {
-	commented bool
-	added     []string
-	removed   []string
-}
-
-func (c *fakeClient) CreateComment(owner, repo string, number int, comment string) error {
-	c.commented = true
-	return nil
+	// current labels
+	labels []string
+	// labels that are added
+	added []string
+	// labels that are removed
+	removed []string
 }
 
 func (c *fakeClient) AddLabel(owner, repo string, number int, label string) error {
 	c.added = append(c.added, label)
+	c.labels = append(c.labels, label)
 	return nil
 }
 
 func (c *fakeClient) RemoveLabel(owner, repo string, number int, label string) error {
 	c.removed = append(c.removed, label)
+
+	// remove from existing labels
+	for k, v := range c.labels {
+		if label == v {
+			c.labels = append(c.labels[:k], c.labels[k+1:]...)
+			break
+		}
+	}
+
 	return nil
 }
 
-func TestDeprecatedClose(t *testing.T) {
-	fc := &fakeClient{}
-	gce := &github.GenericCommentEvent{}
-	ticker := make(chan time.Time, 1)
-	deprecatedTick = ticker
-	err := deprecate(fc, "fake", "org", "repo", 1, gce)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+func (c *fakeClient) GetIssueLabels(owner, repo string, number int) ([]github.Label, error) {
+	la := []github.Label{}
+	for _, l := range c.labels {
+		la = append(la, github.Label{Name: l})
 	}
-	if fc.commented {
-		t.Fatalf("should not comment on empty ticker")
-	}
-	ticker <- time.Now()
-	err = deprecate(fc, "fake", "org", "repo", 1, gce)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if !fc.commented {
-		t.Fatalf("must comment on filled timer")
-	}
-
+	return la, nil
 }
 
 func TestAddLifecycleLabels(t *testing.T) {
 	var testcases = []struct {
+		name    string
 		body    string
 		added   []string
 		removed []string
-		comment bool
+		labels  []string
 	}{
 		{
-			body: "/random-command",
+			name:    "random command -> no-op",
+			body:    "/random-command",
+			added:   []string{},
+			removed: []string{},
+			labels:  []string{},
 		},
 		{
-			body: "/remove-lifecycle",
+			name:    "remove lifecycle but don't specify state -> no-op",
+			body:    "/remove-lifecycle",
+			added:   []string{},
+			removed: []string{},
+			labels:  []string{},
 		},
 		{
-			body: "/lifecycle",
+			name:    "add lifecycle but don't specify state -> no-op",
+			body:    "/lifecycle",
+			added:   []string{},
+			removed: []string{},
+			labels:  []string{},
 		},
 		{
-			body: "/lifecycle random",
+			name:    "add lifecycle random -> no-op",
+			body:    "/lifecycle random",
+			added:   []string{},
+			removed: []string{},
+			labels:  []string{},
 		},
 		{
-			body: "/remove-lifecycle random",
+			name:    "remove lifecycle random -> no-op",
+			body:    "/remove-lifecycle random",
+			added:   []string{},
+			removed: []string{},
+			labels:  []string{},
 		},
 		{
-			body: "/lifecycle frozen putrid stale",
+			name:    "add frozen and stale with single command -> no-op",
+			body:    "/lifecycle frozen stale",
+			added:   []string{},
+			removed: []string{},
+			labels:  []string{},
 		},
 		{
-			body: "/lifecycle frozen cancel",
+			name:    "add frozen and random with single command -> no-op",
+			body:    "/lifecycle frozen random",
+			added:   []string{},
+			removed: []string{},
+			labels:  []string{},
 		},
 		{
-			body:  "/lifecycle frozen",
-			added: []string{"lifecycle/frozen"},
+			name:    "add frozen, don't have it -> frozen added",
+			body:    "/lifecycle frozen",
+			added:   []string{lifecycleFrozenLabel},
+			removed: []string{},
+			labels:  []string{},
 		},
 		{
-			body:  "/lifecycle stale",
-			added: []string{"lifecycle/stale"},
+			name:    "add stale, don't have it -> stale added",
+			body:    "/lifecycle stale",
+			added:   []string{lifecycleStaleLabel},
+			removed: []string{},
+			labels:  []string{},
 		},
 		{
-			body:  "/lifecycle putrid",
-			added: []string{"lifecycle/putrid"},
+			name:    "add rotten, don't have it -> rotten added",
+			body:    "/lifecycle rotten",
+			added:   []string{lifecycleRottenLabel},
+			removed: []string{},
+			labels:  []string{},
 		},
 		{
-			body:  "/lifecycle rotten",
-			added: []string{"lifecycle/rotten"},
-		},
-		{
+			name:    "remove frozen, have it -> frozen removed",
 			body:    "/remove-lifecycle frozen",
-			removed: []string{"lifecycle/frozen"},
+			added:   []string{},
+			removed: []string{lifecycleFrozenLabel},
+			labels:  []string{lifecycleFrozenLabel},
 		},
 		{
+			name:    "remove stale, have it -> stale removed",
 			body:    "/remove-lifecycle stale",
-			removed: []string{"lifecycle/stale"},
+			added:   []string{},
+			removed: []string{lifecycleStaleLabel},
+			labels:  []string{lifecycleStaleLabel},
 		},
 		{
-			body:    "/remove-lifecycle stale\n/remove-lifecycle putrid\n/lifecycle frozen",
-			added:   []string{"lifecycle/frozen"},
-			removed: []string{"lifecycle/stale", "lifecycle/putrid"},
+			name:    "remove rotten, have it -> rotten removed",
+			body:    "/remove-lifecycle rotten",
+			added:   []string{},
+			removed: []string{lifecycleRottenLabel},
+			labels:  []string{lifecycleRottenLabel},
+		},
+		{
+			name:    "add frozen but have it -> no-op",
+			body:    "/lifecycle frozen",
+			added:   []string{},
+			removed: []string{},
+			labels:  []string{lifecycleFrozenLabel},
+		},
+		{
+			name:    "add frozen, have rotten -> frozen added, rotten removed",
+			body:    "/lifecycle frozen",
+			added:   []string{lifecycleFrozenLabel},
+			removed: []string{lifecycleRottenLabel},
+			labels:  []string{lifecycleRottenLabel},
+		},
+		{
+			name:    "add rotten, have stale -> rotten added, stale removed",
+			body:    "/lifecycle rotten",
+			added:   []string{lifecycleRottenLabel},
+			removed: []string{lifecycleStaleLabel},
+			labels:  []string{lifecycleStaleLabel},
+		},
+		{
+			name:    "add frozen, have stale and rotten -> frozen added, stale and rotten removed",
+			body:    "/lifecycle frozen",
+			added:   []string{lifecycleFrozenLabel},
+			removed: []string{lifecycleStaleLabel, lifecycleRottenLabel},
+			labels:  []string{lifecycleStaleLabel, lifecycleRottenLabel},
+		},
+		{
+			name:    "remove stale, then remove rotten and then add frozen -> stale and rotten removed, frozen added",
+			body:    "/remove-lifecycle stale\n/remove-lifecycle rotten\n/lifecycle frozen",
+			added:   []string{lifecycleFrozenLabel},
+			removed: []string{lifecycleStaleLabel, lifecycleRottenLabel},
+			labels:  []string{lifecycleStaleLabel, lifecycleRottenLabel},
 		},
 	}
 	for _, tc := range testcases {
-		fc := &fakeClient{}
+		fc := &fakeClient{
+			labels:  tc.labels,
+			added:   []string{},
+			removed: []string{},
+		}
 		e := &github.GenericCommentEvent{
 			Body:   tc.body,
 			Action: github.GenericCommentActionCreated,
@@ -137,13 +210,11 @@ func TestAddLifecycleLabels(t *testing.T) {
 		err := handle(fc, logrus.WithField("plugin", "fake-lifecyle"), e)
 		switch {
 		case err != nil:
-			t.Errorf("%s: unexpected error: %v", tc.body, err)
-		case tc.comment != fc.commented:
-			t.Errorf("%s: acutal comment %t != expected %t", tc.body, tc.comment, fc.commented)
+			t.Errorf("%s: unexpected error: %v", tc.name, err)
 		case !reflect.DeepEqual(tc.added, fc.added):
-			t.Errorf("%s: added %v != actual %v", tc.body, tc.added, fc.added)
+			t.Errorf("%s: added %v != actual %v", tc.name, tc.added, fc.added)
 		case !reflect.DeepEqual(tc.removed, fc.removed):
-			t.Errorf("%s: removed %v != actual %v", tc.body, tc.removed, fc.removed)
+			t.Errorf("%s: removed %v != actual %v", tc.name, tc.removed, fc.removed)
 		}
 	}
 }

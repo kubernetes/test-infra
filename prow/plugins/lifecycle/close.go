@@ -23,22 +23,10 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
 
 var closeRe = regexp.MustCompile(`(?mi)^/close\s*$`)
-
-func init() {
-	plugins.RegisterGenericCommentHandler("close", deprecatedCloseHandleComment, closeHelp)
-}
-
-func closeHelp(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
-	// The Config field is omitted because this plugin is not configurable.
-	return &pluginhelp.PluginHelp{
-		Description: "Deprecated! Please use the lifecycle plugin instead of close.",
-	}, nil
-}
 
 type closeClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
@@ -47,10 +35,6 @@ type closeClient interface {
 	IsMember(owner, login string) (bool, error)
 	AssignIssue(owner, repo string, number int, assignees []string) error
 	GetIssueLabels(owner, repo string, number int) ([]github.Label, error)
-}
-
-func deprecatedCloseHandleComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
-	return handleClose(pc.GitHubClient, pc.Logger, &e, deprecatedWarn)
 }
 
 func isActive(gc closeClient, org, repo string, number int) (bool, error) {
@@ -66,7 +50,7 @@ func isActive(gc closeClient, org, repo string, number int) (bool, error) {
 	return true, nil
 }
 
-func handleClose(gc closeClient, log *logrus.Entry, e *github.GenericCommentEvent, warn bool) error {
+func handleClose(gc closeClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
 	// Only consider open issues and new comments.
 	if e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
 		return nil
@@ -114,12 +98,6 @@ func handleClose(gc closeClient, log *logrus.Entry, e *github.GenericCommentEven
 				log.Infof("Commenting \"%s\".", resp)
 				return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, commentAuthor, resp))
 			}
-		}
-	}
-
-	if warn {
-		if err := deprecate(gc, "close", org, repo, number, e); err != nil {
-			return err
 		}
 	}
 
