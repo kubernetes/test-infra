@@ -5,4 +5,5 @@ import (
 )
 
 func TestXxx(t *testing.T) {
+	t.Fatalf("ded2")
 }

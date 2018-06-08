@@ -1,33 +1,32 @@
-package(default_visibility = ["//visibility:public"])
-load(
-    "@io_bazel-rules_go//go:def.bzl",
-    "go_library",
-    "go_test",
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "artifact_fetcher.go",
+        "artifacts.go",
+        "spyglass.go",
+        "viewers.go",
+    ],
+    importpath = "k8s.io/test-infra/prow/spyglass",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//prow/kube:go_default_library",
+        "//vendor/cloud.google.com/go/storage:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/google.golang.org/api/iterator:go_default_library",
+        "//vendor/google.golang.org/api/option:go_default_library",
+    ],
 )
 
 go_test(
     name = "go_default_test",
     srcs = [
+        "artifact_fetcher_test.go",
         "spyglass_test.go",
     ],
     embed = [":go_default_library"],
-    deps = [
-        "//prow/config:go_default_library",
-        "//prow/plugins:go_default_library",
-    ],
-)
-
-go_library(
-    name="go_default_library",
-    srcs = [
-        "spyglass.go",
-    ]
-    importpath = "k8s.io/test-infra/prow/spyglass",
-    deps = [
-        "//prow/config:go_default_library",
-        "//prow/plugins:go_default_library",
-        "//vendor/github.com/sirupsen/logrus:go_default_library",
-    ]
+    deps = ["//vendor/github.com/fsouza/fake-gcs-server/fakestorage:go_default_library"],
 )
 
 filegroup(
@@ -41,4 +40,5 @@ filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
     tags = ["automanaged"],
+    visibility = ["//visibility:public"],
 )

@@ -17,39 +17,58 @@ limitations under the License.
 // This file contains artifact-specific view handlers
 package spyglass
 
-import (
-	"regexp"
-
-	"github.com/sirupsen/logrus"
-)
 // An artifact viewer for JUnit tests
 type JUnitViewer struct {
 	ArtifactViewer
+	title string
 }
 
 // An artifact viewer for build logs
 type BuildLogViewer struct {
 	ArtifactViewer
+	title string
 }
 
 // An artifact viewer for prow job metadata
 type MetadataViewer struct {
 	ArtifactViewer
+	title string
+}
+
+// Gets the title of the JUnit View
+func (v *JUnitViewer) Title() string {
+	return v.title
+}
+
+// Gets the title of the JUnit View
+func (v *BuildLogViewer) Title() string {
+	return v.title
+}
+
+// Gets the title of the Metadata View
+func (v *MetadataViewer) Title() string {
+	return v.title
 }
 
 // Creates a view for a build log (or multiple build logs)
 func (v *BuildLogViewer) View(artifacts []Artifact) Lens {
-	//TODO
+	lens := Lens{}
+	for _, a := range artifacts {
+		if a.Size() > 1000 {
+			//TODO
+		}
+	}
+	return lens
 }
 
 // Creates a view for JUnit tests
 func (v *JUnitViewer) View(artifacts []Artifact) Lens {
 	//TODO
+	return Lens{}
 }
 
 // Creates a view for prow job metadata
-func (v *MetdataViewer) View(artifacts []Artifact) Lens {
+func (v *MetadataViewer) View(artifacts []Artifact) Lens {
 	//TODO
+	return Lens{}
 }
-
-

@@ -16,42 +16,41 @@ limitations under the License.
 
 package spyglass
 
-import (
-	"io"
-	"regexp"
-
-	"github.com/sirupsen/logrus"
-	"k8s.io/prow/spyglass/views"
-)
-
 // GCSArtifact represents some output of a prow job stored in GCS
 type GCSArtifact struct {
 	Artifact
+
+	// The direct link to the Artifact, can be used for read operations
 	link string
+
+	// The path of the Artifact within the job
 	path string
 }
 
 // Gets the GCS path of the artifact within the current job
-func (a *GCSArtifact) JobPath() string {
+func (a GCSArtifact) JobPath() string {
 	return a.path
 }
 
 // Gets the GCS web address of the artifact
-func (a *GCSArtifact) CanonicalLink() string {
+func (a GCSArtifact) CanonicalLink() string {
 	return a.link
 }
 
 // Reads len(p) bytes from GCS bucket
-func (a *GCSArtifact) Read(p []byte) (n int, err error) {
+func (a GCSArtifact) Read(p []byte) (n int, err error) {
 	// TODO
+	return
 }
 
 // Reads all bytes from a file in GCS
-func (a *GCSArtifact) ReadAll(p []byte) (err error) {
+func (a GCSArtifact) ReadAll() string {
 	// TODO
+	return ""
 }
 
 // Seeks to a location in a GCS file
 func Seek(offset int64, whence int) (int64, error) {
 	// TODO
+	return 0, nil
 }
