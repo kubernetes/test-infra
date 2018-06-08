@@ -12169,7 +12169,7 @@
       "--cluster=",
       "--deployment=gke",
       "--env=CLOUDSDK_CONTAINER_USE_V1_API=false",
-      "--env=TAG=0.6.0",
+      "--env=TAG=0.8.0",
       "--extract=ci/latest",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-node-image=ubuntu",
