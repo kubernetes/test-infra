@@ -70,15 +70,22 @@ func init() {
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
-	return &pluginhelp.PluginHelp{
-			Description: `The releasenote plugin implements a release note process that uses a markdown 'releasenote' code block to associate a release note with a pull request. Until the 'releasenote' block in the pull request body is populated the PR will be assigned the '` + releaseNoteLabelNeeded + `' label.
+	pluginHelp := &pluginhelp.PluginHelp{
+		Description: `The releasenote plugin implements a release note process that uses a markdown 'releasenote' code block to associate a release note with a pull request. Until the 'releasenote' block in the pull request body is populated the PR will be assigned the '` + releaseNoteLabelNeeded + `' label.
 <br>There are three valid types of release notes that can replace this label:
 <ol><li>PRs with a normal release note in the 'releasenote' block are given the label '` + releaseNote + `'.</li>
 <li>PRs that have a release note of 'none' in the block are given the label '` + releaseNoteNone + `' to indicate that the PR does not warrant a release note.</li>
 <li>PRs that contain 'action required' in their 'releasenote' block are given the label '` + releaseNoteActionRequired + `' to indicate that the PR introduces potentially breaking changes that necessitate user action before upgrading to the release.</li></ol>
-To support old behavior, this plugin also provides a '/release-note-none' command that can be used by organization members to specify that no release note is needed for the PR as an alternative to setting the 'releasenote' block contents to 'none'.` + "To use the plugin, in the pull request body text:\n\n```releasenote\n<release note content>\n```",
-		},
-		nil
+` + "To use the plugin, in the pull request body text:\n\n```releasenote\n<release note content>\n```",
+	}
+	// NOTE: the other two commands re deprecated, so we're not documenting them
+	pluginHelp.AddCommand(pluginhelp.Command{
+		Usage:       "/release-note-none",
+		Description: "Adds the '" + releaseNoteNone + `' label to indicate that the PR does not warrant a release note. This is deprecated and ideally <a href="https://git.k8s.io/community/contributors/guide/release-notes.md">the release note process</a> should be followed in the PR body instead.`,
+		WhoCanUse:   "PR Authors and Org Members.",
+		Examples:    []string{"/release-note-none"},
+	})
+	return pluginHelp, nil
 }
 
 type githubClient interface {
