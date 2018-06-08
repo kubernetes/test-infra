@@ -17,9 +17,7 @@ limitations under the License.
 package lifecycle
 
 import (
-	"fmt"
 	"regexp"
-	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -28,11 +26,8 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-const deprecatedWarn = true
-
 var (
-	deprecatedTick = time.Tick(time.Hour) // Warn once per hour
-	lifecycleRe    = regexp.MustCompile(`(?mi)^/(remove-)?lifecycle (frozen|stale|putrid|rotten)\s*$`)
+	lifecycleRe = regexp.MustCompile(`(?mi)^/(remove-)?lifecycle (frozen|stale|putrid|rotten)\s*$`)
 )
 
 func init() {
@@ -67,33 +62,18 @@ func help(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.Plu
 	return pluginHelp, nil
 }
 
-type commentClient interface {
-	CreateComment(owner, repo string, number int, comment string) error
-}
-
 type lifecycleClient interface {
-	CreateComment(owner, repo string, number int, comment string) error
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
-}
-
-func deprecate(gc commentClient, plugin, org, repo string, number int, e *github.GenericCommentEvent) error {
-	select {
-	case <-deprecatedTick:
-		// Only warn once per tick
-		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, fmt.Sprintf("The %s prow plugin is deprecated, please migrate to the lifecycle plugin before April 2018", plugin)))
-	default:
-		return nil
-	}
 }
 
 func lifecycleHandleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
 	gc := pc.GitHubClient
 	log := pc.Logger
-	if err := handleReopen(gc, log, &e, !deprecatedWarn); err != nil {
+	if err := handleReopen(gc, log, &e); err != nil {
 		return err
 	}
-	if err := handleClose(gc, log, &e, !deprecatedWarn); err != nil {
+	if err := handleClose(gc, log, &e); err != nil {
 		return err
 	}
 	return handle(gc, log, &e)

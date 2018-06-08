@@ -23,23 +23,10 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
 
 var reopenRe = regexp.MustCompile(`(?mi)^/reopen\s*$`)
-
-func init() {
-	plugins.RegisterGenericCommentHandler("reopen", deprecatedHandleReopenComment, reopenHelp)
-}
-
-func reopenHelp(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
-	// The Config field is omitted because this plugin is not configurable.
-	return &pluginhelp.PluginHelp{
-			Description: "Deprecated! Please use the lifecycle plugin instead of reopen.",
-		},
-		nil
-}
 
 type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
@@ -47,12 +34,7 @@ type githubClient interface {
 	ReopenPR(owner, repo string, number int) error
 }
 
-func deprecatedHandleReopenComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
-	warn := true
-	return handleReopen(pc.GitHubClient, pc.Logger, &e, warn)
-}
-
-func handleReopen(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, warn bool) error {
+func handleReopen(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
 	// Only consider closed issues and new comments.
 	if e.IssueState != "closed" || e.Action != github.GenericCommentActionCreated {
 		return nil
@@ -79,12 +61,6 @@ func handleReopen(gc githubClient, log *logrus.Entry, e *github.GenericCommentEv
 		resp := "you can't re-open an issue/PR unless you authored it or you are assigned to it."
 		log.Infof("Commenting \"%s\".", resp)
 		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
-	}
-
-	if warn {
-		if err := deprecate(gc, "reopen", org, repo, number, e); err != nil {
-			return err
-		}
 	}
 
 	if e.IsPR {

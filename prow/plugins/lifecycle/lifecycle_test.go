@@ -19,7 +19,6 @@ package lifecycle
 import (
 	"reflect"
 	"testing"
-	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -45,29 +44,6 @@ func (c *fakeClient) AddLabel(owner, repo string, number int, label string) erro
 func (c *fakeClient) RemoveLabel(owner, repo string, number int, label string) error {
 	c.removed = append(c.removed, label)
 	return nil
-}
-
-func TestDeprecatedClose(t *testing.T) {
-	fc := &fakeClient{}
-	gce := &github.GenericCommentEvent{}
-	ticker := make(chan time.Time, 1)
-	deprecatedTick = ticker
-	err := deprecate(fc, "fake", "org", "repo", 1, gce)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if fc.commented {
-		t.Fatalf("should not comment on empty ticker")
-	}
-	ticker <- time.Now()
-	err = deprecate(fc, "fake", "org", "repo", 1, gce)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if !fc.commented {
-		t.Fatalf("must comment on filled timer")
-	}
-
 }
 
 func TestAddLifecycleLabels(t *testing.T) {
