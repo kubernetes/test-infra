@@ -34,9 +34,14 @@ RUN mkdir -p /go/src/k8s.io/kubernetes \
 # - graphviz package for graphing profiles
 # - bc for shell to junit
 # - rpm for building RPMs with Bazel
+# - nfs for {ci,pull}-kubernetes-local-e2e-containerized - this container image
+#   serves as "the host" for tests with containerized kubelet. Containerized
+#   kubelet uses nfs clients on the host.
 RUN apt-get install -y bc \
     graphviz \
-    rpm
+    rpm \
+    nfs-common
+
 # preinstall this for kops tests xref kubetest prepareAws(...)
 # TODO(bentheelder,krzyzacy,justisb,chrislovecnm): remove this
 RUN pip install awscli
