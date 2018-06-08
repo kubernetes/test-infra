@@ -176,7 +176,7 @@ projects:
     prometheus:
       prometheus-config.yml: |
         global:
-          scrape_interval: 15m
+          scrape_interval: 1m
         scrape_configs:
           - job_name: istio-ci-metrics
             metrics_path: /metrics
