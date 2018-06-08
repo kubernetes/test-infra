@@ -205,6 +205,7 @@ plugins:
   kubernetes/cloud-provider-openstack:
   - approve
   - blunderbuss
+  - docs-no-retest
   - trigger
 
   kubernetes/cloud-provider-vsphere:
