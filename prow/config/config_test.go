@@ -17,7 +17,6 @@ limitations under the License.
 package config
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -248,7 +247,7 @@ func TestValidConfigLoading(t *testing.T) {
 	var testCases = []struct {
 		name               string
 		prowConfig         string
-		jobConfigs         []string
+		jobConfig          string
 		expectError        bool
 		expectPodNameSpace string
 	}{
@@ -259,20 +258,17 @@ func TestValidConfigLoading(t *testing.T) {
 		{
 			name:       "invalid periodic",
 			prowConfig: ``,
-			jobConfigs: []string{
-				`
+			jobConfig: `
 periodics:
 - interval: 10m
   agent: kubernetes
   name: foo`,
-			},
 			expectError: true,
 		},
 		{
 			name:       "one periodic",
 			prowConfig: ``,
-			jobConfigs: []string{
-				`
+			jobConfig: `
 periodics:
 - interval: 10m
   agent: kubernetes
@@ -280,21 +276,19 @@ periodics:
   spec:
     containers:
     - image: alpine`,
-			},
 		},
 		{
 			name:       "two periodics",
 			prowConfig: ``,
-			jobConfigs: []string{
-				`
+			jobConfig: `
 periodics:
 - interval: 10m
   agent: kubernetes
   name: foo
   spec:
     containers:
-    - image: alpine`,
-				`
+    - image: alpine
+---
 periodics:
 - interval: 10m
   agent: kubernetes
@@ -302,13 +296,19 @@ periodics:
   spec:
     containers:
     - image: alpine`,
-			},
 		},
 		{
 			name:       "duplicated periodics",
 			prowConfig: ``,
-			jobConfigs: []string{
-				`
+			jobConfig: `
+periodics:
+- interval: 10m
+  agent: kubernetes
+  name: foo
+  spec:
+    containers:
+    - image: alpine
+---
 periodics:
 - interval: 10m
   agent: kubernetes
@@ -316,22 +316,12 @@ periodics:
   spec:
     containers:
     - image: alpine`,
-				`
-periodics:
-- interval: 10m
-  agent: kubernetes
-  name: foo
-  spec:
-    containers:
-    - image: alpine`,
-			},
 			expectError: true,
 		},
 		{
 			name:       "one presubmit, no context",
 			prowConfig: ``,
-			jobConfigs: []string{
-				`
+			jobConfig: `
 presubmits:
   foo/bar:
   - agent: kubernetes
@@ -339,14 +329,12 @@ presubmits:
     spec:
       containers:
       - image: alpine`,
-			},
 			expectError: true,
 		},
 		{
 			name:       "one presubmit, ok",
 			prowConfig: ``,
-			jobConfigs: []string{
-				`
+			jobConfig: `
 presubmits:
   foo/bar:
   - agent: kubernetes
@@ -355,13 +343,11 @@ presubmits:
     spec:
       containers:
       - image: alpine`,
-			},
 		},
 		{
 			name:       "two presubmits",
 			prowConfig: ``,
-			jobConfigs: []string{
-				`
+			jobConfig: `
 presubmits:
   foo/bar:
   - agent: kubernetes
@@ -369,8 +355,8 @@ presubmits:
     context: bar
     spec:
       containers:
-      - image: alpine`,
-				`
+      - image: alpine
+---
 presubmits:
   foo/baz:
   - agent: kubernetes
@@ -379,13 +365,11 @@ presubmits:
     spec:
       containers:
       - image: alpine`,
-			},
 		},
 		{
 			name:       "dup presubmits, one file",
 			prowConfig: ``,
-			jobConfigs: []string{
-				`
+			jobConfig: `
 presubmits:
   foo/bar:
   - agent: kubernetes
@@ -400,13 +384,11 @@ presubmits:
     spec:
       containers:
       - image: alpine`,
-			},
 		},
 		{
-			name:       "dup presubmits, two files",
+			name:       "dup presubmits, two documents",
 			prowConfig: ``,
-			jobConfigs: []string{
-				`
+			jobConfig: `
 presubmits:
   foo/bar:
   - interval: 10m
@@ -415,8 +397,8 @@ presubmits:
     context: bar
     spec:
       containers:
-      - image: alpine`,
-				`
+      - image: alpine
+---
 presubmits:
   foo/bar:
   - interval: 10m
@@ -426,14 +408,12 @@ presubmits:
     spec:
       containers:
       - image: alpine`,
-			},
 			expectError: true,
 		},
 		{
 			name:       "one postsubmit, ok",
 			prowConfig: ``,
-			jobConfigs: []string{
-				`
+			jobConfig: `
 postsubmits:
   foo/bar:
   - agent: kubernetes
@@ -441,13 +421,11 @@ postsubmits:
     spec:
       containers:
       - image: alpine`,
-			},
 		},
 		{
 			name:       "two postsubmits",
 			prowConfig: ``,
-			jobConfigs: []string{
-				`
+			jobConfig: `
 postsubmits:
   foo/bar:
   - agent: kubernetes
@@ -455,8 +433,8 @@ postsubmits:
     context: bar
     spec:
       containers:
-      - image: alpine`,
-				`
+      - image: alpine
+---
 postsubmits:
   foo/baz:
   - agent: kubernetes
@@ -465,13 +443,11 @@ postsubmits:
     spec:
       containers:
       - image: alpine`,
-			},
 		},
 		{
 			name:       "dup postsubmits, one file",
 			prowConfig: ``,
-			jobConfigs: []string{
-				`
+			jobConfig: `
 postsubmits:
   foo/bar:
   - agent: kubernetes
@@ -486,13 +462,11 @@ postsubmits:
     spec:
       containers:
       - image: alpine`,
-			},
 		},
 		{
-			name:       "dup postsubmits, two files",
+			name:       "dup postsubmits, two documents",
 			prowConfig: ``,
-			jobConfigs: []string{
-				`
+			jobConfig: `
 postsubmits:
   foo/bar:
   - interval: 10m
@@ -501,8 +475,8 @@ postsubmits:
     context: bar
     spec:
       containers:
-      - image: alpine`,
-				`
+      - image: alpine
+---
 postsubmits:
   foo/bar:
   - interval: 10m
@@ -512,17 +486,14 @@ postsubmits:
     spec:
       containers:
       - image: alpine`,
-			},
 			expectError: true,
 		},
 		{
 			name: "overwrite PodNamespace",
 			prowConfig: `
 pod_namespace: test`,
-			jobConfigs: []string{
-				`
+			jobConfig: `
 pod_namespace: debug`,
-			},
 			expectPodNameSpace: "test",
 		},
 	}
@@ -541,29 +512,16 @@ pod_namespace: debug`,
 		}
 
 		jobConfig := ""
-		if len(tc.jobConfigs) > 0 {
+		if tc.jobConfig != "" {
 			jobConfigDir, err := ioutil.TempDir("", "jobConfig")
 			if err != nil {
 				t.Fatalf("fail to make tempdir: %v", err)
 			}
 			defer os.RemoveAll(jobConfigDir)
 
-			// cover both job config as a file & a dir
-			if len(tc.jobConfigs) == 1 {
-				// a single file
-				jobConfig = filepath.Join(jobConfigDir, "config.yaml")
-				if err := ioutil.WriteFile(jobConfig, []byte(tc.jobConfigs[0]), 0666); err != nil {
-					t.Fatalf("fail to write job config: %v", err)
-				}
-			} else {
-				// a dir
-				jobConfig = jobConfigDir
-				for idx, config := range tc.jobConfigs {
-					subConfig := filepath.Join(jobConfigDir, fmt.Sprintf("config_%d.yaml", idx))
-					if err := ioutil.WriteFile(subConfig, []byte(config), 0666); err != nil {
-						t.Fatalf("fail to write job config: %v", err)
-					}
-				}
+			jobConfig = filepath.Join(jobConfigDir, "config.yaml")
+			if err := ioutil.WriteFile(jobConfig, []byte(tc.jobConfig), 0666); err != nil {
+				t.Fatalf("fail to write job config: %v", err)
 			}
 		}
 
