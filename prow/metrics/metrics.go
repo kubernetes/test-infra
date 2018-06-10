@@ -29,6 +29,17 @@ import (
 	"k8s.io/test-infra/prow/config"
 )
 
+const (
+	// minWaitDuration is the minimal interval allowed between two consecutive
+	// Metrics Pusher loops. This guards against busy looping.
+	minWaitDuration = 1 * time.Second
+	// maxWaitDuration is the maximum interval allowed between two consecutive
+	// Metrics Pusher loops. With this we make sure that potentially updated
+	// configuration is at least queried once in some more or less reasonable
+	// period.
+	maxWaitDuration = 2 * time.Hour
+)
+
 // NewPusher creates a Pusher which dynamically reads its config from the
 // ConfigAgent
 func NewPusher(ca configGetter) Pusher {
@@ -59,13 +70,34 @@ func (pm Pusher) Start(component string) {
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 
+	getPusherConfig := func() (time.Duration, string) {
+		c := pm.configAgent.Config().PushGateway
+
+		e := c.Endpoint
+		i := c.Interval
+
+		if i < minWaitDuration {
+			i = minWaitDuration
+		}
+		if i > maxWaitDuration {
+			i = maxWaitDuration
+		}
+
+		return i, e
+	}
+
+	var endpoint string
+	var interval time.Duration
+
+	// get the initial sleep duration
+	interval, _ = getPusherConfig()
 	for {
-		interval := pm.configAgent.Config().PushGateway.Interval
 		waiter := pm.waiter(interval)
 
 		select {
 		case <-waiter:
-			endpoint := pm.configAgent.Config().PushGateway.Endpoint
+			// refresh both the interval and the endpoint from the config
+			interval, endpoint = getPusherConfig()
 			if endpoint != "" {
 				if err := pm.gatherer(component, push.HostnameGroupingKey(), endpoint, prometheus.DefaultGatherer); err != nil {
 					logrus.WithField("component", component).WithError(err).Error("Failed to push metrics.")

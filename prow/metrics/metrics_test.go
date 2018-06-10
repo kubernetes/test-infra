@@ -17,7 +17,6 @@ limitations under the License.
 package metrics
 
 import (
-	"reflect"
 	"testing"
 	"time"
 
@@ -25,169 +24,120 @@ import (
 	"k8s.io/test-infra/prow/config"
 )
 
-func TestMetricsPusherIntervals(t *testing.T) {
-	intervals := []time.Duration{15 * time.Millisecond, 0 * time.Millisecond, 10 * time.Millisecond}
-	lastRunTime := time.Now()
-	ranFuncCh := make(chan time.Time)
-
-	intervalCheckGatherer := func(job string, grouping map[string]string, url string, g prometheus.Gatherer) error {
-		ranFuncCh <- time.Now()
-		return nil
-	}
-
-	pusher := Pusher{
-		gatherer: intervalCheckGatherer,
-		configAgent: &fakeConfigAgent{
-			intervals: intervals,
-		},
-	}
-	go pusher.Start("")
-
-	for _, expectedInterval := range intervals {
-		actualRunTime := <-ranFuncCh
-		actualInterval := actualRunTime.Sub(lastRunTime)
-		lastRunTime = actualRunTime
-		maxAllowdDuration := expectedInterval * 2
-		if maxAllowdDuration <= 0 {
-			maxAllowdDuration = 10 * time.Millisecond
-		}
-		if actualInterval < expectedInterval {
-			t.Errorf("Expected interval to be at least '%s', got '%s'", expectedInterval, actualInterval)
-		}
-		if actualInterval > maxAllowdDuration {
-			t.Errorf("Expected interval to be at most '%s', got '%s'", expectedInterval*2, actualInterval)
-		}
-	}
-}
-
-func TestMetricsPusherEndpoints(t *testing.T) {
-	endpoints := []string{"ep0", "ep1", "ep9000"}
-	actualEndpoints := make(chan string)
-
-	endpointCheckGatherer := func(job string, grouping map[string]string, url string, g prometheus.Gatherer) error {
-		actualEndpoints <- url
-		return nil
-	}
-
-	pusher := Pusher{
-		gatherer: endpointCheckGatherer,
-		configAgent: &fakeConfigAgent{
-			endpoints: endpoints,
-		},
-	}
-	go pusher.Start("")
-
-	for _, expectedEndpoint := range endpoints {
-		actualEndpoint := <-actualEndpoints
-		if actualEndpoint != expectedEndpoint {
-			t.Errorf("Expected endpoint to be '%s', got '%s'", expectedEndpoint, actualEndpoint)
-		}
-	}
-}
-
+// TestMetricsPusherWaiterCalls tests that the waiter is actually called with
+// the durations the config agent returns
 func TestMetricsPusherWaiterCalls(t *testing.T) {
-	intervals := []time.Duration{1 * time.Second, 2 * time.Second}
+	waitForAfter := make(chan time.Duration)
 
-	fakeGatherer := func(job string, grouping map[string]string, url string, g prometheus.Gatherer) error {
-		return nil
-	}
-
-	ranFuncCh := make(chan time.Duration)
-	waiter := func(d time.Duration) <-chan time.Time {
-		waiterCh := make(chan time.Time, 1)
-		ranFuncCh <- d
-		waiterCh <- time.Time{}
-		return waiterCh
+	fakeAfter := func(d time.Duration) <-chan time.Time {
+		newCh := make(chan time.Time, 1)
+		newCh <- time.Time{}
+		waitForAfter <- d
+		return newCh
 	}
 
 	pusher := Pusher{
-		gatherer: fakeGatherer,
+		waiter:   fakeAfter,
+		gatherer: nullGatherer,
 		configAgent: &fakeConfigAgent{
-			intervals: intervals,
+			fakeConfigs: []config.PushGateway{
+				// Initial wait
+				{Interval: 10 * time.Second},
+				{Interval: 20 * time.Minute},
+				// This interval is smaller then the min allowed duration
+				{Interval: 0},
+				{Interval: 30 * time.Second},
+				// This interval is bigger then the max allewd duration
+				{Interval: 30 * time.Hour},
+				{Interval: 10 * time.Second},
+			},
 		},
-		waiter: waiter,
 	}
-
 	go pusher.Start("")
 
-	for _, expectedInterval := range intervals {
-		actualInterval := <-ranFuncCh
-		if actualInterval != expectedInterval {
-			t.Errorf("Expected interval was '%s', got '%s'", expectedInterval, actualInterval)
+	expectedIntervals := []time.Duration{
+		10 * time.Second,
+		20 * time.Minute,
+		minWaitDuration,
+		30 * time.Second,
+		maxWaitDuration,
+	}
+	for i, expected := range expectedIntervals {
+		if actual := <-waitForAfter; actual != expected {
+			t.Fatalf("Expected interval %d to be '%s', got: '%s'", i, expected, actual)
 		}
 	}
 }
 
-func TestMetricsPusherEmptyEndpoint(t *testing.T) {
-	endpoints := []string{"", "ep0", "", "ep1"}
+// TestMetricsPusherGathererCalls tests that ...
+// - the pusher does not run the gatherer function if the endpoint is not
+//   configured (setting the endpoint to "" can be used to temporatily disable
+//   the pushing/gathering of metrics)
+// - keeps the pusher loop running, regardless if endpoint is configured or not
+// - if the endpoint is set again, the gatherer function will be called again
+func TestMetricsPusherGathererCalls(t *testing.T) {
+	waitForURL := make(chan string)
 
-	ranFuncCh := make(chan string)
 	fakeGatherer := func(job string, grouping map[string]string, url string, g prometheus.Gatherer) error {
-		ranFuncCh <- url
+		waitForURL <- url
 		return nil
 	}
 
 	pusher := Pusher{
 		gatherer: fakeGatherer,
+		waiter:   nullWaiter,
 		configAgent: &fakeConfigAgent{
-			endpoints: endpoints,
+			fakeConfigs: []config.PushGateway{
+				// The first time the Config() is requested is just to get the initial
+				// sleep interval, subsequent calls will use both the interval and
+				// the endpoint
+				{Endpoint: "will be ignored"},
+				{Endpoint: ""},
+				{Endpoint: "endpoint one"},
+				{Endpoint: ""},
+				{Endpoint: ""},
+				{Endpoint: "endpoint two"},
+				{Endpoint: ""},
+				{Endpoint: "endpoint three"},
+			},
 		},
 	}
-
 	go pusher.Start("")
 
-	collectedEndpoints := []string{}
-	collectedEndpoints = append(collectedEndpoints, <-ranFuncCh)
-	collectedEndpoints = append(collectedEndpoints, <-ranFuncCh)
-
-	expectedEndpoints := []string{"ep0", "ep1"}
-
-	if !reflect.DeepEqual(collectedEndpoints, expectedEndpoints) {
-		t.Errorf("Expected collected endpoints to be '%v', got '%v'", expectedEndpoints, collectedEndpoints)
+	expectedEndpoints := []string{
+		"endpoint one",
+		"endpoint two",
+		"endpoint three",
 	}
+	for i, expected := range expectedEndpoints {
+		if actual := <-waitForURL; actual != expected {
+			t.Fatalf("Expected endpoint %d to be '%s', got: '%s'", i, expected, actual)
+		}
+	}
+}
+
+func nullWaiter(wait time.Duration) <-chan time.Time {
+	ch := make(chan time.Time, 1)
+	ch <- time.Time{}
+	return ch
+}
+
+func nullGatherer(job string, grouping map[string]string, url string, g prometheus.Gatherer) error {
+	return nil
 }
 
 type fakeConfigAgent struct {
-	endpoints         []string
-	intervals         []time.Duration
-	calledForEndpoint bool
-	endpointIdx       int
-	intervalIdx       int
+	fakeConfigs []config.PushGateway
+	idx         int
 }
 
-// Config returns a minimal *config.Config, filled only with the bits
-// interesting for the metrics pusher.
-// We also take advantage of the fact that Config() is *always* called twice
-// per pusher iteration:
-//   1st call to get the currently configured interval
-//   2nd call to get the currently configured endpoint
-// Therefore we will also return different configs per call. On every even call
-// we will return the expected interval and a "default" endpoint, on every odd
-// run we will return the expected endpoint and a "default" interval.
 func (ca *fakeConfigAgent) Config() *config.Config {
-	interval := 666 * time.Nanosecond
-	endpoint := "should never be used"
 
-	if ca.calledForEndpoint {
-		if ca.endpointIdx < len(ca.endpoints) {
-			endpoint = ca.endpoints[ca.endpointIdx]
-		}
-		ca.endpointIdx++
-	} else {
-		if ca.intervalIdx < len(ca.intervals) {
-			interval = ca.intervals[ca.intervalIdx]
-		}
-		ca.intervalIdx++
+	c := &config.Config{}
+	c.PushGateway = ca.fakeConfigs[ca.idx]
+
+	if ca.idx < len(ca.fakeConfigs)-1 {
+		ca.idx++
 	}
-
-	ca.calledForEndpoint = !ca.calledForEndpoint
-
-	fakeConfig := &config.Config{
-		PushGateway: config.PushGateway{
-			Endpoint: endpoint,
-			Interval: interval,
-		},
-	}
-
-	return fakeConfig
+	return c
 }
