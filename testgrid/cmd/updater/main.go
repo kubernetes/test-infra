@@ -102,6 +102,7 @@ func testGroupPath(g gcs.Path, name string) (*gcs.Path, error) {
 	return np, nil
 }
 
+// Build points to a build stored under a particular gcs prefix.
 type Build struct {
 	Bucket  *storage.BucketHandle
 	Context context.Context
@@ -113,6 +114,7 @@ func (b Build) String() string {
 	return b.Prefix
 }
 
+// Started holds the started.json values of the build.
 type Started struct {
 	Timestamp   int64             `json:"timestamp"` // epoch seconds
 	RepoVersion string            `json:"repo-version"`
@@ -121,17 +123,25 @@ type Started struct {
 	Repos       map[string]string `json:"repos"` // {repo: branch_or_pull} map
 }
 
+// Finished holds the finished.json values of the build
 type Finished struct {
-	Timestamp  int64    `json:"timestamp"` // epoch seconds
+	// Timestamp is epoch seconds
+	Timestamp  int64    `json:"timestamp"`
 	Passed     bool     `json:"passed"`
 	JobVersion string   `json:"job-version"`
 	Metadata   Metadata `json:"metadata"`
 	running    bool
 }
 
-// infra-commit, repos, repo, repo-commit, others
+// Metadata holds the finished.json values in the metadata key.
+//
+// Metadata values can either be string or string map of strings
+//
+// TODO(fejta): figure out which of these we want and document them
+// Special values: infra-commit, repos, repo, repo-commit, others
 type Metadata map[string]interface{}
 
+// String returns the name key if its value is a string.
 func (m Metadata) String(name string) (*string, bool) {
 	if v, ok := m[name]; !ok {
 		return nil, false
@@ -142,6 +152,7 @@ func (m Metadata) String(name string) (*string, bool) {
 	}
 }
 
+// Meta returns the name key if its value is a child object.
 func (m Metadata) Meta(name string) (*Metadata, bool) {
 	if v, ok := m[name]; !ok {
 		return nil, true
@@ -152,6 +163,7 @@ func (m Metadata) Meta(name string) (*Metadata, bool) {
 	}
 }
 
+// ColumnMetadata returns the subset of values in the map that are strings.
 func (m Metadata) ColumnMetadata() ColumnMetadata {
 	bm := ColumnMetadata{}
 	for k, v := range m {
@@ -163,11 +175,13 @@ func (m Metadata) ColumnMetadata() ColumnMetadata {
 	return bm
 }
 
+// JunitSuites holds a <testsuites/> list of JunitSuite results
 type JunitSuites struct {
 	XMLName xml.Name     `xml:"testsuites"`
 	Suites  []JunitSuite `xml:"testsuite"`
 }
 
+// JunitSuite holds <testsuite/> results
 type JunitSuite struct {
 	XMLName  xml.Name      `xml:"testsuite"`
 	Name     string        `xml:"name,attr"`
@@ -180,6 +194,7 @@ type JunitSuite struct {
 	 */
 }
 
+// JunitResult holds <testcase/> results
 type JunitResult struct {
 	Name      string  `xml:"name,attr"`
 	Time      float64 `xml:"time,attr"`
@@ -190,6 +205,9 @@ type JunitResult struct {
 	Skipped   *string `xml:"skipped,omitempty"`
 }
 
+// Message extracts the message for the junit test case.
+//
+// Will use the first non-empty <failure/>, <skipped/>, <output/> value.
 func (jr JunitResult) Message() string {
 	const max = 140
 	var msg string
@@ -201,14 +219,15 @@ func (jr JunitResult) Message() string {
 	case jr.Output != nil && *jr.Output != "":
 		msg = *jr.Output
 	}
-	if l := len(msg); max == 0 || l <= max {
+	l := len(msg)
+	if max == 0 || l <= max {
 		return msg
-	} else {
-		h := max / 2
-		return msg[:h] + "..." + msg[l-h-1:]
 	}
+	h := max / 2
+	return msg[:h] + "..." + msg[l-h-1:]
 }
 
+// Row converts the junit result into a Row result, prepending the suite name.
 func (jr JunitResult) Row(suite string) (string, Row) {
 	n := jr.Name
 	if suite != "" {
@@ -288,10 +307,12 @@ func extractRows(buf []byte, meta map[string]string) (map[string][]Row, error) {
 	return rows, nil
 }
 
+// ColumnMetadata holds key => value mapping of metadata info.
 type ColumnMetadata map[string]string
 
+// Column represents a build run, which includes one or more row results and metadata.
 type Column struct {
-	Id       string
+	ID       string
 	Started  int64
 	Finished int64
 	Passed   bool
@@ -299,6 +320,7 @@ type Column struct {
 	Metadata ColumnMetadata
 }
 
+// Row holds results for a piece of a build run, such as a test result.
 type Row struct {
 	Result   state.Row_Result
 	Metrics  map[string]float64
@@ -307,6 +329,7 @@ type Row struct {
 	Icon     string
 }
 
+// Overall calculates the generated-overall row value for the current column
 func (br Column) Overall() Row {
 	r := Row{
 		Metadata: map[string]string{"Tests name": "Overall"},
@@ -335,6 +358,10 @@ func (br Column) Overall() Row {
 	return r
 }
 
+// AppendMetric adds the value at index to metric.
+//
+// Handles the details of sparse-encoding the results.
+// Indicies must be monotonically increasing for the same metric.
 func AppendMetric(metric *state.Metric, idx int32, value float64) {
 	if l := int32(len(metric.Indices)); l == 0 || metric.Indices[l-2]+metric.Indices[l-1] != idx {
 		// If we append V to idx 9 and metric.Indices = [3, 4] then the last filled index is 3+4-1=7
@@ -346,6 +373,7 @@ func AppendMetric(metric *state.Metric, idx int32, value float64) {
 	metric.Values = append(metric.Values, value)
 }
 
+// FindMetric returns the first metric with the specified name.
 func FindMetric(row *state.Row, name string) *state.Metric {
 	for _, m := range row.Metrics {
 		if m.Name == name {
@@ -357,6 +385,9 @@ func FindMetric(row *state.Row, name string) *state.Metric {
 
 var noResult = Row{Result: state.Row_NO_RESULT}
 
+// AppendResult adds the rowResult column to the row.
+//
+// Handles the details like missing fields and run-length-encoding the result.
 func AppendResult(row *state.Row, rowResult Row, count int) {
 	latest := int32(rowResult.Result)
 	n := len(row.Results)
@@ -381,19 +412,19 @@ func AppendResult(row *state.Row, rowResult Row, count int) {
 	}
 }
 
-type NameConfig struct {
+type nameConfig struct {
 	format string
 	parts  []string
 }
 
-func MakeNameConfig(tnc *config.TestNameConfig) NameConfig {
+func makeNameConfig(tnc *config.TestNameConfig) nameConfig {
 	if tnc == nil {
-		return NameConfig{
+		return nameConfig{
 			format: "%s",
 			parts:  []string{"Tests name"},
 		}
 	}
-	nc := NameConfig{
+	nc := nameConfig{
 		format: tnc.NameFormat,
 		parts:  make([]string, len(tnc.NameElements)),
 	}
@@ -403,7 +434,8 @@ func MakeNameConfig(tnc *config.TestNameConfig) NameConfig {
 	return nc
 }
 
-func (r Row) Format(config NameConfig, meta map[string]string) string {
+// Format renders any requested metadata into the name
+func (r Row) Format(config nameConfig, meta map[string]string) string {
 	parsed := make([]interface{}, len(config.parts))
 	for i, p := range config.parts {
 		if v, ok := r.Metadata[p]; ok {
@@ -415,9 +447,16 @@ func (r Row) Format(config NameConfig, meta map[string]string) string {
 	return fmt.Sprintf(config.format, parsed...)
 }
 
-func AppendColumn(headers []string, format NameConfig, grid *state.Grid, rows map[string]*state.Row, build Column) {
+// AppendColumn adds the build column to the grid.
+//
+// This handles details like:
+// * rows appearing/disappearing in the middle of the run.
+// * adding auto metadata like duration, commit as well as any user-added metadata
+// * extracting build metadata into the appropriate column header
+// * Ensuring row names are unique and formatted with metadata
+func AppendColumn(headers []string, format nameConfig, grid *state.Grid, rows map[string]*state.Row, build Column) {
 	c := state.Column{
-		Build:   build.Id,
+		Build:   build.ID,
 		Started: float64(build.Started * 1000),
 	}
 	for _, h := range headers {
@@ -525,13 +564,15 @@ func dropPrefix(name string) string {
 	return name[1:]
 }
 
+// ValidateName checks whether the basename matches a junit file.
+//
+// Expected format: junit_context_20180102-1256-07.xml
+// Results in {
+//   "Context": "context",
+//   "Timestamp": "20180102-1256",
+//   "Thread": "07",
+// }
 func ValidateName(name string) map[string]string {
-	// Expected format: junit_context_20180102-1256-07
-	// Results in {
-	//   "Context": "context",
-	//   "Timestamp": "20180102-1256",
-	//   "Thread": "07",
-	// }
 	mat := re.FindStringSubmatch(name)
 	if mat == nil {
 		return nil
@@ -544,6 +585,7 @@ func ValidateName(name string) map[string]string {
 
 }
 
+// ReadBuild asynchronously downloads the files in build from gcs and convert them into a build.
 func ReadBuild(build Build) (*Column, error) {
 	var wg sync.WaitGroup                                             // Each subtask does wg.Add(1), then we wg.Wait() for them to finish
 	ctx, cancel := context.WithTimeout(build.Context, 30*time.Second) // Allows aborting after first error
@@ -685,11 +727,11 @@ func ReadBuild(build Build) (*Column, error) {
 						return errors.New("aborted artifact read")
 					default: // Yes, acquire lock
 						// TODO(fejta): consider sync.Map
-						if rows, err := extractRows(buf, meta); err != nil {
+						rows, err := extractRows(buf, meta)
+						if err != nil {
 							return fmt.Errorf("failed to parse %s: %v", ap, err)
-						} else {
-							rc <- rows
 						}
+						rc <- rows
 					}
 					return nil
 				}()
@@ -751,7 +793,7 @@ func ReadBuild(build Build) (*Column, error) {
 		}
 	}
 	br := Column{
-		Id:      path.Base(build.Prefix),
+		ID:      path.Base(build.Prefix),
 		Started: started.Timestamp,
 	}
 	// Has the build finished?
@@ -809,6 +851,7 @@ func ReadBuild(build Build) (*Column, error) {
 	return &br, nil
 }
 
+// Builds is a slice of builds.
 type Builds []Build
 
 func (b Builds) Len() int      { return len(b) }
@@ -818,7 +861,7 @@ func (b Builds) Less(i, j int) bool {
 }
 
 // listBuilds lists and sorts builds under path, sending them to the builds channel.
-func listBuilds(client *storage.Client, ctx context.Context, path gcs.Path) (Builds, error) {
+func listBuilds(ctx context.Context, client *storage.Client, path gcs.Path) (Builds, error) {
 	log.Printf("LIST: %s", path)
 	p := path.Object()
 	if p[len(p)-1] != '/' {
@@ -854,6 +897,7 @@ func listBuilds(client *storage.Client, ctx context.Context, path gcs.Path) (Bui
 	return all, nil
 }
 
+// Headers returns the list of ColumnHeader ConfigurationValues for this group.
 func Headers(group config.TestGroup) []string {
 	var extra []string
 	for _, h := range group.ColumnHeader {
@@ -862,6 +906,7 @@ func Headers(group config.TestGroup) []string {
 	return extra
 }
 
+// Rows is a slice of Row pointers
 type Rows []*state.Row
 
 func (r Rows) Len() int      { return len(r) }
@@ -870,6 +915,7 @@ func (r Rows) Less(i, j int) bool {
 	return sortorder.NaturalLess(r[i].Name, r[j].Name)
 }
 
+// ReadBuilds will asynchronously construct a Grid for the group out of the specified builds.
 func ReadBuilds(parent context.Context, group config.TestGroup, builds Builds, max int, dur time.Duration, concurrency int) (*state.Grid, error) {
 	// Spawn build readers
 	if concurrency == 0 {
@@ -966,7 +1012,7 @@ func ReadBuilds(parent context.Context, group config.TestGroup, builds Builds, m
 	grid := &state.Grid{}
 	rows := map[string]*state.Row{} // For fast target => row lookup
 	h := Headers(group)
-	nc := MakeNameConfig(group.TestNameConfig)
+	nc := makeNameConfig(group.TestNameConfig)
 	for _, c := range cols {
 		select {
 		case <-ctx.Done():
@@ -979,7 +1025,7 @@ func ReadBuilds(parent context.Context, group config.TestGroup, builds Builds, m
 		}
 		AppendColumn(h, nc, grid, rows, *c)
 		if c.Started < stop.Unix() { // There may be concurrency results < stop.Unix()
-			log.Printf("  %s#%s before %s, stopping...", group.Name, c.Id, stop)
+			log.Printf("  %s#%s before %s, stopping...", group.Name, c.ID, stop)
 			break // Just process the first result < stop.Unix()
 		}
 	}
@@ -988,11 +1034,16 @@ func ReadBuilds(parent context.Context, group config.TestGroup, builds Builds, m
 	return grid, nil
 }
 
+// Days converts days float into a time.Duration, assuming a 24 hour day.
+//
+// A day is not always 24 hours due to things like leap-seconds.
+// We do not need this level of precision though, so ignore the complexity.
 func Days(d float64) time.Duration {
 	return time.Duration(24*d) * time.Hour // Close enough
 }
 
-func ReadConfig(obj *storage.ObjectHandle, ctx context.Context) (*config.Configuration, error) {
+// ReadConfig reads the config from gcs and unmarshals it into a Configuration struct.
+func ReadConfig(ctx context.Context, obj *storage.ObjectHandle) (*config.Configuration, error) {
 	r, err := obj.NewReader(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open config: %v", err)
@@ -1008,6 +1059,7 @@ func ReadConfig(obj *storage.ObjectHandle, ctx context.Context) (*config.Configu
 	return &cfg, nil
 }
 
+// Group finds the test group in cfg matching name.
 func Group(cfg config.Configuration, name string) (*config.TestGroup, bool) {
 	for _, g := range cfg.TestGroups {
 		if g.Name == name {
@@ -1032,7 +1084,7 @@ func main() {
 		log.Fatalf("Failed to create storage client: %v", err)
 	}
 
-	cfg, err := ReadConfig(client.Bucket(opt.config.Bucket()).Object(opt.config.Object()), ctx)
+	cfg, err := ReadConfig(ctx, client.Bucket(opt.config.Bucket()).Object(opt.config.Object()))
 	if err != nil {
 		log.Fatalf("Failed to read %s: %v", opt.config, err)
 	}
@@ -1047,7 +1099,7 @@ func main() {
 			for tg := range groups {
 				tgp, err := testGroupPath(opt.config, tg.Name)
 				if err == nil {
-					err = updateGroup(client, ctx, tg, *tgp, opt.buildConcurrency, opt.confirm)
+					err = updateGroup(ctx, client, tg, *tgp, opt.buildConcurrency, opt.confirm)
 				}
 				if err != nil {
 					log.Printf("FAIL: %v", err)
@@ -1077,7 +1129,7 @@ func main() {
 	wg.Wait()
 }
 
-func updateGroup(client *storage.Client, ctx context.Context, tg config.TestGroup, gridPath gcs.Path, concurrency int, write bool) error {
+func updateGroup(ctx context.Context, client *storage.Client, tg config.TestGroup, gridPath gcs.Path, concurrency int, write bool) error {
 	o := tg.Name
 
 	var tgPath gcs.Path
@@ -1087,7 +1139,7 @@ func updateGroup(client *storage.Client, ctx context.Context, tg config.TestGrou
 
 	g := state.Grid{}
 	g.Columns = append(g.Columns, &state.Column{Build: "first", Started: 1})
-	builds, err := listBuilds(client, ctx, tgPath)
+	builds, err := listBuilds(ctx, client, tgPath)
 	if err != nil {
 		return fmt.Errorf("failed to list %s builds: %v", o, err)
 	}
