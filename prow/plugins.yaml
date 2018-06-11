@@ -363,6 +363,7 @@ plugins:
   - help
   - blunderbuss
   - wip
+  - hold
 
   kubernetes-sigs:
   - assign
