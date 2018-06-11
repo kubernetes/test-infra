@@ -1298,8 +1298,8 @@ presubmits:
     run_after_success:
     - name: pull-cri-containerd-node-e2e
       agent: kubernetes
-      skip_branches:
-      - v0.1
+      branches:
+      - master
       always_run: true
       skip_report: false
       max_concurrency: 8
@@ -1316,6 +1316,32 @@ presubmits:
           - --root=/go/src
           - "--job=$(JOB_NAME)"
           - "--repo=k8s.io/kubernetes"
+          - "--repo=github.com/containerd/$(REPO_NAME)=$(PULL_REFS)"
+          - "--service-account=/etc/service-account/service-account.json"
+          - "--upload=gs://kubernetes-jenkins/pr-logs"
+          - "--timeout=90"
+          - "--"
+          - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml -node-env=PULL_REFS=$(PULL_REFS)"
+    - name: pull-cri-containerd-node-e2e
+      agent: kubernetes
+      branches:
+      - release/1.0
+      always_run: true
+      skip_report: false
+      max_concurrency: 8
+      context: pull-cri-containerd-node-e2e
+      rerun_command: "/test pull-cri-containerd-node-e2e"
+      trigger: "(?m)^/test( all| pull-cri-containerd-node-e2e),?(\\s+|$)"
+      labels:
+        preset-service-account: "true"
+        preset-k8s-ssh: "true"
+      spec:
+        containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
+          args:
+          - --root=/go/src
+          - "--job=$(JOB_NAME)"
+          - "--repo=k8s.io/kubernetes=release-1.10"
           - "--repo=github.com/containerd/$(REPO_NAME)=$(PULL_REFS)"
           - "--service-account=/etc/service-account/service-account.json"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
