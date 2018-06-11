@@ -132,7 +132,7 @@ func readConfig(paths []string) (*Config, error) {
 	return &c, nil
 }
 
-func write(client *storage.Client, ctx context.Context, path string, bytes []byte) error {
+func write(ctx context.Context, client *storage.Client, path string, bytes []byte) error {
 	u, err := url.Parse(path)
 	if err != nil {
 		return fmt.Errorf("invalid url %s: %v", path, err)
@@ -144,10 +144,10 @@ func write(client *storage.Client, ctx context.Context, path string, bytes []byt
 	if err = p.SetURL(u); err != nil {
 		return err
 	}
-	return gcs.Upload(client, ctx, p, bytes)
+	return gcs.Upload(ctx, client, p, bytes)
 }
 
-func doOneshot(client *storage.Client, ctx context.Context, opt options) error {
+func doOneshot(ctx context.Context, client *storage.Client, opt options) error {
 	// Ignore what changed for now and just recompute everything
 	c, err := readConfig(opt.inputs)
 	if err != nil {
@@ -165,7 +165,7 @@ func doOneshot(client *storage.Client, ctx context.Context, opt options) error {
 	if opt.output != "" {
 		b, err := c.MarshalBytes()
 		if err == nil {
-			err = write(client, ctx, opt.output, b)
+			err = write(ctx, client, opt.output, b)
 		}
 		if err != nil {
 			return fmt.Errorf("could not write config: %v", err)
@@ -190,7 +190,7 @@ func main() {
 
 	// Oneshot mode, write config and exit
 	if opt.oneshot {
-		if err := doOneshot(client, ctx, opt); err != nil {
+		if err := doOneshot(ctx, client, opt); err != nil {
 			log.Fatalf("FAIL: %v", err)
 		}
 		return
@@ -205,7 +205,7 @@ func main() {
 	for changes := range channel {
 		log.Printf("Changed: %v", changes)
 		log.Println("Writing config...")
-		if err := doOneshot(client, ctx, opt); err != nil {
+		if err := doOneshot(ctx, client, opt); err != nil {
 			log.Printf("FAIL: %v", err)
 			continue
 		}
