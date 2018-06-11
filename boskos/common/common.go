@@ -17,13 +17,12 @@ limitations under the License.
 package common
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
-	"time"
-
-	"encoding/json"
 	"sync"
+	"time"
 
 	"github.com/ghodss/yaml"
 )
@@ -39,6 +38,8 @@ const (
 	Cleaning = "cleaning"
 	// Leased state defines a resource being leased in order to make a new resource
 	Leased = "leased"
+	// Other is used to agglomerate unspecified states for metrics reporting
+	Other = "other"
 )
 
 // UserData is a map of Name to user defined interface, serialized into a string
