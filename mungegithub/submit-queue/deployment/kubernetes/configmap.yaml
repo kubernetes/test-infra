@@ -16,9 +16,10 @@ required-retest-contexts: "\
   pull-kubernetes-bazel-build,\
   pull-kubernetes-bazel-test,\
   pull-kubernetes-e2e-gce,\
+  pull-kubernetes-e2e-gce-100-performance,\
   pull-kubernetes-e2e-kops-aws,\
   pull-kubernetes-integration,\
-  pull-kubernetes-kubemark-e2e-gce,\
+  pull-kubernetes-kubemark-e2e-gce-big,\
   pull-kubernetes-node-e2e,\
   pull-kubernetes-typecheck,\
   pull-kubernetes-verify"
@@ -95,7 +96,7 @@ nonblocking-jobs: "\
   ci-kubernetes-integration-master,\
   ci-kubernetes-verify-master"
 do-not-merge-milestones: "v1.12,v1.13,next-candidate,NO-MILESTONE"
-additional-required-labels: "status/approved-for-milestone"
+additional-required-labels: "status/approved-for-milestone,priority/critical-urgent"
 admin-port: 9999
 chart-url: https://storage.googleapis.com/kubernetes-test-history/k8s-queue-health.svg
 prow-url: https://prow.k8s.io

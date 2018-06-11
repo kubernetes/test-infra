@@ -134,8 +134,6 @@ def check_ci_jobs():
 
     # Hard code node-ci project here
     clean_project('k8s-jkns-ci-node-e2e')
-    # gke internal project
-    clean_project('gke-e2e-createdelete')
 
 
 def main(mode, ratelimit, projects, age):
@@ -147,7 +145,7 @@ def main(mode, ratelimit, projects, age):
     elif mode == 'custom':
         projs = str.split(projects, ',')
         for proj in projs:
-            clean_project(proj, hours=age, ratelimit=ratelimit)
+            clean_project(proj.strip(), hours=age, ratelimit=ratelimit)
     else:
         check_ci_jobs()
 

@@ -43,10 +43,10 @@ TAG="${DATE}-$(git describe --tags --always --dirty)"
 pushd "${TREE}/images/kubekins-e2e"
 make push
 K8S=experimental make push
+K8S=1.11 make push
 K8S=1.10 make push
 K8S=1.9 make push
 K8S=1.8 make push
-K8S=1.7 make push
 popd
 
 echo "TAG = ${TAG}"

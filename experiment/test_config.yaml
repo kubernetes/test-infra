@@ -753,14 +753,12 @@ jobs:
     interval: 2h
     args:
     - --gcp-project=cos-image-validation
-    - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]|\[NodeAlphaFeature:.+\]"
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosbeta-k8sdev-serial:
     interval: 2h
     args:
     - --gcp-project=cos-image-validation
     - --node-test-args=--feature-gates=DynamicKubeletConfig=true
-    - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosbeta-k8sbeta-default:
     interval: 2h
@@ -806,14 +804,12 @@ jobs:
     interval: 2h
     args:
     - --gcp-project=k8s-test-63a7f7788a
-    - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]|\[NodeAlphaFeature:.+\]"
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosstable1-k8sdev-serial:
     interval: 2h
     args:
     - --gcp-project=k8s-test-39a894cbd4
     - --node-test-args=--feature-gates=DynamicKubeletConfig=true
-    - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosstable1-k8sbeta-default:
     interval: 2h
@@ -1184,36 +1180,36 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-master
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
   beta:
     args:
     - --repo=k8s.io/kubernetes=release-1.11
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-1.11
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.11
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.10
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-1.10
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.10
   stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.9
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-1.9
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.9
   stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.8
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180511-51cf02e75-1.8
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.8
 
 nodeTestSuites:
   default:
     args:
     - --timeout=70m
-    - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]"
+    - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]|\[NodeAlphaFeature:.+\]"
   gkespec:
     args:
     - --node-args=--system-spec-name=gke
     - --timeout=60m
-    - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]"
+    - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]|\[NodeAlphaFeature:.+\]"
   serial:
     args:
     - --timeout=180m
-    - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]"
+    - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
     - --node-test-args=--feature-gates=DynamicKubeletConfig=true

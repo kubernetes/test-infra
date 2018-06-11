@@ -23,7 +23,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"strings"
 	"time"
 
 	"github.com/docker/docker/api/types"
@@ -36,6 +35,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/test-infra/kubetest/e2e"
 	"k8s.io/test-infra/kubetest/process"
 	"k8s.io/test-infra/kubetest/util"
 )
@@ -82,33 +82,8 @@ func (b *Builder) Build() error {
 	return b.control.FinishRunning(cmd)
 }
 
-// Tester is capable of running tests against a dind cluster.
-type Tester struct {
-	kubecfg     string
-	ginkgo      string
-	e2etest     string
-	control     *process.Control
-	apiserver   *kubernetes.Clientset
-	testArgs    []string
-	reportdir   string
-	focusRegex  string
-	skipRegex   string
-	parallelism int
-}
-
-// NewTester returns an object that knows how to test the cluster it deployed.
-//TODO(Q-Lee): the deployer interfact should have a NewTester or Test method.
-func (d *DindDeployer) NewTester(focusRegex, skipRegex string, parallelism int) (*Tester, error) {
-	// Find the ginkgo and e2e.test artifacts we need. We'll cheat for now, and pull them from a known path.
-	// We only support dind from linux_amd64 anyway.
-	ginkgo := util.K8s("kubernetes", "bazel-bin", "vendor", "github.com", "onsi", "ginkgo", "ginkgo", "linux_amd64_stripped", "ginkgo")
-	if _, err := os.Stat(ginkgo); err != nil {
-		return nil, fmt.Errorf("ginko isn't available at %s: %v", ginkgo, err)
-	}
-	e2etest := util.K8s("kubernetes", "bazel-bin", "test", "e2e", "e2e.test")
-	if _, err := os.Stat(e2etest); err != nil {
-		return nil, fmt.Errorf("e2e.test isn't available at %s: %v", e2etest, err)
-	}
+// BuildTester returns an object that knows how to test the cluster it deployed.
+func (d *DindDeployer) BuildTester(o *e2e.BuildTesterOptions) (e2e.Tester, error) {
 	// Make a tmpdir for the test report.
 	// TODO(Q-Lee): perhaps there should be one tmpdir per cluster container, and all else can be subdirs?
 	tmpdir, err := ioutil.TempDir("/tmp", "dind-k8s-report-dir-")
@@ -116,35 +91,20 @@ func (d *DindDeployer) NewTester(focusRegex, skipRegex string, parallelism int) 
 		return nil, err
 	}
 
-	return &Tester{
-		kubecfg:     d.RealKubecfg,
-		control:     d.control,
-		apiserver:   d.apiserver,
-		testArgs:    d.testArgs,
-		e2etest:     e2etest,
-		ginkgo:      ginkgo,
-		reportdir:   tmpdir,
-		focusRegex:  focusRegex,
-		skipRegex:   skipRegex,
-		parallelism: parallelism,
-	}, nil
-}
+	t := e2e.NewGinkgoTester(o)
 
-// Test just execs ginkgo. This will take more parameters in the future.
-func (t *Tester) Test() error {
-	args := []string{"--seed=1436380640", "--nodes=1"}
-	// Optionally add the focus and skip regexes.
-	if t.focusRegex != "" {
-		args = append(args, "--focus="+t.focusRegex)
-	}
-	if t.skipRegex != "" {
-		args = append(args, "--skip="+t.skipRegex)
-	}
+	t.Seed = 1436380640
 
-	args = append(args, t.e2etest, "--", "--kubeconfig", t.kubecfg, "--ginkgo.flakeAttempts=2", fmt.Sprintf("--num-nodes=%d", t.parallelism), "--systemd-services=docker,kubelet", "--report-dir", t.reportdir)
-	args = append(args, t.testArgs...)
-	cmd := exec.Command(t.ginkgo, args...)
-	return t.control.FinishRunning(cmd)
+	// dind tester sets parallelism a little differently
+	t.GinkgoParallel = 1
+	t.NumNodes = o.Parallelism
+
+	t.Kubeconfig = d.RealKubecfg
+	t.FlakeAttempts = 2
+	t.SystemdServices = []string{"docker", "kubelet"}
+	t.ReportDir = tmpdir
+
+	return t, nil
 }
 
 type DindDeployer struct {
@@ -153,14 +113,16 @@ type DindDeployer struct {
 	containerID string
 	tmpdir      string
 	RealKubecfg string
-	testArgs    []string
 	docker      *client.Client
 	control     *process.Control
 	apiserver   *kubernetes.Clientset
 }
 
+// DindDeployer implements e2e.TestBuilder, overriding testing
+var _ e2e.TestBuilder = &DindDeployer{}
+
 // New returns a new DindDeployer.
-func NewDeployer(kubecfg, image string, testArgs *string, control *process.Control) (*DindDeployer, error) {
+func NewDeployer(kubecfg, image string, control *process.Control) (*DindDeployer, error) {
 	docker, err := client.NewEnvClient()
 	if err != nil {
 		return nil, err
@@ -177,12 +139,11 @@ func NewDeployer(kubecfg, image string, testArgs *string, control *process.Contr
 		kubecfg = tmpdir + "/admin.conf"
 	}
 	return &DindDeployer{
-		image:    image,
-		kubecfg:  kubecfg,
-		tmpdir:   tmpdir,
-		docker:   docker,
-		control:  control,
-		testArgs: strings.Fields(*testArgs),
+		image:   image,
+		kubecfg: kubecfg,
+		tmpdir:  tmpdir,
+		docker:  docker,
+		control: control,
 	}, nil
 }
 
