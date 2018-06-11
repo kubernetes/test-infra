@@ -26,11 +26,13 @@ import (
 	"k8s.io/test-infra/testgrid/config"
 )
 
+// Config includes config and defaults to apply on unspecified values.
 type Config struct {
 	config        *config.Configuration
 	defaultConfig *config.DefaultConfiguration
 }
 
+// MissingFieldError is an error that includes the missing field.
 type MissingFieldError struct {
 	Field string
 }
@@ -39,7 +41,7 @@ func (e MissingFieldError) Error() string {
 	return fmt.Sprintf("field missing or unset: %s", e.Field)
 }
 
-// Set up unfilled field in a TestGroup using the default TestGroup
+// ReconcileTestGroup sets unfilled currentTestGroup fields to the corresponding defaultTestGroup value.
 func ReconcileTestGroup(currentTestGroup *config.TestGroup, defaultTestGroup *config.TestGroup) {
 	if currentTestGroup.DaysOfResults == 0 {
 		currentTestGroup.DaysOfResults = defaultTestGroup.DaysOfResults
@@ -77,8 +79,8 @@ func ReconcileTestGroup(currentTestGroup *config.TestGroup, defaultTestGroup *co
 	currentTestGroup.UseKubernetesClient = true
 }
 
-// Set up unfilled field in a DashboardTab using the default DashboardTab
-func ReconcileDashboardtab(currentTab *config.DashboardTab, defaultTab *config.DashboardTab) {
+// ReconcileDashboardTab sets unfilled currentTab fields to the corresponding defaultTab value.
+func ReconcileDashboardTab(currentTab *config.DashboardTab, defaultTab *config.DashboardTab) {
 	if currentTab.BugComponent == 0 {
 		currentTab.BugComponent = defaultTab.BugComponent
 	}
@@ -176,7 +178,7 @@ func (c *Config) Update(yamlData []byte) error {
 	for _, dashboard := range curConfig.Dashboards {
 		// validate dashboard tabs
 		for _, dashboardtab := range dashboard.DashboardTab {
-			ReconcileDashboardtab(dashboardtab, c.defaultConfig.DefaultDashboardTab)
+			ReconcileDashboardTab(dashboardtab, c.defaultConfig.DefaultDashboardTab)
 		}
 		c.config.Dashboards = append(c.config.Dashboards, dashboard)
 	}

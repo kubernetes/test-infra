@@ -1104,7 +1104,7 @@ func updateGroup(client *storage.Client, ctx context.Context, tg config.TestGrou
 		log.Printf("  Not writing %s (%d bytes) to %s", o, len(buf), tgp)
 	} else {
 		log.Printf("  Writing %s (%d bytes) to %s", o, len(buf), tgp)
-		if err := gcs.Upload(client, ctx, tgp, buf); err != nil {
+		if err := gcs.Upload(ctx, client, tgp, buf); err != nil {
 			return fmt.Errorf("upload %s to %s failed: %v", o, tgp, err)
 		}
 	}

@@ -37,7 +37,7 @@ func ClientWithCreds(ctx context.Context, creds ...string) (*storage.Client, err
 	case 1:
 		options = append(options, option.WithCredentialsFile(creds[0]))
 	default:
-		return nil, fmt.Errorf("%d creds files unsupported (at most 1).", l)
+		return nil, fmt.Errorf("%d creds files unsupported (at most 1)", l)
 	}
 	return storage.NewClient(ctx, options...)
 }
@@ -47,12 +47,12 @@ type Path struct {
 	url url.URL
 }
 
-// String() returns the gs://bucket/obj url
+// String returns the gs://bucket/obj url
 func (g Path) String() string {
 	return g.url.String()
 }
 
-// Set() updates value from a gs://bucket/obj string, validating errors.
+// Set updates value from a gs://bucket/obj string, validating errors.
 func (g *Path) Set(v string) error {
 	u, err := url.Parse(v)
 	if err != nil {
@@ -61,6 +61,7 @@ func (g *Path) Set(v string) error {
 	return g.SetURL(u)
 }
 
+// SetURL updates value to the passed in gs://bucket/obj url
 func (g *Path) SetURL(u *url.URL) error {
 	switch {
 	case u == nil:
@@ -82,21 +83,21 @@ func (g *Path) SetURL(u *url.URL) error {
 	return nil
 }
 
-// Resolve returns the path relative to the current path
-func (p Path) ResolveReference(ref *url.URL) (*Path, error) {
+// ResolveReference returns the path relative to the current path
+func (g Path) ResolveReference(ref *url.URL) (*Path, error) {
 	var newP Path
-	if err := newP.SetURL(p.url.ResolveReference(ref)); err != nil {
+	if err := newP.SetURL(g.url.ResolveReference(ref)); err != nil {
 		return nil, err
 	}
 	return &newP, nil
 }
 
-// Bucket() returns bucket in gs://bucket/obj
+// Bucket returns bucket in gs://bucket/obj
 func (g Path) Bucket() string {
 	return g.url.Host
 }
 
-// Object() returns path/to/something in gs://bucket/path/to/something
+// Object returns path/to/something in gs://bucket/path/to/something
 func (g Path) Object() string {
 	if g.url.Path == "" {
 		return g.url.Path
@@ -109,7 +110,7 @@ func calcCRC(buf []byte) uint32 {
 }
 
 // Upload writes bytes to the specified Path
-func Upload(client *storage.Client, ctx context.Context, path Path, buf []byte) error {
+func Upload(ctx context.Context, client *storage.Client, path Path, buf []byte) error {
 	crc := calcCRC(buf)
 	w := client.Bucket(path.Bucket()).Object(path.Object()).NewWriter(ctx)
 	w.SendCRC32C = true
