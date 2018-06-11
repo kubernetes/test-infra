@@ -74,7 +74,6 @@ func (c *fakeClientClose) GetIssueLabels(owner, repo string, number int) ([]gith
 }
 
 func TestCloseComment(t *testing.T) {
-	// "a" is the author, "r1", and "r2" are reviewers.
 	var testcases = []struct {
 		name          string
 		action        github.GenericCommentEventAction
@@ -214,7 +213,7 @@ func TestCloseComment(t *testing.T) {
 			Assignees:   []github.User{{Login: "a"}, {Login: "r1"}, {Login: "r2"}},
 			IssueAuthor: github.User{Login: "a"},
 		}
-		if err := handleClose(fc, logrus.WithField("plugin", "fake-close"), e, false); err != nil {
+		if err := handleClose(fc, logrus.WithField("plugin", "fake-close"), e); err != nil {
 			t.Errorf("For case %s, didn't expect error from handle: %v", tc.name, err)
 			continue
 		}

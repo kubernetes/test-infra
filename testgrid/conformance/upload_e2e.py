@@ -42,6 +42,7 @@ import json
 import subprocess
 from os import path
 import glob
+import atexit
 
 
 # logs often contain ANSI escape sequences
@@ -64,6 +65,7 @@ E2E_LOG_SUCCESS_RE = re.compile(r'SUCCESS! -- .* PASS')
 def log_line_strip_escape_sequences(line):
     return ANSI_ESCAPE_RE.sub('', line)
 
+
 def parse_e2e_log_line_timestamp(line, year):
     """parses a ginkgo e2e log line for the leading timestamp
 
@@ -81,6 +83,7 @@ def parse_e2e_log_line_timestamp(line, year):
     # contain one and we want a datetime object...
     timestamp = year+' '+match.group(1)
     return datetime.datetime.strptime(timestamp, '%Y %b %d %H:%M:%S.%f')
+
 
 def parse_e2e_logfile(file_handle, year):
     """parse e2e logfile at path, assuming the log is from year
@@ -110,9 +113,11 @@ def parse_e2e_logfile(file_handle, year):
             passed = True
     return started, finished, passed
 
+
 def datetime_to_unix(datetime_obj):
     """convert datetime.datetime to unix timestamp"""
     return int(time.mktime(datetime_obj.timetuple()))
+
 
 def testgrid_started_json_contents(start_time):
     """returns the string contents of a testgrid started.json file
@@ -127,6 +132,7 @@ def testgrid_started_json_contents(start_time):
     return json.dumps({
         'timestamp': started
     })
+
 
 def testgrid_finished_json_contents(finish_time, passed, metadata):
     """returns the string contents of a testgrid finished.json file
@@ -153,27 +159,70 @@ def testgrid_finished_json_contents(finish_time, passed, metadata):
         'result': result
     })
 
+
 def upload_string(gcs_path, text, dry):
     """Uploads text to gcs_path if dry is False, otherwise just prints"""
     cmd = ['gsutil', '-q', '-h', 'Content-Type:text/plain', 'cp', '-', gcs_path]
-    print >>sys.stderr, 'Run:', cmd, 'stdin=%s'%text
+    print >>sys.stderr, 'Run:', cmd, 'stdin=%s' % text
     if dry:
         return
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
     proc.communicate(input=text)
     if proc.returncode != 0:
-        raise RuntimeError("Failed to upload with exit code: %d" % proc.returncode)
+        raise RuntimeError(
+            "Failed to upload with exit code: %d" % proc.returncode)
+
 
 def upload_file(gcs_path, file_path, dry):
     """Uploads file at file_path to gcs_path if dry is False, otherwise just prints"""
-    cmd = ['gsutil', '-q', '-h', 'Content-Type:text/plain', 'cp', file_path, gcs_path]
+    cmd = ['gsutil', '-q', '-h', 'Content-Type:text/plain',
+           'cp', file_path, gcs_path]
     print >>sys.stderr, 'Run:', cmd
     if dry:
         return
     proc = subprocess.Popen(cmd)
     proc.communicate()
     if proc.returncode != 0:
-        raise RuntimeError('Failed to upload with exit code: %d' % proc.returncode)
+        raise RuntimeError(
+            'Failed to upload with exit code: %d' % proc.returncode)
+
+
+def get_current_account(dry_run):
+    """gets the currently active gcp account by shelling out to gcloud"""
+    cmd = ['gcloud', 'auth', 'list',
+           '--filter=status:ACTIVE', '--format=value(account)']
+    print >>sys.stderr, 'Run:', cmd
+    if dry_run:
+        return ""
+    return subprocess.check_output(cmd).strip('\n')
+
+
+def set_current_account(account, dry_run):
+    """sets the currently active gcp account by shelling out to gcloud"""
+    cmd = ['gcloud', 'config', 'set', 'core/account', account]
+    print >>sys.stderr, 'Run:', cmd
+    if dry_run:
+        return
+    return subprocess.check_call(cmd)
+
+
+def activate_service_account(key_file, dry_run):
+    """activates a gcp service account by shelling out to gcloud"""
+    cmd = ['gcloud', 'auth', 'activate-service-account', '--key-file='+key_file]
+    print >>sys.stderr, 'Run:', cmd
+    if dry_run:
+        return
+    subprocess.check_call(cmd)
+
+
+def revoke_current_account(dry_run):
+    """logs out of the currently active gcp account by shelling out to gcloud"""
+    cmd = ['gcloud', 'auth', 'revoke']
+    print >>sys.stderr, 'Run:', cmd
+    if dry_run:
+        return
+    return subprocess.check_call(cmd)
+
 
 def parse_args(cli_args=None):
     if cli_args is None:
@@ -210,13 +259,35 @@ def parse_args(cli_args=None):
     parser.add_argument(
         '--metadata',
         help='dictionary of additional key-value pairs that can be displayed to the user.',
+        required=False,
         default=str(),
+    )
+    parser.add_argument(
+        '--key-file',
+        help='path to GCP service account key file, which will be activated before '
+        'uploading if provided, the account will be revoked and the active account reset '
+        'on exit',
+        required=False,
     )
     return parser.parse_args(args=cli_args)
 
+
 def main(cli_args):
     args = parse_args(cli_args)
-    log, year, bucket, dry = args.log, args.year, args.bucket, args.dry_run
+
+    # optionally activate a service account with upload credentials
+    if args.key_file:
+        # grab the currently active account if any, and if there is one
+        # register a handler to set it active again on exit
+        current_account = get_current_account(args.dry_run)
+        if current_account:
+            atexit.register(
+                lambda: set_current_account(current_account, args.dry_run)
+            )
+        # login to the service account and register a handler to logout before exit
+        # NOTE: atexit handlers are called in LIFO order
+        activate_service_account(args.key_file, args.dry_run)
+        atexit.register(lambda: revoke_current_account(args.dry_run))
 
     # find the matching junit files, there should be at least one for a useful
     # testgrid entry
@@ -226,24 +297,27 @@ def main(cli_args):
         sys.exit(-1)
 
     # parse the e2e.log for start time, finish time, and success
-    with open(log) as file_handle:
-        started, finished, passed = parse_e2e_logfile(file_handle, year)
+    with open(args.log) as file_handle:
+        started, finished, passed = parse_e2e_logfile(file_handle, args.year)
 
     # convert parsed results to testgrid json metadata blobs
     started_json = testgrid_started_json_contents(started)
-    finished_json = testgrid_finished_json_contents(finished, passed, args.metadata)
+    finished_json = testgrid_finished_json_contents(
+        finished, passed, args.metadata)
 
     # use timestamp as build ID
-    gcs_dir = bucket + '/' + str(datetime_to_unix(started))
+    gcs_dir = args.bucket + '/' + str(datetime_to_unix(started))
 
     # upload metadata, log, junit to testgrid
     print 'Uploading entry to: %s' % gcs_dir
-    upload_string(gcs_dir+'/started.json', started_json, dry)
-    upload_string(gcs_dir+'/finished.json', finished_json, dry)
-    upload_file(gcs_dir+'/build-log.txt', log, dry)
+    upload_string(gcs_dir+'/started.json', started_json, args.dry_run)
+    upload_string(gcs_dir+'/finished.json', finished_json, args.dry_run)
+    upload_file(gcs_dir+'/build-log.txt', args.log, args.dry_run)
     for junit_file in junits:
-        upload_file(gcs_dir+'/artifacts/'+path.basename(junit_file), junit_file, dry)
+        upload_file(gcs_dir+'/artifacts/' +
+                    path.basename(junit_file), junit_file, args.dry_run)
     print 'Done.'
+
 
 if __name__ == '__main__':
     main(sys.argv[1:])

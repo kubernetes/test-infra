@@ -67,6 +67,7 @@ var c *Config
 var cj configJSON
 
 func TestMain(m *testing.M) {
+	flag.Parse()
 	if *configPath == "" {
 		fmt.Println("--config must set")
 		os.Exit(1)
