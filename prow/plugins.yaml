@@ -360,6 +360,7 @@ plugins:
   kubernetes-incubator/service-catalog:
   - cat
   - dog
+  - help
 
   kubernetes-sigs:
   - assign
