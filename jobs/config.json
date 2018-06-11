@@ -13204,30 +13204,6 @@
       "sig-testing"
     ]
   },
-  "pull-kubernetes-kubemark-e2e-gce": {
-    "args": [
-      "--build=bazel",
-      "--cluster=",
-      "--env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env",
-      "--extract=local",
-      "--gcp-node-image=gci",
-      "--gcp-node-size=n1-standard-2",
-      "--gcp-nodes=1",
-      "--gcp-project=k8s-jkns-pr-kubemark",
-      "--gcp-zone=us-central1-f",
-      "--kubemark",
-      "--kubemark-nodes=5",
-      "--provider=gce",
-      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce",
-      "--test=false",
-      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true",
-      "--timeout=60m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-scalability"
-    ]
-  },
   "pull-kubernetes-kubemark-e2e-gce-big": {
     "args": [
       "--build",
@@ -13248,30 +13224,6 @@
       "--test=false",
       "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true",
       "--timeout=100m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-scalability"
-    ]
-  },
-  "pull-kubernetes-kubemark-e2e-gce-canary": {
-    "args": [
-      "--build=bazel",
-      "--cluster=",
-      "--env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env",
-      "--extract=local",
-      "--gcp-node-image=gci",
-      "--gcp-node-size=n1-standard-2",
-      "--gcp-nodes=1",
-      "--gcp-project=k8s-jkns-pr-kubemark",
-      "--gcp-zone=us-central1-f",
-      "--kubemark",
-      "--kubemark-nodes=5",
-      "--provider=gce",
-      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-canary",
-      "--test=false",
-      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true",
-      "--timeout=60m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [

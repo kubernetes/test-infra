@@ -27,7 +27,6 @@ config:
     pull-kubernetes-unit,\
     pull-kubernetes-verify,\
     pull-kubernetes-node-e2e,\
-    pull-kubernetes-kubemark-e2e-gce,\
     pull-kubernetes-e2e-gce-etcd3,\
     pull-kubernetes-bazel-build,\
     pull-kubernetes-bazel-test,\
