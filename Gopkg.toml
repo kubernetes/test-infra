@@ -44,7 +44,7 @@ required = [
 
 [[constraint]]
   name = "cloud.google.com/go"
-  version = "0.17.0"
+  version = ">=0.23.0"
 
 [[constraint]]
   # used by both prow/plugins/buildifier and gazelle

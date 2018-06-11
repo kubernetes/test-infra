@@ -13,11 +13,12 @@
     "iam",
     "internal",
     "internal/optional",
+    "internal/trace",
     "internal/version",
     "storage",
   ]
-  revision = "050b16d2314d5fc3d4c9a51e4cd5c7468e77f162"
-  version = "v0.17.0"
+  revision = "0fd7230b2a7505833d5f69b75cbd6c9582401479"
+  version = "v0.23.0"
 
 [[projects]]
   branch = "parse-constraints-with-dash-in-pre"
@@ -631,6 +632,17 @@
   revision = "7aff26db30c1be810f9de5038ec5ef96ac41fd7c"
 
 [[projects]]
+  name = "go.opencensus.io"
+  packages = [
+    ".",
+    "internal",
+    "trace",
+    "trace/internal",
+  ]
+  revision = "6edeb78af2d9e4f169abb223feaef35da2e45d06"
+  version = "v0.13.0"
+
+[[projects]]
   name = "golang.org/x/crypto"
   packages = [
     "curve25519",
@@ -761,6 +773,7 @@
   packages = [
     "googleapis/api/annotations",
     "googleapis/iam/v1",
+    "googleapis/rpc/code",
     "googleapis/rpc/status",
   ]
   revision = "4eb30f4778eed4c258ba66527a0d4f9ec8a36c45"
@@ -985,6 +998,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b79890b97142b1d6cc8f6c7af5ee756dc5d77ad798f41c225bf04fa39211fbcb"
+  inputs-digest = "0f0499b21851896ed1d20d92dd966eed3c6ed8c7e167e92572c832f48bdd953b"
   solver-name = "gps-cdcl"
   solver-version = 1
