@@ -57,6 +57,11 @@ DEMOLISH_ORDER = [
     Resource('logging', 'sinks', None, None, None, False, False),
 ]
 
+def log(message):
+    """ print a message if --verbose is set. """
+    if ARGS.verbose:
+        print message
+
 
 def collect(project, age, resource, filt, clear_all):
     """ Collect a list of resources for each condition (zone or region).
@@ -87,10 +92,10 @@ def collect(project, age, resource, filt, clear_all):
         '--format=json(name,creationTimestamp.date(tz=UTC),zone,region,isManaged)',
         '--filter=%s' % filt,
         '--project=%s' % project])
-    print '%r' % cmd
+    log('%r' % cmd)
 
     for item in json.loads(subprocess.check_output(cmd)):
-        print '%r' % item
+        log('%r' % item)
 
         if 'name' not in item:
             raise ValueError('missing key: name - %r' % item)
@@ -117,11 +122,11 @@ def collect(project, age, resource, filt, clear_all):
 
         # Unify datetime to use utc timezone.
         created = datetime.datetime.strptime(item['creationTimestamp'], '%Y-%m-%dT%H:%M:%S')
-        print ('Found %r(%r), %r in %r, created time = %r' %
-               (resource.name, resource.subgroup, item['name'], colname, item['creationTimestamp']))
+        log('Found %r(%r), %r in %r, created time = %r' %
+            (resource.name, resource.subgroup, item['name'], colname, item['creationTimestamp']))
         if created < age:
-            print ('Added to janitor list: %r(%r), %r' %
-                   (resource.name, resource.subgroup, item['name']))
+            log('Added to janitor list: %r(%r), %r' %
+                (resource.name, resource.subgroup, item['name']))
             col[colname].append(item['name'])
     return col
 
@@ -147,8 +152,8 @@ def clear_resources(project, cols, resource, rate_limit):
 
     for col, items in cols.items():
         if ARGS.dryrun:
-            print ('Resource type %r(%r) to be deleted: %r' %
-                   (resource.name, resource.subgroup, list(items)))
+            log('Resource type %r(%r) to be deleted: %r' %
+                (resource.name, resource.subgroup, list(items)))
             continue
 
         manage_key = {'Yes':'managed', 'No':'unmanaged'}
@@ -168,11 +173,11 @@ def clear_resources(project, cols, resource, rate_limit):
             else:
                 base.append('--global')
 
-        print 'going to delete %d %s' % (len(items), resource.name)
+        log('going to delete %d %s' % (len(items), resource.name))
         # try to delete at most $rate_limit items at a time
         for idx in xrange(0, len(items), rate_limit):
             clean = items[idx:idx+rate_limit]
-            print 'Call %r' % (base + list(clean))
+            log('Call %r' % (base + list(clean)))
             try:
                 subprocess.check_call(base + list(clean))
             except subprocess.CalledProcessError as exc:
@@ -195,27 +200,27 @@ def clean_gke_cluster(project, age, filt):
     err = 0
     for endpoint in endpoints:
         os.environ['CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER'] = endpoint
-        print "checking endpoint %s" % endpoint
+        log("checking endpoint %s" % endpoint)
         cmd = [
             'gcloud', 'container', '-q', 'clusters', 'list',
             '--project=%s' % project,
             '--filter=%s' % filt,
             '--format=json(name,createTime,zone)'
             ]
-        print 'running %s' % cmd
+        log('running %s' % cmd)
 
         output = ''
         try:
             output = subprocess.check_output(cmd)
         except subprocess.CalledProcessError as exc:
-            print >>sys.stderr, 'Cannot reach endpoint %s with %r, continue' % (endpoint, exc)
+            # expected error
+            log('Cannot reach endpoint %s with %r, continue' % (endpoint, exc))
             continue
 
         for item in json.loads(output):
-            print 'cluster info: %r' % item
+            log('cluster info: %r' % item)
             if 'name' not in item or 'createTime' not in item or 'zone' not in item:
-                print >>sys.stderr, 'name, createTime and zone must present'
-                raise ValueError('%r' % item)
+                raise ValueError('name, createTime and zone must present: %r' % item)
 
             # The raw createTime string looks like 2017-08-30T18:33:14+00:00
             # Which python 2.7 does not support timezones.
@@ -225,8 +230,8 @@ def clean_gke_cluster(project, age, filt):
                 item['createTime'], '%Y-%m-%dT%H:%M:%S')
 
             if created < age:
-                print ('Found stale gke cluster %r in %r, created time = %r' %
-                       (item['name'], endpoint, item['createTime']))
+                log('Found stale gke cluster %r in %r, created time = %r' %
+                    (item['name'], endpoint, item['createTime']))
                 delete = [
                     'gcloud', 'container', '-q', 'clusters', 'delete',
                     item['name'],
@@ -234,7 +239,7 @@ def clean_gke_cluster(project, age, filt):
                     '--zone=%s' % item['zone'],
                 ]
                 try:
-                    print 'running %s' % delete
+                    log('running %s' % delete)
                     subprocess.check_call(delete)
                 except subprocess.CalledProcessError as exc:
                     err = 1
@@ -260,7 +265,7 @@ def main(project, days, hours, filt, rate_limit):
     age = datetime.datetime.utcnow() - datetime.timedelta(days=days, hours=hours)
     clear_all = (days is 0 and hours is 0)
     for res in DEMOLISH_ORDER:
-        print 'Try to search for %r with condition %r' % (res.name, res.condition)
+        log('Try to search for %r with condition %r' % (res.name, res.condition))
         try:
             col = collect(project, age, res, filt, clear_all)
             if col:
@@ -298,10 +303,13 @@ if __name__ == '__main__':
         '--dryrun',
         default=False,
         action='store_true',
-        help='list but not delete resources')
+        help='List but not delete resources')
     PARSER.add_argument(
         '--ratelimit', type=int, default=50,
         help='Max number of resources to bulk clear in one gcloud delete call')
+    PARSER.add_argument(
+        '--verbose', action='store_true',
+        help='Get full janitor output log')
     ARGS = PARSER.parse_args()
 
     # We want to allow --days=0 and --hours=0, so check against None instead.
