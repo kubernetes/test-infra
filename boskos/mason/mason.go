@@ -26,7 +26,6 @@ import (
 
 	"gopkg.in/yaml.v2"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/storage"
@@ -39,7 +38,7 @@ const (
 
 // Masonable should be implemented by all configurations
 type Masonable interface {
-	Construct(*common.Resource, common.TypeToResources) (*common.UserData, error)
+	Construct(context.Context, *common.Resource, common.TypeToResources) (*common.UserData, error)
 }
 
 // ConfigConverter converts a string into a Masonable
@@ -57,14 +56,14 @@ type boskosClient interface {
 
 // Mason uses config to convert dirty resources to usable one
 type Mason struct {
-	client                      boskosClient
-	cleanerCount                int
-	storage                     Storage
-	pending, fulfilled, cleaned chan requirements
-	sleepTime                   time.Duration
-	wg                          sync.WaitGroup
-	configConverters            map[string]ConfigConverter
-	cancel                      context.CancelFunc
+	client                             boskosClient
+	cleanerCount                       int
+	storage                            Storage
+	pending, fulfilled, cleaned        chan requirements
+	boskosWaitPeriod, boskosSyncPeriod time.Duration
+	wg                                 sync.WaitGroup
+	configConverters                   map[string]ConfigConverter
+	cancel                             context.CancelFunc
 }
 
 // requirements for a given resource
@@ -162,19 +161,35 @@ func ValidateConfig(configs []common.ResourcesConfig, resources []common.Resourc
 //     channelSize  - Size for all the channel
 //     cleanerCount - Number of cleaning threads
 //     client       - boskos client
-//     sleepTime    - time to wait before a retry
+//     boskosWaitPeriod    - time to wait before a retry
 // Out: A Pointer to a Mason Object
-func NewMason(channelSize, cleanerCount int, client boskosClient, sleepTime time.Duration) *Mason {
+func NewMason(cleanerCount int, client boskosClient, waitPeriod, syncPeriod time.Duration) *Mason {
 	return &Mason{
 		client:           client,
 		cleanerCount:     cleanerCount,
 		storage:          *newStorage(storage.NewMemoryStorage()),
-		pending:          make(chan requirements, channelSize),
-		cleaned:          make(chan requirements, channelSize),
-		fulfilled:        make(chan requirements, channelSize),
-		sleepTime:        sleepTime,
+		pending:          make(chan requirements),
+		cleaned:          make(chan requirements, cleanerCount+1),
+		fulfilled:        make(chan requirements, cleanerCount+1),
+		boskosWaitPeriod: waitPeriod,
+		boskosSyncPeriod: syncPeriod,
 		configConverters: map[string]ConfigConverter{},
 	}
+}
+
+func checkUserData(res common.Resource) (common.LeasedResources, error) {
+	var leasedResources common.LeasedResources
+	if res.UserData == nil {
+		err := fmt.Errorf("UserData is empty")
+		logrus.WithError(err).Errorf("failed to extract %s", LeasedResources)
+		return nil, err
+	}
+
+	if err := res.UserData.Extract(LeasedResources, &leasedResources); err != nil {
+		logrus.WithError(err).Errorf("failed to extract %s", LeasedResources)
+		return nil, err
+	}
+	return leasedResources, nil
 }
 
 // RegisterConfigConverter is used to register a new Masonable interface
@@ -228,7 +243,7 @@ func (m *Mason) cleanAll(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case req := <-m.fulfilled:
-			if err := m.cleanOne(&req.resource, req.fulfillment); err != nil {
+			if err := m.cleanOne(ctx, &req.resource, req.fulfillment); err != nil {
 				logrus.WithError(err).Errorf("unable to clean resource %s", req.resource.Name)
 				m.garbageCollect(req)
 			} else {
@@ -238,7 +253,7 @@ func (m *Mason) cleanAll(ctx context.Context) {
 	}
 }
 
-func (m *Mason) cleanOne(res *common.Resource, leasedResources common.TypeToResources) error {
+func (m *Mason) cleanOne(ctx context.Context, res *common.Resource, leasedResources common.TypeToResources) error {
 	configEntry, err := m.storage.GetConfig(res.Type)
 	if err != nil {
 		logrus.WithError(err).Errorf("failed to get config for resource %s", res.Type)
@@ -249,7 +264,7 @@ func (m *Mason) cleanOne(res *common.Resource, leasedResources common.TypeToReso
 		logrus.WithError(err).Errorf("failed to convert config type %s - \n%s", configEntry.Config.Type, configEntry.Config.Content)
 		return err
 	}
-	userData, err := config.Construct(res, leasedResources)
+	userData, err := config.Construct(ctx, res, leasedResources)
 	if err != nil {
 		logrus.WithError(err).Errorf("failed to construct resource %s", res.Name)
 		return err
@@ -286,31 +301,22 @@ func (m *Mason) freeAll(ctx context.Context) {
 }
 
 func (m *Mason) freeOne(res *common.Resource) error {
+	leasedResources, err := checkUserData(*res)
+	if err != nil {
+		return err
+	}
+	// TODO: Implement a ReleaseMultiple in a transaction to prevent orphans
 	// Finally return the resource as free
 	if err := m.client.ReleaseOne(res.Name, common.Free); err != nil {
 		logrus.WithError(err).Errorf("failed to release resource %s", res.Name)
 		return err
 	}
-	var leasedResources common.LeasedResources
-	if res.UserData == nil {
-		err := fmt.Errorf("UserData is empty")
-		logrus.WithError(err).Errorf("failed to extract %s", LeasedResources)
-		return err
-	}
-	if err := res.UserData.Extract(LeasedResources, &leasedResources); err != nil {
-		logrus.WithError(err).Errorf("failed to extract %s", LeasedResources)
-		return err
-	}
 	// And release leased resources as res.Name state
-	var allErrors error
 	for _, name := range leasedResources {
 		if err := m.client.ReleaseOne(name, res.Name); err != nil {
 			logrus.WithError(err).Errorf("unable to release %s to state %s", name, res.Name)
-			allErrors = multierror.Append(allErrors, err)
+			return err
 		}
-	}
-	if allErrors != nil {
-		return allErrors
 	}
 	logrus.Infof("Resource %s has been freed", res.Name)
 	return nil
@@ -321,11 +327,12 @@ func (m *Mason) recycleAll(ctx context.Context) {
 		logrus.Info("Exiting recycleAll Thread")
 		m.wg.Done()
 	}()
+	tick := time.NewTicker(m.boskosWaitPeriod).C
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case <-time.After(m.sleepTime):
+		case <-tick:
 			configs, err := m.storage.GetConfigs()
 			if err != nil {
 				logrus.WithError(err).Error("unable to get configuration")
@@ -360,13 +367,8 @@ func (m *Mason) recycleOne(res *common.Resource) (*requirements, error) {
 		logrus.WithError(err).Errorf("could not get config for resource type %s", res.Type)
 		return nil, err
 	}
-	var leasedResources common.LeasedResources
-	if err := res.UserData.Extract(LeasedResources, &leasedResources); err != nil {
-		if _, ok := err.(*common.UserDataNotFound); !ok {
-			logrus.WithError(err).Errorf("cannot parse %s from User Data", LeasedResources)
-			return nil, err
-		}
-	}
+
+	leasedResources, _ := checkUserData(*res)
 	if leasedResources != nil {
 		resources, err := m.client.AcquireByState(res.Name, common.Leased, leasedResources)
 		if err != nil {
@@ -397,11 +399,12 @@ func (m *Mason) syncAll(ctx context.Context) {
 		logrus.Info("Exiting UpdateAll Thread")
 		m.wg.Done()
 	}()
+	tick := time.NewTicker(m.boskosSyncPeriod).C
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case <-time.After(m.sleepTime):
+		case <-tick:
 			if err := m.client.SyncAll(); err != nil {
 				logrus.WithError(err).Errorf("failed to sync resources")
 			}
@@ -420,14 +423,7 @@ func (m *Mason) fulfillAll(ctx context.Context) {
 			return
 		case req := <-m.pending:
 			if err := m.fulfillOne(ctx, &req); err != nil {
-				for _, resources := range req.fulfillment {
-					for _, res := range resources {
-						if err := m.client.ReleaseOne(res.Name, common.Free); err != nil {
-							logrus.WithError(err).Errorf("failed to release resource %s", res.Name)
-						}
-						logrus.Infof("Released resource %s", res.Name)
-					}
-				}
+				m.garbageCollect(req)
 			} else {
 				m.fulfilled <- req
 			}
@@ -441,15 +437,13 @@ func (m *Mason) fulfillOne(ctx context.Context, req *requirements) error {
 	for k, v := range req.needs {
 		needs[k] = v
 	}
+	tick := time.NewTicker(m.boskosWaitPeriod).C
 	for rType := range needs {
 		for needs[rType] > 0 {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
-			case <-time.After(m.sleepTime):
-				// In case we are waiting for a very long time,
-				// we need to make sure that existing resources are being updated
-				// TODO: handle update failures to update fullfillment.
+			case <-tick:
 				m.updateResources(req)
 				if res, err := m.client.Acquire(rType, common.Free, common.Leased); err != nil {
 					logrus.WithError(err).Debug("boskos acquire failed!")
