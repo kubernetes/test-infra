@@ -15260,7 +15260,7 @@ periodics:
       - "--upload=gs://kubernetes-jenkins/logs"
 
 - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11
-  interval: 6h
+  interval: 2h
   agent: kubernetes
   labels:
     preset-service-account: "true"
