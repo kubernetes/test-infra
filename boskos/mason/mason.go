@@ -39,7 +39,7 @@ const (
 
 // Masonable should be implemented by all configurations
 type Masonable interface {
-	Construct(*common.Resource, common.TypeToResources) (common.UserData, error)
+	Construct(context.Context, *common.Resource, common.TypeToResources) (common.UserData, error)
 }
 
 // ConfigConverter converts a string into a Masonable
@@ -164,14 +164,14 @@ func ValidateConfig(configs []common.ResourcesConfig, resources []common.Resourc
 //     client       - boskos client
 //     sleepTime    - time to wait before a retry
 // Out: A Pointer to a Mason Object
-func NewMason(channelSize, cleanerCount int, client boskosClient, sleepTime time.Duration) *Mason {
+func NewMason(cleanerCount int, client boskosClient, sleepTime time.Duration) *Mason {
 	return &Mason{
 		client:           client,
 		cleanerCount:     cleanerCount,
 		storage:          *newStorage(storage.NewMemoryStorage()),
-		pending:          make(chan requirements, channelSize),
-		cleaned:          make(chan requirements, channelSize),
-		fulfilled:        make(chan requirements, channelSize),
+		pending:          make(chan requirements),
+		cleaned:          make(chan requirements, cleanerCount),
+		fulfilled:        make(chan requirements, cleanerCount),
 		sleepTime:        sleepTime,
 		configConverters: map[string]ConfigConverter{},
 	}
@@ -228,7 +228,7 @@ func (m *Mason) cleanAll(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case req := <-m.fulfilled:
-			if err := m.cleanOne(&req.resource, req.fulfillment); err != nil {
+			if err := m.cleanOne(ctx, &req.resource, req.fulfillment); err != nil {
 				logrus.WithError(err).Errorf("unable to clean resource %s", req.resource.Name)
 				m.garbageCollect(req)
 			} else {
@@ -238,7 +238,7 @@ func (m *Mason) cleanAll(ctx context.Context) {
 	}
 }
 
-func (m *Mason) cleanOne(res *common.Resource, leasedResources common.TypeToResources) error {
+func (m *Mason) cleanOne(ctx context.Context, res *common.Resource, leasedResources common.TypeToResources) error {
 	configEntry, err := m.storage.GetConfig(res.Type)
 	if err != nil {
 		logrus.WithError(err).Errorf("failed to get config for resource %s", res.Type)
@@ -249,7 +249,7 @@ func (m *Mason) cleanOne(res *common.Resource, leasedResources common.TypeToReso
 		logrus.WithError(err).Errorf("failed to convert config type %s - \n%s", configEntry.Config.Type, configEntry.Config.Content)
 		return err
 	}
-	userData, err := config.Construct(res, leasedResources)
+	userData, err := config.Construct(ctx, res, leasedResources)
 	if err != nil {
 		logrus.WithError(err).Errorf("failed to construct resource %s", res.Name)
 		return err
@@ -364,7 +364,6 @@ func (m *Mason) recycleOne(res *common.Resource) (*requirements, error) {
 	if err := res.UserData.Extract(LeasedResources, &leasedResources); err != nil {
 		if _, ok := err.(*common.UserDataNotFound); !ok {
 			logrus.WithError(err).Errorf("cannot parse %s from User Data", LeasedResources)
-			return nil, err
 		}
 	}
 	if leasedResources != nil {
@@ -525,7 +524,9 @@ func (m *Mason) Start() {
 	m.cancel = cancel
 	m.start(ctx, m.syncAll)
 	m.start(ctx, m.recycleAll)
-	m.start(ctx, m.fulfillAll)
+	for i := 0; i < m.cleanerCount; i++ {
+		m.start(ctx, m.fulfillAll)
+	}
 	for i := 0; i < m.cleanerCount; i++ {
 		m.start(ctx, m.cleanAll)
 	}

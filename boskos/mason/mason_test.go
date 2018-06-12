@@ -54,7 +54,7 @@ func fakeConfigConverter(in string) (Masonable, error) {
 	return &fakeConfig{}, nil
 }
 
-func (fc *fakeConfig) Construct(res *common.Resource, typeToRes common.TypeToResources) (common.UserData, error) {
+func (fc *fakeConfig) Construct(ctx context.Context, res *common.Resource, typeToRes common.TypeToResources) (common.UserData, error) {
 	return common.UserData{"fakeConfig": "unused"}, nil
 }
 
@@ -144,7 +144,7 @@ func TestRecycleLeasedResources(t *testing.T) {
 	res2, _ := rStorage.GetResource("type2_0")
 	res2.UserData.Set(LeasedResources, &[]string{"type1_0"})
 	rStorage.UpdateResource(res2)
-	m := NewMason(1, 1, mClient.basic, 50*time.Millisecond)
+	m := NewMason(1, mClient.basic, 50*time.Millisecond)
 	m.storage.SyncConfigs(configs)
 	m.RegisterConfigConverter(fakeConfigType, fakeConfigConverter)
 	ctx, cancel := context.WithCancel(context.Background())
@@ -181,7 +181,7 @@ func TestRecycleNoLeasedResources(t *testing.T) {
 	}
 
 	rStorage, mClient, configs := createFakeBoskos(tc)
-	m := NewMason(1, 1, mClient.basic, 50*time.Millisecond)
+	m := NewMason(1, mClient.basic, 50*time.Millisecond)
 	m.storage.SyncConfigs(configs)
 	m.RegisterConfigConverter(fakeConfigType, fakeConfigConverter)
 	ctx, cancel := context.WithCancel(context.Background())
@@ -218,7 +218,7 @@ func TestFulfillOne(t *testing.T) {
 	}
 
 	rStorage, mClient, configs := createFakeBoskos(tc)
-	m := NewMason(1, 1, mClient.basic, 50*time.Millisecond)
+	m := NewMason(1, mClient.basic, 50*time.Millisecond)
 	m.storage.SyncConfigs(configs)
 	res, _ := mClient.basic.Acquire("type2", common.Dirty, common.Cleaning)
 	conf, err := m.storage.GetConfig("type2")
@@ -275,7 +275,7 @@ func TestMason(t *testing.T) {
 		},
 	}
 	rStorage, mClient, configs := createFakeBoskos(tc)
-	m := NewMason(5, 5, mClient.basic, 50*time.Millisecond)
+	m := NewMason(5, mClient.basic, 50*time.Millisecond)
 	m.storage.SyncConfigs(configs)
 	m.RegisterConfigConverter(fakeConfigType, fakeConfigConverter)
 	m.Start()
@@ -353,7 +353,7 @@ func TestMasonStartStop(t *testing.T) {
 		},
 	}
 	_, mClient, configs := createFakeBoskos(tc)
-	m := NewMason(5, 5, mClient.basic, 50*time.Millisecond)
+	m := NewMason(5, mClient.basic, 50*time.Millisecond)
 	m.storage.SyncConfigs(configs)
 	m.RegisterConfigConverter(fakeConfigType, fakeConfigConverter)
 	m.Start()
