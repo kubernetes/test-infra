@@ -2961,6 +2961,48 @@
       "sig-cli"
     ]
   },
+  "ci-kubernetes-e2e-gce-gpu-beta-stable1-downgrade": {
+    "args": [
+      "--check-leaked-resources",
+      "--check-version-skew=false",
+      "--env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gce-device-plugin-gpu.env",
+      "--extract=ci/k8s-beta",
+      "--extract=ci/k8s-stable1",
+      "--gcp-node-image=gci",
+      "--gcp-project-type=gpu-project",
+      "--gcp-zone=us-west1-b",
+      "--provider=gce",
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.focus=\\[Feature:GPUUpgrade\\]",
+      "--timeout=150m",
+      "--upgrade_args=--ginkgo.focus=\\[Feature:GPUUpgrade\\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-gpu-master-stable1-downgrade": {
+    "args": [
+      "--check-leaked-resources",
+      "--check-version-skew=false",
+      "--env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gce-device-plugin-gpu.env",
+      "--extract=ci/latest",
+      "--extract=ci/k8s-stable1",
+      "--gcp-node-image=gci",
+      "--gcp-project-type=gpu-project",
+      "--gcp-zone=us-west1-b",
+      "--provider=gce",
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.focus=\\[Feature:GPUUpgrade\\]",
+      "--timeout=150m",
+      "--upgrade_args=--ginkgo.focus=\\[Feature:GPUUpgrade\\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
   "ci-kubernetes-e2e-gce-gpu-stable1": {
     "args": [
       "--check-leaked-resources",
@@ -2975,6 +3017,48 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-scheduling"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-gpu-stable1-beta-upgrade": {
+    "args": [
+      "--check-leaked-resources",
+      "--check-version-skew=false",
+      "--env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gce-device-plugin-gpu.env",
+      "--extract=ci/k8s-beta",
+      "--extract=ci/k8s-stable1",
+      "--gcp-node-image=gci",
+      "--gcp-project-type=gpu-project",
+      "--gcp-zone=us-west1-b",
+      "--provider=gce",
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.focus=\\[Feature:GPUUpgrade\\]",
+      "--timeout=150m",
+      "--upgrade_args=--ginkgo.focus=\\[Feature:GPUUpgrade\\] --upgrade-target=ci/k8s-beta --upgrade-image=gci"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-gpu-stable1-master-upgrade": {
+    "args": [
+      "--check-leaked-resources",
+      "--check-version-skew=false",
+      "--env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gce-device-plugin-gpu.env",
+      "--extract=ci/latest",
+      "--extract=ci/k8s-stable1",
+      "--gcp-node-image=gci",
+      "--gcp-project-type=gpu-project",
+      "--gcp-zone=us-west1-b",
+      "--provider=gce",
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.focus=\\[Feature:GPUUpgrade\\]",
+      "--timeout=150m",
+      "--upgrade_args=--ginkgo.focus=\\[Feature:GPUUpgrade\\] --upgrade-target=ci/latest --upgrade-image=gci"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
     ]
   },
   "ci-kubernetes-e2e-gce-gpu-stable2": {
@@ -2992,6 +3076,27 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-scheduling"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-gpu-stable2-stable1-upgrade": {
+    "args": [
+      "--check-leaked-resources",
+      "--check-version-skew=false",
+      "--env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gce-device-plugin-gpu.env",
+      "--extract=ci/k8s-stable1",
+      "--extract=ci/k8s-stable2",
+      "--gcp-node-image=gci",
+      "--gcp-project-type=gpu-project",
+      "--gcp-zone=us-west1-b",
+      "--provider=gce",
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.focus=\\[Feature:GPUUpgrade\\]",
+      "--timeout=150m",
+      "--upgrade_args=--ginkgo.focus=\\[Feature:GPUUpgrade\\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
     ]
   },
   "ci-kubernetes-e2e-gce-ha-master": {
@@ -3653,27 +3758,6 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-cli"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-stable2-stable1-gpu-upgrade": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-device-plugin-gpu.env",
-      "--extract=ci/k8s-stable1",
-      "--extract=ci/k8s-stable2",
-      "--gcp-node-image=gci",
-      "--gcp-project-type=gpu-project",
-      "--gcp-zone=us-west1-b",
-      "--provider=gce",
-      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
-      "--timeout=150m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:GPUUpgrade\\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
     ]
   },
   "ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster": {
