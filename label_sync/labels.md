@@ -69,6 +69,7 @@ larger set of contributors to apply/remove them.
 | <a id="sig/node" href="#sig/node">`sig/node`</a> | Categorizes an issue or PR as relevant to sig-node.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="sig/onprem" href="#sig/onprem">`sig/onprem`</a> | Categorizes an issue or PR as relevant to sig-onprem.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="sig/openstack" href="#sig/openstack">`sig/openstack`</a> | Categorizes an issue or PR as relevant to sig-openstack.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="sig/pm" href="#sig/pm">`sig/pm`</a> | Categorizes an issue or PR as relevant to sig-pm.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="sig/release" href="#sig/release">`sig/release`</a> | Categorizes an issue or PR as relevant to sig-release.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="sig/scalability" href="#sig/scalability">`sig/scalability`</a> | Categorizes an issue or PR as relevant to sig-scalability.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="sig/scheduling" href="#sig/scheduling">`sig/scheduling`</a> | Categorizes an issue or PR as relevant to sig-scheduling.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
