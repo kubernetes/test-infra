@@ -64,9 +64,9 @@ bazel run //label_sync -- \
 # generate docs based on labels.yaml
 bazel run //label_sync -- \
   --action docs \
-  --config $(pwd)/labels.yaml \
-  --docs-template $(pwd)/labels.md.tmpl \
-  --docs-output $(pwd)/labels.md
+  --config $(pwd)/label_sync/labels.yaml \
+  --docs-template $(pwd)/label_sync/labels.md.tmpl \
+  --docs-output $(pwd)/label_sync/labels.md
 ```
 
 ## Our Deployment
