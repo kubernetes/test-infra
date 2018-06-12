@@ -30,7 +30,7 @@ import (
 
 var suite util.TestSuite
 
-func TestXmlWrap(t *testing.T) {
+func TestXMLWrap(t *testing.T) {
 	cases := []struct {
 		name            string
 		interrupted     bool
@@ -80,7 +80,7 @@ func TestXmlWrap(t *testing.T) {
 		suite.Cases = suite.Cases[:0]
 		suite.Failures = 6
 		suite.Tests = 9
-		err := c.XmlWrap(&suite, tc.name, func() error {
+		err := c.XMLWrap(&suite, tc.name, func() error {
 			if tc.shouldInterrupt {
 				c.interrupted = true
 			}
