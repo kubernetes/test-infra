@@ -361,6 +361,9 @@ plugins:
   - cat
   - dog
   - help
+  - blunderbuss
+  - wip
+  - hold
 
   kubernetes-sigs:
   - assign
