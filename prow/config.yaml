@@ -10502,7 +10502,7 @@ periodics:
 
 - interval: 12h
   agent: kubernetes
-  name: ci-kubernetes-e2e-gce-gpu-beta-stable1-downgrade
+  name: ci-kubernetes-e2e-gce-gpu-beta-stable1-cluster-downgrade
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -10515,7 +10515,33 @@ periodics:
 
 - interval: 12h
   agent: kubernetes
-  name: ci-kubernetes-e2e-gce-gpu-master-stable1-downgrade
+  name: ci-kubernetes-e2e-gce-gpu-beta-stable1-master-downgrade
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=180
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
+
+- interval: 12h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gce-gpu-master-stable1-cluster-downgrade
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=180
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
+
+- interval: 12h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gce-gpu-master-stable1-master-downgrade
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -10541,7 +10567,7 @@ periodics:
 
 - interval: 12h
   agent: kubernetes
-  name: ci-kubernetes-e2e-gce-gpu-stable1-beta-upgrade
+  name: ci-kubernetes-e2e-gce-gpu-stable1-beta-cluster-upgrade
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -10554,7 +10580,33 @@ periodics:
 
 - interval: 12h
   agent: kubernetes
-  name: ci-kubernetes-e2e-gce-gpu-stable1-master-upgrade
+  name: ci-kubernetes-e2e-gce-gpu-stable1-beta-master-upgrade
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=180
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
+
+- interval: 12h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gce-gpu-stable1-master-cluster-upgrade
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=180
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
+
+- interval: 12h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gce-gpu-stable1-master-master-upgrade
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -10580,7 +10632,20 @@ periodics:
 
 - interval: 12h
   agent: kubernetes
-  name: ci-kubernetes-e2e-gce-gpu-stable2-stable1-upgrade
+  name: ci-kubernetes-e2e-gce-gpu-stable2-stable1-cluster-upgrade
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=180
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
+
+- interval: 12h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gce-gpu-stable2-stable1-master-upgrade
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
