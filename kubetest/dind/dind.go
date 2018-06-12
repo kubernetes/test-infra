@@ -83,7 +83,7 @@ func (b *Builder) Build() error {
 }
 
 // BuildTester returns an object that knows how to test the cluster it deployed.
-func (d *DindDeployer) BuildTester(o *e2e.BuildTesterOptions) (e2e.Tester, error) {
+func (d *Deployer) BuildTester(o *e2e.BuildTesterOptions) (e2e.Tester, error) {
 	// Make a tmpdir for the test report.
 	// TODO(Q-Lee): perhaps there should be one tmpdir per cluster container, and all else can be subdirs?
 	tmpdir, err := ioutil.TempDir("/tmp", "dind-k8s-report-dir-")
@@ -107,7 +107,8 @@ func (d *DindDeployer) BuildTester(o *e2e.BuildTesterOptions) (e2e.Tester, error
 	return t, nil
 }
 
-type DindDeployer struct {
+// Deployer stores information necessary to deploy a cluster inside a docker container.
+type Deployer struct {
 	image       string
 	kubecfg     string
 	containerID string
@@ -118,11 +119,15 @@ type DindDeployer struct {
 	apiserver   *kubernetes.Clientset
 }
 
-// DindDeployer implements e2e.TestBuilder, overriding testing
-var _ e2e.TestBuilder = &DindDeployer{}
+// Deployer implements e2e.TestBuilder, overriding testing
+var _ e2e.TestBuilder = &Deployer{}
 
-// New returns a new DindDeployer.
-func NewDeployer(kubecfg, image string, control *process.Control) (*DindDeployer, error) {
+// NewDeployer instantiates a new Deployer struct with specified args.
+//
+// kubecfg: path to a ~/.kube/config type file that authenticates to the cluster
+// image: name of the dind image to use, will choose a default if empty
+// control: used for creating subprocesses.
+func NewDeployer(kubecfg, image string, control *process.Control) (*Deployer, error) {
 	docker, err := client.NewEnvClient()
 	if err != nil {
 		return nil, err
@@ -138,7 +143,7 @@ func NewDeployer(kubecfg, image string, control *process.Control) (*DindDeployer
 	if kubecfg == "" {
 		kubecfg = tmpdir + "/admin.conf"
 	}
-	return &DindDeployer{
+	return &Deployer{
 		image:   image,
 		kubecfg: kubecfg,
 		tmpdir:  tmpdir,
@@ -147,7 +152,7 @@ func NewDeployer(kubecfg, image string, control *process.Control) (*DindDeployer
 	}, nil
 }
 
-func (d *DindDeployer) ensureImage() error {
+func (d *Deployer) ensureImage() error {
 	// Once Kubernetes is built, we should grab the version for dind.
 	if d.image == "" {
 		tag, err := GetDockerVersion()
@@ -160,7 +165,7 @@ func (d *DindDeployer) ensureImage() error {
 }
 
 // Up synchronously starts a cluster, or times out.
-func (d *DindDeployer) Up() error {
+func (d *Deployer) Up() error {
 	if err := d.ensureImage(); err != nil {
 		return err
 	}
@@ -308,7 +313,7 @@ ApiserverLoop:
 		case <-d.control.Interrupt.C:
 			return fmt.Errorf("timed out waiting for apiserver from cluster container %s", d.containerID)
 		case <-pollCh:
-			statuses, err := d.isApiServerUp()
+			statuses, err := d.isAPIServerUp()
 			if err != nil {
 				continue
 			}
@@ -363,12 +368,12 @@ NodeHealthLoop:
 }
 
 // IsUp returns nil if the apiserver is running, or the error received while checking.
-func (d *DindDeployer) IsUp() error {
-	_, err := d.isApiServerUp()
+func (d *Deployer) IsUp() error {
+	_, err := d.isAPIServerUp()
 	return err
 }
 
-func (d *DindDeployer) isApiServerUp() (*v1.ComponentStatusList, error) {
+func (d *Deployer) isAPIServerUp() (*v1.ComponentStatusList, error) {
 	if d.apiserver == nil {
 		return nil, fmt.Errorf("no apiserver client available")
 	}
@@ -377,17 +382,17 @@ func (d *DindDeployer) isApiServerUp() (*v1.ComponentStatusList, error) {
 }
 
 // DumpClusterLogs is a no-op.
-func (d *DindDeployer) DumpClusterLogs(localPath, gcsPath string) error {
+func (d *Deployer) DumpClusterLogs(localPath, gcsPath string) error {
 	return nil
 }
 
 // TestSetup is a no-op.
-func (d *DindDeployer) TestSetup() error {
+func (d *Deployer) TestSetup() error {
 	return nil
 }
 
 // Down stops and removes the cluster container.
-func (d *DindDeployer) Down() error {
+func (d *Deployer) Down() error {
 	if d.containerID == "" {
 		return nil
 	}
@@ -401,7 +406,7 @@ func (d *DindDeployer) Down() error {
 }
 
 // GetClusterCreated returns the start time of the cluster container. If the container doesn't exist, has no start time, or has a malformed start time, then an error is returned.
-func (d *DindDeployer) GetClusterCreated(gcpProject string) (time.Time, error) {
+func (d *Deployer) GetClusterCreated(gcpProject string) (time.Time, error) {
 	ctx := context.Background()
 	resp, err := d.docker.ContainerInspect(ctx, d.containerID)
 	if err != nil {

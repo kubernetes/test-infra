@@ -416,7 +416,7 @@ func complete(o *options) error {
 func acquireKubernetes(o *options) error {
 	// Potentially build kubernetes
 	if o.build.Enabled() {
-		err := control.XmlWrap(&suite, "Build", o.build.Build)
+		err := control.XMLWrap(&suite, "Build", o.build.Build)
 		if o.flushMemAfterBuild {
 			util.FlushMem()
 		}
@@ -430,7 +430,7 @@ func acquireKubernetes(o *options) error {
 		if o.build == "dind" {
 			return fmt.Errorf("staging dind images isn't supported yet")
 		}
-		if err := control.XmlWrap(&suite, "Stage", func() error {
+		if err := control.XMLWrap(&suite, "Stage", func() error {
 			return o.stage.Stage(o.federation, o.noAllowDup)
 		}); err != nil {
 			return err
@@ -439,7 +439,7 @@ func acquireKubernetes(o *options) error {
 
 	// Potentially download existing binaries and extract them.
 	if o.extract.Enabled() {
-		err := control.XmlWrap(&suite, "Extract", func() error {
+		err := control.XMLWrap(&suite, "Extract", func() error {
 			// Should we restore a previous state?
 			// Restore if we are not upping the cluster or we are bringing up
 			// a federation control plane without the federated clusters.
@@ -474,7 +474,7 @@ func acquireKubernetes(o *options) error {
 func acquireFederation(o *options) error {
 	// Potentially build federation
 	if o.buildFederation.Enabled() {
-		err := control.XmlWrap(&suite, "BuildFederation", o.buildFederation.Build)
+		err := control.XMLWrap(&suite, "BuildFederation", o.buildFederation.Build)
 		if o.flushMemAfterBuild {
 			util.FlushMem()
 		}
@@ -485,7 +485,7 @@ func acquireFederation(o *options) error {
 
 	// Potentially stage federation binaries somewhere on GCS
 	if o.stageFederation.Enabled() {
-		if err := control.XmlWrap(&suite, "StageFederation", func() error {
+		if err := control.XMLWrap(&suite, "StageFederation", func() error {
 			return o.stageFederation.Stage()
 		}); err != nil {
 			return err
@@ -494,7 +494,7 @@ func acquireFederation(o *options) error {
 
 	// Potentially download existing federation binaries and extract them.
 	if o.extractFederation.Enabled() {
-		err := control.XmlWrap(&suite, "ExtractFederation", func() error {
+		err := control.XMLWrap(&suite, "ExtractFederation", func() error {
 			return o.extractFederation.Extract(o.gcpProject, o.gcpZone)
 		})
 		return err
