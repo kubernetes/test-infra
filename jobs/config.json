@@ -10289,6 +10289,7 @@
   },
   "ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11": {
     "args": [
+      "--check-version-skew=false",
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--extract=release/latest-1.11",
@@ -10311,6 +10312,7 @@
   },
   "ci-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9": {
     "args": [
+      "--check-version-skew=false",
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--extract=release/latest-1.9",
@@ -10333,6 +10335,7 @@
   },
   "ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10": {
     "args": [
+      "--check-version-skew=false",
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--extract=release/latest-1.10",
@@ -10355,6 +10358,7 @@
   },
   "ci-kubernetes-e2e-kubeadm-gce-upgrade-stable-master": {
     "args": [
+      "--check-version-skew=false",
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--extract=ci/latest",
