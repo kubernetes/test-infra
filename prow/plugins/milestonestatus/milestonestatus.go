@@ -45,7 +45,7 @@ var (
 type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	AddLabel(owner, repo string, number int, label string) error
-	ListTeamMembers(id int) ([]github.TeamMember, error)
+	ListTeamMembers(id int, role string) ([]github.TeamMember, error)
 }
 
 func init() {
@@ -86,7 +86,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, m
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
 
-	milestoneMaintainers, err := gc.ListTeamMembers(maintainersID)
+	milestoneMaintainers, err := gc.ListTeamMembers(maintainersID, github.RoleAll)
 	if err != nil {
 		return err
 	}
