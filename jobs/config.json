@@ -10117,6 +10117,23 @@
       "sig-aws"
     ]
   },
+  "ci-kubernetes-e2e-kops-gce-canary": {
+    "args": [
+      "--cluster=e2e-kops-gce-canary.k8s.local",
+      "--deployment=kops",
+      "--extract=ci/latest",
+      "--ginkgo-parallel=30",
+      "--kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt",
+      "--kops-zones=us-central1-c",
+      "--provider=gce",
+      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
+      "--timeout=120m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-aws"
+    ]
+  },
   "ci-kubernetes-e2e-kops-gce-channelalpha": {
     "args": [
       "--cluster=e2e-kops-gce-channelalpha.k8s.local",

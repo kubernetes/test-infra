@@ -258,6 +258,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-weave
 - name: ci-kubernetes-e2e-kops-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-gce
+- name: ci-kubernetes-e2e-kops-gce-canary
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-gce-canary
 - name: ci-kubernetes-e2e-kops-gce-channelalpha
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-gce-channelalpha
 - name: ci-kubernetes-e2e-kops-gce-ha
@@ -3295,6 +3297,8 @@ dashboards:
   dashboard_tab:
   - name: kops-gce
     test_group_name: ci-kubernetes-e2e-kops-gce
+  - name: kops-gce-canary
+    test_group_name: ci-kubernetes-e2e-kops-gce-canary
   - name: kops-gce-channelalpha
     test_group_name: ci-kubernetes-e2e-kops-gce-channelalpha
   - name: kops-gce-ha
@@ -6377,6 +6381,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-aws-imageubuntu1604
   - name: kops-gce
     test_group_name: ci-kubernetes-e2e-kops-gce
+  - name: kops-gce-canary
+    test_group_name: ci-kubernetes-e2e-kops-gce-canary
   - name: kops-gce-channelalpha
     test_group_name: ci-kubernetes-e2e-kops-gce-channelalpha
   - name: kops-gce-ha
