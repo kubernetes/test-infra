@@ -762,8 +762,8 @@ func setDecorationDefaults(provided, defaults *kube.DecorationConfig) *kube.Deco
 	if merged.GCSCredentialsSecret == "" {
 		merged.GCSCredentialsSecret = defaults.GCSCredentialsSecret
 	}
-	if len(merged.SshKeySecrets) == 0 {
-		merged.SshKeySecrets = defaults.SshKeySecrets
+	if len(merged.SSHKeySecrets) == 0 {
+		merged.SSHKeySecrets = defaults.SSHKeySecrets
 	}
 
 	return merged
