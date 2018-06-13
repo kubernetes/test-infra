@@ -10408,7 +10408,7 @@
       "--skew",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=release/latest-1.11"
+      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --ginkgo.skip=statefulset-upgrade|hpa-upgrade|service-upgrade --upgrade-target=release/latest-1.11"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -10431,7 +10431,7 @@
       "--skew",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=release/latest-1.9"
+      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --ginkgo.skip=statefulset-upgrade|hpa-upgrade|service-upgrade --upgrade-target=release/latest-1.9"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -10454,7 +10454,7 @@
       "--skew",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\]",
       "--timeout=300m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=release/latest-1.10"
+      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --ginkgo.skip=statefulset-upgrade|hpa-upgrade|service-upgrade --upgrade-target=release/latest-1.10"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -10477,7 +10477,7 @@
       "--skew",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci-cross/latest"
+      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --ginkgo.skip=statefulset-upgrade|hpa-upgrade|service-upgrade --upgrade-target=ci-cross/latest"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
