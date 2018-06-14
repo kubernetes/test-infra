@@ -561,3 +561,13 @@ labels:
     target: both
     prowPlugin: milestonestatus
     addedBy: "[@kubernetes/kubernetes-milestone-maintainers](https://github.com/orgs/kubernetes/teams/kubernetes-milestone-maintainers/members)"
+  - color: "dfb2f7"
+    description: Cluster API vSphere provider.
+    name: cluster-api-vmware
+    target: both
+    addedBy: anyone
+  - color: "18a551"
+    description: Cluster API GCP provider.
+    name: cluster-api-gcp
+    target: both
+    addedBy: anyone
