@@ -130,6 +130,20 @@ func NewUnprocessableEntityError(e error) UnprocessableEntityError {
 	return UnprocessableEntityError{e: e}
 }
 
+// NotFoundError happens when the apiserver returns http 404
+type NotFoundError struct {
+	e error
+}
+
+func (e NotFoundError) Error() string {
+	return e.e.Error()
+}
+
+// NewNotFoundError returns an error with the embedded inner error
+func NewNotFoundError(e error) NotFoundError {
+	return NotFoundError{e: e}
+}
+
 type request struct {
 	method      string
 	path        string
@@ -206,6 +220,8 @@ func (c *Client) requestRetry(r *request) ([]byte, error) {
 		return nil, NewConflictError(fmt.Errorf("body: %s", string(rb)))
 	} else if resp.StatusCode == 422 {
 		return nil, NewUnprocessableEntityError(fmt.Errorf("body: %s", string(rb)))
+	} else if resp.StatusCode == 404 {
+		return nil, NewNotFoundError(fmt.Errorf("body: %s", string(rb)))
 	} else if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		return nil, fmt.Errorf("response has status \"%s\" and body \"%s\"", resp.Status, string(rb))
 	}
@@ -573,6 +589,20 @@ func (c *Client) CreateConfigMap(content ConfigMap) (ConfigMap, error) {
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("/api/v1/namespaces/%s/configmaps", c.namespace),
 		requestBody: &content,
+	}, &retConfigMap)
+
+	return retConfigMap, err
+}
+
+// GetConfigMap gets the configmap identified.
+func (c *Client) GetConfigMap(name, namespace string) (ConfigMap, error) {
+	c.log("GetConfigMap", name)
+	if namespace == "" {
+		namespace = c.namespace
+	}
+	var retConfigMap ConfigMap
+	err := c.request(&request{
+		path: fmt.Sprintf("/api/v1/namespaces/%s/configmaps/%s", namespace, name),
 	}, &retConfigMap)
 
 	return retConfigMap, err

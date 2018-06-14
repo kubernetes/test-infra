@@ -12,7 +12,7 @@ plugins:
 
 config_updater:
   maps:
-    # Update the whatever configmap whenever thing changes
+    # Update the thing-config configmap whenever thing changes
     path/to/some/other/thing:
       name: thing-config
       # Using ProwJobNamespace by default.
@@ -25,4 +25,8 @@ config_updater:
     # Update the plugin configmap whenever plugins.yaml changes
     prow/plugins.yaml:
       name: plugin
+    # Update the `other` key in the `data` configmap whenver `data.yaml` changes
+    some/data.yaml:
+      name: data
+      key: other
 ```
