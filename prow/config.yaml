@@ -206,6 +206,7 @@ tide:
     - kubernetes-sigs/cluster-api
     - kubernetes-sigs/controller-runtime
     - kubernetes-sigs/kubebuilder
+    - client-go/unofficial-docs
     labels:
     - lgtm
     - approved
