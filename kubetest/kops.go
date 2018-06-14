@@ -19,10 +19,12 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/base32"
 	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
+	"hash/fnv"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -531,6 +533,20 @@ func (k kops) TestSetup() error {
 		return fmt.Errorf("exported kubeconfig file %s was empty", k.kubecfg)
 	}
 
+	// export NODE_INSTANCE_GROUP for ginkgo-e2e.sh
+	if k.isGoogleCloud() {
+
+		// This call assumes that we only have one one ig named nodes.
+		// If we every ever have more than one, then we need to use multiple names separated
+		// by commas.
+		nodeGroupNames := nameForInstanceGroupManager(k.cluster, "nodes", k.zones[0])
+
+		// NODE_INSTANCE_GROUP is used by ginkgo-e2e.sh and sets the flag --node-instance-group
+		// on the e2e go binary.
+		if err := os.Setenv("NODE_INSTANCE_GROUP", nodeGroupNames); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -694,4 +710,56 @@ func getAWSEC2Session(region string) (*ec2.EC2, error) {
 
 	return ec2.New(s, config), nil
 
+}
+
+// nameForInstanceGroupManager builds a name for an InstanceGroupManager in the specified zone
+func nameForInstanceGroupManager(clusterName string, igName string, zone string) string {
+	shortZone := zone
+	lastDash := strings.LastIndex(shortZone, "-")
+	if lastDash != -1 {
+		shortZone = shortZone[lastDash+1:]
+	}
+	name := safeObjectName(shortZone+"."+igName, clusterName)
+	name = limitedLengthName(name, 63)
+	return name
+}
+
+// limitedLengthName returns a string subject to a maximum length
+func limitedLengthName(s string, n int) string {
+	// We only use the hash if we need to
+	if len(s) <= n {
+		return s
+	}
+
+	h := fnv.New32a()
+	if _, err := h.Write([]byte(s)); err != nil {
+		panic(fmt.Sprintf("error hashing values: %v", err))
+	}
+	hashString := base32.HexEncoding.EncodeToString(h.Sum(nil))
+	hashString = strings.ToLower(hashString)
+	if len(hashString) > 6 {
+		hashString = hashString[:6]
+	}
+
+	maxBaseLength := n - len(hashString) - 1
+	if len(s) > maxBaseLength {
+		s = s[:maxBaseLength]
+	}
+	s = s + "-" + hashString
+
+	return s
+}
+
+// safeObjectName returns the object name and cluster name escaped for GCE
+func safeObjectName(name string, clusterName string) string {
+	gceName := name + "-" + clusterName
+
+	// TODO: If the cluster name > some max size (32?) we should curtail it
+	return safeClusterName(gceName)
+}
+
+func safeClusterName(clusterName string) string {
+	// GCE does not support . in tags / names
+	safeClusterName := strings.Replace(clusterName, ".", "-", -1)
+	return safeClusterName
 }
