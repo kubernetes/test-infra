@@ -177,6 +177,10 @@ type Brancher struct {
 	SkipBranches []string `json:"skip_branches"`
 	// Only run against these branches. Default is all branches.
 	Branches []string `json:"branches"`
+
+	// We'll set these when we load it.
+	re     *regexp.Regexp
+	reSkip *regexp.Regexp
 }
 
 func (br Brancher) RunsAgainstAllBranch() bool {
@@ -189,18 +193,11 @@ func (br Brancher) RunsAgainstBranch(branch string) bool {
 	}
 
 	// Favor SkipBranches over Branches
-	for _, s := range br.SkipBranches {
-		if s == branch {
-			return false
-		}
+	if len(br.SkipBranches) != 0 && br.reSkip.MatchString(branch) {
+		return false
 	}
-	if len(br.Branches) == 0 {
+	if len(br.Branches) == 0 || br.re.MatchString(branch) {
 		return true
-	}
-	for _, b := range br.Branches {
-		if b == branch {
-			return true
-		}
 	}
 	return false
 }
@@ -309,21 +306,8 @@ func (c *Config) SetPresubmits(jobs map[string][]Presubmit) error {
 	for k, v := range jobs {
 		nj[k] = make([]Presubmit, len(v))
 		copy(nj[k], v)
-		for i := range v {
-			re, err := regexp.Compile(v[i].Trigger)
-			if err != nil {
-				return err
-			}
-			nj[k][i].re = re
-			if v[i].RunIfChanged == "" {
-				continue
-			}
-			re, err = regexp.Compile(v[i].RunIfChanged)
-			if err != nil {
-				return err
-			}
-			nj[k][i].reChanges = re
-
+		if err := SetPresubmitRegexes(nj[k]); err != nil {
+			return err
 		}
 	}
 	c.Presubmits = nj

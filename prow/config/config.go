@@ -423,9 +423,14 @@ func (c *Config) mergeJobConfig(jc JobConfig) error {
 }
 
 func parseConfig(c *Config) error {
-	// Ensure that presubmit regexes are valid.
+	// Ensure that regexes are valid.
 	for _, vs := range c.Presubmits {
-		if err := SetRegexes(vs); err != nil {
+		if err := SetPresubmitRegexes(vs); err != nil {
+			return fmt.Errorf("could not set regex: %v", err)
+		}
+	}
+	for _, js := range c.Postsubmits {
+		if err := SetPostsubmitRegexes(js); err != nil {
 			return fmt.Errorf("could not set regex: %v", err)
 		}
 	}
@@ -898,9 +903,9 @@ func ValidateController(c *Controller) error {
 	return nil
 }
 
-// SetRegexes compiles and validates all the regural expressions for
+// SetPresubmitRegexes compiles and validates all the regural expressions for
 // the provided presubmits.
-func SetRegexes(js []Presubmit) error {
+func SetPresubmitRegexes(js []Presubmit) error {
 	for i, j := range js {
 		if re, err := regexp.Compile(j.Trigger); err == nil {
 			js[i].re = re
@@ -910,7 +915,7 @@ func SetRegexes(js []Presubmit) error {
 		if !js[i].re.MatchString(j.RerunCommand) {
 			return fmt.Errorf("for job %s, rerun command \"%s\" does not match trigger \"%s\"", j.Name, j.RerunCommand, j.Trigger)
 		}
-		if err := SetRegexes(j.RunAfterSuccess); err != nil {
+		if err := SetPresubmitRegexes(j.RunAfterSuccess); err != nil {
 			return err
 		}
 		if j.RunIfChanged != "" {
@@ -919,6 +924,47 @@ func SetRegexes(js []Presubmit) error {
 				return fmt.Errorf("could not compile changes regex for %s: %v", j.Name, err)
 			}
 			js[i].reChanges = re
+		}
+		b, err := setBrancherRegexes(j.Brancher)
+		if err != nil {
+			return fmt.Errorf("could not set branch regexes for %s: %v", j.Name, err)
+		}
+		js[i].Brancher = b
+	}
+	return nil
+}
+
+// setBrancherRegexes compiles and validates all the regural expressions for
+// the provided branch specifiers.
+func setBrancherRegexes(br Brancher) (Brancher, error) {
+	if len(br.Branches) > 0 {
+		if re, err := regexp.Compile(strings.Join(br.Branches, `|`)); err == nil {
+			br.re = re
+		} else {
+			return br, fmt.Errorf("could not compile positive branch regex: %v", err)
+		}
+	}
+	if len(br.SkipBranches) > 0 {
+		if re, err := regexp.Compile(strings.Join(br.SkipBranches, `|`)); err == nil {
+			br.reSkip = re
+		} else {
+			return br, fmt.Errorf("could not compile negative branch regex: %v", err)
+		}
+	}
+	return br, nil
+}
+
+// SetPostsubmitRegexes compiles and validates all the regural expressions for
+// the provided postsubmits.
+func SetPostsubmitRegexes(ps []Postsubmit) error {
+	for i, j := range ps {
+		b, err := setBrancherRegexes(j.Brancher)
+		if err != nil {
+			return fmt.Errorf("could not set branch regexes for %s: %v", j.Name, err)
+		}
+		ps[i].Brancher = b
+		if err := SetPostsubmitRegexes(j.RunAfterSuccess); err != nil {
+			return err
 		}
 	}
 	return nil

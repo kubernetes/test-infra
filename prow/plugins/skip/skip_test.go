@@ -255,7 +255,7 @@ func TestSkipStatus(t *testing.T) {
 
 	for _, test := range tests {
 		t.Logf("running scenario %q", test.name)
-		if err := config.SetRegexes(test.presubmits); err != nil {
+		if err := config.SetPresubmitRegexes(test.presubmits); err != nil {
 			t.Fatal(err)
 		}
 
