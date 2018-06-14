@@ -60,10 +60,6 @@ branch-protection:
             users: []
             teams:
             - stage-bots
-        charts:
-          required_status_checks:
-            contexts:
-            - ci/circleci
         client-go:
           restrictions:
             users: []
