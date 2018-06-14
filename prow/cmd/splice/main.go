@@ -42,7 +42,7 @@ var (
 	remoteURL      = flag.String("remote-url", "https://github.com/kubernetes/kubernetes", "Remote Git URL")
 	orgName        = flag.String("org", "kubernetes", "Org name")
 	repoName       = flag.String("repo", "kubernetes", "Repo name")
-	configPath     = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
+	configPath     = flag.String("config-path", "/etc/config/config.yaml", "Path to config.yaml.")
 	maxBatchSize   = flag.Int("batch-size", 5, "Maximum batch size")
 	alwaysRun      = flag.String("always-run", "", "Job names that should be treated as always_run: true in Splice")
 )

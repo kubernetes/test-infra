@@ -44,7 +44,7 @@ import (
 var (
 	totURL = flag.String("tot-url", "", "Tot URL")
 
-	configPath   = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
+	configPath   = flag.String("config-path", "/etc/config/config.yaml", "Path to config.yaml.")
 	cluster      = flag.String("cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
 	buildCluster = flag.String("build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
 	selector     = flag.String("label-selector", kube.EmptySelector, "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")

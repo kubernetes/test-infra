@@ -48,7 +48,7 @@ var (
 	runOnce = flag.Bool("run-once", false, "If true, run only once then quit.")
 	deckURL = flag.String("deck-url", "", "Deck URL for read-only access to the cluster.")
 
-	configPath = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
+	configPath = flag.String("config-path", "/etc/config/config.yaml", "Path to config.yaml.")
 	cluster    = flag.String("cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
 
 	githubEndpoint  = flagutil.NewStrings("https://api.github.com")
