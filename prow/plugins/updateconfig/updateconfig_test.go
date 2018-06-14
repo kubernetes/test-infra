@@ -18,6 +18,7 @@ package updateconfig
 
 import (
 	"fmt"
+	"path"
 	"strings"
 	"testing"
 
@@ -252,10 +253,16 @@ func TestUpdateConfig(t *testing.T) {
 		}
 
 		for _, configName := range tc.configUpdates {
+			fileName := ""
+			for file, config := range m {
+				if config.Name == configName {
+					fileName = file
+				}
+			}
 			newConfigContent := fmt.Sprintf("new-%s", configName)
 			if config, ok := fkc.maps[configName]; !ok {
 				t.Fatalf("tc %s : Should have updated configmap for '%s'", tc.name, configName)
-			} else if config.Data[configName] != newConfigContent {
+			} else if config.Data[path.Base(fileName)] != newConfigContent {
 				t.Fatalf(
 					"tc %s : Expect get %s '%s', got '%s'",
 					tc.name,

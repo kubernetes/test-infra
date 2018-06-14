@@ -87,7 +87,6 @@ func update(gc githubClient, kc kubeClient, org, repo, commit, filename, name, n
 			Namespace: namespace,
 		},
 		Data: map[string]string{
-			name:                c,
 			path.Base(filename): c,
 		},
 	}
