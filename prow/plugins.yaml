@@ -470,3 +470,7 @@ external_plugins:
   - name: needs-rebase
     events:
       - pull_request
+  client-go/unofficial-docs:
+  - name: needs-rebase
+    events:
+      - pull_request
