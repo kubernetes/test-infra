@@ -58,7 +58,7 @@ func init() {
 	creator.RegisterSourceOrDie("triage-filer", &TriageFiler{})
 }
 
-// FileIssues is the main work function of the TriageFiler.  It fetches and parses cluster data,
+// Issues is the main work function of the TriageFiler.  It fetches and parses cluster data,
 // then syncs the top issues to github with the IssueCreator.
 func (f *TriageFiler) Issues(c *creator.IssueCreator) ([]creator.Issue, error) {
 	f.creator = c
@@ -78,7 +78,7 @@ func (f *TriageFiler) Issues(c *creator.IssueCreator) ([]creator.Issue, error) {
 	return issues, nil
 }
 
-// RegisterOptions registers options for this munger; returns any that require a restart when changed.
+// RegisterFlags registers options for this munger; returns any that require a restart when changed.
 func (f *TriageFiler) RegisterFlags() {
 	flag.IntVar(&f.topClustersCount, "triage-count", 3, "The number of clusters to sync issues for on github.")
 	flag.IntVar(&f.windowDays, "triage-window", 1, "The size of the sliding time window (in days) that is used to determine which failures to consider.")
@@ -103,11 +103,12 @@ type triageData struct {
 	Clustered []*Cluster `json:"clustered"`
 }
 
+// Cluster holds information about a failure cluster.
 type Cluster struct {
-	Id    string  `json:"id"`
-	Key   string  `json:"key"`
-	Text  string  `json:"text"`
-	Tests []*Test `json:"tests"`
+	Identifier string  `json:"id"`
+	Key        string  `json:"key"`
+	Text       string  `json:"text"`
+	Tests      []*Test `json:"tests"`
 
 	filer       *TriageFiler
 	jobs        map[string][]int
@@ -116,11 +117,13 @@ type Cluster struct {
 	totalTests  int
 }
 
+// Test holds a name and list of jobs
 type Test struct {
 	Name string `json:"name"`
 	Jobs []*Job `json:"jobs"`
 }
 
+// Job holds a name and list of build numbers
 type Job struct {
 	Name   string `json:"name"`
 	Builds []int  `json:"builds"`
@@ -139,36 +142,36 @@ func (f *TriageFiler) filterAndValidate(windowDays int) error {
 
 	validClusts := []*Cluster{}
 	for clustIndex, clust := range f.data.Clustered {
-		if len(clust.Id) == 0 {
-			return fmt.Errorf("the cluster at index %d in the triage JSON data does not specify an Id.", clustIndex)
+		if len(clust.Identifier) == 0 {
+			return fmt.Errorf("the cluster at index %d in the triage JSON data does not specify an ID", clustIndex)
 		}
 		if clust.Tests == nil {
-			return fmt.Errorf("cluster '%s' does not have a 'tests' key.", clust.Id)
+			return fmt.Errorf("cluster '%s' does not have a 'tests' key", clust.Identifier)
 		}
 		validTests := []*Test{}
 		for _, test := range clust.Tests {
 			if len(test.Name) == 0 {
-				return fmt.Errorf("cluster '%s' contains a test without a name.", clust.Id)
+				return fmt.Errorf("cluster '%s' contains a test without a name", clust.Identifier)
 			}
 			if test.Jobs == nil {
-				return fmt.Errorf("cluster '%s' does not have a 'jobs' key.", clust.Id)
+				return fmt.Errorf("cluster '%s' does not have a 'jobs' key", clust.Identifier)
 			}
 			validJobs := []*Job{}
 			for _, job := range test.Jobs {
 				if len(job.Name) == 0 {
-					return fmt.Errorf("cluster '%s' contains a job without a name under test '%s'.", clust.Id, test.Name)
+					return fmt.Errorf("cluster '%s' contains a job without a name under test '%s'", clust.Identifier, test.Name)
 				}
 				// Filter out PR jobs
 				if strings.HasPrefix(job.Name, "pr:") {
 					continue
 				}
 				if len(job.Builds) == 0 {
-					return fmt.Errorf("cluster '%s' contains job '%s' under test '%s' with no failing builds.", clust.Id, job.Name, test.Name)
+					return fmt.Errorf("cluster '%s' contains job '%s' under test '%s' with no failing builds", clust.Identifier, job.Name, test.Name)
 				}
 				validBuilds := []int{}
 				rowMap, ok := f.data.Builds.Jobs[job.Name]
 				if !ok {
-					return fmt.Errorf("triage json data does not contain buildnum to row index mapping for job '%s'.", job.Name)
+					return fmt.Errorf("triage json data does not contain buildnum to row index mapping for job '%s'", job.Name)
 				}
 				for _, buildnum := range job.Builds {
 					row, err := rowMap.rowForBuild(buildnum)
@@ -213,7 +216,7 @@ type ContigIndexer struct {
 
 func (rowMap ContigIndexer) rowForBuild(buildnum int) (int, error) {
 	if buildnum < rowMap.startBuild || buildnum > rowMap.startBuild+rowMap.count-1 {
-		return 0, fmt.Errorf("failed to find row in JSON for buildnumber: %d. Row mapping or buildnumber is invalid.", buildnum)
+		return 0, fmt.Errorf("failed to find row in JSON for buildnumber: %d. Row mapping or buildnumber is invalid", buildnum)
 	}
 	return buildnum - rowMap.startBuild + rowMap.startRow, nil
 }
@@ -225,11 +228,11 @@ type DictIndexer map[string]interface{}
 func (rowMap DictIndexer) rowForBuild(buildnum int) (int, error) {
 	row, ok := rowMap[strconv.Itoa(buildnum)]
 	if !ok {
-		return 0, fmt.Errorf("failed to find row in JSON for buildnumber: %d. Row mapping or buildnumber is invalid.", buildnum)
+		return 0, fmt.Errorf("failed to find row in JSON for buildnumber: %d. Row mapping or buildnumber is invalid", buildnum)
 	}
 	var irow float64
 	if irow, ok = row.(float64); !ok {
-		return 0, fmt.Errorf("failed to find row in JSON for buildnumber: %d. Row mapping contains invalid type.", buildnum)
+		return 0, fmt.Errorf("failed to find row in JSON for buildnumber: %d. Row mapping contains invalid type", buildnum)
 	}
 	return int(irow), nil
 }
@@ -287,16 +290,16 @@ func parseTriageData(jsonIn []byte) (*triageData, error) {
 	}
 
 	if data.Builds.Cols.Started == nil {
-		return nil, fmt.Errorf("triage data json is missing the builds.cols.started key.")
+		return nil, fmt.Errorf("triage data json is missing the builds.cols.started key")
 	}
 	if data.Builds.JobsRaw == nil {
-		return nil, fmt.Errorf("triage data is missing the builds.jobs key.")
+		return nil, fmt.Errorf("triage data is missing the builds.jobs key")
 	}
 	if data.Builds.JobPaths == nil {
-		return nil, fmt.Errorf("triage data is missing the builds.job_paths key.")
+		return nil, fmt.Errorf("triage data is missing the builds.job_paths key")
 	}
 	if data.Clustered == nil {
-		return nil, fmt.Errorf("triage data is missing the clustered key.")
+		return nil, fmt.Errorf("triage data is missing the clustered key")
 	}
 	// Populate 'Jobs' with the BuildIndexer for each job.
 	data.Builds.Jobs = make(map[string]BuildIndexer)
@@ -361,7 +364,7 @@ func (c *Cluster) topJobsFailed(count int) []*Job {
 // Title is the string to use as the github issue title.
 func (c *Cluster) Title() string {
 	return fmt.Sprintf("Failure cluster [%s...] failed %d builds, %d jobs, and %d tests over %d days",
-		c.Id[0:6],
+		c.Identifier[0:6],
 		c.totalBuilds,
 		c.totalJobs,
 		c.totalTests,
@@ -384,7 +387,7 @@ func (c *Cluster) Body(closedIssues []*githubapi.Issue) string {
 	}
 
 	var buf bytes.Buffer
-	fmt.Fprintf(&buf, "### Failure cluster [%s](%s#%s)\n", c.ID(), triageURL, c.Id)
+	fmt.Fprintf(&buf, "### Failure cluster [%s](%s#%s)\n", c.ID(), triageURL, c.Identifier)
 	fmt.Fprintf(&buf, "##### Error text:\n```\n%s\n```\n", c.Text)
 	// cluster stats
 	fmt.Fprint(&buf, "##### Failure cluster statistics:\n")
@@ -442,7 +445,7 @@ func (c *Cluster) Body(closedIssues []*githubapi.Issue) string {
 	// Explanations of assignees and sigs
 	fmt.Fprint(&buf, c.filer.creator.ExplainTestAssignments(testNames))
 
-	fmt.Fprintf(&buf, "\n[Current Status](%s#%s)", triageURL, c.Id)
+	fmt.Fprintf(&buf, "\n[Current Status](%s#%s)", triageURL, c.Identifier)
 
 	return buf.String()
 }
@@ -451,7 +454,7 @@ func (c *Cluster) Body(closedIssues []*githubapi.Issue) string {
 // This ID must appear in the body of the issue.
 // DO NOT CHANGE how this ID is formatted or duplicate issues may be created on github.
 func (c *Cluster) ID() string {
-	return c.Id
+	return c.Identifier
 }
 
 // Labels returns the labels to apply to the issue created for this cluster on github.

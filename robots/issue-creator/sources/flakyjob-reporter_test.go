@@ -26,7 +26,7 @@ import (
 )
 
 var (
-	sampleFlakyJobJson = []byte(`
+	sampleFlakyJobJSON = []byte(`
 	{
 	  "ci-kubernetes-e2e-non-cri-gce-etcd3": {
 	    "consistency": 0.863,
@@ -79,7 +79,7 @@ var (
 
 func TestFJParseFlakyJobs(t *testing.T) {
 	reporter := &FlakyJobReporter{creator: &creator.IssueCreator{}}
-	jobs, err := reporter.parseFlakyJobs(sampleFlakyJobJson)
+	jobs, err := reporter.parseFlakyJobs(sampleFlakyJobJSON)
 	if err != nil {
 		t.Fatalf("Error parsing flaky jobs: %v\n", err)
 	}
@@ -114,7 +114,7 @@ func TestFJParseFlakyJobs(t *testing.T) {
 // empty body if there is a closed issue for the same flaky job that was closed in the past week.
 func TestFJPrevCloseInWindow(t *testing.T) {
 	reporter := &FlakyJobReporter{creator: &creator.IssueCreator{}}
-	fjs, err := reporter.parseFlakyJobs(sampleFlakyJobJson)
+	fjs, err := reporter.parseFlakyJobs(sampleFlakyJobJSON)
 	if err != nil {
 		t.Fatalf("Error parsing flaky jobs: %v\n", err)
 	}

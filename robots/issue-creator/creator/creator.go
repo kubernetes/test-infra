@@ -95,6 +95,7 @@ type Issue interface {
 	Priority() (string, bool)
 }
 
+// IssueSource represents a source of auto-filed issues, such as triage-filer or flakyjob-reporter.
 type IssueSource interface {
 	Issues(*IssueCreator) ([]Issue, error)
 	RegisterFlags()
@@ -137,6 +138,7 @@ type IssueCreator struct {
 
 var sources = map[string]IssueSource{}
 
+// RegisterSourceOrDie registers a source of auto-filed issues.
 func RegisterSourceOrDie(name string, src IssueSource) {
 	if _, ok := sources[name]; ok {
 		glog.Fatalf("Cannot register an IssueSource with name %q, already exists!", name)
@@ -216,13 +218,13 @@ func (c *IssueCreator) CreateAndSync() {
 func (c *IssueCreator) loadCache() error {
 	user, err := c.client.GetUser("")
 	if err != nil {
-		return fmt.Errorf("failed to fetch the User struct for the current authenticated user. errmsg: %v\n", err)
+		return fmt.Errorf("failed to fetch the User struct for the current authenticated user. errmsg: %v", err)
 	}
 	if user == nil {
-		return fmt.Errorf("received a nil User struct pointer when trying to look up the currently authenticated user.")
+		return fmt.Errorf("received a nil User struct pointer when trying to look up the currently authenticated user")
 	}
 	if user.Login == nil {
-		return fmt.Errorf("the user struct for the currently authenticated user does not specify a login.")
+		return fmt.Errorf("the user struct for the currently authenticated user does not specify a login")
 	}
 	c.authorName = *user.Login
 
@@ -261,7 +263,7 @@ func (c *IssueCreator) loadCache() error {
 		},
 	)
 	if err != nil {
-		return fmt.Errorf("failed to refresh the list of all issues created by %s in repo '%s/%s'. errmsg: %v\n", c.authorName, c.org, c.project, err)
+		return fmt.Errorf("failed to refresh the list of all issues created by %s in repo '%s/%s'. errmsg: %v", c.authorName, c.org, c.project, err)
 	}
 	if len(issues) == 0 {
 		glog.Warningf("IssueCreator found no issues in the repo '%s/%s' authored by '%s'.\n", c.org, c.project, c.authorName)
@@ -273,7 +275,7 @@ func (c *IssueCreator) loadCache() error {
 	return nil
 }
 
-// RegisterOptions registers options for this munger; returns any that require a restart when changed.
+// RegisterFlags registers options for this munger; returns any that require a restart when changed.
 func (c *IssueCreator) RegisterFlags() {
 	flag.StringVar(&c.ownerPath, "test-owners-csv", "", "file containing a CSV-exported test-owners spreadsheet")
 	flag.IntVar(&c.MaxSIGCount, "maxSIGs", 3, "The maximum number of SIG labels to attach to an issue.")
@@ -395,7 +397,7 @@ func (c *IssueCreator) TestOwner(testName string) string {
 	return owner
 }
 
-// TestSIG uses the IssueCreator's OwnerMapper to look up the SIGs for a list of tests.
+// TestsSIGs uses the IssueCreator's OwnerMapper to look up the SIGs for a list of tests.
 // The number of SIGs returned is limited by MaxSIGCount.
 // The return value is a map from sigs to the tests from testNames that each sig owns.
 func (c *IssueCreator) TestsSIGs(testNames []string) map[string][]string {
@@ -420,7 +422,7 @@ func (c *IssueCreator) TestsSIGs(testNames []string) map[string][]string {
 	return sigs
 }
 
-// TestOwner uses the IssueCreator's OwnerMapper to look up the users assigned to a list of tests.
+// TestsOwners uses the IssueCreator's OwnerMapper to look up the users assigned to a list of tests.
 // The number of users returned is limited by MaxAssignees.
 // The return value is a map from users to the test names from testNames that each user owns.
 func (c *IssueCreator) TestsOwners(testNames []string) map[string][]string {
@@ -445,6 +447,7 @@ func (c *IssueCreator) TestsOwners(testNames []string) map[string][]string {
 	return users
 }
 
+// ExplainTestAssignments returns a string explaining how tests caused the individual/sig assignments.
 func (c *IssueCreator) ExplainTestAssignments(testNames []string) string {
 	assignees := c.TestsOwners(testNames)
 	sigs := c.TestsSIGs(testNames)
