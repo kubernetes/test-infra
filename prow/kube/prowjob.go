@@ -25,29 +25,48 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// ProwJobType specifies how the job is triggered.
 type ProwJobType string
+
+// ProwJobState specifies whether the job is running
 type ProwJobState string
+
+// ProwJobAgent specifies the controller (such as plank or jenkins-agent) that runs the job.
 type ProwJobAgent string
 
+// Various job types.
 const (
-	PresubmitJob  ProwJobType = "presubmit"
-	PostsubmitJob             = "postsubmit"
-	PeriodicJob               = "periodic"
-	BatchJob                  = "batch"
+	// PresubmitJob means it runs on unmerged PRs.
+	PresubmitJob ProwJobType = "presubmit"
+	// PostsubmitJob means it runs on each new commit.
+	PostsubmitJob = "postsubmit"
+	// Periodic job means it runs on a time-basis, unrelated to git changes.
+	PeriodicJob = "periodic"
+	// BatchJob tests multiple unmerged PRs at the same time.
+	BatchJob = "batch"
 )
 
+// Various job states.
 const (
+	// TriggeredState means the job has been created but not yet scheduled.
 	TriggeredState ProwJobState = "triggered"
-	PendingState                = "pending"
-	SuccessState                = "success"
-	FailureState                = "failure"
-	AbortedState                = "aborted"
-	ErrorState                  = "error"
+	// PendingState means the job is scheduled but not yet running.
+	PendingState = "pending"
+	// SuccessState means the job completed without error (exit 0)
+	SuccessState = "success"
+	// FailureState means the job completed with errors (exit non-zero)
+	FailureState = "failure"
+	// AbortedState means prow killed the job early (new commit pushed, perhaps).
+	AbortedState = "aborted"
+	// ErrorState means the job could not schedule (bad config, perhaps).
+	ErrorState = "error"
 )
 
 const (
+	// KubernetesAgent means prow will create a pod to run this job.
 	KubernetesAgent ProwJobAgent = "kubernetes"
-	JenkinsAgent                 = "jenkins"
+	// JenkinsAgent means prow will schedule the job on jenkins.
+	JenkinsAgent = "jenkins"
 )
 
 const (
@@ -76,6 +95,7 @@ const (
 	ProwJobAnnotation = "prow.k8s.io/job"
 )
 
+// ProwJob contains the spec as well as runtime metadata.
 type ProwJob struct {
 	APIVersion        string `json:"apiVersion,omitempty"`
 	Kind              string `json:"kind,omitempty"`
@@ -85,6 +105,10 @@ type ProwJob struct {
 	Status ProwJobStatus `json:"status,omitempty"`
 }
 
+// ProwJobSpec configures the details of the prow job.
+//
+// Details include the podspec, code to clone, the cluster it runs
+// any child jobs, concurrency limitations, etc.
 type ProwJobSpec struct {
 	// Type is the type of job and informs how
 	// the jobs is triggered
@@ -131,6 +155,10 @@ type ProwJobSpec struct {
 	RunAfterSuccess []ProwJobSpec `json:"run_after_success,omitempty"`
 }
 
+// DecorationConfig specifies how to augment pods.
+//
+// This is primarily used to provide automatic integration with gubernator
+// and testgrid.
 type DecorationConfig struct {
 	// Timeout is how long the pod utilities will wait
 	// before aborting a job with SIGINT.
@@ -148,9 +176,9 @@ type DecorationConfig struct {
 	// GCSCredentialsSecret is the name of the Kubernetes secret
 	// that holds GCS push credentials
 	GCSCredentialsSecret string `json:"gcs_credentials_secret,omitempty"`
-	// SshKeySecrets are the names of Kubernetes secrets that contain
+	// SSHKeySecrets are the names of Kubernetes secrets that contain
 	// SSK keys which should be used during the cloning process
-	SshKeySecrets []string `json:"ssh_key_secrets,omitempty"`
+	SSHKeySecrets []string `json:"ssh_key_secrets,omitempty"`
 	// SkipCloning determines if we should clone source code in the
 	// initcontainers for jobs that specify refs
 	SkipCloning bool `json:"skip_cloning,omitempty"`
@@ -169,6 +197,8 @@ type UtilityImages struct {
 	Sidecar string `json:"sidecar,omitempty"`
 }
 
+// PathStrategy specifies minutia about how to contruct the url.
+// Usually consumed by gubernator/testgrid.
 const (
 	PathStrategyLegacy   = "legacy"
 	PathStrategySingle   = "single"
@@ -194,6 +224,7 @@ type GCSConfiguration struct {
 	DefaultRepo string `json:"default_repo,omitempty"`
 }
 
+// ProwJobStatus provides runtime metadata, such as when it finished, whether it is running, etc.
 type ProwJobStatus struct {
 	StartTime      metav1.Time  `json:"startTime,omitempty"`
 	CompletionTime *metav1.Time `json:"completionTime,omitempty"`
@@ -221,15 +252,21 @@ type ProwJobStatus struct {
 	JenkinsBuildID string `json:"jenkins_build_id,omitempty"`
 }
 
+// Complete returns true if the prow job has finished
 func (j *ProwJob) Complete() bool {
+	// TODO(fejta): support a timeout?
 	return j.Status.CompletionTime != nil
 }
 
+// SetComplete marks the job as completed (at time now).
 func (j *ProwJob) SetComplete() {
 	j.Status.CompletionTime = new(metav1.Time)
 	*j.Status.CompletionTime = metav1.Now()
 }
 
+// ClusterAlias specifies the key in the clusters map to use.
+//
+// This allows scheduling a prow job somewhere aside from the default build cluster.
 func (j *ProwJob) ClusterAlias() string {
 	if j.Spec.Cluster == "" {
 		return DefaultClusterAlias
@@ -237,6 +274,7 @@ func (j *ProwJob) ClusterAlias() string {
 	return j.Spec.Cluster
 }
 
+// Pull describes a pull request at a particular point in time.
 type Pull struct {
 	Number int    `json:"number,omitempty"`
 	Author string `json:"author,omitempty"`
@@ -249,8 +287,11 @@ type Pull struct {
 	Ref string `json:"ref,omitempty"`
 }
 
+// Refs describes how the repo was constructed.
 type Refs struct {
-	Org  string `json:"org,omitempty"`
+	// Org is something like kubernetes or k8s.io
+	Org string `json:"org,omitempty"`
+	// Repo is something like test-infra
 	Repo string `json:"repo,omitempty"`
 
 	BaseRef string `json:"base_ref,omitempty"`
