@@ -324,9 +324,10 @@ plugins:
   - approve
 
   kubernetes/test-infra:
-  - trigger
-  - config-updater
   - approve
+  - config-updater
+  - trigger
+  - verify-owners
 
   kubernetes/website:
   - approve
