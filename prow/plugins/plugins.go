@@ -504,6 +504,7 @@ func (pa *PluginAgent) Load(path string) error {
 	if err := compileRegexps(np); err != nil {
 		return err
 	}
+
 	pa.Set(np)
 	return nil
 }
