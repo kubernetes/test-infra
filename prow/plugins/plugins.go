@@ -518,17 +518,17 @@ func (pa *PluginAgent) Config() *Configuration {
 // doesn't contain any nil value
 func ensureConfig(config *Configuration) error {
 	var errors []string
-	for _, configuration := range config.Plugins {
+	for repo, configuration := range config.Plugins {
 		for _, plugin := range configuration {
 			if plugin == "heart" && config.Heart == nil {
-				errors = append(errors, "nil struct: heart")
+				org := strings.Split(repo, "/")[0]
+				errors = append(errors, fmt.Sprintf("unexpected nil config for plugin %s for %s and %s", plugin, repo, org))
 			}
-			//TODO: Rest of plugins
 		}
 	}
 
 	if len(errors) > 0 {
-		return fmt.Errorf("Empty configurations:\n\t%v", strings.Join(errors, "\n\t"))
+		return fmt.Errorf("empty configurations:\n\t%v", strings.Join(errors, "\n\t"))
 	}
 	return nil
 }
