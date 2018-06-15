@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
       - name: tide
-        image: gcr.io/k8s-prow/tide:v20180608-68f2851db
+        image: gcr.io/k8s-prow/tide:v20180615-0824a2979
         args:
         - --dry-run=false
         - --github-endpoint=http://ghproxy
