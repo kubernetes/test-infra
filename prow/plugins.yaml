@@ -240,6 +240,7 @@ plugins:
 
   kubernetes/features:
   - approve
+  - stage
 
   kubernetes/ingress-gce:
   - trigger
@@ -316,6 +317,7 @@ plugins:
 
   kubernetes/sig-release:
   - approve
+  - stage
 
   kubernetes/steering:
   - approve
