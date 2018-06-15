@@ -209,6 +209,7 @@ tide:
     - kubernetes-sigs/application
     - kubernetes-sigs/cluster-api
     - kubernetes-sigs/controller-runtime
+    - kubernetes-sigs/controller-tools
     - kubernetes-sigs/kubebuilder
     labels:
     - lgtm
