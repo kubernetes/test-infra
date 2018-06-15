@@ -33,13 +33,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spf13/pflag"
+
 	"k8s.io/test-infra/boskos/client"
 	"k8s.io/test-infra/kubetest/conformance"
 	"k8s.io/test-infra/kubetest/dind"
 	"k8s.io/test-infra/kubetest/process"
 	"k8s.io/test-infra/kubetest/util"
-
-	"github.com/spf13/pflag"
 )
 
 // Hardcoded in ginkgo-e2e.sh

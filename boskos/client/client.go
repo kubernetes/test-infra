@@ -182,7 +182,7 @@ func (c *Client) SyncAll() error {
 }
 
 // UpdateOne signals update for one of the resources hold by the client.
-func (c *Client) UpdateOne(name, state string, userData common.UserData) error {
+func (c *Client) UpdateOne(name, state string, userData *common.UserData) error {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
@@ -216,7 +216,7 @@ func (c *Client) HasResource() bool {
 
 // private methods
 
-func (c *Client) updateLocalResource(i common.Item, state string, data common.UserData) error {
+func (c *Client) updateLocalResource(i common.Item, state string, data *common.UserData) error {
 	res, err := common.ItemToResource(i)
 	if err != nil {
 		return err
@@ -227,6 +227,7 @@ func (c *Client) updateLocalResource(i common.Item, state string, data common.Us
 	} else {
 		res.UserData.Update(data)
 	}
+
 	return c.storage.Update(res)
 }
 
@@ -297,7 +298,7 @@ func (c *Client) release(name, dest string) error {
 	return nil
 }
 
-func (c *Client) update(name, state string, userData common.UserData) error {
+func (c *Client) update(name, state string, userData *common.UserData) error {
 	var body io.Reader
 	if userData != nil {
 		b := new(bytes.Buffer)

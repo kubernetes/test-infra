@@ -69,10 +69,10 @@ type ResourceSpec struct {
 
 // ResourceStatus holds information that are likely to change
 type ResourceStatus struct {
-	State      string          `json:"state,omitempty"`
-	Owner      string          `json:"owner"`
-	LastUpdate time.Time       `json:"lastUpdate,omitempty"`
-	UserData   common.UserData `json:"userData,omitempty"`
+	State      string           `json:"state,omitempty"`
+	Owner      string           `json:"owner"`
+	LastUpdate time.Time        `json:"lastUpdate,omitempty"`
+	UserData   *common.UserData `json:"userData,omitempty"`
 }
 
 // GetName returns a unique identifier for a given resource
