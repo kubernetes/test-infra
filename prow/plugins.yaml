@@ -357,6 +357,19 @@ plugins:
   - lifecycle
   - size
 
+  kubernetes-client:
+  - assign
+  - cla
+  - label
+  - lgtm
+  - lifecycle
+  - size
+  - wip
+  - hold
+  - help
+  - cat
+  - dog
+
   kubernetes-incubator/service-catalog:
   - cat
   - dog
