@@ -903,7 +903,7 @@ func ValidateController(c *Controller) error {
 	return nil
 }
 
-// SetPresubmitRegexes compiles and validates all the regural expressions for
+// SetPresubmitRegexes compiles and validates all the regular expressions for
 // the provided presubmits.
 func SetPresubmitRegexes(js []Presubmit) error {
 	for i, j := range js {
@@ -934,7 +934,7 @@ func SetPresubmitRegexes(js []Presubmit) error {
 	return nil
 }
 
-// setBrancherRegexes compiles and validates all the regural expressions for
+// setBrancherRegexes compiles and validates all the regular expressions for
 // the provided branch specifiers.
 func setBrancherRegexes(br Brancher) (Brancher, error) {
 	if len(br.Branches) > 0 {
@@ -954,7 +954,7 @@ func setBrancherRegexes(br Brancher) (Brancher, error) {
 	return br, nil
 }
 
-// SetPostsubmitRegexes compiles and validates all the regural expressions for
+// SetPostsubmitRegexes compiles and validates all the regular expressions for
 // the provided postsubmits.
 func SetPostsubmitRegexes(ps []Postsubmit) error {
 	for i, j := range ps {
