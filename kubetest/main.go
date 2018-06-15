@@ -674,6 +674,16 @@ func prepareGcp(o *options) error {
 		return err
 	}
 	if o.provider == "gce" {
+		if o.cluster != "" {
+			if err := os.Setenv("KUBE_GCE_INSTANCE_PREFIX", o.cluster); err != nil {
+				return fmt.Errorf("could not set KUBE_GCE_INSTANCE_PREFIX=%s: %v", o.cluster, err)
+			}
+		}
+		if o.gcpNetwork != "" {
+			if err := os.Setenv("KUBE_GCE_NETWORK", o.gcpNetwork); err != nil {
+				return fmt.Errorf("could not set KUBE_GCE_NETWORK=%s: %v", o.gcpNetwork, err)
+			}
+		}
 		if distro := os.Getenv("KUBE_OS_DISTRIBUTION"); distro != "" {
 			log.Printf("Please use --gcp-master-image=%s --gcp-node-image=%s (instead of deprecated KUBE_OS_DISTRIBUTION)",
 				distro, distro)
