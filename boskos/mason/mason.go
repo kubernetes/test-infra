@@ -38,7 +38,7 @@ const (
 
 // Masonable should be implemented by all configurations
 type Masonable interface {
-	Construct(context.Context, *common.Resource, common.TypeToResources) (*common.UserData, error)
+	Construct(context.Context, common.Resource, common.TypeToResources) (*common.UserData, error)
 }
 
 // ConfigConverter converts a string into a Masonable
@@ -219,9 +219,7 @@ func (m *Mason) garbageCollect(req requirements) {
 
 	for _, resources := range req.fulfillment {
 		for _, r := range resources {
-			if r != nil {
-				names = append(names, r.Name)
-			}
+			names = append(names, r.Name)
 		}
 	}
 
@@ -230,7 +228,6 @@ func (m *Mason) garbageCollect(req requirements) {
 			logrus.WithError(err).Errorf("Unable to release leased resource %s", name)
 		}
 	}
-
 }
 
 func (m *Mason) cleanAll(ctx context.Context) {
@@ -264,11 +261,26 @@ func (m *Mason) cleanOne(ctx context.Context, res *common.Resource, leasedResour
 		logrus.WithError(err).Errorf("failed to convert config type %s - \n%s", configEntry.Config.Type, configEntry.Config.Content)
 		return err
 	}
-	userData, err := config.Construct(ctx, res, leasedResources)
-	if err != nil {
-		logrus.WithError(err).Errorf("failed to construct resource %s", res.Name)
-		return err
+
+	errChan := make(chan error)
+	var userData *common.UserData
+
+	go func() {
+		var err error
+		userData, err = config.Construct(ctx, *res, leasedResources.Copy())
+		errChan <- err
+	}()
+
+	select {
+	case err = <-errChan:
+		if err != nil {
+			logrus.WithError(err).Errorf("failed to construct resource %s", res.Name)
+			return err
+		}
+	case <-ctx.Done():
+		return ctx.Err()
 	}
+
 	if err := m.client.UpdateOne(res.Name, res.State, userData); err != nil {
 		logrus.WithError(err).Error("unable to update user data")
 		return err
@@ -448,7 +460,7 @@ func (m *Mason) fulfillOne(ctx context.Context, req *requirements) error {
 				if res, err := m.client.Acquire(rType, common.Free, common.Leased); err != nil {
 					logrus.WithError(err).Debug("boskos acquire failed!")
 				} else {
-					req.fulfillment[rType] = append(req.fulfillment[rType], res)
+					req.fulfillment[rType] = append(req.fulfillment[rType], *res)
 					needs[rType]--
 				}
 			}
@@ -483,8 +495,8 @@ func (m *Mason) fulfillOne(ctx context.Context, req *requirements) error {
 }
 
 func (m *Mason) updateResources(req *requirements) {
-	var resources []*common.Resource
-	resources = append(resources, &req.resource)
+	var resources []common.Resource
+	resources = append(resources, req.resource)
 	for _, leasedResources := range req.fulfillment {
 		resources = append(resources, leasedResources...)
 	}

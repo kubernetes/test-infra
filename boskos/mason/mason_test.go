@@ -32,12 +32,26 @@ import (
 	"k8s.io/test-infra/boskos/storage"
 )
 
+var (
+	constructErr = fmt.Errorf("failed to construct")
+)
+
 const (
 	fakeConfigType    = "fakeConfig"
 	emptyContent      = "empty content"
 	owner             = "mason"
-	defaultWaitPeriod = 50 * time.Millisecond
+	defaultWaitPeriod = 100 * time.Millisecond
 )
+
+func errorsEqual(a, b error) bool {
+	if a == nil && b == nil {
+		return true
+	}
+	if a != nil && b != nil {
+		return a.Error() == b.Error()
+	}
+	return false
+}
 
 type fakeBoskos struct {
 	ranch *ranch.Ranch
@@ -49,14 +63,32 @@ type testConfig map[string]struct {
 }
 
 type fakeConfig struct {
+	sleepTime time.Duration
+	err       error
 }
 
 func fakeConfigConverter(in string) (Masonable, error) {
 	return &fakeConfig{}, nil
 }
 
-func (fc *fakeConfig) Construct(ctx context.Context, *res common.Resource, typeToRes common.TypeToResources) (*common.UserData, error) {
-	return common.UserDataFromMap(map[string]string{"fakeConfig": "unused"}), nil
+func failingConfigConverter(in string) (Masonable, error) {
+	return &fakeConfig{err: constructErr}, nil
+}
+
+func timeoutConfigConverter(in string) (Masonable, error) {
+	return &fakeConfig{sleepTime: defaultWaitPeriod}, nil
+}
+
+func (fc *fakeConfig) Construct(ctx context.Context, res common.Resource, typeToRes common.TypeToResources) (*common.UserData, error) {
+	// Mess around with data
+	res.Name = "nothingToDo"
+	res.State = "unknown"
+	res.UserData = common.UserDataFromMap(common.UserDataMap{"test": "test"})
+	for k := range typeToRes {
+		delete(typeToRes, k)
+	}
+	time.Sleep(fc.sleepTime)
+	return common.UserDataFromMap(common.UserDataMap{"fakeConfig": "unused"}), fc.err
 }
 
 // Create a fake client
@@ -202,6 +234,89 @@ func TestRecycleNoLeasedResources(t *testing.T) {
 	}
 	if res1.State != common.Free {
 		t.Errorf("Resource state should be untouched, current %s", mClient.resources["type1_0"].State)
+	}
+}
+
+func TestCleanOne(t *testing.T) {
+	testCases := []struct {
+		name          string
+		configConvert ConfigConverter
+		err           error
+		timeout       bool
+	}{
+		{
+			name:          "success",
+			configConvert: fakeConfigConverter,
+		},
+		{
+			name:          "constructFailure",
+			configConvert: failingConfigConverter,
+			err:           constructErr,
+		},
+		{
+			name:          "constructTimeout",
+			configConvert: timeoutConfigConverter,
+			err:           fmt.Errorf("context deadline exceeded"),
+			timeout:       true,
+		},
+	}
+
+	config := testConfig{
+		"type1": {
+			count: 1,
+		},
+		"type2": {
+			resourceNeeds: &common.ResourceNeeds{
+				"type1": 1,
+			},
+			count: 1,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(tt *testing.T) {
+			rStorage, mClient, configs := createFakeBoskos(config)
+			m := NewMason(1, mClient.basic, defaultWaitPeriod, defaultWaitPeriod)
+			m.storage.SyncConfigs(configs)
+			m.RegisterConfigConverter(fakeConfigType, tc.configConvert)
+			masonRes, err := m.client.Acquire("type2", common.Dirty, common.Cleaning)
+			if err != nil {
+				t.Errorf("unexpected error %v", err)
+				t.FailNow()
+			}
+			req := requirements{
+				resource:    *masonRes,
+				needs:       *config["type2"].resourceNeeds,
+				fulfillment: common.TypeToResources{},
+			}
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+			if err := m.fulfillOne(ctx, &req); err != nil {
+				t.Errorf("unexpected error %v", err)
+			}
+
+			if tc.timeout {
+				ctx, cancel = context.WithTimeout(context.Background(), defaultWaitPeriod/2)
+				defer cancel()
+			}
+
+			err = m.cleanOne(ctx, &req.resource, req.fulfillment)
+			if !errorsEqual(tc.err, err) {
+				tt.Errorf("expected error %v got %v", tc.err, err)
+			}
+			m.garbageCollect(req)
+			resources, err := rStorage.GetResources()
+			if err != nil {
+				t.Errorf("unexpected error %v", err)
+				t.FailNow()
+			}
+			for _, res := range resources {
+				if res.State != common.Dirty {
+					tt.Errorf("resource %v should be released as dirty", res)
+				}
+
+			}
+		})
 	}
 }
 
