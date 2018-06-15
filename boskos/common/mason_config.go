@@ -24,7 +24,7 @@ import (
 type ResourceNeeds map[string]int
 
 // TypeToResources stores all the leased resources with the same type f
-type TypeToResources map[string][]*Resource
+type TypeToResources map[string][]Resource
 
 // ConfigType gather the type of config to be applied by Mason in order to construct the resource
 type ConfigType struct {
@@ -65,4 +65,12 @@ func ItemToResourcesConfig(i Item) (ResourcesConfig, error) {
 		return ResourcesConfig{}, fmt.Errorf("cannot construct Resource from received object %v", i)
 	}
 	return conf, nil
+}
+
+func (t TypeToResources) Copy() TypeToResources {
+	new := TypeToResources{}
+	for k, v := range t {
+		new[k] = v
+	}
+	return new
 }
