@@ -190,21 +190,20 @@ func run(deploy deployer, o options) error {
 			errs = util.AppendError(errs, control.XMLWrap(&suite, "Node Tests", func() error {
 				return nodeTest(nodeArgs, o.testArgs, o.nodeTestArgs, o.gcpProject, o.gcpZone)
 			}))
+		} else if err := control.XMLWrap(&suite, "IsUp", deploy.IsUp); err != nil {
+			errs = util.AppendError(errs, err)
+		} else if o.federation {
+			errs = util.AppendError(errs, control.XMLWrap(&suite, "FederationTest", func() error {
+				return federationTest(testArgs)
+			}))
 		} else {
 			if o.deployment != "dind" && o.deployment != "conformance" {
 				errs = util.AppendError(errs, control.XMLWrap(&suite, "kubectl version", getKubectlVersion))
-				if o.skew {
-					errs = util.AppendError(errs, control.XMLWrap(&suite, "SkewTest", func() error {
-						return skewTest(testArgs, "skew", o.checkSkew)
-					}))
-				}
 			}
 
-			if err := control.XMLWrap(&suite, "IsUp", deploy.IsUp); err != nil {
-				errs = util.AppendError(errs, err)
-			} else if o.federation {
-				errs = util.AppendError(errs, control.XMLWrap(&suite, "FederationTest", func() error {
-					return federationTest(testArgs)
+			if o.skew {
+				errs = util.AppendError(errs, control.XMLWrap(&suite, "SkewTest", func() error {
+					return skewTest(testArgs, "skew", o.checkSkew)
 				}))
 			} else {
 				var tester e2e.Tester
