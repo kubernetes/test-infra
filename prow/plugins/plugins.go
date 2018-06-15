@@ -227,6 +227,11 @@ type Owners struct {
 	// the approve and lgtm plugins to use solely OWNERS files for access
 	// control in the provided repos.
 	SkipCollaborators []string `json:"skip_collaborators,omitempty"`
+
+	// LabelsBlackList holds a list of labels that should not be present in any
+	// OWNERS file, preventing their automatic addition by the owners-label plugin.
+	// This check is performed by the verify-owners plugin.
+	LabelsBlackList []string `json:"labels_blacklist,omitempty"`
 }
 
 func (pa *PluginAgent) MDYAMLEnabled(org, repo string) bool {
@@ -474,6 +479,9 @@ func (c *Configuration) setDefaults() {
 	}
 	if c.SigMention.Regexp == "" {
 		c.SigMention.Regexp = `(?m)@kubernetes/sig-([\w-]*)-(misc|test-failures|bugs|feature-requests|proposals|pr-reviews|api-reviews)`
+	}
+	if c.Owners.LabelsBlackList == nil {
+		c.Owners.LabelsBlackList = []string{"approved", "lgtm"}
 	}
 }
 
