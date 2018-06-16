@@ -25,7 +25,6 @@ import (
 	"time"
 
 	"context"
-	"sync"
 
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/ranch"
@@ -33,7 +32,7 @@ import (
 )
 
 var (
-	constructErr = fmt.Errorf("failed to construct")
+	errConstruct = fmt.Errorf("failed to construct")
 )
 
 const (
@@ -53,8 +52,13 @@ func errorsEqual(a, b error) bool {
 	return false
 }
 
+type releasedResource struct {
+	name, state string
+}
+
 type fakeBoskos struct {
-	ranch *ranch.Ranch
+	ranch             *ranch.Ranch
+	releasedResources chan releasedResource
 }
 
 type testConfig map[string]struct {
@@ -68,11 +72,11 @@ type fakeConfig struct {
 }
 
 func fakeConfigConverter(in string) (Masonable, error) {
-	return &fakeConfig{}, nil
+	return &fakeConfig{sleepTime: 0}, nil
 }
 
 func failingConfigConverter(in string) (Masonable, error) {
-	return &fakeConfig{err: constructErr}, nil
+	return &fakeConfig{sleepTime: 0, err: errConstruct}, nil
 }
 
 func timeoutConfigConverter(in string) (Masonable, error) {
@@ -92,7 +96,8 @@ func (fc *fakeConfig) Construct(ctx context.Context, res common.Resource, typeTo
 }
 
 // Create a fake client
-func createFakeBoskos(tc testConfig) (*ranch.Storage, *Client, []common.ResourcesConfig) {
+func createFakeBoskos(tc testConfig) (*ranch.Storage, *Client, []common.ResourcesConfig, chan releasedResource) {
+	names := make(chan releasedResource, 100)
 	configNames := map[string]bool{}
 	var configs []common.ResourcesConfig
 	s, _ := ranch.NewStorage(storage.NewMemoryStorage(), "")
@@ -123,7 +128,7 @@ func createFakeBoskos(tc testConfig) (*ranch.Storage, *Client, []common.Resource
 			s.AddResource(res)
 		}
 	}
-	return s, NewClient(&fakeBoskos{r}), configs
+	return s, NewClient(&fakeBoskos{ranch: r, releasedResources: names}), configs, names
 }
 
 func (fb *fakeBoskos) Acquire(rtype, state, dest string) (*common.Resource, error) {
@@ -135,6 +140,7 @@ func (fb *fakeBoskos) AcquireByState(state, dest string, names []string) ([]comm
 }
 
 func (fb *fakeBoskos) ReleaseOne(name, dest string) error {
+	fb.releasedResources <- releasedResource{name: name, state: dest}
 	return fb.ranch.Release(name, dest, owner)
 }
 
@@ -170,7 +176,7 @@ func TestRecycleLeasedResources(t *testing.T) {
 		},
 	}
 
-	rStorage, mClient, configs := createFakeBoskos(tc)
+	rStorage, mClient, configs, _ := createFakeBoskos(tc)
 	res1, _ := rStorage.GetResource("type1_0")
 	res1.State = "type2_0"
 	rStorage.UpdateResource(res1)
@@ -213,7 +219,7 @@ func TestRecycleNoLeasedResources(t *testing.T) {
 		},
 	}
 
-	rStorage, mClient, configs := createFakeBoskos(tc)
+	rStorage, mClient, configs, _ := createFakeBoskos(tc)
 	m := NewMason(1, mClient.basic, defaultWaitPeriod, defaultWaitPeriod)
 	m.storage.SyncConfigs(configs)
 	m.RegisterConfigConverter(fakeConfigType, fakeConfigConverter)
@@ -251,7 +257,7 @@ func TestCleanOne(t *testing.T) {
 		{
 			name:          "constructFailure",
 			configConvert: failingConfigConverter,
-			err:           constructErr,
+			err:           errConstruct,
 		},
 		{
 			name:          "constructTimeout",
@@ -275,7 +281,7 @@ func TestCleanOne(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(tt *testing.T) {
-			rStorage, mClient, configs := createFakeBoskos(config)
+			rStorage, mClient, configs, _ := createFakeBoskos(config)
 			m := NewMason(1, mClient.basic, defaultWaitPeriod, defaultWaitPeriod)
 			m.storage.SyncConfigs(configs)
 			m.RegisterConfigConverter(fakeConfigType, tc.configConvert)
@@ -333,7 +339,7 @@ func TestFulfillOne(t *testing.T) {
 		},
 	}
 
-	rStorage, mClient, configs := createFakeBoskos(tc)
+	rStorage, mClient, configs, _ := createFakeBoskos(tc)
 	m := NewMason(1, mClient.basic, defaultWaitPeriod, defaultWaitPeriod)
 	m.storage.SyncConfigs(configs)
 	res, _ := mClient.basic.Acquire("type2", common.Dirty, common.Cleaning)
@@ -379,33 +385,44 @@ func TestFulfillOne(t *testing.T) {
 }
 
 func TestMason(t *testing.T) {
+	count := 10
 	tc := testConfig{
 		"type1": {
-			count: 10,
+			count: count,
 		},
 		"type2": {
 			resourceNeeds: &common.ResourceNeeds{
 				"type1": 1,
 			},
-			count: 10,
+			count: count,
 		},
 	}
-	rStorage, mClient, configs := createFakeBoskos(tc)
-	m := NewMason(5, mClient.basic, defaultWaitPeriod, defaultWaitPeriod)
+	rStorage, mClient, configs, releasedResources := createFakeBoskos(tc)
+	m := NewMason(10, mClient.basic, defaultWaitPeriod, defaultWaitPeriod)
 	m.storage.SyncConfigs(configs)
 	m.RegisterConfigConverter(fakeConfigType, fakeConfigConverter)
 	m.Start()
-	<-time.After(time.Second)
-	resources, _ := rStorage.GetResources()
-	for _, r := range resources {
-		switch r.Type {
-		case "type1":
-			if !strings.Contains(r.State, "type2_") {
-				t.Errorf("state should be starting with type2, found %s", r.State)
+	timeout := time.NewTicker(5 * time.Second).C
+	i := 0
+loop:
+	for {
+		select {
+		case <-timeout:
+			t.Errorf("Test timed ouf")
+			t.FailNow()
+		case rr := <-releasedResources:
+			if strings.HasPrefix(rr.name, "type2_") {
+				if rr.state != common.Free {
+					t.Errorf("resource %s should be at state %s, found %s", rr.name, common.Free, rr.state)
+				}
+			} else if strings.HasPrefix(rr.name, "type1_") {
+				if !strings.HasPrefix(rr.state, "type2_") {
+					t.Errorf("resource %s should be starting with type2_, found %s", rr.name, rr.state)
+				}
 			}
-		case "type2":
-			if r.State != common.Free {
-				t.Errorf("state should be %s, found %s", common.Free, r.State)
+			i++
+			if i >= 2*count {
+				break loop
 			}
 		}
 	}
@@ -426,6 +443,7 @@ func TestMason(t *testing.T) {
 		res, err := mClient.Acquire("type2", common.Free, "Used")
 		if err != nil {
 			t.Errorf("Count %d: There should be free resources", i)
+			t.FailNow()
 		}
 		leasedResources := leasedResourceFromRes(*res)
 		if len(leasedResources) != 1 {
@@ -448,7 +466,7 @@ func TestMason(t *testing.T) {
 
 		}
 	}
-	resources, _ = rStorage.GetResources()
+	resources, _ := rStorage.GetResources()
 	for _, r := range resources {
 		if r.State != common.Dirty {
 			t.Errorf("state should be %s, found %s", common.Dirty, r.State)
@@ -468,24 +486,20 @@ func TestMasonStartStop(t *testing.T) {
 			count: 10,
 		},
 	}
-	_, mClient, configs := createFakeBoskos(tc)
+	_, mClient, configs, _ := createFakeBoskos(tc)
 	m := NewMason(5, mClient.basic, defaultWaitPeriod, defaultWaitPeriod)
 	m.storage.SyncConfigs(configs)
-	m.RegisterConfigConverter(fakeConfigType, fakeConfigConverter)
+	m.RegisterConfigConverter(fakeConfigType, failingConfigConverter)
 	m.Start()
-	var done bool
-	var lock sync.RWMutex
+	done := make(chan bool)
 	go func() {
 		m.Stop()
-		lock.Lock()
-		defer lock.Unlock()
-		done = true
+		done <- true
 	}()
-	<-time.After(1 * time.Second)
-	lock.Lock()
-	defer lock.Unlock()
-	if !done {
+	select {
+	case <-time.After(time.Second):
 		t.Errorf("unable to stop mason")
+	case <-done:
 	}
 }
 
