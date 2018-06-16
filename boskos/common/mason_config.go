@@ -67,6 +67,7 @@ func ItemToResourcesConfig(i Item) (ResourcesConfig, error) {
 	return conf, nil
 }
 
+// Copy returns a copy of the TypeToResources
 func (t TypeToResources) Copy() TypeToResources {
 	new := TypeToResources{}
 	for k, v := range t {

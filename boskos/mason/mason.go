@@ -180,7 +180,7 @@ func NewMason(cleanerCount int, client boskosClient, waitPeriod, syncPeriod time
 func checkUserData(res common.Resource) (common.LeasedResources, error) {
 	var leasedResources common.LeasedResources
 	if res.UserData == nil {
-		err := fmt.Errorf("UserData is empty")
+		err := fmt.Errorf("user data is empty")
 		logrus.WithError(err).Errorf("failed to extract %s", LeasedResources)
 		return nil, err
 	}
