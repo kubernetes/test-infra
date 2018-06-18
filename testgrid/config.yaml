@@ -390,6 +390,9 @@ test_groups:
 - name: ci-kubernetes-e2e-gci-gce-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ingress
   alert_stale_results_hours: 24
+- name: ci-kubernetes-e2e-gci-gce-netd
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-netd
+  alert_stale_results_hours: 24
 - name: ci-kubemci-ingress-conformance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubemci-ingress-conformance
 - name: ci-kubernetes-e2e-gci-gce-ingress-manual-network
@@ -5236,6 +5239,13 @@ dashboards:
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
 
+- name: sig-network-netd
+  dashboard_tab:
+    - name: e2e-gci-gce-netd
+    test_group_name: ci-kubernetes-e2e-gci-gce-netd
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+
 - name: sig-node-cri-o
   dashboard_tab:
   - name: crio-e2e-fedora
@@ -6483,6 +6493,7 @@ dashboard_groups:
   - sig-network-gce
   - sig-network-gke
   - sig-network-ingress-gce-e2e
+  - sig-network-netd
 
 - name: sig-node
   dashboard_names:
