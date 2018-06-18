@@ -100,7 +100,7 @@ type awsResourceSet struct {
 	ttl       time.Duration
 }
 
-func LoadResourceSet(sess *session.Session, p *s3path, ttl time.Duration) (*awsResourceSet, error) {
+func loadResourceSet(sess *session.Session, p *s3path, ttl time.Duration) (*awsResourceSet, error) {
 	s := &awsResourceSet{firstSeen: make(map[string]time.Time), marked: make(map[string]bool), ttl: ttl}
 	svc := s3.New(sess, &aws.Config{Region: aws.String(p.region)})
 	resp, err := svc.GetObject(&s3.GetObjectInput{Bucket: aws.String(p.bucket), Key: aws.String(p.key)})
@@ -1299,7 +1299,7 @@ func main() {
 	}
 	glog.V(1).Infof("regions: %v", regions)
 
-	res, err := LoadResourceSet(sess, s3p, *maxTTL)
+	res, err := loadResourceSet(sess, s3p, *maxTTL)
 	if err != nil {
 		glog.Fatalf("error loading %q: %v", *path, err)
 	}
