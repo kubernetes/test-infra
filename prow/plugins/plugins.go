@@ -30,6 +30,7 @@ import (
 
 	"k8s.io/test-infra/prow/commentpruner"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
@@ -516,20 +517,19 @@ func (pa *PluginAgent) Config() *Configuration {
 }
 
 // ensureConfig ensure that the configuration
-// doesn't contain any nil value
+// doesn't contain any nil value.
 func ensureConfig(config *Configuration) error {
-	var errors []string
+	var errors []error
 	for repo, configuration := range config.Plugins {
 		for _, plugin := range configuration {
 			if plugin == "heart" && config.Heart == nil {
-				org := strings.Split(repo, "/")[0]
-				errors = append(errors, fmt.Sprintf("unexpected nil config for plugin %s for %s and %s", plugin, repo, org))
+				errors = append(errors, fmt.Errorf("unexpected nil config for plugin %s for %s", plugin, repo))
 			}
 		}
 	}
 
 	if len(errors) > 0 {
-		return fmt.Errorf("empty configurations:\n\t%v", strings.Join(errors, "\n\t"))
+		return errorutil.NewAggregate(errors...)
 	}
 	return nil
 }
