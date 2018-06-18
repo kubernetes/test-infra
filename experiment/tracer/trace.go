@@ -66,13 +66,13 @@ func (l linesByTimestamp) Less(i, j int) bool {
 var _ fmt.Stringer = linesByTimestamp{}
 
 // Return valid json.
-func (pl linesByTimestamp) String() string {
-	sort.Sort(pl)
+func (l linesByTimestamp) String() string {
+	sort.Sort(l)
 
 	var log string
-	for i, line := range pl {
+	for i, line := range l {
 		switch i {
-		case len(pl) - 1:
+		case len(l) - 1:
 			log += string(line.actual)
 		default:
 			// buf.ReadBytes('\n') does not remove the newline
