@@ -83,6 +83,7 @@ type Controller struct {
 // exactly one action each sync.
 type Action string
 
+// Constants for various actions the controller might take
 const (
 	Wait         Action = "WAIT"
 	Trigger             = "TRIGGER"
@@ -184,7 +185,7 @@ func (c *Controller) Sync() error {
 	c.logger.Debug("Building tide pool.")
 	pool := make(map[string]PullRequest)
 	for _, q := range c.ca.Config().Tide.Queries {
-		poolPRs, err := search(c.ghc, c.logger, ctx, q.Query())
+		poolPRs, err := search(ctx, c.ghc, c.logger, q.Query())
 		if err != nil {
 			return err
 		}
@@ -820,7 +821,7 @@ func (c *Controller) dividePool(pool map[string]PullRequest, pjs []kube.ProwJob)
 	return ret, nil
 }
 
-func search(ghc githubClient, log *logrus.Entry, ctx context.Context, q string) ([]PullRequest, error) {
+func search(ctx context.Context, ghc githubClient, log *logrus.Entry, q string) ([]PullRequest, error) {
 	var ret []PullRequest
 	vars := map[string]interface{}{
 		"query":        githubql.String(q),
@@ -847,6 +848,7 @@ func search(ghc githubClient, log *logrus.Entry, ctx context.Context, q string) 
 	return ret, nil
 }
 
+// PullRequest holds graphql data about a PR, including its commits and their contexts.
 type PullRequest struct {
 	Number githubql.Int
 	Author struct {
@@ -886,6 +888,7 @@ type PullRequest struct {
 	}
 }
 
+// Commit holds graphql data about commits and which contexts they have
 type Commit struct {
 	Status struct {
 		Contexts []Context
@@ -893,6 +896,7 @@ type Commit struct {
 	OID githubql.String `graphql:"oid"`
 }
 
+// Context holds graphql response data for github contexts.
 type Context struct {
 	Context     githubql.String
 	Description githubql.String
