@@ -1134,6 +1134,25 @@ presubmits:
       - name: docker-graph
         emptyDir: {}
 
+  - name: pull-kops-verify-apimachinery
+    agent: kubernetes
+    context: pull-kops-verify-apimachinery
+    branches:
+    - master
+    rerun_command: "/test pull-kops-verify-apimachinery"
+    trigger: "(?m)^/test( all| pull-kops-verify-apimachinery),?(\\s+|$)"
+    always_run: true
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+
   - name: pull-kops-verify-bazel
     agent: kubernetes
     context: pull-kops-verify-bazel
@@ -1169,6 +1188,25 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+
+  - name: pull-kops-verify-gendocs
+    agent: kubernetes
+    context: pull-kops-verify-gendocs
+    branches:
+    - master
+    rerun_command: "/test pull-kops-verify-gendocs"
+    trigger: "(?m)^/test( all| pull-kops-verify-gendocs),?(\\s+|$)"
+    always_run: true
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
 
   - name: pull-kops-verify-gofmt
     agent: kubernetes
