@@ -119,7 +119,7 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (s
 
 	if !targetBranchWhitelisted {
 		desc = fmt.Sprintf(" Merging to branch %s is forbidden.", pr.BaseRef.Name)
-		diff += 1
+		diff++
 	}
 
 	var missingLabels []string
@@ -220,23 +220,23 @@ func expectedStatus(queryMap config.QueryMap, pr *PullRequest, pool map[string]P
 	return github.StatusSuccess, statusInPool
 }
 
-// targetUrl determines the URL used for more details in the status
+// targetURL determines the URL used for more details in the status
 // context on GitHub. If no PR dashboard is configured, we will use
 // the administrative Prow overview.
-func targetUrl(c *config.Agent, pr *PullRequest, log *logrus.Entry) string {
+func targetURL(c *config.Agent, pr *PullRequest, log *logrus.Entry) string {
 	var link string
-	if tideUrl := c.Config().Tide.TargetURL; tideUrl != "" {
-		link = tideUrl
-	} else if baseUrl := c.Config().Tide.PRStatusBaseUrl; baseUrl != "" {
-		parsedUrl, err := url.Parse(baseUrl)
+	if tideURL := c.Config().Tide.TargetURL; tideURL != "" {
+		link = tideURL
+	} else if baseURL := c.Config().Tide.PRStatusBaseUrl; baseURL != "" {
+		parseURL, err := url.Parse(baseURL)
 		if err != nil {
 			log.WithError(err).Error("Failed to parse PR status base URL")
 		} else {
 			prQuery := fmt.Sprintf("is:pr repo:%s author:%s head:%s", pr.Repository.NameWithOwner, pr.Author.Login, pr.HeadRefName)
-			values := parsedUrl.Query()
+			values := parseURL.Query()
 			values.Set("query", prQuery)
-			parsedUrl.RawQuery = values.Encode()
-			link = parsedUrl.String()
+			parseURL.RawQuery = values.Encode()
+			link = parseURL.String()
 		}
 	}
 	return link
@@ -281,7 +281,7 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 					Context:     statusContext,
 					State:       wantState,
 					Description: wantDesc,
-					TargetURL:   targetUrl(sc.ca, pr, log),
+					TargetURL:   targetURL(sc.ca, pr, log),
 				}); err != nil {
 				log.WithError(err).Errorf(
 					"Failed to set status context from %q to %q.",
@@ -353,7 +353,7 @@ func (sc *statusController) sync(pool map[string]PullRequest) {
 	sinceTime := sc.lastSuccessfulQueryStart.Add(-10 * time.Second)
 	query := sc.ca.Config().Tide.Queries.AllPRsSince(sinceTime)
 	queryStartTime := time.Now()
-	allPRs, err := search(sc.ghc, sc.logger, context.Background(), query)
+	allPRs, err := search(context.Background(), sc.ghc, sc.logger, query)
 	if err != nil {
 		sc.logger.WithError(err).Errorf("Searching for open PRs.")
 		return

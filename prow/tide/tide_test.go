@@ -759,10 +759,10 @@ func TestTakeAction(t *testing.T) {
 		batchMerges  []int
 		presubmits   map[int]sets.String
 
-		merged            int
-		triggered         int
-		triggered_batches int
-		action            Action
+		merged           int
+		triggered        int
+		triggeredBatches int
+		action           Action
 	}{
 		{
 			name: "no prs to test, should do nothing",
@@ -830,10 +830,10 @@ func TestTakeAction(t *testing.T) {
 			batchMerges:  []int{},
 			presubmits:   map[int]sets.String{100: sets.NewString("foo", "if-changed")},
 
-			merged:            0,
-			triggered:         1,
-			triggered_batches: 1,
-			action:            TriggerBatch,
+			merged:           0,
+			triggered:        1,
+			triggeredBatches: 1,
+			action:           TriggerBatch,
 		},
 		{
 			name: "one PR, should not trigger batch",
@@ -1025,8 +1025,8 @@ func TestTakeAction(t *testing.T) {
 				batches++
 			}
 		}
-		if tc.triggered_batches != batches {
-			t.Errorf("Wrong number of batches triggered. Got %d, expected %d.", batches, tc.triggered_batches)
+		if tc.triggeredBatches != batches {
+			t.Errorf("Wrong number of batches triggered. Got %d, expected %d.", batches, tc.triggeredBatches)
 		}
 	}
 }
