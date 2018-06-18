@@ -129,13 +129,22 @@ func TestReleaseNoteComment(t *testing.T) {
 			shouldComment: true,
 		},
 		{
+			name:          "author release-note-feature",
+			action:        github.IssueCommentActionCreated,
+			isAuthor:      true,
+			commentBody:   "/release-note-feature",
+			currentLabels: []string{releaseNoteLabelNeeded, "other"},
+			shouldComment: true,
+		},
+
+		{
 			name:          "release-note-none, delete multiple labels",
 			action:        github.IssueCommentActionCreated,
 			isMember:      true,
 			commentBody:   "/release-note-none",
 			currentLabels: []string{releaseNote, releaseNoteLabelNeeded, releaseNoteActionRequired, releaseNoteNone, "other"},
 
-			deletedLabels: []string{releaseNoteLabelNeeded, releaseNoteActionRequired, releaseNote},
+			deletedLabels: []string{releaseNoteLabelNeeded, releaseNoteActionRequired, releaseNote, releaseNoteFeature},
 		},
 		{
 			name:        "no label present",
@@ -288,6 +297,11 @@ func TestReleaseNotePR(t *testing.T) {
 			name:          "LGTM with release-note-action-required",
 			initialLabels: []string{lgtmLabel, releaseNoteActionRequired},
 			body:          "```release-note\n Action required.\n```",
+		},
+		{
+			name:          "LGTM with release-note-feature",
+			initialLabels: []string{lgtmLabel, releaseNoteFeature},
+			body:          "```release-note\n Feature.\n```",
 		},
 		{
 			name:          "LGTM with release-note-action-required, /release-note-none comment",
