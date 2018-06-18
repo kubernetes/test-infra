@@ -17,14 +17,17 @@ limitations under the License.
 package main
 
 import (
+	"bufio"
 	"flag"
+	"fmt"
+	"net"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/golang/glog"
 	"k8s.io/test-infra/dind/pkg/cluster-up/cluster"
 	"k8s.io/test-infra/dind/pkg/cluster-up/options"
-	"k8s.io/test-infra/dind/pkg/util"
 )
 
 const (
@@ -33,6 +36,45 @@ const (
 	timeout         = time.Duration(5) * time.Minute
 )
 
+// dockerImageVersion reads the version from the metadata stored in the container.
+func dockerImageVersion() (string, error) {
+	f, err := os.Open("/docker_version")
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+	scanner := bufio.NewScanner(f)
+	scanner.Split(bufio.ScanLines)
+	for scanner.Scan() {
+		return scanner.Text(), nil
+	}
+	return "", fmt.Errorf("empty version file")
+}
+
+func nonLocalUnicastAddr(intfName string) (string, error) {
+	// Finds a non-localhost unicast address on the given interface.
+	intf, err := net.InterfaceByName(intfName)
+	if err != nil {
+		return "", err
+	}
+	addrs, err := intf.Addrs()
+	if err != nil {
+		return "", err
+	}
+	for _, addr := range addrs {
+		if !strings.HasPrefix("127", addr.String()) {
+			ip, _, err := net.ParseCIDR(addr.String())
+			if err != nil {
+				return "", err
+			}
+
+			return ip.String(), nil
+		}
+	}
+
+	return "", fmt.Errorf("no non-localhost unicast addresses found on interface %s", intfName)
+}
+
 func main() {
 	// Discard the error, because flag.CommandLine is already set to ExitOnError.
 	o, _ := options.New(flag.CommandLine, os.Args[1:])
@@ -40,7 +82,7 @@ func main() {
 
 	// Dynamically lookup any arguments that weren't provided.
 	if o.Version == "" {
-		v, err := util.DockerImageVersion()
+		v, err := dockerImageVersion()
 		if err != nil {
 			glog.Fatalf("Failed to load docker image version: %v", err)
 		}
@@ -48,7 +90,7 @@ func main() {
 	}
 
 	if o.ProxyAddr == "" {
-		p, err := util.NonLocalUnicastAddr("eth0")
+		p, err := nonLocalUnicastAddr("eth0")
 		if err != nil {
 			glog.Fatalf("Failed to determine external proxy address.")
 		}
