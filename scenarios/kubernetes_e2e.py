@@ -368,7 +368,7 @@ def set_up_kops_aws(workspace, args, mode, cluster, runner_args):
         '--kops-state=%s' % args.kops_state,
         '--kops-nodes=%s' % args.kops_nodes,
         '--kops-ssh-key=%s' % aws_ssh,
-        "--kops-ssh-user=admin",
+        '--kops-ssh-user=%s' % args.kops_ssh_user,
     ])
 
 
@@ -402,7 +402,7 @@ def set_up_aws(workspace, args, mode, cluster, runner_args):
         '--kops-state=%s' % args.kops_state,
         '--kops-nodes=%s' % args.kops_nodes,
         '--kops-ssh-key=%s' % aws_ssh,
-        "--kops-ssh-user=admin",
+        '--kops-ssh-user=%s' % args.kops_ssh_user,
     ])
     # TODO(krzyzacy):Remove after retire kops-e2e-runner.sh
     mode.add_aws_runner()
@@ -687,6 +687,10 @@ def create_parser():
     parser.add_argument(
         '--kops-state-gce', default='gs://k8s-kops-gce/',
         help='Name of the kops state storage for GCE')
+    parser.add_argument(
+        '--kops-ssh-user',
+        default='admin',
+        help='(kops only) Username for SSH connections to nodes.')
     parser.add_argument(
         '--kops-zones', help='Comma-separated list of zones else random choice')
     parser.add_argument(
