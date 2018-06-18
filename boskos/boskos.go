@@ -366,7 +366,7 @@ func handleUpdate(r *ranch.Ranch) http.HandlerFunc {
 			}
 		}
 
-		if err := r.Update(name, owner, state, userData); err != nil {
+		if err := r.Update(name, owner, state, &userData); err != nil {
 			logrus.WithError(err).Errorf("Update failed: %v - %v (%v)", name, state, owner)
 			http.Error(res, err.Error(), ErrorToStatus(err))
 			return
