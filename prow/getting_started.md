@@ -41,8 +41,8 @@ that has read and write access to the bot account. Generate it from the
 [account's settings -> Personal access tokens -> Generate new token][1].
 
 ```sh
-kubectl create secret generic hmac-token --from-file=hmac=/path/to/hook/secret
-kubectl create secret generic oauth-token --from-file=oauth=/path/to/oauth/secret
+kubectl create secret generic hmac-token --from-file=hmac=/path/to/hook/hmac
+kubectl create secret generic oauth-token --from-file=oauth=/path/to/oauth/oauth
 ```
 
 #### Bot account
