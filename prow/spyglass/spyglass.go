@@ -40,10 +40,11 @@ type ArtifactViewer interface {
 
 // Artifact represents some output of a prow job
 type Artifact interface {
-	io.ReadSeeker
+	io.ReaderAt
 	CanonicalLink() string
 	JobPath() string
-	ReadAll() string
+	ReadAll() ([]byte, error)
+	ReadTail(n int64) ([]byte, error)
 	Size() int64
 	// TODO functionalities
 	// Read entire file, error if too big

@@ -16,9 +16,20 @@ limitations under the License.
 
 package spyglass
 
+import (
+	"context"
+	"io/ioutil"
+
+	"cloud.google.com/go/storage"
+	"github.com/sirupsen/logrus"
+)
+
 // GCSArtifact represents some output of a prow job stored in GCS
 type GCSArtifact struct {
 	Artifact
+
+	// The handle of the object in GCS
+	Handle *storage.ObjectHandle
 
 	// The direct link to the Artifact, can be used for read operations
 	link string
@@ -27,30 +38,49 @@ type GCSArtifact struct {
 	path string
 }
 
-// Gets the GCS path of the artifact within the current job
+// Size returns the size of the artifact in GCS
+func (a GCSArtifact) Size() int64 {
+	attrs, err := a.Handle.Attrs(context.Background())
+	if err != nil {
+		logrus.Errorf("Could not retrieve object attributes for artifact %s.\nErr: %s\n", a.path, err)
+	}
+	return attrs.Size
+}
+
+// JobPath gets the GCS path of the artifact within the current job
 func (a GCSArtifact) JobPath() string {
 	return a.path
 }
 
-// Gets the GCS web address of the artifact
+// CanonicalLink gets the GCS web address of the artifact
 func (a GCSArtifact) CanonicalLink() string {
 	return a.link
 }
 
-// Reads len(p) bytes from GCS bucket
-func (a GCSArtifact) Read(p []byte) (n int, err error) {
-	// TODO
-	return
+// Read reads len(p) bytes from a file in GCS
+func (a GCSArtifact) ReadAt(p []byte, off int64) (n int, err error) {
+	reader, err := a.Handle.NewRangeReader(context.Background(), off, int64(len(p)))
+	if err != nil {
+		logrus.Errorf("There was an error getting a Reader to the desired artifact: %s", err)
+	}
+	return reader.Read(p)
 }
 
-// Reads all bytes from a file in GCS
-func (a GCSArtifact) ReadAll() string {
-	// TODO
-	return ""
+// ReadAll reads all bytes from a file in GCS
+func (a GCSArtifact) ReadAll() ([]byte, error) {
+	reader, err := a.Handle.NewReader(context.Background())
+	if err != nil {
+		logrus.Errorf("There was an error getting a Reader to the desired artifact: %s", err)
+	}
+	return ioutil.ReadAll(reader)
 }
 
-// Seeks to a location in a GCS file
-func Seek(offset int64, whence int) (int64, error) {
-	// TODO
-	return 0, nil
+// ReadTail reads the last n bytes from a file in GCS
+func (a GCSArtifact) ReadTail(n int64) ([]byte, error) {
+	offset := a.Size() - n
+	reader, err := a.Handle.NewRangeReader(context.Background(), offset, -1)
+	if err != nil {
+		logrus.Errorf("There was an error getting a Reader to the desired artifact: %s", err)
+	}
+	return ioutil.ReadAll(reader)
 }

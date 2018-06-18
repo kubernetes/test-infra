@@ -6,7 +6,8 @@ go_library(
         "artifact_fetcher.go",
         "artifacts.go",
         "spyglass.go",
-        "viewers.go",
+        "util.go",
+        "viewer.go",
     ],
     importpath = "k8s.io/test-infra/prow/spyglass",
     visibility = ["//visibility:public"],
@@ -23,10 +24,16 @@ go_test(
     name = "go_default_test",
     srcs = [
         "artifact_fetcher_test.go",
+        "artifacts_test.go",
         "spyglass_test.go",
+        "util_test.go",
+        "viewer_test.go",
     ],
     embed = [":go_default_library"],
-    deps = ["//vendor/github.com/fsouza/fake-gcs-server/fakestorage:go_default_library"],
+    deps = [
+        "//vendor/cloud.google.com/go/storage:go_default_library",
+        "//vendor/github.com/fsouza/fake-gcs-server/fakestorage:go_default_library",
+    ],
 )
 
 filegroup(

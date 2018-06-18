@@ -54,7 +54,7 @@ type GCSJobSource struct {
 }
 
 // Gets a new ArtifactFetcher with a real GCS Client
-func (af *GCSArtifactFetcher) NewFetcher() {
+func (af GCSArtifactFetcher) NewFetcher() {
 	c, err := storage.NewClient(context.Background(), option.WithoutAuthentication())
 	if err != nil {
 		log.Fatal(err)
@@ -63,7 +63,7 @@ func (af *GCSArtifactFetcher) NewFetcher() {
 }
 
 // Gets all artifacts from a GCS job source
-func (af *GCSArtifactFetcher) Artifacts(src JobSource) []Artifact {
+func (af GCSArtifactFetcher) Artifacts(src JobSource) []Artifact {
 	artifacts := []Artifact{}
 	bkt := af.client.Bucket(src.BucketName())
 	q := storage.Query{
@@ -71,29 +71,31 @@ func (af *GCSArtifactFetcher) Artifacts(src JobSource) []Artifact {
 		Versions: false,
 	}
 	objIter := bkt.Objects(context.Background(), &q)
-	for oAttrs, err := objIter.Next(); err != iterator.Done; {
-		if err != nil {
+	for {
+		oAttrs, err := objIter.Next()
+		if err == iterator.Done {
 			break
 		}
-
 		artifacts = append(artifacts, GCSArtifact{
-			link: oAttrs.MediaLink,
-			path: strings.TrimPrefix(oAttrs.Name, src.JobPath()),
+			Handle: bkt.Object(oAttrs.Name),
+			link:   oAttrs.MediaLink,
+			path:   strings.TrimPrefix(oAttrs.Name, src.JobPath()),
 		})
+
 	}
 	return artifacts
 }
 
 // Gets a link to the location of job-specific artifacts in GCS
-func (src *GCSJobSource) CanonicalLink() string {
+func (src GCSJobSource) CanonicalLink() string {
 	return fmt.Sprintf("https://storage.googleapis.com/%s/%s", src.bucket, src.jobPath)
 }
 
 // Gets the bucket name of the GCS Job Source
-func (src *GCSJobSource) BucketName() string {
+func (src GCSJobSource) BucketName() string {
 	return src.bucket
 }
 
-func (src *GCSJobSource) JobPath() string {
+func (src GCSJobSource) JobPath() string {
 	return src.jobPath
 }

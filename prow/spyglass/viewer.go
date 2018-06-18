@@ -14,8 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// This file contains artifact-specific view handlers
 package spyglass
+
+import (
+	"bufio"
+	"bytes"
+	"html/template"
+)
 
 // An artifact viewer for JUnit tests
 type JUnitViewer struct {
@@ -35,40 +40,58 @@ type MetadataViewer struct {
 	title string
 }
 
-// Gets the title of the JUnit View
+// Title gets the title of the JUnit View
 func (v *JUnitViewer) Title() string {
 	return v.title
 }
 
-// Gets the title of the JUnit View
+// Title gets the title of the JUnit View
 func (v *BuildLogViewer) Title() string {
 	return v.title
 }
 
-// Gets the title of the Metadata View
+// Title gets the title of the Metadata View
 func (v *MetadataViewer) Title() string {
 	return v.title
 }
 
-// Creates a view for a build log (or multiple build logs)
-func (v *BuildLogViewer) View(artifacts []Artifact) Lens {
-	lens := Lens{}
-	for _, a := range artifacts {
-		if a.Size() > 1000 {
-			//TODO
-		}
+// View creates a view for a build log (or multiple build logs)
+func (v *BuildLogViewer) View(artifacts []Artifact) string {
+	logViewTmpl := `
+	<div>
+		{{range .logViews}}
+			<div>
+			.logLines
+			</div>
+		{{end}}
+	</div>
+	`
+	var buf bytes.Buffer
+	wr := bufio.NewWriter(&buf)
+	type LogFileView struct {
+		// requestMore string TODO
+		logLines string
 	}
-	return lens
+	type BuildLogsView struct {
+		logViews []LogFileView
+	}
+	var buildLogsView BuildLogsView
+	for _, a := range artifacts {
+		buildLogsView.logViews = append(buildLogsView.logViews, LogFileView{logLines: LastNLines(a, 100)})
+	}
+	t := template.Must(template.New("BuildLogView").Parse(logViewTmpl))
+	t.Execute(wr, buildLogsView)
+	return buf.String()
 }
 
-// Creates a view for JUnit tests
-func (v *JUnitViewer) View(artifacts []Artifact) Lens {
+// View creates a view for JUnit tests
+func (v *JUnitViewer) View(artifacts []Artifact) string {
 	//TODO
-	return Lens{}
+	return ""
 }
 
-// Creates a view for prow job metadata
-func (v *MetadataViewer) View(artifacts []Artifact) Lens {
+// View creates a view for prow job metadata
+func (v *MetadataViewer) View(artifacts []Artifact) string {
 	//TODO
-	return Lens{}
+	return ""
 }
