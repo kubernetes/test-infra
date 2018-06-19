@@ -62,6 +62,7 @@ type githubClient interface {
 }
 
 type kubeClient interface {
+	GetConfigMap(name, namespace string) (kube.ConfigMap, error)
 	ReplaceConfigMap(name string, config kube.ConfigMap) (kube.ConfigMap, error)
 }
 
@@ -73,22 +74,31 @@ func maps(pc plugins.PluginClient) map[string]plugins.ConfigMapSpec {
 	return pc.PluginConfig.ConfigUpdater.Maps
 }
 
-func update(gc githubClient, kc kubeClient, org, repo, commit, filename, name, namespace string) error {
-	content, err := gc.GetFile(org, repo, filename, commit)
-	if err != nil {
-		return fmt.Errorf("get file err: %v", err)
+func update(gc githubClient, kc kubeClient, org, repo, commit, name, namespace string, updates map[string]string) error {
+	currentContent, err := kc.GetConfigMap(name, namespace)
+	if _, isNotFound := err.(kube.NotFoundError); err != nil && !isNotFound {
+		return fmt.Errorf("failed to fetch current state of configmap: %v", err)
 	}
 
-	c := string(content)
+	data := map[string]string{}
+	if currentContent.Data != nil {
+		data = currentContent.Data
+	}
+
+	for key, filename := range updates {
+		content, err := gc.GetFile(org, repo, filename, commit)
+		if err != nil {
+			return fmt.Errorf("get file err: %v", err)
+		}
+		data[key] = string(content)
+	}
 
 	cm := kube.ConfigMap{
 		ObjectMeta: kube.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 		},
-		Data: map[string]string{
-			path.Base(filename): c,
-		},
+		Data: data,
 	}
 
 	_, err = kc.ReplaceConfigMap(name, cm)
@@ -123,26 +133,46 @@ func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRe
 		return err
 	}
 
-	message := func(cm plugins.ConfigMapSpec, fileName string) string {
-		msg := fmt.Sprintf("`%s` configmap from file `%s`", cm.Name, fileName)
-		if cm.Namespace != "" {
-			msg = fmt.Sprintf("%s in namespace `%s`", msg, cm.Namespace)
+	message := func(name, namespace string, data map[string]string) string {
+		identifier := fmt.Sprintf("`%s` configmap", name)
+		if namespace != "" {
+			identifier = fmt.Sprintf("%s in namespace `%s`", identifier, namespace)
+		}
+		msg := fmt.Sprintf("%s using the following files:", identifier)
+		for key, file := range data {
+			msg = fmt.Sprintf("%s\n - key `%s` using file `%s`", msg, key, file)
 		}
 		return msg
 	}
 
 	// Are any of the changes files ones that define a configmap we want to update?
 	var updated []string
+	type configMapID struct {
+		name, namespace string
+	}
+	toUpdate := map[configMapID]map[string]string{}
 	for _, change := range changes {
 		cm, ok := configMaps[change.Filename]
 		if !ok {
 			continue // This file does not define a configmap
 		}
 		// Yes, update the configmap with the contents of this file
-		if err := update(gc, kc, org, repo, *pr.MergeSHA, change.Filename, cm.Name, cm.Namespace); err != nil {
+		key := cm.Key
+		if key == "" {
+			key = path.Base(change.Filename)
+		}
+		id := configMapID{name: cm.Name, namespace: cm.Namespace}
+		if _, ok := toUpdate[id]; !ok {
+			toUpdate[id] = map[string]string{}
+		}
+		toUpdate[id][key] = change.Filename
+	}
+
+	for cm, data := range toUpdate {
+		if err := update(gc, kc, org, repo, *pr.MergeSHA, cm.name, cm.namespace, data); err != nil {
 			return err
 		}
-		updated = append(updated, message(cm, change.Filename))
+		updated = append(updated, message(cm.name, cm.namespace, data))
 	}
 
 	var msg string
