@@ -110,7 +110,7 @@ labels:
     addedBy: anyone
   - color: e11d21
     description: Indicates that a PR should not merge because it has an invalid OWNERS file in it.
-    name: do-not-merge/invalid-OWNERS
+    name: do-not-merge/invalid-owners-file
     target: prs
     prowPlugin: verify-owners
     addedBy: prow

@@ -38,7 +38,7 @@ const (
 )
 
 var (
-	invalidOwnersLabel = "do-not-merge/invalid-OWNERS"
+	invalidOwnersLabel = "do-not-merge/invalid-owners-file"
 )
 
 func init() {
@@ -47,7 +47,7 @@ func init() {
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	return &pluginhelp.PluginHelp{
-			Description: "The owners plugin validates OWNERS files if they are modified in a PR. On failure it automatically adds a 'do-not-merge/invalid-OWNERS' label to the PR, and a review comment on the incriminated file.",
+			Description: fmt.Sprintf("The verify-owners plugin validates OWNERS files if they are modified in a PR. On validation failure it automatically adds the '%s' label to the PR, and a review comment on the incriminating file(s).", invalidOwnersLabel),
 		},
 		nil
 }
