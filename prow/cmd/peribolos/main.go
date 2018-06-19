@@ -43,6 +43,7 @@ const (
 
 type options struct {
 	config         string
+	jobConfig      string
 	token          string
 	confirm        bool
 	minAdmins      int
@@ -69,6 +70,7 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 	flags.BoolVar(&o.requireSelf, "require-self", true, "Ensure --github-token-path user is an admin")
 	flags.Float64Var(&o.maximumDelta, "maximum-removal-delta", defaultDelta, "Fail if config removes more than this fraction of current members")
 	flags.StringVar(&o.config, "config-path", "", "Path to prow config.yaml")
+	flags.StringVar(&o.jobConfig, "job-config-path", "", "Path to prow job configs.")
 	flags.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
 	flags.StringVar(&o.token, "github-token-path", "", "Path to github token")
 	if err := flags.Parse(args); err != nil {
@@ -108,7 +110,7 @@ func main() {
 		logrus.Fatalf("This program is not yet implemented") // still true
 	}
 
-	cfg, err := config.Load(o.config, "")
+	cfg, err := config.Load(o.config, o.jobConfig)
 	if err != nil {
 		logrus.Fatalf("Failed to load --config=%s: %v", o.config, err)
 	}

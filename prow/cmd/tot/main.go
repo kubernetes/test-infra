@@ -48,6 +48,7 @@ type options struct {
 	fallbackURI string
 
 	configPath     string
+	jobConfigPath  string
 	fallbackBucket string
 }
 
@@ -63,6 +64,7 @@ func gatherOptions() options {
 	)
 
 	flag.StringVar(&o.configPath, "config-path", "", "Path to prow config.")
+	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	flag.StringVar(&o.fallbackBucket, "fallback-bucket", "",
 		"Fallback to top-level bucket for jobs that lack a last vended build number. The bucket layout is expected to follow https://github.com/kubernetes/test-infra/tree/master/gubernator#gcs-bucket-layout",
 	)
@@ -282,7 +284,7 @@ func main() {
 		var configAgent *config.Agent
 		if o.configPath != "" {
 			configAgent = &config.Agent{}
-			if err := configAgent.Start(o.configPath, ""); err != nil {
+			if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 				logrus.WithError(err).Fatal("Error starting config agent.")
 			}
 		}
