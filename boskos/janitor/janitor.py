@@ -27,34 +27,35 @@ import sys
 
 # A resource that need to be cleared.
 Resource = collections.namedtuple(
-    'Resource', 'group name subgroup condition managed tolerate bulk_delete')
+    'Resource', 'api_version group name subgroup condition managed tolerate bulk_delete')
 DEMOLISH_ORDER = [
     # [WARNING FROM KRZYZACY] : TOUCH THIS WITH CARE!
     # ORDER REALLY MATTERS HERE!
 
     # compute resources
-    Resource('compute', 'instances', None, 'zone', None, False, True),
-    Resource('compute', 'addresses', None, 'region', None, False, True),
-    Resource('compute', 'disks', None, 'zone', None, False, True),
-    Resource('compute', 'firewall-rules', None, None, None, False, True),
-    Resource('compute', 'routes', None, None, None, False, True),
-    Resource('compute', 'forwarding-rules', None, 'region', None, False, True),
-    Resource('compute', 'target-http-proxies', None, None, None, False, True),
-    Resource('compute', 'target-https-proxies', None, None, None, False, True),
-    Resource('compute', 'url-maps', None, None, None, False, True),
-    Resource('compute', 'backend-services', None, 'region', None, False, True),
-    Resource('compute', 'target-pools', None, 'region', None, False, True),
-    Resource('compute', 'health-checks', None, None, None, False, True),
-    Resource('compute', 'http-health-checks', None, None, None, False, True),
-    Resource('compute', 'instance-groups', None, 'zone', 'Yes', False, True),
-    Resource('compute', 'instance-groups', None, 'zone', 'No', False, True),
-    Resource('compute', 'instance-templates', None, None, None, False, True),
-    Resource('compute', 'networks', 'subnets', 'region', None, True, True),
-    Resource('compute', 'networks', None, '', None, False, True),
-    Resource('compute', 'routes', None, None, None, False, True),
+    Resource('', 'compute', 'instances', None, 'zone', None, False, True),
+    Resource('', 'compute', 'addresses', None, 'region', None, False, True),
+    Resource('', 'compute', 'disks', None, 'zone', None, False, True),
+    Resource('', 'compute', 'firewall-rules', None, None, None, False, True),
+    Resource('', 'compute', 'routes', None, None, None, False, True),
+    Resource('', 'compute', 'forwarding-rules', None, 'region', None, False, True),
+    Resource('', 'compute', 'target-http-proxies', None, None, None, False, True),
+    Resource('', 'compute', 'target-https-proxies', None, None, None, False, True),
+    Resource('', 'compute', 'url-maps', None, None, None, False, True),
+    Resource('', 'compute', 'backend-services', None, 'region', None, False, True),
+    Resource('', 'compute', 'target-pools', None, 'region', None, False, True),
+    Resource('', 'compute', 'health-checks', None, None, None, False, True),
+    Resource('', 'compute', 'http-health-checks', None, None, None, False, True),
+    Resource('', 'compute', 'instance-groups', None, 'zone', 'Yes', False, True),
+    Resource('', 'compute', 'instance-groups', None, 'zone', 'No', False, True),
+    Resource('', 'compute', 'instance-templates', None, None, None, False, True),
+    Resource('alpha', 'compute', 'network-endpoint-groups', None, None, None, False, True),
+    Resource('', 'compute', 'networks', 'subnets', 'region', None, True, True),
+    Resource('', 'compute', 'networks', None, '', None, False, True),
+    Resource('', 'compute', 'routes', None, None, None, False, True),
 
     # logging resources
-    Resource('logging', 'sinks', None, None, None, False, False),
+    Resource('', 'logging', 'sinks', None, None, None, False, False),
 ]
 
 def log(message):
@@ -62,6 +63,22 @@ def log(message):
     if ARGS.verbose:
         print message
 
+def base_command(resource):
+    """ Return the base gcloud command with api_version, group and subgroup.
+
+    Args:
+        resource: Definition of a type of gcloud resource.
+    Returns:
+        list of base commands of gcloud .
+    """
+
+    base = ['gcloud']
+    if resource.api_version:
+        base += [resource.api_version]
+    base += [resource.group, '-q', resource.name]
+    if resource.subgroup:
+        base.append(resource.subgroup)
+    return base
 
 def collect(project, age, resource, filt, clear_all):
     """ Collect a list of resources for each condition (zone or region).
@@ -84,9 +101,7 @@ def collect(project, age, resource, filt, clear_all):
     if resource.name == 'sinks' and not clear_all:
         return col
 
-    cmd = ['gcloud', resource.group, '-q', resource.name]
-    if resource.subgroup:
-        cmd.append(resource.subgroup)
+    cmd = base_command(resource)
     cmd.extend([
         'list',
         '--format=json(name,creationTimestamp.date(tz=UTC),zone,region,isManaged)',
@@ -159,9 +174,7 @@ def clear_resources(project, cols, resource, rate_limit):
         manage_key = {'Yes':'managed', 'No':'unmanaged'}
 
         # construct the customized gcloud command
-        base = ['gcloud', resource.group, '-q', resource.name]
-        if resource.subgroup:
-            base.append(resource.subgroup)
+        base = base_command(resource)
         if resource.managed:
             base.append(manage_key[resource.managed])
         base.append('delete')
@@ -172,6 +185,8 @@ def clear_resources(project, cols, resource, rate_limit):
                 base.append('--%s=%s' % (resource.condition, col))
             else:
                 base.append('--global')
+
+        base += inject_zone_for_neg(resource.name)
 
         log('going to delete %d %s' % (len(items), resource.name))
         # try to delete at most $rate_limit items at a time
@@ -247,6 +262,12 @@ def clean_gke_cluster(project, age, filt):
 
     return err
 
+# hard code asia-southeast1-a for NEG
+# TODO(freehan): remove this once limitation is dropped
+def inject_zone_for_neg(resource_name):
+    if resource_name == 'network-endpoint-groups':
+        return ['--zone=asia-southeast1-a']
+    return []
 
 def main(project, days, hours, filt, rate_limit):
     """ Clean up resources from a gcp project based on it's creation time
