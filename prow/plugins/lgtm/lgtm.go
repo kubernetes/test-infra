@@ -113,11 +113,6 @@ func handlePullRequestReviewEvent(pc plugins.PluginClient, e github.ReviewEvent)
 	if !opts.ReviewActsAsLgtm {
 		return nil
 	}
-	// If the review event body contains an '/lgtm' or '/lgtm cancel' comment,
-	// skip handling the review event
-	if lgtmRe.MatchString(e.Review.Body) || lgtmCancelRe.MatchString(e.Review.Body) {
-		return nil
-	}
 	return handlePullRequestReview(pc.GitHubClient, pc.PluginConfig, pc.OwnersClient, pc.Logger, e)
 }
 
@@ -170,6 +165,12 @@ func handlePullRequestReview(gc githubClient, config *plugins.Configuration, own
 		htmlURL:     e.Review.HTMLURL,
 	}
 
+	// If the review event body contains an '/lgtm' or '/lgtm cancel' comment,
+	// skip handling the review event
+	if lgtmRe.MatchString(rc.body) || lgtmCancelRe.MatchString(rc.body) {
+		return nil
+	}
+
 	// If we review with Approve, add lgtm if necessary.
 	// If we review with Request Changes, remove lgtm if necessary.
 	wantLGTM := false
@@ -218,7 +219,7 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 			if ok, merr := gc.IsCollaborator(org, repoName, author); merr == nil && !ok {
 				msg = fmt.Sprintf("only %s/%s repo collaborators may be assigned issues", org, repo)
 			} else if merr != nil {
-				log.WithError(merr).Errorf("Failed IsCollaborator(%s, %s)", org, author)
+				log.WithError(merr).Errorf("Failed IsCollaborator(%s, %s, %s)", org, repo, author)
 			} else {
 				log.WithError(err).Errorf("Failed AssignIssue(%s, %s, %d, %s)", org, repoName, number, author)
 			}
@@ -236,7 +237,7 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 		if err != nil {
 			return err
 		}
-		if !loadReviewers(ro, filenames).Has(author) {
+		if !loadReviewers(ro, filenames).Has(github.NormLogin(author)) {
 			resp := "adding LGTM is restricted to approvers and reviewers in OWNERS files."
 			log.Infof("Reply to /lgtm request with comment: \"%s\"", resp)
 			return gc.CreateComment(org, repoName, number, plugins.FormatResponseRaw(body, htmlURL, author, resp))
