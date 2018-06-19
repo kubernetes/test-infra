@@ -1,25 +1,29 @@
 body {
-    font-family: sans-serif;
+    font-family: 'Roboto', sans-serif !important;
     padding: 0;
     margin: 0;
     scroll-behavior: smooth;
 }
 #header {
+    align-items: center;
     background-color: #3f51b5;
     color: white;
+    display: flex;
+    height: 72px;
     text-align: center;
     padding: 8px;
     box-shadow: 0px 0px 10px #666;
-    min-height: 100px;
 }
 #header a {
     color: white;
+    text-align: center;
+    align-self: center;
 }
+
 #header img {
-    width: 100px;
-    height: 100px;
-    float: left;
-    padding-left: 20px;
+    width: 48px;
+    height: 48px;
+    margin: 0 8px;
 }
 #summary {
     text-align: center;
@@ -29,9 +33,6 @@ body {
 }
 #content {
     margin: 10px;
-}
-#help {
-    margin: 30px;
 }
 h3 {
     margin: 0.67em 0 0 0;
@@ -91,11 +92,25 @@ span.inset-expand {
     cursor: pointer;
     text-decoration: underline;
 }
+a:link {
+    color: blue;
+}
+a:visited {
+    color: blue;
+}
 a.anchor, pre.error>a {
     color: inherit;
 }
 a.anchor:target {
     color: blue;
+}
+h1 {
+    font-size: 32px !important;
+    font-weight: 700 !important;
+}
+h2 {
+    font-size: 24px !important;
+    font-weight: 700 !important;
 }
 table.pr {
     margin: 20px;
@@ -126,6 +141,7 @@ table.pr th {
 label:hover {
     cursor: pointer;
 }
+
 table.pr-dash {
     border-spacing: 0;
 }
@@ -141,6 +157,7 @@ table.pr-dash tbody tr:hover {
 #prdash-nav, #milestone-nav {
     margin: 10px 0 0 40px;
 }
+
 #userBox {
     width: 10em;
 }
@@ -157,12 +174,6 @@ table.build-meta td:nth-child(2) {
 }
 table.build-meta td {
     padding:2px 5px 2px 5px;
-}
-h3.pr-section {
-    margin: 1em 0 0 1em;
-}
-h4.pr-section {
-    margin-left: 3em;
 }
 .text-success { color: #55a532; }
 .text-pending { color: #cea61b; }
@@ -206,12 +217,78 @@ div#log {
 }
 ul.log {
     list-style-type:none;
-    margin: 0px;
-    padding: 0px;
+    margin: 0;
+    padding: 0;
 }
 li.log {
     padding: 5px;
     display: inline-block;
+}
+
+/**
+ * Pr Dashboard styles
+ */
+ #delete_acks {
+    align-self: center;
+ }
+
+#main {
+    margin: 8px 24px;
+}
+
+#pr-dashboard-table tbody tr {
+    cursor: pointer;
+}
+
+#view-form {
+    font-size: 18px;
+
+}
+
+h5.pr-section {
+    color: #616161;
+    display: inline-block;
+    padding-right: 14px;
+}
+
+h6.pr-section {
+    margin-top: 8px;
+}
+
+.icon {
+    color: #757575;
+}
+
+.line-break {
+    background-color: #000000;
+    border: none;
+    color: #000000;
+    height: 2px;
+    margin: 24px 0 8px 0;
+    opacity: 0.08;
+}
+
+.pr-dashboard-table {
+    width: 100%;
+}
+
+.pr-dashboard-table tr {
+    cursor: pointer;
+}
+
+.pr-dashboard-table tr.even {
+    background-color: #F5F5F5;
+}
+
+.pr-table-header {
+    align-content: center;
+    display: flex;
+    justify-content: space-between;
+}
+
+.pr-section a {
+    color: #3F51B5;
+    text-decoration: none;
 }
 
 /* weak mobile support */

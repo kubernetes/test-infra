@@ -1,6 +1,10 @@
 % extends 'base.html'
 {% block title %}PR Dashboard{% endblock %}
 % block head
+<link rel="stylesheet" href="{{'mdl/material.min.css'|static}}">
+<script src="{{'mdl/material.min.js'|static}}"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Roboto:300,400,500,700" type="text/css">
 <link rel="stylesheet" href="{{'octicons/octicons.css'|static}}" />
 <script src="{{'pr.js'|static}}"></script>
 {{ super() }}
@@ -9,12 +13,18 @@
 	<h1>PR Dashboard</h1>
 % endblock
 % block content
-<form id="prdash-nav" onsubmit="document.location='/pr/' + document.getElementById('userBox').value; return false;">
-View
-{% if user %}<a href="/pr/all">All</a>{% else %}<b>All</b>{% endif %}
- | {% if user != login or not login %}<a href="/pr">Me</a>{% else %}<b>Me</b>{% endif %}
- | <input id="userBox" pattern='[-\w]+' name="user" type="textbox" placeholder="username" value="{{user or ''}}"}>
-<button>Switch User</button>
+<form id="view-form" onsubmit="document.location='/pr/' + document.getElementById('switch_user').value; return false;">
+	View {% if user != login or not login %}<a href="/pr">Me</a>{% else %}<b>Me</b>{% endif %} |
+		{% if user %}<a href="/pr/all">All</a>{% else %}<b>All</b>{% endif %} |
+	<div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable">
+		<label class="mdl-button mdl-js-button mdl-button--icon" for="switch_user">
+			<i class="material-icons icon">search</i>
+		</label>
+		<div class="mdl-textfield__expandable-holder">
+			<input class="mdl-textfield__input" pattern='[-\w]+' type="text" id="switch_user">
+			<label class="mdl-textfield__label">Username</label>
+		</div>
+	</div>
 </form>
 
 % if milestones
@@ -35,49 +45,72 @@ Filter Milestone: {% if milestone %}<a href="?">Any</a>{% else %}<b>Any</b>{% en
 	% if title == 'Approvable' and not sub_prs
 		% continue
 	% endif
-	<h3 class="pr-section">
-	<a id="section-{{title|slugify}}"></a>
-	% if search
-	<a href="https://github.com/pulls?q={{search|quote_plus}}">{{title}}</a>
-	% else
-	{{title}}
-	% endif
-	({{sub_prs|length}})
-	% if title == 'Needs Attention' and acks
-		<button style='margin-left: 20px;' onclick='ack_clear()' alt='Reset "Needs Attention" ignores'>Clear Acks ({{acks|length}})</button>
-	% endif
-	</h3>
+	% set pr_section = 'pr-section mdl-badge mdl-badge--overlap pr-section' if sub_prs|length > 0 else 'pr-section'
+    <div class="pr-table-header">
+    	<h5 class="{{pr_section}}" data-badge="{{sub_prs|length}}">
+            <a class="header-link" id="section-{{title|slugify}}"></a>
+            % if search
+            <a class="header-link" href="https://github.com/pulls?q={{search|quote_plus}}">{{title}}</a>
+            % else
+            {{title}}
+            % endif
+    	</h5>
+        % if title == 'Needs Attention' and acks
+        <button id="delete_acks" class="clear-ack mdl-button mdl-js-button mdl-button--icon icon" onclick='ack_clear()' data-badge="">
+            <i class="material-icons">delete</i>
+        </button>
+        <div class="mdl-tooltip mdl-tooltip--large mdl-tooltip--left" data-mdl-for="delete_acks">
+            Clear {{acks|length}} ack(s)
+        </div>
+        % endif
+    </div>
 	% if sub_prs
-	<table class="pr pr-dash">
-	<thead>
-		<tr><th>Repo<th>Number<th>Author<th>Status<th>&#9660; Updated<th>Assignees<th>Size<th>Title</tr>
-	</thead>
-		% for pr in sub_prs
-			% set pl = pr.payload
-			<tr id="{{title|slugify}} {{pr.repo}} {{pr.number}}" onclick="window.open('https://github.com/{{pr.repo}}/pull/{{pr.number}}', '_blank')">
-			<td>{{pr.repo|ltrim('kubernetes/')}}
-			<td>{{pr.number}}
-			<td>{{pl['author']}}
-			<td>{{pl|render_status(user)}}
-			<td>{{pr.updated_at|dt_to_epoch|timestamp('humantimestamp', '%b %e')}}
-			<td>{{pl['assignees']|join(", ")}}
-			<td>{{pl|classify_size}}
-			<td>{{pl['title']}}
-			% if title == "Needs Attention" and acks is not none
-				% set latest = pl|get_latest(user)
-				% if latest
-					<td><button onclick="ack(event, '{{pr.repo}}', {{pr.number}}, {{latest}});">ACK</button>
-				% endif
-			% endif
-		% endfor
-	</table>
+	<table class="mdl-data-table mdl-js-data-table mdl-shadow--1dp pr-dashboard-table">
+        <thead>
+            <tr>
+                <th class="mdl-data-table__cell--non-numeric">Repo</th>
+                <th class="mdl-data-table__cell--non-numeric">Number</th>
+                <th class="mdl-data-table__cell--non-numeric">Author</th>
+                <th class="mdl-data-table__cell--non-numeric">Status</th>
+                <th class="mdl-data-table__cell--non-numeric">Updated</th>
+                <th class="mdl-data-table__cell--non-numeric">Assignees</th>
+                <th class="mdl-data-table__cell--non-numeric">Size</th>
+                <th class="mdl-data-table__cell--non-numeric">Title</th>
+                <th class="mdl-data-table__cell--non-numeric"></th>
+            </tr>
+        </thead>
+        <tbody>
+        % for pr in sub_prs
+            % set pl = pr.payload
+            % set row_style = 'even' if loop.index % 2 == 0 else ''
+            <tr id="{{title|slugify}} {{pr.repo}} {{pr.number}}" class="{{row_style}}" onclick="window.open('https://github.com/{{pr.repo}}/pull/{{pr.number}}', '_blank')">
+                <td class="mdl-data-table__cell--non-numeric">{{pr.repo|ltrim('kubernetes/')}}</td>
+                <td class="mdl-data-table__cell--non-numeric">{{pr.number}}</td>
+                <td class="mdl-data-table__cell--non-numeric">{{pl['author']}}</td>
+                <td class="mdl-data-table__cell--non-numeric">{{pl|render_status(user)}}</td>
+                <td class="mdl-data-table__cell--non-numeric">{{pr.updated_at|dt_to_epoch|timestamp('humantimestamp', '%b %e')}}</td>
+                <td class="mdl-data-table__cell--non-numeric">{{pl['assignees']|join(", ")}}</td>
+                <td class="mdl-data-table__cell--non-numeric">{{pl|classify_size}}</td>
+                <td class="mdl-data-table__cell--non-numeric">{{pl['title']}}</td>
+                <td class="mdl-data-table__cell--non-numeric">
+                % if title == "Needs Attention" and acks is not none
+                    % set latest = pl|get_latest(user)
+                    % if latest
+                    <button class="mdl-button mdl-js-button mdl-js-ripple-effect" onclick="ack(event, '{{pr.repo}}', {{pr.number}}, {{latest}});">ACK</button>
+                    % endif
+                % endif
+                </td>
+            % endfor
+            </tr>
+        </tbody>
+    </table>
 	% else
-		<p><h4 class="pr-section">No Results</h4>
+	<h6 class="pr-section">No Results</h6>
 	% endif
 % endfor
-
-<div id="help">
-  <p><b>Needs Attention</b> is a heuristic grouping based on a <a href="https://git.k8s.io/test-infra/gubernator/github/classifier.py#L397">simple state machine</a>. {% if user != login or not login %}<a href="/pr">Login</a> to use {% else %}Use {% endif %} the "ACK" button to remove a PR from "Needs Attention" until something new occurs.
-<p>Have a problem? <a href="https://github.com/kubernetes/test-infra/issues/new?title=PR%20Dashboard:&labels=area/gubernator&assignee=rmmh">File a bug!</a>
+<hr class ="line-break">
+<div>
+  	<p><b>Needs Attention</b> is a heuristic grouping based on a <a href="https://git.k8s.io/test-infra/gubernator/github/classifier.py#L397">simple state machine</a>. {% if user != login or not login %}<a href="/pr">Login</a> to use {% else %}Use {% endif %} the "ACK" button to remove a PR from "Needs Attention" until something new occurs.</p>
+	<p>Have a problem? <a href="https://github.com/kubernetes/test-infra/issues/new?title=PR%20Dashboard:&labels=area/gubernator&assignee=rmmh">File a bug!</a>
 </div>
 % endblock
