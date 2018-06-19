@@ -60,6 +60,7 @@ approve:
   lgtm_acts_as_approve: true
 - repos:
   - kubernetes-sigs
+  - client-go/unofficial-docs
   implicit_self_approve: true
 
 blockades:
@@ -448,6 +449,20 @@ plugins:
 
   GoogleCloudPlatform/k8s-multicluster-ingress:
   - trigger
+  
+  client-go/unofficial-docs:
+  - assign
+  - approve
+  - lgtm
+  - approve
+  - label
+  - cla
+  - cat
+  - dog
+  - help
+  - blunderbuss
+  - wip
+  - hold
 
 external_plugins:
   kubernetes/community:
@@ -467,6 +482,10 @@ external_plugins:
     events:
       - pull_request
   kubernetes/test-infra:
+  - name: needs-rebase
+    events:
+      - pull_request
+  client-go/unofficial-docs:
   - name: needs-rebase
     events:
       - pull_request
