@@ -394,6 +394,9 @@ func TestNeededPresubmits(t *testing.T) {
 	}
 
 	for _, tc := range tests {
+		if err := config.SetPresubmitRegexes(tc.possible); err != nil {
+			t.Fatalf("could not set regexes: %v", err)
+		}
 		var names []string
 		for _, job := range neededPresubmits(tc.possible, tc.current, tc.refs, sets.String{}) {
 			names = append(names, job.Name)

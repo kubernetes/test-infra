@@ -922,22 +922,26 @@ func TestTakeAction(t *testing.T) {
 	for _, tc := range testcases {
 		ca := &config.Agent{}
 		cfg := &config.Config{}
-		cfg.SetPresubmits(
+		if err := cfg.SetPresubmits(
 			map[string][]config.Presubmit{
 				"o/r": {
 					{
-						Name:      "foo",
-						Trigger:   "/test all",
-						AlwaysRun: true,
+						Name:         "foo",
+						Trigger:      "/test all",
+						RerunCommand: "/test all",
+						AlwaysRun:    true,
 					},
 					{
 						Name:         "if-changed",
 						Trigger:      "/test if-changed",
+						RerunCommand: "/test if-changed",
 						RunIfChanged: "CHANGED",
 					},
 				},
 			},
-		)
+		); err != nil {
+			t.Fatalf("failed to set presubmits: %v", err)
+		}
 		ca.Set(cfg)
 		if len(tc.presubmits) > 0 {
 			for i := 0; i <= 8; i++ {

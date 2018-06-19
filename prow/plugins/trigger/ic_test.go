@@ -178,16 +178,18 @@ func TestHandleIssueComment(t *testing.T) {
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:      "job",
-						AlwaysRun: false,
-						Context:   "pull-job",
-						Trigger:   `/test all`,
+						Name:         "job",
+						AlwaysRun:    false,
+						Context:      "pull-job",
+						Trigger:      `/test all`,
+						RerunCommand: `/test all`,
 					},
 					{
-						Name:      "jib",
-						AlwaysRun: false,
-						Context:   "pull-jib",
-						Trigger:   `/test jib`,
+						Name:         "jib",
+						AlwaysRun:    false,
+						Context:      "pull-jib",
+						Trigger:      `/test jib`,
+						RerunCommand: `/test jib`,
 					},
 				},
 			},
@@ -203,12 +205,13 @@ func TestHandleIssueComment(t *testing.T) {
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:       "job",
-						AlwaysRun:  true,
-						SkipReport: true,
-						Context:    "pull-job",
-						Trigger:    `/test all`,
-						Brancher:   config.Brancher{Branches: []string{"master"}},
+						Name:         "job",
+						AlwaysRun:    true,
+						SkipReport:   true,
+						Context:      "pull-job",
+						Trigger:      `/test all`,
+						RerunCommand: `/test all`,
+						Brancher:     config.Brancher{Branches: []string{"master"}},
 					},
 				},
 			},
@@ -227,6 +230,7 @@ func TestHandleIssueComment(t *testing.T) {
 						SkipReport:   true,
 						Context:      "pull-jab",
 						Trigger:      `/test all`,
+						RerunCommand: `/test all`,
 					},
 				},
 			},
@@ -246,6 +250,7 @@ func TestHandleIssueComment(t *testing.T) {
 						RunIfChanged: "CHANGED",
 						Context:      "pull-jib",
 						Trigger:      `/test all`,
+						RerunCommand: `/test all`,
 					},
 				},
 			},
@@ -265,6 +270,7 @@ func TestHandleIssueComment(t *testing.T) {
 						RunIfChanged: "CHANGED",
 						Context:      "pull-jub",
 						Trigger:      `/test jub`,
+						RerunCommand: `/test jub`,
 					},
 				},
 			},
@@ -284,6 +290,7 @@ func TestHandleIssueComment(t *testing.T) {
 						RunIfChanged: "CHANGED2",
 						Context:      "pull-jib",
 						Trigger:      `/test all`,
+						RerunCommand: `/test all`,
 					},
 				},
 			},
@@ -303,6 +310,7 @@ func TestHandleIssueComment(t *testing.T) {
 						RunIfChanged: "CHANGED",
 						Context:      "pull-jab",
 						Trigger:      `/test all`,
+						RerunCommand: `/test all`,
 					},
 				},
 			},
@@ -319,16 +327,18 @@ func TestHandleIssueComment(t *testing.T) {
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:     "jab",
-						Brancher: config.Brancher{Branches: []string{"master"}},
-						Context:  "pull-jab",
-						Trigger:  `/test jab`,
+						Name:         "jab",
+						Brancher:     config.Brancher{Branches: []string{"master"}},
+						Context:      "pull-jab",
+						Trigger:      `/test jab`,
+						RerunCommand: `/test jab`,
 					},
 					{
-						Name:     "jab",
-						Brancher: config.Brancher{Branches: []string{"release"}},
-						Context:  "pull-jab",
-						Trigger:  `/test jab`,
+						Name:         "jab",
+						Brancher:     config.Brancher{Branches: []string{"release"}},
+						Context:      "pull-jab",
+						Trigger:      `/test jab`,
+						RerunCommand: `/test jab`,
 					},
 				},
 			},
@@ -345,16 +355,18 @@ func TestHandleIssueComment(t *testing.T) {
 			Presubmits: map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:     "jab",
-						Brancher: config.Brancher{Branches: []string{"master"}},
-						Context:  "pull-jab",
-						Trigger:  `/test jab`,
+						Name:         "jab",
+						Brancher:     config.Brancher{Branches: []string{"master"}},
+						Context:      "pull-jab",
+						Trigger:      `/test jab`,
+						RerunCommand: `/test jab`,
 					},
 					{
-						Name:     "jab",
-						Brancher: config.Brancher{Branches: []string{"release"}},
-						Context:  "pull-jab",
-						Trigger:  `/test jab`,
+						Name:         "jab",
+						Brancher:     config.Brancher{Branches: []string{"release"}},
+						Context:      "pull-jab",
+						Trigger:      `/test jab`,
+						RerunCommand: `/test jab`,
 					},
 				},
 			},
@@ -374,6 +386,7 @@ func TestHandleIssueComment(t *testing.T) {
 						RunIfChanged: "CHANGED2",
 						Context:      "pull-jeb",
 						Trigger:      `/test all`,
+						RerunCommand: `/test all`,
 					},
 				},
 			},
@@ -393,6 +406,7 @@ func TestHandleIssueComment(t *testing.T) {
 						RunIfChanged: "CHANGED2",
 						Context:      "pull-jib",
 						Trigger:      `/test (all|pull-jeb)`,
+						RerunCommand: `/test pull-jeb`,
 					},
 				},
 			},
@@ -411,6 +425,7 @@ func TestHandleIssueComment(t *testing.T) {
 						RunIfChanged: "CHANGED",
 						Context:      "pull-jub",
 						Trigger:      `/test jub`,
+						RerunCommand: `/test jub`,
 					},
 				},
 			},
@@ -430,6 +445,7 @@ func TestHandleIssueComment(t *testing.T) {
 						RunIfChanged: "CHANGED2",
 						Context:      "pull-jub",
 						Trigger:      `/test jub`,
+						RerunCommand: `/test jub`,
 					},
 				},
 			},
@@ -483,22 +499,26 @@ func TestHandleIssueComment(t *testing.T) {
 			presubmits = map[string][]config.Presubmit{
 				"org/repo": {
 					{
-						Name:      "job",
-						AlwaysRun: true,
-						Context:   "pull-job",
-						Trigger:   `/test all`,
-						Brancher:  config.Brancher{Branches: []string{"master"}},
+						Name:         "job",
+						AlwaysRun:    true,
+						Context:      "pull-job",
+						Trigger:      `/test all`,
+						RerunCommand: `/test all`,
+						Brancher:     config.Brancher{Branches: []string{"master"}},
 					},
 					{
-						Name:      "jib",
-						AlwaysRun: false,
-						Context:   "pull-jib",
-						Trigger:   `/test jib`,
+						Name:         "jib",
+						AlwaysRun:    false,
+						Context:      "pull-jib",
+						Trigger:      `/test jib`,
+						RerunCommand: `/test jib`,
 					},
 				},
 			}
 		}
-		c.Config.SetPresubmits(presubmits)
+		if err := c.Config.SetPresubmits(presubmits); err != nil {
+			t.Fatalf("failed to set presubmits: %v", err)
+		}
 
 		var pr *struct{}
 		if tc.IsPR {

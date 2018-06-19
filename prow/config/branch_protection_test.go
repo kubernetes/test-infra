@@ -429,6 +429,9 @@ func TestJobRequirements(t *testing.T) {
 	}
 
 	for _, tc := range cases {
+		if err := SetPresubmitRegexes(tc.config); err != nil {
+			t.Fatalf("could not set regexes: %v", err)
+		}
 		masterActual, masterOptional := jobRequirements(tc.config, "master", false)
 		if !reflect.DeepEqual(masterActual, tc.masterExpected) {
 			t.Errorf("branch: master - %s: actual %v != expected %v", tc.name, masterActual, tc.masterExpected)
