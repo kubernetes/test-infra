@@ -87,7 +87,7 @@ type gqlClient interface {
 	Query(ctx context.Context, q interface{}, vars map[string]interface{}) error
 }
 
-// throttler sets a ceiling on the rate of github requests.
+// throttler sets a ceiling on the rate of GitHub requests.
 // Configure with Client.Throttle()
 type throttler struct {
 	ticker   *time.Ticker
@@ -508,13 +508,15 @@ func (c *Client) UpdateOrgMembership(org, user string, admin bool) (*OrgMembersh
 	om := OrgMembership{}
 	if admin {
 		om.Role = RoleAdmin
+	} else {
+		om.Role = RoleMember
 	}
 
 	_, err := c.request(&request{
 		method:      http.MethodPut,
 		path:        fmt.Sprintf("/orgs/%s/memberships/%s", org, user),
 		requestBody: &om,
-		exitCodes:   []int{204},
+		exitCodes:   []int{200},
 	}, &om)
 	return &om, err
 }
@@ -599,7 +601,7 @@ func (c *Client) CreateIssueReaction(org, repo string, ID int, reaction string) 
 }
 
 // DeleteStaleComments iterates over comments on an issue/PR, deleting those which the 'isStale'
-// function identifies as stale. If 'comments' is nil, the comments will be fetched from github.
+// function identifies as stale. If 'comments' is nil, the comments will be fetched from GitHub.
 func (c *Client) DeleteStaleComments(org, repo string, number int, comments []IssueComment, isStale func(IssueComment) bool) error {
 	var err error
 	if comments == nil {
@@ -623,7 +625,7 @@ func (c *Client) DeleteStaleComments(org, repo string, number int, comments []Is
 // newObj() should return a new slice of the expected type
 // accumulate() should accept that populated slice for each page of results.
 //
-// Returns an error any call to github or object marshalling fails.
+// Returns an error any call to GitHub or object marshalling fails.
 func (c *Client) readPaginatedResults(path, accept string, newObj func() interface{}, accumulate func(interface{})) error {
 	values := url.Values{
 		"per_page": []string{"100"},
@@ -1204,7 +1206,7 @@ func (c *Client) tryRequestReview(org, repo string, number int, logins []string)
 
 // RequestReview tries to add the users listed in 'logins' as requested reviewers of the specified PR.
 // If any user in the 'logins' slice is not a contributor of the repo, the entire POST will fail
-// without adding any reviewers. The github API response does not specify which user(s) were invalid
+// without adding any reviewers. The GitHub API response does not specify which user(s) were invalid
 // so if we fail to request reviews from the members of 'logins' we try to request reviews from
 // each member individually. We try first with all users in 'logins' for efficiency in the common case.
 func (c *Client) RequestReview(org, repo string, number int, logins []string) error {
@@ -1230,7 +1232,7 @@ func (c *Client) RequestReview(org, repo string, number int, logins []string) er
 }
 
 // UnrequestReview tries to remove the users listed in 'logins' from the requested reviewers of the
-// specified PR. The github API treats deletions of review requests differently than creations. Specifically, if
+// specified PR. The GitHub API treats deletions of review requests differently than creations. Specifically, if
 // 'logins' contains a user that isn't a requested reviewer, other users that are valid are still removed.
 // Furthermore, the API response lists the set of requested reviewers after the deletion (unlike request creations),
 // so we can determine if each deletion was successful.
@@ -1359,7 +1361,7 @@ func (c *Client) GetRef(org, repo, ref string) (string, error) {
 	return res.Object["sha"], err
 }
 
-// FindIssues uses the github search API to find issues which match a particular query.
+// FindIssues uses the GitHub search API to find issues which match a particular query.
 //
 // Input query the same way you would into the website.
 // Order returned results with sort (usually "updated").
@@ -1392,7 +1394,7 @@ func (e *FileNotFound) Error() string {
 	return fmt.Sprintf("%s/%s/%s @ %s not found", e.org, e.repo, e.path, e.commit)
 }
 
-// GetFile uses github repo contents API to retrieve the content of a file with commit sha.
+// GetFile uses GitHub repo contents API to retrieve the content of a file with commit sha.
 // If commit is empty, it will grab content from repo's default branch, usually master.
 // TODO(krzyzacy): Support retrieve a directory
 func (c *Client) GetFile(org, repo, filepath, commit string) ([]byte, error) {
@@ -1438,6 +1440,57 @@ func (c *Client) Query(ctx context.Context, q interface{}, vars map[string]inter
 	return c.gqlc.Query(ctx, q, vars)
 }
 
+// CreateTeam adds a team with name to the org, returning a struct with the new ID.
+func (c *Client) CreateTeam(org string, team Team) (*Team, error) {
+	c.log("CreateTeam", org, team)
+	if team.Name == "" {
+		return nil, errors.New("team.Name must be non-empty")
+	}
+	if c.fake {
+		return nil, nil
+	}
+	path := fmt.Sprintf("/orgs/%s/teams", org)
+	var retTeam Team
+	_, err := c.request(&request{
+		method:      http.MethodPost,
+		path:        path,
+		requestBody: &team,
+		exitCodes:   []int{201},
+	}, &retTeam)
+	return &retTeam, err
+}
+
+// EditTeam patches team.ID to contain the specified other values.
+func (c *Client) EditTeam(team Team) (*Team, error) {
+	c.log("EditTeam", team)
+	if team.ID == 0 {
+		return nil, errors.New("team.ID must be non-zero")
+	}
+	id := team.ID
+	team.ID = 0
+	var retTeam Team
+	path := fmt.Sprintf("/teams/%d", id)
+	_, err := c.request(&request{
+		method:      http.MethodPatch,
+		path:        path,
+		requestBody: &team,
+		exitCodes:   []int{201},
+	}, &retTeam)
+	return &retTeam, err
+}
+
+// DeleteTeam removes team.ID from GitHub.
+func (c *Client) DeleteTeam(id int) error {
+	c.log("DeleteTeam", id)
+	path := fmt.Sprintf("/teams/%d", id)
+	_, err := c.request(&request{
+		method:    http.MethodDelete,
+		path:      path,
+		exitCodes: []int{204},
+	}, nil)
+	return err
+}
+
 // ListTeams gets a list of teams for the given org
 func (c *Client) ListTeams(org string) ([]Team, error) {
 	c.log("ListTeams", org)
@@ -1462,16 +1515,66 @@ func (c *Client) ListTeams(org string) ([]Team, error) {
 	return teams, nil
 }
 
+// UpdateTeamMembership adds the user to the team and/or updates their role in that team.
+//
+// If the user is not a member of the org, GitHub will invite them to become an outside collaborator, setting their status to pending.
+//
+// https://developer.github.com/v3/teams/members/#add-or-update-team-membership
+func (c *Client) UpdateTeamMembership(id int, user string, maintainer bool) (*TeamMembership, error) {
+	c.log("UpdateTeamMembership", id, user, maintainer)
+	if c.fake {
+		return nil, nil
+	}
+	tm := TeamMembership{}
+	if maintainer {
+		tm.Role = RoleMaintainer
+	} else {
+		tm.Role = RoleMember
+	}
+
+	_, err := c.request(&request{
+		method:      http.MethodPut,
+		path:        fmt.Sprintf("/teams/%d/memberships/%s", id, user),
+		requestBody: &tm,
+		exitCodes:   []int{200},
+	}, &tm)
+	return &tm, err
+}
+
+// RemoveTeamMembership removes the user from the team (but not the org).
+//
+// https://developer.github.com/v3/teams/members/#remove-team-member
+func (c *Client) RemoveTeamMembership(id int, user string) error {
+	c.log("RemoveTeamMembership", id, user)
+	if c.fake {
+		return nil
+	}
+	_, err := c.request(&request{
+		method:    http.MethodDelete,
+		path:      fmt.Sprintf("/teams/%d/memberships/%s", id, user),
+		exitCodes: []int{204},
+	}, nil)
+	return err
+}
+
 // ListTeamMembers gets a list of team members for the given team id
-func (c *Client) ListTeamMembers(id int) ([]TeamMember, error) {
-	c.log("ListTeamMembers", id)
+//
+// Role options are "all", "maintainer" and "member"
+//
+// https://developer.github.com/v3/teams/members/#list-team-members
+func (c *Client) ListTeamMembers(id int, role string) ([]TeamMember, error) {
+	c.log("ListTeamMembers", id, role)
 	if c.fake {
 		return nil, nil
 	}
 	path := fmt.Sprintf("/teams/%d/members", id)
 	var teamMembers []TeamMember
-	err := c.readPaginatedResults(
+	err := c.readPaginatedResultsWithValues(
 		path,
+		url.Values{
+			"per_page": []string{"100"},
+			"role":     []string{role},
+		},
 		// This accept header enables the nested teams preview.
 		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
 		"application/vnd.github.hellcat-preview+json",
@@ -1622,7 +1725,7 @@ func (c *Client) CreateFork(owner, repo string) error {
 	return err
 }
 
-// ListIssueEvents gets a list events from github's events API that pertain to the specified issue.
+// ListIssueEvents gets a list events from GitHub's events API that pertain to the specified issue.
 // The events that are returned have a different format than webhook events and certain event types
 // are excluded.
 // https://developer.github.com/v3/issues/events/
@@ -1650,7 +1753,7 @@ func (c *Client) ListIssueEvents(org, repo string, num int) ([]ListedIssueEvent,
 }
 
 // IsMergeable determines if a PR can be merged.
-// Mergeability is calculated by a background job on github and is not immediately available when
+// Mergeability is calculated by a background job on GitHub and is not immediately available when
 // new commits are added so the PR must be polled until the background job completes.
 func (c *Client) IsMergeable(org, repo string, number int, sha string) (bool, error) {
 	backoff := time.Second * 3

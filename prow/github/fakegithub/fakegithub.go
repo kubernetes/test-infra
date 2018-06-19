@@ -274,7 +274,10 @@ func (f *FakeClient) GetFile(org, repo, file, commit string) ([]byte, error) {
 }
 
 // ListTeamMembers return a fake team with a single "sig-lead" Github teammember
-func (f *FakeClient) ListTeamMembers(teamID int) ([]github.TeamMember, error) {
+func (f *FakeClient) ListTeamMembers(teamID int, role string) ([]github.TeamMember, error) {
+	if role != github.RoleAll {
+		return nil, fmt.Errorf("unsupport role %v (only all supported)", role)
+	}
 	return []github.TeamMember{{Login: "sig-lead"}}, nil
 }
 
