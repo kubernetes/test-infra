@@ -160,14 +160,14 @@ func TestConfigureBranches(t *testing.T) {
 
 	cases := []struct {
 		name    string
-		updates []Requirements
+		updates []requirements
 		deletes map[string]bool
 		sets    map[string]github.BranchProtectionRequest
 		errors  int
 	}{
 		{
 			name: "remove-protection",
-			updates: []Requirements{
+			updates: []requirements{
 				{Org: "one", Repo: "1", Branch: "delete", Request: nil},
 				{Org: "one", Repo: "1", Branch: "remove", Request: nil},
 				{Org: "two", Repo: "2", Branch: "remove", Request: nil},
@@ -180,14 +180,14 @@ func TestConfigureBranches(t *testing.T) {
 		},
 		{
 			name: "error-remove-protection",
-			updates: []Requirements{
+			updates: []requirements{
 				{Org: "one", Repo: "1", Branch: "error", Request: nil},
 			},
 			errors: 1,
 		},
 		{
 			name: "update-protection-context",
-			updates: []Requirements{
+			updates: []requirements{
 				{
 					Org:     "one",
 					Repo:    "1",
@@ -208,7 +208,7 @@ func TestConfigureBranches(t *testing.T) {
 		},
 		{
 			name: "complex",
-			updates: []Requirements{
+			updates: []requirements{
 				{Org: "update", Repo: "1", Branch: "master", Request: &prot},
 				{Org: "update", Repo: "2", Branch: "error", Request: &prot},
 				{Org: "remove", Repo: "3", Branch: "master", Request: nil},
@@ -226,12 +226,12 @@ func TestConfigureBranches(t *testing.T) {
 
 	for _, tc := range cases {
 		fc := fakeClient{}
-		p := Protector{
+		p := protector{
 			client:  &fc,
-			updates: make(chan Requirements),
+			updates: make(chan requirements),
 			done:    make(chan []error),
 		}
-		go p.ConfigureBranches()
+		go p.configureBranches()
 		for _, u := range tc.updates {
 			p.updates <- u
 		}
@@ -265,7 +265,7 @@ func TestProtect(t *testing.T) {
 		branches         []string
 		startUnprotected bool
 		config           string
-		expected         []Requirements
+		expected         []requirements
 		errors           int
 	}{
 		{
@@ -290,7 +290,7 @@ branch-protection:
   orgs:
     cfgdef:
 `,
-			expected: []Requirements{
+			expected: []requirements{
 				{
 					Org:     "cfgdef",
 					Repo:    "repo1",
@@ -322,7 +322,7 @@ branch-protection:
       protect-by-default: true
     that:
 `,
-			expected: []Requirements{
+			expected: []requirements{
 				{
 					Org:     "this",
 					Repo:    "yes",
@@ -390,7 +390,7 @@ branch-protection:
         skip:
           protect-by-default: false
 `,
-			expected: []Requirements{
+			expected: []requirements{
 				{
 					Org:     "org",
 					Repo:    "repo1",
@@ -432,7 +432,7 @@ branch-protection:
               require-contexts:
               - branch-presubmit
 `,
-			expected: []Requirements{
+			expected: []requirements{
 				{
 					Org:    "org",
 					Repo:   "repo",
@@ -466,7 +466,7 @@ branch-protection:
               allow-push:
               - branch-team
 `,
-			expected: []Requirements{
+			expected: []requirements{
 				{
 					Org:    "org",
 					Repo:   "repo",
@@ -516,7 +516,7 @@ branch-protection:
         teams:
         - org-team
 `,
-			expected: []Requirements{
+			expected: []requirements{
 				{
 					Org:    "all",
 					Repo:   "modern",
@@ -569,7 +569,7 @@ branch-protection:
     parent:
       protect: false
 `,
-			expected: []Requirements{
+			expected: []requirements{
 				{
 					Org:    "parent",
 					Repo:   "child",
@@ -597,7 +597,7 @@ branch-protection:
       require-contexts:
       - org-presubmit
 `,
-			expected: []Requirements{
+			expected: []requirements{
 				{
 					Org:    "modern",
 					Repo:   "deprecated",
@@ -627,7 +627,7 @@ branch-protection:
       protect: false
 `,
 			startUnprotected: true,
-			expected: []Requirements{
+			expected: []requirements{
 				{
 					Org:     "protect",
 					Repo:    "update",
@@ -669,20 +669,20 @@ branch-protection:
 			if err := yaml.Unmarshal([]byte(tc.config), &cfg); err != nil {
 				t.Fatalf("failed to parse config: %v", err)
 			}
-			p := Protector{
+			p := protector{
 				client:         &fc,
 				cfg:            &cfg,
 				errors:         Errors{},
-				updates:        make(chan Requirements),
+				updates:        make(chan requirements),
 				done:           make(chan []error),
 				completedRepos: make(map[string]bool),
 			}
 			go func() {
-				p.Protect()
+				p.protect()
 				close(p.updates)
 			}()
 
-			var actual []Requirements
+			var actual []requirements
 			for r := range p.updates {
 				actual = append(actual, r)
 			}
@@ -717,7 +717,7 @@ branch-protection:
 	}
 }
 
-func fixup(r *Requirements) {
+func fixup(r *requirements) {
 	if r == nil || r.Request == nil {
 		return
 	}
