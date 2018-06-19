@@ -585,9 +585,6 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gci-gce-autoscaling-hpa':'ci-kubernetes-e2e-gci-gce-autoscaling',
             'ci-kubernetes-e2e-gci-gce-autoscaling-migs-hpa':'ci-kubernetes-e2e-gci-gce-autoscaling-migs',
             'ci-kubernetes-e2e-gci-gke-autoscaling-hpa':'ci-kubernetes-e2e-gci-gke-autoscaling',
-            # kubemark presubmits
-            'pull-kubernetes-kubemark-e2e-gce-canary':'k8s-jkns-pr-kubemark',
-            'pull-kubernetes-kubemark-e2e-gce':'k8s-jkns-pr-kubemark',
             # gpu+autoscaling jobs intentionally share projects with gpu tests
             'ci-kubernetes-e2e-gci-gke-autoscaling-gpu-v100': 'ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu-v100',
         }
