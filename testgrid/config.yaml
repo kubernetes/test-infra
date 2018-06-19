@@ -2750,6 +2750,9 @@ test_groups:
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
 
+- name: ci-kubernetes-e2e-win
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-win
+
 # Add New Testgroups Here
 - name: ci-kubernetes-e2e-gce-coredns-performance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-coredns-performance
@@ -6411,6 +6414,14 @@ dashboards:
     test_group_name: ci-gardener-e2e-conformance-gce-v1.10
     alert_options:
       alert_mail_to_addresses: 'roland.wilfer@sap.com'
+
+# sig-windows dashboard
+- name: sig-windows
+  dashboard_tab:
+  - name: "Conformance acs-engine on Azure"
+    description: Runs conformance tests on a Kubernetes cluster provided by acs-engine (https://github.com/Azure/acs-engine) on Azure cloud"
+    test_group_name: ci-kubernetes-e2e-win
+
 #
 # Start dashboard groups
 #
