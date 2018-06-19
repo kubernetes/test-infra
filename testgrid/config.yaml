@@ -3232,11 +3232,17 @@ test_groups:
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
 
+
 - name: pull-k8s-cluster-bundle-bazel-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-k8s-cluster-bundle-bazel-test
   num_columns_recent: 30
 - name: post-k8s-cluster-bundle-bazel-test
   gcs_prefix: kubernetes-jenkins/logs/post-k8s-cluster-bundle-bazel-test
+
+# acs-engine on Azure tests
+- name: ci-kubernetes-e2e-win-1-13
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-win-1-13
+
 # Add New Testgroups Here
 
 - name: ci-kubernetes-e2e-gce-coredns-performance
@@ -7389,6 +7395,12 @@ dashboards:
   - name: ci-test
     test_group_name: ci-structured-merge-diff-test
 
+# sig-windows dashboard
+- name: sig-windows
+  dashboard_tab:
+  - name: "Conformance acs-engine on Azure"
+    description: Runs conformance tests on a Kubernetes cluster provided by acs-engine (https://github.com/Azure/acs-engine) on Azure cloud"
+    test_group_name: ci-kubernetes-e2e-win-1-13
 
 #
 # Start dashboard groups
