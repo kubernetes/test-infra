@@ -8268,19 +8268,6 @@ periodics:
       - "--timeout=110"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
 
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gce-netd
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - "--timeout=340"
-      - "--repo=k8s.io/kubernetes=release-1.11"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
-
 - interval: 1h
   agent: kubernetes
   name: ci-cri-containerd-e2e-ubuntu-gce
@@ -11817,6 +11804,19 @@ periodics:
     - args:
       - --timeout=110
       - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
+
+- interval: 2h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gci-gce-netd
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - "--timeout=340"
+      - "--repo=k8s.io/kubernetes=release-1.11"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
 
 - interval: 30m

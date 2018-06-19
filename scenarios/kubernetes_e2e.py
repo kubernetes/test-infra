@@ -185,12 +185,26 @@ class LocalMode(object):
     def add_file(self, env_file):
         """Reads all FOO=BAR lines from env_file."""
         with open(env_file) as fp:
+            var_name, multi_line = '', []
             for line in fp:
-                line = line.rstrip()
                 if not line or line.startswith('#'):
                     continue
-                self.env_files.append(parse_env(line))
-
+                # support multi lines var which starts and ends with """
+                if '"""' in line:
+                    if var_name == '':
+                        var_name = line.split('=', 1)[0]
+                        multi_line.append(line.split('"""', 1)[1])
+                    else:
+                        multi_line.append(line.split('"""', 1)[0])
+                        self.env_files.append([var_name, ''.join(multi_line)])
+                        var_name, multi_line = '', []
+                elif var_name:
+                    multi_line.append(line)
+                else:
+                    line = line.rstrip()
+                    self.env_files.append(parse_env(line))
+            if var_name:
+                raise ValueError('%s contians open multiline vars.' % env_file)
     def add_env(self, env):
         self.env_files.append(parse_env(env))
 
