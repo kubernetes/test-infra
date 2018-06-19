@@ -17,6 +17,7 @@ limitations under the License.
 package github
 
 import (
+	"encoding/json"
 	"strings"
 	"time"
 )
@@ -133,6 +134,10 @@ type PullRequestEvent struct {
 	Repo        Repo                   `json:"repository"`
 	Label       Label                  `json:"label"`
 	Sender      User                   `json:"sender"`
+
+	// Changes holds raw change data, which we must inspect
+	// and deserialize later as this is a polymorphic field
+	Changes json.RawMessage `json:"changes"`
 
 	// GUID is included in the header of the request received by Github.
 	GUID string
