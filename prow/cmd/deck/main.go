@@ -51,7 +51,7 @@ type options struct {
 	buildCluster          string
 	tideURL               string
 	hookURL               string
-	oauthUrl              string
+	oauthURL              string
 	githubOAuthConfigFile string
 	cookieSecretFile      string
 	redirectHTTPTo        string
@@ -63,7 +63,7 @@ func (o *options) Validate() error {
 	if o.configPath == "" {
 		return errors.New("required flag --config-path was unset")
 	}
-	if o.oauthUrl != "" {
+	if o.oauthURL != "" {
 		if o.githubOAuthConfigFile == "" {
 			return errors.New("an OAuth URL was provided but required flag --github-oauth-config-file was unset")
 		}
@@ -80,7 +80,7 @@ func gatherOptions() options {
 	flag.StringVar(&o.buildCluster, "build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
 	flag.StringVar(&o.tideURL, "tide-url", "", "Path to tide. If empty, do not serve tide data.")
 	flag.StringVar(&o.hookURL, "hook-url", "", "Path to hook plugin help endpoint.")
-	flag.StringVar(&o.oauthUrl, "oauth-url", "", "Path to deck user dashboard endpoint.")
+	flag.StringVar(&o.oauthURL, "oauth-url", "", "Path to deck user dashboard endpoint.")
 	flag.StringVar(&o.githubOAuthConfigFile, "github-oauth-config-file", "/etc/github/secret", "Path to the file containing the GitHub App Client secret.")
 	flag.StringVar(&o.cookieSecretFile, "cookie-secret", "/etc/cookie/secret", "Path to the file containing the cookie secret key.")
 	// use when behind a load balancer
@@ -187,8 +187,8 @@ func prodOnlyMain(o options, mux *http.ServeMux) *http.ServeMux {
 		mux.Handle("/tide.js", gziphandler.GzipHandler(handleTide(configAgent, ta)))
 	}
 
-	// Enable Git OAuth feature if oauthUrl is provided.
-	if o.oauthUrl != "" {
+	// Enable Git OAuth feature if oauthURL is provided.
+	if o.oauthURL != "" {
 		githubOAuthConfigRaw, err := loadToken(o.githubOAuthConfigFile)
 		if err != nil {
 			logrus.WithError(err).Fatal("Could not read github oauth config file.")

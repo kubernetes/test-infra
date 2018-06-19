@@ -34,13 +34,14 @@ import (
 	"k8s.io/test-infra/prow/pod-utils/options"
 )
 
-// NewOptions returns an empty Options with no nil fields
-func NewOptions() *Options {
+// newOptions returns an empty Options with no nil fields
+func newOptions() *Options {
 	return &Options{
 		Options: gcsupload.NewOptions(),
 	}
 }
 
+// Options holds info about parallelism, how to upload and cluster credentials.
 type Options struct {
 	// NumWorkers determines the number of workers that consume
 	// the controller's work queue
@@ -120,6 +121,9 @@ func loadClusterConfig() (*rest.Config, error) {
 	return clusterConfig, nil
 }
 
+// Run uploads artifacts with the specified options forever.
+//
+// Sends a stop message to the artifact uploader when it is interrupted.
 func (o *Options) Run() error {
 	clusterConfig, err := loadClusterConfig()
 	if err != nil {
@@ -147,7 +151,7 @@ func (o *Options) Run() error {
 }
 
 func main() {
-	o := NewOptions()
+	o := newOptions()
 	if err := options.Load(o); err != nil {
 		logrus.Fatalf("Could not resolve options: %v", err)
 	}
