@@ -21,7 +21,7 @@ import (
 	"k8s.io/test-infra/velodrome/sql"
 )
 
-// Logs the author on all the Points returned. This is enabled by command-line.
+// AuthorLoggerPluginWrapper logs the author on all the Points returned. This is enabled by command-line.
 type AuthorLoggerPluginWrapper struct {
 	plugin  Plugin
 	enabled bool
@@ -29,16 +29,19 @@ type AuthorLoggerPluginWrapper struct {
 
 var _ Plugin = &AuthorLoggerPluginWrapper{}
 
+// NewAuthorLoggerPluginWrapper is the constructor for AuthorLoggerPluginWrapper
 func NewAuthorLoggerPluginWrapper(plugin Plugin) *AuthorLoggerPluginWrapper {
 	return &AuthorLoggerPluginWrapper{
 		plugin: plugin,
 	}
 }
 
+// AddFlags adds "log-authors" <authors> to the command help
 func (a *AuthorLoggerPluginWrapper) AddFlags(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&a.enabled, "log-author", false, "Log the author for each metric")
 }
 
+// ReceiveIssue is a wrapper on plugin.ReceiveIssue() logging the author
 func (a *AuthorLoggerPluginWrapper) ReceiveIssue(issue sql.Issue) []Point {
 	points := a.plugin.ReceiveIssue(issue)
 	if a.enabled {
@@ -53,6 +56,7 @@ func (a *AuthorLoggerPluginWrapper) ReceiveIssue(issue sql.Issue) []Point {
 	return points
 }
 
+// ReceiveIssueEvent is a wrapper on plugin.ReceiveIssueEvent() logging the author
 func (a *AuthorLoggerPluginWrapper) ReceiveIssueEvent(event sql.IssueEvent) []Point {
 	points := a.plugin.ReceiveIssueEvent(event)
 
@@ -70,6 +74,7 @@ func (a *AuthorLoggerPluginWrapper) ReceiveIssueEvent(event sql.IssueEvent) []Po
 	return points
 }
 
+// ReceiveComment is a wrapper on plugin.ReceiveComment() logging the author
 func (a *AuthorLoggerPluginWrapper) ReceiveComment(comment sql.Comment) []Point {
 	points := a.plugin.ReceiveComment(comment)
 

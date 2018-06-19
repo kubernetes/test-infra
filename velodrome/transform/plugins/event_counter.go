@@ -21,6 +21,7 @@ import (
 	"k8s.io/test-infra/velodrome/sql"
 )
 
+// EventCounterPlugin counts events
 type EventCounterPlugin struct {
 	matcher EventMatcher
 	desc    string
@@ -28,19 +29,23 @@ type EventCounterPlugin struct {
 
 var _ Plugin = &EventCounterPlugin{}
 
+// AddFlags adds "event" to the command help
 func (e *EventCounterPlugin) AddFlags(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&e.desc, "event", "", "Match event (eg: `opened`)")
 }
 
+// CheckFlags is delegated to EventMatcher
 func (e *EventCounterPlugin) CheckFlags() error {
 	e.matcher = NewEventMatcher(e.desc)
 	return nil
 }
 
+// ReceiveIssue is needed to implement a Plugin
 func (e *EventCounterPlugin) ReceiveIssue(issue sql.Issue) []Point {
 	return nil
 }
 
+// ReceiveIssueEvent adds issue events to InfluxDB
 func (e *EventCounterPlugin) ReceiveIssueEvent(event sql.IssueEvent) []Point {
 	var label string
 	if event.Label != nil {
@@ -58,6 +63,7 @@ func (e *EventCounterPlugin) ReceiveIssueEvent(event sql.IssueEvent) []Point {
 	}
 }
 
+// ReceiveComment is needed to implement a Plugin
 func (e *EventCounterPlugin) ReceiveComment(comment sql.Comment) []Point {
 	return nil
 }

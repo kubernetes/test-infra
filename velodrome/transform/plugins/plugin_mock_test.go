@@ -27,21 +27,21 @@ import (
 // Mock of Plugin interface
 type MockPlugin struct {
 	ctrl     *gomock.Controller
-	recorder *_MockPluginRecorder
+	recorder *MockPluginRecorder
 }
 
-// Recorder for MockPlugin (not exported)
-type _MockPluginRecorder struct {
+// Recorder for MockPlugin
+type MockPluginRecorder struct {
 	mock *MockPlugin
 }
 
 func NewMockPlugin(ctrl *gomock.Controller) *MockPlugin {
 	mock := &MockPlugin{ctrl: ctrl}
-	mock.recorder = &_MockPluginRecorder{mock}
+	mock.recorder = &MockPluginRecorder{mock}
 	return mock
 }
 
-func (_m *MockPlugin) EXPECT() *_MockPluginRecorder {
+func (_m *MockPlugin) EXPECT() *MockPluginRecorder {
 	return _m.recorder
 }
 
@@ -51,7 +51,7 @@ func (_m *MockPlugin) ReceiveIssue(_param0 sql.Issue) []Point {
 	return ret0
 }
 
-func (_mr *_MockPluginRecorder) ReceiveIssue(arg0 interface{}) *gomock.Call {
+func (_mr *MockPluginRecorder) ReceiveIssue(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "ReceiveIssue", arg0)
 }
 
@@ -61,7 +61,7 @@ func (_m *MockPlugin) ReceiveComment(_param0 sql.Comment) []Point {
 	return ret0
 }
 
-func (_mr *_MockPluginRecorder) ReceiveComment(arg0 interface{}) *gomock.Call {
+func (_mr *MockPluginRecorder) ReceiveComment(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "ReceiveComment", arg0)
 }
 
@@ -71,6 +71,6 @@ func (_m *MockPlugin) ReceiveIssueEvent(_param0 sql.IssueEvent) []Point {
 	return ret0
 }
 
-func (_mr *_MockPluginRecorder) ReceiveIssueEvent(arg0 interface{}) *gomock.Call {
+func (_mr *MockPluginRecorder) ReceiveIssueEvent(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "ReceiveIssueEvent", arg0)
 }

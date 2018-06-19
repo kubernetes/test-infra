@@ -20,6 +20,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// NewCountPlugin counts events and number of issues in given state, and for how long.
 func NewCountPlugin(runner func(Plugin) error) *cobra.Command {
 	stateCounter := &StatePlugin{}
 	eventCounter := &EventCounterPlugin{}

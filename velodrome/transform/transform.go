@@ -43,12 +43,12 @@ type transformConfig struct {
 
 func (config *transformConfig) CheckRootFlags() error {
 	if config.repository == "" {
-		return fmt.Errorf("Repository must be set.")
+		return fmt.Errorf("repository must be set")
 	}
 	config.repository = strings.ToLower(config.repository)
 
 	if config.metricName == "" {
-		return fmt.Errorf("Metric name must be set.")
+		return fmt.Errorf("metric name must be set")
 	}
 
 	return nil

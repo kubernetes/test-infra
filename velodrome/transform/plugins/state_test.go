@@ -44,25 +44,25 @@ func TestStatePlugin(t *testing.T) {
 			events: []sql.IssueEvent{
 				// No change
 				{
-					IssueId:        "1",
+					IssueID:        "1",
 					Event:          "opened",
 					EventCreatedAt: time.Unix(10*60, 0),
 				},
 				// 1 is merged
 				{
-					IssueId:        "1",
+					IssueID:        "1",
 					Event:          "merged",
 					EventCreatedAt: time.Unix(20*60, 0),
 				},
 				// 1 is merged again, no change
 				{
-					IssueId:        "1",
+					IssueID:        "1",
 					Event:          "merged",
 					EventCreatedAt: time.Unix(30*60, 0),
 				},
 				// 2 is merged
 				{
-					IssueId:        "2",
+					IssueID:        "2",
 					Event:          "merged",
 					EventCreatedAt: time.Unix(40*60, 0),
 				},
