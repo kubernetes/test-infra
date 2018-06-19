@@ -20,19 +20,20 @@ package config
 import (
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"regexp"
 	"strings"
 	"text/template"
 	"time"
 
-	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/robfig/cron.v2"
+
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/util/yaml"
 
 	"k8s.io/test-infra/prow/config/org"
 	"k8s.io/test-infra/prow/github"
@@ -286,56 +287,58 @@ func Load(prowConfig, jobConfig string) (*Config, error) {
 		return nil, err
 	}
 
-	if !stat.IsDir() {
-		// still support a single file
-		jobConfig, err := yamlToConfig(jobConfig)
-		if err != nil {
-			return nil, err
-		}
-		if err := nc.mergeJobConfig(jobConfig.JobConfig); err != nil {
-			return nil, err
-		}
-		return nc, nil
+	if stat.IsDir() {
+		return nil, fmt.Errorf("JobConfig should be a single file!")
 	}
 
-	err = filepath.Walk(jobConfig, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			logrus.WithError(err).Errorf("walking path %q.", path)
-			// bad file should not stop us from parsing the directory
-			return nil
-		}
-
-		if filepath.Ext(path) != ".yaml" {
-			return nil
-		}
-
-		if info.IsDir() {
-			return nil
-		}
-
-		subConfig, err := yamlToConfig(path)
-		if err != nil {
-			return err
-		}
-		return nc.mergeJobConfig(subConfig.JobConfig)
-	})
-
+	// JobConfig is a single file contains multiple yaml documents
+	jobConfigBlob, err := yamlToConfig(jobConfig)
 	if err != nil {
+		return nil, err
+	}
+	if err := nc.mergeJobConfig(jobConfigBlob.JobConfig); err != nil {
 		return nil, err
 	}
 	return nc, nil
 }
 
 // yamlToConfig converts a yaml file into a Config object
+// support multiple yaml documents
 func yamlToConfig(path string) (*Config, error) {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("error reading %s: %v", path, err)
 	}
-	nc := &Config{}
-	if err := yaml.Unmarshal(b, nc); err != nil {
-		return nil, fmt.Errorf("error unmarshaling %s: %v", path, err)
+
+	var nc *Config
+
+	decoder := yaml.NewYAMLToJSONDecoder(strings.NewReader(string(b)))
+
+	for {
+		c := &Config{}
+		err := decoder.Decode(&c)
+
+		if err != nil && err != io.EOF {
+			return nil, fmt.Errorf("error decoding: %v", err)
+		}
+
+		if nc == nil {
+			nc = c
+		} else {
+			if err := nc.mergeJobConfig(c.JobConfig); err != nil {
+				return nil, err
+			}
+		}
+
+		if err == io.EOF {
+			break
+		}
 	}
+
+	if nc == nil {
+		return nil, fmt.Errorf("no available yaml doc from %s", string(b))
+	}
+
 	if err := parseConfig(nc); err != nil {
 		return nil, err
 	}
