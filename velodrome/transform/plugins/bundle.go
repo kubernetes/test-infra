@@ -43,7 +43,7 @@ type BundledStates struct {
 	states      map[string]State
 }
 
-// NewBundledStates creates a new BundledStates
+// NewBundledStates is the constructor for BundledStates
 func NewBundledStates(description string) BundledStates {
 	return BundledStates{
 		description: description,
@@ -88,7 +88,7 @@ func (b BundledStates) Total(t time.Time) (count int, sum int64) {
 // Percentile returns given percentile for age of all active states at time t
 func (b BundledStates) Percentile(t time.Time, percentile int) time.Duration {
 	if percentile > 100 || percentile <= 0 {
-		panic(fmt.Errorf("Percentile %d is out of scope.", percentile))
+		panic(fmt.Errorf("percentile %d is out of scope", percentile))
 	}
 
 	ages := []time.Duration{}

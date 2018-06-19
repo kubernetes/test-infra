@@ -45,8 +45,8 @@ func TestFindLatestUpdate(t *testing.T) {
 		},
 		{
 			[]sql.IssueEvent{
-				{ID: "2", IssueId: "7", EventCreatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
-				{ID: "7", IssueId: "7", EventCreatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{ID: "2", IssueID: "7", EventCreatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{ID: "7", IssueID: "7", EventCreatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
 			},
 			0,
 			"TWO",
@@ -54,9 +54,9 @@ func TestFindLatestUpdate(t *testing.T) {
 		},
 		{
 			[]sql.IssueEvent{
-				{ID: "2", IssueId: "7", EventCreatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
-				{ID: "7", IssueId: "2", EventCreatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
-				{ID: "1", IssueId: "7", EventCreatedAt: time.Date(1998, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "TWO"},
+				{ID: "2", IssueID: "7", EventCreatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{ID: "7", IssueID: "2", EventCreatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{ID: "1", IssueID: "7", EventCreatedAt: time.Date(1998, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "TWO"},
 			},
 			2,
 			"ONE",
@@ -64,9 +64,9 @@ func TestFindLatestUpdate(t *testing.T) {
 		},
 		{
 			[]sql.IssueEvent{
-				{ID: "2", IssueId: "7", EventCreatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
-				{ID: "7", IssueId: "7", EventCreatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
-				{ID: "1", IssueId: "7", EventCreatedAt: time.Date(1998, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "TWO"},
+				{ID: "2", IssueID: "7", EventCreatedAt: time.Date(1999, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{ID: "7", IssueID: "7", EventCreatedAt: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "ONE"},
+				{ID: "1", IssueID: "7", EventCreatedAt: time.Date(1998, 1, 1, 0, 0, 0, 0, time.UTC), Repository: "TWO"},
 			},
 			1,
 			"TWO",

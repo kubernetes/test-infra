@@ -24,8 +24,8 @@ import (
 
 func TestBundle(t *testing.T) {
 	bundle := NewBundledStates("merged")
-	if got_count, got_sum := bundle.Total(time.Unix(0, 10)); got_count != 0 || got_sum != 0 {
-		t.Errorf("bundle.Total(time.Unix(0, 10)) = (%d, %d), want (0, 0)", got_count, got_sum)
+	if gotCount, gotSum := bundle.Total(time.Unix(0, 10)); gotCount != 0 || gotSum != 0 {
+		t.Errorf("bundle.Total(time.Unix(0, 10)) = (%d, %d), want (0, 0)", gotCount, gotSum)
 	}
 	if got := bundle.Percentile(time.Unix(0, 10), 50); got != 0 {
 		t.Errorf("bundle.Percentile(time.Unix(0, 10), 50) = %s, want 0", got)
@@ -39,11 +39,11 @@ func TestBundle(t *testing.T) {
 	}
 
 	// we have 50 triggered state
-	want_count := 50
+	wantCount := 50
 	// Total age at time 5000 is: (50*51)/2
-	want_sum := int64(1275)
-	if got_count, got_sum := bundle.Total(time.Unix(50*60, 0)); got_count != want_count || got_sum != want_sum {
-		t.Errorf("bundle.Total() = (%d, %d), want (%d, %d)", got_count, got_sum, want_count, want_sum)
+	wantSum := int64(1275)
+	if gotCount, gotSum := bundle.Total(time.Unix(50*60, 0)); gotCount != wantCount || gotSum != wantSum {
+		t.Errorf("bundle.Total() = (%d, %d), want (%d, %d)", gotCount, gotSum, wantCount, wantSum)
 	}
 	// The issue in the middle has been opened for 25 minutes
 	want := 25 * time.Minute

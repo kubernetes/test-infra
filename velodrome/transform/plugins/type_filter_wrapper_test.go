@@ -45,16 +45,16 @@ func TestTypeFilterWrapperFilterNothing(t *testing.T) {
 	// Filter nothing.
 
 	plugin.EXPECT().ReceiveIssue(sql.Issue{ID: "1", IsPR: false}).Return([]Point{{}})
-	plugin.EXPECT().ReceiveIssueEvent(sql.IssueEvent{IssueId: "1"}).Return([]Point{{}})
+	plugin.EXPECT().ReceiveIssueEvent(sql.IssueEvent{IssueID: "1"}).Return([]Point{{}})
 	plugin.EXPECT().ReceiveComment(sql.Comment{IssueID: "1"}).Return([]Point{{}})
 	plugin.EXPECT().ReceiveIssue(sql.Issue{ID: "2", IsPR: true}).Return([]Point{{}})
-	plugin.EXPECT().ReceiveIssueEvent(sql.IssueEvent{IssueId: "2"}).Return([]Point{{}})
+	plugin.EXPECT().ReceiveIssueEvent(sql.IssueEvent{IssueID: "2"}).Return([]Point{{}})
 	plugin.EXPECT().ReceiveComment(sql.Comment{IssueID: "2"}).Return([]Point{{}})
 
 	if p := typefilter.ReceiveIssue(sql.Issue{ID: "1", IsPR: false}); len(p) != 1 {
 		t.Error("Nothing should be filtered")
 	}
-	if p := typefilter.ReceiveIssueEvent(sql.IssueEvent{IssueId: "1"}); len(p) != 1 {
+	if p := typefilter.ReceiveIssueEvent(sql.IssueEvent{IssueID: "1"}); len(p) != 1 {
 		t.Error("Nothing should be filtered")
 	}
 	if p := typefilter.ReceiveComment(sql.Comment{IssueID: "1"}); len(p) != 1 {
@@ -64,7 +64,7 @@ func TestTypeFilterWrapperFilterNothing(t *testing.T) {
 	if p := typefilter.ReceiveIssue(sql.Issue{ID: "2", IsPR: true}); len(p) != 1 {
 		t.Error("Nothing should be filtered")
 	}
-	if p := typefilter.ReceiveIssueEvent(sql.IssueEvent{IssueId: "2"}); len(p) != 1 {
+	if p := typefilter.ReceiveIssueEvent(sql.IssueEvent{IssueID: "2"}); len(p) != 1 {
 		t.Error("Nothing should be filtered")
 	}
 	if p := typefilter.ReceiveComment(sql.Comment{IssueID: "2"}); len(p) != 1 {
@@ -82,13 +82,13 @@ func TestTypeFilterWrapperFilterIssues(t *testing.T) {
 	typefilter.issues = true
 
 	plugin.EXPECT().ReceiveIssue(sql.Issue{ID: "2", IsPR: true}).Return([]Point{{}})
-	plugin.EXPECT().ReceiveIssueEvent(sql.IssueEvent{IssueId: "2"}).Return([]Point{{}})
+	plugin.EXPECT().ReceiveIssueEvent(sql.IssueEvent{IssueID: "2"}).Return([]Point{{}})
 	plugin.EXPECT().ReceiveComment(sql.Comment{IssueID: "2"}).Return([]Point{{}})
 
 	if p := typefilter.ReceiveIssue(sql.Issue{ID: "1", IsPR: false}); len(p) != 0 {
 		t.Error("Issue 1 is an issue, should be filtered but received point for Issue")
 	}
-	if p := typefilter.ReceiveIssueEvent(sql.IssueEvent{IssueId: "1"}); len(p) != 0 {
+	if p := typefilter.ReceiveIssueEvent(sql.IssueEvent{IssueID: "1"}); len(p) != 0 {
 		t.Error("Issue 1 is an issue, should be filtered but received point for IssueEvent")
 	}
 	if p := typefilter.ReceiveComment(sql.Comment{IssueID: "1"}); len(p) != 0 {
@@ -98,7 +98,7 @@ func TestTypeFilterWrapperFilterIssues(t *testing.T) {
 	if p := typefilter.ReceiveIssue(sql.Issue{ID: "2", IsPR: true}); len(p) != 1 {
 		t.Error("Issue 2 is a PR, should have received point for Issue")
 	}
-	if p := typefilter.ReceiveIssueEvent(sql.IssueEvent{IssueId: "2"}); len(p) != 1 {
+	if p := typefilter.ReceiveIssueEvent(sql.IssueEvent{IssueID: "2"}); len(p) != 1 {
 		t.Error("Issue 2 is a PR, should have received point for IssueEvent")
 	}
 	if p := typefilter.ReceiveComment(sql.Comment{IssueID: "2"}); len(p) != 1 {
@@ -116,13 +116,13 @@ func TestTypeFilterWrapperFilterPR(t *testing.T) {
 	typefilter.pullRequests = true
 
 	plugin.EXPECT().ReceiveIssue(sql.Issue{ID: "2", IsPR: false}).Return([]Point{{}})
-	plugin.EXPECT().ReceiveIssueEvent(sql.IssueEvent{IssueId: "2"}).Return([]Point{{}})
+	plugin.EXPECT().ReceiveIssueEvent(sql.IssueEvent{IssueID: "2"}).Return([]Point{{}})
 	plugin.EXPECT().ReceiveComment(sql.Comment{IssueID: "2"}).Return([]Point{{}})
 
 	if p := typefilter.ReceiveIssue(sql.Issue{ID: "1", IsPR: true}); len(p) != 0 {
 		t.Error("Issue 1 is a PR, should be filtered but received point for Issue")
 	}
-	if p := typefilter.ReceiveIssueEvent(sql.IssueEvent{IssueId: "1"}); len(p) != 0 {
+	if p := typefilter.ReceiveIssueEvent(sql.IssueEvent{IssueID: "1"}); len(p) != 0 {
 		t.Error("Issue 1 is a PR, should be filtered but received point for IssueEvent")
 	}
 	if p := typefilter.ReceiveComment(sql.Comment{IssueID: "1"}); len(p) != 0 {
@@ -132,7 +132,7 @@ func TestTypeFilterWrapperFilterPR(t *testing.T) {
 	if p := typefilter.ReceiveIssue(sql.Issue{ID: "2", IsPR: false}); len(p) != 1 {
 		t.Error("Issue 2 is an issue, should have received point for Issue")
 	}
-	if p := typefilter.ReceiveIssueEvent(sql.IssueEvent{IssueId: "2"}); len(p) != 1 {
+	if p := typefilter.ReceiveIssueEvent(sql.IssueEvent{IssueID: "2"}); len(p) != 1 {
 		t.Error("Issue 2 is an issue, should have received point for IssueEvent")
 	}
 	if p := typefilter.ReceiveComment(sql.Comment{IssueID: "2"}); len(p) != 1 {
@@ -152,7 +152,7 @@ func TestTypeFilterWrapperFilterMissingIssue(t *testing.T) {
 		t.Errorf("ReceiveComment() = %v, expected nil", points)
 	}
 
-	if points := typefilter.ReceiveIssueEvent(sql.IssueEvent{IssueId: "1"}); points != nil {
+	if points := typefilter.ReceiveIssueEvent(sql.IssueEvent{IssueID: "1"}); points != nil {
 		t.Errorf("ReceiveIssueEvent() = %v, expected nil", points)
 	}
 }

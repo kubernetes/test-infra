@@ -56,6 +56,7 @@ func (client *Client) AddFlags(cmd *cobra.Command) {
 		"The github project to scan")
 }
 
+// CheckFlags looks for organization and project flags to configure the client
 func (client *Client) CheckFlags() error {
 	if client.Org == "" {
 		return fmt.Errorf("organization flag must be set")
@@ -125,6 +126,7 @@ type ClientInterface interface {
 	FetchPullComments(issueID int, last time.Time, c chan *github.PullRequestComment)
 }
 
+// RepositoryName returns github's repository name in the form of org/project
 func (client *Client) RepositoryName() string {
 	return fmt.Sprintf("%s/%s", client.Org, client.Project)
 }
