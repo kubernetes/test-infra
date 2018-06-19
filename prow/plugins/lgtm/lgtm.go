@@ -187,7 +187,6 @@ func handlePullRequestReview(gc githubClient, config *plugins.Configuration, own
 func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowners.Interface, rc reviewCtx, gc githubClient, log *logrus.Entry) error {
 	author := rc.author
 	issueAuthor := rc.issueAuthor
-	repo := rc.repo
 	assignees := rc.assignees
 	number := rc.number
 	body := rc.body
@@ -217,9 +216,9 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 		if err := gc.AssignIssue(org, repoName, number, []string{author}); err != nil {
 			msg := "assigning you to the PR failed"
 			if ok, merr := gc.IsCollaborator(org, repoName, author); merr == nil && !ok {
-				msg = fmt.Sprintf("only %s/%s repo collaborators may be assigned issues", org, repo)
+				msg = fmt.Sprintf("only %s/%s repo collaborators may be assigned issues", org, repoName)
 			} else if merr != nil {
-				log.WithError(merr).Errorf("Failed IsCollaborator(%s, %s, %s)", org, repo, author)
+				log.WithError(merr).Errorf("Failed IsCollaborator(%s, %s, %s)", org, repoName, author)
 			} else {
 				log.WithError(err).Errorf("Failed AssignIssue(%s, %s, %d, %s)", org, repoName, number, author)
 			}
