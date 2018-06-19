@@ -49,7 +49,7 @@ DEMOLISH_ORDER = [
     Resource('', 'compute', 'instance-groups', None, 'zone', 'Yes', False, True),
     Resource('', 'compute', 'instance-groups', None, 'zone', 'No', False, True),
     Resource('', 'compute', 'instance-templates', None, None, None, False, True),
-    Resource('alpha', 'compute', 'network-endpoint-groups', None, None, None, False, True),
+    Resource('alpha', 'compute', 'network-endpoint-groups', None, None, None, True, True),
     Resource('', 'compute', 'networks', 'subnets', 'region', None, True, True),
     Resource('', 'compute', 'networks', None, '', None, False, True),
     Resource('', 'compute', 'routes', None, None, None, False, True),
@@ -80,6 +80,45 @@ def base_command(resource):
         base.append(resource.subgroup)
     return base
 
+
+def validate_item(item, age, resource, clear_all):
+    """ Validate if an item need to be cleaned.
+
+    Args:
+        item: a gcloud resource item from json format.
+        age: Time cutoff from the creation of a resource.
+        resource: Definition of a type of gcloud resource.
+        clear_all: If need to clean regardless of timestamp.
+    Returns:
+        True if object need to be cleaned, False otherwise.
+    Raises:
+        ValueError if json result from gcloud is invalid.
+    """
+
+    if resource.managed:
+        if 'isManaged' not in item:
+            raise ValueError(resource.name, resource.managed)
+        if resource.managed != item['isManaged']:
+            return False
+
+    # clears everything without checking creationTimestamp
+    if clear_all:
+        return True
+
+    if 'creationTimestamp' not in item:
+        raise ValueError('missing key: creationTimestamp - %r' % item)
+
+    # Unify datetime to use utc timezone.
+    created = datetime.datetime.strptime(item['creationTimestamp'], '%Y-%m-%dT%H:%M:%S')
+    log('Found %r(%r), %r, created time = %r' %
+        (resource.name, resource.subgroup, item['name'], item['creationTimestamp']))
+    if created < age:
+        log('Added to janitor list: %r(%r), %r' %
+            (resource.name, resource.subgroup, item['name']))
+        return True
+    return False
+
+
 def collect(project, age, resource, filt, clear_all):
     """ Collect a list of resources for each condition (zone or region).
 
@@ -88,10 +127,12 @@ def collect(project, age, resource, filt, clear_all):
         age: Time cutoff from the creation of a resource.
         resource: Definition of a type of gcloud resource.
         filt: Filter clause for gcloud list command.
+        clear_all: If need to clean regardless of timestamp.
     Returns:
         A dict of condition : list of gcloud resource object.
     Raises:
         ValueError if json result from gcloud is invalid.
+        subprocess.CalledProcessError if cannot list the gcloud resource
     """
 
     col = collections.defaultdict(list)
@@ -109,39 +150,27 @@ def collect(project, age, resource, filt, clear_all):
         '--project=%s' % project])
     log('%r' % cmd)
 
-    for item in json.loads(subprocess.check_output(cmd)):
-        log('%r' % item)
+    # TODO(krzyzacy): work around for alpha API list calls
+    try:
+        items = subprocess.check_output(cmd)
+    except subprocess.CalledProcessError:
+        if resource.tolerate:
+            return col
+        raise
+
+    for item in json.loads(items):
+        log('parsing item: %r' % item)
 
         if 'name' not in item:
             raise ValueError('missing key: name - %r' % item)
 
         if resource.condition and resource.condition in item:
             colname = item[resource.condition]
+            log('looking for items in %s=%s' % (resource.condition, colname))
         else:
             colname = ''
 
-        if resource.managed:
-            if 'isManaged' not in item:
-                raise ValueError(resource.name, resource.managed)
-            else:
-                if resource.managed != item['isManaged']:
-                    continue
-
-        # clears everything without checking creationTimestamp
-        if clear_all:
-            col[colname].append(item['name'])
-            continue
-
-        if 'creationTimestamp' not in item:
-            raise ValueError('missing key: creationTimestamp - %r' % item)
-
-        # Unify datetime to use utc timezone.
-        created = datetime.datetime.strptime(item['creationTimestamp'], '%Y-%m-%dT%H:%M:%S')
-        log('Found %r(%r), %r in %r, created time = %r' %
-            (resource.name, resource.subgroup, item['name'], colname, item['creationTimestamp']))
-        if created < age:
-            log('Added to janitor list: %r(%r), %r' %
-                (resource.name, resource.subgroup, item['name']))
+        if validate_item(item, age, resource, clear_all):
             col[colname].append(item['name'])
     return col
 
