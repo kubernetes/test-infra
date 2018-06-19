@@ -142,15 +142,15 @@ func (ut ResourceByName) Len() int           { return len(ut) }
 func (ut ResourceByName) Swap(i, j int)      { ut[i], ut[j] = ut[j], ut[i] }
 func (ut ResourceByName) Less(i, j int) bool { return ut[i].GetName() < ut[j].GetName() }
 
-// ResTypes is used to parse flags for a list of types
-type ResTypes []string
+// CommaSeparatedStrings is used to parse comma separated string flag into a list of strings
+type CommaSeparatedStrings []string
 
-func (r *ResTypes) String() string {
+func (r *CommaSeparatedStrings) String() string {
 	return fmt.Sprint(*r)
 }
 
-// Set parses the flag value into a ResTypes
-func (r *ResTypes) Set(value string) error {
+// Set parses the flag value into a CommaSeparatedStrings
+func (r *CommaSeparatedStrings) Set(value string) error {
 	if len(*r) > 0 {
 		return errors.New("resTypes flag already set")
 	}

@@ -40,7 +40,7 @@ var (
 	promMetrics = prometheusMetrics{
 		BoskosState: map[string]map[string]prometheus.Gauge{},
 	}
-	resources, states common.ResTypes
+	resources, states common.CommaSeparatedStrings
 	defaultStates     = []string{
 		common.Busy,
 		common.Cleaning,
