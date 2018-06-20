@@ -60,6 +60,7 @@ approve:
   lgtm_acts_as_approve: true
 - repos:
   - kubernetes-sigs
+  - client-go/unofficial-docs
   implicit_self_approve: true
 
 blockades:
@@ -240,6 +241,7 @@ plugins:
 
   kubernetes/features:
   - approve
+  - stage
 
   kubernetes/ingress-gce:
   - trigger
@@ -316,6 +318,7 @@ plugins:
 
   kubernetes/sig-release:
   - approve
+  - stage
 
   kubernetes/steering:
   - approve
@@ -357,9 +360,26 @@ plugins:
   - lifecycle
   - size
 
+  kubernetes-client:
+  - assign
+  - cla
+  - label
+  - lgtm
+  - lifecycle
+  - size
+  - wip
+  - hold
+  - help
+  - cat
+  - dog
+
   kubernetes-incubator/service-catalog:
   - cat
   - dog
+  - help
+  - blunderbuss
+  - wip
+  - hold
 
   kubernetes-sigs:
   - assign
@@ -429,6 +449,20 @@ plugins:
 
   GoogleCloudPlatform/k8s-multicluster-ingress:
   - trigger
+  
+  client-go/unofficial-docs:
+  - assign
+  - approve
+  - lgtm
+  - approve
+  - label
+  - cla
+  - cat
+  - dog
+  - help
+  - blunderbuss
+  - wip
+  - hold
 
 external_plugins:
   kubernetes/community:
@@ -448,6 +482,10 @@ external_plugins:
     events:
       - pull_request
   kubernetes/test-infra:
+  - name: needs-rebase
+    events:
+      - pull_request
+  client-go/unofficial-docs:
   - name: needs-rebase
     events:
       - pull_request

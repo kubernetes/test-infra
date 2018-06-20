@@ -46,7 +46,7 @@ func TestDecorationDefaulting(t *testing.T) {
 			DefaultRepo:  "repo",
 		},
 		GCSCredentialsSecret: "secretName",
-		SshKeySecrets:        []string{"first", "second"},
+		SSHKeySecrets:        []string{"first", "second"},
 	}
 
 	var testCases = []struct {
@@ -74,7 +74,7 @@ func TestDecorationDefaulting(t *testing.T) {
 					DefaultRepo:  "repo",
 				},
 				GCSCredentialsSecret: "secretName",
-				SshKeySecrets:        []string{"first", "second"},
+				SSHKeySecrets:        []string{"first", "second"},
 			},
 		},
 		{
@@ -99,7 +99,7 @@ func TestDecorationDefaulting(t *testing.T) {
 					DefaultRepo:  "repo",
 				},
 				GCSCredentialsSecret: "secretName",
-				SshKeySecrets:        []string{"first", "second"},
+				SSHKeySecrets:        []string{"first", "second"},
 			},
 		},
 		{
@@ -124,7 +124,7 @@ func TestDecorationDefaulting(t *testing.T) {
 					DefaultRepo:  "repo",
 				},
 				GCSCredentialsSecret: "secretName",
-				SshKeySecrets:        []string{"first", "second"},
+				SSHKeySecrets:        []string{"first", "second"},
 			},
 		},
 		{
@@ -154,7 +154,7 @@ func TestDecorationDefaulting(t *testing.T) {
 					DefaultRepo:  "repo",
 				},
 				GCSCredentialsSecret: "secretName",
-				SshKeySecrets:        []string{"first", "second"},
+				SSHKeySecrets:        []string{"first", "second"},
 			},
 		},
 		{
@@ -181,7 +181,7 @@ func TestDecorationDefaulting(t *testing.T) {
 					PathStrategy: kube.PathStrategyExplicit,
 				},
 				GCSCredentialsSecret: "secretName",
-				SshKeySecrets:        []string{"first", "second"},
+				SSHKeySecrets:        []string{"first", "second"},
 			},
 		},
 		{
@@ -206,13 +206,13 @@ func TestDecorationDefaulting(t *testing.T) {
 					DefaultRepo:  "repo",
 				},
 				GCSCredentialsSecret: "somethingSecret",
-				SshKeySecrets:        []string{"first", "second"},
+				SSHKeySecrets:        []string{"first", "second"},
 			},
 		},
 		{
 			name: "ssh secrets provided",
 			provided: &kube.DecorationConfig{
-				SshKeySecrets: []string{"my", "special"},
+				SSHKeySecrets: []string{"my", "special"},
 			},
 			expected: &kube.DecorationConfig{
 				Timeout:     1 * time.Minute,
@@ -231,7 +231,7 @@ func TestDecorationDefaulting(t *testing.T) {
 					DefaultRepo:  "repo",
 				},
 				GCSCredentialsSecret: "secretName",
-				SshKeySecrets:        []string{"my", "special"},
+				SSHKeySecrets:        []string{"my", "special"},
 			},
 		},
 	}

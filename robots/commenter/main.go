@@ -40,7 +40,7 @@ import (
 )
 
 const (
-	TemplateHelp = `--comment is a golang text/template if set.
+	templateHelp = `--comment is a golang text/template if set.
 	Valid placeholders:
 		.Org - github org
 		.Repo - github repo
@@ -64,7 +64,7 @@ func flagOptions() options {
 	flag.BoolVar(&o.includeClosed, "include-closed", false, "Match closed issues if set")
 	flag.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
 	flag.StringVar(&o.comment, "comment", "", "Append the following comment to matching issues")
-	flag.BoolVar(&o.useTemplate, "template", false, TemplateHelp)
+	flag.BoolVar(&o.useTemplate, "template", false, templateHelp)
 	flag.IntVar(&o.ceiling, "ceiling", 3, "Maximum number of issues to modify, 0 for infinite")
 	flag.Var(&o.endpoint, "endpoint", "GitHub's API endpoint")
 	flag.StringVar(&o.token, "token", "", "Path to github token")

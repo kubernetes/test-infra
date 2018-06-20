@@ -37,6 +37,7 @@ type githubClient interface {
 	Query(context.Context, interface{}, map[string]interface{}) error
 }
 
+// Blocker specifies an issue number that should block tide from merging.
 type Blocker struct {
 	Number int
 	URL    string
@@ -51,11 +52,13 @@ type orgRepoBranch struct {
 	org, repo, branch string
 }
 
+// Blockers holds maps of issues that are blocking various repos/branches.
 type Blockers struct {
 	Repo   map[orgRepo][]Blocker       `json:"repo,omitempty"`
 	Branch map[orgRepoBranch][]Blocker `json:"branch,omitempty"`
 }
 
+// GetApplicable returns the subset of blockers applicable to the specified branch.
 func (b Blockers) GetApplicable(org, repo, branch string) []Blocker {
 	var res []Blocker
 	res = append(res, b.Repo[orgRepo{org: org, repo: repo}]...)
@@ -67,11 +70,12 @@ func (b Blockers) GetApplicable(org, repo, branch string) []Blocker {
 	return res
 }
 
+// FindAll finds issues with label in the specified orgs/repos that should block tide.
 func FindAll(ghc githubClient, log *logrus.Entry, label string, orgs, repos sets.String) (Blockers, error) {
 	issues, err := search(
+		context.Background(),
 		ghc,
 		log,
-		context.Background(),
 		blockerQuery(label, orgs, repos),
 	)
 	if err != nil {
@@ -127,7 +131,7 @@ func parseBranches(str string) []string {
 	return res
 }
 
-func search(ghc githubClient, log *logrus.Entry, ctx context.Context, q string) ([]Issue, error) {
+func search(ctx context.Context, ghc githubClient, log *logrus.Entry, q string) ([]Issue, error) {
 	var ret []Issue
 	vars := map[string]interface{}{
 		"query":        githubql.String(q),
@@ -154,6 +158,7 @@ func search(ghc githubClient, log *logrus.Entry, ctx context.Context, q string) 
 	return ret, nil
 }
 
+// Issue holds graphql response data about issues
 // TODO: validate that fields are populated properly
 type Issue struct {
 	Number     githubql.Int

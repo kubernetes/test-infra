@@ -2,8 +2,9 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["util.go"],
-    importpath = "k8s.io/test-infra/dind/pkg/util",
+    srcs = ["opencensus.go"],
+    importmap = "vendor/go.opencensus.io",
+    importpath = "go.opencensus.io",
     visibility = ["//visibility:public"],
 )
 
@@ -16,7 +17,11 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//vendor/go.opencensus.io/internal:all-srcs",
+        "//vendor/go.opencensus.io/trace:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

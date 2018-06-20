@@ -130,7 +130,7 @@ func (n localCluster) Up() error {
 	// the docker0 network interface, This ensures that when the pods come up
 	// the health checks (for example for kubedns) succeed. If there is no
 	// docker0, just use the defaults in local-up-cluster.sh
-	dockerIp := ""
+	dockerIP := ""
 	docker0, err := net.InterfaceByName("docker0")
 	if err == nil {
 		addresses, err := docker0.Addrs()
@@ -138,7 +138,7 @@ func (n localCluster) Up() error {
 			for _, address := range addresses {
 				if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
 					if ipnet.IP.To4() != nil {
-						dockerIp = ipnet.IP.String()
+						dockerIP = ipnet.IP.String()
 						break
 					}
 				}
@@ -149,11 +149,11 @@ func (n localCluster) Up() error {
 	} else {
 		log.Printf("unable to find docker0 interface : %v", err)
 	}
-	if dockerIp != "" {
-		log.Printf("using %v for API_HOST_IP, HOSTNAME_OVERRIDE, KUBELET_HOST", dockerIp)
-		cmd.Env = append(cmd.Env, fmt.Sprintf("API_HOST_IP=%s", dockerIp))
-		cmd.Env = append(cmd.Env, fmt.Sprintf("HOSTNAME_OVERRIDE=%s", dockerIp))
-		cmd.Env = append(cmd.Env, fmt.Sprintf("KUBELET_HOST=%s", dockerIp))
+	if dockerIP != "" {
+		log.Printf("using %v for API_HOST_IP, HOSTNAME_OVERRIDE, KUBELET_HOST", dockerIP)
+		cmd.Env = append(cmd.Env, fmt.Sprintf("API_HOST_IP=%s", dockerIP))
+		cmd.Env = append(cmd.Env, fmt.Sprintf("HOSTNAME_OVERRIDE=%s", dockerIP))
+		cmd.Env = append(cmd.Env, fmt.Sprintf("KUBELET_HOST=%s", dockerIP))
 	} else {
 		log.Println("using local-up-cluster.sh's defaults for API_HOST_IP, HOSTNAME_OVERRIDE, KUBELET_HOST")
 	}

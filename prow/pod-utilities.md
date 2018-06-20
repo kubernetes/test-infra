@@ -61,12 +61,11 @@ Example ProwJob configuration:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/test-images/bug-finder:1.0
+      - image: alpine
         command:
-        - "/find-bugs"
+        - "echo"
         args:
-        - "--artifacts=$(ARTIFACTS)"
-        - "--bug-kind=flake"
+        - "The artifacts dir is $(ARTIFACTS)"
 ```
 
 In addition to normal ProwJob configuration, ProwJobs using the Pod Utilities
@@ -97,12 +96,11 @@ the `exta_refs` field.
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/test-images/bug-finder:1.0
+    - image: alpine
       command:
-      - "/find-bugs"
+      - "echo"
       args:
-      - "--artifacts=$(ARTIFACTS)"
-      - "--bug-kind=flake"
+      - "The artifacts dir is $(ARTIFACTS)"
 
 ```
 

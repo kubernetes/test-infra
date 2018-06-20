@@ -4,6 +4,7 @@ required = [
   "github.com/bazelbuild/bazel-gazelle/cmd/gazelle",
   "github.com/client9/misspell/cmd/misspell",
   "github.com/golang/dep/cmd/dep",
+  "github.com/golang/lint/golint",
   "github.com/kubernetes/repo-infra/kazel",
 ]
 
@@ -44,7 +45,7 @@ required = [
 
 [[constraint]]
   name = "cloud.google.com/go"
-  version = "0.17.0"
+  version = ">=0.23.0"
 
 [[constraint]]
   # used by both prow/plugins/buildifier and gazelle

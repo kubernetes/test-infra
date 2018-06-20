@@ -29,6 +29,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//vendor/cloud.google.com/go/internal/optional:all-srcs",
+        "//vendor/cloud.google.com/go/internal/trace:all-srcs",
         "//vendor/cloud.google.com/go/internal/version:all-srcs",
     ],
     tags = ["automanaged"],

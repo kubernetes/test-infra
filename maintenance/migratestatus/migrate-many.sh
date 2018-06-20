@@ -36,7 +36,6 @@ bazel build //maintenance/migratestatus || exit 1
 #migrate "Gubernator tests" pull-test-infra-gubernator
 #migrate "verify-bazel" pull-test-infra-verify-bazel
 
-migrate "Jenkins Kubemark GCE e2e" pull-kubernetes-kubemark-e2e-gce
 migrate "Jenkins GCE etcd3 e2e" pull-kubernetes-e2e-gce-etcd3
 migrate "Jenkins kops AWS e2e" pull-kubernetes-e2e-kops-aws
 migrate "Jenkins unit/integration" pull-kubernetes-unit

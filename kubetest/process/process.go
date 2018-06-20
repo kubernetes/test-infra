@@ -34,6 +34,7 @@ import (
 	"k8s.io/test-infra/kubetest/util"
 )
 
+// Control can commands until a timeout is reached, at which point it signals and then terminates them.
 type Control struct {
 	termLock    *sync.RWMutex
 	terminated  bool
@@ -47,6 +48,7 @@ type Control struct {
 	verbose bool
 }
 
+// NewControl constructs a Control with the specified arguments, instiating other necessary fields.
 func NewControl(timeout time.Duration, interrupt, terminate *time.Timer, verbose bool) *Control {
 	return &Control{
 		termLock:    new(sync.RWMutex),
@@ -60,6 +62,7 @@ func NewControl(timeout time.Duration, interrupt, terminate *time.Timer, verbose
 	}
 }
 
+// WriteXML creates a util.TestCase{} junit_runner.xml file inside the dump dir.
 func (c *Control) WriteXML(suite *util.TestSuite, dump string, start time.Time) {
 	// Note whether timeout occurred
 	tc := util.TestCase{
@@ -93,8 +96,8 @@ func (c *Control) WriteXML(suite *util.TestSuite, dump string, start time.Time) 
 	log.Printf("Saved XML output to %s.", path)
 }
 
-// return f(), adding junit xml testcase result for name
-func (c *Control) XmlWrap(suite *util.TestSuite, name string, f func() error) error {
+// XMLWrap returns f(), adding junit xml testcase result for name
+func (c *Control) XMLWrap(suite *util.TestSuite, name string, f func() error) error {
 	alreadyInterrupted := c.isInterrupted()
 	start := time.Now()
 	err := f()
@@ -135,7 +138,7 @@ func (c *Control) isInterrupted() bool {
 	return i
 }
 
-// return cmd.Wait() and/or timing out.
+// FinishRunning returns cmd.Wait() and/or times out.
 func (c *Control) FinishRunning(cmd *exec.Cmd) error {
 	stepName := strings.Join(cmd.Args, " ")
 	if c.isTerminated() {
@@ -216,15 +219,15 @@ func (c *Control) FinishRunning(cmd *exec.Cmd) error {
 	}
 }
 
-type CmdExecResult struct {
+type cmdExecResult struct {
 	stepName string
 	output   string
 	execTime time.Duration
 	err      error
 }
 
-// execute a given command and send output and error via channel
-func (c *Control) executeParallelCommand(cmd *exec.Cmd, resChan chan CmdExecResult, termChan, intChan chan struct{}) {
+// executeParallelCommand executes a given command and send output and error via channel
+func (c *Control) executeParallelCommand(cmd *exec.Cmd, resChan chan cmdExecResult, termChan, intChan chan struct{}) {
 	stepName := strings.Join(cmd.Args, " ")
 	stdout := bytes.Buffer{}
 	cmd.Stdout = &stdout
@@ -234,13 +237,13 @@ func (c *Control) executeParallelCommand(cmd *exec.Cmd, resChan chan CmdExecResu
 	log.Printf("Running: %v in parallel", stepName)
 
 	if c.isTerminated() {
-		resChan <- CmdExecResult{stepName: stepName, output: stdout.String(), execTime: time.Since(start), err: fmt.Errorf("skipped %s (kubetest is terminated)", stepName)}
+		resChan <- cmdExecResult{stepName: stepName, output: stdout.String(), execTime: time.Since(start), err: fmt.Errorf("skipped %s (kubetest is terminated)", stepName)}
 		return
 	}
 
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	if err := cmd.Start(); err != nil {
-		resChan <- CmdExecResult{stepName: stepName, output: stdout.String(), execTime: time.Since(start), err: fmt.Errorf("error starting %v: %v", stepName, err)}
+		resChan <- cmdExecResult{stepName: stepName, output: stdout.String(), execTime: time.Since(start), err: fmt.Errorf("error starting %v: %v", stepName, err)}
 		return
 	}
 
@@ -261,7 +264,7 @@ func (c *Control) executeParallelCommand(cmd *exec.Cmd, resChan chan CmdExecResu
 				}
 				err = fmt.Errorf("error during %s%s: %v", stepName, suffix, err)
 			}
-			resChan <- CmdExecResult{stepName: stepName, output: stdout.String(), execTime: time.Since(start), err: err}
+			resChan <- cmdExecResult{stepName: stepName, output: stdout.String(), execTime: time.Since(start), err: err}
 			return
 
 		case <-termChan:
@@ -283,10 +286,10 @@ func (c *Control) executeParallelCommand(cmd *exec.Cmd, resChan chan CmdExecResu
 	}
 }
 
-// execute multiple commands in parallel
+// FinishRunningParallel executes multiple commands in parallel
 func (c *Control) FinishRunningParallel(cmds ...*exec.Cmd) error {
 	var wg sync.WaitGroup
-	resultChan := make(chan CmdExecResult, len(cmds))
+	resultChan := make(chan cmdExecResult, len(cmds))
 	termChan := make(chan struct{}, len(cmds))
 	intChan := make(chan struct{}, len(cmds))
 
@@ -340,7 +343,7 @@ func (c *Control) FinishRunningParallel(cmds ...*exec.Cmd) error {
 	}
 }
 
-// return exec.Command(cmd, args...) while calling .StdinPipe().WriteString(input)
+// InputCommand returns exec.Command(cmd, args...) while calling .StdinPipe().WriteString(input)
 func (c *Control) InputCommand(input, cmd string, args ...string) (*exec.Cmd, error) {
 	command := exec.Command(cmd, args...)
 	w, e := command.StdinPipe()
@@ -358,7 +361,7 @@ func (c *Control) InputCommand(input, cmd string, args ...string) (*exec.Cmd, er
 	return command, nil
 }
 
-// return cmd.Output(), potentially timing out in the process.
+// Output returns cmd.Output(), potentially timing out in the process.
 func (c *Control) Output(cmd *exec.Cmd) ([]byte, error) {
 	var stdout bytes.Buffer
 	cmd.Stdout = &stdout
@@ -366,7 +369,7 @@ func (c *Control) Output(cmd *exec.Cmd) ([]byte, error) {
 	return stdout.Bytes(), err
 }
 
-// ignores all output from the command, potentially timing out in the process.
+// NoOutput ignores all output from the command, potentially timing out in the process.
 func (c *Control) NoOutput(cmd *exec.Cmd) error {
 	var void bytes.Buffer
 	cmd.Stdout = &void
@@ -374,7 +377,7 @@ func (c *Control) NoOutput(cmd *exec.Cmd) error {
 	return c.FinishRunning(cmd)
 }
 
-// Get the process group to kill the entire main/child process
+// getGroupPid gets the process group to kill the entire main/child process
 // if Getpgid return error use the current process Pid
 func getGroupPid(pid int) int {
 	pgid, err := syscall.Getpgid(pid)

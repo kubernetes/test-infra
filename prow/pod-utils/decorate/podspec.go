@@ -166,7 +166,7 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 		var sshKeyMode int32 = 0400 // this is octal, so symbolic ref is `u+r`
 		var sshKeysMounts []kube.VolumeMount
 		var sshKeyPaths []string
-		for _, secret := range pj.Spec.DecorationConfig.SshKeySecrets {
+		for _, secret := range pj.Spec.DecorationConfig.SSHKeySecrets {
 			name := fmt.Sprintf("%s-%s", SshKeysMountNamePrefix, secret)
 			keyPath := path.Join(SshKeysMountPathPrefix, secret)
 			sshKeyPaths = append(sshKeyPaths, keyPath)

@@ -127,11 +127,13 @@ func TestLGTMComment(t *testing.T) {
 			shouldComment: true,
 		},
 		{
-			name:         "lgtm cancel by author",
-			body:         "/lgtm cancel",
-			commenter:    "author",
-			hasLGTM:      true,
-			shouldToggle: true,
+			name:          "lgtm cancel by author",
+			body:          "/lgtm cancel",
+			commenter:     "author",
+			hasLGTM:       true,
+			shouldToggle:  true,
+			shouldAssign:  false,
+			shouldComment: false,
 		},
 		{
 			name:          "lgtm comment by non-reviewer",
@@ -253,7 +255,7 @@ func TestLGTMComment(t *testing.T) {
 			User:        github.User{Login: tc.commenter},
 			IssueAuthor: github.User{Login: "author"},
 			Number:      5,
-			Assignees:   []github.User{{Login: "author"}, {Login: "reviewer1"}, {Login: "reviewer2"}},
+			Assignees:   []github.User{{Login: "reviewer1"}, {Login: "reviewer2"}},
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 			HTMLURL:     "<url>",
 		}
@@ -265,7 +267,7 @@ func TestLGTMComment(t *testing.T) {
 		if tc.skipCollab {
 			pc.Owners.SkipCollaborators = []string{"org/repo"}
 		}
-		if err := handle(fc, pc, oc, logrus.WithField("plugin", pluginName), e); err != nil {
+		if err := handleGenericComment(fc, pc, oc, logrus.WithField("plugin", pluginName), *e); err != nil {
 			t.Errorf("didn't expect error from lgtmComment: %v", err)
 			continue
 		}
@@ -390,7 +392,7 @@ func TestLGTMCommentWithLGTMNoti(t *testing.T) {
 			User:        github.User{Login: tc.commenter},
 			IssueAuthor: github.User{Login: "author"},
 			Number:      5,
-			Assignees:   []github.User{{Login: "author"}, {Login: "reviewer1"}, {Login: "reviewer2"}},
+			Assignees:   []github.User{{Login: "reviewer1"}, {Login: "reviewer2"}},
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 			HTMLURL:     "<url>",
 		}
@@ -407,7 +409,7 @@ func TestLGTMCommentWithLGTMNoti(t *testing.T) {
 		fc.IssueComments[5] = append(fc.IssueComments[5], ic)
 		oc := &fakeOwnersClient{approvers: approvers, reviewers: reviewers}
 		pc := &plugins.Configuration{}
-		if err := handle(fc, pc, oc, logrus.WithField("plugin", pluginName), e); err != nil {
+		if err := handleGenericComment(fc, pc, oc, logrus.WithField("plugin", pluginName), *e); err != nil {
 			t.Errorf("For case %s, didn't expect error from lgtmComment: %v", tc.name, err)
 			continue
 		}
@@ -426,6 +428,165 @@ func TestLGTMCommentWithLGTMNoti(t *testing.T) {
 			if !found {
 				t.Errorf("For case %s, LGTM removed notification should not have been deleted", tc.name)
 			}
+		}
+	}
+}
+
+func TestLGTMFromApproveReview(t *testing.T) {
+	var testcases = []struct {
+		name          string
+		state         string
+		body          string
+		reviewer      string
+		hasLGTM       bool
+		shouldToggle  bool
+		shouldComment bool
+		shouldAssign  bool
+	}{
+		{
+			name:          "Request changes review by reviewer, no lgtm on pr",
+			state:         "request_changes",
+			reviewer:      "reviewer1",
+			hasLGTM:       false,
+			shouldToggle:  false,
+			shouldAssign:  false,
+			shouldComment: false,
+		},
+		{
+			name:         "Request changes review by reviewer, lgtm on pr",
+			state:        "request_changes",
+			reviewer:     "reviewer1",
+			hasLGTM:      true,
+			shouldToggle: true,
+			shouldAssign: false,
+		},
+		{
+			name:         "Approve review by reviewer, no lgtm on pr",
+			state:        "approve",
+			reviewer:     "reviewer1",
+			hasLGTM:      false,
+			shouldToggle: true,
+		},
+		{
+			name:         "Approve review by reviewer, lgtm on pr",
+			state:        "approve",
+			reviewer:     "reviewer1",
+			hasLGTM:      true,
+			shouldToggle: false,
+			shouldAssign: false,
+		},
+		{
+			name:          "Approve review by non-reviewer, no lgtm on pr",
+			state:         "approve",
+			reviewer:      "o",
+			hasLGTM:       false,
+			shouldToggle:  true,
+			shouldComment: false,
+			shouldAssign:  true,
+		},
+		{
+			name:          "Request_changes review by non-reviewer, no lgtm on pr",
+			state:         "request_changes",
+			reviewer:      "o",
+			hasLGTM:       false,
+			shouldToggle:  false,
+			shouldComment: false,
+			shouldAssign:  true,
+		},
+		{
+			name:          "Approve review by rando",
+			state:         "approve",
+			reviewer:      "not-in-the-org",
+			hasLGTM:       false,
+			shouldToggle:  false,
+			shouldComment: true,
+			shouldAssign:  false,
+		},
+		{
+			name:          "Comment review by issue author, no lgtm on pr",
+			state:         "comment",
+			reviewer:      "author",
+			hasLGTM:       false,
+			shouldToggle:  false,
+			shouldComment: false,
+			shouldAssign:  false,
+		},
+		{
+			name:          "Comment body has /lgtm on Comment Review ",
+			state:         "comment",
+			reviewer:      "reviewer1",
+			body:          "/lgtm",
+			hasLGTM:       false,
+			shouldToggle:  false,
+			shouldComment: false,
+			shouldAssign:  false,
+		},
+		{
+			name:          "Comment body has /lgtm cancel on Approve Review",
+			state:         "approve",
+			reviewer:      "reviewer1",
+			body:          "/lgtm cancel",
+			hasLGTM:       false,
+			shouldToggle:  false,
+			shouldComment: false,
+			shouldAssign:  false,
+		},
+	}
+	for _, tc := range testcases {
+		fc := &fakegithub.FakeClient{
+			IssueComments: make(map[int][]github.IssueComment),
+		}
+		e := &github.ReviewEvent{
+			Review:      github.Review{Body: tc.body, State: tc.state, HTMLURL: "<url>", User: github.User{Login: tc.reviewer}},
+			PullRequest: github.PullRequest{User: github.User{Login: "author"}, Assignees: []github.User{{Login: "reviewer1"}, {Login: "reviewer2"}}, Number: 5},
+			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
+		}
+		if tc.hasLGTM {
+			fc.LabelsAdded = []string{"org/repo#5:" + lgtmLabel}
+		}
+		oc := &fakeOwnersClient{approvers: approvers, reviewers: reviewers}
+		pc := &plugins.Configuration{}
+		if err := handlePullRequestReview(fc, pc, oc, logrus.WithField("plugin", pluginName), *e); err != nil {
+			t.Errorf("For case %s, didn't expect error from pull request review: %v", tc.name, err)
+			continue
+		}
+		if tc.shouldAssign {
+			found := false
+			for _, a := range fc.AssigneesAdded {
+				if a == fmt.Sprintf("%s/%s#%d:%s", "org", "repo", 5, tc.reviewer) {
+					found = true
+					break
+				}
+			}
+			if !found || len(fc.AssigneesAdded) != 1 {
+				t.Errorf("For case %s, should have assigned %s but added assignees are %s", tc.name, tc.reviewer, fc.AssigneesAdded)
+			}
+		} else if len(fc.AssigneesAdded) != 0 {
+			t.Errorf("For case %s, should not have assigned anyone but assigned %s", tc.name, fc.AssigneesAdded)
+		}
+		if tc.shouldToggle {
+			if tc.hasLGTM {
+				if len(fc.LabelsRemoved) == 0 {
+					t.Errorf("For case %s, should have removed LGTM.", tc.name)
+				} else if len(fc.LabelsAdded) > 1 {
+					t.Errorf("For case %s, should not have added LGTM.", tc.name)
+				}
+			} else {
+				if len(fc.LabelsAdded) == 0 {
+					t.Errorf("For case %s, should have added LGTM.", tc.name)
+				} else if len(fc.LabelsRemoved) > 0 {
+					t.Errorf("For case %s, should not have removed LGTM.", tc.name)
+				}
+			}
+		} else if len(fc.LabelsRemoved) > 0 {
+			t.Errorf("For case %s, should not have removed LGTM.", tc.name)
+		} else if (tc.hasLGTM && len(fc.LabelsAdded) > 1) || (!tc.hasLGTM && len(fc.LabelsAdded) > 0) {
+			t.Errorf("For case %s, should not have added LGTM.", tc.name)
+		}
+		if tc.shouldComment && len(fc.IssueComments[5]) != 1 {
+			t.Errorf("For case %s, should have commented.", tc.name)
+		} else if !tc.shouldComment && len(fc.IssueComments[5]) != 0 {
+			t.Errorf("For case %s, should not have commented.", tc.name)
 		}
 	}
 }

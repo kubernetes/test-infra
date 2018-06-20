@@ -30,7 +30,7 @@ func findLatestEvent(issueID int, db *gorm.DB, repository string) (*int, error) 
 
 	query := db.
 		Select("id, event_created_at").
-		Where(&sql.IssueEvent{IssueId: strconv.Itoa(issueID)}).
+		Where(&sql.IssueEvent{IssueID: strconv.Itoa(issueID)}).
 		Where("repository = ?", repository).
 		Order("event_created_at desc").
 		First(&latestEvent)

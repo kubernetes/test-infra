@@ -62,7 +62,7 @@ func TestOptions_Validate(t *testing.T) {
 			name: "ok with oauth",
 			input: options{
 				configPath:            "test",
-				oauthUrl:              "website",
+				oauthURL:              "website",
 				githubOAuthConfigFile: "something",
 				cookieSecretFile:      "yum",
 			},
@@ -72,7 +72,7 @@ func TestOptions_Validate(t *testing.T) {
 			name: "missing github config with oauth",
 			input: options{
 				configPath:       "test",
-				oauthUrl:         "website",
+				oauthURL:         "website",
 				cookieSecretFile: "yum",
 			},
 			expectedErr: true,
@@ -81,7 +81,7 @@ func TestOptions_Validate(t *testing.T) {
 			name: "missing cookie with oauth",
 			input: options{
 				configPath:            "test",
-				oauthUrl:              "website",
+				oauthURL:              "website",
 				githubOAuthConfigFile: "something",
 			},
 			expectedErr: true,

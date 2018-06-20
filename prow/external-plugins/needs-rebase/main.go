@@ -42,7 +42,7 @@ import (
 var (
 	port              = flag.Int("port", 8888, "Port to listen on.")
 	dryRun            = flag.Bool("dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
-	pluginConfig      = flag.String("plugin-config", "/etc/plugins/plugins", "Path to plugin config file.")
+	pluginConfig      = flag.String("plugin-config", "/etc/plugins/plugins.yaml", "Path to plugin config file.")
 	githubEndpoint    = flagutil.NewStrings("https://api.github.com")
 	githubTokenFile   = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
 	webhookSecretFile = flag.String("hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")

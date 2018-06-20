@@ -20,9 +20,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"net"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/docker/docker/api/types"
@@ -39,25 +37,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-func getNonLocalUnicastAddr(intfName string) (string, error) {
-	// Finds a non-localhost unicast address on the given interface.
-	intf, err := net.InterfaceByName(intfName)
-	if err != nil {
-		return "", err
-	}
-	addrs, err := intf.Addrs()
-	if err != nil {
-		return "", err
-	}
-	for _, addr := range addrs {
-		if !strings.HasPrefix("127", addr.String()) {
-			return addr.String(), nil
-		}
-	}
-
-	return "", fmt.Errorf("No non-localhost unicast addresses found on interface %s", intfName)
-}
-
+// Cluster holds configuration info about the nested cluster.
 type Cluster struct {
 	numNodes         int
 	healthyNodes     int
@@ -78,6 +58,12 @@ type Cluster struct {
 	timeout   time.Duration
 }
 
+// New instantiates a new cluster.
+//
+// Uses NewEnvClient() to create the docker client.
+// Assumes kubecfg lives at admin.conf in masterConfigDir.
+//
+// Returns an error if it cannot create the docker client.
 func New(numNodes int, externalProxy, image, masterConfigDir, networkName, nodeImageFile, version string, timeout time.Duration) (*Cluster, error) {
 	docker, err := client.NewEnvClient()
 	if err != nil {
@@ -103,26 +89,26 @@ func (c *Cluster) Up(loadImage bool) error {
 	end := time.Now().Add(c.timeout)
 	if loadImage {
 		glog.V(2).Info("Loading node image")
-		if err := c.LoadImage(); err != nil {
+		if err := c.loadImage(); err != nil {
 			return err
 		}
 	}
 	glog.V(2).Info("Creating docker objects")
-	if err := c.CreateDockerObjects(); err != nil {
+	if err := c.createDockerObjects(); err != nil {
 		return err
 	}
 	glog.V(2).Info("Starting containers")
-	if err := c.StartContainers(); err != nil {
+	if err := c.startContainers(); err != nil {
 		return err
 	}
 	glog.V(2).Info("Waiting for apiserver")
-	if err := c.WaitForCluster(end); err != nil {
+	if err := c.waitForCluster(end); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (c *Cluster) LoadImage() error {
+func (c *Cluster) loadImage() error {
 	ctx := context.Background()
 	file, err := os.Open(c.nodeImageFile)
 	if err != nil {
@@ -135,7 +121,7 @@ func (c *Cluster) LoadImage() error {
 }
 
 // Create makes all docker objects in the dind cluster.
-func (c *Cluster) CreateDockerObjects() error {
+func (c *Cluster) createDockerObjects() error {
 	// First, create the docker network.
 	if err := c.createNetwork(); err != nil {
 		return err
@@ -162,7 +148,7 @@ func (c *Cluster) CreateDockerObjects() error {
 }
 
 // Start begins all containers in the dind cluster.
-func (c *Cluster) StartContainers() error {
+func (c *Cluster) startContainers() error {
 	ctx := context.Background()
 	for _, id := range c.nodeIDs {
 		if err := c.docker.ContainerStart(ctx, id, types.ContainerStartOptions{}); err != nil {
@@ -285,13 +271,8 @@ func (c *Cluster) createMaster(ip string) error {
 	return c.createNode(entrypoint, mounts, ntwk, ports, exposedPorts)
 }
 
-// ApiServer returns a reference to the kubernetes client built while waiting.
-func (c *Cluster) ApiServer() *kubernetes.Clientset {
-	return c.apiserver
-}
-
-// WaitForCluster waits for a cluster to start with a timeout, reporting milestones along the way.
-func (c *Cluster) WaitForCluster(timeoutTime time.Time) error {
+// waitForCluster waits for a cluster to start with a timeout, reporting milestones along the way.
+func (c *Cluster) waitForCluster(timeoutTime time.Time) error {
 	var lastErr error
 	for {
 		time.Sleep(time.Duration(1) * time.Second)

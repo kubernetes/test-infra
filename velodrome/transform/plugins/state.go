@@ -23,6 +23,7 @@ import (
 	"k8s.io/test-infra/velodrome/sql"
 )
 
+// StatePlugin records age percentiles of issues in InfluxDB
 type StatePlugin struct {
 	states      BundledStates
 	desc        string
@@ -31,27 +32,31 @@ type StatePlugin struct {
 
 var _ Plugin = &StatePlugin{}
 
+// AddFlags adds "state" and "percentiles" to the command help
 func (s *StatePlugin) AddFlags(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&s.desc, "state", "", "Description of the state (eg: `opened,!merged,labeled:cool`)")
 	cmd.Flags().IntSliceVar(&s.percentiles, "percentiles", []int{}, "Age percentiles for state")
 }
 
+// CheckFlags configures which states to monitor
 func (s *StatePlugin) CheckFlags() error {
 	s.states = NewBundledStates(s.desc)
 	return nil
 }
 
+// ReceiveIssue is needed to implement a Plugin
 func (s *StatePlugin) ReceiveIssue(issue sql.Issue) []Point {
 	return nil
 }
 
+// ReceiveIssueEvent computes age percentiles and saves them to InfluxDB
 func (s *StatePlugin) ReceiveIssueEvent(event sql.IssueEvent) []Point {
 	label := ""
 	if event.Label != nil {
 		label = *event.Label
 	}
 
-	if !s.states.ReceiveEvent(event.IssueId, event.Event, label, event.EventCreatedAt) {
+	if !s.states.ReceiveEvent(event.IssueID, event.Event, label, event.EventCreatedAt) {
 		return nil
 	}
 
@@ -72,6 +77,7 @@ func (s *StatePlugin) ReceiveIssueEvent(event sql.IssueEvent) []Point {
 	}
 }
 
+// ReceiveComment is needed to implement a Plugin
 func (s *StatePlugin) ReceiveComment(comment sql.Comment) []Point {
 	return nil
 }

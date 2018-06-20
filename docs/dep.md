@@ -23,7 +23,7 @@ bitbucket.org/ww/goautoneg , but `dep ensure` doesn't output such error message
 and just [freezes].
 
 [add]: https://golang.github.io/dep/docs/daily-dep.html#adding-a-new-dependency
-[bazel]: https://bazelbuild/
+[bazel]: https://bazel.build/
 [`dep`]: https://github.com/golang/dep
 [freezes]: https://github.com/kubernetes/test-infra/issues/5987
 [`hack/update-deps.sh`]: /hack/update-deps.sh

@@ -22,6 +22,7 @@ import (
 	"net"
 )
 
+// Options holds information typically set by flags.
 type Options struct {
 	SideloadImage bool
 	DinDNodeImage string
@@ -44,14 +45,14 @@ func New(set *flag.FlagSet, args []string) (*Options, error) {
 		return nil, err
 	}
 
-	if err := o.Validate(); err != nil {
+	if err := o.validate(); err != nil {
 		return nil, err
 	}
 
 	return &o, nil
 }
 
-func (o *Options) Validate() error {
+func (o *Options) validate() error {
 	if o.NumNodes < 1 {
 		return fmt.Errorf("Must provide at least 1 node, got %d", o.NumNodes)
 	}

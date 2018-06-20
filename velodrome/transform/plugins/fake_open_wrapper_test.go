@@ -59,13 +59,13 @@ func TestFakeOpenWrapper(t *testing.T) {
 			EventCreatedAt: time.Unix(0, 10),
 		}).Return([]Point{{}}),
 		plugin.EXPECT().ReceiveIssueEvent(sql.IssueEvent{
-			IssueId:        "1",
+			IssueID:        "1",
 			Actor:          stringPointer("User1"),
 			Event:          "opened",
 			EventCreatedAt: time.Unix(0, 20),
 		}).Return([]Point{{}}),
 		plugin.EXPECT().ReceiveIssueEvent(sql.IssueEvent{
-			IssueId:        "2",
+			IssueID:        "2",
 			Actor:          stringPointer("User2"),
 			Event:          "opened",
 			EventCreatedAt: time.Unix(0, 30),
@@ -77,7 +77,7 @@ func TestFakeOpenWrapper(t *testing.T) {
 			EventCreatedAt: time.Unix(0, 40),
 		}).Return([]Point{{}}),
 		plugin.EXPECT().ReceiveIssueEvent(sql.IssueEvent{
-			IssueId:        "3",
+			IssueID:        "3",
 			Actor:          stringPointer("User3"),
 			Event:          "opened",
 			EventCreatedAt: time.Unix(0, 50),

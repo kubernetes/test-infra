@@ -55,14 +55,14 @@ func TestActiveStateReceiveMatchingEvent(t *testing.T) {
 		exit:      LabelEvent{Label: "test"},
 	}
 
-	got_state, got_changed := state.ReceiveEvent("labeled", "test", time.Unix(0, 10))
-	want_state := &InactiveState{UnlabelEvent{Label: "test"}}
-	want_changed := true
-	if !reflect.DeepEqual(got_state, want_state) || got_changed != want_changed {
+	gotState, gotChanged := state.ReceiveEvent("labeled", "test", time.Unix(0, 10))
+	wantState := &InactiveState{UnlabelEvent{Label: "test"}}
+	wantChanged := true
+	if !reflect.DeepEqual(gotState, wantState) || gotChanged != wantChanged {
 		t.Errorf(`%#v.ReceiveEvent("labeled", "test", _) = (%#v, %t), want (%#v, %t)`,
 			state,
-			got_state, got_changed,
-			want_state, want_changed)
+			gotState, gotChanged,
+			wantState, wantChanged)
 	}
 }
 
@@ -72,14 +72,14 @@ func TestActiveStateReceiveNonMatchingEvent(t *testing.T) {
 		exit:      LabelEvent{Label: "test"},
 	}
 
-	got_state, got_changed := state.ReceiveEvent("labeled", "non-matching", time.Unix(0, 10))
-	want_state := &state
-	want_changed := false
-	if !reflect.DeepEqual(got_state, want_state) || got_changed != want_changed {
+	gotState, gotChanged := state.ReceiveEvent("labeled", "non-matching", time.Unix(0, 10))
+	wantState := &state
+	wantChanged := false
+	if !reflect.DeepEqual(gotState, wantState) || gotChanged != wantChanged {
 		t.Errorf(`%#v.ReceiveEvent("labeled", "non-matching", _) = (%#v, %t), want (%#v, %t)`,
 			state,
-			got_state, got_changed,
-			want_state, want_changed)
+			gotState, gotChanged,
+			wantState, wantChanged)
 	}
 }
 
@@ -101,14 +101,14 @@ func TestInactiveStateReceiveMatchingEvent(t *testing.T) {
 		entry: LabelEvent{Label: "test"},
 	}
 
-	got_state, got_changed := state.ReceiveEvent("labeled", "test", time.Unix(0, 10))
-	want_state := &ActiveState{startTime: time.Unix(0, 10), exit: UnlabelEvent{Label: "test"}}
-	want_changed := true
-	if !reflect.DeepEqual(got_state, want_state) || got_changed != want_changed {
+	gotState, gotChanged := state.ReceiveEvent("labeled", "test", time.Unix(0, 10))
+	wantState := &ActiveState{startTime: time.Unix(0, 10), exit: UnlabelEvent{Label: "test"}}
+	wantChanged := true
+	if !reflect.DeepEqual(gotState, wantState) || gotChanged != wantChanged {
 		t.Errorf(`%#v.ReceiveEvent("labeled", "test", _) = (%#v, %t), want (%#v, %t)`,
 			state,
-			got_state, got_changed,
-			want_state, want_changed)
+			gotState, gotChanged,
+			wantState, wantChanged)
 	}
 }
 
@@ -117,14 +117,14 @@ func TestInactiveStateReceiveNonMatchingEvent(t *testing.T) {
 		entry: LabelEvent{Label: "test"},
 	}
 
-	got_state, got_changed := state.ReceiveEvent("labeled", "non-matching", time.Unix(0, 10))
-	want_state := &state
-	want_changed := false
-	if !reflect.DeepEqual(got_state, want_state) || got_changed != want_changed {
+	gotState, gotChanged := state.ReceiveEvent("labeled", "non-matching", time.Unix(0, 10))
+	wantState := &state
+	wantChanged := false
+	if !reflect.DeepEqual(gotState, wantState) || gotChanged != wantChanged {
 		t.Errorf(`%#v.ReceiveEvent("labeled", "non-matching", _) = (%#v, %t), want (%#v, %t)`,
 			state,
-			got_state, got_changed,
-			want_state, want_changed)
+			gotState, gotChanged,
+			wantState, wantChanged)
 	}
 }
 
@@ -178,7 +178,7 @@ func TestMultiStateInactive(t *testing.T) {
 
 func TestMultiStateReceiveEvent(t *testing.T) {
 	var want, got, state State
-	var want_changed, got_changed bool
+	var wantChanged, gotChanged bool
 	// We are looking for "merged,!closed", i.e. "merged" but not "closed"
 	state = &MultiState{
 		[]State{
@@ -186,42 +186,42 @@ func TestMultiStateReceiveEvent(t *testing.T) {
 			&ActiveState{exit: CloseEvent{}, startTime: time.Time{}},
 		},
 	}
-	got, got_changed = state.ReceiveEvent("closed", "", time.Unix(0, 10))
-	want, want_changed = &MultiState{
+	got, gotChanged = state.ReceiveEvent("closed", "", time.Unix(0, 10))
+	want, wantChanged = &MultiState{
 		[]State{
 			&InactiveState{entry: MergeEvent{}},
 			&InactiveState{entry: ReopenEvent{}},
 		},
 	}, true
-	if !reflect.DeepEqual(got, want) || got_changed != want_changed {
+	if !reflect.DeepEqual(got, want) || gotChanged != wantChanged {
 		t.Errorf(`%#v.ReceiveEvent("closed", "", _) = (%#v, %t), want (%#v, %t)`,
-			state, got, got_changed, want, want_changed)
+			state, got, gotChanged, want, wantChanged)
 	}
 
 	state = got
-	got, got_changed = state.ReceiveEvent("merged", "", time.Unix(0, 20))
-	want, want_changed = &MultiState{
+	got, gotChanged = state.ReceiveEvent("merged", "", time.Unix(0, 20))
+	want, wantChanged = &MultiState{
 		[]State{
 			&ActiveState{exit: FalseEvent{}, startTime: time.Unix(0, 20)},
 			&InactiveState{entry: ReopenEvent{}},
 		},
 	}, true
-	if !reflect.DeepEqual(got, want) || got_changed != want_changed {
+	if !reflect.DeepEqual(got, want) || gotChanged != wantChanged {
 		t.Errorf(`%#v.ReceiveEvent("merged", "", time.Unix(0, 20)) = (%#v, %t), want (%#v, %t)`,
-			state, got, got_changed, want, want_changed)
+			state, got, gotChanged, want, wantChanged)
 	}
 
 	state = got
-	got, got_changed = state.ReceiveEvent("reopened", "", time.Unix(0, 30))
-	want, want_changed = &MultiState{
+	got, gotChanged = state.ReceiveEvent("reopened", "", time.Unix(0, 30))
+	want, wantChanged = &MultiState{
 		[]State{
 			&ActiveState{exit: FalseEvent{}, startTime: time.Unix(0, 20)},
 			&ActiveState{exit: CloseEvent{}, startTime: time.Unix(0, 30)},
 		},
 	}, true
-	if !reflect.DeepEqual(got, want) || got_changed != want_changed {
+	if !reflect.DeepEqual(got, want) || gotChanged != wantChanged {
 		t.Errorf(`%#v.ReceiveEvent("merged", "", time.Unix(0, 20)) = (%#v, %t), want (%#v, %t)`,
-			state, got, got_changed, want, want_changed)
+			state, got, gotChanged, want, wantChanged)
 	}
 }
 

@@ -40,7 +40,7 @@ const pluginName = "refresh"
 
 var refreshRe = regexp.MustCompile(`(?mi)^/refresh\s*$`)
 
-func HelpProvider(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func helpProvider(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: `The refresh plugin is used for refreshing status contexts in PRs. Useful in case Github breaks down.`,
 	}
@@ -53,7 +53,7 @@ func HelpProvider(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	return pluginHelp, nil
 }
 
-type Server struct {
+type server struct {
 	hmacSecret  []byte
 	credentials string
 	prowURL     string
@@ -62,7 +62,7 @@ type Server struct {
 	log         *logrus.Entry
 }
 
-func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	eventType, eventGUID, payload, ok := hook.ValidateWebhook(w, r, s.hmacSecret)
 	if !ok {
 		return
@@ -74,7 +74,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Server) handleEvent(eventType, eventGUID string, payload []byte) error {
+func (s *server) handleEvent(eventType, eventGUID string, payload []byte) error {
 	l := logrus.WithFields(
 		logrus.Fields{
 			"event-type":     eventType,
@@ -99,7 +99,7 @@ func (s *Server) handleEvent(eventType, eventGUID string, payload []byte) error 
 	return nil
 }
 
-func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent) error {
+func (s *server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent) error {
 	if !ic.Issue.IsPullRequest() || ic.Action != github.IssueCommentActionCreated || ic.Issue.State == "closed" {
 		return nil
 	}
@@ -190,7 +190,7 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 	return nil
 }
 
-func (s *Server) reportForProwJob(pj kube.ProwJob, configs []config.JenkinsOperator) *template.Template {
+func (s *server) reportForProwJob(pj kube.ProwJob, configs []config.JenkinsOperator) *template.Template {
 	for _, cfg := range configs {
 		if cfg.LabelSelector.Matches(labels.Set(pj.Labels)) {
 			return cfg.ReportTemplate

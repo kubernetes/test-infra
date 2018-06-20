@@ -44,7 +44,7 @@ type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	ClearMilestone(org, repo string, num int) error
 	SetMilestone(org, repo string, issueNum, milestoneNum int) error
-	ListTeamMembers(id int) ([]github.TeamMember, error)
+	ListTeamMembers(id int, role string) ([]github.TeamMember, error)
 	ListMilestones(org, repo string) ([]github.Milestone, error)
 }
 
@@ -90,7 +90,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, m
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
 
-	milestoneMaintainers, err := gc.ListTeamMembers(maintainersID)
+	milestoneMaintainers, err := gc.ListTeamMembers(maintainersID, github.RoleAll)
 	if err != nil {
 		return err
 	}

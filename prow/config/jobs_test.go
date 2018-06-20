@@ -386,7 +386,7 @@ func TestConditionalPresubmits(t *testing.T) {
 			RunIfChanged: `(Makefile|\.sh|_(windows|linux|osx|unknown)(_test)?\.go)$`,
 		},
 	}
-	SetRegexes(presubmits)
+	SetPresubmitRegexes(presubmits)
 	ps := presubmits[0]
 	var testcases = []struct {
 		changes  []string
@@ -608,6 +608,10 @@ func TestRunAgainstBranch(t *testing.T) {
 		{
 			Name: "default",
 		},
+	}
+
+	if err := SetPresubmitRegexes(jobs); err != nil {
+		t.Fatalf("could not set regexes: %v", err)
 	}
 
 	for _, job := range jobs {

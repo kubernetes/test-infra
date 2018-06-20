@@ -19,9 +19,13 @@ package common
 import (
 	"errors"
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"strings"
 	"time"
+
+	"encoding/json"
+	"sync"
+
+	"github.com/ghodss/yaml"
 )
 
 const (
@@ -38,7 +42,12 @@ const (
 )
 
 // UserData is a map of Name to user defined interface, serialized into a string
-type UserData map[string]string
+type UserData struct {
+	sync.Map
+}
+
+// UserDataMap is the standard Map version of UserMap, it is used to ease UserMap creation.
+type UserDataMap map[string]string
 
 // LeasedResources is a list of resources name that used in order to create another resource by Mason
 type LeasedResources []string
@@ -56,7 +65,7 @@ type Resource struct {
 	Owner      string    `json:"owner"`
 	LastUpdate time.Time `json:"lastupdate"`
 	// Customized UserData
-	UserData UserData `json:"userdata"`
+	UserData *UserData `json:"userdata"`
 }
 
 // ResourceEntry is resource config format defined from config.yaml
@@ -87,7 +96,7 @@ func NewResource(name, rtype, state, owner string, t time.Time) Resource {
 		State:      state,
 		Owner:      owner,
 		LastUpdate: t,
-		UserData:   map[string]string{},
+		UserData:   &UserData{},
 	}
 }
 
@@ -98,6 +107,15 @@ func NewResourcesFromConfig(e ResourceEntry) []Resource {
 		resources = append(resources, NewResource(name, e.Type, e.State, "", time.Time{}))
 	}
 	return resources
+}
+
+// UserDataFromMap returns a UserData from a map
+func UserDataFromMap(m UserDataMap) *UserData {
+	ud := &UserData{}
+	for k, v := range m {
+		ud.Store(k, v)
+	}
+	return ud
 }
 
 // UserDataNotFound will be returned if requested resource does not exist.
@@ -144,13 +162,28 @@ func (r *ResTypes) Set(value string) error {
 // GetName implements the Item interface used for storage
 func (res Resource) GetName() string { return res.Name }
 
+// UnmarshalJSON implements JSON Unmarshaler interface
+func (ud *UserData) UnmarshalJSON(data []byte) error {
+	tmpMap := UserDataMap{}
+	if err := json.Unmarshal(data, &tmpMap); err != nil {
+		return err
+	}
+	ud.FromMap(tmpMap)
+	return nil
+}
+
+// MarshalJSON implents JSON Marshaler interface
+func (ud *UserData) MarshalJSON() ([]byte, error) {
+	return json.Marshal(ud.ToMap())
+}
+
 // Extract unmarshalls a string a given struct if it exists
-func (ud UserData) Extract(id string, out interface{}) error {
-	content, ok := ud[id]
+func (ud *UserData) Extract(id string, out interface{}) error {
+	content, ok := ud.Load(id)
 	if !ok {
 		return &UserDataNotFound{id}
 	}
-	return yaml.Unmarshal([]byte(content), out)
+	return yaml.Unmarshal([]byte(content.(string)), out)
 }
 
 // User Data are used to store custom information mainly by Mason and Masonable implementation.
@@ -158,26 +191,45 @@ func (ud UserData) Extract(id string, out interface{}) error {
 // create the given resource.
 
 // Set marshalls a struct to a string into the UserData
-func (ud UserData) Set(id string, in interface{}) error {
+func (ud *UserData) Set(id string, in interface{}) error {
 	b, err := yaml.Marshal(in)
 	if err != nil {
 		return err
 	}
-	ud[id] = string(b)
+	ud.Store(id, string(b))
 	return nil
 }
 
 // Update updates existing UserData with new UserData.
 // If a key as an empty string, the key will be deleted
-func (ud UserData) Update(new UserData) {
-	if new != nil {
-		for id, content := range new {
-			if content != "" {
-				ud[id] = content
-			} else {
-				delete(ud, id)
-			}
+func (ud *UserData) Update(new *UserData) {
+	if new == nil {
+		return
+	}
+	new.Range(func(key, value interface{}) bool {
+		if value.(string) != "" {
+			ud.Store(key, value)
+		} else {
+			ud.Delete(key)
 		}
+		return true
+	})
+}
+
+// ToMap converts a UserData to UserDataMap
+func (ud *UserData) ToMap() UserDataMap {
+	m := UserDataMap{}
+	ud.Range(func(key, value interface{}) bool {
+		m[key.(string)] = value.(string)
+		return true
+	})
+	return m
+}
+
+// FromMap feels updates user data from a map
+func (ud *UserData) FromMap(m UserDataMap) {
+	for key, value := range m {
+		ud.Store(key, value)
 	}
 }
 

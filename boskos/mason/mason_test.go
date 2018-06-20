@@ -54,8 +54,8 @@ func fakeConfigConverter(in string) (Masonable, error) {
 	return &fakeConfig{}, nil
 }
 
-func (fc *fakeConfig) Construct(res *common.Resource, typeToRes common.TypeToResources) (common.UserData, error) {
-	return common.UserData{"fakeConfig": "unused"}, nil
+func (fc *fakeConfig) Construct(res *common.Resource, typeToRes common.TypeToResources) (*common.UserData, error) {
+	return common.UserDataFromMap(map[string]string{"fakeConfig": "unused"}), nil
 }
 
 // Create a fake client
@@ -71,7 +71,7 @@ func createFakeBoskos(tc testConfig) (*ranch.Storage, *Client, []common.Resource
 				Type:     rtype,
 				Name:     fmt.Sprintf("%s_%d", rtype, i),
 				State:    common.Free,
-				UserData: common.UserData{},
+				UserData: &common.UserData{},
 			}
 			if c.resourceNeeds != nil {
 				res.State = common.Dirty
@@ -105,7 +105,7 @@ func (fb *fakeBoskos) ReleaseOne(name, dest string) error {
 	return fb.ranch.Release(name, dest, owner)
 }
 
-func (fb *fakeBoskos) UpdateOne(name, state string, userData common.UserData) error {
+func (fb *fakeBoskos) UpdateOne(name, state string, userData *common.UserData) error {
 	return fb.ranch.Update(name, owner, state, userData)
 }
 
@@ -249,10 +249,10 @@ func TestFulfillOne(t *testing.T) {
 	if res.UserData.Extract(LeasedResources, &leasedResources); err != nil {
 		t.Errorf("unable to extract %s", LeasedResources)
 	}
-	if res.UserData[LeasedResources] != req.resource.UserData[LeasedResources] {
+	if res.UserData.ToMap()[LeasedResources] != req.resource.UserData.ToMap()[LeasedResources] {
 		t.Errorf(
 			"resource user data from requirement %v should be the same as the one received %v",
-			req.resource.UserData[LeasedResources], res.UserData[LeasedResources])
+			req.resource.UserData.ToMap()[LeasedResources], res.UserData.ToMap()[LeasedResources])
 	}
 	if len(leasedResources) != 1 {
 		t.Errorf("there should be one leased resource, found %d", len(leasedResources))
