@@ -7819,9 +7819,8 @@
       "--gcp-node-image=gci",
       "--gcp-project=k8s-gke-gpu-boskos-v100",
       "--gcp-zone=us-central1-f",
-      "--gke-create-command=beta container clusters create --accelerator=type=nvidia-tesla-v100,count=8",
+      "--gke-create-command=beta container clusters create --accelerator=type=nvidia-tesla-v100,count=2",
       "--gke-environment=staging",
-      "--gke-shape={\"default\":{\"Nodes\":2,\"MachineType\":\"n1-standard-2\"}}",
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Feature:GPUDevicePlugin\\] --minStartupPods=8",
       "--timeout=80m"
