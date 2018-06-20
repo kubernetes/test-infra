@@ -2333,12 +2333,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-stable1-master-master-upgrade
 - name: ci-kubernetes-e2e-gce-gpu-stable1-master-cluster-upgrade
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-stable1-master-cluster-upgrade
-- name: ci-kubernetes-e2e-gce-gpu-beta-stable1-master-downgrade
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-beta-stable1-master-downgrade
 - name: ci-kubernetes-e2e-gce-gpu-beta-stable1-cluster-downgrade
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-beta-stable1-cluster-downgrade
-- name: ci-kubernetes-e2e-gce-gpu-master-stable1-master-downgrade
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-master-stable1-master-downgrade
 - name: ci-kubernetes-e2e-gce-gpu-master-stable1-cluster-downgrade
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-master-stable1-cluster-downgrade
 - name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-master
@@ -4033,12 +4029,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-gpu-stable1-master-master-upgrade
   - name: gce-1.10-master-upgrade-cluster-gpu
     test_group_name: ci-kubernetes-e2e-gce-gpu-stable1-master-cluster-upgrade
-  - name: gce-1.11-1.10-downgrade-master-gpu
-    test_group_name: ci-kubernetes-e2e-gce-gpu-beta-stable1-master-downgrade
   - name: gce-1.11-1.10-downgrade-cluster-gpu
     test_group_name: ci-kubernetes-e2e-gce-gpu-beta-stable1-cluster-downgrade
-  - name: gce-master-1.10-downgrade-master-gpu
-    test_group_name: ci-kubernetes-e2e-gce-gpu-master-stable1-master-downgrade
   - name: gce-master-1.10-downgrade-cluster-gpu
     test_group_name: ci-kubernetes-e2e-gce-gpu-master-stable1-cluster-downgrade
   - name: gce-1.10-1.9-downgrade-cluster
@@ -4422,18 +4414,8 @@ dashboards:
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
-  - name: gce-1.11-1.10-gpu-master-downgrade
-    test_group_name: ci-kubernetes-e2e-gce-gpu-beta-stable1-master-downgrade
-    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
-    alert_options:
-      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gce-1.11-1.10-gpu-cluster-downgrade
     test_group_name: ci-kubernetes-e2e-gce-gpu-beta-stable1-cluster-downgrade
-    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
-    alert_options:
-      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
-  - name: gce-master-1.10-gpu-master-downgrade
-    test_group_name: ci-kubernetes-e2e-gce-gpu-master-stable1-master-downgrade
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
