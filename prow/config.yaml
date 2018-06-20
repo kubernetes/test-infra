@@ -8148,7 +8148,7 @@ periodics:
       - --repo=k8s.io/kubernetes=release-1.11
       - --repo=k8s.io/release
       - --root=/go/src
-      - --timeout=120
+      - --timeout=180
       env:
       - name: DOCKER_IN_DOCKER_ENABLED
         value: "true"
@@ -8207,7 +8207,7 @@ periodics:
       - --repo=k8s.io/kubernetes=release-1.10
       - --repo=k8s.io/release
       - --root=/go/src
-      - --timeout=120
+      - --timeout=180
       env:
       - name: DOCKER_IN_DOCKER_ENABLED
         value: "true"
@@ -8237,7 +8237,7 @@ periodics:
       - --repo=k8s.io/kubernetes=release-1.9
       - --repo=k8s.io/release
       - --root=/go/src
-      - --timeout=120
+      - --timeout=180
       env:
       - name: DOCKER_IN_DOCKER_ENABLED
         value: "true"
@@ -8267,7 +8267,7 @@ periodics:
       - --repo=k8s.io/kubernetes=release-1.8
       - --repo=k8s.io/release
       - --root=/go/src
-      - --timeout=120
+      - --timeout=180
       env:
       - name: DOCKER_IN_DOCKER_ENABLED
         value: "true"
