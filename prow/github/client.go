@@ -463,6 +463,41 @@ func (c *Client) IsMember(org, user string) (bool, error) {
 	return false, fmt.Errorf("unexpected status: %d", code)
 }
 
+// GetOrg returns current metadata for the org
+//
+// https://developer.github.com/v3/orgs/#get-an-organization
+func (c *Client) GetOrg(name string) (*Organization, error) {
+	c.log("GetOrg", name)
+	var retOrg Organization
+	_, err := c.request(&request{
+		method:    http.MethodGet,
+		path:      fmt.Sprintf("/orgs/%s", name),
+		exitCodes: []int{200},
+	}, &retOrg)
+	if err != nil {
+		return nil, err
+	}
+	return &retOrg, nil
+}
+
+// EditOrg will update the metadata for this org.
+//
+// https://developer.github.com/v3/orgs/#edit-an-organization
+func (c *Client) EditOrg(name string, config Organization) (*Organization, error) {
+	c.log("EditOrg", name, config)
+	var retOrg Organization
+	_, err := c.request(&request{
+		method:      http.MethodPatch,
+		path:        fmt.Sprintf("/orgs/%s", name),
+		exitCodes:   []int{200},
+		requestBody: &config,
+	}, &retOrg)
+	if err != nil {
+		return nil, err
+	}
+	return &retOrg, nil
+}
+
 // ListOrgMembers list all users who are members of an organization. If the authenticated
 // user is also a member of this organization then both concealed and public members
 // will be returned.
