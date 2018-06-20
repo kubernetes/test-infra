@@ -343,7 +343,7 @@ func TestConfig(t *testing.T) {
 
 func TestJobsTestgridEntryMatch(t *testing.T) {
 	prowPath := "../../../prow/config.yaml"
-	jobPath := "../../../config"
+	jobPath := "../../../config/jobs"
 
 	jobs := make(map[string]bool)
 

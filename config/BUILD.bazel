@@ -3,7 +3,7 @@ package(default_visibility = ["//visibility:public"])
 filegroup(
     name = "prowjobs",
     srcs = glob([
-        "**/*.yaml",
+        "jobs/**/*.yaml",
     ]),
 )
 

@@ -1,11 +1,9 @@
-# Kubernetes Prow Job Configs
+# Kubernetes Project Configs
+
+This is a central place for generic tools configs for Kubernetes project
 
 ### UNDER MIGRATION
 
-Here are prow job configs for the Kubernetes prow deployment.
+Directory structure:
 
-Please add jobs per sig/repo subdir.
-
-The file basename will be used as a configmap key so they need to be unique across this directory.
-
-Questions? Contact @krzyzacy!
+[jobs/](./jobs) : job configs for Kubernetes Prow deployment, potentially testgrid configs as well
