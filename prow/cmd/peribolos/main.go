@@ -424,10 +424,72 @@ func configureTeams(client teamClient, orgName string, orgConfig org.Config) (ma
 	return matches, nil
 }
 
+// updateString will return true and set have to want iff they are set and different.
+func updateString(have, want *string) bool {
+	switch {
+	case have == nil:
+		panic("have must be non-nil")
+	case want == nil:
+		return false // do not care what we have
+	case *have == *want:
+		return false // already have it
+	}
+	*have = *want // update value
+	return true
+}
+
+// updateBool will return true and set have to want iff they are set and different.
+func updateBool(have, want *bool) bool {
+	switch {
+	case have == nil:
+		panic("have must not be nil")
+	case want == nil:
+		return false // do not care what we have
+	case *have == *want:
+		return false //already have it
+	}
+	*have = *want // update value
+	return true
+}
+
+type orgMetadataClient interface {
+	GetOrg(name string) (*github.Organization, error)
+	EditOrg(name string, org github.Organization) (*github.Organization, error)
+}
+
+// configureOrgMeta will update github to have the non-nil wanted metadata values.
+func configureOrgMeta(client orgMetadataClient, orgName string, want org.Metadata) error {
+	cur, err := client.GetOrg(orgName)
+	if err != nil {
+		return fmt.Errorf("failed to get %s metadata: %v", orgName, err)
+	}
+	change := false
+	change = updateString(&cur.BillingEmail, want.BillingEmail) || change
+	change = updateString(&cur.Company, want.Company) || change
+	change = updateString(&cur.Email, want.Email) || change
+	change = updateString(&cur.Name, want.Name) || change
+	change = updateString(&cur.Description, want.Description) || change
+	change = updateString(&cur.Location, want.Location) || change
+	if want.DefaultRepositoryPermission != nil {
+		w := string(*want.DefaultRepositoryPermission)
+		change = updateString(&cur.DefaultRepositoryPermission, &w)
+	}
+	change = updateBool(&cur.HasOrganizationProjects, want.HasOrganizationProjects) || change
+	change = updateBool(&cur.HasRepositoryProjects, want.HasRepositoryProjects) || change
+	change = updateBool(&cur.MembersCanCreateRepositories, want.MembersCanCreateRepositories) || change
+	if change {
+		if _, err := client.EditOrg(orgName, *cur); err != nil {
+			return fmt.Errorf("failed to edit %s metadata: %v", orgName, err)
+		}
+	}
+	return nil
+}
+
 func configureOrg(opt options, client *github.Client, orgName string, orgConfig org.Config) error {
-	// get meta
-	// diff meta
-	// patch meta
+	// Ensure that metadata is configured correctly.
+	if err := configureOrgMeta(client, orgName, orgConfig.Metadata); err != nil {
+		return err
+	}
 
 	// Find the id and current state of each declared team (create/delete as necessary)
 	githubTeams, err := configureTeams(client, orgName, orgConfig)
