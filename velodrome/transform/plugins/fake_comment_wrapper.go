@@ -20,32 +20,37 @@ import (
 	"k8s.io/test-infra/velodrome/sql"
 )
 
+// FakeCommentPluginWrapper is a plugin wrapper creating fake "commented" events
 type FakeCommentPluginWrapper struct {
 	plugin Plugin
 }
 
 var _ Plugin = &FakeCommentPluginWrapper{}
 
+// NewFakeCommentPluginWrapper is the constructor for FakeCommentPluginWrapper
 func NewFakeCommentPluginWrapper(plugin Plugin) *FakeCommentPluginWrapper {
 	return &FakeCommentPluginWrapper{
 		plugin: plugin,
 	}
 }
 
+// ReceiveIssue is a wrapper on plugin.ReceiveIssue()
 func (o *FakeCommentPluginWrapper) ReceiveIssue(issue sql.Issue) []Point {
 	// Pass through
 	return o.plugin.ReceiveIssue(issue)
 }
 
+// ReceiveIssueEvent is a wrapper on plugin.ReceiveIssueEvent()
 func (o *FakeCommentPluginWrapper) ReceiveIssueEvent(event sql.IssueEvent) []Point {
 	// Pass through
 	return o.plugin.ReceiveIssueEvent(event)
 }
 
+// ReceiveComment creates a fake "commented" event
 func (o *FakeCommentPluginWrapper) ReceiveComment(comment sql.Comment) []Point {
 	// Create a fake "commented" event for every comment we receive.
 	fakeEvent := sql.IssueEvent{
-		IssueId:        comment.IssueID,
+		IssueID:        comment.IssueID,
 		Event:          "commented",
 		EventCreatedAt: comment.CommentCreatedAt,
 		Actor:          &comment.User,

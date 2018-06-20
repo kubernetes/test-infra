@@ -37,6 +37,7 @@ import (
 )
 
 const (
+	// TestContainerName specifies the primary container name.
 	TestContainerName = "test"
 
 	inClusterBaseURL = "https://kubernetes.default"
@@ -44,14 +45,17 @@ const (
 	retryDelay       = 2 * time.Second
 	requestTimeout   = time.Minute
 
+	// EmptySelector selects everything
 	EmptySelector = ""
 
+	// DefaultClusterAlias specifies the default cluster key to schedule jobs.
 	DefaultClusterAlias = "default"
 )
 
 // newClient is used to allow mocking out the behavior of 'NewClient' while testing.
-var newClient func(c *Cluster, namespace string) (*Client, error) = NewClient
+var newClient = NewClient
 
+// Logger can print debug messages
 type Logger interface {
 	Debugf(s string, v ...interface{})
 }
@@ -72,7 +76,7 @@ type Client struct {
 	hiddenOnly          bool
 }
 
-// SetHiddenRepoProvider takes a continuation that fetches a list of orgs and repos for
+// SetHiddenReposProvider takes a continuation that fetches a list of orgs and repos for
 // which PJs should not be returned.
 // NOTE: This function is not thread safe and should be called before the client is in use.
 func (c *Client) SetHiddenReposProvider(p func() []string, hiddenOnly bool) {
@@ -98,6 +102,7 @@ func (c *Client) log(methodName string, args ...interface{}) {
 	c.logger.Debugf("%s(%s)", methodName, strings.Join(as, ", "))
 }
 
+// ConflictError is http 409.
 type ConflictError struct {
 	e error
 }
@@ -106,10 +111,12 @@ func (e ConflictError) Error() string {
 	return e.e.Error()
 }
 
+// NewConflictError returns an error with the embedded inner error
 func NewConflictError(e error) ConflictError {
 	return ConflictError{e: e}
 }
 
+// UnprocessableEntityError happens when the apiserver returns http 422.
 type UnprocessableEntityError struct {
 	e error
 }
@@ -118,8 +125,23 @@ func (e UnprocessableEntityError) Error() string {
 	return e.e.Error()
 }
 
+// NewUnprocessableEntityError returns an error with the embedded inner error
 func NewUnprocessableEntityError(e error) UnprocessableEntityError {
 	return UnprocessableEntityError{e: e}
+}
+
+// NotFoundError happens when the apiserver returns http 404
+type NotFoundError struct {
+	e error
+}
+
+func (e NotFoundError) Error() string {
+	return e.e.Error()
+}
+
+// NewNotFoundError returns an error with the embedded inner error
+func NewNotFoundError(e error) NotFoundError {
+	return NotFoundError{e: e}
 }
 
 type request struct {
@@ -198,6 +220,8 @@ func (c *Client) requestRetry(r *request) ([]byte, error) {
 		return nil, NewConflictError(fmt.Errorf("body: %s", string(rb)))
 	} else if resp.StatusCode == 422 {
 		return nil, NewUnprocessableEntityError(fmt.Errorf("body: %s", string(rb)))
+	} else if resp.StatusCode == 404 {
+		return nil, NewNotFoundError(fmt.Errorf("body: %s", string(rb)))
 	} else if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		return nil, fmt.Errorf("response has status \"%s\" and body \"%s\"", resp.Status, string(rb))
 	}
@@ -388,6 +412,7 @@ func NewClient(c *Cluster, namespace string) (*Client, error) {
 	}, nil
 }
 
+// GetPod is analogous to kubectl get pods/NAME namespace=client.namespace
 func (c *Client) GetPod(name string) (Pod, error) {
 	c.log("GetPod", name)
 	var retPod Pod
@@ -397,6 +422,7 @@ func (c *Client) GetPod(name string) (Pod, error) {
 	return retPod, err
 }
 
+// ListPods is analogous to kubectl get pods --selector=SELECTOR --namespace=client.namespace
 func (c *Client) ListPods(selector string) ([]Pod, error) {
 	c.log("ListPods", selector)
 	var pl struct {
@@ -409,6 +435,9 @@ func (c *Client) ListPods(selector string) ([]Pod, error) {
 	return pl.Items, err
 }
 
+// DeletePod deletes the pod at name in the client's default namespace.
+//
+// Analogous to kubectl delete pod
 func (c *Client) DeletePod(name string) error {
 	c.log("DeletePod", name)
 	return c.request(&request{
@@ -417,6 +446,9 @@ func (c *Client) DeletePod(name string) error {
 	}, nil)
 }
 
+// CreateProwJob creates a prowjob in the client's default namespace.
+//
+// Analogous to kubectl create prowjob
 func (c *Client) CreateProwJob(j ProwJob) (ProwJob, error) {
 	var representation string
 	if out, err := json.Marshal(j); err == nil {
@@ -454,6 +486,9 @@ func shouldHide(pj *ProwJob, hiddenRepos sets.String, showHiddenOnly bool) bool 
 	return shouldHide
 }
 
+// GetProwJob returns the prowjob at name in the client's default namespace.
+//
+// Analogous to kubectl get prowjob/NAME
 func (c *Client) GetProwJob(name string) (ProwJob, error) {
 	c.log("GetProwJob", name)
 	var pj ProwJob
@@ -470,6 +505,9 @@ func (c *Client) GetProwJob(name string) (ProwJob, error) {
 	return pj, err
 }
 
+// ListProwJobs lists prowjobs using the specified labelSelector in the client's default namespace.
+//
+// Analogous to kubectl get prowjobs --selector=SELECTOR
 func (c *Client) ListProwJobs(selector string) ([]ProwJob, error) {
 	c.log("ListProwJobs", selector)
 	var jl struct {
@@ -493,6 +531,7 @@ func (c *Client) ListProwJobs(selector string) ([]ProwJob, error) {
 	return jl.Items, err
 }
 
+// DeleteProwJob deletes the prowjob at name in the client's default namespace.
 func (c *Client) DeleteProwJob(name string) error {
 	c.log("DeleteProwJob", name)
 	return c.request(&request{
@@ -501,6 +540,9 @@ func (c *Client) DeleteProwJob(name string) error {
 	}, nil)
 }
 
+// ReplaceProwJob will replace name with job in the client's default namespace.
+//
+// Analogous to kubectl replace prowjobs/NAME
 func (c *Client) ReplaceProwJob(name string, job ProwJob) (ProwJob, error) {
 	c.log("ReplaceProwJob", name, job)
 	var retJob ProwJob
@@ -512,6 +554,9 @@ func (c *Client) ReplaceProwJob(name string, job ProwJob) (ProwJob, error) {
 	return retJob, err
 }
 
+// CreatePod creates a pod in the client's default namespace.
+//
+// Analogous to kubectl create pod
 func (c *Client) CreatePod(p v1.Pod) (Pod, error) {
 	c.log("CreatePod", p)
 	var retPod Pod
@@ -523,6 +568,9 @@ func (c *Client) CreatePod(p v1.Pod) (Pod, error) {
 	return retPod, err
 }
 
+// GetLog returns the log of the test container in the specified pod, in the client's default namespace.
+//
+// Analogous to kubectl logs POD -c test
 func (c *Client) GetLog(pod string) ([]byte, error) {
 	c.log("GetLog", pod)
 	return c.requestRetry(&request{
@@ -531,6 +579,9 @@ func (c *Client) GetLog(pod string) ([]byte, error) {
 	})
 }
 
+// CreateConfigMap creates a configmap.
+//
+// Analogous to kubectl create configmap
 func (c *Client) CreateConfigMap(content ConfigMap) (ConfigMap, error) {
 	c.log("CreateConfigMap")
 	var retConfigMap ConfigMap
@@ -543,6 +594,26 @@ func (c *Client) CreateConfigMap(content ConfigMap) (ConfigMap, error) {
 	return retConfigMap, err
 }
 
+// GetConfigMap gets the configmap identified.
+func (c *Client) GetConfigMap(name, namespace string) (ConfigMap, error) {
+	c.log("GetConfigMap", name)
+	if namespace == "" {
+		namespace = c.namespace
+	}
+	var retConfigMap ConfigMap
+	err := c.request(&request{
+		path: fmt.Sprintf("/api/v1/namespaces/%s/configmaps/%s", namespace, name),
+	}, &retConfigMap)
+
+	return retConfigMap, err
+}
+
+// ReplaceConfigMap puts the configmap into name.
+//
+// Analogous to kubectl replace configmap
+//
+// If config.Namespace is empty, the client's default namespace is used.
+// Returns the content returned by the apiserver
 func (c *Client) ReplaceConfigMap(name string, config ConfigMap) (ConfigMap, error) {
 	c.log("ReplaceConfigMap", name)
 	namespace := c.namespace

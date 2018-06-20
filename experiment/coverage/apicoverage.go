@@ -168,9 +168,8 @@ func getAPILog(restlog string) apiArray {
 
 	if *logType == "e2e" {
 		return parseE2eAPILog(fp)
-	} else {
-		return parseAPIServerLog(fp)
 	}
+	return parseAPIServerLog(fp)
 }
 
 var reOpenapi = regexp.MustCompile(`({\S+?})`)

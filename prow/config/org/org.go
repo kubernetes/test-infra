@@ -48,7 +48,6 @@ type Config struct {
 //
 // See https://developer.github.com/v3/teams/#edit-team
 type TeamMetadata struct {
-	Name        string   `json:"name,omitempty"`
 	Description *string  `json:"description,omitempty"`
 	Privacy     *Privacy `json:"privacy,omitempty"`
 }

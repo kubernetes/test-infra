@@ -17,6 +17,7 @@ limitations under the License.
 package trigger
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -69,25 +70,30 @@ func handlePR(c client, trustedOrg, joinOrgURL string, pr github.PullRequestEven
 			c.Logger.Info("Starting all jobs for updated PR.")
 			return buildAll(c, &pr.PullRequest, pr.GUID)
 		}
+	case github.PullRequestActionEdited:
+		// if someone changes the base of their PR, we will get this
+		// event and the changes field will list that the base SHA and
+		// ref changes so we can detect such a case and retrigger tests
+		var changes struct {
+			Base struct {
+				Ref struct {
+					From string `json:"from"`
+				} `json:"ref"`
+				Sha struct {
+					From string `json:"from"`
+				} `json:"sha"`
+			} `json:"base"`
+		}
+		if err := json.Unmarshal(pr.Changes, &changes); err != nil {
+			// we're detecting this best-effort so we can forget about
+			// the event
+			return nil
+		} else if changes.Base.Ref.From != "" || changes.Base.Sha.From != "" {
+			// the base of the PR changed and we need to re-test it
+			return buildAllIfTrusted(c, trustedOrg, pr)
+		}
 	case github.PullRequestActionSynchronize:
-		// When a PR is updated, check that the user is in the org or that an org
-		// member has said "/ok-to-test" before building. There's no need to ask
-		// for "/ok-to-test" because we do that once when the PR is created.
-		comments, err := c.GitHubClient.ListIssueComments(pr.PullRequest.Base.Repo.Owner.Login, pr.PullRequest.Base.Repo.Name, pr.PullRequest.Number)
-		if err != nil {
-			return err
-		}
-		trusted, err := trustedPullRequest(c.GitHubClient, pr.PullRequest, trustedOrg, comments)
-		if err != nil {
-			return fmt.Errorf("could not validate PR: %s", err)
-		} else if trusted {
-			err = clearStaleComments(c.GitHubClient, trustedOrg, pr.PullRequest, comments)
-			if err != nil {
-				c.Logger.Warnf("Failed to clear stale comments: %v.", err)
-			}
-			c.Logger.Info("Starting all jobs for updated PR.")
-			return buildAll(c, &pr.PullRequest, pr.GUID)
-		}
+		return buildAllIfTrusted(c, trustedOrg, pr)
 	case github.PullRequestActionLabeled:
 		comments, err := c.GitHubClient.ListIssueComments(pr.PullRequest.Base.Repo.Owner.Login, pr.PullRequest.Base.Repo.Name, pr.PullRequest.Number)
 		if err != nil {
@@ -103,6 +109,28 @@ func handlePR(c client, trustedOrg, joinOrgURL string, pr github.PullRequestEven
 				return buildAll(c, &pr.PullRequest, pr.GUID)
 			}
 		}
+	}
+	return nil
+}
+
+func buildAllIfTrusted(c client, trustedOrg string, pr github.PullRequestEvent) error {
+	// When a PR is updated, check that the user is in the org or that an org
+	// member has said "/ok-to-test" before building. There's no need to ask
+	// for "/ok-to-test" because we do that once when the PR is created.
+	comments, err := c.GitHubClient.ListIssueComments(pr.PullRequest.Base.Repo.Owner.Login, pr.PullRequest.Base.Repo.Name, pr.PullRequest.Number)
+	if err != nil {
+		return err
+	}
+	trusted, err := trustedPullRequest(c.GitHubClient, pr.PullRequest, trustedOrg, comments)
+	if err != nil {
+		return fmt.Errorf("could not validate PR: %s", err)
+	} else if trusted {
+		err = clearStaleComments(c.GitHubClient, trustedOrg, pr.PullRequest, comments)
+		if err != nil {
+			c.Logger.Warnf("Failed to clear stale comments: %v.", err)
+		}
+		c.Logger.Info("Starting all jobs for updated PR.")
+		return buildAll(c, &pr.PullRequest, pr.GUID)
 	}
 	return nil
 }

@@ -34,6 +34,7 @@ type FakeClient struct {
 	PullRequests        map[int]*github.PullRequest
 	PullRequestChanges  map[int][]github.PullRequestChange
 	PullRequestComments map[int][]github.ReviewComment
+	ReviewID            int
 	Reviews             map[int][]github.Review
 	CombinedStatuses    map[string]*github.CombinedStatus
 	CreatedStatuses     map[string][]github.Status
@@ -103,6 +104,16 @@ func (f *FakeClient) CreateComment(owner, repo string, number int, comment strin
 		User: github.User{Login: botName},
 	})
 	f.IssueCommentID++
+	return nil
+}
+
+func (f *FakeClient) CreateReview(org, repo string, number int, r github.DraftReview) error {
+	f.Reviews[number] = append(f.Reviews[number], github.Review{
+		ID:   f.ReviewID,
+		User: github.User{Login: botName},
+		Body: r.Body,
+	})
+	f.ReviewID++
 	return nil
 }
 
@@ -263,7 +274,10 @@ func (f *FakeClient) GetFile(org, repo, file, commit string) ([]byte, error) {
 }
 
 // ListTeamMembers return a fake team with a single "sig-lead" Github teammember
-func (f *FakeClient) ListTeamMembers(teamID int) ([]github.TeamMember, error) {
+func (f *FakeClient) ListTeamMembers(teamID int, role string) ([]github.TeamMember, error) {
+	if role != github.RoleAll {
+		return nil, fmt.Errorf("unsupport role %v (only all supported)", role)
+	}
 	return []github.TeamMember{{Login: "sig-lead"}}, nil
 }
 

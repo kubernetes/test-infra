@@ -200,7 +200,7 @@ func TestConfig(t *testing.T) {
 				t.Errorf("Dashboard %v, tab %v: - Testgroup %v must be defined first",
 					dashboard.Name, dashboardtab.Name, dashboardtab.TestGroupName)
 			} else {
-				testgroupMap[dashboardtab.TestGroupName] += 1
+				testgroupMap[dashboardtab.TestGroupName]++
 			}
 
 			if dashboardtab.AlertOptions != nil && (dashboardtab.AlertOptions.AlertStaleResultsHours != 0 || dashboardtab.AlertOptions.NumFailuresToAlert != 0) {

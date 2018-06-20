@@ -43,7 +43,7 @@ type configAgent interface {
 
 var (
 	runOnce      = flag.Bool("run-once", false, "If true, run only once then quit.")
-	configPath   = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
+	configPath   = flag.String("config-path", "/etc/config/config.yaml", "Path to config.yaml.")
 	buildCluster = flag.String("build-cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
 )
 

@@ -54,16 +54,16 @@ type Config struct {
 	Labels    []string `json:"labels,omitempty"`
 }
 
-type simpleConfig struct {
+type SimpleConfig struct {
 	Options dirOptions `json:"options,omitempty"`
 	Config  `json:",inline"`
 }
 
-func (s *simpleConfig) Empty() bool {
+func (s *SimpleConfig) Empty() bool {
 	return len(s.Approvers) == 0 && len(s.Reviewers) == 0 && len(s.Labels) == 0
 }
 
-type fullConfig struct {
+type FullConfig struct {
 	Options dirOptions        `json:"options,omitempty"`
 	Filters map[string]Config `json:"filters,omitempty"`
 }
@@ -353,7 +353,7 @@ func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 	// Note that these assignees only apply to the file itself.
 	if o.enableMDYAML && strings.HasSuffix(filename, ".md") {
 		// Parse the yaml header from the file if it exists and marshal into the config
-		simple := &simpleConfig{}
+		simple := &SimpleConfig{}
 		if err := decodeOwnersMdConfig(path, simple); err != nil {
 			log.WithError(err).Error("Error decoding OWNERS config from '*.md' file.")
 			return nil
@@ -387,29 +387,47 @@ func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 	}
 	relPathDir := canonicalize(filepath.Dir(relPath))
 
-	simple := &simpleConfig{}
-	if err := yaml.Unmarshal(b, simple); err == nil && !simple.Empty() {
+	simple, err := ParseSimpleConfig(b)
+	if err != nil || simple.Empty() {
+		c, err := ParseFullConfig(b)
+		if err != nil {
+			log.WithError(err).Errorf("Failed to unmarshal %s into either Simple or FullConfig.", path)
+		} else {
+			// it's a FullConfig
+			for pattern, config := range c.Filters {
+				var re *regexp.Regexp
+				if pattern != ".*" {
+					if re, err = regexp.Compile(pattern); err != nil {
+						log.WithError(err).Errorf("Invalid regexp %q.", pattern)
+						continue
+					}
+				}
+				o.applyConfigToPath(relPathDir, re, &config)
+			}
+			o.applyOptionsToPath(relPathDir, c.Options)
+		}
+	} else {
+		// it's a SimpleConfig
 		o.applyConfigToPath(relPathDir, nil, &simple.Config)
 		o.applyOptionsToPath(relPathDir, simple.Options)
-		return nil
 	}
-	c := &fullConfig{}
-	if err = yaml.Unmarshal(b, c); err != nil {
-		log.WithError(err).Errorf("Failed to unmarshal file contents.")
-		return nil
-	}
-	for pattern, config := range c.Filters {
-		var re *regexp.Regexp
-		if pattern != ".*" {
-			if re, err = regexp.Compile(pattern); err != nil {
-				log.WithError(err).Errorf("Invalid regexp %q.", pattern)
-				continue
-			}
-		}
-		o.applyConfigToPath(relPathDir, re, &config)
-	}
-	o.applyOptionsToPath(relPathDir, c.Options)
 	return nil
+}
+
+// ParseFullConfig will unmarshal OWNERS file's content into a FullConfig
+// Returns an error if the content cannot be unmarshalled
+func ParseFullConfig(b []byte) (FullConfig, error) {
+	full := new(FullConfig)
+	err := yaml.Unmarshal(b, full)
+	return *full, err
+}
+
+// ParseSimpleConfig will unmarshal an OWNERS file's content into a SimpleConfig
+// Returns an error if the content cannot be unmarshalled
+func ParseSimpleConfig(b []byte) (SimpleConfig, error) {
+	simple := new(SimpleConfig)
+	err := yaml.Unmarshal(b, simple)
+	return *simple, err
 }
 
 var mdStructuredHeaderRegex = regexp.MustCompile("^---\n(.|\n)*\n---")
@@ -417,7 +435,7 @@ var mdStructuredHeaderRegex = regexp.MustCompile("^---\n(.|\n)*\n---")
 // decodeOwnersMdConfig will parse the yaml header if it exists and unmarshal it into a singleOwnersConfig.
 // If no yaml header is found, do nothing
 // Returns an error if the file cannot be read or the yaml header is found but cannot be unmarshalled.
-func decodeOwnersMdConfig(path string, config *simpleConfig) error {
+func decodeOwnersMdConfig(path string, config *SimpleConfig) error {
 	fileBytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err

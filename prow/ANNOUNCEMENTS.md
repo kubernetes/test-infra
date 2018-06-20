@@ -19,7 +19,10 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
- - *JUN 1, 2018* all unquoted `boolean` fields in config.yaml that were unmarshall
+ - *June 14, 2018* the `updateconfig` plugin will only add data to your `ConfigMaps`
+   using the basename of the updated file, instead of using that and also duplicating
+   the data using the name of the `ConfigMap` as a key
+ - *June 1, 2018* all unquoted `boolean` fields in config.yaml that were unmarshall
    into type `string` now need to be quoted to avoid unmarshalling error.
  - *May 9, 2018* `deck` logs for jobs run as `Pods` will now return logs for the
    `"test"` container only.

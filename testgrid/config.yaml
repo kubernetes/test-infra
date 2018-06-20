@@ -258,6 +258,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-weave
 - name: ci-kubernetes-e2e-kops-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-gce
+- name: ci-kubernetes-e2e-kops-gce-canary
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-gce-canary
 - name: ci-kubernetes-e2e-kops-gce-channelalpha
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-gce-channelalpha
 - name: ci-kubernetes-e2e-kops-gce-ha
@@ -2200,14 +2202,7 @@ test_groups:
 - name: pull-kubernetes-e2e-containerd-gce
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-containerd-gce
   num_columns_recent: 20
-- name: pull-kubernetes-kubemark-e2e-gce
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-kubemark-e2e-gce
-  num_columns_recent: 20
-  alert_stale_results_hours: 24
   num_failures_to_alert: 10
-- name: pull-kubernetes-kubemark-e2e-gce-canary
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-kubemark-e2e-gce-canary
-  num_columns_recent: 20
 - name: pull-kubernetes-kubemark-e2e-gce-big
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-kubemark-e2e-gce-big
   num_columns_recent: 20
@@ -2368,8 +2363,26 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew-serial
 - name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gce-stable2-stable1-gpu-upgrade
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable2-stable1-gpu-upgrade
+- name: ci-kubernetes-e2e-gce-gpu-stable2-stable1-master-upgrade
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-stable2-stable1-master-upgrade
+- name: ci-kubernetes-e2e-gce-gpu-stable2-stable1-cluster-upgrade
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-stable2-stable1-cluster-upgrade
+- name: ci-kubernetes-e2e-gce-gpu-stable1-beta-master-upgrade
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-stable1-beta-master-upgrade
+- name: ci-kubernetes-e2e-gce-gpu-stable1-beta-cluster-upgrade
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-stable1-beta-cluster-upgrade
+- name: ci-kubernetes-e2e-gce-gpu-stable1-master-master-upgrade
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-stable1-master-master-upgrade
+- name: ci-kubernetes-e2e-gce-gpu-stable1-master-cluster-upgrade
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-stable1-master-cluster-upgrade
+- name: ci-kubernetes-e2e-gce-gpu-beta-stable1-master-downgrade
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-beta-stable1-master-downgrade
+- name: ci-kubernetes-e2e-gce-gpu-beta-stable1-cluster-downgrade
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-beta-stable1-cluster-downgrade
+- name: ci-kubernetes-e2e-gce-gpu-master-stable1-master-downgrade
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-master-stable1-master-downgrade
+- name: ci-kubernetes-e2e-gce-gpu-master-stable1-cluster-downgrade
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-master-stable1-cluster-downgrade
 - name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable2-stable1-upgrade-master
 - name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster-new
@@ -2717,6 +2730,16 @@ test_groups:
   num_failures_to_alert: 1
 - name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.11
   gcs_prefix: k8s-conformance-openstack/periodic-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.11
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1
+
+# Gardener Test Groups
+- name: ci-gardener-e2e-conformance-aws-v1.10
+  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-aws-v1.10
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1
+- name: ci-gardener-e2e-conformance-gce-v1.10
+  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-gce-v1.10
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
 
@@ -3277,6 +3300,8 @@ dashboards:
   dashboard_tab:
   - name: kops-gce
     test_group_name: ci-kubernetes-e2e-kops-gce
+  - name: kops-gce-canary
+    test_group_name: ci-kubernetes-e2e-kops-gce-canary
   - name: kops-gce-channelalpha
     test_group_name: ci-kubernetes-e2e-kops-gce-channelalpha
   - name: kops-gce-ha
@@ -4042,8 +4067,26 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster
   - name: gce-1.9-1.10-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster-new
-  - name: gce-1.9-1.10-upgrade-gpu
-    test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-gpu-upgrade
+  - name: gce-1.9-1.10-upgrade-master-gpu
+    test_group_name: ci-kubernetes-e2e-gce-gpu-stable2-stable1-master-upgrade
+  - name: gce-1.9-1.10-upgrade-cluster-gpu
+    test_group_name: ci-kubernetes-e2e-gce-gpu-stable2-stable1-cluster-upgrade
+  - name: gce-1.10-1.11-upgrade-master-gpu
+    test_group_name: ci-kubernetes-e2e-gce-gpu-stable1-beta-master-upgrade
+  - name: gce-1.10-1.11-upgrade-cluster-gpu
+    test_group_name: ci-kubernetes-e2e-gce-gpu-stable1-beta-cluster-upgrade
+  - name: gce-1.10-master-upgrade-master-gpu
+    test_group_name: ci-kubernetes-e2e-gce-gpu-stable1-master-master-upgrade
+  - name: gce-1.10-master-upgrade-cluster-gpu
+    test_group_name: ci-kubernetes-e2e-gce-gpu-stable1-master-cluster-upgrade
+  - name: gce-1.11-1.10-downgrade-master-gpu
+    test_group_name: ci-kubernetes-e2e-gce-gpu-beta-stable1-master-downgrade
+  - name: gce-1.11-1.10-downgrade-cluster-gpu
+    test_group_name: ci-kubernetes-e2e-gce-gpu-beta-stable1-cluster-downgrade
+  - name: gce-master-1.10-downgrade-master-gpu
+    test_group_name: ci-kubernetes-e2e-gce-gpu-master-stable1-master-downgrade
+  - name: gce-master-1.10-downgrade-cluster-gpu
+    test_group_name: ci-kubernetes-e2e-gce-gpu-master-stable1-cluster-downgrade
   - name: gce-1.10-1.9-downgrade-cluster
     test_group_name: ci-kubernetes-e2e-gce-stable1-stable2-downgrade-cluster
   - name: gce-1.10-1.9-downgrade-cluster-parallel
@@ -4395,8 +4438,53 @@ dashboards:
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
-  - name: gce-1.9-1.10-gpu-upgrade
-    test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-gpu-upgrade
+  - name: gce-1.9-1.10-gpu-master-upgrade
+    test_group_name: ci-kubernetes-e2e-gce-gpu-stable2-stable1-master-upgrade
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gce-1.9-1.10-gpu-cluster-upgrade
+    test_group_name: ci-kubernetes-e2e-gce-gpu-stable2-stable1-cluster-upgrade
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gce-1.10-1.11-gpu-master-upgrade
+    test_group_name: ci-kubernetes-e2e-gce-gpu-stable1-beta-master-upgrade
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gce-1.10-1.11-gpu-cluster-upgrade
+    test_group_name: ci-kubernetes-e2e-gce-gpu-stable1-beta-cluster-upgrade
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gce-1.10-master-gpu-master-upgrade
+    test_group_name: ci-kubernetes-e2e-gce-gpu-stable1-master-master-upgrade
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gce-1.10-master-gpu-cluster-upgrade
+    test_group_name: ci-kubernetes-e2e-gce-gpu-stable1-master-cluster-upgrade
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gce-1.11-1.10-gpu-master-downgrade
+    test_group_name: ci-kubernetes-e2e-gce-gpu-beta-stable1-master-downgrade
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gce-1.11-1.10-gpu-cluster-downgrade
+    test_group_name: ci-kubernetes-e2e-gce-gpu-beta-stable1-cluster-downgrade
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gce-master-1.10-gpu-master-downgrade
+    test_group_name: ci-kubernetes-e2e-gce-gpu-master-stable1-master-downgrade
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gce-master-1.10-gpu-cluster-downgrade
+    test_group_name: ci-kubernetes-e2e-gce-gpu-master-stable1-cluster-downgrade
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
@@ -5981,13 +6069,18 @@ dashboards:
     base_options: 'width=10'
     alert_options:
       alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com, bentheelder+alerts@google.com'
+  - name: pull-kubernetes-e2e-gce-100-performance
+    test_group_name: pull-kubernetes-e2e-gce-100-performance
+    base_options: 'width=10'
+    alert_options:
+      alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
   - name: pull-kubernetes-e2e-kops-aws
     test_group_name: pull-kubernetes-e2e-kops-aws
     base_options: 'width=10'
     alert_options:
       alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
-  - name: pull-kubernetes-kubemark-e2e-gce
-    test_group_name: pull-kubernetes-kubemark-e2e-gce
+  - name: pull-kubernetes-kubemark-e2e-gce-big
+    test_group_name: pull-kubernetes-kubemark-e2e-gce-big
     base_options: 'width=10'
     alert_options:
       alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
@@ -6045,9 +6138,6 @@ dashboards:
     base_options: 'width=10'
   - name: pull-kubernetes-kubemark-e2e-gce-scale
     test_group_name: pull-kubernetes-kubemark-e2e-gce-scale
-    base_options: 'width=10'
-  - name: pull-kubernetes-kubemark-e2e-gce-canary
-    test_group_name: pull-kubernetes-kubemark-e2e-gce-canary
     base_options: 'width=10'
 
 - name: presubmits-test-infra
@@ -6296,11 +6386,26 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-aws-imageubuntu1604
   - name: kops-gce
     test_group_name: ci-kubernetes-e2e-kops-gce
+  - name: kops-gce-canary
+    test_group_name: ci-kubernetes-e2e-kops-gce-canary
   - name: kops-gce-channelalpha
     test_group_name: ci-kubernetes-e2e-kops-gce-channelalpha
   - name: kops-gce-ha
     test_group_name: ci-kubernetes-e2e-kops-gce-ha
 
+# Gardener Dashboard
+- name: conformance-gardener
+  dashboard_tab:
+  - name: "v1.10 AWS"
+    description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Amazon Web Services (AWS)"
+    test_group_name: ci-gardener-e2e-conformance-aws-v1.10
+    alert_options:
+      alert_mail_to_addresses: 'roland.wilfer@sap.com'
+  - name: "v1.10 GCE"
+    description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Google Cloud Engine (GCE)"
+    test_group_name: ci-gardener-e2e-conformance-gce-v1.10
+    alert_options:
+      alert_mail_to_addresses: 'roland.wilfer@sap.com'
 #
 # Start dashboard groups
 #
@@ -6433,3 +6538,5 @@ dashboard_groups:
   - conformance-gce
   - conformance-providerless
   - conformance-cloud-provider-openstack
+  - conformance-gardener
+

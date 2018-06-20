@@ -20,18 +20,21 @@ import (
 	"k8s.io/test-infra/velodrome/sql"
 )
 
+// MultiplexerPluginWrapper allows registering multiple plugins for events
 type MultiplexerPluginWrapper struct {
 	plugins []Plugin
 }
 
 var _ Plugin = &MultiplexerPluginWrapper{}
 
+// NewMultiplexerPluginWrapper is the constructor for MultiplexerPluginWrapper
 func NewMultiplexerPluginWrapper(plugins ...Plugin) *MultiplexerPluginWrapper {
 	return &MultiplexerPluginWrapper{
 		plugins: plugins,
 	}
 }
 
+// ReceiveIssue calls plugin.ReceiveIssue() for all plugins
 func (m *MultiplexerPluginWrapper) ReceiveIssue(issue sql.Issue) []Point {
 	points := []Point{}
 
@@ -42,6 +45,7 @@ func (m *MultiplexerPluginWrapper) ReceiveIssue(issue sql.Issue) []Point {
 	return points
 }
 
+// ReceiveIssueEvent calls plugin.ReceiveIssueEvent() for all plugins
 func (m *MultiplexerPluginWrapper) ReceiveIssueEvent(event sql.IssueEvent) []Point {
 	points := []Point{}
 
@@ -52,6 +56,7 @@ func (m *MultiplexerPluginWrapper) ReceiveIssueEvent(event sql.IssueEvent) []Poi
 	return points
 }
 
+// ReceiveComment calls plugin.ReceiveComment() for all plugins
 func (m *MultiplexerPluginWrapper) ReceiveComment(comment sql.Comment) []Point {
 	points := []Point{}
 

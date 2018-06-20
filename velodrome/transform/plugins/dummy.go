@@ -18,16 +18,20 @@ package plugins
 
 import "k8s.io/test-infra/velodrome/sql"
 
+// DummyPlugin is an empty plugin
 type DummyPlugin struct{}
 
+// ReceiveIssue is needed to implement a Plugin
 func (DummyPlugin) ReceiveIssue(issue sql.Issue) []Point {
 	return nil
 }
 
+// ReceiveIssueEvent is needed to implement a Plugin
 func (DummyPlugin) ReceiveIssueEvent(event sql.IssueEvent) []Point {
 	return nil
 }
 
+// ReceiveComment is needed to implement a Plugin
 func (DummyPlugin) ReceiveComment(comment sql.Comment) []Point {
 	return nil
 }

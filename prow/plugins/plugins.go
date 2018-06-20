@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"path"
 	"regexp"
 	"strings"
 	"sync"
@@ -27,6 +28,7 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/commentpruner"
 	"k8s.io/test-infra/prow/config"
@@ -171,6 +173,7 @@ type Configuration struct {
 	SigMention    SigMention    `json:"sigmention,omitempty"`
 	Cat           Cat           `json:"cat,omitempty"`
 	Label         *Label        `json:"label,omitempty"`
+	Lgtm          []Lgtm        `json:"lgtm,omitempty"`
 }
 
 // ExternalPlugin holds configuration for registering an external
@@ -227,6 +230,11 @@ type Owners struct {
 	// the approve and lgtm plugins to use solely OWNERS files for access
 	// control in the provided repos.
 	SkipCollaborators []string `json:"skip_collaborators,omitempty"`
+
+	// LabelsBlackList holds a list of labels that should not be present in any
+	// OWNERS file, preventing their automatic addition by the owners-label plugin.
+	// This check is performed by the verify-owners plugin.
+	LabelsBlackList []string `json:"labels_blacklist,omitempty"`
 }
 
 func (pa *PluginAgent) MDYAMLEnabled(org, repo string) bool {
@@ -329,6 +337,14 @@ type Approve struct {
 	ReviewActsAsApprove bool `json:"review_acts_as_approve,omitempty"`
 }
 
+type Lgtm struct {
+	// Repos is either of the form org/repos or just org.
+	Repos []string `json:"repos,omitempty"`
+	// ReviewActsAsLgtm indicates that a Github review of "approve" or "request changes"
+	// acts as adding or removing the lgtm label
+	ReviewActsAsLgtm bool `json:"review_acts_as_lgtm,omitempty"`
+}
+
 type Cat struct {
 	// Path to file containing an api key for thecatapi.com
 	KeyPath string `json:"key_path,omitempty"`
@@ -378,6 +394,9 @@ type Slack struct {
 type ConfigMapSpec struct {
 	// Name of ConfigMap
 	Name string `json:"name"`
+	// Key is the key in the ConfigMap to update with the file contents.
+	// If no explicit key is given, the basename of the file will be used.
+	Key string `json:"key,omitempty"`
 	// Namespace in which the configMap needs to be deployed. If no namespace is specified
 	// it will be deployed to the ProwJobNamespace.
 	Namespace string `json:"namespace,omitempty"`
@@ -475,6 +494,9 @@ func (c *Configuration) setDefaults() {
 	if c.SigMention.Regexp == "" {
 		c.SigMention.Regexp = `(?m)@kubernetes/sig-([\w-]*)-(misc|test-failures|bugs|feature-requests|proposals|pr-reviews|api-reviews)`
 	}
+	if c.Owners.LabelsBlackList == nil {
+		c.Owners.LabelsBlackList = []string{"approved", "lgtm"}
+	}
 }
 
 // Load attempts to load config from the path. It returns an error if either
@@ -502,6 +524,9 @@ func (pa *PluginAgent) Load(path string) error {
 		return err
 	}
 	if err := validateBlunderbuss(&np.Blunderbuss); err != nil {
+		return err
+	}
+	if err := validateConfigUpdater(&np.ConfigUpdater); err != nil {
 		return err
 	}
 	// regexp compilation should run after defaulting
@@ -597,6 +622,32 @@ func validateBlunderbuss(b *Blunderbuss) error {
 	}
 	if b.FileWeightCount != nil && *b.FileWeightCount < 1 {
 		return fmt.Errorf("invalid file_weight_count: %v (needs to be positive)", *b.FileWeightCount)
+	}
+	return nil
+}
+
+func validateConfigUpdater(updater *ConfigUpdater) error {
+	files := sets.NewString()
+	configMapKeys := map[string]sets.String{}
+	for file, config := range updater.Maps {
+		if files.Has(file) {
+			return fmt.Errorf("file %s listed more than once in config updater config", file)
+		}
+		files.Insert(file)
+
+		key := config.Key
+		if key == "" {
+			key = path.Base(file)
+		}
+
+		if _, ok := configMapKeys[config.Name]; ok {
+			if configMapKeys[config.Name].Has(key) {
+				return fmt.Errorf("key %s in configmap %s updated with more than one file", key, config.Name)
+			}
+			configMapKeys[config.Name].Insert(key)
+		} else {
+			configMapKeys[config.Name] = sets.NewString(key)
+		}
 	}
 	return nil
 }

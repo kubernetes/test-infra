@@ -461,7 +461,7 @@ func (c *Controller) getBuildID(name string) (string, error) {
 
 // RunAfterSuccessCanRun returns whether a child job (specified as run_after_success in the
 // prow config) can run once its parent job succeeds. The only case we will not run a child job
-// is when it is a presubmit job and has a run_if_changed regural expression specified which does
+// is when it is a presubmit job and has a run_if_changed regular expression specified which does
 // not match the changed filenames in the pull request the job was meant to run for.
 // TODO: Collapse with plank, impossible to reuse as is due to the interfaces.
 func (c *Controller) RunAfterSuccessCanRun(parent, child *kube.ProwJob, ca configAgent, ghc githubClient) bool {

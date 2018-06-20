@@ -147,8 +147,8 @@ func retireAction(origContext, newContext string) func(statuses []github.RepoSta
 	}
 }
 
-// ProcessStatuses checks the mode against the combined status of a PR and emits the actions to take.
-func (m Mode) ProcessStatuses(combStatus *github.CombinedStatus) []*github.RepoStatus {
+// processStatuses checks the mode against the combined status of a PR and emits the actions to take.
+func (m Mode) processStatuses(combStatus *github.CombinedStatus) []*github.RepoStatus {
 	var sha string
 	if combStatus.SHA != nil {
 		sha = *combStatus.SHA
@@ -196,6 +196,7 @@ func (m Mode) ProcessStatuses(combStatus *github.CombinedStatus) []*github.RepoS
 	return m.actions(combStatus.Statuses, sha)
 }
 
+// Migrator will search github for PRs with a given context and migrate/retire/move them.
 type Migrator struct {
 	org             string
 	repo            string
@@ -205,6 +206,9 @@ type Migrator struct {
 	Mode
 }
 
+// New creates a new migrator with specified options.
+//
+// If dryRun is true it will only perform GET requests that do not change github.
 func New(mode Mode, token, org, repo string, dryRun, continueOnError bool) *Migrator {
 	return &Migrator{
 		org:             org,
@@ -215,22 +219,22 @@ func New(mode Mode, token, org, repo string, dryRun, continueOnError bool) *Migr
 	}
 }
 
-func (m *Migrator) ProcessPR(pr *github.PullRequest) error {
+func (m *Migrator) processPR(pr *github.PullRequest) error {
 	if pr == nil {
-		return fmt.Errorf("migrator cannot process a nil PullRequest.")
+		return fmt.Errorf("migrator cannot process a nil PullRequest")
 	}
 	if pr.Head == nil {
-		return fmt.Errorf("migrator cannot process a PullRequest with a nil 'Head' field.")
+		return fmt.Errorf("migrator cannot process a PullRequest with a nil 'Head' field")
 	}
 	if pr.Head.SHA == nil {
-		return fmt.Errorf("migrator cannot process a PullRequest with a nil 'Head.SHA' field.")
+		return fmt.Errorf("migrator cannot process a PullRequest with a nil 'Head.SHA' field")
 	}
 
 	combined, err := m.client.GetCombinedStatus(m.org, m.repo, *pr.Head.SHA)
 	if err != nil {
 		return err
 	}
-	actions := m.ProcessStatuses(combined)
+	actions := m.processStatuses(combined)
 
 	for _, action := range actions {
 		if _, err = m.client.CreateStatus(m.org, m.repo, *pr.Head.SHA, action); err != nil {
@@ -240,6 +244,7 @@ func (m *Migrator) ProcessPR(pr *github.PullRequest) error {
 	return nil
 }
 
+// Migrate will retire/migrate/copy statuses for all matching PRs.
 func (m *Migrator) Migrate(prOptions *github.PullRequestListOptions) error {
-	return m.client.ForEachPR(m.org, m.repo, prOptions, m.continueOnError, m.ProcessPR)
+	return m.client.ForEachPR(m.org, m.repo, prOptions, m.continueOnError, m.processPR)
 }

@@ -58,7 +58,7 @@ func TestAcquireUpdate(t *testing.T) {
 				Type:     "type",
 				Name:     "test",
 				State:    common.Dirty,
-				UserData: common.UserData{"test": "old"},
+				UserData: common.UserDataFromMap(common.UserDataMap{"test": "old"}),
 			},
 		},
 	}
@@ -67,7 +67,7 @@ func TestAcquireUpdate(t *testing.T) {
 		boskos := makeTestBoskos(r)
 		owner := "owner"
 		client := client.NewClient(owner, boskos.URL)
-		userData := common.UserData{"test": "new"}
+		userData := common.UserDataFromMap(common.UserDataMap{"test": "new"})
 
 		newState := "acquired"
 		receivedRes, err := client.Acquire(tc.resource.Type, tc.resource.State, newState)
@@ -86,8 +86,8 @@ func TestAcquireUpdate(t *testing.T) {
 		if err != nil {
 			t.Error("unable to list resources")
 		}
-		if !reflect.DeepEqual(updatedResource.UserData, userData) {
-			t.Errorf("info should match. Expected \n%v, received \n%v", userData, updatedResource.UserData)
+		if !reflect.DeepEqual(updatedResource.UserData.ToMap(), userData.ToMap()) {
+			t.Errorf("info should match. Expected \n%v, received \n%v", userData.ToMap(), updatedResource.UserData.ToMap())
 		}
 	}
 }
@@ -170,9 +170,9 @@ func TestClientServerUpdate(t *testing.T) {
 	owner := "owner"
 	fakeNow := now()
 
-	newResourceWithUD := func(name, rtype, state, owner string, t time.Time, ud common.UserData) common.Resource {
+	newResourceWithUD := func(name, rtype, state, owner string, t time.Time, ud common.UserDataMap) common.Resource {
 		res := common.NewResource(name, rtype, state, owner, t)
-		res.UserData = ud
+		res.UserData = common.UserDataFromMap(ud)
 		return res
 	}
 
@@ -187,7 +187,7 @@ func TestClientServerUpdate(t *testing.T) {
 		resource, expected common.Resource
 		err                error
 		names              []string
-		ud                 common.UserData
+		ud                 common.UserDataMap
 	}{
 		{
 			name:     "noUserData",
@@ -197,26 +197,26 @@ func TestClientServerUpdate(t *testing.T) {
 		{
 			name:     "userData",
 			resource: common.NewResource(resourceName, rType, initialState, "", time.Time{}),
-			expected: newResourceWithUD(resourceName, rType, finalState, owner, fakeNow, common.UserData{"custom": "custom"}),
-			ud:       common.UserData{"custom": "custom"},
+			expected: newResourceWithUD(resourceName, rType, finalState, owner, fakeNow, common.UserDataMap{"custom": "custom"}),
+			ud:       common.UserDataMap{"custom": "custom"},
 		},
 		{
 			name:     "newUserData",
-			resource: newResourceWithUD(resourceName, rType, initialState, "", fakeNow, common.UserData{"1": "1"}),
-			expected: newResourceWithUD(resourceName, rType, finalState, owner, fakeNow, common.UserData{"1": "1", "2": "2"}),
-			ud:       common.UserData{"2": "2"},
+			resource: newResourceWithUD(resourceName, rType, initialState, "", fakeNow, common.UserDataMap{"1": "1"}),
+			expected: newResourceWithUD(resourceName, rType, finalState, owner, fakeNow, common.UserDataMap{"1": "1", "2": "2"}),
+			ud:       common.UserDataMap{"2": "2"},
 		},
 		{
 			name:     "OverRideUserData",
-			resource: newResourceWithUD(resourceName, rType, initialState, "", fakeNow, common.UserData{"1": "1"}),
-			expected: newResourceWithUD(resourceName, rType, finalState, owner, fakeNow, common.UserData{"1": "2"}),
-			ud:       common.UserData{"1": "2"},
+			resource: newResourceWithUD(resourceName, rType, initialState, "", fakeNow, common.UserDataMap{"1": "1"}),
+			expected: newResourceWithUD(resourceName, rType, finalState, owner, fakeNow, common.UserDataMap{"1": "2"}),
+			ud:       common.UserDataMap{"1": "2"},
 		},
 		{
 			name:     "DeleteUserData",
-			resource: newResourceWithUD(resourceName, rType, initialState, "", fakeNow, common.UserData{"1": "1", "2": "2"}),
-			expected: newResourceWithUD(resourceName, rType, finalState, owner, fakeNow, common.UserData{"2": "2"}),
-			ud:       common.UserData{"1": ""},
+			resource: newResourceWithUD(resourceName, rType, initialState, "", fakeNow, common.UserDataMap{"1": "1", "2": "2"}),
+			expected: newResourceWithUD(resourceName, rType, finalState, owner, fakeNow, common.UserDataMap{"2": "2"}),
+			ud:       common.UserDataMap{"1": ""},
 		},
 	}
 	for _, tc := range testcases {
@@ -225,13 +225,19 @@ func TestClientServerUpdate(t *testing.T) {
 		boskos := makeTestBoskos(r)
 		client := client.NewClient(owner, boskos.URL)
 		client.Acquire(rType, initialState, finalState)
-		err := client.UpdateOne(resourceName, finalState, tc.ud)
+		err := client.UpdateOne(resourceName, finalState, common.UserDataFromMap(tc.ud))
 		boskos.Close()
 		if !reflect.DeepEqual(err, tc.err) {
 			t.Errorf("tc: %s - errors don't match, expected %v, received\n %v", tc.name, tc.err, err)
 			continue
 		}
 		receivedRes, _ := r.Storage.GetResource(tc.resource.Name)
+		if !reflect.DeepEqual(receivedRes.UserData.ToMap(), tc.expected.UserData.ToMap()) {
+			t.Errorf("tc: %s - resources user data should match. Expected \n%v, received \n%v", tc.name, tc.expected.UserData.ToMap(), receivedRes.UserData.ToMap())
+		}
+		// Hack: remove UserData to be able to compare since we already compared it before.
+		receivedRes.UserData = nil
+		tc.expected.UserData = nil
 		if !reflect.DeepEqual(receivedRes, tc.expected) {
 			t.Errorf("tc: %s - resources should match. Expected \n%v, received \n%v", tc.name, tc.expected, receivedRes)
 		}

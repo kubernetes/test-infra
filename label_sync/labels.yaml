@@ -109,6 +109,12 @@ labels:
     prowPlugin: hold
     addedBy: anyone
   - color: e11d21
+    description: Indicates that a PR should not merge because it has an invalid OWNERS file in it.
+    name: do-not-merge/invalid-owners-file
+    target: prs
+    prowPlugin: verify-owners
+    addedBy: prow
+  - color: e11d21
     description: Indicates that a PR should not merge because it's missing one of the release note labels.
     name: do-not-merge/release-note-label-needed
     previously:
@@ -442,6 +448,12 @@ labels:
   - color: d2b48c
     description: Categorizes an issue or PR as relevant to sig-openstack.
     name: sig/openstack
+    target: both
+    prowPlugin: label
+    addedBy: anyone
+  - color: d2b48c
+    description: Categorizes an issue or PR as relevant to sig-pm.
+    name: sig/pm
     target: both
     prowPlugin: label
     addedBy: anyone

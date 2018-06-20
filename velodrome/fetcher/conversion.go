@@ -103,7 +103,7 @@ func NewIssueEvent(gIssueEvent *github.IssueEvent, issueID int, repository strin
 		Label:          label,
 		Event:          *gIssueEvent.Event,
 		EventCreatedAt: *gIssueEvent.CreatedAt,
-		IssueId:        strconv.Itoa(issueID),
+		IssueID:        strconv.Itoa(issueID),
 		Assignee:       assignee,
 		Actor:          actor,
 		Repository:     strings.ToLower(repository),
@@ -111,7 +111,7 @@ func NewIssueEvent(gIssueEvent *github.IssueEvent, issueID int, repository strin
 }
 
 // newLabels creates a new Label for each label in the issue
-func newLabels(issueId int, gLabels []github.Label, repository string) ([]sql.Label, error) {
+func newLabels(issueID int, gLabels []github.Label, repository string) ([]sql.Label, error) {
 	labels := []sql.Label{}
 	repository = strings.ToLower(repository)
 
@@ -120,7 +120,7 @@ func newLabels(issueId int, gLabels []github.Label, repository string) ([]sql.La
 			return nil, fmt.Errorf("Label is missing name field")
 		}
 		labels = append(labels, sql.Label{
-			IssueID:    strconv.Itoa(issueId),
+			IssueID:    strconv.Itoa(issueID),
 			Name:       *label.Name,
 			Repository: repository,
 		})
@@ -130,7 +130,7 @@ func newLabels(issueId int, gLabels []github.Label, repository string) ([]sql.La
 }
 
 // newAssignees creates a new Label for each label in the issue
-func newAssignees(issueId int, gAssignees []*github.User, repository string) ([]sql.Assignee, error) {
+func newAssignees(issueID int, gAssignees []*github.User, repository string) ([]sql.Assignee, error) {
 	assignees := []sql.Assignee{}
 	repository = strings.ToLower(repository)
 
@@ -139,7 +139,7 @@ func newAssignees(issueId int, gAssignees []*github.User, repository string) ([]
 			return nil, fmt.Errorf("Assignee is missing Login field")
 		}
 		assignees = append(assignees, sql.Assignee{
-			IssueID:    strconv.Itoa(issueId),
+			IssueID:    strconv.Itoa(issueID),
 			Name:       *assignee.Login,
 			Repository: repository,
 		})
@@ -149,7 +149,7 @@ func newAssignees(issueId int, gAssignees []*github.User, repository string) ([]
 }
 
 // NewIssueComment creates a Comment from a github.IssueComment
-func NewIssueComment(issueId int, gComment *github.IssueComment, repository string) (*sql.Comment, error) {
+func NewIssueComment(issueID int, gComment *github.IssueComment, repository string) (*sql.Comment, error) {
 	if gComment.ID == nil ||
 		gComment.Body == nil ||
 		gComment.CreatedAt == nil ||
@@ -164,7 +164,7 @@ func NewIssueComment(issueId int, gComment *github.IssueComment, repository stri
 
 	return &sql.Comment{
 		ID:               strconv.Itoa(*gComment.ID),
-		IssueID:          strconv.Itoa(issueId),
+		IssueID:          strconv.Itoa(issueID),
 		Body:             *gComment.Body,
 		User:             login,
 		CommentCreatedAt: *gComment.CreatedAt,
@@ -175,7 +175,7 @@ func NewIssueComment(issueId int, gComment *github.IssueComment, repository stri
 }
 
 // NewPullComment creates a Comment from a github.PullRequestComment
-func NewPullComment(issueId int, gComment *github.PullRequestComment, repository string) (*sql.Comment, error) {
+func NewPullComment(issueID int, gComment *github.PullRequestComment, repository string) (*sql.Comment, error) {
 	if gComment.ID == nil ||
 		gComment.Body == nil ||
 		gComment.CreatedAt == nil ||
@@ -189,7 +189,7 @@ func NewPullComment(issueId int, gComment *github.PullRequestComment, repository
 	}
 	return &sql.Comment{
 		ID:               strconv.Itoa(*gComment.ID),
-		IssueID:          strconv.Itoa(issueId),
+		IssueID:          strconv.Itoa(issueID),
 		Body:             *gComment.Body,
 		User:             login,
 		CommentCreatedAt: *gComment.CreatedAt,

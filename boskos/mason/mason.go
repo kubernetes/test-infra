@@ -39,7 +39,7 @@ const (
 
 // Masonable should be implemented by all configurations
 type Masonable interface {
-	Construct(*common.Resource, common.TypeToResources) (common.UserData, error)
+	Construct(*common.Resource, common.TypeToResources) (*common.UserData, error)
 }
 
 // ConfigConverter converts a string into a Masonable
@@ -49,7 +49,7 @@ type boskosClient interface {
 	Acquire(rtype, state, dest string) (*common.Resource, error)
 	AcquireByState(state, dest string, names []string) ([]common.Resource, error)
 	ReleaseOne(name, dest string) error
-	UpdateOne(name, state string, userData common.UserData) error
+	UpdateOne(name, state string, userData *common.UserData) error
 	SyncAll() error
 	UpdateAll(dest string) error
 	ReleaseAll(dest string) error
@@ -379,8 +379,8 @@ func (m *Mason) recycleOne(res *common.Resource) (*requirements, error) {
 			}
 		}
 		// Deleting Leased Resources
-		delete(res.UserData, LeasedResources)
-		if err := m.client.UpdateOne(res.Name, res.State, common.UserData{LeasedResources: ""}); err != nil {
+		res.UserData.Delete(LeasedResources)
+		if err := m.client.UpdateOne(res.Name, res.State, common.UserDataFromMap(map[string]string{LeasedResources: ""})); err != nil {
 			logrus.WithError(err).Errorf("could not update resource %s with freed leased resources", res.Name)
 		}
 	}
@@ -467,7 +467,7 @@ func (m *Mason) fulfillOne(ctx context.Context, req *requirements) error {
 				leasedResources = append(leasedResources, r.Name)
 			}
 		}
-		userData := common.UserData{}
+		userData := &common.UserData{}
 		if err := userData.Set(LeasedResources, &leasedResources); err != nil {
 			logrus.WithError(err).Errorf("failed to add %s user data", LeasedResources)
 			return err
@@ -481,6 +481,7 @@ func (m *Mason) fulfillOne(ctx context.Context, req *requirements) error {
 		} else {
 			req.resource.UserData.Update(userData)
 		}
+
 		logrus.Infof("requirements for release %s is fulfilled", req.resource.Name)
 		return nil
 	}

@@ -45,7 +45,7 @@ func (c *fakeClient) GetUser(login string) (*github.User, error) {
 	if login == "" {
 		return &github.User{Login: &c.userName}, nil
 	}
-	return nil, fmt.Errorf("Fake Client is only able to retrieve the current authenticated user in its current state.")
+	return nil, fmt.Errorf("fake Client is only able to retrieve the current authenticated user in its current state")
 }
 
 func (c *fakeClient) GetRepoLabels(org, repo string) ([]*github.Label, error) {

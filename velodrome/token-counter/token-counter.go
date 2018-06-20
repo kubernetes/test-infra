@@ -68,7 +68,7 @@ func GetUsername(client *github.Client) (string, error) {
 		return "", err
 	}
 	if user.Login == nil {
-		return "", errors.New("Users.Get(\"\") returned empty login.")
+		return "", errors.New("Users.Get(\"\") returned empty login")
 	}
 
 	return *user.Login, nil

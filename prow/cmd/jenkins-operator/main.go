@@ -92,7 +92,7 @@ func gatherOptions() options {
 	o := options{
 		githubEndpoint: flagutil.NewStrings("https://api.github.com"),
 	}
-	flag.StringVar(&o.configPath, "config-path", "/etc/config/config", "Path to config.yaml.")
+	flag.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
 	flag.StringVar(&o.selector, "label-selector", kube.EmptySelector, "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
 	flag.StringVar(&o.totURL, "tot-url", "", "Tot URL")
 	flag.StringVar(&o.deckURL, "deck-url", "", "Deck URL for read-only access to the cluster.")

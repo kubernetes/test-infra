@@ -6,7 +6,10 @@ go_library(
     importmap = "vendor/github.com/golang/lint",
     importpath = "github.com/golang/lint",
     visibility = ["//visibility:public"],
-    deps = ["//vendor/golang.org/x/tools/go/gcexportdata:go_default_library"],
+    deps = [
+        "//vendor/golang.org/x/tools/go/ast/astutil:go_default_library",
+        "//vendor/golang.org/x/tools/go/gcexportdata:go_default_library",
+    ],
 )
 
 filegroup(
@@ -18,7 +21,10 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//vendor/github.com/golang/lint/golint:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

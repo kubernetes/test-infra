@@ -31,10 +31,12 @@ func (t EventTimeHeap) Len() int           { return len(t) }
 func (t EventTimeHeap) Swap(i, j int)      { t[i], t[j] = t[j], t[i] }
 func (t EventTimeHeap) Less(i, j int) bool { return t[i].EventCreatedAt.Before(t[j].EventCreatedAt) }
 
+// Push adds event to the heap
 func (t *EventTimeHeap) Push(x interface{}) {
 	*t = append(*t, x.(sql.IssueEvent))
 }
 
+// Pop retrieves the last added event
 func (t *EventTimeHeap) Pop() interface{} {
 	old := *t
 	n := len(old)
@@ -54,6 +56,7 @@ type FakeOpenPluginWrapper struct {
 
 var _ Plugin = &FakeOpenPluginWrapper{}
 
+// NewFakeOpenPluginWrapper is the constructor for FakeOpenPluginWrapper
 func NewFakeOpenPluginWrapper(plugin Plugin) *FakeOpenPluginWrapper {
 	return &FakeOpenPluginWrapper{
 		plugin:      plugin,
@@ -61,12 +64,13 @@ func NewFakeOpenPluginWrapper(plugin Plugin) *FakeOpenPluginWrapper {
 	}
 }
 
+// ReceiveIssue creates a fake "opened" event
 func (o *FakeOpenPluginWrapper) ReceiveIssue(issue sql.Issue) []Point {
 	if _, ok := o.alreadyOpen[issue.ID]; !ok {
 		// Create/Add fake "opened" events
 		heap.Push(&o.openEvents, sql.IssueEvent{
 			Event:          "opened",
-			IssueId:        issue.ID,
+			IssueID:        issue.ID,
 			Actor:          &issue.User,
 			EventCreatedAt: issue.IssueCreatedAt,
 		})
@@ -76,6 +80,7 @@ func (o *FakeOpenPluginWrapper) ReceiveIssue(issue sql.Issue) []Point {
 	return o.plugin.ReceiveIssue(issue)
 }
 
+// ReceiveIssueEvent injects an extra "opened" event before calling plugin.ReceiveIssueEvent()
 func (o *FakeOpenPluginWrapper) ReceiveIssueEvent(event sql.IssueEvent) []Point {
 	points := []Point{}
 
@@ -87,6 +92,7 @@ func (o *FakeOpenPluginWrapper) ReceiveIssueEvent(event sql.IssueEvent) []Point 
 	return append(points, o.plugin.ReceiveIssueEvent(event)...)
 }
 
+// ReceiveComment is a wrapper on plugin.ReceiveComment()
 func (o *FakeOpenPluginWrapper) ReceiveComment(comment sql.Comment) []Point {
 	return o.plugin.ReceiveComment(comment)
 }

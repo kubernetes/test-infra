@@ -23,6 +23,7 @@ import (
 	"k8s.io/test-infra/velodrome/sql"
 )
 
+// CommentCounterPlugin counts comments
 type CommentCounterPlugin struct {
 	matcher []*regexp.Regexp
 	pattern []string
@@ -30,10 +31,12 @@ type CommentCounterPlugin struct {
 
 var _ Plugin = &CommentCounterPlugin{}
 
+// AddFlags adds "comments" <comments> to the command help
 func (c *CommentCounterPlugin) AddFlags(cmd *cobra.Command) {
 	cmd.Flags().StringSliceVar(&c.pattern, "comments", []string{}, "Regexps to match comments")
 }
 
+// CheckFlags looks for comments matching regexes
 func (c *CommentCounterPlugin) CheckFlags() error {
 	for _, pattern := range c.pattern {
 		matcher, err := regexp.Compile(pattern)
@@ -45,14 +48,17 @@ func (c *CommentCounterPlugin) CheckFlags() error {
 	return nil
 }
 
+// ReceiveIssue is needed to implement a Plugin
 func (CommentCounterPlugin) ReceiveIssue(issue sql.Issue) []Point {
 	return nil
 }
 
+// ReceiveIssueEvent is needed to implement a Plugin
 func (CommentCounterPlugin) ReceiveIssueEvent(event sql.IssueEvent) []Point {
 	return nil
 }
 
+// ReceiveComment adds matching comments to InfluxDB
 func (c *CommentCounterPlugin) ReceiveComment(comment sql.Comment) []Point {
 	points := []Point{}
 	for _, matcher := range c.matcher {
