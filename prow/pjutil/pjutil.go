@@ -18,6 +18,8 @@ limitations under the License.
 package pjutil
 
 import (
+	"strconv"
+
 	"github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -27,14 +29,36 @@ import (
 	"k8s.io/test-infra/prow/kube"
 )
 
+const (
+	jobNameLabel = "prow.k8s.io/job"
+	jobTypeLabel = "prow.k8s.io/type"
+	orgLabel     = "prow.k8s.io/refs.org"
+	repoLabel    = "prow.k8s.io/refs.repo"
+	pullLabel    = "prow.k8s.io/refs.pull"
+)
+
 // NewProwJob initializes a ProwJob out of a ProwJobSpec.
 func NewProwJob(spec kube.ProwJobSpec, labels map[string]string) kube.ProwJob {
+	allLabels := map[string]string{
+		jobNameLabel: spec.Job,
+		jobTypeLabel: string(spec.Type),
+	}
+	if spec.Type != kube.PeriodicJob {
+		allLabels[orgLabel] = spec.Refs.Org
+		allLabels[repoLabel] = spec.Refs.Repo
+		if len(spec.Refs.Pulls) > 0 {
+			allLabels[pullLabel] = strconv.Itoa(spec.Refs.Pulls[0].Number)
+		}
+	}
+	for key, value := range labels {
+		allLabels[key] = value
+	}
 	return kube.ProwJob{
 		APIVersion: "prow.k8s.io/v1",
 		Kind:       "ProwJob",
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   uuid.NewV1().String(),
-			Labels: labels,
+			Labels: allLabels,
 		},
 		Spec: spec,
 		Status: kube.ProwJobStatus{

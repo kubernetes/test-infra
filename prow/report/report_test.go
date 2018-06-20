@@ -250,8 +250,18 @@ func createChildren(pj *kube.ProwJobSpec, d int) {
 	for i := 0; i < d; i++ {
 		npj := &kube.ProwJobSpec{
 			// TODO: Support testing this via defining expected behavior in TestReportStatus
+			Type:    kube.PresubmitJob,
 			Report:  true,
 			Context: fmt.Sprintf("%s/child_%d", pj.Context, i),
+			Refs: &kube.Refs{
+				Org:  "k8s",
+				Repo: "test-infra",
+				Pulls: []kube.Pull{{
+					Author: "me",
+					Number: 1,
+					SHA:    "abcdef",
+				}},
+			},
 		}
 		pj.RunAfterSuccess = append(pj.RunAfterSuccess, *npj)
 	}
@@ -322,6 +332,8 @@ func TestReportStatus(t *testing.T) {
 				URL:         "http://mytest.com",
 			},
 			Spec: kube.ProwJobSpec{
+				Job:     "job-name",
+				Type:    kube.PresubmitJob,
 				Context: "parent",
 				Report:  report,
 				Refs: &kube.Refs{

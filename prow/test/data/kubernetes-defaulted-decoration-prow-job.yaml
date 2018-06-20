@@ -2,7 +2,13 @@ apiVersion: prow.k8s.io/v1
 kind: ProwJob
 metadata:
   creationTimestamp: null
-  name: d41f5d35-4fe1-11e8-8152-54ee753e2644
+  labels:
+    prow.k8s.io/job: kubernetes-defaulted-decoration
+    prow.k8s.io/refs.org: test-org
+    prow.k8s.io/refs.pull: "1"
+    prow.k8s.io/refs.repo: test-repo
+    prow.k8s.io/type: presubmit
+  name: 2cfe71bd-8170-11e8-a121-54ee753e2644
 spec:
   agent: kubernetes
   cluster: default
@@ -43,5 +49,5 @@ spec:
   rerun_command: /test kubernetes-defaulted-decoration
   type: presubmit
 status:
-  startTime: 2018-05-04T21:26:37Z
+  startTime: 2018-07-06T22:59:02Z
   state: triggered
