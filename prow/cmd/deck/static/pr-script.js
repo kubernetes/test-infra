@@ -1,6 +1,44 @@
 'use strict';
 
 /**
+ * A Tide Query helper class that checks whether a pr is covered by the query.
+ */
+class TideQuery {
+    constructor(query) {
+        this.repos = query.repos;
+        this.orgs = query.orgs;
+        this.labels = query.labels;
+        this.missingLabels = query.missingLabels;
+    }
+
+  /**
+   * Returns true if the pr is covered by the query.
+   * @param pr
+   * @returns {boolean}
+   */
+  matchPr(pr) {
+        let isMatched = false;
+        if (this.repos) {
+            isMatched |= this.repos.indexOf(pr.Repository.NameWithOwner) !== -1;
+        } else if (this.orgs) {
+            isMatched |= this.orgs.indexOf(pr.Repository.Owner.Login) !== -1;
+        }
+        return isMatched;
+    }
+
+  /**
+   * Returns labels and missing labels of the query.
+   * @returns {{labels: string[], missingLabels: string[]}}
+   */
+  getQuery() {
+        return {
+            labels: this.labels,
+            missingLabels: this.missingLabels
+        }
+    }
+}
+
+/**
  * Submit the query by redirecting the page with the query and let window.onload
  * sends the request.
  * @param {Element} input query input element
@@ -215,18 +253,11 @@ function createSearchCard() {
  * Loads Pr Status
  */
 function loadPrStatus(prData) {
-    const repoTideQueryMap = new Map();
+    const tideQueries = [];
     for (let query of tideData.TideQueries) {
-        for (let repo of query.repos) {
-            if (!repoTideQueryMap[repo]) {
-                repoTideQueryMap[repo] = [];
-            }
-            repoTideQueryMap[repo].push({
-                labels: query.labels,
-                missingLabels: query.missingLabels
-            });
-        }
+        tideQueries.push(new TideQuery(query));
     }
+
     const container = document.querySelector("#main-container");
     container.appendChild(createSearchCard());
     if (!prData.PullRequests || prData.PullRequests.length === 0) {
@@ -252,8 +283,13 @@ function loadPrStatus(prData) {
                 }
             }
         }
-        container.appendChild(createPRCard(pr, builds,
-            repoTideQueryMap[pr.Repository.NameWithOwner], tideData.Pools));
+        const validQueries = [];
+        for (let query of tideQueries) {
+           if (query.matchPr(pr)) {
+               validQueries.push(query.getQuery());
+           }
+        }
+        container.appendChild(createPRCard(pr, builds, validQueries, tideData.Pools));
     }
 }
 
@@ -892,7 +928,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 });
 
 function configure() {
-    if(typeof branding === undefined){
+    if (!branding){
         return;
     }
     if (branding.logo !== '') {
