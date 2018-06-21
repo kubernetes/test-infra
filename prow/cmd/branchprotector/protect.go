@@ -34,10 +34,11 @@ import (
 )
 
 type options struct {
-	config   string
-	token    string
-	confirm  bool
-	endpoint flagutil.Strings
+	config    string
+	jobConfig string
+	token     string
+	confirm   bool
+	endpoint  flagutil.Strings
 }
 
 func (o *options) Validate() error {
@@ -64,6 +65,7 @@ func gatherOptions() options {
 		endpoint: flagutil.NewStrings("https://api.github.com"),
 	}
 	flag.StringVar(&o.config, "config-path", "", "Path to prow config.yaml")
+	flag.StringVar(&o.jobConfig, "job-config-path", "", "Path to prow job configs.")
 	flag.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
 	flag.Var(&o.endpoint, "github-endpoint", "Github api endpoint, may differ for enterprise")
 	flag.StringVar(&o.token, "github-token-path", "", "Path to github token")
@@ -101,7 +103,7 @@ func main() {
 		logrus.Fatal(err)
 	}
 
-	cfg, err := config.Load(o.config, "")
+	cfg, err := config.Load(o.config, o.jobConfig)
 	if err != nil {
 		logrus.WithError(err).Fatalf("Failed to load --config=%s", o.config)
 	}

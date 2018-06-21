@@ -48,8 +48,9 @@ var (
 	runOnce = flag.Bool("run-once", false, "If true, run only once then quit.")
 	deckURL = flag.String("deck-url", "", "Deck URL for read-only access to the cluster.")
 
-	configPath = flag.String("config-path", "/etc/config/config.yaml", "Path to config.yaml.")
-	cluster    = flag.String("cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
+	configPath    = flag.String("config-path", "/etc/config/config.yaml", "Path to config.yaml.")
+	jobConfigPath = flag.String("job-config-path", "", "Path to prow job configs.")
+	cluster       = flag.String("cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
 
 	githubEndpoint  = flagutil.NewStrings("https://api.github.com")
 	githubTokenFile = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
@@ -66,7 +67,7 @@ func main() {
 	)
 
 	configAgent := &config.Agent{}
-	if err := configAgent.Start(*configPath, ""); err != nil {
+	if err := configAgent.Start(*configPath, *jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
