@@ -19,3 +19,4 @@ prow/plugins.yaml @cblecker
 scenarios/** @bentheelder @krzyzacy
 testgrid/** @krzyzacy @michelle192837
 triage/** @rmmh
+config/** @bentheelder @krzyzacy
