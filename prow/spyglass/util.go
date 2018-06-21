@@ -20,8 +20,6 @@ import (
 	"bufio"
 	"bytes"
 	"strings"
-
-	"github.com/sirupsen/logrus"
 )
 
 // LastNLines reads the last n lines from a file in GCS
@@ -32,14 +30,12 @@ func LastNLines(a Artifact, n int64) string {
 	contents := []string{}
 	artifactSize := a.Size()
 	offset := artifactSize - chunks*chunkSize
-	logrus.Infof("Reading file of size %d starting at offset %d", artifactSize, offset)
 	for int64(len(contents)) < n && offset != 0 {
 		chunkContents := []string{}
 		offset = artifactSize - chunks*chunkSize
 		if offset < 0 {
 			toRead = offset + chunkSize + 1
 			offset = 0
-			logrus.Infof("Reached beginning of file, set offset to %d, reading %d bytes", offset, toRead)
 		}
 		bytesRead := make([]byte, toRead)
 		a.ReadAt(bytesRead, offset)
@@ -54,7 +50,6 @@ func LastNLines(a Artifact, n int64) string {
 	}
 	l := int64(len(contents))
 	if l < n {
-		logrus.Infof("Could not read %d lines, truncating at %d...", n, l)
 		return strings.Join(contents, "\n")
 	}
 	return strings.Join(contents[l-n:], "\n")

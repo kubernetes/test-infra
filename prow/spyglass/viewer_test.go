@@ -21,4 +21,34 @@ import (
 )
 
 func TestBuildLogView(t *testing.T) {
+	buildLogArtifact := NewGCSArtifact(fakeGCSBucket.Object(buildLogName), fakeGCSJobSource.JobPath())
+	buildLogViewer := BuildLogViewer{
+		title: "Build Log",
+	}
+	testCases := []struct {
+		name         string
+		artifacts    []Artifact
+		expectedView string
+	}{
+		{
+			name:      "Basic Build Log View",
+			artifacts: []Artifact{buildLogArtifact},
+			expectedView: `
+<div>
+	<div>
+		Oh wow
+logs
+this is
+crazy
+	</div>
+</div>`,
+		},
+	}
+
+	for _, tc := range testCases {
+		actualView := buildLogViewer.View(tc.artifacts)
+		if actualView != tc.expectedView {
+			t.Errorf("Test %s failed. Expected:\n%s\nActual:\n%s", tc.name, tc.expectedView, actualView)
+		}
+	}
 }

@@ -46,9 +46,6 @@ type Artifact interface {
 	ReadAll() ([]byte, error)
 	ReadTail(n int64) ([]byte, error)
 	Size() int64
-	// TODO functionalities
-	// Read entire file, error if too big
-	// Get last chunk of file
 }
 
 // Lens is a single view of a set of artifacts
@@ -58,7 +55,7 @@ type Lens struct {
 	reMatch  string
 }
 
-// Gets all views of all artifact files matching a regexp with a registered viewer
+// Views gets all views of all artifact files matching each regexp with a registered viewer
 func (s *SpyGlass) Views(artifacts []Artifact) []Lens {
 	lenses := []Lens{}
 	for re, viewer := range s.eyepiece {
@@ -82,7 +79,7 @@ func (s *SpyGlass) Views(artifacts []Artifact) []Lens {
 	return lenses
 }
 
-// Registers new viewers
+// RegisterViewer registers new viewers
 func (s *SpyGlass) RegisterViewer(re string, viewer ArtifactViewer) {
 	_, err := regexp.Compile(re)
 	if err != nil {

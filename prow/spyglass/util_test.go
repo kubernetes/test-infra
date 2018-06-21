@@ -22,14 +22,11 @@ import (
 
 // Tests reading last N Lines from files in GCS
 func TestGCSReadLastNLines(t *testing.T) {
-	buildLogArtifact := GCSArtifact{
-		Handle: fakeGCSBucket.Object("logs/example-ci-run/403/build-log.txt"),
-		path:   "build-log.txt",
-	}
+	buildLogArtifact := NewGCSArtifact(fakeGCSBucket.Object(buildLogName), fakeGCSJobSource.JobPath())
 	testCases := []struct {
 		name     string
 		n        int64
-		a        GCSArtifact
+		a        *GCSArtifact
 		expected string
 	}{
 		{

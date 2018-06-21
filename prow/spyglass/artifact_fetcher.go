@@ -18,9 +18,8 @@ package spyglass
 
 import (
 	"context"
-	"fmt"
 	"log"
-	"strings"
+	"path"
 
 	"cloud.google.com/go/storage"
 	"google.golang.org/api/iterator"
@@ -35,7 +34,6 @@ type ArtifactFetcher interface {
 
 // A fetcher for a GCS client
 type GCSArtifactFetcher struct {
-	ArtifactFetcher
 	client *storage.Client
 }
 
@@ -48,22 +46,42 @@ type JobSource interface {
 
 // A location in GCS where prow job-specific artifacts are stored
 type GCSJobSource struct {
-	JobSource
-	bucket  string
-	jobPath string
+	linkPrefix string
+	bucket     string
+	jobPath    string
 }
 
-// Gets a new ArtifactFetcher with a real GCS Client
-func (af GCSArtifactFetcher) NewFetcher() {
+// NewGCSArtifactFetcher creates a new ArtifactFetcher with a real GCS Client
+func NewGCSArtifactFetcher() *GCSArtifactFetcher {
 	c, err := storage.NewClient(context.Background(), option.WithoutAuthentication())
 	if err != nil {
 		log.Fatal(err)
 	}
-	af.client = c
+	return &GCSArtifactFetcher{
+		client: c,
+	}
 }
 
-// Gets all artifacts from a GCS job source
-func (af GCSArtifactFetcher) Artifacts(src JobSource) []Artifact {
+// NewGCSJobSource creates a new GCSJobSource from a given bucket and jobPath
+func NewGCSJobSource(bucket string, jobPath string) *GCSJobSource {
+	return &GCSJobSource{
+		linkPrefix: "gs://",
+		bucket:     bucket,
+		jobPath:    jobPath,
+	}
+}
+
+// NewGCSJobSource creates a new GCSJobSource from a given bucket, jobPath, and link prefix
+func NewGCSJobSourceWithPrefix(linkPrefix string, bucket string, jobPath string) *GCSJobSource {
+	return &GCSJobSource{
+		linkPrefix: linkPrefix,
+		bucket:     bucket,
+		jobPath:    jobPath,
+	}
+}
+
+// Artifacts gets all artifacts from a GCS job source
+func (af *GCSArtifactFetcher) Artifacts(src JobSource) []Artifact {
 	artifacts := []Artifact{}
 	bkt := af.client.Bucket(src.BucketName())
 	q := storage.Query{
@@ -76,26 +94,23 @@ func (af GCSArtifactFetcher) Artifacts(src JobSource) []Artifact {
 		if err == iterator.Done {
 			break
 		}
-		artifacts = append(artifacts, GCSArtifact{
-			Handle: bkt.Object(oAttrs.Name),
-			link:   oAttrs.MediaLink,
-			path:   strings.TrimPrefix(oAttrs.Name, src.JobPath()),
-		})
+		artifacts = append(artifacts, NewGCSArtifact(bkt.Object(oAttrs.Name), src.JobPath()))
 
 	}
 	return artifacts
 }
 
-// Gets a link to the location of job-specific artifacts in GCS
-func (src GCSJobSource) CanonicalLink() string {
-	return fmt.Sprintf("https://storage.googleapis.com/%s/%s", src.bucket, src.jobPath)
+// CanonicalLink gets a link to the location of job-specific artifacts in GCS
+func (src *GCSJobSource) CanonicalLink() string {
+	return path.Join(src.linkPrefix, src.bucket, src.jobPath)
 }
 
-// Gets the bucket name of the GCS Job Source
-func (src GCSJobSource) BucketName() string {
+// BucketName gets the bucket name of the GCS Job Source
+func (src *GCSJobSource) BucketName() string {
 	return src.bucket
 }
 
-func (src GCSJobSource) JobPath() string {
+// JobPath gets the path in GCS to the job
+func (src *GCSJobSource) JobPath() string {
 	return src.jobPath
 }

@@ -17,7 +17,6 @@ limitations under the License.
 package spyglass
 
 import (
-	"reflect"
 	"testing"
 )
 
@@ -25,28 +24,16 @@ import (
 func TestGCSFetchArtifacts(t *testing.T) {
 	testCases := []struct {
 		name              string
-		gcsJobSource      GCSJobSource
+		gcsJobSource      *GCSJobSource
 		expectedArtifacts []Artifact
 	}{
 		{
-			name: "Fetch Example CI Run #403 Artifacts",
-			gcsJobSource: GCSJobSource{
-				bucket:  "test-bucket",
-				jobPath: "logs/example-ci-run/403/",
-			},
+			name:         "Fetch Example CI Run #403 Artifacts",
+			gcsJobSource: fakeGCSJobSource,
 			expectedArtifacts: []Artifact{
-				GCSArtifact{
-					Handle: fakeGCSBucket.Object("logs/example-ci-run/403/build-log.txt"),
-					path:   "build-log.txt",
-				},
-				GCSArtifact{
-					Handle: fakeGCSBucket.Object("logs/example-ci-run/403/started.json"),
-					path:   "started.json",
-				},
-				GCSArtifact{
-					Handle: fakeGCSBucket.Object("logs/example-ci-run/403/finished.json"),
-					path:   "finished.json",
-				},
+				NewGCSArtifact(fakeGCSBucket.Object(buildLogName), fakeGCSJobSource.JobPath()),
+				NewGCSArtifact(fakeGCSBucket.Object(startedName), fakeGCSJobSource.JobPath()),
+				NewGCSArtifact(fakeGCSBucket.Object(finishedName), fakeGCSJobSource.JobPath()),
 			},
 		},
 	}
@@ -56,7 +43,7 @@ func TestGCSFetchArtifacts(t *testing.T) {
 		for _, ea := range tc.expectedArtifacts {
 			found := false
 			for _, aa := range actualArtifacts {
-				if reflect.DeepEqual(ea, aa) {
+				if ea.CanonicalLink() == aa.CanonicalLink() {
 					found = true
 					break
 				}

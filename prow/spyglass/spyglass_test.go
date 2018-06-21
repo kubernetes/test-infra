@@ -18,27 +18,37 @@ package spyglass
 
 import (
 	"os"
+	"path"
 	"testing"
 
 	"cloud.google.com/go/storage"
 	"github.com/fsouza/fake-gcs-server/fakestorage"
 )
 
-var server *fakestorage.Server
-var fakeGCSClient *storage.Client
-var fakeGCSBucket *storage.BucketHandle
-var testAf *GCSArtifactFetcher
+var (
+	fakeGCSBucket    *storage.BucketHandle
+	testAf           *GCSArtifactFetcher
+	fakeGCSJobSource *GCSJobSource
+	buildLogName     = path.Join(exampleCIJobPath, "build-log.txt")
+	startedName      = path.Join(exampleCIJobPath, "started.json")
+	finishedName     = path.Join(exampleCIJobPath, "finished.json")
+)
+
+const (
+	exampleCIJobPath = "logs/example-ci-run/403"
+	testBucketName   = "test-bucket"
+)
 
 func TestMain(m *testing.M) {
-	server = fakestorage.NewServer([]fakestorage.Object{
+	fakeGCSServer := fakestorage.NewServer([]fakestorage.Object{
 		{
-			BucketName: "test-bucket",
-			Name:       "logs/example-ci-run/403/build-log.txt",
+			BucketName: testBucketName,
+			Name:       path.Join(exampleCIJobPath, "build-log.txt"),
 			Content:    []byte("Oh wow\nlogs\nthis is\ncrazy"),
 		},
 		{
-			BucketName: "test-bucket",
-			Name:       "logs/example-ci-run/403/started.json",
+			BucketName: testBucketName,
+			Name:       path.Join(exampleCIJobPath, "started.json"),
 			Content: []byte(`{
 						  "node": "gke-prow-default-pool-3c8994a8-qfhg", 
 						  "repo-version": "v1.12.0-alpha.0.985+e6f64d0a79243c", 
@@ -54,8 +64,8 @@ func TestMain(m *testing.M) {
 						}`),
 		},
 		{
-			BucketName: "test-bucket",
-			Name:       "logs/example-ci-run/403/finished.json",
+			BucketName: testBucketName,
+			Name:       path.Join(exampleCIJobPath, "finished.json"),
 			Content: []byte(`{
 						  "timestamp": 1528742943, 
 						  "version": "v1.12.0-alpha.0.985+e6f64d0a79243c", 
@@ -75,9 +85,10 @@ func TestMain(m *testing.M) {
 						},`),
 		},
 	})
-	defer server.Stop()
-	fakeGCSClient = server.Client()
-	fakeGCSBucket = fakeGCSClient.Bucket("test-bucket")
+	defer fakeGCSServer.Stop()
+	fakeGCSJobSource = NewGCSJobSourceWithPrefix("localhost:8080", testBucketName, exampleCIJobPath)
+	fakeGCSClient := fakeGCSServer.Client()
+	fakeGCSBucket = fakeGCSClient.Bucket(testBucketName)
 	testAf = &GCSArtifactFetcher{
 		client: fakeGCSClient,
 	}

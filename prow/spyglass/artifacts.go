@@ -19,6 +19,7 @@ package spyglass
 import (
 	"context"
 	"io/ioutil"
+	"strings"
 
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
@@ -26,10 +27,8 @@ import (
 
 // GCSArtifact represents some output of a prow job stored in GCS
 type GCSArtifact struct {
-	Artifact
-
 	// The handle of the object in GCS
-	Handle *storage.ObjectHandle
+	handle *storage.ObjectHandle
 
 	// The direct link to the Artifact, can be used for read operations
 	link string
@@ -38,9 +37,22 @@ type GCSArtifact struct {
 	path string
 }
 
+// NewGCSArtifact returns a new GCSArtifact with a given handle
+func NewGCSArtifact(handle *storage.ObjectHandle, jobPath string) *GCSArtifact {
+	attrs, err := handle.Attrs(context.Background())
+	if err != nil {
+		logrus.Errorf("Failed to create GCSArtifact, could not retrieve attributes from provided handle.")
+	}
+	return &GCSArtifact{
+		handle: handle,
+		link:   attrs.MediaLink,
+		path:   strings.TrimPrefix(attrs.Name, jobPath),
+	}
+}
+
 // Size returns the size of the artifact in GCS
-func (a GCSArtifact) Size() int64 {
-	attrs, err := a.Handle.Attrs(context.Background())
+func (a *GCSArtifact) Size() int64 {
+	attrs, err := a.handle.Attrs(context.Background())
 	if err != nil {
 		logrus.Errorf("Could not retrieve object attributes for artifact %s.\nErr: %s\n", a.path, err)
 	}
@@ -48,27 +60,28 @@ func (a GCSArtifact) Size() int64 {
 }
 
 // JobPath gets the GCS path of the artifact within the current job
-func (a GCSArtifact) JobPath() string {
+func (a *GCSArtifact) JobPath() string {
 	return a.path
 }
 
 // CanonicalLink gets the GCS web address of the artifact
-func (a GCSArtifact) CanonicalLink() string {
+func (a *GCSArtifact) CanonicalLink() string {
 	return a.link
 }
 
 // Read reads len(p) bytes from a file in GCS
-func (a GCSArtifact) ReadAt(p []byte, off int64) (n int, err error) {
-	reader, err := a.Handle.NewRangeReader(context.Background(), off, int64(len(p)))
+func (a *GCSArtifact) ReadAt(p []byte, off int64) (n int, err error) {
+	reader, err := a.handle.NewRangeReader(context.Background(), off, int64(len(p)))
 	if err != nil {
 		logrus.Errorf("There was an error getting a Reader to the desired artifact: %s", err)
 	}
 	return reader.Read(p)
 }
 
+// TODO Throw an error if file is over a certain size
 // ReadAll reads all bytes from a file in GCS
-func (a GCSArtifact) ReadAll() ([]byte, error) {
-	reader, err := a.Handle.NewReader(context.Background())
+func (a *GCSArtifact) ReadAll() ([]byte, error) {
+	reader, err := a.handle.NewReader(context.Background())
 	if err != nil {
 		logrus.Errorf("There was an error getting a Reader to the desired artifact: %s", err)
 	}
@@ -76,9 +89,9 @@ func (a GCSArtifact) ReadAll() ([]byte, error) {
 }
 
 // ReadTail reads the last n bytes from a file in GCS
-func (a GCSArtifact) ReadTail(n int64) ([]byte, error) {
+func (a *GCSArtifact) ReadTail(n int64) ([]byte, error) {
 	offset := a.Size() - n
-	reader, err := a.Handle.NewRangeReader(context.Background(), offset, -1)
+	reader, err := a.handle.NewRangeReader(context.Background(), offset, -1)
 	if err != nil {
 		logrus.Errorf("There was an error getting a Reader to the desired artifact: %s", err)
 	}

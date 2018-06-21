@@ -17,26 +17,24 @@ limitations under the License.
 package spyglass
 
 import (
-	"bufio"
 	"bytes"
 	"html/template"
+
+	"github.com/sirupsen/logrus"
 )
 
 // An artifact viewer for JUnit tests
 type JUnitViewer struct {
-	ArtifactViewer
 	title string
 }
 
 // An artifact viewer for build logs
 type BuildLogViewer struct {
-	ArtifactViewer
 	title string
 }
 
 // An artifact viewer for prow job metadata
 type MetadataViewer struct {
-	ArtifactViewer
 	title string
 }
 
@@ -58,29 +56,28 @@ func (v *MetadataViewer) Title() string {
 // View creates a view for a build log (or multiple build logs)
 func (v *BuildLogViewer) View(artifacts []Artifact) string {
 	logViewTmpl := `
-	<div>
-		{{range .logViews}}
-			<div>
-			.logLines
-			</div>
-		{{end}}
-	</div>
-	`
+<div>
+	{{range .LogViews}}<div>
+		{{.LogLines}}
+	</div>{{end}}
+</div>`
 	var buf bytes.Buffer
-	wr := bufio.NewWriter(&buf)
 	type LogFileView struct {
 		// requestMore string TODO
-		logLines string
+		LogLines string
 	}
 	type BuildLogsView struct {
-		logViews []LogFileView
+		LogViews []LogFileView
 	}
 	var buildLogsView BuildLogsView
 	for _, a := range artifacts {
-		buildLogsView.logViews = append(buildLogsView.logViews, LogFileView{logLines: LastNLines(a, 100)})
+		buildLogsView.LogViews = append(buildLogsView.LogViews, LogFileView{LogLines: LastNLines(a, 100)})
 	}
 	t := template.Must(template.New("BuildLogView").Parse(logViewTmpl))
-	t.Execute(wr, buildLogsView)
+	err := t.Execute(&buf, buildLogsView)
+	if err != nil {
+		logrus.Errorf("Template failed with error: %s", err)
+	}
 	return buf.String()
 }
 

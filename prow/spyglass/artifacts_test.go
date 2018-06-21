@@ -17,16 +17,13 @@ limitations under the License.
 package spyglass
 
 import (
-	"reflect"
+	"bytes"
 	"testing"
 )
 
 // Tests reading all data from files in GCS
 func TestGCSReadAll(t *testing.T) {
-	buildLogArtifact := GCSArtifact{
-		Handle: fakeGCSBucket.Object("logs/example-ci-run/403/build-log.txt"),
-		path:   "build-log.txt",
-	}
+	buildLogArtifact := NewGCSArtifact(fakeGCSBucket.Object(buildLogName), fakeGCSJobSource.JobPath())
 	testCases := []struct {
 		name     string
 		a        Artifact
@@ -43,17 +40,14 @@ func TestGCSReadAll(t *testing.T) {
 		if err != nil {
 			t.Errorf("Test %s failed with err:\n%s", tc.name, err)
 		}
-		if !reflect.DeepEqual(actualBytes, tc.expected) {
+		if !bytes.Equal(actualBytes, tc.expected) {
 			t.Errorf("Test %s failed.\nExpected: %s\nActual: %s", tc.name, tc.expected, actualBytes)
 		}
 	}
 }
 
 func TestGCSSize(t *testing.T) {
-	startedArtifact := GCSArtifact{
-		Handle: fakeGCSBucket.Object("logs/example-ci-run/403/started.json"),
-		path:   "started.json",
-	}
+	startedArtifact := NewGCSArtifact(fakeGCSBucket.Object(startedName), fakeGCSJobSource.JobPath())
 	testCases := []struct {
 		name     string
 		a        Artifact
