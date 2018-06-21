@@ -6009,11 +6009,21 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
-        args:
+      - args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: "true"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.10
+        resources:
+          requests:
+            memory: "6Gi"
   - name: pull-cluster-api-test
     agent: kubernetes
     always_run: true
