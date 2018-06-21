@@ -691,13 +691,13 @@ func parseConfig(c *Config) error {
 		if method != github.MergeMerge &&
 			method != github.MergeRebase &&
 			method != github.MergeSquash {
-			return fmt.Errorf("Merge type %q for %s is not a valid type", method, name)
+			return fmt.Errorf("merge type %q for %s is not a valid type", method, name)
 		}
 	}
 
 	for i, tq := range c.Tide.Queries {
 		if err := tq.Validate(); err != nil {
-			return fmt.Errorf("Tide query (index %d) is invalid: %v.", i, err)
+			return fmt.Errorf("tide query (index %d) is invalid: %v", i, err)
 		}
 	}
 

@@ -378,7 +378,7 @@ func TestTargetUrl(t *testing.T) {
 		{
 			name:        "PR dashboard config and overview config",
 			pr:          &PullRequest{},
-			config:      config.Tide{TargetURL: "tide.com", PRStatusBaseUrl: "pr.status.com"},
+			config:      config.Tide{TargetURL: "tide.com", PRStatusBaseURL: "pr.status.com"},
 			expectedURL: "tide.com",
 		},
 		{
@@ -396,7 +396,7 @@ func TestTargetUrl(t *testing.T) {
 				}{NameWithOwner: githubql.String("org/repo")},
 				HeadRefName: "head",
 			},
-			config:      config.Tide{PRStatusBaseUrl: "pr.status.com"},
+			config:      config.Tide{PRStatusBaseURL: "pr.status.com"},
 			expectedURL: "pr.status.com?query=is%3Apr+repo%3Aorg%2Frepo+author%3Aauthor+head%3Ahead",
 		},
 	}
