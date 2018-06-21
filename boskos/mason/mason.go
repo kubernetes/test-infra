@@ -157,11 +157,11 @@ func ValidateConfig(configs []common.ResourcesConfig, resources []common.Resourc
 }
 
 // NewMason creates and initialized a new Mason object
-// In: rtypes       - A list of resource types to act on
-//     channelSize  - Size for all the channel
-//     cleanerCount - Number of cleaning threads
-//     client       - boskos client
-//     boskosWaitPeriod    - time to wait before a retry
+// In: rtypes            - A list of resource types to act on
+//     cleanerCount      - Number of cleaning threads
+//     client            - boskos client
+//     waitPeriod        - time to wait before a new boskos operation (acquire mostly)
+//     syncPeriod        - time to wait before syncing resource information to boskos
 // Out: A Pointer to a Mason Object
 func NewMason(cleanerCount int, client boskosClient, waitPeriod, syncPeriod time.Duration) *Mason {
 	return &Mason{
