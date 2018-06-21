@@ -11818,6 +11818,132 @@ periodics:
       - "--timeout=340"
       - "--repo=k8s.io/kubernetes=release-1.11"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
+      env:
+      - name: KUBE_CUSTOM_NETD_YAML
+        value:  |2+
+    kind: ClusterRole
+    apiVersion: rbac.authorization.k8s.io/v1
+    metadata:
+      name: netd
+      namespace: kube-system
+      labels:
+        kubernetes.io/cluster-service: "true"
+        addonmanager.kubernetes.io/mode: EnsureExists
+    rules:
+    - apiGroups: [""]
+      resources: ["nodes"]
+      verbs: ["get"]
+    ---
+    kind: ServiceAccount
+    apiVersion: v1
+    metadata:
+      name: netd
+      namespace: kube-system
+      labels:
+        kubernetes.io/cluster-service: "true"
+        addonmanager.kubernetes.io/mode: EnsureExists
+    ---
+    kind: ClusterRoleBinding
+    apiVersion: rbac.authorization.k8s.io/v1
+    metadata:
+      name: netd
+      labels:
+        kubernetes.io/cluster-service: "true"
+        addonmanager.kubernetes.io/mode: EnsureExists
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: ClusterRole
+      name: netd
+    subjects:
+    - kind: ServiceAccount
+      name: netd
+      namespace: kube-system
+    ---
+    kind: ConfigMap
+    apiVersion: v1
+    metadata:
+      name: netd-cni-config
+      namespace: kube-system
+      labels:
+        addonmanager.kubernetes.io/mode: EnsureExists
+    data:
+      cni_network_config: |-
+        {
+          "name": "k8s-pod-network",
+          "cniVersion": "0.3.1",
+          "plugins": [
+            {
+              "type": "ptp",
+              "mtu": 1460,
+              "ipam": {
+                  "type": "host-local",
+                  "ranges": [
+                    [
+                      {
+                        "subnet": "%s"
+                      }
+                    ]
+                  ],
+                  "routes": [
+                    {"dst": "0.0.0.0/0"}
+                  ]
+              }
+            },
+            {
+              "type": "portmap",
+              "capabilities": {
+                "portMappings": true
+              },
+              "noSnat": true
+            }
+          ]
+        }
+    ---
+    kind: DaemonSet
+    apiVersion: extensions/v1beta1
+    metadata:
+      name: netd
+      namespace: kube-system
+      labels:
+        k8s-app: netd
+        addonmanager.kubernetes.io/mode: EnsureExists
+    spec:
+      selector:
+        matchLabels:
+          k8s-app: netd
+      template:
+        metadata:
+          labels:
+            k8s-app: netd
+        spec:
+          priorityClassName: system-node-critical
+          serviceAccountName: netd
+          terminationGracePeriodSeconds: 0
+          nodeSelector:
+            beta.kubernetes.io/kube-netd-ready: "true"
+          hostNetwork: true
+          containers:
+          - image: gcr.io/google-containers/netd-amd64:0.1
+            name: netd
+            securityContext:
+              privileged: true
+            env:
+              - name: NETD_CNI_CONFIG_PATH
+                value: "/host/etc/cni/net.d/10-k8s-ptp.conflist"
+              - name: NETD_CNI_NETWORK_CONFIG_TEMPLATE
+                valueFrom:
+                  configMapKeyRef:
+                    name: netd-cni-config
+                    key: cni_network_config
+            args:
+            - -logtostderr
+            volumeMounts:
+            - mountPath: /host/etc/cni/net.d
+              name: cni-net-dir
+          volumes:
+          - name: cni-net-dir
+            hostPath:
+              path: /etc/cni/net.d
 
 - interval: 30m
   agent: kubernetes
