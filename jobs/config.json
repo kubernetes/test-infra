@@ -12365,7 +12365,7 @@
       "--env=TAG=0.8.0",
       "--extract=ci/latest",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-node-image=ubuntu",
+      "--gcp-node-image=gci",
       "--gcp-project-type=istio-project",
       "--gcp-zone=us-central1-f",
       "--gke-command-group=alpha",
