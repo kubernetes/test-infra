@@ -5999,6 +5999,21 @@ presubmits:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+  - name: pull-cluster-api-make
+    agent: kubernetes
+    always_run: true
+    context: pull-cluster-api-make
+    rerun_command: "/test pull-cluster-api-make"
+    trigger: "/test( all| pull-cluster-api-make)"
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+        args:
+        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
   - name: pull-cluster-api-test
     agent: kubernetes
     always_run: true

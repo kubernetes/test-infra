@@ -12629,6 +12629,15 @@
       "sig-cluster-lifecycle"
     ]
   },
+  "pull-cluster-api-make": {
+    "args": [
+      "./scripts/ci-make.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
   "pull-cluster-api-test": {
     "args": [
       "./scripts/ci-test.sh"
