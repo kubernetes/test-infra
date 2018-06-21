@@ -28,6 +28,7 @@ import (
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 
+	"github.com/ghodss/yaml"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -67,61 +68,111 @@ func TestOptions(t *testing.T) {
 			name: "maximal delta",
 			args: []string{"--config-path=foo", "--github-token-path=bar", "--maximum-removal-delta=1"},
 			expected: &options{
-				config:       "foo",
-				token:        "bar",
-				endpoint:     flagutil.NewStrings(defaultEndpoint),
-				minAdmins:    defaultMinAdmins,
-				requireSelf:  true,
-				maximumDelta: 1,
+				config:        "foo",
+				token:         "bar",
+				endpoint:      flagutil.NewStrings(defaultEndpoint),
+				minAdmins:     defaultMinAdmins,
+				requireSelf:   true,
+				maximumDelta:  1,
+				tokensPerHour: defaultTokens,
+				tokenBurst:    defaultBurst,
 			},
 		},
 		{
 			name: "minimal delta",
 			args: []string{"--config-path=foo", "--github-token-path=bar", "--maximum-removal-delta=0"},
 			expected: &options{
-				config:       "foo",
-				token:        "bar",
-				endpoint:     flagutil.NewStrings(defaultEndpoint),
-				minAdmins:    defaultMinAdmins,
-				requireSelf:  true,
-				maximumDelta: 0,
+				config:        "foo",
+				token:         "bar",
+				endpoint:      flagutil.NewStrings(defaultEndpoint),
+				minAdmins:     defaultMinAdmins,
+				requireSelf:   true,
+				maximumDelta:  0,
+				tokensPerHour: defaultTokens,
+				tokenBurst:    defaultBurst,
 			},
 		},
 		{
 			name: "minimal admins",
 			args: []string{"--config-path=foo", "--github-token-path=bar", "--min-admins=2"},
 			expected: &options{
-				config:       "foo",
-				token:        "bar",
-				endpoint:     flagutil.NewStrings(defaultEndpoint),
-				minAdmins:    2,
-				requireSelf:  true,
-				maximumDelta: defaultDelta,
+				config:        "foo",
+				token:         "bar",
+				endpoint:      flagutil.NewStrings(defaultEndpoint),
+				minAdmins:     2,
+				requireSelf:   true,
+				maximumDelta:  defaultDelta,
+				tokensPerHour: defaultTokens,
+				tokenBurst:    defaultBurst,
+			},
+		},
+		{
+			name: "reject burst > tokens",
+			args: []string{"--config-path=foo", "--github-token-path=bar", "--tokens=10", "--token-burst=11"},
+		},
+		{
+			name: "reject dump and confirm",
+			args: []string{"--github-token-path=bar", "--confirm", "--dump=frogger"},
+		},
+		{
+			name: "reject dump and config-path",
+			args: []string{"--github-token-path=bar", "--config-path=foo", "--dump=frogger"},
+		},
+		{
+			name: "allow disabled throttle",
+			args: []string{"--config-path=foo", "--github-token-path=bar", "--tokens=0"},
+			expected: &options{
+				config:        "foo",
+				token:         "bar",
+				endpoint:      flagutil.NewStrings(defaultEndpoint),
+				minAdmins:     defaultMinAdmins,
+				requireSelf:   true,
+				maximumDelta:  defaultDelta,
+				tokensPerHour: 0,
+				tokenBurst:    defaultBurst,
+			},
+		},
+		{
+			name: "allow dump without config",
+			args: []string{"--github-token-path=bar", "--dump=frogger"},
+			expected: &options{
+				token:         "bar",
+				endpoint:      flagutil.NewStrings(defaultEndpoint),
+				minAdmins:     defaultMinAdmins,
+				requireSelf:   true,
+				maximumDelta:  defaultDelta,
+				tokensPerHour: defaultTokens,
+				tokenBurst:    defaultBurst,
+				dump:          "frogger",
 			},
 		},
 		{
 			name: "minimal",
 			args: []string{"--config-path=foo", "--github-token-path=bar"},
 			expected: &options{
-				config:       "foo",
-				token:        "bar",
-				endpoint:     flagutil.NewStrings(defaultEndpoint),
-				minAdmins:    defaultMinAdmins,
-				requireSelf:  true,
-				maximumDelta: defaultDelta,
+				config:        "foo",
+				token:         "bar",
+				endpoint:      flagutil.NewStrings(defaultEndpoint),
+				minAdmins:     defaultMinAdmins,
+				requireSelf:   true,
+				maximumDelta:  defaultDelta,
+				tokensPerHour: defaultTokens,
+				tokenBurst:    defaultBurst,
 			},
 		},
 		{
 			name: "full",
-			args: []string{"--config-path=foo", "--github-token-path=bar", "--github-endpoint=weird://url", "--confirm=true", "--require-self=false"},
+			args: []string{"--config-path=foo", "--github-token-path=bar", "--github-endpoint=weird://url", "--confirm=true", "--require-self=false", "--tokens=5", "--token-burst=2", "--dump="},
 			expected: &options{
-				config:       "foo",
-				token:        "bar",
-				endpoint:     weirdFlags,
-				confirm:      true,
-				requireSelf:  false,
-				minAdmins:    defaultMinAdmins,
-				maximumDelta: defaultDelta,
+				config:        "foo",
+				token:         "bar",
+				endpoint:      weirdFlags,
+				confirm:       true,
+				requireSelf:   false,
+				minAdmins:     defaultMinAdmins,
+				maximumDelta:  defaultDelta,
+				tokensPerHour: 5,
+				tokenBurst:    2,
 			},
 		},
 	}
@@ -1456,5 +1507,246 @@ func TestConfigureOrgMeta(t *testing.T) {
 				t.Errorf("current %#v != expected %#v", fc.current, tc.expected)
 			}
 		})
+	}
+}
+
+func TestDumpOrgConfig(t *testing.T) {
+	empty := ""
+	hello := "Hello"
+	details := "wise and brilliant exemplary human specimens"
+	yes := true
+	no := false
+	perm := org.Write
+	pub := org.Privacy("")
+	cases := []struct {
+		name        string
+		orgOverride string
+		meta        github.Organization
+		members     []string
+		admins      []string
+		teams       []github.Team
+		teamMembers map[int][]string
+		maintainers map[int][]string
+		expected    org.Config
+		err         bool
+	}{
+		{
+			name:        "fails if GetOrg fails",
+			orgOverride: "fail",
+			err:         true,
+		},
+		{
+			name:    "fails if ListOrgMembers fails",
+			err:     true,
+			members: []string{"hello", "fail"},
+		},
+		{
+			name: "fails if ListTeams fails",
+			err:  true,
+			teams: []github.Team{
+				{
+					Name: "fail",
+					ID:   3,
+				},
+			},
+		},
+		{
+			name: "fails if ListTeamMembersFails",
+			err:  true,
+			teams: []github.Team{
+				{
+					Name: "fred",
+					ID:   -1,
+				},
+			},
+		},
+		{
+			name: "basically works",
+			meta: github.Organization{
+				Name: hello,
+				MembersCanCreateRepositories: yes,
+				DefaultRepositoryPermission:  string(perm),
+			},
+			members: []string{"george", "jungle"},
+			admins:  []string{"james", "giant", "peach"},
+			teams: []github.Team{
+				{
+					ID:          5,
+					Name:        "friends",
+					Description: details,
+				},
+				{
+					ID:   6,
+					Name: "enemies",
+				},
+			},
+			teamMembers: map[int][]string{
+				5: {"george", "james"},
+				6: {"george"},
+			},
+			maintainers: map[int][]string{
+				5: {},
+				6: {"giant", "jungle"},
+			},
+			expected: org.Config{
+				Metadata: org.Metadata{
+					Name:                         &hello,
+					BillingEmail:                 &empty,
+					Company:                      &empty,
+					Email:                        &empty,
+					Description:                  &empty,
+					Location:                     &empty,
+					HasOrganizationProjects:      &no,
+					HasRepositoryProjects:        &no,
+					DefaultRepositoryPermission:  &perm,
+					MembersCanCreateRepositories: &yes,
+				},
+				Teams: map[string]org.Team{
+					"friends": {
+						TeamMetadata: org.TeamMetadata{
+							Description: &details,
+							Privacy:     &pub,
+						},
+						Members:     []string{"george", "james"},
+						Maintainers: []string{},
+					},
+					"enemies": {
+						TeamMetadata: org.TeamMetadata{
+							Description: &empty,
+							Privacy:     &pub,
+						},
+						Members:     []string{"george"},
+						Maintainers: []string{"giant", "jungle"},
+					},
+				},
+				Members: []string{"george", "jungle"},
+				Admins:  []string{"james", "giant", "peach"},
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			orgName := "random-org"
+			if tc.orgOverride != "" {
+				orgName = tc.orgOverride
+			}
+			fc := fakeDumpClient{
+				name:        orgName,
+				members:     tc.members,
+				admins:      tc.admins,
+				meta:        tc.meta,
+				teams:       tc.teams,
+				teamMembers: tc.teamMembers,
+				maintainers: tc.maintainers,
+			}
+			actual, err := dumpOrgConfig(fc, orgName)
+			switch {
+			case err != nil:
+				if !tc.err {
+					t.Errorf("unexpected error: %v", err)
+				}
+			case tc.err:
+				t.Errorf("failed to receive error")
+			default:
+				fixup(actual)
+				fixup(&tc.expected)
+				if !reflect.DeepEqual(actual, &tc.expected) {
+					a, _ := yaml.Marshal(*actual)
+					e, _ := yaml.Marshal(tc.expected)
+					t.Errorf("actual:\n%s != expected:\n%s", string(a), string(e))
+				}
+
+			}
+		})
+	}
+}
+
+type fakeDumpClient struct {
+	name        string
+	members     []string
+	admins      []string
+	meta        github.Organization
+	teams       []github.Team
+	teamMembers map[int][]string
+	maintainers map[int][]string
+}
+
+func (c fakeDumpClient) GetOrg(name string) (*github.Organization, error) {
+	if name != c.name {
+		return nil, errors.New("bad name")
+	}
+	if name == "fail" {
+		return nil, errors.New("injected GetOrg error")
+	}
+	return &c.meta, nil
+}
+
+func (c fakeDumpClient) makeMembers(people []string) ([]github.TeamMember, error) {
+	var ret []github.TeamMember
+	for _, p := range people {
+		if p == "fail" {
+			return nil, errors.New("injected makeMembers error")
+		}
+		ret = append(ret, github.TeamMember{Login: p})
+	}
+	return ret, nil
+}
+
+func (c fakeDumpClient) ListOrgMembers(name, role string) ([]github.TeamMember, error) {
+	switch {
+	case name != c.name:
+		return nil, fmt.Errorf("bad org: %s", name)
+	case role == github.RoleAdmin:
+		return c.makeMembers(c.admins)
+	case role == github.RoleMember:
+		return c.makeMembers(c.members)
+	}
+	return nil, fmt.Errorf("bad role: %s", role)
+}
+
+func (c fakeDumpClient) ListTeams(name string) ([]github.Team, error) {
+	if name != c.name {
+		return nil, fmt.Errorf("bad org: %s", name)
+	}
+
+	for _, t := range c.teams {
+		if t.Name == "fail" {
+			return nil, errors.New("injected ListTeams error")
+		}
+	}
+	return c.teams, nil
+}
+
+func (c fakeDumpClient) ListTeamMembers(id int, role string) ([]github.TeamMember, error) {
+	var mapping map[int][]string
+	switch {
+	case id < 0:
+		return nil, errors.New("injected ListTeamMembers error")
+	case role == github.RoleMaintainer:
+		mapping = c.maintainers
+	case role == github.RoleMember:
+		mapping = c.teamMembers
+	default:
+		return nil, fmt.Errorf("bad role: %s", role)
+	}
+	people, ok := mapping[id]
+	if !ok {
+		return nil, fmt.Errorf("team does not exist: %d", id)
+	}
+	return c.makeMembers(people)
+}
+
+func fixup(ret *org.Config) {
+	if ret == nil {
+		return
+	}
+	sort.Strings(ret.Members)
+	sort.Strings(ret.Admins)
+	for name, team := range ret.Teams {
+		sort.Strings(team.Members)
+		sort.Strings(team.Maintainers)
+		sort.Strings(team.Previously)
+		ret.Teams[name] = team
 	}
 }

@@ -31,6 +31,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/logrusutil"
 
+	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
@@ -39,11 +40,14 @@ const (
 	defaultEndpoint  = "https://api.github.com"
 	defaultMinAdmins = 5
 	defaultDelta     = 0.25
+	defaultTokens    = 300
+	defaultBurst     = 100
 )
 
 type options struct {
 	config         string
 	jobConfig      string
+	dump           string
 	token          string
 	confirm        bool
 	minAdmins      int
@@ -51,6 +55,8 @@ type options struct {
 	requireSelf    bool
 	maximumDelta   float64
 	endpoint       flagutil.Strings
+	tokensPerHour  int
+	tokenBurst     int
 }
 
 func parseOptions() options {
@@ -73,15 +79,17 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 	flags.StringVar(&o.jobConfig, "job-config-path", "", "Path to prow job configs.")
 	flags.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
 	flags.StringVar(&o.token, "github-token-path", "", "Path to github token")
+	flags.IntVar(&o.tokensPerHour, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
+	flags.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst")
+	flags.StringVar(&o.dump, "dump", "", "Output current config of this org if set")
 	if err := flags.Parse(args); err != nil {
 		return err
 	}
-	if o.config == "" {
-		return errors.New("empty --config")
-	}
-
 	if o.token == "" {
 		return errors.New("empty --github-token-path")
+	}
+	if o.tokensPerHour > 0 && o.tokenBurst >= o.tokensPerHour {
+		return fmt.Errorf("--tokens=%d must exceed --token-burst=%d", o.tokensPerHour, o.tokenBurst)
 	}
 
 	for _, ep := range o.endpoint.Strings() {
@@ -97,6 +105,16 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 		return fmt.Errorf("--maximum-removal-delta=%f must be a non-negative number less than 1.0", o.maximumDelta)
 	}
 
+	if o.confirm && o.dump != "" {
+		return fmt.Errorf("--confirm cannot be used with --dump=%s", o.dump)
+	}
+	if o.config == "" && o.dump == "" {
+		return errors.New("--config or --dump required")
+	}
+	if o.config != "" && o.dump != "" {
+		return fmt.Errorf("--config-path=%s and --dump=%s cannot both be set", o.config, o.dump)
+	}
+
 	return nil
 }
 
@@ -105,15 +123,6 @@ func main() {
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "peribolos"}),
 	)
 	o := parseOptions()
-
-	if o.config != "TODO(fejta): implement me" {
-		logrus.Fatalf("This program is not yet implemented") // still true
-	}
-
-	cfg, err := config.Load(o.config, o.jobConfig)
-	if err != nil {
-		logrus.Fatalf("Failed to load --config=%s: %v", o.config, err)
-	}
 
 	b, err := ioutil.ReadFile(o.token)
 	if err != nil {
@@ -127,13 +136,118 @@ func main() {
 	} else {
 		c = github.NewDryRunClient(tok, o.endpoint.Strings()...)
 	}
-	c.Throttle(300, 100) // 300 hourly tokens, bursts of 100
+	if o.tokensPerHour > 0 {
+		c.Throttle(o.tokensPerHour, o.tokenBurst) // 300 hourly tokens, bursts of 100 (default)
+	}
+
+	if o.dump != "" {
+		ret, err := dumpOrgConfig(c, o.dump)
+		if err != nil {
+			logrus.WithError(err).Fatalf("Dump %s failed to collect current data.", o.dump)
+		}
+		out, err := yaml.Marshal(ret)
+		if err != nil {
+			logrus.WithError(err).Fatalf("Dump %s failed to marshal output.", o.dump)
+		}
+		logrus.Info("Dumping orgs[\"%s\"]:", o.dump)
+		fmt.Println(string(out))
+		return
+	}
+
+	if o.config != "TODO(fejta): implement me" {
+		logrus.Fatalf("This program is not yet implemented") // still true
+	}
+
+	cfg, err := config.Load(o.config, o.jobConfig)
+	if err != nil {
+		logrus.Fatalf("Failed to load --config=%s: %v", o.config, err)
+	}
 
 	for name, orgcfg := range cfg.Orgs {
 		if err := configureOrg(o, c, name, orgcfg); err != nil {
 			logrus.Fatalf("Configuration failed: %v", err)
 		}
 	}
+}
+
+type dumpClient interface {
+	GetOrg(name string) (*github.Organization, error)
+	ListOrgMembers(org, role string) ([]github.TeamMember, error)
+	ListTeams(org string) ([]github.Team, error)
+	ListTeamMembers(id int, role string) ([]github.TeamMember, error)
+}
+
+func dumpOrgConfig(client dumpClient, orgName string) (*org.Config, error) {
+	out := org.Config{
+		Members: []string{},
+		Admins:  []string{},
+	}
+	meta, err := client.GetOrg(orgName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get org: %v", err)
+	}
+	out.Metadata.BillingEmail = &meta.BillingEmail
+	out.Metadata.Company = &meta.Company
+	out.Metadata.Email = &meta.Email
+	out.Metadata.Name = &meta.Name
+	out.Metadata.Description = &meta.Description
+	out.Metadata.Location = &meta.Location
+	out.Metadata.HasOrganizationProjects = &meta.HasOrganizationProjects
+	out.Metadata.HasRepositoryProjects = &meta.HasRepositoryProjects
+	drp := org.RepoPermissionLevel(meta.DefaultRepositoryPermission)
+	out.Metadata.DefaultRepositoryPermission = &drp
+	out.Metadata.MembersCanCreateRepositories = &meta.MembersCanCreateRepositories
+
+	admins, err := client.ListOrgMembers(orgName, github.RoleAdmin)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list org admins: %v", err)
+	}
+	for _, m := range admins {
+		out.Admins = append(out.Admins, m.Login)
+	}
+
+	orgMembers, err := client.ListOrgMembers(orgName, github.RoleMember)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list org members: %v", err)
+	}
+	for _, m := range orgMembers {
+		out.Members = append(out.Members, m.Login)
+	}
+
+	teams, err := client.ListTeams(orgName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list teams: %v", err)
+	}
+
+	out.Teams = make(map[string]org.Team, len(teams))
+	for _, t := range teams {
+		p := org.Privacy(t.Privacy)
+		d := t.Description
+		nt := org.Team{
+			TeamMetadata: org.TeamMetadata{
+				Description: &d,
+				Privacy:     &p,
+			},
+			Maintainers: []string{},
+			Members:     []string{},
+		}
+		maintainers, err := client.ListTeamMembers(t.ID, github.RoleMaintainer)
+		if err != nil {
+			return nil, fmt.Errorf("failed to list team %d(%s) maintainers: %v", t.ID, t.Name, err)
+		}
+		for _, m := range maintainers {
+			nt.Maintainers = append(nt.Maintainers, m.Login)
+		}
+		teamMembers, err := client.ListTeamMembers(t.ID, github.RoleMember)
+		if err != nil {
+			return nil, fmt.Errorf("failed to list team %d(%s) members: %v", t.ID, t.Name, err)
+		}
+		for _, m := range teamMembers {
+			nt.Members = append(nt.Members, m.Login)
+		}
+		out.Teams[t.Name] = nt
+	}
+	return &out, nil
 }
 
 type orgClient interface {
