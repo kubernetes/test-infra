@@ -11820,7 +11820,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
       env:
       - name: KUBE_CUSTOM_NETD_YAML
-        value:  |2+
+        value: |2+
             kind: ClusterRole
             apiVersion: rbac.authorization.k8s.io/v1
             metadata:
