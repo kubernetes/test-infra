@@ -162,10 +162,12 @@ type Periodic struct {
 	interval time.Duration
 }
 
+// SetInterval updates interval, the frequency duration it runs.
 func (p *Periodic) SetInterval(d time.Duration) {
 	p.interval = d
 }
 
+// GetInterval returns interval, the frequency duration it runs.
 func (p *Periodic) GetInterval() time.Duration {
 	return p.interval
 }
@@ -183,10 +185,12 @@ type Brancher struct {
 	reSkip *regexp.Regexp
 }
 
+// RunsAgainstAllBranch returns true if there are both branches and skip_branches are unset
 func (br Brancher) RunsAgainstAllBranch() bool {
 	return len(br.SkipBranches) == 0 && len(br.Branches) == 0
 }
 
+// RunsAgainstBranch returns true if the input branch matches, given the whitelist/blacklist.
 func (br Brancher) RunsAgainstBranch(branch string) bool {
 	if br.RunsAgainstAllBranch() {
 		return true
@@ -202,6 +206,7 @@ func (br Brancher) RunsAgainstBranch(branch string) bool {
 	return false
 }
 
+// RunsAgainstChanges returns true if any of the changed input paths match the run_if_changed regex.
 func (ps Presubmit) RunsAgainstChanges(changes []string) bool {
 	for _, change := range changes {
 		if ps.reChanges.MatchString(change) {
@@ -211,6 +216,9 @@ func (ps Presubmit) RunsAgainstChanges(changes []string) bool {
 	return false
 }
 
+// TriggerMatches returns true if the comment body should trigger this presubmit.
+//
+// This is usually a /test foo string.
 func (ps Presubmit) TriggerMatches(body string) bool {
 	return ps.re.MatchString(body)
 }
@@ -223,6 +231,7 @@ func (ps Presubmit) ContextRequired() bool {
 	return true
 }
 
+// ChangedFilesProvider returns a slice of modified files.
 type ChangedFilesProvider func() ([]string, error)
 
 func matching(j Presubmit, body string, testAll bool) []Presubmit {
@@ -239,6 +248,7 @@ func matching(j Presubmit, body string, testAll bool) []Presubmit {
 	return result
 }
 
+// MatchingPresubmits returns a slice of presubmits to trigger based on the repo and a comment text.
 func (c *Config) MatchingPresubmits(fullRepoName, body string, testAll bool) []Presubmit {
 	var result []Presubmit
 	if jobs, ok := c.Presubmits[fullRepoName]; ok {
@@ -249,6 +259,7 @@ func (c *Config) MatchingPresubmits(fullRepoName, body string, testAll bool) []P
 	return result
 }
 
+// UtilityConfig holds decoration metadata, such as how to clone and additional containers/etc
 type UtilityConfig struct {
 	// Decorate determines if we decorate the PodSpec or not
 	Decorate bool `json:"decorate,omitempty"`
@@ -301,6 +312,7 @@ func (c *Config) GetPresubmit(repo, jobName string) *Presubmit {
 	return nil
 }
 
+// SetPresubmits updates c.Presubmits to jobs, after compiling and validing their regexes.
 func (c *Config) SetPresubmits(jobs map[string][]Presubmit) error {
 	nj := map[string][]Presubmit{}
 	for k, v := range jobs {
@@ -374,7 +386,7 @@ func (c *Config) AllPostsubmits(repos []string) []Postsubmit {
 	return res
 }
 
-// AllPostsubmits returns all prow periodic jobs.
+// AllPeriodics returns all prow periodic jobs.
 func (c *Config) AllPeriodics() []Periodic {
 	var listPeriodic func(ps []Periodic) []Periodic
 	listPeriodic = func(ps []Periodic) []Periodic {

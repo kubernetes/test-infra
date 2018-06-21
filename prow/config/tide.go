@@ -29,8 +29,10 @@ import (
 
 const timeFormatISO8601 = "2006-01-02T15:04:05Z"
 
+// TideQueries is a TideQuery slice.
 type TideQueries []TideQuery
 
+// TideContextPolicy configures options about how to handle various contexts.
 type TideContextPolicy struct {
 	// whether to consider unknown contexts optional (skip) or required.
 	SkipUnknownContexts *bool    `json:"skip-unknown-contexts,omitempty"`
@@ -40,16 +42,19 @@ type TideContextPolicy struct {
 	FromBranchProtection *bool `json:"from-branch-protection,omitempty"`
 }
 
+// TideOrgContextPolicy overrides the policy for an org, and any repo overrides.
 type TideOrgContextPolicy struct {
 	TideContextPolicy
 	Repos map[string]TideRepoContextPolicy `json:"repos,omitempty"`
 }
 
+// TideRepoContextPolicy overrides the policy for repo, and any branch overrides.
 type TideRepoContextPolicy struct {
 	TideContextPolicy
 	Branches map[string]TideContextPolicy `json:"branches,omitempty"`
 }
 
+// TideContextPolicyOptions holds the default policy, and any org overrides.
 type TideContextPolicyOptions struct {
 	TideContextPolicy
 	// Github Orgs
@@ -82,10 +87,10 @@ type Tide struct {
 	// allowing it to be a template.
 	TargetURL string `json:"target_url,omitempty"`
 
-	// PRStatusBaseUrl is the base URL for the PR status page.
+	// PRStatusBaseURL is the base URL for the PR status page.
 	// This is used to link to a merge requirements overview
 	// in the tide status context.
-	PRStatusBaseUrl string `json:"pr_status_base_url,omitempty"`
+	PRStatusBaseURL string `json:"pr_status_base_url,omitempty"`
 
 	// BlockerLabel is an optional label that is used to identify merge blocking
 	// Github issues.
@@ -138,6 +143,7 @@ type TideQuery struct {
 	ReviewApprovedRequired bool `json:"reviewApprovedRequired,omitempty"`
 }
 
+// Query returns the corresponding github search string for the tide query.
 func (tq *TideQuery) Query() string {
 	toks := []string{"is:pr", "state:open"}
 	for _, o := range tq.Orgs {
@@ -188,6 +194,7 @@ func (tqs TideQueries) AllPRsSince(t time.Time) string {
 	return strings.Join(toks, " ")
 }
 
+// OrgsAndRepos returns the set of orgs and repos present in any query.
 func (tqs TideQueries) OrgsAndRepos() (sets.String, sets.String) {
 	orgs := sets.NewString()
 	repos := sets.NewString()
@@ -224,6 +231,13 @@ func (qm QueryMap) ForRepo(org, repo string) TideQueries {
 	return qs
 }
 
+// Validate returns an error if the query has any errors.
+//
+// Examples include:
+// * an org name that is empty or includes a /
+// * repos that are not org/repo
+// * a label that is in both the labels and missing_labels section
+// * a branch that is in both included and excluded branch set.
 func (tq *TideQuery) Validate() error {
 	for o := range tq.Orgs {
 		if strings.Contains(tq.Orgs[o], "/") {
@@ -258,8 +272,9 @@ func (tq *TideQuery) Validate() error {
 	return nil
 }
 
-func (c *TideContextPolicy) Validate() error {
-	inter := sets.NewString(c.RequiredContexts...).Intersection(sets.NewString(c.OptionalContexts...))
+// Validate returns an error if any contexts are both required and optional.
+func (cp *TideContextPolicy) Validate() error {
+	inter := sets.NewString(cp.RequiredContexts...).Intersection(sets.NewString(cp.OptionalContexts...))
 	if inter.Len() > 0 {
 		return fmt.Errorf("contexts %s are defined has required and optional", strings.Join(inter.List(), ", "))
 	}
