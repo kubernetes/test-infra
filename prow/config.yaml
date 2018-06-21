@@ -111,6 +111,10 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        org:
+          restrictions: # only allow admins
+            users: []
+            teams: []
         repo-infra:
           required_status_checks:
             contexts:
@@ -196,6 +200,7 @@ tide:
     - kubernetes/kubernetes-template-project
     - kubernetes/minikube
     - kubernetes/node-problem-detector
+    - kubernetes/org
     - kubernetes/perf-tests
     - kubernetes/repo-infra
     - kubernetes/sig-release
