@@ -44,6 +44,7 @@ spec:
         - --hook-url=http://hook:8888/plugin-help
         - --redirect-http-to=prow.k8s.io
         - --oauth-url=/github-login
+        - --job-config-path=/etc/job-config
         volumeMounts:
         - name: oauth-config
           mountPath: /etc/github
@@ -56,6 +57,9 @@ spec:
           readOnly: true
         - name: config
           mountPath: /etc/config
+          readOnly: true
+        - name: job-config
+          mountPath: /etc/job-config
           readOnly: true
       volumes:
       - name: oauth-config
@@ -71,3 +75,6 @@ spec:
       - name: config
         configMap:
           name: config
+      - name: job-config
+        configMap:
+          name: job-config

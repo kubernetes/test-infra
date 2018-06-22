@@ -32,6 +32,7 @@ spec:
         - --dry-run=false
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
+        - --job-config-path=/etc/job-config
         ports:
           - name: http
             containerPort: 8888
@@ -42,6 +43,9 @@ spec:
         - name: config
           mountPath: /etc/config
           readOnly: true
+        - name: job-config
+          mountPath: /etc/job-config
+          readOnly: true
       volumes:
       - name: oauth
         secret:
@@ -49,3 +53,6 @@ spec:
       - name: config
         configMap:
           name: config
+      - name: job-config
+        configMap:
+          name: job-config
