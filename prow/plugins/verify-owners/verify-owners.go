@@ -161,7 +161,14 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 				Body: resp,
 			})
 		}
+		// Make the review body.
+		s := "s"
+		if len(wrongOwnersFiles) == 1 {
+			s = ""
+		}
+		response := fmt.Sprintf("%d invalid OWNERS file%s", len(wrongOwnersFiles), s)
 		err := ghc.CreateReview(org, repo, pre.Number, github.DraftReview{
+			Body:     plugins.FormatResponseRaw(pre.PullRequest.Body, pre.PullRequest.HTMLURL, pre.PullRequest.User.Login, response),
 			Action:   github.Comment,
 			Comments: comments,
 		})
