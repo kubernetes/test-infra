@@ -8,3 +8,5 @@ reviewers:
 - eparis
 - foxish
 - lavalamp
+labels:
+-approved
