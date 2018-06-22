@@ -2,7 +2,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
-    srcs = ["tide.go"],
+    srcs = [
+        "status.go",
+        "tide.go",
+    ],
     importpath = "k8s.io/test-infra/prow/tide",
     visibility = ["//visibility:public"],
     deps = [
@@ -11,6 +14,7 @@ go_library(
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/pjutil:go_default_library",
+        "//prow/tide/blockers:go_default_library",
         "//vendor/github.com/shurcooL/githubql:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
@@ -26,14 +30,20 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//prow/tide/blockers:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )
 
 go_test(
     name = "go_default_test",
-    srcs = ["tide_test.go"],
+    srcs = [
+        "status_test.go",
+        "tide_test.go",
+    ],
     embed = [":go_default_library"],
     deps = [
         "//prow/config:go_default_library",

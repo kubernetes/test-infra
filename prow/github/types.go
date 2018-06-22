@@ -175,9 +175,10 @@ type PullRequestBranch struct {
 
 // Label describes a GitHub label.
 type Label struct {
-	URL   string `json:"url"`
-	Name  string `json:"name"`
-	Color string `json:"color"`
+	URL         string `json:"url"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Color       string `json:"color"`
 }
 
 // PullRequestFileStatus enumerates the statuses for this webhook payload type.
@@ -536,6 +537,27 @@ type Team struct {
 // TeamMember is a member of an organizational team
 type TeamMember struct {
 	Login string `json:"login"`
+}
+
+const (
+	// List members and admins
+	RoleAll = "all"
+	// User is an admin, or list admins
+	RoleAdmin = "admin"
+	// User is a regular member, or list members
+	RoleMember = "member"
+	// User has a pending invitation to the org
+	StatePending = "pending"
+	// User accepted the invitation, is in the org
+	StateActive = "active"
+)
+
+// OrgMembership specifies the org membership details
+type OrgMembership struct {
+	// admin or member
+	Role string `json:"role"`
+	// pending or active
+	State string `json:"state,omitempty"`
 }
 
 type GenericCommentEventAction string

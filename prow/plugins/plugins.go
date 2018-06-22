@@ -199,6 +199,11 @@ type Blunderbuss struct {
 	// reviews from. Selects reviewers based on file weighting.
 	// This and request_count are mutually exclusive options.
 	FileWeightCount *int `json:"file_weight_count,omitempty"`
+	// ExcludeApprovers controls whether approvers are considered to be
+	// reviewers. By default, approvers are considered as reviewers if
+	// insufficient reviewers are available. If ExcludeApprovers is true,
+	// approvers will never be considered as reviewers.
+	ExcludeApprovers bool `json:"exclude_approvers,omitempty"`
 }
 
 // Owners contains configuration related to handling OWNERS files.
@@ -408,6 +413,8 @@ type MergeWarning struct {
 	Channels []string `json:"channels,omitempty"`
 	// A slack event is published if the user is not part of the WhiteList.
 	WhiteList []string `json:"whitelist,omitempty"`
+	// A slack event is published if the user is not on the branch whitelist
+	BranchWhiteList map[string][]string `json:"branch_whitelist,omitempty"`
 }
 
 // TriggerFor finds the Trigger for a repo, if one exists

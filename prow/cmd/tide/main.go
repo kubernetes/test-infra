@@ -66,7 +66,7 @@ func main() {
 	)
 
 	configAgent := &config.Agent{}
-	if err := configAgent.Start(*configPath); err != nil {
+	if err := configAgent.Start(*configPath, ""); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
@@ -154,7 +154,7 @@ func main() {
 			}
 		}
 	}()
-	logrus.Fatal(server.ListenAndServe())
+	logrus.WithError(server.ListenAndServe()).Warn("Tide HTTP server stopped.")
 }
 
 func sync(c *tide.Controller) {

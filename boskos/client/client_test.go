@@ -82,8 +82,12 @@ func TestAcquire(t *testing.T) {
 		if err == nil {
 			if res.Name != "res" {
 				t.Errorf("Test %v, got resource name %v, expect res", tc.name, res.Name)
-			} else if len(c.resources) != 1 {
-				t.Errorf("Test %v, resource in client: %d, expect 1", tc.name, len(c.resources))
+			} else {
+				resources, _ := c.storage.List()
+				if len(resources) != 1 {
+					t.Errorf("Test %v, resource in client: %d, expect 1", tc.name, len(resources))
+				}
+
 			}
 		}
 	}
@@ -133,7 +137,9 @@ func TestRelease(t *testing.T) {
 		defer ts.Close()
 
 		c := NewClient("user", ts.URL)
-		c.resources = append(c.resources, tc.resources...)
+		for _, r := range tc.resources {
+			c.storage.Add(common.Resource{Name: r})
+		}
 		var err error
 		if tc.res == "" {
 			err = c.ReleaseAll("d")
@@ -144,9 +150,9 @@ func TestRelease(t *testing.T) {
 		if !AreErrorsEqual(err, tc.expectErr) {
 			t.Errorf("Test %v, got err %v, expect %v", tc.name, err, tc.expectErr)
 		}
-
-		if tc.expectErr == nil && len(c.resources) != 0 {
-			t.Errorf("Test %v, resource count %v, expect 0", tc.name, len(c.resources))
+		resources, _ := c.storage.List()
+		if tc.expectErr == nil && len(resources) != 0 {
+			t.Errorf("Test %v, resource count %v, expect 0", tc.name, len(resources))
 		}
 	}
 }
@@ -194,7 +200,10 @@ func TestUpdate(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
 		defer ts.Close()
 		c := NewClient("user", ts.URL)
-		c.resources = append(c.resources, tc.resources...)
+		for _, r := range tc.resources {
+			c.storage.Add(common.Resource{Name: r})
+		}
+
 		var err error
 		if tc.res == "" {
 			err = c.UpdateAll("s")
@@ -219,7 +228,7 @@ func TestReset(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error in reset : %v", err)
 	} else if len(rmap) != 1 {
-		t.Errorf("Resource in returned map: %d, expect 1", len(c.resources))
+		t.Errorf("Resource in returned map: %d, expect 1", len(rmap))
 	} else if rmap["res"] != "user" {
 		t.Errorf("Owner of res: %s, expect user", rmap["res"])
 	}

@@ -467,16 +467,22 @@ func (c *Client) IsMember(org, user string) (bool, error) {
 // user is also a member of this organization then both concealed and public members
 // will be returned.
 //
+// Role options are "all", "admin" and "member"
+//
 // https://developer.github.com/v3/orgs/members/#members-list
-func (c *Client) ListOrgMembers(org string) ([]TeamMember, error) {
-	c.log("ListOrgMembers", org)
+func (c *Client) ListOrgMembers(org, role string) ([]TeamMember, error) {
+	c.log("ListOrgMembers", org, role)
 	if c.fake {
 		return nil, nil
 	}
 	path := fmt.Sprintf("/orgs/%s/members", org)
 	var teamMembers []TeamMember
-	err := c.readPaginatedResults(
+	err := c.readPaginatedResultsWithValues(
 		path,
+		url.Values{
+			"per_page": []string{"100"},
+			"role":     []string{role},
+		},
 		"",
 		func() interface{} {
 			return &[]TeamMember{}
@@ -489,6 +495,41 @@ func (c *Client) ListOrgMembers(org string) ([]TeamMember, error) {
 		return nil, err
 	}
 	return teamMembers, nil
+}
+
+// UpdateOrgMembership invites a user to the org and/or updates their permission level.
+//
+// If the user is not already a member, this will invite them.
+// This will also change the role to/from admin, on either the invitation or membership setting.
+//
+// https://developer.github.com/v3/orgs/members/#add-or-update-organization-membership
+func (c *Client) UpdateOrgMembership(org, user string, admin bool) (*OrgMembership, error) {
+	c.log("UpdateOrgMembership", org, user, admin)
+	om := OrgMembership{}
+	if admin {
+		om.Role = RoleAdmin
+	}
+
+	_, err := c.request(&request{
+		method:      http.MethodPut,
+		path:        fmt.Sprintf("/orgs/%s/memberships/%s", org, user),
+		requestBody: &om,
+		exitCodes:   []int{204},
+	}, &om)
+	return &om, err
+}
+
+// RemoveOrgMembership removes the user from the org.
+//
+// https://developer.github.com/v3/orgs/members/#remove-organization-membership
+func (c *Client) RemoveOrgMembership(org, user string) error {
+	c.log("RemoveOrgMembership", org, user)
+	_, err := c.request(&request{
+		method:    http.MethodDelete,
+		path:      fmt.Sprintf("/orgs/%s/memberships/%s", org, user),
+		exitCodes: []int{204},
+	}, nil)
+	return err
 }
 
 // CreateComment creates a comment on the issue.
@@ -910,35 +951,38 @@ func (c *Client) UpdateBranchProtection(org, repo, branch string, config BranchP
 	return err
 }
 
-// Adds Label label/color to given org/repo
-func (c *Client) AddRepoLabel(org, repo, label, color string) error {
-	c.log("AddRepoLabel", org, repo, label, color)
+// AddRepoLabel adds a defined label given org/repo
+func (c *Client) AddRepoLabel(org, repo, label, description, color string) error {
+	c.log("AddRepoLabel", org, repo, label, description, color)
 	_, err := c.request(&request{
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("/repos/%s/%s/labels", org, repo),
-		requestBody: Label{Name: label, Color: color},
+		accept:      "application/vnd.github.symmetra-preview+json", // allow the description field -- https://developer.github.com/changes/2018-02-22-label-description-search-preview/
+		requestBody: Label{Name: label, Description: description, Color: color},
 		exitCodes:   []int{201},
 	}, nil)
 	return err
 }
 
-// Updates org/repo label to new name and color
-func (c *Client) UpdateRepoLabel(org, repo, label, name, color string) error {
-	c.log("UpdateRepoLabel", org, repo, label, name, color)
+// UpdateRepoLabel updates a org/repo label to new name, description, and color
+func (c *Client) UpdateRepoLabel(org, repo, label, newName, description, color string) error {
+	c.log("UpdateRepoLabel", org, repo, label, newName, color)
 	_, err := c.request(&request{
 		method:      http.MethodPatch,
 		path:        fmt.Sprintf("/repos/%s/%s/labels/%s", org, repo, label),
-		requestBody: Label{Name: name, Color: color},
+		accept:      "application/vnd.github.symmetra-preview+json", // allow the description field -- https://developer.github.com/changes/2018-02-22-label-description-search-preview/
+		requestBody: Label{Name: newName, Description: description, Color: color},
 		exitCodes:   []int{200},
 	}, nil)
 	return err
 }
 
-// Delete label in org/repo
+// DeleteRepoLabel deletes a label in org/repo
 func (c *Client) DeleteRepoLabel(org, repo, label string) error {
 	c.log("DeleteRepoLabel", org, repo, label)
 	_, err := c.request(&request{
 		method:      http.MethodDelete,
+		accept:      "application/vnd.github.symmetra-preview+json", // allow the description field -- https://developer.github.com/changes/2018-02-22-label-description-search-preview/
 		path:        fmt.Sprintf("/repos/%s/%s/labels/%s", org, repo, label),
 		requestBody: Label{Name: label},
 		exitCodes:   []int{204},
@@ -966,7 +1010,7 @@ func (c *Client) getLabels(path string) ([]Label, error) {
 	}
 	err := c.readPaginatedResults(
 		path,
-		"",
+		"application/vnd.github.symmetra-preview+json", // allow the description field -- https://developer.github.com/changes/2018-02-22-label-description-search-preview/
 		func() interface{} {
 			return &[]Label{}
 		},
@@ -1501,9 +1545,42 @@ func (c *Client) Merge(org, repo string, pr int, details MergeDetails) error {
 	return nil
 }
 
-// ListCollaborators gets a list of all users who have access to a repo (and can become assignees
-// or requested reviewers). This includes, org members with access, outside collaborators, and org
-// owners.
+// IsCollaborator returns whether or not the user is a collaborator of the repo.
+// From GitHub's API reference:
+// For organization-owned repositories, the list of collaborators includes
+// outside collaborators, organization members that are direct collaborators,
+// organization members with access through team memberships, organization
+// members with access through default organization permissions, and
+// organization owners.
+// https://developer.github.com/v3/repos/collaborators/
+func (c *Client) IsCollaborator(org, repo, user string) (bool, error) {
+	c.log("IsCollaborator", org, user)
+	if org == user {
+		// Make it possible to run a couple of plugins on personal repos.
+		return true, nil
+	}
+	code, err := c.request(&request{
+		method: http.MethodGet,
+		// This accept header enables the nested teams preview.
+		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
+		accept:    "application/vnd.github.hellcat-preview+json",
+		path:      fmt.Sprintf("/repos/%s/%s/collaborators/%s", org, repo, user),
+		exitCodes: []int{204, 404, 302},
+	}, nil)
+	if err != nil {
+		return false, err
+	}
+	if code == 204 {
+		return true, nil
+	} else if code == 404 {
+		return false, nil
+	}
+	return false, fmt.Errorf("unexpected status: %d", code)
+}
+
+// ListCollaborators gets a list of all users who have access to a repo (and
+// can become assignees or requested reviewers).
+// See 'IsCollaborator' for more details.
 func (c *Client) ListCollaborators(org, repo string) ([]User, error) {
 	c.log("ListCollaborators", org, repo)
 	if c.fake {

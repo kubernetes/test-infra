@@ -148,33 +148,33 @@ func TestGetFiles(t *testing.T) {
 			testName:          "Single Root File PR Approved",
 			filenames:         []string{"kubernetes.go"},
 			currentlyApproved: sets.NewString(rootApprovers.List()[0]),
-			expectedFiles:     []File{ApprovedFile{"", sets.NewString(rootApprovers.List()[0]), "org", "project"}},
+			expectedFiles:     []File{ApprovedFile{"", sets.NewString(rootApprovers.List()[0]), "org", "project", "master"}},
 		},
 		{
 			testName:          "Single File PR in B No One Approved",
 			filenames:         []string{"b/test.go"},
 			currentlyApproved: sets.NewString(),
-			expectedFiles:     []File{UnapprovedFile{"b", "org", "project"}},
+			expectedFiles:     []File{UnapprovedFile{"b", "org", "project", "master"}},
 		},
 		{
 			testName:          "Single File PR in B Fully Approved",
 			filenames:         []string{"b/test.go"},
 			currentlyApproved: bApprovers,
-			expectedFiles:     []File{ApprovedFile{"b", bApprovers, "org", "project"}},
+			expectedFiles:     []File{ApprovedFile{"b", bApprovers, "org", "project", "master"}},
 		},
 		{
 			testName:          "Single Root File PR No One Approved",
 			filenames:         []string{"kubernetes.go"},
 			currentlyApproved: sets.NewString(),
-			expectedFiles:     []File{UnapprovedFile{"", "org", "project"}},
+			expectedFiles:     []File{UnapprovedFile{"", "org", "project", "master"}},
 		},
 		{
 			testName:          "Combo and Other; Neither Approved",
 			filenames:         []string{"a/combo/test.go", "a/d/test.go"},
 			currentlyApproved: sets.NewString(),
 			expectedFiles: []File{
-				UnapprovedFile{"a/combo", "org", "project"},
-				UnapprovedFile{"a/d", "org", "project"},
+				UnapprovedFile{"a/combo", "org", "project", "master"},
+				UnapprovedFile{"a/d", "org", "project", "master"},
 			},
 		},
 		{
@@ -182,8 +182,8 @@ func TestGetFiles(t *testing.T) {
 			filenames:         []string{"a/combo/test.go", "a/d/test.go"},
 			currentlyApproved: eApprovers,
 			expectedFiles: []File{
-				ApprovedFile{"a/combo", eApprovers, "org", "project"},
-				UnapprovedFile{"a/d", "org", "project"},
+				ApprovedFile{"a/combo", eApprovers, "org", "project", "master"},
+				UnapprovedFile{"a/d", "org", "project", "master"},
 			},
 		},
 		{
@@ -191,8 +191,8 @@ func TestGetFiles(t *testing.T) {
 			filenames:         []string{"a/combo/test.go", "a/d/test.go"},
 			currentlyApproved: edcApprovers.Intersection(dApprovers),
 			expectedFiles: []File{
-				ApprovedFile{"a/combo", edcApprovers.Intersection(dApprovers), "org", "project"},
-				ApprovedFile{"a/d", edcApprovers.Intersection(dApprovers), "org", "project"},
+				ApprovedFile{"a/combo", edcApprovers.Intersection(dApprovers), "org", "project", "master"},
+				ApprovedFile{"a/d", edcApprovers.Intersection(dApprovers), "org", "project", "master"},
 			},
 		},
 		{
@@ -200,9 +200,9 @@ func TestGetFiles(t *testing.T) {
 			filenames:         []string{"a/combo/test.go", "a/d/test.go", "c/test"},
 			currentlyApproved: cApprovers,
 			expectedFiles: []File{
-				ApprovedFile{"a/combo", cApprovers, "org", "project"},
-				UnapprovedFile{"a/d", "org", "project"},
-				ApprovedFile{"c", cApprovers, "org", "project"},
+				ApprovedFile{"a/combo", cApprovers, "org", "project", "master"},
+				UnapprovedFile{"a/d", "org", "project", "master"},
+				ApprovedFile{"c", cApprovers, "org", "project", "master"},
 			},
 		},
 		{
@@ -210,8 +210,8 @@ func TestGetFiles(t *testing.T) {
 			filenames:         []string{"a/test.go", "a/d/test.go", "b/test"},
 			currentlyApproved: rootApprovers.Union(aApprovers).Union(bApprovers),
 			expectedFiles: []File{
-				ApprovedFile{"a", rootApprovers.Union(aApprovers), "org", "project"},
-				ApprovedFile{"b", rootApprovers.Union(bApprovers), "org", "project"},
+				ApprovedFile{"a", rootApprovers.Union(aApprovers), "org", "project", "master"},
+				ApprovedFile{"b", rootApprovers.Union(bApprovers), "org", "project", "master"},
 			},
 		},
 	}
@@ -222,7 +222,7 @@ func TestGetFiles(t *testing.T) {
 		for approver := range test.currentlyApproved {
 			testApprovers.AddApprover(approver, "REFERENCE", false)
 		}
-		calculated := testApprovers.GetFiles("org", "project")
+		calculated := testApprovers.GetFiles("org", "project", "master")
 		if !reflect.DeepEqual(test.expectedFiles, calculated) {
 			t.Errorf("Failed for test %v.  Expected files: %v. Found %v", test.testName, test.expectedFiles, calculated)
 		}
@@ -722,14 +722,14 @@ The pull request process is described [here](https://git.k8s.io/community/contri
 <details open>
 Needs approval from an approver in each of these files:
 
-- **[a/OWNERS](https://github.com/org/project/blob/master/a/OWNERS)**
-- ~~[b/OWNERS](https://github.com/org/project/blob/master/b/OWNERS)~~ [Bill]
+- **[a/OWNERS](https://github.com/org/project/blob/dev/a/OWNERS)**
+- ~~[b/OWNERS](https://github.com/org/project/blob/dev/b/OWNERS)~~ [Bill]
 
 Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":["alice"]} -->`
-	if got := GetMessage(ap, "org", "project"); got == nil {
+	if got := GetMessage(ap, "org", "project", "dev"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
 		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
@@ -771,7 +771,7 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":[]} -->`
-	if got := GetMessage(ap, "org", "project"); got == nil {
+	if got := GetMessage(ap, "org", "project", "master"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
 		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
@@ -815,7 +815,7 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":["alice","bill"]} -->`
-	if got := GetMessage(ap, "org", "project"); got == nil {
+	if got := GetMessage(ap, "org", "project", "master"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
 		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
@@ -859,7 +859,7 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":[]} -->`
-	if got := GetMessage(ap, "org", "project"); got == nil {
+	if got := GetMessage(ap, "org", "project", "master"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
 		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
@@ -902,7 +902,7 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":[]} -->`
-	if got := GetMessage(ap, "org", "project"); got == nil {
+	if got := GetMessage(ap, "org", "project", "master"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
 		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)
@@ -947,7 +947,7 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":["alice","doctor"]} -->`
-	if got := GetMessage(ap, "org", "project"); got == nil {
+	if got := GetMessage(ap, "org", "project", "master"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
 		t.Errorf("GetMessage() = %+v, want = %+v", *got, want)

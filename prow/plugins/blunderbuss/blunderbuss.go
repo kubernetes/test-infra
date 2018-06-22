@@ -60,10 +60,33 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		nil
 }
 
-type ownersClient interface {
+type reviewersClient interface {
 	FindReviewersOwnersForFile(path string) string
 	Reviewers(path string) sets.String
 	LeafReviewers(path string) sets.String
+}
+
+type ownersClient interface {
+	reviewersClient
+	FindApproverOwnersForFile(path string) string
+	Approvers(path string) sets.String
+	LeafApprovers(path string) sets.String
+}
+
+type fallbackReviewersClient struct {
+	ownersClient
+}
+
+func (foc fallbackReviewersClient) FindReviewersOwnersForFile(path string) string {
+	return foc.ownersClient.FindApproverOwnersForFile(path)
+}
+
+func (foc fallbackReviewersClient) Reviewers(path string) sets.String {
+	return foc.ownersClient.Approvers(path)
+}
+
+func (foc fallbackReviewersClient) LeafReviewers(path string) sets.String {
+	return foc.ownersClient.LeafApprovers(path)
 }
 
 type githubClient interface {
@@ -87,11 +110,12 @@ func handlePullRequest(pc plugins.PluginClient, pre github.PullRequestEvent) err
 		pc.PluginConfig.Blunderbuss.ReviewerCount,
 		pc.PluginConfig.Blunderbuss.FileWeightCount,
 		pc.PluginConfig.Blunderbuss.MaxReviewerCount,
+		pc.PluginConfig.Blunderbuss.ExcludeApprovers,
 		&pre,
 	)
 }
 
-func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, reviewerCount, oldReviewCount *int, maxReviewers int, pre *github.PullRequestEvent) error {
+func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, reviewerCount, oldReviewCount *int, maxReviewers int, excludeApprovers bool, pre *github.PullRequestEvent) error {
 	changes, err := ghc.GetPullRequestChanges(pre.Repo.Owner.Login, pre.Repo.Name, pre.Number)
 	if err != nil {
 		return fmt.Errorf("error getting PR changes: %v", err)
@@ -107,12 +131,30 @@ func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, reviewerCount,
 			return err
 		}
 		if missing := *reviewerCount - len(reviewers); missing > 0 {
-			log.Warnf("Not enough reviewers found in OWNERS files for files touched by this PR. %d/%d reviewers found.", len(reviewers), reviewerCount)
+			if !excludeApprovers {
+				// Attempt to use approvers as additional reviewers. This must use
+				// reviewerCount instead of missing because owners can be both reviewers
+				// and approvers and the search might stop too early if it finds
+				// duplicates.
+				frc := fallbackReviewersClient{ownersClient: oc}
+				approvers, err := getReviewers(frc, pre.PullRequest.User.Login, changes, *reviewerCount)
+				if err != nil {
+					return err
+				}
+				combinedReviewers := sets.NewString(reviewers...)
+				combinedReviewers.Insert(approvers...)
+				log.Infof("Added %d approvers as reviewers. %d/%d reviewers found.", combinedReviewers.Len()-len(reviewers), combinedReviewers.Len(), *reviewerCount)
+				reviewers = combinedReviewers.List()
+			}
+		}
+		if missing := *reviewerCount - len(reviewers); missing > 0 {
+			log.Warnf("Not enough reviewers found in OWNERS files for files touched by this PR. %d/%d reviewers found.", len(reviewers), *reviewerCount)
 		}
 	}
 
 	if len(reviewers) > 0 {
 		if maxReviewers > 0 && len(reviewers) > maxReviewers {
+			log.Infof("Limiting request of %d reviewers to %d maxReviewers.", len(reviewers), maxReviewers)
 			reviewers = reviewers[:maxReviewers]
 		}
 		log.Infof("Requesting reviews from users %s.", reviewers)
@@ -121,20 +163,20 @@ func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, reviewerCount,
 	return nil
 }
 
-func getReviewers(owners ownersClient, author string, files []github.PullRequestChange, minReviewers int) ([]string, error) {
+func getReviewers(rc reviewersClient, author string, files []github.PullRequestChange, minReviewers int) ([]string, error) {
 	authorSet := sets.NewString(author)
 	reviewers := sets.NewString()
 	leafReviewers := sets.NewString()
 	ownersSeen := sets.NewString()
 	// first build 'reviewers' by taking a unique reviewer from each OWNERS file.
 	for _, file := range files {
-		ownersFile := owners.FindReviewersOwnersForFile(file.Filename)
+		ownersFile := rc.FindReviewersOwnersForFile(file.Filename)
 		if ownersSeen.Has(ownersFile) {
 			continue
 		}
 		ownersSeen.Insert(ownersFile)
 
-		fileUnusedLeafs := owners.LeafReviewers(file.Filename).Difference(reviewers).Difference(authorSet)
+		fileUnusedLeafs := rc.LeafReviewers(file.Filename).Difference(reviewers).Difference(authorSet)
 		if fileUnusedLeafs.Len() == 0 {
 			continue
 		}
@@ -150,7 +192,7 @@ func getReviewers(owners ownersClient, author string, files []github.PullRequest
 		if reviewers.Len() >= minReviewers {
 			break
 		}
-		fileReviewers := owners.Reviewers(file.Filename).Difference(authorSet)
+		fileReviewers := rc.Reviewers(file.Filename).Difference(authorSet)
 		for reviewers.Len() < minReviewers && fileReviewers.Len() > 0 {
 			reviewers.Insert(popRandom(fileReviewers))
 		}

@@ -28,6 +28,7 @@ filegroup(
         "//vendor/github.com/aws/aws-sdk-go/service/autoscaling:all-srcs",
         "//vendor/github.com/aws/aws-sdk-go/service/ec2:all-srcs",
         "//vendor/github.com/aws/aws-sdk-go/service/iam:all-srcs",
+        "//vendor/github.com/aws/aws-sdk-go/service/route53:all-srcs",
         "//vendor/github.com/aws/aws-sdk-go/service/s3:all-srcs",
         "//vendor/github.com/aws/aws-sdk-go/service/sts:all-srcs",
         "//vendor/github.com/bazelbuild/bazel-gazelle/cmd/gazelle:all-srcs",

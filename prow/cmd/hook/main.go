@@ -18,14 +18,17 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"flag"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"os/signal"
 	"strconv"
 	"syscall"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
@@ -51,8 +54,9 @@ type options struct {
 	cluster      string
 	pluginConfig string
 
-	dryRun  bool
-	deckURL string
+	dryRun      bool
+	gracePeriod time.Duration
+	deckURL     string
 
 	githubEndpoint  flagutil.Strings
 	githubTokenFile string
@@ -79,6 +83,7 @@ func gatherOptions() options {
 	flag.StringVar(&o.pluginConfig, "plugin-config", "/etc/plugins/plugins", "Path to plugin config file.")
 
 	flag.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
+	flag.DurationVar(&o.gracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration. ")
 	flag.StringVar(&o.deckURL, "deck-url", "", "Deck URL for read-only access to the cluster.")
 
 	flag.Var(&o.githubEndpoint, "github-endpoint", "GitHub's API endpoint.")
@@ -98,14 +103,9 @@ func main() {
 	logrus.SetFormatter(logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "hook"}))
 
 	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath); err != nil {
+	if err := configAgent.Start(o.configPath, ""); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
-
-	// Ignore SIGTERM so that we don't drop hooks when the pod is removed.
-	// We'll get SIGTERM first and then SIGKILL after our graceful termination
-	// deadline.
-	signal.Ignore(syscall.SIGTERM)
 
 	webhookSecretRaw, err := ioutil.ReadFile(o.webhookSecretFile)
 	if err != nil {
@@ -211,6 +211,7 @@ func main() {
 		Plugins:     pluginAgent,
 		Metrics:     promMetrics,
 	}
+	defer server.GracefulShutdown()
 
 	// Return 200 on / for health checks.
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})
@@ -220,5 +221,18 @@ func main() {
 	// Serve plugin help information from /plugin-help.
 	http.Handle("/plugin-help", pluginhelp.NewHelpAgent(pluginAgent, githubClient))
 
-	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(o.port), nil))
+	httpServer := &http.Server{Addr: ":" + strconv.Itoa(o.port)}
+
+	// Shutdown gracefully on SIGTERM or SIGINT
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-sig
+		logrus.Info("Hook is shutting down...")
+		ctx, cancel := context.WithTimeout(context.Background(), o.gracePeriod)
+		defer cancel()
+		httpServer.Shutdown(ctx)
+	}()
+
+	logrus.WithError(httpServer.ListenAndServe()).Warn("Server exited.")
 }

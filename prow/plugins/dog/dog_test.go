@@ -95,8 +95,26 @@ func TestFormat(t *testing.T) {
 
 // Medium integration test (depends on ability to open a TCP port)
 func TestHttpResponse(t *testing.T) {
+	// create test cases for handling content length of images
+	contentLength := make(map[string]string)
+	contentLength["/dog.jpg"] = "717987"
+	contentLength["/doggo.mp4"] = "37943259"
+	contentLength["/bigdog.jpg"] = "12647753"
+
+	// fake server for images
+	ts2 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if s, ok := contentLength[r.URL.Path]; ok {
+			body := "binary image"
+			w.Header().Set("Content-Length", s)
+			io.WriteString(w, body)
+		} else {
+			t.Errorf("Cannot find content length for %s", r.URL.Path)
+		}
+	}))
+	defer ts2.Close()
+
 	// setup a stock valid request
-	url := "http://localhost/dog.jpg"
+	url := ts2.URL + "/dog.jpg"
 	b, err := json.Marshal(&dogResult{
 		URL: url,
 	})
@@ -133,12 +151,18 @@ func TestHttpResponse(t *testing.T) {
 		{
 			name:     "mp4 doggo unsupported :(",
 			path:     "/mp4-doggo",
-			response: `{"url": "http://example/doggo.mp4"}`,
+			response: fmt.Sprintf(`{"url": "%s/doggo.mp4"}`, ts2.URL),
+			isValid:  false,
+		},
+		{
+			name:     "image too big",
+			path:     "/too-big",
+			response: fmt.Sprintf(`{"url": "%s/bigdog.jpg"}`, ts2.URL),
 			isValid:  false,
 		},
 	}
 
-	// setup handler for test-cases
+	// fake server for image urls
 	pathToResponse := make(map[string]string)
 	for _, testcase := range testcases {
 		pathToResponse[testcase.path] = testcase.response
@@ -151,6 +175,8 @@ func TestHttpResponse(t *testing.T) {
 		}
 	}))
 	defer ts.Close()
+
+	// github fake client
 	fc := &fakegithub.FakeClient{
 		IssueComments: make(map[int][]github.IssueComment),
 	}

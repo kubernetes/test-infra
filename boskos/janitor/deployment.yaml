@@ -15,7 +15,7 @@ spec:
       terminationGracePeriodSeconds: 300
       containers:
       - name: boskos-janitor
-        image: gcr.io/k8s-testimages/janitor:v20180402-43203f868
+        image: gcr.io/k8s-testimages/janitor:v20180531-fb2d8fcb9
         args:
         - --service-account=/etc/service-account/service-account.json
         - --resource-type=gke-project
@@ -46,10 +46,10 @@ spec:
       terminationGracePeriodSeconds: 300
       containers:
       - name: boskos-janitor-nongke
-        image: gcr.io/k8s-testimages/janitor:v20180402-43203f868
+        image: gcr.io/k8s-testimages/janitor:v20180531-fb2d8fcb9
         args:
         - --service-account=/etc/service-account/service-account.json
-        - --resource-type=gce-project,gci-qa-project,gpu-project,ingress-project
+        - --resource-type=gce-project,gci-qa-project,gpu-project,ingress-project,istio-project
         - --pool-size=20
         volumeMounts:
         - mountPath: /etc/service-account

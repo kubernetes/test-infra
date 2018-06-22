@@ -13,97 +13,103 @@ labels:
     prowPlugin: approve
     addedBy: approvers
   - color: fef2c0
-    description: Indicates a cherrypick PR into a release branch has been approved by the release branch manager. Consumed by the kubernetes/kubernetes cherrypick-queue.
+    description: Indicates a cherrypick PR into a release branch has been approved by the release branch manager. # Consumed by the kubernetes/kubernetes cherrypick-queue.
     name: cherrypick-approved
     target: prs
     addedBy: humans
   - color: fef2c0
-    description: Denotes a PR to master as a candidate for cherry picking into a release branch. 
+    description: Denotes a PR to master as a candidate for cherry picking into a release branch.
     name: cherrypick-candidate
     target: prs
     addedBy: humans
-  - color: bfe5bf
-    deleteAfter: 2018-04-16T00:00:00Z
-    description: This is a holdover from when we had difficulties getting either the google or cncf CLA bots to behave. It can only be manually applied and is consumed by the submit-queue. It has seen very little use lately.
-    name: 'cla: human-approved'
-    target: prs
-    addedBy: humans
   - color: d455d0
-    description: Indicates an issue is a duplicate of other open issue. The usage should be supported by adding triage findings as an issue comment.
+    description: Indicates an issue is a duplicate of other open issue.
     name: triage/duplicate
     target: both
     previously:
       - name: close/duplicate
+      - name: duplicate
     addedBy: humans
   - color: d455d0
-    description: Indicates an issue needs more information in order to work on it. The usage should be supported by adding triage findings as an issue comment.
+    description: Indicates an issue needs more information in order to work on it.
     name: triage/needs-information
     previously:
       - name: close/needs-information
     target: both
     addedBy: humans
   - color: d455d0
-    description: Indicates an issue can not be reproduced as described. The usage should be supported by adding triage findings as an issue comment.
+    description: Indicates an issue can not be reproduced as described.
     name: triage/not-reproducible
     previously:
       - name: close/not-reproducible
     target: both
     addedBy: humans
   - color: d455d0
-    description: Indicates an issue that can not be resolved. The usage should be supported by adding triage findings as an issue comment.
+    description: Indicates an issue that is a support question.
+    name: triage/support
+    previously:
+      - name: close/support
+      - name: kind/support
+      - name: question
+    target: both
+    addedBy: humans
+  - color: d455d0
+    description: Indicates an issue that can not or will not be resolved.
     name: triage/unresolved
     previously:
       - name: close/unresolved
+      - name: invalid
+      - name: wontfix
     target: both
     addedBy: humans
   - color: c0ff4a
-    description: Denotes an issue or PR intended to be handled by the (as of yet non-existent) code of conduct committee.
+    description: Denotes an issue or PR intended to be handled by the code of conduct committee. # (as of yet non-existent)
     name: committee/conduct
     target: both
     prowPlugin: label
     addedBy: anyone
   - color: c0ff4a
-    description: Denotes an issue or PR intended to be handled by the kubernetes steering committee.
+    description: Denotes an issue or PR intended to be handled by the steering committee.
     name: committee/steering
     target: both
     prowPlugin: label
     addedBy: anyone
   - color: e11d21
-    description: Indicates the PR's author has not signed the CNCF CLA according to the CNCF CLA bot.
+    description: Indicates the PR's author has not signed the CNCF CLA.
     name: 'cncf-cla: no'
     target: prs
     prowPlugin: cla
     addedBy: prow
   - color: bfe5bf
-    description: Indicates the PR's author has signed the CNCF CLA according to the CNCF CLA bot.
+    description: Indicates the PR's author has signed the CNCF CLA.
     name: 'cncf-cla: yes'
     target: prs
     prowPlugin: cla
     addedBy: prow
   - color: e11d21
-    description: DEPRECATED. Indicates that a PR should not be merged. The label can only be manually applied/removed. Please use do-not-merge/hold instead.
+    description: DEPRECATED. Indicates that a PR should not merge. Label can only be manually applied/removed.
     name: do-not-merge
     target: prs
     addedBy: humans
   - color: e11d21
-    description: Indicates that a PR should not be merged because it touches files in blocked paths.
+    description: Indicates that a PR should not merge because it touches files in blocked paths.
     name: do-not-merge/blocked-paths
     target: prs
     prowPlugin: blockade
     addedBy: prow
   - color: e11d21
-    description: Indicates that a PR should not be merged into a release branch because the cherrypick-approved label is not present.
+    description: Indicates that a PR is not yet approved to merge into a release branch.
     name: do-not-merge/cherry-pick-not-approved
     target: prs
     addedBy: mungegithub cherrypick-label-unapproved munger
   - color: e11d21
-    description: Indicates that a PR should not be merged because someone has issued a /hold command, applied by the prow hold plugin.
+    description: Indicates that a PR should not merge because someone has issued a /hold command.
     name: do-not-merge/hold
     target: prs
     prowPlugin: hold
     addedBy: anyone
   - color: e11d21
-    description: Indicates that a PR should not be merged because it's missing one of the release note labels that specify whether this PR should be considered when release notes are generated.
+    description: Indicates that a PR should not merge because it's missing one of the release note labels.
     name: do-not-merge/release-note-label-needed
     previously:
       - name: release-note-label-needed
@@ -111,23 +117,44 @@ labels:
     prowPlugin: releasenote
     addedBy: prow
   - color: e11d21
-    description: Indicates that a PR should not be merged because it is a work in progress, based on the presence of a '[wip]' prefix in the PR title.
+    description: Indicates that a PR should not merge because it is a work in progress.
     name: do-not-merge/work-in-progress
     target: prs
     prowPlugin: wip
     addedBy: prow
+  - color: 7057ff
+    description: Denotes an issue ready for a new contributor, according to the "help wanted" guidelines.
+    name: 'good first issue'
+    previously:
+      - name: for-new-contributors
+    target: issues
+    prowPlugin: help
+    addedBy: anyone
   - color: 006b75
-    description: Denotes an issue ready for a new contributor according to the [help-wanted] guidelines, applied in response to /help by the help prow plugin.
+    description: Denotes an issue that needs help from a contributor. Must meet "help wanted" guidelines.
     name: 'help wanted'
     previously:
       - name: help-wanted
-      - name: for-new-contributors
     target: issues
     prowPlugin: help
     addedBy: anyone
   - color: e11d21
     description: Categorizes issue or PR as related to a bug.
     name: kind/bug
+    previously:
+      - name: bug
+    target: both
+    prowPlugin: label
+    addedBy: anyone
+  - color: c7def8
+    description: Categorizes issue or PR as related to cleaning up code, process, or technical debt.
+    name: kind/cleanup
+    target: both
+    prowPlugin: label
+    addedBy: anyone
+  - color: c7def8
+    description: Categorizes issue or PR as related to design.
+    name: kind/design
     target: both
     prowPlugin: label
     addedBy: anyone
@@ -140,6 +167,15 @@ labels:
   - color: c7def8
     description: Categorizes issue or PR as related to a new feature.
     name: kind/feature
+    previously:
+      - name: enhancement
+      - name: kind/enhancement
+    target: both
+    prowPlugin: label
+    addedBy: anyone
+  - color: f7c6c7
+    description: Categorizes issue or PR as related to a flaky test.
+    name: kind/flake
     target: both
     prowPlugin: label
     addedBy: anyone
@@ -158,13 +194,13 @@ labels:
     prowPlugin: lifecycle
     addedBy: anyone
   - color: "604460"
-    description: Denotes an issue or PR that has aged beyond lifecycle/stale and will be auto-closed.
+    description: Denotes an issue or PR that has aged beyond stale and will be auto-closed.
     name: lifecycle/rotten
     target: both
     prowPlugin: lifecycle
     addedBy: anyone or [@fejta-bot](https://github.com/fejta-bot) via [periodic-test-infra-rotten prowjob](https://prow.k8s.io/?job=periodic-test-infra-rotten)
   - color: "795548"
-    description: Denotes an issue or PR has remained open with no activity for too long and has become stale.
+    description: Denotes an issue or PR has remained open with no activity and has become stale.
     name: lifecycle/stale
     previously:
       - name: stale
@@ -172,76 +208,76 @@ labels:
     prowPlugin: lifecycle
     addedBy: anyone or [@fejta-bot](https://github.com/fejta-bot) via [periodic-test-infra-stale prowjob](https://prow.k8s.io/?job=periodic-test-infra-stale)
   - color: b60205
-    description: Indicates a PR has been submitted by an untrusted contributor, and requires an org member to verify the PR is safe to test. This is to prevent spam/abuse of our CI system, and can be circumvented by becoming an org member. Org members can remove this label with the `/ok-to-test` command.
+    description: Indicates a PR that requires an org member to verify it is safe to test. # This is to prevent spam/abuse of our CI system, and can be circumvented by becoming an org member. Org members can remove this label with the `/ok-to-test` command.
     name: needs-ok-to-test
     target: prs
     prowPlugin: trigger
     addedBy: prow
   - color: BDBDBD
-    description: Indicates a PR cannot be merged because it has merge conflicts with HEAD. Rebase the PR, resolving any merge conflicts, and push the PR to remove the label.
+    description: Indicates a PR cannot be merged because it has merge conflicts with HEAD.
     name: needs-rebase
     target: prs
     prowPlugin: needs-rebase
     addedBy: prow
   - color: ededed
-    description: Indicates an issue lacks a `sig/foo` label and requires one. The label will be removed when a `sig/` label is applied.
+    description: Indicates an issue lacks a `sig/foo` label and requires one.
     name: needs-sig
     target: issues
     prowPlugin: requiresig
     addedBy: prow
   - color: fef2c0
-    description: Lowest priority. Possibly useful, but not yet enough support to actually get it done. These are mostly place-holders for potentially good ideas, so that they don't get completely forgotten, and can be referenced /deduped every time they come up.
+    description: Lowest priority. Possibly useful, but not yet enough support to actually get it done. # These are mostly place-holders for potentially good ideas, so that they don't get completely forgotten, and can be referenced /deduped every time they come up.
     name: priority/awaiting-more-evidence
     target: both
     prowPlugin: label
     addedBy: anyone
   - color: fbca04
-    description: Higher priority than priority/awaiting-more-evidence. There appears to be general agreement that this would be good to have, but we may not have anyone available to work on it right now or in the immediate future. Community contributions would be most welcome in the mean time (although it might take a while to get them reviewed if reviewers are fully occupied with higher priority issues, for example immediately before a release).
+    description: Higher priority than priority/awaiting-more-evidence. # There appears to be general agreement that this would be good to have, but we may not have anyone available to work on it right now or in the immediate future. Community contributions would be most welcome in the mean time (although it might take a while to get them reviewed if reviewers are fully occupied with higher priority issues, for example immediately before a release).
     name: priority/backlog
     target: both
     prowPlugin: label
     addedBy: anyone
   - color: e11d21
-    description: Highest priority. Must be actively worked on as someone's top priority right now. Stuff is burning. If it's not being actively worked on, someone is expected to drop what they're doing immediately to work on it. Team leaders are responsible for making sure that all the issues, labeled with this priority, in their area are being actively worked on. Examples include user-visible bugs in core features, broken builds or tests and critical security issues.
+    description: Highest priority. Must be actively worked on as someone's top priority right now. # Stuff is burning. If it's not being actively worked on, someone is expected to drop what they're doing immediately to work on it. Team leaders are responsible for making sure that all the issues, labeled with this priority, in their area are being actively worked on. Examples include user-visible bugs in core features, broken builds or tests and critical security issues.
     name: priority/critical-urgent
     target: both
     prowPlugin: label
     addedBy: anyone
   - color: e11d21
-    description: "Automatically filed frequently failing test. Needs to be investigated. We would like to migrate/replace this with kind/failing test ([kubernetes/community#1579](https://github.com/kubernetes/community/issues/1579))"
+    description: Automatically filed frequently failing test. Needs to be investigated.
     name: priority/failing-test
     target: both
     prowPlugin: label
     addedBy: anyone
   - color: eb6420
-    description: Important over the long term, but may not be currently staffed and/or may require multiple releases to complete.
+    description: Important over the long term, but may not be staffed and/or may need multiple releases to complete.
     name: priority/important-longterm
     target: both
     prowPlugin: label
     addedBy: anyone
   - color: eb6420
-    description: Lower priority than priority/critical-urgent.  Must be staffed and worked on either currently, or very soon, ideally in time for the next release.
+    description: Must be staffed and worked on either currently, or very soon, ideally in time for the next release.
     name: priority/important-soon
     target: both
     prowPlugin: label
     addedBy: anyone
   - color: ffaa00
-    description: DEPRECATED. Bumps a PR up in priority in the submit-queue for kubernetes/kubernetes because that PR blocks others by being a dependency for other pending changes. This will stop having any effect once kubernetes/kubernetes migrates away from the submit queue.
+    description: DEPRECATED. # Bumps a PR up in priority in the submit-queue for kubernetes/kubernetes because that PR blocks others by being a dependency for other pending changes. This will stop having any effect once kubernetes/kubernetes migrates away from the submit queue.
     name: queue/blocks-others
     target: prs
     addedBy: humans
   - color: ffaa00
-    description: DEPRECATED.  Bumps a PR up in priority in the submit-queue for kubernetes/kubernetes because that PR that contains a critical fix, and will merge even if e2e tests are failing. This will stop having any effect once kubernetes/kubernetes migrates away from the submit queue.
+    description: DEPRECATED. # Bumps a PR up in priority in the submit-queue for kubernetes/kubernetes because that PR that contains a critical fix, and will merge even if e2e tests are failing. This will stop having any effect once kubernetes/kubernetes migrates away from the submit queue.
     name: queue/critical-fix
     target: prs
     addedBy: humans
   - color: ffaa00
-    description: DEPRECATED.  Bumps a PR up in priority in the submit-queue for kubernetes/kubernetes because that PR that will fix or unblock the submit queue. This will stop having any effect once kubernetes/kubernetes migrates away from the submit queue.
+    description: DEPRECATED. # Bumps a PR up in priority in the submit-queue for kubernetes/kubernetes because that PR that will fix or unblock the submit queue. This will stop having any effect once kubernetes/kubernetes migrates away from the submit queue.
     name: queue/fix
     target: prs
     addedBy: humans
   - color: ffaa00
-    description: DEPRECATED.  Bumps a PR up in priority in the submit-queue for kubernetes/kubernetes because that PR that has had difficulty getting merged because merges ahead of it have forced it to be rebased multiple times. This will stop having any effect once kubernetes/kubernetes migrates away from the submit queue.
+    description: DEPRECATED. # Bumps a PR up in priority in the submit-queue for kubernetes/kubernetes because that PR that has had difficulty getting merged because merges ahead of it have forced it to be rebased multiple times. This will stop having any effect once kubernetes/kubernetes migrates away from the submit queue.
     name: queue/multiple-rebases
     target: prs
     addedBy: humans
@@ -252,24 +288,24 @@ labels:
     prowPlugin: releasenote
     addedBy: prow
   - color: c2e0c6
-    description: Denotes a PR that introduces potentially breaking changes that necessitate user action before upgrading to the release that includes these changes. These actions will be specifically called out when it comes time to generate release notes.
+    description: Denotes a PR that introduces potentially breaking changes that require user action. # These actions will be specifically called out when it comes time to generate release notes.
     name: release-note-action-required
     target: prs
     prowPlugin: releasenote
     addedBy: prow
   - color: c2e0c6
-    description: Denotes a PR that doesn't merit a release note, and will be ignored when it comes time to generate release notes.
+    description: Denotes a PR that doesn't merit a release note. # will be ignored when it comes time to generate release notes.
     name: release-note-none
     target: prs
     prowPlugin: releasenote
     addedBy: prow or member or author
   - color: eb6420
-    description: Indicates that a PR doesn't need to be retested prior to merge. At present only submit-queue consumes this label. Unclear whether we're going to modify tide to respect this or not ([kubernetes/test-infra#5334](https://github.com/kubernetes/test-infra/issues/5334))
+    description: Indicates that a PR doesn't need to be retested prior to merge. # At present only submit-queue consumes this label. Unclear whether we're going to modify tide to respect this or not ([kubernetes/test-infra#5334](https://github.com/kubernetes/test-infra/issues/5334))
     name: retest-not-required
     target: prs
     addedBy: humans
   - color: fbca04
-    description: Indicates that a PR doesn't need to be retested prior to merge because it only changes docs. At present only submit-queue consumes this label. Unclear whether we're going to modify tide to respect this or not ([kubernetes/test-infra#7195](https://github.com/kubernetes/test-infra/issues/7195))
+    description: Indicates that a PR doesn't need to be retested prior to merge because it only changes docs. # At present only submit-queue consumes this label. Unclear whether we're going to modify tide to respect this or not ([kubernetes/test-infra#7195](https://github.com/kubernetes/test-infra/issues/7195))
     name: retest-not-required-docs-only
     target: prs
     prowPlugin: docs-no-retest
@@ -325,6 +361,12 @@ labels:
   - color: d2b48c
     description: Categorizes an issue or PR as relevant to sig-cli.
     name: sig/cli
+    target: both
+    prowPlugin: label
+    addedBy: anyone
+  - color: d2b48c
+    description: Categorizes an issue or PR as relevant to sig-cloud-provider.
+    name: sig/cloud-provider
     target: both
     prowPlugin: label
     addedBy: anyone
@@ -494,7 +536,7 @@ labels:
     prowPlugin: size
     addedBy: prow
   - color: fef2c0
-    description: Used during release burndown. Denotes an issue or PR is approved to be part of the release, aka in the milestone. A bot will warn then kick issues out of the milestone that lack this label.
+    description: Used during release burndown. Denotes an issue or PR is approved to be part of the release # A bot will warn then kick issues out of the milestone that lack this label.
     name: status/approved-for-milestone
     previously:
       - name: approved-for-milestone

@@ -38,6 +38,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"golang.org/x/crypto/ssh"
+	"k8s.io/test-infra/kubetest/e2e"
 	"k8s.io/test-infra/kubetest/util"
 )
 
@@ -220,7 +221,10 @@ func newKops(provider, gcpProject, cluster string) (*kops, error) {
 	// Set KUBERNETES_CONFORMANCE_PROVIDER to override the
 	// cloudprovider for KUBERNETES_CONFORMANCE_TEST.
 	// This value is set by the provider flag that is passed into kubetest.
-	if err := os.Setenv("KUBERNETES_CONFORMANCE_PROVIDER", provider); err != nil {
+	// HACK: until we merge #7408, there's a bug in the ginkgo-e2e.sh script we have to work around
+	// TODO(justinsb): remove this hack once #7408 merges
+	// if err := os.Setenv("KUBERNETES_CONFORMANCE_PROVIDER", provider); err != nil {
+	if err := os.Setenv("KUBERNETES_CONFORMANCE_PROVIDER", "aws"); err != nil {
 		return nil, err
 	}
 	// AWS_SSH_KEY is required by the AWS e2e tests.
@@ -530,6 +534,39 @@ func (k kops) TestSetup() error {
 	return nil
 }
 
+// BuildTester returns a standard ginkgo-script tester, except for GCE where we build an e2e.Tester
+func (k kops) BuildTester(o *e2e.BuildTesterOptions) (e2e.Tester, error) {
+	// Start by only enabling this on GCE
+	if !k.isGoogleCloud() {
+		return &GinkgoScriptTester{}, nil
+	}
+
+	log.Printf("running ginkgo tests directly")
+
+	t := e2e.NewGinkgoTester(o)
+	t.KubeRoot = "."
+
+	t.Kubeconfig = k.kubecfg
+	t.Provider = k.provider
+
+	if k.provider == "gce" {
+		t.GCEProject = k.gcpProject
+		if len(k.zones) > 0 {
+			zone := k.zones[0]
+			t.GCEZone = zone
+
+			// us-central1-a => us-central1
+			lastDash := strings.LastIndex(zone, "-")
+			if lastDash == -1 {
+				return nil, fmt.Errorf("unexpected format for GCE zone: %q", zone)
+			}
+			t.GCERegion = zone[0:lastDash]
+		}
+	}
+
+	return t, nil
+}
+
 func (k kops) Down() error {
 	// We do a "kops get" first so the exit status of "kops delete" is
 	// more sensical in the case of a non-existent cluster. ("kops
@@ -585,6 +622,9 @@ func (k *kops) runKopsDump() (*kopsDump, error) {
 
 // kops deployer implements publisher
 var _ publisher = &kops{}
+
+// kops deployer implements e2e.TestBuilder
+var _ e2e.TestBuilder = &kops{}
 
 // Publish will publish a success file, it is called if the tests were successful
 func (k kops) Publish() error {

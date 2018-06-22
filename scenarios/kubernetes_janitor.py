@@ -134,16 +134,18 @@ def check_ci_jobs():
 
     # Hard code node-ci project here
     clean_project('k8s-jkns-ci-node-e2e')
-    # gke internal project
-    clean_project('gke-e2e-createdelete')
 
 
-def main(mode, ratelimit):
+def main(mode, ratelimit, projects, age):
     """Run janitor for each project."""
     if mode == 'pr':
         check_predefine_jobs(PR_PROJECTS, ratelimit)
     elif mode == 'scale':
         check_predefine_jobs(SCALE_PROJECT, ratelimit)
+    elif mode == 'custom':
+        projs = str.split(projects, ',')
+        for proj in projs:
+            clean_project(proj.strip(), hours=age, ratelimit=ratelimit)
     else:
         check_ci_jobs()
 
@@ -160,10 +162,16 @@ if __name__ == '__main__':
     FAILED = []
     PARSER = argparse.ArgumentParser()
     PARSER.add_argument(
-        '--mode', default='ci', choices=['ci', 'pr', 'scale'],
+        '--mode', default='ci', choices=['ci', 'pr', 'scale', 'custom'],
         help='Which type of projects to clear')
     PARSER.add_argument(
         '--ratelimit', type=int,
         help='Max number of resources to clear in one gcloud delete call (passed into janitor.py)')
+    PARSER.add_argument(
+        '--projects', type=str,
+        help='Comma separated list of projects to clean up. Only applicable in custom mode.')
+    PARSER.add_argument(
+        '--age', type=int,
+        help='Expiry age for projects, in hours. Only applicable in custom mode.')
     ARGS = PARSER.parse_args()
-    main(ARGS.mode, ARGS.ratelimit)
+    main(ARGS.mode, ARGS.ratelimit, ARGS.projects, ARGS.age)

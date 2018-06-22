@@ -182,7 +182,12 @@ projects:
             metrics_path: /metrics
             static_configs:
               - targets:
-                  - http://35.199.148.121:9103
+                  - 35.199.148.121
+          - job_name: istio-boskos
+            metrics_path: /prometheus
+            static_configs:
+              - targets:
+                  - 35.233.210.91
   tensorflow:
     repositories:
       tensorflow/tensorflow:

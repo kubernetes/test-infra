@@ -34,8 +34,8 @@ type Agent struct {
 // Start will begin polling the config file at the path. If the first load
 // fails, Start with return the error and abort. Future load failures will log
 // the failure message but continue attempting to load.
-func (ca *Agent) Start(path string) error {
-	c, err := Load(path)
+func (ca *Agent) Start(prowConfig, jobConfig string) error {
+	c, err := Load(prowConfig, jobConfig)
 	if err != nil {
 		return err
 	}
@@ -50,19 +50,37 @@ func (ca *Agent) Start(path string) error {
 			if skips < 600 {
 				// Check if the file changed to see if it needs to be re-read.
 				// os.Stat follows symbolic links, which is how ConfigMaps work.
-				stat, err := os.Stat(path)
+				prowStat, err := os.Stat(prowConfig)
 				if err != nil {
-					logrus.WithField("path", path).WithError(err).Error("Error loading config.")
+					logrus.WithField("prowConfig", prowConfig).WithError(err).Error("Error loading prow config.")
 					continue
 				}
-				if stat.ModTime().Equal(lastModTime) {
+
+				recentModTime := prowStat.ModTime()
+
+				// TODO(krzyzacy): allow empty jobConfig till fully migrate config to subdirs
+				if jobConfig != "" {
+					jobConfigStat, err := os.Stat(jobConfig)
+					if err != nil {
+						logrus.WithField("jobConfig", jobConfig).WithError(err).Error("Error loading job configs.")
+						continue
+					}
+
+					if jobConfigStat.ModTime().After(recentModTime) {
+						recentModTime = jobConfigStat.ModTime()
+					}
+				}
+
+				if !recentModTime.After(lastModTime) {
 					skips++
 					continue // file hasn't been modified
 				}
-				lastModTime = stat.ModTime()
+				lastModTime = recentModTime
 			}
-			if c, err := Load(path); err != nil {
-				logrus.WithField("path", path).WithError(err).Error("Error loading config.")
+			if c, err := Load(prowConfig, jobConfig); err != nil {
+				logrus.WithField("prowConfig", prowConfig).
+					WithField("jobConfig", jobConfig).
+					WithError(err).Error("Error loading config.")
 			} else {
 				skips = 0
 				ca.Lock()

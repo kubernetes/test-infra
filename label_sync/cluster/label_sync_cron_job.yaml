@@ -28,11 +28,11 @@ spec:
         spec:
           containers:
             - name: label-sync
-              image: gcr.io/k8s-testimages/label_sync:v20180227-377685119
+              image: gcr.io/k8s-testimages/label_sync:v20180531-20dbd7ab8
               args:
               - --config=/etc/config/labels.yaml
               - --confirm=true
-              - --orgs=kubernetes
+              - --orgs=kubernetes,kubernetes-sigs
               - --token=/etc/github/oauth
               volumeMounts:
               - name: oauth
@@ -49,4 +49,3 @@ spec:
           - name: config
             configMap:
               name: label-config
-

@@ -87,6 +87,11 @@ type Tide struct {
 	// in the tide status context.
 	PRStatusBaseUrl string `json:"pr_status_base_url,omitempty"`
 
+	// BlockerLabel is an optional label that is used to identify merge blocking
+	// Github issues.
+	// Leave this blank to disable this feature and save 1 API token per sync loop.
+	BlockerLabel string `json:"blocker_label,omitempty"`
+
 	// MaxGoroutines is the maximum number of goroutines spawned inside the
 	// controller to handle org/repo:branch pools. Defaults to 20. Needs to be a
 	// positive number.
@@ -167,12 +172,7 @@ func (tq *TideQuery) Query() string {
 func (tqs TideQueries) AllPRsSince(t time.Time) string {
 	toks := []string{"is:pr", "state:open"}
 
-	orgs := sets.NewString()
-	repos := sets.NewString()
-	for i := range tqs {
-		orgs.Insert(tqs[i].Orgs...)
-		repos.Insert(tqs[i].Repos...)
-	}
+	orgs, repos := tqs.OrgsAndRepos()
 	for _, o := range orgs.List() {
 		toks = append(toks, fmt.Sprintf("org:\"%s\"", o))
 	}
@@ -186,6 +186,16 @@ func (tqs TideQueries) AllPRsSince(t time.Time) string {
 		toks = append(toks, fmt.Sprintf("updated:>=%s", t.Format(timeFormatISO8601)))
 	}
 	return strings.Join(toks, " ")
+}
+
+func (tqs TideQueries) OrgsAndRepos() (sets.String, sets.String) {
+	orgs := sets.NewString()
+	repos := sets.NewString()
+	for i := range tqs {
+		orgs.Insert(tqs[i].Orgs...)
+		repos.Insert(tqs[i].Repos...)
+	}
+	return orgs, repos
 }
 
 // QueryMap is a mapping from ("org/repo" or "org") -> TideQueries that

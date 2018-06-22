@@ -33,11 +33,13 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:v20180521-f8caf9625
+        image: gcr.io/k8s-prow/hook:v20180529-e9431eaa3
         imagePullPolicy: Always
         args:
         - --dry-run=false
         - --slack-token-file=/etc/slack/token
+        - --github-endpoint=http://ghproxy
+        - --github-endpoint=https://api.github.com
         ports:
           - name: http
             containerPort: 8888

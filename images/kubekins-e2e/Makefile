@@ -13,25 +13,31 @@
 # limitations under the License.
 
 IMG = gcr.io/k8s-testimages/kubekins-e2e
-TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
+TAG := $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
 # kubernetes master branch config
 K8S ?= master
 GO ?= 1.10.2
-BAZEL ?= 0.13.0
+BAZEL ?= 0.14.0
 CFSSL ?= R1.2
 
 # config for testing prior to rolling out to master / ongoing release
 ifeq ($(K8S), experimental)
 	GO = 1.10.2
-	BAZEL = 0.13.0
+	BAZEL = 0.14.0
 	CFSSL = R1.2
 endif
 
 # kubernetes release-X branch configs
+ifeq ($(K8S), 1.11)
+	GO = 1.10.2
+	BAZEL = 0.14.0
+	CFSSL = R1.2
+endif
+
 ifeq ($(K8S), 1.10)
 	GO = 1.9.3
-	BAZEL = 0.11.0
+	BAZEL = 0.14.0
 	CFSSL = R1.2
 endif
 
@@ -41,14 +47,8 @@ ifeq ($(K8S), 1.9)
 	CFSSL = R1.2
 endif
 
+# TODO(bentheelder,krzyzacy) deprecate once 1.11 is out
 ifeq ($(K8S), 1.8)
-	GO = 1.8.3
-	BAZEL = 0.6.1
-	CFSSL = R1.2
-endif
-
-# TODO(bentheelder,krzyzacy) deprecate once 1.10 is out
-ifeq ($(K8S), 1.7)
 	GO = 1.8.3
 	BAZEL = 0.6.1
 	CFSSL = R1.2

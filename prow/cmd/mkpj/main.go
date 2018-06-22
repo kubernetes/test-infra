@@ -73,7 +73,7 @@ func main() {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
 
-	conf, err := config.Load(o.configPath)
+	conf, err := config.Load(o.configPath, "")
 	if err != nil {
 		logrus.WithError(err).Fatal("Error loading config.")
 	}

@@ -44,6 +44,7 @@ approve:
   - kubernetes/ingress-nginx
   - kubernetes/kops
   - kubernetes/kube-deploy
+  - kubernetes/kubeadm
   - kubernetes/kubectl
   - kubernetes/kubernetes
   - kubernetes/kubernetes-template-project
@@ -120,11 +121,19 @@ slack:
     - k8s-ci-robot # future home of tide
     - k8s-merge-robot # submit queue
     - k8s-release-robot # anago
-    - wojtek-t # 1.7 patch release manager
-    - jpbetz # 1.8 patch release manager
-    - mbohlool # 1.9 patch release manager
-    - calebamiles # 1.10 branch manager
-    - lavalamp # feature-serverside-apply "branch manager"
+    branch_whitelist:
+        release-1.7:
+            - wojtek-t # 1.7 patch release manager
+        release-1.8:
+            - jpbetz # 1.8 patch release manager
+        release-1.9:
+            - mbohlool # 1.9 patch release manager
+        release-1.10:
+            - maciekpytel # 1.10 patch release manager
+        release-1.11:
+            - calebamiles # 1.11 branch manager
+        feature-serverside-apply:
+            - lavalamp # feature-serverside-apply "branch manager"
   - repos:
     - kubernetes/test-infra
     channels:
@@ -198,6 +207,11 @@ plugins:
   - blunderbuss
   - trigger
 
+  kubernetes/cloud-provider-vsphere:
+  - approve
+  - blunderbuss
+  - trigger
+
   kubernetes/cluster-registry:
   - approve
   - trigger
@@ -254,6 +268,9 @@ plugins:
   - blunderbuss
   - trigger
 
+  kubernetes/kubeadm:
+  - approve
+
   kubernetes/kubectl:
   - approve
 
@@ -275,7 +292,7 @@ plugins:
   kubernetes/kube-openapi:
   - approve
   - blunderbuss
-  
+
   kubernetes/kube-state-metrics:
   - approve
   - blunderbuss
@@ -340,6 +357,10 @@ plugins:
   - lifecycle
   - size
 
+  kubernetes-incubator/service-catalog:
+  - cat
+  - dog
+
   kubernetes-sigs:
   - assign
   - blunderbuss
@@ -376,7 +397,10 @@ plugins:
 
   kubernetes-sigs/application:
   - approve
-  
+
+  kubernetes-sigs/kubeadm-dind-cluster:
+  - approve
+
   containerd/cri:
   - assign
   - cla

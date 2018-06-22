@@ -108,13 +108,13 @@ the `exta_refs` field.
 
 ### Why use Pod Utilities?
 
-Writing a ProwJob that uses the Pod Utilites is much easier than writing one
+Writing a ProwJob that uses the Pod Utilities is much easier than writing one
 that doesn't because the Pod Utilities will transparently handle many of the
 tasks the job would otherwise need to do in order to prepare its environment
 and output more than pass/fail. Historically, this was achieved by wrapping
 every job with a [bootstrap.py](jenkins/bootstrap.py) script that handled cloning
 source code, preparing the test environment, and uploading job metadata, logs,
 and artifacts. This was cumbersome to configure and required every job to be
-wrapped with the script in the job image. The pod utilites achieve the same goals
+wrapped with the script in the job image. The pod utilities achieve the same goals
 with less configuration and much simpler job images that are easier to develop
 and less coupled to Prow.

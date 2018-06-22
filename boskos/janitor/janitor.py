@@ -26,39 +26,39 @@ import sys
 
 
 # A resource that need to be cleared.
-Resource = collections.namedtuple('Resource', 'group name subgroup condition managed tolerate')
+Resource = collections.namedtuple(
+    'Resource', 'group name subgroup condition managed tolerate bulk_delete')
 DEMOLISH_ORDER = [
     # [WARNING FROM KRZYZACY] : TOUCH THIS WITH CARE!
     # ORDER REALLY MATTERS HERE!
 
     # compute resources
-    Resource('compute', 'instances', None, 'zone', None, False),
-    Resource('compute', 'addresses', None, 'region', None, False),
-    Resource('compute', 'disks', None, 'zone', None, False),
-    Resource('compute', 'firewall-rules', None, None, None, False),
-    Resource('compute', 'routes', None, None, None, False),
-    Resource('compute', 'forwarding-rules', None, 'region', None, False),
-    Resource('compute', 'target-http-proxies', None, None, None, False),
-    Resource('compute', 'target-https-proxies', None, None, None, False),
-    Resource('compute', 'url-maps', None, None, None, False),
-    Resource('compute', 'backend-services', None, 'region', None, False),
-    Resource('compute', 'target-pools', None, 'region', None, False),
-    Resource('compute', 'health-checks', None, None, None, False),
-    Resource('compute', 'http-health-checks', None, None, None, False),
-    Resource('compute', 'instance-groups', None, 'zone', 'Yes', False),
-    Resource('compute', 'instance-groups', None, 'zone', 'No', False),
-    Resource('compute', 'instance-templates', None, None, None, False),
-    Resource('compute', 'networks', 'subnets', 'region', None, True),
-    Resource('compute', 'networks', None, '', None, False),
-    Resource('compute', 'routes', None, None, None, False),
+    Resource('compute', 'instances', None, 'zone', None, False, True),
+    Resource('compute', 'addresses', None, 'region', None, False, True),
+    Resource('compute', 'disks', None, 'zone', None, False, True),
+    Resource('compute', 'firewall-rules', None, None, None, False, True),
+    Resource('compute', 'routes', None, None, None, False, True),
+    Resource('compute', 'forwarding-rules', None, 'region', None, False, True),
+    Resource('compute', 'target-http-proxies', None, None, None, False, True),
+    Resource('compute', 'target-https-proxies', None, None, None, False, True),
+    Resource('compute', 'url-maps', None, None, None, False, True),
+    Resource('compute', 'backend-services', None, 'region', None, False, True),
+    Resource('compute', 'target-pools', None, 'region', None, False, True),
+    Resource('compute', 'health-checks', None, None, None, False, True),
+    Resource('compute', 'http-health-checks', None, None, None, False, True),
+    Resource('compute', 'instance-groups', None, 'zone', 'Yes', False, True),
+    Resource('compute', 'instance-groups', None, 'zone', 'No', False, True),
+    Resource('compute', 'instance-templates', None, None, None, False, True),
+    Resource('compute', 'networks', 'subnets', 'region', None, True, True),
+    Resource('compute', 'networks', None, '', None, False, True),
+    Resource('compute', 'routes', None, None, None, False, True),
 
     # logging resources
-    # sinks does not have creationTimestamp yet
-    #Resource('logging', 'sinks', None, None, None, False),
+    Resource('logging', 'sinks', None, None, None, False, False),
 ]
 
 
-def collect(project, age, resource, filt):
+def collect(project, age, resource, filt, clear_all):
     """ Collect a list of resources for each condition (zone or region).
 
     Args:
@@ -74,6 +74,11 @@ def collect(project, age, resource, filt):
 
     col = collections.defaultdict(list)
 
+    # TODO(krzyzacy): logging sink does not have timestamp
+    #                 don't even bother listing it if not clear_all
+    if resource.name == 'sinks' and not clear_all:
+        return col
+
     cmd = ['gcloud', resource.group, '-q', resource.name]
     if resource.subgroup:
         cmd.append(resource.subgroup)
@@ -87,8 +92,8 @@ def collect(project, age, resource, filt):
     for item in json.loads(subprocess.check_output(cmd)):
         print '%r' % item
 
-        if 'name' not in item or 'creationTimestamp' not in item:
-            raise ValueError('%r' % item)
+        if 'name' not in item:
+            raise ValueError('missing key: name - %r' % item)
 
         if resource.condition and resource.condition in item:
             colname = item[resource.condition]
@@ -101,6 +106,14 @@ def collect(project, age, resource, filt):
             else:
                 if resource.managed != item['isManaged']:
                     continue
+
+        # clears everything without checking creationTimestamp
+        if clear_all:
+            col[colname].append(item['name'])
+            continue
+
+        if 'creationTimestamp' not in item:
+            raise ValueError('missing key: creationTimestamp - %r' % item)
 
         # Unify datetime to use utc timezone.
         created = datetime.datetime.strptime(item['creationTimestamp'], '%Y-%m-%dT%H:%M:%S')
@@ -126,6 +139,12 @@ def clear_resources(project, cols, resource, rate_limit):
         1 if deletion command fails
     """
     err = 0
+
+    # delete one resource at a time, if there's no api support
+    # aka, logging sinks for example
+    if not resource.bulk_delete:
+        rate_limit = 1
+
     for col, items in cols.items():
         if ARGS.dryrun:
             print ('Resource type %r(%r) to be deleted: %r' %
@@ -239,10 +258,11 @@ def main(project, days, hours, filt, rate_limit):
     print '[=== Start Janitor on project %r ===]' % project
     err = 0
     age = datetime.datetime.utcnow() - datetime.timedelta(days=days, hours=hours)
+    clear_all = (days is 0 and hours is 0)
     for res in DEMOLISH_ORDER:
         print 'Try to search for %r with condition %r' % (res.name, res.condition)
         try:
-            col = collect(project, age, res, filt)
+            col = collect(project, age, res, filt, clear_all)
             if col:
                 err |= clear_resources(project, col, res, rate_limit)
         except (subprocess.CalledProcessError, ValueError):

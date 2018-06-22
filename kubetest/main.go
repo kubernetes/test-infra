@@ -240,9 +240,9 @@ func getDeployer(o *options) (deployer, error) {
 	case "bash":
 		return newBash(&o.clusterIPRange), nil
 	case "conformance":
-		return conformance.NewDeployer(o.kubecfg, &o.testArgs, control)
+		return conformance.NewDeployer(o.kubecfg)
 	case "dind":
-		return dind.NewDeployer(o.kubecfg, o.dindImage, &o.testArgs, control)
+		return dind.NewDeployer(o.kubecfg, o.dindImage, control)
 	case "gke":
 		return newGKE(o.provider, o.gcpProject, o.gcpZone, o.gcpRegion, o.gcpNetwork, o.gcpNodeImage, o.gcpImageFamily, o.gcpImageProject, o.cluster, &o.testArgs, &o.upgradeArgs)
 	case "kops":

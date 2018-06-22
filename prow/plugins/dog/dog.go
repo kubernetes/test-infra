@@ -108,6 +108,13 @@ func (u realPack) readDog() (string, error) {
 	if !filetypes.MatchString(a.URL) {
 		return "", errors.New("unsupported doggo :( unknown filetype: " + a.URL)
 	}
+	// checking size, GitHub doesn't support big images
+	toobig, err := github.ImageTooBig(a.URL)
+	if err != nil {
+		return "", err
+	} else if toobig {
+		return "", errors.New("unsupported doggo :( size too big: " + a.URL)
+	}
 	return a.Format()
 }
 
