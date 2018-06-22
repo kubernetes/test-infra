@@ -171,6 +171,7 @@ tide:
     missingLabels:
     - do-not-merge
     - do-not-merge/hold
+    - do-not-merge/invalid-owners-file
     - do-not-merge/work-in-progress
     - needs-ok-to-test
     - needs-rebase
@@ -222,6 +223,7 @@ tide:
     - do-not-merge/blocked-paths
     - do-not-merge/cherry-pick-not-approved
     - do-not-merge/hold
+    - do-not-merge/invalid-owners-file
     - do-not-merge/release-note-label-needed
     - do-not-merge/work-in-progress
     - needs-ok-to-test
@@ -232,6 +234,7 @@ tide:
     - "cncf-cla: yes"
     missingLabels:
     - do-not-merge/hold
+    - do-not-merge/invalid-owners-file
     - do-not-merge/work-in-progress
     reviewApprovedRequired: true
   - repos:
@@ -245,6 +248,7 @@ tide:
     - "cncf-cla: yes"
     missingLabels:
     - do-not-merge/hold
+    - do-not-merge/invalid-owners-file
     - do-not-merge/work-in-progress
     - needs-ok-to-test
   merge_method:
@@ -16914,6 +16918,7 @@ periodics:
         -label:do-not-merge/blocked-paths
         -label:do-not-merge/cherry-pick-not-approved
         -label:do-not-merge/hold
+        -label:do-not-merge/invalid-owners-file
         -label:do-not-merge/release-note-label-needed
         -label:do-not-merge/work-in-progress
         label:lgtm
