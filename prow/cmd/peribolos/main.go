@@ -338,7 +338,7 @@ type teamClient interface {
 }
 
 // configureTeams returns the ids for all expected team names, creating/deleting teams as necessary.
-func configureTeams(client teamClient, orgName string, orgConfig org.Config) (map[string]github.Team, error) {
+func configureTeams(client teamClient, orgName string, orgConfig org.Config, maxDelta float64) (map[string]github.Team, error) {
 	if err := validateTeamNames(orgConfig); err != nil {
 		return nil, err
 	}
@@ -385,6 +385,12 @@ func configureTeams(client teamClient, orgName string, orgConfig org.Config) (ma
 		used.Insert(t.ID)
 	}
 
+	// First compute teams we will delete, ensure we are not deleting too many
+	unused := ints.Difference(used)
+	if delta := float64(len(unused)) / float64(len(ints)); delta >= maxDelta {
+		return nil, fmt.Errorf("cannot delete %d teams or %.3f of %s teams (exceeds limit of %.3f)", len(unused), delta, orgName, maxDelta)
+	}
+
 	// Create any missing team names
 	var failures []string
 	for name, orgTeam := range missing {
@@ -402,15 +408,23 @@ func configureTeams(client teamClient, orgName string, orgConfig org.Config) (ma
 			continue
 		}
 		matches[name] = *t
+		// t.ID may include an ID already present in ints if other actors are deleting teams.
 		used.Insert(t.ID)
 	}
 	if n := len(failures); n > 0 {
 		return nil, fmt.Errorf("failed to create %d teams: %s", n, strings.Join(failures, ", "))
 	}
 
+	// Remove any IDs returned by CreateTeam() that are in the unused set.
+	if reused := unused.Intersection(used); len(reused) > 0 {
+		// Logically possible for:
+		// * another actor to delete team N after the ListTeams() call
+		// * github to reuse team N after someone deted it
+		// Therefore used may now include IDs in unused, handle this situation.
+		logrus.Warnf("Will not delete %d team IDs reused by github: %v", len(reused), reused.List())
+		unused = unused.Difference(reused)
+	}
 	// Delete undeclared teams.
-	// TODO(fejta): consider ensuring we don't delete too many teams at once
-	unused := ints.Difference(used)
 	for id := range unused {
 		if err := client.DeleteTeam(id); err != nil {
 			str := fmt.Sprintf("%d(%s)", id, ids[id].Name)
@@ -432,7 +446,7 @@ func configureOrg(opt options, client *github.Client, orgName string, orgConfig 
 	// patch meta
 
 	// Find the id and current state of each declared team (create/delete as necessary)
-	githubTeams, err := configureTeams(client, orgName, orgConfig)
+	githubTeams, err := configureTeams(client, orgName, orgConfig, opt.maximumDelta)
 	if err != nil {
 		return fmt.Errorf("failed to configure %s teams: %v", orgName, err)
 	}
