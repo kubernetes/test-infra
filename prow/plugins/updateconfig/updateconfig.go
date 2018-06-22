@@ -86,6 +86,11 @@ func update(gc githubClient, kc kubeClient, org, repo, commit, name, namespace s
 	}
 
 	for key, filename := range updates {
+		if filename == "" {
+			delete(data, key)
+			continue
+		}
+
 		content, err := gc.GetFile(org, repo, filename, commit)
 		if err != nil {
 			return fmt.Errorf("get file err: %v", err)
@@ -156,6 +161,7 @@ func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRe
 		if !ok {
 			continue // This file does not define a configmap
 		}
+
 		// Yes, update the configmap with the contents of this file
 		key := cm.Key
 		if key == "" {
@@ -165,7 +171,11 @@ func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRe
 		if _, ok := toUpdate[id]; !ok {
 			toUpdate[id] = map[string]string{}
 		}
-		toUpdate[id][key] = change.Filename
+		if change.Status == "removed" {
+			toUpdate[id][key] = ""
+		} else {
+			toUpdate[id][key] = change.Filename
+		}
 	}
 
 	for cm, data := range toUpdate {

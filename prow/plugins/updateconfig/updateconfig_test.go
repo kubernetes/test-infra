@@ -34,7 +34,8 @@ import (
 const defaultNamespace = "default"
 
 type fakeKubeClient struct {
-	maps map[string]kube.ConfigMap
+	maps        map[string]kube.ConfigMap
+	updatedMaps []string
 }
 
 func (c *fakeKubeClient) GetConfigMap(name, namespace string) (kube.ConfigMap, error) {
@@ -49,6 +50,7 @@ func (c *fakeKubeClient) ReplaceConfigMap(name string, config kube.ConfigMap) (k
 		config.Namespace = defaultNamespace
 	}
 	c.maps[name] = config
+	c.updatedMaps = append(c.updatedMaps, name)
 	return c.maps[name], nil
 }
 
@@ -69,12 +71,13 @@ func TestUpdateConfig(t *testing.T) {
 	}
 
 	testcases := []struct {
-		name          string
-		prAction      github.PullRequestEventAction
-		merged        bool
-		mergeCommit   string
-		changes       []github.PullRequestChange
-		configUpdates []string
+		name               string
+		prAction           github.PullRequestEventAction
+		merged             bool
+		mergeCommit        string
+		changes            []github.PullRequestChange
+		existConfigMaps    map[string]kube.ConfigMap
+		expectedConfigMaps map[string]kube.ConfigMap
 	}{
 		{
 			name:     "Opened PR, no update",
@@ -86,6 +89,7 @@ func TestUpdateConfig(t *testing.T) {
 					Additions: 1,
 				},
 			},
+			existConfigMaps: map[string]kube.ConfigMap{},
 		},
 		{
 			name:   "Opened PR, not merged, no update",
@@ -96,6 +100,7 @@ func TestUpdateConfig(t *testing.T) {
 					Additions: 1,
 				},
 			},
+			existConfigMaps: map[string]kube.ConfigMap{},
 		},
 		{
 			name:     "Closed PR, no prow changes, no update",
@@ -107,6 +112,7 @@ func TestUpdateConfig(t *testing.T) {
 					Additions: 1,
 				},
 			},
+			existConfigMaps: map[string]kube.ConfigMap{},
 		},
 		{
 			name:     "For whatever reason no merge commit SHA",
@@ -118,6 +124,7 @@ func TestUpdateConfig(t *testing.T) {
 					Additions: 1,
 				},
 			},
+			existConfigMaps: map[string]kube.ConfigMap{},
 		},
 		{
 			name:        "changed config.yaml, 1 update",
@@ -130,10 +137,21 @@ func TestUpdateConfig(t *testing.T) {
 					Additions: 1,
 				},
 			},
-			configUpdates: []string{"config"},
+			existConfigMaps: map[string]kube.ConfigMap{},
+			expectedConfigMaps: map[string]kube.ConfigMap{
+				"config": {
+					ObjectMeta: kube.ObjectMeta{
+						Name:      "config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"config.yaml": "new-config",
+					},
+				},
+			},
 		},
 		{
-			name:        "changed config.yaml, 1 update",
+			name:        "changed config.yaml, existed configmap, 1 update",
 			prAction:    github.PullRequestActionClosed,
 			merged:      true,
 			mergeCommit: "12345",
@@ -143,7 +161,28 @@ func TestUpdateConfig(t *testing.T) {
 					Additions: 1,
 				},
 			},
-			configUpdates: []string{"config"},
+			existConfigMaps: map[string]kube.ConfigMap{
+				"config": {
+					ObjectMeta: kube.ObjectMeta{
+						Name:      "config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"config.yaml": "old-config",
+					},
+				},
+			},
+			expectedConfigMaps: map[string]kube.ConfigMap{
+				"config": {
+					ObjectMeta: kube.ObjectMeta{
+						Name:      "config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"config.yaml": "new-config",
+					},
+				},
+			},
 		},
 		{
 			name:        "changed plugins.yaml, 1 update with custom key",
@@ -156,7 +195,18 @@ func TestUpdateConfig(t *testing.T) {
 					Additions: 1,
 				},
 			},
-			configUpdates: []string{"plugins"},
+			existConfigMaps: map[string]kube.ConfigMap{},
+			expectedConfigMaps: map[string]kube.ConfigMap{
+				"plugins": {
+					ObjectMeta: kube.ObjectMeta{
+						Name:      "plugins",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"test-key": "new-plugins",
+					},
+				},
+			},
 		},
 		{
 			name:        "changed resources.yaml, 1 update with custom namespace",
@@ -169,7 +219,18 @@ func TestUpdateConfig(t *testing.T) {
 					Additions: 1,
 				},
 			},
-			configUpdates: []string{"boskos-config"},
+			existConfigMaps: map[string]kube.ConfigMap{},
+			expectedConfigMaps: map[string]kube.ConfigMap{
+				"boskos-config": {
+					ObjectMeta: kube.ObjectMeta{
+						Name:      "boskos-config",
+						Namespace: "boskos",
+					},
+					Data: map[string]string{
+						"resources.yaml": "new-boskos-config",
+					},
+				},
+			},
 		},
 		{
 			name:        "changed config.yaml, plugins.yaml and resources.yaml, 3 update",
@@ -190,7 +251,166 @@ func TestUpdateConfig(t *testing.T) {
 					Additions: 1,
 				},
 			},
-			configUpdates: []string{"config", "plugins", "boskos-config"},
+			existConfigMaps: map[string]kube.ConfigMap{},
+			expectedConfigMaps: map[string]kube.ConfigMap{
+				"config": {
+					ObjectMeta: kube.ObjectMeta{
+						Name:      "config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"config.yaml": "new-config",
+					},
+				},
+				"plugins": {
+					ObjectMeta: kube.ObjectMeta{
+						Name:      "plugins",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"test-key": "new-plugins",
+					},
+				},
+				"boskos-config": {
+					ObjectMeta: kube.ObjectMeta{
+						Name:      "boskos-config",
+						Namespace: "boskos",
+					},
+					Data: map[string]string{
+						"resources.yaml": "new-boskos-config",
+					},
+				},
+			},
+		},
+		{
+			name:        "edited both config/foo.yaml and config/bar.yaml, 2 update",
+			prAction:    github.PullRequestActionClosed,
+			merged:      true,
+			mergeCommit: "12345",
+			changes: []github.PullRequestChange{
+				{
+					Filename:  "config/foo.yaml",
+					Additions: 1,
+				},
+				{
+					Filename:  "config/bar.yaml",
+					Additions: 1,
+				},
+			},
+			existConfigMaps: map[string]kube.ConfigMap{
+				"multikey-config": {
+					ObjectMeta: kube.ObjectMeta{
+						Name:      "multikey-config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"foo.yaml": "old-foo-config",
+						"bar.yaml": "old-bar-config",
+					},
+				},
+			},
+			expectedConfigMaps: map[string]kube.ConfigMap{
+				"multikey-config": {
+					ObjectMeta: kube.ObjectMeta{
+						Name:      "multikey-config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"foo.yaml": "new-foo-config",
+						"bar.yaml": "new-bar-config",
+					},
+				},
+			},
+		},
+		{
+			name:        "edited config/foo.yaml, 1 update",
+			prAction:    github.PullRequestActionClosed,
+			merged:      true,
+			mergeCommit: "12345",
+			changes: []github.PullRequestChange{
+				{
+					Filename:  "config/foo.yaml",
+					Status:    "modified",
+					Additions: 1,
+				},
+			},
+			existConfigMaps: map[string]kube.ConfigMap{
+				"unaffected-config": {
+					ObjectMeta: kube.ObjectMeta{
+						Name:      "unaffected-config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"config.yaml": "old-config",
+					},
+				},
+				"multikey-config": {
+					ObjectMeta: kube.ObjectMeta{
+						Name:      "multikey-config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"foo.yaml": "old-foo-config",
+						"bar.yaml": "old-bar-config",
+					},
+				},
+			},
+			expectedConfigMaps: map[string]kube.ConfigMap{
+				"unaffected-config": {
+					ObjectMeta: kube.ObjectMeta{
+						Name:      "unaffected-config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"config.yaml": "old-config",
+					},
+				},
+				"multikey-config": {
+					ObjectMeta: kube.ObjectMeta{
+						Name:      "multikey-config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"foo.yaml": "new-foo-config",
+						"bar.yaml": "old-bar-config",
+					},
+				},
+			},
+		},
+		{
+			name:        "remove config/foo.yaml, 1 update",
+			prAction:    github.PullRequestActionClosed,
+			merged:      true,
+			mergeCommit: "12345",
+			changes: []github.PullRequestChange{
+				{
+					Filename: "config/foo.yaml",
+					Status:   "removed",
+				},
+			},
+			existConfigMaps: map[string]kube.ConfigMap{
+				"multikey-config": {
+					ObjectMeta: kube.ObjectMeta{
+						Name:      "multikey-config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"foo.yaml": "old-foo-config",
+						"bar.yaml": "old-bar-config",
+					},
+				},
+			},
+			expectedConfigMaps: map[string]kube.ConfigMap{
+				"multikey-config": {
+					ObjectMeta: kube.ObjectMeta{
+						Name:      "multikey-config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"bar.yaml": "old-bar-config",
+					},
+				},
+			},
 		},
 	}
 
@@ -202,7 +422,9 @@ func TestUpdateConfig(t *testing.T) {
 			PullRequest: basicPR,
 		}
 		event.PullRequest.Merged = tc.merged
-		event.PullRequest.MergeSHA = &tc.mergeCommit
+		if tc.mergeCommit != "" {
+			event.PullRequest.MergeSHA = &tc.mergeCommit
+		}
 
 		fgc := &fakegithub.FakeClient{
 			PullRequests: map[int]*github.PullRequest{
@@ -225,10 +447,18 @@ func TestUpdateConfig(t *testing.T) {
 					"master": "old-boskos-config",
 					"12345":  "new-boskos-config",
 				},
+				"config/foo.yaml": {
+					"master": "old-foo-config",
+					"12345":  "new-foo-config",
+				},
+				"config/bar.yaml": {
+					"master": "old-bar-config",
+					"12345":  "new-bar-config",
+				},
 			},
 		}
 		fkc := &fakeKubeClient{
-			maps: map[string]kube.ConfigMap{},
+			maps: tc.existConfigMaps,
 		}
 
 		m := map[string]plugins.ConfigMapSpec{
@@ -243,35 +473,11 @@ func TestUpdateConfig(t *testing.T) {
 				Name:      "boskos-config",
 				Namespace: "boskos",
 			},
-		}
-
-		updatedConfigMaps := map[string]kube.ConfigMap{
-			"config": {
-				ObjectMeta: kube.ObjectMeta{
-					Name:      "config",
-					Namespace: defaultNamespace,
-				},
-				Data: map[string]string{
-					"config.yaml": "new-config",
-				},
+			"config/foo.yaml": {
+				Name: "multikey-config",
 			},
-			"plugins": {
-				ObjectMeta: kube.ObjectMeta{
-					Name:      "plugins",
-					Namespace: defaultNamespace,
-				},
-				Data: map[string]string{
-					"test-key": "new-plugins",
-				},
-			},
-			"boskos-config": {
-				ObjectMeta: kube.ObjectMeta{
-					Name:      "boskos-config",
-					Namespace: "boskos",
-				},
-				Data: map[string]string{
-					"resources.yaml": "new-boskos-config",
-				},
+			"config/bar.yaml": {
+				Name: "multikey-config",
 			},
 		}
 
@@ -279,7 +485,7 @@ func TestUpdateConfig(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if tc.configUpdates != nil {
+		if tc.expectedConfigMaps != nil {
 			if len(fgc.IssueComments[basicPR.Number]) != 1 {
 				t.Fatalf("tc %s : Expect 1 comment, actually got %d", tc.name, len(fgc.IssueComments[basicPR.Number]))
 			}
@@ -288,133 +494,44 @@ func TestUpdateConfig(t *testing.T) {
 			if !strings.Contains(comment, "Updated the") {
 				t.Errorf("%s: missing Updated the from %s", tc.name, comment)
 			}
-			for _, configName := range tc.configUpdates {
-				if !strings.Contains(comment, configName) {
-					t.Errorf("%s: missing %s from %s", tc.name, configName, comment)
+			for configName := range tc.expectedConfigMaps {
+				found := false
+				for _, name := range fkc.updatedMaps {
+					if name == configName {
+						if !strings.Contains(comment, configName) {
+							t.Errorf("%s: missing %s from %s", tc.name, configName, comment)
+						}
+						found = true
+					}
+				}
+
+				if !found {
+					if strings.Contains(comment, configName) {
+						t.Errorf("%s: should not contain %s in %s", tc.name, configName, comment)
+					}
 				}
 			}
 		}
 
-		for _, configName := range tc.configUpdates {
-			if config, ok := fkc.maps[configName]; !ok {
-				t.Errorf("tc %s : Should have updated configmap for '%s'", tc.name, configName)
-			} else if expected, actual := updatedConfigMaps[configName], config; !equality.Semantic.DeepEqual(expected, actual) {
-				t.Errorf("%s: incorrect ConfigMap state after update: %v", tc.name, diff.ObjectReflectDiff(expected, actual))
+		for _, name := range fkc.updatedMaps {
+			found := false
+			for expected := range tc.expectedConfigMaps {
+				if name == expected {
+					found = true
+				}
 			}
 
+			if !found {
+				t.Errorf("%s: should not update unexpected configmap %s", tc.name, name)
+			}
 		}
-	}
-}
 
-func TestUpdateConfigMultipleKeys(t *testing.T) {
-	log := logrus.WithField("plugin", pluginName)
-	mergeSHA := "12345"
-	basicPR := github.PullRequest{
-		Number: 1,
-		Base: github.PullRequestBranch{
-			Repo: github.Repo{
-				Owner: github.User{
-					Login: "kubernetes",
-				},
-				Name: "kubernetes",
-			},
-		},
-		User: github.User{
-			Login: "foo",
-		},
-		Merged:   true,
-		MergeSHA: &mergeSHA,
-	}
-	event := github.PullRequestEvent{
-		Action:      github.PullRequestActionClosed,
-		Number:      basicPR.Number,
-		PullRequest: basicPR,
-	}
-
-	fgc := &fakegithub.FakeClient{
-		PullRequests: map[int]*github.PullRequest{
-			basicPR.Number: &basicPR,
-		},
-		PullRequestChanges: map[int][]github.PullRequestChange{
-			basicPR.Number: {
-				{
-					Filename:  "custom/file.yaml",
-					Additions: 1,
-				},
-				{
-					Filename:  "custom/other.yaml",
-					Additions: 1,
-				},
-				{
-					Filename:  "custom/config.yaml",
-					Additions: 1,
-				},
-			},
-		},
-		IssueComments: map[int][]github.IssueComment{},
-		RemoteFiles: map[string]map[string]string{
-			"custom/file.yaml": {
-				"master": "old-file",
-				"12345":  "new-file",
-			},
-			"custom/other.yaml": {
-				"master": "old-other",
-				"12345":  "new-other",
-			},
-			"custom/config.yaml": {
-				"master": "old-config",
-				"12345":  "new-config",
-			},
-		},
-	}
-	fkc := &fakeKubeClient{
-		maps: map[string]kube.ConfigMap{
-			"custom": {
-				ObjectMeta: kube.ObjectMeta{
-					Name:      "custom",
-					Namespace: defaultNamespace,
-				},
-				Data: map[string]string{
-					"unchanged": "old-unchanged",
-					"file.yaml": "old-file",
-				},
-			},
-		},
-	}
-
-	m := map[string]plugins.ConfigMapSpec{
-		"custom/file.yaml": {
-			Name: "custom",
-		},
-		"custom/other.yaml": {
-			Name: "custom",
-		},
-		"custom/config.yaml": {
-			Name: "custom",
-			Key:  "config",
-		},
-	}
-
-	updatedConfigMap := kube.ConfigMap{
-		ObjectMeta: kube.ObjectMeta{
-			Name:      "custom",
-			Namespace: defaultNamespace,
-		},
-		Data: map[string]string{
-			"unchanged":  "old-unchanged",
-			"file.yaml":  "new-file",
-			"other.yaml": "new-other",
-			"config":     "new-config",
-		},
-	}
-
-	if err := handle(fgc, fkc, log, event, m); err != nil {
-		t.Fatal(err)
-	}
-
-	if config, ok := fkc.maps["custom"]; !ok {
-		t.Error("Should have updated configmap for 'custom'")
-	} else if expected, actual := updatedConfigMap, config; !equality.Semantic.DeepEqual(expected, actual) {
-		t.Errorf("incorrect ConfigMap state after update: %v", diff.ObjectReflectDiff(expected, actual))
+		for configName := range tc.expectedConfigMaps {
+			if config, ok := fkc.maps[configName]; !ok {
+				t.Errorf("tc %s : Should have updated configmap for '%s'", tc.name, configName)
+			} else if expected, actual := tc.expectedConfigMaps[configName], config; !equality.Semantic.DeepEqual(expected, actual) {
+				t.Errorf("%s: incorrect ConfigMap state after update: %v", tc.name, diff.ObjectReflectDiff(expected, actual))
+			}
+		}
 	}
 }

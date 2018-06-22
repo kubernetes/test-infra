@@ -30,7 +30,7 @@ import (
 var (
 	bufferSize     = 1 // Maximum holding resources
 	serviceAccount = flag.String("service-account", "", "Path to projects service account")
-	rTypes         common.ResTypes
+	rTypes         common.CommaSeparatedStrings
 	poolSize       int
 	janitorPath    = flag.String("janitor-path", "/bin/janitor.py", "Path to janitor binary path")
 	boskosURL      = flag.String("boskos-url", "http://boskos", "Boskos URL")

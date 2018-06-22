@@ -38,7 +38,7 @@ import (
 )
 
 var (
-	configPath        = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
+	configPath        = flag.String("config-path", "/etc/config/config.yaml", "Path to config.yaml.")
 	port              = flag.Int("port", 8888, "Port to listen on.")
 	dryRun            = flag.Bool("dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	webhookSecretFile = flag.String("hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")

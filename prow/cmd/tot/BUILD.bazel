@@ -23,7 +23,10 @@ go_binary(
 go_test(
     name = "go_default_test",
     srcs = ["main_test.go"],
-    data = ["//prow:configs"],
+    data = [
+        "//config:prowjobs",
+        "//prow:configs",
+    ],
     embed = [":go_default_library"],
     deps = ["//prow/config:go_default_library"],
 )

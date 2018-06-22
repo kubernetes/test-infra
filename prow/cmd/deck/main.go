@@ -48,6 +48,7 @@ import (
 
 type options struct {
 	configPath            string
+	jobConfigPath         string
 	buildCluster          string
 	tideURL               string
 	hookURL               string
@@ -77,6 +78,7 @@ func (o *options) Validate() error {
 func gatherOptions() options {
 	o := options{}
 	flag.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
+	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	flag.StringVar(&o.buildCluster, "build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
 	flag.StringVar(&o.tideURL, "tide-url", "", "Path to tide. If empty, do not serve tide data.")
 	flag.StringVar(&o.hookURL, "hook-url", "", "Path to hook plugin help endpoint.")
@@ -128,7 +130,7 @@ func main() {
 func prodOnlyMain(o options, mux *http.ServeMux) *http.ServeMux {
 	// setup config agent, pod log clients etc.
 	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath, ""); err != nil {
+	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 

@@ -27,6 +27,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/boskos/client"
 	"k8s.io/test-infra/boskos/common"
 )
@@ -39,33 +40,35 @@ var (
 	promMetrics = prometheusMetrics{
 		BoskosState: map[string]map[string]prometheus.Gauge{},
 	}
-	resources common.ResTypes
+	resources, states common.CommaSeparatedStrings
+	defaultStates     = []string{
+		common.Busy,
+		common.Cleaning,
+		common.Dirty,
+		common.Free,
+		common.Leased,
+	}
 )
 
 func init() {
 	flag.Var(&resources, "resource-type", "comma-separated list of resources need to have metrics collected")
+	flag.Var(&states, "resource-state", "comma-separated list of states need to have metrics collected")
 }
 
 func initMetrics() {
 	for _, resource := range resources {
-		promMetrics.BoskosState[resource] = map[string]prometheus.Gauge{
-			common.Free: prometheus.NewGauge(prometheus.GaugeOpts{
-				Name: fmt.Sprintf("boskos_%s_%s", strings.Replace(resource, "-", "_", -1), common.Free),
-				Help: fmt.Sprintf("Number of %s %s", common.Free, resource),
-			}),
-			common.Busy: prometheus.NewGauge(prometheus.GaugeOpts{
-				Name: fmt.Sprintf("boskos_%s_%s", strings.Replace(resource, "-", "_", -1), common.Busy),
-				Help: fmt.Sprintf("Number of %s %s", common.Busy, resource),
-			}),
-			common.Dirty: prometheus.NewGauge(prometheus.GaugeOpts{
-				Name: fmt.Sprintf("boskos_%s_%s", strings.Replace(resource, "-", "_", -1), common.Dirty),
-				Help: fmt.Sprintf("Number of %s %s", common.Dirty, resource),
-			}),
-			common.Cleaning: prometheus.NewGauge(prometheus.GaugeOpts{
-				Name: fmt.Sprintf("boskos_%s_%s", strings.Replace(resource, "-", "_", -1), common.Cleaning),
-				Help: fmt.Sprintf("Number of %s %s", common.Cleaning, resource),
-			}),
+		promMetrics.BoskosState[resource] = map[string]prometheus.Gauge{}
+		for _, state := range states {
+			promMetrics.BoskosState[resource][state] = prometheus.NewGauge(prometheus.GaugeOpts{
+				Name: fmt.Sprintf("boskos_%s_%s", strings.Replace(resource, "-", "_", -1), state),
+				Help: fmt.Sprintf("Number of %s %s", state, resource),
+			})
 		}
+		// Adding other state for metrics that are not captured with existing state
+		promMetrics.BoskosState[resource][common.Other] = prometheus.NewGauge(prometheus.GaugeOpts{
+			Name: fmt.Sprintf("boskos_%s_%s", strings.Replace(resource, "-", "_", -1), common.Other),
+			Help: fmt.Sprintf("Number of %s %s", common.Other, resource),
+		})
 	}
 
 	for _, gauges := range promMetrics.BoskosState {
@@ -81,6 +84,10 @@ func main() {
 	logrus.Infof("Initialzied boskos client!")
 
 	flag.Parse()
+	if states == nil {
+		states = defaultStates
+	}
+
 	initMetrics()
 
 	http.Handle("/prometheus", promhttp.Handler())
@@ -99,19 +106,35 @@ func main() {
 	logrus.WithError(http.ListenAndServe(":8080", nil)).Fatal("ListenAndServe returned.")
 }
 
+func filterMetrics(src map[string]int) map[string]int {
+	metricStates := sets.NewString(states...)
+	dest := map[string]int{}
+	// Making sure all metrics are created
+	for state := range metricStates {
+		dest[state] = 0
+	}
+	dest[common.Other] = 0
+	for state, value := range src {
+		if state != common.Other && metricStates.Has(state) {
+			dest[state] = value
+		} else {
+			dest[common.Other] += value
+		}
+	}
+	return dest
+}
+
 func update(boskos *client.Client) error {
 	for _, resource := range resources {
 		metric, err := boskos.Metric(resource)
 		if err != nil {
 			return fmt.Errorf("fail to get metric for %s : %v", resource, err)
 		}
-
-		promMetrics.BoskosState[resource][common.Free].Set(float64(metric.Current[common.Free]))
-		promMetrics.BoskosState[resource][common.Busy].Set(float64(metric.Current[common.Busy]))
-		promMetrics.BoskosState[resource][common.Dirty].Set(float64(metric.Current[common.Dirty]))
-		promMetrics.BoskosState[resource][common.Cleaning].Set(float64(metric.Current[common.Cleaning]))
+		// Filtering metrics states
+		for state, value := range filterMetrics(metric.Current) {
+			promMetrics.BoskosState[resource][state].Set(float64(value))
+		}
 	}
-
 	return nil
 }
 

@@ -17,13 +17,12 @@ limitations under the License.
 package common
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
-	"time"
-
-	"encoding/json"
 	"sync"
+	"time"
 
 	"github.com/ghodss/yaml"
 )
@@ -39,6 +38,8 @@ const (
 	Cleaning = "cleaning"
 	// Leased state defines a resource being leased in order to make a new resource
 	Leased = "leased"
+	// Other is used to agglomerate unspecified states for metrics reporting
+	Other = "other"
 )
 
 // UserData is a map of Name to user defined interface, serialized into a string
@@ -141,15 +142,15 @@ func (ut ResourceByName) Len() int           { return len(ut) }
 func (ut ResourceByName) Swap(i, j int)      { ut[i], ut[j] = ut[j], ut[i] }
 func (ut ResourceByName) Less(i, j int) bool { return ut[i].GetName() < ut[j].GetName() }
 
-// ResTypes is used to parse flags for a list of types
-type ResTypes []string
+// CommaSeparatedStrings is used to parse comma separated string flag into a list of strings
+type CommaSeparatedStrings []string
 
-func (r *ResTypes) String() string {
+func (r *CommaSeparatedStrings) String() string {
 	return fmt.Sprint(*r)
 }
 
-// Set parses the flag value into a ResTypes
-func (r *ResTypes) Set(value string) error {
+// Set parses the flag value into a CommaSeparatedStrings
+func (r *CommaSeparatedStrings) Set(value string) error {
 	if len(*r) > 0 {
 		return errors.New("resTypes flag already set")
 	}
