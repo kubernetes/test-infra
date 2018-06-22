@@ -27,8 +27,8 @@ import (
 
 // SpyGlass records which sets of artifacts need views for a prow job
 type SpyGlass struct {
-	job      kube.ProwJob
-	eyepiece map[string]ArtifactViewer
+	Job      kube.ProwJob
+	Eyepiece map[string]ArtifactViewer
 }
 
 // TODO move the artifact interfaces, registration to a separate package for importing, add utils
@@ -50,15 +50,34 @@ type Artifact interface {
 
 // Lens is a single view of a set of artifacts
 type Lens struct {
+	// Unique name of view
+	name string
+
 	title    string
 	htmlView string
 	reMatch  string
 }
 
+// NewSpyglass constructs a default spyglass object that renders build logs and Prow metadata
+func NewSpyglass(job kube.ProwJob) *SpyGlass {
+	ep := map[string]ArtifactViewer{
+		"build-log.txt": &BuildLogViewer{
+			title: "Build Log",
+		},
+		"started.json|finished.json": &MetadataViewer{
+			title: "Job Metadata",
+		},
+	}
+	return &SpyGlass{
+		Job:      job,
+		Eyepiece: ep,
+	}
+}
+
 // Views gets all views of all artifact files matching each regexp with a registered viewer
 func (s *SpyGlass) Views(artifacts []Artifact) []Lens {
 	lenses := []Lens{}
-	for re, viewer := range s.eyepiece {
+	for re, viewer := range s.Eyepiece {
 		matches := []Artifact{}
 		r := regexp.MustCompile(re)
 		for _, a := range artifacts {
@@ -72,10 +91,11 @@ func (s *SpyGlass) Views(artifacts []Artifact) []Lens {
 			reMatch:  re,
 		}
 		lenses = append(lenses, lens)
-		go func() {
-			lens.htmlView = viewer.View(matches)
-		}()
+		go func(av ArtifactViewer) {
+			lens.htmlView = av.View(matches)
+		}(viewer)
 	}
+
 	return lenses
 }
 
@@ -85,5 +105,5 @@ func (s *SpyGlass) RegisterViewer(re string, viewer ArtifactViewer) {
 	if err != nil {
 		logrus.Fatal(err)
 	}
-	s.eyepiece[re] = viewer
+	s.Eyepiece[re] = viewer
 }

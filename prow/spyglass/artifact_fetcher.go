@@ -28,7 +28,6 @@ import (
 
 // Gets artfiacts from a storage provider
 type ArtifactFetcher interface {
-	NewFetcher()
 	Artifacts(src *JobSource) []Artifact
 }
 

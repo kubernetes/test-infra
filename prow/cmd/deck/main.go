@@ -45,6 +45,7 @@ import (
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/prstatus"
+	"k8s.io/test-infra/prow/spyglass"
 )
 
 type options struct {
@@ -170,7 +171,7 @@ func prodOnlyMain(o options, mux *http.ServeMux) *http.ServeMux {
 	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(configAgent)))
 	mux.Handle("/branding.js", gziphandler.GzipHandler(handleBranding(configAgent)))
 	mux.Handle("/favicon.ico", gziphandler.GzipHandler(handleFavicon(configAgent)))
-	mux.Handle("/view", gziphandler.GzipHandler(handleJobView(ja)))
+	mux.Handle("/view", gziphandler.GzipHandler(handleRequestJobViews(kc)))
 
 	if o.hookURL != "" {
 		mux.Handle("/plugin-help.js",
@@ -408,11 +409,50 @@ func handleBadge(ja *jobs.JobAgent) http.HandlerFunc {
 	}
 }
 
-func handleJobView() http.HandlerFunc {
+// handleRequestJobViews handles requests to get all available artifact views for a given job
+func handleRequestJobViews(kc pjClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// TODO (paulangton): get artifacts from GCS, pass to spyglass
-		// include GCS path if possible in request so page is reproducible after prow deletes it
-		// Separate artifact fetching into its own package
+		bucket := r.URL.Query().Get("bucket")
+		jobPath := r.URL.Query().Get("job")
+		if bucket == "" {
+			http.Error(w, "missing bucket query parameter", http.StatusBadRequest)
+			return
+		}
+		if jobPath == "" {
+			http.Error(w, "missing jobPath query parameter", http.StatusBadRequest)
+			return
+		}
+
+		artifactFetcher := spyglass.NewGCSArtifactFetcher()
+		gcsJobSource := spyglass.NewGCSJobSource(bucket, jobPath)
+		artifacts := artifactFetcher.Artifacts(gcsJobSource)
+		pj, err := kc.GetProwJob(path.Join(bucket, jobPath))
+		if err != nil {
+			logrus.Errorf("Retrieve ProwJob failed, error: %s", err)
+		}
+		sg := spyglass.NewSpyglass(pj)
+		lenses := sg.Views(artifacts)
+
+		// TODO find a way to get titles and views separately
+		pd, err := json.Marshal(lenses)
+		if err != nil {
+			logrus.WithError(err).Error("Error marshaling payload.")
+			pd = []byte("{}")
+		}
+		fmt.Fprint(w, string(pd))
+	}
+}
+
+// handleArtifactView handles requests to load a view for a specific set of artifacts
+func handleArtifactView() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		name := r.URL.Query().Get("name")
+		if name == "" {
+			http.Error(w, "missing name query parameter", http.StatusBadRequest)
+			return
+		}
+		// TODO get actual html view for this type of artifact
+		// Should also handle "more" requests for specific artifacts
 	}
 }
 
