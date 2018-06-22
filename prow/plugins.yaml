@@ -387,6 +387,7 @@ plugins:
   - blunderbuss
   - wip
   - hold
+  - approve
 
   kubernetes-sigs:
   - assign
