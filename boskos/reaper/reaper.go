@@ -26,7 +26,7 @@ import (
 )
 
 var (
-	rTypes    common.ResTypes
+	rTypes    common.CommaSeparatedStrings
 	boskosURL = flag.String("boskos-url", "http://boskos", "Boskos URL")
 )
 

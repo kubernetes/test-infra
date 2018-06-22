@@ -42,9 +42,10 @@ type configAgent interface {
 }
 
 var (
-	runOnce      = flag.Bool("run-once", false, "If true, run only once then quit.")
-	configPath   = flag.String("config-path", "/etc/config/config.yaml", "Path to config.yaml.")
-	buildCluster = flag.String("build-cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
+	runOnce       = flag.Bool("run-once", false, "If true, run only once then quit.")
+	configPath    = flag.String("config-path", "/etc/config/config.yaml", "Path to config.yaml.")
+	jobConfigPath = flag.String("job-config-path", "", "Path to prow job configs.")
+	buildCluster  = flag.String("build-cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
 )
 
 func main() {
@@ -54,7 +55,7 @@ func main() {
 	)
 
 	configAgent := &config.Agent{}
-	if err := configAgent.Start(*configPath, ""); err != nil {
+	if err := configAgent.Start(*configPath, *jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 

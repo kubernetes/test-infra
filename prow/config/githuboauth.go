@@ -23,6 +23,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
+// Cookie holds the secret returned from github that authenticates the user who authorized this app.
 type Cookie struct {
 	Secret string `json:"secret,omitempty"`
 }
@@ -39,7 +40,7 @@ type GithubOAuthConfig struct {
 	CookieStore *sessions.CookieStore `json:"-"`
 }
 
-// Initialise a GithubOAuthConfig. It creates a OAuthClient using GithubOAuth config and a Cookie Store
+// InitGithubOAuthConfig creates an OAuthClient using GithubOAuth config and a Cookie Store
 // to retain user credentials.
 func (gac *GithubOAuthConfig) InitGithubOAuthConfig(cookie *sessions.CookieStore) {
 	gob.Register(&oauth2.Token{})

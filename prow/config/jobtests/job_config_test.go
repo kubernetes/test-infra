@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package config
+package jobtests
 
 import (
 	"bytes"
@@ -32,15 +32,16 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 
+	cfg "k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 )
 
 // config.json is the worst but contains useful information :-(
 type configJSON map[string]map[string]interface{}
 
-var configPath = flag.String("config", "../config.yaml", "Path to prow config")
+var configPath = flag.String("config", "../../config.yaml", "Path to prow config")
 var jobConfigPath = flag.String("job-config", "", "Path to prow job config")
-var configJSONPath = flag.String("config-json", "../../jobs/config.json", "Path to prow job config")
+var configJSONPath = flag.String("config-json", "../../../jobs/config.json", "Path to prow job config")
 
 func (c configJSON) ScenarioForJob(jobName string) string {
 	if scenario, ok := c[jobName]["scenario"]; ok {
@@ -63,7 +64,7 @@ func readConfigJSON(path string) (config configJSON, err error) {
 }
 
 // Loaded at TestMain.
-var c *Config
+var c *cfg.Config
 var cj configJSON
 
 func TestMain(m *testing.M) {
@@ -73,7 +74,7 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 
-	conf, err := Load(*configPath, *jobConfigPath)
+	conf, err := cfg.Load(*configPath, *jobConfigPath)
 	if err != nil {
 		fmt.Printf("Could not load config: %v", err)
 		os.Exit(1)
@@ -163,7 +164,7 @@ func validateVolumesAndMounts(name string, spec *v1.PodSpec, t *testing.T) {
 	}
 }
 
-func checkContext(t *testing.T, repo string, p Presubmit) {
+func checkContext(t *testing.T, repo string, p cfg.Presubmit) {
 	if !p.SkipReport && p.Name != p.Context {
 		t.Errorf("Context does not match job name: %s in %s", p.Name, repo)
 	}
@@ -180,7 +181,7 @@ func TestContextMatches(t *testing.T) {
 	}
 }
 
-func checkRetest(t *testing.T, repo string, presubmits []Presubmit) {
+func checkRetest(t *testing.T, repo string, presubmits []cfg.Presubmit) {
 	for _, p := range presubmits {
 		expected := fmt.Sprintf("/test %s", p.Name)
 		if p.RerunCommand != expected {
@@ -201,7 +202,7 @@ type SubmitQueueConfig struct {
 	RequiredRetestContexts string `json:"required-retest-contexts"`
 }
 
-func findRequired(t *testing.T, presubmits []Presubmit) []string {
+func findRequired(t *testing.T, presubmits []cfg.Presubmit) []string {
 	var required []string
 	for _, p := range presubmits {
 		if !p.AlwaysRun {
@@ -331,7 +332,7 @@ func volumeIsCacheSSD(v *kube.Volume) bool {
 	return v.HostPath != nil && strings.HasPrefix(v.HostPath.Path, "/mnt/disks/ssd0")
 }
 
-func checkBazelPortPresubmit(presubmits []Presubmit) error {
+func checkBazelPortPresubmit(presubmits []cfg.Presubmit) error {
 	for _, presubmit := range presubmits {
 		if presubmit.Spec == nil {
 			continue
@@ -358,7 +359,7 @@ func checkBazelPortPresubmit(presubmits []Presubmit) error {
 	return nil
 }
 
-func checkBazelPortPostsubmit(postsubmits []Postsubmit) error {
+func checkBazelPortPostsubmit(postsubmits []cfg.Postsubmit) error {
 	for _, postsubmit := range postsubmits {
 		hasCache := false
 		for _, volume := range postsubmit.Spec.Volumes {
@@ -382,7 +383,7 @@ func checkBazelPortPostsubmit(postsubmits []Postsubmit) error {
 	return nil
 }
 
-func checkBazelPortPeriodic(periodics []Periodic) error {
+func checkBazelPortPeriodic(periodics []cfg.Periodic) error {
 	for _, periodic := range periodics {
 		hasCache := false
 		for _, volume := range periodic.Spec.Volumes {
@@ -429,13 +430,13 @@ func TestBazelJobHasContainerPort(t *testing.T) {
 
 // Load the config and extract all jobs, including any child jobs inside
 // RunAfterSuccess fields.
-func allJobs() ([]Presubmit, []Postsubmit, []Periodic, error) {
-	pres := []Presubmit{}
-	posts := []Postsubmit{}
-	peris := []Periodic{}
+func allJobs() ([]cfg.Presubmit, []cfg.Postsubmit, []cfg.Periodic, error) {
+	pres := []cfg.Presubmit{}
+	posts := []cfg.Postsubmit{}
+	peris := []cfg.Periodic{}
 
 	{ // Find all presubmit jobs, including child jobs.
-		q := []Presubmit{}
+		q := []cfg.Presubmit{}
 
 		for _, p := range c.Presubmits {
 			for _, p2 := range p {
@@ -453,7 +454,7 @@ func allJobs() ([]Presubmit, []Postsubmit, []Periodic, error) {
 	}
 
 	{ // Find all postsubmit jobs, including child jobs.
-		q := []Postsubmit{}
+		q := []cfg.Postsubmit{}
 
 		for _, p := range c.Postsubmits {
 			for _, p2 := range p {
@@ -471,7 +472,7 @@ func allJobs() ([]Presubmit, []Postsubmit, []Periodic, error) {
 	}
 
 	{ // Find all periodic jobs, including child jobs.
-		q := []Periodic{}
+		q := []cfg.Periodic{}
 		for _, p := range c.Periodics {
 			q = append(q, p)
 		}

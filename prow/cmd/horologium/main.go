@@ -31,12 +31,14 @@ import (
 )
 
 type options struct {
-	configPath string
+	configPath    string
+	jobConfigPath string
 }
 
 func gatherOptions() options {
 	o := options{}
 	flag.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
+	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	flag.Parse()
 	return o
 }
@@ -48,7 +50,7 @@ func main() {
 	)
 
 	configAgent := config.Agent{}
-	if err := configAgent.Start(o.configPath, ""); err != nil {
+	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 

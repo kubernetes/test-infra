@@ -227,7 +227,7 @@ func targetURL(c *config.Agent, pr *PullRequest, log *logrus.Entry) string {
 	var link string
 	if tideURL := c.Config().Tide.TargetURL; tideURL != "" {
 		link = tideURL
-	} else if baseURL := c.Config().Tide.PRStatusBaseUrl; baseURL != "" {
+	} else if baseURL := c.Config().Tide.PRStatusBaseURL; baseURL != "" {
 		parseURL, err := url.Parse(baseURL)
 		if err != nil {
 			log.WithError(err).Error("Failed to parse PR status base URL")

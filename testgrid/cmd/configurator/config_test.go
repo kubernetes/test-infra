@@ -343,10 +343,11 @@ func TestConfig(t *testing.T) {
 
 func TestJobsTestgridEntryMatch(t *testing.T) {
 	prowPath := "../../../prow/config.yaml"
+	jobPath := "../../../config/jobs"
 
 	jobs := make(map[string]bool)
 
-	prowConfig, err := prow_config.Load(prowPath, "")
+	prowConfig, err := prow_config.Load(prowPath, jobPath)
 	if err != nil {
 		t.Fatalf("Could not load prow configs: %v\n", err)
 	}

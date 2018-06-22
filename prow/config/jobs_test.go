@@ -25,10 +25,18 @@ import (
 	"strings"
 	"testing"
 
+	"flag"
 	"k8s.io/test-infra/prow/kube"
 )
 
+var c *Config
+var cj configJSON
+var configPath = flag.String("config", "../config.yaml", "Path to prow config")
+var jobConfigPath = flag.String("job-config", "", "Path to prow job config")
+var configJSONPath = flag.String("config-json", "../../jobs/config.json", "Path to prow job config")
 var podRe = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`)
+
+type configJSON map[string]map[string]interface{}
 
 const (
 	testThis   = "/test all"
@@ -70,6 +78,44 @@ func checkOverlapBrancher(b1, b2 Brancher) bool {
 	}
 
 	return false
+}
+
+func readConfigJSON(path string) (config configJSON, err error) {
+	raw, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	config = configJSON{}
+	err = json.Unmarshal(raw, &config)
+	if err != nil {
+		return nil, err
+	}
+	return config, nil
+}
+
+func TestMain(m *testing.M) {
+	flag.Parse()
+	if *configPath == "" {
+		fmt.Println("--config must set")
+		os.Exit(1)
+	}
+
+	conf, err := Load(*configPath, *jobConfigPath)
+	if err != nil {
+		fmt.Printf("Could not load config: %v", err)
+		os.Exit(1)
+	}
+	c = conf
+
+	if *configJSONPath != "" {
+		cj, err = readConfigJSON(*configJSONPath)
+		if err != nil {
+			fmt.Printf("Could not load jobs config: %v", err)
+			os.Exit(1)
+		}
+	}
+
+	os.Exit(m.Run())
 }
 
 // TODO(spxtr): Some of this is generic prowjob stuff and some of this is k8s-

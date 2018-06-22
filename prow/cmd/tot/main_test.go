@@ -153,7 +153,7 @@ func TestFallback(t *testing.T) {
 var c *config.Config
 
 func TestMain(m *testing.M) {
-	conf, err := config.Load("../../config.yaml", "")
+	conf, err := config.Load("../../config.yaml", "../../../config/jobs")
 	if err != nil {
 		fmt.Printf("Could not load config: %v", err)
 		os.Exit(1)

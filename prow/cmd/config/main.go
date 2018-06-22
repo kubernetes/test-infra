@@ -28,13 +28,15 @@ import (
 )
 
 type options struct {
-	configPath   string
-	pluginConfig string
+	configPath    string
+	jobConfigPath string
+	pluginConfig  string
 }
 
 func gatherOptions() options {
 	o := options{}
 	flag.StringVar(&o.configPath, "config-path", "", "Path to config file.")
+	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	flag.StringVar(&o.pluginConfig, "plugin-config", "", "Path to plugin config file.")
 	flag.Parse()
 	return o
@@ -51,7 +53,7 @@ func main() {
 		}
 	}
 	if o.configPath != "" {
-		if _, err := config.Load(o.configPath, ""); err != nil {
+		if _, err := config.Load(o.configPath, o.jobConfigPath); err != nil {
 			fmt.Fprintf(os.Stderr, "Error reading %s: %v.", o.configPath, err)
 			foundError = true
 		}

@@ -162,13 +162,13 @@ func mergeRestrictions(parent, child *Restrictions) *Restrictions {
 	}
 }
 
-// apply returns a policy that merges the child into the parent
-func (parent Policy) Apply(child Policy) (Policy, error) {
+// Apply returns a policy that merges the child into the parent
+func (p Policy) Apply(child Policy) (Policy, error) {
 	if old := child.deprecatedPolicy.defined(); old && child.defined() {
-		return parent, errors.New("cannot mix Policy and deprecatedPolicy branch protection fields")
+		return p, errors.New("cannot mix Policy and deprecatedPolicy branch protection fields")
 	} else if old {
-		if !parent.deprecatedWarning {
-			parent.deprecatedWarning = true
+		if !p.deprecatedWarning {
+			p.deprecatedWarning = true
 			logrus.Warn("WARNING: protect-by-default, require-contexts, allow-push are deprecated. Please replace them before July 2018")
 		}
 		d := child.deprecatedPolicy
@@ -188,12 +188,12 @@ func (parent Policy) Apply(child Policy) (Policy, error) {
 	}
 
 	return Policy{
-		Protect:                    selectBool(parent.Protect, child.Protect),
-		RequiredStatusChecks:       mergeContextPolicy(parent.RequiredStatusChecks, child.RequiredStatusChecks),
-		Admins:                     selectBool(parent.Admins, child.Admins),
-		Restrictions:               mergeRestrictions(parent.Restrictions, child.Restrictions),
-		RequiredPullRequestReviews: mergeReviewPolicy(parent.RequiredPullRequestReviews, child.RequiredPullRequestReviews),
-		deprecatedWarning:          parent.deprecatedWarning,
+		Protect:                    selectBool(p.Protect, child.Protect),
+		RequiredStatusChecks:       mergeContextPolicy(p.RequiredStatusChecks, child.RequiredStatusChecks),
+		Admins:                     selectBool(p.Admins, child.Admins),
+		Restrictions:               mergeRestrictions(p.Restrictions, child.Restrictions),
+		RequiredPullRequestReviews: mergeReviewPolicy(p.RequiredPullRequestReviews, child.RequiredPullRequestReviews),
+		deprecatedWarning:          p.deprecatedWarning,
 	}, nil
 }
 
@@ -207,20 +207,26 @@ type BranchProtection struct {
 	warned bool // warn if deprecated fields are use
 }
 
+// Org holds the default protection policy for an entire org, as well as any repo overrides.
 type Org struct {
 	Policy
 	Repos map[string]Repo `json:"repos,omitempty"`
 }
 
+// Repo holds protection policy overrides for all branches in a repo, as well as specific branch overrides.
 type Repo struct {
 	Policy
 	Branches map[string]Branch `json:"branches,omitempty"`
 }
 
+// Branch holds protection policy overrides for a particular branch.
 type Branch struct {
 	Policy
 }
 
+// GetBranchProtection returns the policy for a given branch.
+//
+// Handles merging any policies defined at repo/org/global levels into the branch policy.
 func (c *Config) GetBranchProtection(org, repo, branch string) (*Policy, error) {
 	bp := c.BranchProtection
 	var policy Policy

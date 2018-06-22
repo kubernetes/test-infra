@@ -110,6 +110,7 @@ slack:
   mergewarnings:
   - repos:
     - kubernetes/community
+    - kubernetes/org
     channels:
     - sig-contribex
     whitelist:
@@ -306,6 +307,12 @@ plugins:
   - approve
   - blunderbuss
 
+  kubernetes/org:
+  - approve
+  - blunderbuss
+  - owners-label
+  - require-sig
+
   kubernetes/perf-tests:
   - approve
   - blunderbuss
@@ -449,7 +456,7 @@ plugins:
 
   GoogleCloudPlatform/k8s-multicluster-ingress:
   - trigger
-  
+
   client-go/unofficial-docs:
   - assign
   - approve
@@ -478,6 +485,10 @@ external_plugins:
     events:
       - pull_request
   kubernetes/kubernetes:
+  - name: needs-rebase
+    events:
+      - pull_request
+  kubernetes/org:
   - name: needs-rebase
     events:
       - pull_request
