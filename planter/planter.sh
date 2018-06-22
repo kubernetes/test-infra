@@ -50,7 +50,9 @@ BAZEL_CACHE="${HOME}/.cache/bazel"
 # - ${HOME}/.cache/bazel to share bazel cache across builds
 # - /tmp also needs to be a suitable tmpfs mounted with exec so that bazel
 # can use it when executing various things
-VOLUMES="-v ${REPO}:${REPO} -v ${BAZEL_CACHE}:${BAZEL_CACHE} --tmpfs /tmp:exec,mode=777"
+# We also use the delegated option on the mounts to improve performance on macOS.
+# https://docs.docker.com/docker-for-mac/osxfs-caching/
+VOLUMES="-v ${REPO}:${REPO}:delegated -v ${BAZEL_CACHE}:${BAZEL_CACHE}:delegated --tmpfs /tmp:exec,mode=777"
 
 # We want to run as the host user so they own the build outputs etc.
 # Part of this is handled in planter/entrypoint.sh

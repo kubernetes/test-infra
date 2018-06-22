@@ -42,3 +42,20 @@ with the host system.
 
 Further details can be found in `planter.sh` itself, which is somewhat
 self-documenting.
+
+## Docker for Mac
+
+Performance with docker for mac can be quite bad compared to installing bazel 
+natively (which is an option!). If you are going to use planter though, 
+consider tuning the following Docker options:
+
+- Increase CPU reservation, 4+ cores reccomended
+- Increase Memory reservation, 8+ GB reccomended
+
+You can find these under [preferences > advanced](https://docs.docker.com/docker-for-mac/#advanced)
+
+Check [this unnoficial guide](https://medium.com/@TomKeur/how-get-better-disk-performance-in-docker-for-mac-2ba1244b5b70)
+and make sure that you are using `.raw` formatted VM disk for the daemon. 
+
+We also use [delegated volume mounts](https://docs.docker.com/docker-for-mac/osxfs-caching/) to improve osxfs performance.
+
