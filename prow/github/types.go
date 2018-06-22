@@ -79,6 +79,7 @@ type ClientError struct {
 	} `json:"errors,omitempty"`
 }
 
+// Reaction holds the type of emotional reaction.
 type Reaction struct {
 	Content string `json:"content"`
 }
@@ -113,17 +114,28 @@ var NormLogin = strings.ToLower
 type PullRequestEventAction string
 
 const (
-	PullRequestActionAssigned             PullRequestEventAction = "assigned"
-	PullRequestActionUnassigned                                  = "unassigned"
-	PullRequestActionReviewRequested                             = "review_requested"
-	PullRequestActionReviewRequestRemoved                        = "review_request_removed"
-	PullRequestActionLabeled                                     = "labeled"
-	PullRequestActionUnlabeled                                   = "unlabeled"
-	PullRequestActionOpened                                      = "opened"
-	PullRequestActionEdited                                      = "edited"
-	PullRequestActionClosed                                      = "closed"
-	PullRequestActionReopened                                    = "reopened"
-	PullRequestActionSynchronize                                 = "synchronize"
+	// PullRequestActionAssigned means assignees were added.
+	PullRequestActionAssigned PullRequestEventAction = "assigned"
+	// PullRequestActionUnassigned means assignees were removed.
+	PullRequestActionUnassigned = "unassigned"
+	// PullRequestActionReviewRequested means review requests were added.
+	PullRequestActionReviewRequested = "review_requested"
+	// PullRequestActionReviewRequestRemoved means review requests were removed.
+	PullRequestActionReviewRequestRemoved = "review_request_removed"
+	// PullRequestActionLabeled means means labels were added.
+	PullRequestActionLabeled = "labeled"
+	// PullRequestActionUnlabeled means labels were removed
+	PullRequestActionUnlabeled = "unlabeled"
+	// PullRequestActionOpened means the PR was created
+	PullRequestActionOpened = "opened"
+	// PullRequestActionEdited means means the PR body changed.
+	PullRequestActionEdited = "edited"
+	// PullRequestActionClosed means the PR was closed (or was merged).
+	PullRequestActionClosed = "closed"
+	// PullRequestActionReopened means the PR was reopened.
+	PullRequestActionReopened = "reopened"
+	// PullRequestActionSynchronize means the git state changed.
+	PullRequestActionSynchronize = "synchronize"
 )
 
 // PullRequestEvent is what GitHub sends us when a PR is changed.
@@ -190,10 +202,14 @@ type Label struct {
 type PullRequestFileStatus string
 
 const (
+	// PullRequestFileModified means a file changed.
 	PullRequestFileModified PullRequestFileStatus = "modified"
-	PullRequestFileAdded                          = "added"
-	PullRequestFileRemoved                        = "removed"
-	PullRequestFileRenamed                        = "renamed"
+	// PullRequestFileAdded means a file was added.
+	PullRequestFileAdded = "added"
+	// PullRequestFileRemoved means a file was deleted.
+	PullRequestFileRemoved = "removed"
+	// PullRequestFileRenamed means a file moved.
+	PullRequestFileRenamed = "renamed"
 )
 
 // PullRequestChange contains information about what a PR changed.
@@ -235,11 +251,13 @@ type BranchProtectionRequest struct {
 	Restrictions               *Restrictions               `json:"restrictions"`
 }
 
+// RequiredStatusChecks specifies which contexts must pass to merge.
 type RequiredStatusChecks struct {
-	Strict   bool     `json:"strict"`
+	Strict   bool     `json:"strict"` // PR must be up to date (include latest base branch commit).
 	Contexts []string `json:"contexts"`
 }
 
+// RequiredPullRequestReviews controls review rights.
 type RequiredPullRequestReviews struct {
 	DismissalRestrictions        Restrictions `json:"dismissal_restrictions"`
 	DismissStaleReviews          bool         `json:"dismiss_stale_reviews"`
@@ -263,16 +281,26 @@ type Restrictions struct {
 type IssueEventAction string
 
 const (
-	IssueActionAssigned     IssueEventAction = "assigned"
-	IssueActionUnassigned                    = "unassigned"
-	IssueActionLabeled                       = "labeled"
-	IssueActionUnlabeled                     = "unlabeled"
-	IssueActionOpened                        = "opened"
-	IssueActionEdited                        = "edited"
-	IssueActionMilestoned                    = "milestoned"
-	IssueActionDemilestoned                  = "demilestoned"
-	IssueActionClosed                        = "closed"
-	IssueActionReopened                      = "reopened"
+	// IssueActionAssigned means assignees were added.
+	IssueActionAssigned IssueEventAction = "assigned"
+	// IssueActionUnassigned means assignees were added.
+	IssueActionUnassigned = "unassigned"
+	// IssueActionLabeled means labels were added.
+	IssueActionLabeled = "labeled"
+	// IssueActionUnlabeled means labels were removed.
+	IssueActionUnlabeled = "unlabeled"
+	// IssueActionOpened means issue was opened/created.
+	IssueActionOpened = "opened"
+	// IssueActionEdited means issue body was edited.
+	IssueActionEdited = "edited"
+	// IssueActionMilestoned means the milestone was added/changed.
+	IssueActionMilestoned = "milestoned"
+	// IssueActionDemilestoned means a milestone was removed.
+	IssueActionDemilestoned = "demilestoned"
+	// IssueActionClosed means issue was closed.
+	IssueActionClosed = "closed"
+	// IssueActionReopened means issue was reopened.
+	IssueActionReopened = "reopened"
 )
 
 // IssueEvent represents an issue event from a webhook payload (not from the events API).
@@ -302,9 +330,12 @@ type ListedIssueEvent struct {
 type IssueCommentEventAction string
 
 const (
+	// IssueCommentActionCreated means the comment was created.
 	IssueCommentActionCreated IssueCommentEventAction = "created"
-	IssueCommentActionEdited                          = "edited"
-	IssueCommentActionDeleted                         = "deleted"
+	// IssueCommentActionEdited means the comment was edited.
+	IssueCommentActionEdited = "edited"
+	// IssueCommentActionDeleted means the comment was deleted.
+	IssueCommentActionDeleted = "deleted"
 )
 
 // IssueCommentEvent is what GitHub sends us when an issue comment is changed.
@@ -376,6 +407,9 @@ type IssueComment struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }
 
+// StatusEvent fires whenever a git commit changes.
+//
+// See https://developer.github.com/v3/activity/events/types/#statusevent
 type StatusEvent struct {
 	SHA         string `json:"sha,omitempty"`
 	State       string `json:"state,omitempty"`
@@ -435,9 +469,12 @@ type Commit struct {
 type ReviewEventAction string
 
 const (
+	// ReviewActionSubmitted means the review was submitted.
 	ReviewActionSubmitted ReviewEventAction = "submitted"
-	ReviewActionEdited                      = "edited"
-	ReviewActionDismissed                   = "dismissed"
+	// ReviewActionEdited means the review was edited.
+	ReviewActionEdited = "edited"
+	// ReviewActionDismissed means the review was dismissed.
+	ReviewActionDismissed = "dismissed"
 )
 
 // ReviewEvent is what GitHub sends us when a PR review is changed.
@@ -467,9 +504,12 @@ type Review struct {
 type ReviewCommentEventAction string
 
 const (
+	// ReviewCommentActionCreated means the comment was created.
 	ReviewCommentActionCreated ReviewCommentEventAction = "created"
-	ReviewCommentActionEdited                           = "edited"
-	ReviewCommentActionDeleted                          = "deleted"
+	// ReviewCommentActionEdited means the comment was edited.
+	ReviewCommentActionEdited = "edited"
+	// ReviewCommentActionDeleted means the comment was deleted.
+	ReviewCommentActionDeleted = "deleted"
 )
 
 // ReviewCommentEvent is what GitHub sends us when a PR review comment is changed.
@@ -579,13 +619,17 @@ type TeamMembership struct {
 	Membership
 }
 
+// GenericCommentEventAction coerces multiple actions into its generic equivalent.
 type GenericCommentEventAction string
 
 // Comments indicate values that are coerced to the specified value.
 const (
+	// GenericCommentActionCreated means something was created/opened/submitted
 	GenericCommentActionCreated GenericCommentEventAction = "created" // "opened", "submitted"
-	GenericCommentActionEdited                            = "edited"
-	GenericCommentActionDeleted                           = "deleted" // "dismissed"
+	// GenericCommentActionEdited means something was edited.
+	GenericCommentActionEdited = "edited"
+	// GenericCommentActionDeleted means something was deleted/dismissed.
+	GenericCommentActionDeleted = "deleted" // "dismissed"
 )
 
 // GenericCommentEvent is a fake event type that is instantiated for any github event that contains
