@@ -60,6 +60,8 @@ fi
 # Construct the set of docker run options (RUN_OPTS)
 # - Don't keep the container after it exits
 RUN_OPTS="--rm"
+# - run interactively, which gives a better user experience
+RUN_OPTS="${RUN_OPTS} -it"
 
 # - NOTE: SELinux disabled for this container to prevent relabeling $HOME (!)
 RUN_OPTS="${RUN_OPTS} --security-opt label:disable"
