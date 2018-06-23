@@ -32,8 +32,8 @@ const pluginName = "assign"
 
 var (
 	assignRe = regexp.MustCompile(`(?mi)^/(un)?assign(( @?[-\w]+?)*)\s*$`)
-
-	CCRegexp = regexp.MustCompile(`(?mi)^/(un)?cc(( +@?[-\w]+?)*)\s*$`)
+	// CCRegexp parses and validates /cc commands, also used by blunderbuss
+	CCRegexp = regexp.MustCompile(`(?mi)^/(un)?cc(( +@?[-/\w]+?)*)\s*$`)
 )
 
 func init() {
