@@ -569,6 +569,22 @@ type Membership struct {
 	State string `json:"state,omitempty"`
 }
 
+// Organization stores metadata information about an organization
+type Organization struct {
+	// BillingEmail holds private billing address
+	BillingEmail string `json:"billing_email"`
+	Company      string `json:"company"`
+	// Email is publicly visible
+	Email                        string `json:"email"`
+	Location                     string `json:"location"`
+	Name                         string `json:"name"`
+	Description                  string `json:"description"`
+	HasOrganizationProjects      bool   `json:"has_organization_projects"`
+	HasRepositoryProjects        bool   `json:"has_repository_projects"`
+	DefaultRepositoryPermission  string `json:"default_repository_permission"`
+	MembersCanCreateRepositories bool   `json:"members_can_create_repositories"`
+}
+
 // OrgMembership contains Membership fields for user membership in an org.
 type OrgMembership struct {
 	Membership

@@ -1086,3 +1086,329 @@ func cmpLists(a, b []string) error {
 	}
 	return nil
 }
+
+type fakeOrgClient struct {
+	current github.Organization
+	changed bool
+}
+
+func (o *fakeOrgClient) GetOrg(name string) (*github.Organization, error) {
+	if name == "fail" {
+		return nil, errors.New("injected GetOrg error")
+	}
+	return &o.current, nil
+}
+
+func (o *fakeOrgClient) EditOrg(name string, org github.Organization) (*github.Organization, error) {
+	if org.Description == "fail" {
+		return nil, errors.New("injected EditOrg error")
+	}
+	o.current = org
+	o.changed = true
+	return &o.current, nil
+}
+
+func TestUpdateBool(t *testing.T) {
+	yes := true
+	no := false
+	cases := []struct {
+		name string
+		have *bool
+		want *bool
+		end  bool
+		ret  *bool
+	}{
+		{
+			name: "panic on nil have",
+			want: &no,
+		},
+		{
+			name: "never change on nil want",
+			want: nil,
+			have: &yes,
+			end:  yes,
+			ret:  &no,
+		},
+		{
+			name: "do not change if same",
+			want: &yes,
+			have: &yes,
+			end:  yes,
+			ret:  &no,
+		},
+		{
+			name: "change if different",
+			want: &no,
+			have: &yes,
+			end:  no,
+			ret:  &yes,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			defer func() {
+				wantPanic := tc.ret == nil
+				r := recover()
+				gotPanic := r != nil
+				switch {
+				case gotPanic && !wantPanic:
+					t.Errorf("unexpected panic: %v", r)
+				case wantPanic && !gotPanic:
+					t.Errorf("failed to receive panic")
+				}
+			}()
+			if tc.have != nil { // prevent overwriting what tc.have points to for next test case
+				have := *tc.have
+				tc.have = &have
+			}
+			ret := updateBool(tc.have, tc.want)
+			switch {
+			case ret != *tc.ret:
+				t.Errorf("return value %t != expected %t", ret, *tc.ret)
+			case *tc.have != tc.end:
+				t.Errorf("end value %t != expected %t", *tc.have, tc.end)
+			}
+		})
+	}
+}
+
+func TestUpdateString(t *testing.T) {
+	no := false
+	yes := true
+	hello := "hello"
+	world := "world"
+	empty := ""
+	cases := []struct {
+		name     string
+		have     *string
+		want     *string
+		expected string
+		ret      *bool
+	}{
+		{
+			name: "panic on nil have",
+			want: &hello,
+		},
+		{
+			name:     "never change on nil want",
+			want:     nil,
+			have:     &hello,
+			expected: hello,
+			ret:      &no,
+		},
+		{
+			name:     "do not change if same",
+			want:     &world,
+			have:     &world,
+			expected: world,
+			ret:      &no,
+		},
+		{
+			name:     "change if different",
+			want:     &empty,
+			have:     &hello,
+			expected: empty,
+			ret:      &yes,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			defer func() {
+				wantPanic := tc.ret == nil
+				r := recover()
+				gotPanic := r != nil
+				switch {
+				case gotPanic && !wantPanic:
+					t.Errorf("unexpected panic: %v", r)
+				case wantPanic && !gotPanic:
+					t.Errorf("failed to receive panic")
+				}
+			}()
+			if tc.have != nil { // prevent overwriting what tc.have points to for next test case
+				have := *tc.have
+				tc.have = &have
+			}
+			ret := updateString(tc.have, tc.want)
+			switch {
+			case ret != *tc.ret:
+				t.Errorf("return value %t != expected %t", ret, *tc.ret)
+			case *tc.have != tc.expected:
+				t.Errorf("end value %s != expected %s", *tc.have, tc.expected)
+			}
+		})
+	}
+}
+
+func TestConfigureOrgMeta(t *testing.T) {
+	filled := github.Organization{
+		BillingEmail:                 "be",
+		Company:                      "co",
+		Email:                        "em",
+		Location:                     "lo",
+		Name:                         "na",
+		Description:                  "de",
+		HasOrganizationProjects:      true,
+		HasRepositoryProjects:        true,
+		DefaultRepositoryPermission:  "not-a-real-value",
+		MembersCanCreateRepositories: true,
+	}
+	yes := true
+	no := false
+	str := "random-letters"
+	fail := "fail"
+	read := org.Read
+
+	cases := []struct {
+		name     string
+		orgName  string
+		want     org.Metadata
+		have     github.Organization
+		expected github.Organization
+		err      bool
+		change   bool
+	}{
+		{
+			name:     "no want means no change",
+			have:     filled,
+			expected: filled,
+			change:   false,
+		},
+		{
+			name:    "fail if GetOrg fails",
+			orgName: fail,
+			err:     true,
+		},
+		{
+			name: "fail if EditOrg fails",
+			want: org.Metadata{Description: &fail},
+			err:  true,
+		},
+		{
+			name: "billing diff causes change",
+			want: org.Metadata{BillingEmail: &str},
+			expected: github.Organization{
+				BillingEmail: str,
+			},
+			change: true,
+		},
+		{
+			name: "company diff causes change",
+			want: org.Metadata{Company: &str},
+			expected: github.Organization{
+				Company: str,
+			},
+			change: true,
+		},
+		{
+			name: "email diff causes change",
+			want: org.Metadata{Email: &str},
+			expected: github.Organization{
+				Email: str,
+			},
+			change: true,
+		},
+		{
+			name: "location diff causes change",
+			want: org.Metadata{Location: &str},
+			expected: github.Organization{
+				Location: str,
+			},
+			change: true,
+		},
+		{
+			name: "name diff causes change",
+			want: org.Metadata{Name: &str},
+			expected: github.Organization{
+				Name: str,
+			},
+			change: true,
+		},
+		{
+			name: "org projects diff causes change",
+			want: org.Metadata{HasOrganizationProjects: &yes},
+			expected: github.Organization{
+				HasOrganizationProjects: yes,
+			},
+			change: true,
+		},
+		{
+			name: "repo projects diff causes change",
+			want: org.Metadata{HasRepositoryProjects: &yes},
+			expected: github.Organization{
+				HasRepositoryProjects: yes,
+			},
+			change: true,
+		},
+		{
+			name: "default permission diff causes change",
+			want: org.Metadata{DefaultRepositoryPermission: &read},
+			expected: github.Organization{
+				DefaultRepositoryPermission: string(read),
+			},
+			change: true,
+		},
+		{
+			name: "members can create diff causes change",
+			want: org.Metadata{MembersCanCreateRepositories: &yes},
+			expected: github.Organization{
+				MembersCanCreateRepositories: yes,
+			},
+			change: true,
+		},
+		{
+			name: "change all values at once",
+			have: filled,
+			want: org.Metadata{
+				BillingEmail:                 &str,
+				Company:                      &str,
+				Email:                        &str,
+				Location:                     &str,
+				Name:                         &str,
+				Description:                  &str,
+				HasOrganizationProjects:      &no,
+				HasRepositoryProjects:        &no,
+				MembersCanCreateRepositories: &no,
+				DefaultRepositoryPermission:  &read,
+			},
+			expected: github.Organization{
+				BillingEmail:                 str,
+				Company:                      str,
+				Email:                        str,
+				Location:                     str,
+				Name:                         str,
+				Description:                  str,
+				HasOrganizationProjects:      no,
+				HasRepositoryProjects:        no,
+				MembersCanCreateRepositories: no,
+				DefaultRepositoryPermission:  string(read),
+			},
+			change: true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.orgName == "" {
+				tc.orgName = "whatever"
+			}
+			fc := fakeOrgClient{
+				current: tc.have,
+			}
+			err := configureOrgMeta(&fc, tc.orgName, tc.want)
+			switch {
+			case err != nil:
+				if !tc.err {
+					t.Errorf("unexpected error: %v", err)
+				}
+			case tc.err:
+				t.Errorf("failed to receive error")
+			case tc.change != fc.changed:
+				t.Errorf("changed %t != expected %t", fc.changed, tc.change)
+			case !reflect.DeepEqual(fc.current, tc.expected):
+				t.Errorf("current %#v != expected %#v", fc.current, tc.expected)
+			}
+		})
+	}
+}
