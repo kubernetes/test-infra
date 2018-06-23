@@ -15,6 +15,14 @@
 
 set -o errexit
 set -o nounset
-# write a fake user entry with settings matching the host user possible
-echo "${USER}:!:${UID}:${GID}:${HOME}:/bin/bash" >> /etc/passwd
+
+# write a fake user entry with settings matching the host user
+# note that this is different from the user we installed bazel as, we want
+# it to look just like the user calling planter outside the container
+# so that the file permissions, log paths etc are the same, and we will
+# run the container as this $UID:$GID so tools like python will expect
+# a matching entry here to lookup $HOME, etc.
+echo "${USER}:!:${UID}:${GID}:${FULL_NAME}:${HOME}:/bin/bash" >> /etc/passwd
+
+# actually run the user's command
 exec "$@"

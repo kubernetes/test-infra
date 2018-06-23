@@ -36,8 +36,8 @@ Planter respects the following environment variables:
 
 Currently, SELinux is disabled for the container that runs the bazel
 environment, which allows for the rest of the host system to leave SELinux
-enabled. Automatic relabeling is not done to avoid inadvertently causing issues
-with the host system.
+enabled. We could relabel the volumes and enable SELinux but this could cause
+major issues on the host if planter was used from say $HOME.
 
 
 Further details can be found in `planter.sh` itself, which is somewhat
