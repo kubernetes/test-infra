@@ -31,6 +31,7 @@ import (
 
 	"k8s.io/test-infra/ghproxy/ghcache"
 	"k8s.io/test-infra/greenhouse/diskutil"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 )
@@ -90,6 +91,15 @@ func (o *options) validate() error {
 	return nil
 }
 
+func (o *options) Config() *config.Config {
+	c := &config.Config{}
+	c.PushGateway = config.PushGateway{
+		Endpoint: o.pushGateway,
+		Interval: o.pushGatewayInterval,
+	}
+	return c
+}
+
 func flagOptions() *options {
 	o := &options{}
 	flag.StringVar(&o.dir, "cache-dir", "", "Directory to cache to if using a disk cache.")
@@ -120,10 +130,9 @@ func main() {
 	}
 
 	if o.pushGateway != "" {
-		go metrics.PushMetrics("ghproxy", o.pushGateway, o.pushGatewayInterval)
+		go metrics.NewPusher(o).Start("ghproxy")
 		go diskMonitor(o.pushGatewayInterval, o.dir)
 	}
-
 	proxy := newReverseProxy(o.upstreamParsed, cache, 30*time.Second)
 	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(o.port), proxy))
 }
