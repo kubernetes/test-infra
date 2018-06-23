@@ -22,7 +22,7 @@ set -o nounset
 # so that the file permissions, log paths etc are the same, and we will
 # run the container as this $UID:$GID so tools like python will expect
 # a matching entry here to lookup $HOME, etc.
-echo "${USER}:!:${UID}:${GID}:${FULL_NAME}:${HOME}:/bin/bash" >> /etc/passwd
+echo "${USER}:!:${UID}:${GID}:${FULL_NAME:-}:${HOME}:/bin/bash" >> /etc/passwd
 
 # actually run the user's command
 exec "$@"
