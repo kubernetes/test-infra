@@ -57,5 +57,9 @@ You can find these under [preferences > advanced](https://docs.docker.com/docker
 Check [this unnoficial guide](https://medium.com/@TomKeur/how-get-better-disk-performance-in-docker-for-mac-2ba1244b5b70)
 and make sure that you are using `.raw` formatted VM disk for the daemon. 
 
+Periodically restarting the daemon (docker for mac tray icon > restart) can
+also help. In particular if you see the Bazel analysis phase taking a long time
+consider restarting the docker daemon before trying again.
+
 We also use [delegated volume mounts](https://docs.docker.com/docker-for-mac/osxfs-caching/) to improve osxfs performance.
 
