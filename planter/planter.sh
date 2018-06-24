@@ -18,7 +18,7 @@
 #
 # Environment variable options:
 # - $TAG can be overridden to choose a bazel version eg `TAG=0.8.0 planter.sh ...`
-# - Alternatively $IMAGE or $IMAGE_NAME can be overriden to set the exact image
+# - Alternatively $IMAGE or $IMAGE_NAME can be overridden to set the exact image
 # - $NO_PULL will disable pulling the image before running if set
 # - $DOCKER_EXTRA can be set to supply extra args in the docker call
 # - $DRY_RUN will trigger echoing the docker call instead of running it
@@ -39,7 +39,7 @@
 set -o errexit
 set -o nounset
 
-# these can be overriden but otherwise default to the current stable image
+# these can be overridden but otherwise default to the current stable image
 # used to build kubernetes from the master branch
 IMAGE_NAME="${IMAGE_NAME:-gcr.io/k8s-testimages/planter}"
 TAG="${TAG:-0.14.0}"

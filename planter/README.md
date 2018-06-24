@@ -49,8 +49,8 @@ Performance with docker for mac can be quite bad compared to installing bazel
 natively (which is an option!). If you are going to use planter though, 
 consider tuning the following Docker options:
 
-- Increase CPU reservation, 4+ cores reccomended
-- Increase Memory reservation, 8+ GB reccomended
+- Increase CPU reservation, 4+ cores recommended
+- Increase Memory reservation, 8+ GB recommended
 
 You can find these under [preferences > advanced](https://docs.docker.com/docker-for-mac/#advanced)
 
