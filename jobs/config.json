@@ -4873,8 +4873,8 @@
       "--gcp-node-image=gci",
       "--gcp-zone=asia-southeast1-a",
       "--provider=gce",
-      "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]",
-      "--timeout=320m"
+      "--test_args=--ginkgo.focus=\\[k8s.io\\]\\sNetworking.*\\[Conformance\\] --minStartupPods=8",
+      "--timeout=120m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
