@@ -27,14 +27,18 @@ import (
 
 // SpyGlass records which sets of artifacts need views for a prow job
 type SpyGlass struct {
-	Job      kube.ProwJob
+
+	// map of regex to relevant artifact viewer
 	Eyepiece map[string]ArtifactViewer
+
+	// map of names of views to their corresponding lenses
+	Lenses [string]Lens
 }
 
 // TODO move the artifact interfaces, registration to a separate package for importing, add utils
 // ArtifactViewer generates html views for sets of artifacts
 type ArtifactViewer interface {
-	View(artifacts []Artifact) string
+	View(artifacts []Artifact, raw *RawMessage) string
 	Title() string
 }
 
@@ -50,27 +54,29 @@ type Artifact interface {
 
 // Lens is a single view of a set of artifacts
 type Lens struct {
-	// Unique name of view
-	name string
-
+	// Title of view
 	title    string
 	htmlView string
 	reMatch  string
 }
 
 // NewSpyglass constructs a default spyglass object that renders build logs and Prow metadata
-func NewSpyglass(job kube.ProwJob) *SpyGlass {
+func NewSpyglass() *SpyGlass {
 	ep := map[string]ArtifactViewer{
 		"build-log.txt": &BuildLogViewer{
+			name: "BuildLogViewer"
 			title: "Build Log",
 		},
 		"started.json|finished.json": &MetadataViewer{
+			name: "ProwJobMetadataViewer",
 			title: "Job Metadata",
 		},
 	}
 	return &SpyGlass{
-		Job:      job,
 		Eyepiece: ep,
+		Ready: make(chan string),
+		Lenses: make(map[string]Lens),
+
 	}
 }
 
@@ -86,17 +92,33 @@ func (s *SpyGlass) Views(artifacts []Artifact) []Lens {
 			}
 		}
 		lens := Lens{
-			title:    viewer.Title(),
+			title:    viewer.Title,
 			htmlView: "",
 			reMatch:  re,
 		}
 		lenses = append(lenses, lens)
+		s.Lenses[av.Name] = lens
 		go func(av ArtifactViewer) {
-			lens.htmlView = av.View(matches)
+			lens.htmlView = av.View(matches, json.Unmarshal(``))
 		}(viewer)
 	}
-
 	return lenses
+}
+
+// Refresh reloads the html view for a given set of objects
+func (s *SpyGlass) Refresh(viewName string, artifacts []Artifact, raw *json.RawMessage) Lens{
+	lens := s.Lenses[viewName]
+	re := lens.reMatch
+	viewer := s.Eyepiece[re]
+	matches := []Artifact{}
+	r := regexp.MustCompile(re)
+	for _, a := range artifacts {
+		if r.MatchString(a.JobPath()) {
+			matches = append(matches, a)
+		}
+	}
+	lens.htmlView := viewer.View(matches, raw)
+	return Lens
 }
 
 // RegisterViewer registers new viewers

@@ -25,36 +25,24 @@ import (
 
 // An artifact viewer for JUnit tests
 type JUnitViewer struct {
-	title string
+	Name  string
+	Title string
 }
 
 // An artifact viewer for build logs
 type BuildLogViewer struct {
-	title string
+	Name  string
+	Title string
 }
 
 // An artifact viewer for prow job metadata
 type MetadataViewer struct {
-	title string
-}
-
-// Title gets the title of the JUnit View
-func (v *JUnitViewer) Title() string {
-	return v.title
-}
-
-// Title gets the title of the JUnit View
-func (v *BuildLogViewer) Title() string {
-	return v.title
-}
-
-// Title gets the title of the Metadata View
-func (v *MetadataViewer) Title() string {
-	return v.title
+	Name  string
+	Title string
 }
 
 // View creates a view for a build log (or multiple build logs)
-func (v *BuildLogViewer) View(artifacts []Artifact) string {
+func (v *BuildLogViewer) View(artifacts []Artifact, raw *RawMessage) string {
 	logViewTmpl := `
 <div>
 	{{range .LogViews}}<div>
@@ -82,13 +70,13 @@ func (v *BuildLogViewer) View(artifacts []Artifact) string {
 }
 
 // View creates a view for JUnit tests
-func (v *JUnitViewer) View(artifacts []Artifact) string {
+func (v *JUnitViewer) View(artifacts []Artifact, raw *RawMessage) string {
 	//TODO
 	return ""
 }
 
 // View creates a view for prow job metadata
-func (v *MetadataViewer) View(artifacts []Artifact) string {
+func (v *MetadataViewer) View(artifacts []Artifact, raw *RawMessage) string {
 	//TODO
 	return ""
 }

@@ -159,6 +159,8 @@ func prodOnlyMain(o options, mux *http.ServeMux) *http.ServeMux {
 		plClients[alias] = client
 	}
 
+	spyGlass := spyglass.NewSpyGlass()
+
 	ja := jobs.NewJobAgent(kc, plClients, configAgent)
 	ja.Start()
 
@@ -171,7 +173,7 @@ func prodOnlyMain(o options, mux *http.ServeMux) *http.ServeMux {
 	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(configAgent)))
 	mux.Handle("/branding.js", gziphandler.GzipHandler(handleBranding(configAgent)))
 	mux.Handle("/favicon.ico", gziphandler.GzipHandler(handleFavicon(configAgent)))
-	mux.Handle("/view", gziphandler.GzipHandler(handleRequestJobViews(kc)))
+	mux.Handle("/job", gziphandler.GzipHandler(handleRequestJobViews(spyGlass)))
 
 	if o.hookURL != "" {
 		mux.Handle("/plugin-help.js",
@@ -410,7 +412,8 @@ func handleBadge(ja *jobs.JobAgent) http.HandlerFunc {
 }
 
 // handleRequestJobViews handles requests to get all available artifact views for a given job
-func handleRequestJobViews(kc pjClient) http.HandlerFunc {
+// it responds with a list of all availables view titles
+func handleRequestJobViews(sg SpyGlass) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		bucket := r.URL.Query().Get("bucket")
 		jobPath := r.URL.Query().Get("job")
@@ -426,11 +429,7 @@ func handleRequestJobViews(kc pjClient) http.HandlerFunc {
 		artifactFetcher := spyglass.NewGCSArtifactFetcher()
 		gcsJobSource := spyglass.NewGCSJobSource(bucket, jobPath)
 		artifacts := artifactFetcher.Artifacts(gcsJobSource)
-		pj, err := kc.GetProwJob(path.Join(bucket, jobPath))
-		if err != nil {
-			logrus.Errorf("Retrieve ProwJob failed, error: %s", err)
-		}
-		sg := spyglass.NewSpyglass(pj)
+
 		lenses := sg.Views(artifacts)
 
 		// TODO find a way to get titles and views separately
@@ -443,16 +442,45 @@ func handleRequestJobViews(kc pjClient) http.HandlerFunc {
 	}
 }
 
-// handleArtifactView handles requests to load a view for a specific set of artifacts
-func handleArtifactView() http.HandlerFunc {
+// handleArtifactView handles requests to load a view for a job
+func handleArtifactView(sg spyglass.SpyGlass) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := r.URL.Query().Get("name")
+		bucket := r.URL.Query().Get("bucket")
+		jobPath := r.URL.Query().Get("job")
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, "could not read body", http.StatusBadRequest)
+			return
+		}
 		if name == "" {
 			http.Error(w, "missing name query parameter", http.StatusBadRequest)
 			return
 		}
-		// TODO get actual html view for this type of artifact
-		// Should also handle "more" requests for specific artifacts
+		if bucket == "" {
+			http.Error(w, "missing bucket query parameter", http.StatusBadRequest)
+			return
+		}
+		if jobPath == "" {
+			http.Error(w, "missing jobPath query parameter", http.StatusBadRequest)
+			return
+		}
+
+		artifactFetcher := spyglass.NewGCSArtifactFetcher()
+		gcsJobSource := spyglass.NewGCSJobSource(bucket, jobPath)
+		artifacts := artifactFetcher.Artifacts(gcsJobSource)
+
+		var raw *json.RawMessage
+		raw := json.Unmarshal(body)
+		lens := sg.Refresh(name, artifacts, raw)
+
+		pd, err := json.Marshal(lens)
+		if err != nil {
+			logrus.WithError(err).Error("Error marshaling payload.")
+			pd = []byte("{}")
+		}
+		fmt.Fprint(w, string(pd))
+
 	}
 }
 
