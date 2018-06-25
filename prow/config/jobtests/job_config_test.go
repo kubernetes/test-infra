@@ -40,7 +40,7 @@ import (
 type configJSON map[string]map[string]interface{}
 
 var configPath = flag.String("config", "../../config.yaml", "Path to prow config")
-var jobConfigPath = flag.String("job-config", "", "Path to prow job config")
+var jobConfigPath = flag.String("job-config", "../../../config/jobs", "Path to prow job config")
 var configJSONPath = flag.String("config-json", "../../../jobs/config.json", "Path to prow job config")
 
 func (c configJSON) ScenarioForJob(jobName string) string {
