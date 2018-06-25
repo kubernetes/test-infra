@@ -17,6 +17,7 @@ limitations under the License.
 package approve
 
 import (
+	"fmt"
 	"io/ioutil"
 	"strings"
 	"testing"
@@ -31,6 +32,8 @@ import (
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/plugins"
 )
+
+const prNumber = 1
 
 // TestPluginConfig validates that there are no duplicate repos in the approve plugin config.
 func TestPluginConfig(t *testing.T) {
@@ -94,7 +97,7 @@ func newTestReviewTime(t time.Time, user, body, state string) github.Review {
 func newFakeGithubClient(hasLabel, humanApproved bool, files []string, comments []github.IssueComment, reviews []github.Review) *fakegithub.FakeClient {
 	labels := []string{"org/repo#1:lgtm"}
 	if hasLabel {
-		labels = append(labels, "org/repo#1:approved")
+		labels = append(labels, fmt.Sprintf("org/repo#%v:approved", prNumber))
 	}
 	events := []github.ListedIssueEvent{
 		{
@@ -120,10 +123,10 @@ func newFakeGithubClient(hasLabel, humanApproved bool, files []string, comments 
 	}
 	return &fakegithub.FakeClient{
 		LabelsAdded:        labels,
-		PullRequestChanges: map[int][]github.PullRequestChange{1: changes},
-		IssueComments:      map[int][]github.IssueComment{1: comments},
-		IssueEvents:        map[int][]github.ListedIssueEvent{1: events},
-		Reviews:            map[int][]github.Review{1: reviews},
+		PullRequestChanges: map[int][]github.PullRequestChange{prNumber: changes},
+		IssueComments:      map[int][]github.IssueComment{prNumber: comments},
+		IssueEvents:        map[int][]github.ListedIssueEvent{prNumber: events},
+		Reviews:            map[int][]github.Review{prNumber: reviews},
 	}
 }
 
@@ -221,7 +224,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectComment: true,
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
-This pull-request has been approved by: 
+This pull-request has been approved by:
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **cjwagner**
 
@@ -542,7 +545,7 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 
 Approval requirements bypassed by manually added approval.
 
-This pull-request has been approved by: 
+This pull-request has been approved by:
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
@@ -585,7 +588,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			comments: []github.IssueComment{
 				newTestComment("k8s-ci-robot", `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
-This pull-request has been approved by: 
+This pull-request has been approved by:
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **alice**
 
@@ -664,7 +667,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectComment: true,
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
-This pull-request has been approved by: 
+This pull-request has been approved by:
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **cjwagner**
 
@@ -735,7 +738,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectComment: true,
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
-This pull-request has been approved by: 
+This pull-request has been approved by:
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **cjwagner**
 
@@ -776,7 +779,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectComment: true,
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
-This pull-request has been approved by: 
+This pull-request has been approved by:
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **cjwagner**
 
@@ -817,7 +820,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectComment: true,
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
-This pull-request has been approved by: 
+This pull-request has been approved by:
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **cjwagner**
 
@@ -855,7 +858,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectComment: true,
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
-This pull-request has been approved by: 
+This pull-request has been approved by:
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **cjwagner**
 
@@ -946,12 +949,12 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 		approvers: map[string]sets.String{
 			"a":   sets.NewString("alice"),
 			"a/b": sets.NewString("alice", "bob"),
-			"c":   sets.NewString("cjwagner"),
+			"c":   sets.NewString("cblecker", "cjwagner"),
 		},
 		leafApprovers: map[string]sets.String{
 			"a":   sets.NewString("alice"),
 			"a/b": sets.NewString("bob"),
-			"c":   sets.NewString("cjwagner"),
+			"c":   sets.NewString("cblecker", "cjwagner"),
 		},
 		approverOwners: map[string]string{
 			"a/a.go":   "a",
@@ -983,7 +986,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 				org:       "org",
 				repo:      "repo",
 				branch:    branch,
-				number:    1,
+				number:    prNumber,
 				body:      test.prBody,
 				author:    "cjwagner",
 				assignees: []github.User{{Login: "spxtr"}},
@@ -1016,7 +1019,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 					test.name,
 					len(fghc.IssueCommentsAdded),
 				)
-			} else if expect, got := "org/repo#1:"+test.expectedComment, fghc.IssueCommentsAdded[0]; test.expectedComment != "" && got != expect {
+			} else if expect, got := fmt.Sprintf("org/repo#%v:", prNumber)+test.expectedComment, fghc.IssueCommentsAdded[0]; test.expectedComment != "" && got != expect {
 				t.Errorf(
 					"[%s] Expected the created notification to be:\n%s\n\nbut got:\n%s\n\n",
 					test.name,
@@ -1036,7 +1039,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 
 		labelAdded := false
 		for _, l := range fghc.LabelsAdded {
-			if l == "org/repo#1:approved" {
+			if l == fmt.Sprintf("org/repo#%v:approved", prNumber) {
 				if labelAdded {
 					t.Errorf("[%s] The approved label was applied to a PR that already had it!", test.name)
 				}
@@ -1048,7 +1051,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 		}
 		toggled := labelAdded
 		for _, l := range fghc.LabelsRemoved {
-			if l == "org/repo#1:approved" {
+			if l == fmt.Sprintf("org/repo#%v:approved", prNumber) {
 				if !test.hasLabel {
 					t.Errorf("[%s] The approved label was removed from a PR that doesn't have it!", test.name)
 				}
