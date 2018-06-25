@@ -3432,13 +3432,13 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-gci-latest
   - name: sd-logging-ubuntu-latest
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-latest
-  - name: sd-logging-gci-1.10
+  - name: sd-logging-gci-beta
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-gci-beta
-  - name: sd-logging-ubuntu-1.10
+  - name: sd-logging-ubuntu-beta
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-beta
-  - name: sd-logging-gci-1.9
+  - name: sd-logging-gci-stable
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-gci-stable1
-  - name: sd-logging-ubuntu-1.9
+  - name: sd-logging-ubuntu-stable
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-stable1
 
 - name: google-gke-staging
@@ -6450,6 +6450,7 @@ dashboard_groups:
   - google-gke-prod
   - google-soak
   - google-unit
+  - google-gke-stackdriver
 
 - name: istio
   dashboard_names:
