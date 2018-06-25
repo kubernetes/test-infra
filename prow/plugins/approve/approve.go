@@ -30,6 +30,7 @@ import (
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/approve/approvers"
+	"k8s.io/test-infra/prow/repoowners"
 )
 
 const (
@@ -50,6 +51,9 @@ var (
 	// deprecatedBotNames are the names of the bots that previously handled approvals.
 	// Each can be removed once every PR approved by the old bot has been merged or unapproved.
 	deprecatedBotNames = []string{"k8s-merge-robot", "openshift-merge-robot"}
+
+	// handleFunc is used to allow mocking out the behavior of 'handle' while testing.
+	handleFunc = handle
 )
 
 type githubClient interface {
@@ -65,6 +69,10 @@ type githubClient interface {
 	AddLabel(org, repo string, number int, label string) error
 	RemoveLabel(org, repo string, number int, label string) error
 	ListIssueEvents(org, repo string, num int) ([]github.ListedIssueEvent, error)
+}
+
+type ownersClient interface {
+	LoadRepoOwners(org, repo, base string) (repoowners.RepoOwnerInterface, error)
 }
 
 type state struct {
@@ -128,41 +136,49 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 }
 
 func handleGenericCommentEvent(pc plugins.PluginClient, ce github.GenericCommentEvent) error {
+	return handleGenericComment(
+		pc.Logger,
+		pc.GitHubClient,
+		pc.OwnersClient,
+		pc.PluginConfig,
+		&ce,
+	)
+}
+
+func handleGenericComment(log *logrus.Entry, ghc githubClient, oc ownersClient, config *plugins.Configuration, ce *github.GenericCommentEvent) error {
 	if ce.Action != github.GenericCommentActionCreated || !ce.IsPR || ce.IssueState == "closed" {
 		return nil
 	}
-	botName, err := pc.GitHubClient.BotName()
+
+	botName, err := ghc.BotName()
 	if err != nil {
 		return err
 	}
 
-	opts := optionsForRepo(pc.PluginConfig, ce.Repo.Owner.Login, ce.Repo.Name)
+	opts := optionsForRepo(config, ce.Repo.Owner.Login, ce.Repo.Name)
 	if !isApprovalCommand(botName, opts.LgtmActsAsApprove, &comment{Body: ce.Body, Author: ce.User.Login}) {
 		return nil
 	}
 
-	pr, err := pc.GitHubClient.GetPullRequest(ce.Repo.Owner.Login, ce.Repo.Name, ce.Number)
+	pr, err := ghc.GetPullRequest(ce.Repo.Owner.Login, ce.Repo.Name, ce.Number)
 	if err != nil {
 		return err
 	}
 
-	ro, err := pc.OwnersClient.LoadRepoOwners(ce.Repo.Owner.Login, ce.Repo.Name, pr.Base.Ref)
+	repo, err := oc.LoadRepoOwners(ce.Repo.Owner.Login, ce.Repo.Name, pr.Base.Ref)
 	if err != nil {
 		return err
 	}
-	return handleGenericComment(pc.Logger, pc.GitHubClient, ro, pc.PluginConfig, &ce, pr.Base.Ref)
-}
 
-func handleGenericComment(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, config *plugins.Configuration, ce *github.GenericCommentEvent, branch string) error {
-	return handle(
+	return handleFunc(
 		log,
 		ghc,
 		repo,
-		optionsForRepo(config, ce.Repo.Owner.Login, ce.Repo.Name),
+		opts,
 		&state{
 			org:       ce.Repo.Owner.Login,
 			repo:      ce.Repo.Name,
-			branch:    branch,
+			branch:    pr.Base.Ref,
 			number:    ce.Number,
 			body:      ce.IssueBody,
 			author:    ce.IssueAuthor.Login,
@@ -175,16 +191,26 @@ func handleGenericComment(log *logrus.Entry, ghc githubClient, repo approvers.Re
 // handleReviewEvent should only handle reviews that have no approval command.
 // Reviews with approval commands will be handled by handleGenericCommentEvent.
 func handleReviewEvent(pc plugins.PluginClient, re github.ReviewEvent) error {
+	return handleReview(
+		pc.Logger,
+		pc.GitHubClient,
+		pc.OwnersClient,
+		pc.PluginConfig,
+		&re,
+	)
+}
+
+func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, config *plugins.Configuration, re *github.ReviewEvent) error {
 	if re.Action != github.ReviewActionSubmitted {
 		return nil
 	}
 
-	botName, err := pc.GitHubClient.BotName()
+	botName, err := ghc.BotName()
 	if err != nil {
 		return err
 	}
 
-	opts := optionsForRepo(pc.PluginConfig, re.Repo.Owner.Login, re.Repo.Name)
+	opts := optionsForRepo(config, re.Repo.Owner.Login, re.Repo.Name)
 
 	// Check for an approval command is in the body. If one exists, let the
 	// genericCommentEventHandler handle this event. Approval commands override
@@ -200,21 +226,18 @@ func handleReviewEvent(pc plugins.PluginClient, re github.ReviewEvent) error {
 	}
 
 	// This is a valid review state command. Get the pull request and handle it.
-	pr, err := pc.GitHubClient.GetPullRequest(re.Repo.Owner.Login, re.Repo.Name, re.PullRequest.Number)
+	pr, err := ghc.GetPullRequest(re.Repo.Owner.Login, re.Repo.Name, re.PullRequest.Number)
 	if err != nil {
-		pc.Logger.Error(err)
+		log.Error(err)
 		return err
 	}
 
-	ro, err := pc.OwnersClient.LoadRepoOwners(re.Repo.Owner.Login, re.Repo.Name, pr.Base.Ref)
+	repo, err := oc.LoadRepoOwners(re.Repo.Owner.Login, re.Repo.Name, pr.Base.Ref)
 	if err != nil {
 		return err
 	}
-	return handleReview(pc.Logger, pc.GitHubClient, ro, pc.PluginConfig, &re)
-}
 
-func handleReview(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, config *plugins.Configuration, re *github.ReviewEvent) error {
-	return handle(
+	return handleFunc(
 		log,
 		ghc,
 		repo,
@@ -233,13 +256,23 @@ func handleReview(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterf
 }
 
 func handlePullRequestEvent(pc plugins.PluginClient, pre github.PullRequestEvent) error {
+	return handlePullRequest(
+		pc.Logger,
+		pc.GitHubClient,
+		pc.OwnersClient,
+		pc.PluginConfig,
+		&pre,
+	)
+}
+
+func handlePullRequest(log *logrus.Entry, ghc githubClient, oc ownersClient, config *plugins.Configuration, pre *github.PullRequestEvent) error {
 	if pre.Action != github.PullRequestActionOpened &&
 		pre.Action != github.PullRequestActionReopened &&
 		pre.Action != github.PullRequestActionSynchronize &&
 		pre.Action != github.PullRequestActionLabeled {
 		return nil
 	}
-	botName, err := pc.GitHubClient.BotName()
+	botName, err := ghc.BotName()
 	if err != nil {
 		return err
 	}
@@ -248,15 +281,12 @@ func handlePullRequestEvent(pc plugins.PluginClient, pre github.PullRequestEvent
 		return nil
 	}
 
-	ro, err := pc.OwnersClient.LoadRepoOwners(pre.Repo.Owner.Login, pre.Repo.Name, pre.PullRequest.Base.Ref)
+	repo, err := oc.LoadRepoOwners(pre.Repo.Owner.Login, pre.Repo.Name, pre.PullRequest.Base.Ref)
 	if err != nil {
 		return err
 	}
-	return handlePullRequest(pc.Logger, pc.GitHubClient, ro, pc.PluginConfig, &pre)
-}
 
-func handlePullRequest(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, config *plugins.Configuration, pre *github.PullRequestEvent) error {
-	return handle(
+	return handleFunc(
 		log,
 		ghc,
 		repo,
