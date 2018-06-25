@@ -63,6 +63,9 @@ RUN_OPTS="--rm"
 # - run interactively, which gives a better user experience
 RUN_OPTS="${RUN_OPTS} -it"
 
+# we want a fixed hostname because this leaks into the env when building
+RUN_OPTS="${RUN_OPTS} --hostname=planter"
+
 # - NOTE: SELinux disabled for this container to prevent relabeling $HOME (!)
 RUN_OPTS="${RUN_OPTS} --security-opt label:disable"
 
