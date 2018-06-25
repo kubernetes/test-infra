@@ -949,12 +949,12 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 		approvers: map[string]sets.String{
 			"a":   sets.NewString("alice"),
 			"a/b": sets.NewString("alice", "bob"),
-			"c":   sets.NewString("cjwagner"),
+			"c":   sets.NewString("cblecker", "cjwagner"),
 		},
 		leafApprovers: map[string]sets.String{
 			"a":   sets.NewString("alice"),
 			"a/b": sets.NewString("bob"),
-			"c":   sets.NewString("cjwagner"),
+			"c":   sets.NewString("cblecker", "cjwagner"),
 		},
 		approverOwners: map[string]string{
 			"a/a.go":   "a",
