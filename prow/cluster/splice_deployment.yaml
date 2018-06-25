@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: splice
-        image: gcr.io/k8s-prow/splice:v20180622-df01a7f2b
+        image: gcr.io/k8s-prow/splice:v20180625-90124aa3f
         volumeMounts:
         - name: config
           mountPath: /etc/config
