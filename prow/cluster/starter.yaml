@@ -7,14 +7,14 @@ kind: ConfigMap
 metadata:
   name: plugins
 data:
-  plugins: ""
+  plugins.yaml: ""
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: config
 data:
-  config: |
+  config.yaml: |
     periodics:
     - interval: 10m
       agent: kubernetes
