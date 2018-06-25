@@ -305,6 +305,15 @@ func Load(prowConfig, jobConfig string) (*Config, error) {
 			return nil
 		}
 
+		if strings.HasPrefix(info.Name(), "..") {
+			// kubernetes volumes also include files we
+			// should not look be looking into for keys
+			if info.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+
 		if filepath.Ext(path) != ".yaml" {
 			return nil
 		}
