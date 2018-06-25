@@ -424,6 +424,10 @@ plugins:
   - approve
   - trigger
 
+  kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
+  - approve
+  - trigger
+
   kubernetes-sigs/application:
   - approve
 

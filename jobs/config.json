@@ -12774,6 +12774,15 @@
       "sig-testing"
     ]
   },
+  "pull-gcp-compute-persistent-disk-csi-driver-test": {
+    "args": [
+      "./test/run-tests.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-cloud-provider-gcp"
+    ]
+  },
   "pull-heapster-e2e": {
     "scenario": "kubernetes_heapster",
     "sigOwners": [
