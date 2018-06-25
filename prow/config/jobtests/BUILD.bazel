@@ -4,6 +4,7 @@ go_test(
     name = "go_default_test",
     srcs = ["job_config_test.go"],
     data = [
+        "//config:prowjobs",
         "//jobs",
         "//prow:configs",
     ],
