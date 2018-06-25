@@ -1,19 +1,22 @@
 This script processes a master log and creates a csv file recording the matches against different regular expressions related to endpoints.
+Master log source can be found here: https://github.com/cncf/apisnoop/issues/17#issuecomment-394866106
 
 Usage:
 inputFilePath and resultFileName are mandatory fields
 
-$ ./process.sh
+This will fail since its missing inputFilePath
+$ ./process-e2e-suite-log.sh
 missing parameters, please provide inputFilePath
 
-$ ./process.sh -i=rohan.txt
+This will fail since its missing resultFileName
+$ ./process-e2e-suite-log.sh -i=master-log.txt
 missing parameters, please provide resultFileName
 
 To run using defaults:
-$ ./process.sh -i=rohan.txt -o=result.csv
->> inputFilePath:  rohan.txt
+$ ./process-e2e-suite-log.sh -i=master-log.txt -o=result.csv
+>> inputFilePath:  master-log.txt
 >> separatorLine:  ----------------
->> resultFileName:  today.csv
+>> resultFileName:  result.csv
 >> separator for result file: ,
 >> prefixForSubFile:  res
 >> skipSplitting:  false
@@ -27,12 +30,11 @@ res2.csv
 result.csv
 
 If we change the endpoints collection to match against and want to reuse already splitted files (skip the splitting process):
-$ ./process.sh -i=rohan.txt -o=result.csv --skipSplitting=true
+$ ./process-e2e-suite-log.sh -i=master-log.txt -o=result.csv --skipSplitting=true
 
 This is to use another internal file name different than default (res):
-./process.sh -i=rohan.txt -o=today_4.csv -p=tem 
+./process-e2e-suite-log.sh -i=master-log.txt -o=today.csv -p=tem 
 
 This would be to override the default internal name and also avoid processing the splitting again:
-./process.sh -i=rohan.txt -o=today_4.csv -p=tem --skipSplitting=true
-
+./process-e2e-suite-log.sh -i=master-log.txt -o=today.csv -p=tem --skipSplitting=true
 
