@@ -15,7 +15,7 @@ The process is as follows:
   - Unfortunately this part is currently left as an exercise to the reader. We use
     [bootstrap](/jenkins/bootstrap.py) to facilitate this and are in the midst of
     rewriting it to better support external usage.
-- Add the GCS bucket info to [buckets.yaml](/buckets.yaml) via a PR (use the
+- Add the GCS bucket info to [buckets.yaml](/kettle/buckets.yaml) via a PR (use the
   previously designated github handle for the `contact` field)
 - Add jobs and dashboards to the [testgrid config](/testgrid/config.yaml) via
   a PR (use the previously designated point of contact info in a comment next to

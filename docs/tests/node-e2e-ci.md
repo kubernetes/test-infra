@@ -158,7 +158,7 @@ Official description of the individual files and their content is described by [
 ## Publishing test results in the TestGrid
 
 To have the [TestGrid](https://k8s-testgrid.appspot.com/) consume the new build results, one needs to extend the TestGrid
-configuration file at https://github.com/kubernetes/test-infra/blob/master/testgrid/config/config.yaml and a list of GCS buckets at https://github.com/kubernetes/test-infra/blob/master/buckets.yaml.
+configuration file at https://github.com/kubernetes/test-infra/blob/master/testgrid/config/config.yaml and a list of GCS buckets at https://github.com/kubernetes/test-infra/blob/master/kettle/buckets.yaml.
 
 The header of the file describes what needs to be done to add new build.
 The current jobs have been added through https://github.com/kubernetes/test-infra/pull/5693 PR.

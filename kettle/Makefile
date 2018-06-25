@@ -24,9 +24,7 @@ get-cluster-credentials:
 	kubectl config use-context gke_k8s-gubernator_us-west1-b_g8r || gcloud container clusters get-credentials "$(CLUSTER)" --project="$(PROJECT)" --zone="$(ZONE)"
 
 build:
-	cp ../buckets.yaml .
 	docker build -t $(IMG):$(TAG) .
-	rm buckets.yaml
 	docker tag $(IMG):$(TAG) $(IMG):latest
 	echo Built $(IMG):$(TAG) and tagged with $(IMG):latest ;
 
