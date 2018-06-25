@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # This script processes an "input file" and generates a "output file" formatted in csv.
 #
 # "input file":
