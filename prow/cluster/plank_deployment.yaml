@@ -35,6 +35,7 @@ spec:
         - --dry-run=false
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
+        - --job-config-path=/etc/job-config
         volumeMounts:
         - mountPath: /etc/cluster
           name: cluster
