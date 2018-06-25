@@ -581,7 +581,7 @@ func GetMessage(ap Approvers, org, project, branch string) *string {
 Approval requirements bypassed by manually added approval.
 
 {{end -}}
-This pull-request has been approved by: {{range $index, $approval := .ap.ListApprovals}}{{if $index}}, {{end}}{{$approval}}{{end}}
+This pull-request has been approved by:{{range $index, $approval := .ap.ListApprovals}}{{if $index}}, {{else}} {{end}}{{$approval}}{{end}}
 
 {{- if (and (not .ap.AreFilesApproved) (not (call .ap.ManuallyApproved))) }}
 To fully approve this pull request, please assign additional approvers.
@@ -595,7 +595,7 @@ Assign the PR to them by writing `+"`/assign {{range $index, $cc := .ap.GetCCs}}
 Associated issue: *#{{.ap.AssociatedIssue}}*
 
 {{ else if len .ap.NoIssueApprovers -}}
-Associated issue requirement bypassed by: {{range $index, $approval := .ap.ListNoIssueApprovals}}{{if $index}}, {{end}}{{$approval}}{{end}}
+Associated issue requirement bypassed by:{{range $index, $approval := .ap.ListNoIssueApprovals}}{{if $index}}, {{else}} {{end}}{{$approval}}{{end}}
 
 {{ else if call .ap.ManuallyApproved -}}
 *No associated issue*. Requirement bypassed by manually added approval.

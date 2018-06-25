@@ -221,7 +221,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectComment: true,
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
-This pull-request has been approved by: 
+This pull-request has been approved by:
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **cjwagner**
 
@@ -542,7 +542,7 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 
 Approval requirements bypassed by manually added approval.
 
-This pull-request has been approved by: 
+This pull-request has been approved by:
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
@@ -585,7 +585,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			comments: []github.IssueComment{
 				newTestComment("k8s-ci-robot", `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
-This pull-request has been approved by: 
+This pull-request has been approved by:
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **alice**
 
@@ -664,7 +664,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectComment: true,
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
-This pull-request has been approved by: 
+This pull-request has been approved by:
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **cjwagner**
 
@@ -735,7 +735,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectComment: true,
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
-This pull-request has been approved by: 
+This pull-request has been approved by:
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **cjwagner**
 
@@ -776,7 +776,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectComment: true,
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
-This pull-request has been approved by: 
+This pull-request has been approved by:
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **cjwagner**
 
@@ -817,7 +817,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectComment: true,
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
-This pull-request has been approved by: 
+This pull-request has been approved by:
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **cjwagner**
 
@@ -855,7 +855,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectComment: true,
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
-This pull-request has been approved by: 
+This pull-request has been approved by:
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **cjwagner**
 
