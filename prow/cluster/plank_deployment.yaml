@@ -25,6 +25,7 @@ spec:
       labels:
         app: plank
     spec:
+      # serviceAccountName: "plank" # Uncomment for use with RBAC
       containers:
       - name: plank
         image: gcr.io/k8s-prow/plank:v20180622-df01a7f2b

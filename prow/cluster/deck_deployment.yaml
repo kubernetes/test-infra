@@ -30,6 +30,7 @@ spec:
       labels:
         app: deck
     spec:
+      # serviceAccountName: "deck" # Uncomment for use with RBAC
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
