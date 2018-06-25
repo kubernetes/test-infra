@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:v20180622-df01a7f2b
+        image: gcr.io/k8s-prow/plank:v20180620-3b98af6f3
         args:
         - --tot-url=http://tot
         - --build-cluster=/etc/cluster/cluster
@@ -44,9 +44,6 @@ spec:
         - name: config
           mountPath: /etc/config
           readOnly: true
-        - name: job-config
-          mountPath: /etc/job-config
-          readOnly: true
       volumes:
       - name: cluster
         secret:
@@ -58,6 +55,3 @@ spec:
       - name: config
         configMap:
           name: config
-      - name: job-config
-        configMap:
-          name: job-config
