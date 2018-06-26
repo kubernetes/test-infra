@@ -9781,33 +9781,7 @@ periodics:
 
 - interval: 12h
   agent: kubernetes
-  name: ci-kubernetes-e2e-gce-gpu-beta-stable1-master-downgrade
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=180
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
-
-- interval: 12h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gpu-master-stable1-cluster-downgrade
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=180
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
-
-- interval: 12h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-gpu-master-stable1-master-downgrade
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
