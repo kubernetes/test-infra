@@ -431,7 +431,7 @@ func TestUpdateConfig(t *testing.T) {
 						Namespace: defaultNamespace,
 					},
 					Data: map[string]string{
-						"fejta.yaml": "old-fejta-config",
+						"fejta.yaml":    "old-fejta-config",
 						"krzyzacy.yaml": "old-krzyzacy-config",
 					},
 				},
@@ -443,7 +443,7 @@ func TestUpdateConfig(t *testing.T) {
 						Namespace: defaultNamespace,
 					},
 					Data: map[string]string{
-						"fejta.yaml": "old-fejta-config",
+						"fejta.yaml":    "old-fejta-config",
 						"krzyzacy.yaml": "new-krzyzacy-config",
 					},
 				},
@@ -466,8 +466,8 @@ func TestUpdateConfig(t *testing.T) {
 					Additions: 1,
 				},
 				{
-					Filename:  "dir/subdir/fejtaverse/sig-bar/removed.yaml",
-					Status:    "removed",
+					Filename: "dir/subdir/fejtaverse/sig-bar/removed.yaml",
+					Status:   "removed",
 				},
 			},
 			existConfigMaps: map[string]kube.ConfigMap{
@@ -477,9 +477,9 @@ func TestUpdateConfig(t *testing.T) {
 						Namespace: defaultNamespace,
 					},
 					Data: map[string]string{
-						"fejta.yaml": "old-fejta-config",
+						"fejta.yaml":    "old-fejta-config",
 						"krzyzacy.yaml": "old-krzyzacy-config",
-						"removed.yaml": "old-removed-config",
+						"removed.yaml":  "old-removed-config",
 					},
 				},
 			},
@@ -490,9 +490,9 @@ func TestUpdateConfig(t *testing.T) {
 						Namespace: defaultNamespace,
 					},
 					Data: map[string]string{
-						"fejta.yaml": "new-fejta-config",
+						"fejta.yaml":    "new-fejta-config",
 						"krzyzacy.yaml": "old-krzyzacy-config",
-						"added.yaml": "new-added-config",
+						"added.yaml":    "new-added-config",
 					},
 				},
 			},
@@ -549,7 +549,7 @@ func TestUpdateConfig(t *testing.T) {
 					"12345":  "new-krzyzacy-config",
 				},
 				"dir/subdir/fejtaverse/sig-foo/added.yaml": {
-					"12345":  "new-added-config",
+					"12345": "new-added-config",
 				},
 				"dir/subdir/fejtaverse/sig-bar/removed.yaml": {
 					"master": "old-removed-config",

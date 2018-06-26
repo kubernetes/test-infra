@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"path"
 
-	"github.com/sirupsen/logrus"
 	"github.com/mattn/go-zglob"
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
