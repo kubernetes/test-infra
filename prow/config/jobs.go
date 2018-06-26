@@ -23,6 +23,7 @@ import (
 
 	"k8s.io/api/core/v1"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -204,6 +205,32 @@ func (br Brancher) RunsAgainstBranch(branch string) bool {
 		return true
 	}
 	return false
+}
+
+// Intersects checks if other Brancher would trigger for the same branch.
+func (br Brancher) Intersects(other Brancher) bool {
+	if br.RunsAgainstAllBranch() || other.RunsAgainstAllBranch() {
+		return true
+	}
+	if len(br.Branches) > 0 {
+		baseBranches := sets.NewString(br.Branches...)
+		if len(other.Branches) > 0 {
+			otherBranches := sets.NewString(other.Branches...)
+			if baseBranches.Intersection(otherBranches).Len() > 0 {
+				return true
+			}
+			return false
+		}
+		if !baseBranches.Intersection(sets.NewString(other.SkipBranches...)).Equal(baseBranches) {
+			return true
+		}
+		return false
+	}
+	if len(other.Branches) == 0 {
+		// There can only be one Brancher with skip_branches.
+		return true
+	}
+	return other.Intersects(br)
 }
 
 // RunsAgainstChanges returns true if any of the changed input paths match the run_if_changed regex.

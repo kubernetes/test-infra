@@ -421,10 +421,16 @@ func (c *Config) mergeJobConfig(jc JobConfig) error {
 	}
 
 	// *** Presubmits ***
-	// validate no presubmit with same name exists cross multiple files
-	validPresubmits := map[string]bool{}
+	// validate presubmit with same name do not run on the same branches across multiple files
+	validPresubmits := map[string]Presubmit{}
 	for _, p := range c.AllPresubmits(nil) {
-		validPresubmits[p.Name] = true
+		if existingJog, ok := validPresubmits[p.Name]; ok {
+			fmt.Println(existingJog.Brancher)
+			if existingJog.Brancher.Intersects(p.Brancher) {
+				return fmt.Errorf("duplicated presubmit from main config file : %s", p.Name)
+			}
+		}
+		validPresubmits[p.Name] = p
 	}
 
 	if c.Presubmits == nil {
@@ -434,8 +440,10 @@ func (c *Config) mergeJobConfig(jc JobConfig) error {
 	for repo, jobs := range jc.Presubmits {
 		if _, ok := c.Presubmits[repo]; ok {
 			for _, job := range jobs {
-				if _, ok := validPresubmits[job.Name]; ok {
-					return fmt.Errorf("duplicated presubmit job across multiple files : %s", job.Name)
+				if existingJob, ok := validPresubmits[job.Name]; ok {
+					if existingJob.Brancher.Intersects(job.Brancher) {
+						return fmt.Errorf("duplicated presubmit job across multiple files : %s", job.Name)
+					}
 				}
 			}
 			c.Presubmits[repo] = append(c.Presubmits[repo], jobs...)
@@ -445,10 +453,15 @@ func (c *Config) mergeJobConfig(jc JobConfig) error {
 	}
 
 	// *** Postsubmits ***
-	// validate no postsubmit with same name exists cross multiple files
-	validPostsubmits := map[string]bool{}
+	// validate postsubmit with same name do not run on the same branches across multiple files
+	validPostsubmits := map[string]Postsubmit{}
 	for _, p := range c.AllPostsubmits(nil) {
-		validPostsubmits[p.Name] = true
+		if existingJob, ok := validPostsubmits[p.Name]; ok {
+			if existingJob.Brancher.Intersects(p.Brancher) {
+				return fmt.Errorf("duplicated postsubmit job from main config file : %s", p.Name)
+			}
+		}
+		validPostsubmits[p.Name] = p
 	}
 
 	if c.Postsubmits == nil {
@@ -458,8 +471,10 @@ func (c *Config) mergeJobConfig(jc JobConfig) error {
 	for repo, jobs := range jc.Postsubmits {
 		if _, ok := c.Postsubmits[repo]; ok {
 			for _, job := range jobs {
-				if _, ok := validPostsubmits[job.Name]; ok {
-					return fmt.Errorf("duplicated postsubmit job across multiple files : %s", job.Name)
+				if existingJob, ok := validPostsubmits[job.Name]; ok {
+					if existingJob.Brancher.Intersects(job.Brancher) {
+						return fmt.Errorf("duplicated postsubmit job across multiple files : %s", job.Name)
+					}
 				}
 			}
 			c.Postsubmits[repo] = append(c.Postsubmits[repo], jobs...)

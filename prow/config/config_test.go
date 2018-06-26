@@ -432,6 +432,37 @@ presubmits:
 			expectError: true,
 		},
 		{
+			name:       "dup presubmits not the same branch, two files",
+			prowConfig: ``,
+			jobConfigs: []string{
+				`
+presubmits:
+  foo/bar:
+  - interval: 10m
+    agent: kubernetes
+    name: presubmit-bar
+    context: bar
+    branches:
+    - master
+    spec:
+      containers:
+      - image: alpine`,
+				`
+presubmits:
+  foo/bar:
+  - interval: 10m
+    agent: kubernetes
+    context: bar
+    branches:
+    - other
+    name: presubmit-bar
+    spec:
+      containers:
+      - image: alpine`,
+			},
+			expectError: false,
+		},
+		{
 			name:       "one postsubmit, ok",
 			prowConfig: ``,
 			jobConfigs: []string{
@@ -760,4 +791,96 @@ periodics:
 			}
 		}
 	}
+}
+
+func TestBrancher_Intersects(t *testing.T) {
+	testCases := []struct {
+		name   string
+		a, b   Brancher
+		result bool
+	}{
+		{
+			name: "TwodifferentBranches",
+			a: Brancher{
+				Branches: []string{"a"},
+			},
+			b: Brancher{
+				Branches: []string{"b"},
+			},
+		},
+		{
+			name: "Opposite",
+			a: Brancher{
+				SkipBranches: []string{"b"},
+			},
+			b: Brancher{
+				Branches: []string{"b"},
+			},
+		},
+		{
+			name:   "BothRunOnAllBranches",
+			a:      Brancher{},
+			b:      Brancher{},
+			result: true,
+		},
+		{
+			name: "RunsOnAllBranchesAndSpecified",
+			a:    Brancher{},
+			b: Brancher{
+				Branches: []string{"b"},
+			},
+			result: true,
+		},
+		{
+			name: "SkipBranchesAndSet",
+			a: Brancher{
+				SkipBranches: []string{"a", "b", "c"},
+			},
+			b: Brancher{
+				Branches: []string{"a"},
+			},
+		},
+		{
+			name: "SkipBranchesAndSet",
+			a: Brancher{
+				Branches: []string{"c"},
+			},
+			b: Brancher{
+				Branches: []string{"a"},
+			},
+		},
+		{
+			name: "BothSkipBranches",
+			a: Brancher{
+				SkipBranches: []string{"a", "b", "c"},
+			},
+			b: Brancher{
+				SkipBranches: []string{"d", "e", "f"},
+			},
+			result: true,
+		},
+		{
+			name: "BothSkipCommonBranches",
+			a: Brancher{
+				SkipBranches: []string{"a", "b", "c"},
+			},
+			b: Brancher{
+				SkipBranches: []string{"b", "e", "f"},
+			},
+			result: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(st *testing.T) {
+			r1 := tc.a.Intersects(tc.b)
+			r2 := tc.b.Intersects(tc.a)
+			for _, result := range []bool{r1, r2} {
+				if result != tc.result {
+					st.Errorf("Expected %v got %v", tc.result, result)
+				}
+			}
+		})
+	}
+
 }
