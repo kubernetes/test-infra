@@ -16,14 +16,14 @@ The process is as follows:
     [bootstrap](/jenkins/bootstrap.py) to facilitate this and are in the midst of
     rewriting it to better support external usage.
 - Add the GCS bucket info to [buckets.yaml](/kettle/buckets.yaml) via a PR (use the
-  previously designated github handle for the `contact` field)
+  previously designated github handle for the `contact` field).
 - Add jobs and dashboards to the [testgrid config](/testgrid/config.yaml) via
   a PR (use the previously designated point of contact info in a comment next to
   added `test_group`s, or even better in the `description` field for added
   `dashboard_tab`s)
 
 As of this writing, a good example GCS bucket to grep for in this repo would be the
-`gce-daisy-test` bucket.
+`k8s-conformance-openstack` bucket.
 
 We are actively working on improving this process, which means that this
 document may not be kept exactly up-to-date. Feel free to file an issue against
