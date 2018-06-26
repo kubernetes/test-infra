@@ -19,7 +19,7 @@ LABEL maintainer "beacham@google.com"
 ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     pkg-config \
     unzip \
