@@ -6147,6 +6147,7 @@ presubmits:
     agent: kubernetes
     labels:
       preset-service-account: "true"
+      preset-k8s-ssh: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
