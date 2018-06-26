@@ -723,6 +723,7 @@ func TestConfigureTeams(t *testing.T) {
 		teams           []github.Team
 		expected        map[string]github.Team
 		deleted         []int
+		delta           float64
 	}{
 		{
 			name: "do nothing without error",
@@ -838,6 +839,48 @@ func TestConfigureTeams(t *testing.T) {
 				"new": {ID: 1, Name: "new", Description: desc, Privacy: string(priv)},
 			},
 		},
+		{
+			name: "allow deleting many teams",
+			teams: []github.Team{
+				{
+					Name: "unused",
+					ID:   1,
+				},
+				{
+					Name: "used",
+					ID:   2,
+				},
+			},
+			config: org.Config{
+				Teams: map[string]org.Team{
+					"used": {},
+				},
+			},
+			expected: map[string]github.Team{
+				"used": {ID: 2, Name: "used"},
+			},
+			delta: 0.6,
+		},
+		{
+			name: "refuse to delete too many teams",
+			teams: []github.Team{
+				{
+					Name: "unused",
+					ID:   1,
+				},
+				{
+					Name: "used",
+					ID:   2,
+				},
+			},
+			config: org.Config{
+				Teams: map[string]org.Team{
+					"used": {},
+				},
+			},
+			err:   true,
+			delta: 0.1,
+		},
 	}
 
 	for _, tc := range cases {
@@ -850,7 +893,10 @@ func TestConfigureTeams(t *testing.T) {
 			if tc.expected == nil {
 				tc.expected = map[string]github.Team{}
 			}
-			actual, err := configureTeams(fc, orgName, tc.config)
+			if tc.delta == 0 {
+				tc.delta = 1
+			}
+			actual, err := configureTeams(fc, orgName, tc.config, tc.delta)
 			switch {
 			case err != nil:
 				if !tc.err {
