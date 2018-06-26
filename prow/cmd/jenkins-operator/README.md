@@ -10,7 +10,7 @@ the operator to make requests to. By default, `--dry-run` is set to `true`
 so the operator will not make any mutating requests to Jenkins, Github,
 and Kubernetes, but you most probably want to set it to `false`.
 The Jenkins operator expects to read the Prow configuration by default
-in `/etc/config/config` which can be configured with `--config-path`.
+in `/etc/config/config.yaml` which can be configured with `--config-path`.
 
 The following stanza is config that can be optionally set in the Prow config file:
 
