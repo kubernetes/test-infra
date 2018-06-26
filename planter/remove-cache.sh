@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright 2017 The Kubernetes Authors.
+# Copyright 2018 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,16 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This is a utility to remove the Bazel cache after using Planter
+#
+# After using planter the cache contents are correctly owned by the host user,
+# but some files are not writable so we make them writable and then delete
+# the cache dir rather than the normal `bazel clean`.
+# NOTE: this is a rough approximation of `bazel clean --expunge`
 set -o errexit
 set -o nounset
 
-# write a fake user entry with settings matching the host user
-# note that this is different from the user we installed bazel as, we want
-# it to look just like the user calling planter outside the container
-# so that the file permissions, log paths etc are the same, and we will
-# run the container as this $UID:$GID so tools like python will expect
-# a matching entry here to lookup $HOME, etc.
-echo "${USER}:!:${UID}:${GID}:${FULL_NAME:-}:${HOME}:/bin/bash" >> /etc/passwd
-
-# actually run the user's command
-exec "$@"
+BAZEL_CACHE="${HOME}/.cache/bazel"
+chmod -R +w "${BAZEL_CACHE}" && rm -rf "${BAZEL_CACHE}"

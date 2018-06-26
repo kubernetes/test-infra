@@ -36,9 +36,30 @@ Planter respects the following environment variables:
 
 Currently, SELinux is disabled for the container that runs the bazel
 environment, which allows for the rest of the host system to leave SELinux
-enabled. Automatic relabeling is not done to avoid inadvertently causing issues
-with the host system.
+enabled. We could relabel the volumes and enable SELinux but this could cause
+major issues on the host if planter was used from say $HOME.
 
 
 Further details can be found in `planter.sh` itself, which is somewhat
 self-documenting.
+
+## Docker for Mac
+
+Performance with docker for mac can be quite bad compared to installing bazel 
+natively (which is an option!). If you are going to use planter though, 
+consider tuning the following Docker options:
+
+- Increase CPU reservation, 4+ cores recommended
+- Increase Memory reservation, 8+ GB recommended
+
+You can find these under [preferences > advanced](https://docs.docker.com/docker-for-mac/#advanced)
+
+Check [this unnoficial guide](https://medium.com/@TomKeur/how-get-better-disk-performance-in-docker-for-mac-2ba1244b5b70)
+and make sure that you are using `.raw` formatted VM disk for the daemon. 
+
+Periodically restarting the daemon (docker for mac tray icon > restart) can
+also help. In particular if you see the Bazel analysis phase taking a long time
+consider restarting the docker daemon before trying again.
+
+We also use [delegated volume mounts](https://docs.docker.com/docker-for-mac/osxfs-caching/) to improve osxfs performance.
+
