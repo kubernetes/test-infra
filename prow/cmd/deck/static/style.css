@@ -465,7 +465,7 @@ span.label:not(.merge-table-label):hover {
 /*
 Plugin Help style
  */
-#plugin-container {
+#plugin-container, #lens-container {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;

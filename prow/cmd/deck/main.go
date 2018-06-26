@@ -23,6 +23,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -173,7 +174,7 @@ func prodOnlyMain(o options, mux *http.ServeMux) *http.ServeMux {
 	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(configAgent)))
 	mux.Handle("/branding.js", gziphandler.GzipHandler(handleBranding(configAgent)))
 	mux.Handle("/favicon.ico", gziphandler.GzipHandler(handleFavicon(configAgent)))
-	mux.Handle("/job", gziphandler.GzipHandler(handleRequestJobViews(spyGlass)))
+	mux.Handle("/view", gziphandler.GzipHandler(handleRequestJobViews(spyGlass)))
 
 	if o.hookURL != "" {
 		mux.Handle("/plugin-help.js",
@@ -413,7 +414,7 @@ func handleBadge(ja *jobs.JobAgent) http.HandlerFunc {
 
 // handleRequestJobViews handles requests to get all available artifact views for a given job
 // it responds with a list of all availables view titles
-func handleRequestJobViews(sg SpyGlass) http.HandlerFunc {
+func handleRequestJobViews(sg *spyglass.SpyGlass) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		bucket := r.URL.Query().Get("bucket")
 		jobPath := r.URL.Query().Get("job")
@@ -426,24 +427,82 @@ func handleRequestJobViews(sg SpyGlass) http.HandlerFunc {
 			return
 		}
 
+		viewTmpl := `<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Job View</title>
+        <link id="favicon" rel="icon" type="image/png" href="favicon.ico">
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <link rel="stylesheet" type="text/css" href="extensions/style.css">
+        <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+        <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
+        <script type="text/javascript" src="script.js"></script>
+        <script type="text/javascript" src="extensions/script.js"></script>
+        <script type="text/javascript" src="branding.js?var=branding"></script>
+        <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+    </head>
+    <body>
+	<div class="mdl-layout__container">
+        <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+            <header class="mdl-layout__header">
+                <div class="mdl-layout__header-row">
+                    <a href="https://github.com/kubernetes/test-infra/tree/master/prow#prow" class="logo"><img id="img" src="/logo.svg" alt="kubernetes logo" class="logo"/></a>
+                    <span class="mdl-layout-title header-title">Job View</span>
+                </div>
+            </header>
+	    <main class="mdl-layout__content">
+	    <div id="lens-container">
+	    {{range .Views}}<div class="mdl-card mdl-shadow--2dp">
+		<div class="mdl-card__title">
+		<h3 class="mdl-card__title-text">{{.Title}}</h3>
+		</div>
+	        {{.HtmlView}}
+	    </div>{{end}}
+	    </div>
+	    </main>
+	</div>
+	</div>
+    </body>
+</html>
+		`
+
 		artifactFetcher := spyglass.NewGCSArtifactFetcher()
 		gcsJobSource := spyglass.NewGCSJobSource(bucket, jobPath)
 		artifacts := artifactFetcher.Artifacts(gcsJobSource)
 
-		lenses := sg.Views(artifacts)
+		logrus.Info("Got a fetcher")
 
-		// TODO find a way to get titles and views separately
-		pd, err := json.Marshal(lenses)
-		if err != nil {
-			logrus.WithError(err).Error("Error marshaling payload.")
-			pd = []byte("{}")
+		lenses := sg.Views(artifacts)
+		logrus.Infof("Got %d views!", len(lenses))
+		var viewBuf bytes.Buffer
+		type ViewsTemplate struct {
+			Views []spyglass.Lens
 		}
-		fmt.Fprint(w, string(pd))
+		vTmpl := ViewsTemplate{
+			Views: lenses,
+		}
+		logrus.Info("Created view template")
+		t := template.Must(template.New("ArtifactsView").Parse(viewTmpl))
+		logrus.Info("compiled template")
+		tErr := t.Execute(&viewBuf, vTmpl)
+		if tErr != nil {
+			logrus.WithError(tErr).Error("Error rendering template.")
+		}
+
+		fmt.Fprint(w, viewBuf.String())
+		//	pd, err := json.Marshal(lenses)
+		//	if err != nil {
+		//		logrus.WithError(err).Error("Error marshaling payload.")
+		//		pd = []byte("{}")
+		//	}
+		//	fmt.Fprint(w, string(pd))
 	}
 }
 
 // handleArtifactView handles requests to load a view for a job
-func handleArtifactView(sg spyglass.SpyGlass) http.HandlerFunc {
+func handleArtifactView(sg *spyglass.SpyGlass) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := r.URL.Query().Get("name")
 		bucket := r.URL.Query().Get("bucket")
@@ -471,7 +530,7 @@ func handleArtifactView(sg spyglass.SpyGlass) http.HandlerFunc {
 		artifacts := artifactFetcher.Artifacts(gcsJobSource)
 
 		var raw *json.RawMessage
-		raw := json.Unmarshal(body)
+		raw.UnmarshalJSON(body)
 		lens := sg.Refresh(name, artifacts, raw)
 
 		pd, err := json.Marshal(lens)

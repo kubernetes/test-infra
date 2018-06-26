@@ -17,13 +17,15 @@ limitations under the License.
 package spyglass
 
 import (
+	"encoding/json"
 	"testing"
 )
 
 func TestBuildLogView(t *testing.T) {
 	buildLogArtifact := NewGCSArtifact(fakeGCSBucket.Object(buildLogName), fakeGCSJobSource.JobPath())
 	buildLogViewer := BuildLogViewer{
-		title: "Build Log",
+		ViewTitle: "Build Log",
+		ViewName:  "BuildLogViewer",
 	}
 	testCases := []struct {
 		name         string
@@ -46,7 +48,9 @@ crazy
 	}
 
 	for _, tc := range testCases {
-		actualView := buildLogViewer.View(tc.artifacts)
+		var msg *json.RawMessage
+		msg.UnmarshalJSON([]byte(``))
+		actualView := buildLogViewer.View(tc.artifacts, msg)
 		if actualView != tc.expectedView {
 			t.Errorf("Test %s failed. Expected:\n%s\nActual:\n%s", tc.name, tc.expectedView, actualView)
 		}

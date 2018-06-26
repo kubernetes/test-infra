@@ -18,6 +18,7 @@ package spyglass
 
 import (
 	"bytes"
+	"encoding/json"
 	"html/template"
 
 	"github.com/sirupsen/logrus"
@@ -25,24 +26,24 @@ import (
 
 // An artifact viewer for JUnit tests
 type JUnitViewer struct {
-	Name  string
-	Title string
+	ViewName  string
+	ViewTitle string
 }
 
 // An artifact viewer for build logs
 type BuildLogViewer struct {
-	Name  string
-	Title string
+	ViewName  string
+	ViewTitle string
 }
 
 // An artifact viewer for prow job metadata
 type MetadataViewer struct {
-	Name  string
-	Title string
+	ViewName  string
+	ViewTitle string
 }
 
 // View creates a view for a build log (or multiple build logs)
-func (v *BuildLogViewer) View(artifacts []Artifact, raw *RawMessage) string {
+func (v *BuildLogViewer) View(artifacts []Artifact, raw *json.RawMessage) string {
 	logViewTmpl := `
 <div>
 	{{range .LogViews}}<div>
@@ -70,13 +71,43 @@ func (v *BuildLogViewer) View(artifacts []Artifact, raw *RawMessage) string {
 }
 
 // View creates a view for JUnit tests
-func (v *JUnitViewer) View(artifacts []Artifact, raw *RawMessage) string {
+func (v *JUnitViewer) View(artifacts []Artifact, raw *json.RawMessage) string {
 	//TODO
 	return ""
 }
 
 // View creates a view for prow job metadata
-func (v *MetadataViewer) View(artifacts []Artifact, raw *RawMessage) string {
+func (v *MetadataViewer) View(artifacts []Artifact, raw *json.RawMessage) string {
 	//TODO
 	return ""
+}
+
+// Title gets the title of the viewer
+func (v *JUnitViewer) Title() string {
+	return v.ViewTitle
+}
+
+// Title gets the title of the viewer
+func (v *MetadataViewer) Title() string {
+	return v.ViewTitle
+}
+
+// Title gets the title of the viewer
+func (v *BuildLogViewer) Title() string {
+	return v.ViewTitle
+}
+
+// Name gets the unique name of the viewer within the job
+func (v *BuildLogViewer) Name() string {
+	return v.ViewName
+}
+
+// Name gets the unique name of the viewer within the job
+func (v *JUnitViewer) Name() string {
+	return v.ViewName
+}
+
+// Name gets the unique name of the viewer within the job
+func (v *MetadataViewer) Name() string {
+	return v.ViewName
 }
