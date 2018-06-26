@@ -37,7 +37,7 @@ func TestPathForSpec(t *testing.T) {
 			spec: &downwardapi.JobSpec{
 				Type:    kube.PeriodicJob,
 				Job:     "job",
-				BuildId: "number",
+				BuildID: "number",
 			},
 			expected: "logs/job/number",
 		},
@@ -45,7 +45,7 @@ func TestPathForSpec(t *testing.T) {
 			name: "postsubmit",
 			spec: &downwardapi.JobSpec{Type: kube.PostsubmitJob,
 				Job:     "job",
-				BuildId: "number",
+				BuildID: "number",
 			},
 			expected: "logs/job/number",
 		},
@@ -53,7 +53,7 @@ func TestPathForSpec(t *testing.T) {
 			name: "batch",
 			spec: &downwardapi.JobSpec{Type: kube.BatchJob,
 				Job:     "job",
-				BuildId: "number",
+				BuildID: "number",
 			},
 			expected: "pr-logs/pull/batch/job/number",
 		},
@@ -62,7 +62,7 @@ func TestPathForSpec(t *testing.T) {
 			spec: &downwardapi.JobSpec{
 				Type:    kube.PresubmitJob,
 				Job:     "job",
-				BuildId: "number",
+				BuildID: "number",
 				Refs: kube.Refs{
 					Org:  "org",
 					Repo: "repo",
@@ -81,7 +81,7 @@ func TestPathForSpec(t *testing.T) {
 			spec: &downwardapi.JobSpec{
 				Type:    kube.PresubmitJob,
 				Job:     "job",
-				BuildId: "number",
+				BuildID: "number",
 				Refs: kube.Refs{
 					Org:  "org",
 					Repo: "repo",
@@ -100,7 +100,7 @@ func TestPathForSpec(t *testing.T) {
 			spec: &downwardapi.JobSpec{
 				Type:    kube.PresubmitJob,
 				Job:     "job",
-				BuildId: "number",
+				BuildID: "number",
 				Refs: kube.Refs{
 					Org:  "org",
 					Repo: "repo",
@@ -149,7 +149,7 @@ func TestAliasForSpec(t *testing.T) {
 			spec: &downwardapi.JobSpec{
 				Type:    kube.PresubmitJob,
 				Job:     "job",
-				BuildId: "number",
+				BuildID: "number",
 			},
 			expected: "pr-logs/directory/job/number.txt",
 		},

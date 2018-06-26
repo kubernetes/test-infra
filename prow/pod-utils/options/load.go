@@ -22,6 +22,7 @@ import (
 	"os"
 )
 
+// OptionLoader allows loading options from either the environment or flags.
 type OptionLoader interface {
 	ConfigVar() string
 	LoadConfig(config string) error

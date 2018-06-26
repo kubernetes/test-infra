@@ -34,8 +34,8 @@ func TestEnvironmentForSpec(t *testing.T) {
 			spec: JobSpec{
 				Type:      kube.PeriodicJob,
 				Job:       "job-name",
-				BuildId:   "0",
-				ProwJobId: "prowjob",
+				BuildID:   "0",
+				ProwJobID: "prowjob",
 			},
 			expected: map[string]string{
 				"JOB_NAME":    "job-name",
@@ -50,8 +50,8 @@ func TestEnvironmentForSpec(t *testing.T) {
 			spec: JobSpec{
 				Type:      kube.PostsubmitJob,
 				Job:       "job-name",
-				BuildId:   "0",
-				ProwJobId: "prowjob",
+				BuildID:   "0",
+				ProwJobID: "prowjob",
 				Refs: kube.Refs{
 					Org:     "org-name",
 					Repo:    "repo-name",
@@ -77,8 +77,8 @@ func TestEnvironmentForSpec(t *testing.T) {
 			spec: JobSpec{
 				Type:      kube.BatchJob,
 				Job:       "job-name",
-				BuildId:   "0",
-				ProwJobId: "prowjob",
+				BuildID:   "0",
+				ProwJobID: "prowjob",
 				Refs: kube.Refs{
 					Org:     "org-name",
 					Repo:    "repo-name",
@@ -113,8 +113,8 @@ func TestEnvironmentForSpec(t *testing.T) {
 			spec: JobSpec{
 				Type:      kube.PresubmitJob,
 				Job:       "job-name",
-				BuildId:   "0",
-				ProwJobId: "prowjob",
+				BuildID:   "0",
+				ProwJobID: "prowjob",
 				Refs: kube.Refs{
 					Org:     "org-name",
 					Repo:    "repo-name",
@@ -147,8 +147,8 @@ func TestEnvironmentForSpec(t *testing.T) {
 			spec: JobSpec{
 				Type:      kube.PeriodicJob,
 				Job:       "job-name",
-				BuildId:   "0",
-				ProwJobId: "prowjob",
+				BuildID:   "0",
+				ProwJobID: "prowjob",
 				agent:     kube.KubernetesAgent,
 			},
 			expected: map[string]string{
@@ -165,8 +165,8 @@ func TestEnvironmentForSpec(t *testing.T) {
 			spec: JobSpec{
 				Type:      kube.PeriodicJob,
 				Job:       "job-name",
-				BuildId:   "0",
-				ProwJobId: "prowjob",
+				BuildID:   "0",
+				ProwJobID: "prowjob",
 				agent:     kube.JenkinsAgent,
 			},
 			expected: map[string]string{

@@ -14,5 +14,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// errorutil provides utilities for errors
+// Package errorutil provides utilities for errors
 package errorutil

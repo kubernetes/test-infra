@@ -14,6 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// downwardapi declares the types used to expose
+// Package downwardapi declares the types used to expose
 // job configuration to the jobs themselves
 package downwardapi

@@ -169,7 +169,7 @@ func TestOptions_AssembleTargets(t *testing.T) {
 						},
 					},
 				},
-				BuildId: "build",
+				BuildID: "build",
 			}
 
 			tmpDir, err := ioutil.TempDir("", testCase.name)

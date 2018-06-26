@@ -14,6 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// wrapper contains utilities for the processes that
+// Package wrapper contains utilities for the processes that
 // wrap the test execution in a ProwJob test container
 package wrapper
