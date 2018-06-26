@@ -31,7 +31,7 @@ bq show <<< $'\n' > /dev/null  # create initial bq config
 
 while true; do
   # Attempt to update buckets.yaml.
-  curl -fsSL --retry 5 -o buckets.yaml.new https://raw.githubusercontent.com/kubernetes/test-infra/master/kettle/buckets.yaml && mv buckets.yaml.new buckets.yaml
+  curl -fsSL --retry 5 -o buckets.yaml.new https://raw.githubusercontent.com/kubernetes/test-infra/master/kettle/buckets.yaml && mv buckets.yaml.new /kettle/buckets.yaml
 
   /kettle/update.py
 done

@@ -27,8 +27,7 @@ RUN curl -o installer https://sdk.cloud.google.com && bash installer --disable-p
 ENV KETTLE_DB=/data/build.db
 ENV TZ=America/Los_Angeles
 
-ADD *.py schema.json runner.sh /kettle/
-ADD buckets.yaml /
+ADD *.py schema.json runner.sh buckets.yaml /kettle/
 
 CMD ["/kettle/runner.sh"]
 VOLUME ["/data"]
