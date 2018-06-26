@@ -26,6 +26,10 @@ triggers:
   - tensorflow/minigo
   trusted_org: tensorflow
   join_org_url: https://github.com/tensorflow/minigo/blob/master/CONTRIBUTING.md
+- repos:
+  - bazelbuild
+  trusted_org: bazelbuild
+  # TODO(fejta): determine instructions for join_org_url
 owners:
   mdyamlrepos:
   - kubernetes/website
@@ -160,6 +164,18 @@ config_updater:
       name: plugins
 
 plugins:
+  bazelbuild/rules_k8s:
+  - approve  # Allow OWNERS to /approve
+  - assign  # Allow /assign and /cc
+  - blunderbuss  # Auto-assign people
+  - help  # Support /help and /good-first-issue
+  - hold  # Support /hold to delay merge
+  - lgtm  # Allow /lgtm
+  - lifecycle  # Allow /lifecycle stale
+  - size  # Auto-label size of PR
+  - trigger  # Allow people to configure CI jobs to /test
+  - wip  # Auto-hold PRs with WIP in title
+
   google/cadvisor:
   - trigger
 
