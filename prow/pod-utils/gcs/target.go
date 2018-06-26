@@ -32,11 +32,11 @@ import (
 func PathForSpec(spec *downwardapi.JobSpec, pathSegment RepoPathBuilder) string {
 	switch spec.Type {
 	case kube.PeriodicJob, kube.PostsubmitJob:
-		return path.Join("logs", spec.Job, spec.BuildId)
+		return path.Join("logs", spec.Job, spec.BuildID)
 	case kube.PresubmitJob:
-		return path.Join("pr-logs", "pull", pathSegment(spec.Refs.Org, spec.Refs.Repo), strconv.Itoa(spec.Refs.Pulls[0].Number), spec.Job, spec.BuildId)
+		return path.Join("pr-logs", "pull", pathSegment(spec.Refs.Org, spec.Refs.Repo), strconv.Itoa(spec.Refs.Pulls[0].Number), spec.Job, spec.BuildID)
 	case kube.BatchJob:
-		return path.Join("pr-logs", "pull", "batch", spec.Job, spec.BuildId)
+		return path.Join("pr-logs", "pull", "batch", spec.Job, spec.BuildID)
 	default:
 		logrus.Fatalf("unknown job spec type: %v", spec.Type)
 	}
@@ -49,7 +49,7 @@ func AliasForSpec(spec *downwardapi.JobSpec) string {
 	case kube.PeriodicJob, kube.PostsubmitJob, kube.BatchJob:
 		return ""
 	case kube.PresubmitJob:
-		return path.Join("pr-logs", "directory", spec.Job, fmt.Sprintf("%s.txt", spec.BuildId))
+		return path.Join("pr-logs", "directory", spec.Job, fmt.Sprintf("%s.txt", spec.BuildID))
 	default:
 		logrus.Fatalf("unknown job spec type: %v", spec.Type)
 	}
