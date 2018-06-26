@@ -12225,6 +12225,19 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
 
+- name: ci-kubernetes-e2e-gke-device-plugin-gpu-ubuntu
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=300
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
+
 - interval: 1h
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-ci-master
