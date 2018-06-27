@@ -3,16 +3,18 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = [
-        "artifact_fetcher.go",
-        "artifacts.go",
+        "artifactfetchers.go",
+        "gcsartifact.go",
+        "gcsartifact_fetcher.go",
         "spyglass.go",
         "util.go",
-        "viewer.go",
     ],
     importpath = "k8s.io/test-infra/prow/spyglass",
     visibility = ["//visibility:public"],
     deps = [
-        "//prow/kube:go_default_library",
+        "//prow/spyglass/viewers:go_default_library",
+        "//prow/spyglass/viewers/buildlog:go_default_library",
+        "//prow/spyglass/viewers/metadata:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/google.golang.org/api/iterator:go_default_library",
@@ -23,11 +25,10 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = [
-        "artifact_fetcher_test.go",
-        "artifacts_test.go",
+        "gcsartifact_fetcher_test.go",
+        "gcsartifact_test.go",
         "spyglass_test.go",
         "util_test.go",
-        "viewer_test.go",
     ],
     embed = [":go_default_library"],
     deps = [
@@ -45,7 +46,10 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//prow/spyglass/viewers:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

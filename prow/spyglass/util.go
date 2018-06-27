@@ -20,11 +20,13 @@ import (
 	"bufio"
 	"bytes"
 	"strings"
+
+	"k8s.io/test-infra/prow/spyglass/viewers"
 )
 
 // LastNLines reads the last n lines from a file in GCS
 // TODO this is broken, just scan backwards
-func LastNLines(a Artifact, n int64) string {
+func LastNLines(a viewers.Artifact, n int64) string {
 	chunkSize := int64(1e6) //1MB
 	toRead := chunkSize + 1 // Add 1 for exclusive upper bound read range
 	chunks := int64(1)

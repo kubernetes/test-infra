@@ -14,7 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package spyglass
+// Package buildlog provides a build log viewer for Spyglass
+package buildlog
 
 import (
 	"bytes"
@@ -23,13 +24,8 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/spyglass/viewers"
 )
-
-// An artifact viewer for JUnit tests
-type JUnitViewer struct {
-	ViewName  string
-	ViewTitle string
-}
 
 // An artifact viewer for build logs
 type BuildLogViewer struct {
@@ -37,14 +33,18 @@ type BuildLogViewer struct {
 	ViewTitle string
 }
 
-// An artifact viewer for prow job metadata
-type MetadataViewer struct {
-	ViewName  string
-	ViewTitle string
+// Name gets the unique name of the viewer within the job
+func (v *BuildLogViewer) Name() string {
+	return v.ViewName
+}
+
+// Title gets the title of the viewer
+func (v *BuildLogViewer) Title() string {
+	return v.ViewTitle
 }
 
 // View creates a view for a build log (or multiple build logs)
-func (v *BuildLogViewer) View(artifacts []Artifact, raw *json.RawMessage) string {
+func (v *BuildLogViewer) View(artifacts []viewers.Artifact, raw *json.RawMessage) string {
 	logViewTmpl := `
 	<div style="font-family:monospace;">
 	{{range .LogViews}}<ul style="list-style-type:none;padding:0;margin:0;line-height:1;">
@@ -55,7 +55,6 @@ func (v *BuildLogViewer) View(artifacts []Artifact, raw *json.RawMessage) string
 </div>`
 	var buf bytes.Buffer
 	type LogFileView struct {
-		// requestMore string TODO
 		LogLines []string
 	}
 	type BuildLogsView struct {
@@ -78,46 +77,4 @@ func (v *BuildLogViewer) View(artifacts []Artifact, raw *json.RawMessage) string
 		logrus.Errorf("Template failed with error: %s", err)
 	}
 	return buf.String()
-}
-
-// View creates a view for JUnit tests
-func (v *JUnitViewer) View(artifacts []Artifact, raw *json.RawMessage) string {
-	//TODO
-	return ""
-}
-
-// View creates a view for prow job metadata
-func (v *MetadataViewer) View(artifacts []Artifact, raw *json.RawMessage) string {
-	//TODO
-	return ""
-}
-
-// Title gets the title of the viewer
-func (v *JUnitViewer) Title() string {
-	return v.ViewTitle
-}
-
-// Title gets the title of the viewer
-func (v *MetadataViewer) Title() string {
-	return v.ViewTitle
-}
-
-// Title gets the title of the viewer
-func (v *BuildLogViewer) Title() string {
-	return v.ViewTitle
-}
-
-// Name gets the unique name of the viewer within the job
-func (v *BuildLogViewer) Name() string {
-	return v.ViewName
-}
-
-// Name gets the unique name of the viewer within the job
-func (v *JUnitViewer) Name() string {
-	return v.ViewName
-}
-
-// Name gets the unique name of the viewer within the job
-func (v *MetadataViewer) Name() string {
-	return v.ViewName
 }

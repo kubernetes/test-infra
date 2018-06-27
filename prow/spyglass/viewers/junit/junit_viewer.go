@@ -14,27 +14,33 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package viewers provides interfaces and methods necessary for implementing views
-package viewers
+// Package junit provides a junit viewer for Spyglass
+package junit
 
 import (
 	"encoding/json"
-	"io"
+
+	"k8s.io/test-infra/prow/spyglass/viewers"
 )
 
-// Artifact represents some output of a prow job
-type Artifact interface {
-	io.ReaderAt
-	CanonicalLink() string
-	JobPath() string
-	ReadAll() ([]byte, error)
-	ReadTail(n int64) ([]byte, error)
-	Size() int64
+// An artifact viewer for JUnit tests
+type JUnitViewer struct {
+	ViewName  string
+	ViewTitle string
 }
 
-// Viewer generates html views for sets of artifacts
-type Viewer interface {
-	View(artifacts []Artifact, raw *json.RawMessage) string
-	Title() string
-	Name() string
+// Title gets the title of the viewer
+func (v *JUnitViewer) Title() string {
+	return v.ViewTitle
+}
+
+// Name gets the unique name of the viewer within the job
+func (v *JUnitViewer) Name() string {
+	return v.ViewName
+}
+
+// View creates a view for JUnit tests
+func (v *JUnitViewer) View(artifacts []viewers.Artifact, raw *json.RawMessage) string {
+	//TODO
+	return ""
 }

@@ -19,6 +19,8 @@ package spyglass
 import (
 	"bytes"
 	"testing"
+
+	"k8s.io/test-infra/prow/spyglass/viewers"
 )
 
 // Tests reading all data from files in GCS
@@ -26,7 +28,7 @@ func TestGCSReadAll(t *testing.T) {
 	buildLogArtifact := NewGCSArtifact(fakeGCSBucket.Object(buildLogName), fakeGCSJobSource.JobPath())
 	testCases := []struct {
 		name     string
-		a        Artifact
+		a        viewers.Artifact
 		expected []byte
 	}{
 		{
@@ -50,7 +52,7 @@ func TestGCSSize(t *testing.T) {
 	startedArtifact := NewGCSArtifact(fakeGCSBucket.Object(startedName), fakeGCSJobSource.JobPath())
 	testCases := []struct {
 		name     string
-		a        Artifact
+		a        viewers.Artifact
 		expected int64
 	}{
 		{

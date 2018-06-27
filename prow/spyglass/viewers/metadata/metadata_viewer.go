@@ -14,27 +14,33 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package viewers provides interfaces and methods necessary for implementing views
-package viewers
+// Package metadata provides a metadata viewer for Spyglass
+package metadata
 
 import (
 	"encoding/json"
-	"io"
+
+	"k8s.io/test-infra/prow/spyglass/viewers"
 )
 
-// Artifact represents some output of a prow job
-type Artifact interface {
-	io.ReaderAt
-	CanonicalLink() string
-	JobPath() string
-	ReadAll() ([]byte, error)
-	ReadTail(n int64) ([]byte, error)
-	Size() int64
+// An artifact viewer for build logs
+type MetadataViewer struct {
+	ViewName  string
+	ViewTitle string
 }
 
-// Viewer generates html views for sets of artifacts
-type Viewer interface {
-	View(artifacts []Artifact, raw *json.RawMessage) string
-	Title() string
-	Name() string
+// View creates a view for prow job metadata
+func (v *MetadataViewer) View(artifacts []viewers.Artifact, raw *json.RawMessage) string {
+	//TODO
+	return ""
+}
+
+// Title gets the title of the viewer
+func (v *MetadataViewer) Title() string {
+	return v.ViewTitle
+}
+
+// Name gets the unique name of the viewer within the job
+func (v *MetadataViewer) Name() string {
+	return v.ViewName
 }

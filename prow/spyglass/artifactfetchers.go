@@ -14,27 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package viewers provides interfaces and methods necessary for implementing views
-package viewers
+package spyglass
 
 import (
-	"encoding/json"
-	"io"
+	"k8s.io/test-infra/prow/spyglass/viewers"
 )
 
-// Artifact represents some output of a prow job
-type Artifact interface {
-	io.ReaderAt
+// A location storing the results of prow jobs
+type JobSource interface {
 	CanonicalLink() string
 	JobPath() string
-	ReadAll() ([]byte, error)
-	ReadTail(n int64) ([]byte, error)
-	Size() int64
+	BucketName() string
 }
 
-// Viewer generates html views for sets of artifacts
-type Viewer interface {
-	View(artifacts []Artifact, raw *json.RawMessage) string
-	Title() string
-	Name() string
+// Gets artfiacts from a storage provider
+type ArtifactFetcher interface {
+	Artifacts(src *JobSource) []viewers.Artifact
 }

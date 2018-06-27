@@ -18,6 +18,8 @@ package spyglass
 
 import (
 	"testing"
+
+	"k8s.io/test-infra/prow/spyglass/viewers"
 )
 
 // Tests getting handles to objects associated with the current job in GCS
@@ -25,12 +27,12 @@ func TestGCSFetchArtifacts(t *testing.T) {
 	testCases := []struct {
 		name              string
 		gcsJobSource      *GCSJobSource
-		expectedArtifacts []Artifact
+		expectedArtifacts []viewers.Artifact
 	}{
 		{
 			name:         "Fetch Example CI Run #403 Artifacts",
 			gcsJobSource: fakeGCSJobSource,
-			expectedArtifacts: []Artifact{
+			expectedArtifacts: []viewers.Artifact{
 				NewGCSArtifact(fakeGCSBucket.Object(buildLogName), fakeGCSJobSource.JobPath()),
 				NewGCSArtifact(fakeGCSBucket.Object(startedName), fakeGCSJobSource.JobPath()),
 				NewGCSArtifact(fakeGCSBucket.Object(finishedName), fakeGCSJobSource.JobPath()),

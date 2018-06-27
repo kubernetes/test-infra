@@ -24,23 +24,12 @@ import (
 	"cloud.google.com/go/storage"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
+	"k8s.io/test-infra/prow/spyglass/viewers"
 )
-
-// Gets artfiacts from a storage provider
-type ArtifactFetcher interface {
-	Artifacts(src *JobSource) []Artifact
-}
 
 // A fetcher for a GCS client
 type GCSArtifactFetcher struct {
 	client *storage.Client
-}
-
-// A location storing the results of prow jobs
-type JobSource interface {
-	CanonicalLink() string
-	JobPath() string
-	BucketName() string
 }
 
 // A location in GCS where prow job-specific artifacts are stored
@@ -80,8 +69,8 @@ func NewGCSJobSourceWithPrefix(linkPrefix string, bucket string, jobPath string)
 }
 
 // Artifacts gets all artifacts from a GCS job source
-func (af *GCSArtifactFetcher) Artifacts(src JobSource) []Artifact {
-	artifacts := []Artifact{}
+func (af *GCSArtifactFetcher) Artifacts(src JobSource) []viewers.Artifact {
+	artifacts := []viewers.Artifact{}
 	bkt := af.client.Bucket(src.BucketName())
 	q := storage.Query{
 		Prefix:   src.JobPath(),

@@ -14,27 +14,31 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package spyglass
+package viewers
 
 import (
 	"encoding/json"
 	"testing"
+
+	"k8s.io/test-infra/prow/spyglass"
+	"k8s.io/test-infra/prow/spyglass/viewers"
 )
 
-func TestBuildLogView(t *testing.T) {
-	buildLogArtifact := NewGCSArtifact(fakeGCSBucket.Object(buildLogName), fakeGCSJobSource.JobPath())
+// TODO how do we test viewers? (uppercase this to test)
+func testBuildLogView(t *testing.T) {
+	buildLogArtifact := NewGCSArtifact(fakeGCSBucket.Object(buildLogName), spyglass.fakeGCSJobSource.JobPath())
 	buildLogViewer := BuildLogViewer{
 		ViewTitle: "Build Log",
 		ViewName:  "BuildLogViewer",
 	}
 	testCases := []struct {
 		name         string
-		artifacts    []Artifact
+		artifacts    []viewers.Artifact
 		expectedView string
 	}{
 		{
 			name:      "Basic Build Log View",
-			artifacts: []Artifact{buildLogArtifact},
+			artifacts: []viewers.Artifact{buildLogArtifact},
 			expectedView: `
 <div>
 	<div>
