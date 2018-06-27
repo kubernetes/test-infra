@@ -183,32 +183,21 @@ func contextsToStrings(contexts []Context) []string {
 func (c *Controller) Sync() error {
 	ctx := context.Background()
 	c.logger.Debug("Building tide pool.")
-	pool := make(map[string]PullRequest)
+	prs := make(map[string]PullRequest)
 	for _, q := range c.ca.Config().Tide.Queries {
-		poolPRs, err := search(ctx, c.ghc, c.logger, q.Query())
+		results, err := search(ctx, c.ghc, c.logger, q.Query())
 		if err != nil {
 			return err
 		}
-		for _, pr := range poolPRs {
-			// Only keep PRs that are mergeable or haven't had mergeability computed.
-			if pr.Mergeable != githubql.MergeableStateConflicting {
-				pool[prKey(&pr)] = pr
-			}
+		for _, pr := range results {
+			prs[prKey(&pr)] = pr
 		}
 	}
-	// Notify statusController about the new pool.
-	c.sc.Lock()
-	c.sc.poolPRs = pool
-	select {
-	case c.sc.newPoolPending <- true:
-	default:
-	}
-	c.sc.Unlock()
 
 	var pjs []kube.ProwJob
 	var blocks blockers.Blockers
 	var err error
-	if len(pool) > 0 {
+	if len(prs) > 0 {
 		pjs, err = c.kc.ListProwJobs(kube.EmptySelector)
 		if err != nil {
 			return err
@@ -223,10 +212,28 @@ func (c *Controller) Sync() error {
 			}
 		}
 	}
-	sps, err := c.dividePool(pool, pjs)
+	// Partition PRs into subpools and filter out non-pool PRs.
+	rawPools, err := c.dividePool(prs, pjs)
 	if err != nil {
 		return err
 	}
+	filteredPools := c.filterSubpools(rawPools)
+
+	// Notify statusController about the new pool.
+	c.sc.Lock()
+	c.sc.poolPRs = poolPRMap(filteredPools)
+	select {
+	case c.sc.newPoolPending <- true:
+	default:
+	}
+	c.sc.Unlock()
+
+	// Load the subpools into a channel for use as a work queue.
+	sps := make(chan subpool, len(filteredPools))
+	for _, sp := range filteredPools {
+		sps <- *sp
+	}
+	close(sps)
 
 	goroutines := c.ca.Config().Tide.MaxGoroutines
 	if goroutines > len(sps) {
@@ -273,6 +280,93 @@ func (c *Controller) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if _, err = w.Write(b); err != nil {
 		c.logger.WithError(err).Error("Writing JSON response.")
 	}
+}
+
+// filterSubpools filters non-pool PRs out of the initially identified subpools,
+// deleting any pools that become empty.
+// See filterSubpool for filtering details.
+func (c *Controller) filterSubpools(raw map[string]*subpool) map[string]*subpool {
+	filtered := make(map[string]*subpool)
+	for key, sp := range raw {
+		var err error
+		// TODO: move initialization of 'presubmits' 'cc' and 'sha' to an 'initPool' func.
+		sp.presubmits, err = c.presubmitsByPull(sp)
+		if err != nil {
+			sp.log.WithError(err).Error("Determining required presubmit prowjobs.")
+			continue
+		}
+		sp.cc, err = c.ca.Config().GetTideContextPolicy(sp.org, sp.repo, sp.branch)
+		if err != nil {
+			sp.log.WithError(err).Error("Setting up context checker.")
+			continue
+		}
+
+		if spFiltered := filterSubpool(c.ghc, sp); spFiltered != nil {
+			filtered[key] = spFiltered
+		}
+	}
+	return filtered
+}
+
+// filterSubpool filters PRs from an initially identified subpool, returning the
+// filtered subpool.
+// If the subpool becomes empty 'nil' is returned to indicate that the subpool
+// should be deleted.
+func filterSubpool(ghc githubClient, sp *subpool) *subpool {
+	var toKeep []PullRequest
+	for _, pr := range sp.prs {
+		if !filterPR(ghc, sp, &pr) {
+			toKeep = append(toKeep, pr)
+		}
+	}
+	if len(toKeep) == 0 {
+		return nil
+	}
+	sp.prs = toKeep
+	return sp
+}
+
+// filterPR indicates if a PR should be filtered out of the subpool.
+// Specifically we filter out PRs that:
+// - Have known merge conflicts.
+// - Have failing or missing status contexts.
+// - Have pending required status contexts that are not associated with a
+//   ProwJob. (This ensures that the 'tide' context indicates that the pending
+//   status is preventing merge. Required ProwJob statuses are allowed to be
+//   'pending' because this prevents kicking PRs from the pool when Tide is
+//   retesting them.)
+func filterPR(ghc githubClient, sp *subpool, pr *PullRequest) bool {
+	log := sp.log.WithFields(pr.logFields())
+	// Skip PRs that are known to be unmergeable.
+	if pr.Mergeable == githubql.MergeableStateConflicting {
+		return true
+	}
+	// Filter out PRs with unsuccessful contexts unless the only unsuccessful
+	// contexts are pending required prowjobs.
+	contexts, err := headContexts(log, ghc, pr)
+	if err != nil {
+		log.WithError(err).Error("Getting head contexts.")
+		return true
+	}
+	pjContexts := sp.presubmits[int(pr.Number)]
+	for _, ctx := range unsuccessfulContexts(contexts, sp.cc) {
+		if ctx.State != githubql.StatusStatePending || !pjContexts.Has(string(ctx.Context)) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// poolPRMap collects all subpool PRs into a map containing all pooled PRs.
+func poolPRMap(subpoolMap map[string]*subpool) map[string]PullRequest {
+	prs := make(map[string]PullRequest)
+	for _, sp := range subpoolMap {
+		for _, pr := range sp.prs {
+			prs[prKey(&pr)] = pr
+		}
+	}
+	return prs
 }
 
 type simpleState string
@@ -418,7 +512,7 @@ func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []ku
 		for _, p := range requiredPresubmits.List() {
 			if s, ok := state.jobStates[p]; !ok || s != successState {
 				passesAll = false
-				continue
+				break
 			}
 		}
 		if !passesAll {
@@ -446,7 +540,7 @@ func accumulate(presubmits map[int]sets.String, prs []PullRequest, pjs []kube.Pr
 				continue
 			}
 
-			name := pj.Spec.Job
+			name := pj.Spec.Context
 			oldState := psStates[name]
 			newState := toSimpleState(pj.Status.State)
 			if oldState == noneState || oldState == "" {
@@ -627,7 +721,7 @@ func (c *Controller) trigger(sp subpool, presubmits map[int]sets.String, prs []P
 	return nil
 }
 
-func (c *Controller) takeAction(sp subpool, presubmits map[int]sets.String, batchPending, successes, pendings, nones, batchMerges []PullRequest, cc contextChecker) (Action, []PullRequest, error) {
+func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, nones, batchMerges []PullRequest) (Action, []PullRequest, error) {
 	// Merge the batch!
 	if len(batchMerges) > 0 {
 		return MergeBatch, batchMerges, c.mergePRs(sp, batchMerges)
@@ -635,40 +729,40 @@ func (c *Controller) takeAction(sp subpool, presubmits map[int]sets.String, batc
 	// Do not merge PRs while waiting for a batch to complete. We don't want to
 	// invalidate the old batch result.
 	if len(successes) > 0 && len(batchPending) == 0 {
-		if ok, pr := pickSmallestPassingNumber(sp.log, c.ghc, successes, cc); ok {
+		if ok, pr := pickSmallestPassingNumber(sp.log, c.ghc, successes, sp.cc); ok {
 			return Merge, []PullRequest{pr}, c.mergePRs(sp, []PullRequest{pr})
 		}
 	}
 	// If no presubmits are configured, just wait.
-	if len(presubmits) == 0 {
+	if len(sp.presubmits) == 0 {
 		return Wait, nil, nil
 	}
 	// If we have no serial jobs pending or successful, trigger one.
 	if len(nones) > 0 && len(pendings) == 0 && len(successes) == 0 {
-		if ok, pr := pickSmallestPassingNumber(sp.log, c.ghc, nones, cc); ok {
-			return Trigger, []PullRequest{pr}, c.trigger(sp, presubmits, []PullRequest{pr})
+		if ok, pr := pickSmallestPassingNumber(sp.log, c.ghc, nones, sp.cc); ok {
+			return Trigger, []PullRequest{pr}, c.trigger(sp, sp.presubmits, []PullRequest{pr})
 		}
 	}
 	// If we have no batch, trigger one.
 	if len(sp.prs) > 1 && len(batchPending) == 0 {
-		batch, err := c.pickBatch(sp, cc)
+		batch, err := c.pickBatch(sp, sp.cc)
 		if err != nil {
 			return Wait, nil, err
 		}
 		if len(batch) > 1 {
-			return TriggerBatch, batch, c.trigger(sp, presubmits, batch)
+			return TriggerBatch, batch, c.trigger(sp, sp.presubmits, batch)
 		}
 	}
 	return Wait, nil, nil
 }
 
-func (c *Controller) presubmitsByPull(sp subpool) (map[int]sets.String, error) {
+func (c *Controller) presubmitsByPull(sp *subpool) (map[int]sets.String, error) {
 	presubmits := make(map[int]sets.String, len(sp.prs))
-	record := func(num int, job string) {
+	record := func(num int, context string) {
 		if jobs, ok := presubmits[num]; ok {
-			jobs.Insert(job)
+			jobs.Insert(context)
 		} else {
-			presubmits[num] = sets.NewString(job)
+			presubmits[num] = sets.NewString(context)
 		}
 	}
 	// nextChangeCache caches file change info that is relevant this sync for use next sync.
@@ -685,7 +779,7 @@ func (c *Controller) presubmitsByPull(sp subpool) (map[int]sets.String, error) {
 		if ps.AlwaysRun {
 			// Every PR requires this job.
 			for _, pr := range sp.prs {
-				record(int(pr.Number), ps.Name)
+				record(int(pr.Number), ps.Context)
 			}
 		} else if ps.RunIfChanged != "" {
 			// This is a run if changed job so we need to check if each PR requires it.
@@ -705,7 +799,7 @@ func (c *Controller) presubmitsByPull(sp subpool) (map[int]sets.String, error) {
 				}
 				nextChangeCache[cacheKey] = changedFiles
 				if ps.RunsAgainstChanges(changedFiles) {
-					record(int(pr.Number), ps.Name)
+					record(int(pr.Number), ps.Context)
 				}
 			}
 		}
@@ -715,16 +809,8 @@ func (c *Controller) presubmitsByPull(sp subpool) (map[int]sets.String, error) {
 
 func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, error) {
 	sp.log.Infof("Syncing subpool: %d PRs, %d PJs.", len(sp.prs), len(sp.pjs))
-	presubmits, err := c.presubmitsByPull(sp)
-	if err != nil {
-		return Pool{}, fmt.Errorf("error determining required presubmits: %v", err)
-	}
-	cr, err := c.ca.Config().GetTideContextPolicy(sp.org, sp.repo, sp.branch)
-	if err != nil {
-		return Pool{}, fmt.Errorf("error parsing tide context options: %v", err)
-	}
-	successes, pendings, nones := accumulate(presubmits, sp.prs, sp.pjs)
-	batchMerge, batchPending := accumulateBatch(presubmits, sp.prs, sp.pjs)
+	successes, pendings, nones := accumulate(sp.presubmits, sp.prs, sp.pjs)
+	batchMerge, batchPending := accumulateBatch(sp.presubmits, sp.prs, sp.pjs)
 	sp.log.WithFields(logrus.Fields{
 		"prs-passing":   prNumbers(successes),
 		"prs-pending":   prNumbers(pendings),
@@ -735,10 +821,11 @@ func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, e
 
 	var act Action
 	var targets []PullRequest
+	var err error
 	if len(blocks) > 0 {
 		act = PoolBlocked
 	} else {
-		act, targets, err = c.takeAction(sp, presubmits, batchPending, successes, pendings, nones, batchMerge, &cr)
+		act, targets, err = c.takeAction(sp, batchPending, successes, pendings, nones, batchMerge)
 	}
 
 	sp.log.WithFields(logrus.Fields{
@@ -769,13 +856,17 @@ type subpool struct {
 	repo   string
 	branch string
 	sha    string
-	pjs    []kube.ProwJob
-	prs    []PullRequest
+
+	pjs []kube.ProwJob
+	prs []PullRequest
+
+	cc         contextChecker
+	presubmits map[int]sets.String
 }
 
 // dividePool splits up the list of pull requests and prow jobs into a group
 // per repo and branch. It only keeps ProwJobs that match the latest branch.
-func (c *Controller) dividePool(pool map[string]PullRequest, pjs []kube.ProwJob) (chan subpool, error) {
+func (c *Controller) dividePool(pool map[string]PullRequest, pjs []kube.ProwJob) (map[string]*subpool, error) {
 	sps := make(map[string]*subpool)
 	for _, pr := range pool {
 		org := string(pr.Repository.Owner.Login)
@@ -813,12 +904,7 @@ func (c *Controller) dividePool(pool map[string]PullRequest, pjs []kube.ProwJob)
 		}
 		sps[fn].pjs = append(sps[fn].pjs, pj)
 	}
-	ret := make(chan subpool, len(sps))
-	for _, sp := range sps {
-		ret <- *sp
-	}
-	close(ret)
-	return ret, nil
+	return sps, nil
 }
 
 func search(ctx context.Context, ghc githubClient, log *logrus.Entry, q string) ([]PullRequest, error) {
@@ -965,5 +1051,14 @@ func headContexts(log *logrus.Entry, ghc githubClient, pr *PullRequest) ([]Conte
 			},
 		)
 	}
+	// Add a commit with these contexts to pr for future look ups.
+	pr.Commits.Nodes = append(pr.Commits.Nodes,
+		struct{ Commit Commit }{
+			Commit: Commit{
+				OID:    pr.HeadRefOID,
+				Status: struct{ Contexts []Context }{Contexts: contexts},
+			},
+		},
+	)
 	return contexts, nil
 }
