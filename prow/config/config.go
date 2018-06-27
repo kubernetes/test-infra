@@ -297,6 +297,27 @@ func loadConfig(prowConfig, jobConfig string) (*Config, error) {
 		return nil, err
 	}
 
+	// Checking that no duplicate job in prow config have the same branch spec.
+	validPresubmits := map[string]Presubmit{}
+	for _, p := range nc.AllPresubmits(nil) {
+		if existingJog, ok := validPresubmits[p.Name]; ok {
+			if existingJog.Brancher.Intersects(p.Brancher) {
+				return nil, fmt.Errorf("duplicated presubmit from main config file : %s", p.Name)
+			}
+		}
+		validPresubmits[p.Name] = p
+	}
+
+	validPostsubmits := map[string]Postsubmit{}
+	for _, p := range nc.AllPostsubmits(nil) {
+		if existingJob, ok := validPostsubmits[p.Name]; ok {
+			if existingJob.Brancher.Intersects(p.Brancher) {
+				return nil, fmt.Errorf("duplicated postsubmit job from main config file : %s", p.Name)
+			}
+		}
+		validPostsubmits[p.Name] = p
+	}
+
 	// TODO(krzyzacy): temporary allow empty jobconfig
 	//                 also temporary allow job config in prow config
 	if jobConfig == "" {
@@ -421,20 +442,14 @@ func (c *Config) mergeJobConfig(jc JobConfig) error {
 	}
 
 	// *** Presubmits ***
-	// validate presubmit with same name do not run on the same branches across multiple files
-	validPresubmits := map[string]Presubmit{}
-	for _, p := range c.AllPresubmits(nil) {
-		if existingJog, ok := validPresubmits[p.Name]; ok {
-			fmt.Println(existingJog.Brancher)
-			if existingJog.Brancher.Intersects(p.Brancher) {
-				return fmt.Errorf("duplicated presubmit from main config file : %s", p.Name)
-			}
-		}
-		validPresubmits[p.Name] = p
-	}
-
 	if c.Presubmits == nil {
 		c.Presubmits = make(map[string][]Presubmit)
+	}
+
+	// Checking that no duplicate job in prow config have the same branch spec.
+	validPresubmits := map[string]Presubmit{}
+	for _, p := range c.AllPresubmits(nil) {
+		validPresubmits[p.Name] = p
 	}
 
 	for repo, jobs := range jc.Presubmits {
@@ -453,19 +468,14 @@ func (c *Config) mergeJobConfig(jc JobConfig) error {
 	}
 
 	// *** Postsubmits ***
-	// validate postsubmit with same name do not run on the same branches across multiple files
-	validPostsubmits := map[string]Postsubmit{}
-	for _, p := range c.AllPostsubmits(nil) {
-		if existingJob, ok := validPostsubmits[p.Name]; ok {
-			if existingJob.Brancher.Intersects(p.Brancher) {
-				return fmt.Errorf("duplicated postsubmit job from main config file : %s", p.Name)
-			}
-		}
-		validPostsubmits[p.Name] = p
-	}
-
 	if c.Postsubmits == nil {
 		c.Postsubmits = make(map[string][]Postsubmit)
+	}
+
+	// validate no postsubmit with same name exists cross multiple files
+	validPostsubmits := map[string]Postsubmit{}
+	for _, p := range c.AllPostsubmits(nil) {
+		validPostsubmits[p.Name] = p
 	}
 
 	for repo, jobs := range jc.Postsubmits {
