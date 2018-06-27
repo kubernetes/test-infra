@@ -71,7 +71,7 @@ func (a *GCSArtifact) CanonicalLink() string {
 
 // Read reads len(p) bytes from a file in GCS
 func (a *GCSArtifact) ReadAt(p []byte, off int64) (n int, err error) {
-	reader, err := a.handle.NewRangeReader(context.Background(), off, int64(len(p)))
+	reader, err := a.handle.ReadCompressed(false).NewRangeReader(context.Background(), off, int64(len(p)))
 	if err != nil {
 		logrus.Errorf("There was an error getting a Reader to the desired artifact: %s", err)
 	}

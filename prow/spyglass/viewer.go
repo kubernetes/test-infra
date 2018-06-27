@@ -60,7 +60,14 @@ func (v *BuildLogViewer) View(artifacts []Artifact, raw *json.RawMessage) string
 	}
 	var buildLogsView BuildLogsView
 	for _, a := range artifacts {
-		buildLogsView.LogViews = append(buildLogsView.LogViews, LogFileView{LogLines: LastNLines(a, 100)})
+		//logLines := LastNLines(a, 100)
+		read, err := a.ReadAll()
+		if err != nil {
+			logrus.Error("Failed reading lines")
+		}
+		logLines := string(read)
+		logrus.Info("loglines", logLines)
+		buildLogsView.LogViews = append(buildLogsView.LogViews, LogFileView{LogLines: logLines})
 	}
 	t := template.Must(template.New("BuildLogView").Parse(logViewTmpl))
 	err := t.Execute(&buf, buildLogsView)

@@ -175,6 +175,7 @@ func prodOnlyMain(o options, mux *http.ServeMux) *http.ServeMux {
 	mux.Handle("/branding.js", gziphandler.GzipHandler(handleBranding(configAgent)))
 	mux.Handle("/favicon.ico", gziphandler.GzipHandler(handleFavicon(configAgent)))
 	mux.Handle("/view", gziphandler.GzipHandler(handleRequestJobViews(spyGlass)))
+	mux.Handle("/view/refresh", gziphandler.GzipHandler(handleArtifactView(spyGlass)))
 
 	if o.hookURL != "" {
 		mux.Handle("/plugin-help.js",
@@ -443,7 +444,7 @@ func handleRequestJobViews(sg *spyglass.SpyGlass) http.HandlerFunc {
         <script type="text/javascript" src="branding.js?var=branding"></script>
         <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
     </head>
-    <body>
+    <body onload="loadViews()">
 	<div class="mdl-layout__container">
         <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
             <header class="mdl-layout__header">
@@ -454,16 +455,56 @@ func handleRequestJobViews(sg *spyglass.SpyGlass) http.HandlerFunc {
             </header>
 	    <main class="mdl-layout__content">
 	    <div id="lens-container">
-	    {{range .Views}}<div class="mdl-card mdl-shadow--2dp">
+	    {{range .Views}}<div class="mdl-card mdl-shadow--2dp lens-card">
 		<div class="mdl-card__title">
-		<h3 class="mdl-card__title-text">{{.Title}}</h3>
+			<h3 class="mdl-card__title-text">{{.Title}}</h3>
 		</div>
-	        {{.HtmlView}}
+		<div id="{{.Name}}-view">
+			<div class="mdl-spinner mdl-js-spinner is-active lens-card-loading" id="{{.Name}}-loading"></div>
+		</div>
 	    </div>{{end}}
 	    </div>
 	    </main>
 	</div>
 	</div>
+	<script>
+	var pageUrl = window.location.href;
+	var urlObj = new URL(pageUrl);
+	var job = urlObj.searchParams.get("job");
+	var bucket = urlObj.searchParams.get("bucket");
+
+	// Loads views for this job
+	async function loadViews() {
+		let promises = {{.Views}}.map(view => {
+			return requestReload(view.Name, '{}')
+		})
+		Promise.all(promises)
+	}
+
+	// asynchronously requests a reloaded view of the provided viewer given a body request
+	function requestReload(name, body) {
+		return new Promise((resolve, reject) => {
+			const url = "/view/refresh?job="+encodeURIComponent(job)+"&bucket="+encodeURIComponent(bucket)+"&name="+encodeURIComponent(name);
+			var req = new XMLHttpRequest();
+			req.open('POST', url, true);
+			req.setRequestHeader('Content-Type', 'application/json')
+			req.onreadystatechange = function() {
+				if (req.readyState === 4 && req.status === 200) {
+					console.log("got response: " + req.responseText)
+					var lensJson = JSON.parse(req.responseText);
+					document.getElementById(name + "-loading").style.display = "none";
+					document.getElementById(name + "-view").innerHTML = lensJson.HtmlView;
+					resolve()
+				} else if (req.readyState === 4 && !(req.status === 200)) {
+					reject(req.status)
+				}
+
+			}
+			req.send(JSON.stringify(body))
+		})
+	}
+
+	</script>
     </body>
 </html>
 		`
@@ -504,6 +545,9 @@ func handleRequestJobViews(sg *spyglass.SpyGlass) http.HandlerFunc {
 // handleArtifactView handles requests to load a view for a job
 func handleArtifactView(sg *spyglass.SpyGlass) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		logrus.Info("spyglass thing", sg)
+		setHeadersNoCaching(w)
+		w.Header().Set("Content-Type", "application/json")
 		name := r.URL.Query().Get("name")
 		bucket := r.URL.Query().Get("bucket")
 		jobPath := r.URL.Query().Get("job")
@@ -528,18 +572,22 @@ func handleArtifactView(sg *spyglass.SpyGlass) http.HandlerFunc {
 		artifactFetcher := spyglass.NewGCSArtifactFetcher()
 		gcsJobSource := spyglass.NewGCSJobSource(bucket, jobPath)
 		artifacts := artifactFetcher.Artifacts(gcsJobSource)
-
+		logrus.Infof("created artifact fetcher for viewer name=%s", name)
 		var raw *json.RawMessage
 		raw.UnmarshalJSON(body)
+		logrus.Info("valid json: ", json.Valid(body))
+		logrus.Info("Artifacts: ", artifacts)
+		logrus.Info("raw body ", raw)
 		lens := sg.Refresh(name, artifacts, raw)
-
+		logrus.Infof("successfully refreshed viewer name=%s", name)
+		logrus.Infof("Htmlview is: %s", lens.HtmlView)
 		pd, err := json.Marshal(lens)
 		if err != nil {
 			logrus.WithError(err).Error("Error marshaling payload.")
 			pd = []byte("{}")
 		}
+		logrus.Infof("Marshaled json: %s", string(pd))
 		fmt.Fprint(w, string(pd))
-
 	}
 }
 

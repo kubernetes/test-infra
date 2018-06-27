@@ -55,6 +55,8 @@ type Artifact interface {
 
 // Lens is a single view of a set of artifacts
 type Lens struct {
+	// Name of the view, unique within a job
+	Name string
 	// Title of view
 	Title    string
 	HtmlView string
@@ -91,6 +93,7 @@ func (s *SpyGlass) Views(artifacts []Artifact) []Lens {
 			}
 		}
 		lens := Lens{
+			Name:     viewer.Name(),
 			Title:    viewer.Title(),
 			HtmlView: "",
 			ReMatch:  re,
@@ -99,7 +102,7 @@ func (s *SpyGlass) Views(artifacts []Artifact) []Lens {
 		s.Lenses[viewer.Name()] = lens
 		go func(av ArtifactViewer) {
 			var msg *json.RawMessage
-			msg.UnmarshalJSON([]byte(``))
+			msg.UnmarshalJSON([]byte("{}"))
 			lens.HtmlView = av.View(matches, msg)
 		}(viewer)
 	}
@@ -108,9 +111,18 @@ func (s *SpyGlass) Views(artifacts []Artifact) []Lens {
 
 // Refresh reloads the html view for a given set of objects
 func (s *SpyGlass) Refresh(viewName string, artifacts []Artifact, raw *json.RawMessage) Lens {
-	lens := s.Lenses[viewName]
+	lens, ok := s.Lenses[viewName]
+	if !ok {
+		logrus.Errorf("Could not find Lens with name %s.", viewName)
+		return Lens{}
+	}
 	re := lens.ReMatch
-	viewer := s.Eyepiece[re]
+	viewer, ok := s.Eyepiece[re]
+	if !ok {
+		logrus.Errorf("Could not find registered artifact viewer for regexp %s.", re)
+		return Lens{}
+	}
+
 	matches := []Artifact{}
 	r := regexp.MustCompile(re)
 	for _, a := range artifacts {

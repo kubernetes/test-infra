@@ -23,6 +23,7 @@ import (
 )
 
 // LastNLines reads the last n lines from a file in GCS
+// TODO this is broken, just scan backwards
 func LastNLines(a Artifact, n int64) string {
 	chunkSize := int64(1e6) //1MB
 	toRead := chunkSize + 1 // Add 1 for exclusive upper bound read range
