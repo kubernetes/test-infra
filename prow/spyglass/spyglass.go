@@ -23,6 +23,7 @@ import (
 	"regexp"
 
 	"github.com/sirupsen/logrus"
+	_ "k8s.io/test-infra/prow/spyglass/viewers"
 )
 
 // SpyGlass records which sets of artifacts need views for a prow job

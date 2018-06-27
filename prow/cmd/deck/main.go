@@ -453,17 +453,15 @@ func handleRequestJobViews(sg *spyglass.SpyGlass) http.HandlerFunc {
                     <span class="mdl-layout-title header-title">Job View</span>
                 </div>
             </header>
-	    <main class="mdl-layout__content">
-	    <div id="lens-container">
+	    <main class="mdl-layout__content" id="lens-container">
 	    {{range .Views}}<div class="mdl-card mdl-shadow--2dp lens-card">
 		<div class="mdl-card__title">
 			<h3 class="mdl-card__title-text">{{.Title}}</h3>
 		</div>
-		<div id="{{.Name}}-view">
+		<div id="{{.Name}}-view" class="mdl-card__supporting-text lens-view-content">
 			<div class="mdl-spinner mdl-js-spinner is-active lens-card-loading" id="{{.Name}}-loading"></div>
 		</div>
 	    </div>{{end}}
-	    </div>
 	    </main>
 	</div>
 	</div>
@@ -474,34 +472,35 @@ func handleRequestJobViews(sg *spyglass.SpyGlass) http.HandlerFunc {
 	var bucket = urlObj.searchParams.get("bucket");
 
 	// Loads views for this job
-	async function loadViews() {
-		let promises = {{.Views}}.map(view => {
-			return requestReload(view.Name, '{}')
-		})
-		Promise.all(promises)
+	function loadViews() {
+		{{.Views}}.map(view => {
+			requestReload(view.Name, '{}')
+		});
 	}
 
 	// asynchronously requests a reloaded view of the provided viewer given a body request
 	function requestReload(name, body) {
-		return new Promise((resolve, reject) => {
-			const url = "/view/refresh?job="+encodeURIComponent(job)+"&bucket="+encodeURIComponent(bucket)+"&name="+encodeURIComponent(name);
-			var req = new XMLHttpRequest();
-			req.open('POST', url, true);
-			req.setRequestHeader('Content-Type', 'application/json')
-			req.onreadystatechange = function() {
-				if (req.readyState === 4 && req.status === 200) {
-					console.log("got response: " + req.responseText)
-					var lensJson = JSON.parse(req.responseText);
-					document.getElementById(name + "-loading").style.display = "none";
-					document.getElementById(name + "-view").innerHTML = lensJson.HtmlView;
-					resolve()
-				} else if (req.readyState === 4 && !(req.status === 200)) {
-					reject(req.status)
-				}
-
+		const url = "/view/refresh?job="+encodeURIComponent(job)+"&bucket="+encodeURIComponent(bucket)+"&name="+encodeURIComponent(name);
+		var req = new XMLHttpRequest();
+		req.open('POST', url, true);
+		req.setRequestHeader('Content-Type', 'application/json')
+		req.onreadystatechange = function() {
+			if (req.readyState === 4 && req.status === 200) {
+				console.log("got response: " + req.responseText)
+				var lensJson = JSON.parse(req.responseText);
+				insertView(name, lensJson.HtmlView);
+			} else if (req.readyState === 4 && !(req.status === 200)) {
+				insertView(name, "<div>Error: " + req.status +"</div>");
 			}
-			req.send(JSON.stringify(body))
-		})
+
+		}
+		req.send(JSON.stringify(body))
+	}
+
+	function insertView(name, content) {
+		document.getElementById(name + "-loading").style.display = "none";
+		document.getElementById(name + "-view").innerHTML = content;
+
 	}
 
 	</script>

@@ -507,15 +507,17 @@ Plugin Help style
  */
 
 #lens-container {
-  display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
-  justify-content: center;
-  width: 100%;
 }
 
-.lens-card {
-  width: calc(100% - 16px);
+.lens-card.mdl-card {
+  width: 100%;
+  align-content: center;
+}
+
+.lens-view-content {  
+  line-height: 1.25;
 }
 
 .lens-card-loading {

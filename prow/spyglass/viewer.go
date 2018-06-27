@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"html/template"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 )
@@ -45,15 +46,17 @@ type MetadataViewer struct {
 // View creates a view for a build log (or multiple build logs)
 func (v *BuildLogViewer) View(artifacts []Artifact, raw *json.RawMessage) string {
 	logViewTmpl := `
-<div>
-	{{range .LogViews}}<div>
-		{{.LogLines}}
-	</div>{{end}}
+	<div style="font-family:monospace;">
+	{{range .LogViews}}<ul style="list-style-type:none;padding:0;margin:0;line-height:1;">
+		{{range $ix, $e := .LogLines}}
+			<li>{{$e}}</li>
+		{{end}}
+	</ul>{{end}}
 </div>`
 	var buf bytes.Buffer
 	type LogFileView struct {
 		// requestMore string TODO
-		LogLines string
+		LogLines []string
 	}
 	type BuildLogsView struct {
 		LogViews []LogFileView
@@ -65,7 +68,7 @@ func (v *BuildLogViewer) View(artifacts []Artifact, raw *json.RawMessage) string
 		if err != nil {
 			logrus.Error("Failed reading lines")
 		}
-		logLines := string(read)
+		logLines := strings.Split(string(read), "\n")
 		logrus.Info("loglines", logLines)
 		buildLogsView.LogViews = append(buildLogsView.LogViews, LogFileView{LogLines: logLines})
 	}
