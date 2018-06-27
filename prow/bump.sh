@@ -58,7 +58,9 @@ echo -n "images: " >&2
 images=("$@")
 if [[ "${#images[@]}" == 0 ]]; then
   echo "querying bazel for $(color-target :image) targets under $(color-target //prow/...) ..." >&2
-  mapfile -t images < <(bazel query 'filter(".*:image", //prow/...)' | cut -d : -f 1 | xargs -n 1 basename)
+  # OSX doesn't have mapfile / good bash array support:
+  # shellcheck disable=SC2207
+  images=($(bazel query 'filter(".*:image", //prow/...)' | cut -d : -f 1 | xargs -n 1 basename))
   echo -n "images: " >&2
 fi
 echo -e "$(color-image "${images[@]}")" >&2

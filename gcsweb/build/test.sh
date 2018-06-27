@@ -1,4 +1,4 @@
-#!/bin/ash
+#!/bin/sh
 
 # Copyright 2016 The Kubernetes Authors.
 #
@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This is run inside a docker container by something that doesn't have bash,
+# and with a sh that's *actually* dash compatible.
 # shellcheck shell=dash
 
 set -o errexit

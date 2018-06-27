@@ -20,7 +20,7 @@ set -o nounset
 
 # match BAZEL_VERSION to installer URL
 INSTALLER="bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh"
-if [[ "${BAZEL_VERSION}" =~ ([0-9\.]+)(rc[0-9]+) ]]; then
+if [[ "${BAZEL_VERSION}" =~ ([0-9.]+)(rc[0-9]+) ]]; then
     DOWNLOAD_URL="https://storage.googleapis.com/bazel/${BASH_REMATCH[1]}/${BASH_REMATCH[2]}/${INSTALLER}"
 else
     DOWNLOAD_URL="https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/${INSTALLER}"

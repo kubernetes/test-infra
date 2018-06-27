@@ -31,6 +31,9 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+# OSX doesn't support mapfile.
+# shellcheck disable=SC2207
+
 # Compute list of modified files in bazel package form.
 packages=($(bazel query \
   --noshow_progress \
@@ -44,14 +47,16 @@ fi
 buildables=$(bazel query \
   --keep_going \
   --noshow_progress \
-  "kind(.*_binary, rdeps(//..., set(${packages[@]})))")
-if [[ ! -z "${buildables}" ]]; then
-  bazel build ${buildables}
+  "kind(.*_binary, rdeps(//..., set(${packages[*]})))")
+if [[ -n "${buildables}" ]]; then
+  bazel build "${buildables[@]}"
 fi
 
 # Run affected tests.
 tests=$(bazel query \
   --keep_going \
   --noshow_progress \
-  "kind(test, rdeps(//..., set(${packages[@]})))")
-bazel test --test_output=errors ${tests}
+  "kind(test, rdeps(//..., set(${packages[*]})))")
+if [[ -n "${tests}" ]]; then
+  bazel test --test_output=errors ${tests}
+fi
