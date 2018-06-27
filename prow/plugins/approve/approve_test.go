@@ -228,7 +228,7 @@ This pull-request has been approved by:
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **cjwagner**
 
-Assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
@@ -393,7 +393,7 @@ This pull-request has been approved by: *<a href="#" title="Author self-approved
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **alice**
 
-Assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when ready.
+If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when ready.
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
@@ -592,7 +592,7 @@ This pull-request has been approved by:
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **alice**
 
-Assign the PR to them by writing `+"`/assign @alice`"+` in a comment when ready.
+If they are not already assigned, you can assign the PR to them by writing `+"`/assign @alice`"+` in a comment when ready.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
@@ -671,7 +671,7 @@ This pull-request has been approved by:
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **cjwagner**
 
-Assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
@@ -742,7 +742,7 @@ This pull-request has been approved by:
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **cjwagner**
 
-Assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
@@ -783,7 +783,7 @@ This pull-request has been approved by:
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **cjwagner**
 
-Assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
@@ -824,7 +824,7 @@ This pull-request has been approved by:
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **cjwagner**
 
-Assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
@@ -862,7 +862,7 @@ This pull-request has been approved by:
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **cjwagner**
 
-Assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
