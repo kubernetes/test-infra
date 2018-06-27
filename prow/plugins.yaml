@@ -168,6 +168,8 @@ plugins:
   - approve  # Allow OWNERS to /approve
   - assign  # Allow /assign and /cc
   - blunderbuss  # Auto-assign people
+  - cat # /meow replies with cat pictures
+  - dog # /bark replies with dog pictures
   - help  # Support /help and /good-first-issue
   - hold  # Support /hold to delay merge
   - lgtm  # Allow /lgtm
@@ -175,6 +177,7 @@ plugins:
   - size  # Auto-label size of PR
   - trigger  # Allow people to configure CI jobs to /test
   - wip  # Auto-hold PRs with WIP in title
+  - yuks # Let prow tell a /joke
 
   google/cadvisor:
   - trigger
