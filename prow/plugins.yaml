@@ -162,6 +162,8 @@ config_updater:
       name: config
     prow/plugins.yaml:
       name: plugins
+    config/jobs/**/*.yaml:
+      name: job-config
 
 plugins:
   bazelbuild/rules_k8s:
