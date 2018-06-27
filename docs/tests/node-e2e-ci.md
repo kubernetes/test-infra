@@ -155,12 +155,16 @@ The `TestGrid` then expects the following content of each build:
 
 Official description of the individual files and their content is described by [job artifacts gcs layout](https://github.com/kubernetes/test-infra/blob/master/gubernator/README.md#job-artifact-gcs-layout). You can check a real example with more data at https://console.cloud.google.com/storage/browser/kubernetes-jenkins/logs/ci-cri-containerd-node-e2e/2600.
 
-## Publishing test results in the TestGrid
+## Publishing test results in TestGrid
 
 To have the [TestGrid](https://k8s-testgrid.appspot.com/) consume the new build results, one needs to extend the TestGrid
-configuration file at https://github.com/kubernetes/test-infra/blob/master/testgrid/config/config.yaml and a list of GCS buckets at https://github.com/kubernetes/test-infra/blob/master/buckets.yaml.
+configuration file at https://github.com/kubernetes/test-infra/blob/master/testgrid/config/config.yaml.
 
 The header of the file describes what needs to be done to add new build.
 The current jobs have been added through https://github.com/kubernetes/test-infra/pull/5693 PR.
 
 Once the PR is merged, one has to wait up to 30 minutes until the GCS bucket processing is run, the job results are processed and available in the TestGrid.
+
+## Publishing test results in BigQuery
+
+Add the bucket to the list of GCS buckets at [/kettle/buckets.yaml]. Results will be updated daily, and appear in the [/kettle/README.md] BigQuery tables.

@@ -17,12 +17,6 @@ filegroup(
     visibility = ["//visibility:private"],
 )
 
-filegroup(
-    name = "buckets",
-    srcs = ["buckets.yaml"],
-    visibility = ["//:__subpackages__"],
-)
-
 workspace_binary(
     name = "dep",
     cmd = "//vendor/github.com/golang/dep/cmd/dep",

@@ -81,7 +81,7 @@ def parse_junit(xml):
 
 # pypy compatibility hack
 BUCKETS = json.loads(subprocess.check_output(
-    ['python2', '-c', 'import json,yaml; print json.dumps(yaml.load(open("../buckets.yaml")))'],
+    ['python2', '-c', 'import json,yaml; print json.dumps(yaml.load(open("buckets.yaml")))'],
     cwd=os.path.dirname(os.path.abspath(__file__))))
 
 

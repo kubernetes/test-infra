@@ -11,3 +11,14 @@ which is publicly accessible.
 Running
 =======
 Use `pip install -r requirements.txt` to install dependencies.
+
+Deploying
+=======
+Kettle runs as a pod in Gubernator's GKE cluster.
+
+buckets.yaml is automatically fetched from GitHub.
+
+When code changes, run 'make push update' to deploy a new version. If it fails,
+use "make rollback" to revert to the previous deploy.
+
+If deployment.yaml changes, run 'make push deploy'.
