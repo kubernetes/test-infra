@@ -146,7 +146,7 @@ func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRe
 		}
 		msg := fmt.Sprintf("%s using the following files:", identifier)
 		for key, file := range data {
-			msg = fmt.Sprintf("%s\n   - key `%s` using file `%s`", msg, key, file)
+			msg = fmt.Sprintf("%s\n    - key `%s` using file `%s`", msg, key, file)
 		}
 		return msg
 	}
