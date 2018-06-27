@@ -52,7 +52,7 @@ func getRequestedJob(path string) string {
 	return parts[jobIndex]
 }
 
-func testWrapper(t *testing.T, jobs []string, builds map[string][]JenkinsBuild, status *int) http.HandlerFunc {
+func testWrapper(t *testing.T, jobs []string, builds map[string][]Build, status *int) http.HandlerFunc {
 	var paths []string
 	for _, job := range jobs {
 		paths = append(paths, fmt.Sprintf("/job/%s/api/json", job))
@@ -107,10 +107,10 @@ func TestListBuilds(t *testing.T) {
 
 		existingJobs  []string
 		requestedJobs []string
-		builds        map[string][]JenkinsBuild
+		builds        map[string][]Build
 		status        *int
 
-		expectedResults map[string]JenkinsBuild
+		expectedResults map[string]Build
 		expectedErr     error
 	}{
 		{
@@ -118,24 +118,24 @@ func TestListBuilds(t *testing.T) {
 
 			existingJobs:  []string{"unit", "integration"},
 			requestedJobs: []string{"unit", "integration", "e2e"},
-			builds: map[string][]JenkinsBuild{
+			builds: map[string][]Build{
 				"unit": {
-					{Number: 1, Result: strP(Succeess), Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "first"}, {Name: prowJobID, Value: "first"}}}}},
-					{Number: 2, Result: strP(Failure), Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "second"}, {Name: prowJobID, Value: "second"}}}}},
-					{Number: 3, Result: strP(Failure), Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "third"}, {Name: prowJobID, Value: "third"}}}}},
+					{Number: 1, Result: strP(success), Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "first"}, {Name: prowJobID, Value: "first"}}}}},
+					{Number: 2, Result: strP(failure), Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "second"}, {Name: prowJobID, Value: "second"}}}}},
+					{Number: 3, Result: strP(failure), Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "third"}, {Name: prowJobID, Value: "third"}}}}},
 				},
 				"integration": {
-					{Number: 1, Result: strP(Failure), Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "first-int"}, {Name: prowJobID, Value: "first-int"}}}}},
-					{Number: 2, Result: strP(Succeess), Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "second-int"}, {Name: prowJobID, Value: "second-int"}}}}},
+					{Number: 1, Result: strP(failure), Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "first-int"}, {Name: prowJobID, Value: "first-int"}}}}},
+					{Number: 2, Result: strP(success), Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "second-int"}, {Name: prowJobID, Value: "second-int"}}}}},
 				},
 			},
 
-			expectedResults: map[string]JenkinsBuild{
-				"first":      {Number: 1, Result: strP(Succeess), Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "first"}, {Name: prowJobID, Value: "first"}}}}},
-				"second":     {Number: 2, Result: strP(Failure), Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "second"}, {Name: prowJobID, Value: "second"}}}}},
-				"third":      {Number: 3, Result: strP(Failure), Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "third"}, {Name: prowJobID, Value: "third"}}}}},
-				"first-int":  {Number: 1, Result: strP(Failure), Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "first-int"}, {Name: prowJobID, Value: "first-int"}}}}},
-				"second-int": {Number: 2, Result: strP(Succeess), Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "second-int"}, {Name: prowJobID, Value: "second-int"}}}}},
+			expectedResults: map[string]Build{
+				"first":      {Number: 1, Result: strP(success), Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "first"}, {Name: prowJobID, Value: "first"}}}}},
+				"second":     {Number: 2, Result: strP(failure), Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "second"}, {Name: prowJobID, Value: "second"}}}}},
+				"third":      {Number: 3, Result: strP(failure), Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "third"}, {Name: prowJobID, Value: "third"}}}}},
+				"first-int":  {Number: 1, Result: strP(failure), Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "first-int"}, {Name: prowJobID, Value: "first-int"}}}}},
+				"second-int": {Number: 2, Result: strP(success), Actions: []Action{{Parameters: []Parameter{{Name: statusBuildID, Value: "second-int"}, {Name: prowJobID, Value: "second-int"}}}}},
 			},
 		},
 		{
