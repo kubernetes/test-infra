@@ -358,9 +358,29 @@ func yamlToConfig(path string) (*Config, error) {
 // 	- Periodics
 //	- PodPresets
 func (c *Config) mergeJobConfig(jc JobConfig) error {
-	c.Presets = append(c.Presets, jc.Presets...)
+	// Resolve presets from first config before we merge presets
+	// Presets within jc is already resolved, do it twice will lead to error
+	for _, v := range jc.AllPeriodics() {
+		if err := validatePresets(v.Name, v.Labels, v.Spec, c.Presets); err != nil {
+			return err
+		}
+	}
 
-	c.Periodics = append(c.Periodics, jc.Periodics...)
+	for _, v := range jc.AllPresubmits(nil) {
+		if err := validatePresets(v.Name, v.Labels, v.Spec, c.Presets); err != nil {
+			return err
+		}
+	}
+
+	for _, v := range jc.AllPostsubmits(nil) {
+		if err := validatePresets(v.Name, v.Labels, v.Spec, c.Presets); err != nil {
+			return err
+		}
+	}
+
+	// Merge everything
+	// *** Presets ***
+	c.Presets = append(c.Presets, jc.Presets...)
 
 	// validate no duplicated presets
 	validLabels := map[string]string{}
@@ -373,6 +393,9 @@ func (c *Config) mergeJobConfig(jc JobConfig) error {
 		}
 	}
 
+	// *** Periodics ***
+	c.Periodics = append(c.Periodics, jc.Periodics...)
+
 	// validate no duplicated periodics
 	validPeriodics := map[string]bool{}
 	for _, p := range c.AllPeriodics() {
@@ -382,6 +405,7 @@ func (c *Config) mergeJobConfig(jc JobConfig) error {
 		validPeriodics[p.Name] = true
 	}
 
+	// *** Presubmits ***
 	// validate no presubmit with same name exists cross multiple files
 	validPresubmits := map[string]bool{}
 	for _, p := range c.AllPresubmits(nil) {
@@ -405,6 +429,7 @@ func (c *Config) mergeJobConfig(jc JobConfig) error {
 		}
 	}
 
+	// *** Postsubmits ***
 	// validate no postsubmit with same name exists cross multiple files
 	validPostsubmits := map[string]bool{}
 	for _, p := range c.AllPostsubmits(nil) {
