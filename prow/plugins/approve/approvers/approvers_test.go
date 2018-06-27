@@ -711,7 +711,7 @@ This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Bi
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **alice**
 
-Assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when ready.
+If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when ready.
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
@@ -797,7 +797,7 @@ This pull-request has been approved by: *<a href="REFERENCE" title="Author self-
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approvers: **alice**, **bill**
 
-Assign the PR to them by writing ` + "`/assign @alice @bill`" + ` in a comment when ready.
+If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @alice @bill`" + ` in a comment when ready.
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
@@ -929,7 +929,7 @@ This pull-request has been approved by: *<a href="REFERENCE" title="Author self-
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approvers: **alice**, **doctor**
 
-Assign the PR to them by writing ` + "`/assign @alice @doctor`" + ` in a comment when ready.
+If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @alice @doctor`" + ` in a comment when ready.
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
