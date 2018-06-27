@@ -22,3 +22,30 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8
       - --timeout=65m
+- interval: 30m
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gce-canary
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=60
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --check-version-skew=false
+      - --cluster=canary-e2e
+      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce.env
+      - --extract=ci/k8s-stable1
+      - --extract=ci/latest
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-nodes=4
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test_args=--ginkgo.focus=Variable.Expansion --ginkgo.skip=\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+      - --timeout=40m
+      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      imagePullPolicy: Always
