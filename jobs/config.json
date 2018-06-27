@@ -6465,6 +6465,27 @@
       "sig-scheduling"
     ]
   },
+  "ci-kubernetes-e2e-gke-device-plugin-gpu-ubuntu": {
+    "args": [
+      "--check-leaked-resources",
+      "--deployment=gke",
+      "--env=NVIDIA_DRIVER_INSTALLER_DAEMONSET=https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/ubuntu/daemonset.yaml",
+      "--extract=ci/latest",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=ubuntu",
+      "--gcp-project-type=gpu-project",
+      "--gcp-zone=us-west1-b",
+      "--gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2",
+      "--gke-environment=test",
+      "--provider=gke",
+      "--test_args=--ginkgo.focus=\\[Feature:GPUDevicePlugin\\] --minStartupPods=8",
+      "--timeout=180m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-gcp"
+    ]
+  },
   "ci-kubernetes-e2e-gke-gci-ci-master": {
     "args": [
       "--check-leaked-resources",
