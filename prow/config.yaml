@@ -11008,32 +11008,6 @@ periodics:
 
 - interval: 2h
   agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
-
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gce-latest-upgrade-kube-proxy-ds
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=110
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
-
-- interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-netd
   labels:
     preset-service-account: "true"
