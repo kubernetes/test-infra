@@ -2065,13 +2065,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kustomize-periodic-default-gke
 - name: application-periodic-default-gke
   gcs_prefix: kubernetes-jenkins/logs/application-periodic-default-gke
-# kube-proxy daemonset migration jobs
-- name: ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
-  alert_stale_results_hours: 24
-- name: ci-kubernetes-e2e-gci-gce-latest-upgrade-kube-proxy-ds
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-latest-upgrade-kube-proxy-ds
-  alert_stale_results_hours: 24
 #ibm ppc64le test results
 - name: ppc64le-conformance
   gcs_prefix: ppc64le-kubernetes/logs/ci-conformance-kubernetes
@@ -5039,16 +5032,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
     base_options: 'include-filter-by-regex=\[sig-network\]'
     description: 'network gci-gce alpha features e2e tests for master branch'
-    alert_options:
-      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: gci-gce-latest-upgrade-kube-proxy-ds
-    test_group_name: ci-kubernetes-e2e-gci-gce-latest-upgrade-kube-proxy-ds
-    description: 'upgrade cluster and migrate kube-proxy from static pods to a daemonset'
-    alert_options:
-      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: gci-gce-latest-downgrade-kube-proxy-ds
-    test_group_name: ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
-    description: 'downgrade cluster and migrate kube-proxy from a daemonset to static pods'
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: kubeadm-gce-ipvs
