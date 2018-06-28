@@ -456,6 +456,36 @@ func (c *Config) mergeJobConfig(jc JobConfig) error {
 	return nil
 }
 
+func setPresubmitDecorationDefaults(c *Config, ps *Presubmit) {
+	if ps.Decorate {
+		ps.DecorationConfig = setDecorationDefaults(ps.DecorationConfig, c.Plank.DefaultDecorationConfig)
+	}
+
+	for i := range ps.RunAfterSuccess {
+		setPresubmitDecorationDefaults(c, &ps.RunAfterSuccess[i])
+	}
+}
+
+func setPostsubmitDecorationDefaults(c *Config, ps *Postsubmit) {
+	if ps.Decorate {
+		ps.DecorationConfig = setDecorationDefaults(ps.DecorationConfig, c.Plank.DefaultDecorationConfig)
+	}
+
+	for i := range ps.RunAfterSuccess {
+		setPostsubmitDecorationDefaults(c, &ps.RunAfterSuccess[i])
+	}
+}
+
+func setPeriodicDecorationDefaults(c *Config, ps *Periodic) {
+	if ps.Decorate {
+		ps.DecorationConfig = setDecorationDefaults(ps.DecorationConfig, c.Plank.DefaultDecorationConfig)
+	}
+
+	for i := range ps.RunAfterSuccess {
+		setPeriodicDecorationDefaults(c, &ps.RunAfterSuccess[i])
+	}
+}
+
 func parseConfig(c *Config) error {
 	// Ensure that regexes are valid.
 	for _, vs := range c.Presubmits {
@@ -485,24 +515,18 @@ func parseConfig(c *Config) error {
 
 		for _, vs := range c.Presubmits {
 			for i := range vs {
-				if vs[i].Decorate {
-					vs[i].DecorationConfig = setDecorationDefaults(vs[i].DecorationConfig, c.Plank.DefaultDecorationConfig)
-				}
+				setPresubmitDecorationDefaults(c, &vs[i])
 			}
 		}
 
 		for _, js := range c.Postsubmits {
 			for i := range js {
-				if js[i].Decorate {
-					js[i].DecorationConfig = setDecorationDefaults(js[i].DecorationConfig, c.Plank.DefaultDecorationConfig)
-				}
+				setPostsubmitDecorationDefaults(c, &js[i])
 			}
 		}
 
 		for i := range c.Periodics {
-			if c.Periodics[i].Decorate {
-				c.Periodics[i].DecorationConfig = setDecorationDefaults(c.Periodics[i].DecorationConfig, c.Plank.DefaultDecorationConfig)
-			}
+			setPeriodicDecorationDefaults(c, &c.Periodics[i])
 		}
 	}
 
