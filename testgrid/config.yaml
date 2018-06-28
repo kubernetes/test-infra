@@ -2543,20 +2543,26 @@ test_groups:
   gcs_prefix: istio-circleci/racetest
   num_failures_to_alert: 5
 # Istio daily releases
-- name: daily-unit-tests
+- name: istio-daily-unit-tests
   gcs_prefix: istio-prow/directory/daily-unit-tests
   num_failures_to_alert: 1
-- name: daily-e2e-rbac-no_auth
-  gcs_prefix: istio-prow/directory/daily-e2e-rbac-no_auth
+- name: istio-daily-perf-tests
+  gcs_prefix: istio-prow/directory/daily-perf-tests
   num_failures_to_alert: 1
-- name: daily-e2e-rbac-no_auth-default
-  gcs_prefix: istio-prow/directory/daily-e2e-rbac-no_auth-default
+- name: istio-daily-e2e-pilot-no_auth
+  gcs_prefix: istio-prow/directory/daily-e2e-pilot-no_auth
   num_failures_to_alert: 1
-- name: daily-e2e-rbac-auth
-  gcs_prefix: istio-prow/directory/daily-e2e-rbac-auth
+- name: istio-daily-e2e-bookinfoTests
+  gcs_prefix: istio-prow/directory/daily-e2e-bookinfoTests
   num_failures_to_alert: 1
-- name: daily-e2e-rbac-auth-default
-  gcs_prefix: istio-prow/directory/daily-e2e-rbac-auth-default
+- name: istio-daily-e2e-simpleTests
+  gcs_prefix: istio-prow/directory/daily-e2e-simpleTests
+  num_failures_to_alert: 1
+- name: istio-daily-e2e-mixer-no_auth
+  gcs_prefix: istio-prow/directory/daily-e2e-mixer-no_auth
+  num_failures_to_alert: 1
+- name: istio-daily-e2e-dashboard
+  gcs_prefix: istio-prow/directory/daily-e2e-dashboard
   num_failures_to_alert: 1
 - name: istio-periodic-e2e-gke-addon
   gcs_prefix: kubernetes-jenkins/logs/istio-periodic-e2e-gke-addon
@@ -6264,24 +6270,32 @@ dashboards:
 
 - name: istio-daily
   dashboard_tab:
-  - name: daily-unit-tests
-    test_group_name: daily-unit-tests
+  - name: unit-tests
+    test_group_name: istio-daily-unit-tests
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
-  - name: daily-e2e-rbac-no_auth
-    test_group_name: daily-e2e-rbac-no_auth
+  - name: perf-tests
+    test_group_name: istio-daily-perf-tests
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
-  - name: daily-e2e-rbac-no_auth-default
-    test_group_name: daily-e2e-rbac-no_auth-default
+  - name: e2e-pilot-no_auth
+    test_group_name: istio-daily-e2e-pilot-no_auth
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
-  - name: daily-e2e-rbac-auth
-    test_group_name: daily-e2e-rbac-auth
+  - name: e2e-bookinfoTests
+    test_group_name: istio-daily-e2e-bookinfoTests
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
-  - name: daily-e2e-rbac-auth-default
-    test_group_name: daily-e2e-rbac-auth-default
+  - name: e2e-simpleTests
+    test_group_name: istio-daily-e2e-simpleTests
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: e2e-mixer-no_auth
+    test_group_name: istio-daily-e2e-mixer-no_auth
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: e2e-dashboard
+    test_group_name: istio-daily-e2e-dashboard
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
 
