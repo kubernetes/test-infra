@@ -2,7 +2,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_test")
 
 go_test(
     name = "go_default_test",
-    srcs = ["job_config_test.go"],
+    srcs = ["jobs_test.go"],
     data = [
         "//config:prowjobs",
         "//jobs",
@@ -10,8 +10,9 @@ go_test(
     ],
     deps = [
         "//prow/config:go_default_library",
+        "//prow/kube:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
     ],
 )
 

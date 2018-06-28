@@ -15,15 +15,13 @@ limitations under the License.
 */
 
 /*
-fixconfig automatically fixes the prow config to have automatically generated
-security repo presubmits transformed from the kubernetes presubmits
+genjobs automatically generates the security repo presubmits from the
+kubernetes presubmits
 
 NOTE: this makes a few assumptions
-- $PWD/prow/config.yaml is where the config lives (unless you supply --config=)
-- `presubmits:` exists
-- `  kubernetes-security/kubernetes:` exists in presubmits
-- some other `  org/repo:` exists in presubmits *after* `  kubernetes-security/kubernetes:`
-- the original contents around this will be kept, but this section will be automatically rewritten
+- $PWD/../../prow/config.yaml is where the config lives (unless you supply --config=)
+- $PWD/.. is where the job configs live (unless you supply --jobs=)
+- the output is job configs ($PWD/..) + /kubernetes-security/generated-security-jobs.yaml (unless you supply --output)
 */
 package main
 
@@ -42,14 +40,17 @@ import (
 	"github.com/ghodss/yaml"
 	flag "github.com/spf13/pflag"
 
+	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 )
 
-var configPath = flag.String("config", "", "path to prow/config.yaml, defaults to $PWD/prow/config.yaml")
-var configJSONPath = flag.String("config-json", "", "path to jobs/config.json, defaults to $PWD/jobs/config.json")
+var configPath = flag.String("config", "", "path to prow/config.yaml, defaults to $PWD/../../prow/config.yaml")
+var jobsPath = flag.String("jobs", "", "path to prowjobs, defaults to $PWD/../")
+var configJSONPath = flag.String("config-json", "", "path to jobs/config.json, defaults to $PWD/../../jobs/config.json")
+var outputPath = flag.String("output", "", "path to output the generated jobs to, defaults to $PWD/generated-security-jobs.json")
 
 // config.json is the worst but contains useful information :-(
 type configJSON map[string]map[string]interface{}
@@ -84,40 +85,70 @@ func readConfigJSON(path string) (config configJSON, err error) {
 	return config, nil
 }
 
-func readConfig(path string) (raw []byte, parsed *config.Config, err error) {
-	raw, err = ioutil.ReadFile(path)
-	if err != nil {
-		return nil, nil, err
+// remove merged presets from a podspec
+func undoPreset(preset *config.Preset, labels map[string]string, pod *v1.PodSpec) {
+	// skip presets that do not match the job labels
+	for l, v := range preset.Labels {
+		if v2, ok := labels[l]; !ok || v2 != v {
+			return
+		}
 	}
-	parsed = &config.Config{}
-	err = yaml.Unmarshal(raw, parsed)
-	if err != nil {
-		return nil, nil, err
+
+	// collect up preset created keys
+	removeEnvNames := sets.NewString()
+	for _, e1 := range preset.Env {
+		removeEnvNames.Insert(e1.Name)
 	}
-	return raw, parsed, nil
+	removeVolumeNames := sets.NewString()
+	for _, volume := range preset.Volumes {
+		removeVolumeNames.Insert(volume.Name)
+	}
+	removeVolumeMountNames := sets.NewString()
+	for _, volumeMount := range preset.VolumeMounts {
+		removeVolumeMountNames.Insert(volumeMount.Name)
+	}
+
+	// remove volumes from spec
+	filteredVolumes := []v1.Volume{}
+	for _, volume := range pod.Volumes {
+		if !removeVolumeNames.Has(volume.Name) {
+			filteredVolumes = append(filteredVolumes, volume)
+		}
+	}
+	pod.Volumes = filteredVolumes
+
+	// remove env and volume mounts from containers
+	for i := range pod.Containers {
+		filteredEnv := []v1.EnvVar{}
+		for _, env := range pod.Containers[i].Env {
+			if !removeEnvNames.Has(env.Name) {
+				filteredEnv = append(filteredEnv, env)
+			}
+		}
+		pod.Containers[i].Env = filteredEnv
+
+		filteredVolumeMounts := []v1.VolumeMount{}
+		for _, mount := range pod.Containers[i].VolumeMounts {
+			if !removeVolumeMountNames.Has(mount.Name) {
+				filteredVolumeMounts = append(filteredVolumeMounts, mount)
+			}
+		}
+		pod.Containers[i].VolumeMounts = filteredVolumeMounts
+	}
 }
 
-// get the start/end byte indexes of the security repo presubmits
-// in the raw config.yaml bytes
-func getSecurityRepoJobsIndex(configBytes []byte) (start, end int, err error) {
-	// find security-repo config beginning
-	// first find presubmits
-	presubmitIdx := bytes.Index(configBytes, ([]byte)("presubmits:"))
-	// then find k-s/k:
-	startRegex := regexp.MustCompile("(?m)^  kubernetes-security/kubernetes:$")
-	loc := startRegex.FindIndex(configBytes[presubmitIdx:])
-	if loc == nil {
-		return 0, 0, fmt.Errorf("failed to find start of security repo presubmits")
+// undo merged presets from loaded presubmit and its children
+func undoPresubmitPresets(presets []config.Preset, presubmit *config.Presubmit) {
+	if presubmit.Spec == nil {
+		return
 	}
-	start = presubmitIdx + loc[1]
-	// must be like `  org/repo:`
-	loc = regexp.MustCompile("(?m)^  [^ #-][^ #]+/.+:$").FindIndex(configBytes[start:])
-	if loc == nil {
-		return 0, 0, fmt.Errorf("failed to find end of security repo presubmits")
+	for _, preset := range presets {
+		undoPreset(&preset, presubmit.Labels, presubmit.Spec)
 	}
-	// loc[0] is the beginning of the match
-	end = start + loc[0]
-	return start, end, nil
+	// do the same for any run after success children
+	for i := range presubmit.RunAfterSuccess {
+		undoPresubmitPresets(presets, &presubmit.RunAfterSuccess[i])
+	}
 }
 
 func volumeIsCacheSSD(v *kube.Volume) bool {
@@ -432,23 +463,24 @@ func main() {
 		log.Fatalf("Failed to get $PWD: %v", err)
 	}
 	if *configPath == "" {
-		*configPath = pwd + "/prow/config.yaml"
+		*configPath = pwd + "/../../prow/config.yaml"
+	}
+	if *jobsPath == "" {
+		*jobsPath = pwd + "/../"
 	}
 	if *configJSONPath == "" {
-		*configJSONPath = pwd + "/jobs/config.json"
+		*configJSONPath = pwd + "/../../jobs/config.json"
+	}
+	if *outputPath == "" {
+		*outputPath = pwd + "/generated-security-jobs.yaml"
 	}
 	// read in current prow config
-	originalBytes, parsed, err := readConfig(*configPath)
+	parsed, err := config.Load(*configPath, *jobsPath)
 	if err != nil {
 		log.Fatalf("Failed to read config file: %v", err)
 	}
 	// read in jobs config
 	jobsConfig, err := readConfigJSON(*configJSONPath)
-	// find security repo section
-	securityRepoStart, securityRepoEnd, err := getSecurityRepoJobsIndex(originalBytes)
-	if err != nil {
-		log.Fatalf("Failed to find security repo section: %v", err)
-	}
 
 	// create temp file to write updated config
 	f, err := ioutil.TempFile(filepath.Dir(*configPath), "temp")
@@ -457,20 +489,22 @@ func main() {
 	}
 	defer os.Remove(f.Name())
 
-	// write the original bytes before the security repo section
-	_, err = f.Write(originalBytes[:securityRepoStart])
-	if err != nil {
-		log.Fatalf("Failed to write temp file: %v", err)
-	}
-	f.Sync()
-	io.WriteString(f, "\n")
+	// write the header
+	io.WriteString(f, "# Autogenerated by genjobs.go please do not edit!\n")
+	io.WriteString(f, "# To modify these jobs first update their kubernetes/kubernetes sources\n")
+	io.WriteString(f, "# and/or genjobs.go, then run `hack/update-jobs.sh`\n")
+	io.WriteString(f, "presubmits:\n  kubernetes-security/kubernetes:\n")
 
 	// convert each kubernetes/kubernetes presubmit to a
 	// kubernetes-security/kubernetes presubmit and write to the file
 	dropLabels := getCacheSSDPresetLabels(parsed)
 	dropLabels.Insert("preset-bazel-remote-cache-enabled: true")
-	for _, job := range parsed.Presubmits["kubernetes/kubernetes"] {
-		convertJobToSecurityJob(&job, dropLabels, jobsConfig)
+	for i := range parsed.Presubmits["kubernetes/kubernetes"] {
+		job := &parsed.Presubmits["kubernetes/kubernetes"][i]
+		// undo merged presets, this needs to occur first!
+		undoPresubmitPresets(parsed.Presets, job)
+		// now convert the job
+		convertJobToSecurityJob(job, dropLabels, jobsConfig)
 		jobBytes, err := yaml.Marshal(job)
 		if err != nil {
 			log.Fatalf("Failed to marshal job: %v", err)
@@ -479,20 +513,14 @@ func main() {
 		jobBytes = yamlBytesStripNulls(jobBytes)
 		f.Write(yamlBytesToEntry(jobBytes, 4))
 	}
-
-	// write the original bytes after the security repo section
-	_, err = f.Write(originalBytes[securityRepoEnd:])
-	if err != nil {
-		log.Fatalf("Failed to write temp file: %v", err)
-	}
 	f.Sync()
 
 	// move file to replace original
 	f.Close()
-	err = os.Rename(f.Name(), *configPath)
+	err = os.Rename(f.Name(), *outputPath)
 	if err != nil {
 		// fallback to copying the file instead
-		err = copyFile(f.Name(), *configPath)
+		err = copyFile(f.Name(), *outputPath)
 		if err != nil {
 			log.Fatalf("Failed to replace config with updated version: %v", err)
 		}

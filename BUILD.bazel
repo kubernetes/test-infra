@@ -53,7 +53,6 @@ filegroup(
         "//label_sync:all-srcs",
         "//logexporter/cmd:all-srcs",
         "//maintenance/aws-janitor:all-srcs",
-        "//maintenance/fixconfig:all-srcs",
         "//maintenance/migratestatus:all-srcs",
         "//metrics:all-srcs",
         "//mungegithub:all-srcs",
