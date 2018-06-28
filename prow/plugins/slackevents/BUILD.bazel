@@ -15,7 +15,6 @@ go_test(
         "//prow/github/fakegithub:go_default_library",
         "//prow/plugins:go_default_library",
         "//prow/slack:go_default_library",
-        "//prow/slack/fakeslack:go_default_library",
     ],
 )
 
