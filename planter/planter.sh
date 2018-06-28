@@ -53,7 +53,7 @@ REPO=${REPO:-${PWD}}
 # Ensure the bazel cache directory exists, as otherwise docker will create it,
 # possibly with the wrong owner.
 BAZEL_CACHE="${HOME}/.cache/bazel"
-if [ -d "${BAZEL_CACHE}" ] ; then
+if [ ! -d "${BAZEL_CACHE}" ] ; then
     mkdir -p "${BAZEL_CACHE}"
 fi
 
