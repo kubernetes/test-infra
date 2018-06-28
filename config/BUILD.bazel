@@ -16,6 +16,9 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//config/jobs/kubernetes-security:all-srcs",
+    ],
     tags = ["automanaged"],
 )
