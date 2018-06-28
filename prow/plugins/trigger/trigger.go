@@ -148,7 +148,7 @@ func isUserTrusted(ghc githubClient, user, trustedOrg, org string) (bool, error)
 	} else if orgMember {
 		return true, nil
 	}
-	if org != trustedOrg {
+	if trustedOrg != "" && org != trustedOrg {
 		orgMember, err = ghc.IsMember(org, user)
 		if err != nil {
 			return false, err
