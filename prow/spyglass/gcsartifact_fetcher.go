@@ -20,6 +20,7 @@ import (
 	"context"
 	"log"
 	"path"
+	"strings"
 
 	"cloud.google.com/go/storage"
 	"google.golang.org/api/iterator"
@@ -71,18 +72,25 @@ func NewGCSJobSourceWithPrefix(linkPrefix string, bucket string, jobPath string)
 // Artifacts gets all artifacts from a GCS job source
 func (af *GCSArtifactFetcher) Artifacts(src JobSource) []viewers.Artifact {
 	artifacts := []viewers.Artifact{}
+
 	bkt := af.client.Bucket(src.BucketName())
+
 	q := storage.Query{
 		Prefix:   src.JobPath(),
 		Versions: false,
 	}
 	objIter := bkt.Objects(context.Background(), &q)
+	// TODO This is super slow
 	for {
 		oAttrs, err := objIter.Next()
+
 		if err == iterator.Done {
 			break
 		}
-		artifacts = append(artifacts, NewGCSArtifact(bkt.Object(oAttrs.Name), src.JobPath()))
+
+		obj := bkt.Object(oAttrs.Name)
+		artifact := NewGCSArtifact(obj, oAttrs.MediaLink, strings.TrimPrefix(oAttrs.Name, src.JobPath()))
+		artifacts = append(artifacts, artifact)
 
 	}
 	return artifacts

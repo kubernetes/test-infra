@@ -47,7 +47,7 @@ func (v *BuildLogViewer) Title() string {
 func (v *BuildLogViewer) View(artifacts []viewers.Artifact, raw *json.RawMessage) string {
 	logViewTmpl := `
 	<div style="font-family:monospace;">
-	{{range .LogViews}}<ul style="list-style-type:none;padding:0;margin:0;line-height:1;">
+	{{range .LogViews}}<ul style="list-style-type:none;padding:0;margin:0;line-height:1.4;color:black;">
 		{{range $ix, $e := .LogLines}}
 			<li>{{$e}}</li>
 		{{end}}
@@ -68,7 +68,6 @@ func (v *BuildLogViewer) View(artifacts []viewers.Artifact, raw *json.RawMessage
 			logrus.Error("Failed reading lines")
 		}
 		logLines := strings.Split(string(read), "\n")
-		logrus.Info("loglines", logLines)
 		buildLogsView.LogViews = append(buildLogsView.LogViews, LogFileView{LogLines: logLines})
 	}
 	t := template.Must(template.New("BuildLogView").Parse(logViewTmpl))

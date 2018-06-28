@@ -14,49 +14,42 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package viewers
+package buildlog
 
-import (
-	"encoding/json"
-	"testing"
-
-	"k8s.io/test-infra/prow/spyglass"
-	"k8s.io/test-infra/prow/spyglass/viewers"
-)
-
-// TODO how do we test viewers? (uppercase this to test)
-func testBuildLogView(t *testing.T) {
-	buildLogArtifact := NewGCSArtifact(fakeGCSBucket.Object(buildLogName), spyglass.fakeGCSJobSource.JobPath())
-	buildLogViewer := BuildLogViewer{
-		ViewTitle: "Build Log",
-		ViewName:  "BuildLogViewer",
-	}
-	testCases := []struct {
-		name         string
-		artifacts    []viewers.Artifact
-		expectedView string
-	}{
-		{
-			name:      "Basic Build Log View",
-			artifacts: []viewers.Artifact{buildLogArtifact},
-			expectedView: `
-<div>
-	<div>
-		Oh wow
-logs
-this is
-crazy
-	</div>
-</div>`,
-		},
-	}
-
-	for _, tc := range testCases {
-		var msg *json.RawMessage
-		msg.UnmarshalJSON([]byte(``))
-		actualView := buildLogViewer.View(tc.artifacts, msg)
-		if actualView != tc.expectedView {
-			t.Errorf("Test %s failed. Expected:\n%s\nActual:\n%s", tc.name, tc.expectedView, actualView)
-		}
-	}
-}
+//
+//// TODO how do we test viewers? (uppercase this to test)
+//func TestBuildLogView(t *testing.T) {
+//	buildLogArtifact := NewGCSArtifact(fakeGCSBucket.Object(buildLogName), fakeGCSJobSource.JobPath())
+//	buildLogViewer := BuildLogViewer{
+//		ViewTitle: "Build Log",
+//		ViewName:  "BuildLogViewer",
+//	}
+//	testCases := []struct {
+//		name         string
+//		artifacts    []viewers.Artifact
+//		expectedView string
+//	}{
+//		{
+//			name:      "Basic Build Log View",
+//			artifacts: []viewers.Artifact{buildLogArtifact},
+//			expectedView: `
+//<div>
+//	<div>
+//		Oh wow
+//logs
+//this is
+//crazy
+//	</div>
+//</div>`,
+//		},
+//	}
+//
+//	for _, tc := range testCases {
+//		var msg *json.RawMessage
+//		msg.UnmarshalJSON([]byte(``))
+//		actualView := buildLogViewer.View(tc.artifacts, msg)
+//		if actualView != tc.expectedView {
+//			t.Errorf("Test %s failed. Expected:\n%s\nActual:\n%s", tc.name, tc.expectedView, actualView)
+//		}
+//	}
+//}

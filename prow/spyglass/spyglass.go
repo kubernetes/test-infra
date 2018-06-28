@@ -84,11 +84,6 @@ func (s *SpyGlass) Views(artifacts []viewers.Artifact) []Lens {
 		}
 		lenses = append(lenses, lens)
 		s.Lenses[viewer.Name()] = lens
-		go func(av viewers.Viewer) {
-			var msg *json.RawMessage
-			msg.UnmarshalJSON([]byte("{}"))
-			lens.HtmlView = av.View(matches, msg)
-		}(viewer)
 	}
 	return lenses
 }

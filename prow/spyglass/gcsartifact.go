@@ -19,7 +19,6 @@ package spyglass
 import (
 	"context"
 	"io/ioutil"
-	"strings"
 
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
@@ -38,15 +37,11 @@ type GCSArtifact struct {
 }
 
 // NewGCSArtifact returns a new GCSArtifact with a given handle
-func NewGCSArtifact(handle *storage.ObjectHandle, jobPath string) *GCSArtifact {
-	attrs, err := handle.Attrs(context.Background())
-	if err != nil {
-		logrus.Errorf("Failed to create GCSArtifact, could not retrieve attributes from provided handle.")
-	}
+func NewGCSArtifact(handle *storage.ObjectHandle, link string, path string) *GCSArtifact {
 	return &GCSArtifact{
 		handle: handle,
-		link:   attrs.MediaLink,
-		path:   strings.TrimPrefix(attrs.Name, jobPath),
+		link:   link,
+		path:   path,
 	}
 }
 
@@ -71,7 +66,7 @@ func (a *GCSArtifact) CanonicalLink() string {
 
 // Read reads len(p) bytes from a file in GCS
 func (a *GCSArtifact) ReadAt(p []byte, off int64) (n int, err error) {
-	reader, err := a.handle.ReadCompressed(false).NewRangeReader(context.Background(), off, int64(len(p)))
+	reader, err := a.handle.NewRangeReader(context.Background(), off, int64(len(p)))
 	if err != nil {
 		logrus.Errorf("There was an error getting a Reader to the desired artifact: %s", err)
 	}

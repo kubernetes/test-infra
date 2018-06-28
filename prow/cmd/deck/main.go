@@ -417,6 +417,7 @@ func handleBadge(ja *jobs.JobAgent) http.HandlerFunc {
 // it responds with a list of all availables view titles
 func handleRequestJobViews(sg *spyglass.SpyGlass) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
 		bucket := r.URL.Query().Get("bucket")
 		jobPath := r.URL.Query().Get("job")
 		if bucket == "" {
@@ -507,15 +508,18 @@ func handleRequestJobViews(sg *spyglass.SpyGlass) http.HandlerFunc {
     </body>
 </html>
 		`
-
 		artifactFetcher := spyglass.NewGCSArtifactFetcher()
 		gcsJobSource := spyglass.NewGCSJobSource(bucket, jobPath)
+		artStart := time.Now()
 		artifacts := artifactFetcher.Artifacts(gcsJobSource)
+		artElapsed := time.Since(artStart)
+		logrus.Info("Retrieved artifacts in ", artElapsed)
 
-		logrus.Info("Got a fetcher")
-
+		viewsStart := time.Now()
 		lenses := sg.Views(artifacts)
-		logrus.Infof("Got %d views!", len(lenses))
+		viewsElapsed := time.Since(viewsStart)
+		logrus.Info("Got views in ", viewsElapsed)
+
 		var viewBuf bytes.Buffer
 		type ViewsTemplate struct {
 			Views []spyglass.Lens
@@ -523,15 +527,15 @@ func handleRequestJobViews(sg *spyglass.SpyGlass) http.HandlerFunc {
 		vTmpl := ViewsTemplate{
 			Views: lenses,
 		}
-		logrus.Info("Created view template")
 		t := template.Must(template.New("ArtifactsView").Parse(viewTmpl))
-		logrus.Info("compiled template")
 		tErr := t.Execute(&viewBuf, vTmpl)
 		if tErr != nil {
 			logrus.WithError(tErr).Error("Error rendering template.")
 		}
 
 		fmt.Fprint(w, viewBuf.String())
+		elapsed := time.Since(start)
+		logrus.Info("Time taken to return view page: ", elapsed)
 		//	pd, err := json.Marshal(lenses)
 		//	if err != nil {
 		//		logrus.WithError(err).Error("Error marshaling payload.")
@@ -544,7 +548,7 @@ func handleRequestJobViews(sg *spyglass.SpyGlass) http.HandlerFunc {
 // handleArtifactView handles requests to load a view for a job
 func handleArtifactView(sg *spyglass.SpyGlass) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		logrus.Info("spyglass thing", sg)
+		start := time.Now()
 		setHeadersNoCaching(w)
 		w.Header().Set("Content-Type", "application/json")
 		name := r.URL.Query().Get("name")
@@ -571,6 +575,7 @@ func handleArtifactView(sg *spyglass.SpyGlass) http.HandlerFunc {
 		artifactFetcher := spyglass.NewGCSArtifactFetcher()
 		gcsJobSource := spyglass.NewGCSJobSource(bucket, jobPath)
 		artifacts := artifactFetcher.Artifacts(gcsJobSource)
+
 		logrus.Infof("created artifact fetcher for viewer name=%s", name)
 		var raw *json.RawMessage
 		raw.UnmarshalJSON(body)
@@ -579,14 +584,14 @@ func handleArtifactView(sg *spyglass.SpyGlass) http.HandlerFunc {
 		logrus.Info("raw body ", raw)
 		lens := sg.Refresh(name, artifacts, raw)
 		logrus.Infof("successfully refreshed viewer name=%s", name)
-		logrus.Infof("Htmlview is: %s", lens.HtmlView)
 		pd, err := json.Marshal(lens)
 		if err != nil {
 			logrus.WithError(err).Error("Error marshaling payload.")
 			pd = []byte("{}")
 		}
-		logrus.Infof("Marshaled json: %s", string(pd))
 		fmt.Fprint(w, string(pd))
+		elapsed := time.Since(start)
+		logrus.Info("Time taken to refresh view: ", name, elapsed)
 	}
 }
 

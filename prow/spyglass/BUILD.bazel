@@ -32,6 +32,7 @@ go_test(
     ],
     embed = [":go_default_library"],
     deps = [
+        "//prow/spyglass/viewers:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/fsouza/fake-gcs-server/fakestorage:go_default_library",
     ],
