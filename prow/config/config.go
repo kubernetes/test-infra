@@ -296,26 +296,13 @@ func loadConfig(prowConfig, jobConfig string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+	// Making a copy of job Config to merge it.
+	mainJobConfig := nc.JobConfig
+	// Resetting Job Config from the main config
+	nc.JobConfig = JobConfig{}
 
-	// Checking that no duplicate job in prow config have the same branch spec.
-	validPresubmits := map[string]Presubmit{}
-	for _, p := range nc.AllPresubmits(nil) {
-		if existingJog, ok := validPresubmits[p.Name]; ok {
-			if existingJog.Brancher.Intersects(p.Brancher) {
-				return nil, fmt.Errorf("duplicated presubmit from main config file : %s", p.Name)
-			}
-		}
-		validPresubmits[p.Name] = p
-	}
-
-	validPostsubmits := map[string]Postsubmit{}
-	for _, p := range nc.AllPostsubmits(nil) {
-		if existingJob, ok := validPostsubmits[p.Name]; ok {
-			if existingJob.Brancher.Intersects(p.Brancher) {
-				return nil, fmt.Errorf("duplicated postsubmit job from main config file : %s", p.Name)
-			}
-		}
-		validPostsubmits[p.Name] = p
+	if err := nc.mergeJobConfig(mainJobConfig); err != nil {
+		return nil, err
 	}
 
 	// TODO(krzyzacy): temporary allow empty jobconfig
@@ -446,25 +433,30 @@ func (c *Config) mergeJobConfig(jc JobConfig) error {
 		c.Presubmits = make(map[string][]Presubmit)
 	}
 
+	type orgRepoJobName struct {
+		orgRepo, jobName string
+	}
+
 	// Checking that no duplicate job in prow config have the same branch spec.
-	validPresubmits := map[string]Presubmit{}
-	for _, p := range c.AllPresubmits(nil) {
-		validPresubmits[p.Name] = p
+	validPresubmits := map[orgRepoJobName][]Presubmit{}
+	for repo, ps := range c.Presubmits {
+		for _, p := range ps {
+			repoJobName := orgRepoJobName{repo, p.Name}
+			validPresubmits[repoJobName] = append(validPresubmits[repoJobName], p)
+		}
 	}
 
 	for repo, jobs := range jc.Presubmits {
-		if _, ok := c.Presubmits[repo]; ok {
-			for _, job := range jobs {
-				if existingJob, ok := validPresubmits[job.Name]; ok {
-					if existingJob.Brancher.Intersects(job.Brancher) {
-						return fmt.Errorf("duplicated presubmit job across multiple files : %s", job.Name)
-					}
+		for _, job := range jobs {
+			repoJobName := orgRepoJobName{repo, job.Name}
+			for _, existingJob := range validPresubmits[repoJobName] {
+				if existingJob.Brancher.Intersects(job.Brancher) {
+					return fmt.Errorf("duplicated presubmit job across multiple files : %s", job.Name)
 				}
 			}
-			c.Presubmits[repo] = append(c.Presubmits[repo], jobs...)
-		} else {
-			c.Presubmits[repo] = jobs
+			validPresubmits[repoJobName] = append(validPresubmits[repoJobName], job)
 		}
+		c.Presubmits[repo] = append(c.Presubmits[repo], jobs...)
 	}
 
 	// *** Postsubmits ***
@@ -472,25 +464,26 @@ func (c *Config) mergeJobConfig(jc JobConfig) error {
 		c.Postsubmits = make(map[string][]Postsubmit)
 	}
 
-	// validate no postsubmit with same name exists cross multiple files
-	validPostsubmits := map[string]Postsubmit{}
-	for _, p := range c.AllPostsubmits(nil) {
-		validPostsubmits[p.Name] = p
+	// Checking that no duplicate job in prow config have the same branch spec.
+	validPostsubmits := map[orgRepoJobName][]Postsubmit{}
+	for repo, ps := range c.Postsubmits {
+		for _, p := range ps {
+			repoJobName := orgRepoJobName{repo, p.Name}
+			validPostsubmits[repoJobName] = append(validPostsubmits[repoJobName], p)
+		}
 	}
 
 	for repo, jobs := range jc.Postsubmits {
-		if _, ok := c.Postsubmits[repo]; ok {
-			for _, job := range jobs {
-				if existingJob, ok := validPostsubmits[job.Name]; ok {
-					if existingJob.Brancher.Intersects(job.Brancher) {
-						return fmt.Errorf("duplicated postsubmit job across multiple files : %s", job.Name)
-					}
+		for _, job := range jobs {
+			repoJobName := orgRepoJobName{repo, job.Name}
+			for _, existingJob := range validPostsubmits[repoJobName] {
+				if existingJob.Brancher.Intersects(job.Brancher) {
+					return fmt.Errorf("duplicated postsubmit job across multiple files : %s", job.Name)
 				}
 			}
-			c.Postsubmits[repo] = append(c.Postsubmits[repo], jobs...)
-		} else {
-			c.Postsubmits[repo] = jobs
+			validPostsubmits[repoJobName] = append(validPostsubmits[repoJobName], job)
 		}
+		c.Postsubmits[repo] = append(c.Postsubmits[repo], jobs...)
 	}
 
 	return nil

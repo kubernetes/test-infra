@@ -403,6 +403,7 @@ presubmits:
       containers:
       - image: alpine`,
 			},
+			expectError: true,
 		},
 		{
 			name:       "dup presubmits, two files",
@@ -411,8 +412,7 @@ presubmits:
 				`
 presubmits:
   foo/bar:
-  - interval: 10m
-    agent: kubernetes
+  - agent: kubernetes
     name: presubmit-bar
     context: bar
     spec:
@@ -421,8 +421,7 @@ presubmits:
 				`
 presubmits:
   foo/bar:
-  - interval: 10m
-    agent: kubernetes
+  - agent: kubernetes
     context: bar
     name: presubmit-bar
     spec:
@@ -438,8 +437,7 @@ presubmits:
 				`
 presubmits:
   foo/bar:
-  - interval: 10m
-    agent: kubernetes
+  - agent: kubernetes
     name: presubmit-bar
     context: bar
     branches:
@@ -450,8 +448,7 @@ presubmits:
 				`
 presubmits:
   foo/bar:
-  - interval: 10m
-    agent: kubernetes
+  - agent: kubernetes
     context: bar
     branches:
     - other
@@ -462,6 +459,49 @@ presubmits:
 			},
 			expectError: false,
 		},
+		{
+			name: "dup presubmits main file",
+			prowConfig: `
+presubmits:
+  foo/bar:
+  - agent: kubernetes
+    name: presubmit-bar
+    context: bar
+    spec:
+      containers:
+      - image: alpine
+  - agent: kubernetes
+    context: bar
+    name: presubmit-bar
+    spec:
+      containers:
+      - image: alpine`,
+			expectError: true,
+		},
+		{
+			name: "dup presubmits main file not on the same branch",
+			prowConfig: `
+presubmits:
+  foo/bar:
+  - agent: kubernetes
+    name: presubmit-bar
+    context: bar
+    branches:
+    - other
+    spec:
+      containers:
+      - image: alpine
+  - agent: kubernetes
+    context: bar
+    branches:
+    - master
+    name: presubmit-bar
+    spec:
+      containers:
+      - image: alpine`,
+			expectError: false,
+		},
+
 		{
 			name:       "one postsubmit, ok",
 			prowConfig: ``,
@@ -520,6 +560,7 @@ postsubmits:
       containers:
       - image: alpine`,
 			},
+			expectError: true,
 		},
 		{
 			name:       "dup postsubmits, two files",
@@ -528,8 +569,7 @@ postsubmits:
 				`
 postsubmits:
   foo/bar:
-  - interval: 10m
-    agent: kubernetes
+  - agent: kubernetes
     name: postsubmit-bar
     context: bar
     spec:
@@ -538,8 +578,7 @@ postsubmits:
 				`
 postsubmits:
   foo/bar:
-  - interval: 10m
-    agent: kubernetes
+  - agent: kubernetes
     context: bar
     name: postsubmit-bar
     spec:
