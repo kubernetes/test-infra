@@ -23,15 +23,10 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/spyglass/viewers"
-	"k8s.io/test-infra/prow/spyglass/viewers/buildlog"
-	"k8s.io/test-infra/prow/spyglass/viewers/metadata"
 )
 
 // SpyGlass records which sets of artifacts need views for a prow job
 type SpyGlass struct {
-
-	// map of regex to relevant artifact viewer
-	Eyepiece map[string]viewers.Viewer
 
 	// map of names of views to their corresponding lenses
 	Lenses map[string]Lens
@@ -49,41 +44,38 @@ type Lens struct {
 
 // NewSpyglass constructs a default spyglass object that renders build logs and Prow metadata
 func NewSpyGlass() *SpyGlass {
-	ep := map[string]viewers.Viewer{
-		"build-log.txt": &buildlog.BuildLogViewer{
-			ViewName:  "BuildLogViewer",
-			ViewTitle: "Build Log",
-		},
-		"started.json|finished.json": &metadata.MetadataViewer{
-			ViewName:  "ProwJobMetadataViewer",
-			ViewTitle: "Job Metadata",
-		},
-	}
 	return &SpyGlass{
-		Eyepiece: ep,
-		Lenses:   make(map[string]Lens),
+		Lenses: make(map[string]Lens),
 	}
 }
 
 // Views gets all views of all artifact files matching each regexp with a registered viewer
-func (s *SpyGlass) Views(artifacts []viewers.Artifact) []Lens {
+func (s *SpyGlass) Views(artifacts []viewers.Artifact, eyepiece map[string]string) []Lens {
 	lenses := []Lens{}
-	for re, viewer := range s.Eyepiece {
+	for re, viewer := range eyepiece {
 		matches := []viewers.Artifact{}
-		r := regexp.MustCompile(re)
+		r, err := regexp.Compile(re)
+		if err != nil {
+			logrus.Errorf("Regexp %s failed to compile.", re)
+			continue
+		}
 		for _, a := range artifacts {
 			if r.MatchString(a.JobPath()) {
 				matches = append(matches, a)
 			}
 		}
+		title, err := viewers.Title(viewer)
+		if err != nil {
+			logrus.Error("Could not find artifact viewer with name ", viewer)
+		}
 		lens := Lens{
-			Name:     viewer.Name(),
-			Title:    viewer.Title(),
+			Name:     viewer,
+			Title:    title,
 			HtmlView: "",
 			ReMatch:  re,
 		}
 		lenses = append(lenses, lens)
-		s.Lenses[viewer.Name()] = lens
+		s.Lenses[viewer] = lens
 	}
 	return lenses
 }
@@ -92,16 +84,10 @@ func (s *SpyGlass) Views(artifacts []viewers.Artifact) []Lens {
 func (s *SpyGlass) Refresh(viewName string, artifacts []viewers.Artifact, raw *json.RawMessage) Lens {
 	lens, ok := s.Lenses[viewName]
 	if !ok {
-		logrus.Errorf("Could not find Lens with name %s.", viewName)
+		logrus.Errorf("Could not find Lens with name %s", viewName)
 		return Lens{}
 	}
 	re := lens.ReMatch
-	viewer, ok := s.Eyepiece[re]
-	if !ok {
-		logrus.Errorf("Could not find registered artifact viewer for regexp %s.", re)
-		return Lens{}
-	}
-
 	matches := []viewers.Artifact{}
 	r := regexp.MustCompile(re)
 	for _, a := range artifacts {
@@ -109,15 +95,11 @@ func (s *SpyGlass) Refresh(viewName string, artifacts []viewers.Artifact, raw *j
 			matches = append(matches, a)
 		}
 	}
-	lens.HtmlView = viewer.View(matches, raw)
-	return lens
-}
-
-// RegisterViewer registers new viewers
-func (s *SpyGlass) RegisterViewer(re string, viewer viewers.Viewer) {
-	_, err := regexp.Compile(re)
+	view, err := viewers.View(viewName, matches, raw)
 	if err != nil {
-		logrus.Fatal(err)
+		logrus.Errorf("Could not find registered artifact viewer for name=%s", viewName)
+		return Lens{}
 	}
-	s.Eyepiece[re] = viewer
+	lens.HtmlView = view
+	return lens
 }

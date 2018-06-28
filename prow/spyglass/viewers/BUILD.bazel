@@ -5,6 +5,7 @@ go_library(
     srcs = ["viewers.go"],
     importpath = "k8s.io/test-infra/prow/spyglass/viewers",
     visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/sirupsen/logrus:go_default_library"],
 )
 
 filegroup(

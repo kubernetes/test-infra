@@ -33,9 +33,9 @@ func TestGCSFetchArtifacts(t *testing.T) {
 			name:         "Fetch Example CI Run #403 Artifacts",
 			gcsJobSource: fakeGCSJobSource,
 			expectedArtifacts: []viewers.Artifact{
-				NewGCSArtifact(fakeGCSBucket.Object(buildLogName), fakeGCSJobSource.JobPath()),
-				NewGCSArtifact(fakeGCSBucket.Object(startedName), fakeGCSJobSource.JobPath()),
-				NewGCSArtifact(fakeGCSBucket.Object(finishedName), fakeGCSJobSource.JobPath()),
+				NewGCSArtifact(fakeGCSBucket.Object(buildLogName), "", fakeGCSJobSource.JobPath()),
+				NewGCSArtifact(fakeGCSBucket.Object(startedName), "", fakeGCSJobSource.JobPath()),
+				NewGCSArtifact(fakeGCSBucket.Object(finishedName), "", fakeGCSJobSource.JobPath()),
 			},
 		},
 	}

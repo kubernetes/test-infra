@@ -47,6 +47,11 @@ import (
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/prstatus"
 	"k8s.io/test-infra/prow/spyglass"
+
+	// Import standard spyglass viewers
+	_ "k8s.io/test-infra/prow/spyglass/viewers/buildlog"
+	_ "k8s.io/test-infra/prow/spyglass/viewers/junit"
+	_ "k8s.io/test-infra/prow/spyglass/viewers/metadata"
 )
 
 type options struct {
@@ -174,7 +179,7 @@ func prodOnlyMain(o options, mux *http.ServeMux) *http.ServeMux {
 	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(configAgent)))
 	mux.Handle("/branding.js", gziphandler.GzipHandler(handleBranding(configAgent)))
 	mux.Handle("/favicon.ico", gziphandler.GzipHandler(handleFavicon(configAgent)))
-	mux.Handle("/view", gziphandler.GzipHandler(handleRequestJobViews(spyGlass)))
+	mux.Handle("/view", gziphandler.GzipHandler(handleRequestJobViews(spyGlass, configAgent)))
 	mux.Handle("/view/refresh", gziphandler.GzipHandler(handleArtifactView(spyGlass)))
 
 	if o.hookURL != "" {
@@ -415,7 +420,7 @@ func handleBadge(ja *jobs.JobAgent) http.HandlerFunc {
 
 // handleRequestJobViews handles requests to get all available artifact views for a given job
 // it responds with a list of all availables view titles
-func handleRequestJobViews(sg *spyglass.SpyGlass) http.HandlerFunc {
+func handleRequestJobViews(sg *spyglass.SpyGlass, ca *config.Agent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		bucket := r.URL.Query().Get("bucket")
@@ -469,8 +474,7 @@ func handleRequestJobViews(sg *spyglass.SpyGlass) http.HandlerFunc {
 	<script>
 	var pageUrl = window.location.href;
 	var urlObj = new URL(pageUrl);
-	var job = urlObj.searchParams.get("job");
-	var bucket = urlObj.searchParams.get("bucket");
+	var src = urlObj.searchParams.get("src");
 
 	// Loads views for this job
 	function loadViews() {
@@ -481,7 +485,7 @@ func handleRequestJobViews(sg *spyglass.SpyGlass) http.HandlerFunc {
 
 	// asynchronously requests a reloaded view of the provided viewer given a body request
 	function requestReload(name, body) {
-		const url = "/view/refresh?job="+encodeURIComponent(job)+"&bucket="+encodeURIComponent(bucket)+"&name="+encodeURIComponent(name);
+		const url = "/view/refresh?src="+encodeURIComponent(src)+"&name="+encodeURIComponent(name);
 		var req = new XMLHttpRequest();
 		req.open('POST', url, true);
 		req.setRequestHeader('Content-Type', 'application/json')
@@ -516,7 +520,7 @@ func handleRequestJobViews(sg *spyglass.SpyGlass) http.HandlerFunc {
 		logrus.Info("Retrieved artifacts in ", artElapsed)
 
 		viewsStart := time.Now()
-		lenses := sg.Views(artifacts)
+		lenses := sg.Views(artifacts, ca.Config().SpyGlass.Viewers)
 		viewsElapsed := time.Since(viewsStart)
 		logrus.Info("Got views in ", viewsElapsed)
 
@@ -580,7 +584,6 @@ func handleArtifactView(sg *spyglass.SpyGlass) http.HandlerFunc {
 		var raw *json.RawMessage
 		raw.UnmarshalJSON(body)
 		logrus.Info("valid json: ", json.Valid(body))
-		logrus.Info("Artifacts: ", artifacts)
 		logrus.Info("raw body ", raw)
 		lens := sg.Refresh(name, artifacts, raw)
 		logrus.Infof("successfully refreshed viewer name=%s", name)

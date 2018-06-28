@@ -27,24 +27,17 @@ import (
 	"k8s.io/test-infra/prow/spyglass/viewers"
 )
 
-// An artifact viewer for build logs
-type BuildLogViewer struct {
-	ViewName  string
-	ViewTitle string
+const (
+	name  = "BuildLogViewer"
+	title = "Build Log"
+)
+
+func init() {
+	viewers.RegisterViewer(name, title, ViewHandler)
 }
 
-// Name gets the unique name of the viewer within the job
-func (v *BuildLogViewer) Name() string {
-	return v.ViewName
-}
-
-// Title gets the title of the viewer
-func (v *BuildLogViewer) Title() string {
-	return v.ViewTitle
-}
-
-// View creates a view for a build log (or multiple build logs)
-func (v *BuildLogViewer) View(artifacts []viewers.Artifact, raw *json.RawMessage) string {
+// ViewHandler creates a view for a build log (or multiple build logs)
+func ViewHandler(artifacts []viewers.Artifact, raw *json.RawMessage) string {
 	logViewTmpl := `
 	<div style="font-family:monospace;">
 	{{range .LogViews}}<ul style="list-style-type:none;padding:0;margin:0;line-height:1.4;color:black;">
@@ -70,7 +63,7 @@ func (v *BuildLogViewer) View(artifacts []viewers.Artifact, raw *json.RawMessage
 		logLines := strings.Split(string(read), "\n")
 		buildLogsView.LogViews = append(buildLogsView.LogViews, LogFileView{LogLines: logLines})
 	}
-	t := template.Must(template.New("BuildLogView").Parse(logViewTmpl))
+	t := template.Must(template.New(name).Parse(logViewTmpl))
 	err := t.Execute(&buf, buildLogsView)
 	if err != nil {
 		logrus.Errorf("Template failed with error: %s", err)

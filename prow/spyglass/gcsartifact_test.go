@@ -25,7 +25,7 @@ import (
 
 // Tests reading all data from files in GCS
 func TestGCSReadAll(t *testing.T) {
-	buildLogArtifact := NewGCSArtifact(fakeGCSBucket.Object(buildLogName), fakeGCSJobSource.JobPath())
+	buildLogArtifact := NewGCSArtifact(fakeGCSBucket.Object(buildLogName), "", fakeGCSJobSource.JobPath())
 	testCases := []struct {
 		name     string
 		a        viewers.Artifact
@@ -49,7 +49,7 @@ func TestGCSReadAll(t *testing.T) {
 }
 
 func TestGCSSize(t *testing.T) {
-	startedArtifact := NewGCSArtifact(fakeGCSBucket.Object(startedName), fakeGCSJobSource.JobPath())
+	startedArtifact := NewGCSArtifact(fakeGCSBucket.Object(startedName), "", fakeGCSJobSource.JobPath())
 	testCases := []struct {
 		name     string
 		a        viewers.Artifact

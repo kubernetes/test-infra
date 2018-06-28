@@ -22,40 +22,46 @@ import (
 	"encoding/json"
 	"time"
 
+	"html/template"
+
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/bazel-test-infra/external/go_sdk/src/html/template"
 	"k8s.io/test-infra/prow/spyglass/viewers"
 )
 
-// An artifact viewer for build logs
-type MetadataViewer struct {
-	ViewName  string
-	ViewTitle string
+const (
+	name  = "MetadataViewer"
+	title = "Metadata"
+)
+
+func init() {
+	viewers.RegisterViewer(name, title, ViewHandler)
 }
 
 // Started is used to mirror the started.json artifact
 type Started struct {
-	TimestampString string `json:"timestamp"`
-	Timestamp       time.Time
+	TimestampString string            `json:"timestamp"`
+	Timestamp       time.Time         `json:"-"`
 	Repos           map[string]string `json:"repos"`
 	Pull            string            `json:"pull"`
 }
 
 // Finished is used to mirror the finished.json artifact
 type Finished struct {
-	TimestampString string `json:"timestamp"`
-	Timestamp       time.Time
-	Result          string `json:"result"`
-	Metadata        string `json:"metadata"`
+	TimestampString string    `json:"timestamp"`
+	Timestamp       time.Time `json:"-"`
+	Result          string    `json:"result"`
+	Metadata        string    `json:"metadata"`
 }
 
-// View creates a view for prow job metadata
-func (v *MetadataViewer) View(artifacts []viewers.Artifact, raw *json.RawMessage) string {
+// ViewHandler creates a view for prow job metadata
+func ViewHandler(artifacts []viewers.Artifact, raw *json.RawMessage) string {
 	metadataViewTmpl := `
 	<div>
 	{{ .Started}}
 	</div>
+	<div>
 	{{ .Finished}}
+	</div>
 	`
 	var buf bytes.Buffer
 	type MetadataView struct {
@@ -86,14 +92,4 @@ func (v *MetadataViewer) View(artifacts []viewers.Artifact, raw *json.RawMessage
 		logrus.Errorf("Template failed with error: %s", err)
 	}
 	return buf.String()
-}
-
-// Title gets the title of the viewer
-func (v *MetadataViewer) Title() string {
-	return v.ViewTitle
-}
-
-// Name gets the unique name of the viewer within the job
-func (v *MetadataViewer) Name() string {
-	return v.ViewName
 }

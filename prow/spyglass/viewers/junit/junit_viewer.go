@@ -23,24 +23,17 @@ import (
 	"k8s.io/test-infra/prow/spyglass/viewers"
 )
 
-// An artifact viewer for JUnit tests
-type JUnitViewer struct {
-	ViewName  string
-	ViewTitle string
+const (
+	name  = "JUnitViewer"
+	title = "JUnit"
+)
+
+func init() {
+	viewers.RegisterViewer(name, title, ViewHandler)
 }
 
-// Title gets the title of the viewer
-func (v *JUnitViewer) Title() string {
-	return v.ViewTitle
-}
-
-// Name gets the unique name of the viewer within the job
-func (v *JUnitViewer) Name() string {
-	return v.ViewName
-}
-
-// View creates a view for JUnit tests
-func (v *JUnitViewer) View(artifacts []viewers.Artifact, raw *json.RawMessage) string {
+// ViewHandler creates a view for JUnit tests
+func ViewHandler(artifacts []viewers.Artifact, raw *json.RawMessage) string {
 	//TODO
 	return ""
 }

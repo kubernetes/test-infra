@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"cloud.google.com/go/storage"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 	"k8s.io/test-infra/prow/spyglass/viewers"
@@ -80,12 +81,13 @@ func (af *GCSArtifactFetcher) Artifacts(src JobSource) []viewers.Artifact {
 		Versions: false,
 	}
 	objIter := bkt.Objects(context.Background(), &q)
-	// TODO This is super slow
 	for {
 		oAttrs, err := objIter.Next()
-
-		if err == iterator.Done {
-			break
+		if err != nil {
+			if err == iterator.Done {
+				break
+			}
+			logrus.Error("Error accessing objects. ", err)
 		}
 
 		obj := bkt.Object(oAttrs.Name)

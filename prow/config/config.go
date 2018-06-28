@@ -30,7 +30,7 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
-	"gopkg.in/robfig/cron.v2"
+	cron "gopkg.in/robfig/cron.v2"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -66,6 +66,7 @@ type ProwConfig struct {
 	Plank            Plank                 `json:"plank,omitempty"`
 	Sinker           Sinker                `json:"sinker,omitempty"`
 	Deck             Deck                  `json:"deck,omitempty"`
+	SpyGlass         SpyGlass              `json:"spyglass,omitempty"`
 	BranchProtection BranchProtection      `json:"branch-protection,omitempty"`
 	Orgs             map[string]org.Config `json:"orgs,omitempty"`
 	Gerrit           Gerrit                `json:"gerrit,omitempty"`
@@ -211,6 +212,12 @@ type Sinker struct {
 	// MaxPodAge is how old a Pod can be before it is garbage-collected.
 	// Defaults to one day.
 	MaxPodAge time.Duration `json:"-"`
+}
+
+//SpyGlass hold config for SpyGlass
+type SpyGlass struct {
+	// Viewers defines which sets of artifacts need to be viewed by which viewers
+	Viewers map[string]string `json:"viewers,omitempty"`
 }
 
 // Deck holds config for deck.

@@ -13,8 +13,6 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//prow/spyglass/viewers:go_default_library",
-        "//prow/spyglass/viewers/buildlog:go_default_library",
-        "//prow/spyglass/viewers/metadata:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/google.golang.org/api/iterator:go_default_library",

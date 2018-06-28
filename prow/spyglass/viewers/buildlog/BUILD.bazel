@@ -29,8 +29,4 @@ go_test(
     name = "go_default_test",
     srcs = ["buildlog_viewer_test.go"],
     embed = [":go_default_library"],
-    deps = [
-        "//prow/spyglass:go_default_library",
-        "//prow/spyglass/viewers:go_default_library",
-    ],
 )
