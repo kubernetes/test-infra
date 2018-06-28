@@ -50,9 +50,9 @@ const (
 )
 
 const (
-	Succeess = "SUCCESS"
-	Failure  = "FAILURE"
-	Aborted  = "ABORTED"
+	success = "SUCCESS"
+	failure = "FAILURE"
+	aborted = "ABORTED"
 )
 
 // NotFoundError is returned by the Jenkins client when
@@ -70,10 +70,12 @@ func NewNotFoundError(e error) NotFoundError {
 	return NotFoundError{e: e}
 }
 
+// Action holds a list of parameters
 type Action struct {
 	Parameters []Parameter `json:"parameters"`
 }
 
+// Parameter configures some aspect of the job.
 type Parameter struct {
 	Name string `json:"name"`
 	// This needs to be an interface so we won't clobber
@@ -82,7 +84,8 @@ type Parameter struct {
 	Value interface{} `json:"value"`
 }
 
-type JenkinsBuild struct {
+// Build holds information about an instance of a jenkins job.
+type Build struct {
 	Actions []Action `json:"actions"`
 	Task    struct {
 		// Used for tracking unscheduled builds for jobs.
@@ -93,23 +96,28 @@ type JenkinsBuild struct {
 	enqueued bool
 }
 
-func (jb *JenkinsBuild) IsRunning() bool {
+// IsRunning means the job started but has not finished.
+func (jb *Build) IsRunning() bool {
 	return jb.Result == nil
 }
 
-func (jb *JenkinsBuild) IsSuccess() bool {
-	return jb.Result != nil && *jb.Result == Succeess
+// IsSuccess means the job passed
+func (jb *Build) IsSuccess() bool {
+	return jb.Result != nil && *jb.Result == success
 }
 
-func (jb *JenkinsBuild) IsFailure() bool {
-	return jb.Result != nil && *jb.Result == Failure
+// IsFailure means the job completed with problems.
+func (jb *Build) IsFailure() bool {
+	return jb.Result != nil && *jb.Result == failure
 }
 
-func (jb *JenkinsBuild) IsAborted() bool {
-	return jb.Result != nil && *jb.Result == Aborted
+// IsAborted means something stopped the job before it could finish.
+func (jb *Build) IsAborted() bool {
+	return jb.Result != nil && *jb.Result == aborted
 }
 
-func (jb *JenkinsBuild) IsEnqueued() bool {
+// IsEnqueued means the job has created but has not started.
+func (jb *Build) IsEnqueued() bool {
 	return jb.enqueued
 }
 
@@ -117,7 +125,7 @@ func (jb *JenkinsBuild) IsEnqueued() bool {
 // Jenkins build in order to correlate the build with
 // a ProwJob. If the build has an empty PROW_JOB_ID
 // it didn't start by prow.
-func (jb *JenkinsBuild) ProwJobID() string {
+func (jb *Build) ProwJobID() string {
 	for _, action := range jb.Actions {
 		for _, p := range action.Parameters {
 			if p.Name == prowJobID {
@@ -142,7 +150,7 @@ func (jb *JenkinsBuild) ProwJobID() string {
 // a build that does not have the ProwJobID set
 // explicitly, as in  that case the Jenkins build has
 // not started by prow.
-func (jb *JenkinsBuild) BuildID() string {
+func (jb *Build) BuildID() string {
 	var buildID string
 	hasProwJobID := false
 	for _, action := range jb.Actions {
@@ -165,6 +173,7 @@ func (jb *JenkinsBuild) BuildID() string {
 	return buildID
 }
 
+// Client can interact with jenkins to create/manage builds.
 type Client struct {
 	// If logger is non-nil, log all method calls with it.
 	logger *logrus.Entry
@@ -197,15 +206,26 @@ type AuthConfig struct {
 	csrfRequestField string
 }
 
+// BasicAuthConfig authenticates with jenkins using user/pass.
 type BasicAuthConfig struct {
 	User  string
 	Token string
 }
 
+// BearerTokenAuthConfig authenticates jenkins using an oauth bearer token.
 type BearerTokenAuthConfig struct {
 	Token string
 }
 
+// NewClient instantiates a client with provided values.
+//
+// url: the jenkins master to connect to.
+// dryRun: mutating calls such as starting/aborting a build will be skipped.
+// tlsConfig: configures client transport if set, may be nil.
+// authConfig: configures the client to connect to Jenkins via basic auth/bearer token
+//             and optionally enables csrf protection
+// logger: creates a standard logger if nil.
+// metrics: gathers prometheus metrics for the Jenkins client if set.
 func NewClient(
 	url string,
 	dryRun bool,
@@ -371,18 +391,18 @@ func (c *Client) doRequest(method, path string) (*http.Response, error) {
 // Build triggers a Jenkins build for the provided ProwJob. The name of
 // the ProwJob is going to be used as the Prow Job ID parameter that will
 // help us track the build before it's scheduled by Jenkins.
-func (c *Client) Build(pj *kube.ProwJob, buildId string) error {
+func (c *Client) Build(pj *kube.ProwJob, buildID string) error {
 	c.logger.WithFields(pjutil.ProwJobFields(pj)).Info("Build")
-	return c.BuildFromSpec(&pj.Spec, buildId, pj.ObjectMeta.Name)
+	return c.BuildFromSpec(&pj.Spec, buildID, pj.ObjectMeta.Name)
 }
 
 // BuildFromSpec triggers a Jenkins build for the provided ProwJobSpec.
-// prowJobId helps us track the build before it's scheduled by Jenkins.
-func (c *Client) BuildFromSpec(spec *kube.ProwJobSpec, buildId, prowJobId string) error {
+// prowJobID helps us track the build before it's scheduled by Jenkins.
+func (c *Client) BuildFromSpec(spec *kube.ProwJobSpec, buildID, prowJobID string) error {
 	if c.dryRun {
 		return nil
 	}
-	env, err := downwardapi.EnvForSpec(downwardapi.NewJobSpec(*spec, buildId, prowJobId))
+	env, err := downwardapi.EnvForSpec(downwardapi.NewJobSpec(*spec, buildID, prowJobID))
 	if err != nil {
 		return err
 	}
@@ -404,14 +424,14 @@ func (c *Client) BuildFromSpec(spec *kube.ProwJobSpec, buildId, prowJobId string
 
 // ListBuilds returns a list of all Jenkins builds for the
 // provided jobs (both scheduled and enqueued).
-func (c *Client) ListBuilds(jobs []string) (map[string]JenkinsBuild, error) {
+func (c *Client) ListBuilds(jobs []string) (map[string]Build, error) {
 	// Get queued builds.
 	jenkinsBuilds, err := c.GetEnqueuedBuilds(jobs)
 	if err != nil {
 		return nil, err
 	}
 
-	buildChan := make(chan map[string]JenkinsBuild, len(jobs))
+	buildChan := make(chan map[string]Build, len(jobs))
 	errChan := make(chan error, len(jobs))
 	wg := &sync.WaitGroup{}
 	wg.Add(len(jobs))
@@ -451,7 +471,7 @@ func (c *Client) ListBuilds(jobs []string) (map[string]JenkinsBuild, error) {
 }
 
 // GetEnqueuedBuilds lists all enqueued builds for the provided jobs.
-func (c *Client) GetEnqueuedBuilds(jobs []string) (map[string]JenkinsBuild, error) {
+func (c *Client) GetEnqueuedBuilds(jobs []string) (map[string]Build, error) {
 	c.logger.Debug("GetEnqueuedBuilds")
 
 	data, err := c.Get("/queue/api/json?tree=items[task[name],actions[parameters[name,value]]]")
@@ -459,15 +479,15 @@ func (c *Client) GetEnqueuedBuilds(jobs []string) (map[string]JenkinsBuild, erro
 		return nil, fmt.Errorf("cannot list builds from the queue: %v", err)
 	}
 	page := struct {
-		QueuedBuilds []JenkinsBuild `json:"items"`
+		QueuedBuilds []Build `json:"items"`
 	}{}
 	if err := json.Unmarshal(data, &page); err != nil {
 		return nil, fmt.Errorf("cannot unmarshal builds from the queue: %v", err)
 	}
-	jenkinsBuilds := make(map[string]JenkinsBuild)
+	jenkinsBuilds := make(map[string]Build)
 	for _, jb := range page.QueuedBuilds {
 		prowJobID := jb.ProwJobID()
-		// Ignore builds with missing buildId parameters.
+		// Ignore builds with missing buildID parameters.
 		if prowJobID == "" {
 			continue
 		}
@@ -491,7 +511,7 @@ func (c *Client) GetEnqueuedBuilds(jobs []string) (map[string]JenkinsBuild, erro
 // GetBuilds lists all scheduled builds for the provided job.
 // In newer Jenkins versions, this also includes enqueued
 // builds (tested in 2.73.2).
-func (c *Client) GetBuilds(job string) (map[string]JenkinsBuild, error) {
+func (c *Client) GetBuilds(job string) (map[string]Build, error) {
 	c.logger.Debugf("GetBuilds(%v)", job)
 
 	data, err := c.Get(fmt.Sprintf("/job/%s/api/json?tree=builds[number,result,actions[parameters[name,value]]]", job))
@@ -504,15 +524,15 @@ func (c *Client) GetBuilds(job string) (map[string]JenkinsBuild, error) {
 		return nil, fmt.Errorf("cannot list builds for job %q: %v", job, err)
 	}
 	page := struct {
-		Builds []JenkinsBuild `json:"builds"`
+		Builds []Build `json:"builds"`
 	}{}
 	if err := json.Unmarshal(data, &page); err != nil {
 		return nil, fmt.Errorf("cannot unmarshal builds for job %q: %v", job, err)
 	}
-	jenkinsBuilds := make(map[string]JenkinsBuild)
+	jenkinsBuilds := make(map[string]Build)
 	for _, jb := range page.Builds {
 		prowJobID := jb.ProwJobID()
-		// Ignore builds with missing buildId parameters.
+		// Ignore builds with missing buildID parameters.
 		if prowJobID == "" {
 			continue
 		}
@@ -522,7 +542,7 @@ func (c *Client) GetBuilds(job string) (map[string]JenkinsBuild, error) {
 }
 
 // Abort aborts the provided Jenkins build for job.
-func (c *Client) Abort(job string, build *JenkinsBuild) error {
+func (c *Client) Abort(job string, build *Build) error {
 	c.logger.Debugf("Abort(%v %v)", job, build.Number)
 	if c.dryRun {
 		return nil
