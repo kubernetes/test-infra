@@ -6139,11 +6139,11 @@ presubmits:
         - "--clean"
         - "--timeout=45"
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
-  - name: pull-gcp-compute-persistent-disk-csi-driver-test
-    context: pull-gcp-compute-persistent-disk-csi-driver-test
+  - name: pull-gcp-compute-persistent-disk-csi-driver-e2e
+    context: pull-gcp-compute-persistent-disk-csi-driver-e2e
     always_run: true
-    rerun_command: "/test pull-gcp-compute-persistent-disk-csi-driver-test"
-    trigger: "(?m)^/test( all| pull-gcp-compute-persistent-disk-csi-driver-test),?(\\s+|$)"
+    rerun_command: "/test pull-gcp-compute-persistent-disk-csi-driver-e2e"
+    trigger: "(?m)^/test( all| pull-gcp-compute-persistent-disk-csi-driver-e2e),?(\\s+|$)"
     agent: kubernetes
     labels:
       preset-service-account: "true"
@@ -6158,12 +6158,8 @@ presubmits:
         - "--clean"
         - "--timeout=45"
         env:
-        - name: PROJECT
-          value: dyzz-test
         - name: ZONE
           value: us-central1-c
-        - name: IAM_NAME
-          value: gce-pd-csi-ci-robot@dyzz-test.iam.gserviceaccount.com
   kubernetes/release:
   - name: pull-release-cluster-up
     agent: kubernetes

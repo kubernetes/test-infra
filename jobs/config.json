@@ -12528,9 +12528,9 @@
       "sig-testing"
     ]
   },
-  "pull-gcp-compute-persistent-disk-csi-driver-test": {
+  "pull-gcp-compute-persistent-disk-csi-driver-e2e": {
     "args": [
-      "./test/run-tests.sh"
+      "./test/run-e2e.sh"
     ],
     "scenario": "execute",
     "sigOwners": [
