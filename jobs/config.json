@@ -12536,6 +12536,15 @@
       "sig-cloud-provider-gcp"
     ]
   },
+  "pull-gcp-compute-persistent-disk-csi-driver-sanity": {
+    "args": [
+      "./test/run-sanity.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-cloud-provider-gcp"
+    ]
+  },
   "pull-gcp-compute-persistent-disk-csi-driver-verify": {
     "args": [
       "./hack/verify-all.sh"

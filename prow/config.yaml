@@ -6160,6 +6160,23 @@ presubmits:
         env:
         - name: ZONE
           value: us-central1-c
+  - name: pull-gcp-compute-persistent-disk-csi-driver-sanity
+    context: pull-gcp-compute-persistent-disk-csi-driver-sanity
+    always_run: true
+    rerun_command: "/test pull-gcp-compute-persistent-disk-csi-driver-sanity"
+    trigger: "(?m)^/test( all| pull-gcp-compute-persistent-disk-csi-driver-sanity),?(\\s+|$)"
+    agent: kubernetes
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+        args:
+        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+        - "--timeout=10"
   - name: pull-gcp-compute-persistent-disk-csi-driver-verify
     context: pull-gcp-compute-persistent-disk-csi-driver-verify
     always_run: true
@@ -6176,7 +6193,7 @@ presubmits:
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
-        - "--timeout=45"
+        - "--timeout=10"
   kubernetes/release:
   - name: pull-release-cluster-up
     agent: kubernetes
