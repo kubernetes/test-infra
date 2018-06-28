@@ -6166,6 +6166,8 @@ presubmits:
     rerun_command: "/test pull-gcp-compute-persistent-disk-csi-driver-verify"
     trigger: "(?m)^/test( all| pull-gcp-compute-persistent-disk-csi-driver-verify),?(\\s+|$)"
     agent: kubernetes
+    labels:
+      preset-service-account: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
