@@ -44,7 +44,7 @@ data:
     pid /run/nginx.pid;
     error_log /dev/stdout;
     events {
-      worker_connections 20;
+      worker_connections 200;
     }
     http {
       access_log /dev/stdout;
