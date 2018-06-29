@@ -17,6 +17,8 @@ limitations under the License.
 package main
 
 import (
+	"os"
+
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/entrypoint"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -37,7 +39,5 @@ func main() {
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "entrypoint"}),
 	)
 
-	if err := o.Run(); err != nil {
-		logrus.WithError(err).Fatal("Failed to run test process")
-	}
+	os.Exit(o.Run())
 }
