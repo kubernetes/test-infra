@@ -24,13 +24,40 @@ gcloud container --project "${PROJECT}" clusters create prow \
 ```
 
 ## Create cluster role bindings
-As of 1.8 Kubernetes uses [Role-Based Access Control (“RBAC”)](https://kubernetes.io/docs/admin/authorization/rbac/) 
-to drive authorization decisions, allowing admins to dynamically configure policies. 
-To create cluster resources you need to grant a user admin role in all namespaces for the cluster.
+As of 1.8 Kubernetes uses [Role-Based Access Control (“RBAC”)](https://kubernetes.io/docs/admin/authorization/rbac/) to drive authorization decisions, allowing `cluster-admin` to dynamically configure policies.
+To create cluster resources you need to grant a user `cluster-admin` role in all namespaces for the cluster.
 
+For Prow on GCP, you can use the following command.
+```sh
+kubectl create clusterrolebinding cluster-admin-binding --clusterrole cluster-admin --user $(gcloud config get-value account)
+```
+
+For Prow on other platforms, the following command will likely work.
 ```sh
 kubectl create clusterrolebinding cluster-admin-binding-"${USER}" --clusterrole=cluster-admin --user="${USER}"
 ```
+On some platforms the `USER` variable may not map correctly to the user
+in-cluster. If you see an error of the following form, this is likely the case.
+
+``` 
+Error from server (Forbidden): error when creating
+"prow/cluster/starter.yaml": roles.rbac.authorization.k8s.io "<account>" is
+forbidden: attempt to grant extra privileges:
+[PolicyRule{Resources:["pods/log"], APIGroups:[""], Verbs:["get"]}
+PolicyRule{Resources:["prowjobs"], APIGroups:["prow.k8s.io"], Verbs:["get"]}
+APIGroups:["prow.k8s.io"], Verbs:["list"]}] user=&{<CLUSTER_USER>
+[system:authenticated] map[]}...
+```
+
+Run the previous command substituting `USER` with `CLUSTER_USER` from the error
+message above to solve this issue.
+```sh
+kubectl create clusterrolebinding cluster-admin-binding-"<CLUSTER_USER>" --clusterrole=cluster-admin --user="<CLUSTER_USER>"
+```
+
+There are [relevant docs on Kubernetes Authentication](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#authentication-strategies) that may help if neither of the above work.
+
+
 
 ## Create the GitHub secrets
 

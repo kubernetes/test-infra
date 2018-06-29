@@ -94,7 +94,6 @@ spec:
         app: hook
     spec:
       terminationGracePeriodSeconds: 180
-      serviceAccountName: "hook"
       containers:
       - name: hook
         image: gcr.io/k8s-prow/hook:v20180627-ea5075d37
@@ -301,6 +300,18 @@ apiVersion: v1
 metadata:
   name: "deck"
 ---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: "deck"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: "deck"
+subjects:
+- kind: ServiceAccount
+  name: "deck"
+---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
@@ -320,17 +331,10 @@ rules:
       - get
       - list
 ---
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ServiceAccount
+apiVersion: v1
 metadata:
-  name: "deck"
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: "deck"
-subjects:
-- kind: ServiceAccount
-  name: "deck"
+  name: "horologium"
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
@@ -357,8 +361,8 @@ subjects:
 - kind: ServiceAccount
   name: "horologium"
 ---
-apiVersion: v1
 kind: ServiceAccount
+apiVersion: v1
 metadata:
   name: "plank"
 ---
