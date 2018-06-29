@@ -73,6 +73,12 @@ make_bazel_rc () {
     local cache_id="$(get_workspace),$(hash_toolchains)"
     local cache_url="http://${CACHE_HOST}:${CACHE_PORT}/${cache_id}"
     echo "build --remote_http_cache=${cache_url}"
+    # specifically for bazel 0.15.0 we want to set this flag
+    # our docker image now sets BAZEL_VERSION with the bazel version as installed
+    # https://github.com/bazelbuild/bazel/issues/5047#issuecomment-401295174
+    if [[ -n "${BAZEL_VERSION+}" && "${BAZEL_VERSION}" -eq "0.15.0" ]]; then
+        echo "build --remote_max_connections=200"
+    fi
 }
 
 # https://docs.bazel.build/versions/master/user-manual.html#bazelrc
