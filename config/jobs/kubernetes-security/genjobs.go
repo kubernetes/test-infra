@@ -151,139 +151,6 @@ func undoPresubmitPresets(presets []config.Preset, presubmit *config.Presubmit) 
 	}
 }
 
-func volumeIsCacheSSD(v *kube.Volume) bool {
-	return v.HostPath != nil && strings.HasPrefix(v.HostPath.Path, "/mnt/disks/ssd0")
-}
-
-// strip cache ssd related settings
-func stripCache(j *config.Presubmit) {
-	container := &j.Spec.Containers[0]
-	// strip cache disk related args etc
-	filteredArgs := []string{}
-	for _, arg := range container.Args {
-		if strings.HasPrefix(arg, "--git-cache") {
-			continue
-		}
-		filteredArgs = append(filteredArgs, arg)
-	}
-	container.Args = filteredArgs
-	// filter cache related env
-	filteredEnv := []kube.EnvVar{}
-	for _, env := range container.Env {
-		// don't keep bazel *local* cache directory env
-		// TODO(bentheelder): we can probably allow this env in certain cases
-		if env.Name == "TEST_TMPDIR" {
-			continue
-		}
-		if env.Name == "BAZEL_REMOTE_CACHE_ENABLED" {
-			continue
-		}
-		filteredEnv = append(filteredEnv, env)
-	}
-	container.Env = filteredEnv
-	// filter cache disk volumes, swap DIND volume for
-	filteredVolumes := []kube.Volume{}
-	removedVolumeNames := sets.String{}
-	for _, volume := range j.Spec.Volumes {
-		if volumeIsCacheSSD(&volume) {
-			removedVolumeNames.Insert(volume.Name)
-			continue
-		} else if volume.Name == "docker-graph" {
-			removedVolumeNames.Insert(volume.Name)
-			continue
-		}
-		filteredVolumes = append(filteredVolumes, volume)
-	}
-	j.Spec.Volumes = filteredVolumes
-	// filter out mounts for filtered out volumes
-	filteredVolumeMounts := []kube.VolumeMount{}
-	for _, volumeMount := range container.VolumeMounts {
-		if removedVolumeNames.Has(volumeMount.Name) {
-			continue
-		}
-		filteredVolumeMounts = append(filteredVolumeMounts, volumeMount)
-	}
-	container.VolumeMounts = filteredVolumeMounts
-	// remove """cache port"""
-	container.Ports = []kube.Port{}
-}
-
-// run after stripCache to make sure we still at least mount an emptyDir to
-// /docker-graph for dind enabled jobs
-func ensureDockerGraphVolume(j *config.Presubmit) {
-	// make sure this is a docker-in-docker job first
-	dindEnabled := false
-	container := &j.Spec.Containers[0]
-	for _, env := range container.Env {
-		if env.Name == "DOCKER_IN_DOCKER_ENABLED" && env.Value == "true" {
-			dindEnabled = true
-			break
-		}
-	}
-	if !dindEnabled {
-		return
-	}
-
-	// filter out old /docker-graph volume mounts of any sort
-	const dockerGraphMountPath = "/docker-graph"
-	oldDockerGraphVolumeMount := ""
-	removedVolumeNames := sets.String{}
-	filteredVolumeMounts := []kube.VolumeMount{}
-	for _, volumeMount := range container.VolumeMounts {
-		if volumeMount.MountPath == dockerGraphMountPath {
-			removedVolumeNames.Insert(volumeMount.Name)
-			continue
-		}
-		filteredVolumeMounts = append(filteredVolumeMounts, volumeMount)
-	}
-	container.VolumeMounts = filteredVolumeMounts
-
-	// remove old volumes associated with old mounts if any
-	if removedVolumeNames.Len() > 0 {
-		filteredVolumes := []kube.Volume{}
-		for _, volume := range j.Spec.Volumes {
-			if volume.Name == oldDockerGraphVolumeMount {
-				continue
-			}
-			filteredVolumes = append(filteredVolumes, volume)
-		}
-		j.Spec.Volumes = filteredVolumes
-	}
-
-	// add new auto generated volume mount
-	const dockerGraphVolumeMount = "auto-generated-docker-graph-volume-mount"
-	container.VolumeMounts = append(container.VolumeMounts, kube.VolumeMount{
-		Name:      dockerGraphVolumeMount,
-		MountPath: dockerGraphMountPath,
-	})
-
-	// add matching auto generated emptyDir volume
-	volumeSource := kube.VolumeSource{}
-	volumeSource.EmptyDir = &kube.EmptyDirVolumeSource{}
-	volume := kube.Volume{
-		Name:         dockerGraphVolumeMount,
-		VolumeSource: volumeSource,
-	}
-	j.Spec.Volumes = append(j.Spec.Volumes, volume)
-}
-
-// returns all of the labels for presets that mount the cache SSD volume
-// as "key: v"
-func getCacheSSDPresetLabels(c *config.Config) (labels sets.String) {
-	labels = sets.NewString()
-	for _, preset := range c.Presets {
-		for _, volume := range preset.Volumes {
-			if volumeIsCacheSSD(&volume) {
-				for k, v := range preset.Labels {
-					labels.Insert(fmt.Sprintf("%s: %s", k, v))
-				}
-				break
-			}
-		}
-	}
-	return labels
-}
-
 // convert a kubernetes/kubernetes job to a kubernetes-security/kubernetes job
 // dropLabels should be a set of "k: v" strings
 // xref: prow/config/config_test.go replace(...)
@@ -399,11 +266,6 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, jobsCo
 				},
 			},
 		)
-		// remove cache-ssd related args
-		stripCache(j)
-		// strip cache may remove the /docker-graph mount if it is on the cache
-		// ssd, make sure we still have an emptyDir instead for dind jobs
-		ensureDockerGraphVolume(j)
 	}
 	// done with this job, check for run_after_success
 	for i := range j.RunAfterSuccess {
@@ -411,6 +273,7 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, jobsCo
 	}
 }
 
+// these are unnecessary, and make the config larger so we strip them out
 func yamlBytesStripNulls(yamlBytes []byte) []byte {
 	nullRE := regexp.MustCompile("(?m)[\n]+^[^\n]+: null$")
 	return nullRE.ReplaceAll(yamlBytes, []byte{})
@@ -490,15 +353,16 @@ func main() {
 	defer os.Remove(f.Name())
 
 	// write the header
-	io.WriteString(f, "# Autogenerated by genjobs.go please do not edit!\n")
-	io.WriteString(f, "# To modify these jobs first update their kubernetes/kubernetes sources\n")
-	io.WriteString(f, "# and/or genjobs.go, then run `hack/update-jobs.sh`\n")
+	io.WriteString(f, "# Autogenerated by genjobs.go, do NOT edit!\n")
+	io.WriteString(f, "# see genjobs.go, which you can run with hack/update-config.sh\n")
 	io.WriteString(f, "presubmits:\n  kubernetes-security/kubernetes:\n")
+
+	// this is the set of preset labels we want to remove
+	// we remove the bazel remote cache because we do not deploy one to this build cluster
+	dropLabels := sets.NewString("preset-bazel-remote-cache-enabled: true")
 
 	// convert each kubernetes/kubernetes presubmit to a
 	// kubernetes-security/kubernetes presubmit and write to the file
-	dropLabels := getCacheSSDPresetLabels(parsed)
-	dropLabels.Insert("preset-bazel-remote-cache-enabled: true")
 	for i := range parsed.Presubmits["kubernetes/kubernetes"] {
 		job := &parsed.Presubmits["kubernetes/kubernetes"][i]
 		// undo merged presets, this needs to occur first!
