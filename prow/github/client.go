@@ -27,6 +27,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -36,6 +37,8 @@ import (
 	"github.com/shurcooL/githubql"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
+
+	"k8s.io/test-infra/prow/errorutil"
 )
 
 type timeClient interface {
@@ -76,6 +79,7 @@ var (
 	max404Retries = 2
 	maxSleepTime  = 2 * time.Minute
 	initialDelay  = 2 * time.Second
+	teamRe        = regexp.MustCompile(`^(.*)/(.*)$`)
 )
 
 // Interface for how prow interacts with the http client, which we may throttle.
@@ -1312,14 +1316,55 @@ func (c *Client) CreateReview(org, repo string, number int, r DraftReview) error
 	return err
 }
 
+// prepareReviewersBody separates reviewers from team_reviewers and prepares a map
+// {
+//   "reviewers": [
+//     "octocat",
+//     "hubot",
+//     "other_user"
+//   ],
+//   "team_reviewers": [
+//     "justice-league"
+//   ]
+// }
+//
+// https://developer.github.com/v3/pulls/review_requests/#create-a-review-request
+func prepareReviewersBody(logins []string, org string) (map[string][]string, error) {
+	body := map[string][]string{}
+	var errors []error
+	for _, login := range logins {
+		mat := teamRe.FindStringSubmatch(login)
+		if mat == nil {
+			if _, exists := body["reviewers"]; !exists {
+				body["reviewers"] = []string{}
+			}
+			body["reviewers"] = append(body["reviewers"], login)
+		} else if mat[1] == org {
+			if _, exists := body["team_reviewers"]; !exists {
+				body["team_reviewers"] = []string{}
+			}
+			body["team_reviewers"] = append(body["team_reviewers"], mat[2])
+		} else {
+			errors = append(errors, fmt.Errorf("team %s is not part of %s org", login, org))
+		}
+	}
+	return body, errorutil.NewAggregate(errors...)
+}
+
 func (c *Client) tryRequestReview(org, repo string, number int, logins []string) (int, error) {
 	c.log("RequestReview", org, repo, number, logins)
 	var pr PullRequest
+	body, err := prepareReviewersBody(logins, org)
+	if err != nil {
+		// At least one team not in org,
+		// let RequestReview handle retries and alerting for each login.
+		return http.StatusUnprocessableEntity, err
+	}
 	return c.request(&request{
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("/repos/%s/%s/pulls/%d/requested_reviewers", org, repo, number),
-		accept:      "application/vnd.github.black-cat-preview+json",
-		requestBody: map[string][]string{"reviewers": logins},
+		accept:      "application/vnd.github.symmetra-preview+json",
+		requestBody: body,
 		exitCodes:   []int{http.StatusCreated /*201*/},
 	}, &pr)
 }
@@ -1339,7 +1384,7 @@ func (c *Client) RequestReview(org, repo string, number int, logins []string) er
 		for _, user := range logins {
 			statusCode, err = c.tryRequestReview(org, repo, number, []string{user})
 			if err != nil && statusCode == http.StatusUnprocessableEntity /*422*/ {
-				// User is not a contributor.
+				// User is not a contributor, or team not in org.
 				missing.Users = append(missing.Users, user)
 			} else if err != nil {
 				return fmt.Errorf("failed to add reviewer to PR. Status code: %d, errmsg: %v", statusCode, err)
@@ -1364,11 +1409,17 @@ func (c *Client) RequestReview(org, repo string, number int, logins []string) er
 func (c *Client) UnrequestReview(org, repo string, number int, logins []string) error {
 	c.log("UnrequestReview", org, repo, number, logins)
 	var pr PullRequest
-	_, err := c.request(&request{
+	body, err := prepareReviewersBody(logins, org)
+	if len(body) == 0 {
+		// No point in doing request for none,
+		// if some logins didn't make it to body, extras.Users will catch them.
+		return err
+	}
+	_, err = c.request(&request{
 		method:      http.MethodDelete,
 		path:        fmt.Sprintf("/repos/%s/%s/pulls/%d/requested_reviewers", org, repo, number),
-		accept:      "application/vnd.github.black-cat-preview+json",
-		requestBody: map[string][]string{"reviewers": logins},
+		accept:      "application/vnd.github.symmetra-preview+json",
+		requestBody: body,
 		exitCodes:   []int{http.StatusOK /*200*/},
 	}, &pr)
 	if err != nil {
