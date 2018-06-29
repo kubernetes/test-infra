@@ -1046,7 +1046,7 @@ images:
     - --gcp-node-image=gci
   ubuntu1:
     args:
-    - --image-family=ubuntu-gke-1604-lts-1
+    - --image-family=ubuntu-gke-1804-lts-1
     - --image-project=ubuntu-os-gke-cloud-devel
     - --gcp-node-image=custom
   ubuntu2:
@@ -1157,7 +1157,7 @@ nodeImages:
     - --node-args=--instance-metadata=user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled
   ubuntu1:
     args:
-    - --image-family=ubuntu-gke-1604-lts-1
+    - --image-family=ubuntu-gke-1804-lts-1
     - --image-project=ubuntu-os-gke-cloud-devel
   ubuntu2:
     args:
