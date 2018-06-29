@@ -1107,11 +1107,105 @@ func TestListTeams(t *testing.T) {
 	}
 }
 
+func TestCreateTeam(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/orgs/foo/teams" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			t.Fatalf("Could not read request body: %v", err)
+		}
+		var team Team
+		switch err := json.Unmarshal(b, &team); {
+		case err != nil:
+			t.Errorf("Could not unmarshal request: %v", err)
+		case team.Name == "":
+			t.Errorf("client should reject empty names")
+		case team.Name != "frobber":
+			t.Errorf("Bad name: %s", team.Name)
+		}
+		team.Name = "hello"
+		team.Description = "world"
+		team.Privacy = "special"
+		b, err = json.Marshal(team)
+		if err != nil {
+			t.Fatalf("Didn't expect error: %v", err)
+		}
+		w.WriteHeader(http.StatusCreated) // 201
+		fmt.Fprint(w, string(b))
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if _, err := c.CreateTeam("foo", Team{Name: ""}); err == nil {
+		t.Errorf("client should reject empty name")
+	}
+	switch team, err := c.CreateTeam("foo", Team{Name: "frobber"}); {
+	case err != nil:
+		t.Errorf("unexpected error: %v", err)
+	case team.Name != "hello":
+		t.Errorf("bad name: %s", team.Name)
+	case team.Description != "world":
+		t.Errorf("bad description: %s", team.Description)
+	case team.Privacy != "special":
+		t.Errorf("bad privacy: %s", team.Privacy)
+	}
+}
+
+func TestEditTeam(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPatch {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/teams/63" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			t.Fatalf("Could not read request body: %v", err)
+		}
+		var team Team
+		switch err := json.Unmarshal(b, &team); {
+		case err != nil:
+			t.Errorf("Could not unmarshal request: %v", err)
+		case team.Name == "":
+			t.Errorf("Bad name: %s", team.Name)
+		}
+		team.Name = "hello"
+		team.Description = "world"
+		team.Privacy = "special"
+		b, err = json.Marshal(team)
+		if err != nil {
+			t.Fatalf("Didn't expect error: %v", err)
+		}
+		w.WriteHeader(http.StatusCreated) // 201
+		fmt.Fprint(w, string(b))
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if _, err := c.EditTeam(Team{ID: 0, Name: "frobber"}); err == nil {
+		t.Errorf("client should reject id 0")
+	}
+	switch team, err := c.EditTeam(Team{ID: 63, Name: "frobber"}); {
+	case err != nil:
+		t.Errorf("unexpected error: %v", err)
+	case team.Name != "hello":
+		t.Errorf("bad name: %s", team.Name)
+	case team.Description != "world":
+		t.Errorf("bad description: %s", team.Description)
+	case team.Privacy != "special":
+		t.Errorf("bad privacy: %s", team.Privacy)
+	}
+}
+
 func TestListTeamMembers(t *testing.T) {
 	ts := simpleTestServer(t, "/teams/1/members", []TeamMember{{Login: "foo"}})
 	defer ts.Close()
 	c := getClient(ts.URL)
-	teamMembers, err := c.ListTeamMembers(1)
+	teamMembers, err := c.ListTeamMembers(1, RoleAll)
 	if err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	} else if len(teamMembers) != 1 {

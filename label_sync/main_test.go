@@ -27,7 +27,7 @@ import (
 // Tests for getting data from GitHub are not needed:
 // The would have to use real API point or test stubs
 
-// Test SyncLabels(config *Configuration, curr *RepoLabels) (updates RepoUpdates, err error)
+// Test syncLabels(config *Configuration, curr *RepoLabels) (updates RepoUpdates, err error)
 // Input: Configuration list and Current labels list on multiple repos
 // Output: list of wanted label updates (update due to name or color) addition due to missing labels
 // This is main testing for this program
@@ -253,7 +253,7 @@ func TestSyncLabels(t *testing.T) {
 
 	// Do tests
 	for _, tc := range testcases {
-		actualUpdates, err := SyncLabels(tc.config, tc.current)
+		actualUpdates, err := syncLabels(tc.config, tc.current)
 		if err == nil && tc.expectedError {
 			t.Errorf("%s: failed to raise error", tc.name)
 		} else if err != nil && !tc.expectedError {

@@ -200,7 +200,7 @@ func TestConfig(t *testing.T) {
 				t.Errorf("Dashboard %v, tab %v: - Testgroup %v must be defined first",
 					dashboard.Name, dashboardtab.Name, dashboardtab.TestGroupName)
 			} else {
-				testgroupMap[dashboardtab.TestGroupName] += 1
+				testgroupMap[dashboardtab.TestGroupName]++
 			}
 
 			if dashboardtab.AlertOptions != nil && (dashboardtab.AlertOptions.AlertStaleResultsHours != 0 || dashboardtab.AlertOptions.NumFailuresToAlert != 0) {
@@ -343,10 +343,11 @@ func TestConfig(t *testing.T) {
 
 func TestJobsTestgridEntryMatch(t *testing.T) {
 	prowPath := "../../../prow/config.yaml"
+	jobPath := "../../../config/jobs"
 
 	jobs := make(map[string]bool)
 
-	prowConfig, err := prow_config.Load(prowPath, "")
+	prowConfig, err := prow_config.Load(prowPath, jobPath)
 	if err != nil {
 		t.Fatalf("Could not load prow configs: %v\n", err)
 	}

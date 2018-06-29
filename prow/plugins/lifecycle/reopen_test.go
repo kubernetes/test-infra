@@ -44,8 +44,7 @@ func (c *fakeClientReopen) ReopenPR(owner, repo string, number int) error {
 	return nil
 }
 
-func TestOpenComment(t *testing.T) {
-	// "a" is the author, "r1", and "r2" are reviewers.
+func TestReopenComment(t *testing.T) {
 	var testcases = []struct {
 		name          string
 		action        github.GenericCommentEventAction
@@ -130,7 +129,7 @@ func TestOpenComment(t *testing.T) {
 			Assignees:   []github.User{{Login: "a"}, {Login: "r1"}, {Login: "r2"}},
 			IssueAuthor: github.User{Login: "a"},
 		}
-		if err := handleReopen(fc, logrus.WithField("plugin", "fake-reopen"), e, false); err != nil {
+		if err := handleReopen(fc, logrus.WithField("plugin", "fake-reopen"), e); err != nil {
 			t.Errorf("For case %s, didn't expect error from handle: %v", tc.name, err)
 			continue
 		}

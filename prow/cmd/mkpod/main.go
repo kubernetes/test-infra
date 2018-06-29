@@ -33,7 +33,7 @@ import (
 
 type options struct {
 	prowJobPath string
-	buildId     string
+	buildID     string
 }
 
 func (o *options) Validate() error {
@@ -47,7 +47,7 @@ func (o *options) Validate() error {
 func gatherOptions() options {
 	o := options{}
 	flag.StringVar(&o.prowJobPath, "prow-job", "", "ProwJob to decorate, - for stdin.")
-	flag.StringVar(&o.buildId, "build-id", "", "Build ID for the job run.")
+	flag.StringVar(&o.buildID, "build-id", "", "Build ID for the job run.")
 	flag.Parse()
 	return o
 }
@@ -78,15 +78,15 @@ func main() {
 		logrus.WithError(err).Fatal("Could not unmarshal ProwJob YAML.")
 	}
 
-	if o.buildId == "" && job.Status.BuildID != "" {
-		o.buildId = job.Status.BuildID
+	if o.buildID == "" && job.Status.BuildID != "" {
+		o.buildID = job.Status.BuildID
 	}
 
-	if o.buildId == "" {
+	if o.buildID == "" {
 		logrus.Warning("No BuildID found in ProwJob status or given with --build-id, GCS interaction will be poor.")
 	}
 
-	pod, err := decorate.ProwJobToPod(job, o.buildId)
+	pod, err := decorate.ProwJobToPod(job, o.buildID)
 	if err != nil {
 		logrus.WithError(err).Fatal("Could not decorate PodSpec.")
 	}

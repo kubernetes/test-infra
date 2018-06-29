@@ -7,6 +7,7 @@
    "sig-azure",
    "sig-big-data",
    "sig-cli",
+   "sig-cloud-provider-gcp",
    "sig-cluster-lifecycle",
    "sig-contributor-experience",
    "sig-docs",

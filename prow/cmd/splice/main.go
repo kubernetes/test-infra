@@ -42,7 +42,8 @@ var (
 	remoteURL      = flag.String("remote-url", "https://github.com/kubernetes/kubernetes", "Remote Git URL")
 	orgName        = flag.String("org", "kubernetes", "Org name")
 	repoName       = flag.String("repo", "kubernetes", "Repo name")
-	configPath     = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
+	configPath     = flag.String("config-path", "/etc/config/config.yaml", "Path to config.yaml.")
+	jobConfigPath  = flag.String("job-config-path", "", "Path to prow job configs.")
 	maxBatchSize   = flag.Int("batch-size", 5, "Maximum batch size")
 	alwaysRun      = flag.String("always-run", "", "Job names that should be treated as always_run: true in Splice")
 )
@@ -280,7 +281,7 @@ func main() {
 	defer splicer.cleanup()
 
 	configAgent := &config.Agent{}
-	if err := configAgent.Start(*configPath, ""); err != nil {
+	if err := configAgent.Start(*configPath, *jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 

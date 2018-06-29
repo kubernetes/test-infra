@@ -11,7 +11,6 @@ go_test(
     srcs = [
         "branch_protection_test.go",
         "config_test.go",
-        "job_config_test.go",
         "jobs_test.go",
         "tide_test.go",
     ],
@@ -26,7 +25,6 @@ go_test(
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/diff:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
@@ -71,6 +69,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
+        "//prow/config/jobtests:all-srcs",
         "//prow/config/org:all-srcs",
     ],
     tags = ["automanaged"],

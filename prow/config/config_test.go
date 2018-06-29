@@ -25,6 +25,7 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/api/core/v1"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -46,7 +47,7 @@ func TestDecorationDefaulting(t *testing.T) {
 			DefaultRepo:  "repo",
 		},
 		GCSCredentialsSecret: "secretName",
-		SshKeySecrets:        []string{"first", "second"},
+		SSHKeySecrets:        []string{"first", "second"},
 	}
 
 	var testCases = []struct {
@@ -74,7 +75,7 @@ func TestDecorationDefaulting(t *testing.T) {
 					DefaultRepo:  "repo",
 				},
 				GCSCredentialsSecret: "secretName",
-				SshKeySecrets:        []string{"first", "second"},
+				SSHKeySecrets:        []string{"first", "second"},
 			},
 		},
 		{
@@ -99,7 +100,7 @@ func TestDecorationDefaulting(t *testing.T) {
 					DefaultRepo:  "repo",
 				},
 				GCSCredentialsSecret: "secretName",
-				SshKeySecrets:        []string{"first", "second"},
+				SSHKeySecrets:        []string{"first", "second"},
 			},
 		},
 		{
@@ -124,7 +125,7 @@ func TestDecorationDefaulting(t *testing.T) {
 					DefaultRepo:  "repo",
 				},
 				GCSCredentialsSecret: "secretName",
-				SshKeySecrets:        []string{"first", "second"},
+				SSHKeySecrets:        []string{"first", "second"},
 			},
 		},
 		{
@@ -154,7 +155,7 @@ func TestDecorationDefaulting(t *testing.T) {
 					DefaultRepo:  "repo",
 				},
 				GCSCredentialsSecret: "secretName",
-				SshKeySecrets:        []string{"first", "second"},
+				SSHKeySecrets:        []string{"first", "second"},
 			},
 		},
 		{
@@ -181,7 +182,7 @@ func TestDecorationDefaulting(t *testing.T) {
 					PathStrategy: kube.PathStrategyExplicit,
 				},
 				GCSCredentialsSecret: "secretName",
-				SshKeySecrets:        []string{"first", "second"},
+				SSHKeySecrets:        []string{"first", "second"},
 			},
 		},
 		{
@@ -206,13 +207,13 @@ func TestDecorationDefaulting(t *testing.T) {
 					DefaultRepo:  "repo",
 				},
 				GCSCredentialsSecret: "somethingSecret",
-				SshKeySecrets:        []string{"first", "second"},
+				SSHKeySecrets:        []string{"first", "second"},
 			},
 		},
 		{
 			name: "ssh secrets provided",
 			provided: &kube.DecorationConfig{
-				SshKeySecrets: []string{"my", "special"},
+				SSHKeySecrets: []string{"my", "special"},
 			},
 			expected: &kube.DecorationConfig{
 				Timeout:     1 * time.Minute,
@@ -231,7 +232,7 @@ func TestDecorationDefaulting(t *testing.T) {
 					DefaultRepo:  "repo",
 				},
 				GCSCredentialsSecret: "secretName",
-				SshKeySecrets:        []string{"my", "special"},
+				SSHKeySecrets:        []string{"my", "special"},
 			},
 		},
 	}
@@ -251,6 +252,7 @@ func TestValidConfigLoading(t *testing.T) {
 		jobConfigs         []string
 		expectError        bool
 		expectPodNameSpace string
+		expectEnv          map[string][]v1.EnvVar
 	}{
 		{
 			name:       "one config",
@@ -525,6 +527,154 @@ pod_namespace: debug`,
 			},
 			expectPodNameSpace: "test",
 		},
+		{
+			name: "test valid presets in main config",
+			prowConfig: `
+presets:
+- labels:
+    preset-baz: "true"
+  env:
+  - name: baz
+    value: fejtaverse`,
+			jobConfigs: []string{
+				`periodics:
+- interval: 10m
+  agent: kubernetes
+  name: foo
+  labels:
+    preset-baz: "true"
+  spec:
+    containers:
+    - image: alpine`,
+				`
+periodics:
+- interval: 10m
+  agent: kubernetes
+  name: bar
+  labels:
+    preset-baz: "true"
+  spec:
+    containers:
+    - image: alpine`,
+			},
+			expectEnv: map[string][]v1.EnvVar{
+				"foo": {
+					{
+						Name:  "baz",
+						Value: "fejtaverse",
+					},
+				},
+				"bar": {
+					{
+						Name:  "baz",
+						Value: "fejtaverse",
+					},
+				},
+			},
+		},
+		{
+			name:       "test valid presets in job configs",
+			prowConfig: ``,
+			jobConfigs: []string{
+				`
+presets:
+- labels:
+    preset-baz: "true"
+  env:
+  - name: baz
+    value: fejtaverse
+periodics:
+- interval: 10m
+  agent: kubernetes
+  name: foo
+  labels:
+    preset-baz: "true"
+  spec:
+    containers:
+    - image: alpine`,
+				`
+periodics:
+- interval: 10m
+  agent: kubernetes
+  name: bar
+  labels:
+    preset-baz: "true"
+  spec:
+    containers:
+    - image: alpine`,
+			},
+			expectEnv: map[string][]v1.EnvVar{
+				"foo": {
+					{
+						Name:  "baz",
+						Value: "fejtaverse",
+					},
+				},
+				"bar": {
+					{
+						Name:  "baz",
+						Value: "fejtaverse",
+					},
+				},
+			},
+		},
+		{
+			name: "test valid presets in both main & job configs",
+			prowConfig: `
+presets:
+- labels:
+    preset-baz: "true"
+  env:
+  - name: baz
+    value: fejtaverse`,
+			jobConfigs: []string{
+				`
+presets:
+- labels:
+    preset-k8s: "true"
+  env:
+  - name: k8s
+    value: kubernetes
+periodics:
+- interval: 10m
+  agent: kubernetes
+  name: foo
+  labels:
+    preset-baz: "true"
+    preset-k8s: "true"
+  spec:
+    containers:
+    - image: alpine`,
+				`
+periodics:
+- interval: 10m
+  agent: kubernetes
+  name: bar
+  labels:
+    preset-baz: "true"
+  spec:
+    containers:
+    - image: alpine`,
+			},
+			expectEnv: map[string][]v1.EnvVar{
+				"foo": {
+					{
+						Name:  "k8s",
+						Value: "kubernetes",
+					},
+					{
+						Name:  "baz",
+						Value: "fejtaverse",
+					},
+				},
+				"bar": {
+					{
+						Name:  "baz",
+						Value: "fejtaverse",
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -581,6 +731,32 @@ pod_namespace: debug`,
 
 			if cfg.PodNamespace != tc.expectPodNameSpace {
 				t.Errorf("tc %s: Expect PodNamespace %s, but got %v", tc.name, tc.expectPodNameSpace, cfg.PodNamespace)
+			}
+
+			if len(tc.expectEnv) > 0 {
+				for _, j := range cfg.AllPresubmits(nil) {
+					if envs, ok := tc.expectEnv[j.Name]; ok {
+						if !reflect.DeepEqual(envs, j.Spec.Containers[0].Env) {
+							t.Errorf("tc %s: expect env %v for job %s, got %+v", tc.name, envs, j.Name, j.Spec.Containers[0].Env)
+						}
+					}
+				}
+
+				for _, j := range cfg.AllPostsubmits(nil) {
+					if envs, ok := tc.expectEnv[j.Name]; ok {
+						if !reflect.DeepEqual(envs, j.Spec.Containers[0].Env) {
+							t.Errorf("tc %s: expect env %v for job %s, got %+v", tc.name, envs, j.Name, j.Spec.Containers[0].Env)
+						}
+					}
+				}
+
+				for _, j := range cfg.AllPeriodics() {
+					if envs, ok := tc.expectEnv[j.Name]; ok {
+						if !reflect.DeepEqual(envs, j.Spec.Containers[0].Env) {
+							t.Errorf("tc %s: expect env %v for job %s, got %+v", tc.name, envs, j.Name, j.Spec.Containers[0].Env)
+						}
+					}
+				}
 			}
 		}
 	}

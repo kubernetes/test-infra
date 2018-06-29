@@ -173,8 +173,8 @@ func TestTFParserSimple(t *testing.T) {
 	if issues[0].Text != "issue_name" {
 		t.Error("Expected Text='issue_name', got ", issues[0].Text)
 	}
-	if issues[0].Id != "key_hash" {
-		t.Error("Expected Id='key_hash', got ", issues[0].Id)
+	if issues[0].Identifier != "key_hash" {
+		t.Error("Expected Identifier='key_hash', got ", issues[0].Identifier)
 	}
 	// Note that 5 builds failed in json, but one is outside the time window.
 	if issues[0].totalBuilds != 4 {
@@ -214,28 +214,28 @@ func checkBuildStart(t *testing.T, f *TriageFiler, jobName string, build int, ex
 // checkCluster checks that the properties that should be true for all clusters hold for this cluster
 func checkCluster(clust *Cluster, t *testing.T) {
 	if !checkTopFailingsSorted(clust) {
-		t.Errorf("Top tests or jobs is improperly sorted for cluster: %s\n", clust.Id)
+		t.Errorf("Top tests or jobs is improperly sorted for cluster: %s\n", clust.Identifier)
 	}
 	if clust.totalJobs != len(clust.jobs) {
-		t.Errorf("Total job count is invalid for cluster: %s\n", clust.Id)
+		t.Errorf("Total job count is invalid for cluster: %s\n", clust.Identifier)
 	}
 	if clust.totalTests != len(clust.Tests) {
-		t.Errorf("Total test count is invalid for cluster: %s\n", clust.Id)
+		t.Errorf("Total test count is invalid for cluster: %s\n", clust.Identifier)
 	}
 	title := clust.Title()
 	body := clust.Body(nil)
 	id := clust.ID()
 	if len(title) <= 0 {
-		t.Errorf("Title of cluster: %s is empty!", clust.Id)
+		t.Errorf("Title of cluster: %s is empty!", clust.Identifier)
 	}
 	if len(body) <= 0 {
-		t.Errorf("Body of cluster: %s is empty!", clust.Id)
+		t.Errorf("Body of cluster: %s is empty!", clust.Identifier)
 	}
 	if len(id) <= 0 {
-		t.Errorf("ID of cluster: %s is empty!", clust.Id)
+		t.Errorf("ID of cluster: %s is empty!", clust.Identifier)
 	}
 	if !strings.Contains(body, id) {
-		t.Errorf("The body text for cluster: %s does not contain its ID!\n", clust.Id)
+		t.Errorf("The body text for cluster: %s does not contain its ID!\n", clust.Identifier)
 	}
 	//ensure that 'kind/flake' is among the label set
 	found := false
@@ -244,12 +244,12 @@ func checkCluster(clust *Cluster, t *testing.T) {
 			found = true
 		} else {
 			if label == "" {
-				t.Errorf("Cluster: %s has an empty label!\n", clust.Id)
+				t.Errorf("Cluster: %s has an empty label!\n", clust.Identifier)
 			}
 		}
 	}
 	if !found {
-		t.Errorf("The cluster: %s does not have the label 'kind/flake'!", clust.Id)
+		t.Errorf("The cluster: %s does not have the label 'kind/flake'!", clust.Identifier)
 	}
 }
 
@@ -279,7 +279,7 @@ func TestTFOwnersAndSIGs(t *testing.T) {
 		}
 	}
 	if !foundSIG {
-		t.Errorf("Failed to get the SIG for cluster: %s\n", clusters[0].Id)
+		t.Errorf("Failed to get the SIG for cluster: %s\n", clusters[0].Identifier)
 	}
 
 	// Check that the body contains a table that correctly explains why users and sig areas were assigned.
@@ -296,7 +296,7 @@ func TestTFOwnersAndSIGs(t *testing.T) {
 
 	// Check that the body contains the assignments themselves:
 	if !strings.Contains(body, "/assign @cjwagner @spxtr") && !strings.Contains(body, "/assign @spxtr @cjwagner") {
-		t.Errorf("Failed to find the '/assign' command in the body of cluster: %s\n%q\n", clusters[0].Id, body)
+		t.Errorf("Failed to find the '/assign' command in the body of cluster: %s\n%q\n", clusters[0].Identifier, body)
 	}
 }
 

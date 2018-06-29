@@ -21,6 +21,7 @@ import (
 	"k8s.io/test-infra/velodrome/sql"
 )
 
+// AuthorFilterPluginWrapper ignore comments and events from some authors
 type AuthorFilterPluginWrapper struct {
 	ignoredAuthors []string
 
@@ -29,12 +30,14 @@ type AuthorFilterPluginWrapper struct {
 
 var _ Plugin = &AuthorFilterPluginWrapper{}
 
+// NewAuthorFilterPluginWrapper is the constructor for AuthorFilterPluginWrapper
 func NewAuthorFilterPluginWrapper(plugin Plugin) *AuthorFilterPluginWrapper {
 	return &AuthorFilterPluginWrapper{
 		plugin: plugin,
 	}
 }
 
+// AddFlags adds "ignore-authors" <authors> to the command help
 func (a *AuthorFilterPluginWrapper) AddFlags(cmd *cobra.Command) {
 	cmd.Flags().StringSliceVar(&a.ignoredAuthors, "ignore-authors", []string{}, "Name of people to ignore")
 }
@@ -48,6 +51,7 @@ func (a *AuthorFilterPluginWrapper) match(author string) bool {
 	return false
 }
 
+// ReceiveIssue calls plugin.ReceiveIssue() if the author is not filtered
 func (a *AuthorFilterPluginWrapper) ReceiveIssue(issue sql.Issue) []Point {
 	if a.match(issue.User) {
 		return nil
@@ -55,6 +59,7 @@ func (a *AuthorFilterPluginWrapper) ReceiveIssue(issue sql.Issue) []Point {
 	return a.plugin.ReceiveIssue(issue)
 }
 
+// ReceiveIssueEvent calls plugin.ReceiveIssueEvent() if the author is not filtered
 func (a *AuthorFilterPluginWrapper) ReceiveIssueEvent(event sql.IssueEvent) []Point {
 	if event.Actor != nil && a.match(*event.Actor) {
 		return nil
@@ -62,6 +67,7 @@ func (a *AuthorFilterPluginWrapper) ReceiveIssueEvent(event sql.IssueEvent) []Po
 	return a.plugin.ReceiveIssueEvent(event)
 }
 
+// ReceiveComment calls plugin.ReceiveComment() if the author is not filtered
 func (a *AuthorFilterPluginWrapper) ReceiveComment(comment sql.Comment) []Point {
 	if a.match(comment.User) {
 		return nil

@@ -33,7 +33,6 @@ jobs:
   - pull-kubernetes-e2e-gce-device-plugin-gpu
   - pull-kubernetes-e2e-kops-aws
   - pull-kubernetes-integration
-  - pull-kubernetes-kubemark-e2e-gce
   - pull-kubernetes-kubemark-e2e-gce-big
   - pull-kubernetes-node-e2e
   - pull-kubernetes-typecheck

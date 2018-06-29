@@ -1,0 +1,25 @@
+package(default_visibility = ["//visibility:public"])
+
+filegroup(
+    name = "prowjobs",
+    srcs = glob([
+        "jobs/**/*.yaml",
+    ]) + ["//config/jobs/kubernetes-security:generated-jobs"],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//config/jobs/kubernetes-security:all-srcs",
+        "//config/tests/jobs:all-srcs",
+    ],
+    tags = ["automanaged"],
+)

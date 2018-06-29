@@ -132,7 +132,7 @@ func TestProwJobToPod(t *testing.T) {
 						DefaultRepo:  "kubernetes",
 					},
 					GCSCredentialsSecret: "secret-name",
-					SshKeySecrets:        []string{"ssh-1", "ssh-2"},
+					SSHKeySecrets:        []string{"ssh-1", "ssh-2"},
 				},
 				Agent: kube.KubernetesAgent,
 				Refs: &kube.Refs{
@@ -373,7 +373,7 @@ func TestProwJobToPod(t *testing.T) {
 						DefaultRepo:  "kubernetes",
 					},
 					GCSCredentialsSecret: "secret-name",
-					SshKeySecrets:        []string{"ssh-1", "ssh-2"},
+					SSHKeySecrets:        []string{"ssh-1", "ssh-2"},
 				},
 				Agent: kube.KubernetesAgent,
 				PodSpec: &v1.PodSpec{
@@ -537,7 +537,7 @@ func TestProwJobToPod(t *testing.T) {
 						DefaultRepo:  "kubernetes",
 					},
 					GCSCredentialsSecret: "secret-name",
-					SshKeySecrets:        []string{"ssh-1", "ssh-2"},
+					SSHKeySecrets:        []string{"ssh-1", "ssh-2"},
 					SkipCloning:          true,
 				},
 				Agent: kube.KubernetesAgent,

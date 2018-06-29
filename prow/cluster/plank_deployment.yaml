@@ -25,15 +25,17 @@ spec:
       labels:
         app: plank
     spec:
+      # serviceAccountName: "plank" # Uncomment for use with RBAC
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:v20180529-e9431eaa3
+        image: gcr.io/k8s-prow/plank:v20180627-ea5075d37
         args:
         - --tot-url=http://tot
         - --build-cluster=/etc/cluster/cluster
         - --dry-run=false
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
+        - --job-config-path=/etc/job-config
         volumeMounts:
         - mountPath: /etc/cluster
           name: cluster
@@ -43,6 +45,9 @@ spec:
           readOnly: true
         - name: config
           mountPath: /etc/config
+          readOnly: true
+        - name: job-config
+          mountPath: /etc/job-config
           readOnly: true
       volumes:
       - name: cluster
@@ -55,3 +60,6 @@ spec:
       - name: config
         configMap:
           name: config
+      - name: job-config
+        configMap:
+          name: job-config

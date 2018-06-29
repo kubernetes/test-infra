@@ -68,11 +68,11 @@ func run(deploy deployer, o options) error {
 
 	if o.up {
 		if o.federation {
-			if err := control.XmlWrap(&suite, "Federation TearDown Previous", fedDown); err != nil {
+			if err := control.XMLWrap(&suite, "Federation TearDown Previous", fedDown); err != nil {
 				return fmt.Errorf("error tearing down previous federation control plane: %v", err)
 			}
 		}
-		if err := control.XmlWrap(&suite, "TearDown Previous", deploy.Down); err != nil {
+		if err := control.XMLWrap(&suite, "TearDown Previous", deploy.Down); err != nil {
 			return fmt.Errorf("error tearing down previous cluster: %s", err)
 		}
 	}
@@ -94,7 +94,7 @@ func run(deploy deployer, o options) error {
 	)
 
 	if o.checkLeaks {
-		errs = util.AppendError(errs, control.XmlWrap(&suite, "listResources Before", func() error {
+		errs = util.AppendError(errs, control.XMLWrap(&suite, "listResources Before", func() error {
 			beforeResources, err = listResources()
 			return err
 		}))
@@ -104,7 +104,7 @@ func run(deploy deployer, o options) error {
 		// If we tried to bring the cluster up, make a courtesy
 		// attempt to bring it down so we're not leaving resources around.
 		if o.down {
-			defer control.XmlWrap(&suite, "Deferred TearDown", func() error {
+			defer control.XMLWrap(&suite, "Deferred TearDown", func() error {
 				if !downDone {
 					return deploy.Down()
 				}
@@ -114,7 +114,7 @@ func run(deploy deployer, o options) error {
 			// federation down defer must appear after the cluster teardown in
 			// order to execute that before cluster teardown.
 			if o.federation {
-				defer control.XmlWrap(&suite, "Deferred Federation TearDown", func() error {
+				defer control.XMLWrap(&suite, "Deferred Federation TearDown", func() error {
 					if !federationDownDone {
 						return fedDown()
 					}
@@ -123,9 +123,9 @@ func run(deploy deployer, o options) error {
 			}
 		}
 		// Start the cluster using this version.
-		if err := control.XmlWrap(&suite, "Up", deploy.Up); err != nil {
+		if err := control.XMLWrap(&suite, "Up", deploy.Up); err != nil {
 			if dump != "" {
-				control.XmlWrap(&suite, "DumpClusterLogs (--up failed)", func() error {
+				control.XMLWrap(&suite, "DumpClusterLogs (--up failed)", func() error {
 					// This frequently means the cluster does not exist.
 					// Thus DumpClusterLogs() typically fails.
 					// Therefore always return null for this scenarios.
@@ -137,8 +137,8 @@ func run(deploy deployer, o options) error {
 			return fmt.Errorf("starting e2e cluster: %s", err)
 		}
 		if o.federation {
-			if err := control.XmlWrap(&suite, "Federation Up", fedUp); err != nil {
-				control.XmlWrap(&suite, "dumpFederationLogs", func() error {
+			if err := control.XMLWrap(&suite, "Federation Up", fedUp); err != nil {
+				control.XMLWrap(&suite, "dumpFederationLogs", func() error {
 					return dumpFederationLogs(dump)
 				})
 				return fmt.Errorf("error starting federation: %s", err)
@@ -148,9 +148,9 @@ func run(deploy deployer, o options) error {
 		// The dind deployer checks that the control plane is healthy.
 		if !o.nodeTests && o.deployment != "dind" {
 			// Check that the api is reachable before proceeding with further steps.
-			errs = util.AppendError(errs, control.XmlWrap(&suite, "Check APIReachability", getKubectlVersion))
+			errs = util.AppendError(errs, control.XMLWrap(&suite, "Check APIReachability", getKubectlVersion))
 			if dump != "" {
-				errs = util.AppendError(errs, control.XmlWrap(&suite, "list nodes", func() error {
+				errs = util.AppendError(errs, control.XMLWrap(&suite, "list nodes", func() error {
 					return listNodes(dump)
 				}))
 			}
@@ -158,17 +158,17 @@ func run(deploy deployer, o options) error {
 	}
 
 	if o.checkLeaks {
-		errs = util.AppendError(errs, control.XmlWrap(&suite, "listResources Up", func() error {
+		errs = util.AppendError(errs, control.XMLWrap(&suite, "listResources Up", func() error {
 			upResources, err = listResources()
 			return err
 		}))
 	}
 
 	if o.upgradeArgs != "" {
-		if err := control.XmlWrap(&suite, "test setup", deploy.TestSetup); err != nil {
+		if err := control.XMLWrap(&suite, "test setup", deploy.TestSetup); err != nil {
 			errs = util.AppendError(errs, err)
 		} else {
-			errs = util.AppendError(errs, control.XmlWrap(&suite, "UpgradeTest", func() error {
+			errs = util.AppendError(errs, control.XMLWrap(&suite, "UpgradeTest", func() error {
 				// upgrade tests really only run one spec
 				var env []string
 				for _, v := range os.Environ() {
@@ -183,28 +183,27 @@ func run(deploy deployer, o options) error {
 
 	testArgs := argFields(o.testArgs, dump, o.clusterIPRange)
 	if o.test {
-		if err := control.XmlWrap(&suite, "test setup", deploy.TestSetup); err != nil {
+		if err := control.XMLWrap(&suite, "test setup", deploy.TestSetup); err != nil {
 			errs = util.AppendError(errs, err)
 		} else if o.nodeTests {
 			nodeArgs := strings.Fields(o.nodeArgs)
-			errs = util.AppendError(errs, control.XmlWrap(&suite, "Node Tests", func() error {
+			errs = util.AppendError(errs, control.XMLWrap(&suite, "Node Tests", func() error {
 				return nodeTest(nodeArgs, o.testArgs, o.nodeTestArgs, o.gcpProject, o.gcpZone)
+			}))
+		} else if err := control.XMLWrap(&suite, "IsUp", deploy.IsUp); err != nil {
+			errs = util.AppendError(errs, err)
+		} else if o.federation {
+			errs = util.AppendError(errs, control.XMLWrap(&suite, "FederationTest", func() error {
+				return federationTest(testArgs)
 			}))
 		} else {
 			if o.deployment != "dind" && o.deployment != "conformance" {
-				errs = util.AppendError(errs, control.XmlWrap(&suite, "kubectl version", getKubectlVersion))
-				if o.skew {
-					errs = util.AppendError(errs, control.XmlWrap(&suite, "SkewTest", func() error {
-						return skewTest(testArgs, "skew", o.checkSkew)
-					}))
-				}
+				errs = util.AppendError(errs, control.XMLWrap(&suite, "kubectl version", getKubectlVersion))
 			}
 
-			if err := control.XmlWrap(&suite, "IsUp", deploy.IsUp); err != nil {
-				errs = util.AppendError(errs, err)
-			} else if o.federation {
-				errs = util.AppendError(errs, control.XmlWrap(&suite, "FederationTest", func() error {
-					return federationTest(testArgs)
+			if o.skew {
+				errs = util.AppendError(errs, control.XMLWrap(&suite, "SkewTest", func() error {
+					return skewTest(testArgs, "skew", o.checkSkew)
 				}))
 			} else {
 				var tester e2e.Tester
@@ -214,7 +213,7 @@ func run(deploy deployer, o options) error {
 					errs = util.AppendError(errs, err)
 				}
 				if tester != nil {
-					errs = util.AppendError(errs, control.XmlWrap(&suite, "Test", func() error {
+					errs = util.AppendError(errs, control.XMLWrap(&suite, "Test", func() error {
 						return tester.Run(control, testArgs)
 					}))
 				}
@@ -223,10 +222,10 @@ func run(deploy deployer, o options) error {
 	}
 
 	if o.testCmd != "" {
-		if err := control.XmlWrap(&suite, "test setup", deploy.TestSetup); err != nil {
+		if err := control.XMLWrap(&suite, "test setup", deploy.TestSetup); err != nil {
 			errs = util.AppendError(errs, err)
 		} else {
-			errs = util.AppendError(errs, control.XmlWrap(&suite, o.testCmdName, func() error {
+			errs = util.AppendError(errs, control.XMLWrap(&suite, o.testCmdName, func() error {
 				cmdLine := os.ExpandEnv(o.testCmd)
 				return control.FinishRunning(exec.Command(cmdLine, o.testCmdArgs...))
 			}))
@@ -236,32 +235,32 @@ func run(deploy deployer, o options) error {
 	// TODO(bentheelder): consider remapping charts, etc to testCmd
 
 	if o.kubemark {
-		errs = util.AppendError(errs, control.XmlWrap(&suite, "Kubemark Overall", func() error {
+		errs = util.AppendError(errs, control.XMLWrap(&suite, "Kubemark Overall", func() error {
 			return kubemarkTest(testArgs, dump, o, deploy)
 		}))
 	}
 
 	if o.charts {
-		errs = util.AppendError(errs, control.XmlWrap(&suite, "Helm Charts", chartsTest))
+		errs = util.AppendError(errs, control.XMLWrap(&suite, "Helm Charts", chartsTest))
 	}
 
 	if o.perfTests {
-		errs = util.AppendError(errs, control.XmlWrap(&suite, "Perf Tests", perfTest))
+		errs = util.AppendError(errs, control.XMLWrap(&suite, "Perf Tests", perfTest))
 	}
 
 	if dump != "" {
-		errs = util.AppendError(errs, control.XmlWrap(&suite, "DumpClusterLogs", func() error {
+		errs = util.AppendError(errs, control.XMLWrap(&suite, "DumpClusterLogs", func() error {
 			return deploy.DumpClusterLogs(dump, o.logexporterGCSPath)
 		}))
 		if o.federation {
-			errs = util.AppendError(errs, control.XmlWrap(&suite, "dumpFederationLogs", func() error {
+			errs = util.AppendError(errs, control.XMLWrap(&suite, "dumpFederationLogs", func() error {
 				return dumpFederationLogs(dump)
 			}))
 		}
 	}
 
 	if o.checkLeaks {
-		errs = util.AppendError(errs, control.XmlWrap(&suite, "listResources Down", func() error {
+		errs = util.AppendError(errs, control.XMLWrap(&suite, "listResources Down", func() error {
 			downResources, err = listResources()
 			return err
 		}))
@@ -269,7 +268,7 @@ func run(deploy deployer, o options) error {
 
 	if o.down {
 		if o.federation {
-			errs = util.AppendError(errs, control.XmlWrap(&suite, "Federation TearDown", func() error {
+			errs = util.AppendError(errs, control.XMLWrap(&suite, "Federation TearDown", func() error {
 				if !federationDownDone {
 					err := fedDown()
 					if err != nil {
@@ -280,7 +279,7 @@ func run(deploy deployer, o options) error {
 				return nil
 			}))
 		}
-		errs = util.AppendError(errs, control.XmlWrap(&suite, "TearDown", func() error {
+		errs = util.AppendError(errs, control.XMLWrap(&suite, "TearDown", func() error {
 			if !downDone {
 				err := deploy.Down()
 				if err != nil {
@@ -296,7 +295,7 @@ func run(deploy deployer, o options) error {
 	// or we are turning up federated clusters without turning up
 	// the federation control plane.
 	if o.save != "" && ((!o.down && o.up) || (!o.federation && o.up && o.deployment != "none")) {
-		errs = util.AppendError(errs, control.XmlWrap(&suite, "Save Cluster State", func() error {
+		errs = util.AppendError(errs, control.XMLWrap(&suite, "Save Cluster State", func() error {
 			return saveState(o.save)
 		}))
 	}
@@ -304,13 +303,13 @@ func run(deploy deployer, o options) error {
 	if o.checkLeaks {
 		log.Print("Sleeping for 30 seconds...") // Wait for eventually consistent listing
 		time.Sleep(30 * time.Second)
-		if err := control.XmlWrap(&suite, "listResources After", func() error {
+		if err := control.XMLWrap(&suite, "listResources After", func() error {
 			afterResources, err = listResources()
 			return err
 		}); err != nil {
 			errs = append(errs, err)
 		} else {
-			errs = util.AppendError(errs, control.XmlWrap(&suite, "diffResources", func() error {
+			errs = util.AppendError(errs, control.XMLWrap(&suite, "diffResources", func() error {
 				return diffResources(beforeResources, upResources, downResources, afterResources, dump)
 			}))
 		}
@@ -321,7 +320,7 @@ func run(deploy deployer, o options) error {
 		}
 	}
 	if len(errs) == 0 && o.publish != "" {
-		errs = util.AppendError(errs, control.XmlWrap(&suite, "Publish version", func() error {
+		errs = util.AppendError(errs, control.XMLWrap(&suite, "Publish version", func() error {
 			// Use plaintext version file packaged with kubernetes.tar.gz
 			v, err := ioutil.ReadFile("version")
 			if err != nil {
@@ -585,7 +584,7 @@ func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone string) e
 
 func kubemarkTest(testArgs []string, dump string, o options, deploy deployer) error {
 	// Stop previously running kubemark cluster (if any).
-	if err := control.XmlWrap(&suite, "Kubemark TearDown Previous", func() error {
+	if err := control.XMLWrap(&suite, "Kubemark TearDown Previous", func() error {
 		return control.FinishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
 	}); err != nil {
 		return err
@@ -596,20 +595,20 @@ func kubemarkTest(testArgs []string, dump string, o options, deploy deployer) er
 	// TODO: We should try calling stop-kubemark exactly once. Though to
 	// stop the leaking resources for now, we want to be on the safe side
 	// and call it explicitly in defer if the other one is not called.
-	defer control.XmlWrap(&suite, "Kubemark TearDown (Deferred)", func() error {
+	defer control.XMLWrap(&suite, "Kubemark TearDown (Deferred)", func() error {
 		return control.FinishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
 	})
 
-	if err := control.XmlWrap(&suite, "IsUp", deploy.IsUp); err != nil {
+	if err := control.XMLWrap(&suite, "IsUp", deploy.IsUp); err != nil {
 		return err
 	}
 
 	// Start kubemark cluster.
-	if err := control.XmlWrap(&suite, "Kubemark Up", func() error {
+	if err := control.XMLWrap(&suite, "Kubemark Up", func() error {
 		return control.FinishRunning(exec.Command("./test/kubemark/start-kubemark.sh"))
 	}); err != nil {
 		if dump != "" {
-			control.XmlWrap(&suite, "Kubemark MasterLogDump (--up failed)", func() error {
+			control.XMLWrap(&suite, "Kubemark MasterLogDump (--up failed)", func() error {
 				return control.FinishRunning(exec.Command("./test/kubemark/master-log-dump.sh", dump))
 			})
 		}
@@ -618,13 +617,13 @@ func kubemarkTest(testArgs []string, dump string, o options, deploy deployer) er
 
 	// Check kubemark apiserver reachability by listing all nodes.
 	if dump != "" {
-		control.XmlWrap(&suite, "list kubemark nodes", func() error {
+		control.XMLWrap(&suite, "list kubemark nodes", func() error {
 			return listKubemarkNodes(dump)
 		})
 	}
 
 	// Run tests on the kubemark cluster.
-	if err := control.XmlWrap(&suite, "Kubemark Test", func() error {
+	if err := control.XMLWrap(&suite, "Kubemark Test", func() error {
 		testArgs = util.SetFieldDefault(testArgs, "--ginkgo.focus", "starting\\s30\\pods")
 
 		// detect master IP
@@ -640,10 +639,9 @@ func kubemarkTest(testArgs []string, dump string, o options, deploy deployer) er
 			"--format=value(address)"))
 		if err != nil {
 			return fmt.Errorf("failed to get masterIP: %v", err)
-		} else {
-			if err := os.Setenv("KUBE_MASTER_IP", strings.TrimSpace(string(masterIP))); err != nil {
-				return err
-			}
+		}
+		if err := os.Setenv("KUBE_MASTER_IP", strings.TrimSpace(string(masterIP))); err != nil {
+			return err
 		}
 
 		if os.Getenv("ENABLE_KUBEMARK_CLUSTER_AUTOSCALER") == "true" {
@@ -671,7 +669,7 @@ func kubemarkTest(testArgs []string, dump string, o options, deploy deployer) er
 		return control.FinishRunning(cmd)
 	}); err != nil {
 		if dump != "" {
-			control.XmlWrap(&suite, "Kubemark MasterLogDump (--test failed)", func() error {
+			control.XMLWrap(&suite, "Kubemark MasterLogDump (--test failed)", func() error {
 				return control.FinishRunning(exec.Command("./test/kubemark/master-log-dump.sh", dump))
 			})
 		}
@@ -679,12 +677,12 @@ func kubemarkTest(testArgs []string, dump string, o options, deploy deployer) er
 	}
 
 	// Dump logs from kubemark master.
-	control.XmlWrap(&suite, "Kubemark MasterLogDump", func() error {
+	control.XMLWrap(&suite, "Kubemark MasterLogDump", func() error {
 		return control.FinishRunning(exec.Command("./test/kubemark/master-log-dump.sh", dump))
 	})
 
 	// Stop the kubemark cluster.
-	if err := control.XmlWrap(&suite, "Kubemark TearDown", func() error {
+	if err := control.XMLWrap(&suite, "Kubemark TearDown", func() error {
 		return control.FinishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
 	}); err != nil {
 		return err

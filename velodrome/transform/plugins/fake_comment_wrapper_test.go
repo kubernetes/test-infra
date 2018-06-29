@@ -33,7 +33,7 @@ func TestFakeCommentWrapper(t *testing.T) {
 	fakeComment := NewFakeCommentPluginWrapper(plugin)
 
 	plugin.EXPECT().ReceiveIssueEvent(sql.IssueEvent{
-		IssueId:        "1",
+		IssueID:        "1",
 		Event:          "commented",
 		EventCreatedAt: time.Unix(10, 0),
 		Actor:          stringPointer("SomeUser"),

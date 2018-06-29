@@ -17,15 +17,14 @@ filegroup(
     visibility = ["//visibility:private"],
 )
 
-filegroup(
-    name = "buckets",
-    srcs = ["buckets.yaml"],
-    visibility = ["//:__subpackages__"],
-)
-
 workspace_binary(
     name = "dep",
     cmd = "//vendor/github.com/golang/dep/cmd/dep",
+)
+
+workspace_binary(
+    name = "golint",
+    cmd = "//vendor/github.com/golang/lint/golint",
 )
 
 filegroup(
@@ -34,11 +33,11 @@ filegroup(
         ":package-srcs",
         "//autogo:all-srcs",
         "//boskos:all-srcs",
+        "//config:all-srcs",
         "//def:all-srcs",
         "//dind/cmd/cluster-up:all-srcs",
         "//dind/pkg/cluster-up/cluster:all-srcs",
         "//dind/pkg/cluster-up/options:all-srcs",
-        "//dind/pkg/util:all-srcs",
         "//experiment:all-srcs",
         "//gcsweb/cmd/gcsweb:all-srcs",
         "//gcsweb/pkg/version:all-srcs",
@@ -54,7 +53,6 @@ filegroup(
         "//label_sync:all-srcs",
         "//logexporter/cmd:all-srcs",
         "//maintenance/aws-janitor:all-srcs",
-        "//maintenance/fixconfig:all-srcs",
         "//maintenance/migratestatus:all-srcs",
         "//metrics:all-srcs",
         "//mungegithub:all-srcs",

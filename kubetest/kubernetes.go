@@ -79,13 +79,12 @@ func waitForReadyNodes(desiredCount int, timeout time.Duration, requiredConsecut
 					readyNodes,
 					consecutiveSuccesses)
 				return nil
-			} else {
-				log.Printf("%d ready nodes found, waiting for %d sequential successes (success count = %d)",
-					readyNodes,
-					requiredConsecutiveSuccesses,
-					consecutiveSuccesses)
-				time.Sleep(2 * time.Second)
 			}
+			log.Printf("%d ready nodes found, waiting for %d sequential successes (success count = %d)",
+				readyNodes,
+				requiredConsecutiveSuccesses,
+				consecutiveSuccesses)
+			time.Sleep(2 * time.Second)
 		} else {
 			consecutiveSuccesses = 0
 			log.Printf("%d (ready nodes) < %d (requested instances), sleeping", readyNodes, desiredCount)

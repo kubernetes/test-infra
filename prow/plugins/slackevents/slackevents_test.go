@@ -25,8 +25,16 @@ import (
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/slack"
-	"k8s.io/test-infra/prow/slack/fakeslack"
 )
+
+type FakeClient struct {
+	SentMessages map[string][]string
+}
+
+func (fk *FakeClient) WriteMessage(text string, channel string) error {
+	fk.SentMessages[channel] = append(fk.SentMessages[channel], text)
+	return nil
+}
 
 func TestPush(t *testing.T) {
 	var pushStr string = `{
@@ -141,7 +149,7 @@ func TestPush(t *testing.T) {
 
 	//repeat the tests with a fake slack client
 	for _, tc := range testcases {
-		slackClient := &fakeslack.FakeClient{
+		slackClient := &FakeClient{
 			SentMessages: make(map[string][]string),
 		}
 		pc.SlackClient = slackClient
@@ -235,7 +243,7 @@ func TestComment(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		fakeSlackClient := &fakeslack.FakeClient{
+		fakeSlackClient := &FakeClient{
 			SentMessages: make(map[string][]string),
 		}
 		client := client{

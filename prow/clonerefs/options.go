@@ -215,6 +215,7 @@ func (a *orgRepoFormat) Set(value string) error {
 	return nil
 }
 
+// OrgRepo hold both an org and repo name.
 type OrgRepo struct {
 	Org, Repo string
 }

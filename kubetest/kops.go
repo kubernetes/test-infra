@@ -339,13 +339,13 @@ func (k kops) Up() error {
 	// If we downloaded kubernetes, pass that version to kops
 	if k.kubeVersion == "" {
 		// TODO(justinsb): figure out a refactor that allows us to get this from acquireKubernetes cleanly
-		kubeReleaseUrl := os.Getenv("KUBERNETES_RELEASE_URL")
+		kubeReleaseURL := os.Getenv("KUBERNETES_RELEASE_URL")
 		kubeRelease := os.Getenv("KUBERNETES_RELEASE")
-		if kubeReleaseUrl != "" && kubeRelease != "" {
-			if !strings.HasSuffix(kubeReleaseUrl, "/") {
-				kubeReleaseUrl += "/"
+		if kubeReleaseURL != "" && kubeRelease != "" {
+			if !strings.HasSuffix(kubeReleaseURL, "/") {
+				kubeReleaseURL += "/"
 			}
-			k.kubeVersion = kubeReleaseUrl + kubeRelease
+			k.kubeVersion = kubeReleaseURL + kubeRelease
 		}
 	}
 
@@ -590,7 +590,7 @@ type kopsDump struct {
 
 // String implements fmt.Stringer
 func (o *kopsDump) String() string {
-	return util.JsonForDebug(o)
+	return util.JSONForDebug(o)
 }
 
 // kopsDumpInstance is the format of an instance (machine) in a kops dump
@@ -601,7 +601,7 @@ type kopsDumpInstance struct {
 
 // String implements fmt.Stringer
 func (o *kopsDumpInstance) String() string {
-	return util.JsonForDebug(o)
+	return util.JSONForDebug(o)
 }
 
 // runKopsDump runs a kops toolbox dump to dump the status of the cluster
@@ -637,7 +637,7 @@ func (k kops) Publish() error {
 		return errors.New("kops-version not set; cannot publish")
 	}
 
-	return control.XmlWrap(&suite, "Publish kops version", func() error {
+	return control.XMLWrap(&suite, "Publish kops version", func() error {
 		log.Printf("Set %s version to %s", k.kopsPublish, k.kopsVersion)
 		return gcsWrite(k.kopsPublish, []byte(k.kopsVersion))
 	})

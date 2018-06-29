@@ -97,8 +97,8 @@ function redrawQueries() {
         var innerLi = document.createElement("li");
         ul.appendChild(innerLi);
         li.appendChild(ul);
-        // add the list of repos
-        var repos = tideQuery["repos"];
+        // add the list of repos, defaulting to an empty array if no repos have been provided.
+        var repos = tideQuery["repos"] || [];
         for (var j = 0; j < repos.length; j++) {
             innerLi.appendChild(createLink("https://github.com/" + repos[j], repos[j]));
             if (j+1 < repos.length) {

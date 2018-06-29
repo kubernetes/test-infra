@@ -20,6 +20,9 @@ import (
 	"encoding/xml"
 )
 
+// TestCase holds the result of a test/step/command.
+//
+// This will become a row in testgrid.
 type TestCase struct {
 	XMLName   xml.Name `xml:"testcase"`
 	ClassName string   `xml:"classname,attr"`
@@ -29,6 +32,9 @@ type TestCase struct {
 	Skipped   string   `xml:"skipped,omitempty"`
 }
 
+// TestSuite holds a slice of TestCase and other summary metadata.
+//
+// A build (column in testgrid) is composed of one or more TestSuites.
 type TestSuite struct {
 	XMLName  xml.Name `xml:"testsuite"`
 	Failures int      `xml:"failures,attr"`

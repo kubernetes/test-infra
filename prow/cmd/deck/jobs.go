@@ -37,6 +37,7 @@ const (
 	period = 30 * time.Second
 )
 
+// Job holds information about a job prow is running/has run.
 // TODO(#5216): Remove this, and all associated machinery.
 type Job struct {
 	Type        string            `json:"type"`
@@ -78,6 +79,7 @@ type configAgent interface {
 	Config() *config.Config
 }
 
+// JobAgent creates lists of jobs, updates their status and returns their run logs.
 type JobAgent struct {
 	kc        serviceClusterClient
 	pkcs      map[string]podLogClient
@@ -89,6 +91,7 @@ type JobAgent struct {
 	mut       sync.Mutex
 }
 
+// Start will start the job and periodically update it.
 func (ja *JobAgent) Start() {
 	ja.tryUpdate()
 	go func() {
@@ -99,6 +102,7 @@ func (ja *JobAgent) Start() {
 	}()
 }
 
+// Jobs returns a thread-safe snapshot of the current job state.
 func (ja *JobAgent) Jobs() []Job {
 	ja.mut.Lock()
 	defer ja.mut.Unlock()
@@ -107,6 +111,7 @@ func (ja *JobAgent) Jobs() []Job {
 	return res
 }
 
+// ProwJobs returns a thread-safe snapshot of the current prow jobs.
 func (ja *JobAgent) ProwJobs() []kube.ProwJob {
 	ja.mut.Lock()
 	defer ja.mut.Unlock()
@@ -117,6 +122,7 @@ func (ja *JobAgent) ProwJobs() []kube.ProwJob {
 
 var jobNameRE = regexp.MustCompile(`^([\w-]+)-(\d+)$`)
 
+// GetJobLog returns the job logs, works for both kubernetes and jenkins agent types.
 func (ja *JobAgent) GetJobLog(job, id string) ([]byte, error) {
 	var j kube.ProwJob
 	ja.mut.Lock()

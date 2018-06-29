@@ -126,7 +126,7 @@ func TestReloadingOwnerList(t *testing.T) {
 			sig:    "Scheduling",
 		},
 		{
-			name:   "missing sig returns BadCsv",
+			name:   "missing sig returns badCsv",
 			csv:    "owner,name,sig\nfoo,flake\n",
 			lookup: "flake",
 			err:    true,
@@ -164,12 +164,12 @@ func TestReloadingOwnerList(t *testing.T) {
 			if err == nil {
 				t.Errorf("%s: expected an error", tc.name)
 			}
-			_, ok := err.(BadCsv)
+			_, ok := err.(badCsv)
 			if !ok {
-				t.Errorf("%s: error type is not BadCsv: %v", tc.name, err)
+				t.Errorf("%s: error type is not badCsv: %v", tc.name, err)
 			}
 			if list == nil {
-				t.Errorf("%s: did not return a list during BadCsv", tc.name)
+				t.Errorf("%s: did not return a list during badCsv", tc.name)
 			}
 		}
 		if owner := list.TestOwner(tc.lookup); owner != tc.owner {

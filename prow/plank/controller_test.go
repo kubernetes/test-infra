@@ -69,7 +69,7 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
 			Name: "test-bazel-test",
 		},
 	}
-	if err := config.SetRegexes(presubmits); err != nil {
+	if err := config.SetPresubmitRegexes(presubmits); err != nil {
 		t.Fatal(err)
 	}
 	presubmitMap := map[string][]config.Presubmit{

@@ -17,6 +17,8 @@ limitations under the License.
 package common
 
 import (
+	"bytes"
+	"encoding/json"
 	"reflect"
 	"testing"
 )
@@ -28,7 +30,9 @@ type fakeStruct struct {
 func TestUserData_Extract(t *testing.T) {
 	ud := UserData{}
 	fs := fakeStruct{"value"}
-	ud.Set("test", &fs)
+	if err := ud.Set("test", &fs); err != nil {
+		t.Errorf("unable to set data")
+	}
 	var rfs fakeStruct
 	if err := ud.Extract("test", &rfs); err != nil {
 		t.Error("unable to extract struct")
@@ -39,16 +43,48 @@ func TestUserData_Extract(t *testing.T) {
 }
 
 func TestUserData_Update(t *testing.T) {
-	ud1 := UserData{"0": "0"}
-	ud2 := UserData{"1": "1", "2": "2"}
-	ud3 := UserData{"0": "0", "1": "1", "2": "2"}
+	ud1 := UserDataFromMap(UserDataMap{"0": "0"})
+	ud2 := UserDataFromMap(UserDataMap{"1": "1", "2": "2"})
+	ud3 := UserDataFromMap(UserDataMap{"0": "0", "1": "1", "2": "2"})
 	ud1.Update(ud2)
-	if !reflect.DeepEqual(ud1, ud3) {
+	if !reflect.DeepEqual(ud1.ToMap(), ud3.ToMap()) {
 		t.Errorf("%v does not match expected %v", ud1, ud3)
 	}
 	// Testing delete
-	ud3.Update(UserData{"0": ""})
-	if !reflect.DeepEqual(ud3, ud2) {
+	ud3.Update(UserDataFromMap(UserDataMap{"0": ""}))
+	if !reflect.DeepEqual(ud3.ToMap(), ud2.ToMap()) {
 		t.Errorf("%v does not match expected %v", ud3, ud2)
 	}
+}
+
+func TestUserData_Marshall(t *testing.T) {
+	ud := UserDataFromMap(UserDataMap{"0": "0", "1": "1", "2": "2"})
+	b, err := ud.MarshalJSON()
+	if err != nil {
+		t.Errorf("unable to marshall %v", ud.ToMap())
+	}
+	var udFromJSON UserData
+	if err := udFromJSON.UnmarshalJSON(b); err != nil {
+		t.Errorf("unable to unmarshall %v", string(b))
+	}
+	if !reflect.DeepEqual(ud.ToMap(), udFromJSON.ToMap()) {
+		t.Errorf("src %v does not match %v", ud.ToMap(), udFromJSON.ToMap())
+	}
+}
+
+func TestUserData_JSON(t *testing.T) {
+	ud := UserDataFromMap(UserDataMap{"0": "0", "1": "1", "2": "2"})
+	b := new(bytes.Buffer)
+	if err := json.NewEncoder(b).Encode(ud); err != nil {
+		t.Errorf("unable to marshall %v", ud.ToMap())
+	}
+	var decodedUD UserData
+	if err := json.NewDecoder(b).Decode(&decodedUD); err != nil {
+		t.Errorf("unable to unmarshall %v", b.String())
+	}
+
+	if !reflect.DeepEqual(ud.ToMap(), decodedUD.ToMap()) {
+		t.Errorf("src %v does not match %v", ud.ToMap(), decodedUD.ToMap())
+	}
+
 }

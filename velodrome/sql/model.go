@@ -59,7 +59,7 @@ type IssueEvent struct {
 	Label          *string
 	Event          string
 	EventCreatedAt time.Time `gorm:"index:repo_created"`
-	IssueId        string
+	IssueID        string
 	Assignee       *string
 	Actor          *string
 }

@@ -48,7 +48,6 @@ type Config struct {
 //
 // See https://developer.github.com/v3/teams/#edit-team
 type TeamMetadata struct {
-	Name        string   `json:"name,omitempty"`
 	Description *string  `json:"description,omitempty"`
 	Privacy     *Privacy `json:"privacy,omitempty"`
 }
@@ -68,10 +67,14 @@ type Team struct {
 type RepoPermissionLevel string
 
 const (
-	Read  RepoPermissionLevel = "read"
+	// Read allows pull but not push
+	Read RepoPermissionLevel = "read"
+	// Write allows Read plus push
 	Write RepoPermissionLevel = "write"
+	// Admin allows Write plus change others' rights.
 	Admin RepoPermissionLevel = "admin"
-	None  RepoPermissionLevel = "none"
+	// None disallows everything
+	None RepoPermissionLevel = "none"
 )
 
 var repoPermissionLevels = map[RepoPermissionLevel]bool{
@@ -81,7 +84,7 @@ var repoPermissionLevels = map[RepoPermissionLevel]bool{
 	None:  true,
 }
 
-// MashalText returns the byte representation of the permission
+// MarshalText returns the byte representation of the permission
 func (l RepoPermissionLevel) MarshalText() ([]byte, error) {
 	return []byte(l), nil
 }
@@ -102,7 +105,9 @@ func (l *RepoPermissionLevel) UnmarshalText(text []byte) error {
 type Privacy string
 
 const (
+	// Closed means it is only visible to org members
 	Closed Privacy = "closed"
+	// Secret means it is only visible to team members.
 	Secret Privacy = "secret"
 )
 

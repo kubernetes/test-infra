@@ -38,7 +38,7 @@ import (
 )
 
 var (
-	configPath        = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
+	configPath        = flag.String("config-path", "/etc/config/config.yaml", "Path to config.yaml.")
 	port              = flag.Int("port", 8888, "Port to listen on.")
 	dryRun            = flag.Bool("dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	webhookSecretFile = flag.String("hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
@@ -56,9 +56,8 @@ func validateFlags() error {
 		return errors.New("--prow-url needs to be specified")
 	}
 	for _, ep := range githubEndpoint.Strings() {
-		_, err := url.Parse(ep)
-		if err != nil {
-			return fmt.Errorf("Invalid --endpoint URL %q: %v.", ep, err)
+		if _, err := url.Parse(ep); err != nil {
+			return fmt.Errorf("invalid --endpoint URL %q: %v", ep, err)
 		}
 	}
 	return nil
@@ -102,7 +101,7 @@ func main() {
 		ghc = github.NewDryRunClient(oauthSecret, githubEndpoint.Strings()...)
 	}
 
-	server := &Server{
+	serv := &server{
 		hmacSecret:  webhookSecret,
 		credentials: oauthSecret,
 		prowURL:     *prowURL,
@@ -111,7 +110,7 @@ func main() {
 		log:         log,
 	}
 
-	http.Handle("/", server)
-	externalplugins.ServeExternalPluginHelp(http.DefaultServeMux, log, HelpProvider)
+	http.Handle("/", serv)
+	externalplugins.ServeExternalPluginHelp(http.DefaultServeMux, log, helpProvider)
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
 }

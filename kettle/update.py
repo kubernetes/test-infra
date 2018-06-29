@@ -26,7 +26,7 @@ def call(cmd):
 
 
 def main():
-    call('time python make_db.py --buckets ../buckets.yaml --junit --threads 32')
+    call('time python make_db.py --buckets buckets.yaml --junit --threads 32')
 
     bq_cmd = 'bq load --source_format=NEWLINE_DELIMITED_JSON --max_bad_records=1000'
     mj_cmd = 'pypy make_json.py'

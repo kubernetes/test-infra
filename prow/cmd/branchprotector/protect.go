@@ -34,10 +34,11 @@ import (
 )
 
 type options struct {
-	config   string
-	token    string
-	confirm  bool
-	endpoint flagutil.Strings
+	config    string
+	jobConfig string
+	token     string
+	confirm   bool
+	endpoint  flagutil.Strings
 }
 
 func (o *options) Validate() error {
@@ -52,7 +53,7 @@ func (o *options) Validate() error {
 	for _, ep := range o.endpoint.Strings() {
 		_, err := url.Parse(ep)
 		if err != nil {
-			return fmt.Errorf("Invalid --endpoint URL %q: %v.", ep, err)
+			return fmt.Errorf("invalid --endpoint URL %q: %v", ep, err)
 		}
 	}
 
@@ -64,6 +65,7 @@ func gatherOptions() options {
 		endpoint: flagutil.NewStrings("https://api.github.com"),
 	}
 	flag.StringVar(&o.config, "config-path", "", "Path to prow config.yaml")
+	flag.StringVar(&o.jobConfig, "job-config-path", "", "Path to prow job configs.")
 	flag.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
 	flag.Var(&o.endpoint, "github-endpoint", "Github api endpoint, may differ for enterprise")
 	flag.StringVar(&o.token, "github-token-path", "", "Path to github token")
@@ -71,13 +73,14 @@ func gatherOptions() options {
 	return o
 }
 
-type Requirements struct {
+type requirements struct {
 	Org     string
 	Repo    string
 	Branch  string
 	Request *github.BranchProtectionRequest
 }
 
+// Errors holds a list of errors, including a method to concurrently append.
 type Errors struct {
 	lock sync.Mutex
 	errs []error
@@ -100,7 +103,7 @@ func main() {
 		logrus.Fatal(err)
 	}
 
-	cfg, err := config.Load(o.config, "")
+	cfg, err := config.Load(o.config, o.jobConfig)
 	if err != nil {
 		logrus.WithError(err).Fatalf("Failed to load --config=%s", o.config)
 	}
@@ -119,17 +122,17 @@ func main() {
 	}
 	c.Throttle(300, 100) // 300 hourly tokens, bursts of 100
 
-	p := Protector{
+	p := protector{
 		client:         c,
 		cfg:            cfg,
-		updates:        make(chan Requirements),
+		updates:        make(chan requirements),
 		errors:         Errors{},
 		completedRepos: make(map[string]bool),
 		done:           make(chan []error),
 	}
 
-	go p.ConfigureBranches()
-	p.Protect()
+	go p.configureBranches()
+	p.protect()
 	close(p.updates)
 	errors := <-p.done
 	if n := len(errors); n > 0 {
@@ -147,16 +150,16 @@ type client interface {
 	GetRepos(org string, user bool) ([]github.Repo, error)
 }
 
-type Protector struct {
+type protector struct {
 	client         client
 	cfg            *config.Config
-	updates        chan Requirements
+	updates        chan requirements
 	errors         Errors
 	completedRepos map[string]bool
 	done           chan []error
 }
 
-func (p *Protector) ConfigureBranches() {
+func (p *protector) configureBranches() {
 	for u := range p.updates {
 		if u.Request == nil {
 			if err := p.client.RemoveBranchProtection(u.Org, u.Repo, u.Branch); err != nil {
@@ -172,8 +175,8 @@ func (p *Protector) ConfigureBranches() {
 	p.done <- p.errors.errs
 }
 
-// Protect branches specified in the presubmit and branch-protection config sections.
-func (p *Protector) Protect() {
+// protect protects branches specified in the presubmit and branch-protection config sections.
+func (p *protector) protect() {
 	bp := p.cfg.BranchProtection
 
 	// Scan the branch-protection configuration
@@ -205,8 +208,8 @@ func (p *Protector) Protect() {
 	}
 }
 
-// Update all repos in the org with the specified defaults
-func (p *Protector) UpdateOrg(orgName string, org config.Org, allRepos bool) error {
+// UpdateOrg updates all repos in the org with the specified defaults
+func (p *protector) UpdateOrg(orgName string, org config.Org, allRepos bool) error {
 	var repos []string
 	allRepos = allRepos || org.HasProtect()
 	if allRepos {
@@ -234,18 +237,18 @@ func (p *Protector) UpdateOrg(orgName string, org config.Org, allRepos bool) err
 	return nil
 }
 
-// Update all branches in the repo with the specified defaults
-func (p *Protector) UpdateRepo(orgName string, repo string, repoDefaults config.Repo) error {
+// UpdateRepo updates all branches in the repo with the specified defaults
+func (p *protector) UpdateRepo(orgName string, repo string, repoDefaults config.Repo) error {
 	p.completedRepos[orgName+"/"+repo] = true
 
 	branches := map[string]github.Branch{}
 	for _, onlyProtected := range []bool{false, true} { // put true second so it becomes the value
-		if bs, err := p.client.GetBranches(orgName, repo, onlyProtected); err != nil {
+		bs, err := p.client.GetBranches(orgName, repo, onlyProtected)
+		if err != nil {
 			return fmt.Errorf("GetBranches(%s, %s, %t) failed: %v", orgName, repo, onlyProtected, err)
-		} else {
-			for _, b := range bs {
-				branches[b.Name] = b
-			}
+		}
+		for _, b := range bs {
+			branches[b.Name] = b
 		}
 	}
 
@@ -257,8 +260,8 @@ func (p *Protector) UpdateRepo(orgName string, repo string, repoDefaults config.
 	return nil
 }
 
-// Update the branch with the specified configuration
-func (p *Protector) UpdateBranch(orgName, repo string, branchName string, protected bool) error {
+// UpdateBranch updates the branch with the specified configuration
+func (p *protector) UpdateBranch(orgName, repo string, branchName string, protected bool) error {
 	bp, err := p.cfg.GetBranchProtection(orgName, repo, branchName)
 	if err != nil {
 		return err
@@ -275,7 +278,7 @@ func (p *Protector) UpdateBranch(orgName, repo string, branchName string, protec
 		r := makeRequest(*bp)
 		req = &r
 	}
-	p.updates <- Requirements{
+	p.updates <- requirements{
 		Org:     orgName,
 		Repo:    repo,
 		Branch:  branchName,

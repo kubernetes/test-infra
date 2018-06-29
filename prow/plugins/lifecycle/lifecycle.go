@@ -17,9 +17,7 @@ limitations under the License.
 package lifecycle
 
 import (
-	"fmt"
 	"regexp"
-	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -28,11 +26,12 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-const deprecatedWarn = true
-
 var (
-	deprecatedTick = time.Tick(time.Hour) // Warn once per hour
-	lifecycleRe    = regexp.MustCompile(`(?mi)^/(remove-)?lifecycle (frozen|stale|putrid|rotten)\s*$`)
+	lifecycleFrozenLabel = "lifecycle/frozen"
+	lifecycleStaleLabel  = "lifecycle/stale"
+	lifecycleRottenLabel = "lifecycle/rotten"
+	lifecycleLabels      = []string{lifecycleFrozenLabel, lifecycleStaleLabel, lifecycleRottenLabel}
+	lifecycleRe          = regexp.MustCompile(`(?mi)^/(remove-)?lifecycle (frozen|stale|rotten)\s*$`)
 )
 
 func init() {
@@ -41,7 +40,7 @@ func init() {
 
 func help(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: "Close, reopen, flag and/or unflag an issue or PR as stale/putrid/rotten/frozen",
+		Description: "Close, reopen, flag and/or unflag an issue or PR as frozen/stale/rotten",
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/close",
@@ -58,8 +57,8 @@ func help(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.Plu
 		Examples:    []string{"/reopen"},
 	})
 	pluginHelp.AddCommand(pluginhelp.Command{
-		Usage:       "/[remove-]lifecycle <frozen|stale|putrid|rotten>",
-		Description: "Flags an issue or PR as frozen/stale/putrid/rotten",
+		Usage:       "/[remove-]lifecycle <frozen|stale|rotten>",
+		Description: "Flags an issue or PR as frozen/stale/rotten",
 		Featured:    false,
 		WhoCanUse:   "Anyone can trigger this command.",
 		Examples:    []string{"/lifecycle frozen", "/remove-lifecycle stale"},
@@ -67,33 +66,19 @@ func help(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.Plu
 	return pluginHelp, nil
 }
 
-type commentClient interface {
-	CreateComment(owner, repo string, number int, comment string) error
-}
-
 type lifecycleClient interface {
-	CreateComment(owner, repo string, number int, comment string) error
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
-}
-
-func deprecate(gc commentClient, plugin, org, repo string, number int, e *github.GenericCommentEvent) error {
-	select {
-	case <-deprecatedTick:
-		// Only warn once per tick
-		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, fmt.Sprintf("The %s prow plugin is deprecated, please migrate to the lifecycle plugin before April 2018", plugin)))
-	default:
-		return nil
-	}
+	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 }
 
 func lifecycleHandleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
 	gc := pc.GitHubClient
 	log := pc.Logger
-	if err := handleReopen(gc, log, &e, !deprecatedWarn); err != nil {
+	if err := handleReopen(gc, log, &e); err != nil {
 		return err
 	}
-	if err := handleClose(gc, log, &e, !deprecatedWarn); err != nil {
+	if err := handleClose(gc, log, &e); err != nil {
 		return err
 	}
 	return handle(gc, log, &e)
@@ -121,10 +106,34 @@ func handleOne(gc lifecycleClient, log *logrus.Entry, e *github.GenericCommentEv
 	remove := mat[1] != ""
 	cmd := mat[2]
 	lbl := "lifecycle/" + cmd
-	// Let's start simple and allow anyone to add/remove frozen, stale, putrid, rotten labels.
+
+	// Let's start simple and allow anyone to add/remove frozen, stale, rotten labels.
 	// Adjust if we find evidence of the community abusing these labels.
-	if remove {
+	labels, err := gc.GetIssueLabels(org, repo, number)
+	if err != nil {
+		log.WithError(err).Errorf("Failed to get labels.")
+	}
+
+	// If the label exists and we asked for it to be removed, remove it.
+	if github.HasLabel(lbl, labels) && remove {
 		return gc.RemoveLabel(org, repo, number, lbl)
 	}
-	return gc.AddLabel(org, repo, number, lbl)
+
+	// If the label does not exist and we asked for it to be added,
+	// remove other existing lifecycle labels and add it.
+	if !github.HasLabel(lbl, labels) && !remove {
+		for _, label := range lifecycleLabels {
+			if label != lbl && github.HasLabel(label, labels) {
+				if err := gc.RemoveLabel(org, repo, number, label); err != nil {
+					log.WithError(err).Errorf("Github failed to remove the following label: %s", label)
+				}
+			}
+		}
+
+		if err := gc.AddLabel(org, repo, number, lbl); err != nil {
+			log.WithError(err).Errorf("Github failed to add the following label: %s", lbl)
+		}
+	}
+
+	return nil
 }

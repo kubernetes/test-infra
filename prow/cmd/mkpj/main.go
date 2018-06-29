@@ -32,8 +32,9 @@ import (
 )
 
 type options struct {
-	jobName    string
-	configPath string
+	jobName       string
+	configPath    string
+	jobConfigPath string
 
 	baseRef    string
 	baseSha    string
@@ -58,6 +59,7 @@ func gatherOptions() options {
 	o := options{}
 	flag.StringVar(&o.jobName, "job", "", "Job to run.")
 	flag.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
+	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	flag.StringVar(&o.baseRef, "base-ref", "", "Git base ref under test")
 	flag.StringVar(&o.baseSha, "base-sha", "", "Git base SHA under test")
 	flag.IntVar(&o.pullNumber, "pull-number", 0, "Git pull number under test")
@@ -73,7 +75,7 @@ func main() {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
 
-	conf, err := config.Load(o.configPath, "")
+	conf, err := config.Load(o.configPath, o.jobConfigPath)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error loading config.")
 	}

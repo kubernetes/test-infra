@@ -11,17 +11,22 @@ spec:
       labels:
         app: sinker
     spec:
+      # serviceAccountName: "sinker" # Uncomment for use with RBAC
       containers:
       - name: sinker
         args:
         - --build-cluster=/etc/cluster/cluster
-        image: gcr.io/k8s-prow/sinker:v20180529-e9431eaa3
+        - --job-config-path=/etc/job-config
+        image: gcr.io/k8s-prow/sinker:v20180627-ea5075d37
         volumeMounts:
         - mountPath: /etc/cluster
           name: cluster
           readOnly: true
         - name: config
           mountPath: /etc/config
+          readOnly: true
+        - name: job-config
+          mountPath: /etc/job-config
           readOnly: true
       volumes:
       - name: cluster
@@ -31,3 +36,6 @@ spec:
       - name: config
         configMap:
           name: config
+      - name: job-config
+        configMap:
+          name: job-config

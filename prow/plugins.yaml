@@ -26,6 +26,10 @@ triggers:
   - tensorflow/minigo
   trusted_org: tensorflow
   join_org_url: https://github.com/tensorflow/minigo/blob/master/CONTRIBUTING.md
+- repos:
+  - bazelbuild
+  trusted_org: bazelbuild
+  # TODO(fejta): determine instructions for join_org_url
 owners:
   mdyamlrepos:
   - kubernetes/website
@@ -60,6 +64,7 @@ approve:
   lgtm_acts_as_approve: true
 - repos:
   - kubernetes-sigs
+  - client-go/unofficial-docs
   implicit_self_approve: true
 
 blockades:
@@ -109,6 +114,7 @@ slack:
   mergewarnings:
   - repos:
     - kubernetes/community
+    - kubernetes/org
     channels:
     - sig-contribex
     whitelist:
@@ -156,8 +162,25 @@ config_updater:
       name: config
     prow/plugins.yaml:
       name: plugins
+    config/jobs/**/*.yaml:
+      name: job-config
 
 plugins:
+  bazelbuild/rules_k8s:
+  - approve  # Allow OWNERS to /approve
+  - assign  # Allow /assign and /cc
+  - blunderbuss  # Auto-assign people
+  - cat # /meow replies with cat pictures
+  - dog # /bark replies with dog pictures
+  - help  # Support /help and /good-first-issue
+  - hold  # Support /hold to delay merge
+  - lgtm  # Allow /lgtm
+  - lifecycle  # Allow /lifecycle stale
+  - size  # Auto-label size of PR
+  - trigger  # Allow people to configure CI jobs to /test
+  - wip  # Auto-hold PRs with WIP in title
+  - yuks # Let prow tell a /joke
+
   google/cadvisor:
   - trigger
 
@@ -240,6 +263,7 @@ plugins:
 
   kubernetes/features:
   - approve
+  - stage
 
   kubernetes/ingress-gce:
   - trigger
@@ -304,6 +328,12 @@ plugins:
   - approve
   - blunderbuss
 
+  kubernetes/org:
+  - approve
+  - blunderbuss
+  - owners-label
+  - require-sig
+
   kubernetes/perf-tests:
   - approve
   - blunderbuss
@@ -316,14 +346,16 @@ plugins:
 
   kubernetes/sig-release:
   - approve
+  - stage
 
   kubernetes/steering:
   - approve
 
   kubernetes/test-infra:
-  - trigger
-  - config-updater
   - approve
+  - config-updater
+  - trigger
+  - verify-owners
 
   kubernetes/website:
   - approve
@@ -357,9 +389,27 @@ plugins:
   - lifecycle
   - size
 
+  kubernetes-client:
+  - assign
+  - cla
+  - label
+  - lgtm
+  - lifecycle
+  - size
+  - wip
+  - hold
+  - help
+  - cat
+  - dog
+
   kubernetes-incubator/service-catalog:
   - cat
   - dog
+  - help
+  - blunderbuss
+  - wip
+  - hold
+  - approve
 
   kubernetes-sigs:
   - assign
@@ -392,6 +442,10 @@ plugins:
   - trigger
 
   kubernetes-sigs/cluster-api:
+  - approve
+  - trigger
+
+  kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
   - approve
   - trigger
 
@@ -430,6 +484,20 @@ plugins:
   GoogleCloudPlatform/k8s-multicluster-ingress:
   - trigger
 
+  client-go/unofficial-docs:
+  - assign
+  - approve
+  - lgtm
+  - approve
+  - label
+  - cla
+  - cat
+  - dog
+  - help
+  - blunderbuss
+  - wip
+  - hold
+
 external_plugins:
   kubernetes/community:
   - name: needs-rebase
@@ -447,7 +515,15 @@ external_plugins:
   - name: needs-rebase
     events:
       - pull_request
+  kubernetes/org:
+  - name: needs-rebase
+    events:
+      - pull_request
   kubernetes/test-infra:
+  - name: needs-rebase
+    events:
+      - pull_request
+  client-go/unofficial-docs:
   - name: needs-rebase
     events:
       - pull_request

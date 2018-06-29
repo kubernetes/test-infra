@@ -28,7 +28,7 @@ import (
 	"strings"
 )
 
-// Returns $GOPATH/src/k8s.io/...
+// K8s returns $GOPATH/src/k8s.io/...
 func K8s(topdir string, parts ...string) string {
 	gopathList := filepath.SplitList(build.Default.GOPATH)
 	found := false
@@ -52,7 +52,7 @@ func K8s(topdir string, parts ...string) string {
 	return filepath.Join(p...)
 }
 
-// append(errs, err) if err != nil
+// AppendError does append(errs, err) if err != nil
 func AppendError(errs []error, err error) []error {
 	if err != nil {
 		return append(errs, err)
@@ -60,7 +60,7 @@ func AppendError(errs []error, err error) []error {
 	return errs
 }
 
-// Returns $HOME/part/part/part
+// Home returns Returns $HOME/part/part/part
 func Home(parts ...string) string {
 	p := []string{os.Getenv("HOME")}
 	for _, a := range parts {
@@ -69,12 +69,12 @@ func Home(parts ...string) string {
 	return filepath.Join(p...)
 }
 
-// export PATH=path:$PATH
+// InsertPath does export PATH=path:$PATH
 func InsertPath(path string) error {
 	return os.Setenv("PATH", fmt.Sprintf("%v:%v", path, os.Getenv("PATH")))
 }
 
-// gs://foo and bar becomes gs://foo/bar
+// JoinURL converts input (gs://foo, "bar") to gs://foo/bar
 func JoinURL(urlPath, path string) (string, error) {
 	u, err := url.Parse(urlPath)
 	if err != nil {
@@ -84,7 +84,7 @@ func JoinURL(urlPath, path string) (string, error) {
 	return u.String(), nil
 }
 
-// Chdir() to dir and return a function to cd back to Getwd()
+// Pushd will Chdir() to dir and return a function to cd back to Getwd()
 func Pushd(dir string) (func() error, error) {
 	old, err := os.Getwd()
 	if err != nil {
@@ -98,7 +98,7 @@ func Pushd(dir string) (func() error, error) {
 	}, nil
 }
 
-// Push env=value and return a function that resets env
+// PushEnv pushes env=value and return a function that resets env
 func PushEnv(env, value string) (func() error, error) {
 	prev, present := os.LookupEnv(env)
 	if err := os.Setenv(env, value); err != nil {
@@ -112,7 +112,7 @@ func PushEnv(env, value string) (func() error, error) {
 	}, nil
 }
 
-// Option that was an ENV that is now a --flag
+// MigratedOption is an option that was an ENV that is now a --flag
 type MigratedOption struct {
 	Env      string  // env associated with --flag
 	Option   *string // Value of --flag
@@ -120,7 +120,7 @@ type MigratedOption struct {
 	SkipPush bool    // Push option to env if false
 }
 
-// Read value from ENV if --flag unset, optionally pushing to ENV
+// MigrateOptions reads value from ENV if --flag unset, optionally pushing to ENV
 func MigrateOptions(m []MigratedOption) error {
 	for _, s := range m {
 		if *s.Option == "" {
@@ -148,16 +148,27 @@ func MigrateOptions(m []MigratedOption) error {
 	return nil
 }
 
+// AppendField will append prefix to the flag value.
+//
+// For example, AppendField(fields, "--foo", "bar") if fields is empty or does
+// not contain a "--foo" it will simply append a "--foo=bar" value.
+// Otherwise if fields contains "--foo=current" it will replace this value with
+// "--foo=current-bar
 func AppendField(fields []string, flag, prefix string) []string {
 	fields, cur, _ := ExtractField(fields, flag)
 	if len(cur) == 0 {
 		cur = prefix
 	} else {
-		cur = cur + "-" + prefix
+		cur += "-" + prefix
 	}
 	return append(fields, flag+"="+cur)
 }
 
+// SetFieldDefault sets the value of flag to val if flag is not present in fields.
+//
+// For example, SetFieldDefault(fields, "--foo", "bar") will append "--foo=bar" if
+// fields is empty or does not include a "--foo" flag.
+// It returns fields unchanged if "--foo" is present.
 func SetFieldDefault(fields []string, flag, val string) []string {
 	fields, cur, present := ExtractField(fields, flag)
 	if !present {
@@ -166,7 +177,9 @@ func SetFieldDefault(fields []string, flag, val string) []string {
 	return append(fields, flag+"="+cur)
 }
 
-// ExtractField("--a=this --b=that --c=other", "--b") returns [--a=this, --c=other"], "that"
+// ExtractField input ("--a=this --b=that --c=other", "--b") returns [--a=this, --c=other"], "that", true
+//
+// In other words, it will remove "--b" from fields and return the previous value of "--b" if it was set.
 func ExtractField(fields []string, target string) ([]string, string, bool) {
 	f := []string{}
 	prefix := target + "="
@@ -213,9 +226,9 @@ func EnsureExecutable(p string) error {
 	return nil
 }
 
-// JsonForDebug returns a json representation of the value, or a string representation of an error
+// JSONForDebug returns a json representation of the value, or a string representation of an error
 // It is useful for an easy implementation of fmt.Stringer
-func JsonForDebug(o interface{}) string {
+func JSONForDebug(o interface{}) string {
 	if o == nil {
 		return "nil"
 	}

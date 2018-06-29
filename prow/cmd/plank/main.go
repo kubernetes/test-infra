@@ -44,10 +44,11 @@ import (
 var (
 	totURL = flag.String("tot-url", "", "Tot URL")
 
-	configPath   = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
-	cluster      = flag.String("cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
-	buildCluster = flag.String("build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
-	selector     = flag.String("label-selector", kube.EmptySelector, "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
+	configPath    = flag.String("config-path", "/etc/config/config.yaml", "Path to config.yaml.")
+	jobConfigPath = flag.String("job-config-path", "", "Path to prow job configs.")
+	cluster       = flag.String("cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
+	buildCluster  = flag.String("build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
+	selector      = flag.String("label-selector", kube.EmptySelector, "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
 
 	githubEndpoint  = flagutil.NewStrings("https://api.github.com")
 	githubTokenFile = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
@@ -70,7 +71,7 @@ func main() {
 	}
 
 	configAgent := &config.Agent{}
-	if err := configAgent.Start(*configPath, ""); err != nil {
+	if err := configAgent.Start(*configPath, *jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 

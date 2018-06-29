@@ -7,14 +7,14 @@ kind: ConfigMap
 metadata:
   name: plugins
 data:
-  plugins: ""
+  plugins.yaml: ""
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: config
 data:
-  config: |
+  config.yaml: |
     periodics:
     - interval: 10m
       agent: kubernetes
@@ -94,9 +94,10 @@ spec:
         app: hook
     spec:
       terminationGracePeriodSeconds: 180
+      serviceAccountName: "hook"
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:v20180529-e9431eaa3
+        image: gcr.io/k8s-prow/hook:v20180627-ea5075d37
         imagePullPolicy: Always
         args:
         - --dry-run=false
@@ -154,9 +155,10 @@ spec:
       labels:
         app: plank
     spec:
+      serviceAccountName: "plank"
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:v20180529-e9431eaa3
+        image: gcr.io/k8s-prow/plank:v20180627-ea5075d37
         args:
         - --dry-run=false
         volumeMounts:
@@ -187,9 +189,10 @@ spec:
       labels:
         app: sinker
     spec:
+      serviceAccountName: "sinker"
       containers:
       - name: sinker
-        image: gcr.io/k8s-prow/sinker:v20180529-e9431eaa3
+        image: gcr.io/k8s-prow/sinker:v20180627-ea5075d37
         volumeMounts:
         - name: config
           mountPath: /etc/config
@@ -217,10 +220,11 @@ spec:
       labels:
         app: deck
     spec:
+      serviceAccountName: "deck"
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:v20180529-e9431eaa3
+        image: gcr.io/k8s-prow/deck:v20180627-ea5075d37
         args:
         - --hook-url=http://hook:8888/plugin-help
         ports:
@@ -260,10 +264,11 @@ spec:
       labels:
         app: horologium
     spec:
+      serviceAccountName: "horologium"
       terminationGracePeriodSeconds: 30
       containers:
       - name: horologium
-        image: gcr.io/k8s-prow/horologium:v20180529-e9431eaa3
+        image: gcr.io/k8s-prow/horologium:v20180627-ea5075d37
         volumeMounts:
         - name: config
           mountPath: /etc/config
@@ -289,3 +294,142 @@ spec:
         backend:
           serviceName: hook
           servicePort: 8888
+---
+
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: "deck"
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: "deck"
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods/log
+    verbs:
+      - get
+  - apiGroups:
+      - "prow.k8s.io"
+    resources:
+      - prowjobs
+    verbs:
+      - get
+      - list
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: "deck"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: "deck"
+subjects:
+- kind: ServiceAccount
+  name: "deck"
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: "horologium"
+rules:
+  - apiGroups:
+      - "prow.k8s.io"
+    resources:
+      - prowjobs
+    verbs:
+      - create
+      - list
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: "horologium"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: "horologium"
+subjects:
+- kind: ServiceAccount
+  name: "horologium"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: "plank"
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: "plank"
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - create
+      - delete
+      - list
+  - apiGroups:
+      - "prow.k8s.io"
+    resources:
+      - prowjobs
+    verbs:
+      - create
+      - list
+      - update
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: "plank"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: "plank"
+subjects:
+- kind: ServiceAccount
+  name: "plank"
+---
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: "sinker"
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: "sinker"
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - delete
+      - list
+  - apiGroups:
+      - "prow.k8s.io"
+    resources:
+      - prowjobs
+    verbs:
+      - delete
+      - list
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: "sinker"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: "sinker"
+subjects:
+- kind: ServiceAccount
+  name: "sinker"
+

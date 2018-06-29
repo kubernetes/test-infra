@@ -34,6 +34,7 @@ import (
 	"k8s.io/test-infra/prow/genfiles"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -46,6 +47,21 @@ var buildifyRe = regexp.MustCompile(`(?mi)^/buildif(y|ier)\s*$`)
 
 func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, nil)
+}
+
+func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+	// The Config field is omitted because this plugin is not configurable.
+	pluginHelp := &pluginhelp.PluginHelp{
+		Description: "The buildifier plugin runs buildifier on changes made to Bazel files in a PR. It then creates a new review on the pull request and leaves warnings at the appropriate lines of code.",
+	}
+	pluginHelp.AddCommand(pluginhelp.Command{
+		Usage:       "/buildif(y|ier)",
+		Featured:    false,
+		Description: "Runs buildifier on changes made to Bazel files in a PR",
+		WhoCanUse:   "Anyone can trigger this command on a PR.",
+		Examples:    []string{"/buildify", "/buildifier"},
+	})
+	return pluginHelp, nil
 }
 
 type githubClient interface {

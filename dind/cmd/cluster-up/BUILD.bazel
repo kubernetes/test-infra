@@ -8,7 +8,6 @@ go_library(
     deps = [
         "//dind/pkg/cluster-up/cluster:go_default_library",
         "//dind/pkg/cluster-up/options:go_default_library",
-        "//dind/pkg/util:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
     ],
 )

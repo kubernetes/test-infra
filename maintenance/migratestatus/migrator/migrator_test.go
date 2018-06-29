@@ -32,20 +32,20 @@ type modeTest struct {
 // compareDiffs checks if a list of status updates matches an expected list of status updates.
 func compareDiffs(diffs []*github.RepoStatus, expectedDiffs []*github.RepoStatus) error {
 	if len(diffs) != len(expectedDiffs) {
-		return fmt.Errorf("failed because the returned diff had %d changes instead of %d.", len(diffs), len(expectedDiffs))
+		return fmt.Errorf("failed because the returned diff had %d changes instead of %d", len(diffs), len(expectedDiffs))
 	}
 	for _, diff := range diffs {
 		if diff == nil {
-			return fmt.Errorf("failed because the returned diff contained a nil RepoStatus.")
+			return fmt.Errorf("failed because the returned diff contained a nil RepoStatus")
 		}
 		if diff.Context == nil {
-			return fmt.Errorf("failed because the returned diff contained a RepoStatus with a nil Context field.")
+			return fmt.Errorf("failed because the returned diff contained a RepoStatus with a nil Context field")
 		}
 		if diff.Description == nil {
-			return fmt.Errorf("failed because the returned diff contained a RepoStatus with a nil Description field.")
+			return fmt.Errorf("failed because the returned diff contained a RepoStatus with a nil Description field")
 		}
 		if diff.State == nil {
-			return fmt.Errorf("failed because the returned diff contained a RepoStatus with a nil State field.")
+			return fmt.Errorf("failed because the returned diff contained a RepoStatus with a nil State field")
 		}
 		var match *github.RepoStatus
 		for _, expected := range expectedDiffs {
@@ -55,24 +55,24 @@ func compareDiffs(diffs []*github.RepoStatus, expectedDiffs []*github.RepoStatus
 			}
 		}
 		if match == nil {
-			return fmt.Errorf("failed because the returned diff contained an unexpected change to context '%s'.", *diff.Context)
+			return fmt.Errorf("failed because the returned diff contained an unexpected change to context '%s'", *diff.Context)
 		}
 		// Found a matching context. Make sure that fields are equal.
 		if *match.Description != *diff.Description {
-			return fmt.Errorf("failed because the returned diff for context '%s' had Description '%s' instead of '%s'.", *diff.Context, *diff.Description, *match.Description)
+			return fmt.Errorf("failed because the returned diff for context '%s' had Description '%s' instead of '%s'", *diff.Context, *diff.Description, *match.Description)
 		}
 		if *match.State != *diff.State {
-			return fmt.Errorf("failed because the returned diff for context '%s' had State '%s' instead of '%s'.", *diff.Context, *diff.State, *match.State)
+			return fmt.Errorf("failed because the returned diff for context '%s' had State '%s' instead of '%s'", *diff.Context, *diff.State, *match.State)
 		}
 
 		if match.TargetURL == nil {
 			if diff.TargetURL != nil {
-				return fmt.Errorf("failed because the returned diff for context '%s' had a non-nil TargetURL.", *diff.Context)
+				return fmt.Errorf("failed because the returned diff for context '%s' had a non-nil TargetURL", *diff.Context)
 			}
 		} else if diff.TargetURL == nil {
-			return fmt.Errorf("failed because the returned diff for context '%s' had a nil TargetURL.", *diff.Context)
+			return fmt.Errorf("failed because the returned diff for context '%s' had a nil TargetURL", *diff.Context)
 		} else if *match.TargetURL != *diff.TargetURL {
-			return fmt.Errorf("failed because the returned diff for context '%s' had TargetURL '%s' instead of '%s'.", *diff.Context, *diff.TargetURL, *match.TargetURL)
+			return fmt.Errorf("failed because the returned diff for context '%s' had TargetURL '%s' instead of '%s'", *diff.Context, *diff.TargetURL, *match.TargetURL)
 		}
 	}
 	return nil
@@ -142,7 +142,7 @@ func TestMoveMode(t *testing.T) {
 
 	m := *MoveMode(contextA, contextB)
 	for _, test := range tests {
-		diff := m.ProcessStatuses(&github.CombinedStatus{Statuses: test.start})
+		diff := m.processStatuses(&github.CombinedStatus{Statuses: test.start})
 		if err := compareDiffs(diff, test.expectedDiffs); err != nil {
 			t.Errorf("MoveMode test '%s' %v\n", test.name, err)
 		}
@@ -225,7 +225,7 @@ func TestCopyMode(t *testing.T) {
 
 	m := *CopyMode(contextA, contextB)
 	for _, test := range tests {
-		diff := m.ProcessStatuses(&github.CombinedStatus{Statuses: test.start})
+		diff := m.processStatuses(&github.CombinedStatus{Statuses: test.start})
 		if err := compareDiffs(diff, test.expectedDiffs); err != nil {
 			t.Errorf("CopyMode test '%s' %v\n", test.name, err)
 		}
@@ -301,7 +301,7 @@ func TestRetireModeReplacement(t *testing.T) {
 
 	m := *RetireMode(contextA, contextB)
 	for _, test := range tests {
-		diff := m.ProcessStatuses(&github.CombinedStatus{Statuses: test.start})
+		diff := m.processStatuses(&github.CombinedStatus{Statuses: test.start})
 		if err := compareDiffs(diff, test.expectedDiffs); err != nil {
 			t.Errorf("RetireMode(Replacement) test '%s' %v\n", test.name, err)
 		}
@@ -350,7 +350,7 @@ func TestRetireModeNoReplacement(t *testing.T) {
 
 	m := *RetireMode(contextA, "")
 	for _, test := range tests {
-		diff := m.ProcessStatuses(&github.CombinedStatus{Statuses: test.start})
+		diff := m.processStatuses(&github.CombinedStatus{Statuses: test.start})
 		if err := compareDiffs(diff, test.expectedDiffs); err != nil {
 			t.Errorf("RetireMode(NoReplace) test '%s' %v\n", test.name, err)
 		}

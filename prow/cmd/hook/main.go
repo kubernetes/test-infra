@@ -50,9 +50,10 @@ import (
 type options struct {
 	port int
 
-	configPath   string
-	cluster      string
-	pluginConfig string
+	configPath    string
+	jobConfigPath string
+	cluster       string
+	pluginConfig  string
 
 	dryRun      bool
 	gracePeriod time.Duration
@@ -78,9 +79,10 @@ func gatherOptions() options {
 	}
 	flag.IntVar(&o.port, "port", 8888, "Port to listen on.")
 
-	flag.StringVar(&o.configPath, "config-path", "/etc/config/config", "Path to config.yaml.")
+	flag.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
+	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	flag.StringVar(&o.cluster, "cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
-	flag.StringVar(&o.pluginConfig, "plugin-config", "/etc/plugins/plugins", "Path to plugin config file.")
+	flag.StringVar(&o.pluginConfig, "plugin-config", "/etc/plugins/plugins.yaml", "Path to plugin config file.")
 
 	flag.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	flag.DurationVar(&o.gracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration. ")
@@ -103,7 +105,7 @@ func main() {
 	logrus.SetFormatter(logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "hook"}))
 
 	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath, ""); err != nil {
+	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 

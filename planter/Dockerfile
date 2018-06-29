@@ -42,14 +42,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 SHELL ["/bin/bash", "-c"]
 
-RUN INSTALLER="bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh"; \
-    if [[ "${BAZEL_VERSION}" =~ ([0-9\.]+)(rc[0-9]+) ]]; then \
-      DOWNLOAD_URL="https://storage.googleapis.com/bazel/${BASH_REMATCH[1]}/${BASH_REMATCH[2]}/${INSTALLER}"; \
-    else \
-      DOWNLOAD_URL="https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/${INSTALLER}"; \
-    fi; \
-    wget -q "${DOWNLOAD_URL}" && \
-    chmod +x "${INSTALLER}" && "./${INSTALLER}" && rm "${INSTALLER}"
+# install bazel as some non-root user
+RUN useradd -ms /bin/bash install-user
+COPY ./install-bazel.sh /
+RUN chmod +rx /install-bazel.sh && \
+    cd /home/install-user && \
+    su install-user /install-bazel.sh
+# make sure bazel is in $PATH
+ENV PATH="/home/install-user/bin:${PATH}"
 
 # It turns out git and bazel pkg_tar and a bunch of other things fail if we
 # don't have a /etc/passwd with the user in it, so let's solve that.
@@ -58,6 +58,7 @@ RUN INSTALLER="bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh"; \
 # this means we don't need to run the container as root! :-)
 # We care about not running as root because it means build files are owned by
 # the host users, not root (and logs, etc).
+# More about this in entrypoint.sh
 RUN touch /etc/passwd && chmod a+rw /etc/passwd
 
 COPY ./entrypoint.sh /
