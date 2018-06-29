@@ -493,10 +493,11 @@ type ReviewState string
 
 // Possible review states.
 const (
-	ReviewStateChangesRequested ReviewState = "CHANGES_REQUESTED"
-	ReviewStateApproved                     = "APPROVED"
-	ReviewStatePending                      = "PENDING"
+	ReviewStateApproved         ReviewState = "APPROVED"
+	ReviewStateChangesRequested             = "CHANGES_REQUESTED"
+	ReviewStateCommented                    = "COMMENTED"
 	ReviewStateDismissed                    = "DISMISSED"
+	ReviewStatePending                      = "PENDING"
 )
 
 // Review describes a Pull Request review.
