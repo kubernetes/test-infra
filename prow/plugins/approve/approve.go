@@ -35,13 +35,11 @@ import (
 const (
 	pluginName = "approve"
 
-	approveCommand              = "APPROVE"
-	approvedLabel               = "approved"
-	approvedReviewState         = "APPROVED"
-	cancelArgument              = "cancel"
-	changesRequestedReviewState = "CHANGES_REQUESTED"
-	lgtmCommand                 = "LGTM"
-	noIssueArgument             = "no-issue"
+	approveCommand  = "APPROVE"
+	approvedLabel   = "approved"
+	cancelArgument  = "cancel"
+	lgtmCommand     = "LGTM"
+	noIssueArgument = "no-issue"
 )
 
 var (
@@ -467,8 +465,7 @@ func isApprovalState(botName string, reviewActsAsApprove bool, c *comment) bool 
 	// consider reviews in either approved OR requested changes states as
 	// approval commands. Reviews in requested changes states will be
 	// interpreted as cancelled approvals.
-	state := strings.ToUpper(c.ReviewState)
-	if reviewActsAsApprove && (state == approvedReviewState || state == changesRequestedReviewState) {
+	if reviewActsAsApprove && (c.ReviewState == github.ReviewStateApproved || c.ReviewState == github.ReviewStateChangesRequested) {
 		return true
 	}
 	return false
@@ -503,14 +500,14 @@ func addApprovers(approversHandler *approvers.Approvers, approveComments []*comm
 			continue
 		}
 
-		if reviewActsAsApprove && c.ReviewState == approvedReviewState {
+		if reviewActsAsApprove && c.ReviewState == github.ReviewStateApproved {
 			approversHandler.AddApprover(
 				c.Author,
 				c.HTMLURL,
 				false,
 			)
 		}
-		if reviewActsAsApprove && c.ReviewState == changesRequestedReviewState {
+		if reviewActsAsApprove && c.ReviewState == github.ReviewStateChangesRequested {
 			approversHandler.RemoveApprover(c.Author)
 		}
 
@@ -579,7 +576,7 @@ type comment struct {
 	CreatedAt   time.Time
 	HTMLURL     string
 	ID          int
-	ReviewState string
+	ReviewState github.ReviewState
 }
 
 func commentFromIssueComment(ic *github.IssueComment) *comment {

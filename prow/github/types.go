@@ -446,14 +446,25 @@ type ReviewEvent struct {
 	GUID string
 }
 
+// ReviewState is the state a review can be in.
+type ReviewState string
+
+// Possible review states.
+const (
+	ReviewStateChangesRequested ReviewState = "CHANGES_REQUESTED"
+	ReviewStateApproved                     = "APPROVED"
+	ReviewStatePending                      = "PENDING"
+	ReviewStateDismissed                    = "DISMISSED"
+)
+
 // Review describes a Pull Request review.
 type Review struct {
-	ID          int       `json:"id"`
-	User        User      `json:"user"`
-	Body        string    `json:"body"`
-	State       string    `json:"state"`
-	HTMLURL     string    `json:"html_url"`
-	SubmittedAt time.Time `json:"submitted_at"`
+	ID          int         `json:"id"`
+	User        User        `json:"user"`
+	Body        string      `json:"body"`
+	State       ReviewState `json:"state"`
+	HTMLURL     string      `json:"html_url"`
+	SubmittedAt time.Time   `json:"submitted_at"`
 }
 
 // ReviewCommentEventAction enumerates the triggers for this

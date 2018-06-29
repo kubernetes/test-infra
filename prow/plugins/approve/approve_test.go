@@ -81,11 +81,11 @@ func newTestCommentTime(t time.Time, user, body string) github.IssueComment {
 	return c
 }
 
-func newTestReview(user, body, state string) github.Review {
+func newTestReview(user, body string, state github.ReviewState) github.Review {
 	return github.Review{User: github.User{Login: user}, Body: body, State: state}
 }
 
-func newTestReviewTime(t time.Time, user, body, state string) github.Review {
+func newTestReviewTime(t time.Time, user, body string, state github.ReviewState) github.Review {
 	r := newTestReview(user, body, state)
 	r.SubmittedAt = t
 	return r
@@ -653,7 +653,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			hasLabel:            false,
 			files:               []string{"c/c.go"},
 			comments:            []github.IssueComment{},
-			reviews:             []github.Review{newTestReview("cjwagner", "stuff", approvedReviewState)},
+			reviews:             []github.Review{newTestReview("cjwagner", "stuff", github.ReviewStateApproved)},
 			selfApprove:         false,
 			needsIssue:          false,
 			lgtmActsAsApprove:   false,
@@ -689,7 +689,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			hasLabel:            false,
 			files:               []string{"a/a.go"},
 			comments:            []github.IssueComment{},
-			reviews:             []github.Review{newTestReview("Alice", "stuff", approvedReviewState)},
+			reviews:             []github.Review{newTestReview("Alice", "stuff", github.ReviewStateApproved)},
 			selfApprove:         false,
 			needsIssue:          false,
 			lgtmActsAsApprove:   false,
@@ -763,8 +763,8 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 				newTestCommentTime(time.Now().Add(time.Hour), "k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"), // second
 			},
 			reviews: []github.Review{
-				newTestReviewTime(time.Now(), "cjwagner", "yep", approvedReviewState),                           // first
-				newTestReviewTime(time.Now().Add(time.Hour*2), "cjwagner", "nope", changesRequestedReviewState), // third
+				newTestReviewTime(time.Now(), "cjwagner", "yep", github.ReviewStateApproved),                           // first
+				newTestReviewTime(time.Now().Add(time.Hour*2), "cjwagner", "nope", github.ReviewStateChangesRequested), // third
 			},
 			selfApprove:         false,
 			needsIssue:          false,
@@ -805,7 +805,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 				newTestCommentTime(time.Now().Add(time.Hour*2), "cjwagner", "stuff\n/approve cancel \nmore stuff"),                  // third
 			},
 			reviews: []github.Review{
-				newTestReviewTime(time.Now(), "cjwagner", "yep", approvedReviewState), // first
+				newTestReviewTime(time.Now(), "cjwagner", "yep", github.ReviewStateApproved), // first
 			},
 			selfApprove:         false,
 			needsIssue:          false,
@@ -843,7 +843,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			files:    []string{"c/c.go"},
 			comments: []github.IssueComment{},
 			reviews: []github.Review{
-				newTestReview("cjwagner", "/approve cancel", approvedReviewState),
+				newTestReview("cjwagner", "/approve cancel", github.ReviewStateApproved),
 			},
 			selfApprove:         false,
 			needsIssue:          false,
@@ -880,7 +880,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			hasLabel:            false,
 			files:               []string{"a/a.go"},
 			comments:            []github.IssueComment{},
-			reviews:             []github.Review{newTestReview("Alice", "/approve", changesRequestedReviewState)},
+			reviews:             []github.Review{newTestReview("Alice", "/approve", github.ReviewStateChangesRequested)},
 			selfApprove:         false,
 			needsIssue:          false,
 			lgtmActsAsApprove:   false,
