@@ -174,9 +174,9 @@ func handlePullRequestReview(gc githubClient, config *plugins.Configuration, own
 	// If we review with Approve, add lgtm if necessary.
 	// If we review with Request Changes, remove lgtm if necessary.
 	wantLGTM := false
-	if e.Review.State == "approve" {
+	if e.Review.State == github.ReviewStateApproved {
 		wantLGTM = true
-	} else if e.Review.State == "request_changes" {
+	} else if e.Review.State == github.ReviewStateChangesRequested {
 		wantLGTM = false
 	} else {
 		return nil
