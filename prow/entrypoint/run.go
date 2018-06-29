@@ -24,6 +24,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"path/filepath"
 	"strconv"
 	"syscall"
 	"time"
@@ -138,8 +139,26 @@ func (o Options) Run() error {
 }
 
 func (o *Options) mark(exitCode string) error {
-	if err := ioutil.WriteFile(o.MarkerFile, []byte(exitCode), os.ModePerm); err != nil {
-		return fmt.Errorf("could not write to marker file(%s): %v", o.MarkerFile, err)
+	// create temp file in the same directory as the desired marker file
+	dir := filepath.Dir(o.MarkerFile)
+	tempFile, err := ioutil.TempFile(dir, "temp-marker")
+	if err != nil {
+		return fmt.Errorf("could not create temp marker file in %s: %v", dir, err)
+	}
+	// write the exit code to the tempfile, sync to disk and close
+	if _, err = tempFile.Write([]byte(exitCode)); err != nil {
+		return fmt.Errorf("could not write to temp marker file (%s): %v", tempFile.Name(), err)
+	}
+	if err = tempFile.Sync(); err != nil {
+		return fmt.Errorf("could not sync temp marker file (%s): %v", tempFile.Name(), err)
+	}
+	tempFile.Close()
+	// set desired permission bits, then rename to the desired file name
+	if err = os.Chmod(tempFile.Name(), os.ModePerm); err != nil {
+		return fmt.Errorf("could not chmod (%x) temp marker file (%s): %v", os.ModePerm, tempFile.Name(), err)
+	}
+	if err := os.Rename(tempFile.Name(), o.MarkerFile); err != nil {
+		return fmt.Errorf("could not move marker file to destination path (%s): %v", o.MarkerFile, err)
 	}
 	return nil
 }
