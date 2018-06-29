@@ -39,7 +39,7 @@ if [[ -n "${gazelle_diff}" || -n "${kazel_diff}" ]]; then
   echo "${gazelle_diff}"
   echo "${kazel_diff}"
   echo
-  echo "Run ./verify/update-bazel.sh"
+  echo "Run ./hack/update-bazel.sh"
   exit 1
 fi
 
