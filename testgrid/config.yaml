@@ -6155,37 +6155,37 @@ dashboards:
   dashboard_tab:
   - name: presubmit
     test_group_name: istio-presubmit
-  - name: unit-tests-presubmit
+  - name: unit-tests
     test_group_name: istio-unit-tests-presubmit
-  - name: pilot-e2e-presubmit
+  - name: pilot-e2e
     test_group_name: istio-pilot-e2e-presubmit
-  - name: pilot-e2e-envoyv2-v1alpha3-presubmit
+  - name: pilot-e2e-envoyv2-v1alpha3
     test_group_name: istio-pilot-e2e-envoyv2-v1alpha3-presubmit
-  - name: e2e-mixer-no_auth-presubmit
+  - name: e2e-mixer-no_auth
     test_group_name: istio-e2e-mixer-no_auth-presubmit
-  - name: e2e-dashboard-presubmit
+  - name: e2e-dashboard
     test_group_name: istio-e2e-dashboard-presubmit
-  - name: e2e-simpleTests-presubmit
+  - name: e2e-simpleTests
     test_group_name: istio-e2e-simpleTests-presubmit
-  - name: e2e-bookInfoTests-presubmit
+  - name: e2e-bookInfoTests
     test_group_name: istio-e2e-bookInfoTests-presubmit
-  - name: e2e-bookInfoTests-envoyv2-v1alpha3-presubmit
+  - name: e2e-bookInfoTests-envoyv2-v1alpha3
     test_group_name: istio-e2e-bookInfoTests-envoyv2-v1alpha3-presubmit
-  - name: circleci-e2e-simple-presubmit
+  - name: circleci-e2e-simple
     test_group_name: istio-circleci-e2e-simple-presubmit
-  - name: circleci-e2e-dashboard-presubmit
+  - name: circleci-e2e-dashboard
     test_group_name: istio-circleci-e2e-dashboard-presubmit
-  - name: circleci-e2e-mixer-noauth-v1alpha3-v2-presubmit
+  - name: circleci-e2e-mixer-noauth-v1alpha3-v2
     test_group_name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2-presubmit
-  - name: circleci-e2e-galley-presubmit
+  - name: circleci-e2e-galley
     test_group_name: istio-circleci-e2e-galley-presubmit
-  - name: circleci-e2e-pilot-auth-v1alpha3-v2-presubmit
+  - name: circleci-e2e-pilot-auth-v1alpha3-v2
     test_group_name: istio-circleci-e2e-pilot-auth-v1alpha3-v2-presubmit
-  - name: circleci-e2e-pilot-noauth-v1alpha3-v2-presubmit
+  - name: circleci-e2e-pilot-noauth-v1alpha3-v2
     test_group_name: istio-circleci-e2e-pilot-noauth-v1alpha3-v2-presubmit
-  - name: circleci-test-presubmit
+  - name: circleci-test
     test_group_name: istio-circleci-test-presubmit
-  - name: circleci-racetest-presubmit
+  - name: circleci-racetest
     test_group_name: istio-circleci-racetest-presubmit
 
 - name: istio-postsubmits
