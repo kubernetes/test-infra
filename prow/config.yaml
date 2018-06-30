@@ -3614,8 +3614,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
-        imagePullPolicy: Always
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180628-a3a68a1f6-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
