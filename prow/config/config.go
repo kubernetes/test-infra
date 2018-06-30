@@ -33,6 +33,7 @@ import (
 	"gopkg.in/robfig/cron.v2"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/config/org"
 	"k8s.io/test-infra/prow/github"
@@ -298,6 +299,10 @@ func Load(prowConfig, jobConfig string) (*Config, error) {
 		return nc, nil
 	}
 
+	// we need to ensure all config files have unique basenames,
+	// since updateconfig plugin will use basename as a key in the configmap
+	uniqueBasenames := sets.String{}
+
 	err = filepath.Walk(jobConfig, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			logrus.WithError(err).Errorf("walking path %q.", path)
@@ -321,6 +326,12 @@ func Load(prowConfig, jobConfig string) (*Config, error) {
 		if info.IsDir() {
 			return nil
 		}
+
+		base := filepath.Base(path)
+		if uniqueBasenames.Has(base) {
+			return fmt.Errorf("duplicated basename is not allowed: %s", base)
+		}
+		uniqueBasenames.Insert(base)
 
 		subConfig, err := yamlToConfig(path)
 		if err != nil {
