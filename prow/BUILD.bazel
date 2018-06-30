@@ -85,6 +85,7 @@ filegroup(
         "//prow/errorutil:all-srcs",
         "//prow/external-plugins/cherrypicker:all-srcs",
         "//prow/external-plugins/needs-rebase:all-srcs",
+        "//prow/external-plugins/refresh:all-srcs",
         "//prow/flagutil:all-srcs",
         "//prow/gcsupload:all-srcs",
         "//prow/genfiles:all-srcs",
