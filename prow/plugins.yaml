@@ -4,32 +4,25 @@
 ---
 triggers:
 - repos:
+  - GoogleCloudPlatform/k8s-multicluster-ingress
+  - google/cadvisor
   - kubernetes
   - kubernetes-incubator
   - kubernetes-security
   - kubernetes-sigs
-  - google/cadvisor
-  - tensorflow/k8s
-  - tensorflow/minigo
-  - GoogleCloudPlatform/k8s-multicluster-ingress
   trusted_org: kubernetes
   join_org_url: "https://git.k8s.io/community/community-membership.md#member"
 - repos:
   - containerd/cri
-  trusted_org: containerd
   join_org_url: "https://github.com/containerd/containerd/blob/master/MAINTAINERS"
 - repos:
   - kubeflow
-  trusted_org: kubeflow
-  join_org_url: https://github.com/kubeflow/kubeflow/blob/master/CONTRIBUTING.md
+  join_org_url: "https://github.com/kubeflow/kubeflow/blob/master/CONTRIBUTING.md"
 - repos:
   - tensorflow/minigo
-  trusted_org: tensorflow
-  join_org_url: https://github.com/tensorflow/minigo/blob/master/CONTRIBUTING.md
+  join_org_url: "https://github.com/tensorflow/minigo/blob/master/CONTRIBUTING.md"
 - repos:
   - bazelbuild
-  trusted_org: bazelbuild
-  # TODO(fejta): determine instructions for join_org_url
 owners:
   mdyamlrepos:
   - kubernetes/website
