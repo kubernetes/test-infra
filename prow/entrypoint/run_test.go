@@ -20,6 +20,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strconv"
 	"testing"
 	"time"
 
@@ -35,35 +36,30 @@ func TestOptions_Run(t *testing.T) {
 		gracePeriod    time.Duration
 		expectedLog    string
 		expectedMarker string
-		expectedErr    bool
 	}{
 		{
 			name:           "successful command",
 			args:           []string{"sh", "-c", "exit 0"},
 			expectedLog:    "",
 			expectedMarker: "0",
-			expectedErr:    false,
 		},
 		{
 			name:           "successful command with output",
 			args:           []string{"echo", "test"},
 			expectedLog:    "test\n",
 			expectedMarker: "0",
-			expectedErr:    false,
 		},
 		{
 			name:           "unsuccessful command",
 			args:           []string{"sh", "-c", "exit 12"},
 			expectedLog:    "",
 			expectedMarker: "12",
-			expectedErr:    true,
 		},
 		{
 			name:           "unsuccessful command with output",
 			args:           []string{"sh", "-c", "echo test && exit 12"},
 			expectedLog:    "test\n",
 			expectedMarker: "12",
-			expectedErr:    true,
 		},
 		{
 			name:           "command times out",
@@ -71,8 +67,7 @@ func TestOptions_Run(t *testing.T) {
 			timeout:        1 * time.Second,
 			gracePeriod:    1 * time.Second,
 			expectedLog:    "level=error msg=\"Process did not finish before 1s timeout\" \nlevel=error msg=\"Process gracefully exited before 1s grace period\" \n",
-			expectedMarker: InternalErrorCode,
-			expectedErr:    true,
+			expectedMarker: strconv.Itoa(InternalErrorCode),
 		},
 		{
 			name:           "command times out and ignores interrupt",
@@ -80,8 +75,7 @@ func TestOptions_Run(t *testing.T) {
 			timeout:        1 * time.Second,
 			gracePeriod:    1 * time.Second,
 			expectedLog:    "level=error msg=\"Process did not finish before 1s timeout\" \nlevel=error msg=\"Process did not exit before 1s grace period\" \n",
-			expectedMarker: InternalErrorCode,
-			expectedErr:    true,
+			expectedMarker: strconv.Itoa(InternalErrorCode),
 		},
 	}
 
@@ -111,10 +105,8 @@ func TestOptions_Run(t *testing.T) {
 				},
 			}
 
-			if err := options.Run(); err == nil && testCase.expectedErr {
-				t.Errorf("%s: expected an error but got none", testCase.name)
-			} else if err != nil && !testCase.expectedErr {
-				t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
+			if code := strconv.Itoa(options.Run()); code != testCase.expectedMarker {
+				t.Errorf("%s: exit code %q does not match expected marker file contents %q", testCase.name, code, testCase.expectedMarker)
 			}
 
 			compareFileContents(testCase.name, options.ProcessLog, testCase.expectedLog, t)
