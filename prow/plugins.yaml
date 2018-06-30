@@ -66,6 +66,15 @@ approve:
   - kubernetes-sigs
   - client-go/unofficial-docs
   implicit_self_approve: true
+- repos:
+  - bazelbuild
+  implicit_self_approve: true
+  review_acts_as_approve: true
+
+lgtm:
+- repos:
+  - bazelbuild
+  review_acts_as_lgtm: true
 
 blockades:
 - repos:
