@@ -84,7 +84,7 @@ make_bazel_rc () {
     # specifically for bazel 0.15.0 we want to set this flag
     # our docker image now sets BAZEL_VERSION with the bazel version as installed
     # https://github.com/bazelbuild/bazel/issues/5047#issuecomment-401295174
-    if [[ -n "${BAZEL_VERSION+}" && "${BAZEL_VERSION}" -eq "0.15.0" ]]; then
+    if [[ -n "${BAZEL_VERSION+}" && "${BAZEL_VERSION}" = "0.15.0" ]]; then
         echo "build --remote_max_connections=200"
     fi
 }
