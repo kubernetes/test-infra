@@ -261,6 +261,18 @@ type Branding struct {
 
 // Load loads and parses the config at path.
 func Load(prowConfig, jobConfig string) (*Config, error) {
+	nc, err := loadHelper(prowConfig, jobConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := nc.finalizeDecoration(); err != nil {
+		return nil, err
+	}
+	return nc, nil
+}
+
+func loadHelper(prowConfig, jobConfig string) (*Config, error) {
 	stat, err := os.Stat(prowConfig)
 	if err != nil {
 		return nil, err
@@ -332,6 +344,7 @@ func Load(prowConfig, jobConfig string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return nc, nil
 }
 
@@ -486,19 +499,7 @@ func setPeriodicDecorationDefaults(c *Config, ps *Periodic) {
 	}
 }
 
-func parseConfig(c *Config) error {
-	// Ensure that regexes are valid.
-	for _, vs := range c.Presubmits {
-		if err := SetPresubmitRegexes(vs); err != nil {
-			return fmt.Errorf("could not set regex: %v", err)
-		}
-	}
-	for _, js := range c.Postsubmits {
-		if err := SetPostsubmitRegexes(js); err != nil {
-			return fmt.Errorf("could not set regex: %v", err)
-		}
-	}
-
+func (c *Config) finalizeDecoration() error {
 	if c.decorationRequested() {
 		if c.Plank.DefaultDecorationConfig == nil {
 			return errors.New("no default decoration config provided for plank")
@@ -527,6 +528,21 @@ func parseConfig(c *Config) error {
 
 		for i := range c.Periodics {
 			setPeriodicDecorationDefaults(c, &c.Periodics[i])
+		}
+	}
+	return nil
+}
+
+func parseConfig(c *Config) error {
+	// Ensure that regexes are valid.
+	for _, vs := range c.Presubmits {
+		if err := SetPresubmitRegexes(vs); err != nil {
+			return fmt.Errorf("could not set regex: %v", err)
+		}
+	}
+	for _, js := range c.Postsubmits {
+		if err := SetPostsubmitRegexes(js); err != nil {
+			return fmt.Errorf("could not set regex: %v", err)
 		}
 	}
 
