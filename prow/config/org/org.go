@@ -55,8 +55,9 @@ type TeamMetadata struct {
 // Team declares metadata as well as its poeple.
 type Team struct {
 	TeamMetadata
-	Members     []string `json:"members,omitempty"`
-	Maintainers []string `json:"maintainers,omitempty"`
+	Members     []string        `json:"members,omitempty"`
+	Maintainers []string        `json:"maintainers,omitempty"`
+	Children    map[string]Team `json:"teams,omitempty"`
 
 	Previously []string `json:"previously,omitempty"`
 }

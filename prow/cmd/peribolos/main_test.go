@@ -698,6 +698,13 @@ func (c *fakeTeamClient) EditTeam(team github.Team) (*github.Team, error) {
 	if team.Privacy != "" {
 		t.Privacy = team.Privacy
 	}
+	if team.ParentTeamID != nil {
+		t.Parent = &github.Team{
+			ID: *team.ParentTeamID,
+		}
+	} else {
+		t.Parent = nil
+	}
 	c.teams[id] = t
 	return &t, nil
 }
@@ -974,10 +981,12 @@ func TestConfigureTeam(t *testing.T) {
 	pfail := org.Privacy(fail)
 	whatev := "whatever"
 	secret := org.Secret
+	parent := 2
 	cases := []struct {
 		name     string
 		err      bool
 		teamName string
+		parent   *int
 		config   org.Team
 		github   github.Team
 		expected github.Team
@@ -1000,6 +1009,7 @@ func TestConfigureTeam(t *testing.T) {
 		{
 			name:     "patch team when description changes",
 			teamName: whatev,
+			parent:   nil,
 			config: org.Team{
 				TeamMetadata: org.TeamMetadata{
 					Description: &cur,
@@ -1019,6 +1029,7 @@ func TestConfigureTeam(t *testing.T) {
 		{
 			name:     "patch team when privacy changes",
 			teamName: whatev,
+			parent:   nil,
 			config: org.Team{
 				TeamMetadata: org.TeamMetadata{
 					Privacy: &secret,
@@ -1036,8 +1047,47 @@ func TestConfigureTeam(t *testing.T) {
 			},
 		},
 		{
+			name:     "patch team when parent changes",
+			teamName: whatev,
+			parent:   &parent,
+			config:   org.Team{},
+			github: github.Team{
+				ID:   3,
+				Name: whatev,
+				Parent: &github.Team{
+					ID: 4,
+				},
+			},
+			expected: github.Team{
+				ID:   3,
+				Name: whatev,
+				Parent: &github.Team{
+					ID: 2,
+				},
+			},
+		},
+		{
+			name:     "patch team when parent removed",
+			teamName: whatev,
+			parent:   nil,
+			config:   org.Team{},
+			github: github.Team{
+				ID:   3,
+				Name: whatev,
+				Parent: &github.Team{
+					ID: 2,
+				},
+			},
+			expected: github.Team{
+				ID:     3,
+				Name:   whatev,
+				Parent: nil,
+			},
+		},
+		{
 			name:     "do not patch team when values are the same",
 			teamName: fail,
+			parent:   &parent,
 			config: org.Team{
 				TeamMetadata: org.TeamMetadata{
 					Description: &fail,
@@ -1049,17 +1099,24 @@ func TestConfigureTeam(t *testing.T) {
 				Name:        fail,
 				Description: fail,
 				Privacy:     fail,
+				Parent: &github.Team{
+					ID: 2,
+				},
 			},
 			expected: github.Team{
 				ID:          4,
 				Name:        fail,
 				Description: fail,
 				Privacy:     fail,
+				Parent: &github.Team{
+					ID: 2,
+				},
 			},
 		},
 		{
 			name:     "fail to patch team",
 			teamName: "team",
+			parent:   nil,
 			config: org.Team{
 				TeamMetadata: org.TeamMetadata{
 					Description: &fail,
@@ -1077,7 +1134,7 @@ func TestConfigureTeam(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			fc := makeFakeTeamClient(tc.github)
-			err := configureTeam(fc, fakeOrg, tc.teamName, tc.config, tc.github)
+			err := configureTeam(fc, fakeOrg, tc.teamName, tc.config, tc.github, tc.parent)
 			switch {
 			case err != nil:
 				if !tc.err {
@@ -1086,7 +1143,7 @@ func TestConfigureTeam(t *testing.T) {
 			case tc.err:
 				t.Errorf("failed to receive expected error")
 			case !reflect.DeepEqual(fc.teams[tc.expected.ID], tc.expected):
-				t.Errorf("actual %v != expected %v", fc.teams[tc.expected.ID], tc.expected)
+				t.Errorf("actual %+v != expected %+v", fc.teams[tc.expected.ID], tc.expected)
 			}
 		})
 	}
@@ -1567,7 +1624,7 @@ func TestDumpOrgConfig(t *testing.T) {
 				MembersCanCreateRepositories: yes,
 				DefaultRepositoryPermission:  string(perm),
 			},
-			members: []string{"george", "jungle"},
+			members: []string{"george", "jungle", "banana"},
 			admins:  []string{"james", "giant", "peach"},
 			teams: []github.Team{
 				{
@@ -1579,14 +1636,24 @@ func TestDumpOrgConfig(t *testing.T) {
 					ID:   6,
 					Name: "enemies",
 				},
+				{
+					ID:   7,
+					Name: "archenemies",
+					Parent: &github.Team{
+						ID:   6,
+						Name: "enemies",
+					},
+				},
 			},
 			teamMembers: map[int][]string{
 				5: {"george", "james"},
 				6: {"george"},
+				7: {},
 			},
 			maintainers: map[int][]string{
 				5: {},
 				6: {"giant", "jungle"},
+				7: {"banana"},
 			},
 			expected: org.Config{
 				Metadata: org.Metadata{
@@ -1609,6 +1676,7 @@ func TestDumpOrgConfig(t *testing.T) {
 						},
 						Members:     []string{"george", "james"},
 						Maintainers: []string{},
+						Children:    map[string]org.Team{},
 					},
 					"enemies": {
 						TeamMetadata: org.TeamMetadata{
@@ -1617,9 +1685,20 @@ func TestDumpOrgConfig(t *testing.T) {
 						},
 						Members:     []string{"george"},
 						Maintainers: []string{"giant", "jungle"},
+						Children: map[string]org.Team{
+							"archenemies": {
+								TeamMetadata: org.TeamMetadata{
+									Description: &empty,
+									Privacy:     &pub,
+								},
+								Members:     []string{},
+								Maintainers: []string{"banana"},
+								Children:    map[string]org.Team{},
+							},
+						},
 					},
 				},
-				Members: []string{"george", "jungle"},
+				Members: []string{"george", "jungle", "banana"},
 				Admins:  []string{"james", "giant", "peach"},
 			},
 		},
