@@ -1591,8 +1591,11 @@ func (c *Client) CreateTeam(org string, team Team) (*Team, error) {
 	path := fmt.Sprintf("/orgs/%s/teams", org)
 	var retTeam Team
 	_, err := c.request(&request{
-		method:      http.MethodPost,
-		path:        path,
+		method: http.MethodPost,
+		path:   path,
+		// This accept header enables the nested teams preview.
+		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
+		accept:      "application/vnd.github.hellcat-preview+json",
 		requestBody: &team,
 		exitCodes:   []int{201},
 	}, &retTeam)
@@ -1612,8 +1615,11 @@ func (c *Client) EditTeam(team Team) (*Team, error) {
 	var retTeam Team
 	path := fmt.Sprintf("/teams/%d", id)
 	_, err := c.request(&request{
-		method:      http.MethodPatch,
-		path:        path,
+		method: http.MethodPatch,
+		path:   path,
+		// This accept header enables the nested teams preview.
+		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
+		accept:      "application/vnd.github.hellcat-preview+json",
 		requestBody: &team,
 		exitCodes:   []int{201},
 	}, &retTeam)
@@ -1646,7 +1652,9 @@ func (c *Client) ListTeams(org string) ([]Team, error) {
 	var teams []Team
 	err := c.readPaginatedResults(
 		path,
-		"",
+		// This accept header enables the nested teams preview.
+		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
+		"application/vnd.github.hellcat-preview+json",
 		func() interface{} {
 			return &[]Team{}
 		},

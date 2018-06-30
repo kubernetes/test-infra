@@ -575,10 +575,12 @@ type Content struct {
 
 // Team is a github organizational team
 type Team struct {
-	ID          int    `json:"id,omitempty"`
-	Name        string `json:"name,omitempty"`
-	Description string `json:"description,omitempty"`
-	Privacy     string `json:"privacy,omitempty"`
+	ID           int    `json:"id,omitempty"`
+	Name         string `json:"name"`
+	Description  string `json:"description,omitempty"`
+	Privacy      string `json:"privacy,omitempty"`
+	Parent       *Team  `json:"parent,omitempty"` // Only present in responses
+	ParentTeamID *int   `json:"parent_team_id"`   // Only valid in creates/edits
 }
 
 // TeamMember is a member of an organizational team

@@ -219,7 +219,11 @@ func dumpOrgConfig(client dumpClient, orgName string) (*org.Config, error) {
 		return nil, fmt.Errorf("failed to list teams: %v", err)
 	}
 
-	out.Teams = make(map[string]org.Team, len(teams))
+	names := map[int]string{}   // what's the name of a team?
+	idMap := map[int]org.Team{} // metadata for a team
+	children := map[int][]int{} // what children does it have
+	var tops []int              // what are the top-level teams
+
 	for _, t := range teams {
 		p := org.Privacy(t.Privacy)
 		d := t.Description
@@ -230,6 +234,7 @@ func dumpOrgConfig(client dumpClient, orgName string) (*org.Config, error) {
 			},
 			Maintainers: []string{},
 			Members:     []string{},
+			Children:    map[string]org.Team{},
 		}
 		maintainers, err := client.ListTeamMembers(t.ID, github.RoleMaintainer)
 		if err != nil {
@@ -245,8 +250,32 @@ func dumpOrgConfig(client dumpClient, orgName string) (*org.Config, error) {
 		for _, m := range teamMembers {
 			nt.Members = append(nt.Members, m.Login)
 		}
-		out.Teams[t.Name] = nt
+
+		names[t.ID] = t.Name
+		idMap[t.ID] = nt
+
+		if t.Parent == nil { // top level team
+			tops = append(tops, t.ID)
+		} else { // add this id to the list of the parent's children
+			children[t.Parent.ID] = append(children[t.Parent.ID], t.ID)
+		}
 	}
+
+	var makeChild func(id int) org.Team
+	makeChild = func(id int) org.Team {
+		t := idMap[id]
+		for _, cid := range children[id] {
+			child := makeChild(cid)
+			t.Children[names[cid]] = child
+		}
+		return t
+	}
+
+	out.Teams = make(map[string]org.Team, len(tops))
+	for _, id := range tops {
+		out.Teams[names[id]] = makeChild(id)
+	}
+
 	return &out, nil
 }
 
@@ -360,10 +389,7 @@ func configureOrgMembers(opt options, client orgClient, orgName string, orgConfi
 		return err
 	}
 
-	if err = configureMembers(have, want, adder, remover); err != nil {
-		return err
-	}
-	return nil
+	return configureMembers(have, want, adder, remover)
 }
 
 type memberships struct {
@@ -633,20 +659,39 @@ func configureOrg(opt options, client *github.Client, orgName string, orgConfig 
 	}
 
 	for name, team := range orgConfig.Teams {
-		gt, ok := githubTeams[name]
-		if !ok { // configureTeams is buggy if this is the case
-			return fmt.Errorf("%s not found in id list", name)
-		}
-
-		// Configure team metadata
-		err := configureTeam(client, orgName, name, team, gt)
+		err := configureTeamAndMembers(client, githubTeams, name, orgName, team, nil)
 		if err != nil {
-			return fmt.Errorf("failed to update %s: %v", orgName, err)
+			return fmt.Errorf("failed to configure %s teams: %v", orgName, err)
 		}
-
-		// Add/remove/update members to the team.
-		return configureTeamMembers(client, gt.ID, team)
 	}
+	return nil
+}
+
+func configureTeamAndMembers(client *github.Client, githubTeams map[string]github.Team, name, orgName string, team org.Team, parent *int) error {
+	gt, ok := githubTeams[name]
+	if !ok { // configureTeams is buggy if this is the case
+		return fmt.Errorf("%s not found in id list", name)
+	}
+
+	// Configure team metadata
+	err := configureTeam(client, orgName, name, team, gt, parent)
+	if err != nil {
+		return fmt.Errorf("failed to update %s metadata: %v", name, err)
+	}
+
+	// Configure team members
+	err = configureTeamMembers(client, gt.ID, team)
+	if err != nil {
+		return fmt.Errorf("failed to update %s members: %v", name, err)
+	}
+
+	for childName, childTeam := range team.Children {
+		err = configureTeamAndMembers(client, githubTeams, childName, orgName, childTeam, &gt.ID)
+		if err != nil {
+			return fmt.Errorf("failed to update %s child teams: %v", name, err)
+		}
+	}
+
 	return nil
 }
 
@@ -655,7 +700,7 @@ type editTeamClient interface {
 }
 
 // configureTeam patches the team name/description/privacy when values differ
-func configureTeam(client editTeamClient, orgName, teamName string, team org.Team, gt github.Team) error {
+func configureTeam(client editTeamClient, orgName, teamName string, team org.Team, gt github.Team, parent *int) error {
 	// Do we need to reconfigure any team settings?
 	patch := false
 	if gt.Name != teamName {
@@ -674,6 +719,22 @@ func configureTeam(client editTeamClient, orgName, teamName string, team org.Tea
 
 	} else {
 		gt.Privacy = ""
+	}
+	// doesn't have parent in github, but has parent in config
+	if gt.Parent == nil && parent != nil {
+		patch = true
+		gt.ParentTeamID = parent
+	}
+	if gt.Parent != nil { // has parent in github ...
+		if parent == nil { // ... but doesn't need one
+			patch = true
+			gt.Parent = nil
+			gt.ParentTeamID = parent
+		} else if gt.Parent.ID != *parent { // but it's different than the config
+			patch = true
+			gt.Parent = nil
+			gt.ParentTeamID = parent
+		}
 	}
 
 	if patch { // yes we need to patch
