@@ -62,7 +62,7 @@ kubetest:
 
 build: kubetest
 	@echo Building with go:$(GO) and bazel:$(BAZEL)
-	docker build --build-arg GO_VERSION=$(GO) --build-arg BAZEL_VERSION=$(BAZEL) --build-arg CFSSL_VERSION=$(CFSSL) --build-arg IMAGE_ARG=$(IMG):$(TAG)-$(K8S) -t $(IMG):$(TAG)-$(K8S) .
+	docker build --build-arg GO_VERSION=$(GO) --build-arg BAZEL_VERSION_ARG=$(BAZEL) --build-arg CFSSL_VERSION=$(CFSSL) --build-arg IMAGE_ARG=$(IMG):$(TAG)-$(K8S) -t $(IMG):$(TAG)-$(K8S) .
 	docker tag $(IMG):$(TAG)-$(K8S) $(IMG):latest-$(K8S)
 	rm kubetest
 	@echo Built $(IMG):$(TAG)-$(K8S) and tagged with latest-$(K8S)
