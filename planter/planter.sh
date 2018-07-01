@@ -100,8 +100,8 @@ RUN_OPTS="${RUN_OPTS} -v ${REPO}:${REPO}:delegated"
 RUN_OPTS="${RUN_OPTS} -w ${PWD}"
 
 # - pass through any extra user-supplied options
-if [ -z "${DOCKER_EXTRA:-set}" ]; then
-    RUN_OPTS="${RUN_OPTS} ${DOCKER_EXTRA:-}"
+if [ -n "${DOCKER_EXTRA:-}" ]; then
+    RUN_OPTS="${RUN_OPTS} ${DOCKER_EXTRA}"
 fi
 
 # this is the command we will actually run
@@ -112,8 +112,8 @@ if [ -z "${NO_PULL+set}" ]; then
 fi
 
 # run the command or echo it if dry run
-if [ -n "${DRY_RUN+set}" ]; then
-    echo "${CMD}"
-else
+if [ -z "${DRY_RUN+set}" ]; then
     eval "${CMD}"
+else
+    echo "${CMD}"
 fi
