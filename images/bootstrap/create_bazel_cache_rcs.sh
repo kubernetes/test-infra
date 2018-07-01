@@ -21,12 +21,18 @@ package_to_version () {
     dpkg-query --showformat='${Version}' --show "$1"
 }
 
-# look up a binary with which and return the debian package it belongs to
+# look up a binary with `command -v $1` and return the debian package it belongs to
 command_to_package () {
+    # NOTE: we resolve symlinks first because debian packages can provide alternatives
+    # by `update-alternatives` in postinit scripts, which updates a common
+    # symlink for a provided file to the backing entry.
+    # https://wiki.debian.org/DebianAlternatives
     local binary_path
     binary_path=$(readlink -f "$(command -v "$1")")
-    # `dpkg -S $file` spits out lines with the format: "package: file"
-    dpkg -S "${binary_path}" | cut -d':' -f1
+    # `dpkg-query --search $file-pattern` ouputs lines with the format: "$package: $file-path"
+    # where $file-path belongs to $package
+    # https://manpages.debian.org/jessie/dpkg/dpkg-query.1.en.html
+    dpkg-query --search "${binary_path}" | cut -d':' -f1
 }
 
 # get the installed package version relating to a binary
