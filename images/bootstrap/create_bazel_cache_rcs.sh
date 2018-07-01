@@ -24,9 +24,9 @@ package_to_version () {
 # look up a binary with which and return the debian package it belongs to
 command_to_package () {
     local binary_path
-    binary_path=$(readlink -f "$(which "$1")")
-    # `dpkg -S $package` spits out lines with the format: "package: file"
-    dpkg -S "$1" | grep "${binary_path}" | cut -d':' -f1
+    binary_path=$(readlink -f "$(command -v "$1")")
+    # `dpkg -S $file` spits out lines with the format: "package: file"
+    dpkg -S "${binary_path}" | cut -d':' -f1
 }
 
 # get the installed package version relating to a binary
