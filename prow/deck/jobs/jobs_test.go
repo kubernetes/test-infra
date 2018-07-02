@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package jobs
 
 import (
 	"fmt"
@@ -72,7 +72,7 @@ func TestGetLog(t *testing.T) {
 	}
 	ja := &JobAgent{
 		kc:   kc,
-		pkcs: map[string]podLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")},
+		pkcs: map[string]PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")},
 	}
 	if err := ja.update(); err != nil {
 		t.Fatalf("Updating: %v", err)
@@ -109,7 +109,7 @@ func TestProwJobs(t *testing.T) {
 	}
 	ja := &JobAgent{
 		kc:   kc,
-		pkcs: map[string]podLogClient{kube.DefaultClusterAlias: fpkc("")},
+		pkcs: map[string]PodLogClient{kube.DefaultClusterAlias: fpkc("")},
 	}
 	if err := ja.update(); err != nil {
 		t.Fatalf("Updating: %v", err)

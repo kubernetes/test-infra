@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2018 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+// Package jobs implements methods on job information used by Prow component deck
+package jobs
 
 import (
 	"bytes"
@@ -28,7 +29,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/labels"
-
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 )
@@ -71,19 +71,28 @@ type serviceClusterClient interface {
 	ListProwJobs(selector string) ([]kube.ProwJob, error)
 }
 
-type podLogClient interface {
+type PodLogClient interface {
 	GetLog(pod string) ([]byte, error)
 }
 
-type configAgent interface {
+type ConfigAgent interface {
 	Config() *config.Config
+}
+
+// NewJobAgent is a JobAgent constructor
+func NewJobAgent(kc serviceClusterClient, plClients map[string]PodLogClient, ca ConfigAgent) *JobAgent {
+	return &JobAgent{
+		kc:   kc,
+		pkcs: plClients,
+		c:    ca,
+	}
 }
 
 // JobAgent creates lists of jobs, updates their status and returns their run logs.
 type JobAgent struct {
 	kc        serviceClusterClient
-	pkcs      map[string]podLogClient
-	c         configAgent
+	pkcs      map[string]PodLogClient
+	c         ConfigAgent
 	prowJobs  []kube.ProwJob
 	jobs      []Job
 	jobsMap   map[string]Job                     // pod name -> Job
