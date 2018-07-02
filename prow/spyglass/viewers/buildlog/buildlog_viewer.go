@@ -20,6 +20,7 @@ package buildlog
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"strings"
 
@@ -40,7 +41,8 @@ func init() {
 func ViewHandler(artifacts []viewers.Artifact, raw *json.RawMessage) string {
 	logViewTmpl := `
 	<div style="font-family:monospace;">
-	{{range .LogViews}}<ul style="list-style-type:none;padding:0;margin:0;line-height:1.4;color:black;">
+	{{range .LogViews}}<h4>{{.LogName}}</h4>
+	<ul style="list-style-type:none;padding:0;margin:0;line-height:1.4;color:black;">
 		{{range $ix, $e := .LogLines}}
 			<li>{{$e}}</li>
 		{{end}}
@@ -48,6 +50,7 @@ func ViewHandler(artifacts []viewers.Artifact, raw *json.RawMessage) string {
 </div>`
 	var buf bytes.Buffer
 	type LogFileView struct {
+		LogName  string
 		LogLines []string
 	}
 	type BuildLogsView struct {
@@ -58,15 +61,20 @@ func ViewHandler(artifacts []viewers.Artifact, raw *json.RawMessage) string {
 		//logLines := LastNLines(a, 100)
 		read, err := a.ReadAll()
 		if err != nil {
-			logrus.Error("Failed reading lines")
+			logrus.WithError(err).Error("Failed reading lines")
 		}
-		logLines := strings.Split(string(read), "\n")
-		buildLogsView.LogViews = append(buildLogsView.LogViews, LogFileView{LogLines: logLines})
+		if string(read) != "" {
+			logLines := strings.Split(string(read), "\n")
+			for ix, line := range logLines {
+				line = fmt.Sprintf("%d\t%s", ix, line)
+			}
+			buildLogsView.LogViews = append(buildLogsView.LogViews, LogFileView{LogName: a.JobPath(), LogLines: logLines})
+		}
 	}
 	t := template.Must(template.New(name).Parse(logViewTmpl))
 	err := t.Execute(&buf, buildLogsView)
 	if err != nil {
-		logrus.Errorf("Template failed with error: %s", err)
+		logrus.WithError(err).Error("Template failed.")
 	}
 	return buf.String()
 }

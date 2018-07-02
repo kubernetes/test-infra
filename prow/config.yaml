@@ -20,7 +20,7 @@ plank:
 spyglass:
   viewers:
     "started.json|finished.json": "MetadataViewer"
-    "build-log.txt": "BuildLogViewer"
+    "build-log.txt|pod-log": "BuildLogViewer"
     "artifacts/junit.*\\.xml": "JUnitViewer"
 
 sinker:

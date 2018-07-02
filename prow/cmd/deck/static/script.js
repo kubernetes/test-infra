@@ -536,7 +536,7 @@ function redraw(fz) {
 
         r.appendChild(createTimeCell(i, parseInt(build.started)));
         r.appendChild(createTextCell(build.duration));
-        r.appendChild(createLinkCell("View", gubernatorToSpyGlass(build.job), ""))
+        r.appendChild(createLinkCell("View", gubernatorToSpyGlass(build.job, build.build_id), ""))
         builds.appendChild(r);
     }
     const jobCount = document.getElementById("job-count");
@@ -765,11 +765,12 @@ function stateToAdj(state) {
     }
 }
 
-function gubernatorToSpyGlass(gubernatorLink) {
+function gubernatorToSpyGlass(gubernatorLink, buildId) {
     var cleanLink = gubernatorLink.replace("https://k8s-gubernator.appspot.com/build/", '')
     var bucket = cleanLink.substring(0, cleanLink.indexOf("/"))
     var job = cleanLink.replace(bucket + "/", '')
-    return "https://" + window.location.hostname + "/view?bucket=" + bucket + "&job=" + job
+    var src = "gs://" + bucket + "/" + job + "/"
+    return "https://" + window.location.hostname + "/view?src=" + encodeURIComponent(src) + "&id=" + encodeURIComponent(buildId)
 }
 
 /**

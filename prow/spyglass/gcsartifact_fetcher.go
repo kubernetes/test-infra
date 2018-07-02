@@ -36,9 +36,12 @@ type GCSArtifactFetcher struct {
 
 // A location in GCS where prow job-specific artifacts are stored
 type GCSJobSource struct {
+	source     string
 	linkPrefix string
 	bucket     string
 	jobPath    string
+	jobName    string
+	jobId      string
 }
 
 // NewGCSArtifactFetcher creates a new ArtifactFetcher with a real GCS Client
@@ -53,20 +56,21 @@ func NewGCSArtifactFetcher() *GCSArtifactFetcher {
 }
 
 // NewGCSJobSource creates a new GCSJobSource from a given bucket and jobPath
-func NewGCSJobSource(bucket string, jobPath string) *GCSJobSource {
+func NewGCSJobSource(src string) *GCSJobSource {
+	linkPrefix := "gs://"
+	noPrefixSrc := strings.TrimPrefix(src, linkPrefix)
+	tokens := strings.FieldsFunc(noPrefixSrc, func(c rune) bool { return c == '/' })
+	bucket := tokens[0]
+	jobId := tokens[len(tokens)-1]
+	name := tokens[len(tokens)-2]
+	jobPath := strings.TrimPrefix(noPrefixSrc, bucket+"/")
 	return &GCSJobSource{
-		linkPrefix: "gs://",
-		bucket:     bucket,
-		jobPath:    jobPath,
-	}
-}
-
-// NewGCSJobSource creates a new GCSJobSource from a given bucket, jobPath, and link prefix
-func NewGCSJobSourceWithPrefix(linkPrefix string, bucket string, jobPath string) *GCSJobSource {
-	return &GCSJobSource{
+		source:     src,
 		linkPrefix: linkPrefix,
 		bucket:     bucket,
 		jobPath:    jobPath,
+		jobName:    name,
+		jobId:      jobId,
 	}
 }
 
@@ -111,4 +115,14 @@ func (src *GCSJobSource) BucketName() string {
 // JobPath gets the path in GCS to the job
 func (src *GCSJobSource) JobPath() string {
 	return src.jobPath
+}
+
+// JobName gets the name of the job
+func (src *GCSJobSource) JobName() string {
+	return src.jobName
+}
+
+// JobId gets the id of the job
+func (src *GCSJobSource) JobId() string {
+	return src.jobId
 }

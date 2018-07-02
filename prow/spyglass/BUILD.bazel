@@ -6,12 +6,14 @@ go_library(
         "artifactfetchers.go",
         "gcsartifact.go",
         "gcsartifact_fetcher.go",
+        "podlogartifact.go",
         "spyglass.go",
         "util.go",
     ],
     importpath = "k8s.io/test-infra/prow/spyglass",
     visibility = ["//visibility:public"],
     deps = [
+        "//prow/deck/jobs:go_default_library",
         "//prow/spyglass/viewers:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
@@ -25,14 +27,19 @@ go_test(
     srcs = [
         "gcsartifact_fetcher_test.go",
         "gcsartifact_test.go",
+        "podlogartifact_test.go",
         "spyglass_test.go",
         "util_test.go",
     ],
     embed = [":go_default_library"],
     deps = [
+        "//prow/config:go_default_library",
+        "//prow/deck/jobs:go_default_library",
+        "//prow/kube:go_default_library",
         "//prow/spyglass/viewers:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/fsouza/fake-gcs-server/fakestorage:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
 

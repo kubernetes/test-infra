@@ -17,38 +17,70 @@ limitations under the License.
 package spyglass
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"testing"
 
 	"cloud.google.com/go/storage"
 	"github.com/fsouza/fake-gcs-server/fakestorage"
+	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/deck/jobs"
+	"k8s.io/test-infra/prow/kube"
 )
 
 var (
 	fakeGCSBucket    *storage.BucketHandle
 	testAf           *GCSArtifactFetcher
+	fakeJa           *jobs.JobAgent
 	fakeGCSJobSource *GCSJobSource
-	buildLogName     = path.Join(exampleCIJobPath, "build-log.txt")
-	startedName      = path.Join(exampleCIJobPath, "started.json")
-	finishedName     = path.Join(exampleCIJobPath, "finished.json")
+	buildLogName     string
+	startedName      string
+	finishedName     string
 )
 
 const (
-	exampleCIJobPath = "logs/example-ci-run/403"
-	testBucketName   = "test-bucket"
+	testSrc = "gs://test-bucket/logs/example-ci-run/403"
 )
 
+type fkc []kube.ProwJob
+
+func (f fkc) GetLog(pod string) ([]byte, error) {
+	return nil, nil
+}
+
+func (f fkc) ListPods(selector string) ([]kube.Pod, error) {
+	return nil, nil
+}
+
+func (f fkc) ListProwJobs(s string) ([]kube.ProwJob, error) {
+	return f, nil
+}
+
+type fpkc string
+
+func (f fpkc) GetLog(pod string) ([]byte, error) {
+	if pod == "wowowow" || pod == "powowow" {
+		return []byte(f), nil
+	}
+	return nil, fmt.Errorf("pod not found: %s", pod)
+}
+
 func TestMain(m *testing.M) {
+	fakeGCSJobSource = NewGCSJobSource(testSrc)
+	testBucketName := fakeGCSJobSource.BucketName()
+	buildLogName = path.Join(fakeGCSJobSource.JobPath(), "build-log.txt")
+	startedName = path.Join(fakeGCSJobSource.JobPath(), "started.json")
+	finishedName = path.Join(fakeGCSJobSource.JobPath(), "finished.json")
 	fakeGCSServer := fakestorage.NewServer([]fakestorage.Object{
 		{
 			BucketName: testBucketName,
-			Name:       path.Join(exampleCIJobPath, "build-log.txt"),
+			Name:       buildLogName,
 			Content:    []byte("Oh wow\nlogs\nthis is\ncrazy"),
 		},
 		{
 			BucketName: testBucketName,
-			Name:       path.Join(exampleCIJobPath, "started.json"),
+			Name:       startedName,
 			Content: []byte(`{
 						  "node": "gke-prow-default-pool-3c8994a8-qfhg", 
 						  "repo-version": "v1.12.0-alpha.0.985+e6f64d0a79243c", 
@@ -65,7 +97,7 @@ func TestMain(m *testing.M) {
 		},
 		{
 			BucketName: testBucketName,
-			Name:       path.Join(exampleCIJobPath, "finished.json"),
+			Name:       finishedName,
 			Content: []byte(`{
 						  "timestamp": 1528742943, 
 						  "version": "v1.12.0-alpha.0.985+e6f64d0a79243c", 
@@ -86,11 +118,35 @@ func TestMain(m *testing.M) {
 		},
 	})
 	defer fakeGCSServer.Stop()
-	fakeGCSJobSource = NewGCSJobSourceWithPrefix("localhost:8080", testBucketName, exampleCIJobPath)
 	fakeGCSClient := fakeGCSServer.Client()
 	fakeGCSBucket = fakeGCSClient.Bucket(testBucketName)
 	testAf = &GCSArtifactFetcher{
 		client: fakeGCSClient,
 	}
+	kc := fkc{
+		kube.ProwJob{
+			Spec: kube.ProwJobSpec{
+				Agent: kube.KubernetesAgent,
+				Job:   "job",
+			},
+			Status: kube.ProwJobStatus{
+				PodName: "wowowow",
+				BuildID: "123",
+			},
+		},
+		kube.ProwJob{
+			Spec: kube.ProwJobSpec{
+				Agent:   kube.KubernetesAgent,
+				Job:     "jib",
+				Cluster: "trusted",
+			},
+			Status: kube.ProwJobStatus{
+				PodName: "powowow",
+				BuildID: "123",
+			},
+		},
+	}
+	fakeJa = jobs.NewJobAgent(kc, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, &config.Agent{})
+	fakeJa.Start()
 	os.Exit(m.Run())
 }

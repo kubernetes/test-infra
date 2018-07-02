@@ -165,10 +165,10 @@ func prodOnlyMain(o options, mux *http.ServeMux) *http.ServeMux {
 		plClients[alias] = client
 	}
 
-	spyGlass := spyglass.NewSpyGlass()
-
 	ja := jobs.NewJobAgent(kc, plClients, configAgent)
 	ja.Start()
+
+	sg := spyglass.NewSpyglass(ja)
 
 	// setup prod only handlers
 	mux.Handle("/data.js", gziphandler.GzipHandler(handleData(ja)))
@@ -179,8 +179,8 @@ func prodOnlyMain(o options, mux *http.ServeMux) *http.ServeMux {
 	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(configAgent)))
 	mux.Handle("/branding.js", gziphandler.GzipHandler(handleBranding(configAgent)))
 	mux.Handle("/favicon.ico", gziphandler.GzipHandler(handleFavicon(configAgent)))
-	mux.Handle("/view", gziphandler.GzipHandler(handleRequestJobViews(spyGlass, configAgent)))
-	mux.Handle("/view/refresh", gziphandler.GzipHandler(handleArtifactView(spyGlass)))
+	mux.Handle("/view", gziphandler.GzipHandler(handleRequestJobViews(sg, configAgent)))
+	mux.Handle("/view/refresh", gziphandler.GzipHandler(handleArtifactView(sg)))
 
 	if o.hookURL != "" {
 		mux.Handle("/plugin-help.js",
@@ -419,21 +419,25 @@ func handleBadge(ja *jobs.JobAgent) http.HandlerFunc {
 }
 
 // handleRequestJobViews handles requests to get all available artifact views for a given job
-// it responds with a list of all availables view titles
-func handleRequestJobViews(sg *spyglass.SpyGlass, ca *config.Agent) http.HandlerFunc {
+// it responds with html containing all available views
+func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		bucket := r.URL.Query().Get("bucket")
-		jobPath := r.URL.Query().Get("job")
-		if bucket == "" {
-			http.Error(w, "missing bucket query parameter", http.StatusBadRequest)
-			return
-		}
-		if jobPath == "" {
-			http.Error(w, "missing jobPath query parameter", http.StatusBadRequest)
+		src := r.URL.Query().Get("src")
+		jobId := r.URL.Query().Get("id")
+		if src == "" {
+			http.Error(w, "missing src query parameter", http.StatusBadRequest)
 			return
 		}
 
+		if jobId == "" {
+			logrus.Info("No job id passed to spyglass, will try to extract from source.")
+		}
+
+		artifacts, err := sg.FetchArtifacts(src, jobId)
+		if err != nil {
+			logrus.Error("Invalid source parameter provided: ", src)
+		}
 		viewTmpl := `<!DOCTYPE html>
 <html>
     <head>
@@ -483,6 +487,8 @@ func handleRequestJobViews(sg *spyglass.SpyGlass, ca *config.Agent) http.Handler
 		});
 	}
 
+	// Add a function here with a standard body response (list of matching artifacts, etc)
+
 	// asynchronously requests a reloaded view of the provided viewer given a body request
 	function requestReload(name, body) {
 		const url = "/view/refresh?src="+encodeURIComponent(src)+"&name="+encodeURIComponent(name);
@@ -512,12 +518,6 @@ func handleRequestJobViews(sg *spyglass.SpyGlass, ca *config.Agent) http.Handler
     </body>
 </html>
 		`
-		artifactFetcher := spyglass.NewGCSArtifactFetcher()
-		gcsJobSource := spyglass.NewGCSJobSource(bucket, jobPath)
-		artStart := time.Now()
-		artifacts := artifactFetcher.Artifacts(gcsJobSource)
-		artElapsed := time.Since(artStart)
-		logrus.Info("Retrieved artifacts in ", artElapsed)
 
 		viewsStart := time.Now()
 		lenses := sg.Views(artifacts, ca.Config().SpyGlass.Viewers)
@@ -549,15 +549,15 @@ func handleRequestJobViews(sg *spyglass.SpyGlass, ca *config.Agent) http.Handler
 	}
 }
 
-// handleArtifactView handles requests to load a view for a job
-func handleArtifactView(sg *spyglass.SpyGlass) http.HandlerFunc {
+// handleArtifactView handles requests to load a specific view for a job
+func handleArtifactView(sg *spyglass.Spyglass) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		setHeadersNoCaching(w)
 		w.Header().Set("Content-Type", "application/json")
 		name := r.URL.Query().Get("name")
-		bucket := r.URL.Query().Get("bucket")
-		jobPath := r.URL.Query().Get("job")
+		src := r.URL.Query().Get("src")
+		jobId := r.URL.Query().Get("id")
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, "could not read body", http.StatusBadRequest)
@@ -567,23 +567,18 @@ func handleArtifactView(sg *spyglass.SpyGlass) http.HandlerFunc {
 			http.Error(w, "missing name query parameter", http.StatusBadRequest)
 			return
 		}
-		if bucket == "" {
-			http.Error(w, "missing bucket query parameter", http.StatusBadRequest)
-			return
-		}
-		if jobPath == "" {
-			http.Error(w, "missing jobPath query parameter", http.StatusBadRequest)
+		if src == "" {
+			http.Error(w, "missing src query parameter", http.StatusBadRequest)
 			return
 		}
 
-		artifactFetcher := spyglass.NewGCSArtifactFetcher()
-		gcsJobSource := spyglass.NewGCSJobSource(bucket, jobPath)
-		artifacts := artifactFetcher.Artifacts(gcsJobSource)
+		artifacts, err := sg.FetchArtifacts(src, jobId)
+		if err != nil {
+			logrus.Error("Invalid source parameter: ", src)
+		}
 
-		logrus.Infof("created artifact fetcher for viewer name=%s", name)
 		var raw *json.RawMessage
 		raw.UnmarshalJSON(body)
-		logrus.Info("valid json: ", json.Valid(body))
 		logrus.Info("raw body ", raw)
 		lens := sg.Refresh(name, artifacts, raw)
 		logrus.Infof("successfully refreshed viewer name=%s", name)

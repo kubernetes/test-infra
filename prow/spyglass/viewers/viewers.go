@@ -74,6 +74,6 @@ func RegisterViewer(viewerName string, title string, handler ViewHandler) error 
 	}
 	viewHandlerRegistry[viewerName] = handler
 	viewTitleRegistry[viewerName] = title
-	logrus.Info("Registered viewer %s with title %s and a handler function")
+	logrus.Infof("Registered viewer %s with title %s and a handler function", viewerName, title)
 	return nil
 }

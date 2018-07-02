@@ -19,17 +19,24 @@ package spyglass
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"regexp"
+	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/deck/jobs"
 	"k8s.io/test-infra/prow/spyglass/viewers"
 )
 
 // SpyGlass records which sets of artifacts need views for a prow job
-type SpyGlass struct {
+type Spyglass struct {
 
 	// map of names of views to their corresponding lenses
 	Lenses map[string]Lens
+
+	// Job Agent for spyglass
+	Ja *jobs.JobAgent
 }
 
 // Lens is a single view of a set of artifacts
@@ -37,20 +44,23 @@ type Lens struct {
 	// Name of the view, unique within a job
 	Name string
 	// Title of view
-	Title    string
+	Title string
+	// Priority of the view on the page
+	Priority float32
 	HtmlView string
 	ReMatch  string
 }
 
-// NewSpyglass constructs a default spyglass object that renders build logs and Prow metadata
-func NewSpyGlass() *SpyGlass {
-	return &SpyGlass{
+// NewSpyglass constructs a spyglass object from a JobAgent
+func NewSpyglass(ja *jobs.JobAgent) *Spyglass {
+	return &Spyglass{
 		Lenses: make(map[string]Lens),
+		Ja:     ja,
 	}
 }
 
 // Views gets all views of all artifact files matching each regexp with a registered viewer
-func (s *SpyGlass) Views(artifacts []viewers.Artifact, eyepiece map[string]string) []Lens {
+func (s *Spyglass) Views(artifacts []viewers.Artifact, eyepiece map[string]string) []Lens {
 	lenses := []Lens{}
 	for re, viewer := range eyepiece {
 		matches := []viewers.Artifact{}
@@ -81,7 +91,7 @@ func (s *SpyGlass) Views(artifacts []viewers.Artifact, eyepiece map[string]strin
 }
 
 // Refresh reloads the html view for a given set of objects
-func (s *SpyGlass) Refresh(viewName string, artifacts []viewers.Artifact, raw *json.RawMessage) Lens {
+func (s *Spyglass) Refresh(viewName string, artifacts []viewers.Artifact, raw *json.RawMessage) Lens {
 	lens, ok := s.Lenses[viewName]
 	if !ok {
 		logrus.Errorf("Could not find Lens with name %s", viewName)
@@ -102,4 +112,36 @@ func (s *SpyGlass) Refresh(viewName string, artifacts []viewers.Artifact, raw *j
 	}
 	lens.HtmlView = view
 	return lens
+}
+
+// FetchArtifacts handles muxing artifact sources to the correct fetcher implementations
+func (sg *Spyglass) FetchArtifacts(src string, jobId string) ([]viewers.Artifact, error) {
+	artifacts := []viewers.Artifact{}
+	var jobName string
+	// First check src
+	if isGCSSource(src) {
+		artifactFetcher := NewGCSArtifactFetcher()
+		gcsJobSource := NewGCSJobSource(src)
+		jobName = gcsJobSource.JobName()
+		if jobId == "" {
+			jobId = gcsJobSource.JobId()
+			logrus.Info("Extracted jobId from source. ", gcsJobSource.JobId())
+		}
+
+		artStart := time.Now()
+		artifacts = append(artifacts, artifactFetcher.Artifacts(gcsJobSource)...)
+		artElapsed := time.Since(artStart)
+		logrus.Info("Retrieved GCS artifacts in ", artElapsed)
+
+	} else {
+		return []viewers.Artifact{}, errors.New(fmt.Sprintf("Invalid source: %s", src))
+	}
+
+	// Then check prowjob id for pod logs, pod spec, etc
+	if jobId != "" && jobName != "" {
+		logrus.Info("Trying pod logs. ")
+		artifacts = append(artifacts, NewPodLogArtifact(jobName, jobId, sg.Ja))
+
+	}
+	return artifacts, nil
 }

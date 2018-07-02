@@ -19,11 +19,18 @@ package spyglass
 import (
 	"testing"
 
+	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/spyglass/viewers"
 )
 
 // Tests getting handles to objects associated with the current job in GCS
 func TestGCSFetchArtifacts(t *testing.T) {
+	jp := fakeGCSJobSource.JobPath()
+	logrus.Info(jp)
+	blgArtifact := NewGCSArtifact(fakeGCSBucket.Object(buildLogName), "", fakeGCSJobSource.JobPath())
+	srtArtifact := NewGCSArtifact(fakeGCSBucket.Object(startedName), "", fakeGCSJobSource.JobPath())
+	finArtifact := NewGCSArtifact(fakeGCSBucket.Object(finishedName), "", fakeGCSJobSource.JobPath())
+
 	testCases := []struct {
 		name              string
 		gcsJobSource      *GCSJobSource
@@ -33,9 +40,9 @@ func TestGCSFetchArtifacts(t *testing.T) {
 			name:         "Fetch Example CI Run #403 Artifacts",
 			gcsJobSource: fakeGCSJobSource,
 			expectedArtifacts: []viewers.Artifact{
-				NewGCSArtifact(fakeGCSBucket.Object(buildLogName), "", fakeGCSJobSource.JobPath()),
-				NewGCSArtifact(fakeGCSBucket.Object(startedName), "", fakeGCSJobSource.JobPath()),
-				NewGCSArtifact(fakeGCSBucket.Object(finishedName), "", fakeGCSJobSource.JobPath()),
+				blgArtifact,
+				srtArtifact,
+				finArtifact,
 			},
 		},
 	}

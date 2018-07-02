@@ -58,3 +58,8 @@ func LastNLines(a viewers.Artifact, n int64) string {
 	return strings.Join(contents[l-n:], "\n")
 
 }
+
+// isGCSSource recognizes whether a source string references a GCS bucket
+func isGCSSource(src string) bool {
+	return strings.HasPrefix(src, "gs://")
+}
