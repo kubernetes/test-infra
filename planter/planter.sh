@@ -75,7 +75,12 @@ RUN_OPTS="${RUN_OPTS} --security-opt label:disable"
 _UID="$(id -u "${USER}")"
 _GID="$(id -g "${USER}")"
 RUN_OPTS="${RUN_OPTS} --user ${_UID}:${_GID} -e GID=${_GID} -e UID=${_UID}"
-FULL_NAME="$(id -F "${USER}")"
+# macOS has the convenient `id -F` and no getent, unix has getent
+if command -v getent >/dev/null 2>&1; then
+    FULL_NAME="$(getent passwd "${USER}" | cut -d : -f 5)"
+else
+    FULL_NAME="$(id -F "${USER}")"
+fi
 RUN_OPTS="${RUN_OPTS} -e USER=${USER} -e FULL_NAME='${FULL_NAME}'"
 RUN_OPTS="${RUN_OPTS} -e HOME=${HOME}"
 
