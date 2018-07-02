@@ -6156,7 +6156,7 @@ presubmits:
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
-        - "--timeout=45"
+        - "--timeout=300"
         env:
         - name: ZONE
           value: us-central1-c
