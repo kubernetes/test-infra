@@ -30,10 +30,15 @@ func TestServeHTTPErrors(t *testing.T) {
 	metrics := NewMetrics()
 	pa := &plugins.PluginAgent{}
 	pa.Set(&plugins.Configuration{})
+
+	getSecret := func() []byte {
+		return []byte("abc")
+	}
+
 	s := &Server{
-		HMACSecret: []byte("abc"),
-		Metrics:    metrics,
-		Plugins:    pa,
+		Metrics:        metrics,
+		Plugins:        pa,
+		TokenGenerator: getSecret,
 	}
 	// This is the SHA1 signature for payload "{}" and signature "abc"
 	// echo -n '{}' | openssl dgst -sha1 -hmac abc

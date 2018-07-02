@@ -38,6 +38,7 @@ go_library(
         "config.go",
         "githuboauth.go",
         "jobs.go",
+        "secrets_agent.go",
         "tide.go",
     ],
     importpath = "k8s.io/test-infra/prow/config",

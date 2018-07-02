@@ -26,7 +26,6 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/url"
 	"regexp"
@@ -35,6 +34,7 @@ import (
 	"text/template"
 	"time"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 )
@@ -142,23 +142,31 @@ func main() {
 	if o.comment == "" {
 		log.Fatal("empty --comment")
 	}
-	b, err := ioutil.ReadFile(o.token)
-	if err != nil {
-		log.Fatalf("cannot read --token: %v", err)
+
+	secretAgent := &config.SecretAgent{}
+	if err := secretAgent.Start([]string{o.token}); err != nil {
+		log.Fatalf("Error starting secrets agent: %v", err)
 	}
+
+	getSecret := func(secretPath string) func() []byte {
+		return func() []byte {
+			return secretAgent.GetSecret(secretPath)
+		}
+	}
+
+	var err error
 	for _, ep := range o.endpoint.Strings() {
-		_, err = url.Parse(ep)
+		_, err = url.ParseRequestURI(ep)
 		if err != nil {
 			log.Fatalf("Invalid --endpoint URL %q: %v.", ep, err)
 		}
 	}
 
 	var c client
-	tok := strings.TrimSpace(string(b))
 	if o.confirm {
-		c = github.NewClient(tok, o.endpoint.Strings()...)
+		c = github.NewClient(getSecret(o.token), o.endpoint.Strings()...)
 	} else {
-		c = github.NewDryRunClient(tok, o.endpoint.Strings()...)
+		c = github.NewDryRunClient(getSecret(o.token), o.endpoint.Strings()...)
 	}
 
 	query, err := makeQuery(o.query, o.includeClosed, o.updated)

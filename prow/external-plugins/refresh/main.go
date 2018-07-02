@@ -18,11 +18,9 @@ limitations under the License.
 package main
 
 import (
-	"bytes"
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os/signal"
@@ -84,30 +82,27 @@ func main() {
 		log.WithError(err).Fatal("Error starting config agent.")
 	}
 
-	webhookSecretRaw, err := ioutil.ReadFile(*webhookSecretFile)
-	if err != nil {
-		log.WithError(err).Fatal("Could not read webhook secret file.")
+	secretAgent := &config.SecretAgent{}
+	if err := secretAgent.Start([]string{*githubTokenFile, *webhookSecretFile}); err != nil {
+		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
-	webhookSecret := bytes.TrimSpace(webhookSecretRaw)
 
-	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
-	if err != nil {
-		log.WithError(err).Fatal("Could not read oauth secret file.")
+	getSecret := func(secretPath string) func() []byte {
+		return func() []byte {
+			return secretAgent.GetSecret(secretPath)
+		}
 	}
-	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
-
-	ghc := github.NewClient(oauthSecret, githubEndpoint.Strings()...)
+	ghc := github.NewClient(getSecret(*githubTokenFile), githubEndpoint.Strings()...)
 	if *dryRun {
-		ghc = github.NewDryRunClient(oauthSecret, githubEndpoint.Strings()...)
+		ghc = github.NewDryRunClient(getSecret(*githubTokenFile), githubEndpoint.Strings()...)
 	}
 
 	serv := &server{
-		hmacSecret:  webhookSecret,
-		credentials: oauthSecret,
-		prowURL:     *prowURL,
-		configAgent: configAgent,
-		ghc:         ghc,
-		log:         log,
+		tokenGenerator: getSecret(*webhookSecretFile),
+		prowURL:        *prowURL,
+		configAgent:    configAgent,
+		ghc:            ghc,
+		log:            log,
 	}
 
 	http.Handle("/", serv)

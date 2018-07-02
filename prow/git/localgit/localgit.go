@@ -52,6 +52,13 @@ func New() (*LocalGit, *git.Client, error) {
 		os.RemoveAll(t)
 		return nil, nil, err
 	}
+
+	getSecret := func() []byte {
+		return []byte("")
+	}
+
+	c.SetCredentials("", getSecret)
+
 	c.SetRemote(t)
 	return &LocalGit{
 		Dir: t,

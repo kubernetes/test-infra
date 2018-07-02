@@ -60,11 +60,16 @@ func TestHook(t *testing.T) {
 	pa.Set(&plugins.Configuration{Plugins: map[string][]string{"foo/bar": {"baz"}}})
 	ca := &config.Agent{}
 	metrics := NewMetrics()
+
+	getSecret := func() []byte {
+		return []byte("123abc")
+	}
+
 	s := httptest.NewServer(&Server{
-		Plugins:     pa,
-		ConfigAgent: ca,
-		HMACSecret:  secret,
-		Metrics:     metrics,
+		Plugins:        pa,
+		ConfigAgent:    ca,
+		Metrics:        metrics,
+		TokenGenerator: getSecret,
 	})
 	defer s.Close()
 	if err := phony.SendHook(s.URL, "issues", payload, secret); err != nil {
