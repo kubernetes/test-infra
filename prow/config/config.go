@@ -262,18 +262,19 @@ type Branding struct {
 
 // Load loads and parses the config at path.
 func Load(prowConfig, jobConfig string) (*Config, error) {
-	nc, err := loadHelper(prowConfig, jobConfig)
+	nc, err := loadConfig(prowConfig, jobConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := nc.finalizeDecoration(); err != nil {
+	if err := nc.validateJobConfig(); err != nil {
 		return nil, err
 	}
 	return nc, nil
 }
 
-func loadHelper(prowConfig, jobConfig string) (*Config, error) {
+// loadConfig loads one or multiple config files and returns a config object.
+func loadConfig(prowConfig, jobConfig string) (*Config, error) {
 	stat, err := os.Stat(prowConfig)
 	if err != nil {
 		return nil, err
@@ -283,7 +284,7 @@ func loadHelper(prowConfig, jobConfig string) (*Config, error) {
 		return nil, fmt.Errorf("prowConfig cannot be a dir - %s", prowConfig)
 	}
 
-	nc, err := yamlToConfig(prowConfig)
+	nc, err := yamlToConfig(prowConfig, true)
 	if err != nil {
 		return nil, err
 	}
@@ -301,7 +302,7 @@ func loadHelper(prowConfig, jobConfig string) (*Config, error) {
 
 	if !stat.IsDir() {
 		// still support a single file
-		jobConfig, err := yamlToConfig(jobConfig)
+		jobConfig, err := yamlToConfig(jobConfig, false)
 		if err != nil {
 			return nil, err
 		}
@@ -345,7 +346,7 @@ func loadHelper(prowConfig, jobConfig string) (*Config, error) {
 		}
 		uniqueBasenames.Insert(base)
 
-		subConfig, err := yamlToConfig(path)
+		subConfig, err := yamlToConfig(path, false)
 		if err != nil {
 			return err
 		}
@@ -360,7 +361,7 @@ func loadHelper(prowConfig, jobConfig string) (*Config, error) {
 }
 
 // yamlToConfig converts a yaml file into a Config object
-func yamlToConfig(path string) (*Config, error) {
+func yamlToConfig(path string, prowConfig bool) (*Config, error) {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("error reading %s: %v", path, err)
@@ -369,8 +370,10 @@ func yamlToConfig(path string) (*Config, error) {
 	if err := yaml.Unmarshal(b, nc); err != nil {
 		return nil, fmt.Errorf("error unmarshaling %s: %v", path, err)
 	}
-	if err := parseConfig(nc); err != nil {
-		return nil, err
+	if prowConfig {
+		if err := parseProwConfig(nc); err != nil {
+			return nil, err
+		}
 	}
 	return nc, nil
 }
@@ -382,26 +385,6 @@ func yamlToConfig(path string) (*Config, error) {
 // 	- Periodics
 //	- PodPresets
 func (c *Config) mergeJobConfig(jc JobConfig) error {
-	// Resolve presets from first config before we merge presets
-	// Presets within jc is already resolved, do it twice will lead to error
-	for _, v := range jc.AllPeriodics() {
-		if err := validatePresets(v.Name, v.Labels, v.Spec, c.Presets); err != nil {
-			return err
-		}
-	}
-
-	for _, v := range jc.AllPresubmits(nil) {
-		if err := validatePresets(v.Name, v.Labels, v.Spec, c.Presets); err != nil {
-			return err
-		}
-	}
-
-	for _, v := range jc.AllPostsubmits(nil) {
-		if err := validatePresets(v.Name, v.Labels, v.Spec, c.Presets); err != nil {
-			return err
-		}
-	}
-
 	// Merge everything
 	// *** Presets ***
 	c.Presets = append(c.Presets, jc.Presets...)
@@ -510,7 +493,8 @@ func setPeriodicDecorationDefaults(c *Config, ps *Periodic) {
 	}
 }
 
-func (c *Config) finalizeDecoration() error {
+// validateJobConfig validates if all the jobspecs/presets are valid
+func (c *Config) validateJobConfig() error {
 	if c.decorationRequested() {
 		if c.Plank.DefaultDecorationConfig == nil {
 			return errors.New("no default decoration config provided for plank")
@@ -541,10 +525,7 @@ func (c *Config) finalizeDecoration() error {
 			setPeriodicDecorationDefaults(c, &c.Periodics[i])
 		}
 	}
-	return nil
-}
 
-func parseConfig(c *Config) error {
 	// Ensure that regexes are valid.
 	for _, vs := range c.Presubmits {
 		if err := SetPresubmitRegexes(vs); err != nil {
@@ -635,6 +616,10 @@ func parseConfig(c *Config) error {
 		}
 	}
 
+	return nil
+}
+
+func parseProwConfig(c *Config) error {
 	if err := ValidateController(&c.Plank.Controller); err != nil {
 		return fmt.Errorf("validating plank config: %v", err)
 	}
