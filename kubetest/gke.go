@@ -160,13 +160,6 @@ func newGKE(provider, project, zone, region, network, image, imageFamily, imageP
 	}
 
 	g.commandGroup = strings.Fields(*gkeCommandGroup)
-	if *gkeCommandGroup == "alpha" || *gkeCommandGroup == "beta" {
-		// By default gcloud {alpha,beta} container is using v1 api.
-		// If we want to use v1alpha1/v1beta1 we need to force it.
-		if err := control.FinishRunning(exec.Command("gcloud", "config", "set", "container/use_v1_api", "False")); err != nil {
-			return nil, err
-		}
-	}
 
 	g.createCommand = append([]string{}, g.commandGroup...)
 	g.createCommand = append(g.createCommand, strings.Fields(*gkeCreateCommand)...)
