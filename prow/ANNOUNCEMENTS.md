@@ -1,6 +1,9 @@
 # Announcements
 
 New features added to each components:
+ - *July 13, 2018* `blunderbluss` plugin will now support `required_reviewers` in
+   OWNERS file to specify a person or github team to be cc'd on every PR that
+   touches the corresponding part of the code.
  - *June 25, 2018* `updateconfig` plugin will now support update/remove keys
    from a glob match.
  - *June 05, 2018* `blunderbuss` plugin may now suggest approvers in addition
