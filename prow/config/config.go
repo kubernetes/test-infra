@@ -262,18 +262,21 @@ type Branding struct {
 
 // Load loads and parses the config at path.
 func Load(prowConfig, jobConfig string) (*Config, error) {
-	nc, err := loadHelper(prowConfig, jobConfig)
+	nc, err := loadConfig(prowConfig, jobConfig)
 	if err != nil {
 		return nil, err
 	}
-
-	if err := nc.finalizeDecoration(); err != nil {
+	if err := nc.finalizeJobConfig(); err != nil {
+		return nil, err
+	}
+	if err := nc.validateJobConfig(); err != nil {
 		return nil, err
 	}
 	return nc, nil
 }
 
-func loadHelper(prowConfig, jobConfig string) (*Config, error) {
+// loadConfig loads one or multiple config files and returns a config object.
+func loadConfig(prowConfig, jobConfig string) (*Config, error) {
 	stat, err := os.Stat(prowConfig)
 	if err != nil {
 		return nil, err
@@ -283,7 +286,7 @@ func loadHelper(prowConfig, jobConfig string) (*Config, error) {
 		return nil, fmt.Errorf("prowConfig cannot be a dir - %s", prowConfig)
 	}
 
-	nc, err := yamlToConfig(prowConfig)
+	nc, err := yamlToConfig(prowConfig, true)
 	if err != nil {
 		return nil, err
 	}
@@ -301,7 +304,7 @@ func loadHelper(prowConfig, jobConfig string) (*Config, error) {
 
 	if !stat.IsDir() {
 		// still support a single file
-		jobConfig, err := yamlToConfig(jobConfig)
+		jobConfig, err := yamlToConfig(jobConfig, false)
 		if err != nil {
 			return nil, err
 		}
@@ -345,7 +348,7 @@ func loadHelper(prowConfig, jobConfig string) (*Config, error) {
 		}
 		uniqueBasenames.Insert(base)
 
-		subConfig, err := yamlToConfig(path)
+		subConfig, err := yamlToConfig(path, false)
 		if err != nil {
 			return err
 		}
@@ -360,7 +363,7 @@ func loadHelper(prowConfig, jobConfig string) (*Config, error) {
 }
 
 // yamlToConfig converts a yaml file into a Config object
-func yamlToConfig(path string) (*Config, error) {
+func yamlToConfig(path string, prowConfig bool) (*Config, error) {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("error reading %s: %v", path, err)
@@ -369,8 +372,10 @@ func yamlToConfig(path string) (*Config, error) {
 	if err := yaml.Unmarshal(b, nc); err != nil {
 		return nil, fmt.Errorf("error unmarshaling %s: %v", path, err)
 	}
-	if err := parseConfig(nc); err != nil {
-		return nil, err
+	if prowConfig {
+		if err := parseProwConfig(nc); err != nil {
+			return nil, err
+		}
 	}
 	return nc, nil
 }
@@ -382,26 +387,6 @@ func yamlToConfig(path string) (*Config, error) {
 // 	- Periodics
 //	- PodPresets
 func (c *Config) mergeJobConfig(jc JobConfig) error {
-	// Resolve presets from first config before we merge presets
-	// Presets within jc is already resolved, do it twice will lead to error
-	for _, v := range jc.AllPeriodics() {
-		if err := validatePresets(v.Name, v.Labels, v.Spec, c.Presets); err != nil {
-			return err
-		}
-	}
-
-	for _, v := range jc.AllPresubmits(nil) {
-		if err := validatePresets(v.Name, v.Labels, v.Spec, c.Presets); err != nil {
-			return err
-		}
-	}
-
-	for _, v := range jc.AllPostsubmits(nil) {
-		if err := validatePresets(v.Name, v.Labels, v.Spec, c.Presets); err != nil {
-			return err
-		}
-	}
-
 	// Merge everything
 	// *** Presets ***
 	c.Presets = append(c.Presets, jc.Presets...)
@@ -510,7 +495,8 @@ func setPeriodicDecorationDefaults(c *Config, ps *Periodic) {
 	}
 }
 
-func (c *Config) finalizeDecoration() error {
+// finalizeJobConfig mutates and fixes entries for jobspecs
+func (c *Config) finalizeJobConfig() error {
 	if c.decorationRequested() {
 		if c.Plank.DefaultDecorationConfig == nil {
 			return errors.New("no default decoration config provided for plank")
@@ -541,10 +527,7 @@ func (c *Config) finalizeDecoration() error {
 			setPeriodicDecorationDefaults(c, &c.Periodics[i])
 		}
 	}
-	return nil
-}
 
-func parseConfig(c *Config) error {
 	// Ensure that regexes are valid.
 	for _, vs := range c.Presubmits {
 		if err := SetPresubmitRegexes(vs); err != nil {
@@ -557,12 +540,33 @@ func parseConfig(c *Config) error {
 		}
 	}
 
+	for _, v := range c.AllPresubmits(nil) {
+		if err := resolvePresets(v.Name, v.Labels, v.Spec, c.Presets); err != nil {
+			return err
+		}
+	}
+
+	for _, v := range c.AllPostsubmits(nil) {
+		if err := resolvePresets(v.Name, v.Labels, v.Spec, c.Presets); err != nil {
+			return err
+		}
+	}
+
+	for _, v := range c.AllPeriodics() {
+		if err := resolvePresets(v.Name, v.Labels, v.Spec, c.Presets); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// validateJobConfig validates if all the jobspecs/presets are valid
+// if you are mutating the jobs, please add it to finalizeJobConfig above
+func (c *Config) validateJobConfig() error {
 	// Validate presubmits.
 	for _, v := range c.AllPresubmits(nil) {
 		if err := validateAgent(v.Name, v.Agent, v.Spec, v.DecorationConfig); err != nil {
-			return err
-		}
-		if err := validatePresets(v.Name, v.Labels, v.Spec, c.Presets); err != nil {
 			return err
 		}
 		// Ensure max_concurrency is non-negative.
@@ -585,9 +589,6 @@ func parseConfig(c *Config) error {
 		if err := validateAgent(j.Name, j.Agent, j.Spec, j.DecorationConfig); err != nil {
 			return err
 		}
-		if err := validatePresets(j.Name, j.Labels, j.Spec, c.Presets); err != nil {
-			return err
-		}
 		// Ensure max_concurrency is non-negative.
 		if j.MaxConcurrency < 0 {
 			return fmt.Errorf("job %s jas invalid max_concurrency (%d), it needs to be a non-negative number", j.Name, j.MaxConcurrency)
@@ -603,9 +604,6 @@ func parseConfig(c *Config) error {
 	// Ensure that the periodic durations are valid and specs exist.
 	for _, p := range c.AllPeriodics() {
 		if err := validateAgent(p.Name, p.Agent, p.Spec, p.DecorationConfig); err != nil {
-			return err
-		}
-		if err := validatePresets(p.Name, p.Labels, p.Spec, c.Presets); err != nil {
 			return err
 		}
 		if err := validatePodSpec(p.Name, kube.PeriodicJob, p.Spec); err != nil {
@@ -635,6 +633,10 @@ func parseConfig(c *Config) error {
 		}
 	}
 
+	return nil
+}
+
+func parseProwConfig(c *Config) error {
 	if err := ValidateController(&c.Plank.Controller); err != nil {
 		return fmt.Errorf("validating plank config: %v", err)
 	}
@@ -896,7 +898,7 @@ func validateAgent(name, agent string, spec *v1.PodSpec, config *kube.Decoration
 	return nil
 }
 
-func validatePresets(name string, labels map[string]string, spec *v1.PodSpec, presets []Preset) error {
+func resolvePresets(name string, labels map[string]string, spec *v1.PodSpec, presets []Preset) error {
 	for _, preset := range presets {
 		if err := mergePreset(preset, labels, spec); err != nil {
 			return fmt.Errorf("job %s failed to merge presets: %v", name, err)
