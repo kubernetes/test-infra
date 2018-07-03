@@ -101,8 +101,13 @@ make_bazel_rc () {
 # - The path specified by the --bazelrc=file startup option. If specified, this option must appear before the command name (e.g. build)
 # - A file named .bazelrc in your base workspace directory
 # - A file named .bazelrc in your home directory
-make_bazel_rc >> "${HOME}/.bazelrc"
+bazel_rc_contents=$(make_bazel_rc)
+echo "create_bazel_cache_rcs.sh: Configuring '${HOME}/.bazelrc' and '/etc/bazel.bazelrc' with"
+echo "# ------------------------------------------------------------------------------"
+echo "${bazel_rc_contents}"
+echo "# ------------------------------------------------------------------------------"
+echo "${bazel_rc_contents}" >> "${HOME}/.bazelrc"
 # Aside from the optional configuration file described above, Bazel also looks for a master rc file next to the binary, in the workspace at tools/bazel.rc or system-wide at /etc/bazel.bazelrc.
 # These files are here to support installation-wide options or options shared between users. Reading of this file can be disabled using the --nomaster_bazelrc option.
-make_bazel_rc >> "/etc/bazel.bazelrc"
+echo "${bazel_rc_contents}" >> "/etc/bazel.bazelrc"
 # hopefully no repos create *both* of these ...
