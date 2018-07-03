@@ -405,13 +405,14 @@ plugins:
   - dog
 
   kubernetes-incubator/service-catalog:
+  - approve
+  - blunderbuss
   - cat
   - dog
   - help
-  - blunderbuss
-  - wip
   - hold
-  - approve
+  - trigger
+  - wip
 
   kubernetes-sigs:
   - assign
