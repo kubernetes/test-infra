@@ -41,43 +41,61 @@ import (
 	"k8s.io/test-infra/prow/tide"
 )
 
-var (
-	port = flag.Int("port", 8888, "Port to listen on.")
+type options struct {
+	port int
 
-	dryRun  = flag.Bool("dry-run", true, "Whether to mutate any real-world state.")
-	runOnce = flag.Bool("run-once", false, "If true, run only once then quit.")
-	deckURL = flag.String("deck-url", "", "Deck URL for read-only access to the cluster.")
+	dryRun  bool
+	runOnce bool
+	deckURL string
 
-	configPath    = flag.String("config-path", "/etc/config/config.yaml", "Path to config.yaml.")
-	jobConfigPath = flag.String("job-config-path", "", "Path to prow job configs.")
-	cluster       = flag.String("cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
+	configPath    string
+	jobConfigPath string
+	cluster       string
 
-	githubEndpoint  = flagutil.NewStrings("https://api.github.com")
-	githubTokenFile = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
-)
+	githubEndpoint  flagutil.Strings
+	githubTokenFile string
+}
 
-func init() {
-	flag.Var(&githubEndpoint, "github-endpoint", "GitHub's API endpoint.")
+func gatherOptions() options {
+	o := options{
+		githubEndpoint: flagutil.NewStrings("https://api.github.com"),
+	}
+	flag.IntVar(&o.port, "port", 8888, "Port to listen on.")
+
+	flag.BoolVar(&o.dryRun, "dry-run", true, "Whether to mutate any real-world state.")
+	flag.BoolVar(&o.runOnce, "run-once", false, "If true, run only once then quit.")
+	flag.StringVar(&o.deckURL, "deck-url", "", "Deck URL for read-only access to the cluster.")
+
+	flag.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
+	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
+	flag.StringVar(&o.cluster, "cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
+
+	flag.Var(&o.githubEndpoint, "github-endpoint", "GitHub's API endpoint.")
+	flag.StringVar(&o.githubTokenFile, "github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
+
+	flag.Parse()
+	return o
 }
 
 func main() {
-	flag.Parse()
+	o := gatherOptions()
+
 	logrus.SetFormatter(
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "tide"}),
 	)
 
 	configAgent := &config.Agent{}
-	if err := configAgent.Start(*configPath, *jobConfigPath); err != nil {
+	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
-	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
+	oauthSecretRaw, err := ioutil.ReadFile(o.githubTokenFile)
 	if err != nil {
 		logrus.WithError(err).Fatalf("Could not read oauth secret file.")
 	}
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
-	for _, ep := range githubEndpoint.Strings() {
+	for _, ep := range o.githubEndpoint.Strings() {
 		_, err = url.Parse(ep)
 		if err != nil {
 			logrus.WithError(err).Fatalf("Invalid --endpoint URL %q.", ep)
@@ -86,20 +104,20 @@ func main() {
 
 	var ghcSync, ghcStatus *github.Client
 	var kc *kube.Client
-	if *dryRun {
-		ghcSync = github.NewDryRunClient(oauthSecret, githubEndpoint.Strings()...)
-		ghcStatus = github.NewDryRunClient(oauthSecret, githubEndpoint.Strings()...)
-		kc = kube.NewFakeClient(*deckURL)
+	if o.dryRun {
+		ghcSync = github.NewDryRunClient(oauthSecret, o.githubEndpoint.Strings()...)
+		ghcStatus = github.NewDryRunClient(oauthSecret, o.githubEndpoint.Strings()...)
+		kc = kube.NewFakeClient(o.deckURL)
 	} else {
-		ghcSync = github.NewClient(oauthSecret, githubEndpoint.Strings()...)
-		ghcStatus = github.NewClient(oauthSecret, githubEndpoint.Strings()...)
-		if *cluster == "" {
+		ghcSync = github.NewClient(oauthSecret, o.githubEndpoint.Strings()...)
+		ghcStatus = github.NewClient(oauthSecret, o.githubEndpoint.Strings()...)
+		if o.cluster == "" {
 			kc, err = kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 			if err != nil {
 				logrus.WithError(err).Fatal("Error getting kube client.")
 			}
 		} else {
-			kc, err = kube.NewClientFromFile(*cluster, configAgent.Config().ProwJobNamespace)
+			kc, err = kube.NewClientFromFile(o.cluster, configAgent.Config().ProwJobNamespace)
 			if err != nil {
 				logrus.WithError(err).Fatal("Error getting kube client.")
 			}
@@ -129,11 +147,11 @@ func main() {
 	c := tide.NewController(ghcSync, ghcStatus, kc, configAgent, gc, nil)
 	defer c.Shutdown()
 
-	server := &http.Server{Addr: ":" + strconv.Itoa(*port), Handler: c}
+	server := &http.Server{Addr: ":" + strconv.Itoa(o.port), Handler: c}
 
 	start := time.Now()
 	sync(c)
-	if *runOnce {
+	if o.runOnce {
 		return
 	}
 	go func() {
