@@ -3844,6 +3844,26 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
 
+  kubernetes-incubator/service-catalog:
+  - name: pull-service-catalog-unit
+    agent: kubernetes
+    context: pull-service-catalog-unit
+    always_run: true
+    skip_report: true
+    rerun_command: "/test pull-service-catalog-unit"
+    trigger: "(?m)^/test (all|pull-service-catalog-unit)\\s*"
+    decorate: true
+    spec:
+      containers:
+      - image: golang:1.10
+        command:
+        - make
+        args:
+        - test-unit
+        env:
+        - name: NO_DOCKER
+          value: "1"
+
 postsubmits:
   kubeflow/examples:
   - name: kubeflow-examples-postsubmit
