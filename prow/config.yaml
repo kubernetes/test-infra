@@ -13839,7 +13839,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180702-944952019-master
       args:
       - --repo=github.com/ostromart/istio=k8s-prow-test
       - --timeout=90
