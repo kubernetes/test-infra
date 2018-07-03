@@ -41,6 +41,8 @@ import (
 	"k8s.io/test-infra/prow/plank"
 )
 
+type githubClient interface {}
+
 var (
 	totURL = flag.String("tot-url", "", "Tot URL")
 
@@ -93,7 +95,7 @@ func main() {
 		oauthSecret = string(bytes.TrimSpace(oauthSecretRaw))
 	}
 
-	var ghc *github.Client
+	var ghc githubClient
 	var kc *kube.Client
 	var pkcs map[string]*kube.Client
 	if *dryRun {
