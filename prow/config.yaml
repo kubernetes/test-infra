@@ -203,6 +203,7 @@ tide:
     - kubernetes/node-problem-detector
     - kubernetes/org
     - kubernetes/perf-tests
+    - kubernetes/publishing-bot
     - kubernetes/repo-infra
     - kubernetes/sig-release
     - kubernetes/steering
