@@ -812,6 +812,23 @@
       "sig-network"
     ]
   },
+  "ci-ingress-gce-e2e-release-1-2": {
+    "args": [
+      "--check-leaked-resources",
+      "--cluster=",
+      "--env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:release-1.2",
+      "--extract=ci/latest",
+      "--gcp-project-type=ingress-project",
+      "--ginkgo-parallel=1",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Feature:Ingress\\]",
+      "--timeout=320m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-network"
+    ]
+  },
   "ci-ingress-gce-e2e-scale": {
     "args": [
       "--check-leaked-resources",
