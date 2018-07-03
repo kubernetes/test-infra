@@ -43,7 +43,6 @@ go_test(
     name = "go_default_test",
     srcs = [
         "badge_test.go",
-        "jobs_test.go",
         "main_test.go",
         "tide_test.go",
     ],
@@ -63,7 +62,6 @@ go_library(
     name = "go_default_library",
     srcs = [
         "badge.go",
-        "jobs.go",
         "main.go",
         "pluginhelp.go",
         "tide.go",
@@ -71,6 +69,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/cmd/deck",
     deps = [
         "//prow/config:go_default_library",
+        "//prow/deck/jobs:go_default_library",
         "//prow/githuboauth:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/logrusutil:go_default_library",
@@ -84,7 +83,6 @@ go_library(
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/golang.org/x/oauth2:go_default_library",
         "//vendor/golang.org/x/oauth2/github:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/labels:go_default_library",
     ],
 )
 
