@@ -3198,7 +3198,6 @@
       "--env=HEAPSTER_MACHINE_TYPE=n1-standard-8",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-large-correctness.env",
       "--extract=ci/latest",
       "--gcp-master-image=gci",
       "--gcp-node-image=gci",
@@ -4835,7 +4834,6 @@
     "args": [
       "--cluster=e2e-big-beta",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-beta.env",
       "--extract=ci/k8s-beta",
       "--gcp-node-image=gci",
       "--gcp-nodes=100",
