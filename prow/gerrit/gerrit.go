@@ -305,6 +305,16 @@ func (c *Controller) ProcessChange(change gerrit.ChangeInfo) error {
 				if err := template.Execute(&b, &pj); err != nil {
 					logger.WithFields(pjutil.ProwJobFields(&pj)).Errorf("error executing URL template: %v", err)
 				}
+				// TODO(krzyzacy): We doesn't have buildID here yet - do a hack to get a proper URL to the PR
+				// Remove this once we have proper report interface.
+
+				// mangle
+				// https://gubernator-internal.googleplex.com/build/gob-prow/pr-logs/pull/gke-internal.googlesource.com_test-infra/8940/pull-test-infra-presubmit//
+				// to
+				// https://gubernator-internal.googleplex.com/builds/gob-prow/pr-logs/pull/gke-internal.googlesource.com_test-infra/8940/pull-test-infra-presubmit/
+				url := b.String()
+				url = strings.Replace(url, "builds", "build", 1)
+				url = strings.Replace(url, "//", "/", 1)
 			}
 			triggeredJobs = append(triggeredJobs, triggeredJob{Name: spec.Name, URL: b.String()})
 		}
