@@ -266,7 +266,9 @@ func Load(prowConfig, jobConfig string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	if err := nc.finalizeJobConfig(); err != nil {
+		return nil, err
+	}
 	if err := nc.validateJobConfig(); err != nil {
 		return nil, err
 	}
@@ -493,8 +495,8 @@ func setPeriodicDecorationDefaults(c *Config, ps *Periodic) {
 	}
 }
 
-// validateJobConfig validates if all the jobspecs/presets are valid
-func (c *Config) validateJobConfig() error {
+// finalizeJobConfig mutates and fixes entries for jobspecs
+func (c *Config) finalizeJobConfig() error {
 	if c.decorationRequested() {
 		if c.Plank.DefaultDecorationConfig == nil {
 			return errors.New("no default decoration config provided for plank")
@@ -538,12 +540,33 @@ func (c *Config) validateJobConfig() error {
 		}
 	}
 
+	for _, v := range c.AllPresubmits(nil) {
+		if err := resolvePresets(v.Name, v.Labels, v.Spec, c.Presets); err != nil {
+			return err
+		}
+	}
+
+	for _, v := range c.AllPostsubmits(nil) {
+		if err := resolvePresets(v.Name, v.Labels, v.Spec, c.Presets); err != nil {
+			return err
+		}
+	}
+
+	for _, v := range c.AllPeriodics() {
+		if err := resolvePresets(v.Name, v.Labels, v.Spec, c.Presets); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// validateJobConfig validates if all the jobspecs/presets are valid
+// if you are mutating the jobs, please add it to finalizeJobConfig above
+func (c *Config) validateJobConfig() error {
 	// Validate presubmits.
 	for _, v := range c.AllPresubmits(nil) {
 		if err := validateAgent(v.Name, v.Agent, v.Spec, v.DecorationConfig); err != nil {
-			return err
-		}
-		if err := validatePresets(v.Name, v.Labels, v.Spec, c.Presets); err != nil {
 			return err
 		}
 		// Ensure max_concurrency is non-negative.
@@ -566,9 +589,6 @@ func (c *Config) validateJobConfig() error {
 		if err := validateAgent(j.Name, j.Agent, j.Spec, j.DecorationConfig); err != nil {
 			return err
 		}
-		if err := validatePresets(j.Name, j.Labels, j.Spec, c.Presets); err != nil {
-			return err
-		}
 		// Ensure max_concurrency is non-negative.
 		if j.MaxConcurrency < 0 {
 			return fmt.Errorf("job %s jas invalid max_concurrency (%d), it needs to be a non-negative number", j.Name, j.MaxConcurrency)
@@ -584,9 +604,6 @@ func (c *Config) validateJobConfig() error {
 	// Ensure that the periodic durations are valid and specs exist.
 	for _, p := range c.AllPeriodics() {
 		if err := validateAgent(p.Name, p.Agent, p.Spec, p.DecorationConfig); err != nil {
-			return err
-		}
-		if err := validatePresets(p.Name, p.Labels, p.Spec, c.Presets); err != nil {
 			return err
 		}
 		if err := validatePodSpec(p.Name, kube.PeriodicJob, p.Spec); err != nil {
@@ -881,7 +898,7 @@ func validateAgent(name, agent string, spec *v1.PodSpec, config *kube.Decoration
 	return nil
 }
 
-func validatePresets(name string, labels map[string]string, spec *v1.PodSpec, presets []Preset) error {
+func resolvePresets(name string, labels map[string]string, spec *v1.PodSpec, presets []Preset) error {
 	for _, preset := range presets {
 		if err := mergePreset(preset, labels, spec); err != nil {
 			return fmt.Errorf("job %s failed to merge presets: %v", name, err)
