@@ -309,9 +309,9 @@ func (c *Controller) ProcessChange(change gerrit.ChangeInfo) error {
 				// Remove this once we have proper report interface.
 
 				// mangle
-				// https://gubernator-internal.googleplex.com/build/gob-prow/pr-logs/pull/gke-internal.googlesource.com_test-infra/8940/pull-test-infra-presubmit//
+				// https://gubernator.k8s.io/build/gob-prow/pr-logs/pull/some-repo/8940/pull-test-infra-presubmit//
 				// to
-				// https://gubernator-internal.googleplex.com/builds/gob-prow/pr-logs/pull/gke-internal.googlesource.com_test-infra/8940/pull-test-infra-presubmit/
+				// https://gubernator.k8s.io/builds/gob-prow/pr-logs/pull/some-repo/8940/pull-test-infra-presubmit/
 				url := b.String()
 				url = strings.Replace(url, "builds", "build", 1)
 				url = strings.Replace(url, "//", "/", 1)
