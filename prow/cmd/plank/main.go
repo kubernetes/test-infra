@@ -93,7 +93,7 @@ func main() {
 		oauthSecret = string(bytes.TrimSpace(oauthSecretRaw))
 	}
 
-	var ghc *github.Client
+	var ghc plank.GitHubClient
 	var kc *kube.Client
 	var pkcs map[string]*kube.Client
 	if *dryRun {
