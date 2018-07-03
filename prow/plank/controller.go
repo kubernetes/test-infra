@@ -19,6 +19,7 @@ package plank
 import (
 	"bytes"
 	"fmt"
+	"reflect"
 	"strings"
 	"sync"
 	"time"
@@ -89,7 +90,7 @@ type Controller struct {
 }
 
 // NewController creates a new Controller from the provided clients.
-func NewController(kc *kube.Client, pkcs map[string]*kube.Client, ghc *github.Client, logger *logrus.Entry, ca *config.Agent, totURL, selector string) (*Controller, error) {
+func NewController(kc *kube.Client, pkcs map[string]*kube.Client, ghc githubClient, logger *logrus.Entry, ca *config.Agent, totURL, selector string) (*Controller, error) {
 	n, err := snowflake.NewNode(1)
 	if err != nil {
 		return nil, err
@@ -217,7 +218,9 @@ func (c *Controller) Sync() error {
 	}
 
 	var reportErrs []error
+	c.log.Warn("*** Before Reporting ***")
 	if c.ghc != nil {
+		c.log.Warn("*** Inside Reporting ***")
 		reportTemplate := c.ca.Config().Plank.ReportTemplate
 		for report := range reportCh {
 			if err := reportlib.Report(c.ghc, reportTemplate, report); err != nil {
