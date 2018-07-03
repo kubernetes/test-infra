@@ -18,6 +18,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -41,49 +42,74 @@ import (
 	"k8s.io/test-infra/prow/plank"
 )
 
-var (
-	totURL = flag.String("tot-url", "", "Tot URL")
+type options struct {
+	totURL string
 
-	configPath    = flag.String("config-path", "/etc/config/config.yaml", "Path to config.yaml.")
-	jobConfigPath = flag.String("job-config-path", "", "Path to prow job configs.")
-	cluster       = flag.String("cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
-	buildCluster  = flag.String("build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
-	selector      = flag.String("label-selector", kube.EmptySelector, "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
+	configPath    string
+	jobConfigPath string
+	cluster       string
+	buildCluster  string
+	selector      string
 
-	githubEndpoint  = flagutil.NewStrings("https://api.github.com")
-	githubTokenFile = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
-	dryRun          = flag.Bool("dry-run", true, "Whether or not to make mutating API calls to GitHub.")
-	deckURL         = flag.String("deck-url", "", "Deck URL for read-only access to the cluster.")
-)
+	githubEndpoint  flagutil.Strings
+	githubTokenFile string
+	dryRun          bool
+	deckURL         string
+}
 
-func init() {
-	flag.Var(&githubEndpoint, "github-endpoint", "GitHub's API endpoint.")
+func gatherOptions() options {
+	o := options{
+		githubEndpoint: flagutil.NewStrings("https://api.github.com"),
+	}
+
+	flag.StringVar(&o.totURL, "tot-url", "", "Tot URL")
+
+	flag.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
+	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
+	flag.StringVar(&o.cluster, "cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
+	flag.StringVar(&o.buildCluster, "build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
+	flag.StringVar(&o.selector, "label-selector", kube.EmptySelector, "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
+
+	flag.Var(&o.githubEndpoint, "github-endpoint", "GitHub's API endpoint.")
+	flag.StringVar(&o.githubTokenFile, "github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
+	flag.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
+	flag.StringVar(&o.deckURL, "deck-url", "", "Deck URL for read-only access to the cluster.")
+	flag.Parse()
+	return o
+}
+
+func (o *options) Validate() error {
+	if _, err := labels.Parse(o.selector); err != nil {
+		return errors.New("Error parsing label selector.")
+	}
+
+	return nil
 }
 
 func main() {
-	flag.Parse()
+	o := gatherOptions()
+	if err := o.Validate(); err != nil {
+		logrus.WithError(err).Fatal("Invalid options")
+	}
+
 	logrus.SetFormatter(
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "plank"}),
 	)
 
-	if _, err := labels.Parse(*selector); err != nil {
-		logrus.WithError(err).Fatal("Error parsing label selector.")
-	}
-
 	configAgent := &config.Agent{}
-	if err := configAgent.Start(*configPath, *jobConfigPath); err != nil {
+	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
 	var oauthSecret string
 	var err error
-	if *githubTokenFile != "" {
-		oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
+	if o.githubTokenFile != "" {
+		oauthSecretRaw, err := ioutil.ReadFile(o.githubTokenFile)
 		if err != nil {
 			logrus.WithError(err).Fatalf("Could not read oauth secret file.")
 		}
 
-		for _, ep := range githubEndpoint.Strings() {
+		for _, ep := range o.githubEndpoint.Strings() {
 			_, err = url.Parse(ep)
 			if err != nil {
 				logrus.WithError(err).Fatalf("Invalid --endpoint URL %q.", ep)
@@ -96,42 +122,42 @@ func main() {
 	var ghc plank.GitHubClient
 	var kc *kube.Client
 	var pkcs map[string]*kube.Client
-	if *dryRun {
+	if o.dryRun {
 		if oauthSecret != "" {
-			ghc = github.NewDryRunClient(oauthSecret, githubEndpoint.Strings()...)
+			ghc = github.NewDryRunClient(oauthSecret, o.githubEndpoint.Strings()...)
 		}
-		kc = kube.NewFakeClient(*deckURL)
+		kc = kube.NewFakeClient(o.deckURL)
 		pkcs = map[string]*kube.Client{kube.DefaultClusterAlias: kc}
 	} else {
 		if oauthSecret != "" {
-			ghc = github.NewClient(oauthSecret, githubEndpoint.Strings()...)
+			ghc = github.NewClient(oauthSecret, o.githubEndpoint.Strings()...)
 		}
-		if *cluster == "" {
+		if o.cluster == "" {
 			kc, err = kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 			if err != nil {
 				logrus.WithError(err).Fatal("Error getting kube client.")
 			}
 		} else {
-			kc, err = kube.NewClientFromFile(*cluster, configAgent.Config().ProwJobNamespace)
+			kc, err = kube.NewClientFromFile(o.cluster, configAgent.Config().ProwJobNamespace)
 			if err != nil {
 				logrus.WithError(err).Fatal("Error getting kube client.")
 			}
 		}
-		if *buildCluster == "" {
+		if o.buildCluster == "" {
 			pkc, err := kube.NewClientInCluster(configAgent.Config().PodNamespace)
 			if err != nil {
 				logrus.WithError(err).Fatal("Error getting kube client.")
 			}
 			pkcs = map[string]*kube.Client{kube.DefaultClusterAlias: pkc}
 		} else {
-			pkcs, err = kube.ClientMapFromFile(*buildCluster, configAgent.Config().PodNamespace)
+			pkcs, err = kube.ClientMapFromFile(o.buildCluster, configAgent.Config().PodNamespace)
 			if err != nil {
 				logrus.WithError(err).Fatal("Error getting kube client to build cluster.")
 			}
 		}
 	}
 
-	c, err := plank.NewController(kc, pkcs, ghc, nil, configAgent, *totURL, *selector)
+	c, err := plank.NewController(kc, pkcs, ghc, nil, configAgent, o.totURL, o.selector)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating plank controller.")
 	}

@@ -41,21 +41,30 @@ type configAgent interface {
 	Config() *config.Config
 }
 
-var (
-	runOnce       = flag.Bool("run-once", false, "If true, run only once then quit.")
-	configPath    = flag.String("config-path", "/etc/config/config.yaml", "Path to config.yaml.")
-	jobConfigPath = flag.String("job-config-path", "", "Path to prow job configs.")
-	buildCluster  = flag.String("build-cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
-)
+type options struct {
+	runOnce       bool
+	configPath    string
+	jobConfigPath string
+	buildCluster  string
+}
 
-func main() {
+func gatherOptions() options {
+	o := options{}
+	flag.BoolVar(&o.runOnce, "run-once", false, "If true, run only once then quit.")
+	flag.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
+	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
+	flag.StringVar(&o.buildCluster, "build-cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
 	flag.Parse()
+	return o
+}
+func main() {
+	o := gatherOptions()
 	logrus.SetFormatter(
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "sinker"}),
 	)
 
 	configAgent := &config.Agent{}
-	if err := configAgent.Start(*configPath, *jobConfigPath); err != nil {
+	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
@@ -66,12 +75,12 @@ func main() {
 	}
 
 	var pkcs map[string]*kube.Client
-	if *buildCluster == "" {
+	if o.buildCluster == "" {
 		pkcs = map[string]*kube.Client{
 			kube.DefaultClusterAlias: kc.Namespace(configAgent.Config().PodNamespace),
 		}
 	} else {
-		pkcs, err = kube.ClientMapFromFile(*buildCluster, configAgent.Config().PodNamespace)
+		pkcs, err = kube.ClientMapFromFile(o.buildCluster, configAgent.Config().PodNamespace)
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting kube client(s).")
 		}
@@ -93,7 +102,7 @@ func main() {
 		start := time.Now()
 		c.clean()
 		logrus.Infof("Sync time: %v", time.Since(start))
-		if *runOnce {
+		if o.runOnce {
 			break
 		}
 		time.Sleep(configAgent.Config().Sinker.ResyncPeriod)
