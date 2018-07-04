@@ -131,8 +131,6 @@ slack:
     - k8s-merge-robot # submit queue
     - k8s-release-robot # anago
     branch_whitelist:
-        release-1.7:
-            - wojtek-t # 1.7 patch release manager
         release-1.8:
             - jpbetz # 1.8 patch release manager
         release-1.9:
@@ -140,7 +138,7 @@ slack:
         release-1.10:
             - maciekpytel # 1.10 patch release manager
         release-1.11:
-            - calebamiles # 1.11 branch manager
+            - foxish # 1.11 patch release manager
         feature-serverside-apply:
             - lavalamp # feature-serverside-apply "branch manager"
   - repos:
