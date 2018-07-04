@@ -49,6 +49,7 @@ approve:
   - kubernetes/minikube
   - kubernetes/node-problem-detector
   - kubernetes/perf-tests
+  - kubernetes/publishing-bot
   - kubernetes/repo-infra
   - kubernetes/sig-release
   - kubernetes/steering
@@ -337,6 +338,10 @@ plugins:
   - require-sig
 
   kubernetes/perf-tests:
+  - approve
+  - blunderbuss
+
+  kubernetes/publishing-bot:
   - approve
   - blunderbuss
 
