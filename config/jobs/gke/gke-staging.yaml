@@ -23,7 +23,7 @@ periodics:
       - --ginkgo-parallel
       - --gke-environment=staging
       - --provider=gke
-      - --test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\\\\[Slow\\\\]|\\\\[Serial\\\\]|\\\\[Disruptive\\\\]|\\\\[Flaky\\\\]|\\\\[Feature:.+\\\\] --minStartupPods=8
       - --timeout=80m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
 
@@ -50,7 +50,7 @@ periodics:
       - --gcp-zone=us-central1-f
       - --gke-environment=staging
       - --provider=gke
-      - --test_args=--ginkgo.focus=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\\\\[Slow\\\\]|\\\\[Serial\\\\]|\\\\[Disruptive\\\\] --ginkgo.skip=\\\\[Flaky\\\\]|\\\\[Feature:.+\\\\] --minStartupPods=8
       - --timeout=800m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
 
@@ -78,7 +78,7 @@ periodics:
       - --ginkgo-parallel
       - --gke-environment=staging
       - --provider=gke
-      - --test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\\\\[Slow\\\\]|\\\\[Serial\\\\]|\\\\[Disruptive\\\\]|\\\\[Flaky\\\\]|\\\\[Feature:.+\\\\] --minStartupPods=8
       - --timeout=80m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
 
@@ -105,7 +105,7 @@ periodics:
       - --gcp-zone=us-central1-f
       - --gke-environment=staging
       - --provider=gke
-      - --test_args=--ginkgo.focus=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\\\\[Slow\\\\]|\\\\[Serial\\\\]|\\\\[Disruptive\\\\] --ginkgo.skip=\\\\[Flaky\\\\]|\\\\[Feature:.+\\\\] --minStartupPods=8
       - --timeout=600m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
 
@@ -133,7 +133,7 @@ periodics:
       - --ginkgo-parallel
       - --gke-environment=staging
       - --provider=gke
-      - --test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\\\\[Slow\\\\]|\\\\[Serial\\\\]|\\\\[Disruptive\\\\]|\\\\[Flaky\\\\]|\\\\[Feature:.+\\\\] --minStartupPods=8
       - --timeout=80m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
 
@@ -160,7 +160,7 @@ periodics:
       - --gcp-zone=us-central1-f
       - --gke-environment=staging
       - --provider=gke
-      - --test_args=--ginkgo.focus=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\\\\[Slow\\\\]|\\\\[Serial\\\\]|\\\\[Disruptive\\\\] --ginkgo.skip=\\\\[Flaky\\\\]|\\\\[Feature:.+\\\\] --minStartupPods=8
       - --timeout=600m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
 
@@ -188,7 +188,7 @@ periodics:
       - --ginkgo-parallel
       - --gke-environment=staging
       - --provider=gke
-      - --test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\\\\[Slow\\\\]|\\\\[Serial\\\\]|\\\\[Disruptive\\\\]|\\\\[Flaky\\\\]|\\\\[Feature:.+\\\\] --minStartupPods=8
       - --timeout=80m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
 
@@ -215,7 +215,7 @@ periodics:
       - --gcp-zone=us-central1-f
       - --gke-environment=staging
       - --provider=gke
-      - --test_args=--ginkgo.focus=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\\\\[Slow\\\\]|\\\\[Serial\\\\]|\\\\[Disruptive\\\\] --ginkgo.skip=\\\\[Flaky\\\\]|\\\\[Feature:.+\\\\] --minStartupPods=8
       - --timeout=600m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
 
@@ -243,7 +243,7 @@ periodics:
       - --ginkgo-parallel
       - --gke-environment=staging
       - --provider=gke
-      - --test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\\\\[Slow\\\\]|\\\\[Serial\\\\]|\\\\[Disruptive\\\\]|\\\\[Flaky\\\\]|\\\\[Feature:.+\\\\] --minStartupPods=8
       - --timeout=80m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
 
@@ -270,6 +270,6 @@ periodics:
       - --gcp-zone=us-central1-f
       - --gke-environment=staging
       - --provider=gke
-      - --test_args=--ginkgo.focus=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\\\\[Slow\\\\]|\\\\[Serial\\\\]|\\\\[Disruptive\\\\] --ginkgo.skip=\\\\[Flaky\\\\]|\\\\[Feature:.+\\\\] --minStartupPods=8
       - --timeout=600m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
