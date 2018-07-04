@@ -104,7 +104,7 @@ function redraw(prData) {
     if (prData && prData.Login) {
         loadPrStatus(prData);
     } else {
-        loadGithubLogin();
+        forceGithubLogin();
     }
 }
 
@@ -822,25 +822,10 @@ function createPRCard(pr, builds = [], queries = [], tidePools = []) {
 }
 
 /**
- * Load Github login button if user has not login.
+ * Redirect to initiate github login flow.
  */
-function loadGithubLogin() {
-    const button = document.createElement("BUTTON");
-    button.classList.add("mdl-button", "mdl-js-button", "mdl-button--raised",
-        "mdl-button--primary", "mdl-js-ripple-effect");
-    button.textContent = "Login to Github";
-    button.style.alignSelf = "center";
-    button.style.width = "160px";
-    button.addEventListener("click", () => {
-        const url = window.location;
-        window.location.href = url.origin + "/github-login";
-    });
-    const msg = createMessage(
-        "PR Status needs you to login and grant it OAuth scopes",
-        "sentiment_very_satisfied");
-    const main = document.querySelector("#main-container");
-    main.appendChild(msg);
-    main.appendChild(button);
+function forceGithubLogin() {
+	window.location.href = window.location.origin + "/github-login";
 }
 
 /**
