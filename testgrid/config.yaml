@@ -539,6 +539,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-default-parallel
 - name: ci-kubernetes-e2e-gke-staging-default-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-default-serial
+- name: ci-kubernetes-e2e-gke-staging-beta-parallel
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-beta-parallel
+- name: ci-kubernetes-e2e-gke-staging-beta-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-beta-serial
 - name: ci-kubernetes-e2e-gke-staging-stable1-parallel
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-stable1-parallel
 - name: ci-kubernetes-e2e-gke-staging-stable1-serial
@@ -3417,6 +3421,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-staging-default-parallel
   - name: gke-staging-default-serial
     test_group_name: ci-kubernetes-e2e-gke-staging-default-serial
+  - name: gke-staging-1.11-parallel
+    test_group_name: ci-kubernetes-e2e-gke-staging-beta-parallel
+  - name: gke-staging-1.11-serial
+    test_group_name: ci-kubernetes-e2e-gke-staging-beta-serial
   - name: gke-staging-1.10-parallel
     test_group_name: ci-kubernetes-e2e-gke-staging-stable1-parallel
   - name: gke-staging-1.10-serial
