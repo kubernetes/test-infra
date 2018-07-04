@@ -10,7 +10,7 @@
 from
 <input id="date" onfocus="(this.type='date')" placeholder="today" onchange="getData();">
 </h1>
-<b>Show clusters for SIG:</b><span id="btn-sig-group">
+<span id="btn-sig-group"><b>Show clusters for SIG:</b>
 	<button id="btn-sig-api-machinery" class="toggle sig-api-machinery">api-machinery</button>
 	<button id="btn-sig-apps" class="toggle sig-apps">apps</button>
 	<button id="btn-sig-autoscaling" class="toggle sig-autoscaling">autoscaling</button>
@@ -26,25 +26,27 @@ from
 	<button id="btn-sig-storage" class="toggle sig-storage">storage</button>
 	<button id="btn-sig-testing" class="toggle sig-testing">testing</button>
 	<button id="btn-sig-ui" class="toggle sig-ui">ui</button>
-</span>
 <br><br>
+</span>
 <form id="options" onchange="rerender();">
+Include results from:
+<label><input type="checkbox" checked id="job-ci">CI</label>
+<label><input type="checkbox" id="job-pr">PR</label>
+<br>
+<span id="multiple-options">
 Sort by
 <label><input id="sort" name="sort" type="radio" value="total">total count</label>
 <label><input name="sort" type="radio" value="day" checked>count in last day</label>
 <label><input name="sort" type="radio" value="message">error message</label>
 <br>
 <label style="display:none"><input type="checkbox" id="show-normalize">Display normalized errors</label><br>
-Include results from:
-<label><input type="checkbox" checked id="job-ci">CI</label>
-<label><input type="checkbox" id="job-pr">PR</label>
-<br><br>
 Filter (these are regexes):
 <table>
 <label><tr><td>Failure text<td><input type="text" id="filter-text"></label><br>
 <label><tr><td>Job<td><input type="text" id="filter-job"></label><br>
 <label><tr><td>Test<td><input type="text" id="filter-test"></label><br>
 </table>
+</span>
 </form>
 <div id="summary"></div>
 <div id="load-status">

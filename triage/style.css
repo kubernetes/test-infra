@@ -21,12 +21,16 @@ pre span.mm {
   cursor: pointer;
 }
 
-h2 {
-  position: sticky;
-  top: 0px;
+div.failure {
+  border: 1px solid;
+  border-radius: 5px;
   padding: 5px;
-  background-color: white;
-  border: 1px solid black;
+  margin-bottom: 5px;
+}
+
+div.failure > h2 {
+  margin: 0;
+  padding: 0;
 }
 
 input[type=text] {

@@ -167,19 +167,33 @@ function rerender(maxCount) {
 
   summaryText += ` out of ${builds.runCount} builds from ${builds.getStartTime()} to ${builds.getEndTime()}.`
 
+  if (clusteredAll.clusterId) {
+    // Render just the cluster with the given key.
+    // Show an error message if no live cluster with that id is found.
+    summaryText = '';
+    var keyId = clusteredAll.clusterId;
+
+    addElement(top, 'h3', null, [createElement('a', {href: ''}, 'View all clusters')]);
+
+    if (!clustered.byId[keyId]) {
+      var summary = document.getElementById('summary');
+      summaryText = `Cluster ${keyId} not found in the last week of data.`
+    }
+  }
+
   if (maxCount !== 0) {
     summary.innerText = summaryText;
 
-    if (clustered.length > 0) {
+    if (clustered.length > 0 && !clusteredAll.clusterId) {
       let graph = addElement(summary, 'div');
       renderGraph(graph, clustered.allBuilds());
     }
 
     renderSubset(0, maxCount || 10);
-  }
 
-  // draw graphs after the current render cycle, to reduce perceived latency.
-  setTimeout(drawVisibleGraphs, 0);
+    // draw graphs after the current render cycle, to reduce perceived latency.
+    setTimeout(drawVisibleGraphs, 0);
+  }
 }
 
 function toggle(target) {
@@ -197,22 +211,12 @@ function toggle(target) {
   return true;
 }
 
-// Render just the cluster with the given key.
-// Show an error message if no live cluster with that id is found.
 function renderOnly(keyId) {
   var el = null;
   rerender(0);
 
   var top = document.getElementById('clusters');
   top.removeChildren();
-
-  addElement(top, 'h3', null, [createElement('a', {href: ''}, 'View all clusters')]);
-
-  if (!clustered.byId[keyId]) {
-    var summary = document.getElementById('summary');
-    summary.innerText = `Cluster ${keyId} not found in the last week of data.`
-    return;
-  }
 
   renderSubset(0, 1);
 
@@ -282,7 +286,15 @@ function get(uri, callback, onprogress) {
   req.send();
 }
 
-function getData(clusterId) {
+function getData() {
+  var clusterId = null;
+  if (/^#[a-f0-9]{20}$/.test(window.location.hash)) {
+    clusterId = window.location.hash.slice(1);
+    // Hide filtering options, since this page has only a single cluster.
+    setElementVisibility('multiple-options', false);
+    setElementVisibility('btn-sig-group', false);
+  }
+
   var url = '/k8s-gubernator/triage/'
   var date = document.getElementById('date');
   if (date && date.value) {
@@ -321,13 +333,8 @@ function getData(clusterId) {
             }
           }
         }
-        clusteredAll = new Clusters(data.clustered);
-        if (clusterId) {
-          clusteredAll.slice = true;
-          renderOnly(clusterId);
-        } else {
-          rerender();
-        }
+        clusteredAll = new Clusters(data.clustered, clusterId);
+        rerender();
       }, 0);
     },
     evt => {
@@ -342,14 +349,7 @@ function getData(clusterId) {
 function load() {
   setOptionsFromURL();
 
-  var clusterId = null;
-  if (/^#[a-f0-9]{20}$/.test(window.location.hash)) {
-    clusterId = window.location.hash.slice(1);
-    // Hide filtering options, since this page has only a single cluster.
-    document.getElementById('options').style.display = 'none';
-  }
-
-  getData(clusterId);
+  getData();
 
   google.charts.load('current', {'packages': ['corechart', 'line']});
   google.charts.setOnLoadCallback(() => { google.charts.loaded = true });
