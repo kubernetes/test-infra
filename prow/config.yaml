@@ -12988,26 +12988,6 @@ periodics:
     - name: docker-graph
       emptyDir: {}
 
-- name: ci-kubernetes-kubemark-5-prow-canary
-  cron: "0 * * * *"
-  agent: kubernetes
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-      imagePullPolicy: Always
-      args:
-      - --bare
-      - --timeout=80
-      env:
-      - name: KUBEMARK_BAZEL_BUILD
-        value: "y"
-      # bazel needs privileged mode to sandbox builds
-      securityContext:
-        privileged: true
-
 - name: ci-kubernetes-kubemark-500-gce
   tags:
   - "perfDashPrefix: kubemark-500Nodes-master"
