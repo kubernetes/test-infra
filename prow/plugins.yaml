@@ -29,6 +29,7 @@ owners:
 
 approve:
 - repos:
+  - kubernetes/autoscaler
   - kubernetes/charts
   - kubernetes/cluster-registry
   - kubernetes/contrib
@@ -204,6 +205,9 @@ plugins:
     # Applies a label to PRs with wip in the title to block merge
     - wip
     - trigger
+
+  kubernetes/autoscaler:
+  - approve
 
   kubernetes/charts:
   - approve
