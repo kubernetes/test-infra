@@ -20,7 +20,7 @@ periodics:
       - --gcp-zone=us-central1-f
       - --ginkgo-parallel=25
       - --provider=gce
-      - --test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\\\\[Slow\\\\]|\\\\[Serial\\\\]|\\\\[Disruptive\\\\]|\\\\[Flaky\\\\]|\\\\[Feature:.+\\\\] --minStartupPods=8
       - --timeout=65m
 - interval: 30m
   agent: kubernetes
@@ -45,7 +45,7 @@ periodics:
       - --gcp-nodes=4
       - --gcp-zone=us-central1-f
       - --provider=gce
-      - --test_args=--ginkgo.focus=Variable.Expansion --ginkgo.skip=\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+      - --test_args=--ginkgo.focus=Variable.Expansion --ginkgo.skip=\\\\[Feature:.+\\\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=40m
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
