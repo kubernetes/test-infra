@@ -90,7 +90,6 @@ config:
     ci-kubernetes-e2e-kops-aws-slow,\
     ci-kubernetes-e2e-kops-aws-updown,\
     ci-kubernetes-e2e-kops-aws-weave,\
-    ci-kubernetes-kubemark-5-gce,\
     ci-kubernetes-kubemark-500-gce,\
     ci-kubernetes-node-kubelet,\
     ci-kubernetes-node-kubelet-serial,\

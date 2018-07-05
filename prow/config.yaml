@@ -12963,31 +12963,6 @@ periodics:
     - name: docker-graph
       emptyDir: {}
 
-- name: ci-kubernetes-kubemark-5-gce
-  interval: 30m
-  agent: kubernetes
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
-      args:
-      - --bare
-      - --timeout=80
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
-
 - name: ci-kubernetes-kubemark-5-gce-last-release
   interval: 30m
   agent: kubernetes

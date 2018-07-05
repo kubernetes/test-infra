@@ -588,9 +588,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-100-canary
 - name: ci-kubernetes-kubemark-5-prow-canary
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-5-prow-canary
-- name: ci-kubernetes-kubemark-5-gce
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-5-gce
-  num_failures_to_alert: 1
 - name: ci-kubernetes-kubemark-5-gce-last-release
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-5-gce-last-release
   num_failures_to_alert: 1
@@ -5496,8 +5493,6 @@ dashboards:
 
 - name: sig-scalability-kubemark
   dashboard_tab:
-  - name: kubemark-small
-    test_group_name: ci-kubernetes-kubemark-5-gce
   - name: kubemark-small-last-release
     test_group_name: ci-kubernetes-kubemark-5-gce-last-release
   - name: kubemark-100
