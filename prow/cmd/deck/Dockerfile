@@ -16,5 +16,5 @@ FROM gcr.io/k8s-prow/alpine:0.1
 LABEL maintainer="spxtr@google.com"
 
 COPY deck /deck
-COPY static /static
+COPY static/ /static
 ENTRYPOINT ["/deck"]
