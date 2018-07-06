@@ -4857,7 +4857,8 @@
       "--gcp-zone=us-east1-b",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true --minStartupPods=8",
-      "--timeout=120m"
+      "--timeout=120m",
+      "--use-logexporter"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4876,7 +4877,8 @@
       "--gcp-zone=us-east1-b",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true --minStartupPods=8",
-      "--timeout=120m"
+      "--timeout=120m",
+      "--use-logexporter"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4895,7 +4897,8 @@
       "--gcp-zone=us-east1-b",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true --minStartupPods=8",
-      "--timeout=120m"
+      "--timeout=120m",
+      "--use-logexporter"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
