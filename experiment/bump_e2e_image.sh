@@ -72,5 +72,5 @@ TAG="${DATE}-$(git describe --tags --always --dirty)"
 make -C "${TREE}/images/kubeadm" push TAG="${TAG}"
 
 $SED -i "s/\\/e2e-kubeadm:v.*$/\\/e2e-kubeadm:${TAG}/" "${TREE}/prow/config.yaml"
-find "${TREE}/config/jobs/" -type f -name \*.yaml -exec $SED -i "s/\\/e2e-kubeadm:v.*-\\(.*\)$/\\/e2e-kubeadm:${TAG}-\\1/" {} \;
+find "${TREE}/config/jobs/" -type f -name \*.yaml -exec $SED -i "s/\\/e2e-kubeadm:v.*-\\(.*\)$/\\/e2e-kubeadm:${TAG}/" {} \;
 git commit -am "Bump to e2e-kubeadm:${TAG}"
