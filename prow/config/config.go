@@ -261,18 +261,24 @@ type Branding struct {
 }
 
 // Load loads and parses the config at path.
-func Load(prowConfig, jobConfig string) (*Config, error) {
-	nc, err := loadConfig(prowConfig, jobConfig)
+func Load(prowConfig, jobConfig string) (c *Config, err error) {
+	// we never want config loading to take down the prow components
+	defer func() {
+		if r := recover(); r != nil {
+			c, err = nil, fmt.Errorf("panic loading config: %v", r)
+		}
+	}()
+	c, err = loadConfig(prowConfig, jobConfig)
 	if err != nil {
 		return nil, err
 	}
-	if err := nc.finalizeJobConfig(); err != nil {
+	if err := c.finalizeJobConfig(); err != nil {
 		return nil, err
 	}
-	if err := nc.validateJobConfig(); err != nil {
+	if err := c.validateJobConfig(); err != nil {
 		return nil, err
 	}
-	return nc, nil
+	return c, nil
 }
 
 // loadConfig loads one or multiple config files and returns a config object.
