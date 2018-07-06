@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
+FROM gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-master
 LABEL maintainer "beacham@google.com"
 
 # add env we can debug with the image name:tag
 ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     pkg-config \
     unzip \
@@ -30,7 +30,6 @@ RUN apt-get update && apt-get install -y \
 
 ENV TERRAFORM_VERSION=0.9.4 \
     KUBERNETES_PROVIDER=kubernetes-anywhere \
-    KUBECTL_VERSION=1.6.4 \
     PATH=/usr/local/bin:${PATH}
 
 # Add kubernetes-anywhere dependencies: jsonnet, terraform, kubectl
@@ -48,11 +47,6 @@ RUN mkdir -p /tmp/terraform/ && \
       unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip -d /bin \
     ) && \
     rm -rf /tmp/terraform
-
-# TODO(pipejakob): Instead of fetching a specific precompiled version, get
-# kubernetes-anywhere to use the kubectl built as part of this job.
-RUN wget https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl -O /usr/local/bin/kubectl && \
-    chmod +x /usr/local/bin/kubectl
 
 WORKDIR /workspace
 ADD runner /
