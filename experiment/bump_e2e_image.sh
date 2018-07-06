@@ -55,9 +55,9 @@ $SED -i "s/\\/kubekins-e2e:v.*$/\\/kubekins-e2e:${TAG}-master/" "${TREE}/experim
 $SED -i "s/\\/kubekins-e2e:v.*-\\(.*\\)$/\\/kubekins-e2e:${TAG}-\\1/" "${TREE}/experiment/test_config.yaml"
 
 bazel run //experiment:generate_tests -- \
-  "--yaml-config-path=${TREE}experiment/test_config.yaml" \
-  "--json-config-path=${TREE}jobs/config.json" \
-  "--prow-config-path=${TREE}prow/config.yaml"
+  "--yaml-config-path=${TREE}/experiment/test_config.yaml" \
+  "--json-config-path=${TREE}/jobs/config.json" \
+  "--prow-config-path=${TREE}/prow/config.yaml"
 bazel run //jobs:config_sort
 
 # Scan for kubekins-e2e:v.* as a rudimentary way to avoid
