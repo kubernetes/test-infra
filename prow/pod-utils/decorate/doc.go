@@ -14,6 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// decorate is a library for adding to a user-provided PodSpec
+// Package decorate is a library for adding to a user-provided PodSpec
 // in order to create a full Pod that will fulfill a test job
 package decorate

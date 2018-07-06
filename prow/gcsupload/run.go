@@ -84,7 +84,7 @@ func (o Options) assembleTargets(spec *downwardapi.JobSpec, extra map[string]gcs
 
 	if latestBuilds := gcs.LatestBuildForSpec(spec, builder); len(latestBuilds) > 0 {
 		for _, latestBuild := range latestBuilds {
-			uploadTargets[latestBuild] = gcs.DataUpload(strings.NewReader(spec.BuildId))
+			uploadTargets[latestBuild] = gcs.DataUpload(strings.NewReader(spec.BuildID))
 		}
 	}
 

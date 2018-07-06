@@ -17,7 +17,6 @@ limitations under the License.
 package slack
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -43,63 +42,11 @@ type Client struct {
 }
 
 const (
-	apiURL = "https://slack.com/api/"
-
-	authTest = apiURL + "auth.test"
-	apiTest  = apiURL + "api.test"
-
-	channelsList = apiURL + "channels.list"
-
-	chatPostMessage = apiURL + "chat.postMessage"
+	chatPostMessage = "https://slack.com/api/chat.postMessage"
 
 	botName      = "prow"
 	botIconEmoji = ":prow:"
 )
-
-type APIResponse struct {
-	Ok bool `json:"ok"`
-}
-
-type AuthResponse struct {
-	Ok     bool   `json:"ok"`
-	URL    string `json:"url"`
-	Team   string `json:"team"`
-	User   string `json:"user"`
-	TeamID string `json:"team_id"`
-	UserID string `json:"user_id"`
-}
-
-type Channel struct {
-	ID             string   `json:"id"`
-	Name           string   `json:"name"`
-	IsChannel      bool     `json:"is_channel"`
-	Created        int      `json:"created"`
-	Creator        string   `json:"creator"`
-	IsArchived     bool     `json:"is_archived"`
-	IsGeneral      bool     `json:"is_general"`
-	NameNormalized string   `json:"name_normalized"`
-	IsShared       bool     `json:"is_shared"`
-	IsOrgShared    bool     `json:"is_org_shared"`
-	IsMember       bool     `json:"is_member"`
-	Members        []string `json:"members"`
-	Topic          struct {
-		Value   string `json:"value"`
-		Creator string `json:"creator"`
-		LastSet int    `json:"last_set"`
-	} `json:"topic"`
-	Purpose struct {
-		Value   string `json:"value"`
-		Creator string `json:"creator"`
-		LastSet int    `json:"last_set"`
-	} `json:"purpose"`
-	PreviousNames []interface{} `json:"previous_names"`
-	NumMembers    int           `json:"num_members"`
-}
-
-type ChannelList struct {
-	Ok       bool      `json:"ok"`
-	Channels []Channel `json:"channels"`
-}
 
 // NewClient creates a slack client with an API token.
 func NewClient(token string) *Client {
@@ -127,42 +74,6 @@ func (sl *Client) log(methodName string, args ...interface{}) {
 	sl.logger.Debugf("%s(%s)", methodName, strings.Join(as, ", "))
 }
 
-func (sl *Client) VerifyAPI() (bool, error) {
-	sl.log("VerifyAPI")
-	if sl.fake {
-		return true, nil
-	}
-	t, e := sl.postMessage(apiTest, sl.urlValues())
-	if e != nil {
-		return false, e
-	}
-
-	var apiResponse APIResponse
-	e = json.Unmarshal(t, &apiResponse)
-	if e != nil {
-		return false, e
-	}
-	return apiResponse.Ok, nil
-}
-
-func (sl *Client) VerifyAuth() (bool, error) {
-	sl.log("VerifyAuth")
-	if sl.fake {
-		return true, nil
-	}
-	t, e := sl.postMessage(authTest, sl.urlValues())
-	if e != nil {
-		return false, e
-	}
-
-	var authResponse AuthResponse
-	e = json.Unmarshal(t, &authResponse)
-	if e != nil {
-		return false, e
-	}
-	return authResponse.Ok, nil
-}
-
 func (sl *Client) urlValues() *url.Values {
 	uv := url.Values{}
 	uv.Add("username", botName)
@@ -186,21 +97,7 @@ func (sl *Client) postMessage(url string, uv *url.Values) ([]byte, error) {
 	return t, nil
 }
 
-func (sl *Client) GetChannels() ([]Channel, error) {
-	sl.log("GetChannels")
-	if sl.fake {
-		return []Channel{}, nil
-	}
-	var uv *url.Values = sl.urlValues()
-	t, _ := sl.postMessage(channelsList, uv)
-	var chanList ChannelList
-	err := json.Unmarshal(t, &chanList)
-	if err != nil {
-		return nil, err
-	}
-	return chanList.Channels, nil
-}
-
+// WriteMessage adds text to channel
 func (sl *Client) WriteMessage(text, channel string) error {
 	sl.log("WriteMessage", text, channel)
 	if sl.fake {

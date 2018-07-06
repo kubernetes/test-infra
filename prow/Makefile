@@ -52,6 +52,8 @@ ENTRYPOINT_VERSION        ?= $(TAG)
 SIDECAR_VERSION           ?= $(TAG)
 # ARTIFACT-UPLOADER_VERSION is the version of the artifact uploader image
 ARTIFACT-UPLOADER_VERSION ?= $(TAG)
+# NEEDS-REBASE_VERSION is the version of the needs-rebase image
+NEEDS_REBASE_VERSION      ?= $(TAG)
 
 # These are the usual GKE variables.
 PROJECT       ?= k8s-prow
@@ -246,3 +248,15 @@ artifact-uploader-image: alpine-image
 
 .PHONY: clonerefs-image initupload-image gcsupload-image entrypoint-image sidecar-image artifact-uploader-image
 
+needs-rebase-image: git-image
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o external-plugins/needs-rebase/needs_rebase k8s.io/test-infra/prow/external-plugins/needs-rebase
+	docker build -t "$(REGISTRY)/$(PROJECT)/needs-rebase:$(NEEDS_REBASE_VERSION)" $(DOCKER_LABELS) external-plugins/needs-rebase
+	$(PUSH) "$(REGISTRY)/$(PROJECT)/needs-rebase:$(NEEDS_REBASE_VERSION)"
+
+needs-rebase-deployment: get-cluster-credentials
+	kubectl apply -f cluster/needs-rebase_deployment.yaml
+
+needs-rebase-service: get-cluster-credentials
+	kubectl apply -f cluster/needs-rebase_service.yaml
+
+.PHONY: needs-rebase-image needs-rebase-deployment needs-rebase-service

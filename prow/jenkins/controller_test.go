@@ -135,10 +135,10 @@ type fjc struct {
 	built  bool
 	pjs    []kube.ProwJob
 	err    error
-	builds map[string]JenkinsBuild
+	builds map[string]Build
 }
 
-func (f *fjc) Build(pj *kube.ProwJob, buildId string) error {
+func (f *fjc) Build(pj *kube.ProwJob, buildID string) error {
 	f.Lock()
 	defer f.Unlock()
 	if f.err != nil {
@@ -149,7 +149,7 @@ func (f *fjc) Build(pj *kube.ProwJob, buildId string) error {
 	return nil
 }
 
-func (f *fjc) ListBuilds(jobs []string) (map[string]JenkinsBuild, error) {
+func (f *fjc) ListBuilds(jobs []string) (map[string]Build, error) {
 	f.Lock()
 	defer f.Unlock()
 	if f.err != nil {
@@ -158,7 +158,7 @@ func (f *fjc) ListBuilds(jobs []string) (map[string]JenkinsBuild, error) {
 	return f.builds, nil
 }
 
-func (f *fjc) Abort(job string, build *JenkinsBuild) error {
+func (f *fjc) Abort(job string, build *Build) error {
 	f.Lock()
 	defer f.Unlock()
 	return nil
@@ -213,7 +213,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		pj             kube.ProwJob
 		pendingJobs    map[string]int
 		maxConcurrency int
-		builds         map[string]JenkinsBuild
+		builds         map[string]Build
 		err            error
 
 		expectedState    kube.ProwJobState
@@ -364,7 +364,7 @@ func TestSyncPendingJobs(t *testing.T) {
 		name        string
 		pj          kube.ProwJob
 		pendingJobs map[string]int
-		builds      map[string]JenkinsBuild
+		builds      map[string]Build
 		err         error
 
 		// TODO: Change to pass a ProwJobStatus
@@ -390,7 +390,7 @@ func TestSyncPendingJobs(t *testing.T) {
 					Description: "Jenkins job enqueued.",
 				},
 			},
-			builds: map[string]JenkinsBuild{
+			builds: map[string]Build{
 				"foofoo": {enqueued: true, Number: 10},
 			},
 			expectedState:    kube.PendingState,
@@ -410,7 +410,7 @@ func TestSyncPendingJobs(t *testing.T) {
 					Description: "Jenkins job enqueued.",
 				},
 			},
-			builds: map[string]JenkinsBuild{
+			builds: map[string]Build{
 				"boing": {enqueued: false, Number: 10},
 			},
 			expectedURL:      "boing/pending",
@@ -431,7 +431,7 @@ func TestSyncPendingJobs(t *testing.T) {
 					State: kube.PendingState,
 				},
 			},
-			builds: map[string]JenkinsBuild{
+			builds: map[string]Build{
 				"firstoutthetrenches": {enqueued: false, Number: 10},
 			},
 			expectedURL:    "firstoutthetrenches/pending",
@@ -459,7 +459,7 @@ func TestSyncPendingJobs(t *testing.T) {
 				},
 			},
 			// missing build
-			builds: map[string]JenkinsBuild{
+			builds: map[string]Build{
 				"other": {enqueued: false, Number: 10},
 			},
 			expectedURL:      "https://github.com/kubernetes/test-infra/issues",
@@ -481,8 +481,8 @@ func TestSyncPendingJobs(t *testing.T) {
 					State: kube.PendingState,
 				},
 			},
-			builds: map[string]JenkinsBuild{
-				"winwin": {Result: pState(Succeess), Number: 11},
+			builds: map[string]Build{
+				"winwin": {Result: pState(success), Number: 11},
 			},
 			expectedURL:      "winwin/success",
 			expectedState:    kube.SuccessState,
@@ -502,8 +502,8 @@ func TestSyncPendingJobs(t *testing.T) {
 					State: kube.PendingState,
 				},
 			},
-			builds: map[string]JenkinsBuild{
-				"whatapity": {Result: pState(Failure), Number: 12},
+			builds: map[string]Build{
+				"whatapity": {Result: pState(failure), Number: 12},
 			},
 			expectedURL:      "whatapity/failure",
 			expectedState:    kube.FailureState,
@@ -608,7 +608,7 @@ func TestBatch(t *testing.T) {
 		prowjobs: []kube.ProwJob{pj},
 	}
 	jc := &fjc{
-		builds: map[string]JenkinsBuild{
+		builds: map[string]Build{
 			"known_name": { /* Running */ },
 		},
 	}
@@ -635,7 +635,7 @@ func TestBatch(t *testing.T) {
 	if fc.prowjobs[0].Status.Description != "Jenkins job enqueued." {
 		t.Fatalf("Expected description %q, got %q.", "Jenkins job enqueued.", fc.prowjobs[0].Status.Description)
 	}
-	jc.builds["known_name"] = JenkinsBuild{Number: 42}
+	jc.builds["known_name"] = Build{Number: 42}
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on second sync: %v", err)
 	}
@@ -645,7 +645,7 @@ func TestBatch(t *testing.T) {
 	if fc.prowjobs[0].Status.PodName != "known_name" {
 		t.Fatalf("Wrong PodName: %s", fc.prowjobs[0].Status.PodName)
 	}
-	jc.builds["known_name"] = JenkinsBuild{Result: pState(Succeess)}
+	jc.builds["known_name"] = Build{Result: pState(success)}
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on third sync: %v", err)
 	}

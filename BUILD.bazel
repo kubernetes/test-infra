@@ -17,12 +17,6 @@ filegroup(
     visibility = ["//visibility:private"],
 )
 
-filegroup(
-    name = "buckets",
-    srcs = ["buckets.yaml"],
-    visibility = ["//:__subpackages__"],
-)
-
 workspace_binary(
     name = "dep",
     cmd = "//vendor/github.com/golang/dep/cmd/dep",
@@ -59,7 +53,6 @@ filegroup(
         "//label_sync:all-srcs",
         "//logexporter/cmd:all-srcs",
         "//maintenance/aws-janitor:all-srcs",
-        "//maintenance/fixconfig:all-srcs",
         "//maintenance/migratestatus:all-srcs",
         "//metrics:all-srcs",
         "//mungegithub:all-srcs",

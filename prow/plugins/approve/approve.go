@@ -30,18 +30,17 @@ import (
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/approve/approvers"
+	"k8s.io/test-infra/prow/repoowners"
 )
 
 const (
 	pluginName = "approve"
 
-	approveCommand              = "APPROVE"
-	approvedLabel               = "approved"
-	approvedReviewState         = "APPROVED"
-	cancelArgument              = "cancel"
-	changesRequestedReviewState = "CHANGES_REQUESTED"
-	lgtmCommand                 = "LGTM"
-	noIssueArgument             = "no-issue"
+	approveCommand  = "APPROVE"
+	approvedLabel   = "approved"
+	cancelArgument  = "cancel"
+	lgtmCommand     = "LGTM"
+	noIssueArgument = "no-issue"
 )
 
 var (
@@ -52,6 +51,9 @@ var (
 	// deprecatedBotNames are the names of the bots that previously handled approvals.
 	// Each can be removed once every PR approved by the old bot has been merged or unapproved.
 	deprecatedBotNames = []string{"k8s-merge-robot", "openshift-merge-robot"}
+
+	// handleFunc is used to allow mocking out the behavior of 'handle' while testing.
+	handleFunc = handle
 )
 
 type githubClient interface {
@@ -67,6 +69,10 @@ type githubClient interface {
 	AddLabel(org, repo string, number int, label string) error
 	RemoveLabel(org, repo string, number int, label string) error
 	ListIssueEvents(org, repo string, num int) ([]github.ListedIssueEvent, error)
+}
+
+type ownersClient interface {
+	LoadRepoOwners(org, repo, base string) (repoowners.RepoOwnerInterface, error)
 }
 
 type state struct {
@@ -85,6 +91,7 @@ type state struct {
 
 func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleGenericCommentEvent, helpProvider)
+	plugins.RegisterReviewEventHandler(pluginName, handleReviewEvent, helpProvider)
 	plugins.RegisterPullRequestHandler(pluginName, handlePullRequestEvent, helpProvider)
 }
 
@@ -109,7 +116,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", repo)
 		}
 		opts := optionsForRepo(config, parts[0], parts[1])
-		approveConfig[repo] = fmt.Sprintf("Pull requests %s require an associated issue.<br>Pull request authors %s implicitly approve their own PRs.<br>The /lgtm [cancel] command(s) %s act as approval.", doNot(opts.IssueRequired), doNot(opts.ImplicitSelfApprove), willNot(opts.LgtmActsAsApprove))
+		approveConfig[repo] = fmt.Sprintf("Pull requests %s require an associated issue.<br>Pull request authors %s implicitly approve their own PRs.<br>The /lgtm [cancel] command(s) %s act as approval.<br>A GitHub approved or changes requested review %s act as approval or cancel respectively.", doNot(opts.IssueRequired), doNot(opts.ImplicitSelfApprove), willNot(opts.LgtmActsAsApprove), willNot(opts.ReviewActsAsApprove))
 	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: `The approve plugin implements a pull request approval process that manages the '` + approvedLabel + `' label and an approval notification comment. Approval is achieved when the set of users that have approved the PR is capable of approving every file changed by the PR. A user is able to approve a file if their username or an alias they belong to is listed in the 'approvers' section of an OWNERS file in the directory of the file or higher in the directory tree.
@@ -129,41 +136,49 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 }
 
 func handleGenericCommentEvent(pc plugins.PluginClient, ce github.GenericCommentEvent) error {
+	return handleGenericComment(
+		pc.Logger,
+		pc.GitHubClient,
+		pc.OwnersClient,
+		pc.PluginConfig,
+		&ce,
+	)
+}
+
+func handleGenericComment(log *logrus.Entry, ghc githubClient, oc ownersClient, config *plugins.Configuration, ce *github.GenericCommentEvent) error {
 	if ce.Action != github.GenericCommentActionCreated || !ce.IsPR || ce.IssueState == "closed" {
 		return nil
 	}
-	botName, err := pc.GitHubClient.BotName()
+
+	botName, err := ghc.BotName()
 	if err != nil {
 		return err
 	}
 
-	opts := optionsForRepo(pc.PluginConfig, ce.Repo.Owner.Login, ce.Repo.Name)
-	if !approvalCommandMatcher(botName, opts.LgtmActsAsApprove, opts.ReviewActsAsApprove)(&comment{Body: ce.Body, Author: ce.User.Login}) {
+	opts := optionsForRepo(config, ce.Repo.Owner.Login, ce.Repo.Name)
+	if !isApprovalCommand(botName, opts.LgtmActsAsApprove, &comment{Body: ce.Body, Author: ce.User.Login}) {
 		return nil
 	}
 
-	pr, err := pc.GitHubClient.GetPullRequest(ce.Repo.Owner.Login, ce.Repo.Name, ce.Number)
+	pr, err := ghc.GetPullRequest(ce.Repo.Owner.Login, ce.Repo.Name, ce.Number)
 	if err != nil {
 		return err
 	}
 
-	ro, err := pc.OwnersClient.LoadRepoOwners(ce.Repo.Owner.Login, ce.Repo.Name, pr.Base.Ref)
+	repo, err := oc.LoadRepoOwners(ce.Repo.Owner.Login, ce.Repo.Name, pr.Base.Ref)
 	if err != nil {
 		return err
 	}
-	return handleGenericComment(pc.Logger, pc.GitHubClient, ro, pc.PluginConfig, &ce, pr.Base.Ref)
-}
 
-func handleGenericComment(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, config *plugins.Configuration, ce *github.GenericCommentEvent, branch string) error {
-	return handle(
+	return handleFunc(
 		log,
 		ghc,
 		repo,
-		optionsForRepo(config, ce.Repo.Owner.Login, ce.Repo.Name),
+		opts,
 		&state{
 			org:       ce.Repo.Owner.Login,
 			repo:      ce.Repo.Name,
-			branch:    branch,
+			branch:    pr.Base.Ref,
 			number:    ce.Number,
 			body:      ce.IssueBody,
 			author:    ce.IssueAuthor.Login,
@@ -173,14 +188,91 @@ func handleGenericComment(log *logrus.Entry, ghc githubClient, repo approvers.Re
 	)
 }
 
+// handleReviewEvent should only handle reviews that have no approval command.
+// Reviews with approval commands will be handled by handleGenericCommentEvent.
+func handleReviewEvent(pc plugins.PluginClient, re github.ReviewEvent) error {
+	return handleReview(
+		pc.Logger,
+		pc.GitHubClient,
+		pc.OwnersClient,
+		pc.PluginConfig,
+		&re,
+	)
+}
+
+func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, config *plugins.Configuration, re *github.ReviewEvent) error {
+	if re.Action != github.ReviewActionSubmitted {
+		return nil
+	}
+
+	botName, err := ghc.BotName()
+	if err != nil {
+		return err
+	}
+
+	opts := optionsForRepo(config, re.Repo.Owner.Login, re.Repo.Name)
+
+	// Check for an approval command is in the body. If one exists, let the
+	// genericCommentEventHandler handle this event. Approval commands override
+	// review state.
+	if isApprovalCommand(botName, opts.LgtmActsAsApprove, &comment{Body: re.Review.Body, Author: re.Review.User.Login}) {
+		return nil
+	}
+
+	// Check for an approval command via review state. If none exists, don't
+	// handle this event.
+	if !isApprovalState(botName, opts.ReviewActsAsApprove, &comment{Author: re.Review.User.Login, ReviewState: re.Review.State}) {
+		return nil
+	}
+
+	// This is a valid review state command. Get the pull request and handle it.
+	pr, err := ghc.GetPullRequest(re.Repo.Owner.Login, re.Repo.Name, re.PullRequest.Number)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	repo, err := oc.LoadRepoOwners(re.Repo.Owner.Login, re.Repo.Name, pr.Base.Ref)
+	if err != nil {
+		return err
+	}
+
+	return handleFunc(
+		log,
+		ghc,
+		repo,
+		optionsForRepo(config, re.Repo.Owner.Login, re.Repo.Name),
+		&state{
+			org:       re.Repo.Owner.Login,
+			repo:      re.Repo.Name,
+			number:    re.PullRequest.Number,
+			body:      re.Review.Body,
+			author:    re.Review.User.Login,
+			assignees: re.PullRequest.Assignees,
+			htmlURL:   re.PullRequest.HTMLURL,
+		},
+	)
+
+}
+
 func handlePullRequestEvent(pc plugins.PluginClient, pre github.PullRequestEvent) error {
+	return handlePullRequest(
+		pc.Logger,
+		pc.GitHubClient,
+		pc.OwnersClient,
+		pc.PluginConfig,
+		&pre,
+	)
+}
+
+func handlePullRequest(log *logrus.Entry, ghc githubClient, oc ownersClient, config *plugins.Configuration, pre *github.PullRequestEvent) error {
 	if pre.Action != github.PullRequestActionOpened &&
 		pre.Action != github.PullRequestActionReopened &&
 		pre.Action != github.PullRequestActionSynchronize &&
 		pre.Action != github.PullRequestActionLabeled {
 		return nil
 	}
-	botName, err := pc.GitHubClient.BotName()
+	botName, err := ghc.BotName()
 	if err != nil {
 		return err
 	}
@@ -189,15 +281,12 @@ func handlePullRequestEvent(pc plugins.PluginClient, pre github.PullRequestEvent
 		return nil
 	}
 
-	ro, err := pc.OwnersClient.LoadRepoOwners(pre.Repo.Owner.Login, pre.Repo.Name, pre.PullRequest.Base.Ref)
+	repo, err := oc.LoadRepoOwners(pre.Repo.Owner.Login, pre.Repo.Name, pre.PullRequest.Base.Ref)
 	if err != nil {
 		return err
 	}
-	return handlePullRequest(pc.Logger, pc.GitHubClient, ro, pc.PluginConfig, &pre)
-}
 
-func handlePullRequest(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, config *plugins.Configuration, pre *github.PullRequestEvent) error {
-	return handle(
+	return handleFunc(
 		log,
 		ghc,
 		repo,
@@ -300,6 +389,9 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, o
 	// Author implicitly approves their own PR if config allows it
 	if opts.ImplicitSelfApprove {
 		approversHandler.AddAuthorSelfApprover(pr.author, pr.htmlURL+"#", false)
+	} else {
+		// Treat the author as an assignee, and suggest them if possible
+		approversHandler.AddAssignees(pr.author)
 	}
 
 	commentsFromIssueComments := commentsFromIssueComments(issueComments)
@@ -308,7 +400,7 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, o
 	sort.SliceStable(comments, func(i, j int) bool {
 		return comments[i].CreatedAt.Before(comments[j].CreatedAt)
 	})
-	approveComments := filterComments(comments, approvalCommandMatcher(botName, opts.LgtmActsAsApprove, opts.ReviewActsAsApprove))
+	approveComments := filterComments(comments, approvalMatcher(botName, opts.LgtmActsAsApprove, opts.ReviewActsAsApprove))
 	addApprovers(&approversHandler, approveComments, pr.author, opts.ReviewActsAsApprove)
 
 	for _, user := range pr.assignees {
@@ -378,26 +470,38 @@ func humanAddedApproved(ghc githubClient, log *logrus.Entry, org, repo string, n
 	}
 }
 
-func approvalCommandMatcher(botName string, lgtmActsAsApprove bool, reviewActsAsApprove bool) func(*comment) bool {
+func approvalMatcher(botName string, lgtmActsAsApprove, reviewActsAsApprove bool) func(*comment) bool {
 	return func(c *comment) bool {
-		if c.Author == botName || isDeprecatedBot(c.Author) {
-			return false
-		}
+		return isApprovalCommand(botName, lgtmActsAsApprove, c) || isApprovalState(botName, reviewActsAsApprove, c)
+	}
+}
 
-		// consider reviews in either approved OR requested changes states as
-		// approval commands. Reviews in requested changes states will be
-		// interpreted as cancelled approvals.
-		if reviewActsAsApprove && (c.ReviewState == approvedReviewState || c.ReviewState == changesRequestedReviewState) {
-			return true
-		}
-		for _, match := range commandRegex.FindAllStringSubmatch(c.Body, -1) {
-			cmd := strings.ToUpper(match[1])
-			if (cmd == lgtmCommand && lgtmActsAsApprove) || cmd == approveCommand {
-				return true
-			}
-		}
+func isApprovalCommand(botName string, lgtmActsAsApprove bool, c *comment) bool {
+	if c.Author == botName || isDeprecatedBot(c.Author) {
 		return false
 	}
+
+	for _, match := range commandRegex.FindAllStringSubmatch(c.Body, -1) {
+		cmd := strings.ToUpper(match[1])
+		if (cmd == lgtmCommand && lgtmActsAsApprove) || cmd == approveCommand {
+			return true
+		}
+	}
+	return false
+}
+
+func isApprovalState(botName string, reviewActsAsApprove bool, c *comment) bool {
+	if c.Author == botName || isDeprecatedBot(c.Author) {
+		return false
+	}
+
+	// consider reviews in either approved OR requested changes states as
+	// approval commands. Reviews in requested changes states will be
+	// interpreted as cancelled approvals.
+	if reviewActsAsApprove && (c.ReviewState == github.ReviewStateApproved || c.ReviewState == github.ReviewStateChangesRequested) {
+		return true
+	}
+	return false
 }
 
 func notificationMatcher(botName string) func(*comment) bool {
@@ -429,14 +533,14 @@ func addApprovers(approversHandler *approvers.Approvers, approveComments []*comm
 			continue
 		}
 
-		if reviewActsAsApprove && c.ReviewState == approvedReviewState {
+		if reviewActsAsApprove && c.ReviewState == github.ReviewStateApproved {
 			approversHandler.AddApprover(
 				c.Author,
 				c.HTMLURL,
 				false,
 			)
 		}
-		if reviewActsAsApprove && c.ReviewState == changesRequestedReviewState {
+		if reviewActsAsApprove && c.ReviewState == github.ReviewStateChangesRequested {
 			approversHandler.RemoveApprover(c.Author)
 		}
 
@@ -505,7 +609,7 @@ type comment struct {
 	CreatedAt   time.Time
 	HTMLURL     string
 	ID          int
-	ReviewState string
+	ReviewState github.ReviewState
 }
 
 func commentFromIssueComment(ic *github.IssueComment) *comment {

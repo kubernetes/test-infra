@@ -49,7 +49,9 @@ type kubeClient interface {
 	DeletePod(string) error
 }
 
-type githubClient interface {
+// GitHubClient contains the methods used by plank on k8s.io/test-infra/prow/github.Client
+// Plank's unit tests implement a fake of this.
+type GitHubClient interface {
 	BotName() (string, error)
 	CreateStatus(org, repo, ref string, s github.Status) error
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
@@ -70,7 +72,7 @@ type syncFn func(pj kube.ProwJob, pm map[string]kube.Pod, reports chan<- kube.Pr
 type Controller struct {
 	kc     kubeClient
 	pkcs   map[string]kubeClient
-	ghc    githubClient
+	ghc    GitHubClient
 	log    *logrus.Entry
 	ca     configAgent
 	node   *snowflake.Node
@@ -89,7 +91,7 @@ type Controller struct {
 }
 
 // NewController creates a new Controller from the provided clients.
-func NewController(kc *kube.Client, pkcs map[string]*kube.Client, ghc *github.Client, logger *logrus.Entry, ca *config.Agent, totURL, selector string) (*Controller, error) {
+func NewController(kc *kube.Client, pkcs map[string]*kube.Client, ghc GitHubClient, logger *logrus.Entry, ca *config.Agent, totURL, selector string) (*Controller, error) {
 	n, err := snowflake.NewNode(1)
 	if err != nil {
 		return nil, err
@@ -524,7 +526,7 @@ func getPodBuildID(pod *kube.Pod) string {
 // is when it is a presubmit job and has a run_if_changed regular expression specified which does
 // not match the changed filenames in the pull request the job was meant to run for.
 // TODO: Collapse with Jenkins, impossible to reuse as is due to the interfaces.
-func (c *Controller) RunAfterSuccessCanRun(parent, child *kube.ProwJob, ca configAgent, ghc githubClient) bool {
+func (c *Controller) RunAfterSuccessCanRun(parent, child *kube.ProwJob, ca configAgent, ghc GitHubClient) bool {
 	if parent.Spec.Type != kube.PresubmitJob {
 		return true
 	}

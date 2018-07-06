@@ -1078,6 +1078,7 @@ func TestHeadContexts(t *testing.T) {
 	headSHA := "head"
 	testCases := []struct {
 		name           string
+		headRef        *commitContext
 		commitContexts []commitContext
 		expectAPICall  bool
 	}{
@@ -1106,6 +1107,21 @@ func TestHeadContexts(t *testing.T) {
 			},
 			expectAPICall: true,
 		},
+		{
+			name:    "headRef is usable",
+			headRef: &commitContext{context: win, sha: headSHA},
+			commitContexts: []commitContext{
+				{context: lose, sha: "shaaa"},
+				{context: lose, sha: "other"},
+				{context: lose, sha: "sha"},
+			},
+			expectAPICall: true,
+		},
+		{
+			name:           "headRef is usable (no other commits in list)",
+			headRef:        &commitContext{context: win, sha: headSHA},
+			commitContexts: []commitContext{},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -1127,6 +1143,28 @@ func TestHeadContexts(t *testing.T) {
 				OID: githubql.String(ctx.sha),
 			}
 			pr.Commits.Nodes = append(pr.Commits.Nodes, struct{ Commit Commit }{commit})
+		}
+		if tc.headRef != nil {
+			pr.HeadRef = &struct {
+				Target struct {
+					Commit Commit `graphql:"... on Commit"`
+				}
+			}{
+				Target: struct {
+					Commit Commit `graphql:"... on Commit"`
+				}{
+					Commit: Commit{
+						Status: struct{ Contexts []Context }{
+							Contexts: []Context{
+								{
+									Context: githubql.String(tc.headRef.context),
+								},
+							},
+						},
+						OID: githubql.String(tc.headRef.sha),
+					},
+				},
+			}
 		}
 
 		contexts, err := headContexts(logrus.WithField("component", "tide"), fgc, pr)

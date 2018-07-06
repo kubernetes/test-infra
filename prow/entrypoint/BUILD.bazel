@@ -10,7 +10,6 @@ go_library(
     importpath = "k8s.io/test-infra/prow/entrypoint",
     visibility = ["//visibility:public"],
     deps = [
-        "//prow/errorutil:go_default_library",
         "//prow/pod-utils/wrapper:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],

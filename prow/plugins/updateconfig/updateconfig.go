@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"path"
 
+	"github.com/mattn/go-zglob"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
@@ -145,7 +146,7 @@ func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRe
 		}
 		msg := fmt.Sprintf("%s using the following files:", identifier)
 		for key, file := range data {
-			msg = fmt.Sprintf("%s\n - key `%s` using file `%s`", msg, key, file)
+			msg = fmt.Sprintf("%s\n    - key `%s` using file `%s`", msg, key, file)
 		}
 		return msg
 	}
@@ -157,8 +158,24 @@ func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRe
 	}
 	toUpdate := map[configMapID]map[string]string{}
 	for _, change := range changes {
-		cm, ok := configMaps[change.Filename]
-		if !ok {
+		var cm plugins.ConfigMapSpec
+		found := false
+
+		for key, configMap := range configMaps {
+			found, err = zglob.Match(key, change.Filename)
+			if err != nil {
+				// Should not happen, log err and continue
+				log.WithError(err).Info("key matching error")
+				continue
+			}
+
+			if found {
+				cm = configMap
+				break
+			}
+		}
+
+		if !found {
 			continue // This file does not define a configmap
 		}
 

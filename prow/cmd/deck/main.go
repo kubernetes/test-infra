@@ -38,6 +38,7 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/deck/jobs"
 	"k8s.io/test-infra/prow/githuboauth"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -149,16 +150,12 @@ func prodOnlyMain(o options, mux *http.ServeMux) *http.ServeMux {
 			logrus.WithError(err).Fatal("Error getting kube client to build cluster.")
 		}
 	}
-	plClients := map[string]podLogClient{}
+	plClients := map[string]jobs.PodLogClient{}
 	for alias, client := range pkcs {
 		plClients[alias] = client
 	}
 
-	ja := &JobAgent{
-		kc:   kc,
-		pkcs: plClients,
-		c:    configAgent,
-	}
+	ja := jobs.NewJobAgent(kc, plClients, configAgent)
 	ja.Start()
 
 	// setup prod only handlers
@@ -345,7 +342,7 @@ func handleNotCached(next http.Handler) http.HandlerFunc {
 	}
 }
 
-func handleProwJobs(ja *JobAgent) http.HandlerFunc {
+func handleProwJobs(ja *jobs.JobAgent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
 		jobs := ja.ProwJobs()
@@ -371,7 +368,7 @@ func handleProwJobs(ja *JobAgent) http.HandlerFunc {
 	}
 }
 
-func handleData(ja *JobAgent) http.HandlerFunc {
+func handleData(ja *jobs.JobAgent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
 		jobs := ja.Jobs()
@@ -390,7 +387,7 @@ func handleData(ja *JobAgent) http.HandlerFunc {
 	}
 }
 
-func handleBadge(ja *JobAgent) http.HandlerFunc {
+func handleBadge(ja *jobs.JobAgent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
 		wantJobs := r.URL.Query().Get("jobs")
@@ -540,7 +537,7 @@ func handleRerun(kc pjClient) http.HandlerFunc {
 	}
 }
 
-func handleConfig(ca configAgent) http.HandlerFunc {
+func handleConfig(ca jobs.ConfigAgent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// TODO(bentheelder): add the ability to query for portions of the config?
 		setHeadersNoCaching(w)
@@ -560,7 +557,7 @@ func handleConfig(ca configAgent) http.HandlerFunc {
 	}
 }
 
-func handleBranding(ca configAgent) http.HandlerFunc {
+func handleBranding(ca jobs.ConfigAgent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
 		config := ca.Config()

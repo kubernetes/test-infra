@@ -17,6 +17,7 @@ limitations under the License.
 package approve
 
 import (
+	"fmt"
 	"io/ioutil"
 	"strings"
 	"testing"
@@ -30,7 +31,11 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/plugins/approve/approvers"
+	"k8s.io/test-infra/prow/repoowners"
 )
+
+const prNumber = 1
 
 // TestPluginConfig validates that there are no duplicate repos in the approve plugin config.
 func TestPluginConfig(t *testing.T) {
@@ -81,11 +86,11 @@ func newTestCommentTime(t time.Time, user, body string) github.IssueComment {
 	return c
 }
 
-func newTestReview(user, body, state string) github.Review {
+func newTestReview(user, body string, state github.ReviewState) github.Review {
 	return github.Review{User: github.User{Login: user}, Body: body, State: state}
 }
 
-func newTestReviewTime(t time.Time, user, body, state string) github.Review {
+func newTestReviewTime(t time.Time, user, body string, state github.ReviewState) github.Review {
 	r := newTestReview(user, body, state)
 	r.SubmittedAt = t
 	return r
@@ -94,7 +99,7 @@ func newTestReviewTime(t time.Time, user, body, state string) github.Review {
 func newFakeGithubClient(hasLabel, humanApproved bool, files []string, comments []github.IssueComment, reviews []github.Review) *fakegithub.FakeClient {
 	labels := []string{"org/repo#1:lgtm"}
 	if hasLabel {
-		labels = append(labels, "org/repo#1:approved")
+		labels = append(labels, fmt.Sprintf("org/repo#%v:approved", prNumber))
 	}
 	events := []github.ListedIssueEvent{
 		{
@@ -120,10 +125,10 @@ func newFakeGithubClient(hasLabel, humanApproved bool, files []string, comments 
 	}
 	return &fakegithub.FakeClient{
 		LabelsAdded:        labels,
-		PullRequestChanges: map[int][]github.PullRequestChange{1: changes},
-		IssueComments:      map[int][]github.IssueComment{1: comments},
-		IssueEvents:        map[int][]github.ListedIssueEvent{1: events},
-		Reviews:            map[int][]github.Review{1: reviews},
+		PullRequestChanges: map[int][]github.PullRequestChange{prNumber: changes},
+		IssueComments:      map[int][]github.IssueComment{prNumber: comments},
+		IssueEvents:        map[int][]github.ListedIssueEvent{prNumber: events},
+		Reviews:            map[int][]github.Review{prNumber: reviews},
 	}
 }
 
@@ -221,11 +226,11 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectComment: true,
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
-This pull-request has been approved by: 
+This pull-request has been approved by:
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **cjwagner**
 
-Assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
@@ -390,7 +395,7 @@ This pull-request has been approved by: *<a href="#" title="Author self-approved
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **alice**
 
-Assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when ready.
+If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when ready.
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
@@ -542,7 +547,7 @@ Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 
 Approval requirements bypassed by manually added approval.
 
-This pull-request has been approved by: 
+This pull-request has been approved by:
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
@@ -585,11 +590,11 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			comments: []github.IssueComment{
 				newTestComment("k8s-ci-robot", `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
-This pull-request has been approved by: 
+This pull-request has been approved by:
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **alice**
 
-Assign the PR to them by writing `+"`/assign @alice`"+` in a comment when ready.
+If they are not already assigned, you can assign the PR to them by writing `+"`/assign @alice`"+` in a comment when ready.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
@@ -653,7 +658,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			hasLabel:            false,
 			files:               []string{"c/c.go"},
 			comments:            []github.IssueComment{},
-			reviews:             []github.Review{newTestReview("cjwagner", "stuff", approvedReviewState)},
+			reviews:             []github.Review{newTestReview("cjwagner", "stuff", github.ReviewStateApproved)},
 			selfApprove:         false,
 			needsIssue:          false,
 			lgtmActsAsApprove:   false,
@@ -664,11 +669,11 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectComment: true,
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
-This pull-request has been approved by: 
+This pull-request has been approved by:
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **cjwagner**
 
-Assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
@@ -689,7 +694,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			hasLabel:            false,
 			files:               []string{"a/a.go"},
 			comments:            []github.IssueComment{},
-			reviews:             []github.Review{newTestReview("Alice", "stuff", approvedReviewState)},
+			reviews:             []github.Review{newTestReview("Alice", "stuff", github.ReviewStateApproved)},
 			selfApprove:         false,
 			needsIssue:          false,
 			lgtmActsAsApprove:   false,
@@ -735,11 +740,11 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectComment: true,
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
-This pull-request has been approved by: 
+This pull-request has been approved by:
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **cjwagner**
 
-Assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
@@ -763,8 +768,8 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 				newTestCommentTime(time.Now().Add(time.Hour), "k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"), // second
 			},
 			reviews: []github.Review{
-				newTestReviewTime(time.Now(), "cjwagner", "yep", approvedReviewState),                           // first
-				newTestReviewTime(time.Now().Add(time.Hour*2), "cjwagner", "nope", changesRequestedReviewState), // third
+				newTestReviewTime(time.Now(), "cjwagner", "yep", github.ReviewStateApproved),                           // first
+				newTestReviewTime(time.Now().Add(time.Hour*2), "cjwagner", "nope", github.ReviewStateChangesRequested), // third
 			},
 			selfApprove:         false,
 			needsIssue:          false,
@@ -776,11 +781,11 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectComment: true,
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
-This pull-request has been approved by: 
+This pull-request has been approved by:
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **cjwagner**
 
-Assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
@@ -805,7 +810,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 				newTestCommentTime(time.Now().Add(time.Hour*2), "cjwagner", "stuff\n/approve cancel \nmore stuff"),                  // third
 			},
 			reviews: []github.Review{
-				newTestReviewTime(time.Now(), "cjwagner", "yep", approvedReviewState), // first
+				newTestReviewTime(time.Now(), "cjwagner", "yep", github.ReviewStateApproved), // first
 			},
 			selfApprove:         false,
 			needsIssue:          false,
@@ -817,11 +822,11 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectComment: true,
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
-This pull-request has been approved by: 
+This pull-request has been approved by:
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **cjwagner**
 
-Assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
@@ -843,7 +848,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			files:    []string{"c/c.go"},
 			comments: []github.IssueComment{},
 			reviews: []github.Review{
-				newTestReview("cjwagner", "/approve cancel", approvedReviewState),
+				newTestReview("cjwagner", "/approve cancel", github.ReviewStateApproved),
 			},
 			selfApprove:         false,
 			needsIssue:          false,
@@ -855,11 +860,11 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectComment: true,
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
-This pull-request has been approved by: 
+This pull-request has been approved by:
 To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **cjwagner**
 
-Assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+If they are not already assigned, you can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
@@ -880,7 +885,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			hasLabel:            false,
 			files:               []string{"a/a.go"},
 			comments:            []github.IssueComment{},
-			reviews:             []github.Review{newTestReview("Alice", "/approve", changesRequestedReviewState)},
+			reviews:             []github.Review{newTestReview("Alice", "/approve", github.ReviewStateChangesRequested)},
 			selfApprove:         false,
 			needsIssue:          false,
 			lgtmActsAsApprove:   false,
@@ -946,12 +951,12 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 		approvers: map[string]sets.String{
 			"a":   sets.NewString("alice"),
 			"a/b": sets.NewString("alice", "bob"),
-			"c":   sets.NewString("cjwagner"),
+			"c":   sets.NewString("cblecker", "cjwagner"),
 		},
 		leafApprovers: map[string]sets.String{
 			"a":   sets.NewString("alice"),
 			"a/b": sets.NewString("bob"),
-			"c":   sets.NewString("cjwagner"),
+			"c":   sets.NewString("cblecker", "cjwagner"),
 		},
 		approverOwners: map[string]string{
 			"a/a.go":   "a",
@@ -983,7 +988,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 				org:       "org",
 				repo:      "repo",
 				branch:    branch,
-				number:    1,
+				number:    prNumber,
 				body:      test.prBody,
 				author:    "cjwagner",
 				assignees: []github.User{{Login: "spxtr"}},
@@ -1016,7 +1021,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 					test.name,
 					len(fghc.IssueCommentsAdded),
 				)
-			} else if expect, got := "org/repo#1:"+test.expectedComment, fghc.IssueCommentsAdded[0]; test.expectedComment != "" && got != expect {
+			} else if expect, got := fmt.Sprintf("org/repo#%v:", prNumber)+test.expectedComment, fghc.IssueCommentsAdded[0]; test.expectedComment != "" && got != expect {
 				t.Errorf(
 					"[%s] Expected the created notification to be:\n%s\n\nbut got:\n%s\n\n",
 					test.name,
@@ -1036,7 +1041,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 
 		labelAdded := false
 		for _, l := range fghc.LabelsAdded {
-			if l == "org/repo#1:approved" {
+			if l == fmt.Sprintf("org/repo#%v:approved", prNumber) {
 				if labelAdded {
 					t.Errorf("[%s] The approved label was applied to a PR that already had it!", test.name)
 				}
@@ -1048,7 +1053,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 		}
 		toggled := labelAdded
 		for _, l := range fghc.LabelsRemoved {
-			if l == "org/repo#1:approved" {
+			if l == fmt.Sprintf("org/repo#%v:approved", prNumber) {
 				if !test.hasLabel {
 					t.Errorf("[%s] The approved label was removed from a PR that doesn't have it!", test.name)
 				}
@@ -1068,3 +1073,493 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 
 // TODO: cache approvers 'GetFilesApprovers' and 'GetCCs' since these are called repeatedly and are
 // expensive.
+
+type fakeOwnersClient struct{}
+
+func (foc fakeOwnersClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwnerInterface, error) {
+	return fakeRepoOwners{}, nil
+}
+
+type fakeRepoOwners struct {
+	fakeRepo
+}
+
+func (fro fakeRepoOwners) FindLabelsForFile(path string) sets.String {
+	return sets.NewString()
+}
+
+func (fro fakeRepoOwners) FindReviewersOwnersForFile(path string) string {
+	return ""
+}
+
+func (fro fakeRepoOwners) LeafReviewers(path string) sets.String {
+	return sets.NewString()
+}
+
+func (fro fakeRepoOwners) Reviewers(path string) sets.String {
+	return sets.NewString()
+}
+
+// func (fro fakeRepoOwners) FindReviewersOwners
+
+func getTestHandleFunc() func(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, opts *plugins.Approve, pr *state) error {
+	return func(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, opts *plugins.Approve, pr *state) error {
+		return nil
+	}
+}
+
+func TestHandleGenericComment(t *testing.T) {
+	tests := []struct {
+		name              string
+		commentEvent      github.GenericCommentEvent
+		lgtmActsAsApprove bool
+		expectHandle      bool
+	}{
+		{
+			name: "valid approve command",
+			commentEvent: github.GenericCommentEvent{
+				Action: github.GenericCommentActionCreated,
+				IsPR:   true,
+				Body:   "/approve",
+				Number: 1,
+				User: github.User{
+					Login: "author",
+				},
+			},
+			expectHandle: true,
+		},
+		{
+			name: "not comment created",
+			commentEvent: github.GenericCommentEvent{
+				Action: github.GenericCommentActionEdited,
+				IsPR:   true,
+				Body:   "/approve",
+				Number: 1,
+				User: github.User{
+					Login: "author",
+				},
+			},
+			expectHandle: false,
+		},
+		{
+			name: "not PR",
+			commentEvent: github.GenericCommentEvent{
+				Action: github.GenericCommentActionEdited,
+				IsPR:   false,
+				Body:   "/approve",
+				Number: 1,
+				User: github.User{
+					Login: "author",
+				},
+			},
+			expectHandle: false,
+		},
+		{
+			name: "closed PR",
+			commentEvent: github.GenericCommentEvent{
+				Action: github.GenericCommentActionCreated,
+				IsPR:   true,
+				Body:   "/approve",
+				Number: 1,
+				User: github.User{
+					Login: "author",
+				},
+				IssueState: "closed",
+			},
+			expectHandle: false,
+		},
+		{
+			name: "no approve command",
+			commentEvent: github.GenericCommentEvent{
+				Action: github.GenericCommentActionCreated,
+				IsPR:   true,
+				Body:   "stuff",
+				Number: 1,
+				User: github.User{
+					Login: "author",
+				},
+			},
+			expectHandle: false,
+		},
+		{
+			name: "lgtm without lgtmActsAsApprove",
+			commentEvent: github.GenericCommentEvent{
+				Action: github.GenericCommentActionCreated,
+				IsPR:   true,
+				Body:   "/lgtm",
+				Number: 1,
+				User: github.User{
+					Login: "author",
+				},
+			},
+			expectHandle: false,
+		},
+		{
+			name: "lgtm with lgtmActsAsApprove",
+			commentEvent: github.GenericCommentEvent{
+				Action: github.GenericCommentActionCreated,
+				IsPR:   true,
+				Body:   "/lgtm",
+				Number: 1,
+				User: github.User{
+					Login: "author",
+				},
+			},
+			lgtmActsAsApprove: true,
+			expectHandle:      true,
+		},
+	}
+
+	var handled bool
+	handleFunc = func(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, opts *plugins.Approve, pr *state) error {
+		handled = true
+		return nil
+	}
+	defer func() {
+		handleFunc = handle
+	}()
+
+	repo := github.Repo{
+		Owner: github.User{
+			Login: "org",
+		},
+		Name: "repo",
+	}
+	pr := github.PullRequest{
+		Base: github.PullRequestBranch{
+			Ref: "branch",
+		},
+		Number: 1,
+	}
+	fghc := &fakegithub.FakeClient{
+		PullRequests: map[int]*github.PullRequest{1: &pr},
+	}
+
+	for _, test := range tests {
+		test.commentEvent.Repo = repo
+		config := &plugins.Configuration{}
+		config.Approve = append(config.Approve, plugins.Approve{
+			Repos:             []string{test.commentEvent.Repo.Owner.Login},
+			LgtmActsAsApprove: test.lgtmActsAsApprove,
+		})
+		err := handleGenericComment(
+			logrus.WithField("plugin", "approve"),
+			fghc,
+			fakeOwnersClient{},
+			config,
+			&test.commentEvent,
+		)
+
+		if test.expectHandle && !handled {
+			t.Errorf("%s: expected call to handleFunc, but it wasn't called", test.name)
+		}
+
+		if !test.expectHandle && handled {
+			t.Errorf("%s: expected no call to handleFunc, but it was called", test.name)
+		}
+
+		if err != nil {
+			t.Errorf("%s: error calling handleGenericComment: %v", test.name, err)
+		}
+		handled = false
+	}
+}
+
+func TestHandleReviewEvent(t *testing.T) {
+	tests := []struct {
+		name                string
+		reviewEvent         github.ReviewEvent
+		lgtmActsAsApprove   bool
+		reviewActsAsApprove bool
+		expectHandle        bool
+	}{
+		{
+			name: "approved state",
+			reviewEvent: github.ReviewEvent{
+				Action: github.ReviewActionSubmitted,
+				Review: github.Review{
+					Body: "looks good",
+					User: github.User{
+						Login: "author",
+					},
+					State: github.ReviewStateApproved,
+				},
+			},
+			reviewActsAsApprove: true,
+			expectHandle:        true,
+		},
+		{
+			name: "changes requested state",
+			reviewEvent: github.ReviewEvent{
+				Action: github.ReviewActionSubmitted,
+				Review: github.Review{
+					Body: "looks bad",
+					User: github.User{
+						Login: "author",
+					},
+					State: github.ReviewStateChangesRequested,
+				},
+			},
+			reviewActsAsApprove: true,
+			expectHandle:        true,
+		},
+		{
+			name: "pending state",
+			reviewEvent: github.ReviewEvent{
+				Action: github.ReviewActionSubmitted,
+				Review: github.Review{
+					Body: "looks good",
+					User: github.User{
+						Login: "author",
+					},
+					State: github.ReviewStatePending,
+				},
+			},
+			reviewActsAsApprove: true,
+			expectHandle:        false,
+		},
+		{
+			name: "edited review",
+			reviewEvent: github.ReviewEvent{
+				Action: github.ReviewActionEdited,
+				Review: github.Review{
+					Body: "looks good",
+					User: github.User{
+						Login: "author",
+					},
+					State: github.ReviewStateApproved,
+				},
+			},
+			reviewActsAsApprove: true,
+			expectHandle:        false,
+		},
+		{
+			name: "dismissed review",
+			reviewEvent: github.ReviewEvent{
+				Action: github.ReviewActionDismissed,
+				Review: github.Review{
+					Body: "looks good",
+					User: github.User{
+						Login: "author",
+					},
+					State: github.ReviewStateDismissed,
+				},
+			},
+			reviewActsAsApprove: true,
+			expectHandle:        false,
+		},
+		{
+			name: "approve command",
+			reviewEvent: github.ReviewEvent{
+				Action: github.ReviewActionSubmitted,
+				Review: github.Review{
+					Body: "/approve",
+					User: github.User{
+						Login: "author",
+					},
+					State: github.ReviewStateApproved,
+				},
+			},
+			reviewActsAsApprove: true,
+			expectHandle:        false,
+		},
+		{
+			name: "lgtm command",
+			reviewEvent: github.ReviewEvent{
+				Action: github.ReviewActionSubmitted,
+				Review: github.Review{
+					Body: "/lgtm",
+					User: github.User{
+						Login: "author",
+					},
+					State: github.ReviewStateApproved,
+				},
+			},
+			lgtmActsAsApprove:   true,
+			reviewActsAsApprove: true,
+			expectHandle:        false,
+		},
+		{
+			name: "feature disabled",
+			reviewEvent: github.ReviewEvent{
+				Action: github.ReviewActionSubmitted,
+				Review: github.Review{
+					Body: "looks good",
+					User: github.User{
+						Login: "author",
+					},
+					State: github.ReviewStateApproved,
+				},
+			},
+			reviewActsAsApprove: false,
+			expectHandle:        false,
+		},
+	}
+
+	var handled bool
+	handleFunc = func(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, opts *plugins.Approve, pr *state) error {
+		handled = true
+		return nil
+	}
+	defer func() {
+		handleFunc = handle
+	}()
+
+	repo := github.Repo{
+		Owner: github.User{
+			Login: "org",
+		},
+		Name: "repo",
+	}
+	pr := github.PullRequest{
+		Base: github.PullRequestBranch{
+			Ref: "branch",
+		},
+		Number: 1,
+	}
+	fghc := &fakegithub.FakeClient{
+		PullRequests: map[int]*github.PullRequest{1: &pr},
+	}
+
+	for _, test := range tests {
+		test.reviewEvent.Repo = repo
+		test.reviewEvent.PullRequest = pr
+		config := &plugins.Configuration{}
+		config.Approve = append(config.Approve, plugins.Approve{
+			Repos:               []string{test.reviewEvent.Repo.Owner.Login},
+			LgtmActsAsApprove:   test.lgtmActsAsApprove,
+			ReviewActsAsApprove: test.reviewActsAsApprove,
+		})
+		err := handleReview(
+			logrus.WithField("plugin", "approve"),
+			fghc,
+			fakeOwnersClient{},
+			config,
+			&test.reviewEvent,
+		)
+
+		if test.expectHandle && !handled {
+			t.Errorf("%s: expected call to handleFunc, but it wasn't called", test.name)
+		}
+
+		if !test.expectHandle && handled {
+			t.Errorf("%s: expected no call to handleFunc, but it was called", test.name)
+		}
+
+		if err != nil {
+			t.Errorf("%s: error calling handleGenericComment: %v", test.name, err)
+		}
+		handled = false
+	}
+}
+
+func TestHandlePullRequestEvent(t *testing.T) {
+	tests := []struct {
+		name         string
+		prEvent      github.PullRequestEvent
+		expectHandle bool
+	}{
+		{
+			name: "pr opened",
+			prEvent: github.PullRequestEvent{
+				Action: github.PullRequestActionOpened,
+			},
+			expectHandle: true,
+		},
+		{
+			name: "pr reopened",
+			prEvent: github.PullRequestEvent{
+				Action: github.PullRequestActionReopened,
+			},
+			expectHandle: true,
+		},
+		{
+			name: "pr sync",
+			prEvent: github.PullRequestEvent{
+				Action: github.PullRequestActionSynchronize,
+			},
+			expectHandle: true,
+		},
+		{
+			name: "pr labeled",
+			prEvent: github.PullRequestEvent{
+				Action: github.PullRequestActionLabeled,
+				Label: github.Label{
+					Name: approvedLabel,
+				},
+			},
+			expectHandle: true,
+		},
+		{
+			name: "pr another label",
+			prEvent: github.PullRequestEvent{
+				Action: github.PullRequestActionLabeled,
+				Label: github.Label{
+					Name: "some-label",
+				},
+			},
+			expectHandle: false,
+		},
+		{
+			name: "pr closed",
+			prEvent: github.PullRequestEvent{
+				Action: github.PullRequestActionLabeled,
+				Label: github.Label{
+					Name: approvedLabel,
+				},
+				PullRequest: github.PullRequest{
+					State: "closed",
+				},
+			},
+			expectHandle: false,
+		},
+		{
+			name: "pr review requested",
+			prEvent: github.PullRequestEvent{
+				Action: github.PullRequestActionReviewRequested,
+			},
+			expectHandle: false,
+		},
+	}
+
+	var handled bool
+	handleFunc = func(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, opts *plugins.Approve, pr *state) error {
+		handled = true
+		return nil
+	}
+	defer func() {
+		handleFunc = handle
+	}()
+
+	repo := github.Repo{
+		Owner: github.User{
+			Login: "org",
+		},
+		Name: "repo",
+	}
+	fghc := &fakegithub.FakeClient{}
+
+	for _, test := range tests {
+		test.prEvent.Repo = repo
+		err := handlePullRequest(
+			logrus.WithField("plugin", "approve"),
+			fghc,
+			fakeOwnersClient{},
+			&plugins.Configuration{},
+			&test.prEvent,
+		)
+
+		if test.expectHandle && !handled {
+			t.Errorf("%s: expected call to handleFunc, but it wasn't called", test.name)
+		}
+
+		if !test.expectHandle && handled {
+			t.Errorf("%s: expected no call to handleFunc, but it was called", test.name)
+		}
+
+		if err != nil {
+			t.Errorf("%s: error calling handleGenericComment: %v", test.name, err)
+		}
+		handled = false
+	}
+}

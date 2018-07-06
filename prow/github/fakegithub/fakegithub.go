@@ -25,6 +25,7 @@ import (
 
 const botName = "k8s-ci-robot"
 
+// FakeClient is like client, but fake.
 type FakeClient struct {
 	Issues              []github.Issue
 	OrgMembers          map[string][]string
@@ -67,10 +68,12 @@ type FakeClient struct {
 	RemoteFiles map[string]map[string]string
 }
 
+// BotName returns authenticated login.
 func (f *FakeClient) BotName() (string, error) {
 	return botName, nil
 }
 
+// IsMember returns true if user is in org.
 func (f *FakeClient) IsMember(org, user string) (bool, error) {
 	for _, m := range f.OrgMembers[org] {
 		if m == user {
@@ -80,22 +83,27 @@ func (f *FakeClient) IsMember(org, user string) (bool, error) {
 	return false, nil
 }
 
+// ListIssueComments returns comments.
 func (f *FakeClient) ListIssueComments(owner, repo string, number int) ([]github.IssueComment, error) {
 	return append([]github.IssueComment{}, f.IssueComments[number]...), nil
 }
 
+// ListPullRequestComments returns review comments.
 func (f *FakeClient) ListPullRequestComments(owner, repo string, number int) ([]github.ReviewComment, error) {
 	return append([]github.ReviewComment{}, f.PullRequestComments[number]...), nil
 }
 
+// ListReviews returns reviews.
 func (f *FakeClient) ListReviews(owner, repo string, number int) ([]github.Review, error) {
 	return append([]github.Review{}, f.Reviews[number]...), nil
 }
 
+// ListIssueEvents returns issue events
 func (f *FakeClient) ListIssueEvents(owner, repo string, number int) ([]github.ListedIssueEvent, error) {
 	return append([]github.ListedIssueEvent{}, f.IssueEvents[number]...), nil
 }
 
+// CreateComment adds a comment to a PR
 func (f *FakeClient) CreateComment(owner, repo string, number int, comment string) error {
 	f.IssueCommentsAdded = append(f.IssueCommentsAdded, fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, comment))
 	f.IssueComments[number] = append(f.IssueComments[number], github.IssueComment{
@@ -107,6 +115,7 @@ func (f *FakeClient) CreateComment(owner, repo string, number int, comment strin
 	return nil
 }
 
+// CreateReview adds a review to a PR
 func (f *FakeClient) CreateReview(org, repo string, number int, r github.DraftReview) error {
 	f.Reviews[number] = append(f.Reviews[number], github.Review{
 		ID:   f.ReviewID,
@@ -117,16 +126,19 @@ func (f *FakeClient) CreateReview(org, repo string, number int, r github.DraftRe
 	return nil
 }
 
+// CreateCommentReaction adds emoji to a comment.
 func (f *FakeClient) CreateCommentReaction(org, repo string, ID int, reaction string) error {
 	f.CommentReactionsAdded = append(f.CommentReactionsAdded, fmt.Sprintf("%s/%s#%d:%s", org, repo, ID, reaction))
 	return nil
 }
 
+// CreateIssueReaction adds an emoji to an issue.
 func (f *FakeClient) CreateIssueReaction(org, repo string, ID int, reaction string) error {
 	f.IssueReactionsAdded = append(f.IssueReactionsAdded, fmt.Sprintf("%s/%s#%d:%s", org, repo, ID, reaction))
 	return nil
 }
 
+// DeleteComment deletes a comment.
 func (f *FakeClient) DeleteComment(owner, repo string, ID int) error {
 	f.IssueCommentsDeleted = append(f.IssueCommentsDeleted, fmt.Sprintf("%s/%s#%d", owner, repo, ID))
 	for num, ics := range f.IssueComments {
@@ -140,6 +152,7 @@ func (f *FakeClient) DeleteComment(owner, repo string, ID int) error {
 	return fmt.Errorf("could not find issue comment %d", ID)
 }
 
+// DeleteStaleComments deletes comments flagged by isStale.
 func (f *FakeClient) DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error {
 	if comments == nil {
 		comments, _ = f.ListIssueComments(org, repo, number)
@@ -154,18 +167,22 @@ func (f *FakeClient) DeleteStaleComments(org, repo string, number int, comments 
 	return nil
 }
 
+// GetPullRequest returns details about the PR.
 func (f *FakeClient) GetPullRequest(owner, repo string, number int) (*github.PullRequest, error) {
 	return f.PullRequests[number], nil
 }
 
+// GetPullRequestChanges returns the file modifications in a PR.
 func (f *FakeClient) GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error) {
 	return f.PullRequestChanges[number], nil
 }
 
+// GetRef returns the hash of a ref.
 func (f *FakeClient) GetRef(owner, repo, ref string) (string, error) {
 	return "abcde", nil
 }
 
+// CreateStatus adds a status context to a commit.
 func (f *FakeClient) CreateStatus(owner, repo, sha string, s github.Status) error {
 	if f.CreatedStatuses == nil {
 		f.CreatedStatuses = make(map[string][]github.Status)
@@ -185,14 +202,17 @@ func (f *FakeClient) CreateStatus(owner, repo, sha string, s github.Status) erro
 	return nil
 }
 
+// ListStatuses returns individual status contexts on a commit.
 func (f *FakeClient) ListStatuses(org, repo, ref string) ([]github.Status, error) {
 	return f.CreatedStatuses[ref], nil
 }
 
+// GetCombinedStatus returns the overall status for a commit.
 func (f *FakeClient) GetCombinedStatus(owner, repo, ref string) (*github.CombinedStatus, error) {
 	return f.CombinedStatuses[ref], nil
 }
 
+// GetRepoLabels gets labels in a repo.
 func (f *FakeClient) GetRepoLabels(owner, repo string) ([]github.Label, error) {
 	la := []github.Label{}
 	for _, l := range f.ExistingLabels {
@@ -201,6 +221,7 @@ func (f *FakeClient) GetRepoLabels(owner, repo string) ([]github.Label, error) {
 	return la, nil
 }
 
+// GetIssueLabels gets labels on an issue
 func (f *FakeClient) GetIssueLabels(owner, repo string, number int) ([]github.Label, error) {
 	// Only labels added to an issue are considered. Removals are ignored by this fake.
 	re := regexp.MustCompile(fmt.Sprintf(`^%s/%s#%d:(.*)$`, owner, repo, number))
@@ -214,6 +235,7 @@ func (f *FakeClient) GetIssueLabels(owner, repo string, number int) ([]github.La
 	return la, nil
 }
 
+// AddLabel adds a label
 func (f *FakeClient) AddLabel(owner, repo string, number int, label string) error {
 	if f.ExistingLabels == nil {
 		f.LabelsAdded = append(f.LabelsAdded, fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label))
@@ -228,6 +250,7 @@ func (f *FakeClient) AddLabel(owner, repo string, number int, label string) erro
 	return fmt.Errorf("cannot add %v to %s/%s/#%d", label, owner, repo, number)
 }
 
+// RemoveLabel removes a label
 func (f *FakeClient) RemoveLabel(owner, repo string, number int, label string) error {
 	f.LabelsRemoved = append(f.LabelsRemoved, fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label))
 	return nil
@@ -238,6 +261,7 @@ func (f *FakeClient) FindIssues(query, sort string, asc bool) ([]github.Issue, e
 	return f.Issues, nil
 }
 
+// AssignIssue adds assignees.
 func (f *FakeClient) AssignIssue(owner, repo string, number int, assignees []string) error {
 	var m github.MissingUsers
 	for _, a := range assignees {
@@ -253,6 +277,7 @@ func (f *FakeClient) AssignIssue(owner, repo string, number int, assignees []str
 	return m
 }
 
+// GetFile returns the bytes of the file.
 func (f *FakeClient) GetFile(org, repo, file, commit string) ([]byte, error) {
 	contents, ok := f.RemoteFiles[file]
 	if !ok {
@@ -281,6 +306,7 @@ func (f *FakeClient) ListTeamMembers(teamID int, role string) ([]github.TeamMemb
 	return []github.TeamMember{{Login: "sig-lead"}}, nil
 }
 
+// IsCollaborator returns true if the user is a collaborator of the repo.
 func (f *FakeClient) IsCollaborator(org, repo, login string) (bool, error) {
 	normed := github.NormLogin(login)
 	for _, collab := range f.Collaborators {
@@ -291,6 +317,7 @@ func (f *FakeClient) IsCollaborator(org, repo, login string) (bool, error) {
 	return false, nil
 }
 
+// ListCollaborators lists the collaborators.
 func (f *FakeClient) ListCollaborators(org, repo string) ([]github.User, error) {
 	result := make([]github.User, 0, len(f.Collaborators))
 	for _, login := range f.Collaborators {
@@ -299,11 +326,13 @@ func (f *FakeClient) ListCollaborators(org, repo string) ([]github.User, error) 
 	return result, nil
 }
 
+// ClearMilestone removes the milestone
 func (f *FakeClient) ClearMilestone(org, repo string, issueNum int) error {
 	f.Milestone = 0
 	return nil
 }
 
+// SetMilestone sets the milestone.
 func (f *FakeClient) SetMilestone(org, repo string, issueNum, milestoneNum int) error {
 	if milestoneNum < 0 {
 		return fmt.Errorf("Milestone Numbers Cannot Be Negative")
@@ -312,6 +341,7 @@ func (f *FakeClient) SetMilestone(org, repo string, issueNum, milestoneNum int) 
 	return nil
 }
 
+// ListMilestones lists milestones.
 func (f *FakeClient) ListMilestones(org, repo string) ([]github.Milestone, error) {
 	milestones := []github.Milestone{}
 	for k, v := range f.MilestoneMap {

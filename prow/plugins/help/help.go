@@ -128,19 +128,6 @@ func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.Gene
 		return nil
 	}
 
-	// If PR does not have the help label and we're asking it to be added,
-	// add the label
-	if !hasHelp && helpRe.MatchString(e.Body) {
-		if err := gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.IssueHTMLURL, commentAuthor, helpMsg)); err != nil {
-			log.WithError(err).Errorf("Failed to create comment \"%s\".", helpMsg)
-		}
-		if err := gc.AddLabel(org, repo, e.Number, helpLabel); err != nil {
-			log.WithError(err).Errorf("Github failed to add the following label: %s", helpLabel)
-		}
-
-		return nil
-	}
-
 	// If PR does not have the good-first-issue label and we are asking for it to be added,
 	// add both the good-first-issue and help labels
 	if !hasGoodFirstIssue && helpGoodFirstIssueRe.MatchString(e.Body) {
@@ -156,6 +143,19 @@ func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.Gene
 			if err := gc.AddLabel(org, repo, e.Number, helpLabel); err != nil {
 				log.WithError(err).Errorf("Github failed to add the following label: %s", helpLabel)
 			}
+		}
+
+		return nil
+	}
+
+	// If PR does not have the help label and we're asking it to be added,
+	// add the label
+	if !hasHelp && helpRe.MatchString(e.Body) {
+		if err := gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.IssueHTMLURL, commentAuthor, helpMsg)); err != nil {
+			log.WithError(err).Errorf("Failed to create comment \"%s\".", helpMsg)
+		}
+		if err := gc.AddLabel(org, repo, e.Number, helpLabel); err != nil {
+			log.WithError(err).Errorf("Github failed to add the following label: %s", helpLabel)
 		}
 
 		return nil

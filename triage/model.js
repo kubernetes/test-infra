@@ -139,7 +139,7 @@ function getHitsInLastDay(entry) {
 
 // Store test clusters and support iterating and refiltering through them.
 class Clusters {
-  constructor(clustered) {
+  constructor(clustered, clusterId) {
     this.data = clustered;
     this.length = this.data.length;
     this.sum = sum(this.data, c => clustersSum(c.tests));
@@ -150,6 +150,9 @@ class Clusters {
       if (!this.byId[keyId]) {
         this.byId[keyId] = cluster;
       }
+    }
+    if (clusterId !== undefined) {
+      this.clusterId = clusterId;
     }
   }
 

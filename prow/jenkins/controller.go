@@ -44,8 +44,8 @@ type kubeClient interface {
 
 type jenkinsClient interface {
 	Build(*kube.ProwJob, string) error
-	ListBuilds(jobs []string) (map[string]JenkinsBuild, error)
-	Abort(job string, build *JenkinsBuild) error
+	ListBuilds(jobs []string) (map[string]Build, error)
+	Abort(job string, build *Build) error
 }
 
 type githubClient interface {
@@ -62,7 +62,7 @@ type configAgent interface {
 	Config() *config.Config
 }
 
-type syncFn func(kube.ProwJob, chan<- kube.ProwJob, map[string]JenkinsBuild) error
+type syncFn func(kube.ProwJob, chan<- kube.ProwJob, map[string]Build) error
 
 // Controller manages ProwJobs.
 type Controller struct {
@@ -260,7 +260,7 @@ func getJenkinsJobs(pjs []kube.ProwJob) []string {
 
 // terminateDupes aborts presubmits that have a newer version. It modifies pjs
 // in-place when it aborts.
-func (c *Controller) terminateDupes(pjs []kube.ProwJob, jbs map[string]JenkinsBuild) error {
+func (c *Controller) terminateDupes(pjs []kube.ProwJob, jbs map[string]Build) error {
 	// "job org/repo#number" -> newest job
 	dupes := make(map[string]int)
 	for i, pj := range pjs {
@@ -316,7 +316,7 @@ func syncProwJobs(
 	jobs <-chan kube.ProwJob,
 	reports chan<- kube.ProwJob,
 	syncErrors chan<- error,
-	jbs map[string]JenkinsBuild,
+	jbs map[string]Build,
 ) {
 	goroutines := maxSyncRoutines
 	if goroutines > len(jobs) {
@@ -338,7 +338,7 @@ func syncProwJobs(
 	wg.Wait()
 }
 
-func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob, jbs map[string]JenkinsBuild) error {
+func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob, jbs map[string]Build) error {
 	// Record last known state so we can log state transitions.
 	prevState := pj.Status.State
 
@@ -410,7 +410,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 	return err
 }
 
-func (c *Controller) syncTriggeredJob(pj kube.ProwJob, reports chan<- kube.ProwJob, jbs map[string]JenkinsBuild) error {
+func (c *Controller) syncTriggeredJob(pj kube.ProwJob, reports chan<- kube.ProwJob, jbs map[string]Build) error {
 	// Record last known state so we can log state transitions.
 	prevState := pj.Status.State
 

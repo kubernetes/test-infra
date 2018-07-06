@@ -25,21 +25,40 @@ import (
 	"time"
 
 	"context"
-	"sync"
 
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/ranch"
 	"k8s.io/test-infra/boskos/storage"
 )
 
-const (
-	fakeConfigType = "fakeConfig"
-	emptyContent   = "empty content"
-	owner          = "mason"
+var (
+	errConstruct = fmt.Errorf("failed to construct")
 )
 
+const (
+	fakeConfigType    = "fakeConfig"
+	emptyContent      = "empty content"
+	owner             = "mason"
+	defaultWaitPeriod = 100 * time.Millisecond
+)
+
+func errorsEqual(a, b error) bool {
+	if a == nil && b == nil {
+		return true
+	}
+	if a != nil && b != nil {
+		return a.Error() == b.Error()
+	}
+	return false
+}
+
+type releasedResource struct {
+	name, state string
+}
+
 type fakeBoskos struct {
-	ranch *ranch.Ranch
+	ranch             *ranch.Ranch
+	releasedResources chan releasedResource
 }
 
 type testConfig map[string]struct {
@@ -48,18 +67,37 @@ type testConfig map[string]struct {
 }
 
 type fakeConfig struct {
+	sleepTime time.Duration
+	err       error
 }
 
 func fakeConfigConverter(in string) (Masonable, error) {
-	return &fakeConfig{}, nil
+	return &fakeConfig{sleepTime: 0}, nil
 }
 
-func (fc *fakeConfig) Construct(res *common.Resource, typeToRes common.TypeToResources) (*common.UserData, error) {
-	return common.UserDataFromMap(map[string]string{"fakeConfig": "unused"}), nil
+func failingConfigConverter(in string) (Masonable, error) {
+	return &fakeConfig{sleepTime: 0, err: errConstruct}, nil
+}
+
+func timeoutConfigConverter(in string) (Masonable, error) {
+	return &fakeConfig{sleepTime: defaultWaitPeriod}, nil
+}
+
+func (fc *fakeConfig) Construct(ctx context.Context, res common.Resource, typeToRes common.TypeToResources) (*common.UserData, error) {
+	// Mess around with data
+	res.Name = "nothingToDo"
+	res.State = "unknown"
+	res.UserData = common.UserDataFromMap(common.UserDataMap{"test": "test"})
+	for k := range typeToRes {
+		delete(typeToRes, k)
+	}
+	time.Sleep(fc.sleepTime)
+	return common.UserDataFromMap(common.UserDataMap{"fakeConfig": "unused"}), fc.err
 }
 
 // Create a fake client
-func createFakeBoskos(tc testConfig) (*ranch.Storage, *Client, []common.ResourcesConfig) {
+func createFakeBoskos(tc testConfig) (*ranch.Storage, *Client, []common.ResourcesConfig, chan releasedResource) {
+	names := make(chan releasedResource, 100)
 	configNames := map[string]bool{}
 	var configs []common.ResourcesConfig
 	s, _ := ranch.NewStorage(storage.NewMemoryStorage(), "")
@@ -90,7 +128,7 @@ func createFakeBoskos(tc testConfig) (*ranch.Storage, *Client, []common.Resource
 			s.AddResource(res)
 		}
 	}
-	return s, NewClient(&fakeBoskos{r}), configs
+	return s, NewClient(&fakeBoskos{ranch: r, releasedResources: names}), configs, names
 }
 
 func (fb *fakeBoskos) Acquire(rtype, state, dest string) (*common.Resource, error) {
@@ -102,6 +140,7 @@ func (fb *fakeBoskos) AcquireByState(state, dest string, names []string) ([]comm
 }
 
 func (fb *fakeBoskos) ReleaseOne(name, dest string) error {
+	fb.releasedResources <- releasedResource{name: name, state: dest}
 	return fb.ranch.Release(name, dest, owner)
 }
 
@@ -137,14 +176,14 @@ func TestRecycleLeasedResources(t *testing.T) {
 		},
 	}
 
-	rStorage, mClient, configs := createFakeBoskos(tc)
+	rStorage, mClient, configs, _ := createFakeBoskos(tc)
 	res1, _ := rStorage.GetResource("type1_0")
 	res1.State = "type2_0"
 	rStorage.UpdateResource(res1)
 	res2, _ := rStorage.GetResource("type2_0")
 	res2.UserData.Set(LeasedResources, &[]string{"type1_0"})
 	rStorage.UpdateResource(res2)
-	m := NewMason(1, 1, mClient.basic, 50*time.Millisecond)
+	m := NewMason(1, mClient.basic, defaultWaitPeriod, defaultWaitPeriod)
 	m.storage.SyncConfigs(configs)
 	m.RegisterConfigConverter(fakeConfigType, fakeConfigConverter)
 	ctx, cancel := context.WithCancel(context.Background())
@@ -180,8 +219,8 @@ func TestRecycleNoLeasedResources(t *testing.T) {
 		},
 	}
 
-	rStorage, mClient, configs := createFakeBoskos(tc)
-	m := NewMason(1, 1, mClient.basic, 50*time.Millisecond)
+	rStorage, mClient, configs, _ := createFakeBoskos(tc)
+	m := NewMason(1, mClient.basic, defaultWaitPeriod, defaultWaitPeriod)
 	m.storage.SyncConfigs(configs)
 	m.RegisterConfigConverter(fakeConfigType, fakeConfigConverter)
 	ctx, cancel := context.WithCancel(context.Background())
@@ -204,6 +243,89 @@ func TestRecycleNoLeasedResources(t *testing.T) {
 	}
 }
 
+func TestCleanOne(t *testing.T) {
+	testCases := []struct {
+		name          string
+		configConvert ConfigConverter
+		err           error
+		timeout       bool
+	}{
+		{
+			name:          "success",
+			configConvert: fakeConfigConverter,
+		},
+		{
+			name:          "constructFailure",
+			configConvert: failingConfigConverter,
+			err:           errConstruct,
+		},
+		{
+			name:          "constructTimeout",
+			configConvert: timeoutConfigConverter,
+			err:           fmt.Errorf("context deadline exceeded"),
+			timeout:       true,
+		},
+	}
+
+	config := testConfig{
+		"type1": {
+			count: 1,
+		},
+		"type2": {
+			resourceNeeds: &common.ResourceNeeds{
+				"type1": 1,
+			},
+			count: 1,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(tt *testing.T) {
+			rStorage, mClient, configs, _ := createFakeBoskos(config)
+			m := NewMason(1, mClient.basic, defaultWaitPeriod, defaultWaitPeriod)
+			m.storage.SyncConfigs(configs)
+			m.RegisterConfigConverter(fakeConfigType, tc.configConvert)
+			masonRes, err := m.client.Acquire("type2", common.Dirty, common.Cleaning)
+			if err != nil {
+				t.Errorf("unexpected error %v", err)
+				t.FailNow()
+			}
+			req := requirements{
+				resource:    *masonRes,
+				needs:       *config["type2"].resourceNeeds,
+				fulfillment: common.TypeToResources{},
+			}
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+			if err := m.fulfillOne(ctx, &req); err != nil {
+				t.Errorf("unexpected error %v", err)
+			}
+
+			if tc.timeout {
+				ctx, cancel = context.WithTimeout(context.Background(), defaultWaitPeriod/2)
+				defer cancel()
+			}
+
+			err = m.cleanOne(ctx, &req.resource, req.fulfillment)
+			if !errorsEqual(tc.err, err) {
+				tt.Errorf("expected error %v got %v", tc.err, err)
+			}
+			m.garbageCollect(req)
+			resources, err := rStorage.GetResources()
+			if err != nil {
+				t.Errorf("unexpected error %v", err)
+				t.FailNow()
+			}
+			for _, res := range resources {
+				if res.State != common.Dirty {
+					tt.Errorf("resource %v should be released as dirty", res)
+				}
+
+			}
+		})
+	}
+}
+
 func TestFulfillOne(t *testing.T) {
 	tc := testConfig{
 		"type1": {
@@ -217,8 +339,8 @@ func TestFulfillOne(t *testing.T) {
 		},
 	}
 
-	rStorage, mClient, configs := createFakeBoskos(tc)
-	m := NewMason(1, 1, mClient.basic, 50*time.Millisecond)
+	rStorage, mClient, configs, _ := createFakeBoskos(tc)
+	m := NewMason(1, mClient.basic, defaultWaitPeriod, defaultWaitPeriod)
 	m.storage.SyncConfigs(configs)
 	res, _ := mClient.basic.Acquire("type2", common.Dirty, common.Cleaning)
 	conf, err := m.storage.GetConfig("type2")
@@ -263,33 +385,44 @@ func TestFulfillOne(t *testing.T) {
 }
 
 func TestMason(t *testing.T) {
+	count := 10
 	tc := testConfig{
 		"type1": {
-			count: 10,
+			count: count,
 		},
 		"type2": {
 			resourceNeeds: &common.ResourceNeeds{
 				"type1": 1,
 			},
-			count: 10,
+			count: count,
 		},
 	}
-	rStorage, mClient, configs := createFakeBoskos(tc)
-	m := NewMason(5, 5, mClient.basic, 50*time.Millisecond)
+	rStorage, mClient, configs, releasedResources := createFakeBoskos(tc)
+	m := NewMason(10, mClient.basic, defaultWaitPeriod, defaultWaitPeriod)
 	m.storage.SyncConfigs(configs)
 	m.RegisterConfigConverter(fakeConfigType, fakeConfigConverter)
 	m.Start()
-	<-time.After(time.Second)
-	resources, _ := rStorage.GetResources()
-	for _, r := range resources {
-		switch r.Type {
-		case "type1":
-			if !strings.Contains(r.State, "type2_") {
-				t.Errorf("state should be starting with type2, found %s", r.State)
+	timeout := time.NewTicker(5 * time.Second).C
+	i := 0
+loop:
+	for {
+		select {
+		case <-timeout:
+			t.Errorf("Test timed ouf")
+			t.FailNow()
+		case rr := <-releasedResources:
+			if strings.HasPrefix(rr.name, "type2_") {
+				if rr.state != common.Free {
+					t.Errorf("resource %s should be at state %s, found %s", rr.name, common.Free, rr.state)
+				}
+			} else if strings.HasPrefix(rr.name, "type1_") {
+				if !strings.HasPrefix(rr.state, "type2_") {
+					t.Errorf("resource %s should be starting with type2_, found %s", rr.name, rr.state)
+				}
 			}
-		case "type2":
-			if r.State != common.Free {
-				t.Errorf("state should be %s, found %s", common.Free, r.State)
+			i++
+			if i >= 2*count {
+				break loop
 			}
 		}
 	}
@@ -310,6 +443,7 @@ func TestMason(t *testing.T) {
 		res, err := mClient.Acquire("type2", common.Free, "Used")
 		if err != nil {
 			t.Errorf("Count %d: There should be free resources", i)
+			t.FailNow()
 		}
 		leasedResources := leasedResourceFromRes(*res)
 		if len(leasedResources) != 1 {
@@ -332,7 +466,7 @@ func TestMason(t *testing.T) {
 
 		}
 	}
-	resources, _ = rStorage.GetResources()
+	resources, _ := rStorage.GetResources()
 	for _, r := range resources {
 		if r.State != common.Dirty {
 			t.Errorf("state should be %s, found %s", common.Dirty, r.State)
@@ -352,24 +486,20 @@ func TestMasonStartStop(t *testing.T) {
 			count: 10,
 		},
 	}
-	_, mClient, configs := createFakeBoskos(tc)
-	m := NewMason(5, 5, mClient.basic, 50*time.Millisecond)
+	_, mClient, configs, _ := createFakeBoskos(tc)
+	m := NewMason(5, mClient.basic, defaultWaitPeriod, defaultWaitPeriod)
 	m.storage.SyncConfigs(configs)
-	m.RegisterConfigConverter(fakeConfigType, fakeConfigConverter)
+	m.RegisterConfigConverter(fakeConfigType, failingConfigConverter)
 	m.Start()
-	var done bool
-	var lock sync.RWMutex
+	done := make(chan bool)
 	go func() {
 		m.Stop()
-		lock.Lock()
-		defer lock.Unlock()
-		done = true
+		done <- true
 	}()
-	<-time.After(1 * time.Second)
-	lock.Lock()
-	defer lock.Unlock()
-	if !done {
+	select {
+	case <-time.After(time.Second):
 		t.Errorf("unable to stop mason")
+	case <-done:
 	}
 }
 

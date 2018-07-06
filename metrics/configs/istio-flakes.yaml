@@ -1,0 +1,31 @@
+# Istio has identical names for pre/post submits and
+# the version field in the job results are alwasys `unknown`
+# so the canonical flakiness metrics config does not apply to
+# istio. This config is used by istio only and generates weekly
+# flakiness summery given the constraints aforementioned.
+metric: istio-job-flakes
+description: Computes weekly flakiness for all jobs.
+query: |
+  SELECT
+    job,
+    sum(runs) runs,
+    sum(passed) passed,
+    if(passed == 0, 1, sum(passed)/sum(runs)) consistency,
+    max(stamp) stamp,
+  FROM (
+    SELECT /* all runs of any job for yesterday noting whether it passed */
+      job,
+      regexp_extract(metadata.value, r'master:([a-f0-9]+)"') commit, /* extract the master commit sha */
+      date(started) stamp,
+      sum(if(result=='SUCCESS',1,0)) passed,
+      count(result) runs,
+    FROM [k8s-gubernator:build.week]
+    WHERE
+      path LIKE "gs://istio%" AND
+      started > date_add(current_timestamp(), -7, "DAY")
+    GROUP BY job, stamp, commit
+  )
+  WHERE commit IS NOT NULL /* i.e. postsumit only */
+  GROUP BY job
+
+jqfilter: |

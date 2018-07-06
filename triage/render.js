@@ -68,9 +68,7 @@ function slugify(inp) {
   return inp.replace(/[^\w\s-]+/g, '').replace(/\s+/g, '-').toLowerCase();
 }
 
-// Turn a build object into a link with information.
-function buildToHtml(build, test, skipNumber) {
-  let started = tsToString(build.started);
+function gubernatorURLForBuild(build, test) {
   let buildPath = builds.jobPaths[build.job] + '/' + build.number;
   var gubernatorURL = 'https://k8s-gubernator.appspot.com/build/' + buildPath.slice(5);
   if (build.pr) {
@@ -79,7 +77,13 @@ function buildToHtml(build, test, skipNumber) {
   if (test) {
     gubernatorURL += '#' + slugify(test);
   }
-  return `<a href="${gubernatorURL}" target="_blank" rel="noopener">${skipNumber ? "" : build.number} ${started}</a>`;
+  return gubernatorURL;
+}
+
+// Turn a build object into a link with information.
+function buildToHtml(build, test, skipNumber) {
+  let started = tsToString(build.started);
+  return `<a href="${gubernatorURLForBuild(build, test)}" target="_blank" rel="noopener">${skipNumber ? "" : build.number} ${started}</a>`;
 }
 
 // Turn a job and array of build numbers into a list of build links.
@@ -205,12 +209,14 @@ function renderLatest(el, keyId) {
     createElement('th', null, 'Job'),
     createElement('th', null, 'Test')
   ]);
-  var buildsEmitted = new Set();
+  var buildsEmittedSet = new Set();
+  var buildsEmitted = [];
   var n = 0;
   for (let [build, job, test] of ctxs) {
     var key = job + build.number;
-    if (buildsEmitted.has(key)) continue;
-    buildsEmitted.add(key);
+    if (buildsEmittedSet.has(key)) continue;
+    buildsEmittedSet.add(key);
+    buildsEmitted.push([build, job, test]);
     addElement(el, 'tr', null, [
       createElement('td', {innerHTML: `${buildToHtml(build, test, true)}`}),
       createElement('td', null, job),
@@ -218,6 +224,7 @@ function renderLatest(el, keyId) {
     ]);
     if (++n >= 5) break;
   }
+  return buildsEmitted;
 }
 
 // Return a list of strings and spans made from text according to spans.
@@ -241,6 +248,25 @@ function renderSpans(text, spans) {
   return out;
 }
 
+function makeGithubIssue(id, text, owner, latestBuilds) {
+  let title = `Failure cluster [${id.slice(0, 8)}...]`;
+  let body = `### Failure cluster [${id}](https://go.k8s.io/triage#{id})
+
+##### Error text:
+\`\`\`
+${text.slice(0, Math.min(text.length, 1500))}
+\`\`\`
+#### Recent failures:
+`;
+  for (let [build, job, test] of latestBuilds) {
+    const url = gubernatorURLForBuild(build, test);
+    const started = tsToString(build.started);
+    body += `[${started} ${job}](${url})\n`
+  }
+  body += `\n\n/label sig/${owner}`
+  return [title, body];
+}
+
 // Render a section for each cluster, including the text, a graph, and expandable sections
 // to dive into failures for each test or job.
 function renderCluster(top, cluster) {
@@ -259,11 +285,13 @@ function renderCluster(top, cluster) {
   var clusterSum = clustersSum(tests);
   var todayCount = clustered.getHitsInLastDayById(id);
   var ownerTag = createElement('span', {className: 'owner sig-' + (owner || ''), dataset: {tooltip: 'inferred owner'}});
-  var failureNode = addElement(top, 'div', {id: id}, [
+  var fileBug = createElement('a', {href: '#', target: '_blank', rel: 'noopener'}, 'file bug');
+  var failureNode = addElement(top, 'div', {id: id, className: 'failure'}, [
     createElement('h2', null, [
-      `${plural(clusterSum, 'FAILURE', 'S')} (${todayCount} TODAY) MATCHING `,
-      createElement('a', {href: '#' + id}, id),
-      createElement('a', {href: 'https://github.com/search?type=Issues&q=org:kubernetes%20' + id, target: '_blank', rel: 'noopener'}, 'github search'),
+      `${plural(clusterSum, 'test failure', 's')} (${todayCount} today) look like `,
+      createElement('a', {href: '#' + id}, 'link'),
+      createElement('a', {href: 'https://github.com/search?type=Issues&q=org:kubernetes%20' + id, target: '_blank', rel: 'noopener'}, 'search github'),
+      fileBug,
       ownerTag,
     ]),
     createElement('pre', null, options.showNormalize ? key : renderSpans(text, spans)),
@@ -276,13 +304,19 @@ function renderCluster(top, cluster) {
     ownerTag.remove();
   }
 
-
   var latest = createElement('table');
   var list = addElement(failureNode, 'ul', null, [
     createElement('span', null, [`Latest Failures`, latest]),
   ]);
 
-  renderLatest(latest, id);
+  var latestBuilds = renderLatest(latest, id);
+
+  fileBug.addEventListener('click', () => {
+    let [title, body] = makeGithubIssue(id, text, owner, latestBuilds);
+    title = encodeURIComponent(title);
+    body = encodeURIComponent(body);
+    fileBug.href = `https://github.com/kubernetes/kubernetes/issues/new?body=${body}&title=${title}`;
+  })
 
   var clusterJobs = addElement(list, 'li');
 
