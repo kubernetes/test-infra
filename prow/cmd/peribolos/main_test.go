@@ -119,6 +119,10 @@ func TestOptions(t *testing.T) {
 			args: []string{"--github-token-path=bar", "--config-path=foo", "--dump=frogger"},
 		},
 		{
+			name: "reject --fix-team-members without --fix-teams",
+			args: []string{"--github-token-path=bar", "--config-path=foo", "--fix-team-members"},
+		},
+		{
 			name: "allow disabled throttle",
 			args: []string{"--config-path=foo", "--github-token-path=bar", "--tokens=0"},
 			expected: &options{
@@ -162,17 +166,21 @@ func TestOptions(t *testing.T) {
 		},
 		{
 			name: "full",
-			args: []string{"--config-path=foo", "--github-token-path=bar", "--github-endpoint=weird://url", "--confirm=true", "--require-self=false", "--tokens=5", "--token-burst=2", "--dump="},
+			args: []string{"--config-path=foo", "--github-token-path=bar", "--github-endpoint=weird://url", "--confirm=true", "--require-self=false", "--tokens=5", "--token-burst=2", "--dump=", "--fix-org", "--fix-org-members", "--fix-teams", "--fix-team-members"},
 			expected: &options{
-				config:        "foo",
-				token:         "bar",
-				endpoint:      weirdFlags,
-				confirm:       true,
-				requireSelf:   false,
-				minAdmins:     defaultMinAdmins,
-				maximumDelta:  defaultDelta,
-				tokensPerHour: 5,
-				tokenBurst:    2,
+				config:         "foo",
+				token:          "bar",
+				endpoint:       weirdFlags,
+				confirm:        true,
+				requireSelf:    false,
+				minAdmins:      defaultMinAdmins,
+				maximumDelta:   defaultDelta,
+				tokensPerHour:  5,
+				tokenBurst:     2,
+				fixOrg:         true,
+				fixOrgMembers:  true,
+				fixTeams:       true,
+				fixTeamMembers: true,
 			},
 		},
 	}
