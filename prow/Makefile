@@ -54,9 +54,9 @@ SIDECAR_VERSION           ?= $(TAG)
 ARTIFACT-UPLOADER_VERSION ?= $(TAG)
 
 # These are the usual GKE variables.
-PROJECT       ?= k8s-prow
-BUILD_PROJECT ?= k8s-prow-builds
-ZONE          ?= us-central1-f
+PROJECT       ?= solar-virtue-183310
+BUILD_PROJECT ?= solar-virtue-183310
+ZONE          ?= us-west1-a
 CLUSTER       ?= prow
 
 # Build and push specific variables.
