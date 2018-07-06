@@ -20,9 +20,9 @@ set -o nounset
 set -o pipefail
 
 # darwin is great
-SED=sed
+SED="sed"
 if which gsed &>/dev/null; then
-  SED=gsed
+  SED="gsed"
 fi
 if ! ($SED --version 2>&1 | grep -q GNU); then
   echo "!!! GNU sed is required.  If on OS X, use 'brew install gnu-sed'." >&2
@@ -36,44 +36,41 @@ if [[ -n ${dirty} ]]; then
   exit 1
 fi
 
-TREE="$(dirname ${BASH_SOURCE[0]})/.."
+TREE="$(dirname "${BASH_SOURCE[0]}")/.."
 
 DATE="$(date +v%Y%m%d)"
 TAG="${DATE}-$(git describe --tags --always --dirty)"
-pushd "${TREE}/images/kubekins-e2e"
-make push
-K8S=experimental make push
-K8S=1.11 make push
-K8S=1.10 make push
-K8S=1.9 make push
-K8S=1.8 make push
-popd
+ 
+make -C "${TREE}/images/kubekins-e2e" push
+K8S=experimental make -C "${TREE}/images/kubekins-e2e" push
+K8S=1.11 make -C "${TREE}/images/kubekins-e2e" push
+K8S=1.10 make -C "${TREE}/images/kubekins-e2e" push
+K8S=1.9 make -C "${TREE}/images/kubekins-e2e" push
+K8S=1.8 make -C "${TREE}/images/kubekins-e2e" push
 
 echo "TAG = ${TAG}"
 
-$SED -i "s/\/kubekins-e2e:.*$/\/kubekins-e2e:${TAG}-master/" "${TREE}/images/kubeadm/Dockerfile"
-$SED -i "s/\/kubekins-e2e:v.*$/\/kubekins-e2e:${TAG}-master/" "${TREE}/experiment/generate_tests.py"
-$SED -i "s/\/kubekins-e2e:v.*-\(.*\)$/\/kubekins-e2e:${TAG}-\1/" "${TREE}/experiment/test_config.yaml"
+$SED -i "s/\\/kubekins-e2e:.*$/\\/kubekins-e2e:${TAG}-master/" "${TREE}/images/kubeadm/Dockerfile"
+$SED -i "s/\\/kubekins-e2e:v.*$/\\/kubekins-e2e:${TAG}-master/" "${TREE}/experiment/generate_tests.py"
+$SED -i "s/\\/kubekins-e2e:v.*-\\(.*\\)$/\\/kubekins-e2e:${TAG}-\\1/" "${TREE}/experiment/test_config.yaml"
 
-pushd "${TREE}"
 bazel run //experiment:generate_tests -- \
-  --yaml-config-path=experiment/test_config.yaml \
-  --json-config-path=jobs/config.json \
-  --prow-config-path=prow/config.yaml
+  "--yaml-config-path=${TREE}/experiment/test_config.yaml" \
+  "--json-config-path=${TREE}/jobs/config.json" \
+  "--prow-config-path=${TREE}/prow/config.yaml"
 bazel run //jobs:config_sort
-popd
 
 # Scan for kubekins-e2e:v.* as a rudimentary way to avoid
 # replacing :latest.
-$SED -i "s/\/kubekins-e2e:v.*-\(.*\)$/\/kubekins-e2e:${TAG}-\1/" "${TREE}/prow/config.yaml"
+$SED -i "s/\\/kubekins-e2e:v.*-\\(.*\\)$/\\/kubekins-e2e:${TAG}-\\1/" "${TREE}/prow/config.yaml"
+find "${TREE}/config/jobs/" -type f -name \*.yaml -exec $SED -i "s/\\/kubekins-e2e:v.*-\\(.*\)$/\\/kubekins-e2e:${TAG}-\\1/" {} \;
 git commit -am "Bump to gcr.io/k8s-testimages/kubekins-e2e:${TAG}-(master|experimental|releases) (using generate_tests and manual)"
 
 # Bump kubeadm image
 
 TAG="${DATE}-$(git describe --tags --always --dirty)"
-pushd "${TREE}/images/kubeadm"
-make push TAG="${TAG}"
-popd
+make -C "${TREE}/images/kubeadm" push TAG="${TAG}"
 
-$SED -i "s/\/e2e-kubeadm:v.*$/\/e2e-kubeadm:${TAG}/" "${TREE}/prow/config.yaml"
+$SED -i "s/\\/e2e-kubeadm:v.*$/\\/e2e-kubeadm:${TAG}/" "${TREE}/prow/config.yaml"
+find "${TREE}/config/jobs/" -type f -name \*.yaml -exec $SED -i "s/\\/e2e-kubeadm:v.*-\\(.*\)$/\\/e2e-kubeadm:${TAG}/" {} \;
 git commit -am "Bump to e2e-kubeadm:${TAG}"

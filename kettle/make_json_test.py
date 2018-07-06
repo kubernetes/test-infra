@@ -23,6 +23,18 @@ import make_json
 import model
 
 
+class ValidateBuckets(unittest.TestCase):
+    def test_buckets(self):
+        prefixes = set()
+        for name, options in sorted(make_json.BUCKETS.iteritems()):
+            if name == 'gs://kubernetes-jenkins/logs/':
+                continue  # only bucket without a prefix
+            prefix = options.get('prefix', '')
+            self.assertNotEqual(prefix, '', 'bucket %s must have a prefix' % name)
+            self.assertNotIn(prefix, prefixes, "bucket %s prefix %r isn't unique" % (name, prefix))
+            self.assertEqual(prefix[-1], ':', "bucket %s prefix should be %s:" % (name, prefix))
+
+
 class MakeJsonTest(unittest.TestCase):
     def setUp(self):
         self.db = model.Database(':memory:')

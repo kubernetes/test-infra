@@ -18,6 +18,7 @@ limitations under the License.
 package gerrit
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -270,7 +271,11 @@ func (c *Controller) ProcessChange(change gerrit.ChangeInfo) error {
 	}
 
 	logger := logrus.WithField("gerrit change", change.Number)
-	triggered := []string{}
+
+	type triggeredJob struct {
+		Name, URL string
+	}
+	triggeredJobs := []triggeredJob{}
 
 	for _, spec := range c.ca.Config().Presubmits[c.instance+"/"+change.Project] {
 		kr := kube.Refs{
@@ -294,14 +299,40 @@ func (c *Controller) ProcessChange(change gerrit.ChangeInfo) error {
 		if _, err := c.kc.CreateProwJob(pj); err != nil {
 			logger.WithError(err).Errorf("fail to create prowjob %v", pj)
 		} else {
-			triggered = append(triggered, spec.Name)
+			var b bytes.Buffer
+			template := c.ca.Config().Plank.JobURLTemplate
+			if template != nil {
+				if err := template.Execute(&b, &pj); err != nil {
+					logger.WithFields(pjutil.ProwJobFields(&pj)).Errorf("error executing URL template: %v", err)
+				}
+				// TODO(krzyzacy): We doesn't have buildID here yet - do a hack to get a proper URL to the PR
+				// Remove this once we have proper report interface.
+
+				// mangle
+				// https://gubernator.k8s.io/build/gob-prow/pr-logs/pull/some-repo/8940/pull-test-infra-presubmit//
+				// to
+				// https://gubernator.k8s.io/builds/gob-prow/pr-logs/pull/some-repo/8940/pull-test-infra-presubmit/
+				url := b.String()
+				url = strings.Replace(url, "builds", "build", 1)
+				url = strings.Replace(url, "//", "/", 1)
+			}
+			triggeredJobs = append(triggeredJobs, triggeredJob{Name: spec.Name, URL: b.String()})
 		}
 	}
 
-	if len(triggered) > 0 {
+	if len(triggeredJobs) > 0 {
 		// comment back to gerrit
+		message := "Triggered presubmit:"
+		for _, job := range triggeredJobs {
+			if job.URL != "" {
+				message += fmt.Sprintf("\n  * Name: %s, URL: %s", job.Name, job.URL)
+			} else {
+				message += fmt.Sprintf("\n  * Name: %s", job.Name)
+			}
+		}
+
 		if _, _, err := c.gc.SetReview(change.ID, change.CurrentRevision, &gerrit.ReviewInput{
-			Message: fmt.Sprintf("Triggered presubmit: %v", triggered),
+			Message: message,
 		}); err != nil {
 			return fmt.Errorf("cannot comment to gerrit: %v", err)
 		}

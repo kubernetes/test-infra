@@ -186,9 +186,9 @@ def pull_ref(pull):
         checkouts.append(sha)
         if not refs:  # First ref should be branch to merge into
             refs.append(name)
-        elif change_ref: # explicit change refs
+        elif change_ref:  # explicit change refs
             refs.append(change_ref)
-        else: # PR numbers
+        else:  # PR numbers
             num = int(name)
             refs.append('+refs/pull/%d/head:refs/pr/%d' % (num, num))
     return refs, checkouts
@@ -222,10 +222,12 @@ def random_sleep(attempt):
     """Sleep 2**attempt seconds with a random fractional offset."""
     time.sleep(random.random() + attempt ** 2)
 
+
 def auth_google_gerrit(git, call):
     """authenticate to foo.googlesource.com"""
     call([git, 'clone', 'https://gerrit.googlesource.com/gcompute-tools'])
     call(['./gcompute-tools/git-cookie-authdaemon'])
+
 
 def commit_date(git, commit, call):
     try:
@@ -234,6 +236,7 @@ def commit_date(git, commit, call):
     except subprocess.CalledProcessError:
         logging.warning('Unable to print commit date for %s', commit)
         return None
+
 
 def checkout(call, repo, repo_path, branch, pull, ssh='', git_cache='', clean=False):
     """Fetch and checkout the repository at the specified branch/pull.
@@ -391,7 +394,6 @@ class GSUtil(object):
         cmd = [self.gsutil, '-q', 'cat', '%s#%s' % (path, generation)]
         return self.call(cmd, output=True)
 
-
     def upload_artifacts(self, gsutil, path, artifacts):
         """Upload artifacts to the specified path."""
         # Upload artifacts
@@ -484,7 +486,8 @@ def metadata(repos, artifacts, call):
         logging.warning('metadata path %s does not exist', path)
 
     if not meta or not isinstance(meta, dict):
-        logging.warning('metadata not found or invalid, init with empty metadata')
+        logging.warning(
+            'metadata not found or invalid, init with empty metadata')
         meta = {}
     if repos:
         meta['repo'] = repos.main
@@ -604,7 +607,7 @@ def find_version(call):
     if os.path.isfile(version_script):
         cmd = [
             'bash', '-c', (
-"""
+                """
 set -o errexit
 set -o nounset
 export KUBE_ROOT=.
@@ -620,6 +623,7 @@ echo $KUBE_GIT_VERSION
 
 class Paths(object):  # pylint: disable=too-many-instance-attributes,too-few-public-methods
     """Links to remote gcs-paths for uploading results."""
+
     def __init__(  # pylint: disable=too-many-arguments
         self,
         artifacts,  # artifacts folder (in build)
@@ -645,7 +649,6 @@ class Paths(object):  # pylint: disable=too-many-instance-attributes,too-few-pub
         self.started = started
 
 
-
 def ci_paths(base, job, build):
     """Return a Paths() instance for a continuous build."""
     latest = os.path.join(base, job, 'latest-build.txt')
@@ -661,7 +664,6 @@ def ci_paths(base, job, build):
         result_cache=os.path.join(base, job, 'jobResultsCache.json'),
         started=os.path.join(base, job, build, 'started.json'),
     )
-
 
 
 def pr_paths(base, repos, job, build):
@@ -688,9 +690,9 @@ def pr_paths(base, repos, job, build):
         pull = os.path.join(prefix, pr_nums[0])
     pr_path = os.path.join(base, 'pull', pull, job, build)
     result_cache = os.path.join(
-            base, 'directory', job, 'jobResultsCache.json')
+        base, 'directory', job, 'jobResultsCache.json')
     pr_result_cache = os.path.join(
-            base, 'pull', pull, job, 'jobResultsCache.json')
+        base, 'pull', pull, job, 'jobResultsCache.json')
     return Paths(
         artifacts=os.path.join(pr_path, 'artifacts'),
         build_log=os.path.join(pr_path, 'build-log.txt'),
@@ -703,7 +705,6 @@ def pr_paths(base, repos, job, build):
         result_cache=result_cache,
         started=os.path.join(pr_path, 'started.json'),
     )
-
 
 
 BUILD_ENV = 'BUILD_NUMBER'
@@ -746,7 +747,8 @@ def setup_credentials(call, robot, upload):
     if robot:
         os.environ[SERVICE_ACCOUNT_ENV] = robot
     if not os.getenv(SERVICE_ACCOUNT_ENV) and upload:
-        logging.warning('Cannot --upload=%s, no active gcloud account.', upload)
+        logging.warning(
+            'Cannot --upload=%s, no active gcloud account.', upload)
         raise ValueError('--upload requires --service-account')
     if not os.getenv(SERVICE_ACCOUNT_ENV) and not upload:
         logging.info('Will not upload results.')
@@ -758,12 +760,25 @@ def setup_credentials(call, robot, upload):
             'Create service account and then create key at '
             'https://console.developers.google.com/iam-admin/serviceaccounts/project',  # pylint: disable=line-too-long
         )
-    call([
-        'gcloud',
-        'auth',
-        'activate-service-account',
-        '--key-file=%s' % os.environ[SERVICE_ACCOUNT_ENV],
-    ])
+    # this sometimes fails spuriously due to DNS flakiness, so we retry it
+    for _ in range(5):
+        try:
+            call([
+                'gcloud',
+                'auth',
+                'activate-service-account',
+                '--key-file=%s' % os.environ[SERVICE_ACCOUNT_ENV],
+            ])
+            break
+        except subprocess.CalledProcessError:
+            pass
+        sleep_for = 1
+        logging.info(
+            'Retrying service account activation in %.2fs ...', sleep_for)
+        time.sleep(sleep_for)
+    else:
+        raise Exception(
+            "Failed to activate service account, exhausted retries")
     try:  # Old versions of gcloud may not support this value
         account = call(
             ['gcloud', 'config', 'get-value', 'account'], output=True).strip()
@@ -814,7 +829,6 @@ def setup_magic_environment(job, call):
         os.path.join(home, '.ssh/kube_aws_rsa.pub'),
     )
 
-
     cwd = os.getcwd()
     # TODO(fejta): jenkins sets WORKSPACE and pieces of our infra expect this
     #              value. Consider doing something else in the future.
@@ -834,7 +848,8 @@ def setup_magic_environment(job, call):
     if JOB_ENV not in os.environ:
         os.environ[JOB_ENV] = job
     elif os.environ[JOB_ENV] != job:
-        logging.warning('%s=%s (overrides %s)', JOB_ENV, job, os.environ[JOB_ENV])
+        logging.warning('%s=%s (overrides %s)', JOB_ENV,
+                        job, os.environ[JOB_ENV])
         os.environ[JOB_ENV] = job
     # TODO(fejta): Magic value to tell our test code not do upload started.json
     # TODO(fejta): delete upload-to-gcs.sh and then this value.
@@ -900,7 +915,8 @@ def configure_ssh_key(ssh):
     # during git fetch. In the future change this to GIT_SSH_COMMAND
     # https://superuser.com/questions/232373/how-to-tell-git-which-private-key-to-use
     with tempfile.NamedTemporaryFile(prefix='ssh', delete=False) as fp:
-        fp.write('#!/bin/sh\nssh -o StrictHostKeyChecking=no -i \'%s\' -F /dev/null "${@}"\n' % ssh)
+        fp.write(
+            '#!/bin/sh\nssh -o StrictHostKeyChecking=no -i \'%s\' -F /dev/null "${@}"\n' % ssh)
     try:
         os.chmod(fp.name, 0500)
         had = 'GIT_SSH' in os.environ
@@ -982,13 +998,16 @@ def parse_repos(args):
     ret = Repos()
     if len(repos) != 1:
         if args.pull:
-            raise ValueError('Multi --repo does not support --pull, use --repo=R=branch,p1,p2')
+            raise ValueError(
+                'Multi --repo does not support --pull, use --repo=R=branch,p1,p2')
         if args.branch:
-            raise ValueError('Multi --repo does not support --branch, use --repo=R=branch')
+            raise ValueError(
+                'Multi --repo does not support --branch, use --repo=R=branch')
     elif len(repos) == 1 and (args.branch or args.pull):
         repo = repos[0]
         if '=' in repo or ':' in repo:
-            raise ValueError('--repo cannot contain = or : with --branch or --pull')
+            raise ValueError(
+                '--repo cannot contain = or : with --branch or --pull')
         ret[repo] = (args.branch, args.pull)
         return ret
     for repo in repos:
@@ -1028,7 +1047,8 @@ def bootstrap(args):
     gsutil = GSUtil(call)
 
     if len(sys.argv) > 1:
-        logging.info('Args: %s', ' '.join(pipes.quote(a) for a in sys.argv[1:]))
+        logging.info('Args: %s', ' '.join(pipes.quote(a)
+                                          for a in sys.argv[1:]))
     logging.info('Bootstrap %s...', job)
     logging.info('Builder: %s', node())
     if IMAGE_NAME_ENV in os.environ:
@@ -1057,10 +1077,12 @@ def bootstrap(args):
             setup_credentials(call, args.service_account, upload)
             if upload:
                 try:
-                    maybe_upload_podspec(call, paths.artifacts, gsutil, os.getenv)
+                    maybe_upload_podspec(
+                        call, paths.artifacts, gsutil, os.getenv)
                 except (OSError, subprocess.CalledProcessError), exc:
                     logging.error("unable to upload podspecs: %s", exc)
-            setup_root(call, args.root, repos, args.ssh, args.git_cache, args.clean)
+            setup_root(call, args.root, repos, args.ssh,
+                       args.git_cache, args.clean)
             logging.info('Configure environment...')
             setup_magic_environment(job, call)
             setup_credentials(call, args.service_account, upload)
@@ -1088,9 +1110,10 @@ def bootstrap(args):
         try:
             finish(
                 gsutil, paths, success,
-                os.path.join(os.getenv(WORKSPACE_ENV, os.getcwd()), '_artifacts'),
+                os.path.join(
+                    os.getenv(WORKSPACE_ENV, os.getcwd()), '_artifacts'),
                 build, version, repos, call
-                )
+            )
         except subprocess.CalledProcessError:  # Still try to upload build log
             success = False
     logging.getLogger('').removeHandler(build_log)
@@ -1103,6 +1126,7 @@ def bootstrap(args):
         # TODO(fejta/spxtr): we should distinguish infra and non-infra problems
         # by exit code and automatically retrigger after an infra-problem.
         sys.exit(1)
+
 
 def parse_args(arguments=None):
     """Parse arguments or sys.argv[1:]."""

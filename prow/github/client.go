@@ -27,6 +27,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -36,6 +37,8 @@ import (
 	"github.com/shurcooL/githubql"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
+
+	"k8s.io/test-infra/prow/errorutil"
 )
 
 type timeClient interface {
@@ -52,6 +55,7 @@ func (s *standardTime) Until(t time.Time) time.Duration {
 	return time.Until(t)
 }
 
+// Client interacts with the github api.
 type Client struct {
 	// If logger is non-nil, log all method calls with it.
 	logger *logrus.Entry
@@ -75,6 +79,7 @@ var (
 	max404Retries = 2
 	maxSleepTime  = 2 * time.Minute
 	initialDelay  = 2 * time.Second
+	teamRe        = regexp.MustCompile(`^(.*)/(.*)$`)
 )
 
 // Interface for how prow interacts with the http client, which we may throttle.
@@ -415,6 +420,9 @@ func (c *Client) getUserData() error {
 	return nil
 }
 
+// BotName returns the login of the authenticated identity.
+//
+// See https://developer.github.com/v3/users/#get-the-authenticated-user
 func (c *Client) BotName() (string, error) {
 	c.mut.Lock()
 	defer c.mut.Unlock()
@@ -426,6 +434,9 @@ func (c *Client) BotName() (string, error) {
 	return c.botName, nil
 }
 
+// Email returns the user-configured email for the authenticated identity.
+//
+// See https://developer.github.com/v3/users/#get-the-authenticated-user
 func (c *Client) Email() (string, error) {
 	c.mut.Lock()
 	defer c.mut.Unlock()
@@ -438,6 +449,8 @@ func (c *Client) Email() (string, error) {
 }
 
 // IsMember returns whether or not the user is a member of the org.
+//
+// See https://developer.github.com/v3/orgs/members/#check-membership
 func (c *Client) IsMember(org, user string) (bool, error) {
 	c.log("IsMember", org, user)
 	if org == user {
@@ -461,6 +474,41 @@ func (c *Client) IsMember(org, user string) (bool, error) {
 	}
 	// Should be unreachable.
 	return false, fmt.Errorf("unexpected status: %d", code)
+}
+
+// GetOrg returns current metadata for the org
+//
+// https://developer.github.com/v3/orgs/#get-an-organization
+func (c *Client) GetOrg(name string) (*Organization, error) {
+	c.log("GetOrg", name)
+	var retOrg Organization
+	_, err := c.request(&request{
+		method:    http.MethodGet,
+		path:      fmt.Sprintf("/orgs/%s", name),
+		exitCodes: []int{200},
+	}, &retOrg)
+	if err != nil {
+		return nil, err
+	}
+	return &retOrg, nil
+}
+
+// EditOrg will update the metadata for this org.
+//
+// https://developer.github.com/v3/orgs/#edit-an-organization
+func (c *Client) EditOrg(name string, config Organization) (*Organization, error) {
+	c.log("EditOrg", name, config)
+	var retOrg Organization
+	_, err := c.request(&request{
+		method:      http.MethodPatch,
+		path:        fmt.Sprintf("/orgs/%s", name),
+		exitCodes:   []int{200},
+		requestBody: &config,
+	}, &retOrg)
+	if err != nil {
+		return nil, err
+	}
+	return &retOrg, nil
 }
 
 // ListOrgMembers list all users who are members of an organization. If the authenticated
@@ -535,6 +583,8 @@ func (c *Client) RemoveOrgMembership(org, user string) error {
 }
 
 // CreateComment creates a comment on the issue.
+//
+// See https://developer.github.com/v3/issues/comments/#create-a-comment
 func (c *Client) CreateComment(org, repo string, number int, comment string) error {
 	c.log("CreateComment", org, repo, number, comment)
 	ic := IssueComment{
@@ -550,36 +600,44 @@ func (c *Client) CreateComment(org, repo string, number int, comment string) err
 }
 
 // DeleteComment deletes the comment.
-func (c *Client) DeleteComment(org, repo string, ID int) error {
-	c.log("DeleteComment", org, repo, ID)
+//
+// See https://developer.github.com/v3/issues/comments/#delete-a-comment
+func (c *Client) DeleteComment(org, repo string, id int) error {
+	c.log("DeleteComment", org, repo, id)
 	_, err := c.request(&request{
 		method:    http.MethodDelete,
-		path:      fmt.Sprintf("/repos/%s/%s/issues/comments/%d", org, repo, ID),
+		path:      fmt.Sprintf("/repos/%s/%s/issues/comments/%d", org, repo, id),
 		exitCodes: []int{204},
 	}, nil)
 	return err
 }
 
-func (c *Client) EditComment(org, repo string, ID int, comment string) error {
-	c.log("EditComment", org, repo, ID, comment)
+// EditComment changes the body of comment id in org/repo.
+//
+// See https://developer.github.com/v3/issues/comments/#edit-a-comment
+func (c *Client) EditComment(org, repo string, id int, comment string) error {
+	c.log("EditComment", org, repo, id, comment)
 	ic := IssueComment{
 		Body: comment,
 	}
 	_, err := c.request(&request{
 		method:      http.MethodPatch,
-		path:        fmt.Sprintf("/repos/%s/%s/issues/comments/%d", org, repo, ID),
+		path:        fmt.Sprintf("/repos/%s/%s/issues/comments/%d", org, repo, id),
 		requestBody: &ic,
 		exitCodes:   []int{200},
 	}, nil)
 	return err
 }
 
-func (c *Client) CreateCommentReaction(org, repo string, ID int, reaction string) error {
-	c.log("CreateCommentReaction", org, repo, ID, reaction)
+// CreateCommentReaction responds emotionally to comment id in org/repo.
+//
+// See https://developer.github.com/v3/reactions/#create-reaction-for-an-issue-comment
+func (c *Client) CreateCommentReaction(org, repo string, id int, reaction string) error {
+	c.log("CreateCommentReaction", org, repo, id, reaction)
 	r := Reaction{Content: reaction}
 	_, err := c.request(&request{
 		method:      http.MethodPost,
-		path:        fmt.Sprintf("/repos/%s/%s/issues/comments/%d/reactions", org, repo, ID),
+		path:        fmt.Sprintf("/repos/%s/%s/issues/comments/%d/reactions", org, repo, id),
 		accept:      "application/vnd.github.squirrel-girl-preview",
 		exitCodes:   []int{201},
 		requestBody: &r,
@@ -587,12 +645,15 @@ func (c *Client) CreateCommentReaction(org, repo string, ID int, reaction string
 	return err
 }
 
-func (c *Client) CreateIssueReaction(org, repo string, ID int, reaction string) error {
-	c.log("CreateIssueReaction", org, repo, ID, reaction)
+// CreateIssueReaction responds emotionally to org/repo#id
+//
+// See https://developer.github.com/v3/reactions/#create-reaction-for-an-issue
+func (c *Client) CreateIssueReaction(org, repo string, id int, reaction string) error {
+	c.log("CreateIssueReaction", org, repo, id, reaction)
 	r := Reaction{Content: reaction}
 	_, err := c.request(&request{
 		method:      http.MethodPost,
-		path:        fmt.Sprintf("/repos/%s/%s/issues/%d/reactions", org, repo, ID),
+		path:        fmt.Sprintf("/repos/%s/%s/issues/%d/reactions", org, repo, id),
 		accept:      "application/vnd.github.squirrel-girl-preview",
 		requestBody: &r,
 		exitCodes:   []int{200, 201},
@@ -674,8 +735,11 @@ func (c *Client) readPaginatedResultsWithValues(path string, values url.Values, 
 	return nil
 }
 
-// ListIssueComments returns all comments on an issue. This may use more than
-// one API token.
+// ListIssueComments returns all comments on an issue.
+//
+// Each page of results consumes one API token.
+//
+// See https://developer.github.com/v3/issues/comments/#list-comments-on-an-issue
 func (c *Client) ListIssueComments(org, repo string, number int) ([]IssueComment, error) {
 	c.log("ListIssueComments", org, repo, number)
 	if c.fake {
@@ -700,6 +764,8 @@ func (c *Client) ListIssueComments(org, repo string, number int) ([]IssueComment
 }
 
 // GetPullRequest gets a pull request.
+//
+// See https://developer.github.com/v3/pulls/#get-a-single-pull-request
 func (c *Client) GetPullRequest(org, repo string, number int) (*PullRequest, error) {
 	c.log("GetPullRequest", org, repo, number)
 	var pr PullRequest
@@ -712,6 +778,8 @@ func (c *Client) GetPullRequest(org, repo string, number int) (*PullRequest, err
 }
 
 // GetPullRequestPatch gets the patch version of a pull request.
+//
+// See https://developer.github.com/v3/media/#commits-commit-comparison-and-pull-requests
 func (c *Client) GetPullRequestPatch(org, repo string, number int) ([]byte, error) {
 	c.log("GetPullRequestPatch", org, repo, number)
 	_, patch, err := c.requestRaw(&request{
@@ -725,6 +793,8 @@ func (c *Client) GetPullRequestPatch(org, repo string, number int) ([]byte, erro
 
 // CreatePullRequest creates a new pull request and returns its number if
 // the creation is successful, otherwise any error that is encountered.
+//
+// See https://developer.github.com/v3/pulls/#create-a-pull-request
 func (c *Client) CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (int, error) {
 	c.log("CreatePullRequest", org, repo, title)
 	data := struct {
@@ -759,6 +829,8 @@ func (c *Client) CreatePullRequest(org, repo, title, body, head, base string, ca
 }
 
 // GetPullRequestChanges gets a list of files modified in a pull request.
+//
+// See https://developer.github.com/v3/pulls/#list-pull-requests-files
 func (c *Client) GetPullRequestChanges(org, repo string, number int) ([]PullRequestChange, error) {
 	c.log("GetPullRequestChanges", org, repo, number)
 	if c.fake {
@@ -782,8 +854,11 @@ func (c *Client) GetPullRequestChanges(org, repo string, number int) ([]PullRequ
 	return changes, nil
 }
 
-// ListPullRequestComments returns all *review* comments on a pull request. This may use
-// more than one API token.
+// ListPullRequestComments returns all *review* comments on a pull request.
+//
+// Multiple-pages of comments consumes multiple API tokens.
+//
+// See https://developer.github.com/v3/pulls/comments/#list-comments-on-a-pull-request
 func (c *Client) ListPullRequestComments(org, repo string, number int) ([]ReviewComment, error) {
 	c.log("ListPullRequestComments", org, repo, number)
 	if c.fake {
@@ -807,8 +882,11 @@ func (c *Client) ListPullRequestComments(org, repo string, number int) ([]Review
 	return comments, nil
 }
 
-// ListReviews returns all reviews on a pull request. This may use
-// more than one API token.
+// ListReviews returns all reviews on a pull request.
+//
+// Multiple-pages of results consumes multiple API tokens.
+//
+// See https://developer.github.com/v3/pulls/reviews/#list-reviews-on-a-pull-request
 func (c *Client) ListReviews(org, repo string, number int) ([]Review, error) {
 	c.log("ListReviews", org, repo, number)
 	if c.fake {
@@ -833,6 +911,8 @@ func (c *Client) ListReviews(org, repo string, number int) ([]Review, error) {
 }
 
 // CreateStatus creates or updates the status of a commit.
+//
+// See https://developer.github.com/v3/repos/statuses/#create-a-status
 func (c *Client) CreateStatus(org, repo, sha string, s Status) error {
 	c.log("CreateStatus", org, repo, sha, s)
 	_, err := c.request(&request{
@@ -845,6 +925,8 @@ func (c *Client) CreateStatus(org, repo, sha string, s Status) error {
 }
 
 // ListStatuses gets commit statuses for a given ref.
+//
+// See https://developer.github.com/v3/repos/statuses/#list-statuses-for-a-specific-ref
 func (c *Client) ListStatuses(org, repo, ref string) ([]Status, error) {
 	c.log("ListStatuses", org, repo, ref)
 	var statuses []Status
@@ -857,6 +939,8 @@ func (c *Client) ListStatuses(org, repo, ref string) ([]Status, error) {
 }
 
 // GetRepo returns the repo for the provided owner/name combination.
+//
+// See https://developer.github.com/v3/repos/#get
 func (c *Client) GetRepo(owner, name string) (Repo, error) {
 	c.log("GetRepo", owner, name)
 
@@ -872,6 +956,8 @@ func (c *Client) GetRepo(owner, name string) (Repo, error) {
 // GetRepos returns all repos in an org.
 //
 // This call uses multiple API tokens when results are paginated.
+//
+// See https://developer.github.com/v3/repos/#list-organization-repositories
 func (c *Client) GetRepos(org string, isUser bool) ([]Repo, error) {
 	c.log("GetRepos", org, isUser)
 	var (
@@ -908,6 +994,8 @@ func (c *Client) GetRepos(org string, isUser bool) ([]Repo, error) {
 // and branch.Protected will be true. Otherwise Protected is the default value (false).
 //
 // This call uses multiple API tokens when results are paginated.
+//
+// See https://developer.github.com/v3/repos/branches/#list-branches
 func (c *Client) GetBranches(org, repo string, onlyProtected bool) ([]Branch, error) {
 	c.log("GetBranches", org, repo)
 	var branches []Branch
@@ -931,6 +1019,9 @@ func (c *Client) GetBranches(org, repo string, onlyProtected bool) ([]Branch, er
 	return branches, nil
 }
 
+// RemoveBranchProtection unprotects org/repo=branch.
+//
+// See https://developer.github.com/v3/repos/branches/#remove-branch-protection
 func (c *Client) RemoveBranchProtection(org, repo, branch string) error {
 	c.log("RemoveBranchProtection", org, repo, branch)
 	_, err := c.request(&request{
@@ -941,6 +1032,9 @@ func (c *Client) RemoveBranchProtection(org, repo, branch string) error {
 	return err
 }
 
+// UpdateBranchProtection configures org/repo=branch.
+//
+// See https://developer.github.com/v3/repos/branches/#update-branch-protection
 func (c *Client) UpdateBranchProtection(org, repo, branch string, config BranchProtectionRequest) error {
 	c.log("UpdateBranchProtection", org, repo, branch, config)
 	_, err := c.request(&request{
@@ -954,6 +1048,8 @@ func (c *Client) UpdateBranchProtection(org, repo, branch string, config BranchP
 }
 
 // AddRepoLabel adds a defined label given org/repo
+//
+// See https://developer.github.com/v3/issues/labels/#create-a-label
 func (c *Client) AddRepoLabel(org, repo, label, description, color string) error {
 	c.log("AddRepoLabel", org, repo, label, description, color)
 	_, err := c.request(&request{
@@ -967,6 +1063,8 @@ func (c *Client) AddRepoLabel(org, repo, label, description, color string) error
 }
 
 // UpdateRepoLabel updates a org/repo label to new name, description, and color
+//
+// See https://developer.github.com/v3/issues/labels/#update-a-label
 func (c *Client) UpdateRepoLabel(org, repo, label, newName, description, color string) error {
 	c.log("UpdateRepoLabel", org, repo, label, newName, color)
 	_, err := c.request(&request{
@@ -980,6 +1078,8 @@ func (c *Client) UpdateRepoLabel(org, repo, label, newName, description, color s
 }
 
 // DeleteRepoLabel deletes a label in org/repo
+//
+// See https://developer.github.com/v3/issues/labels/#delete-a-label
 func (c *Client) DeleteRepoLabel(org, repo, label string) error {
 	c.log("DeleteRepoLabel", org, repo, label)
 	_, err := c.request(&request{
@@ -993,6 +1093,8 @@ func (c *Client) DeleteRepoLabel(org, repo, label string) error {
 }
 
 // GetCombinedStatus returns the latest statuses for a given ref.
+//
+// See https://developer.github.com/v3/repos/statuses/#get-the-combined-status-for-a-specific-ref
 func (c *Client) GetCombinedStatus(org, repo, ref string) (*CombinedStatus, error) {
 	c.log("GetCombinedStatus", org, repo, ref)
 	var combinedStatus CombinedStatus
@@ -1026,16 +1128,25 @@ func (c *Client) getLabels(path string) ([]Label, error) {
 	return labels, nil
 }
 
+// GetRepoLabels returns the list of labels accessible to org/repo.
+//
+// See https://developer.github.com/v3/issues/labels/#list-all-labels-for-this-repository
 func (c *Client) GetRepoLabels(org, repo string) ([]Label, error) {
 	c.log("GetRepoLabels", org, repo)
 	return c.getLabels(fmt.Sprintf("/repos/%s/%s/labels", org, repo))
 }
 
+// GetIssueLabels returns the list of labels currently on issue org/repo#number.
+//
+// See https://developer.github.com/v3/issues/labels/#list-labels-on-an-issue
 func (c *Client) GetIssueLabels(org, repo string, number int) ([]Label, error) {
 	c.log("GetIssueLabels", org, repo, number)
 	return c.getLabels(fmt.Sprintf("/repos/%s/%s/issues/%d/labels", org, repo, number))
 }
 
+// AddLabel adds label to org/repo#number, returning an error on a bad response code.
+//
+// See https://developer.github.com/v3/issues/labels/#add-labels-to-an-issue
 func (c *Client) AddLabel(org, repo string, number int, label string) error {
 	c.log("AddLabel", org, repo, number, label)
 	_, err := c.request(&request{
@@ -1063,6 +1174,9 @@ type githubError struct {
 	Message string `json:"message,omitempty"`
 }
 
+// RemoveLabel removes label from org/repo#number, returning an error on any failure.
+//
+// See https://developer.github.com/v3/issues/labels/#remove-a-label-from-an-issue
 func (c *Client) RemoveLabel(org, repo string, number int, label string) error {
 	c.log("RemoveLabel", org, repo, number, label)
 	code, body, err := c.requestRaw(&request{
@@ -1105,6 +1219,7 @@ func (c *Client) RemoveLabel(org, repo string, number int, label string) error {
 	return fmt.Errorf("deleting label 404: %s", ge.Message)
 }
 
+// MissingUsers is an error specifying the users that could not be unassigned.
 type MissingUsers struct {
 	Users  []string
 	action string
@@ -1114,6 +1229,9 @@ func (m MissingUsers) Error() string {
 	return fmt.Sprintf("could not %s the following user(s): %s.", m.action, strings.Join(m.Users, ", "))
 }
 
+// AssignIssue adds logins to org/repo#number, returning an error if any login is missing after making the call.
+//
+// See https://developer.github.com/v3/issues/assignees/#add-assignees-to-an-issue
 func (c *Client) AssignIssue(org, repo string, number int, logins []string) error {
 	c.log("AssignIssue", org, repo, number, logins)
 	assigned := make(map[string]bool)
@@ -1142,6 +1260,7 @@ func (c *Client) AssignIssue(org, repo string, number int, logins []string) erro
 	return nil
 }
 
+// ExtraUsers is an error specifying the users that could not be unassigned.
 type ExtraUsers struct {
 	Users  []string
 	action string
@@ -1151,6 +1270,9 @@ func (e ExtraUsers) Error() string {
 	return fmt.Sprintf("could not %s the following user(s): %s.", e.action, strings.Join(e.Users, ", "))
 }
 
+// UnassignIssue removes logins from org/repo#number, returns an error if any login remains assigned.
+//
+// See https://developer.github.com/v3/issues/assignees/#remove-assignees-from-an-issue
 func (c *Client) UnassignIssue(org, repo string, number int, logins []string) error {
 	c.log("UnassignIssue", org, repo, number, logins)
 	assigned := make(map[string]bool)
@@ -1180,6 +1302,8 @@ func (c *Client) UnassignIssue(org, repo string, number int, logins []string) er
 }
 
 // CreateReview creates a review using the draft.
+//
+// https://developer.github.com/v3/pulls/reviews/#create-a-pull-request-review
 func (c *Client) CreateReview(org, repo string, number int, r DraftReview) error {
 	c.log("CreateReview", org, repo, number, r)
 	_, err := c.request(&request{
@@ -1192,14 +1316,55 @@ func (c *Client) CreateReview(org, repo string, number int, r DraftReview) error
 	return err
 }
 
+// prepareReviewersBody separates reviewers from team_reviewers and prepares a map
+// {
+//   "reviewers": [
+//     "octocat",
+//     "hubot",
+//     "other_user"
+//   ],
+//   "team_reviewers": [
+//     "justice-league"
+//   ]
+// }
+//
+// https://developer.github.com/v3/pulls/review_requests/#create-a-review-request
+func prepareReviewersBody(logins []string, org string) (map[string][]string, error) {
+	body := map[string][]string{}
+	var errors []error
+	for _, login := range logins {
+		mat := teamRe.FindStringSubmatch(login)
+		if mat == nil {
+			if _, exists := body["reviewers"]; !exists {
+				body["reviewers"] = []string{}
+			}
+			body["reviewers"] = append(body["reviewers"], login)
+		} else if mat[1] == org {
+			if _, exists := body["team_reviewers"]; !exists {
+				body["team_reviewers"] = []string{}
+			}
+			body["team_reviewers"] = append(body["team_reviewers"], mat[2])
+		} else {
+			errors = append(errors, fmt.Errorf("team %s is not part of %s org", login, org))
+		}
+	}
+	return body, errorutil.NewAggregate(errors...)
+}
+
 func (c *Client) tryRequestReview(org, repo string, number int, logins []string) (int, error) {
 	c.log("RequestReview", org, repo, number, logins)
 	var pr PullRequest
+	body, err := prepareReviewersBody(logins, org)
+	if err != nil {
+		// At least one team not in org,
+		// let RequestReview handle retries and alerting for each login.
+		return http.StatusUnprocessableEntity, err
+	}
 	return c.request(&request{
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("/repos/%s/%s/pulls/%d/requested_reviewers", org, repo, number),
-		accept:      "application/vnd.github.black-cat-preview+json",
-		requestBody: map[string][]string{"reviewers": logins},
+		accept:      "application/vnd.github.symmetra-preview+json",
+		requestBody: body,
 		exitCodes:   []int{http.StatusCreated /*201*/},
 	}, &pr)
 }
@@ -1209,6 +1374,8 @@ func (c *Client) tryRequestReview(org, repo string, number int, logins []string)
 // without adding any reviewers. The GitHub API response does not specify which user(s) were invalid
 // so if we fail to request reviews from the members of 'logins' we try to request reviews from
 // each member individually. We try first with all users in 'logins' for efficiency in the common case.
+//
+// See https://developer.github.com/v3/pulls/review_requests/#create-a-review-request
 func (c *Client) RequestReview(org, repo string, number int, logins []string) error {
 	statusCode, err := c.tryRequestReview(org, repo, number, logins)
 	if err != nil && statusCode == http.StatusUnprocessableEntity /*422*/ {
@@ -1217,7 +1384,7 @@ func (c *Client) RequestReview(org, repo string, number int, logins []string) er
 		for _, user := range logins {
 			statusCode, err = c.tryRequestReview(org, repo, number, []string{user})
 			if err != nil && statusCode == http.StatusUnprocessableEntity /*422*/ {
-				// User is not a contributor.
+				// User is not a contributor, or team not in org.
 				missing.Users = append(missing.Users, user)
 			} else if err != nil {
 				return fmt.Errorf("failed to add reviewer to PR. Status code: %d, errmsg: %v", statusCode, err)
@@ -1237,14 +1404,22 @@ func (c *Client) RequestReview(org, repo string, number int, logins []string) er
 // Furthermore, the API response lists the set of requested reviewers after the deletion (unlike request creations),
 // so we can determine if each deletion was successful.
 // The API responds with http status code 200 no matter what the content of 'logins' is.
+//
+// See https://developer.github.com/v3/pulls/review_requests/#delete-a-review-request
 func (c *Client) UnrequestReview(org, repo string, number int, logins []string) error {
 	c.log("UnrequestReview", org, repo, number, logins)
 	var pr PullRequest
-	_, err := c.request(&request{
+	body, err := prepareReviewersBody(logins, org)
+	if len(body) == 0 {
+		// No point in doing request for none,
+		// if some logins didn't make it to body, extras.Users will catch them.
+		return err
+	}
+	_, err = c.request(&request{
 		method:      http.MethodDelete,
 		path:        fmt.Sprintf("/repos/%s/%s/pulls/%d/requested_reviewers", org, repo, number),
-		accept:      "application/vnd.github.black-cat-preview+json",
-		requestBody: map[string][]string{"reviewers": logins},
+		accept:      "application/vnd.github.symmetra-preview+json",
+		requestBody: body,
 		exitCodes:   []int{http.StatusOK /*200*/},
 	}, &pr)
 	if err != nil {
@@ -1270,6 +1445,8 @@ func (c *Client) UnrequestReview(org, repo string, number int, logins []string) 
 }
 
 // CloseIssue closes the existing, open issue provided
+//
+// See https://developer.github.com/v3/issues/#edit-an-issue
 func (c *Client) CloseIssue(org, repo string, number int) error {
 	c.log("CloseIssue", org, repo, number)
 	_, err := c.request(&request{
@@ -1310,6 +1487,8 @@ func stateCannotBeChangedOrOriginalError(err error) error {
 }
 
 // ReopenIssue re-opens the existing, closed issue provided
+//
+// See https://developer.github.com/v3/issues/#edit-an-issue
 func (c *Client) ReopenIssue(org, repo string, number int) error {
 	c.log("ReopenIssue", org, repo, number)
 	_, err := c.request(&request{
@@ -1323,6 +1502,8 @@ func (c *Client) ReopenIssue(org, repo string, number int) error {
 
 // ClosePR closes the existing, open PR provided
 // TODO: Rename to ClosePullRequest
+//
+// See https://developer.github.com/v3/pulls/#update-a-pull-request
 func (c *Client) ClosePR(org, repo string, number int) error {
 	c.log("ClosePR", org, repo, number)
 	_, err := c.request(&request{
@@ -1336,6 +1517,8 @@ func (c *Client) ClosePR(org, repo string, number int) error {
 
 // ReopenPR re-opens the existing, closed PR provided
 // TODO: Rename to ReopenPullRequest
+//
+// See https://developer.github.com/v3/pulls/#update-a-pull-request
 func (c *Client) ReopenPR(org, repo string, number int) error {
 	c.log("ReopenPR", org, repo, number)
 	_, err := c.request(&request{
@@ -1348,6 +1531,8 @@ func (c *Client) ReopenPR(org, repo string, number int) error {
 }
 
 // GetRef returns the SHA of the given ref, such as "heads/master".
+//
+// See https://developer.github.com/v3/git/refs/#get-a-reference
 func (c *Client) GetRef(org, repo, ref string) (string, error) {
 	c.log("GetRef", org, repo, ref)
 	var res struct {
@@ -1386,6 +1571,7 @@ func (c *Client) FindIssues(query, sort string, asc bool) ([]Issue, error) {
 	return issSearchResult.Issues, err
 }
 
+// FileNotFound happens when github cannot find the file requested by GetFile().
 type FileNotFound struct {
 	org, repo, path, commit string
 }
@@ -1397,6 +1583,8 @@ func (e *FileNotFound) Error() string {
 // GetFile uses GitHub repo contents API to retrieve the content of a file with commit sha.
 // If commit is empty, it will grab content from repo's default branch, usually master.
 // TODO(krzyzacy): Support retrieve a directory
+//
+// See https://developer.github.com/v3/repos/contents/#get-contents
 func (c *Client) GetFile(org, repo, filepath, commit string) ([]byte, error) {
 	c.log("GetFile", org, repo, filepath, commit)
 
@@ -1441,6 +1629,8 @@ func (c *Client) Query(ctx context.Context, q interface{}, vars map[string]inter
 }
 
 // CreateTeam adds a team with name to the org, returning a struct with the new ID.
+//
+// See https://developer.github.com/v3/teams/#create-team
 func (c *Client) CreateTeam(org string, team Team) (*Team, error) {
 	c.log("CreateTeam", org, team)
 	if team.Name == "" {
@@ -1452,8 +1642,11 @@ func (c *Client) CreateTeam(org string, team Team) (*Team, error) {
 	path := fmt.Sprintf("/orgs/%s/teams", org)
 	var retTeam Team
 	_, err := c.request(&request{
-		method:      http.MethodPost,
-		path:        path,
+		method: http.MethodPost,
+		path:   path,
+		// This accept header enables the nested teams preview.
+		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
+		accept:      "application/vnd.github.hellcat-preview+json",
 		requestBody: &team,
 		exitCodes:   []int{201},
 	}, &retTeam)
@@ -1461,6 +1654,8 @@ func (c *Client) CreateTeam(org string, team Team) (*Team, error) {
 }
 
 // EditTeam patches team.ID to contain the specified other values.
+//
+// See https://developer.github.com/v3/teams/#edit-team
 func (c *Client) EditTeam(team Team) (*Team, error) {
 	c.log("EditTeam", team)
 	if team.ID == 0 {
@@ -1471,8 +1666,11 @@ func (c *Client) EditTeam(team Team) (*Team, error) {
 	var retTeam Team
 	path := fmt.Sprintf("/teams/%d", id)
 	_, err := c.request(&request{
-		method:      http.MethodPatch,
-		path:        path,
+		method: http.MethodPatch,
+		path:   path,
+		// This accept header enables the nested teams preview.
+		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
+		accept:      "application/vnd.github.hellcat-preview+json",
 		requestBody: &team,
 		exitCodes:   []int{201},
 	}, &retTeam)
@@ -1480,6 +1678,8 @@ func (c *Client) EditTeam(team Team) (*Team, error) {
 }
 
 // DeleteTeam removes team.ID from GitHub.
+//
+// See https://developer.github.com/v3/teams/#delete-team
 func (c *Client) DeleteTeam(id int) error {
 	c.log("DeleteTeam", id)
 	path := fmt.Sprintf("/teams/%d", id)
@@ -1492,6 +1692,8 @@ func (c *Client) DeleteTeam(id int) error {
 }
 
 // ListTeams gets a list of teams for the given org
+//
+// See https://developer.github.com/v3/teams/#list-teams
 func (c *Client) ListTeams(org string) ([]Team, error) {
 	c.log("ListTeams", org)
 	if c.fake {
@@ -1501,7 +1703,9 @@ func (c *Client) ListTeams(org string) ([]Team, error) {
 	var teams []Team
 	err := c.readPaginatedResults(
 		path,
-		"",
+		// This accept header enables the nested teams preview.
+		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
+		"application/vnd.github.hellcat-preview+json",
 		func() interface{} {
 			return &[]Team{}
 		},
@@ -1592,6 +1796,7 @@ func (c *Client) ListTeamMembers(id int, role string) ([]TeamMember, error) {
 }
 
 // MergeDetails contains desired properties of the merge.
+//
 // See https://developer.github.com/v3/pulls/#merge-a-pull-request-merge-button
 type MergeDetails struct {
 	// CommitTitle defaults to the automatic message.
@@ -1604,23 +1809,29 @@ type MergeDetails struct {
 	MergeMethod string `json:"merge_method,omitempty"`
 }
 
+// ModifiedHeadError happens when github refuses to merge a PR because the PR changed.
 type ModifiedHeadError string
 
 func (e ModifiedHeadError) Error() string { return string(e) }
 
+// UnmergablePRError happens when github refuses to merge a PR for other reasons (merge confclit).
 type UnmergablePRError string
 
 func (e UnmergablePRError) Error() string { return string(e) }
 
+// UnmergablePRBaseChangedError happens when github refuses merging a PR because the base changed.
 type UnmergablePRBaseChangedError string
 
 func (e UnmergablePRBaseChangedError) Error() string { return string(e) }
 
+// UnauthorizedToPushError happens when client is not allowed to push to github.
 type UnauthorizedToPushError string
 
 func (e UnauthorizedToPushError) Error() string { return string(e) }
 
 // Merge merges a PR.
+//
+// See https://developer.github.com/v3/pulls/#merge-a-pull-request-merge-button
 func (c *Client) Merge(org, repo string, pr int, details MergeDetails) error {
 	c.log("Merge", org, repo, pr, details)
 	ge := githubError{}
@@ -1655,7 +1866,8 @@ func (c *Client) Merge(org, repo string, pr int, details MergeDetails) error {
 // organization members with access through team memberships, organization
 // members with access through default organization permissions, and
 // organization owners.
-// https://developer.github.com/v3/repos/collaborators/
+//
+// See https://developer.github.com/v3/repos/collaborators/
 func (c *Client) IsCollaborator(org, repo, user string) (bool, error) {
 	c.log("IsCollaborator", org, user)
 	if org == user {
@@ -1683,7 +1895,9 @@ func (c *Client) IsCollaborator(org, repo, user string) (bool, error) {
 
 // ListCollaborators gets a list of all users who have access to a repo (and
 // can become assignees or requested reviewers).
+//
 // See 'IsCollaborator' for more details.
+// See https://developer.github.com/v3/repos/collaborators/
 func (c *Client) ListCollaborators(org, repo string) ([]User, error) {
 	c.log("ListCollaborators", org, repo)
 	if c.fake {
@@ -1728,7 +1942,8 @@ func (c *Client) CreateFork(owner, repo string) error {
 // ListIssueEvents gets a list events from GitHub's events API that pertain to the specified issue.
 // The events that are returned have a different format than webhook events and certain event types
 // are excluded.
-// https://developer.github.com/v3/issues/events/
+//
+// See https://developer.github.com/v3/issues/events/
 func (c *Client) ListIssueEvents(org, repo string, num int) ([]ListedIssueEvent, error) {
 	c.log("ListIssueEvents", org, repo, num)
 	if c.fake {
@@ -1781,6 +1996,8 @@ func (c *Client) IsMergeable(org, repo string, number int, sha string) (bool, er
 }
 
 // ClearMilestone clears the milestone from the specified issue
+//
+// See https://developer.github.com/v3/issues/#edit-an-issue
 func (c *Client) ClearMilestone(org, repo string, num int) error {
 	c.log("ClearMilestone", org, repo, num)
 
@@ -1799,6 +2016,8 @@ func (c *Client) ClearMilestone(org, repo string, num int) error {
 }
 
 // SetMilestone sets the milestone from the specified issue (if it is a valid milestone)
+//
+// See https://developer.github.com/v3/issues/#edit-an-issue
 func (c *Client) SetMilestone(org, repo string, issueNum, milestoneNum int) error {
 	c.log("SetMilestone", org, repo, issueNum, milestoneNum)
 
@@ -1816,7 +2035,8 @@ func (c *Client) SetMilestone(org, repo string, issueNum, milestoneNum int) erro
 }
 
 // ListMilestones list all milestones in a repo
-// https://developer.github.com/v3/issues/milestones/#list-milestones-for-a-repository/
+//
+// See https://developer.github.com/v3/issues/milestones/#list-milestones-for-a-repository/
 func (c *Client) ListMilestones(org, repo string) ([]Milestone, error) {
 	c.log("ListMilestones", org)
 	if c.fake {

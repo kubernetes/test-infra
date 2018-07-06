@@ -4,28 +4,25 @@
 ---
 triggers:
 - repos:
+  - GoogleCloudPlatform/k8s-multicluster-ingress
+  - google/cadvisor
   - kubernetes
   - kubernetes-incubator
   - kubernetes-security
   - kubernetes-sigs
-  - google/cadvisor
-  - tensorflow/k8s
-  - tensorflow/minigo
-  - GoogleCloudPlatform/k8s-multicluster-ingress
   trusted_org: kubernetes
   join_org_url: "https://git.k8s.io/community/community-membership.md#member"
 - repos:
   - containerd/cri
-  trusted_org: containerd
   join_org_url: "https://github.com/containerd/containerd/blob/master/MAINTAINERS"
 - repos:
   - kubeflow
-  trusted_org: kubeflow
-  join_org_url: https://github.com/kubeflow/kubeflow/blob/master/CONTRIBUTING.md
+  join_org_url: "https://github.com/kubeflow/kubeflow/blob/master/CONTRIBUTING.md"
 - repos:
   - tensorflow/minigo
-  trusted_org: tensorflow
-  join_org_url: https://github.com/tensorflow/minigo/blob/master/CONTRIBUTING.md
+  join_org_url: "https://github.com/tensorflow/minigo/blob/master/CONTRIBUTING.md"
+- repos:
+  - bazelbuild
 owners:
   mdyamlrepos:
   - kubernetes/website
@@ -52,6 +49,7 @@ approve:
   - kubernetes/minikube
   - kubernetes/node-problem-detector
   - kubernetes/perf-tests
+  - kubernetes/publishing-bot
   - kubernetes/repo-infra
   - kubernetes/sig-release
   - kubernetes/steering
@@ -62,6 +60,15 @@ approve:
   - kubernetes-sigs
   - client-go/unofficial-docs
   implicit_self_approve: true
+- repos:
+  - bazelbuild
+  implicit_self_approve: true
+  review_acts_as_approve: true
+
+lgtm:
+- repos:
+  - bazelbuild
+  review_acts_as_lgtm: true
 
 blockades:
 - repos:
@@ -158,8 +165,25 @@ config_updater:
       name: config
     prow/plugins.yaml:
       name: plugins
+    config/jobs/**/*.yaml:
+      name: job-config
 
 plugins:
+  bazelbuild/rules_k8s:
+  - approve  # Allow OWNERS to /approve
+  - assign  # Allow /assign and /cc
+  - blunderbuss  # Auto-assign people
+  - cat # /meow replies with cat pictures
+  - dog # /bark replies with dog pictures
+  - help  # Support /help and /good-first-issue
+  - hold  # Support /hold to delay merge
+  - lgtm  # Allow /lgtm
+  - lifecycle  # Allow /lifecycle stale
+  - size  # Auto-label size of PR
+  - trigger  # Allow people to configure CI jobs to /test
+  - wip  # Auto-hold PRs with WIP in title
+  - yuks # Let prow tell a /joke
+
   google/cadvisor:
   - trigger
 
@@ -317,6 +341,10 @@ plugins:
   - approve
   - blunderbuss
 
+  kubernetes/publishing-bot:
+  - approve
+  - blunderbuss
+
   kubernetes/release:
   - trigger
 
@@ -331,9 +359,10 @@ plugins:
   - approve
 
   kubernetes/test-infra:
-  - trigger
-  - config-updater
   - approve
+  - config-updater
+  - trigger
+  - verify-owners
 
   kubernetes/website:
   - approve
@@ -381,12 +410,14 @@ plugins:
   - dog
 
   kubernetes-incubator/service-catalog:
+  - approve
+  - blunderbuss
   - cat
   - dog
   - help
-  - blunderbuss
-  - wip
   - hold
+  - trigger
+  - wip
 
   kubernetes-sigs:
   - assign
@@ -419,6 +450,10 @@ plugins:
   - trigger
 
   kubernetes-sigs/cluster-api:
+  - approve
+  - trigger
+
+  kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
   - approve
   - trigger
 

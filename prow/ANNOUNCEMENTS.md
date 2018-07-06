@@ -1,7 +1,8 @@
 # Announcements
 
 New features added to each components:
-
+ - *June 25, 2018* `updateconfig` plugin will now support update/remove keys
+   from a glob match.
  - *June 05, 2018* `blunderbuss` plugin may now suggest approvers in addition
    to reviewers. Use `exclude_approvers: true` to revert to previous behavior.
  - *April 10, 2018* `cla` plugin now supports `/check-cla` command 

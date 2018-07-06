@@ -120,6 +120,16 @@ func TestParseLogins(t *testing.T) {
 			text:   " @erick @fejta",
 			logins: []string{"erick", "fejta"},
 		},
+		{
+			name:   "one team",
+			text:   " @kubernetes/sig-testing-misc",
+			logins: []string{"kubernetes/sig-testing-misc"},
+		},
+		{
+			name:   "two teams",
+			text:   " @kubernetes/sig-testing-misc @kubernetes/sig-testing-bugs",
+			logins: []string{"kubernetes/sig-testing-misc", "kubernetes/sig-testing-bugs"},
+		},
 	}
 	for _, tc := range testcases {
 		l := parseLogins(tc.text)
@@ -348,9 +358,21 @@ func TestAssignAndReview(t *testing.T) {
 			requested:   []string{"cjwagner"},
 			unrequested: []string{"spxtr"},
 		},
+		{
+			name:      "request team review",
+			body:      "/cc @kubernetes/sig-testing-misc",
+			commenter: "rando",
+			requested: []string{"kubernetes/sig-testing-misc"},
+		},
+		{
+			name:        "unrequest team review",
+			body:        "/uncc @kubernetes/sig-testing-misc",
+			commenter:   "rando",
+			unrequested: []string{"kubernetes/sig-testing-misc"},
+		},
 	}
 	for _, tc := range testcases {
-		fc := newFakeClient([]string{"hello-world", "allow_underscore", "cjwagner", "merlin"})
+		fc := newFakeClient([]string{"hello-world", "allow_underscore", "cjwagner", "merlin", "kubernetes/sig-testing-misc"})
 		e := github.GenericCommentEvent{
 			Body:   tc.body,
 			User:   github.User{Login: tc.commenter},

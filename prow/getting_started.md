@@ -24,13 +24,40 @@ gcloud container --project "${PROJECT}" clusters create prow \
 ```
 
 ## Create cluster role bindings
-As of 1.8 Kubernetes uses [Role-Based Access Control (“RBAC”)](https://kubernetes.io/docs/admin/authorization/rbac/) 
-to drive authorization decisions, allowing admins to dynamically configure policies. 
-To create cluster resources you need to grant a user admin role in all namespaces for the cluster.
+As of 1.8 Kubernetes uses [Role-Based Access Control (“RBAC”)](https://kubernetes.io/docs/admin/authorization/rbac/) to drive authorization decisions, allowing `cluster-admin` to dynamically configure policies.
+To create cluster resources you need to grant a user `cluster-admin` role in all namespaces for the cluster.
 
+For Prow on GCP, you can use the following command.
+```sh
+kubectl create clusterrolebinding cluster-admin-binding --clusterrole cluster-admin --user $(gcloud config get-value account)
+```
+
+For Prow on other platforms, the following command will likely work.
 ```sh
 kubectl create clusterrolebinding cluster-admin-binding-"${USER}" --clusterrole=cluster-admin --user="${USER}"
 ```
+On some platforms the `USER` variable may not map correctly to the user
+in-cluster. If you see an error of the following form, this is likely the case.
+
+``` 
+Error from server (Forbidden): error when creating
+"prow/cluster/starter.yaml": roles.rbac.authorization.k8s.io "<account>" is
+forbidden: attempt to grant extra privileges:
+[PolicyRule{Resources:["pods/log"], APIGroups:[""], Verbs:["get"]}
+PolicyRule{Resources:["prowjobs"], APIGroups:["prow.k8s.io"], Verbs:["get"]}
+APIGroups:["prow.k8s.io"], Verbs:["list"]}] user=&{<CLUSTER_USER>
+[system:authenticated] map[]}...
+```
+
+Run the previous command substituting `USER` with `CLUSTER_USER` from the error
+message above to solve this issue.
+```sh
+kubectl create clusterrolebinding cluster-admin-binding-"<CLUSTER_USER>" --clusterrole=cluster-admin --user="<CLUSTER_USER>"
+```
+
+There are [relevant docs on Kubernetes Authentication](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#authentication-strategies) that may help if neither of the above work.
+
+
 
 ## Create the GitHub secrets
 
@@ -198,21 +225,6 @@ update-config: get-cluster-credentials
 
 Presubmits and postsubmits are triggered by the `trigger` plugin. Be sure to
 enable that plugin by adding it to the list you created in the last section.
-
-By default, services are not granted permission to run these jobs. Run the
-following to grant permission to all services to create and run Prow Jobs (NOTE: This
-command grants a permissive policy to _all_ services in the cluster. We do this
-because the only services running in the prow starter are ones that we have
-written and trust. This is not the recommended policy for most clusters.
-See [RBAC documentation](https://kubernetes.io/docs/admin/authorization/rbac/) for more details):
-
-```
-kubectl create clusterrolebinding permissive-binding \
-  --clusterrole=cluster-admin \
-  --user=admin \
-  --user=kubelet \
-  --group=system:serviceaccounts
-```
 
 Now when you open a PR it will automatically run the presubmit that you added
 to this file. You can see it on your prow dashboard. Once you are happy that it

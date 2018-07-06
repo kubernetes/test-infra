@@ -24,11 +24,10 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"path/filepath"
 	"strconv"
 	"syscall"
 	"time"
-
-	"k8s.io/test-infra/prow/errorutil"
 
 	"github.com/sirupsen/logrus"
 )
@@ -36,7 +35,7 @@ import (
 const (
 	// InternalErrorCode is what we write to the marker file to
 	// indicate that we failed to start the wrapped command
-	InternalErrorCode = "127"
+	InternalErrorCode = 127
 
 	// DefaultTimeout is the default timeout for the test
 	// process before SIGINT is sent
@@ -53,28 +52,37 @@ var (
 	errTimedOut = errors.New("process timed out")
 )
 
-// Run creates the artifact directory then executes the process as configured,
-// writing the output to the process log and the exit code to the marker file
-// on exit.
-func (o Options) Run() error {
+// Run executes the test process then writes the exit code to the marker file.
+// This function returns the status code that should be passed to os.Exit().
+func (o Options) Run() int {
+	code, err := o.ExecuteProcess()
+	if err != nil {
+		logrus.WithError(err).Error("Error executing test process: %v.", err)
+	}
+	if err := o.mark(code); err != nil {
+		logrus.WithError(err).Error("Error writing exit code to marker file: %v.", err)
+		return InternalErrorCode
+	}
+	return code
+}
+
+// ExecuteProcess creates the artifact directory then executes the process as
+// configured, writing the output to the process log.
+func (o Options) ExecuteProcess() (int, error) {
 	if o.ArtifactDir != "" {
 		if err := os.MkdirAll(o.ArtifactDir, os.ModePerm); err != nil {
-			return errorutil.NewAggregate(
-				fmt.Errorf("could not create artifact directory(%s): %v", o.ArtifactDir, err),
-				o.mark(InternalErrorCode),
-			)
+			return InternalErrorCode, fmt.Errorf("could not create artifact directory(%s): %v", o.ArtifactDir, err)
 		}
 	}
 	processLogFile, err := os.Create(o.ProcessLog)
 	if err != nil {
-		return errorutil.NewAggregate(
-			fmt.Errorf("could not create process logfile(%s): %v", o.ProcessLog, err),
-			o.mark(InternalErrorCode),
-		)
+		return InternalErrorCode, fmt.Errorf("could not create process logfile(%s): %v", o.ProcessLog, err)
 	}
+	defer processLogFile.Close()
 
 	output := io.MultiWriter(os.Stdout, processLogFile)
 	logrus.SetOutput(output)
+	defer logrus.SetOutput(os.Stdout)
 
 	executable := o.Args[0]
 	var arguments []string
@@ -85,10 +93,7 @@ func (o Options) Run() error {
 	command.Stderr = output
 	command.Stdout = output
 	if err := command.Start(); err != nil {
-		return errorutil.NewAggregate(
-			fmt.Errorf("could not start the process: %v", err),
-			o.mark(InternalErrorCode),
-		)
+		return InternalErrorCode, fmt.Errorf("could not start the process: %v", err)
 	}
 
 	// if we get asked to terminate we need to forward
@@ -116,30 +121,50 @@ func (o Options) Run() error {
 		cancelled = true
 		gracefullyTerminate(command, done, gracePeriod)
 	}
-	// Close the process logfile before writing the marker file to avoid racing
-	// with the sidecar container.
-	processLogFile.Close()
 
-	var returnCode string
+	var returnCode int
 	if cancelled {
 		returnCode = InternalErrorCode
 		commandErr = errTimedOut
 	} else {
 		if status, ok := command.ProcessState.Sys().(syscall.WaitStatus); ok {
-			returnCode = strconv.Itoa(status.ExitStatus())
+			returnCode = status.ExitStatus()
 		} else if commandErr == nil {
-			returnCode = "0"
+			returnCode = 0
 		} else {
-			returnCode = "1"
+			returnCode = 1
+		}
+
+		if returnCode != 0 {
 			commandErr = fmt.Errorf("wrapped process failed: %v", commandErr)
 		}
 	}
-	return errorutil.NewAggregate(commandErr, o.mark(returnCode))
+	return returnCode, commandErr
 }
 
-func (o *Options) mark(exitCode string) error {
-	if err := ioutil.WriteFile(o.MarkerFile, []byte(exitCode), os.ModePerm); err != nil {
-		return fmt.Errorf("could not write to marker file(%s): %v", o.MarkerFile, err)
+func (o *Options) mark(exitCode int) error {
+	content := []byte(strconv.Itoa(exitCode))
+
+	// create temp file in the same directory as the desired marker file
+	dir := filepath.Dir(o.MarkerFile)
+	tempFile, err := ioutil.TempFile(dir, "temp-marker")
+	if err != nil {
+		return fmt.Errorf("could not create temp marker file in %s: %v", dir, err)
+	}
+	// write the exit code to the tempfile, sync to disk and close
+	if _, err = tempFile.Write(content); err != nil {
+		return fmt.Errorf("could not write to temp marker file (%s): %v", tempFile.Name(), err)
+	}
+	if err = tempFile.Sync(); err != nil {
+		return fmt.Errorf("could not sync temp marker file (%s): %v", tempFile.Name(), err)
+	}
+	tempFile.Close()
+	// set desired permission bits, then rename to the desired file name
+	if err = os.Chmod(tempFile.Name(), os.ModePerm); err != nil {
+		return fmt.Errorf("could not chmod (%x) temp marker file (%s): %v", os.ModePerm, tempFile.Name(), err)
+	}
+	if err := os.Rename(tempFile.Name(), o.MarkerFile); err != nil {
+		return fmt.Errorf("could not move marker file to destination path (%s): %v", o.MarkerFile, err)
 	}
 	return nil
 }

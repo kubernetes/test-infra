@@ -18,6 +18,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -37,16 +38,38 @@ import (
 	"k8s.io/test-infra/prow/pjutil"
 )
 
-var (
-	submitQueueURL = flag.String("submit-queue-endpoint", "http://submit-queue.k8s.io/github-e2e-queue", "Submit Queue status URL")
-	remoteURL      = flag.String("remote-url", "https://github.com/kubernetes/kubernetes", "Remote Git URL")
-	orgName        = flag.String("org", "kubernetes", "Org name")
-	repoName       = flag.String("repo", "kubernetes", "Repo name")
-	configPath     = flag.String("config-path", "/etc/config/config.yaml", "Path to config.yaml.")
-	jobConfigPath  = flag.String("job-config-path", "", "Path to prow job configs.")
-	maxBatchSize   = flag.Int("batch-size", 5, "Maximum batch size")
-	alwaysRun      = flag.String("always-run", "", "Job names that should be treated as always_run: true in Splice")
-)
+type options struct {
+	submitQueueURL string
+	remoteURL      string
+	orgName        string
+	repoName       string
+	configPath     string
+	jobConfigPath  string
+	maxBatchSize   int
+	alwaysRun      string
+}
+
+func gatherOptions() options {
+	o := options{}
+	flag.StringVar(&o.submitQueueURL, "submit-queue-endpoint", "http://submit-queue.k8s.io/github-e2e-queue", "Submit Queue status URL")
+	flag.StringVar(&o.remoteURL, "remote-url", "https://github.com/kubernetes/kubernetes", "Remote Git URL")
+	flag.StringVar(&o.orgName, "org", "kubernetes", "Org name")
+	flag.StringVar(&o.repoName, "repo", "kubernetes", "Repo name")
+	flag.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
+	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
+	flag.IntVar(&o.maxBatchSize, "batch-size", 5, "Maximum batch size")
+	flag.StringVar(&o.alwaysRun, "always-run", "", "Job names that should be treated as always_run: true in Splice")
+	flag.Parse()
+	return o
+}
+
+func (o *options) Validate() error {
+	if o.maxBatchSize < 1 {
+		return errors.New("batch size cannot be less that one")
+	}
+
+	return nil
+}
 
 // Call a binary and return its output and success status.
 func call(binary string, args ...string) (string, error) {
@@ -269,7 +292,11 @@ func neededPresubmits(presubmits []config.Presubmit, currentJobs []kube.ProwJob,
 }
 
 func main() {
-	flag.Parse()
+	o := gatherOptions()
+	if err := o.Validate(); err != nil {
+		logrus.Fatalf("Invalid options: %v", err)
+	}
+
 	logrus.SetFormatter(
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "splice"}),
 	)
@@ -281,7 +308,7 @@ func main() {
 	defer splicer.cleanup()
 
 	configAgent := &config.Agent{}
-	if err := configAgent.Start(*configPath, *jobConfigPath); err != nil {
+	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
@@ -291,7 +318,7 @@ func main() {
 	}
 
 	// get overridden always_run jobs
-	alwaysRunOverride := sets.NewString(strings.Split(*alwaysRun, ",")...)
+	alwaysRunOverride := sets.NewString(strings.Split(o.alwaysRun, ",")...)
 
 	cooldown := 0
 	// Loop endlessly, sleeping a minute between iterations
@@ -325,7 +352,7 @@ func main() {
 			continue
 		}
 
-		queue, err := getQueuedPRs(*submitQueueURL)
+		queue, err := getQueuedPRs(o.submitQueueURL)
 		if err != nil {
 			logrus.WithError(err).Warning("Error getting queued PRs. Is the submit queue down?")
 			continue
@@ -335,7 +362,7 @@ func main() {
 			continue
 		}
 		logrus.Infof("PRs in queue: %v", queue)
-		batchPRs, err := splicer.findMergeable(*remoteURL, queue)
+		batchPRs, err := splicer.findMergeable(o.remoteURL, queue)
 		if err != nil {
 			logrus.WithError(err).Error("Error computing mergeable PRs.")
 			continue
@@ -345,12 +372,12 @@ func main() {
 			continue
 		}
 		// Trim down to the desired batch size.
-		if len(batchPRs) > *maxBatchSize {
-			batchPRs = batchPRs[:*maxBatchSize]
+		if len(batchPRs) > o.maxBatchSize {
+			batchPRs = batchPRs[:o.maxBatchSize]
 		}
 		logrus.Infof("Starting a batch for the following PRs: %v", batchPRs)
-		refs := splicer.makeBuildRefs(*orgName, *repoName, batchPRs)
-		presubmits := configAgent.Config().Presubmits[fmt.Sprintf("%s/%s", *orgName, *repoName)]
+		refs := splicer.makeBuildRefs(o.orgName, o.repoName, batchPRs)
+		presubmits := configAgent.Config().Presubmits[fmt.Sprintf("%s/%s", o.orgName, o.repoName)]
 		for _, job := range neededPresubmits(presubmits, currentJobs, refs, alwaysRunOverride) {
 			if _, err := kc.CreateProwJob(pjutil.NewProwJob(pjutil.BatchSpec(job, refs), job.Labels)); err != nil {
 				logrus.WithError(err).WithField("job", job.Name).Error("Error starting batch job.")

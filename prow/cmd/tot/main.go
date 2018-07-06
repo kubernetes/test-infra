@@ -208,6 +208,8 @@ func (f fallbackHandler) get(jobName string) int {
 				} else {
 					logrus.WithError(err).Error("Failed to read response body.")
 				}
+			} else if resp.StatusCode == http.StatusNotFound {
+				break
 			}
 		} else {
 			logrus.WithError(err).Errorf("Failed to GET %s.", url)

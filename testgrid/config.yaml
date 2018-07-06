@@ -218,6 +218,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-e2e-release-1-0
 - name: ci-ingress-gce-e2e-release-1-1
   gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-e2e-release-1-1
+- name: ci-ingress-gce-e2e-release-1-2
+  gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-e2e-release-1-2
 - name: ci-ingress-gce-e2e-scale
   gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-e2e-scale
 - name: ci-ingress-gce-upgrade-e2e
@@ -390,6 +392,9 @@ test_groups:
 - name: ci-kubernetes-e2e-gci-gce-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ingress
   alert_stale_results_hours: 24
+- name: ci-kubernetes-e2e-gci-gce-netd
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-netd
+  alert_stale_results_hours: 24
 - name: ci-kubemci-ingress-conformance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubemci-ingress-conformance
 - name: ci-kubernetes-e2e-gci-gce-ingress-manual-network
@@ -441,6 +446,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-device-plugin-gpu-monitoring
   alert_stale_results_hours: 24
   num_failures_to_alert: 8 # Runs every 3h. Alert when it's been failing for a day.
+- name: ci-kubernetes-e2e-gke-device-plugin-gpu-ubuntu
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-device-plugin-gpu-ubuntu
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
 - name: ci-kubernetes-e2e-gci-gke-alpha-features
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-alpha-features
 - name: ci-kubernetes-e2e-gci-gke-autoscaling
@@ -530,6 +539,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-default-parallel
 - name: ci-kubernetes-e2e-gke-staging-default-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-default-serial
+- name: ci-kubernetes-e2e-gke-staging-beta-parallel
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-beta-parallel
+- name: ci-kubernetes-e2e-gke-staging-beta-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-beta-serial
 - name: ci-kubernetes-e2e-gke-staging-stable1-parallel
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-stable1-parallel
 - name: ci-kubernetes-e2e-gke-staging-stable1-serial
@@ -573,11 +586,6 @@ test_groups:
   num_failures_to_alert: 1
 - name: ci-kubernetes-kubemark-100-canary
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-100-canary
-- name: ci-kubernetes-kubemark-5-prow-canary
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-5-prow-canary
-- name: ci-kubernetes-kubemark-5-gce
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-5-gce
-  num_failures_to_alert: 1
 - name: ci-kubernetes-kubemark-5-gce-last-release
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-5-gce-last-release
   num_failures_to_alert: 1
@@ -1020,12 +1028,6 @@ test_groups:
   - configuration_value: node_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-ingress
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-ingress
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-reboot
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-reboot
   column_header:
@@ -1072,12 +1074,6 @@ test_groups:
   - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-flaky
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-flaky
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-ingress
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-ingress
   column_header:
   - configuration_value: node_os_image
   - configuration_value: Commit
@@ -1132,12 +1128,6 @@ test_groups:
   - configuration_value: node_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-ingress
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-ingress
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-reboot
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-reboot
   column_header:
@@ -1184,12 +1174,6 @@ test_groups:
   - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-flaky
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-flaky
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-ingress
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-ingress
   column_header:
   - configuration_value: node_os_image
   - configuration_value: Commit
@@ -1244,12 +1228,6 @@ test_groups:
   - configuration_value: node_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-ingress
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-ingress
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-reboot
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-reboot
   column_header:
@@ -1296,12 +1274,6 @@ test_groups:
   - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-flaky
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-flaky
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-ingress
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-ingress
   column_header:
   - configuration_value: node_os_image
   - configuration_value: Commit
@@ -1356,12 +1328,6 @@ test_groups:
   - configuration_value: node_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-ingress
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-ingress
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-reboot
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-reboot
   column_header:
@@ -1408,12 +1374,6 @@ test_groups:
   - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-flaky
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-flaky
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-ingress
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-ingress
   column_header:
   - configuration_value: node_os_image
   - configuration_value: Commit
@@ -2106,13 +2066,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kustomize-periodic-default-gke
 - name: application-periodic-default-gke
   gcs_prefix: kubernetes-jenkins/logs/application-periodic-default-gke
-# kube-proxy daemonset migration jobs
-- name: ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
-  alert_stale_results_hours: 24
-- name: ci-kubernetes-e2e-gci-gce-latest-upgrade-kube-proxy-ds
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-latest-upgrade-kube-proxy-ds
-  alert_stale_results_hours: 24
 #ibm ppc64le test results
 - name: ppc64le-conformance
   gcs_prefix: ppc64le-kubernetes/logs/ci-conformance-kubernetes
@@ -2378,12 +2331,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-stable1-master-master-upgrade
 - name: ci-kubernetes-e2e-gce-gpu-stable1-master-cluster-upgrade
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-stable1-master-cluster-upgrade
-- name: ci-kubernetes-e2e-gce-gpu-beta-stable1-master-downgrade
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-beta-stable1-master-downgrade
 - name: ci-kubernetes-e2e-gce-gpu-beta-stable1-cluster-downgrade
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-beta-stable1-cluster-downgrade
-- name: ci-kubernetes-e2e-gce-gpu-master-stable1-master-downgrade
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-master-stable1-master-downgrade
 - name: ci-kubernetes-e2e-gce-gpu-master-stable1-cluster-downgrade
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-master-stable1-cluster-downgrade
 - name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-master
@@ -2503,93 +2452,116 @@ test_groups:
   gcs_prefix: origin-federated-results/pr-logs/directory/test_pull_request_crio_e2e_fedora
 - name: test_pull_request_crio_e2e_rhel
   gcs_prefix: origin-federated-results/pr-logs/directory/test_pull_request_crio_e2e_rhel
-# Istio
-- name: istio-istio-postsubmit
-  gcs_prefix: istio-prow/istio-postsubmit
-  num_failures_to_alert: 1
-- name: istio-e2e-suite-rbac-no_auth
-  gcs_prefix: istio-prow/e2e-suite-rbac-no_auth
-  num_failures_to_alert: 1
-- name: istio-e2e-suite-rbac-auth
-  gcs_prefix: istio-prow/e2e-suite-rbac-auth
-  num_failures_to_alert: 1
-- name: istio-e2e-cluster_wide-auth
-  gcs_prefix: istio-prow/e2e-cluster_wide-auth
-  num_failures_to_alert: 1
 # Istio Prow Presubmits
 - name: istio-presubmit
   gcs_prefix: istio-prow/directory/istio-presubmit
-- name: istio-unit-tests
+- name: istio-unit-tests-presubmit
   gcs_prefix: istio-prow/directory/istio-unit-tests
-- name: istio-pilot-e2e
+- name: istio-pilot-e2e-presubmit
   gcs_prefix: istio-prow/directory/istio-pilot-e2e
-- name: istio-pilot-e2e-envoyv2-v1alpha3
+- name: istio-pilot-e2e-envoyv2-v1alpha3-presubmit
   gcs_prefix: istio-prow/directory/istio-pilot-e2e-envoyv2-v1alpha3
-- name: e2e-simpleTests
+- name: istio-e2e-mixer-no_auth-presubmit
+  gcs_prefix: istio-prow/directory/e2e-mixer-no_auth
+- name: istio-e2e-dashboard-presubmit
+  gcs_prefix: istio-prow/directory/e2e-dashboard
+- name: istio-e2e-simpleTests-presubmit
   gcs_prefix: istio-prow/directory/e2e-simpleTests
-- name: e2e-bookInfoTests
+- name: istio-e2e-bookInfoTests-presubmit
   gcs_prefix: istio-prow/directory/e2e-bookInfoTests
-- name: e2e-bookInfoTests-envoyv2-v1alpha3
+- name: istio-e2e-bookInfoTests-envoyv2-v1alpha3-presubmit
   gcs_prefix: istio-prow/directory/e2e-bookInfoTests-envoyv2-v1alpha3
+# Istio Prow Postsubmits
+- name: istio-istio-postsubmit
+  gcs_prefix: istio-prow/istio-postsubmit
+- name: istio-e2e-simpleTests
+  gcs_prefix: istio-prow/e2e-simpleTests
+  num_failures_to_alert: 1
+- name: istio-e2e-bookInfoTests-envoyv2-v1alpha3
+  gcs_prefix: istio-prow/e2e-bookInfoTests-envoyv2-v1alpha3
+  num_failures_to_alert: 1
+- name: istio-pilot-e2e-envoyv2-v1alpha3
+  gcs_prefix: istio-prow/istio-pilot-e2e-envoyv2-v1alpha3
+  num_failures_to_alert: 1
+- name: istio-pilot-e2e-envoyv2-v1alpha3-k8s-1.10
+  gcs_prefix: istio-prow/istio-pilot-e2e-envoyv2-v1alpha3-k8s-1.10
+  num_failures_to_alert: 1
+- name: istio-e2e-mixer-no_auth
+  gcs_prefix: istio-prow/e2e-mixer-no_auth
+  num_failures_to_alert: 1
+- name: istio-e2e-dashboard
+  gcs_prefix: istio-prow/e2e-dashboard
+  num_failures_to_alert: 1
 # Istio CircleCI Presubmits
-- name: circleci-e2e-mixer-presubmit
-  gcs_prefix: istio-circleci/presubmit/e2e-mixer
-- name: circleci-e2e-simple-presubmit
+- name: istio-circleci-e2e-simple-presubmit
   gcs_prefix: istio-circleci/presubmit/e2e-simple
-- name: circleci-e2e-pilot-presubmit
-  gcs_prefix: istio-circleci/presubmit/e2e-pilot
-- name: circleci-e2e-pilot-auth-v1alpha3-v2-presubmit
-  gcs_prefix: istio-circleci/presubmit/e2e-pilot-auth-v1alpha3-v2
-- name: circleci-e2e-pilot-noauth-v1alpha3-v2-presubmit
-  gcs_prefix: istio-circleci/presubmit/e2e-pilot-noauth-v1alpha3-v2
-- name: circleci-e2e-galley-presubmit
+- name: istio-circleci-e2e-dashboard-presubmit
+  gcs_prefix: istio-circleci/presubmit/e2e-dashboard
+- name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2-presubmit
+  gcs_prefix: istio-circleci/presubmit/e2e-mixer-noauth-v1alpha3-v2
+- name: istio-circleci-e2e-galley-presubmit
   gcs_prefix: istio-circleci/presubmit/e2e-galley
-- name: circleci-test-presubmit
+- name: istio-circleci-e2e-pilot-cloudfoundry-v1alpha3-v2-presubmit
+  gcs_prefix: istio-circleci/presubmit/e2e-pilot-cloudfoundry-v1alpha3-v2
+- name: istio-circleci-e2e-pilot-auth-v1alpha3-v2-presubmit
+  gcs_prefix: istio-circleci/presubmit/e2e-pilot-auth-v1alpha3-v2
+- name: istio-circleci-e2e-pilot-noauth-v1alpha3-v2-presubmit
+  gcs_prefix: istio-circleci/presubmit/e2e-pilot-noauth-v1alpha3-v2
+- name: istio-circleci-test-presubmit
   gcs_prefix: istio-circleci/presubmit/test
-- name: circleci-racetest-presubmit
+- name: istio-circleci-racetest-presubmit
   gcs_prefix: istio-circleci/presubmit/racetest
 # Istio CircleCI Postsubmits
-- name: circleci-e2e-mixer
-  gcs_prefix: istio-circleci/e2e-mixer
+- name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2
+  gcs_prefix: istio-circleci/e2e-mixer-noauth-v1alpha3-v2
   num_failures_to_alert: 5
-- name: circleci-e2e-simple
+- name: istio-circleci-e2e-simple
   gcs_prefix: istio-circleci/e2e-simple
   num_failures_to_alert: 5
-- name: circleci-e2e-pilot
-  gcs_prefix: istio-circleci/e2e-pilot
+- name: istio-circleci-e2e-dashboard
+  gcs_prefix: istio-circleci/e2e-dashboard
   num_failures_to_alert: 5
-- name: circleci-e2e-pilot-auth-v1alpha3-v2
+- name: istio-circleci-e2e-pilot-auth-v1alpha3-v2
   gcs_prefix: istio-circleci/e2e-pilot-auth-v1alpha3-v2
   num_failures_to_alert: 5
-- name: circleci-e2e-pilot-noauth-v1alpha3-v2
+- name: istio-circleci-e2e-pilot-noauth-v1alpha3-v2
   gcs_prefix: istio-circleci/e2e-pilot-noauth-v1alpha3-v2
   num_failures_to_alert: 5
-- name: circleci-e2e-galley
+- name: istio-circleci-e2e-galley
   gcs_prefix: istio-circleci/e2e-galley
   num_failures_to_alert: 5
-- name: circleci-test
+- name: istio-circleci-e2e-pilot-cloudfoundry-v1alpha3-v2
+  gcs_prefix: istio-circleci/e2e-pilot-cloudfoundry-v1alpha3-v2
+  num_failures_to_alert: 5
+- name: istio-circleci-test
   days_of_results: 3
   gcs_prefix: istio-circleci/test
   num_failures_to_alert: 5
-- name: circleci-racetest
+- name: istio-circleci-racetest
   days_of_results: 3
   gcs_prefix: istio-circleci/racetest
   num_failures_to_alert: 5
 # Istio daily releases
-- name: daily-unit-tests
+- name: istio-daily-unit-tests
   gcs_prefix: istio-prow/directory/daily-unit-tests
   num_failures_to_alert: 1
-- name: daily-e2e-rbac-no_auth
-  gcs_prefix: istio-prow/directory/daily-e2e-rbac-no_auth
+- name: istio-daily-perf-tests
+  gcs_prefix: istio-prow/directory/daily-perf-tests
   num_failures_to_alert: 1
-- name: daily-e2e-rbac-no_auth-default
-  gcs_prefix: istio-prow/directory/daily-e2e-rbac-no_auth-default
+- name: istio-daily-e2e-pilot-no_auth
+  gcs_prefix: istio-prow/directory/daily-e2e-pilot-no_auth
   num_failures_to_alert: 1
-- name: daily-e2e-rbac-auth
-  gcs_prefix: istio-prow/directory/daily-e2e-rbac-auth
+- name: istio-daily-e2e-bookinfoTests
+  gcs_prefix: istio-prow/directory/daily-e2e-bookinfoTests
   num_failures_to_alert: 1
-- name: daily-e2e-rbac-auth-default
-  gcs_prefix: istio-prow/directory/daily-e2e-rbac-auth-default
+- name: istio-daily-e2e-simpleTests
+  gcs_prefix: istio-prow/directory/daily-e2e-simpleTests
+  num_failures_to_alert: 1
+- name: istio-daily-e2e-mixer-no_auth
+  gcs_prefix: istio-prow/directory/daily-e2e-mixer-no_auth
+  num_failures_to_alert: 1
+- name: istio-daily-e2e-dashboard
+  gcs_prefix: istio-prow/directory/daily-e2e-dashboard
   num_failures_to_alert: 1
 - name: istio-periodic-e2e-gke-addon
   gcs_prefix: kubernetes-jenkins/logs/istio-periodic-e2e-gke-addon
@@ -2741,8 +2713,24 @@ test_groups:
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-aws-v1.10
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
+- name: ci-gardener-e2e-conformance-aws-v1.11
+  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-aws-v1.11
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1
 - name: ci-gardener-e2e-conformance-gce-v1.10
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-gce-v1.10
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1
+- name: ci-gardener-e2e-conformance-gce-v1.11
+  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-gce-v1.11
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1
+- name: ci-gardener-e2e-conformance-os-v1.11
+  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-os-v1.11
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1
+- name: ci-gardener-e2e-conformance-az-v1.11
+  gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-az-v1.11
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
 
@@ -2937,8 +2925,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-default
   - name: gke-ubuntu1-k8sbeta-flaky
     test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-flaky
-  - name: gke-ubuntu1-k8sbeta-ingress
-    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-ingress
   - name: gke-ubuntu1-k8sbeta-reboot
     test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-reboot
   - name: gke-ubuntu1-k8sbeta-serial
@@ -2968,8 +2954,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-default
   - name: gke-ubuntu1-k8sstable1-flaky
     test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-flaky
-  - name: gke-ubuntu1-k8sstable1-ingress
-    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-ingress
   - name: gke-ubuntu1-k8sstable1-reboot
     test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-reboot
   - name: gke-ubuntu1-k8sstable1-serial
@@ -2999,8 +2983,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-default
   - name: gke-ubuntu1-k8sstable2-flaky
     test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-flaky
-  - name: gke-ubuntu1-k8sstable2-ingress
-    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-ingress
   - name: gke-ubuntu1-k8sstable2-reboot
     test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-reboot
   - name: gke-ubuntu1-k8sstable2-serial
@@ -3030,8 +3012,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-default
   - name: gke-ubuntu1-k8sstable3-flaky
     test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-flaky
-  - name: gke-ubuntu1-k8sstable3-ingress
-    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-ingress
   - name: gke-ubuntu1-k8sstable3-reboot
     test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-reboot
   - name: gke-ubuntu1-k8sstable3-serial
@@ -3061,8 +3041,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-default
   - name: gke-ubuntu2-k8sbeta-flaky
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-flaky
-  - name: gke-ubuntu2-k8sbeta-ingress
-    test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-ingress
   - name: gke-ubuntu2-k8sbeta-reboot
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-reboot
   - name: gke-ubuntu2-k8sbeta-serial
@@ -3092,8 +3070,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-default
   - name: gke-ubuntu2-k8sstable1-flaky
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-flaky
-  - name: gke-ubuntu2-k8sstable1-ingress
-    test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-ingress
   - name: gke-ubuntu2-k8sstable1-reboot
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-reboot
   - name: gke-ubuntu2-k8sstable1-serial
@@ -3123,8 +3099,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-default
   - name: gke-ubuntu2-k8sstable2-flaky
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-flaky
-  - name: gke-ubuntu2-k8sstable2-ingress
-    test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-ingress
   - name: gke-ubuntu2-k8sstable2-reboot
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-reboot
   - name: gke-ubuntu2-k8sstable2-serial
@@ -3154,8 +3128,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-default
   - name: gke-ubuntu2-k8sstable3-flaky
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-flaky
-  - name: gke-ubuntu2-k8sstable3-ingress
-    test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-ingress
   - name: gke-ubuntu2-k8sstable3-reboot
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-reboot
   - name: gke-ubuntu2-k8sstable3-serial
@@ -3429,13 +3401,13 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-gci-latest
   - name: sd-logging-ubuntu-latest
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-latest
-  - name: sd-logging-gci-1.10
+  - name: sd-logging-gci-beta
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-gci-beta
-  - name: sd-logging-ubuntu-1.10
+  - name: sd-logging-ubuntu-beta
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-beta
-  - name: sd-logging-gci-1.9
+  - name: sd-logging-gci-stable
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-gci-stable1
-  - name: sd-logging-ubuntu-1.9
+  - name: sd-logging-ubuntu-stable
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-stable1
 
 - name: google-gke-staging
@@ -3444,6 +3416,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-staging-default-parallel
   - name: gke-staging-default-serial
     test_group_name: ci-kubernetes-e2e-gke-staging-default-serial
+  - name: gke-staging-1.11-parallel
+    test_group_name: ci-kubernetes-e2e-gke-staging-beta-parallel
+  - name: gke-staging-1.11-serial
+    test_group_name: ci-kubernetes-e2e-gke-staging-beta-serial
   - name: gke-staging-1.10-parallel
     test_group_name: ci-kubernetes-e2e-gke-staging-stable1-parallel
   - name: gke-staging-1.10-serial
@@ -4082,12 +4058,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-gpu-stable1-master-master-upgrade
   - name: gce-1.10-master-upgrade-cluster-gpu
     test_group_name: ci-kubernetes-e2e-gce-gpu-stable1-master-cluster-upgrade
-  - name: gce-1.11-1.10-downgrade-master-gpu
-    test_group_name: ci-kubernetes-e2e-gce-gpu-beta-stable1-master-downgrade
   - name: gce-1.11-1.10-downgrade-cluster-gpu
     test_group_name: ci-kubernetes-e2e-gce-gpu-beta-stable1-cluster-downgrade
-  - name: gce-master-1.10-downgrade-master-gpu
-    test_group_name: ci-kubernetes-e2e-gce-gpu-master-stable1-master-downgrade
   - name: gce-master-1.10-downgrade-cluster-gpu
     test_group_name: ci-kubernetes-e2e-gce-gpu-master-stable1-cluster-downgrade
   - name: gce-1.10-1.9-downgrade-cluster
@@ -4426,6 +4398,11 @@ dashboards:
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gke-device-plugin-gpu-ubuntu
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-ubuntu
+    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-device-plugin-gpu-autoscaling-k80
     test_group_name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu-k80
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
@@ -4471,18 +4448,8 @@ dashboards:
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
-  - name: gce-1.11-1.10-gpu-master-downgrade
-    test_group_name: ci-kubernetes-e2e-gce-gpu-beta-stable1-master-downgrade
-    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
-    alert_options:
-      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gce-1.11-1.10-gpu-cluster-downgrade
     test_group_name: ci-kubernetes-e2e-gce-gpu-beta-stable1-cluster-downgrade
-    base_options: 'exclude-filter-by-regex=^BeforeSuite$'
-    alert_options:
-      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
-  - name: gce-master-1.10-gpu-master-downgrade
-    test_group_name: ci-kubernetes-e2e-gce-gpu-master-stable1-master-downgrade
     base_options: 'exclude-filter-by-regex=^BeforeSuite$'
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
@@ -5093,16 +5060,6 @@ dashboards:
     description: 'network gci-gce alpha features e2e tests for master branch'
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: gci-gce-latest-upgrade-kube-proxy-ds
-    test_group_name: ci-kubernetes-e2e-gci-gce-latest-upgrade-kube-proxy-ds
-    description: 'upgrade cluster and migrate kube-proxy from static pods to a daemonset'
-    alert_options:
-      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: gci-gce-latest-downgrade-kube-proxy-ds
-    test_group_name: ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
-    description: 'downgrade cluster and migrate kube-proxy from a daemonset to static pods'
-    alert_options:
-      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: kubeadm-gce-ipvs
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-ipvs
     alert_options:
@@ -5170,38 +5127,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: gke-ubuntu1-k8sbeta-ingress
-    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-ingress
-    alert_options:
-      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: gke-ubuntu1-k8sstable1-ingress
-    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-ingress
-    alert_options:
-      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: gke-ubuntu1-k8sstable2-ingress
-    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-ingress
-    alert_options:
-      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: gke-ubuntu1-k8sstable3-ingress
-    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-ingress
-    alert_options:
-      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: gke-ubuntu2-k8sbeta-ingress
-    test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-ingress
-    alert_options:
-      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: gke-ubuntu2-k8sstable1-ingress
-    test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-ingress
-    alert_options:
-      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: gke-ubuntu2-k8sstable2-ingress
-    test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-ingress
-    alert_options:
-      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: gke-ubuntu2-k8sstable3-ingress
-    test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-ingress
-    alert_options:
-      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
 
 - name: sig-network-ingress-gce-e2e
   dashboard_tab:
@@ -5215,6 +5140,10 @@ dashboards:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: ingress-gce-e2e-release-1.1
     test_group_name: ci-ingress-gce-e2e-release-1-1
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: ingress-gce-e2e-release-1.2
+    test_group_name: ci-ingress-gce-e2e-release-1-2
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: ingress-gce-e2e-scale
@@ -5231,6 +5160,13 @@ dashboards:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: ingress-gce-downgrade-e2e
     test_group_name: ci-ingress-gce-downgrade-e2e
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+
+- name: sig-network-netd
+  dashboard_tab:
+  - name: e2e-gci-gce-netd
+    test_group_name: ci-kubernetes-e2e-gci-gce-netd
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
 
@@ -5555,8 +5491,6 @@ dashboards:
 
 - name: sig-scalability-kubemark
   dashboard_tab:
-  - name: kubemark-small
-    test_group_name: ci-kubernetes-kubemark-5-gce
   - name: kubemark-small-last-release
     test_group_name: ci-kubernetes-kubemark-5-gce-last-release
   - name: kubemark-100
@@ -5810,10 +5744,6 @@ dashboards:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: kubemark-canary
     test_group_name: ci-kubernetes-kubemark-100-canary
-    code_search_url_template:
-      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-  - name: kubemark-canary-prow
-    test_group_name: ci-kubernetes-kubemark-5-prow-canary
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: scalability-canary
@@ -6247,108 +6177,138 @@ dashboards:
 
 - name: istio-presubmits
   dashboard_tab:
-  - name: istio-presubmit
+  - name: presubmit
     test_group_name: istio-presubmit
-  - name: istio-unit-tests
-    test_group_name: istio-unit-tests
-  - name: istio-pilot-e2e
-    test_group_name: istio-pilot-e2e
-  - name: istio-pilot-e2e-envoyv2-v1alpha3
-    test_group_name: istio-pilot-e2e-envoyv2-v1alpha3
+  - name: unit-tests
+    test_group_name: istio-unit-tests-presubmit
+  - name: pilot-e2e
+    test_group_name: istio-pilot-e2e-presubmit
+  - name: pilot-e2e-envoyv2-v1alpha3
+    test_group_name: istio-pilot-e2e-envoyv2-v1alpha3-presubmit
+  - name: e2e-mixer-no_auth
+    test_group_name: istio-e2e-mixer-no_auth-presubmit
+  - name: e2e-dashboard
+    test_group_name: istio-e2e-dashboard-presubmit
   - name: e2e-simpleTests
-    test_group_name: e2e-simpleTests
+    test_group_name: istio-e2e-simpleTests-presubmit
   - name: e2e-bookInfoTests
-    test_group_name: e2e-bookInfoTests
+    test_group_name: istio-e2e-bookInfoTests-presubmit
   - name: e2e-bookInfoTests-envoyv2-v1alpha3
-    test_group_name: e2e-bookInfoTests-envoyv2-v1alpha3
-  - name: circleci-e2e-mixer-presubmit
-    test_group_name: circleci-e2e-mixer-presubmit
-  - name: circleci-e2e-simple-presubmit
-    test_group_name: circleci-e2e-simple-presubmit
-  - name: circleci-e2e-pilot-presubmit
-    test_group_name: circleci-e2e-pilot-presubmit
-  - name: circleci-e2e-pilot-auth-v1alpha3-v2-presubmit
-    test_group_name: circleci-e2e-pilot-auth-v1alpha3-v2-presubmit
-  - name: circleci-e2e-pilot-noauth-v1alpha3-v2-presubmit
-    test_group_name: circleci-e2e-pilot-noauth-v1alpha3-v2-presubmit
-  - name: circleci-e2e-galley-presubmit
-    test_group_name: circleci-e2e-galley-presubmit
-  - name: circleci-test-presubmit
-    test_group_name: circleci-test-presubmit
-  - name: circleci-racetest-presubmit
-    test_group_name: circleci-racetest-presubmit
+    test_group_name: istio-e2e-bookInfoTests-envoyv2-v1alpha3-presubmit
+  - name: circleci-e2e-simple
+    test_group_name: istio-circleci-e2e-simple-presubmit
+  - name: circleci-e2e-dashboard
+    test_group_name: istio-circleci-e2e-dashboard-presubmit
+  - name: circleci-e2e-mixer-noauth-v1alpha3-v2
+    test_group_name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2-presubmit
+  - name: circleci-e2e-galley
+    test_group_name: istio-circleci-e2e-galley-presubmit
+  - name: circleci-e2e-pilot-cloudfoundry-v1alpha3-v2
+    test_group_name: istio-circleci-e2e-pilot-cloudfoundry-v1alpha3-v2-presubmit
+  - name: circleci-e2e-pilot-auth-v1alpha3-v2
+    test_group_name: istio-circleci-e2e-pilot-auth-v1alpha3-v2-presubmit
+  - name: circleci-e2e-pilot-noauth-v1alpha3-v2
+    test_group_name: istio-circleci-e2e-pilot-noauth-v1alpha3-v2-presubmit
+  - name: circleci-test
+    test_group_name: istio-circleci-test-presubmit
+  - name: circleci-racetest
+    test_group_name: istio-circleci-racetest-presubmit
 
 - name: istio-postsubmits
   dashboard_tab:
-  - name: istio-postsubmit
+  - name: postsubmit
     test_group_name: istio-istio-postsubmit
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
-  - name: e2e-suite-rbac-no_auth
-    test_group_name: istio-e2e-suite-rbac-no_auth
+  - name: e2e-simpleTests
+    test_group_name: istio-e2e-simpleTests
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
-  - name: e2e-suite-rbac-auth
-    test_group_name: istio-e2e-suite-rbac-auth
+  - name: e2e-bookInfoTests-envoyv2-v1alpha3
+    test_group_name: istio-e2e-bookInfoTests-envoyv2-v1alpha3
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
-  - name: e2e-cluster_wide-auth
-    test_group_name: istio-e2e-cluster_wide-auth
+  - name: pilot-e2e-envoyv2-v1alpha3
+    test_group_name: istio-pilot-e2e-envoyv2-v1alpha3
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
-  - name: circleci-e2e-mixer
-    test_group_name: circleci-e2e-mixer
+  - name: pilot-e2e-envoyv2-v1alpha3-k8s-1.10
+    test_group_name: istio-pilot-e2e-envoyv2-v1alpha3-k8s-1.10
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: e2e-mixer-no_auth
+    test_group_name: istio-e2e-mixer-no_auth
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: e2e-dashboard
+    test_group_name: istio-e2e-dashboard
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: circleci-e2e-mixer-noauth-v1alpha3-v2
+    test_group_name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
   - name: circleci-e2e-simple
-    test_group_name: circleci-e2e-simple
+    test_group_name: istio-circleci-e2e-simple
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
-  - name: circleci-e2e-pilot
-    test_group_name: circleci-e2e-pilot
+  - name: circleci-e2e-dashboard
+    test_group_name: istio-circleci-e2e-dashboard
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
   - name: circleci-e2e-pilot-auth-v1alpha3-v2
-    test_group_name: circleci-e2e-pilot-auth-v1alpha3-v2
+    test_group_name: istio-circleci-e2e-pilot-auth-v1alpha3-v2
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
   - name: circleci-e2e-pilot-noauth-v1alpha3-v2
-    test_group_name: circleci-e2e-pilot-noauth-v1alpha3-v2
+    test_group_name: istio-circleci-e2e-pilot-noauth-v1alpha3-v2
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
   - name: circleci-e2e-galley
-    test_group_name: circleci-e2e-galley
+    test_group_name: istio-circleci-e2e-galley
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: circleci-e2e-pilot-cloudfoundry-v1alpha3-v2
+    test_group_name: istio-circleci-e2e-pilot-cloudfoundry-v1alpha3-v2
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
   - name: circleci-test
-    test_group_name: circleci-test
+    test_group_name: istio-circleci-test
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
   - name: circleci-racetest
-    test_group_name: circleci-racetest
+    test_group_name: istio-circleci-racetest
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
 
 - name: istio-daily
   dashboard_tab:
-  - name: daily-unit-tests
-    test_group_name: daily-unit-tests
+  - name: unit-tests
+    test_group_name: istio-daily-unit-tests
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
-  - name: daily-e2e-rbac-no_auth
-    test_group_name: daily-e2e-rbac-no_auth
+  - name: perf-tests
+    test_group_name: istio-daily-perf-tests
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
-  - name: daily-e2e-rbac-no_auth-default
-    test_group_name: daily-e2e-rbac-no_auth-default
+  - name: e2e-pilot-no_auth
+    test_group_name: istio-daily-e2e-pilot-no_auth
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
-  - name: daily-e2e-rbac-auth
-    test_group_name: daily-e2e-rbac-auth
+  - name: e2e-bookinfoTests
+    test_group_name: istio-daily-e2e-bookinfoTests
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
-  - name: daily-e2e-rbac-auth-default
-    test_group_name: daily-e2e-rbac-auth-default
+  - name: e2e-simpleTests
+    test_group_name: istio-daily-e2e-simpleTests
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: e2e-mixer-no_auth
+    test_group_name: istio-daily-e2e-mixer-no_auth
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: e2e-dashboard
+    test_group_name: istio-daily-e2e-dashboard
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
 
@@ -6406,11 +6366,33 @@ dashboards:
     test_group_name: ci-gardener-e2e-conformance-aws-v1.10
     alert_options:
       alert_mail_to_addresses: 'roland.wilfer@sap.com'
+  - name: "v1.11 AWS"
+    description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Amazon Web Services (AWS)"
+    test_group_name: ci-gardener-e2e-conformance-aws-v1.11
+    alert_options:
+      alert_mail_to_addresses: 'roland.wilfer@sap.com'
   - name: "v1.10 GCE"
     description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Google Cloud Engine (GCE)"
     test_group_name: ci-gardener-e2e-conformance-gce-v1.10
     alert_options:
       alert_mail_to_addresses: 'roland.wilfer@sap.com'
+  - name: "v1.11 GCE"
+    description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Google Cloud Engine (GCE)"
+    test_group_name: ci-gardener-e2e-conformance-gce-v1.11
+    alert_options:
+      alert_mail_to_addresses: 'roland.wilfer@sap.com'
+  - name: "v1.11 OpenStack"
+    description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Openstack"
+    test_group_name: ci-gardener-e2e-conformance-os-v1.11
+    alert_options:
+      alert_mail_to_addresses: 'roland.wilfer@sap.com'
+  - name: "v1.11 Azure"
+    description: Runs conformance tests on a Kubernetes cluster provided by Gardener (https://github.com/gardener/gardener) on Microsoft Azure"
+    test_group_name: ci-gardener-e2e-conformance-az-v1.11
+    alert_options:
+      alert_mail_to_addresses: 'roland.wilfer@sap.com'
+
+
 #
 # Start dashboard groups
 #
@@ -6440,6 +6422,7 @@ dashboard_groups:
   - google-gke-prod
   - google-soak
   - google-unit
+  - google-gke-stackdriver
 
 - name: istio
   dashboard_names:
@@ -6483,6 +6466,7 @@ dashboard_groups:
   - sig-network-gce
   - sig-network-gke
   - sig-network-ingress-gce-e2e
+  - sig-network-netd
 
 - name: sig-node
   dashboard_names:
@@ -6544,4 +6528,3 @@ dashboard_groups:
   - conformance-providerless
   - conformance-cloud-provider-openstack
   - conformance-gardener
-

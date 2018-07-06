@@ -860,8 +860,13 @@ type PullRequest struct {
 	}
 	HeadRefName githubql.String `graphql:"headRefName"`
 	HeadRefOID  githubql.String `graphql:"headRefOid"`
-	Mergeable   githubql.MergeableState
-	Repository  struct {
+	HeadRef     *struct {
+		Target struct {
+			Commit Commit `graphql:"... on Commit"`
+		}
+	}
+	Mergeable  githubql.MergeableState
+	Repository struct {
 		Name          githubql.String
 		NameWithOwner githubql.String
 		Owner         struct {
@@ -872,12 +877,8 @@ type PullRequest struct {
 		Nodes []struct {
 			Commit Commit
 		}
-		// Request the 'last' 4 commits hoping that one of them is the logically 'last'
-		// commit with OID matching HeadRefOID. If we don't find it we have to use an
-		// additional API token. (see the 'headContexts' func for details)
-		// We can't raise this too much or we could hit the limit of 50,000 nodes
-		// per query: https://developer.github.com/v4/guides/resource-limitations/#node-limit
-	} `graphql:"commits(last: 4)"`
+		// See the 'headContexts' function for details.
+	} `graphql:"commits(last: 1)"`
 	Labels struct {
 		Nodes []struct {
 			Name githubql.String
@@ -930,26 +931,40 @@ func (pr *PullRequest) logFields() logrus.Fields {
 
 // headContexts gets the status contexts for the commit with OID == pr.HeadRefOID
 //
-// First, we try to get this value from the commits we got with the PR query.
-// Unfortunately the 'last' commit ordering is determined by author date
-// not commit date so if commits are reordered non-chronologically on the PR
-// branch the 'last' commit isn't necessarily the logically last commit.
-// We list multiple commits with the query to increase our chance of success,
-// but if we don't find the head commit we have to ask Github for it
-// specifically (this costs an API token).
+// There is no single way to use the GitHub Graphql API to get the status contexts
+// for the head commit of PR. There are 2 ways that each only work under certain
+// conditions and sometimes neither of those will work and we must fall back to
+// the REST API. Here is our process:
+//
+// First, we try to get the statuses via the `headRef` field. This works most PRs,
+// only PRs with a deleted head ref will need to continue on.
+//
+// If the head ref has been deleted, we can still get status contexts by looking
+// at the list of commits for the PR. Unfortunately the 'last' commit ordering
+// is determined by author date not commit date so if commits are reordered
+// non-chronologically on the PR branch, the 'last' commit isn't necessarily the
+// logically last commit. Most PRs won't have reorder commits so in most cases
+// we can just use the statuses from this 'last' commit.
+//
+// If the worst case occurs and neither of the above cases is suitable we have
+// to use the REST API to get the head commit statuses. This costs an extra API
+// token every sync loop.
+//
+// Here are some issues on GitHub's support forum that describe why this gross
+// work around is necessary.
+// https://platform.github.community/t/some-prs-are-missing-head-refs/4586
+// https://platform.github.community/t/github-commits-returned-in-the-incorrect-order-how-to-get-the-head-commit-for-statuses/4130
 func headContexts(log *logrus.Entry, ghc githubClient, pr *PullRequest) ([]Context, error) {
-	for _, node := range pr.Commits.Nodes {
-		if node.Commit.OID == pr.HeadRefOID {
-			return node.Commit.Status.Contexts, nil
-		}
+	if contexts, ok := headContextsNoCost(pr); ok {
+		return contexts, nil
 	}
-	// We didn't get the head commit from the query (the commits must not be
+
+	// We didn't get the head commit from the query (the PR's commits must not be
 	// logically ordered) so we need to specifically ask Github for the status
 	// and coerce it to a graphql type.
 	org := string(pr.Repository.Owner.Login)
 	repo := string(pr.Repository.Name)
-	// Log this event so we can tune the number of commits we list to minimize this.
-	log.Warnf("'last' %d commits didn't contain logical last commit. Querying Github...", len(pr.Commits.Nodes))
+	log.Warnf("HeadRef was missing and 'last' commit is not the logical last commit. Querying Github...")
 	combined, err := ghc.GetCombinedStatus(org, repo, string(pr.HeadRefOID))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get the combined status: %v", err)
@@ -966,4 +981,19 @@ func headContexts(log *logrus.Entry, ghc githubClient, pr *PullRequest) ([]Conte
 		)
 	}
 	return contexts, nil
+}
+
+// headContextsNoCost tries to get the head commit contexts from the PullRequest
+// struct without making additional API calls. It returns the contexts if found
+// and a bool indicating success.
+func headContextsNoCost(pr *PullRequest) ([]Context, bool) {
+	if pr.HeadRef != nil {
+		return pr.HeadRef.Target.Commit.Status.Contexts, true
+	}
+	for _, node := range pr.Commits.Nodes {
+		if node.Commit.OID == pr.HeadRefOID {
+			return node.Commit.Status.Contexts, true
+		}
+	}
+	return nil, false
 }

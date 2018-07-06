@@ -59,7 +59,8 @@ RUN wget -q "https://storage.googleapis.com/golang/${GO_TARBALL}" && \
     rm "${GO_TARBALL}"
 
 # install bazel
-ARG BAZEL_VERSION
+ARG BAZEL_VERSION_ARG
+ENV BAZEL_VERSION=${BAZEL_VERSION_ARG}
 RUN INSTALLER="bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh"; \
     wget -q "https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/${INSTALLER}" && \
     chmod +x "${INSTALLER}" && "./${INSTALLER}" && rm "${INSTALLER}"

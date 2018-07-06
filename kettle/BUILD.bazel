@@ -68,7 +68,7 @@ py_test(
         "model.py",
         ":package-srcs",
     ],
-    data = ["//:buckets"],
+    data = [":buckets"],
     # idem
     local = True,
     deps = ["@yaml"],
@@ -91,4 +91,10 @@ filegroup(
     srcs = [":package-srcs"],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "buckets",
+    srcs = ["buckets.yaml"],
+    visibility = ["//:__subpackages__"],
 )

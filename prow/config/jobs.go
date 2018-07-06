@@ -249,7 +249,7 @@ func matching(j Presubmit, body string, testAll bool) []Presubmit {
 }
 
 // MatchingPresubmits returns a slice of presubmits to trigger based on the repo and a comment text.
-func (c *Config) MatchingPresubmits(fullRepoName, body string, testAll bool) []Presubmit {
+func (c *JobConfig) MatchingPresubmits(fullRepoName, body string, testAll bool) []Presubmit {
 	var result []Presubmit
 	if jobs, ok := c.Presubmits[fullRepoName]; ok {
 		for _, job := range jobs {
@@ -285,7 +285,7 @@ type UtilityConfig struct {
 
 // RetestPresubmits returns all presubmits that should be run given a /retest command.
 // This is the set of all presubmits intersected with ((alwaysRun + runContexts) - skipContexts)
-func (c *Config) RetestPresubmits(fullRepoName string, skipContexts, runContexts map[string]bool) []Presubmit {
+func (c *JobConfig) RetestPresubmits(fullRepoName string, skipContexts, runContexts map[string]bool) []Presubmit {
 	var result []Presubmit
 	if jobs, ok := c.Presubmits[fullRepoName]; ok {
 		for _, job := range jobs {
@@ -301,7 +301,7 @@ func (c *Config) RetestPresubmits(fullRepoName string, skipContexts, runContexts
 }
 
 // GetPresubmit returns the presubmit job for the provided repo and job name.
-func (c *Config) GetPresubmit(repo, jobName string) *Presubmit {
+func (c *JobConfig) GetPresubmit(repo, jobName string) *Presubmit {
 	presubmits := c.AllPresubmits([]string{repo})
 	for i := range presubmits {
 		ps := presubmits[i]
@@ -313,7 +313,7 @@ func (c *Config) GetPresubmit(repo, jobName string) *Presubmit {
 }
 
 // SetPresubmits updates c.Presubmits to jobs, after compiling and validing their regexes.
-func (c *Config) SetPresubmits(jobs map[string][]Presubmit) error {
+func (c *JobConfig) SetPresubmits(jobs map[string][]Presubmit) error {
 	nj := map[string][]Presubmit{}
 	for k, v := range jobs {
 		nj[k] = make([]Presubmit, len(v))
@@ -328,7 +328,7 @@ func (c *Config) SetPresubmits(jobs map[string][]Presubmit) error {
 
 // AllPresubmits returns all prow presubmit jobs in repos.
 // if repos is empty, return all presubmits.
-func (c *Config) AllPresubmits(repos []string) []Presubmit {
+func (c *JobConfig) AllPresubmits(repos []string) []Presubmit {
 	var res []Presubmit
 	var listPres func(ps []Presubmit) []Presubmit
 	listPres = func(ps []Presubmit) []Presubmit {
@@ -358,7 +358,7 @@ func (c *Config) AllPresubmits(repos []string) []Presubmit {
 
 // AllPostsubmits returns all prow postsubmit jobs in repos.
 // if repos is empty, return all postsubmits.
-func (c *Config) AllPostsubmits(repos []string) []Postsubmit {
+func (c *JobConfig) AllPostsubmits(repos []string) []Postsubmit {
 	var res []Postsubmit
 	var listPost func(ps []Postsubmit) []Postsubmit
 	listPost = func(ps []Postsubmit) []Postsubmit {
@@ -387,7 +387,7 @@ func (c *Config) AllPostsubmits(repos []string) []Postsubmit {
 }
 
 // AllPeriodics returns all prow periodic jobs.
-func (c *Config) AllPeriodics() []Periodic {
+func (c *JobConfig) AllPeriodics() []Periodic {
 	var listPeriodic func(ps []Periodic) []Periodic
 	listPeriodic = func(ps []Periodic) []Periodic {
 		var res []Periodic

@@ -412,6 +412,91 @@ func TestUpdateConfig(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:        "edited dir/subdir/fejtaverse/krzyzacy.yaml, 1 update",
+			prAction:    github.PullRequestActionClosed,
+			merged:      true,
+			mergeCommit: "12345",
+			changes: []github.PullRequestChange{
+				{
+					Filename:  "dir/subdir/fejtaverse/krzyzacy.yaml",
+					Status:    "modified",
+					Additions: 1,
+				},
+			},
+			existConfigMaps: map[string]kube.ConfigMap{
+				"glob-config": {
+					ObjectMeta: kube.ObjectMeta{
+						Name:      "glob-config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"fejta.yaml":    "old-fejta-config",
+						"krzyzacy.yaml": "old-krzyzacy-config",
+					},
+				},
+			},
+			expectedConfigMaps: map[string]kube.ConfigMap{
+				"glob-config": {
+					ObjectMeta: kube.ObjectMeta{
+						Name:      "glob-config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"fejta.yaml":    "old-fejta-config",
+						"krzyzacy.yaml": "new-krzyzacy-config",
+					},
+				},
+			},
+		},
+		{
+			name:        "add delete edit glob config, 3 update",
+			prAction:    github.PullRequestActionClosed,
+			merged:      true,
+			mergeCommit: "12345",
+			changes: []github.PullRequestChange{
+				{
+					Filename:  "dir/subdir/fejta.yaml",
+					Status:    "modified",
+					Additions: 1,
+				},
+				{
+					Filename:  "dir/subdir/fejtaverse/sig-foo/added.yaml",
+					Status:    "added",
+					Additions: 1,
+				},
+				{
+					Filename: "dir/subdir/fejtaverse/sig-bar/removed.yaml",
+					Status:   "removed",
+				},
+			},
+			existConfigMaps: map[string]kube.ConfigMap{
+				"glob-config": {
+					ObjectMeta: kube.ObjectMeta{
+						Name:      "glob-config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"fejta.yaml":    "old-fejta-config",
+						"krzyzacy.yaml": "old-krzyzacy-config",
+						"removed.yaml":  "old-removed-config",
+					},
+				},
+			},
+			expectedConfigMaps: map[string]kube.ConfigMap{
+				"glob-config": {
+					ObjectMeta: kube.ObjectMeta{
+						Name:      "glob-config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"fejta.yaml":    "new-fejta-config",
+						"krzyzacy.yaml": "old-krzyzacy-config",
+						"added.yaml":    "new-added-config",
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range testcases {
@@ -455,6 +540,20 @@ func TestUpdateConfig(t *testing.T) {
 					"master": "old-bar-config",
 					"12345":  "new-bar-config",
 				},
+				"dir/subdir/fejta.yaml": {
+					"master": "old-fejta-config",
+					"12345":  "new-fejta-config",
+				},
+				"dir/subdir/fejtaverse/krzyzacy.yaml": {
+					"master": "old-krzyzacy-config",
+					"12345":  "new-krzyzacy-config",
+				},
+				"dir/subdir/fejtaverse/sig-foo/added.yaml": {
+					"12345": "new-added-config",
+				},
+				"dir/subdir/fejtaverse/sig-bar/removed.yaml": {
+					"master": "old-removed-config",
+				},
 			},
 		}
 		fkc := &fakeKubeClient{
@@ -479,10 +578,13 @@ func TestUpdateConfig(t *testing.T) {
 			"config/bar.yaml": {
 				Name: "multikey-config",
 			},
+			"dir/subdir/**/*.yaml": {
+				Name: "glob-config",
+			},
 		}
 
 		if err := handle(fgc, fkc, log, event, m); err != nil {
-			t.Fatal(err)
+			t.Fatalf("tc: %s, err: %s", tc.name, err)
 		}
 
 		if tc.expectedConfigMaps != nil {

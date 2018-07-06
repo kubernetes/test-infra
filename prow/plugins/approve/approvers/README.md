@@ -96,7 +96,7 @@ K8s-bot creates a comment that suggests the selected approvers and shows a list 
 	This pull-request has been approved by: *PRAuthor*
 	We suggest the following additional approvers: **approver1,** **approver2**
 
-	Assign the PR to them by writing `/assign @approver1 @approver2` in a comment when ready.
+	If they are not already assigned, you can assign the PR to them by writing `/assign @approver1 @approver2` in a comment when ready.
 
 	∇ Details
 	Needs approval from an approver in each of these OWNERS Files:
@@ -119,7 +119,7 @@ K8s-bot updates comment:
 	This pull-request has been approved by: *approver1, PRAuthor*
 	We suggest the following additional approver: **approver2**
 
-	Assign the PR to them by writing /assign @approver2 in a comment when ready.
+	If they are not already assigned, you can assign the PR to them by writing /assign @approver2 in a comment when ready.
 
 	∇ Details
 	Needs approval from an approver in each of these OWNERS Files:
@@ -138,7 +138,7 @@ K8s-bot updates comment:
 	This pull-request has been approved by:* approver3, PRAuthor* 
 	We suggest the following additional approvers: **approver1,** **approver2**
 
-	Assign the PR to them by writing /assign @approver1 @approver2 in a comment when ready.
+	If they are not already assigned, you can assign the PR to them by writing /assign @approver1 @approver2 in a comment when ready.
 	
 	∇ Details
 	Needs approval from an approver in each of these OWNERS Files:
@@ -157,7 +157,7 @@ K8s-bot updates comment:
 	This pull-request has been approved by: *approver1, PRAuthor*
 	We suggest the following additional approver: **approver2**
 
-	Assign the PR to them by writing /assign @approver2 in a comment when ready.
+	If they are not already assigned, you can assign the PR to them by writing /assign @approver2 in a comment when ready.
 	
 	∇ Details
 	Needs approval from an approver in each of these OWNERS Files:

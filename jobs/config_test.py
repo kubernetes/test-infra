@@ -523,9 +523,7 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gce-scalability-canary': 'ci-kubernetes-e2e-gce-scalability-*',
             # TODO(fejta): remove these (found while migrating jobs)
             'ci-kubernetes-kubemark-100-gce': 'ci-kubernetes-kubemark-*',
-            'ci-kubernetes-kubemark-5-prow-canary': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-100-canary': 'ci-kubernetes-kubemark-*',
-            'ci-kubernetes-kubemark-5-gce': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-5-gce-last-release': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-high-density-100-gce': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-gce-scale': 'ci-kubernetes-scale-*',
