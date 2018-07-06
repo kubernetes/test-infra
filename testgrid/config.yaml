@@ -586,8 +586,6 @@ test_groups:
   num_failures_to_alert: 1
 - name: ci-kubernetes-kubemark-100-canary
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-100-canary
-- name: ci-kubernetes-kubemark-5-prow-canary
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-5-prow-canary
 - name: ci-kubernetes-kubemark-5-gce-last-release
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-5-gce-last-release
   num_failures_to_alert: 1
@@ -5746,10 +5744,6 @@ dashboards:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: kubemark-canary
     test_group_name: ci-kubernetes-kubemark-100-canary
-    code_search_url_template:
-      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-  - name: kubemark-canary-prow
-    test_group_name: ci-kubernetes-kubemark-5-prow-canary
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: scalability-canary
