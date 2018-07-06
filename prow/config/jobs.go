@@ -353,27 +353,28 @@ func (c *JobConfig) SetPresubmits(jobs map[string][]Presubmit) error {
 	return nil
 }
 
+// listPresubmits list all the presubmit for a given repo including the run after success jobs.
+func listPresubmits(ps []Presubmit) []Presubmit {
+	var res []Presubmit
+	for _, p := range ps {
+		res = append(res, p)
+		res = append(res, listPresubmits(p.RunAfterSuccess)...)
+	}
+	return res
+}
+
 // AllPresubmits returns all prow presubmit jobs in repos.
 // if repos is empty, return all presubmits.
 func (c *JobConfig) AllPresubmits(repos []string) []Presubmit {
 	var res []Presubmit
-	var listPres func(ps []Presubmit) []Presubmit
-	listPres = func(ps []Presubmit) []Presubmit {
-		var res []Presubmit
-		for _, p := range ps {
-			res = append(res, p)
-			res = append(res, listPres(p.RunAfterSuccess)...)
-		}
-		return res
-	}
 
 	for repo, v := range c.Presubmits {
 		if len(repos) == 0 {
-			res = append(res, listPres(v)...)
+			res = append(res, listPresubmits(v)...)
 		} else {
 			for _, r := range repos {
 				if r == repo {
-					res = append(res, listPres(v)...)
+					res = append(res, listPresubmits(v)...)
 					break
 				}
 			}
@@ -383,27 +384,28 @@ func (c *JobConfig) AllPresubmits(repos []string) []Presubmit {
 	return res
 }
 
+// listPostsubmits list all the postsubmits for a given repo including the run after success jobs.
+func listPostsubmits(ps []Postsubmit) []Postsubmit {
+	var res []Postsubmit
+	for _, p := range ps {
+		res = append(res, p)
+		res = append(res, listPostsubmits(p.RunAfterSuccess)...)
+	}
+	return res
+}
+
 // AllPostsubmits returns all prow postsubmit jobs in repos.
 // if repos is empty, return all postsubmits.
 func (c *JobConfig) AllPostsubmits(repos []string) []Postsubmit {
 	var res []Postsubmit
-	var listPost func(ps []Postsubmit) []Postsubmit
-	listPost = func(ps []Postsubmit) []Postsubmit {
-		var res []Postsubmit
-		for _, p := range ps {
-			res = append(res, p)
-			res = append(res, listPost(p.RunAfterSuccess)...)
-		}
-		return res
-	}
 
 	for repo, v := range c.Postsubmits {
 		if len(repos) == 0 {
-			res = append(res, listPost(v)...)
+			res = append(res, listPostsubmits(v)...)
 		} else {
 			for _, r := range repos {
 				if r == repo {
-					res = append(res, listPost(v)...)
+					res = append(res, listPostsubmits(v)...)
 					break
 				}
 			}
