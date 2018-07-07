@@ -82,6 +82,10 @@ var (
 	teamRe        = regexp.MustCompile(`^(.*)/(.*)$`)
 )
 
+const (
+	acceptNone = ""
+)
+
 // Interface for how prow interacts with the http client, which we may throttle.
 type httpClient interface {
 	Do(req *http.Request) (*http.Response, error)
@@ -388,7 +392,7 @@ func (c *Client) doRequest(method, path, accept string, body interface{}) (*http
 		return nil, err
 	}
 	req.Header.Set("Authorization", "Token "+c.token)
-	if accept == "" {
+	if accept == acceptNone {
 		req.Header.Add("Accept", "application/vnd.github.v3+json")
 	} else {
 		req.Header.Add("Accept", accept)
@@ -498,6 +502,9 @@ func (c *Client) GetOrg(name string) (*Organization, error) {
 // https://developer.github.com/v3/orgs/#edit-an-organization
 func (c *Client) EditOrg(name string, config Organization) (*Organization, error) {
 	c.log("EditOrg", name, config)
+	if c.dry {
+		return &config, nil
+	}
 	var retOrg Organization
 	_, err := c.request(&request{
 		method:      http.MethodPatch,
@@ -509,6 +516,32 @@ func (c *Client) EditOrg(name string, config Organization) (*Organization, error
 		return nil, err
 	}
 	return &retOrg, nil
+}
+
+// ListOrgInvitations lists pending invitations to th org.
+//
+// https://developer.github.com/v3/orgs/members/#list-pending-organization-invitations
+func (c *Client) ListOrgInvitations(org string) ([]OrgInvitation, error) {
+	c.log("ListOrgInvitations", org)
+	if c.fake {
+		return nil, nil
+	}
+	path := fmt.Sprintf("/orgs/%s/invitations", org)
+	var ret []OrgInvitation
+	err := c.readPaginatedResults(
+		path,
+		acceptNone,
+		func() interface{} {
+			return &[]OrgInvitation{}
+		},
+		func(obj interface{}) {
+			ret = append(ret, *(obj.(*[]OrgInvitation))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return ret, nil
 }
 
 // ListOrgMembers list all users who are members of an organization. If the authenticated
@@ -531,7 +564,7 @@ func (c *Client) ListOrgMembers(org, role string) ([]TeamMember, error) {
 			"per_page": []string{"100"},
 			"role":     []string{role},
 		},
-		"",
+		acceptNone,
 		func() interface{} {
 			return &[]TeamMember{}
 		},
@@ -558,6 +591,9 @@ func (c *Client) UpdateOrgMembership(org, user string, admin bool) (*OrgMembersh
 		om.Role = RoleAdmin
 	} else {
 		om.Role = RoleMember
+	}
+	if c.dry {
+		return &om, nil
 	}
 
 	_, err := c.request(&request{
@@ -749,7 +785,7 @@ func (c *Client) ListIssueComments(org, repo string, number int) ([]IssueComment
 	var comments []IssueComment
 	err := c.readPaginatedResults(
 		path,
-		"",
+		acceptNone,
 		func() interface{} {
 			return &[]IssueComment{}
 		},
@@ -840,7 +876,7 @@ func (c *Client) GetPullRequestChanges(org, repo string, number int) ([]PullRequ
 	var changes []PullRequestChange
 	err := c.readPaginatedResults(
 		path,
-		"",
+		acceptNone,
 		func() interface{} {
 			return &[]PullRequestChange{}
 		},
@@ -868,7 +904,7 @@ func (c *Client) ListPullRequestComments(org, repo string, number int) ([]Review
 	var comments []ReviewComment
 	err := c.readPaginatedResults(
 		path,
-		"",
+		acceptNone,
 		func() interface{} {
 			return &[]ReviewComment{}
 		},
@@ -896,7 +932,7 @@ func (c *Client) ListReviews(org, repo string, number int) ([]Review, error) {
 	var reviews []Review
 	err := c.readPaginatedResults(
 		path,
-		"",
+		acceptNone,
 		func() interface{} {
 			return &[]Review{}
 		},
@@ -973,8 +1009,8 @@ func (c *Client) GetRepos(org string, isUser bool) ([]Repo, error) {
 		nextURL = fmt.Sprintf("/orgs/%s/repos", org)
 	}
 	err := c.readPaginatedResults(
-		nextURL, // path
-		"",      // accept
+		nextURL,    // path
+		acceptNone, // accept
 		func() interface{} { // newObj
 			return &[]Repo{}
 		},
@@ -1005,7 +1041,7 @@ func (c *Client) GetBranches(org, repo string, onlyProtected bool) ([]Branch, er
 			"protected": []string{strconv.FormatBool(onlyProtected)},
 			"per_page":  []string{"100"},
 		},
-		"",
+		acceptNone,
 		func() interface{} { // newObj
 			return &[]Branch{}
 		},
@@ -1638,6 +1674,8 @@ func (c *Client) CreateTeam(org string, team Team) (*Team, error) {
 	}
 	if c.fake {
 		return nil, nil
+	} else if c.dry {
+		return &team, nil
 	}
 	path := fmt.Sprintf("/orgs/%s/teams", org)
 	var retTeam Team
@@ -1656,13 +1694,24 @@ func (c *Client) CreateTeam(org string, team Team) (*Team, error) {
 // EditTeam patches team.ID to contain the specified other values.
 //
 // See https://developer.github.com/v3/teams/#edit-team
-func (c *Client) EditTeam(team Team) (*Team, error) {
-	c.log("EditTeam", team)
-	if team.ID == 0 {
+func (c *Client) EditTeam(t Team) (*Team, error) {
+	c.log("EditTeam", t)
+	if t.ID == 0 {
 		return nil, errors.New("team.ID must be non-zero")
 	}
-	id := team.ID
-	team.ID = 0
+	if c.dry {
+		return &t, nil
+	}
+	id := t.ID
+	t.ID = 0
+	// Need to send parent_team_id: null
+	team := struct {
+		Team
+		ParentTeamID *int `json:"parent_team_id"`
+	}{
+		Team:         t,
+		ParentTeamID: t.ParentTeamID,
+	}
 	var retTeam Team
 	path := fmt.Sprintf("/teams/%d", id)
 	_, err := c.request(&request{
@@ -1672,7 +1721,7 @@ func (c *Client) EditTeam(team Team) (*Team, error) {
 		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
 		accept:      "application/vnd.github.hellcat-preview+json",
 		requestBody: &team,
-		exitCodes:   []int{201},
+		exitCodes:   []int{200, 201},
 	}, &retTeam)
 	return &retTeam, err
 }
@@ -1734,6 +1783,10 @@ func (c *Client) UpdateTeamMembership(id int, user string, maintainer bool) (*Te
 		tm.Role = RoleMaintainer
 	} else {
 		tm.Role = RoleMember
+	}
+
+	if c.dry {
+		return &tm, nil
 	}
 
 	_, err := c.request(&request{
@@ -1953,7 +2006,7 @@ func (c *Client) ListIssueEvents(org, repo string, num int) ([]ListedIssueEvent,
 	var events []ListedIssueEvent
 	err := c.readPaginatedResults(
 		path,
-		"",
+		acceptNone,
 		func() interface{} {
 			return &[]ListedIssueEvent{}
 		},
@@ -2046,7 +2099,7 @@ func (c *Client) ListMilestones(org, repo string) ([]Milestone, error) {
 	var milestones []Milestone
 	err := c.readPaginatedResults(
 		path,
-		"",
+		acceptNone,
 		func() interface{} {
 			return &[]Milestone{}
 		},
