@@ -1,0 +1,28 @@
+substitutions:
+  _REV: "master"
+  _PUSH_REGISTRY: ""
+steps:
+- name: gcr.io/google-containers/addon-builder
+  entrypoint: checkout
+  args:
+  - "https://github.com/kubernetes/kubernetes"
+  - "--rev"
+  - "${_REV}"
+- name: gcr.io/google-containers/addon-builder
+  dir: "/workspace/kubernetes/test/images/volumes-tester/iscsi"
+  env:
+  - 'TMPDIR=/workspace'
+  entrypoint: bash
+  args:
+  - -c
+  - |
+    make image
+- name: k8s.gcr.io/addon-builder
+  entrypoint: label_push
+  env:
+  - "BUILD_ID=$BUILD_ID"
+  - "PROJECT_ID=$PROJECT_ID"
+  - "PUSH_REGISTRY=${_PUSH_REGISTRY}"
+  args:
+  - "volume-iscsi"
+timeout: 10800s

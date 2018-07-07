@@ -1,0 +1,30 @@
+substitutions:
+  _REV: "master"
+  _PUSH_REGISTRY: ""
+steps:
+- name: k8s.gcr.io/addon-builder
+  entrypoint: checkout
+  args:
+  - "https://github.com/kubernetes/kubernetes"
+  - "--rev"
+  - "${_REV}"
+- name: k8s.gcr.io/addon-builder
+  dir: "/workspace/kubernetes/build/debian-base"
+  env:
+  - 'TMPDIR=/workspace'
+  entrypoint: bash
+  args:
+  - -c
+  - |
+    for arch in amd64 arm arm64 ppc64le s390x; do
+      ARCH=$arch make build
+    done
+- name: k8s.gcr.io/addon-builder
+  entrypoint: label_push
+  env:
+  - "BUILD_ID=$BUILD_ID"
+  - "PROJECT_ID=$PROJECT_ID"
+  - "PUSH_REGISTRY=${_PUSH_REGISTRY}"
+  args:
+  - "debian-base"
+timeout: 10800s
