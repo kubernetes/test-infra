@@ -444,7 +444,8 @@ span.label:not(.merge-table-label):hover {
 .label.do-not-merge\/work-in-progress,
 .label.do-not-merge\/release-note-label-needed,
 .label.do-not-merge\/cherry-pick-not-approved,
-.label.do-not-merge\/blocked-paths {
+.label.do-not-merge\/blocked-paths,
+.label.do-not-merge\/invalid-owners-file {
     background-color: #e11d21;
     color: #ffffff;
 }
