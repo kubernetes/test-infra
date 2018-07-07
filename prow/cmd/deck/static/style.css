@@ -394,6 +394,34 @@ span.label:not(.merge-table-label):hover {
 
 /* Known GitHub Labels, can be overridden in extensions/style.css */
 /* NOTE: spaces must be stripped from the label name */
+.label.area {
+    background-color: #1a53c5;
+    color: #fff;
+}
+.label.XS {
+    background-color: #5da447;
+    color: #000;
+}
+.label.S {
+    background-color: #99c356;
+    color: #000;
+}
+.label.M {
+    background-color: #ebc65d;
+    color: #000;
+}
+.label.L {
+    background-color: #e7ab56;
+    color: #000;
+}
+.label.XL {
+    background-color: #e27749;
+    color: #000;
+}
+.label.XXL {
+    background-color: #e14f43;
+    color: #fff;
+}
 .label.lgtm {
     background-color: #15dd18;
     color: #000000;
