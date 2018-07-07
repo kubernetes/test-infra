@@ -24,6 +24,7 @@ import (
 )
 
 const botName = "k8s-ci-robot"
+const Bot = botName
 
 // FakeClient is like client, but fake.
 type FakeClient struct {

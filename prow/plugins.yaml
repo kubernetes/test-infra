@@ -4,12 +4,15 @@
 ---
 triggers:
 - repos:
-  - GoogleCloudPlatform/k8s-multicluster-ingress
-  - google/cadvisor
   - kubernetes
   - kubernetes-incubator
   - kubernetes-security
   - kubernetes-sigs
+  join_org_url: "https://git.k8s.io/community/community-membership.md#member"
+  only_org_members: true
+- repos:
+  - google/cadvisor
+  - GoogleCloudPlatform/k8s-multicluster-ingress
   trusted_org: kubernetes
   join_org_url: "https://git.k8s.io/community/community-membership.md#member"
 - repos:

@@ -5,7 +5,7 @@ New features added to each components:
    from a glob match.
  - *June 05, 2018* `blunderbuss` plugin may now suggest approvers in addition
    to reviewers. Use `exclude_approvers: true` to revert to previous behavior.
- - *April 10, 2018* `cla` plugin now supports `/check-cla` command 
+ - *April 10, 2018* `cla` plugin now supports `/check-cla` command
    to force rechecking of the CLA status.
  - *February 1, 2018* `updateconfig` will now update any configmap on merge
  - *November 14, 2017* `jenkins-operator:0.58` exposes prometheus metrics.
@@ -20,6 +20,9 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *July 2, 2018* the `trigger` plugin will now trust PRs from repo
+   collaborators. Use `only_org_members: true` in the trigger config to
+   temporarily disable this behavior.
  - *June 14, 2018* the `updateconfig` plugin will only add data to your `ConfigMaps`
    using the basename of the updated file, instead of using that and also duplicating
    the data using the name of the `ConfigMap` as a key

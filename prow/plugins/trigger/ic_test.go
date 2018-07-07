@@ -550,7 +550,7 @@ func TestHandleIssueComment(t *testing.T) {
 			event.Issue.Labels = tc.IssueLabels
 		}
 
-		if err := handleIC(c, "kubernetes", event); err != nil {
+		if err := handleIC(c, nil, event); err != nil {
 			t.Fatalf("Didn't expect error: %s", err)
 		}
 		if len(kc.started) > 0 && !tc.ShouldBuild {

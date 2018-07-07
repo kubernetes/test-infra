@@ -366,6 +366,9 @@ type Trigger struct {
 	// should be able to read more about joining the organization in order
 	// to become trusted members. Defaults to the Github link of TrustedOrg.
 	JoinOrgURL string `json:"join_org_url,omitempty"`
+	// OnlyOrgMembers requires PRs and/or /ok-to-test comments to come from org members.
+	// By default, trigger also include repo collaborators.
+	OnlyOrgMembers bool `json:"only_org_members,omitempty"`
 }
 
 type Heart struct {
