@@ -18,7 +18,6 @@ package main
 
 import (
 	"bytes"
-	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -80,7 +79,7 @@ func gatherOptions() options {
 
 func (o *options) Validate() error {
 	if _, err := labels.Parse(o.selector); err != nil {
-		return errors.New("Error parsing label selector.")
+		return fmt.Errorf("parse label selector: %v", err)
 	}
 
 	return nil

@@ -29,17 +29,19 @@ To create cluster resources you need to grant a user `cluster-admin` role in all
 
 For Prow on GCP, you can use the following command.
 ```sh
-kubectl create clusterrolebinding cluster-admin-binding --clusterrole cluster-admin --user $(gcloud config get-value account)
+kubectl create clusterrolebinding cluster-admin-binding \
+  --clusterrole cluster-admin --user $(gcloud config get-value account)
 ```
 
 For Prow on other platforms, the following command will likely work.
 ```sh
-kubectl create clusterrolebinding cluster-admin-binding-"${USER}" --clusterrole=cluster-admin --user="${USER}"
+kubectl create clusterrolebinding cluster-admin-binding-"${USER}" \
+  --clusterrole=cluster-admin --user="${USER}"
 ```
 On some platforms the `USER` variable may not map correctly to the user
 in-cluster. If you see an error of the following form, this is likely the case.
 
-```
+```console
 Error from server (Forbidden): error when creating
 "prow/cluster/starter.yaml": roles.rbac.authorization.k8s.io "<account>" is
 forbidden: attempt to grant extra privileges:
@@ -52,7 +54,8 @@ APIGroups:["prow.k8s.io"], Verbs:["list"]}] user=&{<CLUSTER_USER>
 Run the previous command substituting `USER` with `CLUSTER_USER` from the error
 message above to solve this issue.
 ```sh
-kubectl create clusterrolebinding cluster-admin-binding-"<CLUSTER_USER>" --clusterrole=cluster-admin --user="<CLUSTER_USER>"
+kubectl create clusterrolebinding cluster-admin-binding-"<CLUSTER_USER>" \
+  --clusterrole=cluster-admin --user="<CLUSTER_USER>"
 ```
 
 There are [relevant docs on Kubernetes Authentication](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#authentication-strategies) that may help if neither of the above work.
@@ -90,7 +93,7 @@ kubectl apply -f cluster/starter.yaml
 
 After a moment, the cluster components will be running.
 
-```sh
+```console
 $ kubectl get deployments
 NAME         DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
 deck         2         2         2            2           1m
@@ -103,7 +106,7 @@ sinker       1         1         1            1           1m
 Find out your external address. It might take a couple minutes for the IP to
 show up.
 
-```sh
+```console
 $ kubectl get ingress ing
 NAME      HOSTS     ADDRESS          PORTS     AGE
 ing       *         an.ip.addr.ess   80        3m
@@ -140,7 +143,7 @@ instead just say `YOUR_ORG:` and the plugin will run for every repo in the org.
 
 Run the following to test the file, replacing the path as necessary:
 
-```
+```sh
 bazel run //prow/cmd/config -- --plugin-config=path/to/plugins.yaml
 ```
 
@@ -149,8 +152,10 @@ so that any errors are caught before you try to update.
 
 Now run the following to update the configmap, replacing the path as necessary:
 
-```
-kubectl create configmap plugins --from-file=plugins.yaml=path/to/plugins.yaml --dry-run -o yaml | kubectl replace configmap plugins -f -
+```sh
+kubectl create configmap plugins \
+  --from-file=plugins=path/to/plugins.yaml --dry-run -o yaml \
+  | kubectl replace configmap plugins -f -
 ```
 
 We added a make rule to do this for us:
@@ -206,14 +211,15 @@ presubmits:
 
 Run the following to test the file, replacing the path as necessary:
 
-```
+```sh
 bazel run //prow/cmd/config -- --config-path=path/to/config.yaml
 ```
 
 Now run the following to update the configmap.
 
-```
-kubectl create configmap config --from-file=config.yaml=path/to/config.yaml --dry-run -o yaml | kubectl replace configmap config -f -
+```sh
+kubectl create configmap config \
+  --from-file=config=path/to/config.yaml --dry-run -o yaml | kubectl replace configmap config -f -
 ```
 
 We use a make rule:
@@ -237,7 +243,7 @@ When you push a new change, the postsubmit job will run.
 
 For more information on the job environment, see [How to add new jobs][2].
 
-## Run test pods in a different namespace or a different cluster
+## Run test pods in a different namespace
 
 You may choose to keep prowjobs or run tests in a different namespace. First
 create the namespace by `kubectl create -f`ing this:
@@ -253,18 +259,35 @@ Now, in `config.yaml`, set `prowjob_namespace` or `pod_namespace` to the
 name from the YAML file. You can then use RBAC roles to limit what test pods
 can do.
 
+
+## Run test pods in different clusters
+
 You may choose to run test pods in a separate cluster entirely. Create a secret
-containing the following:
+containing a `{"cluster-name": {cluster-details}}` map like this:
 
 ```yaml
-endpoint: https://<master-ip>
-clientCertificate: <base64-encoded cert>
-clientKey: <base64-encoded key>
-clusterCaCertificate: <base64-encoded cert>
+default:
+  endpoint: https://<master-ip>
+  clientCertificate: <base64-encoded cert>
+  clientKey: <base64-encoded key>
+  clusterCaCertificate: <base64-encoded cert>
+other:
+  endpoint: https://<master-ip>
+  clientCertificate: <base64-encoded cert>
+  clientKey: <base64-encoded key>
+  clusterCaCertificate: <base64-encoded cert>
 ```
 
-You can learn these by running `gcloud container clusters describe` on your
-cluster. Then, mount this secret into the prow components that need it and set
+Use [mkbuild-cluster][5] to determine these values:
+```sh
+bazel run //prow/cmd/mkbuild-cluster -- \
+  --project=P --zone=Z --cluster=C \
+  --alias=A \
+  --print-entry | tee cluster.yaml
+kubectl create secret generic build-cluster --from-file=cluster.yaml
+```
+
+Mount this secret into the prow components that need it and set
 the `--build-cluster` flag to the location you mount it at. For instance, you
 will need to merge the following into the plank deployment:
 
@@ -273,25 +296,61 @@ spec:
   containers:
   - name: plank
     args:
-    - --build-cluster=/etc/cluster/cluster
+    - --build-cluster=/etc/foo/cluster.yaml # basename matches --from-file key
     volumeMounts:
-    - mountPath: /etc/cluster
+    - mountPath: /etc/foo
       name: cluster
       readOnly: true
   volumes:
   - name: cluster
     secret:
       defaultMode: 420
-      secretName: build-cluster
+      secretName: build-cluster # example above contains a cluster.yaml key
 ```
+
+Configure jobs to use the non-default cluster with the `cluster:` field.
+The above example `cluster.yaml` defines two clusters: `default` and `other` to schedule jobs, which we can use as follows:
+```yaml
+periodics:
+- name: cluster-unspecified
+  # cluster: 
+  interval: 10m
+  agent: kubernetes
+  spec:
+    containers:
+    - image: alpine
+      command: ["/bin/date"]
+- name: cluster-default
+  cluster: default
+  interval: 10m
+  agent: kubernetes
+  spec:
+    containers:
+    - image: alpine
+      command: ["/bin/date"]
+- name: cluster-other
+  cluster: other
+  interval: 10m
+  agent: kubernetes
+  spec:
+    containers:
+    - image: alpine
+      command: ["/bin/date"]
+```
+
+This results in:
+* The `cluster-unspecified` and `default-cluster` jobs run in the `default` cluster.
+* The `cluster-other` job runs in the `other` cluster.
+
+See [mkbuild-cluster][5] for more details about how to create/update `cluster.yaml`.
 
 ## Configure SSL
 
-I suggest using [kube-lego][3] for automatic LetsEncrypt integration. If you
+Use [kube-lego][3] for automatic LetsEncrypt integration. If you
 already have a cert then follow the [official docs][4] to set up HTTPS
 termination. Promote your ingress IP to static IP. On GKE, run:
 
-```
+```sh
 gcloud compute addresses create [ADDRESS_NAME] --addresses [IP_ADDRESS] --region [REGION]
 ```
 
@@ -305,3 +364,4 @@ a separate namespace.
 [2]: ./README.md##how-to-add-new-jobs
 [3]: https://github.com/jetstack/kube-lego
 [4]: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
+[5]: /prow/cmd/mkbuild-cluster/
