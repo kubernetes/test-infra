@@ -2740,6 +2740,10 @@ test_groups:
 - name: ci-kubernetes-e2e-gce-kubedns-performance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-kubedns-performance
 
+# bazelbuild/rules_k8s tests
+- name: pull-rules-k8s-e2e
+  gcs_prefix: kubernetes-jenkins/logs/pull-rules-k8s-e2e
+
 #
 # Start dashboards
 #
@@ -6174,6 +6178,11 @@ dashboards:
     test_group_name: pull-poseidon-verify
   - name: e2e
     test_group_name: ci-poseidon-e2e-gce
+
+- name: google-rules_k8s
+  dashboard_tab:
+  - name: pull-rules-k8s-e2e
+    test_group_name: pull-rules-k8s-e2e
 
 - name: istio-presubmits
   dashboard_tab:
