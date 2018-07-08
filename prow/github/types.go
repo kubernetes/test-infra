@@ -585,14 +585,21 @@ type Content struct {
 	SHA     string `json:"sha"`
 }
 
+const (
+	// PrivacySecret memberships are only visible to other team members.
+	PrivacySecret = "secret"
+	// PrivacyClosed memberships are visible to org members.
+	PrivacyClosed = "closed"
+)
+
 // Team is a github organizational team
 type Team struct {
 	ID           int    `json:"id,omitempty"`
 	Name         string `json:"name"`
 	Description  string `json:"description,omitempty"`
 	Privacy      string `json:"privacy,omitempty"`
-	Parent       *Team  `json:"parent,omitempty"` // Only present in responses
-	ParentTeamID *int   `json:"parent_team_id"`   // Only valid in creates/edits
+	Parent       *Team  `json:"parent,omitempty"`         // Only present in responses
+	ParentTeamID *int   `json:"parent_team_id,omitempty"` // Only valid in creates/edits
 }
 
 // TeamMember is a member of an organizational team
@@ -647,6 +654,12 @@ type OrgMembership struct {
 // TeamMembership contains Membership fields for user membership on a team.
 type TeamMembership struct {
 	Membership
+}
+
+// OrgInvitation contains Login and other details about the invitation.
+type OrgInvitation struct {
+	TeamMember
+	Inviter TeamMember `json:"login"`
 }
 
 // GenericCommentEventAction coerces multiple actions into its generic equivalent.

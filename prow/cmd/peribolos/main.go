@@ -291,6 +291,7 @@ func dumpOrgConfig(client dumpClient, orgName string) (*org.Config, error) {
 type orgClient interface {
 	BotName() (string, error)
 	ListOrgMembers(org, role string) ([]github.TeamMember, error)
+	ListOrgInvitations(org string) ([]github.OrgInvitation, error)
 	RemoveOrgMembership(org, user string) error
 	UpdateOrgMembership(org, user string, admin bool) (*github.OrgMembership, error)
 }
@@ -324,22 +325,32 @@ func configureOrgMembers(opt options, client orgClient, orgName string, orgConfi
 	// Get current state
 	haveAdmins := sets.String{}
 	haveMembers := sets.String{}
-	ms, err := client.ListOrgMembers(orgName, "admin")
+	ms, err := client.ListOrgMembers(orgName, github.RoleAdmin)
 	if err != nil {
 		return fmt.Errorf("failed to list %s admins: %v", orgName, err)
 	}
 	for _, m := range ms {
 		haveAdmins.Insert(m.Login)
 	}
-	if ms, err = client.ListOrgMembers(orgName, "member"); err != nil {
+	if ms, err = client.ListOrgMembers(orgName, github.RoleMember); err != nil {
 		return fmt.Errorf("failed to list %s members: %v", orgName, err)
 	}
 	for _, m := range ms {
 		haveMembers.Insert(m.Login)
 	}
+	is, err := client.ListOrgInvitations(orgName)
+	if err != nil {
+		return fmt.Errorf("failed to list %s invitations: %v", orgName, err)
+	}
+	for _, i := range is { // Do not reinvite anyone
+		haveMembers.Insert(i.Login)
+		haveAdmins.Insert(i.Login)
+	}
 
 	have := memberships{members: haveMembers, super: haveAdmins}
 	want := memberships{members: wantMembers, super: wantAdmins}
+	have.normalize()
+	want.normalize()
 	// Figure out who to remove
 	remove := have.all().Difference(want.all())
 
@@ -375,9 +386,9 @@ func configureOrgMembers(opt options, client orgClient, orgName string, orgConfi
 	}
 
 	adder := func(user string, super bool) error {
-		role := "member"
+		role := github.RoleMember
 		if super {
-			role = "admin"
+			role = github.RoleAdmin
 		}
 		om, err := client.UpdateOrgMembership(orgName, user, super)
 		if err != nil {
@@ -410,7 +421,22 @@ func (m memberships) all() sets.String {
 	return m.members.Union(m.super)
 }
 
+func normalize(s sets.String) sets.String {
+	out := sets.String{}
+	for i := range s {
+		out.Insert(github.NormLogin(i))
+	}
+	return out
+}
+
+func (m *memberships) normalize() {
+	m.members = normalize(m.members)
+	m.super = normalize(m.super)
+}
+
 func configureMembers(have, want memberships, adder func(user string, super bool) error, remover func(user string) error) error {
+	have.normalize()
+	want.normalize()
 	if both := want.super.Intersection(want.members); len(both) > 0 {
 		return fmt.Errorf("users in both roles: %s", strings.Join(both.List(), ", "))
 	}
@@ -524,19 +550,24 @@ func configureTeams(client teamClient, orgName string, orgConfig org.Config, max
 	matches := map[string]github.Team{}
 	missing := map[string]org.Team{}
 	used := sets.Int{}
-	for name, orgTeam := range orgConfig.Teams {
-		t := findTeam(names, name, orgTeam.Previously...)
-		if t == nil {
-			missing[name] = orgTeam
-			continue
+	var match func(teams map[string]org.Team)
+	match = func(teams map[string]org.Team) {
+		for name, orgTeam := range teams {
+			match(orgTeam.Children)
+			t := findTeam(names, name, orgTeam.Previously...)
+			if t == nil {
+				missing[name] = orgTeam
+				continue
+			}
+			matches[name] = *t // t.Name != name if we matched on orgTeam.Previously
+			used.Insert(t.ID)
 		}
-		matches[name] = *t // t.Name != name if we matched on orgTeam.Previously
-		used.Insert(t.ID)
 	}
+	match(orgConfig.Teams)
 
 	// First compute teams we will delete, ensure we are not deleting too many
 	unused := ints.Difference(used)
-	if delta := float64(len(unused)) / float64(len(ints)); delta >= maxDelta {
+	if delta := float64(len(unused)) / float64(len(ints)); delta > maxDelta {
 		return nil, fmt.Errorf("cannot delete %d teams or %.3f of %s teams (exceeds limit of %.3f)", len(unused), delta, orgName, maxDelta)
 	}
 
@@ -732,13 +763,6 @@ func configureTeam(client editTeamClient, orgName, teamName string, team org.Tea
 	} else {
 		gt.Description = ""
 	}
-	if team.Privacy != nil && gt.Privacy != string(*team.Privacy) {
-		patch = true
-		gt.Privacy = string(*team.Privacy)
-
-	} else {
-		gt.Privacy = ""
-	}
 	// doesn't have parent in github, but has parent in config
 	if gt.Parent == nil && parent != nil {
 		patch = true
@@ -754,6 +778,15 @@ func configureTeam(client editTeamClient, orgName, teamName string, team org.Tea
 			gt.Parent = nil
 			gt.ParentTeamID = parent
 		}
+	}
+
+	if team.Privacy != nil && gt.Privacy != string(*team.Privacy) {
+		patch = true
+		gt.Privacy = string(*team.Privacy)
+
+	} else if team.Privacy == nil && (parent != nil || len(team.Children) > 0) && gt.Privacy != "closed" {
+		patch = true
+		gt.Privacy = github.PrivacyClosed // nested teams must be closed
 	}
 
 	if patch { // yes we need to patch
