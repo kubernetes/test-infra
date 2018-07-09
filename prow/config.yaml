@@ -12954,6 +12954,8 @@ periodics:
       - --bare
       - --timeout=260
       env:
+      - name: KUBEMARK_BAZEL_BUILD
+        value: "y"
       - name: DOCKER_IN_DOCKER_ENABLED
         value: "true"
       volumeMounts:
