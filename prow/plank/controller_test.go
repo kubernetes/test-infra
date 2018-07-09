@@ -835,9 +835,13 @@ func TestSyncPendingJob(t *testing.T) {
 					Name: "boop-42",
 				},
 				Spec: kube.ProwJobSpec{
-					Type:            kube.BatchJob,
-					PodSpec:         &kube.PodSpec{Containers: []kube.Container{{Name: "test-name", Env: []kube.EnvVar{}}}},
-					RunAfterSuccess: []kube.ProwJobSpec{{}},
+					Type:    kube.BatchJob,
+					PodSpec: &kube.PodSpec{Containers: []kube.Container{{Name: "test-name", Env: []kube.EnvVar{}}}},
+					RunAfterSuccess: []kube.ProwJobSpec{{
+						Job:     "job-name",
+						Type:    kube.PeriodicJob,
+						PodSpec: &kube.PodSpec{Containers: []kube.Container{{Name: "test-name", Env: []kube.EnvVar{}}}},
+					}},
 				},
 				Status: kube.ProwJobStatus{
 					State:   kube.PendingState,
@@ -935,6 +939,8 @@ func TestSyncPendingJob(t *testing.T) {
 				},
 				Spec: kube.ProwJobSpec{
 					RunAfterSuccess: []kube.ProwJobSpec{{
+						Job:     "job-name",
+						Type:    kube.PeriodicJob,
 						PodSpec: &kube.PodSpec{Containers: []kube.Container{{Name: "test-name", Env: []kube.EnvVar{}}}},
 					}},
 				},
@@ -964,6 +970,8 @@ func TestSyncPendingJob(t *testing.T) {
 				},
 				Spec: kube.ProwJobSpec{
 					RunAfterSuccess: []kube.ProwJobSpec{{
+						Job:     "job-name",
+						Type:    kube.PeriodicJob,
 						PodSpec: &kube.PodSpec{Containers: []kube.Container{{Name: "test-name", Env: []kube.EnvVar{}}}},
 					}},
 				},
@@ -1019,6 +1027,8 @@ func TestSyncPendingJob(t *testing.T) {
 				},
 				Spec: kube.ProwJobSpec{
 					RunAfterSuccess: []kube.ProwJobSpec{{
+						Job:     "job-name",
+						Type:    kube.PeriodicJob,
 						PodSpec: &kube.PodSpec{Containers: []kube.Container{{Name: "test-name", Env: []kube.EnvVar{}}}},
 					}},
 				},

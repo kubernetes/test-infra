@@ -17,10 +17,13 @@ limitations under the License.
 package pjutil
 
 import (
+	"reflect"
 	"testing"
 	"time"
 
+	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/diff"
 
 	"k8s.io/test-infra/prow/kube"
 )
@@ -195,6 +198,75 @@ func TestGetLatestProwJobs(t *testing.T) {
 			if _, ok := got[name]; ok {
 				t.Errorf("expected job: %s", name)
 			}
+		}
+	}
+}
+
+func TestNewProwJob(t *testing.T) {
+	var testCases = []struct {
+		name           string
+		spec           kube.ProwJobSpec
+		labels         map[string]string
+		expectedLabels map[string]string
+	}{
+		{
+			name: "periodic job, no extra labels",
+			spec: kube.ProwJobSpec{
+				Job:  "job",
+				Type: kube.PeriodicJob,
+			},
+			labels: map[string]string{},
+			expectedLabels: map[string]string{
+				"prow.k8s.io/job":  "job",
+				"prow.k8s.io/type": "periodic",
+			},
+		},
+		{
+			name: "periodic job, extra labels",
+			spec: kube.ProwJobSpec{
+				Job:  "job",
+				Type: kube.PeriodicJob,
+			},
+			labels: map[string]string{
+				"extra": "stuff",
+			},
+			expectedLabels: map[string]string{
+				"prow.k8s.io/job":  "job",
+				"prow.k8s.io/type": "periodic",
+				"extra":            "stuff",
+			},
+		},
+		{
+			name: "presubmit job",
+			spec: kube.ProwJobSpec{
+				Job:  "job",
+				Type: kube.PresubmitJob,
+				Refs: &kube.Refs{
+					Org:  "org",
+					Repo: "repo",
+					Pulls: []kube.Pull{
+						{Number: 1},
+					},
+				},
+			},
+			labels: map[string]string{},
+			expectedLabels: map[string]string{
+				"prow.k8s.io/job":       "job",
+				"prow.k8s.io/type":      "presubmit",
+				"prow.k8s.io/refs.org":  "org",
+				"prow.k8s.io/refs.repo": "repo",
+				"prow.k8s.io/refs.pull": "1",
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		pj := NewProwJob(testCase.spec, testCase.labels)
+		if actual, expected := pj.Spec, testCase.spec; !equality.Semantic.DeepEqual(actual, expected) {
+			t.Errorf("%s: incorrect ProwJobSpec created: %s", testCase.name, diff.ObjectReflectDiff(actual, expected))
+		}
+		if actual, expected := pj.Labels, testCase.expectedLabels; !reflect.DeepEqual(actual, expected) {
+			t.Errorf("%s: incorrect ProwJob labels created: %s", testCase.name, diff.ObjectReflectDiff(actual, expected))
 		}
 	}
 }
