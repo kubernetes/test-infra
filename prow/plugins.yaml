@@ -8,6 +8,7 @@ triggers:
   - kubernetes-incubator
   - kubernetes-security
   - kubernetes-sigs
+  trusted_org: kubernetes
   join_org_url: "https://git.k8s.io/community/community-membership.md#member"
   only_org_members: true
 - repos:
