@@ -140,7 +140,10 @@ func (sg *Spyglass) FetchArtifacts(src string, jobId string) ([]viewers.Artifact
 	// Then check prowjob id for pod logs, pod spec, etc
 	if jobId != "" && jobName != "" {
 		logrus.Info("Trying pod logs. ")
-		artifacts = append(artifacts, NewPodLogArtifact(jobName, jobId, sg.Ja))
+		podLog := NewPodLogArtifact(jobName, jobId, sg.Ja)
+		if podLog.Size() != -1 {
+			artifacts = append(artifacts, podLog)
+		}
 
 	}
 	return artifacts, nil

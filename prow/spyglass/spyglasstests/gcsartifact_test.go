@@ -14,18 +14,46 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package spyglass
+package spyglasstests
 
 import (
 	"bytes"
 	"testing"
 
+	"k8s.io/test-infra/prow/spyglass"
 	"k8s.io/test-infra/prow/spyglass/viewers"
 )
 
+// Tests reading at most n bytes of data from files in GCS
+func TestGCSReadAtMost(t *testing.T) {
+	buildLogArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(buildLogName), "", fakeGCSJobSource.JobPath())
+	testCases := []struct {
+		name     string
+		a        viewers.Artifact
+		n        int64
+		expected []byte
+	}{
+		{
+			name:     "ReadN example build log",
+			n:        4,
+			a:        buildLogArtifact,
+			expected: []byte("Oh w"),
+		},
+	}
+	for _, tc := range testCases {
+		actualBytes, err := tc.a.ReadAtMost(tc.n)
+		if err != nil {
+			t.Errorf("Test %s failed with err:\n%s", tc.name, err)
+		}
+		if !bytes.Equal(actualBytes, tc.expected) {
+			t.Errorf("Test %s failed.\nExpected: %s\nActual: %s", tc.name, tc.expected, actualBytes)
+		}
+	}
+}
+
 // Tests reading all data from files in GCS
 func TestGCSReadAll(t *testing.T) {
-	buildLogArtifact := NewGCSArtifact(fakeGCSBucket.Object(buildLogName), "", fakeGCSJobSource.JobPath())
+	buildLogArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(buildLogName), "", fakeGCSJobSource.JobPath())
 	testCases := []struct {
 		name     string
 		a        viewers.Artifact
@@ -49,7 +77,7 @@ func TestGCSReadAll(t *testing.T) {
 }
 
 func TestGCSSize(t *testing.T) {
-	startedArtifact := NewGCSArtifact(fakeGCSBucket.Object(startedName), "", fakeGCSJobSource.JobPath())
+	startedArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(startedName), "", fakeGCSJobSource.JobPath())
 	testCases := []struct {
 		name     string
 		a        viewers.Artifact

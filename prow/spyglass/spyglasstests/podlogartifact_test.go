@@ -13,39 +13,41 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-
-package spyglass
+package spyglasstests
 
 import (
+	"bytes"
 	"testing"
+
+	"k8s.io/test-infra/prow/spyglass"
 )
 
-// Tests reading last N Lines from files in GCS
-func TestGCSReadLastNLines(t *testing.T) {
-	buildLogArtifact := NewGCSArtifact(fakeGCSBucket.Object(buildLogName), "", fakeGCSJobSource.JobPath())
+func TestPodLogReadAll(t *testing.T) {
 	testCases := []struct {
 		name     string
-		n        int64
-		a        *GCSArtifact
-		expected string
+		artifact *spyglass.PodLogArtifact
+		expected []byte
 	}{
 		{
-			name:     "Read last 2 lines of a 4-line file",
-			n:        2,
-			a:        buildLogArtifact,
-			expected: "this is\ncrazy",
+			name:     "Job Podlog readall",
+			artifact: spyglass.NewPodLogArtifact("job", "123", fakeJa),
+			expected: []byte("clusterA"),
 		},
 		{
-			name:     "Read last 5 lines of a 4-line file",
-			n:        5,
-			a:        buildLogArtifact,
-			expected: "Oh wow\nlogs\nthis is\ncrazy",
+			name:     "Jib Podlog readall",
+			artifact: spyglass.NewPodLogArtifact("jib", "123", fakeJa),
+			expected: []byte("clusterB"),
 		},
 	}
 	for _, tc := range testCases {
-		actual := LastNLines(tc.a, tc.n)
-		if tc.expected != actual {
-			t.Errorf("Test %s failed.\nExpected:\n%s\nActual:\n%s", tc.name, tc.expected, actual)
+		res, err := tc.artifact.ReadAll()
+		if err != nil {
+			t.Fatalf("%s failed reading bytes of log. err: %s", tc.name, err)
 		}
+		if !bytes.Equal(tc.expected, res) {
+			t.Errorf("Unexpected result of reading pod logs, expected %s, got %s", string(tc.expected), string(res))
+		}
+
 	}
+
 }

@@ -18,6 +18,8 @@ limitations under the License.
 package viewers
 
 import (
+	"bufio"
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -29,11 +31,13 @@ import (
 var (
 	viewHandlerRegistry = map[string]ViewHandler{}
 	viewTitleRegistry   = map[string]string{}
+	ErrUnsupportedOp    = errors.New("Unsupported Operation")
 )
 
 // Artifact represents some output of a prow job
 type Artifact interface {
 	io.ReaderAt
+	ReadAtMost(n int64) ([]byte, error)
 	CanonicalLink() string
 	JobPath() string
 	ReadAll() ([]byte, error)
@@ -76,4 +80,55 @@ func RegisterViewer(viewerName string, title string, handler ViewHandler) error 
 	viewTitleRegistry[viewerName] = title
 	logrus.Infof("Registered viewer %s with title %s and a handler function", viewerName, title)
 	return nil
+}
+
+// LastNLines reads the last n lines from a file in GCS
+func LastNLines(a Artifact, n int64) ([]string, error) {
+	chunkSize := int64(256e3) // 256KB
+	toRead := chunkSize + 1   // Add 1 for exclusive upper bound read range
+	chunks := int64(1)
+	var contents []byte
+	var linesInContents int64
+	artifactSize := a.Size()
+	logrus.Info("Artifact size: ", artifactSize)
+	offset := artifactSize - chunks*chunkSize
+	for linesInContents < n && offset != 0 {
+		offset = artifactSize - chunks*chunkSize
+		if offset < 0 {
+			toRead = offset + chunkSize + 1
+			offset = 0
+		}
+		logrus.Info("toRead ", toRead)
+		logrus.Info("offset ", offset)
+		bytesRead := make([]byte, toRead)
+		numRead, err := a.ReadAt(bytesRead, offset)
+		if err != nil {
+			if err != io.EOF {
+				logrus.WithError(err).Error("Error reading artifact ", a.JobPath())
+				return []string{}, err
+			}
+		}
+		logrus.Info("Read bytes ", numRead)
+		bytesRead = bytes.Trim(bytesRead, "\x00")
+		linesInContents += int64(bytes.Count(bytesRead, []byte("\n")))
+		logrus.Info("lines so far ", linesInContents)
+		contents = append(bytesRead, contents...)
+		chunks += 1
+	}
+
+	var lines []string
+	scanner := bufio.NewScanner(bytes.NewReader(contents))
+	scanner.Split(bufio.ScanLines)
+	for scanner.Scan() {
+		line := scanner.Text()
+		logrus.Info("read line ", line)
+		lines = append(lines, line)
+	}
+
+	l := int64(len(lines))
+	if l < n {
+		return lines, nil
+	}
+	return lines[l-n:], nil
+
 }

@@ -17,7 +17,9 @@ package spyglass
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
+	"io"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/deck/jobs"
@@ -25,17 +27,19 @@ import (
 
 // PodLogArtifact holds data for reading from a specific pod log
 type PodLogArtifact struct {
-	name  string
-	jobId string
-	ja    *jobs.JobAgent
+	name      string
+	jobId     string
+	ja        *jobs.JobAgent
+	sizeLimit int64
 }
 
 //NewPodLogArtifact creates a new PodLogArtifact
 func NewPodLogArtifact(jobName string, jobId string, ja *jobs.JobAgent) *PodLogArtifact {
 	return &PodLogArtifact{
-		name:  jobName,
-		jobId: jobId,
-		ja:    ja,
+		name:      jobName,
+		jobId:     jobId,
+		ja:        ja,
+		sizeLimit: 500e6,
 	}
 }
 
@@ -58,9 +62,35 @@ func (a *PodLogArtifact) ReadAt(p []byte, off int64) (n int, err error) {
 	return bytes.NewReader(logs).ReadAt(p, off)
 }
 
-// ReadAll reads all available pod logs
+// ReadAll reads all available pod logs, failing if they are too large
 func (a *PodLogArtifact) ReadAll() ([]byte, error) {
+	if a.Size() > a.sizeLimit {
+		return []byte{}, errors.New("File too large.")
+	}
 	return a.ja.GetJobLog(a.name, a.jobId)
+}
+
+// ReadAtMost reads at most n bytes
+func (a *PodLogArtifact) ReadAtMost(n int64) ([]byte, error) {
+	joblog, err := a.ja.GetJobLog(a.name, a.jobId)
+	if err != nil {
+		return []byte{}, err
+	}
+	reader := bytes.NewReader(joblog)
+	var byteCount int64
+	var p []byte
+	for byteCount <= n {
+		b, err := reader.ReadByte()
+		if err != nil {
+			if err == io.EOF {
+				return p, nil
+			} else {
+				return p, err
+			}
+		}
+		p = append(p, b)
+	}
+	return p, nil
 }
 
 // ReadTail reads the last n bytes of the pod log

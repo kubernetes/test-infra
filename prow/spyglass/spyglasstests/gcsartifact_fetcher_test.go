@@ -14,26 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package spyglass
+package spyglasstests
 
 import (
 	"testing"
 
-	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/spyglass"
 	"k8s.io/test-infra/prow/spyglass/viewers"
 )
 
 // Tests getting handles to objects associated with the current job in GCS
 func TestGCSFetchArtifacts(t *testing.T) {
-	jp := fakeGCSJobSource.JobPath()
-	logrus.Info(jp)
-	blgArtifact := NewGCSArtifact(fakeGCSBucket.Object(buildLogName), "", fakeGCSJobSource.JobPath())
-	srtArtifact := NewGCSArtifact(fakeGCSBucket.Object(startedName), "", fakeGCSJobSource.JobPath())
-	finArtifact := NewGCSArtifact(fakeGCSBucket.Object(finishedName), "", fakeGCSJobSource.JobPath())
-
+	blgArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(buildLogName), "", fakeGCSJobSource.JobPath())
+	srtArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(startedName), "", fakeGCSJobSource.JobPath())
+	finArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(finishedName), "", fakeGCSJobSource.JobPath())
+	longLogArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(longLogName), "", fakeGCSJobSource.JobPath())
 	testCases := []struct {
 		name              string
-		gcsJobSource      *GCSJobSource
+		gcsJobSource      *spyglass.GCSJobSource
 		expectedArtifacts []viewers.Artifact
 	}{
 		{
@@ -43,6 +41,7 @@ func TestGCSFetchArtifacts(t *testing.T) {
 				blgArtifact,
 				srtArtifact,
 				finArtifact,
+				longLogArtifact,
 			},
 		},
 	}

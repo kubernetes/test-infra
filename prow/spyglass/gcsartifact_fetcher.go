@@ -31,7 +31,7 @@ import (
 
 // A fetcher for a GCS client
 type GCSArtifactFetcher struct {
-	client *storage.Client
+	Client *storage.Client
 }
 
 // A location in GCS where prow job-specific artifacts are stored
@@ -51,7 +51,7 @@ func NewGCSArtifactFetcher() *GCSArtifactFetcher {
 		log.Fatal(err)
 	}
 	return &GCSArtifactFetcher{
-		client: c,
+		Client: c,
 	}
 }
 
@@ -74,11 +74,16 @@ func NewGCSJobSource(src string) *GCSJobSource {
 	}
 }
 
+// isGCSSource recognizes whether a source string references a GCS bucket
+func isGCSSource(src string) bool {
+	return strings.HasPrefix(src, "gs://")
+}
+
 // Artifacts gets all artifacts from a GCS job source
 func (af *GCSArtifactFetcher) Artifacts(src JobSource) []viewers.Artifact {
 	artifacts := []viewers.Artifact{}
 
-	bkt := af.client.Bucket(src.BucketName())
+	bkt := af.Client.Bucket(src.BucketName())
 
 	q := storage.Query{
 		Prefix:   src.JobPath(),

@@ -20,7 +20,6 @@ package buildlog
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"html/template"
 	"strings"
 
@@ -58,18 +57,21 @@ func ViewHandler(artifacts []viewers.Artifact, raw *json.RawMessage) string {
 	}
 	var buildLogsView BuildLogsView
 	for _, a := range artifacts {
-		//logLines := LastNLines(a, 100)
-		read, err := a.ReadAll()
+		logLines, err := viewers.LastNLines(a, 100)
 		if err != nil {
-			logrus.WithError(err).Error("Failed reading lines")
-		}
-		if string(read) != "" {
-			logLines := strings.Split(string(read), "\n")
-			for ix, line := range logLines {
-				line = fmt.Sprintf("%d\t%s", ix, line)
+			logrus.WithError(err).Error("Last N lines failed.")
+			if err == viewers.ErrUnsupportedOp { // read at most 30MB
+				read, err := a.ReadAtMost(30e6) // 30MB
+				if err != nil {
+					logrus.WithError(err).Error("Failed reading lines")
+				}
+				logLines = strings.Split(string(read), "\n")
+				//for ix, line := range logLines {
+				//	logLines[ix] = fmt.Sprintf("%d\t%s", ix, line)
+				//}
 			}
-			buildLogsView.LogViews = append(buildLogsView.LogViews, LogFileView{LogName: a.JobPath(), LogLines: logLines})
 		}
+		buildLogsView.LogViews = append(buildLogsView.LogViews, LogFileView{LogName: a.JobPath(), LogLines: logLines})
 	}
 	t := template.Must(template.New(name).Parse(logViewTmpl))
 	err := t.Execute(&buf, buildLogsView)
