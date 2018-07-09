@@ -6869,7 +6869,7 @@
       "--gke-shape={\"default\":{\"Nodes\":1999,\"MachineType\":\"n1-standard-1\"},\"heapster-pool\":{\"Nodes\":1,\"MachineType\":\"n1-standard-8\"}}",
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Feature:Performance\\]",
-      "--timeout=510m",
+      "--timeout=570m",
       "--use-logexporter"
     ],
     "scenario": "kubernetes_e2e",
@@ -6892,7 +6892,7 @@
       "--gke-shape={\"default\":{\"Nodes\":1999,\"MachineType\":\"n1-standard-1\"},\"heapster-pool\":{\"Nodes\":1,\"MachineType\":\"n1-standard-8\"}}",
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Feature:Performance\\]",
-      "--timeout=510m",
+      "--timeout=570m",
       "--use-logexporter"
     ],
     "scenario": "kubernetes_e2e",
@@ -7137,7 +7137,7 @@
       "--gke-shape={\"default\":{\"Nodes\":4999,\"MachineType\":\"g1-small\"},\"heapster-pool\":{\"Nodes\":1,\"MachineType\":\"n1-standard-16\"}}",
       "--provider=gke",
       "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[DisabledForLargeClusters\\] --minStartupPods=8",
-      "--timeout=630m",
+      "--timeout=210m",
       "--use-logexporter"
     ],
     "scenario": "kubernetes_e2e",

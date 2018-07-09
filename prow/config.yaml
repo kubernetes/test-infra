@@ -9884,7 +9884,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=540
+      - --timeout=600
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-master
       resources:
@@ -9904,7 +9904,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=540
+      - --timeout=600
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-master
       resources:
@@ -10056,7 +10056,7 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-master
 
-- cron: '1 17 * * 0' # Run at 9:01PST (17:01 UTC) on sunday
+- cron: '1 18 * * 0' # Run at 10:01PST (18:01 UTC) on sunday
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-scale-correctness
   labels:
@@ -10065,7 +10065,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=660
+      - --timeout=240
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-master
       resources:
