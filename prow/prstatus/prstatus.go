@@ -48,22 +48,11 @@ type githubClient interface {
 	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
 }
 
-type githubRestfulClient interface {
-	GetUser(login string) (*gogithub.User, error)
-}
-
-type pullRequestRestfulClient struct {
-	*ghclient.Client
-}
-
-func (grc pullRequestRestfulClient) GetUser(login string) (*gogithub.User, error) {
-	return grc.Client.GetUser(login)
-}
-
 // PullRequestQueryHandler defines an interface that query handlers should implement.
 type PullRequestQueryHandler interface {
 	HeadContexts(ghc githubClient, pr PullRequest) ([]Context, error)
 	QueryPullRequests(context.Context, githubClient, string) ([]PullRequest, error)
+	GetUser(*ghclient.Client) (*gogithub.User, error)
 }
 
 // UserData represents data returned to client request to the endpoint. It has a flag that indicates
@@ -190,9 +179,9 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 			// If access token exist, get user login using the access token. This is a chance
 			// to validate whether the access token is consumable or not. If not, invalidate the
 			// session.
-			grc := pullRequestRestfulClient{ghclient.NewClient(token.AccessToken, false)}
+			goGithubClient := ghclient.NewClient(token.AccessToken, false)
 			var err error
-			user, err = grc.GetUser("")
+			user, err = queryHandler.GetUser(goGithubClient)
 			if err != nil {
 				if strings.Contains(err.Error(), "401") {
 					// Invalidate access token session
@@ -331,6 +320,10 @@ func (da *DashboardAgent) HeadContexts(ghc githubClient, pr PullRequest) ([]Cont
 		)
 	}
 	return contexts, nil
+}
+
+func (da *DashboardAgent) GetUser(client *ghclient.Client) (*gogithub.User, error) {
+	return client.GetUser("")
 }
 
 func (da *DashboardAgent) ConstructSearchQuery(login string) string {

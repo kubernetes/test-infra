@@ -381,7 +381,7 @@ function createTidePoolLabel(pr, tidePool) {
  */
 function createTitleLabel(isMerge, jobStatus, mergeAbility) {
     const label = document.createElement("SPAN");
-    label.classList.add("title-label", "mdl-shadow--2dp");
+    label.classList.add("title-label");
     if (isMerge) {
         label.textContent = "Merged";
         label.classList.add("merging");
