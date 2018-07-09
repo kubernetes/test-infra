@@ -145,6 +145,7 @@ slack:
             - foxish # 1.11 patch release manager
         feature-serverside-apply:
             - lavalamp # feature-serverside-apply "branch manager"
+            - apelisse # feature-serverside-apply "branch manager"
   - repos:
     - kubernetes/test-infra
     channels:
