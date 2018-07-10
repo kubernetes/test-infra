@@ -313,8 +313,8 @@ func (c *Controller) ProcessChange(change gerrit.ChangeInfo) error {
 				// to
 				// https://gubernator.k8s.io/builds/gob-prow/pr-logs/pull/some-repo/8940/pull-test-infra-presubmit/
 				url := b.String()
-				url = strings.Replace(url, "builds", "build", 1)
-				url = strings.Replace(url, "//", "/", 1)
+				url = strings.Replace(url, "build", "builds", 1)
+				url = strings.TrimSuffix(url, "//")
 			}
 			triggeredJobs = append(triggeredJobs, triggeredJob{Name: spec.Name, URL: b.String()})
 		}
