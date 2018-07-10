@@ -303,7 +303,10 @@ func (c *Controller) filterSubpools(raw map[string]*subpool) map[string]*subpool
 		}
 
 		if spFiltered := filterSubpool(c.ghc, sp); spFiltered != nil {
+			sp.log.WithField("key", key).WithField("pool", spFiltered).Debug("filtered sub-pool")
 			filtered[key] = spFiltered
+		} else {
+			sp.log.WithField("key", key).WithField("pool", spFiltered).Debug("filtering sub-pool removed all PRs")
 		}
 	}
 	return filtered
@@ -340,6 +343,7 @@ func filterPR(ghc githubClient, sp *subpool, pr *PullRequest) bool {
 	log := sp.log.WithFields(pr.logFields())
 	// Skip PRs that are known to be unmergeable.
 	if pr.Mergeable == githubql.MergeableStateConflicting {
+		log.Debug("filtering out PR as it is unmergeable")
 		return true
 	}
 	// Filter out PRs with unsuccessful contexts unless the only unsuccessful
@@ -350,8 +354,9 @@ func filterPR(ghc githubClient, sp *subpool, pr *PullRequest) bool {
 		return true
 	}
 	pjContexts := sp.presubmits[int(pr.Number)]
-	for _, ctx := range unsuccessfulContexts(contexts, sp.cc) {
+	for _, ctx := range unsuccessfulContexts(contexts, sp.cc, log) {
 		if ctx.State != githubql.StatusStatePending || !pjContexts.Has(string(ctx.Context)) {
+			log.WithField("context", ctx.Context).Debug("filtering out PR as unsuccessful context is not a pending Prow-controlled context")
 			return true
 		}
 	}
@@ -397,7 +402,8 @@ func isPassingTests(log *logrus.Entry, ghc githubClient, pr PullRequest, cc cont
 		// If we can't get the status of the commit, assume that it is failing.
 		return false
 	}
-	return len(unsuccessfulContexts(contexts, cc)) == 0
+	unsuccessful := unsuccessfulContexts(contexts, cc, log)
+	return len(unsuccessful) == 0
 }
 
 // unsuccessfulContexts determines which contexts from the list that we care about are
@@ -405,7 +411,7 @@ func isPassingTests(log *logrus.Entry, ghc githubClient, pr PullRequest, cc cont
 // If the branchProtection is set to only check for required checks, we will skip
 // all non-required tests. If required tests are missing from the list, they will be
 // added to the list of failed contexts.
-func unsuccessfulContexts(contexts []Context, cc contextChecker) []Context {
+func unsuccessfulContexts(contexts []Context, cc contextChecker, log *logrus.Entry) []Context {
 	var failed []Context
 	for _, ctx := range contexts {
 		if string(ctx.Context) == statusContext {
@@ -422,6 +428,7 @@ func unsuccessfulContexts(contexts []Context, cc contextChecker) []Context {
 		failed = append(failed, newExpectedContext(c))
 	}
 
+	log.Debugf("from %d total contexts (%v) found %d failing contexts: %v", len(contexts), contextsToStrings(contexts), len(failed), contextsToStrings(failed))
 	return failed
 }
 
@@ -447,9 +454,10 @@ func pickSmallestPassingNumber(log *logrus.Entry, ghc githubClient, prs []PullRe
 // accumulateBatch returns a list of PRs that can be merged after passing batch
 // testing, if any exist. It also returns a list of PRs currently being batch
 // tested.
-func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []kube.ProwJob) ([]PullRequest, []PullRequest) {
+func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []kube.ProwJob, log *logrus.Entry) ([]PullRequest, []PullRequest) {
+	log.Debug("accumulating PRs for batch testing")
 	if len(presubmits) == 0 {
-		// Avoid accumulating batches when no presubmits are configured.
+		log.Debug("no presubmits configured, no batch can be triggered")
 		return nil, nil
 	}
 	prNums := make(map[int]PullRequest)
@@ -471,9 +479,12 @@ func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []ku
 		// If any batch job is pending, return now.
 		if toSimpleState(pj.Status.State) == pendingState {
 			var pending []PullRequest
+			var pendingNums []int
 			for _, pull := range pj.Spec.Refs.Pulls {
 				pending = append(pending, prNums[pull.Number])
+				pendingNums = append(pendingNums, pull.Number)
 			}
+			log.Debugf("no new batch necessary, current batch pending: %v", pendingNums)
 			return nil, pending
 		}
 		// Otherwise, accumulate results.
@@ -486,8 +497,13 @@ func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []ku
 			for _, pull := range pj.Spec.Refs.Pulls {
 				if pr, ok := prNums[pull.Number]; ok && string(pr.HeadRefOID) == pull.SHA {
 					states[ref].prs = append(states[ref].prs, pr)
+				} else if !ok {
+					states[ref].validPulls = false
+					log.WithField("batch", ref).WithFields(pr.logFields()).Debug("batch invalid, PR left pool")
+					break
 				} else {
 					states[ref].validPulls = false
+					log.WithField("batch", ref).WithFields(pr.logFields()).Debug("batch invalid, PR HEAD changed")
 					break
 				}
 			}
@@ -501,7 +517,7 @@ func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []ku
 			states[ref].jobStates[job] = toSimpleState(pj.Status.State)
 		}
 	}
-	for _, state := range states {
+	for ref, state := range states {
 		if !state.validPulls {
 			continue
 		}
@@ -513,6 +529,7 @@ func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []ku
 		for _, p := range requiredPresubmits.List() {
 			if s, ok := state.jobStates[p]; !ok || s != successState {
 				passesAll = false
+				log.WithField("batch", ref).Debug("batch invalid, required presubmit %s not passing", p)
 				break
 			}
 		}
@@ -526,7 +543,7 @@ func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []ku
 
 // accumulate returns the supplied PRs sorted into three buckets based on their
 // accumulated state across the presubmits.
-func accumulate(presubmits map[int]sets.String, prs []PullRequest, pjs []kube.ProwJob) (successes, pendings, nones []PullRequest) {
+func accumulate(presubmits map[int]sets.String, prs []PullRequest, pjs []kube.ProwJob, log *logrus.Entry) (successes, pendings, nones []PullRequest) {
 	for _, pr := range prs {
 		// Accumulate the best result for each job.
 		psStates := make(map[string]simpleState)
@@ -553,10 +570,16 @@ func accumulate(presubmits map[int]sets.String, prs []PullRequest, pjs []kube.Pr
 		// The overall result is the worst of the best.
 		overallState := successState
 		for _, ps := range presubmits[int(pr.Number)].List() {
-			if s, ok := psStates[ps]; s == noneState || !ok {
+			if s, ok := psStates[ps]; !ok {
 				overallState = noneState
+				log.WithFields(pr.logFields()).Debugf("missing presubmit %s", ps)
+				break
+			} else if s == noneState {
+				overallState = noneState
+				log.WithFields(pr.logFields()).Debugf("presubmit %s not passing", ps)
 				break
 			} else if s == pendingState {
+				log.WithFields(pr.logFields()).Debugf("presubmit %s pending", ps)
 				overallState = pendingState
 			}
 		}
@@ -810,8 +833,8 @@ func (c *Controller) presubmitsByPull(sp *subpool) (map[int]sets.String, error) 
 
 func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, error) {
 	sp.log.Infof("Syncing subpool: %d PRs, %d PJs.", len(sp.prs), len(sp.pjs))
-	successes, pendings, nones := accumulate(sp.presubmits, sp.prs, sp.pjs)
-	batchMerge, batchPending := accumulateBatch(sp.presubmits, sp.prs, sp.pjs)
+	successes, pendings, nones := accumulate(sp.presubmits, sp.prs, sp.pjs, sp.log)
+	batchMerge, batchPending := accumulateBatch(sp.presubmits, sp.prs, sp.pjs, sp.log)
 	sp.log.WithFields(logrus.Fields{
 		"prs-passing":   prNumbers(successes),
 		"prs-pending":   prNumbers(pendings),
@@ -953,7 +976,7 @@ func search(ctx context.Context, ghc githubClient, log *logrus.Entry, q string) 
 		}
 		vars["searchCursor"] = githubql.NewString(sq.Search.PageInfo.EndCursor)
 	}
-	log.Debugf("Search for query \"%s\" cost %d point(s). %d remaining.", q, totalCost, remaining)
+	log.Debugf("Search for query \"%s\" returned %d PRs and cost %d point(s). %d remaining.", q, len(ret), totalCost, remaining)
 	return ret, nil
 }
 
