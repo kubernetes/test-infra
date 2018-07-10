@@ -776,7 +776,89 @@ func checkScenarioArgs(jobName string, args []string) error {
 	}
 
 	if use_shared_build_in_args && build_in_args {
-		return fmt.Errorf("Job %s: --use-shared-build and --build cannot be combined", jobName)
+		return fmt.Errorf("job %s: --use-shared-build and --build cannot be combined", jobName)
+	}
+
+	if scenario != "kubernetes_e2e" {
+		return nil
+	}
+
+	if hasArg("--provider=gke", args) {
+		if !hasArg("--deployment=gke", args) {
+			return fmt.Errorf("with --provider=gke, job %s must use --deployment=gke", jobName)
+		}
+		if hasArg("--gcp-master-image", args) {
+			return fmt.Errorf("with --provider=gke, job %s cannot use --gcp-master-image", jobName)
+		}
+		if hasArg("--gcp-nodes", args) {
+			return fmt.Errorf("with --provider=gke, job %s cannot use --gcp-nodes", jobName)
+		}
+	}
+
+	if hasArg("--deployment=gke", args) && !hasArg("--gcp-node-image", args) {
+		return fmt.Errorf("with --deployment=gke, job %s must use --gcp-node-image", jobName)
+	}
+
+	if hasArg("--env-file=jobs/pull-kubernetes-e2e.env", args) && hasArg("--check-leaked-resources", args) {
+		return fmt.Errorf("presubmit job %s should not check for resource leaks", jobName)
+	}
+
+	extracts := hasArg("--extract=", args)
+	sharedBuilds := hasArg("--use-shared-build", args)
+	nodeE2e := hasArg("--deployment=node", args)
+	localE2e := hasArg("--deployment=local", args)
+	builds := hasArg("--build", args)
+
+	if sharedBuilds && extracts {
+		return fmt.Errorf("e2e jobs %s cannot have --use-shared-build and --extract", jobName)
+	}
+
+	if !sharedBuilds && !extracts && !nodeE2e && !builds {
+		return fmt.Errorf("e2e jobs %s should get k8s build from one of --extract, --use-shared-build, --build or use --deployment=node", jobName)
+	}
+
+	expectedExtract := 1
+	if sharedBuilds || nodeE2e || builds {
+		expectedExtract = 0
+	} else if strings.Contains(jobName, "upgrade") ||
+		strings.Contains(jobName, "skew") ||
+		strings.Contains(jobName, "rollback") ||
+		strings.Contains(jobName, "downgrade") ||
+		jobName == "ci-kubernetes-e2e-gce-canary" {
+		expectedExtract = 2
+	}
+
+	numExtract := 0
+	for _, arg := range args {
+		if strings.HasPrefix(arg, "--extract=") {
+			numExtract++
+		}
+	}
+	if numExtract != expectedExtract {
+		return fmt.Errorf("e2e jobs %s should have %d --extract flags, got %d", jobName, expectedExtract, numExtract)
+	}
+
+	if hasArg("--image-family", args) != hasArg("--image-project", args) {
+		return fmt.Errorf("e2e jobs %s should have both --image-family and --image-project, or none of them", jobName)
+	}
+
+	if strings.HasPrefix(jobName, "pull-kubernetes-") &&
+		!nodeE2e &&
+		!localE2e &&
+		!strings.Contains(jobName, "kubeadm") {
+		stage := "gs://kubernetes-release-pull/ci/" + jobName
+		if strings.Contains(jobName, "gke") {
+			stage = "gs://kubernetes-release-dev/ci"
+			if !hasArg("--stage-suffix="+jobName, args) {
+				return fmt.Errorf("presubmit gke jobs %s - need to have --stage-suffix=%s", jobName, jobName)
+			}
+		}
+
+		if !sharedBuilds {
+			if !hasArg("--stage="+stage, args) {
+				return fmt.Errorf("presubmit jobs %s - need to stage to %s", jobName, stage)
+			}
+		}
 	}
 
 	return nil
