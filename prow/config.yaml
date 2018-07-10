@@ -13682,6 +13682,33 @@ periodics:
       secret:
         secretName: velodrome-influxdb
 
+- name: periodic-features-no-freeze
+  interval: 1h
+  agent: kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782
+      args:
+      - |-
+        --query=repo:kubernetes/features
+        label:lifecycle/frozen
+      - --token=/etc/token/bot-github-token
+      - |-
+        --comment=Feature issues opened in `kubernetes/features` should never be marked as frozen.
+        Feature Owners can ensure that features never become rotten by consistently updating their states across release cycles.
+
+        /remove-lifecycle frozen
+      - --template
+      - --ceiling=10
+      - --confirm
+      volumeMounts:
+      - name: token
+        mountPath: /etc/token
+    volumes:
+    - name: token
+      secret:
+        secretName: fejta-bot-token
+
 - name: periodic-kubernetes-bazel-build-1-10
   interval: 6h
   agent: kubernetes
