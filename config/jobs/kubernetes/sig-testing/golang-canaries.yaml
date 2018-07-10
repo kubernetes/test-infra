@@ -1,0 +1,68 @@
+# canaries against golang tip
+periodics:
+# NOTE: we build at midnight, then start testing two hours later
+- cron: "0 0 * * *"
+  agent: kubernetes
+  name: ci-kubernetes-go-tip-build
+  labels:
+    preset-service-account: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-master
+      args:
+      - --repo=k8s.io/kubernetes
+      - --repo=k8s.io/release
+      - --repo=https://go.googlesource.com/go
+      - --root=/go/src
+      - --timeout=40
+      - --scenario=kubernetes_build
+      - --version-suffix=go-tip
+      - --
+      - --allow-dup
+      - --fast
+      - --use-go-tip
+      env:
+      - name: 
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: "true"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: docker-graph
+        mountPath: /docker-graph
+      resources:
+        requests:
+          cpu: 4
+          memory: "8Gi"
+    volumes:
+    - name: docker-graph
+      emptyDir: {}
+
+# TODO(bentheelder): disabled until the build is sorted
+#- cron: "0 2 * * *"
+#  agent: kubernetes
+#  name: ci-kubernetes-go-tip-e2e-gci-gce
+#  labels:
+#    preset-service-account: "true"
+#    preset-k8s-ssh: "true"
+#  spec:
+#    containers:
+#    image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-master
+#    - args:
+#      - --timeout=70
+#      - --bare
+#      - --scenario=kubernetes_e2e
+#      - --
+#      - --check-leaked-resources
+#      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce.env
+#      - --extract=ci/latest-go-tip
+#      - --gcp-master-image=gci
+#      - --gcp-node-image=gci
+#      - --gcp-nodes=4
+#      - --gcp-zone=us-central1-f
+#      - --ginkgo-parallel=30
+#      - --provider=gce
+#      - --publish=gs://kubernetes-release-dev/ci/latest-green.txt
+#      - --test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8
+#      - --timeout=50m

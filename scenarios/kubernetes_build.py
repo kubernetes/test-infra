@@ -31,16 +31,19 @@ def check(*cmd):
     print >>sys.stderr, 'Run:', cmd
     subprocess.check_call(cmd)
 
+
 def check_no_stdout(*cmd):
     """Log and run the command, suppress stdout & stderr, raising on errors."""
     print >>sys.stderr, 'Run:', cmd
     null = open(os.devnull, 'w')
     subprocess.check_call(cmd, stdout=null, stderr=null)
 
+
 def check_output(*cmd):
     """Log and run the command, raising on errors, return output"""
     print >>sys.stderr, 'Run:', cmd
     return subprocess.check_output(cmd)
+
 
 def check_build_exists(gcs, suffix):
     """ check if a k8s/federation build with same version
@@ -86,7 +89,7 @@ def main(args):
     This is a python port of the kubernetes/hack/jenkins/build.sh script.
     """
     if os.path.split(os.getcwd())[-1] != 'kubernetes' and \
-        os.path.split(os.getcwd())[-1] != 'federation':
+            os.path.split(os.getcwd())[-1] != 'federation':
         print >>sys.stderr, (
             'Scenario should only run from either kubernetes or federation directory!')
         sys.exit(1)
@@ -106,6 +109,8 @@ def main(args):
     push_build_args = ['--nomock', '--verbose', '--ci']
     if args.suffix:
         push_build_args.append('--gcs-suffix=%s' % args.suffix)
+    if args.version_suffix:
+        push_build_args.append('--version-suffix=%s' % args.version_suffix)
     if args.federation:
         # TODO: do we need to set these?
         env['PROJECT'] = args.federation
@@ -120,23 +125,52 @@ def main(args):
     if args.hyperkube:
         env['KUBE_BUILD_HYPERKUBE'] = 'y'
     if args.extra_publish_file:
-        push_build_args.append('--extra-publish-file=%s' % args.extra_publish_file)
+        push_build_args.append('--extra-publish-file=%s' %
+                               args.extra_publish_file)
     if args.allow_dup:
         push_build_args.append('--allow-dup')
 
-    for key, value in env.items():
-        os.environ[key] = value
-    check('make', 'clean')
-    if args.fast:
-        check('make', 'quick-release')
+    if args.use_go_tip:
+        # build go first
+        # we assume the source is in ./../go, and install to $HOME/go
+        check('sh', '-c', 'cd ./../go && GOROOT=$HOME/go ./make.bash')
+        # prepend our go install to $PATH
+        os.environ['PATH'] = os.environ['HOME']+'/go/bin:'+os.environ['PATH']
+        # set kube build env, clean
+        if args.fast:
+            # do a quick release
+            # NOTE we do NOT use `make quick-release` as that runs in a container
+            # we're already running this in a container in CI, and we don't want
+            # to deal with trying to re-install go in _that_ container when we
+            # can easily control it in ours
+            # https://github.com/kubernetes/kubernetes/blob/24ee75e265101b24cbc48c6480519fccd224ea33/build/root/Makefile#L406
+            os.environ['KUBE_FASTBUILD'] = 'true'
+        for key, value in env.items():
+            os.environ[key] = value
+        check('make', 'clean')
+        # build
+        # build a release, knowing we are already inside a container
+        # setting the env above should convert this into a `quick-release-in-a-container`
+        # TODO(bentheelder): if this works and is useful, PR a quick-release-in-a-container
+        # target upstream
+        check('make', 'release-in-a-container')
     else:
-        check('make', 'release')
+        for key, value in env.items():
+            os.environ[key] = value
+        check('make', 'clean')
+        if args.fast:
+            check('make', 'quick-release')
+        else:
+            check('make', 'release')
     check(args.push_build_script, *push_build_args)
+
 
 if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(
         'Build and push.')
     PARSER.add_argument('--fast', action='store_true', help='Build quickly')
+    PARSER.add_argument('--use-go-tip', action='store_true',
+                        help='build go and use the newly built go to build Kubernetes')
     PARSER.add_argument(
         '--release', help='Upload binaries to the specified gs:// path')
     PARSER.add_argument(
@@ -144,6 +178,8 @@ if __name__ == '__main__':
     PARSER.add_argument(
         '--federation',
         help='Push federation images to the specified project')
+    PARSER.add_argument(
+        '--version-suffix', help='passed through to push-build.sh --version-suffix')
     PARSER.add_argument(
         '--release-kind',
         default='kubernetes',
