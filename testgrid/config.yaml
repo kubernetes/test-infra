@@ -2713,27 +2713,27 @@ test_groups:
 # Gardener Test Groups
 - name: ci-gardener-e2e-conformance-aws-v1.10
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-aws-v1.10
-  alert_stale_results_hours: 24
+  alert_stale_results_hours: 168
   num_failures_to_alert: 1
 - name: ci-gardener-e2e-conformance-aws-v1.11
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-aws-v1.11
-  alert_stale_results_hours: 24
+  alert_stale_results_hours: 168
   num_failures_to_alert: 1
 - name: ci-gardener-e2e-conformance-gce-v1.10
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-gce-v1.10
-  alert_stale_results_hours: 24
+  alert_stale_results_hours: 168
   num_failures_to_alert: 1
 - name: ci-gardener-e2e-conformance-gce-v1.11
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-gce-v1.11
-  alert_stale_results_hours: 24
+  alert_stale_results_hours: 168
   num_failures_to_alert: 1
 - name: ci-gardener-e2e-conformance-os-v1.11
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-os-v1.11
-  alert_stale_results_hours: 24
+  alert_stale_results_hours: 168
   num_failures_to_alert: 1
 - name: ci-gardener-e2e-conformance-az-v1.11
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-az-v1.11
-  alert_stale_results_hours: 24
+  alert_stale_results_hours: 168
   num_failures_to_alert: 1
 
 # Add New Testgroups Here
