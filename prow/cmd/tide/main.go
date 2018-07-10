@@ -107,6 +107,9 @@ func main() {
 	if o.dryRun {
 		ghcSync = github.NewDryRunClient(oauthSecret, o.githubEndpoint.Strings()...)
 		ghcStatus = github.NewDryRunClient(oauthSecret, o.githubEndpoint.Strings()...)
+		if o.deckURL == "" {
+			logrus.Fatal("no deck URL was given for read-only ProwJob access")
+		}
 		kc = kube.NewFakeClient(o.deckURL)
 	} else {
 		ghcSync = github.NewClient(oauthSecret, o.githubEndpoint.Strings()...)
