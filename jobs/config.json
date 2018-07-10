@@ -12512,6 +12512,15 @@
       "sig-cloud-provider-gcp"
     ]
   },
+  "pull-gcp-compute-persistent-disk-csi-driver-unit": {
+    "args": [
+      "./test/run-unit.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-cloud-provider-gcp"
+    ]
+  },
   "pull-heapster-e2e": {
     "scenario": "kubernetes_heapster",
     "sigOwners": [
