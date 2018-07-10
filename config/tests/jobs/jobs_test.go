@@ -379,22 +379,18 @@ func checkDockerSocketVolumes(volumes []v1.Volume) error {
 
 // Make sure jobs are not using the docker socket as a host path
 func TestJobDoesNotHaveDockerSocket(t *testing.T) {
-	for _, pres := range c.Presubmits {
-		for _, presubmit := range pres {
-			if presubmit.Spec != nil {
-				if err := checkDockerSocketVolumes(presubmit.Spec.Volumes); err != nil {
-					t.Errorf("Error in presubmit: %v", err)
-				}
+	for _, presubmit := range c.AllPresubmits(nil) {
+		if presubmit.Spec != nil {
+			if err := checkDockerSocketVolumes(presubmit.Spec.Volumes); err != nil {
+				t.Errorf("Error in presubmit: %v", err)
 			}
 		}
 	}
 
-	for _, posts := range c.Postsubmits {
-		for _, postsubmit := range posts {
-			if postsubmit.Spec != nil {
-				if err := checkDockerSocketVolumes(postsubmit.Spec.Volumes); err != nil {
-					t.Errorf("Error in postsubmit: %v", err)
-				}
+	for _, postsubmit := range c.AllPostsubmits(nil) {
+		if postsubmit.Spec != nil {
+			if err := checkDockerSocketVolumes(postsubmit.Spec.Volumes); err != nil {
+				t.Errorf("Error in postsubmit: %v", err)
 			}
 		}
 	}
@@ -406,67 +402,6 @@ func TestJobDoesNotHaveDockerSocket(t *testing.T) {
 			}
 		}
 	}
-}
-
-// Load the config and extract all jobs, including any child jobs inside
-// RunAfterSuccess fields.
-func allJobs() ([]cfg.Presubmit, []cfg.Postsubmit, []cfg.Periodic, error) {
-	pres := []cfg.Presubmit{}
-	posts := []cfg.Postsubmit{}
-	peris := []cfg.Periodic{}
-
-	{ // Find all presubmit jobs, including child jobs.
-		q := []cfg.Presubmit{}
-
-		for _, p := range c.Presubmits {
-			for _, p2 := range p {
-				q = append(q, p2)
-			}
-		}
-
-		for len(q) > 0 {
-			pres = append(pres, q[0])
-			for _, p := range q[0].RunAfterSuccess {
-				q = append(q, p)
-			}
-			q = q[1:]
-		}
-	}
-
-	{ // Find all postsubmit jobs, including child jobs.
-		q := []cfg.Postsubmit{}
-
-		for _, p := range c.Postsubmits {
-			for _, p2 := range p {
-				q = append(q, p2)
-			}
-		}
-
-		for len(q) > 0 {
-			posts = append(posts, q[0])
-			for _, p := range q[0].RunAfterSuccess {
-				q = append(q, p)
-			}
-			q = q[1:]
-		}
-	}
-
-	{ // Find all periodic jobs, including child jobs.
-		q := []cfg.Periodic{}
-		for _, p := range c.Periodics {
-			q = append(q, p)
-		}
-
-		for len(q) > 0 {
-			peris = append(peris, q[0])
-			for _, p := range q[0].RunAfterSuccess {
-				q = append(q, p)
-			}
-			q = q[1:]
-		}
-	}
-
-	return pres, posts, peris, nil
 }
 
 // Validate any containers using a bazelbuild image, returning which bazelbuild tags are used.
@@ -583,23 +518,18 @@ func checkBazelbuildSpec(t *testing.T, name string, spec *v1.PodSpec, periodic b
 
 // Unit test jobs that use a bazelbuild image do so correctly.
 func TestBazelbuildArgs(t *testing.T) {
-	pres, posts, peris, err := allJobs()
-	if err != nil {
-		t.Fatalf("Could not load config: %v", err)
-	}
-
 	tags := map[string][]string{} // tag -> jobs map
-	for _, p := range pres {
+	for _, p := range c.AllPresubmits(nil) {
 		for t := range checkBazelbuildSpec(t, p.Name, p.Spec, false) {
 			tags[t] = append(tags[t], p.Name)
 		}
 	}
-	for _, p := range posts {
+	for _, p := range c.AllPostsubmits(nil) {
 		for t := range checkBazelbuildSpec(t, p.Name, p.Spec, false) {
 			tags[t] = append(tags[t], p.Name)
 		}
 	}
-	for _, p := range peris {
+	for _, p := range c.AllPeriodics() {
 		for t := range checkBazelbuildSpec(t, p.Name, p.Spec, true) {
 			tags[t] = append(tags[t], p.Name)
 		}
@@ -667,27 +597,23 @@ func checkLatestUsesImagePullPolicy(spec *v1.PodSpec) error {
 
 // Make sure jobs that use `latest-*` tags specify `imagePullPolicy: Always`
 func TestLatestUsesImagePullPolicy(t *testing.T) {
-	for _, pres := range c.Presubmits {
-		for _, presubmit := range pres {
-			if presubmit.Spec != nil {
-				if err := checkLatestUsesImagePullPolicy(presubmit.Spec); err != nil {
-					t.Errorf("Error in presubmit %q: %v", presubmit.Name, err)
-				}
+	for _, presubmit := range c.AllPresubmits(nil) {
+		if presubmit.Spec != nil {
+			if err := checkLatestUsesImagePullPolicy(presubmit.Spec); err != nil {
+				t.Errorf("Error in presubmit %q: %v", presubmit.Name, err)
 			}
 		}
 	}
 
-	for _, posts := range c.Postsubmits {
-		for _, postsubmit := range posts {
-			if postsubmit.Spec != nil {
-				if err := checkLatestUsesImagePullPolicy(postsubmit.Spec); err != nil {
-					t.Errorf("Error in postsubmit %q: %v", postsubmit.Name, err)
-				}
+	for _, postsubmit := range c.AllPostsubmits(nil) {
+		if postsubmit.Spec != nil {
+			if err := checkLatestUsesImagePullPolicy(postsubmit.Spec); err != nil {
+				t.Errorf("Error in postsubmit %q: %v", postsubmit.Name, err)
 			}
 		}
 	}
 
-	for _, periodic := range c.Periodics {
+	for _, periodic := range c.AllPeriodics() {
 		if periodic.Spec != nil {
 			if err := checkLatestUsesImagePullPolicy(periodic.Spec); err != nil {
 				t.Errorf("Error in periodic %q: %v", periodic.Name, err)
@@ -769,20 +695,113 @@ func TestValidPresets(t *testing.T) {
 		}
 	}
 
-	for _, posts := range c.Postsubmits {
-		for _, postsubmit := range posts {
-			if postsubmit.Spec != nil && !postsubmit.Decorate {
-				if err := checkKubekinsPresets(postsubmit.Name, postsubmit.Spec, postsubmit.Labels, validLabels); err != nil {
-					t.Errorf("Error in postsubmit %q: %v", postsubmit.Name, err)
-				}
+	for _, postsubmit := range c.AllPostsubmits(nil) {
+		if postsubmit.Spec != nil && !postsubmit.Decorate {
+			if err := checkKubekinsPresets(postsubmit.Name, postsubmit.Spec, postsubmit.Labels, validLabels); err != nil {
+				t.Errorf("Error in postsubmit %q: %v", postsubmit.Name, err)
 			}
 		}
 	}
 
-	for _, periodic := range c.Periodics {
+	for _, periodic := range c.AllPeriodics() {
 		if periodic.Spec != nil && !periodic.Decorate {
 			if err := checkKubekinsPresets(periodic.Name, periodic.Spec, periodic.Labels, validLabels); err != nil {
 				t.Errorf("Error in periodic %q: %v", periodic.Name, err)
+			}
+		}
+	}
+}
+
+func hasArg(wanted string, args []string) bool {
+	for _, arg := range args {
+		if strings.HasPrefix(arg, wanted) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func checkScenarioArgs(jobName string, args []string) error {
+	// env files/scenarios validation
+	scenarioArgs := false
+	scenario := ""
+	for _, arg := range args {
+		if strings.HasPrefix(arg, "--env-file=") {
+			env := strings.TrimPrefix(arg, "--env-file=")
+			if _, err := os.Stat("../../../" + env); err != nil {
+				return fmt.Errorf("job %s: cannot stat env file %s", jobName, env)
+			}
+		}
+
+		if arg == "--" {
+			scenarioArgs = true
+		}
+
+		if strings.HasPrefix(arg, "--scenario=") {
+			scenario = strings.TrimPrefix(arg, "--scenario=")
+		}
+	}
+
+	if !scenarioArgs {
+		return nil
+	}
+
+	if scenario == "" {
+		entry := jobName
+		if strings.HasPrefix(jobName, "pull-security-kubernetes") {
+			entry = strings.Replace(entry, "pull-security-kubernetes", "pull-kubernetes", -1)
+		}
+
+		if _, ok := cj[entry]; ok {
+			// the unit test is handled in jobs/config_test.py
+			return nil
+		}
+		return fmt.Errorf("job %s: missing --scenario", jobName)
+	} else {
+		if _, err := os.Stat(fmt.Sprintf("../../../scenarios/%s.py", scenario)); err != nil {
+			return fmt.Errorf("job %s: scenario %s does not exist: %s", jobName, scenario, err)
+		}
+	}
+
+	// shared build args
+	use_shared_build_in_args := hasArg("--use-shared-build", args)
+	extract_in_args := hasArg("--extract", args)
+	build_in_args := hasArg("--build", args)
+
+	if use_shared_build_in_args && extract_in_args {
+		return fmt.Errorf("job %s: --use-shared-build and --extract cannot be combined", jobName)
+	}
+
+	if use_shared_build_in_args && build_in_args {
+		return fmt.Errorf("Job %s: --use-shared-build and --build cannot be combined", jobName)
+	}
+
+	return nil
+}
+
+// TestValidScenarioArgs makes sure all scenario args in job configs are valid
+func TestValidScenarioArgs(t *testing.T) {
+	for _, job := range c.AllPresubmits(nil) {
+		if job.Spec != nil {
+			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Args); err != nil {
+				t.Errorf("Invalid Scenario Args : %s", err)
+			}
+		}
+	}
+
+	for _, job := range c.AllPostsubmits(nil) {
+		if job.Spec != nil {
+			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Args); err != nil {
+				t.Errorf("Invalid Scenario Args : %s", err)
+			}
+		}
+	}
+
+	for _, job := range c.AllPeriodics() {
+		if job.Spec != nil {
+			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Args); err != nil {
+				t.Errorf("Invalid Scenario Args : %s", err)
 			}
 		}
 	}
