@@ -599,7 +599,7 @@ func (c *Client) GetUserPermission(org, repo, user string) (string, error) {
 	c.log("GetUserPermission", org, repo, user)
 
 	var perm struct {
-		perm string `json:"permission"`
+		Perm string `json:"permission"`
 	}
 	_, err := c.request(&request{
 		method:    http.MethodGet,
@@ -609,7 +609,7 @@ func (c *Client) GetUserPermission(org, repo, user string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return perm.perm, nil
+	return perm.Perm, nil
 }
 
 // UpdateOrgMembership invites a user to the org and/or updates their permission level.
