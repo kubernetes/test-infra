@@ -10,7 +10,7 @@ periodics:
     - args:
       - --timeout=100
       - --bare
-      - --scenarios=kubernetes_e2e
+      - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
       - --deployment=gke
@@ -38,7 +38,7 @@ periodics:
     - args:
       - --timeout=100
       - --bare
-      - --scenarios=kubernetes_e2e
+      - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
       - --deployment=gke
