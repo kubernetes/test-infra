@@ -23,16 +23,15 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 	"time"
 
 	"github.com/ghodss/yaml"
 	gogithub "github.com/google/go-github/github"
 	"github.com/gorilla/sessions"
-	"github.com/shurcooL/githubql"
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/test-infra/ghclient"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
@@ -115,7 +114,7 @@ func TestHandlePrStatusWithoutLogin(t *testing.T) {
 	if err := yaml.Unmarshal(body, &dataReturned); err != nil {
 		t.Errorf("Error with unmarshaling response: %v", err)
 	}
-	if !equality.Semantic.DeepEqual(dataReturned, mockData) {
+	if !reflect.DeepEqual(dataReturned, mockData) {
 		t.Errorf("Invalid user data. Got %v, expected %v", dataReturned, mockData)
 	}
 }
@@ -138,7 +137,6 @@ func TestHandlePrStatusWithLogin(t *testing.T) {
 			contextMap: map[int][]Context{},
 			expectedData: UserData{
 				Login: true,
-				PullRequestsWithContexts: []PullRequestWithContext{},
 			},
 		},
 		{
@@ -161,26 +159,26 @@ func TestHandlePrStatusWithLogin(t *testing.T) {
 					{
 						Context:     "gofmt-job",
 						Description: "job succeed",
-						State:       githubql.StatusStateSuccess,
+						State:       "SUCCESS",
 					},
 				},
 				1: {
 					{
 						Context:     "verify-bazel-job",
 						Description: "job failed",
-						State:       githubql.StatusStateFailure,
+						State:       "FAILURE",
 					},
 				},
 				2: {
 					{
 						Context:     "gofmt-job",
 						Description: "job succeed",
-						State:       githubql.StatusStateSuccess,
+						State:       "SUCCESS",
 					},
 					{
 						Context:     "verify-bazel-job",
 						Description: "job failed",
-						State:       githubql.StatusStateFailure,
+						State:       "FAILURE",
 					},
 				},
 			},
@@ -196,7 +194,7 @@ func TestHandlePrStatusWithLogin(t *testing.T) {
 							{
 								Context:     "gofmt-job",
 								Description: "job succeed",
-								State:       githubql.StatusStateSuccess,
+								State:       "SUCCESS",
 							},
 						},
 					},
@@ -209,7 +207,7 @@ func TestHandlePrStatusWithLogin(t *testing.T) {
 							{
 								Context:     "verify-bazel-job",
 								Description: "job failed",
-								State:       githubql.StatusStateFailure,
+								State:       "FAILURE",
 							},
 						},
 					},
@@ -222,12 +220,12 @@ func TestHandlePrStatusWithLogin(t *testing.T) {
 							{
 								Context:     "gofmt-job",
 								Description: "job succeed",
-								State:       githubql.StatusStateSuccess,
+								State:       "SUCCESS",
 							},
 							{
 								Context:     "verify-bazel-job",
 								Description: "job failed",
-								State:       githubql.StatusStateFailure,
+								State:       "FAILURE",
 							},
 						},
 					},
@@ -262,7 +260,7 @@ func TestHandlePrStatusWithLogin(t *testing.T) {
 		if err := yaml.Unmarshal(body, &dataReturned); err != nil {
 			t.Errorf("Error with unmarshaling response: %v", err)
 		}
-		if !equality.Semantic.DeepEqual(dataReturned, testcase.expectedData) {
+		if !reflect.DeepEqual(dataReturned, testcase.expectedData) {
 			t.Fatalf("Invalid user data. Got %v, expected %v.", dataReturned, testcase.expectedData)
 		}
 		t.Logf("Passed")
@@ -310,19 +308,19 @@ func TestHeadContexts(t *testing.T) {
 			pr: PullRequest{},
 			expectedContexts: []Context{
 				{
-					Context:     githubql.String("gofmt-job"),
-					Description: githubql.String("job failed"),
-					State:       githubql.StatusStateFailure,
+					Context:     "gofmt-job",
+					Description: "job failed",
+					State:       "FAILURE",
 				},
 				{
-					State:       githubql.StatusStateSuccess,
-					Description: githubql.String("job succeed"),
-					Context:     githubql.String("k8s-job"),
+					State:       "SUCCESS",
+					Description: "job succeed",
+					Context:     "k8s-job",
 				},
 				{
-					State:       githubql.StatusStatePending,
-					Description: githubql.String("triggered"),
-					Context:     githubql.String("test-job"),
+					State:       "PENDING",
+					Description: "triggered",
+					Context:     "test-job",
 				},
 			},
 		},
@@ -335,7 +333,7 @@ func TestHeadContexts(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Error with getting head contexts")
 		}
-		if !equality.Semantic.DeepEqual(contexts, testcase.expectedContexts) {
+		if !reflect.DeepEqual(contexts, testcase.expectedContexts) {
 			t.Fatalf("Invalid user data. Got %v, expected %v.", contexts, testcase.expectedContexts)
 		}
 		t.Logf("Passed")

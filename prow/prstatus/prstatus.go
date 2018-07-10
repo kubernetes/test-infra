@@ -83,11 +83,11 @@ type Label struct {
 	Name githubql.String
 }
 
-// Context holds graphql response data for github contexts.
+// Context represent github contexts.
 type Context struct {
-	Context     githubql.String
-	Description githubql.String
-	State       githubql.StatusState
+	Context     string
+	Description string
+	State       string
 }
 
 // PullRequest holds graphql response data for github pull request.
@@ -313,9 +313,9 @@ func (da *DashboardAgent) HeadContexts(ghc githubClient, pr PullRequest) ([]Cont
 		contexts = append(
 			contexts,
 			Context{
-				Context:     githubql.String(status.Context),
-				Description: githubql.String(status.Description),
-				State:       githubql.StatusState(strings.ToUpper(status.State)),
+				Context:     status.Context,
+				Description: status.Description,
+				State:       strings.ToUpper(status.State),
 			},
 		)
 	}
