@@ -22,9 +22,11 @@ import (
 
 	"k8s.io/test-infra/prow/github"
 )
-
+// AboutThisBotWithoutCommands is the message displayed by the bot which details how to interact with it.
 const AboutThisBotWithoutCommands = "Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository."
+// AboutThisBotCommands is the message displayed by the bot which details the commands understood by the bot
 const AboutThisBotCommands = "I understand the commands that are listed [here](https://go.k8s.io/bot-commands)."
+// AboutThisBot is the message displayed by the bot which details how to interact with it and the commands understood by the bot
 const AboutThisBot = AboutThisBotWithoutCommands + " " + AboutThisBotCommands
 
 // FormatResponse nicely formats a response to a generic reason.

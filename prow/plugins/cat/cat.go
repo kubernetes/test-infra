@@ -82,24 +82,24 @@ type realClowder struct {
 	keyPath string
 }
 
-func (c *realClowder) setKey(keyPath string, log *logrus.Entry) {
-	c.lock.Lock()
-	defer c.lock.Unlock()
-	if !time.Now().After(c.update) {
+func (r *realClowder) setKey(keyPath string, log *logrus.Entry) {
+	r.lock.Lock()
+	defer r.lock.Unlock()
+	if !time.Now().After(r.update) {
 		return
 	}
-	c.update = time.Now().Add(1 * time.Minute)
+	r.update = time.Now().Add(1 * time.Minute)
 	if keyPath == "" {
-		c.key = ""
+		r.key = ""
 		return
 	}
 	b, err := ioutil.ReadFile(keyPath)
 	if err == nil {
-		c.key = strings.TrimSpace(string(b))
+		r.key = strings.TrimSpace(string(b))
 		return
 	}
 	log.WithError(err).Errorf("failed to read key at %s", keyPath)
-	c.key = ""
+	r.key = ""
 }
 
 var client = http.Client{}
@@ -128,7 +128,7 @@ func (cr catResult) Format() (string, error) {
 	return fmt.Sprintf("[![cat image](%s)](%s)", img, src), nil
 }
 
-func (r *realClowder) Url(category string) string {
+func (r *realClowder) URL(category string) string {
 	r.lock.RLock()
 	defer r.lock.RUnlock()
 	uri := string(r.url)
@@ -142,7 +142,7 @@ func (r *realClowder) Url(category string) string {
 }
 
 func (r *realClowder) readCat(category string) (string, error) {
-	uri := r.Url(category)
+	uri := r.URL(category)
 	req, err := http.NewRequest("GET", uri, nil)
 	if err != nil {
 		return "", fmt.Errorf("could not create request %s: %v", uri, err)

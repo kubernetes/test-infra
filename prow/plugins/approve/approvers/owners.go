@@ -30,19 +30,19 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 )
-
+// ApprovalNotificationName is name for approval notification
 const (
 	ownersFileName           = "OWNERS"
 	ApprovalNotificationName = "ApprovalNotifier"
 )
-
+// RepoInterface provides  an interface for different approvers
 type RepoInterface interface {
 	Approvers(path string) sets.String
 	LeafApprovers(path string) sets.String
 	FindApproverOwnersForFile(file string) string
 	IsNoParentOwners(path string) bool
 }
-
+// Owners provides the owner of the file or repo
 type Owners struct {
 	filenames []string
 	repo      RepoInterface
@@ -50,7 +50,7 @@ type Owners struct {
 
 	log *logrus.Entry
 }
-
+// NewOwners is list of new owner to file or repo
 func NewOwners(log *logrus.Entry, filenames []string, r RepoInterface, s int64) Owners {
 	return Owners{filenames: filenames, repo: r, seed: s, log: log}
 }
@@ -169,7 +169,7 @@ func (o Owners) GetOwnersSet() sets.String {
 	return owners
 }
 
-// Shuffles the potential approvers so that we don't always suggest the same people
+// GetShuffledApprovers  the potential approvers so that we don't always suggest the same people
 func (o Owners) GetShuffledApprovers() []string {
 	approversList := o.GetAllPotentialApprovers()
 	order := rand.New(rand.NewSource(o.seed)).Perm(len(approversList))
@@ -224,7 +224,7 @@ func (a Approval) String() string {
 		a.Login,
 	)
 }
-
+// Approvers approves the request
 type Approvers struct {
 	owners          Owners
 	approvers       map[string]Approval // The keys of this map are normalized to lowercase.
@@ -303,7 +303,7 @@ func (ap *Approvers) AddApprover(login, reference string, noIssue bool) {
 	}
 }
 
-// AddSAuthorSelfApprover adds the author self approval
+// AddAuthorSelfApprover adds the author self approval
 func (ap *Approvers) AddAuthorSelfApprover(login, reference string, noIssue bool) {
 	if ap.shouldNotOverrideApproval(login, noIssue) {
 		return
@@ -414,7 +414,7 @@ func (ap Approvers) UnapprovedFiles() sets.String {
 	return unapproved
 }
 
-// UnapprovedFiles returns owners files that still need approval
+// GetFiles returns owners files that still need approval
 func (ap Approvers) GetFiles(org, project, branch string) []File {
 	allOwnersFiles := []File{}
 	filesApprovers := ap.GetFilesApprovers()
@@ -519,11 +519,11 @@ func (ap Approvers) ListNoIssueApprovals() []Approval {
 
 	return approvals
 }
-
+// File interface returns string
 type File interface {
 	String() string
 }
-
+// ApprovedFile gives file approvals
 type ApprovedFile struct {
 	filepath  string
 	approvers sets.String
@@ -531,7 +531,7 @@ type ApprovedFile struct {
 	project   string
 	branch    string
 }
-
+// UnapprovedFile shows the unapproved file
 type UnapprovedFile struct {
 	filepath string
 	org      string
@@ -569,7 +569,7 @@ func GenerateTemplate(templ, name string, data interface{}) (string, error) {
 	return buf.String(), nil
 }
 
-// getMessage returns the comment body that we want the approve plugin to display on PRs
+// GetMessage returns the comment body that we want the approve plugin to display on PRs
 // The comment shows:
 // 	- a list of approvers files (and links) needed to get the PR approved
 // 	- a list of approvers files with strikethroughs that already have an approver's approval

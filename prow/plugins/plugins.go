@@ -55,64 +55,64 @@ var (
 	reviewCommentEventHandlers = map[string]ReviewCommentEventHandler{}
 	statusEventHandlers        = map[string]StatusEventHandler{}
 )
-
+// HelpProvider takes string array and returns the pluginhelp
 type HelpProvider func(config *Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error)
-
+// HelpProviders returns pluginHelp
 func HelpProviders() map[string]HelpProvider {
 	return pluginHelp
 }
-
+// IssueHandler takes PluginClient and IssueEvent and return an error
 type IssueHandler func(PluginClient, github.IssueEvent) error
-
+// RegisterIssueHandler registers the IssueHandler
 func RegisterIssueHandler(name string, fn IssueHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	issueHandlers[name] = fn
 }
-
+// IssueCommentHandler handles the comments on the issues
 type IssueCommentHandler func(PluginClient, github.IssueCommentEvent) error
-
+// RegisterIssueCommentHandler register the IssueCommentHandler
 func RegisterIssueCommentHandler(name string, fn IssueCommentHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	issueCommentHandlers[name] = fn
 }
-
+// PullRequestHandler handles the pull request
 type PullRequestHandler func(PluginClient, github.PullRequestEvent) error
-
+// RegisterPullRequestHandler register the PullRequestHandler
 func RegisterPullRequestHandler(name string, fn PullRequestHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	pullRequestHandlers[name] = fn
 }
-
+// StatusEventHandler handles the status of an event
 type StatusEventHandler func(PluginClient, github.StatusEvent) error
-
+// RegisterStatusEventHandler register the StatusEventHandler
 func RegisterStatusEventHandler(name string, fn StatusEventHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	statusEventHandlers[name] = fn
 }
-
+// PushEventHandler handles PushEvent
 type PushEventHandler func(PluginClient, github.PushEvent) error
-
+// RegisterPushEventHandler register the PushEventHandler
 func RegisterPushEventHandler(name string, fn PushEventHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	pushEventHandlers[name] = fn
 }
-
+// ReviewEventHandler reviews the events
 type ReviewEventHandler func(PluginClient, github.ReviewEvent) error
-
+// RegisterReviewEventHandler register the ReviewEventHandler
 func RegisterReviewEventHandler(name string, fn ReviewEventHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	reviewEventHandlers[name] = fn
 }
-
+// ReviewCommentEventHandler review and comment the events
 type ReviewCommentEventHandler func(PluginClient, github.ReviewCommentEvent) error
-
+// RegisterReviewCommentEventHandler register the ReviewCommentEventHandler
 func RegisterReviewCommentEventHandler(name string, fn ReviewCommentEventHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	reviewCommentEventHandlers[name] = fn
 }
-
+// GenericCommentHandler handles the generic comments
 type GenericCommentHandler func(PluginClient, github.GenericCommentEvent) error
-
+// RegisterGenericCommentHandler register the GenericCommentHandler
 func RegisterGenericCommentHandler(name string, fn GenericCommentHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	genericCommentHandlers[name] = fn
@@ -136,7 +136,7 @@ type PluginClient struct {
 
 	Logger *logrus.Entry
 }
-
+// PluginAgent is an agent for plugin
 type PluginAgent struct {
 	PluginClient
 
@@ -189,7 +189,7 @@ type ExternalPlugin struct {
 	// everything is sent.
 	Events []string `json:"events,omitempty"`
 }
-
+// Blunderbuss counts the number of reviewer
 type Blunderbuss struct {
 	// ReviewerCount is the minimum number of reviewers to request
 	// reviews from. Defaults to requesting reviews from 2 reviewers
@@ -236,7 +236,7 @@ type Owners struct {
 	// This check is performed by the verify-owners plugin.
 	LabelsBlackList []string `json:"labels_blacklist,omitempty"`
 }
-
+// MDYAMLEnabled returns bool
 func (pa *PluginAgent) MDYAMLEnabled(org, repo string) bool {
 	full := fmt.Sprintf("%s/%s", org, repo)
 	for _, elem := range pa.Config().Owners.MDYAMLRepos {
@@ -246,7 +246,7 @@ func (pa *PluginAgent) MDYAMLEnabled(org, repo string) bool {
 	}
 	return false
 }
-
+// SkipCollaborators takes PluginAgent as receiver and returns boolean value
 func (pa *PluginAgent) SkipCollaborators(org, repo string) bool {
 	full := fmt.Sprintf("%s/%s", org, repo)
 	for _, elem := range pa.Config().Owners.SkipCollaborators {
@@ -284,7 +284,7 @@ type SigMention struct {
 	Re     *regexp.Regexp `json:"-"`
 }
 
-/*
+/*Blockade ...
   Blockade specifies a configuration for a single blockade.blockade. The configuration for the
   blockade plugin is defined as a list of these structures. Here is an example of a complete
   yaml config for the blockade plugin that is composed of 2 Blockade structs:
@@ -319,7 +319,7 @@ type Blockade struct {
 	// be an explanation of why the paths specified are blockaded.
 	Explanation string `json:"explanation,omitempty"`
 }
-
+// Approve approve the issues
 type Approve struct {
 	// Repos is either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
@@ -336,7 +336,7 @@ type Approve struct {
 	// indicate approval.
 	ReviewActsAsApprove bool `json:"review_acts_as_approve,omitempty"`
 }
-
+// Lgtm labels ready to get merge
 type Lgtm struct {
 	// Repos is either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
@@ -344,18 +344,18 @@ type Lgtm struct {
 	// acts as adding or removing the lgtm label
 	ReviewActsAsLgtm bool `json:"review_acts_as_lgtm,omitempty"`
 }
-
+// Cat display the path to key file containing an api key for thecatapi.com
 type Cat struct {
 	// Path to file containing an api key for thecatapi.com
 	KeyPath string `json:"key_path,omitempty"`
 }
-
+// Label provides additional labels
 type Label struct {
 	// AdditionalLabels is a set of additional labels enabled for use
 	// on top of the existing "kind/*", "priority/*", and "area/*" labels.
 	AdditionalLabels []string `json:"additional_labels"`
 }
-
+// Trigger provides triggering
 type Trigger struct {
 	// Repos is either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
@@ -370,7 +370,7 @@ type Trigger struct {
 	// By default, trigger also include repo collaborators.
 	OnlyOrgMembers bool `json:"only_org_members,omitempty"`
 }
-
+// Heart returns the adorees
 type Heart struct {
 	// Adorees is a list of GitHub logins for members
 	// for whom we will add emojis to comments
@@ -387,7 +387,7 @@ type Milestone struct {
 	MaintainersID   int    `json:"maintainers_id,omitempty"`
 	MaintainersTeam string `json:"maintainers_team,omitempty"`
 }
-
+// Slack is communication channel
 type Slack struct {
 	MentionChannels []string       `json:"mentionchannels,omitempty"`
 	MergeWarnings   []MergeWarning `json:"mergewarnings,omitempty"`
@@ -404,7 +404,7 @@ type ConfigMapSpec struct {
 	// it will be deployed to the ProwJobNamespace.
 	Namespace string `json:"namespace,omitempty"`
 }
-
+// ConfigUpdater updates the config
 type ConfigUpdater struct {
 	// A map of filename => ConfigMapSpec.
 	// Whenever a commit changes filename, prow will update the corresponding configmap.
@@ -540,7 +540,7 @@ func (pa *PluginAgent) Load(path string) error {
 	pa.Set(np)
 	return nil
 }
-
+// Config returns the configuration
 func (pa *PluginAgent) Config() *Configuration {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
@@ -819,7 +819,7 @@ func (pa *PluginAgent) getPlugins(owner, repo string) []string {
 
 	return plugins
 }
-
+// EventsForPlugin handles events for plugin
 func EventsForPlugin(name string) []string {
 	var events []string
 	if _, ok := issueHandlers[name]; ok {
@@ -848,7 +848,7 @@ func EventsForPlugin(name string) []string {
 	}
 	return events
 }
-
+// EnabledReposForPlugin enales repo for plugin
 func (c *Configuration) EnabledReposForPlugin(plugin string) (orgs, repos []string) {
 	for repo, plugins := range c.Plugins {
 		found := false
@@ -868,7 +868,7 @@ func (c *Configuration) EnabledReposForPlugin(plugin string) (orgs, repos []stri
 	}
 	return
 }
-
+// EnabledReposForExternalPlugin enables repos for external plugin
 func (c *Configuration) EnabledReposForExternalPlugin(plugin string) (orgs, repos []string) {
 	for repo, plugins := range c.ExternalPlugins {
 		found := false
