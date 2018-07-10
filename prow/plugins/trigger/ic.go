@@ -109,7 +109,7 @@ func handleIC(c client, trigger *plugins.Trigger, ic github.IssueCommentEvent) e
 		if err != nil {
 			return fmt.Errorf("error listing issue comments: %v", err)
 		}
-		trusted, err := trustedPullRequest(c.GitHubClient, trigger, commentAuthor, org, repo, comments)
+		trusted, err := trustedPullRequest(c.GitHubClient, trigger, ic.Issue.User.Login, org, repo, comments)
 		if err != nil {
 			return err
 		}

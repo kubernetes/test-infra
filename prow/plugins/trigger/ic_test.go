@@ -41,6 +41,7 @@ func TestHandleIssueComment(t *testing.T) {
 		name string
 
 		Author        string
+		PRAuthor      string
 		Body          string
 		State         string
 		IsPR          bool
@@ -85,6 +86,24 @@ func TestHandleIssueComment(t *testing.T) {
 
 			Author:      "u",
 			Body:        "/ok-to-test",
+			State:       "open",
+			IsPR:        true,
+			ShouldBuild: false,
+		},
+		{
+			name:        "accept /test from non-trusted member if PR author is trusted",
+			Author:      "u",
+			PRAuthor:    "t",
+			Body:        "/test all",
+			State:       "open",
+			IsPR:        true,
+			ShouldBuild: true,
+		},
+		{
+			name:        "reject /test from non-trusted member when PR author is untrusted",
+			Author:      "u",
+			PRAuthor:    "u",
+			Body:        "/test all",
 			State:       "open",
 			IsPR:        true,
 			ShouldBuild: false,
@@ -542,6 +561,7 @@ func TestHandleIssueComment(t *testing.T) {
 				User: github.User{Login: tc.Author},
 			},
 			Issue: github.Issue{
+				User:        github.User{Login: tc.PRAuthor},
 				PullRequest: pr,
 				State:       tc.State,
 			},
