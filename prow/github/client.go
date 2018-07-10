@@ -578,6 +578,40 @@ func (c *Client) ListOrgMembers(org, role string) ([]TeamMember, error) {
 	return teamMembers, nil
 }
 
+// HasPermission returns true if GetUserPermission() returns any of the roles.
+func (c *Client) HasPermission(org, repo, user string, roles ...string) (bool, error) {
+	perm, err := c.GetUserPermission(org, repo, user)
+	if err != nil {
+		return false, err
+	}
+	for _, r := range roles {
+		if r == perm {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+// GetUserPermission returns the user's permission level for a repo
+//
+// https://developer.github.com/v3/repos/collaborators/#review-a-users-permission-level
+func (c *Client) GetUserPermission(org, repo, user string) (string, error) {
+	c.log("GetUserPermission", org, repo, user)
+
+	var perm struct {
+		perm string `json:"permission"`
+	}
+	_, err := c.request(&request{
+		method:    http.MethodGet,
+		path:      fmt.Sprintf("/repos/%s/%s/collaborators/%s/permission", org, repo, user),
+		exitCodes: []int{200},
+	}, &perm)
+	if err != nil {
+		return "", err
+	}
+	return perm.perm, nil
+}
+
 // UpdateOrgMembership invites a user to the org and/or updates their permission level.
 //
 // If the user is not already a member, this will invite them.
