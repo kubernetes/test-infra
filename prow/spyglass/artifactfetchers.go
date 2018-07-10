@@ -29,5 +29,6 @@ type JobSource interface {
 
 // Gets artfiacts from a storage provider
 type ArtifactFetcher interface {
-	Artifacts(src *JobSource) []viewers.Artifact
+	Artifacts(src *JobSource) []string
+	Artifact(src *JobSource, name string) viewers.Artifact
 }

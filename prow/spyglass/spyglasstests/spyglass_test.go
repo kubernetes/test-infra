@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+//Package spyglasstests contains tests for spyglass
 package spyglasstests
 
 import (
@@ -25,6 +26,7 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/fsouza/fake-gcs-server/fakestorage"
+	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
 	"k8s.io/test-infra/prow/kube"
@@ -40,6 +42,10 @@ var (
 	longLogName      string
 	startedName      string
 	finishedName     string
+	buildLogKey      string
+	longLogKey       string
+	startedKey       string
+	finishedKey      string
 )
 
 const (
@@ -72,24 +78,29 @@ func (f fpkc) GetLog(pod string) ([]byte, error) {
 func TestMain(m *testing.M) {
 	fakeGCSJobSource = spyglass.NewGCSJobSource(testSrc)
 	testBucketName := fakeGCSJobSource.BucketName()
-	buildLogName = path.Join(fakeGCSJobSource.JobPath(), "build-log.txt")
-	startedName = path.Join(fakeGCSJobSource.JobPath(), "started.json")
-	finishedName = path.Join(fakeGCSJobSource.JobPath(), "finished.json")
-	longLogName = path.Join(fakeGCSJobSource.JobPath(), "long-log.txt")
+	buildLogName = "build-log.txt"
+	startedName = "started.json"
+	finishedName = "finished.json"
+	longLogName = "long-log.txt"
+	buildLogKey = path.Join(fakeGCSJobSource.JobPath(), buildLogName)
+	startedKey = path.Join(fakeGCSJobSource.JobPath(), startedName)
+	finishedKey = path.Join(fakeGCSJobSource.JobPath(), finishedName)
+	longLogKey = path.Join(fakeGCSJobSource.JobPath(), longLogName)
+	logrus.Info("Bucket keys: ", buildLogKey, finishedKey, startedKey, longLogKey)
 	fakeGCSServer := fakestorage.NewServer([]fakestorage.Object{
 		{
 			BucketName: testBucketName,
-			Name:       buildLogName,
+			Name:       buildLogKey,
 			Content:    []byte("Oh wow\nlogs\nthis is\ncrazy"),
 		},
 		{
 			BucketName: testBucketName,
-			Name:       longLogName,
+			Name:       longLogKey,
 			Content:    longLog,
 		},
 		{
 			BucketName: testBucketName,
-			Name:       startedName,
+			Name:       startedKey,
 			Content: []byte(`{
 						  "node": "gke-prow-default-pool-3c8994a8-qfhg", 
 						  "repo-version": "v1.12.0-alpha.0.985+e6f64d0a79243c", 
@@ -106,7 +117,7 @@ func TestMain(m *testing.M) {
 		},
 		{
 			BucketName: testBucketName,
-			Name:       finishedName,
+			Name:       finishedKey,
 			Content: []byte(`{
 						  "timestamp": 1528742943, 
 						  "version": "v1.12.0-alpha.0.985+e6f64d0a79243c", 

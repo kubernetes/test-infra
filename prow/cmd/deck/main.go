@@ -49,6 +49,7 @@ import (
 	"k8s.io/test-infra/prow/spyglass"
 
 	// Import standard spyglass viewers
+
 	_ "k8s.io/test-infra/prow/spyglass/viewers/buildlog"
 	_ "k8s.io/test-infra/prow/spyglass/viewers/junit"
 	_ "k8s.io/test-infra/prow/spyglass/viewers/metadata"
@@ -434,10 +435,28 @@ func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent) http.Handler
 			logrus.Info("No job id passed to spyglass, will try to extract from source.")
 		}
 
-		artifacts, err := sg.FetchArtifacts(src, jobId)
+		artifactNames, err := sg.ListArtifacts(src, jobId)
 		if err != nil {
 			logrus.Error("Invalid source parameter provided: ", src)
 		}
+
+		viewerCache := map[string][]string{}
+
+		for re, viewer := range ca.Config().SpyGlass.Viewers {
+			matches := []string{}
+			r, err := regexp.Compile(re)
+			if err != nil {
+				logrus.WithError(err).Error("Regexp failed to compile.")
+				continue
+			}
+			for _, a := range artifactNames {
+				if r.MatchString(a) {
+					matches = append(matches, a)
+				}
+			}
+			viewerCache[viewer] = matches
+		}
+
 		viewTmpl := `<!DOCTYPE html>
 <html>
     <head>
@@ -460,16 +479,28 @@ func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent) http.Handler
             <header class="mdl-layout__header">
                 <div class="mdl-layout__header-row">
                     <a href="https://github.com/kubernetes/test-infra/tree/master/prow#prow" class="logo"><img id="img" src="/logo.svg" alt="kubernetes logo" class="logo"/></a>
-                    <span class="mdl-layout-title header-title">Job View</span>
+		    <span class="mdl-layout-title header-title">Job View</span>
+		    <span class="mdl-layout-title header-title">{{.Source}}</span>
                 </div>
             </header>
+	    <div class="mdl-layout__drawer">
+		<span class="mdl-layout-title">Prow Dashboard</span>
+		<nav class="mdl-navigation">
+		    <a class="mdl-navigation__link mdl-navigation__link--current" href="/">Prow Status</a>
+		    <a class="mdl-navigation__link" href="/pr">PR Status</a>
+		    <a class="mdl-navigation__link" href="/command-help">Command Help</a>
+		    <a class="mdl-navigation__link" href="/tide">Tide Status</a>
+		    <a class="mdl-navigation__link" href="/plugins">Plugins</a>
+		</nav>
+	    </div>
 	    <main class="mdl-layout__content" id="lens-container">
 	    {{range .Views}}<div class="mdl-card mdl-shadow--2dp lens-card">
 		<div class="mdl-card__title">
 			<h3 class="mdl-card__title-text">{{.Title}}</h3>
 		</div>
-		<div id="{{.Name}}-view" class="mdl-card__supporting-text lens-view-content">
+		<div id="{{.Name}}-view-container" class="mdl-card__supporting-text lens-view-content">
 			<div class="mdl-spinner mdl-js-spinner is-active lens-card-loading" id="{{.Name}}-loading"></div>
+			<div id="{{.Name}}-view"></div>
 		</div>
 	    </div>{{end}}
 	    </main>
@@ -479,18 +510,33 @@ func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent) http.Handler
 	var pageUrl = window.location.href;
 	var urlObj = new URL(pageUrl);
 	var src = urlObj.searchParams.get("src");
+	var viewerCache = {{ .ViewerCache}};
 
 	// Loads views for this job
 	function loadViews() {
 		{{.Views}}.map(view => {
-			requestReload(view.Name, '{}')
+			refreshView(view.Name, '{}')
 		});
 	}
 
+	// refreshView refreshes a single view. Use this function to to communicate with your viewer backend.
+	function refreshView(viewName, viewData) {
+		console.log("refreshing " + viewName + " with " + viewData)
+		requestReload(viewName, createBody(viewName, viewData))
+	}
+
 	// Add a function here with a standard body response (list of matching artifacts, etc)
+	function createBody(viewName, viewData) {
+		var body = new Object();
+		body.name = viewName;
+		body.viewerCache = viewerCache;
+		body.viewData = viewData;
+		return JSON.stringify(body);
+	}
 
 	// asynchronously requests a reloaded view of the provided viewer given a body request
 	function requestReload(name, body) {
+		insertLoading(name);
 		const url = "/view/refresh?src="+encodeURIComponent(src)+"&name="+encodeURIComponent(name);
 		var req = new XMLHttpRequest();
 		req.open('POST', url, true);
@@ -505,7 +551,7 @@ func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent) http.Handler
 			}
 
 		}
-		req.send(JSON.stringify(body))
+		req.send(body);
 	}
 
 	function insertView(name, content) {
@@ -514,22 +560,33 @@ func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent) http.Handler
 
 	}
 
+	function insertLoading(name) {
+		document.getElementById(name + "-view").innerHTML = "";
+		document.getElementById(name + "-loading").style.display = "block";
+
+	}
+
+
 	</script>
     </body>
 </html>
-		`
+`
 
 		viewsStart := time.Now()
-		lenses := sg.Views(artifacts, ca.Config().SpyGlass.Viewers)
+		lenses := sg.Views(viewerCache)
 		viewsElapsed := time.Since(viewsStart)
 		logrus.Info("Got views in ", viewsElapsed)
 
 		var viewBuf bytes.Buffer
 		type ViewsTemplate struct {
-			Views []spyglass.Lens
+			Views       []spyglass.Lens
+			Source      string
+			ViewerCache map[string][]string
 		}
 		vTmpl := ViewsTemplate{
-			Views: lenses,
+			Views:       lenses,
+			Source:      src,
+			ViewerCache: viewerCache,
 		}
 		t := template.Must(template.New("ArtifactsView").Parse(viewTmpl))
 		tErr := t.Execute(&viewBuf, vTmpl)
@@ -540,12 +597,6 @@ func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent) http.Handler
 		fmt.Fprint(w, viewBuf.String())
 		elapsed := time.Since(start)
 		logrus.Info("Time taken to return view page: ", elapsed)
-		//	pd, err := json.Marshal(lenses)
-		//	if err != nil {
-		//		logrus.WithError(err).Error("Error marshaling payload.")
-		//		pd = []byte("{}")
-		//	}
-		//	fmt.Fprint(w, string(pd))
 	}
 }
 
@@ -560,28 +611,30 @@ func handleArtifactView(sg *spyglass.Spyglass) http.HandlerFunc {
 		jobId := r.URL.Query().Get("id")
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			http.Error(w, "could not read body", http.StatusBadRequest)
+			http.Error(w, "Failed to read body", http.StatusBadRequest)
 			return
 		}
 		if name == "" {
-			http.Error(w, "missing name query parameter", http.StatusBadRequest)
+			http.Error(w, "Missing name query parameter", http.StatusBadRequest)
 			return
 		}
 		if src == "" {
-			http.Error(w, "missing src query parameter", http.StatusBadRequest)
+			http.Error(w, "Missing src query parameter", http.StatusBadRequest)
 			return
 		}
 
-		artifacts, err := sg.FetchArtifacts(src, jobId)
-		if err != nil {
-			logrus.Error("Invalid source parameter: ", src)
+		if jobId == "" {
+			logrus.Info("No job id passed to spyglass, will try to extract from source.")
 		}
 
-		var raw *json.RawMessage
-		raw.UnmarshalJSON(body)
-		logrus.Info("raw body ", raw)
-		lens := sg.Refresh(name, artifacts, raw)
-		logrus.Infof("successfully refreshed viewer name=%s", name)
+		viewReq := &spyglass.ViewRequest{}
+		err = json.Unmarshal(body, viewReq)
+		if err != nil {
+			logrus.WithError(err).Error("Failed to marshal request body")
+		}
+		logrus.Info("View request:  ", viewReq)
+
+		lens := sg.Refresh(src, jobId, viewReq)
 		pd, err := json.Marshal(lens)
 		if err != nil {
 			logrus.WithError(err).Error("Error marshaling payload.")
@@ -589,7 +642,7 @@ func handleArtifactView(sg *spyglass.Spyglass) http.HandlerFunc {
 		}
 		fmt.Fprint(w, string(pd))
 		elapsed := time.Since(start)
-		logrus.Info("Time taken to refresh view: ", name, elapsed)
+		logrus.Infof("Time taken to refresh %s: %s", name, elapsed)
 	}
 }
 

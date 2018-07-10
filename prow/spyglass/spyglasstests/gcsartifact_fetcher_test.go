@@ -20,28 +20,27 @@ import (
 	"testing"
 
 	"k8s.io/test-infra/prow/spyglass"
-	"k8s.io/test-infra/prow/spyglass/viewers"
 )
 
 // Tests getting handles to objects associated with the current job in GCS
 func TestGCSFetchArtifacts(t *testing.T) {
-	blgArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(buildLogName), "", fakeGCSJobSource.JobPath())
-	srtArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(startedName), "", fakeGCSJobSource.JobPath())
-	finArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(finishedName), "", fakeGCSJobSource.JobPath())
-	longLogArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(longLogName), "", fakeGCSJobSource.JobPath())
+	blgArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(buildLogName), "", buildLogName)
+	srtArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(startedName), "", startedName)
+	finArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(finishedName), "", finishedName)
+	longLogArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(longLogName), "", longLogName)
 	testCases := []struct {
 		name              string
 		gcsJobSource      *spyglass.GCSJobSource
-		expectedArtifacts []viewers.Artifact
+		expectedArtifacts []string
 	}{
 		{
 			name:         "Fetch Example CI Run #403 Artifacts",
 			gcsJobSource: fakeGCSJobSource,
-			expectedArtifacts: []viewers.Artifact{
-				blgArtifact,
-				srtArtifact,
-				finArtifact,
-				longLogArtifact,
+			expectedArtifacts: []string{
+				blgArtifact.JobPath(),
+				srtArtifact.JobPath(),
+				finArtifact.JobPath(),
+				longLogArtifact.JobPath(),
 			},
 		},
 	}
@@ -51,7 +50,7 @@ func TestGCSFetchArtifacts(t *testing.T) {
 		for _, ea := range tc.expectedArtifacts {
 			found := false
 			for _, aa := range actualArtifacts {
-				if ea.CanonicalLink() == aa.CanonicalLink() {
+				if ea == aa {
 					found = true
 					break
 				}

@@ -14,14 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Spyglass creates views for build artifacts
+// Package Spyglass creates views for Prow job artifacts
 package spyglass
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"regexp"
+	"sort"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -45,10 +44,17 @@ type Lens struct {
 	Name string
 	// Title of view
 	Title string
-	// Priority of the view on the page
-	Priority float32
+	// Html rendering of the view
 	HtmlView string
-	ReMatch  string
+	// Priority is the relative position of the view on the page
+	Priority int
+}
+
+// ViewRequest holds data sent by a view
+type ViewRequest struct {
+	ViewName    string              `json:"name"`
+	ViewerCache map[string][]string `json:"viewerCache"`
+	ViewData    string              `json:"viewData"`
 }
 
 // NewSpyglass constructs a spyglass object from a JobAgent
@@ -60,21 +66,14 @@ func NewSpyglass(ja *jobs.JobAgent) *Spyglass {
 }
 
 // Views gets all views of all artifact files matching each regexp with a registered viewer
-func (s *Spyglass) Views(artifacts []viewers.Artifact, eyepiece map[string]string) []Lens {
+func (s *Spyglass) Views(eyepiece map[string][]string) []Lens {
 	lenses := []Lens{}
-	for re, viewer := range eyepiece {
-		matches := []viewers.Artifact{}
-		r, err := regexp.Compile(re)
-		if err != nil {
-			logrus.Errorf("Regexp %s failed to compile.", re)
-			continue
-		}
-		for _, a := range artifacts {
-			if r.MatchString(a.JobPath()) {
-				matches = append(matches, a)
-			}
-		}
+	for viewer := range eyepiece {
 		title, err := viewers.Title(viewer)
+		if err != nil {
+			logrus.Error("Could not find artifact viewer with name ", viewer)
+		}
+		priority, err := viewers.Priority(viewer)
 		if err != nil {
 			logrus.Error("Could not find artifact viewer with name ", viewer)
 		}
@@ -82,40 +81,82 @@ func (s *Spyglass) Views(artifacts []viewers.Artifact, eyepiece map[string]strin
 			Name:     viewer,
 			Title:    title,
 			HtmlView: "",
-			ReMatch:  re,
+			Priority: priority,
 		}
 		lenses = append(lenses, lens)
 		s.Lenses[viewer] = lens
 	}
+	sort.Slice(lenses, func(i, j int) bool {
+		iname := lenses[i].Name
+		jname := lenses[j].Name
+		pi := lenses[i].Priority
+		pj := lenses[j].Priority
+		if pi == pj {
+			return iname < jname
+		} else {
+			return pi < pj
+		}
+	})
 	return lenses
 }
 
 // Refresh reloads the html view for a given set of objects
-func (s *Spyglass) Refresh(viewName string, artifacts []viewers.Artifact, raw *json.RawMessage) Lens {
-	lens, ok := s.Lenses[viewName]
+func (s *Spyglass) Refresh(src string, jobId string, viewReq *ViewRequest) Lens {
+	lens, ok := s.Lenses[viewReq.ViewName]
 	if !ok {
-		logrus.Errorf("Could not find Lens with name %s", viewName)
+		logrus.Errorf("Could not find Lens with name %s.", viewReq.ViewName)
 		return Lens{}
 	}
-	re := lens.ReMatch
-	matches := []viewers.Artifact{}
-	r := regexp.MustCompile(re)
-	for _, a := range artifacts {
-		if r.MatchString(a.JobPath()) {
-			matches = append(matches, a)
-		}
-	}
-	view, err := viewers.View(viewName, matches, raw)
+	artifacts, err := s.FetchArtifacts(src, jobId, viewReq.ViewerCache[viewReq.ViewName])
 	if err != nil {
-		logrus.Errorf("Could not find registered artifact viewer for name=%s", viewName)
+		logrus.WithError(err).Error("Error while fetching artifacts.")
+	}
+
+	view, err := viewers.View(viewReq.ViewName, artifacts, viewReq.ViewData)
+	if err != nil {
+		logrus.WithError(err).Error("Could not find a valid artifact viewer.")
 		return Lens{}
 	}
 	lens.HtmlView = view
 	return lens
 }
 
-// FetchArtifacts handles muxing artifact sources to the correct fetcher implementations
-func (sg *Spyglass) FetchArtifacts(src string, jobId string) ([]viewers.Artifact, error) {
+// ListArtifacts handles muxing artifact sources to the correct fetcher implementations to list
+// all available artifact names
+func (s *Spyglass) ListArtifacts(src string, jobId string) ([]string, error) {
+	artifacts := []string{}
+	var jobName string
+	// First check src
+	if isGCSSource(src) {
+		artifactFetcher := NewGCSArtifactFetcher()
+		gcsJobSource := NewGCSJobSource(src)
+		jobName = gcsJobSource.JobName()
+		if jobId == "" {
+			jobId = gcsJobSource.JobId()
+		}
+
+		artStart := time.Now()
+		artifacts = append(artifacts, artifactFetcher.Artifacts(gcsJobSource)...)
+		artElapsed := time.Since(artStart)
+		logrus.Info("Retrieved GCS artifacts in ", artElapsed)
+
+	} else {
+		return []string{}, errors.New(fmt.Sprintf("Invalid source: %s", src))
+	}
+
+	// Then check prowjob id for pod logs, pod spec, etc
+	if jobId != "" && jobName != "" {
+		podLog := NewPodLogArtifact(jobName, jobId, s.Ja)
+		if podLog.Size() != -1 {
+			artifacts = append(artifacts, podLog.JobPath())
+		}
+
+	}
+	return artifacts, nil
+}
+
+// FetchArtifacts creates artifact objects for each artifact name in the list
+func (s *Spyglass) FetchArtifacts(src string, jobId string, artifactNames []string) ([]viewers.Artifact, error) {
 	artifacts := []viewers.Artifact{}
 	var jobName string
 	// First check src
@@ -125,11 +166,12 @@ func (sg *Spyglass) FetchArtifacts(src string, jobId string) ([]viewers.Artifact
 		jobName = gcsJobSource.JobName()
 		if jobId == "" {
 			jobId = gcsJobSource.JobId()
-			logrus.Info("Extracted jobId from source. ", gcsJobSource.JobId())
 		}
 
 		artStart := time.Now()
-		artifacts = append(artifacts, artifactFetcher.Artifacts(gcsJobSource)...)
+		for _, name := range artifactNames {
+			artifacts = append(artifacts, artifactFetcher.Artifact(gcsJobSource, name))
+		}
 		artElapsed := time.Since(artStart)
 		logrus.Info("Retrieved GCS artifacts in ", artElapsed)
 
@@ -140,11 +182,12 @@ func (sg *Spyglass) FetchArtifacts(src string, jobId string) ([]viewers.Artifact
 	// Then check prowjob id for pod logs, pod spec, etc
 	if jobId != "" && jobName != "" {
 		logrus.Info("Trying pod logs. ")
-		podLog := NewPodLogArtifact(jobName, jobId, sg.Ja)
+		podLog := NewPodLogArtifact(jobName, jobId, s.Ja)
 		if podLog.Size() != -1 {
 			artifacts = append(artifacts, podLog)
 		}
 
 	}
 	return artifacts, nil
+
 }

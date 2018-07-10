@@ -43,6 +43,7 @@ func NewPodLogArtifact(jobName string, jobId string, ja *jobs.JobAgent) *PodLogA
 	}
 }
 
+// CanonicalLink returns a link to where pod logs are streamed
 func (a *PodLogArtifact) CanonicalLink() string {
 	return fmt.Sprintf("/log?job=%s&id=%s", a.name, a.jobId)
 }

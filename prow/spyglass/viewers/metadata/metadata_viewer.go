@@ -29,12 +29,16 @@ import (
 )
 
 const (
-	name  = "MetadataViewer"
-	title = "Metadata"
+	name     = "MetadataViewer"
+	title    = "Metadata"
+	priority = 0
 )
 
 func init() {
-	viewers.RegisterViewer(name, title, ViewHandler)
+	viewers.RegisterViewer(name, viewers.ViewMetadata{
+		Title:    title,
+		Priority: priority,
+	}, ViewHandler)
 }
 
 // Started is used to mirror the started.json artifact
@@ -54,7 +58,7 @@ type Finished struct {
 }
 
 // ViewHandler creates a view for prow job metadata
-func ViewHandler(artifacts []viewers.Artifact, raw *json.RawMessage) string {
+func ViewHandler(artifacts []viewers.Artifact, raw string) string {
 	metadataViewTmpl := `
 	<div>
 	{{ .Started}}

@@ -18,6 +18,7 @@ package spyglass
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"path"
 	"strings"
@@ -79,9 +80,9 @@ func isGCSSource(src string) bool {
 	return strings.HasPrefix(src, "gs://")
 }
 
-// Artifacts gets all artifacts from a GCS job source
-func (af *GCSArtifactFetcher) Artifacts(src JobSource) []viewers.Artifact {
-	artifacts := []viewers.Artifact{}
+// Artifacts gets all artifact names from a GCS job source
+func (af *GCSArtifactFetcher) Artifacts(src JobSource) []string {
+	artifacts := []string{}
 
 	bkt := af.Client.Bucket(src.BucketName())
 
@@ -96,15 +97,21 @@ func (af *GCSArtifactFetcher) Artifacts(src JobSource) []viewers.Artifact {
 			if err == iterator.Done {
 				break
 			}
-			logrus.Error("Error accessing objects. ", err)
+			logrus.WithError(err).Error("Error accessing GCS object.")
 		}
 
-		obj := bkt.Object(oAttrs.Name)
-		artifact := NewGCSArtifact(obj, oAttrs.MediaLink, strings.TrimPrefix(oAttrs.Name, src.JobPath()))
-		artifacts = append(artifacts, artifact)
+		artifacts = append(artifacts, strings.TrimPrefix(strings.TrimPrefix(oAttrs.Name, src.JobPath()), "/"))
 
 	}
 	return artifacts
+}
+
+// Artifact contructs a GCS artifact from the given GCS bucket and key
+func (af *GCSArtifactFetcher) Artifact(src JobSource, artifactName string) viewers.Artifact {
+	bkt := af.Client.Bucket(src.BucketName())
+	obj := bkt.Object(path.Join(src.JobPath(), artifactName))
+	link := fmt.Sprintf("http://gcsweb.k8s.io/gcs/%s/%s/%s", src.BucketName(), src.JobPath(), artifactName)
+	return NewGCSArtifact(obj, link, artifactName)
 }
 
 // CanonicalLink gets a link to the location of job-specific artifacts in GCS

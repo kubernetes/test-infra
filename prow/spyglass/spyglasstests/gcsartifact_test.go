@@ -26,7 +26,7 @@ import (
 
 // Tests reading at most n bytes of data from files in GCS
 func TestGCSReadAtMost(t *testing.T) {
-	buildLogArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(buildLogName), "", fakeGCSJobSource.JobPath())
+	buildLogArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(buildLogKey), "", buildLogName)
 	testCases := []struct {
 		name     string
 		a        viewers.Artifact
@@ -53,7 +53,7 @@ func TestGCSReadAtMost(t *testing.T) {
 
 // Tests reading all data from files in GCS
 func TestGCSReadAll(t *testing.T) {
-	buildLogArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(buildLogName), "", fakeGCSJobSource.JobPath())
+	buildLogArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(buildLogKey), "", buildLogName)
 	testCases := []struct {
 		name     string
 		a        viewers.Artifact
@@ -77,7 +77,7 @@ func TestGCSReadAll(t *testing.T) {
 }
 
 func TestGCSSize(t *testing.T) {
-	startedArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(startedName), "", fakeGCSJobSource.JobPath())
+	startedArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(startedKey), "", startedName)
 	testCases := []struct {
 		name     string
 		a        viewers.Artifact

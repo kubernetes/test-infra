@@ -18,22 +18,24 @@ limitations under the License.
 package junit
 
 import (
-	"encoding/json"
-
 	"k8s.io/test-infra/prow/spyglass/viewers"
 )
 
 const (
-	name  = "JUnitViewer"
-	title = "JUnit"
+	name     = "JUnitViewer"
+	title    = "JUnit"
+	priority = 5
 )
 
 func init() {
-	viewers.RegisterViewer(name, title, ViewHandler)
+	viewers.RegisterViewer(name, viewers.ViewMetadata{
+		Title:    title,
+		Priority: priority,
+	}, ViewHandler)
 }
 
 // ViewHandler creates a view for JUnit tests
-func ViewHandler(artifacts []viewers.Artifact, raw *json.RawMessage) string {
+func ViewHandler(artifacts []viewers.Artifact, raw string) string {
 	//TODO
 	return ""
 }

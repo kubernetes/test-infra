@@ -42,7 +42,7 @@ type GCSArtifact struct {
 	sizeLimit int64
 }
 
-// NewGCSArtifact returns a new GCSArtifact with a given handle
+// NewGCSArtifact returns a new GCSArtifact with a given handle, canonical link, and path within the job
 func NewGCSArtifact(handle *storage.ObjectHandle, link string, path string) *GCSArtifact {
 	return &GCSArtifact{
 		handle:    handle,
@@ -100,10 +100,8 @@ func (a *GCSArtifact) ReadAtMost(n int64) ([]byte, error) {
 			return []byte{}, err
 		}
 		p, e = ioutil.ReadAll(gReader)
-		logrus.Info("read gzipped ", string(p))
 	} else {
 		p, e = ioutil.ReadAll(reader)
-		logrus.Info("not gzipped read: ", string(p))
 	}
 	reader.Close()
 	return p, e

@@ -17,6 +17,7 @@ go_test(
         "//prow/spyglass/viewers:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/fsouza/fake-gcs-server/fakestorage:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
 

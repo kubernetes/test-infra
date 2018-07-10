@@ -25,8 +25,8 @@ import (
 
 // Tests reading last N Lines from files in GCS
 func TestGCSReadLastNLines(t *testing.T) {
-	buildLogArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(buildLogName), "", fakeGCSJobSource.JobPath())
-	//longLogArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(longLogName), "", fakeGCSJobSource.JobPath())
+	buildLogArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(buildLogKey), "", buildLogName)
+	//longLogArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(longLogKey), "", longLogName)
 	testCases := []struct {
 		name     string
 		n        int64

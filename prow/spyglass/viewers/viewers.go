@@ -14,13 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package viewers provides interfaces and methods necessary for implementing views
+// Package viewers provides interfaces and methods necessary for implementing custom artifact viewers
 package viewers
 
 import (
 	"bufio"
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -29,10 +28,21 @@ import (
 )
 
 var (
-	viewHandlerRegistry = map[string]ViewHandler{}
-	viewTitleRegistry   = map[string]string{}
-	ErrUnsupportedOp    = errors.New("Unsupported Operation")
+	viewHandlerRegistry  = map[string]ViewHandler{}
+	viewMetadataRegistry = map[string]ViewMetadata{}
+	ErrUnsupportedOp     = errors.New("Unsupported Operation")
 )
+
+// ViewMetadata represents some metadata associated with rendering views
+type ViewMetadata struct {
+	// The title of the view
+	Title string
+
+	// Defines the order of views on the page. Lower priority values will be rendered higher up.
+	// Views with identical priorities will be rendered in alphabetical order by title.
+	// Valid: [0-INTMAX].
+	Priority int
+}
 
 // Artifact represents some output of a prow job
 type Artifact interface {
@@ -45,11 +55,14 @@ type Artifact interface {
 	Size() int64
 }
 
-// ViewHandler consumes artifacts and some possible callback json data and returns and html view
-type ViewHandler func([]Artifact, *json.RawMessage) string
+// ViewHandler consumes artifacts and some possible callback json data and returns an html view.
+// Use the javascript function refreshView(viewName, viewData) to allow your viewer to call back to itself
+// (request more data, update the view, etc.). ViewData is a json blob that will be passed back to the
+// handler function for your view as the string
+type ViewHandler func([]Artifact, string) string
 
 // View gets the updated view from an artifact viewer with the provided name
-func View(name string, artifacts []Artifact, raw *json.RawMessage) (string, error) {
+func View(name string, artifacts []Artifact, raw string) (string, error) {
 	handler, ok := viewHandlerRegistry[name]
 	if !ok {
 		logrus.Error("Invalid view name ", name)
@@ -61,24 +74,42 @@ func View(name string, artifacts []Artifact, raw *json.RawMessage) (string, erro
 
 // Title gets the title of the view with the given name
 func Title(name string) (string, error) {
-	title, ok := viewTitleRegistry[name]
+	m, ok := viewMetadataRegistry[name]
 	if !ok {
 		logrus.Error("Invalid view name ", name)
 		return "", errors.New("Invalid view name provided.")
 	}
-	return title, nil
+	return m.Title, nil
+
+}
+
+// Priority gets the priority of the view with the given name
+func Priority(name string) (int, error) {
+	m, ok := viewMetadataRegistry[name]
+	if !ok {
+		logrus.Error("Invalid view name ", name)
+		return -1, errors.New("Invalid view name provided.")
+	}
+	return m.Priority, nil
 
 }
 
 // RegisterViewer registers new viewers
-func RegisterViewer(viewerName string, title string, handler ViewHandler) error {
+func RegisterViewer(viewerName string, metadata ViewMetadata, handler ViewHandler) error {
 	_, ok := viewHandlerRegistry[viewerName]
 	if ok {
 		return errors.New(fmt.Sprintf("Viewer already registered with name %s.", viewerName))
 	}
+
+	if metadata.Title == "" {
+		return errors.New("Must provide at least a Title in ViewMetadata.")
+	}
+	if metadata.Priority < 0 {
+		return errors.New("Priority must be in range [0-INTMAX]")
+	}
 	viewHandlerRegistry[viewerName] = handler
-	viewTitleRegistry[viewerName] = title
-	logrus.Infof("Registered viewer %s with title %s and a handler function", viewerName, title)
+	viewMetadataRegistry[viewerName] = metadata
+	logrus.Infof("Registered viewer %s with title %s.", viewerName, metadata.Title)
 	return nil
 }
 
