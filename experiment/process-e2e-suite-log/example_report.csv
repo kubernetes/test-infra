@@ -1,0 +1,705 @@
+filename,testDescription,Conformance,DELETE /api/v1/namespaces/{namespace}/pods,DELETE /api/v1/namespaces/{namespace}/pods/{name},DELETE /api/v1/namespaces/{namespace}/pods/{name}/proxy,DELETE /api/v1/namespaces/{namespace}/pods/{name}/proxy/{path},GET /api/v1/namespaces/{namespace}/pods,GET /api/v1/namespaces/{namespace}/pods/{name},GET /api/v1/namespaces/{namespace}/pods/{name}/log,GET /api/v1/namespaces/{namespace}/pods/{name}/portforward,GET /api/v1/namespaces/{namespace}/pods/{name}/proxy,GET /api/v1/namespaces/{namespace}/pods/{name}/proxy/{path},GET /api/v1/namespaces/{namespace}/pods/{name}/status,GET /api/v1/pods,GET /api/v1/watch/namespaces/{namespace}/pods,GET /api/v1/watch/namespaces/{namespace}/pods/{name},GET /api/v1/watch/pods,PATCH /api/v1/namespaces/{namespace}/pods/{name},PATCH /api/v1/namespaces/{namespace}/pods/{name}/status,POST /api/v1/namespaces/{namespace}/pods,POST /api/v1/namespaces/{namespace}/pods/{name}/eviction,POST /api/v1/namespaces/{namespace}/pods/{name}/portforward,POST /api/v1/namespaces/{namespace}/pods/{name}/proxy,POST /api/v1/namespaces/{namespace}/pods/{name}/proxy/{path},PUT /api/v1/namespaces/{namespace}/pods/{name},PUT /api/v1/namespaces/{namespace}/pods/{name}/proxy,PUT /api/v1/namespaces/{namespace}/pods/{name}/proxy/{path},PUT /api/v1/namespaces/{namespace}/pods/{name}/status
+res_100.tmp,[sig-api-machinery] Watchers   should observe add update and delete events on pods,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,Y,,,Y
+res_101.tmp,[sig-storage] Subpath [Volume type: nfs]   should fail if non-existent subpath is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_10.tmp,[sig-storage] Subpath [Volume type: nfs]   should unmount if pod is force deleted while kubelet is down [Disruptive][Slow],,Y,Y,,,Y,Y,,,,,,Y,Y,,Y,,,Y,,,,,,,,Y
+res_102.tmp,[sig-storage] Subpath [Volume type: nfs]   should unmount if pod is gracefully deleted while kubelet is down [Disruptive][Slow],,Y,Y,,,Y,Y,,,,,,Y,,,Y,,,Y,,,,,,,,Y
+res_103.tmp,[sig-storage] Subpath Atomic writer volumes   should support subpaths with downward pod,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_104.tmp,[sig-scheduling] Multi-AZ Cluster Volumes [sig-storage]   should only be allowed to provision PDs in zones where nodes exist,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_105.tmp,[sig-storage] PersistentVolumes-local  [Volume type: tmpfs] Two pods mounting a local volume one after the other   should be able to write from pod1 and read from pod2,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_106.tmp,[sig-storage] Subpath [Volume type: hostPath]   should support readOnly directory specified in the volumeSource,,Y,Y,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_108.tmp,[sig-network] Services   should have session affinity work for service with type clusterIP,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_109.tmp,[sig-apps] Deployment   RecreateDeployment should delete old pods and create new ones,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_110.tmp,[sig-api-machinery] Generated clientset   should create v1beta1 cronJobs delete cronJobs watch cronJobs,,Y,,,,Y,Y,,,,,,,Y,,,,,,,,,,,,,
+res_11.tmp,[sig-storage] EmptyDir volumes   should support (root0666tmpfs) [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_111.tmp,[sig-storage] Volume Placement   should create and delete pod with multiple volumes from different datastore,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_113.tmp,[sig-storage] Subpath [Volume type: hostPath]   should support existing single file,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_112.tmp,[sig-storage] [Serial] Volume metrics PVController   should create none metrics for pvc controller before creating any PV or PVC,,Y,,,,Y,Y,,,,Y,,,,,,,,,,,,,,,,
+res_114.tmp,[sig-storage] Subpath [Volume type: hostPathSymlink]   should support creating multiple subpath from same volumes [Slow],,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_115.tmp,[sig-storage] Downward API volume   should provide container's cpu limit  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_116.tmp,[k8s.io] Pods   should get a host IP  [Conformance],Y,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_118.tmp,[sig-storage] PersistentVolumes-local  Local volume that cannot be mounted [Slow]   should fail due to non-existent path,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_117.tmp,[sig-storage] Volume Placement   test back to back pod creation and deletion with different volume sources on the same worker node,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_107.tmp,[sig-storage] EmptyDir wrapper volumes   should not cause race condition when used for configmaps [Serial] [Slow],,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_12.tmp,[sig-storage] ConfigMap   binary data should be reflected in volume ,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_120.tmp,[sig-storage] PersistentVolumes-local  [Volume type: gce-localssd-scsi-fs] [Serial] Two pods mounting a local volume one after the other   should be able to write from pod1 and read from pod2,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_119.tmp,[sig-instrumentation] Cluster level logging implemented by Stackdriver   should ingest logs,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_122.tmp,[sig-storage] Downward API volume   should provide container's memory request  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_123.tmp,[sig-storage] PersistentVolumes:vsphere   should test that deleting the PV before the pod does not cause pod deletion to fail on vspehre volume detach,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_121.tmp,[sig-storage] Volumes PD   should be mountable with ext3,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_124.tmp,[sig-storage] Subpath [Volume type: gcePDPartitioned]   should support readOnly directory specified in the volumeMount,,Y,Y,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_126.tmp,[sig-storage] Subpath [Volume type: hostPath]   should support creating multiple subpath from same volumes [Slow],,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_125.tmp,[sig-network] Networking   should check kube-proxy urls,,Y,,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_129.tmp,[sig-storage] Subpath [Volume type: gcePDPartitioned]   should support restarting containers using file as subpath [Slow],,Y,Y,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_127.tmp,[k8s.io] [sig-node] AppArmor load AppArmor profiles   can disable an AppArmor profile using unconfined,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_13.tmp,[sig-auth] PodSecurityPolicy   should enforce the restricted extensions.PodSecurityPolicy,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_128.tmp,[sig-api-machinery] AdmissionWebhook   Should mutate custom resource,,Y,,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_130.tmp,[sig-scheduling] SchedulerPredicates [Serial]   validates that there is no conflict between pods with same hostPort but different hostIP and protocol,,Y,Y,,,Y,Y,,,,,,Y,,,Y,,,Y,,,,,,,,Y
+res_131.tmp,[sig-storage] Subpath [Volume type: hostPathSymlink]   should fail if non-existent subpath is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_132.tmp,[sig-storage] PVC Protection   Verify "immediate" deletion of a PVC that is not in active use by a pod,,Y,,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_134.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir-bindmounted] Two pods mounting a local volume one after the other   should be able to write from pod1 and read from pod2,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_133.tmp,[sig-auth] ServiceAccounts   should mount an API token into pods  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_135.tmp,[sig-api-machinery] AdmissionWebhook   Should mutate pod and apply defaults after mutation,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_136.tmp,[sig-storage] Flexvolumes [Disruptive]   should install plugin without kubelet restart,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_137.tmp,[sig-network] Services   should serve multiport endpoints from pods  [Conformance],Y,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_139.tmp,[sig-network] Networking Granular Checks: Services [Slow]   should function for node-Service: http,,Y,,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_138.tmp,[sig-storage] Subpath [Volume type: nfs]   should fail if subpath directory is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_14.tmp,[sig-storage] Subpath [Volume type: gcePDPVC]   should fail if subpath with backstepping is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_141.tmp,[sig-api-machinery] ConfigMap   should be consumable via the environment  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_142.tmp,[sig-api-machinery] Garbage collector   should not be blocked by dependency circle [Conformance],Y,Y,Y,,,Y,Y,,,,,,,,,Y,Y,,Y,,,,,Y,,,Y
+res_140.tmp,[sig-storage] Subpath [Volume type: gluster]   should fail if non-existent subpath is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_144.tmp,[sig-apps] StatefulSet [k8s.io] Basic StatefulSet functionality [StatefulSetBasic]   should perform canary updates and phased rolling updates of template modifications [Conformance],Y,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_143.tmp,[sig-auth] Advanced Audit   should audit API calls [DisabledForLargeClusters],,Y,Y,,,Y,Y,,,,,,,Y,,Y,Y,,Y,,,,,Y,,,Y
+res_145.tmp,[sig-api-machinery] AdmissionWebhook   Should unconditionally reject operations on fail closed webhook,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_147.tmp,[sig-storage] Subpath [Volume type: gcePDPartitioned]   should support existing directory,,Y,Y,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_146.tmp,[sig-cluster-lifecycle] Nodes [Disruptive] Resize [Slow]   should be able to delete nodes,,Y,Y,,,Y,Y,,,,Y,,Y,Y,,Y,,,Y,,,,,,,,Y
+res_148.tmp,[k8s.io] Docker Containers   should be able to override the image's default command (docker entrypoint)  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_149.tmp,[sig-storage] Subpath [Volume type: gluster]   should support readOnly directory specified in the volumeMount,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_151.tmp,[sig-storage] Subpath [Volume type: gcePDPartitioned]   should fail if non-existent subpath is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_150.tmp,[sig-storage] Downward API volume   should provide container's cpu request  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_152.tmp,[sig-storage] Subpath [Volume type: gcePDPartitioned]   should fail if subpath with backstepping is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_15.tmp,[sig-network] Services   should be able to create an internal type load balancer [Slow] [DisabledForLargeClusters],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_153.tmp,[sig-storage] Projected   should be consumable from pods in volume with mappings as non-root with FSGroup,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_154.tmp,[sig-auth] ServiceAccounts   should allow opting out of API token automount  [Conformance],Y,Y,,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_156.tmp,[sig-storage] ConfigMap   should be consumable from pods in volume as non-root with defaultMode and fsGroup set,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_157.tmp,[sig-storage] Subpath [Volume type: emptyDir]   should support non-existent path,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_155.tmp,[sig-network] Networking Granular Checks: Pods   should function for intra-pod communication: udp  [Conformance],Y,Y,,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_158.tmp,[sig-storage] Subpath [Volume type: nfsPVC]   should support readOnly directory specified in the volumeMount,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_160.tmp,[sig-storage] Pod Disks schedule a pod w/ RW PD(s) mounted to 1 or more containers write to PD verify content delete pod and repeat in rapid succession [Slow]   using 1 containers and 2 PDs,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_16.tmp,[k8s.io] Probing container   should be restarted with a exec "cat /tmp/health" liveness probe [Conformance],Y,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_159.tmp,[sig-apps] StatefulSet [k8s.io] Basic StatefulSet functionality [StatefulSetBasic]   Scaling should happen in predictable order and halt if any stateful pod is unhealthy [Conformance],Y,Y,Y,,,Y,Y,,,,,,Y,Y,,Y,,,Y,,,,,,,,Y
+res_161.tmp,[sig-storage] Projected   updates should be reflected in volume [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_163.tmp,[k8s.io] Probing container   should be restarted with a /healthz http liveness probe  [Conformance],Y,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_164.tmp,[sig-storage] Subpath [Volume type: gluster]   should support readOnly directory specified in the volumeSource,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_165.tmp,[sig-cli] Kubectl client [k8s.io] Kubectl run default   should create an rc or deployment from an image  [Conformance],Y,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_162.tmp,[sig-storage] PersistentVolumes-local  [Volume type: tmpfs] One pod requesting one prebound PVC   should be able to mount volume and read from pod1,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_166.tmp,[sig-network] Services   should serve a basic endpoint from pods  [Conformance],Y,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_167.tmp,[sig-storage] Projected   should update labels on modification [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,Y,,,Y
+res_168.tmp,[sig-auth] Metadata Concealment   should run a check-metadata-concealment job to completion,,Y,,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_169.tmp,[sig-storage] PersistentVolumes-local  [Volume type: gce-localssd-scsi-fs] [Serial] Set fsGroup for local volume   should set fsGroup for one pod,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_171.tmp,[sig-storage] PersistentVolumes:vsphere   should test that deleting the Namespace of a PVC and Pod causes the successful detach of vsphere volume,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_17.tmp,[sig-storage] Subpath [Volume type: nfs]   should support readOnly file specified in the volumeMount,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_170.tmp,[sig-instrumentation] Logging soak [Performance] [Slow] [Disruptive]   should survive logging 1KB every 1s seconds for a duration of 2m0s scaling up to 1 pods per node,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_173.tmp,[sig-cli] Kubectl client [k8s.io] Update Demo   should create and stop a replication controller  [Conformance],Y,Y,Y,,,Y,Y,,,,Y,,,,,,,,Y,,,,,,,,Y
+res_172.tmp,[sig-storage] PVC Protection   Verify that PVC in active use by a pod is not removed immediately,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_175.tmp,[sig-storage] Projected   should be consumable from pods in volume as non-root with defaultMode and fsGroup set,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_177.tmp,[sig-storage] Subpath [Volume type: hostPathSymlink]   should support restarting containers using directory as subpath [Slow],,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_174.tmp,[sig-storage] PersistentVolumes-local  [Volume type: blockfs] Set fsGroup for local volume   should not set different fsGroups for two pods simultaneously,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_176.tmp,[sig-storage] GCP Volumes NFSv3   should be mountable for NFSv3,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_18.tmp,[sig-storage] Secrets   should be consumable from pods in volume  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_178.tmp,[sig-storage] EmptyDir wrapper volumes   should not conflict,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_179.tmp,[sig-storage] Subpath [Volume type: hostPathSymlink]   should support restarting containers using file as subpath [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_180.tmp,[sig-storage] Subpath [Volume type: emptyDir]   should support existing single file,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_181.tmp,[sig-api-machinery] AdmissionWebhook   Should be able to deny pod and configmap creation,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_184.tmp,[sig-cli] Kubectl client [k8s.io] Kubectl cluster-info   should check if Kubernetes master services is included in cluster-info  [Conformance],Y,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_183.tmp,[sig-storage] Downward API volume   should update labels on modification  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,Y,,,Y
+res_182.tmp,[sig-storage] Subpath [Volume type: hostPathSymlink]   should fail if subpath file is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_185.tmp,[sig-storage] Subpath [Volume type: hostPath]   should support restarting containers using directory as subpath [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_187.tmp,[sig-storage] Subpath [Volume type: hostPath]   should support existing directory,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_186.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir-link-bindmounted] One pod requesting one prebound PVC   should be able to mount volume and write from pod1,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_188.tmp,[sig-network] Services   should create endpoints for unready pods,,Y,Y,,,Y,Y,,,,Y,,,,,Y,,,Y,,,,,,,,Y
+res_189.tmp,[sig-storage] ConfigMap   should be consumable from pods in volume as non-root  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_190.tmp,[sig-storage] ConfigMap   should be consumable from pods in volume with mappings  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_191.tmp,[sig-cli] Kubectl Port forwarding [k8s.io] With a server listening on 0.0.0.0 [k8s.io] that expects a client request   should support a client that connects sends NO DATA and disconnects,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,Y,,,,,,Y
+res_192.tmp,[sig-api-machinery] Servers with support for Table transformation   should return a 406 for a backend which does not implement metadata,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_19.tmp,[sig-storage] Subpath [Volume type: nfsPVC]   should support readOnly directory specified in the volumeSource,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_194.tmp,[sig-storage] Secrets   should be consumable from pods in volume with mappings  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_195.tmp,[sig-storage] Pod Disks detach in a disrupted environment [Slow] [Disruptive]   when pod is evicted,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,Y,,,,,,,Y
+res_196.tmp,[k8s.io] Pods   should contain environment variables for services  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_193.tmp,[sig-network] Networking Granular Checks: Pods   should function for node-pod communication: http  [Conformance],Y,Y,,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_198.tmp,[sig-apps] Network Partition [Disruptive] [Slow] [k8s.io] [Job]   should create new pods when node is partitioned,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_2.tmp,[sig-network] Services   should check NodePort out-of-range,,Y,,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_20.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir-bindmounted] Set fsGroup for local volume   should set fsGroup for one pod,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_199.tmp,[sig-api-machinery] Etcd failure [Disruptive]   should recover from network partition with master,,Y,Y,,,Y,Y,,,,Y,,,Y,,Y,,,Y,,,,,,,,Y
+res_197.tmp,[sig-storage] PersistentVolumes-local  [Volume type: tmpfs] Set fsGroup for local volume   should set different fsGroup for second pod if first pod is deleted,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_200.tmp,[sig-storage] Subpath [Volume type: gluster]   should support existing directory,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_201.tmp,[sig-apps] Daemon set [Serial]   should not update pod when spec was updated and update strategy is OnDelete,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_202.tmp,[sig-storage] Projected   should be consumable in multiple volumes in the same pod [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_205.tmp,[sig-cli] Kubectl client [k8s.io] Kubectl run rc   should create an rc from an image  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_203.tmp,[sig-apps] StatefulSet [k8s.io] Basic StatefulSet functionality [StatefulSetBasic]   should perform rolling updates and roll backs of template modifications [Conformance],Y,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_204.tmp,[sig-storage] Subpath [Volume type: nfsPVC]   should fail if subpath with backstepping is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_206.tmp,[sig-api-machinery] Garbage collector   should delete pods created by rc when not orphaning [Conformance],Y,Y,Y,,,Y,Y,,,,Y,,,,,,,,Y,,,,,,,,Y
+res_207.tmp,[sig-storage] Secrets   should be able to mount in a volume regardless of a different secret existing with same name in different namespace,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_208.tmp,[sig-storage] Subpath [Volume type: emptyDir]   should support creating multiple subpath from same volumes [Slow],,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_209.tmp,[sig-cli] Kubectl client [k8s.io] Update Demo   should do a rolling update of a replication controller  [Conformance],Y,Y,Y,,,Y,Y,,,,Y,,,Y,,Y,Y,,Y,,,,,,,,Y
+res_21.tmp,[sig-apps] Daemon set [Serial]   should run and stop complex daemon with node affinity,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_210.tmp,[sig-storage] Subpath [Volume type: gcePDPVC]   should unmount if pod is gracefully deleted while kubelet is down [Disruptive][Slow],,Y,Y,,,Y,Y,,,,,,Y,,,Y,,,Y,,,,,,,,Y
+res_211.tmp,[sig-storage] EmptyDir volumes   should support (non-root0644tmpfs) [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_213.tmp,[sig-storage] [Serial] Volume metrics PVController   should create unbound pvc count metrics for pvc controller after creating pvc only,,Y,,,,Y,Y,,,,Y,,,,,,,,,,,,,,,,
+res_212.tmp,[sig-api-machinery] AdmissionWebhook   Should be able to deny custom resource creation,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_215.tmp,[sig-network] Proxy version v1   should proxy logs on node with explicit kubelet port using proxy subresource  [Conformance],Y,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_216.tmp,[sig-api-machinery] Downward API   should provide container's limits.cpu/memory and requests.cpu/memory as env vars  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_214.tmp,[sig-api-machinery] AdmissionWebhook   Should not be able to prevent deleting validating-webhook-configurations or mutating-webhook-configurations,,Y,,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_217.tmp,[sig-scheduling] SchedulerPredicates [Serial]   validates that taints-tolerations is respected if not matching,,Y,Y,,,Y,Y,,,,,,Y,,,Y,,,Y,,,,,,,,Y
+res_22.tmp,[sig-scheduling] ResourceQuota   should create a ResourceQuota and capture the life of a persistent volume claim with a storage class. [sig-storage],,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_219.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir-link-bindmounted] Set fsGroup for local volume   should not set different fsGroups for two pods simultaneously,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_218.tmp,[k8s.io] Probing container   with readiness probe should not be ready before initial delay and never restart  [Conformance],Y,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_220.tmp,[sig-storage] Subpath [Volume type: hostPathSymlink]   should support readOnly directory specified in the volumeSource,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_223.tmp,[sig-storage] EmptyDir volumes   should support (non-root0666default) [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_222.tmp,[sig-network] Loadbalancing: L7 [Slow] Nginx   should conform to Ingress spec,,Y,,,,Y,Y,Y,,,,,Y,,,,,,,,,,,,,,
+res_221.tmp,[sig-storage] Subpath [Volume type: nfsPVC]   should support non-existent path,,Y,Y,,,Y,Y,Y,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_224.tmp,[sig-api-machinery] Garbage collector   should support cascading deletion of custom resources,,Y,,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_227.tmp,[sig-apps] DisruptionController   evictions: too few pods absolute => should not allow an eviction,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,Y,,,,,,,Y
+res_225.tmp,[k8s.io] EquivalenceCache [Serial]   validates GeneralPredicates is properly invalidated when a pod is scheduled [Slow],,Y,Y,,,Y,Y,,,,,,Y,Y,,Y,,,Y,,,,,,,,Y
+res_226.tmp,[sig-apps] StatefulSet [k8s.io] Basic StatefulSet functionality [StatefulSetBasic]   Should recreate evicted statefulset [Conformance],Y,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_228.tmp,[sig-api-machinery] Garbage collector   should delete RS created by deployment when not orphaning [Conformance],Y,Y,Y,,,Y,Y,,,,Y,,,,,Y,,,Y,,,,,,,,Y
+res_230.tmp,[sig-network] Networking   should provide unchanging static URL paths for kubernetes api services,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_229.tmp,[sig-api-machinery] Downward API   should provide default limits.cpu/memory from node allocatable  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_231.tmp,[sig-network] Networking Granular Checks: Services [Slow]   should function for client IP based session affinity: udp,,Y,,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_23.tmp,[sig-apps] CronJob   should replace jobs when ReplaceConcurrent,,Y,Y,,,Y,Y,,,,,,,Y,,Y,Y,,Y,,,,,,,,Y
+res_232.tmp,[sig-cli] Kubectl client [k8s.io] Simple pod   should support exec,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_233.tmp,[sig-storage] Subpath [Volume type: hostPathSymlink]   should fail if subpath with backstepping is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_235.tmp,[sig-scheduling] SchedulerPredicates [Serial]   validates that NodeSelector is respected if matching  [Conformance],Y,Y,Y,,,Y,Y,,,,,,Y,,,Y,,,Y,,,,,,,,Y
+res_234.tmp,[sig-storage] Subpath [Volume type: emptyDir]   should unmount if pod is force deleted while kubelet is down [Disruptive][Slow],,Y,Y,,,Y,Y,,,,,,Y,,,Y,,,Y,,,,,,,,Y
+res_237.tmp,[sig-storage] Projected   should be consumable from pods in volume [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_238.tmp,[sig-storage] PersistentVolumes-local  [Volume type: blockfs] Set fsGroup for local volume   should set different fsGroup for second pod if first pod is deleted,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_239.tmp,[sig-storage] PersistentVolumes NFS with multiple PVs and PVCs all in same ns   should create 2 PVs and 4 PVCs: test write access,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_24.tmp,[sig-storage] Subpath [Volume type: gluster]   should support creating multiple subpath from same volumes [Slow],,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_240.tmp,[sig-storage] Subpath [Volume type: gcePDPVC]   should support readOnly directory specified in the volumeSource,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_242.tmp,[sig-storage] Secrets   should be consumable from pods in volume as non-root with defaultMode and fsGroup set  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_241.tmp,[k8s.io] InitContainer   should invoke init containers on a RestartAlways pod,,Y,Y,,,Y,Y,,,,,,,Y,,,,,Y,,,,,,,,Y
+res_243.tmp,[sig-storage] Downward API volume   should provide node allocatable (cpu) as default cpu limit if the limit is not set  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_245.tmp,[sig-apps] DisruptionController   evictions: maxUnavailable deny evictions integer => should not allow an eviction,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,Y,,,,,,,Y
+res_244.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir-link] Set fsGroup for local volume   should set different fsGroup for second pod if first pod is deleted,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_246.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir-link-bindmounted] Two pods mounting a local volume one after the other   should be able to write from pod1 and read from pod2,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_247.tmp,[sig-storage] ConfigMap   should be consumable from pods in volume with mappings as non-root  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_248.tmp,[sig-storage] Subpath [Volume type: hostPath]   should fail if non-existent subpath is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_249.tmp,[sig-storage] Subpath [Volume type: gcePDPVC]   should fail if subpath file is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_25.tmp,[sig-cli] Kubectl client [k8s.io] Simple pod   should support inline execution and attach,,Y,Y,,,Y,Y,Y,,,,,,Y,,,Y,,Y,,,,,,,,Y
+res_251.tmp,[sig-storage] Subpath [Volume type: hostPath]   should unmount if pod is gracefully deleted while kubelet is down [Disruptive][Slow],,Y,Y,,,Y,Y,,,,,,Y,,,Y,,,Y,,,,,,,,Y
+res_250.tmp,[sig-network] Services   should work after restarting apiserver [Disruptive],,Y,Y,,,Y,Y,,,,,,Y,Y,,Y,,,Y,,,,,,,,Y
+res_252.tmp,[sig-storage] Subpath [Volume type: gcePDPartitioned]   should support readOnly file specified in the volumeMount,,Y,Y,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_253.tmp,[sig-storage] Secrets   should be consumable from pods in volume with mappings and Item Mode set  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_255.tmp,[sig-storage] Projected   should set mode on item file [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_254.tmp,[sig-storage] Dynamic Provisioning DynamicProvisioner External   should let an external dynamic provisioner create and delete persistent volumes [Slow],,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_257.tmp,[sig-storage] Secrets   should be consumable from pods in volume with defaultMode set  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_256.tmp,[sig-storage] Subpath [Volume type: gluster]   should support restarting containers using directory as subpath [Slow],,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_236.tmp,[sig-api-machinery] Namespaces [Serial]   should delete fast enough (90 percent of 100 namespaces in 150 seconds),,Y,,,,Y,Y,,,,,,,Y,,Y,,,,,,,,,,,
+res_258.tmp,[sig-storage] Downward API volume   should provide podname as non-root with fsgroup,,Y,Y,,,Y,Y,Y,,,,,,Y,,,,,Y,,,,,,,,Y
+res_26.tmp,[sig-scheduling] ResourceQuota   should create a ResourceQuota and capture the life of a secret.,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_259.tmp,[sig-storage] Subpath [Volume type: gcePDPVC]   should support non-existent path,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_260.tmp,[sig-api-machinery] AdmissionWebhook   Should mutate configmap,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_262.tmp,[sig-storage] Projected   should provide container's cpu request [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_261.tmp,[sig-storage] Downward API volume   should set DefaultMode on files  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_263.tmp,[sig-storage] Subpath [Volume type: hostPath]   should support readOnly directory specified in the volumeMount,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_264.tmp,[sig-storage] Volumes PD   should be mountable with ext4,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_267.tmp,[sig-network] Networking Granular Checks: Services [Slow]   should update nodePort: udp [Slow],,Y,,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_265.tmp,[sig-apps] StatefulSet [k8s.io] Basic StatefulSet functionality [StatefulSetBasic]   should adopt matching orphans and release non-matching pods,,Y,Y,,,Y,Y,,,,,,,,,Y,Y,,Y,,,,,Y,,,Y
+res_266.tmp,[sig-storage] Volume plugin streaming [Slow] NFS   should write files of various sizes verify size validate content,,Y,Y,,,Y,Y,,,,,,,Y,,,,,Y,,,,,,,,Y
+res_268.tmp,[sig-cli] Kubectl client [k8s.io] Kubectl create quota   should create a quota without scopes,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_27.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir-link-bindmounted] Set fsGroup for local volume   should set different fsGroup for second pod if first pod is deleted,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_269.tmp,[k8s.io] Docker Containers   should be able to override the image's default arguments (docker cmd)  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_271.tmp,[sig-storage] EmptyDir volumes   should support (root0777default) [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_272.tmp,[sig-storage] Subpath [Volume type: emptyDir]   should support file as subpath,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_270.tmp,[k8s.io] Probing container   should *not* be restarted with a /healthz http liveness probe  [Conformance],Y,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_273.tmp,[sig-storage] Subpath [Volume type: gcePDPartitioned]   should fail if subpath directory is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_276.tmp,[sig-api-machinery] Servers with support for Table transformation   should return chunks of table results for list calls,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_275.tmp,[sig-api-machinery] Etcd failure [Disruptive]   should recover from SIGKILL,,Y,Y,,,Y,Y,,,,Y,,,Y,,Y,,,Y,,,,,,,,Y
+res_274.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir-link-bindmounted] One pod requesting one prebound PVC   should be able to mount volume and read from pod1,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_278.tmp,[sig-storage] [Serial] Volume metrics   should create prometheus metrics for volume provisioning and attach/detach,,Y,Y,,,Y,Y,,,,Y,,,Y,,Y,,,Y,,,,,,,,Y
+res_277.tmp,[k8s.io] Pods   should cap back-off at MaxContainerBackOff [Slow],,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_279.tmp,[sig-storage] PV Protection   Verify "immediate" deletion of a PV that is not bound to a PVC,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_28.tmp,[sig-network] Services   should prevent NodePort collisions,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_281.tmp,[sig-cli] Kubectl client [k8s.io] Kubectl rolling-update   should support rolling-update to same image  [Conformance],Y,Y,Y,,,Y,Y,,,,,,,,,Y,Y,,Y,,,,,Y,,,Y
+res_282.tmp,[k8s.io] [sig-node] Mount propagation   should propagate mounts to the host,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_280.tmp,[k8s.io] Probing container   with readiness probe that fails should never be ready and never restart  [Conformance],Y,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_284.tmp,[sig-storage] Downward API volume   should set mode on item file  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_283.tmp,[sig-storage] Subpath [Volume type: hostPath]   should support restarting containers using file as subpath [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_285.tmp,[sig-cluster-lifecycle] Nodes [Disruptive] Resize [Slow]   should be able to add nodes,,Y,Y,,,Y,Y,,,,Y,,Y,Y,,Y,,,Y,,,,,,,,Y
+res_286.tmp,[sig-apps] CronJob   should delete successful finished jobs with limit of one successful job,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_287.tmp,[sig-storage] Pod Disks schedule pods each with a PD delete pod and verify detach [Slow]   for read-only PD with pod delete grace period of "default (30s)",,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_288.tmp,[sig-cli] Kubectl client [k8s.io] Kubectl apply   should reuse port when apply to an existing SVC,,Y,,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_290.tmp,[sig-storage] Downward API volume   should provide podname as non-root with fsgroup and defaultMode,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_289.tmp,[sig-scheduling] SchedulerPredicates [Serial]   validates resource limits of pods that are allowed to run  [Conformance],Y,Y,,,,Y,Y,,,,,,Y,Y,,Y,,,Y,,,,,,,,Y
+res_291.tmp,[sig-network] DNS   should provide DNS for ExternalName services,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_29.tmp,[sig-autoscaling] DNS horizontal autoscaling   [Serial] [Slow] kube-dns-autoscaler should scale kube-dns pods when cluster size changed,,Y,Y,,,Y,Y,,,,,,Y,Y,,Y,,,Y,,,,,,,,Y
+res_292.tmp,[sig-storage] EmptyDir volumes when FSGroup is specified   new files should be created with FSGroup ownership when container is root,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_294.tmp,[sig-storage] Volumes PD   should be mountable with xfs,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_293.tmp,[sig-autoscaling] [HPA] Horizontal pod autoscaling (scale resource: CPU) [sig-autoscaling] [Serial] [Slow] Deployment   Should scale from 5 pods to 3 pods and from 3 to 1,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_295.tmp,[sig-auth] ServiceAccounts   should ensure a single API token exists,,Y,,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_297.tmp,[k8s.io] Pods   should support retrieving logs from the container over websockets,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_296.tmp,[sig-storage] PVC Protection   Verify that scheduling of a pod that uses PVC that is being deleted fails and the pod becomes Unschedulable,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_298.tmp,[k8s.io] Probing container   should *not* be restarted with a exec "cat /tmp/health" liveness probe [Conformance],Y,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_299.tmp,[sig-storage] Dynamic Provisioning DynamicProvisioner   should provision storage with different parameters [Slow],,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_3.tmp,[k8s.io] EquivalenceCache [Serial]   validates pod anti-affinity works properly when new replica pod is scheduled,,Y,Y,,,Y,Y,,,,,,Y,Y,,Y,,,Y,,,,,,,,Y
+res_30.tmp,[k8s.io] Pods   should be updated  [Conformance],Y,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,Y,,,Y
+res_301.tmp,[k8s.io] Pods   should be submitted and removed  [Conformance],Y,Y,Y,,,Y,Y,,,,,,,Y,,,,,Y,,,,,,,,Y
+res_303.tmp,[sig-api-machinery] Aggregator   Should be able to support the 1.7 Sample API Server using the current Aggregator,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_300.tmp,[sig-autoscaling] [HPA] Horizontal pod autoscaling (scale resource: CPU) [sig-autoscaling] [Serial] [Slow] ReplicaSet   Should scale from 1 pod to 3 pods and from 3 to 5,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_302.tmp,[sig-apps] CronJob   should not emit unexpected warnings,,Y,,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_304.tmp,[sig-storage] [Serial] Volume metrics PVController   should create unbound pv count metrics for pvc controller after creating pv only,,Y,,,,Y,Y,,,,Y,,,,,Y,,,,,,,,,,,
+res_305.tmp,[sig-scheduling] Multi-AZ Clusters   should spread the pods of a service across zones,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_307.tmp,[sig-storage] Dynamic Provisioning DynamicProvisioner   should provision storage with mount options,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_306.tmp,[sig-apps] ReplicationController   should release no longer matching pods,,Y,Y,,,Y,Y,,,,,,,,,,Y,,Y,,,,,Y,,,Y
+res_308.tmp,[sig-cli] Kubectl client [k8s.io] Simple pod   should support port-forward,,Y,Y,,,Y,Y,,,,,,,Y,,,,,Y,,Y,,,,,,Y
+res_309.tmp,[sig-network] Networking Granular Checks: Services [Slow]   should function for pod-Service: udp,,Y,,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_31.tmp,[sig-autoscaling] DNS horizontal autoscaling   [DisabledForLargeClusters] kube-dns-autoscaler should scale kube-dns pods in both nonfaulty and faulty scenarios,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_311.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir] One pod requesting one prebound PVC   should be able to mount volume and write from pod1,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_313.tmp,[sig-scheduling] ResourceQuota   should create a ResourceQuota and capture the life of a service.,,Y,,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_312.tmp,[sig-storage] Pod Disks schedule pods each with a PD delete pod and verify detach [Slow]   for RW PD with pod delete grace period of "default (30s)",,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_314.tmp,[sig-storage] PersistentVolumes-local  Local volume provisioner [Serial]   should not create local persistent volume for filesystem volume that was not bind mounted,,Y,Y,,,Y,Y,Y,,,,,,,,Y,Y,,Y,,,,,,,,Y
+res_310.tmp,[sig-storage] EmptyDir wrapper volumes   should not cause race condition when used for git_repo [Serial] [Slow],,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_316.tmp,[sig-network] Services   should be able to switch session affinity for service with type clusterIP,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_315.tmp,[sig-storage] Subpath [Volume type: gcePDPVC]   should fail if non-existent subpath is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_318.tmp,[sig-storage] PersistentVolumes NFS with Single PV - PVC pairs   create a PVC and a pre-bound PV: test write access,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_317.tmp,[sig-api-machinery] Generated clientset   should create pods set the deletionTimestamp and deletionGracePeriodSeconds of the pod,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_32.tmp,[sig-storage] vsphere statefulset   vsphere statefulset testing,,Y,Y,,,Y,Y,,,,,,,,,,,,,,,,,,,,Y
+res_321.tmp,[sig-cli] Kubectl client [k8s.io] Kubectl apply   should apply a new configuration to an existing RC,,Y,Y,,,Y,Y,,,,,,,,,,Y,,Y,,,,,,,,Y
+res_319.tmp,[sig-autoscaling] [HPA] Horizontal pod autoscaling (scale resource: CPU) [sig-autoscaling] [Serial] [Slow] ReplicationController   Should scale from 1 pod to 3 pods and from 3 to 5 and verify decision stability,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_320.tmp,[sig-storage] PersistentVolumes-local  [Volume type: blockfs] One pod requesting one prebound PVC   should be able to mount volume and read from pod1,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_322.tmp,[sig-storage] Subpath [Volume type: nfsPVC]   should unmount if pod is force deleted while kubelet is down [Disruptive][Slow],,Y,Y,,,Y,Y,,,,,,Y,Y,,Y,,,Y,,,,,,,,Y
+res_325.tmp,[sig-apps] ReplicationController   should adopt matching pods on creation,,Y,Y,,,Y,Y,,,,,,,,,Y,Y,,Y,,,,,,,,Y
+res_324.tmp,[sig-storage] Subpath [Volume type: hostPath]   should unmount if pod is force deleted while kubelet is down [Disruptive][Slow],,Y,Y,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_326.tmp,[sig-storage] Projected   should update annotations on modification [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,Y,,,Y
+res_328.tmp,[sig-storage] ConfigMap   should be consumable from pods in volume with defaultMode set  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_327.tmp,[sig-storage] Subpath [Volume type: nfs]   should support readOnly directory specified in the volumeSource,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_329.tmp,[sig-network] Services   should have session affinity work for LoadBalancer service with ESIPP off [Slow] [DisabledForLargeClusters],,Y,Y,,,Y,Y,Y,,,,,Y,Y,,Y,,,Y,,,,,,,,Y
+res_33.tmp,[sig-instrumentation] MetricsGrabber   should grab all metrics from a Kubelet.,,Y,Y,,,Y,Y,,,,,,,,,,,,,,,,,,,,Y
+res_330.tmp,[sig-instrumentation] MetricsGrabber   should grab all metrics from API server.,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_331.tmp,[k8s.io] Downward API [Serial] [Disruptive] Downward API tests for local ephemeral storage   should provide container's limits.ephemeral-storage and requests.ephemeral-storage as env vars,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_323.tmp,[sig-apps] Deployment   deployment should support proportional scaling,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_333.tmp,[sig-cli] Kubectl client [k8s.io] Kubectl patch   should add annotations for pods in rc  [Conformance],Y,Y,Y,,,Y,Y,,,,,,,Y,,Y,Y,,Y,,,,,,,,Y
+res_334.tmp,[sig-storage] EmptyDir volumes   should support (root0777tmpfs) [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_335.tmp,[sig-storage] Downward API volume   should provide node allocatable (memory) as default memory limit if the limit is not set  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_337.tmp,[sig-cli] Kubectl Port forwarding [k8s.io] With a server listening on localhost [k8s.io] that expects NO client request   should support a client that connects sends DATA and disconnects,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,Y,,,,,,Y
+res_332.tmp,[sig-cluster-lifecycle] Restart [Disruptive]   should restart all nodes and ensure all nodes and pods recover,,Y,,,,Y,Y,,,,,,Y,Y,,Y,,,,,,,,,,,Y
+res_336.tmp,[sig-apps] CronJob   should remove from active list jobs that have been deleted,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_338.tmp,[sig-storage] Subpath [Volume type: nfsPVC]   should support creating multiple subpath from same volumes [Slow],,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_34.tmp,[sig-storage] Subpath [Volume type: gluster]   should support restarting containers using file as subpath [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_339.tmp,[sig-network] Networking Granular Checks: Services [Slow]   should function for node-Service: udp,,Y,,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_341.tmp,[sig-apps] Job   should run a job to completion when tasks sometimes fail and are locally restarted,,Y,,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_340.tmp,[sig-apps] StatefulSet [k8s.io] Basic StatefulSet functionality [StatefulSetBasic]   should implement legacy replacement when the update strategy is OnDelete,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_343.tmp,[sig-storage] Subpath [Volume type: gcePDPartitioned]   should support existing single file,,Y,Y,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_342.tmp,[sig-storage] HostPath   should support subPath,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_345.tmp,[sig-storage] Downward API volume   should provide podname only  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_344.tmp,[sig-storage] Subpath [Volume type: gcePDPVC]   should support existing directory,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_347.tmp,[sig-storage] Subpath [Volume type: hostPath]   should support readOnly file specified in the volumeMount,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_346.tmp,[sig-storage] PersistentVolumes-local  Pod with node different from PV's NodeAffinity   should fail scheduling due to different NodeSelector,,Y,,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_348.tmp,[sig-storage] Subpath [Volume type: nfsPVC]   should fail if non-existent subpath is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_35.tmp,[sig-storage] ConfigMap   should be consumable from pods in volume with mappings as non-root with FSGroup,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_350.tmp,[sig-network] Services   should only allow access from service loadbalancer source ranges [Slow],,Y,,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_349.tmp,[sig-storage] PersistentVolumes-local  [Volume type: blockfs] Two pods mounting a local volume at the same time   should be able to write from pod1 and read from pod2,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_352.tmp,[sig-storage] Volume Placement   should create and delete pod with the same volume source on the same worker node,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_354.tmp,[sig-storage] Subpath [Volume type: gcePDPVC]   should support creating multiple subpath from same volumes [Slow],,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_355.tmp,[k8s.io] Variable Expansion   should allow substituting values in a container's command  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_353.tmp,[sig-network] ESIPP [Slow] [DisabledForLargeClusters]   should handle updates to ExternalTrafficPolicy field,,Y,,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_356.tmp,[sig-storage] EmptyDir volumes   should support (non-root0777tmpfs) [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_358.tmp,[sig-storage] Projected   should project all components that make up the projection API [Projection] [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,Y,,,,,Y,,,,,,,,Y
+res_357.tmp,[sig-apps] StatefulSet [k8s.io] Basic StatefulSet functionality [StatefulSetBasic]   should not deadlock when a pod's predecessor fails,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_359.tmp,[sig-storage] Dynamic Provisioning DynamicProvisioner Default   should create and delete default persistent volumes [Slow],,Y,,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_360.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir-link] Set fsGroup for local volume   should not set different fsGroups for two pods simultaneously,,Y,,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_36.tmp,[sig-auth] Certificates API   should support building a client with a CSR,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_361.tmp,[sig-apps] CronJob   should schedule multiple jobs concurrently,,Y,Y,,,Y,Y,,,,,,Y,,,Y,,,Y,,,,,,,,Y
+res_363.tmp,[k8s.io] [sig-node] Pods Extended [k8s.io] Pods Set QOS Class   should be submitted and removed  [Conformance],Y,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_362.tmp,[sig-storage] PersistentVolumes-local  Local volume provisioner [Serial]   should discover dynamicly created local persistent volume mountpoint in discovery directory,,Y,Y,,,Y,Y,,,,,,,,,,Y,,Y,,,,,,,,Y
+res_365.tmp,[sig-storage] Projected   should be consumable from pods in volume with defaultMode set [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_366.tmp,[sig-storage] EmptyDir volumes   should support (non-root0777default) [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_364.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir-link] Two pods mounting a local volume at the same time   should be able to write from pod1 and read from pod2,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_367.tmp,[sig-storage] Subpath [Volume type: gcePDPVC]   should support readOnly directory specified in the volumeMount,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_369.tmp,[sig-storage] [Serial] Volume metrics   should create volume metrics with the correct PVC ref,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_37.tmp,[k8s.io] [sig-node] SSH   should SSH to all nodes and run commands,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_368.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir-bindmounted] Two pods mounting a local volume at the same time   should be able to write from pod1 and read from pod2,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_370.tmp,[sig-storage] PersistentVolumes-local  [Volume type: gce-localssd-scsi-fs] [Serial] Set fsGroup for local volume   should set different fsGroup for second pod if first pod is deleted,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_372.tmp,[sig-auth] PodSecurityPolicy   should forbid pod creation when no PSP is available,,Y,,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_371.tmp,[sig-storage] Subpath [Volume type: gluster]   should fail if subpath directory is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_374.tmp,[sig-apps] Deployment   RollingUpdateDeployment should delete old pods and create new ones,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_375.tmp,[sig-apps] Network Partition [Disruptive] [Slow] [k8s.io] Pods should return to running and ready state after network partition is healed   All pods on the unreachable node should be marked as NotReady upon the node turn NotReady AND all pods should be mark back to Ready when the node get back to Ready before pod eviction timeout,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_373.tmp,[sig-network] Services   should work after restarting kube-proxy [Disruptive],,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_351.tmp,[sig-storage] PersistentVolumes-local  Stress with local volume provisioner [Serial]   should use be able to process many pods and reuse local volumes,,Y,Y,,,Y,Y,,,,,,,Y,,Y,Y,,Y,,,,,,,,Y
+res_376.tmp,[sig-storage] Subpath [Volume type: gcePDPartitioned]   should support readOnly directory specified in the volumeSource,,Y,Y,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_378.tmp,[sig-storage] EmptyDir volumes when FSGroup is specified   files with FSGroup ownership should support (root0644tmpfs),,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_379.tmp,[sig-apps] Job   should exceed backoffLimit,,Y,,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_377.tmp,[sig-network] ESIPP [Slow] [DisabledForLargeClusters]   should work for type=LoadBalancer,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_380.tmp,[sig-storage] EmptyDir volumes when FSGroup is specified   volume on tmpfs should have the correct mode using FSGroup,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_381.tmp,[sig-scheduling] ResourceQuota   should create a ResourceQuota and ensure its status is promptly calculated.,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_382.tmp,[sig-storage] Subpath [Volume type: emptyDir]   should support readOnly directory specified in the volumeMount,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_38.tmp,[sig-storage] Subpath [Volume type: gcePDPVC]   should support file as subpath,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_383.tmp,[sig-api-machinery] Servers with support for API chunking   should return chunks of results for list calls,,Y,,,,Y,Y,,,,,,,Y,,Y,,,,,,,,,,,
+res_384.tmp,[sig-storage] PersistentVolumes-local  [Volume type: tmpfs] One pod requesting one prebound PVC   should be able to mount volume and write from pod1,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_385.tmp,[sig-apps] Deployment   deployment reaping should cascade to its replica sets and pods,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_388.tmp,[sig-storage] Projected   optional updates should be reflected in volume [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_387.tmp,[sig-scheduling] Rescheduler [Serial]   should ensure that critical pod is scheduled in case there is no resources available,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_386.tmp,[sig-storage] GCP Volumes GlusterFS   should be mountable,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_389.tmp,[sig-network] Services   should be able to switch session affinity for NodePort service,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_39.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir-link-bindmounted] Set fsGroup for local volume   should set same fsGroup for two pods simultaneously,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_390.tmp,[sig-storage] Projected   should provide node allocatable (memory) as default memory limit if the limit is not set [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_392.tmp,[sig-apps] DisruptionController   should create a PodDisruptionBudget,,Y,,,,Y,Y,,,,,,,Y,,,,,,,,,,,,,
+res_393.tmp,[sig-api-machinery] Downward API   should provide pod UID as env vars  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_391.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir-link] Two pods mounting a local volume one after the other   should be able to write from pod1 and read from pod2,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_395.tmp,[k8s.io] [sig-node] AppArmor load AppArmor profiles   should enforce an AppArmor profile,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_394.tmp,[sig-cli] Kubectl client [k8s.io] Kubectl create quota   should create a quota with scopes,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_397.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir] One pod requesting one prebound PVC   should be able to mount volume and read from pod1,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_396.tmp,[sig-storage] Pod Disks detach in a disrupted environment [Slow] [Disruptive]   when node's API object is deleted,,Y,Y,,,Y,Y,,,,,,Y,,,Y,,,Y,,,,,,,,Y
+res_398.tmp,[sig-apps] ReplicationController   should surface a failure condition on a common issue like exceeded quota,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_399.tmp,[sig-scheduling] ResourceQuota   should verify ResourceQuota with terminating scopes.,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_400.tmp,[sig-storage] Projected   should be consumable from pods in volume with mappings [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_40.tmp,[sig-apps] CronJob   should not schedule new jobs when ForbidConcurrent [Slow],,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_401.tmp,[sig-storage] Dynamic Provisioning [k8s.io] GlusterDynamicProvisioner   should create and delete persistent volumes [fast],,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_4.tmp,[k8s.io] EquivalenceCache [Serial]   validates pod affinity works properly when new replica pod is scheduled,,Y,Y,,,Y,Y,,,,,,Y,Y,,Y,,,Y,,,,,,,,Y
+res_402.tmp,[sig-cli] Kubectl client [k8s.io] Kubectl logs   should be able to retrieve and filter logs  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_403.tmp,[sig-network] Networking Granular Checks: Services [Slow]   should function for client IP based session affinity: http,,Y,,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_404.tmp,[sig-storage] Subpath [Volume type: gluster]   should support file as subpath,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_406.tmp,[sig-apps] ReplicaSet   should serve a basic image on each replica with a public image  [Conformance],Y,Y,Y,,,Y,Y,,,,Y,,,,,,,,Y,,,,,,,,Y
+res_405.tmp,[sig-cli] Kubectl Port forwarding [k8s.io] With a server listening on 0.0.0.0 [k8s.io] that expects NO client request   should support a client that connects sends DATA and disconnects,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,Y,,,,,,Y
+res_408.tmp,[sig-network] Networking Granular Checks: Services [Slow]   should function for endpoint-Service: http,,Y,,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_407.tmp,[sig-api-machinery] Garbage collector   should delete jobs and pods created by cronjob,,Y,Y,,,Y,Y,,,,Y,,,,,Y,,,Y,,,,,,,,Y
+res_409.tmp,[k8s.io] Downward API [Serial] [Disruptive] Downward API tests for local ephemeral storage   should provide default limits.ephemeral-storage from node allocatable,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_410.tmp,[sig-storage] PersistentVolumes:vsphere   should test that deleting a PVC before the pod does not cause pod deletion to fail on vsphere volume detach,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_41.tmp,[sig-storage] Pod Disks schedule pods each with a PD delete pod and verify detach [Slow]   for read-only PD with pod delete grace period of "immediate (0s)",,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_413.tmp,[sig-storage] HostPath   should support r/w,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_414.tmp,[sig-network] Services   should use same NodePort with same port but different protocols,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_411.tmp,[sig-storage] PersistentVolumes-local  [Volume type: blockfs] Set fsGroup for local volume   should set fsGroup for one pod,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_412.tmp,[sig-storage] Subpath [Volume type: gluster]   should support readOnly file specified in the volumeMount,,Y,Y,,,Y,Y,Y,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_415.tmp,[sig-storage] Subpath Atomic writer volumes   should support subpaths with projected pod,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_417.tmp,[sig-cli] Kubectl client [k8s.io] Kubectl api-versions   should check if v1 is in available api versions  [Conformance],Y,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_416.tmp,[sig-network] Services   should preserve source pod IP for traffic thru service cluster IP,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_419.tmp,[sig-auth] PodSecurityPolicy   should allow pods under the privileged extensions.PodSecurityPolicy,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_42.tmp,[sig-storage] Dynamic Provisioning DynamicProvisioner   should not provision a volume in an unmanaged GCE zone.,,Y,,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_418.tmp,[sig-network] ESIPP [Slow] [DisabledForLargeClusters]   should only target nodes with endpoints,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_420.tmp,[sig-storage] PersistentVolumes-local  [Volume type: gce-localssd-scsi-fs] [Serial] One pod requesting one prebound PVC   should be able to mount volume and read from pod1,,Y,,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_421.tmp,[sig-storage] Projected   should be consumable from pods in volume with mappings as non-root [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_424.tmp,[sig-storage] PersistentVolumes-local  [Volume type: tmpfs] Two pods mounting a local volume at the same time   should be able to write from pod1 and read from pod2,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_423.tmp,[sig-storage] PersistentVolumes-local  [Volume type: tmpfs] Set fsGroup for local volume   should set fsGroup for one pod,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_422.tmp,[sig-storage] PersistentVolumes GCEPD   should test that deleting the PV before the pod does not cause pod deletion to fail on PD detach,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_425.tmp,[sig-storage] Subpath [Volume type: hostPathSymlink]   should unmount if pod is force deleted while kubelet is down [Disruptive][Slow],,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_427.tmp,[k8s.io] Pods   should support remote command execution over websockets,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_426.tmp,[k8s.io] Variable Expansion   should allow composing env vars into new env vars  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_429.tmp,[sig-scheduling] Multi-AZ Clusters   should spread the pods of a replication controller across zones,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_428.tmp,[sig-storage] Subpath [Volume type: gcePDPVC]   should unmount if pod is force deleted while kubelet is down [Disruptive][Slow],,Y,Y,,,Y,Y,,,,,,Y,,,Y,,,Y,,,,,,,,Y
+res_43.tmp,[sig-storage] PersistentVolumes NFS with Single PV - PVC pairs   should create a non-pre-bound PV and PVC: test write access ,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_430.tmp,[sig-autoscaling] [HPA] Horizontal pod autoscaling (scale resource: CPU) [sig-autoscaling] ReplicationController light   Should scale from 1 pod to 2 pods,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_433.tmp,[k8s.io] Sysctls   should reject invalid sysctls,,Y,,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,
+res_431.tmp,[sig-apps] ReplicaSet   should surface a failure condition on a common issue like exceeded quota,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_434.tmp,[sig-storage] Subpath [Volume type: hostPath]   should support file as subpath,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_432.tmp,[sig-api-machinery] CustomResourceDefinition Watch CustomResourceDefinition Watch   watch on custom resource definition objects,,Y,,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_436.tmp,[sig-instrumentation] MetricsGrabber   should grab all metrics from a Scheduler.,,Y,,,,Y,Y,,,,Y,,,,,,,,,,,,,,,,
+res_435.tmp,[sig-cli] Kubectl client [k8s.io] Kubectl run deployment   should create a deployment from an image  [Conformance],Y,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_437.tmp,[sig-storage] Projected   should provide container's memory request [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_438.tmp,[sig-autoscaling] [HPA] Horizontal pod autoscaling (scale resource: CPU) [sig-autoscaling] [Serial] [Slow] ReplicaSet   Should scale from 5 pods to 3 pods and from 3 to 1,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_44.tmp,[k8s.io] Pods   should allow activeDeadlineSeconds to be updated  [Conformance],Y,Y,,,,Y,Y,,,,,,,,,,,,Y,,,,,Y,,,Y
+res_439.tmp,[sig-storage] PersistentVolumes-local  Local volume that cannot be mounted [Slow]   should fail due to wrong node,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_440.tmp,[sig-storage] PersistentVolumes-local  StatefulSet with pod anti-affinity   should use volumes spread across nodes,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_441.tmp,[sig-storage] GenericPersistentVolume[Disruptive] When kubelet restarts   Should test that a volume mounted to a pod that is force deleted while the kubelet is down unmounts when the kubelet returns.,,Y,Y,,,Y,Y,,,,,,Y,,,Y,,,Y,,,,,,,,Y
+res_442.tmp,[sig-storage] PersistentVolumes-local  [Volume type: tmpfs] Set fsGroup for local volume   should set same fsGroup for two pods simultaneously,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_443.tmp,[sig-storage] Volume Placement   should create and delete pod with the same volume source attach/detach to different worker nodes,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_445.tmp,[sig-storage] Subpath [Volume type: nfs]   should support existing directory,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_447.tmp,[sig-storage] Projected   should be consumable in multiple volumes in a pod [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_448.tmp,[sig-cli] Kubectl client [k8s.io] Kubectl run --rm job   should create a job from an image then delete the job  [Conformance],Y,Y,Y,,,Y,Y,,,,,,,Y,,,,,Y,,,,,,,,Y
+res_444.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir-link-bindmounted] Two pods mounting a local volume at the same time   should be able to write from pod1 and read from pod2,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_446.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir-link] Set fsGroup for local volume   should set fsGroup for one pod,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_449.tmp,[sig-storage] Subpath [Volume type: gcePDPartitioned]   should support creating multiple subpath from same volumes [Slow],,Y,Y,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_450.tmp,[sig-storage] PersistentVolumes NFS with Single PV - PVC pairs   create a PVC and non-pre-bound PV: test write access,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_45.tmp,[sig-apps] DisruptionController   evictions: enough pods absolute => should allow an eviction,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,Y,,,,,,,Y
+res_451.tmp,[sig-api-machinery] Namespaces [Serial]   should ensure that all pods are removed when a namespace is deleted.,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_453.tmp,[sig-scheduling] SchedulerPredicates [Serial]   validates that NodeAffinity is respected if not matching,,Y,,,,Y,Y,,,,,,Y,,,Y,,,Y,,,,,,,,Y
+res_452.tmp,[sig-storage] Subpath [Volume type: nfsPVC]   should fail if subpath directory is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_454.tmp,[sig-storage] PersistentVolumes-local  Pod with node different from PV's NodeAffinity   should fail scheduling due to different NodeAffinity,,Y,,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_456.tmp,[sig-storage] Volumes ConfigMap   should be mountable,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_457.tmp,[sig-storage] GCP Volumes NFSv4   should be mountable for NFSv4,,Y,Y,,,Y,Y,,,,,,Y,,,Y,,,Y,,,,,,,,Y
+res_455.tmp,[sig-storage] Subpath [Volume type: gcePDPVC]   should support restarting containers using file as subpath [Slow],,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_459.tmp,[sig-storage] PersistentVolumes:vsphere   should test that a vspehre volume mounted to a pod that is deleted while the kubelet is down unmounts when the kubelet returns [Disruptive],,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_458.tmp,[sig-apps] Network Partition [Disruptive] [Slow] [k8s.io] [ReplicationController]   should eagerly create replacement pod during network partition when termination grace is non-zero,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_460.tmp,[sig-storage] Subpath [Volume type: hostPathSymlink]   should support readOnly directory specified in the volumeMount,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_461.tmp,[sig-storage] PersistentVolumes-local  [Volume type: gce-localssd-scsi-fs] [Serial] One pod requesting one prebound PVC   should be able to mount volume and write from pod1,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_462.tmp,[sig-api-machinery] Secrets   should be consumable via the environment  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_46.tmp,[sig-apps] StatefulSet [k8s.io] Basic StatefulSet functionality [StatefulSetBasic]   Burst scaling should run to completion even with unhealthy pods [Conformance],Y,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_464.tmp,[sig-auth] PodSecurityPolicy   should enforce the restricted policy.PodSecurityPolicy,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_463.tmp,[sig-storage] Subpath [Volume type: gcePDPartitioned]   should support file as subpath,,Y,Y,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_466.tmp,[sig-storage] Projected   should be able to mount in a volume regardless of a different secret existing with same name in different namespace,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_465.tmp,[sig-network] DNS   should provide DNS for the cluster  [Conformance],Y,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_467.tmp,[sig-network] Networking Granular Checks: Services [Slow]   should update nodePort: http [Slow],,Y,,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_469.tmp,[k8s.io] KubeletManagedEtcHosts   should test kubelet managed /etc/hosts file  [Conformance],Y,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_468.tmp,[sig-apps] Deployment   deployment should support rollback,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_47.tmp,[sig-network] Networking Granular Checks: Services [Slow]   should function for endpoint-Service: udp,,Y,,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_471.tmp,[sig-network] ESIPP [Slow] [DisabledForLargeClusters]   should work for type=NodePort,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_472.tmp,[sig-network] Services   should be able to change the type from NodePort to ExternalName,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_473.tmp,[sig-network] Firewall rule   should have correct firewall rules for e2e cluster,,Y,,,,Y,Y,Y,,,,,Y,,,,,,,,,,,,,,
+res_474.tmp,[sig-storage] EmptyDir volumes   should support (non-root0666tmpfs) [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_475.tmp,[sig-storage] PersistentVolumes-local  [Volume type: gce-localssd-scsi-fs] [Serial] Two pods mounting a local volume at the same time   should be able to write from pod1 and read from pod2,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_470.tmp,[sig-network] Service endpoints latency   should not be very high  [Conformance],Y,Y,Y,,,Y,Y,,,,,,,Y,,,,,Y,,,,,,,,Y
+res_477.tmp,[sig-storage] Projected   should be consumable from pods in volume as non-root with defaultMode and fsGroup set [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_478.tmp,[sig-network] Network   should set TCP CLOSE_WAIT timeout,,Y,,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_48.tmp,[sig-cli] Kubectl client [k8s.io] Kubectl run pod   should create a pod from an image when restart is Never  [Conformance],Y,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_479.tmp,[sig-instrumentation] Cluster level logging implemented by Stackdriver   should ingest events,,Y,,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_481.tmp,[sig-api-machinery] Garbage collector   should keep the rc around until all its pods are deleted if the deleteOptions says so [Conformance],Y,Y,Y,,,Y,Y,,,,Y,,,,,,,,Y,,,,,,,,Y
+res_482.tmp,[sig-apps] Job   should exceed active deadline,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_483.tmp,[sig-storage] Subpath [Volume type: hostPathSymlink]   should unmount if pod is gracefully deleted while kubelet is down [Disruptive][Slow],,Y,Y,,,Y,Y,,,,,,Y,,,Y,,,Y,,,,,,,,Y
+res_484.tmp,[sig-storage] Subpath [Volume type: nfsPVC]   should unmount if pod is gracefully deleted while kubelet is down [Disruptive][Slow],,Y,Y,,,Y,Y,,,,,,Y,,,Y,,,Y,,,,,,,,Y
+res_480.tmp,[sig-scheduling] SchedulerPredicates [Serial]   validates MaxPods limit number of pods that are allowed to run [Slow],,Y,,,,Y,Y,,,,,,Y,Y,,Y,,,Y,,,,,,,,Y
+res_486.tmp,[sig-storage] ConfigMap   optional updates should be reflected in volume  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_485.tmp,[sig-storage] Subpath [Volume type: emptyDir]   should fail if subpath file is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_487.tmp,[sig-storage] HostPath   should support existing single file subPath,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_476.tmp,[k8s.io] [sig-node] Kubelet [Serial] [Slow] [k8s.io] [sig-node] regular resource usage tracking   resource tracking for 100 pods per node,,Y,Y,,,Y,Y,,,,,,Y,Y,,Y,,,Y,,,,,,,,Y
+res_49.tmp,[sig-cli] Kubectl client [k8s.io] Simple pod   should support exec through kubectl proxy,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_488.tmp,[sig-cli] Kubectl client [k8s.io] Guestbook application   should create and stop a working application  [Conformance],Y,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_491.tmp,[sig-scheduling] LimitRange   should create a LimitRange with defaults and ensure pod has those defaults applied.,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_490.tmp,[sig-storage] ConfigMap   should be consumable in multiple volumes in the same pod  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_492.tmp,[sig-apps] ReplicaSet   should adopt matching pods on creation and release no longer matching pods,,Y,Y,,,Y,Y,,,,,,,,,Y,Y,,Y,,,,,Y,,,Y
+res_489.tmp,[k8s.io] [sig-node] kubelet [k8s.io] [sig-node] Clean up pods on node   kubelet should be able to delete 10 pods per node in 1m0s.,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_494.tmp,[sig-storage] Volumes NFS   should be mountable,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_493.tmp,[sig-network] Services   should have session affinity work for LoadBalancer service with ESIPP on [Slow] [DisabledForLargeClusters],,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_496.tmp,[sig-storage] PV Protection   Verify that PV bound to a PVC is not removed immediately,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_495.tmp,[sig-storage] Subpath [Volume type: hostPath]   should fail if subpath directory is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_497.tmp,[sig-storage] Projected   should provide podname only [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_498.tmp,[sig-storage] Subpath [Volume type: nfsPVC]   should support readOnly file specified in the volumeMount,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_50.tmp,[sig-storage] Volume Placement   should create and delete pod with multiple volumes from same datastore,,Y,,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_499.tmp,[sig-cli] Kubectl client [k8s.io] Kubectl taint [Serial]   should remove all the taints with the same key off a node,,Y,Y,,,Y,Y,,,,,,Y,,,,,,Y,,,,,,,,Y
+res_500.tmp,[sig-storage] EmptyDir volumes   volume on default medium should have the correct mode [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,Y,,,,,Y,,,,,,,,Y
+res_5.tmp,[sig-cli] Kubectl Port forwarding [k8s.io] With a server listening on localhost [k8s.io] that expects a client request   should support a client that connects sends NO DATA and disconnects,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,Y,,,,,,Y
+res_501.tmp,[sig-storage] Flexvolumes [Disruptive]   should be mountable when non-attachable,,Y,Y,,,Y,Y,,,,,,Y,,,Y,,,Y,,,,,,,,Y
+res_502.tmp,[sig-storage] PersistentVolumes-local  [Volume type: blockfs] One pod requesting one prebound PVC   should be able to mount volume and write from pod1,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_503.tmp,[sig-storage] Subpath [Volume type: hostPath]   should fail if subpath file is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_505.tmp,[sig-storage] PersistentVolumes-local  [Volume type: gce-localssd-scsi-fs] [Serial] Set fsGroup for local volume   should set same fsGroup for two pods simultaneously,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_504.tmp,[sig-apps] Job   should run a job to completion when tasks succeed,,Y,,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_507.tmp,[sig-cli] Kubectl client [k8s.io] Kubectl run job   should create a job from an image when restart is OnFailure  [Conformance],Y,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_509.tmp,[sig-storage] Subpath Atomic writer volumes   should support subpaths with configmap pod,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_506.tmp,[sig-storage] PersistentVolumes NFS with multiple PVs and PVCs all in same ns   should create 3 PVs and 3 PVCs: test write access,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_508.tmp,[sig-scheduling] ResourceQuota   should create a ResourceQuota and capture the life of a configMap.,,Y,,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_51.tmp,[sig-api-machinery] CustomResourceDefinition resources Simple CustomResourceDefinition   creating/deleting custom resource definition objects works  [Conformance],Y,Y,,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_511.tmp,[sig-storage] Subpath [Volume type: gcePDPartitioned]   should fail if subpath file is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_512.tmp,[sig-api-machinery] Secrets   should be consumable from pods in env vars  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_514.tmp,[sig-storage] ConfigMap   should be consumable from pods in volume  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_515.tmp,[sig-storage] Subpath [Volume type: gluster]   should fail if subpath with backstepping is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_513.tmp,[sig-storage] GenericPersistentVolume[Disruptive] When kubelet restarts   Should test that a file written to the mount before kubelet restart is readable after restart.,,Y,Y,,,Y,Y,,,,,,Y,,,Y,,,Y,,,,,,,,Y
+res_517.tmp,[sig-cli] Kubectl client [k8s.io] Update Demo   should scale a replication controller  [Conformance],Y,Y,Y,,,Y,Y,,,,Y,,,,,Y,,,Y,,,,,,,,Y
+res_516.tmp,[sig-storage] Dynamic Provisioning DynamicProvisioner   should test that deleting a claim before the volume is provisioned deletes the volume.,,Y,,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_518.tmp,[sig-storage] GenericPersistentVolume[Disruptive] When kubelet restarts   Should test that a volume mounted to a pod that is deleted while the kubelet is down unmounts when the kubelet returns.,,Y,Y,,,Y,Y,,,,,,Y,,,Y,,,Y,,,,,,,,Y
+res_519.tmp,[sig-network] DNS configMap nameserver Forward external name lookup   should forward externalname lookup to upstream nameserver [Slow][Serial],,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_510.tmp,[sig-apps] Deployment   iterative rollouts should eventually progress,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_52.tmp,[sig-storage] EmptyDir volumes   should support (non-root0644default) [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_520.tmp,[sig-cli] Kubectl client [k8s.io] Kubectl replace   should update a single-container pod's image  [Conformance],Y,Y,Y,,,Y,Y,,,,,,Y,Y,,Y,,,Y,,,,,Y,,,Y
+res_523.tmp,[sig-storage] Secrets   should be consumable in multiple volumes in a pod  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_522.tmp,[sig-scheduling] SchedulerPredicates [Serial]   validates that NodeSelector is respected if not matching  [Conformance],Y,Y,,,,Y,Y,,,,,,Y,,,Y,,,Y,,,,,,,,Y
+res_524.tmp,[sig-storage] Subpath [Volume type: emptyDir]   should support readOnly file specified in the volumeMount,,Y,Y,,,Y,Y,Y,,,,,,Y,,,,,Y,,,,,,,,Y
+res_521.tmp,[sig-apps] StatefulSet [k8s.io] Basic StatefulSet functionality [StatefulSetBasic]   should provide basic identity,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_525.tmp,[sig-scheduling] SchedulerPriorities [Serial]   Pod should perfer to scheduled to nodes pod can tolerate,,Y,Y,,,Y,Y,,,,,,Y,Y,,Y,,,Y,,,,,,,,Y
+res_527.tmp,[sig-storage] Subpath [Volume type: nfs]   should support creating multiple subpath from same volumes [Slow],,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_526.tmp,[sig-apps] DaemonRestart [Disruptive]   Controller Manager should not create/delete replicas across restart,,Y,Y,,,Y,Y,,,,,,Y,Y,,Y,,,Y,,,,,,,,Y
+res_528.tmp,[sig-scheduling] SchedulerPredicates [Serial]   validates that required NodeAffinity setting is respected if matching,,Y,Y,,,Y,Y,,,,,,Y,,,Y,,,Y,,,,,,,,Y
+res_529.tmp,[sig-cli] Kubectl client [k8s.io] Proxy server   should support proxy with --port 0  [Conformance],Y,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_53.tmp,[sig-storage] Subpath [Volume type: gcePDPVC]   should support existing single file,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_531.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir] Set fsGroup for local volume   should not set different fsGroups for two pods simultaneously,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_530.tmp,[sig-network] DNS   should provide DNS for services  [Conformance],Y,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_532.tmp,[sig-apps] Deployment   deployment should support rollover,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_534.tmp,[sig-apps] Daemon set [Serial]   should rollback without unnecessary restarts [Conformance],Y,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_535.tmp,[sig-storage] Pod Disks   should be able to delete a non-existent PD without error,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_533.tmp,[sig-storage] Dynamic Provisioning DynamicProvisioner Default   should be disabled by removing the default annotation [Serial] [Disruptive],,Y,,,,Y,Y,,,,,,,Y,,Y,,,,,,,,,,,
+res_538.tmp,[sig-apps] Daemon set [Serial]   should run and stop complex daemon [Conformance],Y,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_537.tmp,[sig-scheduling] ResourceQuota   should create a ResourceQuota and capture the life of a pod.,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,Y,,,Y
+res_536.tmp,[sig-storage] PersistentVolumes-local  Local volume provisioner [Serial]   should create and recreate local persistent volume,,Y,Y,,,Y,Y,,,,,,,,,,Y,,Y,,,,,,,,Y
+res_539.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir-link] Set fsGroup for local volume   should set same fsGroup for two pods simultaneously,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_540.tmp,[sig-cli] Kubectl client [k8s.io] Kubectl label   should update the label on a resource  [Conformance],Y,Y,Y,,,Y,Y,,,,,,,,,,Y,,Y,,,,,,,,Y
+res_541.tmp,[sig-storage] Subpath [Volume type: gcePDPartitioned]   should unmount if pod is force deleted while kubelet is down [Disruptive][Slow],,Y,Y,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_54.tmp,[sig-storage] Volume plugin streaming [Slow] GlusterFS   should write files of various sizes verify size validate content,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_542.tmp,[sig-storage] EmptyDir volumes when FSGroup is specified   new files should be created with FSGroup ownership when container is non-root,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_543.tmp,[k8s.io] Probing container   should be restarted with a docker exec liveness probe with timeout ,,Y,,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_546.tmp,[sig-storage] Projected   should be consumable from pods in volume as non-root [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_545.tmp,[sig-network] Services   should be able to create a functioning NodePort service,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_544.tmp,[sig-storage] PersistentVolumes NFS with multiple PVs and PVCs all in same ns   should create 4 PVs and 2 PVCs: test write access [Slow],,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_547.tmp,[sig-network] Services   should be able to change the type from ClusterIP to ExternalName,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_549.tmp,[sig-storage] Subpath [Volume type: nfs]   should support readOnly directory specified in the volumeMount,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_55.tmp,[sig-api-machinery] AdmissionWebhook   Should deny crd creation,,Y,,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_548.tmp,[sig-storage] Subpath [Volume type: nfs]   should support restarting containers using file as subpath [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_551.tmp,[sig-apps] Daemon set [Serial]   should run and stop simple daemon [Conformance],Y,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_552.tmp,[sig-storage] Subpath [Volume type: nfsPVC]   should support existing single file,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_550.tmp,[sig-apps] DisruptionController   should update PodDisruptionBudget status,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_554.tmp,[sig-network] Services   should be able to switch session affinity for LoadBalancer service with ESIPP on [Slow] [DisabledForLargeClusters],,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_555.tmp,[sig-apps] Job   should delete a job,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_553.tmp,[k8s.io] Probing container   should have monotonically increasing restart count  [Slow] [Conformance],Y,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_556.tmp,[sig-network] Proxy version v1   should proxy logs on node using proxy subresource  [Conformance],Y,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_557.tmp,[sig-cli] Kubectl client [k8s.io] Kubectl create quota   should reject quota with invalid scopes,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_558.tmp,[sig-storage] Projected   should be consumable from pods in volume with mappings and Item Mode set [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_559.tmp,[sig-network] Services   should release NodePorts on delete,,Y,,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_56.tmp,[sig-storage] Subpath [Volume type: gluster]   should unmount if pod is gracefully deleted while kubelet is down [Disruptive][Slow],,Y,Y,,,Y,Y,,,,,,Y,,,Y,,,Y,,,,,,,,Y
+res_561.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir-link-bindmounted] Set fsGroup for local volume   should set fsGroup for one pod,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_560.tmp,[sig-storage] Subpath [Volume type: gluster]   should unmount if pod is force deleted while kubelet is down [Disruptive][Slow],,Y,Y,,,Y,Y,,,,,,Y,,,Y,,,Y,,,,,,,,Y
+res_562.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir-bindmounted] One pod requesting one prebound PVC   should be able to mount volume and write from pod1,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_563.tmp,[sig-apps] Network Partition [Disruptive] [Slow] [k8s.io] [ReplicationController]   should recreate pods scheduled on the unreachable node AND allow scheduling of pods on a node after it rejoins the cluster,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_564.tmp,[sig-network] Services   should be able to change the type from ExternalName to NodePort,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_565.tmp,[sig-storage] Subpath [Volume type: gcePDPVC]   should fail if subpath directory is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_566.tmp,[sig-storage] Projected   should provide container's memory limit [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_569.tmp,[sig-storage] EmptyDir volumes when FSGroup is specified   nonexistent volume subPath should have the correct mode and owner using FSGroup,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_57.tmp,[sig-apps] Job   should run a job to completion when tasks sometimes fail and are not locally restarted,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_568.tmp,[sig-network] Networking Granular Checks: Services [Slow]   should update endpoints: udp,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_567.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir] Set fsGroup for local volume   should set same fsGroup for two pods simultaneously,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_570.tmp,[sig-storage] EmptyDir volumes   should support (root0666default) [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_572.tmp,[sig-apps] DisruptionController   evictions: no PDB => should allow an eviction,,Y,,,,Y,Y,,,,,,,,,,,,Y,Y,,,,,,,Y
+res_573.tmp,[sig-storage] Subpath Atomic writer volumes   should support subpaths with secret pod,,Y,Y,,,Y,Y,Y,,,,,,Y,,,,,Y,,,,,,,,Y
+res_571.tmp,[sig-storage] Subpath [Volume type: emptyDir]   should fail if non-existent subpath is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_575.tmp,[sig-apps] Daemon set [Serial]   should retry creating failed daemon pods [Conformance],Y,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_576.tmp,[sig-api-machinery] ConfigMap   should be consumable via environment variable  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_578.tmp,[sig-storage] Subpath [Volume type: emptyDir]   should support readOnly directory specified in the volumeSource,,Y,Y,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_574.tmp,[sig-storage] Subpath [Volume type: nfsPVC]   should support restarting containers using file as subpath [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_579.tmp,[sig-instrumentation] Cadvisor   should be healthy on every node.,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_577.tmp,[sig-storage] Subpath [Volume type: nfsPVC]   should support existing directory,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_580.tmp,[sig-scheduling] ResourceQuota   should create a ResourceQuota and capture the life of a replica set.,,Y,,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_58.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir] Set fsGroup for local volume   should set fsGroup for one pod,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_582.tmp,[sig-network] Networking Granular Checks: Services [Slow]   should function for pod-Service: http,,Y,,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_581.tmp,[sig-cli] Kubectl client [k8s.io] Kubectl apply   apply set/view last-applied,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_585.tmp,[sig-cluster-lifecycle] Addon update   should propagate add-on file changes [Slow],,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_583.tmp,[sig-apps] Job   should adopt matching orphans and release non-matching pods,,Y,Y,,,Y,Y,,,,,,,,,,Y,,Y,,,,,Y,,,Y
+res_584.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir-link] One pod requesting one prebound PVC   should be able to mount volume and read from pod1,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_587.tmp,[sig-storage] Projected   should be consumable from pods in volume with mappings and Item mode set [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_586.tmp,[sig-storage] Pod Disks schedule pods each with a PD delete pod and verify detach [Slow]   for RW PD with pod delete grace period of "immediate (0s)",,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_588.tmp,[sig-storage] Projected   should provide container's cpu limit [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_59.tmp,[k8s.io] [sig-node] Kubelet [Serial] [Slow] [k8s.io] [sig-node] regular resource usage tracking   resource tracking for 0 pods per node,,Y,,,,Y,Y,,,,,,,Y,,Y,,,,,,,,,,,
+res_589.tmp,[sig-apps] DisruptionController   evictions: maxUnavailable allow single eviction percentage => should allow an eviction,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,Y,,,,,,,Y
+res_591.tmp,[sig-api-machinery] Namespaces [Serial]   should ensure that all services are removed when a namespace is deleted.,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_590.tmp,[sig-apps] Daemon set [Serial]   should update pod when spec was updated and update strategy is RollingUpdate [Conformance],Y,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_593.tmp,[sig-storage] Subpath [Volume type: emptyDir]   should fail if subpath with backstepping is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_595.tmp,[sig-auth] PodSecurityPolicy   should allow pods under the privileged policy.PodSecurityPolicy,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_592.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir-bindmounted] One pod requesting one prebound PVC   should be able to mount volume and read from pod1,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_596.tmp,[k8s.io] [sig-node] Events   should be sent by kubelets and the scheduler about pods scheduling and running  [Conformance],Y,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_594.tmp,[sig-apps] DisruptionController   evictions: enough pods replicaSet percentage => should allow an eviction,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,Y,,,,,,,Y
+res_598.tmp,[sig-api-machinery] Garbage collector   should not delete dependents that have both valid owner and owner that's waiting for dependents to be deleted [Conformance],Y,Y,Y,,,Y,Y,,,,Y,,,,,Y,Y,,Y,,,,,,,,Y
+res_599.tmp,[sig-cli] Kubectl client [k8s.io] Kubectl taint [Serial]   should update the taint on a node,,Y,Y,,,Y,Y,,,,,,Y,,,,,,Y,,,,,,,,Y
+res_597.tmp,[sig-network] Networking Granular Checks: Services [Slow]   should update endpoints: http,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_6.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir-bindmounted] Set fsGroup for local volume   should not set different fsGroups for two pods simultaneously,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_600.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir] Set fsGroup for local volume   should set different fsGroup for second pod if first pod is deleted,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_60.tmp,[sig-storage] Subpath [Volume type: nfs]   should support restarting containers using directory as subpath [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_601.tmp,[sig-storage] [Serial] Volume metrics PVController   should create bound pv/pvc count metrics for pvc controller after creating both pv and pvc,,Y,,,,Y,Y,,,,Y,,,,,,,,,,,,,,,,
+res_602.tmp,[sig-api-machinery] Garbage collector   should orphan RS created by deployment when deleteOptions.PropagationPolicy is Orphan [Conformance],Y,Y,Y,,,Y,Y,,,,Y,,,,,,,,Y,,,,,,,,Y
+res_603.tmp,[sig-storage] Projected   should provide node allocatable (cpu) as default cpu limit if the limit is not set [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_605.tmp,[sig-storage] Downward API volume   should provide container's memory limit  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_604.tmp,[sig-storage] Projected   should be consumable from pods in volume with defaultMode set [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_607.tmp,[sig-network] ESIPP [Slow] [DisabledForLargeClusters]   should work from pods,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_606.tmp,[sig-network] DNS configMap nameserver Forward PTR lookup   should forward PTR records lookup to upstream nameserver [Slow][Serial],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_609.tmp,[sig-network] Networking Granular Checks: Pods   should function for node-pod communication: udp  [Conformance],Y,Y,,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_61.tmp,[sig-storage] Subpath [Volume type: emptyDir]   should support existing directory,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_608.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir] Two pods mounting a local volume one after the other   should be able to write from pod1 and read from pod2,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_610.tmp,[sig-apps] ReplicaSet   should serve a basic image on each replica with a private image,,Y,,,,Y,Y,,,,Y,,,,,,,,Y,,,,,,,,Y
+res_613.tmp,[k8s.io] Docker Containers   should be able to override the image's default command and arguments  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_611.tmp,[sig-storage] Subpath [Volume type: nfs]   should support file as subpath,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_612.tmp,[sig-network] DNS configMap federations   should be able to change federation configuration [Slow][Serial],,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_614.tmp,[sig-storage] Subpath [Volume type: nfs]   should support non-existent path,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_615.tmp,[sig-storage] Subpath [Volume type: nfs]   should support existing single file,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_616.tmp,[sig-storage] Subpath [Volume type: nfsPVC]   should fail if subpath file is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_617.tmp,[sig-network] Firewall rule   [Slow] [Serial] should create valid firewall rules for LoadBalancer type service,,Y,,,,Y,Y,Y,,,,,Y,,,Y,,,,,,,,,,,
+res_618.tmp,[sig-storage] Subpath [Volume type: gcePDPVC]   should support readOnly file specified in the volumeMount,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_619.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir-bindmounted] Set fsGroup for local volume   should set different fsGroup for second pod if first pod is deleted,,Y,,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_62.tmp,[sig-api-machinery] Servers with support for Table transformation   should return generic metadata details across all namespaces for nodes,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_621.tmp,[sig-storage] Dynamic Provisioning DynamicProvisioner   should provision storage with non-default reclaim policy Retain,,Y,,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_620.tmp,[k8s.io] Variable Expansion   should allow substituting values in a container's args  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_624.tmp,[sig-cli] Kubectl client [k8s.io] Simple pod   should handle in-cluster config,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_623.tmp,[sig-scheduling] ResourceQuota   should create a ResourceQuota and capture the life of a persistent volume claim. [sig-storage],,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_622.tmp,[sig-storage] Subpath [Volume type: emptyDir]   should fail if subpath directory is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_625.tmp,[sig-autoscaling] [HPA] Horizontal pod autoscaling (scale resource: CPU) [sig-autoscaling] ReplicationController light   Should scale from 2 pods to 1 pod,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_627.tmp,[sig-storage] Projected   should be consumable from pods in volume with mappings [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,Y,,,Y,,,Y,,,,,,,,Y
+res_628.tmp,[sig-storage] Pod Disks schedule a pod w/ RW PD(s) mounted to 1 or more containers write to PD verify content delete pod and repeat in rapid succession [Slow]   using 4 containers and 1 PDs,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_626.tmp,[sig-storage] Flexvolumes [Disruptive]   should be mountable when attachable,,Y,Y,,,Y,Y,,,,,,Y,,,Y,,,Y,,,,,,,,Y
+res_63.tmp,[sig-storage] ConfigMap   should be consumable from pods in volume as non-root with FSGroup,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_630.tmp,[sig-apps] Network Partition [Disruptive] [Slow] [k8s.io] [StatefulSet]   should come back up if node goes down [Slow] [Disruptive],,Y,,,,Y,,,,,,,,,,,,,,,,,,,,,
+res_629.tmp,[sig-storage] Projected   optional updates should be reflected in volume [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_631.tmp,[sig-api-machinery] Garbage collector   should orphan pods created by rc if deleteOptions.OrphanDependents is nil,,Y,,,,Y,Y,,,,Y,,,,,Y,Y,,Y,,,,,,,,Y
+res_633.tmp,[k8s.io] InitContainer   should not start app containers if init containers fail on a RestartAlways pod,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_634.tmp,[sig-storage] EmptyDir volumes   should support (root0644tmpfs) [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,Y,,,,,Y,,,,,,,,Y
+res_635.tmp,[k8s.io] Sysctls   should support sysctls,,Y,,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_632.tmp,[sig-apps] DaemonRestart [Disruptive]   Scheduler should continue assigning pods to nodes across restart,,Y,Y,,,Y,Y,,,,,,Y,Y,,Y,,,Y,,,,,,,,Y
+res_636.tmp,[sig-apps] CronJob   should not schedule jobs when suspended [Slow],,Y,,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_637.tmp,[sig-network] Services   should be able to change the type from ExternalName to ClusterIP,,Y,,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_64.tmp,[k8s.io] Docker Containers   should use the image defaults if command and args are blank  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_638.tmp,[sig-apps] ReplicationController   should serve a basic image on each replica with a private image,,Y,,,,Y,Y,,,,Y,,,,,,,,Y,,,,,,,,Y
+res_639.tmp,[sig-apps] ReplicationController   should serve a basic image on each replica with a public image  [Conformance],Y,Y,,,,Y,Y,,,,Y,,,,,,,,Y,,,,,,,,Y
+res_640.tmp,[sig-storage] ConfigMap   updates should be reflected in volume  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_641.tmp,[sig-storage] PersistentVolumes NFS when invoking the Recycle reclaim policy   should test that a PV becomes Available and is clean after the PVC is deleted.,,Y,Y,,,Y,Y,,,,,,,Y,,,,,Y,,,,,,,,Y
+res_643.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir-link] One pod requesting one prebound PVC   should be able to mount volume and write from pod1,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_644.tmp,[sig-storage] PersistentVolumes NFS with Single PV - PVC pairs   create a PV and a pre-bound PVC: test write access,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_645.tmp,[sig-network] Services   should be able to change the type and ports of a service [Slow] [DisabledForLargeClusters],,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_642.tmp,[sig-apps] DaemonRestart [Disruptive]   Kubelet should not restart containers across restart,,Y,Y,,,Y,Y,,,,,,Y,Y,,Y,,,Y,,,,,,,,Y
+res_647.tmp,[sig-storage] Subpath [Volume type: hostPathSymlink]   should support file as subpath,,Y,Y,,,Y,Y,Y,,,,,,Y,,,,,Y,,,,,,,,Y
+res_646.tmp,[sig-scheduling] ResourceQuota   should create a ResourceQuota and capture the life of a replication controller.,,Y,,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_648.tmp,[sig-storage] EmptyDir volumes   should support (root0644default) [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_65.tmp,[sig-cli] Kubectl Port forwarding [k8s.io] With a server listening on localhost   should support forwarding over websockets,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_649.tmp,[sig-api-machinery] Downward API   should provide host IP as an env var  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_651.tmp,[sig-storage] EmptyDir volumes   volume on tmpfs should have the correct mode [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_650.tmp,[sig-storage] Subpath [Volume type: gcePDPartitioned]   should support restarting containers using directory as subpath [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_652.tmp,[sig-storage] Secrets   optional updates should be reflected in volume  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_653.tmp,[sig-storage] Subpath [Volume type: gluster]   should support non-existent path,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_654.tmp,[sig-storage] HostPath   should support existing directory subPath,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_656.tmp,[sig-storage] ConfigMap   should be consumable from pods in volume with mappings and Item mode set [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_658.tmp,[k8s.io] Sysctls   should support unsafe sysctls which are actually whitelisted,,Y,,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_655.tmp,[sig-storage] Subpath [Volume type: gluster]   should fail if subpath file is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_659.tmp,[sig-network] Services   should be able to update NodePorts with two same port numbers but different protocols,,Y,,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_657.tmp,[sig-network] Networking Granular Checks: Pods   should function for intra-pod communication: http  [Conformance],Y,Y,,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_66.tmp,[sig-storage] Projected   should provide podname as non-root with fsgroup,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_660.tmp,[sig-storage] Subpath [Volume type: gcePDPartitioned]   should unmount if pod is gracefully deleted while kubelet is down [Disruptive][Slow],,Y,Y,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_661.tmp,[sig-storage] Dynamic Provisioning DynamicProvisioner   deletion should be idempotent,,Y,,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_663.tmp,[sig-ui] Kubernetes Dashboard   should check that the kubernetes-dashboard instance is alive,,Y,,,,Y,Y,,,,,,,Y,,,,,,,,,,,,,
+res_664.tmp,[sig-storage] PersistentVolumes GCEPD   should test that deleting the Namespace of a PVC and Pod causes the successful detach of Persistent Disk,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_662.tmp,[sig-scheduling] SchedulerPriorities [Serial]   Pod should avoid to schedule to node that have avoidPod annotation,,Y,Y,,,Y,Y,,,,,,Y,Y,,Y,,,Y,,,,,,,,Y
+res_667.tmp,[sig-cli] Kubectl Port forwarding [k8s.io] With a server listening on 0.0.0.0   should support forwarding over websockets,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_665.tmp,[sig-storage] Subpath [Volume type: emptyDir]   should support restarting containers using file as subpath [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_668.tmp,[sig-cli] Kubectl Port forwarding [k8s.io] With a server listening on localhost [k8s.io] that expects a client request   should support a client that connects sends DATA and disconnects,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,Y,,,,,,Y
+res_666.tmp,[sig-apps] DisruptionController   evictions: too few pods replicaSet percentage => should not allow an eviction,,Y,,,,Y,Y,,,,,,,,,Y,,,Y,Y,,,,,,,Y
+res_67.tmp,[sig-storage] Subpath [Volume type: emptyDir]   should support restarting containers using directory as subpath [Slow],,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_669.tmp,[sig-cli] Kubectl client [k8s.io] Kubectl expose   should create services for rc  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_670.tmp,[sig-storage] Downward API volume   should update annotations on modification  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,Y,,,Y
+res_671.tmp,[sig-storage] PersistentVolumes-local  [Volume type: tmpfs] Set fsGroup for local volume   should not set different fsGroups for two pods simultaneously,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_672.tmp,[sig-storage] CSI Volumes CSI plugin test using CSI driver: hostPath   should provision storage,,Y,Y,,,Y,Y,,,,,,,Y,,,,,Y,,,,,,,,Y
+res_673.tmp,[sig-network] Services   should provide secure master service  [Conformance],Y,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_674.tmp,[sig-storage] Subpath [Volume type: gcePDPartitioned]   should support non-existent path,,Y,Y,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_675.tmp,[sig-storage] Projected   should be consumable from pods in volume [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_676.tmp,[sig-scheduling] Multi-AZ Cluster Volumes [sig-storage]   should schedule pods in the same zones as statically provisioned PVs,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_678.tmp,[sig-apps] Deployment   test Deployment ReplicaSet orphaning and adoption regarding controllerRef,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_677.tmp,[sig-network] Services   should be able to up and down services,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_680.tmp,[sig-storage] HostPath   should give a volume the correct mode [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_679.tmp,[sig-storage] PersistentVolumes-local  [Volume type: blockfs] Set fsGroup for local volume   should set same fsGroup for two pods simultaneously,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_681.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir-bindmounted] Set fsGroup for local volume   should set same fsGroup for two pods simultaneously,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_682.tmp,[sig-storage] Projected   should set DefaultMode on files [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_683.tmp,[sig-storage] Subpath [Volume type: gcePDPVC]   should support restarting containers using directory as subpath [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_68.tmp,[sig-autoscaling] [HPA] Horizontal pod autoscaling (scale resource: CPU) [sig-autoscaling] [Serial] [Slow] Deployment   Should scale from 1 pod to 3 pods and from 3 to 5,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_685.tmp,[sig-api-machinery] Downward API   should provide pod name namespace and IP address as env vars  [Conformance],Y,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_684.tmp,[sig-storage] Subpath [Volume type: emptyDir]   should unmount if pod is gracefully deleted while kubelet is down [Disruptive][Slow],,Y,Y,,,Y,Y,,,,,,Y,,,Y,,,Y,,,,,,,,Y
+res_686.tmp,[sig-api-machinery] Garbage collector   should orphan pods created by rc if delete options say so [Conformance],Y,Y,,,,Y,Y,,,,Y,,,,,,Y,,Y,,,,,,,,Y
+res_688.tmp,[sig-cli] Kubectl client [k8s.io] Kubectl version   should check is all data is printed  [Conformance],Y,Y,,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,Y
+res_687.tmp,[sig-storage] Pod Disks detach in a disrupted environment [Slow] [Disruptive]   when node is deleted,,Y,Y,,,Y,Y,,,,,,Y,Y,,Y,,,Y,,,,,,,,Y
+res_689.tmp,[sig-storage] EmptyDir volumes when FSGroup is specified   volume on default medium should have the correct mode using FSGroup,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_69.tmp,[sig-network] DNS configMap nameserver Change stubDomain   should be able to change stubDomain configuration [Slow][Serial],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_690.tmp,[sig-storage] Subpath [Volume type: hostPathSymlink]   should support existing directory,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_692.tmp,[sig-storage] Subpath [Volume type: hostPath]   should support non-existent path,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_691.tmp,[sig-storage] Dynamic Provisioning DynamicProvisioner Default   should be disabled by changing the default annotation [Serial] [Disruptive],,Y,,,,Y,Y,,,,,,,,,Y,,,,,,,,,,,
+res_693.tmp,[sig-scheduling] ResourceQuota   should verify ResourceQuota with best effort scope.,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_696.tmp,[sig-apps] Deployment   deployment should delete old replica sets,,Y,Y,,,Y,Y,,,,,,,Y,,,,,Y,,,,,,,,Y
+res_694.tmp,[sig-autoscaling] [HPA] Horizontal pod autoscaling (scale resource: CPU) [sig-autoscaling] [Serial] [Slow] ReplicationController   Should scale from 5 pods to 3 pods and from 3 to 1 and verify decision stability,,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_695.tmp,[sig-cli] Kubectl client [k8s.io] Kubectl describe   should check if kubectl describe prints relevant information for rc and pods  [Conformance],Y,Y,Y,,,Y,Y,,,,,,Y,,,Y,,,Y,,,,,,,,Y
+res_699.tmp,[sig-storage] Subpath [Volume type: nfs]   should fail if subpath file is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_697.tmp,[sig-storage] Subpath [Volume type: nfsPVC]   should support file as subpath,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_698.tmp,[sig-storage] Subpath [Volume type: nfs]   should fail if subpath with backstepping is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_7.tmp,[k8s.io] PrivilegedPod   should enable privileged commands,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_70.tmp,[sig-apps] Network Partition [Disruptive] [Slow] [k8s.io] [StatefulSet]   should not reschedule stateful pods if there is a network partition [Slow] [Disruptive],,Y,,,,Y,Y,,,,,,,Y,,,,,,,,,,,,,Y
+res_700.tmp,[sig-storage] Subpath [Volume type: hostPathSymlink]   should support non-existent path,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_701.tmp,[sig-storage] PersistentVolumes-local  [Volume type: blockfs] Two pods mounting a local volume one after the other   should be able to write from pod1 and read from pod2,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_704.tmp,Jun  5 15:31:18.813: INFO: Running AfterSuite actions on all nodeJun  5 15:31:18.813: INFO: Running AfterSuite actions on node 1,,,,,,,,,,,,,,,,,,,,,,,,,,,
+res_702.tmp,[sig-storage] PersistentVolumes GCEPD   should test that deleting a PVC before the pod does not cause pod deletion to fail on PD detach,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_703.tmp,[sig-storage] Subpath [Volume type: hostPathSymlink]   should support existing single file,,Y,Y,,,Y,Y,Y,,,,,Y,Y,,Y,,,Y,,,,,,,,Y
+res_72.tmp,[sig-storage] Subpath [Volume type: hostPathSymlink]   should fail if subpath directory is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_74.tmp,[sig-instrumentation] MetricsGrabber   should grab all metrics from a ControllerManager.,,Y,,,,Y,Y,,,,Y,,,,,,,,,,,,,,,,
+res_71.tmp,[sig-cli] Kubectl client [k8s.io] Simple pod   should return command exit codes,,Y,Y,,,Y,Y,Y,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_73.tmp,[sig-storage] Volumes GlusterFS   should be mountable,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_75.tmp,[sig-network] DNS   should provide DNS for pods for Hostname and Subdomain,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_76.tmp,[sig-cli] Kubectl Port forwarding [k8s.io] With a server listening on 0.0.0.0 [k8s.io] that expects a client request   should support a client that connects sends DATA and disconnects,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,Y,,,,,,Y
+res_77.tmp,[sig-network] Proxy version v1   should proxy through a service and a pod  [Conformance],Y,Y,Y,,,Y,Y,,,,Y,,,Y,,Y,,,Y,,,,,,,,Y
+res_78.tmp,[sig-scheduling] SchedulerPredicates [Serial]   validates that there exists conflict between pods with same hostPort and protocol but one using 0.0.0.0 hostIP,,Y,Y,,,Y,Y,,,,,,Y,Y,,Y,,,Y,,,,,,,,Y
+res_79.tmp,[sig-storage] PersistentVolumes:vsphere   should test that a file written to the vspehre volume mount before kubelet restart can be read after restart [Disruptive],,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_8.tmp,[k8s.io] Sysctls   should not launch unsafe but not explicitly enabled sysctls on the node,,Y,,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_80.tmp,[sig-storage] PersistentVolumes-local  [Volume type: dir] Two pods mounting a local volume at the same time   should be able to write from pod1 and read from pod2,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_81.tmp,[k8s.io] [sig-node] PreStop   should call prestop when killing a pod  [Conformance],Y,Y,Y,,,Y,Y,,,,Y,,,,,Y,,,Y,,,,,,,,Y
+res_83.tmp,[sig-cli] Kubectl client [k8s.io] Proxy server   should support --unix-socket=/path  [Conformance],Y,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_84.tmp,[sig-cli] Kubectl alpha client [k8s.io] Kubectl run CronJob   should create a CronJob,,Y,,,,Y,Y,,,,,,,Y,,,,,,,,,,,,,
+res_82.tmp,[sig-storage] Subpath [Volume type: hostPath]   should fail if subpath with backstepping is outside the volume [Slow],,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_85.tmp,[k8s.io] InitContainer   should invoke init containers on a RestartNever pod,,Y,,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,,,,Y
+res_88.tmp,[sig-storage] Projected   should be consumable from pods in volume as non-root with FSGroup,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_86.tmp,[sig-cli] Kubectl client [k8s.io] Simple pod   should support exec through an HTTP proxy,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_89.tmp,[sig-network] DNS   should support configurable pod resolv.conf,,Y,Y,,,Y,Y,,,,,,,,,Y,,,Y,,,,,,,,Y
+res_87.tmp,[sig-storage] Subpath [Volume type: nfsPVC]   should support restarting containers using directory as subpath [Slow],,Y,Y,,,Y,Y,,,,,,Y,,,Y,,,Y,,,,,,,,Y
+res_90.tmp,[sig-storage] PersistentVolumes-local  [Volume type: gce-localssd-scsi-fs] [Serial] Set fsGroup for local volume   should not set different fsGroups for two pods simultaneously,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_92.tmp,[sig-api-machinery] Servers with support for Table transformation   should return pod details,,Y,Y,,,Y,Y,,,,,,,,,,,,Y,,,,,,,,Y
+res_9.tmp,[sig-scheduling] SchedulerPriorities [Serial]   Pod should be schedule to node that don't match the PodAntiAffinity terms,,Y,Y,,,Y,Y,,,,,,Y,Y,,Y,,,Y,,,,,,,,Y
+res_91.tmp,[k8s.io] Pods   should have their auto-restart back-off timer reset on image update [Slow],,Y,Y,,,Y,Y,,,,,,,Y,,Y,,,Y,,,,,Y,,,Y
+res_93.tmp,[k8s.io] InitContainer   should not start app containers and fail the pod if init containers fail on a RestartNever pod,,Y,,,,Y,Y,,,,,,,Y,,,,,Y,,,,,,,,Y
+res_94.tmp,[sig-storage] Subpath [Volume type: hostPathSymlink]   should support readOnly file specified in the volumeMount,,Y,Y,,,Y,Y,Y,,,,,,,,Y,,,Y,,,,,,,,Y
+res_96.tmp,[sig-cli] Kubectl client [k8s.io] Kubectl run CronJob   should create a CronJob,,Y,,,,Y,Y,,,,,,,,,,,,,,,,,,,,
+res_98.tmp,[sig-storage] Projected   should provide podname as non-root with fsgroup and defaultMode,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
+res_95.tmp,[sig-network] Services   should have session affinity work for NodePort service,,Y,Y,,,Y,Y,,,,,,,Y,,,,,Y,,,,,,,,Y
+resultWriter.go,Licensed under the Apache License Version 2.0 (the "License");,,,,,,,,,,,,,,,,,,,,,,,,,,,
+res_97.tmp,[sig-scheduling] SchedulerPredicates [Serial]   validates that taints-tolerations is respected if matching,,Y,Y,,,Y,Y,,,,,,Y,,,Y,,,Y,,,,,,,,Y
+res_99.tmp,[sig-storage] Subpath [Volume type: gluster]   should support existing single file,,Y,Y,,,Y,Y,Y,,,,,,,,,,,Y,,,,,,,,Y
