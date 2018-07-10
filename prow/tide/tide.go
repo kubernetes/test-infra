@@ -579,6 +579,22 @@ func prNumbers(prs []PullRequest) []int {
 }
 
 func (c *Controller) pickBatch(sp subpool, cc contextChecker) ([]PullRequest, error) {
+	// we must choose the oldest PRs for the batch
+	sort.Slice(sp.prs, func(i, j int) bool { return sp.prs[i].Number < sp.prs[j].Number })
+
+	var candidates []PullRequest
+	for _, pr := range sp.prs {
+		if isPassingTests(sp.log, c.ghc, pr, cc) {
+			candidates = append(candidates, pr)
+		}
+	}
+
+	if len(candidates) == 0 {
+		sp.log.Debugf("of %d possible PRs, none were passing tests, no batch will be created", len(sp.prs))
+		return nil, nil
+	}
+	sp.log.Debugf("of %d possible PRs, %d are passing tests", len(sp.prs), len(candidates))
+
 	r, err := c.gc.Clone(sp.org + "/" + sp.repo)
 	if err != nil {
 		return nil, err
@@ -597,14 +613,8 @@ func (c *Controller) pickBatch(sp subpool, cc contextChecker) ([]PullRequest, er
 		return nil, err
 	}
 
-	// we must choose the oldest PRs for the batch
-	sort.Slice(sp.prs, func(i, j int) bool { return sp.prs[i].Number < sp.prs[j].Number })
-
 	var res []PullRequest
-	for _, pr := range sp.prs {
-		if !isPassingTests(sp.log, c.ghc, pr, cc) {
-			continue
-		}
+	for _, pr := range candidates {
 		if ok, err := r.Merge(string(pr.HeadRefOID)); err != nil {
 			// we failed to abort the merge and our git client is
 			// in a bad state; it must be cleaned before we try again
