@@ -10,17 +10,18 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180628-a3a68a1f6-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/logs"
-        - "--" # end bootstrap args, scenario args below
-        - "--build=//..."
-        - "--install=gubernator/test_requirements.txt"
-        - "--test=//..."
-        - "--test-args=--test_output=errors"
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-jenkins/logs
+        - --scenario=kubernetes_bazel
+        - -- # end bootstrap args, scenario args below
+        - --build=//...
+        - --install=gubernator/test_requirements.txt
+        - --test=//...
+        - --test-args=--test_output=errors
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -40,8 +41,11 @@ postsubmits:
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/logs"
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-jenkins/logs
+        - --scenario=execute
+        - --
+        - ./boskos/update_prow_config.sh
         env:
         - name: PROW_SERVICE_ACCOUNT
           value: /etc/prow-build-service/prow-build-service.json
@@ -63,12 +67,15 @@ postsubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180628-a3a68a1f6-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/logs"
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-jenkins/logs
+        - --scenario=execute
+        - --
+        - ./testgrid/config-upload.sh
         resources:
           requests:
             memory: "1Gi"

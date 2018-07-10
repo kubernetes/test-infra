@@ -8,12 +8,13 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180628-a3a68a1f6-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-experimental
       args:
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/test-infra=master"
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
+      - "--scenario=kubernetes_bazel"
       - "--" # end bootstrap args, scenario args below
       - "--build=//..."
       - "--install=gubernator/test_requirements.txt"

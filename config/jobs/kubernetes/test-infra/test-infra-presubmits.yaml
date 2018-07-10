@@ -14,7 +14,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180628-a3a68a1f6-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -49,6 +49,9 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - --upload=gs://kubernetes-jenkins/pr-logs
         - --service-account=/etc/service-account/service-account.json
+        - --scenario=execute
+        - --
+        - ./gubernator/test-gubernator.sh
 
   - name: pull-test-infra-lint
     agent: kubernetes
@@ -98,8 +101,11 @@ presubmits:
       - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - --root=/go/src
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --scenario=execute
+        - --
+        - ./hack/verify-bazel.sh
 
   - name: pull-test-infra-verify-config
     agent: kubernetes
@@ -114,13 +120,16 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180628-a3a68a1f6-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - --upload=gs://kubernetes-jenkins/pr-logs
         - --service-account=/etc/service-account/service-account.json
-        - "--timeout=15"
+        - --timeout=15
+        - --scenario=execute
+        - --
+        - ./hack/verify-config.sh
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -142,7 +151,7 @@ presubmits:
       - name: test
         command:
         - ./hack/verify-config.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180628-a3a68a1f6-experimental
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-experimental
         env:
         - name: TEST_TMPDIR
           value: /bazel-scratch/.cache/bazel
@@ -171,12 +180,15 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180628-a3a68a1f6-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - --upload=gs://kubernetes-jenkins/pr-logs
         - --service-account=/etc/service-account/service-account.json
+        - --scenario=execute
+        - --
+        - ./hack/verify-deps.sh
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -199,8 +211,11 @@ presubmits:
       - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - --root=/go/src
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --scenario=execute
+        - --
+        - ./hack/verify-gofmt.sh
 
   - name: pull-test-infra-verify-govet
     agent: kubernetes
@@ -217,8 +232,11 @@ presubmits:
       - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - --root=/go/src
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --scenario=execute
+        - --
+        - ./hack/verify-govet.sh
 
   - name: pull-test-infra-verify-labels
     agent: kubernetes
@@ -233,12 +251,15 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180628-a3a68a1f6-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-experimental
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - --root=/go/src
+        - --upload=gs://kubernetes-jenkins/pr-logs
         - --service-account=/etc/service-account/service-account.json
+        - --scenario=execute
+        - --
+        - ./hack/verify-labels.sh
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
