@@ -571,16 +571,16 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-ci-master
 - name: ci-kubernetes-e2e-gke-canary
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-canary
-- name: ci-kubernetes-e2e-new-cos-gke
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-new-cos-gke
-- name: ci-kubernetes-e2e-new-cos-gke-k8sstable1
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-new-cos-gke-k8sstable1
-- name: ci-kubernetes-e2e-new-cos-gke-k8sstable1-compare
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-new-cos-gke-k8sstable1-compare
-- name: ci-kubernetes-e2e-new-cos-gke-k8sstable1-alpha-features
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-new-cos-gke-k8sstable1-alpha-features
-- name: ci-kubernetes-e2e-new-cos-gke-k8sstable1-alpha-features-compare
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-new-cos-gke-k8sstable1-alpha-features-compare
+- name: ci-kubernetes-e2e-cos-containerd-gke
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-containerd-gke
+- name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-containerd-gke-k8sstable1
+- name: ci-kubernetes-e2e-cos-gke-k8sstable1
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-gke-k8sstable1
+- name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-features
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-features
+- name: ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-features
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-features
 - name: ci-kubernetes-kubemark-100-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-100-gce
   num_failures_to_alert: 1
@@ -3357,8 +3357,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100
   - name: gke-canary
     test_group_name: ci-kubernetes-e2e-gke-canary
-  - name: gke-new-cos
-    test_group_name: ci-kubernetes-e2e-new-cos-gke
+  - name: gke-cos-containerd
+    test_group_name: ci-kubernetes-e2e-cos-containerd-gke
   # K8S 1.8 branch on GKE
   - name: gci-gke-ingress-1.8
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-ingress
@@ -3392,14 +3392,14 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-serial
   - name: gci-gke-slow-1.10
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-slow
-  - name: gke-new-cos-1.10
-    test_group_name: ci-kubernetes-e2e-new-cos-gke-k8sstable1
-  - name: gke-new-cos-1.10-compare
-    test_group_name: ci-kubernetes-e2e-new-cos-gke-k8sstable1-compare
-  - name: gke-new-cos-alpha-features-1.10
-    test_group_name: ci-kubernetes-e2e-new-cos-gke-k8sstable1-alpha-features
-  - name: gke-new-cos-alpha-features-1.10-compare
-    test_group_name: ci-kubernetes-e2e-new-cos-gke-k8sstable1-alpha-features-compare
+  - name: gke-cos-containerd-1.10
+    test_group_name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1
+  - name: gke-cos-1.10
+    test_group_name: ci-kubernetes-e2e-cos-gke-k8sstable1
+  - name: gke-cos-containerd-alpha-features-1.10
+    test_group_name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-features
+  - name: gke-cos-alpha-features-1.10
+    test_group_name: ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-features
 
 - name: google-gke-stackdriver
   dashboard_tab:

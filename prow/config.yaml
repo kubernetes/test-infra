@@ -5219,6 +5219,71 @@ periodics:
     - name: docker-graph
       emptyDir: {}
 
+- interval: 1h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-cos-containerd-gke
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-master
+
+- interval: 1h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-master
+
+- interval: 1h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-features
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=200
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-master
+
+- interval: 1h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-cos-gke-k8sstable1
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-master
+
+- interval: 1h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-features
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=200
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-master
+
 - interval: 30m
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-alpha-api
@@ -11027,71 +11092,6 @@ periodics:
       - "--repo=k8s.io/kubernetes=master"
       - "--timeout=320"
       - "--upload=gs://kubernetes-jenkins/logs"
-
-- interval: 1h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-new-cos-gke
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=70
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-master
-
-- interval: 1h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-new-cos-gke-k8sstable1
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=70
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-master
-
-- interval: 1h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-new-cos-gke-k8sstable1-alpha-features
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=200
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-master
-
-- interval: 1h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-new-cos-gke-k8sstable1-alpha-features-compare
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=200
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-master
-
-- interval: 1h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-new-cos-gke-k8sstable1-compare
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=70
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-master
 
 - name: ci-kubernetes-e2e-node-canary
   interval: 1h
