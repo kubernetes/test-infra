@@ -47,7 +47,7 @@ func TestMetricsPusherWaiterCalls(t *testing.T) {
 				// This interval is smaller then the min allowed duration
 				{Interval: 0},
 				{Interval: 30 * time.Second},
-				// This interval is bigger then the max allewd duration
+				// This interval is bigger then the max allowed duration
 				{Interval: 30 * time.Hour},
 				{Interval: 10 * time.Second},
 			},
