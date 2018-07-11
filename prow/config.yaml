@@ -214,6 +214,7 @@ tide:
     - kubernetes-sigs/controller-runtime
     - kubernetes-sigs/controller-tools
     - kubernetes-sigs/gcp-compute-persistent-disk-csi-driver
+    - kubernetes-sigs/gcp-filestore-csi-driver
     - kubernetes-sigs/kubebuilder
     - client-go/unofficial-docs
     labels:
