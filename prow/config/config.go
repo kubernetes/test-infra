@@ -807,7 +807,7 @@ func parseProwConfig(c *Config) error {
 	return nil
 }
 
-func (c *Config) decorationRequested() bool {
+func (c *JobConfig) decorationRequested() bool {
 	for _, vs := range c.Presubmits {
 		for i := range vs {
 			if vs[i].Decorate {

@@ -11583,14 +11583,6 @@
       "sig-scheduling"
     ]
   },
-  "ci-test-infra-bazel": {
-    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
-    "args": [],
-    "scenario": "kubernetes_bazel",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
   "fake-branch": {
     "args": [
       "./fake/fake-branch.sh"
@@ -11643,61 +11635,6 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-gcp"
-    ]
-  },
-  "maintenance-boskos-config-upload": {
-    "args": [
-      "./boskos/update_prow_config.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "maintenance-ci-aws-janitor": {
-    "args": [
-      "/aws-janitor",
-      "--",
-      "--ttl=2h30m",
-      "--path=s3://k8s-kops-prow/objs.json"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "maintenance-ci-janitor": {
-    "scenario": "kubernetes_janitor",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "maintenance-ci-testgrid-config-upload": {
-    "args": [
-      "./testgrid/config-upload.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "maintenance-pull-janitor": {
-    "args": [
-      "--mode=pr"
-    ],
-    "scenario": "kubernetes_janitor",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "maintenance-pull-scale-janitor": {
-    "args": [
-      "--mode=scale",
-      "--ratelimit=5"
-    ],
-    "scenario": "kubernetes_janitor",
-    "sigOwners": [
-      "sig-testing"
     ]
   },
   "metrics-bigquery": {
@@ -12659,77 +12596,6 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-release"
-    ]
-  },
-  "pull-test-infra-bazel": {
-    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
-    "args": [],
-    "scenario": "kubernetes_execute_bazel",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "pull-test-infra-gubernator": {
-    "args": [
-      "./gubernator/test-gubernator.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "pull-test-infra-verify-bazel": {
-    "args": [
-      "./hack/verify-bazel.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "pull-test-infra-verify-config": {
-    "args": [
-      "./hack/verify-config.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "pull-test-infra-verify-deps": {
-    "args": [
-      "./hack/verify-deps.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "pull-test-infra-verify-gofmt": {
-    "args": [
-      "./hack/verify-gofmt.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "pull-test-infra-verify-govet": {
-    "args": [
-      "./hack/verify-govet.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "pull-test-infra-verify-labels": {
-    "args": [
-      "./hack/verify-labels.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-testing"
     ]
   },
   "random_job": {

@@ -1,0 +1,81 @@
+postsubmits:
+  kubernetes/test-infra:
+  - name: ci-test-infra-bazel
+    agent: kubernetes
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-experimental
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-jenkins/logs
+        - --scenario=kubernetes_bazel
+        - -- # end bootstrap args, scenario args below
+        - --build=//...
+        - --install=gubernator/test_requirements.txt
+        - --test=//...
+        - --test-args=--test_output=errors
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "2Gi"
+
+  - name: maintenance-boskos-config-upload
+    agent: kubernetes
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-jenkins/logs
+        - --scenario=execute
+        - --
+        - ./boskos/update_prow_config.sh
+        env:
+        - name: PROW_SERVICE_ACCOUNT
+          value: /etc/prow-build-service/prow-build-service.json
+        volumeMounts:
+        - name: prow-build-service
+          mountPath: /etc/prow-build-service
+          readOnly: true
+      volumes:
+      - name: prow-build-service
+        secret:
+          secretName: prow-build-service
+
+  - name: maintenance-ci-testgrid-config-upload
+    agent: kubernetes
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-experimental
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-jenkins/logs
+        - --scenario=execute
+        - --
+        - ./testgrid/config-upload.sh
+        resources:
+          requests:
+            memory: "1Gi"
