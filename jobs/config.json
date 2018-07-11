@@ -29,32 +29,6 @@
       "sig-scheduling"
     ]
   },
-  "ci-cadvisor-canarypush": {
-    "args": [
-      "--file=deploy/canary/Dockerfile",
-      "--owner=stclair@google.com",
-      "--target=google/cadvisor:canary"
-    ],
-    "scenario": "canarypush",
-    "sigOwners": [
-      "sig-node"
-    ]
-  },
-  "ci-cadvisor-e2e": {
-    "args": [
-      "--deployment=node",
-      "--gcp-project=ci-cadvisor-e2e",
-      "--gcp-zone=us-central1-f",
-      "--node-tests=true",
-      "--provider=gce",
-      "--test_args=--nodes=1--flakeAttempts=2",
-      "--timeout=10m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-node"
-    ]
-  },
   "ci-cluster-api-build": {
     "args": [
       "./scripts/ci-build.sh"
@@ -11740,21 +11714,6 @@
     "scenario": "execute",
     "sigOwners": [
       "sig-cluster-lifecycle"
-    ]
-  },
-  "pull-cadvisor-e2e": {
-    "args": [
-      "--deployment=node",
-      "--gcp-project=cadvisor-e2e",
-      "--gcp-zone=us-central1-f",
-      "--node-tests=true",
-      "--provider=gce",
-      "--test_args=--nodes=1--flakeAttempts=2",
-      "--timeout=10m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-node"
     ]
   },
   "pull-charts-e2e": {
