@@ -23,6 +23,7 @@ import (
 	"github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/validation/validation"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
@@ -30,29 +31,49 @@ import (
 )
 
 const (
-	jobNameLabel = "prow.k8s.io/job"
-	jobTypeLabel = "prow.k8s.io/type"
-	orgLabel     = "prow.k8s.io/refs.org"
-	repoLabel    = "prow.k8s.io/refs.repo"
-	pullLabel    = "prow.k8s.io/refs.pull"
+	defaultProw  = "prow.k8s.io"
+
+	jobNameLabel = "/job"
+	jobTypeLabel = "/type"
+	orgLabel     = "/refs.org"
+	repoLabel    = "/refs.repo"
+	pullLabel    = "/refs.pull"
 )
+
+// NewProwJob initializes a ProwJob out of a ProwJobSpec with customized prow urls.
+func NewProwJobWithProwURL(spec kube.ProwJobSpec, labels map[string]string, prow string) kube.ProwJob {
+	return newProwJobHelper(spec, labels, prow)
+}
 
 // NewProwJob initializes a ProwJob out of a ProwJobSpec.
 func NewProwJob(spec kube.ProwJobSpec, labels map[string]string) kube.ProwJob {
+	return newProwJobHelper(spec, labels, defaultProw)
+}
+
+func newProwJobHelper(spec kube.ProwJobSpec, labels map[string]string, prow string) kube.ProwJob {
 	allLabels := map[string]string{
-		jobNameLabel: spec.Job,
-		jobTypeLabel: string(spec.Type),
+		prow + jobNameLabel: spec.Job,
+		prow + jobTypeLabel: string(spec.Type),
 	}
 	if spec.Type != kube.PeriodicJob {
-		allLabels[orgLabel] = spec.Refs.Org
-		allLabels[repoLabel] = spec.Refs.Repo
+		allLabels[prow + orgLabel] = spec.Refs.Org
+		allLabels[prow + repoLabel] = spec.Refs.Repo
 		if len(spec.Refs.Pulls) > 0 {
-			allLabels[pullLabel] = strconv.Itoa(spec.Refs.Pulls[0].Number)
+			allLabels[prow + pullLabel] = strconv.Itoa(spec.Refs.Pulls[0].Number)
 		}
 	}
 	for key, value := range labels {
 		allLabels[key] = value
 	}
+
+	// let's validate labels
+	labelRegexp := regexp.MustCompile()
+	for key, value := range allLabels {
+		if !validation.IsValidLabelValue(value) {
+			delete(allLabels, key)
+		}
+	}
+
 	return kube.ProwJob{
 		APIVersion: "prow.k8s.io/v1",
 		Kind:       "ProwJob",
