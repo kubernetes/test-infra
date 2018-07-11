@@ -1483,6 +1483,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/metrics-bigquery
 - name: metrics-kettle
   gcs_prefix: kubernetes-jenkins/logs/metrics-kettle
+- name: periodic-features-unfreeze
+  gcs_prefix: kubernetes-jenkins/logs/periodic-features-unfreeze
 - name: periodic-kubernetes-bazel-test-1-8
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-8
 - name: periodic-kubernetes-bazel-test-1-9
@@ -5722,6 +5724,9 @@ dashboards:
   - name: close
     description: Closes rotten issues after 30d of inactivity
     test_group_name: periodic-test-infra-close
+  - name: features-unfreeze
+    description: Prevents issues in `k/features` from being marked as `lifecycle/frozen`
+    test_group_name: periodic-features-unfreeze
   - name: issue-creator
     description: Creates github issues based on data from various 'IssueSource's.
     test_group_name: issue-creator
