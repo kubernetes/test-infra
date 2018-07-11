@@ -23,7 +23,7 @@ import (
 	"github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/validation/validation"
+	"k8s.io/apimachinery/pkg/util/validation"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
