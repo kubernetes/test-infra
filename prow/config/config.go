@@ -292,15 +292,18 @@ func loadConfig(prowConfig, jobConfig string) (*Config, error) {
 		return nil, fmt.Errorf("prowConfig cannot be a dir - %s", prowConfig)
 	}
 
-	nc, err := yamlToConfig(prowConfig, true)
-	if err != nil {
+	var nc Config
+	if err := yamlToConfig(prowConfig, &nc); err != nil {
+		return nil, err
+	}
+	if err := parseProwConfig(&nc); err != nil {
 		return nil, err
 	}
 
 	// TODO(krzyzacy): temporary allow empty jobconfig
 	//                 also temporary allow job config in prow config
 	if jobConfig == "" {
-		return nc, nil
+		return &nc, nil
 	}
 
 	stat, err = os.Stat(jobConfig)
@@ -310,14 +313,14 @@ func loadConfig(prowConfig, jobConfig string) (*Config, error) {
 
 	if !stat.IsDir() {
 		// still support a single file
-		jobConfig, err := yamlToConfig(jobConfig, false)
-		if err != nil {
+		var jc JobConfig
+		if err := yamlToConfig(jobConfig, &jc); err != nil {
 			return nil, err
 		}
-		if err := nc.mergeJobConfig(jobConfig.JobConfig); err != nil {
+		if err := nc.mergeJobConfig(jc); err != nil {
 			return nil, err
 		}
-		return nc, nil
+		return &nc, nil
 	}
 
 	// we need to ensure all config files have unique basenames,
@@ -354,36 +357,30 @@ func loadConfig(prowConfig, jobConfig string) (*Config, error) {
 		}
 		uniqueBasenames.Insert(base)
 
-		subConfig, err := yamlToConfig(path, false)
-		if err != nil {
+		var subConfig JobConfig
+		if err := yamlToConfig(path, &subConfig); err != nil {
 			return err
 		}
-		return nc.mergeJobConfig(subConfig.JobConfig)
+		return nc.mergeJobConfig(subConfig)
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	return nc, nil
+	return &nc, nil
 }
 
 // yamlToConfig converts a yaml file into a Config object
-func yamlToConfig(path string, prowConfig bool) (*Config, error) {
+func yamlToConfig(path string, nc interface{}) error {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("error reading %s: %v", path, err)
+		return fmt.Errorf("error reading %s: %v", path, err)
 	}
-	nc := &Config{}
 	if err := yaml.Unmarshal(b, nc); err != nil {
-		return nil, fmt.Errorf("error unmarshaling %s: %v", path, err)
+		return fmt.Errorf("error unmarshaling %s: %v", path, err)
 	}
-	if prowConfig {
-		if err := parseProwConfig(nc); err != nil {
-			return nil, err
-		}
-	}
-	return nc, nil
+	return nil
 }
 
 // mergeConfig merges two JobConfig together
@@ -411,61 +408,20 @@ func (c *Config) mergeJobConfig(jc JobConfig) error {
 	// *** Periodics ***
 	c.Periodics = append(c.Periodics, jc.Periodics...)
 
-	// validate no duplicated periodics
-	validPeriodics := map[string]bool{}
-	for _, p := range c.AllPeriodics() {
-		if _, ok := validPeriodics[p.Name]; ok {
-			return fmt.Errorf("duplicated periodic job : %s", p.Name)
-		}
-		validPeriodics[p.Name] = true
-	}
-
 	// *** Presubmits ***
-	// validate no presubmit with same name exists cross multiple files
-	validPresubmits := map[string]bool{}
-	for _, p := range c.AllPresubmits(nil) {
-		validPresubmits[p.Name] = true
-	}
-
 	if c.Presubmits == nil {
 		c.Presubmits = make(map[string][]Presubmit)
 	}
-
 	for repo, jobs := range jc.Presubmits {
-		if _, ok := c.Presubmits[repo]; ok {
-			for _, job := range jobs {
-				if _, ok := validPresubmits[job.Name]; ok {
-					return fmt.Errorf("duplicated presubmit job across multiple files : %s", job.Name)
-				}
-			}
-			c.Presubmits[repo] = append(c.Presubmits[repo], jobs...)
-		} else {
-			c.Presubmits[repo] = jobs
-		}
+		c.Presubmits[repo] = append(c.Presubmits[repo], jobs...)
 	}
 
 	// *** Postsubmits ***
-	// validate no postsubmit with same name exists cross multiple files
-	validPostsubmits := map[string]bool{}
-	for _, p := range c.AllPostsubmits(nil) {
-		validPostsubmits[p.Name] = true
-	}
-
 	if c.Postsubmits == nil {
 		c.Postsubmits = make(map[string][]Postsubmit)
 	}
-
 	for repo, jobs := range jc.Postsubmits {
-		if _, ok := c.Postsubmits[repo]; ok {
-			for _, job := range jobs {
-				if _, ok := validPostsubmits[job.Name]; ok {
-					return fmt.Errorf("duplicated postsubmit job across multiple files : %s", job.Name)
-				}
-			}
-			c.Postsubmits[repo] = append(c.Postsubmits[repo], jobs...)
-		} else {
-			c.Postsubmits[repo] = jobs
-		}
+		c.Postsubmits[repo] = append(c.Postsubmits[repo], jobs...)
 	}
 
 	return nil
@@ -570,7 +526,25 @@ func (c *Config) finalizeJobConfig() error {
 // validateJobConfig validates if all the jobspecs/presets are valid
 // if you are mutating the jobs, please add it to finalizeJobConfig above
 func (c *Config) validateJobConfig() error {
+	type orgRepoJobName struct {
+		orgRepo, jobName string
+	}
+
 	// Validate presubmits.
+	// Checking that no duplicate job in prow config exists on the same org / repo / branch.
+	validPresubmits := map[orgRepoJobName][]Presubmit{}
+	for repo, jobs := range c.Presubmits {
+		for _, job := range listPresubmits(jobs) {
+			repoJobName := orgRepoJobName{repo, job.Name}
+			for _, existingJob := range validPresubmits[repoJobName] {
+				if existingJob.Brancher.Intersects(job.Brancher) {
+					return fmt.Errorf("duplicated presubmit job: %s", job.Name)
+				}
+			}
+			validPresubmits[repoJobName] = append(validPresubmits[repoJobName], job)
+		}
+	}
+
 	for _, v := range c.AllPresubmits(nil) {
 		if err := validateAgent(v.Name, v.Agent, v.Spec, v.DecorationConfig); err != nil {
 			return err
@@ -591,6 +565,20 @@ func (c *Config) validateJobConfig() error {
 	}
 
 	// Validate postsubmits.
+	// Checking that no duplicate job in prow config exists on the same org / repo / branch.
+	validPostsubmits := map[orgRepoJobName][]Postsubmit{}
+	for repo, jobs := range c.Postsubmits {
+		for _, job := range listPostsubmits(jobs) {
+			repoJobName := orgRepoJobName{repo, job.Name}
+			for _, existingJob := range validPostsubmits[repoJobName] {
+				if existingJob.Brancher.Intersects(job.Brancher) {
+					return fmt.Errorf("duplicated postsubmit job: %s", job.Name)
+				}
+			}
+			validPostsubmits[repoJobName] = append(validPostsubmits[repoJobName], job)
+		}
+	}
+
 	for _, j := range c.AllPostsubmits(nil) {
 		if err := validateAgent(j.Name, j.Agent, j.Spec, j.DecorationConfig); err != nil {
 			return err
@@ -607,8 +595,14 @@ func (c *Config) validateJobConfig() error {
 		}
 	}
 
+	// validate no duplicated periodics
+	validPeriodics := sets.NewString()
 	// Ensure that the periodic durations are valid and specs exist.
 	for _, p := range c.AllPeriodics() {
+		if validPeriodics.Has(p.Name) {
+			return fmt.Errorf("duplicated periodic job : %s", p.Name)
+		}
+		validPeriodics.Insert(p.Name)
 		if err := validateAgent(p.Name, p.Agent, p.Spec, p.DecorationConfig); err != nil {
 			return err
 		}
