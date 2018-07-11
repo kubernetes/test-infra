@@ -311,6 +311,15 @@ func TestLabel(t *testing.T) {
 			commenter:             orgMember,
 		},
 		{
+			name:                  "Remove WG Policy",
+			body:                  "/remove-wg policy",
+			repoLabels:            []string{"area/infra", "wg/policy"},
+			issueLabels:           []string{"area/infra", "wg/policy"},
+			expectedNewLabels:     []string{},
+			expectedRemovedLabels: formatLabels("wg/policy"),
+			commenter:             orgMember,
+		},
+		{
 			name:                  "Remove Triage Label",
 			body:                  "/remove-triage needs-information",
 			repoLabels:            []string{"area/infra", "triage/needs-information"},
