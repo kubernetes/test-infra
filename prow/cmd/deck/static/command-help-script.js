@@ -41,6 +41,7 @@ window.onload = function () {
                 mainContainer.scrollTop = el.getBoundingClientRect().top;
                 window.location.hash = hash;
             }, 32);
+            el.querySelector(".mdl-button--primary").click();
         }
     }
 };
@@ -234,7 +235,7 @@ function createPluginCell(repo, pluginName, plugin) {
     button.classList.add("mdl-button", "mdl-button--js", "mdl-button--primary");
     button.innerHTML = pluginName;
 
-    // Attach Event Hanlders.
+    // Attach Event Handlers.
     const dialog = document.querySelector('dialog');
     button.addEventListener('click', (event) => {
         const title = dialog.querySelector(".mdl-dialog__title");
