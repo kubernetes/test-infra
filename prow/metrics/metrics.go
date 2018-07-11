@@ -45,6 +45,8 @@ const (
 func NewPusher(ca configGetter) Pusher {
 	return Pusher{
 		configAgent: ca,
+		gatherer:    push.FromGatherer,
+		waiter:      time.After,
 	}
 }
 
@@ -60,13 +62,6 @@ type Pusher struct {
 // Start is meant to run in a goroutine and continuously push
 // metrics to the provided endpoint.
 func (pm Pusher) Start(component string) {
-	if pm.gatherer == nil {
-		pm.gatherer = push.FromGatherer
-	}
-	if pm.waiter == nil {
-		pm.waiter = time.After
-	}
-
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 
