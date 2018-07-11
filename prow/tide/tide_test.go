@@ -971,10 +971,10 @@ func TestTakeAction(t *testing.T) {
 			branch:     "master",
 			sha:        "master",
 		}
-		genPulls := func(nums []int) []PullRequest {
+		genPulls := func(nums []int, state githubql.StatusState) []PullRequest {
 			var prs []PullRequest
 			for _, i := range nums {
-				if err := lg.CheckoutNewBranch("o", "r", fmt.Sprintf("pr-%d", i)); err != nil {
+				if err := lg.CheckoutNewBranch("o", "r", fmt.Sprintf("pr-%s-%d", state, i)); err != nil {
 					t.Fatalf("Error checking out new branch: %v", err)
 				}
 				if err := lg.AddCommit("o", "r", map[string][]byte{fmt.Sprintf("%d", i): []byte("WOW")}); err != nil {
@@ -983,13 +983,21 @@ func TestTakeAction(t *testing.T) {
 				if err := lg.Checkout("o", "r", "master"); err != nil {
 					t.Fatalf("Error checking out master: %v", err)
 				}
-				oid := githubql.String(fmt.Sprintf("origin/pr-%d", i))
+				oid := githubql.String(fmt.Sprintf("origin/pr-%s-%d", state, i))
 				var pr PullRequest
 				pr.Number = githubql.Int(i)
 				pr.HeadRefOID = oid
 				pr.Commits.Nodes = []struct {
 					Commit Commit
-				}{{Commit: Commit{OID: oid}}}
+				}{{Commit: Commit{
+					OID: oid,
+					Status: struct {
+						Contexts []Context
+					}{Contexts: []Context{{
+						Context: githubql.String("foo"),
+						State:   state,
+					}}},
+				}}}
 				sp.prs = append(sp.prs, pr)
 				prs = append(prs, pr)
 			}
@@ -1009,7 +1017,7 @@ func TestTakeAction(t *testing.T) {
 			batchPending = []PullRequest{{}}
 		}
 		t.Logf("Test case: %s", tc.name)
-		if act, _, err := c.takeAction(sp, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges)); err != nil {
+		if act, _, err := c.takeAction(sp, batchPending, genPulls(tc.successes, githubql.StatusStateSuccess), genPulls(tc.pendings, githubql.StatusStatePending), genPulls(tc.nones, githubql.StatusStateSuccess), genPulls(tc.batchMerges, githubql.StatusStateSuccess)); err != nil {
 			t.Errorf("Error in takeAction: %v", err)
 			continue
 		} else if act != tc.action {

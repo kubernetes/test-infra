@@ -992,7 +992,7 @@ type PullRequest struct {
 			Commit Commit
 		}
 		// See the 'headContexts' function for details.
-	} `graphql:"commits(last: 1)"`
+	} `graphql:"commits(last: 4)"`
 	Labels struct {
 		Nodes []struct {
 			Name githubql.String
@@ -1110,11 +1110,11 @@ func headContexts(log *logrus.Entry, ghc githubClient, pr *PullRequest) ([]Conte
 // struct without making additional API calls. It returns the contexts if found
 // and a bool indicating success.
 func headContextsNoCost(pr *PullRequest) ([]Context, bool) {
-	if pr.HeadRef != nil {
+	if pr.HeadRef != nil && len(pr.HeadRef.Target.Commit.Status.Contexts) != 0 {
 		return pr.HeadRef.Target.Commit.Status.Contexts, true
 	}
 	for _, node := range pr.Commits.Nodes {
-		if node.Commit.OID == pr.HeadRefOID {
+		if node.Commit.OID == pr.HeadRefOID && len(node.Commit.Status.Contexts) != 0 {
 			return node.Commit.Status.Contexts, true
 		}
 	}
