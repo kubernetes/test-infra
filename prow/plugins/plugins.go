@@ -174,6 +174,7 @@ type Configuration struct {
 	Cat           Cat                  `json:"cat,omitempty"`
 	Label         *Label               `json:"label,omitempty"`
 	Lgtm          []Lgtm               `json:"lgtm,omitempty"`
+	Welcome       Welcome              `json:"welcome,omitempty"`
 }
 
 // ExternalPlugin holds configuration for registering an external
@@ -437,6 +438,13 @@ type MergeWarning struct {
 	WhiteList []string `json:"whitelist,omitempty"`
 	// A slack event is published if the user is not on the branch whitelist
 	BranchWhiteList map[string][]string `json:"branch_whitelist,omitempty"`
+}
+
+// Welcome is config for the welcome plugin
+type Welcome struct {
+	// Message is the welcome message to post on new-contributor PRs
+	// TODO(bentheelder): make this be configurable per-repo?
+	Message string `json:"message,omitempty"`
 }
 
 // TriggerFor finds the Trigger for a repo, if one exists
