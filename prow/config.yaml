@@ -356,22 +356,6 @@ presets:
   - name: aws-cred
     mountPath: /etc/aws-cred
     readOnly: true
-- labels:
-    preset-cadvisor-docker-credential: "true"
-  env:
-  - name: DOCKER_USER
-    value: /etc/cadvisor-cred/username
-  - name: DOCKER_PASSWORD
-    value: /etc/cadvisor-cred/password
-  volumes:
-  - name: cadvisor-cred
-    secret:
-      defaultMode: 0400
-      secretName: cadvisor-docker-credential
-  volumeMounts:
-  - name: cadvisor-cred
-    mountPath: /etc/cadvisor-cred
-    readOnly: true
 # storage / caching presets
 - labels:
     preset-bazel-scratch-dir: "true"
@@ -449,29 +433,6 @@ presubmits:
       - name: service-account
         secret:
           secretName: service-account
-  google/cadvisor:
-  - name: pull-cadvisor-e2e
-    agent: kubernetes
-    always_run: true
-    context: pull-cadvisor-e2e
-    rerun_command: "/test pull-cadvisor-e2e"
-    trigger: "(?m)^/test( all| pull-cadvisor-e2e),?(\\s+|$)"
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-master
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/kubernetes"
-        - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=90"
-        - "--"
-        - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml --test-suite=cadvisor"
 
   kubernetes/charts:
   - name: pull-charts-e2e
@@ -3747,55 +3708,6 @@ periodics:
       - --repo=k8s.io/kubernetes=master
       - --timeout=40
       - --root=/go/src
-      env:
-      - name: GOPATH
-        value: /go
-
-- interval: 24h
-  name: ci-cadvisor-canarypush
-  agent: kubernetes
-  labels:
-    preset-service-account: "true"
-    preset-cadvisor-docker-credential: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
-      args:
-      - --repo=github.com/google/cadvisor
-      - --root=/go/src
-      - --timeout=30
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
-
-- name: ci-cadvisor-e2e
-  interval: 8h
-  agent: kubernetes
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-master
-      args:
-      - --job=$(JOB_NAME)
-      - --root=/go/src
-      - --repo=k8s.io/kubernetes
-      - --repo=github.com/google/cadvisor=master
-      - --service-account=/etc/service-account/service-account.json
-      - --timeout=90
-      - --upload=gs://kubernetes-jenkins/logs
-      - --
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml --test-suite=cadvisor
       env:
       - name: GOPATH
         value: /go
