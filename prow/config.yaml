@@ -466,6 +466,24 @@ presubmits:
         emptyDir: {}
 
   kubernetes/cloud-provider-azure:
+  - name: pull-cloud-provider-azure-check
+    agent: kubernetes
+    always_run: true
+    context: pull-cloud-provider-azure-check
+    rerun_command: "/test pull-cloud-provider-azure-check"
+    trigger: "(?m)^/test( all| pull-cloud-provider-azure-check),?(\\s+|$)"
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-master
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+
   - name: pull-cloud-provider-azure-e2e
     agent: kubernetes
     always_run: false
@@ -496,24 +514,6 @@ presubmits:
       volumes:
       - name: auto-generated-docker-graph-volume-mount
         emptyDir: {}
-
-  - name: pull-cloud-provider-azure-lint
-    agent: kubernetes
-    always_run: true
-    context: pull-cloud-provider-azure-lint
-    rerun_command: "/test pull-cloud-provider-azure-lint"
-    trigger: "(?m)^/test( all| pull-cloud-provider-azure-lint),?(\\s+|$)"
-    branches:
-    - master
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-master
-        args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
 
   - name: pull-cloud-provider-azure-unit
     agent: kubernetes

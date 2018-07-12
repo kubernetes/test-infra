@@ -11725,23 +11725,22 @@
       "sig-apps"
     ]
   },
-  "pull-cloud-provider-azure-e2e": {
+  "pull-cloud-provider-azure-check": {
     "args": [
       "make",
-      "test-e2e",
-      "SUITE=default",
-      "SUBJECT=${PULL_NUMBER}"
+      "test-check"
     ],
     "scenario": "execute",
     "sigOwners": [
       "sig-azure"
     ]
   },
-  "pull-cloud-provider-azure-lint": {
+  "pull-cloud-provider-azure-e2e": {
     "args": [
       "make",
-      "test-lint-prepare",
-      "test-lint"
+      "test-e2e",
+      "SUITE=default",
+      "SUBJECT=${PULL_NUMBER}"
     ],
     "scenario": "execute",
     "sigOwners": [
