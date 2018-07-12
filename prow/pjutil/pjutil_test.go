@@ -205,7 +205,6 @@ func TestGetLatestProwJobs(t *testing.T) {
 func TestNewProwJob(t *testing.T) {
 	var testCases = []struct {
 		name           string
-		prow           string
 		spec           kube.ProwJobSpec
 		labels         map[string]string
 		expectedLabels map[string]string
@@ -261,12 +260,11 @@ func TestNewProwJob(t *testing.T) {
 		},
 		{
 			name: "non-github presubmit job",
-			prow: "prow.foo.io"
 			spec: kube.ProwJobSpec{
 				Job:  "job",
 				Type: kube.PresubmitJob,
 				Refs: &kube.Refs{
-					Org:  "org",
+					Org:  "https://some-gerrit-instance.foo.com",
 					Repo: "some/invalid/repo",
 					Pulls: []kube.Pull{
 						{Number: 1},
@@ -275,22 +273,17 @@ func TestNewProwJob(t *testing.T) {
 			},
 			labels: map[string]string{},
 			expectedLabels: map[string]string{
-				"prow.foo.io/job":       "job",
-				"prow.foo.io/type":      "presubmit",
-				"prow.foo.io/refs.org":  "org",
+				"prow.k8s.io/job":       "job",
+				"prow.k8s.io/type":      "presubmit",
+				"prow.k8s.io/refs.org":  "some-gerrit-instance.foo.com",
+				"prow.k8s.io/refs.repo": "repo",
 				"prow.k8s.io/refs.pull": "1",
 			},
 		},
 	}
 
 	for _, testCase := range testCases {
-		var pj kube.ProwJob
-		if testCase.prow == "" {
-			pj := NewProwJob(testCase.spec, testCase.labels)
-		} else {
-			pj := NewProwJobWithProwURL(testCase.spec, testCase.labels, testCase.prow)
-		}
-		
+		pj := NewProwJob(testCase.spec, testCase.labels)
 		if actual, expected := pj.Spec, testCase.spec; !equality.Semantic.DeepEqual(actual, expected) {
 			t.Errorf("%s: incorrect ProwJobSpec created: %s", testCase.name, diff.ObjectReflectDiff(actual, expected))
 		}

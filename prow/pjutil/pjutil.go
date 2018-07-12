@@ -18,6 +18,7 @@ limitations under the License.
 package pjutil
 
 import (
+	"path/filepath"
 	"strconv"
 
 	"github.com/satori/go.uuid"
@@ -31,35 +32,24 @@ import (
 )
 
 const (
-	defaultProw  = "prow.k8s.io"
-
-	jobNameLabel = "/job"
-	jobTypeLabel = "/type"
-	orgLabel     = "/refs.org"
-	repoLabel    = "/refs.repo"
-	pullLabel    = "/refs.pull"
+	jobNameLabel = "prow.k8s.io/job"
+	jobTypeLabel = "prow.k8s.io/type"
+	orgLabel     = "prow.k8s.io/refs.org"
+	repoLabel    = "prow.k8s.io/refs.repo"
+	pullLabel    = "prow.k8s.io/refs.pull"
 )
-
-// NewProwJob initializes a ProwJob out of a ProwJobSpec with customized prow urls.
-func NewProwJobWithProwURL(spec kube.ProwJobSpec, labels map[string]string, prow string) kube.ProwJob {
-	return newProwJobHelper(spec, labels, prow)
-}
 
 // NewProwJob initializes a ProwJob out of a ProwJobSpec.
 func NewProwJob(spec kube.ProwJobSpec, labels map[string]string) kube.ProwJob {
-	return newProwJobHelper(spec, labels, defaultProw)
-}
-
-func newProwJobHelper(spec kube.ProwJobSpec, labels map[string]string, prow string) kube.ProwJob {
 	allLabels := map[string]string{
-		prow + jobNameLabel: spec.Job,
-		prow + jobTypeLabel: string(spec.Type),
+		jobNameLabel: spec.Job,
+		jobTypeLabel: string(spec.Type),
 	}
 	if spec.Type != kube.PeriodicJob {
-		allLabels[prow + orgLabel] = spec.Refs.Org
-		allLabels[prow + repoLabel] = spec.Refs.Repo
+		allLabels[orgLabel] = spec.Refs.Org
+		allLabels[repoLabel] = spec.Refs.Repo
 		if len(spec.Refs.Pulls) > 0 {
-			allLabels[prow + pullLabel] = strconv.Itoa(spec.Refs.Pulls[0].Number)
+			allLabels[pullLabel] = strconv.Itoa(spec.Refs.Pulls[0].Number)
 		}
 	}
 	for key, value := range labels {
@@ -67,10 +57,16 @@ func newProwJobHelper(spec kube.ProwJobSpec, labels map[string]string, prow stri
 	}
 
 	// let's validate labels
-	labelRegexp := regexp.MustCompile()
 	for key, value := range allLabels {
-		if !validation.IsValidLabelValue(value) {
+		if errs := validation.IsValidLabelValue(value); len(errs) > 0 {
+			// try to use basename of a path, if path contains invalid //
+			base := filepath.Base(value)
+			if errs := validation.IsValidLabelValue(base); len(errs) == 0 {
+				allLabels[key] = base
+				continue
+			}
 			delete(allLabels, key)
+			logrus.Warnf("Removing invalid label: key - %s, value - %s, error: %s", key, value, errs)
 		}
 	}
 
