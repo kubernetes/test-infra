@@ -190,6 +190,14 @@ func fileChangesGetter(ghc githubClient, org, repo string, num int) func() ([]st
 	}
 }
 
+func allContexts(parent config.Presubmit) []string {
+	contexts := []string{parent.Context}
+	for _, child := range parent.RunAfterSuccess {
+		contexts = append(contexts, allContexts(child)...)
+	}
+	return contexts
+}
+
 func runOrSkipRequested(c client, pr *github.PullRequest, requestedJobs []config.Presubmit, forceRunContexts map[string]bool, body, eventGUID string) error {
 	org := pr.Base.Repo.Owner.Login
 	repo := pr.Base.Repo.Name
@@ -240,7 +248,10 @@ func runOrSkipRequested(c client, pr *github.PullRequest, requestedJobs []config
 			toRunJobs = append(toRunJobs, job)
 			toRun.Insert(job.Context)
 		} else if !job.SkipReport {
-			toSkip.Insert(job.Context)
+			// we need to post context statuses for all jobs; if a job is slated to
+			// run after the success of a parent job that is skipped, it must be
+			// skipped as well
+			toSkip.Insert(allContexts(job)...)
 		}
 	}
 	// 'Skip' any context that is requested, but doesn't have any job shards that
