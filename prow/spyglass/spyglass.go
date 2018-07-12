@@ -14,11 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package Spyglass creates views for Prow job artifacts
+// Package spyglass creates views for Prow job artifacts
 package spyglass
 
 import (
-	"errors"
 	"fmt"
 	"sort"
 	"time"
@@ -28,7 +27,7 @@ import (
 	"k8s.io/test-infra/prow/spyglass/viewers"
 )
 
-// SpyGlass records which sets of artifacts need views for a prow job
+// Spyglass records which sets of artifacts need views for a prow job
 type Spyglass struct {
 
 	// map of names of views to their corresponding lenses
@@ -45,7 +44,7 @@ type Lens struct {
 	// Title of view
 	Title string
 	// Html rendering of the view
-	HtmlView string
+	HTMLView string
 	// Priority is the relative position of the view on the page
 	Priority int
 }
@@ -80,7 +79,7 @@ func (s *Spyglass) Views(eyepiece map[string][]string) []Lens {
 		lens := Lens{
 			Name:     viewer,
 			Title:    title,
-			HtmlView: "",
+			HTMLView: "",
 			Priority: priority,
 		}
 		lenses = append(lenses, lens)
@@ -93,21 +92,20 @@ func (s *Spyglass) Views(eyepiece map[string][]string) []Lens {
 		pj := lenses[j].Priority
 		if pi == pj {
 			return iname < jname
-		} else {
-			return pi < pj
 		}
+		return pi < pj
 	})
 	return lenses
 }
 
 // Refresh reloads the html view for a given set of objects
-func (s *Spyglass) Refresh(src string, jobId string, viewReq *ViewRequest) Lens {
+func (s *Spyglass) Refresh(src string, jobID string, viewReq *ViewRequest) Lens {
 	lens, ok := s.Lenses[viewReq.ViewName]
 	if !ok {
 		logrus.Errorf("Could not find Lens with name %s.", viewReq.ViewName)
 		return Lens{}
 	}
-	artifacts, err := s.FetchArtifacts(src, jobId, viewReq.ViewerCache[viewReq.ViewName])
+	artifacts, err := s.FetchArtifacts(src, jobID, viewReq.ViewerCache[viewReq.ViewName])
 	if err != nil {
 		logrus.WithError(err).Error("Error while fetching artifacts.")
 	}
@@ -117,13 +115,13 @@ func (s *Spyglass) Refresh(src string, jobId string, viewReq *ViewRequest) Lens 
 		logrus.WithError(err).Error("Could not find a valid artifact viewer.")
 		return Lens{}
 	}
-	lens.HtmlView = view
+	lens.HTMLView = view
 	return lens
 }
 
 // ListArtifacts handles muxing artifact sources to the correct fetcher implementations to list
 // all available artifact names
-func (s *Spyglass) ListArtifacts(src string, jobId string) ([]string, error) {
+func (s *Spyglass) ListArtifacts(src string, jobID string) ([]string, error) {
 	artifacts := []string{}
 	var jobName string
 	// First check src
@@ -131,8 +129,8 @@ func (s *Spyglass) ListArtifacts(src string, jobId string) ([]string, error) {
 		artifactFetcher := NewGCSArtifactFetcher()
 		gcsJobSource := NewGCSJobSource(src)
 		jobName = gcsJobSource.JobName()
-		if jobId == "" {
-			jobId = gcsJobSource.JobId()
+		if jobID == "" {
+			jobID = gcsJobSource.JobID()
 		}
 
 		artStart := time.Now()
@@ -141,12 +139,12 @@ func (s *Spyglass) ListArtifacts(src string, jobId string) ([]string, error) {
 		logrus.Info("Retrieved GCS artifacts in ", artElapsed)
 
 	} else {
-		return []string{}, errors.New(fmt.Sprintf("Invalid source: %s", src))
+		return []string{}, fmt.Errorf("Invalid source: %s", src)
 	}
 
 	// Then check prowjob id for pod logs, pod spec, etc
-	if jobId != "" && jobName != "" {
-		podLog := NewPodLogArtifact(jobName, jobId, s.Ja)
+	if jobID != "" && jobName != "" {
+		podLog := NewPodLogArtifact(jobName, jobID, s.Ja)
 		if podLog.Size() != -1 {
 			artifacts = append(artifacts, podLog.JobPath())
 		}
@@ -156,7 +154,7 @@ func (s *Spyglass) ListArtifacts(src string, jobId string) ([]string, error) {
 }
 
 // FetchArtifacts creates artifact objects for each artifact name in the list
-func (s *Spyglass) FetchArtifacts(src string, jobId string, artifactNames []string) ([]viewers.Artifact, error) {
+func (s *Spyglass) FetchArtifacts(src string, jobID string, artifactNames []string) ([]viewers.Artifact, error) {
 	artifacts := []viewers.Artifact{}
 	var jobName string
 	// First check src
@@ -164,8 +162,8 @@ func (s *Spyglass) FetchArtifacts(src string, jobId string, artifactNames []stri
 		artifactFetcher := NewGCSArtifactFetcher()
 		gcsJobSource := NewGCSJobSource(src)
 		jobName = gcsJobSource.JobName()
-		if jobId == "" {
-			jobId = gcsJobSource.JobId()
+		if jobID == "" {
+			jobID = gcsJobSource.JobID()
 		}
 
 		artStart := time.Now()
@@ -176,13 +174,13 @@ func (s *Spyglass) FetchArtifacts(src string, jobId string, artifactNames []stri
 		logrus.Info("Retrieved GCS artifacts in ", artElapsed)
 
 	} else {
-		return []viewers.Artifact{}, errors.New(fmt.Sprintf("Invalid source: %s", src))
+		return []viewers.Artifact{}, fmt.Errorf("Invalid source: %s", src)
 	}
 
 	// Then check prowjob id for pod logs, pod spec, etc
-	if jobId != "" && jobName != "" {
+	if jobID != "" && jobName != "" {
 		logrus.Info("Trying pod logs. ")
-		podLog := NewPodLogArtifact(jobName, jobId, s.Ja)
+		podLog := NewPodLogArtifact(jobName, jobID, s.Ja)
 		if podLog.Size() != -1 {
 			artifacts = append(artifacts, podLog)
 		}

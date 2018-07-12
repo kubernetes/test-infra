@@ -42,7 +42,7 @@ type GCSJobSource struct {
 	bucket     string
 	jobPath    string
 	jobName    string
-	jobId      string
+	jobID      string
 }
 
 // NewGCSArtifactFetcher creates a new ArtifactFetcher with a real GCS Client
@@ -62,7 +62,7 @@ func NewGCSJobSource(src string) *GCSJobSource {
 	noPrefixSrc := strings.TrimPrefix(src, linkPrefix)
 	tokens := strings.FieldsFunc(noPrefixSrc, func(c rune) bool { return c == '/' })
 	bucket := tokens[0]
-	jobId := tokens[len(tokens)-1]
+	jobID := tokens[len(tokens)-1]
 	name := tokens[len(tokens)-2]
 	jobPath := strings.TrimPrefix(noPrefixSrc, bucket+"/")
 	return &GCSJobSource{
@@ -71,7 +71,7 @@ func NewGCSJobSource(src string) *GCSJobSource {
 		bucket:     bucket,
 		jobPath:    jobPath,
 		jobName:    name,
-		jobId:      jobId,
+		jobID:      jobID,
 	}
 }
 
@@ -81,6 +81,7 @@ func isGCSSource(src string) bool {
 }
 
 // Artifacts gets all artifact names from a GCS job source
+// TODO this is slow for jobs with lots of artifacts (scalabilty)
 func (af *GCSArtifactFetcher) Artifacts(src JobSource) []string {
 	artifacts := []string{}
 
@@ -134,7 +135,7 @@ func (src *GCSJobSource) JobName() string {
 	return src.jobName
 }
 
-// JobId gets the id of the job
-func (src *GCSJobSource) JobId() string {
-	return src.jobId
+// JobID gets the id of the job
+func (src *GCSJobSource) JobID() string {
+	return src.jobID
 }

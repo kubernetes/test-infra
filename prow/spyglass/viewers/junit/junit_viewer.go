@@ -18,6 +18,11 @@ limitations under the License.
 package junit
 
 import (
+	"bytes"
+	"fmt"
+
+	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/bazel-test-infra/external/go_sdk/src/html/template"
 	"k8s.io/test-infra/prow/spyglass/viewers"
 )
 
@@ -34,8 +39,30 @@ func init() {
 	}, ViewHandler)
 }
 
+// TestResult holds information about a test run
+type TestResult struct {
+	TestName string
+	Passed   bool
+}
+
 // ViewHandler creates a view for JUnit tests
 func ViewHandler(artifacts []viewers.Artifact, raw string) string {
-	//TODO
-	return ""
+	type JunitViewData struct {
+		NumTests int
+		Passed   []TestResult
+		Failed   []TestResult
+	}
+
+	for _, a := range artifacts {
+		contents, err := a.ReadAll()
+
+	}
+
+	var buf bytes.Buffer
+	t := template.Must(template.New(fmt.Sprintf("%sTemplate", name)).Parse(tmplt))
+	if err := t.Execute(&buf, junitViewData); err != nil {
+		logrus.WithError(err).Error("Error executing template.")
+	}
+
+	return buf.String()
 }

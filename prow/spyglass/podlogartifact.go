@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package spyglass
 
 import (
@@ -28,16 +29,16 @@ import (
 // PodLogArtifact holds data for reading from a specific pod log
 type PodLogArtifact struct {
 	name      string
-	jobId     string
+	jobID     string
 	ja        *jobs.JobAgent
 	sizeLimit int64
 }
 
 //NewPodLogArtifact creates a new PodLogArtifact
-func NewPodLogArtifact(jobName string, jobId string, ja *jobs.JobAgent) *PodLogArtifact {
+func NewPodLogArtifact(jobName string, jobID string, ja *jobs.JobAgent) *PodLogArtifact {
 	return &PodLogArtifact{
 		name:      jobName,
-		jobId:     jobId,
+		jobID:     jobID,
 		ja:        ja,
 		sizeLimit: 500e6,
 	}
@@ -45,7 +46,7 @@ func NewPodLogArtifact(jobName string, jobId string, ja *jobs.JobAgent) *PodLogA
 
 // CanonicalLink returns a link to where pod logs are streamed
 func (a *PodLogArtifact) CanonicalLink() string {
-	return fmt.Sprintf("/log?job=%s&id=%s", a.name, a.jobId)
+	return fmt.Sprintf("/log?job=%s&id=%s", a.name, a.jobID)
 }
 
 // JobPath gets the path within the job for the pod log. Note this is a special case, trying to match
@@ -54,8 +55,9 @@ func (a *PodLogArtifact) JobPath() string {
 	return "pod-log"
 }
 
+// ReadAt implements reading a range of bytes from the pod logs endpoint
 func (a *PodLogArtifact) ReadAt(p []byte, off int64) (n int, err error) {
-	logs, err := a.ja.GetJobLog(a.name, a.jobId)
+	logs, err := a.ja.GetJobLog(a.name, a.jobID)
 	if err != nil {
 		logrus.WithError(err).Error("Could not get pod logs.")
 		return 0, err
@@ -66,14 +68,14 @@ func (a *PodLogArtifact) ReadAt(p []byte, off int64) (n int, err error) {
 // ReadAll reads all available pod logs, failing if they are too large
 func (a *PodLogArtifact) ReadAll() ([]byte, error) {
 	if a.Size() > a.sizeLimit {
-		return []byte{}, errors.New("File too large.")
+		return []byte{}, errors.New("file over size limit")
 	}
-	return a.ja.GetJobLog(a.name, a.jobId)
+	return a.ja.GetJobLog(a.name, a.jobID)
 }
 
 // ReadAtMost reads at most n bytes
 func (a *PodLogArtifact) ReadAtMost(n int64) ([]byte, error) {
-	joblog, err := a.ja.GetJobLog(a.name, a.jobId)
+	joblog, err := a.ja.GetJobLog(a.name, a.jobID)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -85,9 +87,8 @@ func (a *PodLogArtifact) ReadAtMost(n int64) ([]byte, error) {
 		if err != nil {
 			if err == io.EOF {
 				return p, nil
-			} else {
-				return p, err
 			}
+			return p, err
 		}
 		p = append(p, b)
 	}
@@ -96,7 +97,7 @@ func (a *PodLogArtifact) ReadAtMost(n int64) ([]byte, error) {
 
 // ReadTail reads the last n bytes of the pod log
 func (a *PodLogArtifact) ReadTail(n int64) ([]byte, error) {
-	logs, err := a.ja.GetJobLog(a.name, a.jobId)
+	logs, err := a.ja.GetJobLog(a.name, a.jobID)
 	if err != nil {
 		logrus.WithError(err).Error("Could not get pod logs.")
 		return []byte{}, err
@@ -113,7 +114,7 @@ func (a *PodLogArtifact) ReadTail(n int64) ([]byte, error) {
 
 // Size gets the size of the pod log. Note: this function makes the same network call as reading the entire file.
 func (a *PodLogArtifact) Size() int64 {
-	logs, err := a.ja.GetJobLog(a.name, a.jobId)
+	logs, err := a.ja.GetJobLog(a.name, a.jobID)
 	if err != nil {
 		logrus.WithError(err).Error("Could not get pod logs.")
 		return -1

@@ -20,6 +20,7 @@ package metadata
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"html/template"
@@ -43,57 +44,70 @@ func init() {
 
 // Started is used to mirror the started.json artifact
 type Started struct {
-	TimestampString string            `json:"timestamp"`
-	Timestamp       time.Time         `json:"-"`
-	Repos           map[string]string `json:"repos"`
-	Pull            string            `json:"pull"`
+	TimestampRaw int64             `json:"timestamp"`
+	Timestamp    time.Time         `json:"-"`
+	Node         string            `json:"node"`
+	Repos        map[string]string `json:"repos"`
+	Pull         string            `json:"pull"`
 }
 
 // Finished is used to mirror the finished.json artifact
 type Finished struct {
-	TimestampString string    `json:"timestamp"`
-	Timestamp       time.Time `json:"-"`
-	Result          string    `json:"result"`
-	Metadata        string    `json:"metadata"`
+	TimestampRaw int64             `json:"timestamp"`
+	Timestamp    time.Time         `json:"-"`
+	Version      string            `json:"version"`
+	JobVersion   string            `json:"job-version"`
+	Passed       bool              `json:"passed"`
+	Result       string            `json:"result"`
+	Metadata     map[string]string `json:"metadata"`
+}
+
+// Derived contains metadata derived from provided metadata for insertion into the template
+type Derived struct {
+	Elapsed          time.Duration
+	GCSArtifactsLink string
 }
 
 // ViewHandler creates a view for prow job metadata
+// TODO: os image,
 func ViewHandler(artifacts []viewers.Artifact, raw string) string {
-	metadataViewTmpl := `
-	<div>
-	{{ .Started}}
-	</div>
-	<div>
-	{{ .Finished}}
-	</div>
-	`
 	var buf bytes.Buffer
-	type MetadataView struct {
+	type MetadataViewData struct {
 		Started  Started
 		Finished Finished
+		Derived  Derived
 	}
-	var metadataView MetadataView
+	var metadataViewData MetadataViewData
 	for _, a := range artifacts {
 		read, err := a.ReadAll()
 		if err != nil {
-			logrus.Error("Failed reading file")
+			logrus.WithError(err).Error("Failed reading from artifact.")
 		}
 		if a.JobPath() == "started.json" {
 			s := Started{}
-			json.Unmarshal(read, s)
-			metadataView.Started = s
+			if err = json.Unmarshal(read, &s); err != nil {
+				logrus.WithError(err).Error("Error unmarshaling started.json")
+			}
+			s.Timestamp = time.Unix(s.TimestampRaw, 0)
+			metadataViewData.Started = s
 
 		} else if a.JobPath() == "finished.json" {
 			f := Finished{}
-			json.Unmarshal(read, f)
-			metadataView.Finished = f
+			if err = json.Unmarshal(read, &f); err != nil {
+				logrus.WithError(err).Error("Error unmarshaling finished.json")
+			}
+			f.Timestamp = time.Unix(f.TimestampRaw, 0)
+			metadataViewData.Finished = f
 		}
 
 	}
-	t := template.Must(template.New("MetadataView").Parse(metadataViewTmpl))
-	err := t.Execute(&buf, metadataView)
-	if err != nil {
-		logrus.Errorf("Template failed with error: %s", err)
+	d := Derived{
+		Elapsed: metadataViewData.Finished.Timestamp.Sub(metadataView.Started.Timestamp),
+	}
+	metadataViewData.Derived = d
+	t := template.Must(template.New(fmt.Sprintf("%sTemplate", name)).Parse(tmplt))
+	if err := t.Execute(&buf, metadataViewData); err != nil {
+		logrus.WithError(err).Error("Error executing template.")
 	}
 	return buf.String()
 }

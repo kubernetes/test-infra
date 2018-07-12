@@ -100,7 +100,7 @@ func ViewHandler(artifacts []viewers.Artifact, raw string) string {
 			chunks = viewData.CurrentChunks
 			if viewData.More {
 				logrus.Info("Requesting more for artifact ", a.JobPath())
-				chunks += 1
+				chunks++
 			}
 		} else {
 			logrus.Info("Did not find artifact in refresh request")
@@ -158,24 +158,12 @@ func ViewHandler(artifacts []viewers.Artifact, raw string) string {
 	return LogViewTemplate(buildLogsView)
 }
 
-// Executes a log view template ready for rendering
+// LogViewTemplate executes the log viewer template ready for rendering
 func LogViewTemplate(buildLogsView BuildLogsView) string {
-	logViewTmpl := `
-<div style="font-family:monospace;">
-	{{range .LogViews}}<h4><a href="{{.ArtifactLink}}">{{.ArtifactName}}</a> - {{.ViewMethodDescription}}</h4>
-	<ul style="list-style-type:none;padding:0;margin:0;line-height:1.4;color:black;">
-		{{range $ix, $e := .LogLines}}
-			<li>{{$e}}</li>
-		{{end}}
-	</ul>
-	<button onclick="refreshView({{.ViewName}}, '{{index $.RawRefreshRequests .ArtifactName}}')" class="mdl-button mdl-js-button mdl-button--primary">More Lines Please</button>{{end}}
-</div>`
 	var buf bytes.Buffer
-
-	t := template.Must(template.New(name).Parse(logViewTmpl))
-	err := t.Execute(&buf, buildLogsView)
-	if err != nil {
-		logrus.WithError(err).Error("Template failed.")
+	t := template.Must(template.New(fmt.Sprintf("%sTemplate", name)).Parse(tmplt))
+	if err := t.Execute(&buf, buildLogsView); err != nil {
+		logrus.WithError(err).Error("Error executing template.")
 	}
 	return buf.String()
 }

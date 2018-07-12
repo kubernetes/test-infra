@@ -14,21 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package spyglass
+package buildlog
 
-import (
-	"k8s.io/test-infra/prow/spyglass/viewers"
-)
-
-// JobSource gets information about a location storing the results of a single Prow job
-type JobSource interface {
-	CanonicalLink() string
-	JobPath() string
-	BucketName() string
-}
-
-// ArtifactFetcher gets all information necessary to perform IO operations on artifacts from a storage provider
-type ArtifactFetcher interface {
-	Artifacts(src *JobSource) []string
-	Artifact(src *JobSource, name string) viewers.Artifact
-}
+const tmplt = `
+<div style="font-family:monospace;">
+  {{range .LogViews}}<h4><a href="{{.ArtifactLink}}">{{.ArtifactName}}</a> - {{.ViewMethodDescription}}</h4>
+  <ul style="list-style-type:none;padding:0;margin:0;line-height:1.4;color:black;">
+    {{range $ix, $e := .LogLines}}
+    <li>{{$e}}</li>
+    {{end}}
+  </ul>
+  <button onclick="refreshView({{.ViewName}}, '{{index $.RawRefreshRequests .ArtifactName}}')" class="mdl-button mdl-js-button mdl-button--primary">More Lines Please</button>
+  {{end}}
+</div>`
