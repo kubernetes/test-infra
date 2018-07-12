@@ -10894,6 +10894,7 @@
   },
   "ci-kubernetes-kubemark-100-canary": {
     "args": [
+      "--build=bazel",
       "--cluster=kubemark-100-canary",
       "--env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env",
       "--extract=ci/latest",
