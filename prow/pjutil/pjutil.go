@@ -18,11 +18,13 @@ limitations under the License.
 package pjutil
 
 import (
+	"path/filepath"
 	"strconv"
 
 	"github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/validation"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
@@ -53,6 +55,21 @@ func NewProwJob(spec kube.ProwJobSpec, labels map[string]string) kube.ProwJob {
 	for key, value := range labels {
 		allLabels[key] = value
 	}
+
+	// let's validate labels
+	for key, value := range allLabels {
+		if errs := validation.IsValidLabelValue(value); len(errs) > 0 {
+			// try to use basename of a path, if path contains invalid //
+			base := filepath.Base(value)
+			if errs := validation.IsValidLabelValue(base); len(errs) == 0 {
+				allLabels[key] = base
+				continue
+			}
+			delete(allLabels, key)
+			logrus.Warnf("Removing invalid label: key - %s, value - %s, error: %s", key, value, errs)
+		}
+	}
+
 	return kube.ProwJob{
 		APIVersion: "prow.k8s.io/v1",
 		Kind:       "ProwJob",

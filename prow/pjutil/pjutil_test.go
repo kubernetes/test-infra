@@ -258,6 +258,28 @@ func TestNewProwJob(t *testing.T) {
 				"prow.k8s.io/refs.pull": "1",
 			},
 		},
+		{
+			name: "non-github presubmit job",
+			spec: kube.ProwJobSpec{
+				Job:  "job",
+				Type: kube.PresubmitJob,
+				Refs: &kube.Refs{
+					Org:  "https://some-gerrit-instance.foo.com",
+					Repo: "some/invalid/repo",
+					Pulls: []kube.Pull{
+						{Number: 1},
+					},
+				},
+			},
+			labels: map[string]string{},
+			expectedLabels: map[string]string{
+				"prow.k8s.io/job":       "job",
+				"prow.k8s.io/type":      "presubmit",
+				"prow.k8s.io/refs.org":  "some-gerrit-instance.foo.com",
+				"prow.k8s.io/refs.repo": "repo",
+				"prow.k8s.io/refs.pull": "1",
+			},
+		},
 	}
 
 	for _, testCase := range testCases {
