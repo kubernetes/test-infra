@@ -211,6 +211,7 @@ tide:
     - kubernetes/website
     - kubernetes-sigs/application
     - kubernetes-sigs/cluster-api
+    - kubernetes-sigs/cluster-api-provider-openstack
     - kubernetes-sigs/controller-runtime
     - kubernetes-sigs/controller-tools
     - kubernetes-sigs/gcp-compute-persistent-disk-csi-driver
@@ -261,6 +262,7 @@ tide:
     kubernetes/kube-deploy: squash
     kubernetes/website: squash
     kubernetes-sigs/cluster-api: squash
+    kubernetes-sigs/cluster-api-provider-openstack: squash
   target_url: https://prow.k8s.io/tide.html
 
 push_gateway:
@@ -3147,6 +3149,7 @@ presubmits:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+
   kubernetes-sigs/testing_frameworks:
   - name: pull-frameworks-test
     context: pull-frameworks-test
