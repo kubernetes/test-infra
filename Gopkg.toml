@@ -1,7 +1,5 @@
 # Gopkg.toml for k8s.io/test-infra
 
-# Force dep to vendor the code generators, which aren't imported just used at dev time.
-# Picking a subpackage with Go code won't be necessary once https://github.com/golang/dep/pull/1545 is merged.
 required = [
   "github.com/bazelbuild/bazel-gazelle/cmd/gazelle",
   "github.com/client9/misspell/cmd/misspell",
@@ -9,6 +7,10 @@ required = [
   "github.com/golang/lint/golint",
   "github.com/kubernetes/repo-infra/kazel",
   "github.com/jteeuwen/go-bindata/go-bindata",
+  # Force dep to vendor the code generators, which
+  # aren't imported just used at dev time. Picking a
+  # subpackage with Go code won't be necessary once
+  # https://github.com/golang/dep/pull/1545is merged.
   "k8s.io/code-generator/cmd/defaulter-gen",
   "k8s.io/code-generator/cmd/deepcopy-gen",
   "k8s.io/code-generator/cmd/conversion-gen",
