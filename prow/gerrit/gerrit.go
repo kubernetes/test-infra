@@ -300,6 +300,7 @@ func (c *Controller) ProcessChange(change gerrit.ChangeInfo) error {
 			logger.WithError(err).Errorf("fail to create prowjob %v", pj)
 		} else {
 			var b bytes.Buffer
+			url := ""
 			template := c.ca.Config().Plank.JobURLTemplate
 			if template != nil {
 				if err := template.Execute(&b, &pj); err != nil {
@@ -312,11 +313,11 @@ func (c *Controller) ProcessChange(change gerrit.ChangeInfo) error {
 				// https://gubernator.k8s.io/build/gob-prow/pr-logs/pull/some-repo/8940/pull-test-infra-presubmit//
 				// to
 				// https://gubernator.k8s.io/builds/gob-prow/pr-logs/pull/some-repo/8940/pull-test-infra-presubmit/
-				url := b.String()
+				url = b.String()
 				url = strings.Replace(url, "build", "builds", 1)
 				url = strings.TrimSuffix(url, "//")
 			}
-			triggeredJobs = append(triggeredJobs, triggeredJob{Name: spec.Name, URL: b.String()})
+			triggeredJobs = append(triggeredJobs, triggeredJob{Name: spec.Name, URL: url})
 		}
 	}
 
