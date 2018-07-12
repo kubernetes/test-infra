@@ -17,7 +17,6 @@ limitations under the License.
 package verifyowners
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
@@ -47,7 +46,7 @@ func init() {
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	return &pluginhelp.PluginHelp{
-			Description: fmt.Sprintf("The verify-owners plugin validates OWNERS files if they are modified in a PR. On validation failure it automatically adds the '%s' label to the PR, and a review comment on the incriminating file(s).", invalidOwnersLabel),
+			Description: fmt.Sprintf("The verify-owners plugin validates %s files if they are modified in a PR. On validation failure it automatically adds the '%s' label to the PR, and a review comment on the incriminating file(s).", ownersFileName, invalidOwnersLabel),
 		},
 		nil
 }
@@ -74,7 +73,7 @@ func handlePullRequest(pc plugins.PluginClient, pre github.PullRequestEvent) err
 func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.PullRequestEvent, labelsBlackList []string) error {
 	org := pre.Repo.Owner.Login
 	repo := pre.Repo.Name
-	wrongOwnersFiles := map[string]error{}
+	wrongOwnersFiles := map[string]string{}
 
 	// Get changes.
 	changes, err := ghc.GetPullRequestChanges(org, repo, pre.Number)
@@ -122,7 +121,7 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 		if err != nil || simple.Empty() {
 			full, err := repoowners.ParseFullConfig(b)
 			if err != nil {
-				wrongOwnersFiles[f] = fmt.Errorf("error occurred parsing the OWNERS file in %s: %v", f, err)
+				wrongOwnersFiles[f] = fmt.Sprintf("Cannot parse file: %v.", err)
 				continue
 			} else {
 				// it's a FullConfig
@@ -138,42 +137,47 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 		}
 		// Check labels against blacklist
 		if sets.NewString(labels...).HasAny(labelsBlackList...) {
-			wrongOwnersFiles[f] = fmt.Errorf("OWNERS file contains blacklisted labels: %s", sets.NewString(simple.Config.Labels...).Intersection(sets.NewString(labelsBlackList...)).List())
+			wrongOwnersFiles[f] = fmt.Sprintf("File contains blacklisted labels: %s.", sets.NewString(labels...).Intersection(sets.NewString(labelsBlackList...)).List())
 			continue
 		}
 		// Check approvers isn't empty
 		if filepath.Dir(f) == "." && len(approvers) == 0 {
-			wrongOwnersFiles[f] = errors.New("no approvers in the root directory OWNERS file")
+			wrongOwnersFiles[f] = fmt.Sprintf("No approvers defined in this root directory %s file.", ownersFileName)
 			continue
 		}
 	}
 	// React if we saw something.
 	if len(wrongOwnersFiles) > 0 {
-		if err := ghc.AddLabel(org, repo, pre.Number, invalidOwnersLabel); err != nil {
-			return err
-		}
-		log.Debugf("Creating a review for %d OWNERS files.", len(wrongOwnersFiles))
-		var comments []github.DraftReviewComment
-		for errFile, errMsg := range wrongOwnersFiles {
-			resp := fmt.Sprintf("Invalid OWNERS file: %v", errMsg)
-			comments = append(comments, github.DraftReviewComment{
-				Path: errFile,
-				Body: resp,
-			})
-		}
-		// Make the review body.
 		s := "s"
 		if len(wrongOwnersFiles) == 1 {
 			s = ""
 		}
-		response := fmt.Sprintf("%d invalid OWNERS file%s", len(wrongOwnersFiles), s)
-		err := ghc.CreateReview(org, repo, pre.Number, github.DraftReview{
+		if err := ghc.AddLabel(org, repo, pre.Number, invalidOwnersLabel); err != nil {
+			return err
+		}
+		log.Debugf("Creating a review for %d %s file%s.", len(wrongOwnersFiles), ownersFileName, s)
+		var comments []github.DraftReviewComment
+		for errFile, errMsg := range wrongOwnersFiles {
+			resp := errMsg
+			comments = append(comments, github.DraftReviewComment{
+				Path:     errFile,
+				Body:     resp,
+				Position: 1,
+			})
+		}
+		// Make the review body.
+		response := fmt.Sprintf("%d invalid %s file%s", len(wrongOwnersFiles), ownersFileName, s)
+		draftReview := github.DraftReview{
 			Body:     plugins.FormatResponseRaw(pre.PullRequest.Body, pre.PullRequest.HTMLURL, pre.PullRequest.User.Login, response),
 			Action:   github.Comment,
 			Comments: comments,
-		})
+		}
+		if pre.PullRequest.MergeSHA != nil {
+			draftReview.CommitSHA = *pre.PullRequest.MergeSHA
+		}
+		err := ghc.CreateReview(org, repo, pre.Number, draftReview)
 		if err != nil {
-			return fmt.Errorf("error creating a review for invalid OWNERS file(s): %v", err)
+			return fmt.Errorf("error creating a review for invalid %s file%s: %v", ownersFileName, s, err)
 		}
 	} else {
 		// Don't bother checking if it has the label...it's a race, and we'll have
@@ -181,7 +185,7 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 		labelNotFound := true
 		if err := ghc.RemoveLabel(org, repo, pre.Number, invalidOwnersLabel); err != nil {
 			if _, labelNotFound = err.(*github.LabelNotFound); !labelNotFound {
-				return fmt.Errorf("failed removing lgtm label: %v", err)
+				return fmt.Errorf("failed removing %s label: %v", invalidOwnersLabel, err)
 			}
 			// If the error is indeed *github.LabelNotFound, consider it a success.
 		}
