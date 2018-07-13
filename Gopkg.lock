@@ -522,6 +522,12 @@
   revision = "0b12d6b5"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/joshdk/go-junit"
+  packages = ["."]
+  revision = "bf76511d08693cfcf6e5d1bd8b46b62518c496f3"
+
+[[projects]]
   name = "github.com/json-iterator/go"
   packages = ["."]
   revision = "3353055b2a1a5ae1b6a8dfde887a524e7088f3a2"

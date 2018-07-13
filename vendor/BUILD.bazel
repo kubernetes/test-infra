@@ -128,6 +128,7 @@ filegroup(
         "//vendor/github.com/jinzhu/inflection:all-srcs",
         "//vendor/github.com/jmank88/nuts:all-srcs",
         "//vendor/github.com/jmespath/go-jmespath:all-srcs",
+        "//vendor/github.com/joshdk/go-junit:all-srcs",
         "//vendor/github.com/json-iterator/go:all-srcs",
         "//vendor/github.com/jteeuwen/go-bindata:all-srcs",
         "//vendor/github.com/kubernetes/repo-infra/kazel:all-srcs",

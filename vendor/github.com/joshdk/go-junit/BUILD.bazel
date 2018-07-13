@@ -3,15 +3,15 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
-        "metadata_template.go",
-        "metadata_viewer.go",
+        "ingest.go",
+        "ingesters.go",
+        "node.go",
+        "parse.go",
+        "types.go",
     ],
-    importpath = "k8s.io/test-infra/prow/spyglass/viewers/metadata",
+    importmap = "vendor/github.com/joshdk/go-junit",
+    importpath = "github.com/joshdk/go-junit",
     visibility = ["//visibility:public"],
-    deps = [
-        "//prow/spyglass/viewers:go_default_library",
-        "//vendor/github.com/sirupsen/logrus:go_default_library",
-    ],
 )
 
 filegroup(
