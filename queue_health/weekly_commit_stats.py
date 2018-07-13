@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Lists weekly commits for a github org."""
+from __future__ import print_function
 
 import collections
 import datetime
@@ -26,8 +27,8 @@ import requests  # pip install requests
 SESSION = requests.Session()
 
 if len(sys.argv) != 3:
-    print >>sys.stderr, 'Usage: %s <path/to/token> <org>' % sys.argv[0]
-    print >>sys.stderr, '  Info at https://github.com/settings/tokens'
+    print('Usage: %s <path/to/token> <org>' % sys.argv[0], file=sys.stderr)
+    print('  Info at https://github.com/settings/tokens', file=sys.stderr)
     sys.exit(1)
 
 TOKEN = open(sys.argv[1]).read().strip()
@@ -42,7 +43,7 @@ def get(path):
 
 def github_repos(org):
     """List repos for the org."""
-    print >>sys.stderr, 'Repos', org
+    print('Repos', org, file=sys.stderr)
     resp = get('orgs/%s/repos' % org)
     resp.raise_for_status()
     return json.loads(resp.content)
@@ -50,7 +51,7 @@ def github_repos(org):
 
 def github_commits(owner, repo):
     """List weekly commits for the repo."""
-    print >>sys.stderr, 'Commits', owner, repo
+    print('Commits', owner, repo, file=sys.stderr)
     resp = get('repos/%s/%s/stats/commit_activity' % (owner, repo))
     resp.raise_for_status()
     return json.loads(resp.content)
@@ -64,8 +65,8 @@ def org_commits(org):
         for week in weeks:
             date = datetime.datetime.fromtimestamp(week['week'])
             weekly_commits[date] += week['total']
-    print 'Week,commits'
+    print('Week,commits')
     for week, total in sorted(weekly_commits.items()):
-        print '%s,%d' % (week.strftime('%Y-%m-%d'), total)
+        print('%s,%d' % (week.strftime('%Y-%m-%d'), total))
 
 org_commits(sys.argv[2])

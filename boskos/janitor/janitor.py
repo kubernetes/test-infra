@@ -15,6 +15,7 @@
 # limitations under the License.
 
 """Clean up resources from gcp projects. """
+from __future__ import print_function
 
 import argparse
 import collections
@@ -61,7 +62,7 @@ DEMOLISH_ORDER = [
 def log(message):
     """ print a message if --verbose is set. """
     if ARGS.verbose:
-        print message
+        print(message)
 
 def base_command(resource):
     """ Return the base gcloud command with api_version, group and subgroup.
@@ -227,7 +228,7 @@ def clear_resources(project, cols, resource, rate_limit):
             except subprocess.CalledProcessError as exc:
                 if not resource.tolerate:
                     err = 1
-                print >>sys.stderr, 'Error try to delete resources: %r' % exc
+                print('Error try to delete resources: %r' % exc, file=sys.stderr)
     return err
 
 
@@ -287,7 +288,7 @@ def clean_gke_cluster(project, age, filt):
                     subprocess.check_call(delete)
                 except subprocess.CalledProcessError as exc:
                     err = 1
-                    print >>sys.stderr, 'Error try to delete cluster %s: %r' % (item['name'], exc)
+                    print('Error try to delete cluster %s: %r' % (item['name'], exc), file=sys.stderr)
 
     return err
 
@@ -310,7 +311,7 @@ def main(project, days, hours, filt, rate_limit):
         1 if list or delete command fails
     """
 
-    print '[=== Start Janitor on project %r ===]' % project
+    print('[=== Start Janitor on project %r ===]' % project)
     err = 0
     age = datetime.datetime.utcnow() - datetime.timedelta(days=days, hours=hours)
     clear_all = (days is 0 and hours is 0)
@@ -322,16 +323,16 @@ def main(project, days, hours, filt, rate_limit):
                 err |= clear_resources(project, col, res, rate_limit)
         except (subprocess.CalledProcessError, ValueError):
             err |= 1 # keep clean the other resource
-            print >>sys.stderr, 'Fail to list resource %r from project %r' % (res.name, project)
+            print('Fail to list resource %r from project %r' % (res.name, project), file=sys.stderr)
 
     # try to clean leaking gke cluster
     try:
         err |= clean_gke_cluster(project, age, filt)
     except ValueError:
         err |= 1 # keep clean the other resource
-        print >>sys.stderr, 'Fail to clean up cluster from project %r' % project
+        print('Fail to clean up cluster from project %r' % project, file=sys.stderr)
 
-    print '[=== Finish Janitor on project %r with status %r ===]' % (project, err)
+    print('[=== Finish Janitor on project %r with status %r ===]' % (project, err))
     sys.exit(err)
 
 
@@ -364,7 +365,7 @@ if __name__ == '__main__':
 
     # We want to allow --days=0 and --hours=0, so check against None instead.
     if ARGS.days is None and ARGS.hours is None:
-        print >>sys.stderr, 'must specify --days and/or --hours'
+        print('must specify --days and/or --hours', file=sys.stderr)
         sys.exit(1)
 
     main(ARGS.project, ARGS.days or 0, ARGS.hours or 0, ARGS.filter, ARGS.ratelimit)

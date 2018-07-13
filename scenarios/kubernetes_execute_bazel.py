@@ -17,6 +17,7 @@
 """Executes a command, afterwards executes coalesce.py, preserving the return code.
 
 Also supports configuring bazel remote caching."""
+from __future__ import print_function
 
 import argparse
 import os
@@ -31,12 +32,12 @@ def test_infra(*paths):
 
 def check(*cmd):
     """Log and run the command, raising on errors."""
-    print >>sys.stderr, 'Run:', cmd
+    print('Run:', cmd, file=sys.stderr)
     subprocess.check_call(cmd)
 
 def call(*cmd):
     """Log and run the command, raising on errors."""
-    print >>sys.stderr, 'Run:', cmd
+    print('Run:', cmd, file=sys.stderr)
     return subprocess.call(cmd)
 
 
@@ -46,7 +47,7 @@ def main(cmd):
         raise ValueError(cmd)
     # update bazel caching configuration if enabled
     if os.environ.get('BAZEL_REMOTE_CACHE_ENABLED', 'false') == 'true':
-        print 'Bazel remote cache is enabled, generating .bazelrcs ...'
+        print('Bazel remote cache is enabled, generating .bazelrcs ...')
         # TODO(bentheelder): consider moving this once we've migrated all users
         # of the remote cache to this script
         check(test_infra('images/bootstrap/create_bazel_cache_rcs.sh'))

@@ -126,7 +126,7 @@ class _StorageApi(rest_api._RestApi):
       resp_tuple = yield super(_StorageApi, self).do_request_async(
           url, method=method, headers=headers, payload=payload,
           deadline=deadline, callback=callback)
-    except urlfetch.DownloadError, e:
+    except urlfetch.DownloadError as e:
       raise errors.TimeoutError(
           'Request to Google Cloud Storage timed out.', e)
 

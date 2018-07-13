@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import print_function
 import os
 import string
 import sys
@@ -38,7 +39,7 @@ DEPLOYMENTS = {
 
 def main():
     if len(sys.argv) != 1:
-        print >> sys.stderr, "Too many arguments."
+        print("Too many arguments.", file=sys.stderr)
         sys.exit(128)
 
     with open(get_absolute_path(CONFIG)) as config_file:
@@ -112,8 +113,8 @@ def print_deployments(components, env):
 
 
 def print_deployment(deployment, env):
-    print string.Template(deployment).safe_substitute(**env),
-    print '---'
+    print(string.Template(deployment).safe_substitute(**env), end=' ')
+    print('---')
 
 if __name__ == '__main__':
     main()

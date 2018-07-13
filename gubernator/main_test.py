@@ -20,6 +20,8 @@ To run these tests:
     $ pip install webtest nosegae
     $ nosetests --with-gae --gae-lib-root ~/google_appengine/
 """
+from __future__ import print_function
+from __future__ import absolute_import
 
 import unittest
 
@@ -27,9 +29,9 @@ import webtest
 
 import cloudstorage as gcs
 
-import main
-import gcs_async
-import gcs_async_test
+from . import main
+from . import gcs_async
+from . import gcs_async_test
 
 write = gcs_async_test.write
 
@@ -178,7 +180,7 @@ class AppTest(TestBase):
                     '0101 01:01:01.002 pod\n'
                     '01-01T01:01:01.005Z last line')
         response = app.get('/build' + nodelog_url)
-        print response
+        print(response)
         self.assertIn(expected, response)
 
     def test_timestamp_no_apiserver(self):

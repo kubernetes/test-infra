@@ -16,6 +16,8 @@
 
 # pylint: disable=no-self-use
 
+from __future__ import print_function
+from __future__ import absolute_import
 import cPickle as pickle
 import json
 
@@ -24,10 +26,10 @@ import webtest
 from google.appengine.ext import deferred
 from google.appengine.ext import testbed
 
-import main_test
-import models
-import periodic_sync
-import secrets
+from . import main_test
+from . import models
+from . import periodic_sync
+from . import secrets
 
 app = webtest.TestApp(periodic_sync.app)
 
@@ -106,7 +108,7 @@ class SyncTest(main_test.TestBase):
                 link = '%s&page=%d>; rel="next", %s' % (frag, page + 1, link)
             if page > 1:
                 link = '%s&page=%d>; rel="prev", %s' % (frag, page - 1, link)
-            print link
+            print(link)
             return {'Link': link}
 
         prs = [pr_data(n) for n in range(400)]

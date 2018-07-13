@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # Copyright 2016 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,11 +22,11 @@ import defusedxml.ElementTree as ET
 
 from google.appengine.api import urlfetch
 
-import gcs_async
-from github import models
-import log_parser
-import testgrid
-import view_base
+from . import gcs_async
+from .github import models
+from . import log_parser
+from . import testgrid
+from . import view_base
 
 
 class JUnitParser(object):
@@ -65,11 +66,11 @@ class JUnitParser(object):
             return  # can't extract results from nothing!
         try:
             tree = ET.fromstring(xml)
-        except ET.ParseError, e:
+        except ET.ParseError as e:
             logging.exception('parse_junit failed for %s', filename)
             try:
                 tree = ET.fromstring(re.sub(r'[\x00\x80-\xFF]+', '?', xml))
-            except ET.ParseError, e:
+            except ET.ParseError as e:
                 if re.match(r'junit.*\.xml', os.path.basename(filename)):
                     self.failed.append(
                         ('Gubernator Internal Fatal XML Parse Error', 0.0, str(e), filename, ''))

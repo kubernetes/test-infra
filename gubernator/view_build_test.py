@@ -1,3 +1,4 @@
+from __future__ import print_function
 # Copyright 2016 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -274,7 +275,7 @@ class BuildTest(main_test.TestBase):
         # Sometimes junit files are actually empty (???)
         write(self.BUILD_DIR + 'artifacts/junit_01.xml', '')
         response = self.get_build_page()
-        print response
+        print(response)
         self.assertIn('No Test Failures', response)
 
     def test_parse_pr_path(self):

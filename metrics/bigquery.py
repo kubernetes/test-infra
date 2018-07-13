@@ -15,6 +15,7 @@
 # limitations under the License.
 
 """Runs bigquery metrics and uploads the result to GCS."""
+from __future__ import print_function
 
 import argparse
 import calendar
@@ -35,11 +36,11 @@ import yaml
 
 def check(cmd, **kwargs):
     """Logs and runs the command, raising on errors."""
-    print >>sys.stderr, 'Run:', ' '.join(pipes.quote(c) for c in cmd),
+    print('Run:', ' '.join(pipes.quote(c) for c in cmd), end=' ', file=sys.stderr)
     if hasattr(kwargs.get('stdout'), 'name'):
-        print >>sys.stderr, ' > %s' % kwargs['stdout'].name
+        print(' > %s' % kwargs['stdout'].name, file=sys.stderr)
     else:
-        print
+        print()
     # If 'stdin' keyword arg is a string run command and communicate string to stdin
     if 'stdin' in kwargs and isinstance(kwargs['stdin'], str):
         in_string = kwargs['stdin']
@@ -71,7 +72,7 @@ class BigQuerier(object):
             raise ValueError('project', project)
         self.project = project
         if not bucket_path:
-            print >>sys.stderr, 'Not uploading results, no bucket specified.'
+            print('Not uploading results, no bucket specified.', file=sys.stderr)
         self.prefix = bucket_path
 
         self.influx = influx_client
@@ -87,7 +88,7 @@ class BigQuerier(object):
         ]
         with open(out_filename, 'w') as out_file:
             check(cmd, stdout=out_file)
-            print  # bq doesn't output a trailing newline
+            print()  # bq doesn't output a trailing newline
 
     def jq_upload(self, config, data_filename):
         """Filters a data file with jq and uploads the results to GCS."""
@@ -109,13 +110,13 @@ class BigQuerier(object):
             try:
                 points = json.load(points_file)
             except ValueError:
-                print >>sys.stderr, "No influxdb points to upload.\n"
+                print("No influxdb points to upload.\n", file=sys.stderr)
                 return
         if not self.influx:
-            print >>sys.stderr, (
+            print((
                 'Skipping influxdb upload of metric %s, no db configured.\n'
                 % config['metric']
-            )
+            ), file=sys.stderr)
             return
         points = [ints_to_floats(point) for point in points]
         self.influx.write_points(points, time_precision='s', batch_size=100)
@@ -140,7 +141,7 @@ class BigQuerier(object):
                     influxdb.client.InfluxDBClientError,
                     influxdb.client.InfluxDBServerError,
                 ):
-                print >>sys.stderr, traceback.format_exc()
+                print(traceback.format_exc(), file=sys.stderr)
                 consumer_error = True
         if consumer_error:
             raise ValueError('Error(s) were thrown by query result consumers.')
@@ -254,11 +255,11 @@ def main(configs, project, bucket_path, backfill_days):
                 IOError,
                 subprocess.CalledProcessError,
             ):
-            print >>sys.stderr, traceback.format_exc()
+            print(traceback.format_exc(), file=sys.stderr)
             errs.append(path)
 
     if errs:
-        print 'Failed %d configs: %s' % (len(errs), ', '.join(errs))
+        print('Failed %d configs: %s' % (len(errs), ', '.join(errs)))
         sys.exit(1)
 
 

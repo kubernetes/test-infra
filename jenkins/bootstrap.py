@@ -918,7 +918,7 @@ def configure_ssh_key(ssh):
         fp.write(
             '#!/bin/sh\nssh -o StrictHostKeyChecking=no -i \'%s\' -F /dev/null "${@}"\n' % ssh)
     try:
-        os.chmod(fp.name, 0500)
+        os.chmod(fp.name, 0o500)
         had = 'GIT_SSH' in os.environ
         old = os.getenv('GIT_SSH')
         os.environ['GIT_SSH'] = fp.name
@@ -1079,7 +1079,7 @@ def bootstrap(args):
                 try:
                     maybe_upload_podspec(
                         call, paths.artifacts, gsutil, os.getenv)
-                except (OSError, subprocess.CalledProcessError), exc:
+                except (OSError, subprocess.CalledProcessError) as exc:
                     logging.error("unable to upload podspecs: %s", exc)
             setup_root(call, args.root, repos, args.ssh,
                        args.git_cache, args.clean)

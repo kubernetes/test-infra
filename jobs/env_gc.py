@@ -15,6 +15,7 @@
 # limitations under the License.
 
 """Garbage collect unused .env files."""
+from __future__ import print_function
 
 import argparse
 import os
@@ -63,7 +64,7 @@ def deep_unlink(path):
 def unlink_orphans():
     orphans = find_orphans()
     for path in orphans:
-        print "Deleting unused .env file: {}".format(path)
+        print("Deleting unused .env file: {}".format(path))
         deep_unlink(test_infra(path))
     if orphans:
         print ('\nNote: If this is a git tree, ' +

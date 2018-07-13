@@ -18,6 +18,7 @@
 Summarize groups failed tests together by finding edit distances between their failure strings,
 and emits JSON for rendering in a browser.
 '''
+from __future__ import print_function
 
 # pylint: disable=invalid-name,missing-docstring
 
@@ -164,11 +165,11 @@ def file_memoize(description, name):
         def wrapper(*args, **kwargs):
             if os.path.exists(name):
                 data = json.load(open(name))
-                print 'done (cached)', description
+                print('done (cached)', description)
                 return data
             data = func(*args, **kwargs)
             json.dump(data, open(name, 'w'))
-            print 'done', description
+            print('done', description)
             return data
         wrapper.__wrapped__ = func
         return wrapper
@@ -239,7 +240,7 @@ def cluster_test(tests):
             else:
                 clusters[fnorm] = [test]
         if time.time() > start + 60:
-            print 'bailing early, taking too long!'
+            print('bailing early, taking too long!')
             break
     return clusters
 
@@ -249,10 +250,10 @@ def cluster_local(failed_tests):
     """Cluster together the failures for each test. """
     clustered = {}
     for test_name, tests in sorted(failed_tests.iteritems(), key=lambda x: len(x[1]), reverse=True):
-        print len(tests), test_name,
+        print(len(tests), test_name, end=' ')
         sys.stdout.flush()
         clustered[test_name] = cluster_test(tests)
-        print len(clustered[test_name])
+        print(len(clustered[test_name]))
     return clustered
 
 
@@ -276,22 +277,22 @@ def cluster_global(clustered, previous_clustered):
         for cluster in previous_clustered:
             key = cluster['key']
             if key != normalize(key):
-                print key
-                print normalize(key)
+                print(key)
+                print(normalize(key))
                 n += 1
                 continue
             clusters[cluster['key']] = {}
-        print 'Seeding with %d previous clusters' % len(clusters)
+        print('Seeding with %d previous clusters' % len(clusters))
         if n:
-            print '!!! %d clusters lost from different normalization! !!!' % n
+            print('!!! %d clusters lost from different normalization! !!!' % n)
 
 
     for n, (test_name, cluster) in enumerate(
             sorted(clustered.iteritems(),
-                   key=lambda (k, v): sum(len(x) for x in v.itervalues()),
+                   key=lambda k_v: sum(len(x) for x in k_v[1].itervalues()),
                    reverse=True),
             1):
-        print '%d/%d %d %s' % (n, len(clustered), len(cluster), test_name)
+        print('%d/%d %d %s' % (n, len(clustered), len(cluster), test_name))
         for key, tests in sorted(cluster.iteritems(), key=lambda x: len(x[1]), reverse=True):
             if key in clusters:
                 clusters[key].setdefault(test_name, []).extend(tests)
@@ -321,7 +322,7 @@ def tests_group_by_job(tests, builds):
         if 'number' in build:
             groups.setdefault(build['job'], set()).add(build['number'])
     return sorted(((key, sorted(value, reverse=True)) for key, value in groups.iteritems()),
-                  key=lambda (k, v): (-len(v), k))
+                  key=lambda k_v2: (-len(k_v2[1]), k_v2[0]))
 
 
 SPAN_RE = re.compile(r'\w+|\W+')
@@ -377,7 +378,7 @@ def clusters_to_display(clustered, builds):
             "jobs": [{"name": n, "builds": b}
                      for n, b in tests_group_by_job(tests, builds)]
             }
-                  for test_name, tests in sorted(clusters, key=lambda (n, t): (-len(t), n))
+                  for test_name, tests in sorted(clusters, key=lambda n_t: (-len(n_t[1]), n_t[0]))
                  ]
         }
             for key, key_id, clusters in clustered if sum(len(x[1]) for x in clusters) > 1
@@ -423,10 +424,10 @@ def builds_to_columns(builds):
 def render(builds, clustered):
     clustered_sorted = sorted(
         clustered.iteritems(),
-        key=lambda (k, v): (-sum(len(ts) for ts in v.itervalues()), k))
+        key=lambda k_v3: (-sum(len(ts) for ts in k_v3[1].itervalues()), k_v3[0]))
     clustered_tuples = [(k,
                          make_ngram_counts_digest(k),
-                         sorted(clusters.items(), key=lambda (n, t): (-len(t), n)))
+                         sorted(clusters.items(), key=lambda n_t1: (-len(n_t1[1]), n_t1[0])))
                         for k, clusters in clustered_sorted]
 
     return {'clustered': clusters_to_display(clustered_tuples, builds),
@@ -472,7 +473,7 @@ def annotate_owners(data, builds, owners):
                     else:
                         counts[1] += 1
         if owner_counts:
-            owner = max(owner_counts.items(), key=lambda (o, c): (c, o))[0]
+            owner = max(owner_counts.items(), key=lambda o_c: (o_c[1], o_c[0]))[0]
             cluster['owner'] = owner
         else:
             cluster['owner'] = 'testing'
@@ -516,13 +517,13 @@ def main(args):
 
     previous_clustered = None
     if args.previous:
-        print 'loading previous'
+        print('loading previous')
         previous_clustered = json.load(args.previous)['clustered']
 
     clustered_local = cluster_local(failed_tests)
     clustered = cluster_global(clustered_local, previous_clustered)
 
-    print '%d clusters' % len(clustered)
+    print('%d clusters' % len(clustered))
 
     data = render(builds, clustered)
 

@@ -19,6 +19,7 @@
 
 
 """Selects a random sample of kubernetes developers."""
+from __future__ import print_function
 
 import json
 import os
@@ -85,7 +86,7 @@ def main(path=None, num=35, top=0.6, middle=0.2, bottom=0.2):
             data = fp.read()
     users = sorted(load_content(data))
     for user in find_users(users, num, top, middle, bottom):
-        print '%s (%d recent commits, %d total)' % (user.user, user.recent, user.total)
+        print('%s (%d recent commits, %d total)' % (user.user, user.recent, user.total))
 
 
 if __name__ == '__main__':

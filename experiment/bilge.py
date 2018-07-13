@@ -19,6 +19,7 @@
 This can happen with repeated '/test all' commands, or
 even something as simple as pushing new code while builds are already queued.
 """
+from __future__ import print_function
 
 import sys
 
@@ -45,11 +46,11 @@ def prune(host):
         if len(val) < 2:
             continue
         val.sort()
-        print '===', key
+        print('===', key)
         for pull in val[:-1]:
-            print pull
+            print(pull)
             _resp = requests.post('http://%s/queue/cancelItem?id=%d' % (host, pull[1]))
-        print 'GOOD:', val[-1]
+        print('GOOD:', val[-1])
 
 
 if __name__ == '__main__':

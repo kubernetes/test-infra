@@ -18,6 +18,7 @@
 # pylint: disable=bad-continuation
 
 """Dig through jobs/FOO.env, and execute a janitor pass for each of the project"""
+from __future__ import print_function
 
 import argparse
 import json
@@ -35,7 +36,7 @@ def test_infra(*paths):
 
 def check(*cmd):
     """Log and run the command, raising on errors."""
-    print >>sys.stderr, 'Run:', cmd
+    print('Run:', cmd, file=sys.stderr)
     subprocess.check_call(cmd)
 
 
@@ -124,7 +125,7 @@ def check_ci_jobs():
                 continue
             project = mat.group(1)
             if any(b in project for b in BLACKLIST):
-                print >>sys.stderr, 'Project %r is blacklisted in ci-janitor' % project
+                print('Project %r is blacklisted in ci-janitor' % project, file=sys.stderr)
                 continue
             if project in PR_PROJECTS or project in SCALE_PROJECT:
                 continue # CI janitor skips all PR jobs
@@ -150,9 +151,9 @@ def main(mode, ratelimit, projects, age):
         check_ci_jobs()
 
     # Summary
-    print 'Janitor checked %d project, %d failed to clean up.' % (len(CHECKED), len(FAILED))
+    print('Janitor checked %d project, %d failed to clean up.' % (len(CHECKED), len(FAILED)))
     if FAILED:
-        print >>sys.stderr, 'Failed projects: %r' % FAILED
+        print('Failed projects: %r' % FAILED, file=sys.stderr)
         exit(1)
 
 
