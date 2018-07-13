@@ -17,10 +17,10 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-SCRIPT_ROOT=$(dirname "${BASH_SOURCE}")/..
+SCRIPT_ROOT=$(git rev-parse --show-toplevel)
 
-DIFFROOT="${SCRIPT_ROOT}/pkg"
-TMP_DIFFROOT="${SCRIPT_ROOT}/_tmp/pkg"
+DIFFROOT="${SCRIPT_ROOT}/prow"
+TMP_DIFFROOT="${SCRIPT_ROOT}/_tmp/prow"
 _tmp="${SCRIPT_ROOT}/_tmp"
 
 cleanup() {
@@ -31,13 +31,14 @@ trap "cleanup" EXIT SIGINT
 cleanup
 
 mkdir -p "${TMP_DIFFROOT}"
-cp -a "${DIFFROOT}"/* "${TMP_DIFFROOT}"
+cp -a "${DIFFROOT}"/{apis,client} "${TMP_DIFFROOT}"
 
 "${SCRIPT_ROOT}/hack/update-codegen.sh"
 echo "diffing ${DIFFROOT} against freshly generated codegen"
 ret=0
-diff -Naupr "${DIFFROOT}" "${TMP_DIFFROOT}" || ret=$?
-cp -a "${TMP_DIFFROOT}"/* "${DIFFROOT}"
+diff -Naupr "${DIFFROOT}/apis" "${TMP_DIFFROOT}/apis" || ret=$?
+diff -Naupr "${DIFFROOT}/client" "${TMP_DIFFROOT}/client" || ret=$?
+cp -a "${TMP_DIFFROOT}"/{apis,client} "${DIFFROOT}"
 if [[ $ret -eq 0 ]]
 then
   echo "${DIFFROOT} up to date."
