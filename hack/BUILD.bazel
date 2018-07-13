@@ -37,12 +37,22 @@ sh_test(
     tags = ["lint"],
 )
 
+sh_test(
+    name = "verify-codecgen",
+    srcs = ["verify-codecgen.sh"],
+    data = [
+        "//:all-srcs",
+    ],
+    tags = ["lint"],
+)
+
 test_suite(
     name = "verify-all",
     tags = ["lint"],
     tests = [
         "verify-pylint",
         "verify_boilerplate",
+        "verify_codecgen",
     ],
 )
 
