@@ -97,7 +97,7 @@ Our build job will generate a ci/(channel-name) file pointer in gcs.
 After you update [test_config.yaml](experiment/test_config.yaml), please run
 
 ```
-bazel run //experiment:generate_tests -- --yaml-config-path=experiment/test_config.yaml --json-config-path=jobs/config.json  --prow-config-path=prow/config.yaml
+bazel run //experiment:generate_tests -- --yaml-config-path=experiment/test_config.yaml
 ```
 
 to regenerate the job configs.

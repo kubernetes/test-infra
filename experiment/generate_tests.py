@@ -22,8 +22,6 @@ Usage example:
 
   $ bazel run //experiment:generate_tests -- \
       --yaml-config-path=experiment/test_config.yaml \
-      --json-config-path=jobs/config.json \
-      --prow-config-path=prow/config.yaml
 """
 
 import argparse
@@ -297,37 +295,13 @@ def for_each_job(output_dir, job_name, job, yaml_config):
     return prow_config
 
 
-def remove_generated_jobs(json_config):
-    """Removes all the generated job configs and their env files."""
-    # TODO(yguo0905): Remove the generated env files as well.
-    return {
-        name: job_def for (name, job_def) in json_config.items()
-        if 'generated' not in job_def.get('tags', [])}
-
-
-def remove_generated_prow_configs(prow_config):
-    """Removes all the generated Prow configurations."""
-    # TODO(yguo0905): Handle non-periodics jobs.
-    prow_config['periodics'] = [
-        job for job in prow_config.get('periodics', [])
-        if 'generated' not in job.get('tags', [])]
-
-
-def main(json_config_path, yaml_config_path, prow_config_path, output_dir):
+def main(yaml_config_path, output_dir):
     """Creates test job definitions.
 
     Converts the test configurations in yaml_config_path to the job definitions
-    in json_config_path and the env files in output_dir.
+    in output_dir/generated.yaml.
     """
     # TODO(yguo0905): Validate the configurations from yaml_config_path.
-
-    with open(json_config_path) as fp:
-        json_config = json.load(fp)
-    json_config = remove_generated_jobs(json_config)
-
-    with open(prow_config_path) as fp:
-        prow_config = yaml.round_trip_load(fp, preserve_quotes=True)
-    remove_generated_prow_configs(prow_config)
 
     with open(yaml_config_path) as fp:
         yaml_config = yaml.safe_load(fp)
@@ -348,14 +322,10 @@ if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(
         description='Create test definitions from the given yaml config')
     PARSER.add_argument('--yaml-config-path', help='Path to config.yaml')
-    PARSER.add_argument('--json-config-path', help='Path to config.json')
-    PARSER.add_argument('--prow-config-path', help='Path to the Prow config')
     PARSER.add_argument(
         '--output-dir', help='Prowjob config output dir', default='config/jobs/kubernetes/generated/')
     ARGS = PARSER.parse_args()
 
     main(
-        ARGS.json_config_path,
         ARGS.yaml_config_path,
-        ARGS.prow_config_path,
         ARGS.output_dir)
