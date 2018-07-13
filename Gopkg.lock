@@ -285,8 +285,31 @@
 [[projects]]
   name = "github.com/gogo/protobuf"
   packages = [
+    "gogoproto",
+    "plugin/compare",
+    "plugin/defaultcheck",
+    "plugin/description",
+    "plugin/embedcheck",
+    "plugin/enumstringer",
+    "plugin/equal",
+    "plugin/face",
+    "plugin/gostring",
+    "plugin/marshalto",
+    "plugin/oneofcheck",
+    "plugin/populate",
+    "plugin/size",
+    "plugin/stringer",
+    "plugin/testgen",
+    "plugin/union",
+    "plugin/unmarshal",
     "proto",
+    "protoc-gen-gogo/descriptor",
+    "protoc-gen-gogo/generator",
+    "protoc-gen-gogo/grpc",
+    "protoc-gen-gogo/plugin",
     "sortkeys",
+    "vanity",
+    "vanity/command",
   ]
   revision = "342cbe0a04158f6dcb03ca0079991a51a4248c02"
   version = "v0.5"
@@ -1044,6 +1067,9 @@
     "cmd/deepcopy-gen/args",
     "cmd/defaulter-gen",
     "cmd/defaulter-gen/args",
+    "cmd/go-to-protobuf",
+    "cmd/go-to-protobuf/protobuf",
+    "cmd/import-boss",
     "cmd/informer-gen",
     "cmd/informer-gen/args",
     "cmd/informer-gen/generators",
@@ -1052,7 +1078,9 @@
     "cmd/lister-gen/generators",
     "cmd/openapi-gen",
     "cmd/openapi-gen/args",
+    "cmd/set-gen",
     "pkg/util",
+    "third_party/forked/golang/reflect",
   ]
   revision = "9de8e796a74d16d2a285165727d04c185ebca6dc"
 
@@ -1068,6 +1096,8 @@
     "args",
     "examples/deepcopy-gen/generators",
     "examples/defaulter-gen/generators",
+    "examples/import-boss/generators",
+    "examples/set-gen/generators",
     "examples/set-gen/sets",
     "generator",
     "namer",
@@ -1097,6 +1127,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "248e2f9323aaaa91cd2610b198877613910f984e5649d5e02875d77428dc885b"
+  inputs-digest = "0fff1f34776cfc9ae925224c063afe6fb288523cc975861470bd31e52150b064"
   solver-name = "gps-cdcl"
   solver-version = 1

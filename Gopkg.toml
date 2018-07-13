@@ -10,7 +10,7 @@ required = [
   # Force dep to vendor the code generators, which
   # aren't imported just used at dev time. Picking a
   # subpackage with Go code won't be necessary once
-  # https://github.com/golang/dep/pull/1545is merged.
+  # https://github.com/golang/dep/pull/1545 is merged.
   "k8s.io/code-generator/cmd/defaulter-gen",
   "k8s.io/code-generator/cmd/deepcopy-gen",
   "k8s.io/code-generator/cmd/conversion-gen",
@@ -19,6 +19,12 @@ required = [
   "k8s.io/code-generator/cmd/informer-gen",
   "k8s.io/code-generator/cmd/openapi-gen",
   "k8s.io/gengo/args",
+  # we don't need these but if we want the repo to build
+  # with bazel we need to require them
+  "k8s.io/code-generator/cmd/go-to-protobuf",
+  "k8s.io/code-generator/cmd/import-boss",
+  "k8s.io/code-generator/cmd/set-gen",
+  "github.com/gogo/protobuf/vanity/command",
 ]
 
 [prune]
