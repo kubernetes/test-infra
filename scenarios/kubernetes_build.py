@@ -75,7 +75,7 @@ def check_build_exists(gcs, suffix):
             check_no_stdout('gsutil', 'ls', gcs)
             return True
         except subprocess.CalledProcessError as exc:
-            print >>sys.stderr, 'gcs path %s does not exist yet, continue' % gcs
+            print >>sys.stderr, 'gcs path %s does not exist yet, continue: %s' % (gcs, exc)
     return False
 
 
@@ -85,7 +85,7 @@ def main(args):
 
     This is a python port of the kubernetes/hack/jenkins/build.sh script.
     """
-    if os.path.split(os.getcwd())[-1] != 'kubernetes' and \
+    if os.path.split(os.getcwd())[-1] != 'kubernetes' or \
         os.path.split(os.getcwd())[-1] != 'federation':
         print >>sys.stderr, (
             'Scenario should only run from either kubernetes or federation directory!')
