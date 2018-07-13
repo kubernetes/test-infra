@@ -15,6 +15,7 @@
 # limitations under the License.
 
 """Migrate --extract flag from an JENKINS_FOO env to a scenario flag."""
+from __future__ import print_function
 
 import json
 import os
@@ -91,8 +92,8 @@ def sort():
         fp.write('\n')
     if not problems:
         sys.exit(0)
-    print >>sys.stderr, '%d problems' % len(problems)
-    print '\n'.join(problems)
+    print('%d problems' % len(problems), file=sys.stderr)
+    print('\n'.join(problems))
 
 if __name__ == '__main__':
     sort()

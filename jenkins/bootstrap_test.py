@@ -15,6 +15,7 @@
 # limitations under the License.
 
 """Tests for bootstrap."""
+from __future__ import print_function
 
 # pylint: disable=protected-access, attribute-defined-outside-init
 
@@ -1433,7 +1434,7 @@ class IntegrationTest(unittest.TestCase):
             refs.append('%d:%s' % (pr, head_sha()))
         os.chdir('/tmp')
         pull = ','.join(refs)
-        print '--pull', pull
+        print('--pull', pull)
         subprocess.check_call(['ls'])
         test_bootstrap(
             job='fake-pr',

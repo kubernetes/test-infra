@@ -245,7 +245,7 @@ class _RestApi(object):
     headers.update(self.user_agent)
     try:
       self.token = yield self.get_token_async()
-    except app_identity.InternalError, e:
+    except app_identity.InternalError as e:
       if os.environ.get('DATACENTER', '').endswith('sandman'):
         self.token = None
         logging.warning('Could not fetch an authentication token in sandman '

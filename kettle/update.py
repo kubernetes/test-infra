@@ -15,11 +15,12 @@
 # limitations under the License.
 
 
+from __future__ import print_function
 import os
 
 
 def call(cmd):
-    print '+', cmd
+    print('+', cmd)
     status = os.system(cmd)
     if status:
         raise OSError('invocation failed')

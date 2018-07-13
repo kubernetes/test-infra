@@ -13,12 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import print_function
+from __future__ import absolute_import
 import logging
 
 import jinja2
 
-import kubelet_parser
-import regex
+from . import kubelet_parser
+from . import regex
 
 CONTEXT_DEFAULT = 6
 MAX_BUFFER = 5000000  # GAE has RAM limits.
@@ -127,4 +129,4 @@ def digest(data, objref_dict=None, filters=None, error_re=regex.error_re,
 if __name__ == '__main__':
     import sys
     for f in sys.argv[1:]:
-        print digest(open(f).read().decode('utf8'))
+        print(digest(open(f).read().decode('utf8')))

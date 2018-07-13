@@ -18,6 +18,7 @@
 
 Useful for finding which tests overlapped with a certain event.
 """
+from __future__ import print_function
 
 import argparse
 import datetime
@@ -113,7 +114,7 @@ def main():
     with open(args.file) as log:
         for test in _get_tests(log):
             if test.overlaps(after, before):
-                print str(test)
+                print(str(test))
 
 
 if __name__ == '__main__':

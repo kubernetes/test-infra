@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # Copyright 2016 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,12 +19,12 @@ import logging
 import os
 import time
 
-import filters
-import gcs_async
-import github.models as ghm
-import pull_request
-import view_base
-import view_build
+from . import filters
+from . import gcs_async
+from . import github.models as ghm
+from . import pull_request
+from . import view_base
+from . import view_build
 
 
 @view_base.memcache_memoize('pr-details://', expires=60 * 3)
@@ -45,7 +46,7 @@ def pr_builds(path):
                 gcs_async.read('/%sstarted.json' % build),
                 gcs_async.read('/%sfinished.json' % build)])
 
-    futures.sort(key=lambda (job, build, s, f): (job, view_base.pad_numbers(build)), reverse=True)
+    futures.sort(key=lambda job_build_s_f: (job_build_s_f[0], view_base.pad_numbers(job_build_s_f[1])), reverse=True)
 
     jobs = {}
     for job, build, started_fut, finished_fut in futures:
@@ -101,7 +102,7 @@ class PRHandler(view_base.BaseHandler):
         # TODO(fejta): assume all builds are monotonically increasing.
         for bs in builds.itervalues():
             if any(len(b) > 8 for b, _, _ in bs):
-                bs.sort(key=lambda (b, s, f): -(s or {}).get('timestamp', 0))
+                bs.sort(key=lambda b_s_f: -(b_s_f[1] or {}).get('timestamp', 0))
         if pr == 'batch':  # truncate batch results to last day
             cutoff = time.time() - 60 * 60 * 24
             builds = {}

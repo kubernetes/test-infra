@@ -14,11 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import print_function
+from __future__ import absolute_import
 import re
 import unittest
 import urllib
 
-import filters
+from . import filters
 
 import jinja2
 
@@ -90,7 +92,7 @@ class HelperTest(unittest.TestCase):
             ('//pkg/foo/bar:go_default_test',
             'bazel test //pkg/foo/bar:go_default_test'),
             ('verify typecheck', 'make verify WHAT=typecheck')):
-            print 'test name:', name
+            print('test name:', name)
             self.assertEqual(filters.do_testcmd(name), expected)
 
     def test_classify_size(self):

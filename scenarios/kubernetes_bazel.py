@@ -15,6 +15,7 @@
 # limitations under the License.
 
 """Runs bazel build/test for current repo."""
+from __future__ import print_function
 
 import argparse
 import os
@@ -29,12 +30,12 @@ def test_infra(*paths):
 
 def check(*cmd):
     """Log and run the command, raising on errors."""
-    print >>sys.stderr, 'Run:', cmd
+    print('Run:', cmd, file=sys.stderr)
     subprocess.check_call(cmd)
 
 def check_output(*cmd):
     """Log and run the command, raising on errors, return output"""
-    print >>sys.stderr, 'Run:', cmd
+    print('Run:', cmd, file=sys.stderr)
     return subprocess.check_output(cmd)
 
 
@@ -94,7 +95,7 @@ class Bazel(object):
 def upload_string(gcs_path, text):
     """Uploads text to gcs_path"""
     cmd = ['gsutil', '-q', '-h', 'Content-Type:text/plain', 'cp', '-', gcs_path]
-    print >>sys.stderr, 'Run:', cmd, 'stdin=%s'%text
+    print('Run:', cmd, 'stdin=%s'%text, file=sys.stderr)
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
     proc.communicate(input=text)
 
@@ -108,7 +109,7 @@ def echo_result(res):
         4:'Build passed, no tests found',
         5:'Interrupted'
     }
-    print echo_map.get(res, 'Unknown exit code : %s' % res)
+    print(echo_map.get(res, 'Unknown exit code : %s' % res))
 
 def get_version():
     """Return kubernetes version"""
@@ -196,7 +197,7 @@ def main(args):
     if args.release and res == 0:
         version = get_version()
         if not version:
-            print 'Kubernetes version missing; not uploading ci artifacts.'
+            print('Kubernetes version missing; not uploading ci artifacts.')
             res = 1
         else:
             try:

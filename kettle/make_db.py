@@ -193,14 +193,16 @@ def mp_init_worker(jobs_dir, metadata, client_class, use_signal=True):
     global WORKER_CLIENT  # pylint: disable=global-statement
     WORKER_CLIENT = client_class(jobs_dir, metadata)
 
-def get_started_finished((job, build)):
+def get_started_finished(xxx_todo_changeme):
+    (job, build) = xxx_todo_changeme
     try:
         return WORKER_CLIENT.get_started_finished(job, build)
     except:
         logging.exception('failed to get tests for %s/%s', job, build)
         raise
 
-def get_junits((build_id, gcs_path)):
+def get_junits(xxx_todo_changeme1):
+    (build_id, gcs_path) = xxx_todo_changeme1
     try:
         junits = WORKER_CLIENT.get_junits_from_build(gcs_path)
         return build_id, gcs_path, junits

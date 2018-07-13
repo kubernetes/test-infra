@@ -14,11 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import print_function
+from __future__ import absolute_import
 import re
 import unittest
 
-import log_parser
-import regex
+from . import log_parser
+from . import regex
 
 def digest(data, strip=True, filters=None,
            error_re=regex.error_re):
@@ -27,7 +29,7 @@ def digest(data, strip=True, filters=None,
 
     digested = log_parser.digest(data.replace(' ', '\n'), error_re=error_re,
                                  skip_fmt=lambda l: 's%d' % l, filters=filters)
-    print digested
+    print(digested)
     if strip:
         digested = re.sub(r'<span class="skipped"[^<]*>([^<]*)</span>', r'(\1)',
             digested, flags=re.MULTILINE)

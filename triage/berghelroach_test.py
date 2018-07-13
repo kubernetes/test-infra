@@ -128,7 +128,7 @@ class AbstractLevenshteinTestCase(object):
     # @return the number of edits actually performed, the new string
     @staticmethod
     def performSomeEdits(b, alphabet, replaces, inserts):
-        r = random.Random(768614336404564651L)
+        r = random.Random(768614336404564651)
         edits = 0
         b = list(b)
 

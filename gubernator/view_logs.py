@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 # Copyright 2016 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +16,11 @@
 import os
 import re
 
-import gcs_async
-import log_parser
-import kubelet_parser
-import regex
-import view_base
+from . import gcs_async
+from . import log_parser
+from . import kubelet_parser
+from . import regex
+from . import view_base
 
 
 @view_base.memcache_memoize('log-file-junit://', expires=60*60*4)
@@ -90,8 +91,9 @@ def parse_log_file(log_filename, pod, filters=None, make_dict=False, objref_dict
             error_re=bold_re, filters=filters, objref_dict=objref_dict)
 
 
-def get_logs_junit((log_files, pod_name, filters, objref_dict, apiserver_filename)):
+def get_logs_junit(xxx_todo_changeme):
     # Get the logs in the case where the junit file with the failure is in a specific folder
+    (log_files, pod_name, filters, objref_dict, apiserver_filename) = xxx_todo_changeme
     all_logs = {}
     results = {}
     # default to filtering kube-apiserver log if user unchecks both checkboxes
@@ -202,12 +204,13 @@ def get_woven_logs(log_files, pod, filters, objref_dict):
     return woven_logs
 
 
-def parse_by_timestamp((build_dir, junit, log_files, pod, filters, objref_dict)):
+def parse_by_timestamp(xxx_todo_changeme1):
     """
     Returns:
         woven_logs: HTML code of chosen logs woven together by timestamp
         all_logs: Dictionary of logs relevant for filtering
     """
+    (build_dir, junit, log_files, pod, filters, objref_dict) = xxx_todo_changeme1
     woven_logs = get_woven_logs(log_files, pod, filters, objref_dict)
 
     apiserver_filename = find_log_junit(build_dir, junit, "kube-apiserver.log")
