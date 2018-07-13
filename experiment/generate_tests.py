@@ -26,7 +26,6 @@ Usage example:
 
 import argparse
 import hashlib
-import json
 import os
 import ruamel.yaml as yaml
 
@@ -63,15 +62,6 @@ def substitute(job_name, lines):
     """Replace '${job_name_hash}' in lines with the SHA1 hash of job_name."""
     return [line.replace('${job_name_hash}', get_sha1_hash(job_name)[:10]) \
             for line in lines]
-
-
-def get_envs(job_name, desc, field):
-    """Returns a list of envs for the given field."""
-    if not field or not field.get('envs', []):
-        return []
-    header = ['', '# The %s configurations.' % desc]
-    return header + substitute(job_name, field.get('envs', []))
-
 
 def get_args(job_name, field):
     """Returns a list of args for the given field."""
@@ -162,7 +152,6 @@ class E2ENodeTest(object):
         if 'envs' in self.common or 'envs' in image or 'envs' in test_suite:
             raise ValueError(
                 'envs are disallowed in node e2e test', self.job_name)
-        envs = []
         # Generates args.
         args = []
         args.extend(get_args(self.job_name, self.common))
@@ -281,7 +270,7 @@ def for_each_job(output_dir, job_name, job, yaml_config):
         generator = E2ENodeTest(job_name, job, yaml_config)
     else:
         raise ValueError('Unexpected job type ', job_type)
-    envs, job_config, prow_config = generator.generate()
+    job_config, prow_config = generator.generate()
 
     # Applies job-level overrides.
     apply_job_overrides(job_config['args'], get_args(job_name, job))
