@@ -179,7 +179,7 @@ class E2ENodeTest(object):
 
         job_config['args'] = job_args
 
-        return envs, job_config, prow_config
+        return job_config, prow_config
 
 
 class E2ETest(object):
@@ -194,9 +194,8 @@ class E2ETest(object):
         self.k8s_versions = config['k8sVersions']
         self.test_suites = config['testSuites']
 
-    def __get_job_def(self, args, envs):
+    def __get_job_def(self, args):
         """Returns the job definition from the given args."""
-        args += (['--env-file=%s' % self.env_filename] if envs else [])
         return {
             'scenario': 'kubernetes_e2e',
             'args': args,
@@ -234,13 +233,6 @@ class E2ETest(object):
         k8s_version = self.k8s_versions[fields[5][3:]]
         test_suite = self.test_suites[fields[6]]
 
-        # Generates envs.
-        envs = []
-        envs.extend(get_envs(self.job_name, 'common', self.common))
-        envs.extend(get_envs(self.job_name, 'cloud provider', cloud_provider))
-        envs.extend(get_envs(self.job_name, 'image', image))
-        envs.extend(get_envs(self.job_name, 'k8s version', k8s_version))
-        envs.extend(get_envs(self.job_name, 'test suite', test_suite))
         # Generates args.
         args = []
         args.extend(get_args(self.job_name, self.common))
@@ -249,11 +241,11 @@ class E2ETest(object):
         args.extend(get_args(self.job_name, k8s_version))
         args.extend(get_args(self.job_name, test_suite))
         # Generates job config.
-        job_config = self.__get_job_def(args, envs)
+        job_config = self.__get_job_def(args)
         # Generates Prow config.
         prow_config = self.__get_prow_config(test_suite)
 
-        return envs, job_config, prow_config
+        return job_config, prow_config
 
 
 def for_each_job(output_dir, job_name, job, yaml_config):
@@ -312,7 +304,9 @@ if __name__ == '__main__':
         description='Create test definitions from the given yaml config')
     PARSER.add_argument('--yaml-config-path', help='Path to config.yaml')
     PARSER.add_argument(
-        '--output-dir', help='Prowjob config output dir', default='config/jobs/kubernetes/generated/')
+        '--output-dir',
+        help='Prowjob config output dir',
+        default='config/jobs/kubernetes/generated/')
     ARGS = PARSER.parse_args()
 
     main(
