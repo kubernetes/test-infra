@@ -54,6 +54,7 @@ approve:
   - kubernetes/node-problem-detector
   - kubernetes/perf-tests
   - kubernetes/publishing-bot
+  - kubernetes/release
   - kubernetes/repo-infra
   - kubernetes/sig-release
   - kubernetes/steering
@@ -351,6 +352,7 @@ plugins:
   - blunderbuss
 
   kubernetes/release:
+  - approve
   - trigger
 
   kubernetes/repo-infra:

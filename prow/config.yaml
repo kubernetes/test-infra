@@ -204,6 +204,7 @@ tide:
     - kubernetes/org
     - kubernetes/perf-tests
     - kubernetes/publishing-bot
+    - kubernetes/release
     - kubernetes/repo-infra
     - kubernetes/sig-release
     - kubernetes/steering
