@@ -24,9 +24,6 @@ Usage example:
       --yaml-config-path=experiment/test_config.yaml \
       --json-config-path=jobs/config.json \
       --prow-config-path=prow/config.yaml
-
-  After generating the tests, you should run:
-  $ bazel run //jobs:config_sort
 """
 
 import argparse
@@ -85,32 +82,8 @@ def get_args(job_name, field):
     return substitute(job_name, field.get('args', []))
 
 
-def write_env_file(output_dir, job_name, envs):
-    """Writes envs into a file in output_dir, and returns the file name."""
-    output_file = os.path.join(output_dir, '%s.env' % job_name)
-    if not envs:
-        try:
-            os.unlink(output_file)
-        except OSError:
-            pass
-        return
-    with open(output_file, 'w') as fp:
-        fp.write('\n'.join(envs))
-        fp.write('\n')
-
-
-def write_job_defs_file(output_dir, job_defs):
-    """Writes the job definitions into a file in output_dir."""
-    output_file = os.path.join(output_dir, 'config.json')
-    with open(output_file, 'w') as fp:
-        json.dump(
-            job_defs, fp, sort_keys=True, indent=2, separators=(',', ': '))
-        fp.write('\n')
-
-
-def write_prow_configs_file(output_dir, job_defs):
-    """Writes the Prow configurations into a file in output_dir."""
-    output_file = os.path.join(output_dir, 'config.yaml')
+def write_prow_configs_file(output_file, job_defs):
+    """Writes the Prow configurations into output_file."""
     with open(output_file, 'w') as fp:
         yaml.dump(
             job_defs, fp, Dumper=yaml.RoundTripDumper, width=float("inf"))
@@ -313,15 +286,15 @@ def for_each_job(output_dir, job_name, job, yaml_config):
     envs, job_config, prow_config = generator.generate()
 
     # Applies job-level overrides.
-    if envs:
-        envs.insert(0, '# ' + COMMENT)
-    apply_job_overrides(envs, get_envs(job_name, 'job', job))
     apply_job_overrides(job_config['args'], get_args(job_name, job))
 
-    # Writes the envs into the standalone file referenced in the job def.
-    write_env_file(output_dir, job_name, envs)
+    # merge job_config into prow_config
+    args = prow_config['spec']['containers'][0]['args']
+    args.append('--scenario=' + job_config['scenario'])
+    args.append('--')
+    args.extend(job_config['args'])
 
-    return job_config, prow_config
+    return prow_config
 
 
 def remove_generated_jobs(json_config):
@@ -359,16 +332,16 @@ def main(json_config_path, yaml_config_path, prow_config_path, output_dir):
     with open(yaml_config_path) as fp:
         yaml_config = yaml.safe_load(fp)
 
+    output_config = {}
+    output_config['periodics'] = []
     for job_name, _ in yaml_config['jobs'].items():
         # Get the envs and args for each job defined under "jobs".
-        job, prow = for_each_job(
+        prow = for_each_job(
             output_dir, job_name, yaml_config['jobs'][job_name], yaml_config)
-        json_config[job_name] = job
-        prow_config['periodics'].append(prow)
+        output_config['periodics'].append(prow)
 
-    # Write the job definitions to config.json.
-    write_job_defs_file(output_dir, json_config)
-    write_prow_configs_file('prow', prow_config)
+    # Write the job definitions to --output-dir/generated.yaml
+    write_prow_configs_file(output_dir + 'generated.yaml', output_config)
 
 
 if __name__ == '__main__':
@@ -378,7 +351,7 @@ if __name__ == '__main__':
     PARSER.add_argument('--json-config-path', help='Path to config.json')
     PARSER.add_argument('--prow-config-path', help='Path to the Prow config')
     PARSER.add_argument(
-        '--output-dir', help='Env files output dir', default='jobs')
+        '--output-dir', help='Prowjob config output dir', default='config/jobs/kubernetes/generated/')
     ARGS = PARSER.parse_args()
 
     main(
