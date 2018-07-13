@@ -7836,6 +7836,7 @@ periodics:
   tags:
   - "perfDashPrefix: gce-100Nodes"
   - "perfDashJobType: performance"
+  - "perfDashBuildsCount: 1000"
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
