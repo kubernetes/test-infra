@@ -57,7 +57,7 @@ filegroup(
         "//prow/artifact-uploader:all-srcs",
         "//prow/client/clientset/versioned:all-srcs",
         "//prow/client/informers/externalversions:all-srcs",
-        "//prow/client/listers/prowjobs/v1alpha1:all-srcs",
+        "//prow/client/listers/prowjobs/v1:all-srcs",
         "//prow/clonerefs:all-srcs",
         "//prow/cluster:all-srcs",
         "//prow/cmd/artifact-uploader:all-srcs",

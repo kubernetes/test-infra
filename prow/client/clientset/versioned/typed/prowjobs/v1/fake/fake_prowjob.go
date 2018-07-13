@@ -25,34 +25,34 @@ import (
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	testing "k8s.io/client-go/testing"
-	v1alpha1 "k8s.io/test-infra/prow/apis/prowjobs/v1alpha1"
+	prowjobsv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
 // FakeProwJobs implements ProwJobInterface
 type FakeProwJobs struct {
-	Fake *FakeProwV1alpha1
+	Fake *FakeProwV1
 	ns   string
 }
 
-var prowjobsResource = schema.GroupVersionResource{Group: "prow.k8s.io", Version: "v1alpha1", Resource: "prowjobs"}
+var prowjobsResource = schema.GroupVersionResource{Group: "prow.k8s.io", Version: "v1", Resource: "prowjobs"}
 
-var prowjobsKind = schema.GroupVersionKind{Group: "prow.k8s.io", Version: "v1alpha1", Kind: "ProwJob"}
+var prowjobsKind = schema.GroupVersionKind{Group: "prow.k8s.io", Version: "v1", Kind: "ProwJob"}
 
 // Get takes name of the prowJob, and returns the corresponding prowJob object, and an error if there is any.
-func (c *FakeProwJobs) Get(name string, options v1.GetOptions) (result *v1alpha1.ProwJob, err error) {
+func (c *FakeProwJobs) Get(name string, options v1.GetOptions) (result *prowjobsv1.ProwJob, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewGetAction(prowjobsResource, c.ns, name), &v1alpha1.ProwJob{})
+		Invokes(testing.NewGetAction(prowjobsResource, c.ns, name), &prowjobsv1.ProwJob{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.ProwJob), err
+	return obj.(*prowjobsv1.ProwJob), err
 }
 
 // List takes label and field selectors, and returns the list of ProwJobs that match those selectors.
-func (c *FakeProwJobs) List(opts v1.ListOptions) (result *v1alpha1.ProwJobList, err error) {
+func (c *FakeProwJobs) List(opts v1.ListOptions) (result *prowjobsv1.ProwJobList, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewListAction(prowjobsResource, prowjobsKind, c.ns, opts), &v1alpha1.ProwJobList{})
+		Invokes(testing.NewListAction(prowjobsResource, prowjobsKind, c.ns, opts), &prowjobsv1.ProwJobList{})
 
 	if obj == nil {
 		return nil, err
@@ -62,8 +62,8 @@ func (c *FakeProwJobs) List(opts v1.ListOptions) (result *v1alpha1.ProwJobList, 
 	if label == nil {
 		label = labels.Everything()
 	}
-	list := &v1alpha1.ProwJobList{}
-	for _, item := range obj.(*v1alpha1.ProwJobList).Items {
+	list := &prowjobsv1.ProwJobList{}
+	for _, item := range obj.(*prowjobsv1.ProwJobList).Items {
 		if label.Matches(labels.Set(item.Labels)) {
 			list.Items = append(list.Items, item)
 		}
@@ -79,43 +79,43 @@ func (c *FakeProwJobs) Watch(opts v1.ListOptions) (watch.Interface, error) {
 }
 
 // Create takes the representation of a prowJob and creates it.  Returns the server's representation of the prowJob, and an error, if there is any.
-func (c *FakeProwJobs) Create(prowJob *v1alpha1.ProwJob) (result *v1alpha1.ProwJob, err error) {
+func (c *FakeProwJobs) Create(prowJob *prowjobsv1.ProwJob) (result *prowjobsv1.ProwJob, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(prowjobsResource, c.ns, prowJob), &v1alpha1.ProwJob{})
+		Invokes(testing.NewCreateAction(prowjobsResource, c.ns, prowJob), &prowjobsv1.ProwJob{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.ProwJob), err
+	return obj.(*prowjobsv1.ProwJob), err
 }
 
 // Update takes the representation of a prowJob and updates it. Returns the server's representation of the prowJob, and an error, if there is any.
-func (c *FakeProwJobs) Update(prowJob *v1alpha1.ProwJob) (result *v1alpha1.ProwJob, err error) {
+func (c *FakeProwJobs) Update(prowJob *prowjobsv1.ProwJob) (result *prowjobsv1.ProwJob, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(prowjobsResource, c.ns, prowJob), &v1alpha1.ProwJob{})
+		Invokes(testing.NewUpdateAction(prowjobsResource, c.ns, prowJob), &prowjobsv1.ProwJob{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.ProwJob), err
+	return obj.(*prowjobsv1.ProwJob), err
 }
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeProwJobs) UpdateStatus(prowJob *v1alpha1.ProwJob) (*v1alpha1.ProwJob, error) {
+func (c *FakeProwJobs) UpdateStatus(prowJob *prowjobsv1.ProwJob) (*prowjobsv1.ProwJob, error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateSubresourceAction(prowjobsResource, "status", c.ns, prowJob), &v1alpha1.ProwJob{})
+		Invokes(testing.NewUpdateSubresourceAction(prowjobsResource, "status", c.ns, prowJob), &prowjobsv1.ProwJob{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.ProwJob), err
+	return obj.(*prowjobsv1.ProwJob), err
 }
 
 // Delete takes name of the prowJob and deletes it. Returns an error if one occurs.
 func (c *FakeProwJobs) Delete(name string, options *v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteAction(prowjobsResource, c.ns, name), &v1alpha1.ProwJob{})
+		Invokes(testing.NewDeleteAction(prowjobsResource, c.ns, name), &prowjobsv1.ProwJob{})
 
 	return err
 }
@@ -124,17 +124,17 @@ func (c *FakeProwJobs) Delete(name string, options *v1.DeleteOptions) error {
 func (c *FakeProwJobs) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
 	action := testing.NewDeleteCollectionAction(prowjobsResource, c.ns, listOptions)
 
-	_, err := c.Fake.Invokes(action, &v1alpha1.ProwJobList{})
+	_, err := c.Fake.Invokes(action, &prowjobsv1.ProwJobList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched prowJob.
-func (c *FakeProwJobs) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.ProwJob, err error) {
+func (c *FakeProwJobs) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *prowjobsv1.ProwJob, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(prowjobsResource, c.ns, name, data, subresources...), &v1alpha1.ProwJob{})
+		Invokes(testing.NewPatchSubresourceAction(prowjobsResource, c.ns, name, data, subresources...), &prowjobsv1.ProwJob{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.ProwJob), err
+	return obj.(*prowjobsv1.ProwJob), err
 }

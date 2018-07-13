@@ -25,8 +25,8 @@ import (
 	fakediscovery "k8s.io/client-go/discovery/fake"
 	"k8s.io/client-go/testing"
 	clientset "k8s.io/test-infra/prow/client/clientset/versioned"
-	prowv1alpha1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1alpha1"
-	fakeprowv1alpha1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1alpha1/fake"
+	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
+	fakeprowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1/fake"
 )
 
 // NewSimpleClientset returns a clientset that will respond with the provided objects.
@@ -70,12 +70,12 @@ func (c *Clientset) Discovery() discovery.DiscoveryInterface {
 
 var _ clientset.Interface = &Clientset{}
 
-// ProwV1alpha1 retrieves the ProwV1alpha1Client
-func (c *Clientset) ProwV1alpha1() prowv1alpha1.ProwV1alpha1Interface {
-	return &fakeprowv1alpha1.FakeProwV1alpha1{Fake: &c.Fake}
+// ProwV1 retrieves the ProwV1Client
+func (c *Clientset) ProwV1() prowv1.ProwV1Interface {
+	return &fakeprowv1.FakeProwV1{Fake: &c.Fake}
 }
 
-// Prow retrieves the ProwV1alpha1Client
-func (c *Clientset) Prow() prowv1alpha1.ProwV1alpha1Interface {
-	return &fakeprowv1alpha1.FakeProwV1alpha1{Fake: &c.Fake}
+// Prow retrieves the ProwV1Client
+func (c *Clientset) Prow() prowv1.ProwV1Interface {
+	return &fakeprowv1.FakeProwV1{Fake: &c.Fake}
 }

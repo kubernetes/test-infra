@@ -23,32 +23,32 @@ import (
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
-	prowv1alpha1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1alpha1"
+	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 )
 
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
-	ProwV1alpha1() prowv1alpha1.ProwV1alpha1Interface
+	ProwV1() prowv1.ProwV1Interface
 	// Deprecated: please explicitly pick a version if possible.
-	Prow() prowv1alpha1.ProwV1alpha1Interface
+	Prow() prowv1.ProwV1Interface
 }
 
 // Clientset contains the clients for groups. Each group has exactly one
 // version included in a Clientset.
 type Clientset struct {
 	*discovery.DiscoveryClient
-	prowV1alpha1 *prowv1alpha1.ProwV1alpha1Client
+	prowV1 *prowv1.ProwV1Client
 }
 
-// ProwV1alpha1 retrieves the ProwV1alpha1Client
-func (c *Clientset) ProwV1alpha1() prowv1alpha1.ProwV1alpha1Interface {
-	return c.prowV1alpha1
+// ProwV1 retrieves the ProwV1Client
+func (c *Clientset) ProwV1() prowv1.ProwV1Interface {
+	return c.prowV1
 }
 
 // Deprecated: Prow retrieves the default version of ProwClient.
 // Please explicitly pick a version.
-func (c *Clientset) Prow() prowv1alpha1.ProwV1alpha1Interface {
-	return c.prowV1alpha1
+func (c *Clientset) Prow() prowv1.ProwV1Interface {
+	return c.prowV1
 }
 
 // Discovery retrieves the DiscoveryClient
@@ -67,7 +67,7 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 	}
 	var cs Clientset
 	var err error
-	cs.prowV1alpha1, err = prowv1alpha1.NewForConfig(&configShallowCopy)
+	cs.prowV1, err = prowv1.NewForConfig(&configShallowCopy)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +84,7 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 // panics if there is an error in the config.
 func NewForConfigOrDie(c *rest.Config) *Clientset {
 	var cs Clientset
-	cs.prowV1alpha1 = prowv1alpha1.NewForConfigOrDie(c)
+	cs.prowV1 = prowv1.NewForConfigOrDie(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClientForConfigOrDie(c)
 	return &cs
@@ -93,7 +93,7 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 // New creates a new Clientset for the given RESTClient.
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
-	cs.prowV1alpha1 = prowv1alpha1.New(c)
+	cs.prowV1 = prowv1.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)
 	return &cs

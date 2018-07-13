@@ -9,7 +9,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/client/informers/externalversions",
     visibility = ["//visibility:public"],
     deps = [
-        "//prow/apis/prowjobs/v1alpha1:go_default_library",
+        "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/client/clientset/versioned:go_default_library",
         "//prow/client/informers/externalversions/internalinterfaces:go_default_library",
         "//prow/client/informers/externalversions/prowjobs:go_default_library",

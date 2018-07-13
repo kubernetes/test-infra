@@ -50,9 +50,9 @@ test_suite(
     name = "verify-all",
     tags = ["lint"],
     tests = [
+        "verify-codecgen",
         "verify-pylint",
         "verify_boilerplate",
-        "verify_codecgen",
     ],
 )
 

@@ -4,20 +4,21 @@ go_library(
     name = "go_default_library",
     srcs = [
         "doc.go",
-        "generated_expansion.go",
-        "prowjob.go",
-        "prowjobs_client.go",
+        "fake_prowjob.go",
+        "fake_prowjobs_client.go",
     ],
-    importpath = "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1alpha1",
+    importpath = "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1/fake",
     visibility = ["//visibility:public"],
     deps = [
-        "//prow/apis/prowjobs/v1alpha1:go_default_library",
-        "//prow/client/clientset/versioned/scheme:go_default_library",
+        "//prow/apis/prowjobs/v1:go_default_library",
+        "//prow/client/clientset/versioned/typed/prowjobs/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/runtime/serializer:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/labels:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/watch:go_default_library",
         "//vendor/k8s.io/client-go/rest:go_default_library",
+        "//vendor/k8s.io/client-go/testing:go_default_library",
     ],
 )
 
@@ -30,10 +31,7 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [
-        ":package-srcs",
-        "//prow/client/clientset/versioned/typed/prowjobs/v1alpha1/fake:all-srcs",
-    ],
+    srcs = [":package-srcs"],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

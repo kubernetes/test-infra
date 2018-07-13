@@ -7,7 +7,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//prow/client/informers/externalversions/internalinterfaces:go_default_library",
-        "//prow/client/informers/externalversions/prowjobs/v1alpha1:go_default_library",
+        "//prow/client/informers/externalversions/prowjobs/v1:go_default_library",
     ],
 )
 
@@ -22,7 +22,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
-        "//prow/client/informers/externalversions/prowjobs/v1alpha1:all-srcs",
+        "//prow/client/informers/externalversions/prowjobs/v1:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],

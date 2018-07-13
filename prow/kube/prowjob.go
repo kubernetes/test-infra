@@ -17,54 +17,54 @@ limitations under the License.
 package kube
 
 import (
-	"k8s.io/test-infra/prow/apis/prowjobs/v1alpha1"
+	"k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
 // The following are aliases to aid in the refactoring while we move
 // API definitions under prow/apis/
 
 // ProwJobType specifies how the job is triggered.
-type ProwJobType = v1alpha1.ProwJobType
+type ProwJobType = v1.ProwJobType
 
 // ProwJobState specifies whether the job is running
-type ProwJobState = v1alpha1.ProwJobState
+type ProwJobState = v1.ProwJobState
 
 // ProwJobAgent specifies the controller (such as plank or jenkins-agent) that runs the job.
-type ProwJobAgent = v1alpha1.ProwJobAgent
+type ProwJobAgent = v1.ProwJobAgent
 
 // Various job types.
 const (
 	// PresubmitJob means it runs on unmerged PRs.
-	PresubmitJob = v1alpha1.PresubmitJob
+	PresubmitJob = v1.PresubmitJob
 	// PostsubmitJob means it runs on each new commit.
-	PostsubmitJob = v1alpha1.PostsubmitJob
+	PostsubmitJob = v1.PostsubmitJob
 	// Periodic job means it runs on a time-basis, unrelated to git changes.
-	PeriodicJob = v1alpha1.PeriodicJob
+	PeriodicJob = v1.PeriodicJob
 	// BatchJob tests multiple unmerged PRs at the same time.
-	BatchJob = v1alpha1.BatchJob
+	BatchJob = v1.BatchJob
 )
 
 // Various job states.
 const (
 	// TriggeredState means the job has been created but not yet scheduled.
-	TriggeredState = v1alpha1.TriggeredState
+	TriggeredState = v1.TriggeredState
 	// PendingState means the job is scheduled but not yet running.
-	PendingState = v1alpha1.PendingState
+	PendingState = v1.PendingState
 	// SuccessState means the job completed without error (exit 0)
-	SuccessState = v1alpha1.SuccessState
+	SuccessState = v1.SuccessState
 	// FailureState means the job completed with errors (exit non-zero)
-	FailureState = v1alpha1.FailureState
+	FailureState = v1.FailureState
 	// AbortedState means prow killed the job early (new commit pushed, perhaps).
-	AbortedState = v1alpha1.AbortedState
+	AbortedState = v1.AbortedState
 	// ErrorState means the job could not schedule (bad config, perhaps).
-	ErrorState = v1alpha1.ErrorState
+	ErrorState = v1.ErrorState
 )
 
 const (
 	// KubernetesAgent means prow will create a pod to run this job.
-	KubernetesAgent = v1alpha1.KubernetesAgent
+	KubernetesAgent = v1.KubernetesAgent
 	// JenkinsAgent means prow will schedule the job on jenkins.
-	JenkinsAgent = v1alpha1.JenkinsAgent
+	JenkinsAgent = v1.JenkinsAgent
 )
 
 const (
@@ -94,41 +94,41 @@ const (
 )
 
 // ProwJob contains the spec as well as runtime metadata.
-type ProwJob = v1alpha1.ProwJob
+type ProwJob = v1.ProwJob
 
 // ProwJobSpec configures the details of the prow job.
 //
 // Details include the podspec, code to clone, the cluster it runs
 // any child jobs, concurrency limitations, etc.
-type ProwJobSpec = v1alpha1.ProwJobSpec
+type ProwJobSpec = v1.ProwJobSpec
 
 // DecorationConfig specifies how to augment pods.
 //
 // This is primarily used to provide automatic integration with gubernator
 // and testgrid.
-type DecorationConfig = v1alpha1.DecorationConfig
+type DecorationConfig = v1.DecorationConfig
 
 // UtilityImages holds pull specs for the utility images
 // to be used for a job
-type UtilityImages = v1alpha1.UtilityImages
+type UtilityImages = v1.UtilityImages
 
 // PathStrategy specifies minutia about how to contruct the url.
 // Usually consumed by gubernator/testgrid.
 const (
-	PathStrategyLegacy   = v1alpha1.PathStrategyLegacy
-	PathStrategySingle   = v1alpha1.PathStrategySingle
-	PathStrategyExplicit = v1alpha1.PathStrategyExplicit
+	PathStrategyLegacy   = v1.PathStrategyLegacy
+	PathStrategySingle   = v1.PathStrategySingle
+	PathStrategyExplicit = v1.PathStrategyExplicit
 )
 
 // GCSConfiguration holds options for pushing logs and
 // artifacts to GCS from a job.
-type GCSConfiguration = v1alpha1.GCSConfiguration
+type GCSConfiguration = v1.GCSConfiguration
 
 // ProwJobStatus provides runtime metadata, such as when it finished, whether it is running, etc.
-type ProwJobStatus = v1alpha1.ProwJobStatus
+type ProwJobStatus = v1.ProwJobStatus
 
 // Pull describes a pull request at a particular point in time.
-type Pull = v1alpha1.Pull
+type Pull = v1.Pull
 
 // Refs describes how the repo was constructed.
-type Refs = v1alpha1.Refs
+type Refs = v1.Refs

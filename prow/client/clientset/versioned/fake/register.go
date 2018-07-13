@@ -23,7 +23,7 @@ import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	serializer "k8s.io/apimachinery/pkg/runtime/serializer"
-	prowv1alpha1 "k8s.io/test-infra/prow/apis/prowjobs/v1alpha1"
+	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
 var scheme = runtime.NewScheme()
@@ -50,5 +50,5 @@ func init() {
 // After this, RawExtensions in Kubernetes types will serialize kube-aggregator types
 // correctly.
 func AddToScheme(scheme *runtime.Scheme) {
-	prowv1alpha1.AddToScheme(scheme)
+	prowv1.AddToScheme(scheme)
 }
