@@ -3290,7 +3290,7 @@
   },
   "ci-kubernetes-e2e-gce-large-correctness": {
     "args": [
-      "--cluster=gce-large-cluster",
+      "--cluster=gce-scale-cluster",
       "--env=HEAPSTER_MACHINE_TYPE=n1-standard-8",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env",
@@ -3353,7 +3353,7 @@
   },
   "ci-kubernetes-e2e-gce-large-performance": {
     "args": [
-      "--cluster=gce-large-cluster",
+      "--cluster=gce-scale-cluster",
       "--env=HEAPSTER_MACHINE_TYPE=n1-standard-8",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env",
