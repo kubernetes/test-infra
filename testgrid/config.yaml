@@ -356,16 +356,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-flaky
 - name: ci-kubernetes-e2e-gci-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce
-- name: ci-kubernetes-e2e-gce-gci-qa-m65
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m65
-- name: ci-kubernetes-e2e-gce-gci-qa-m66
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m66
-- name: ci-kubernetes-e2e-gce-gci-qa-m67
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m67
-- name: ci-kubernetes-e2e-gce-gci-qa-m68
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m68
-- name: ci-kubernetes-e2e-gce-gci-qa-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-master
 - name: ci-kubernetes-e2e-gci-gce-scalability
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability
   num_failures_to_alert: 1
@@ -3293,26 +3283,6 @@ dashboards:
   - name: kops-gce-ha
     test_group_name: ci-kubernetes-e2e-kops-gce-ha
 
-# "google-gci-dev" is a tab for tests that are used for GCI(aka COS) image
-# development and qualification. It should not be confused with the "google-gci"
-# tab that is for k8s development and release qualification.
-# If you are going to make a change here, kindly cc @kubernetes/goog-image.
-- name: google-gci-dev
-  dashboard_tab:
-  - name: qa-m65
-    test_group_name: ci-kubernetes-e2e-gce-gci-qa-m65
-  - name: qa-m66
-    test_group_name: ci-kubernetes-e2e-gce-gci-qa-m66
-  - name: qa-m67
-    test_group_name: ci-kubernetes-e2e-gce-gci-qa-m67
-  - name: qa-m68
-    test_group_name: ci-kubernetes-e2e-gce-gci-qa-m68
-  - name: qa-master
-    test_group_name: ci-kubernetes-e2e-gce-gci-qa-master
-  - name: ci-gke-master
-    test_group_name: ci-kubernetes-e2e-gke-gci-ci-master
-# END google-gci-dev
-
 - name: google-gci
   dashboard_tab:
   - name: gci-gce
@@ -3325,6 +3295,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-serial
   - name: slow
     test_group_name: ci-kubernetes-e2e-gci-gce-slow
+  - name: ci-gke-master
+    test_group_name: ci-kubernetes-e2e-gke-gci-ci-master
 
 - name: google-gke
   dashboard_tab:
@@ -6441,7 +6413,6 @@ dashboard_groups:
   - google-aws
   - google-gce
   - google-gci
-  - google-gci-dev
   - google-gce-compute-image-tools
   - google-gke
   - google-gke-staging
