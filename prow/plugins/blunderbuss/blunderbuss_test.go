@@ -69,11 +69,12 @@ func (c *fakeGithubClient) GetPullRequestChanges(org, repo string, num int) ([]g
 }
 
 type fakeOwnersClient struct {
-	owners        map[string]string
-	approvers     map[string]sets.String
-	leafApprovers map[string]sets.String
-	reviewers     map[string]sets.String
-	leafReviewers map[string]sets.String
+	owners            map[string]string
+	approvers         map[string]sets.String
+	leafApprovers     map[string]sets.String
+	reviewers         map[string]sets.String
+	requiredReviewers map[string]sets.String
+	leafReviewers     map[string]sets.String
 }
 
 func (foc *fakeOwnersClient) Approvers(path string) sets.String {
@@ -90,6 +91,10 @@ func (foc *fakeOwnersClient) FindApproverOwnersForFile(path string) string {
 
 func (foc *fakeOwnersClient) Reviewers(path string) sets.String {
 	return foc.reviewers[path]
+}
+
+func (foc *fakeOwnersClient) RequiredReviewers(path string) sets.String {
+	return foc.requiredReviewers[path]
 }
 
 func (foc *fakeOwnersClient) LeafReviewers(path string) sets.String {
@@ -117,6 +122,11 @@ var (
 
 		"e.go":  sets.NewString("erick", "evan"),
 		"ee.go": sets.NewString("erick", "evan"),
+	}
+	requiredReviewers = map[string]sets.String{
+		"a.go": sets.NewString("ben"),
+
+		"ee.go": sets.NewString("chris", "charles"),
 	}
 	leafReviewers = map[string]sets.String{
 		"a.go":  sets.NewString("alice"),
@@ -151,19 +161,20 @@ var (
 			name:              "two files, 2 leaf reviewers, 1 common parent, request 2",
 			filesChanged:      []string{"a.go", "b.go"},
 			reviewerCount:     2,
-			expectedRequested: []string{"alice", "bob"},
+			expectedRequested: []string{"alice", "ben", "bob"},
 		},
 		{
 			name:              "two files, 2 leaf reviewers, 1 common parent, request 3",
 			filesChanged:      []string{"a.go", "b.go"},
 			reviewerCount:     3,
-			expectedRequested: []string{"alice", "bob", "al"},
+			expectedRequested: []string{"alice", "ben", "bob", "al"},
 		},
 		{
 			name:              "one files, 1 leaf reviewers, request 1",
 			filesChanged:      []string{"a.go"},
 			reviewerCount:     1,
-			expectedRequested: []string{"alice"},
+			maxReviewerCount:  1,
+			expectedRequested: []string{"alice", "ben"},
 		},
 		{
 			name:              "one file, 2 leaf reviewer, 2 parent reviewers (1 dup), request 3",
@@ -188,15 +199,15 @@ var (
 			name:              "two files, 2 leaf reviewers, 1 common parent, request 1",
 			filesChanged:      []string{"a.go", "b.go"},
 			reviewerCount:     1,
-			expectedRequested: []string{"alice", "bob"},
+			expectedRequested: []string{"alice", "ben", "bob"},
 		},
 		{
-			name:                       "two files, 2 leaf reviewers, 1 common parent, request 1, limit 1",
+			name:                       "two files, 2 leaf reviewers, 1 common parent, request 1, limit 2",
 			filesChanged:               []string{"a.go", "b.go"},
 			reviewerCount:              1,
 			maxReviewerCount:           1,
-			expectedRequested:          []string{"alice"},
-			alternateExpectedRequested: []string{"bob"},
+			expectedRequested:          []string{"alice", "ben"},
+			alternateExpectedRequested: []string{"ben", "bob"},
 		},
 	}
 )
@@ -206,9 +217,10 @@ var (
 // true.
 func TestHandleWithExcludeApproversOnlyReviewers(t *testing.T) {
 	foc := &fakeOwnersClient{
-		owners:        owners,
-		reviewers:     reviewers,
-		leafReviewers: leafReviewers,
+		owners:            owners,
+		reviewers:         reviewers,
+		requiredReviewers: requiredReviewers,
+		leafReviewers:     leafReviewers,
 	}
 
 	for _, tc := range testcases {
@@ -244,9 +256,10 @@ func TestHandleWithExcludeApproversOnlyReviewers(t *testing.T) {
 // TestHandleWithExcludeApprovers.
 func TestHandleWithoutExcludeApproversNoReviewers(t *testing.T) {
 	foc := &fakeOwnersClient{
-		owners:        owners,
-		approvers:     reviewers,
-		leafApprovers: leafReviewers,
+		owners:            owners,
+		approvers:         reviewers,
+		leafApprovers:     leafReviewers,
+		requiredReviewers: requiredReviewers,
 	}
 
 	for _, tc := range testcases {
