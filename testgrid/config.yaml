@@ -226,10 +226,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-upgrade-e2e
 - name: ci-ingress-gce-downgrade-e2e
   gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-downgrade-e2e
-- name: ci-kube-deploy-build
-  gcs_prefix: kubernetes-jenkins/logs/ci-kube-deploy-build
-- name: ci-kube-deploy-test
-  gcs_prefix: kubernetes-jenkins/logs/ci-kube-deploy-test
 - name: ci-cluster-api-build
   gcs_prefix: kubernetes-jenkins/logs/ci-cluster-api-build
 - name: ci-cluster-api-test
@@ -2064,12 +2060,6 @@ test_groups:
 - name: ppc64le-unit
   gcs_prefix: ppc64le-kubernetes/logs/ci-unit-kubernetes
 #presubmits
-- name: pull-kube-deploy-build
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kube-deploy-build
-  num_columns_recent: 20
-- name: pull-kube-deploy-test
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kube-deploy-test
-  num_columns_recent: 20
 - name: pull-cluster-api-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-build
   num_columns_recent: 20
@@ -4850,14 +4840,6 @@ dashboards:
     test_group_name: pull-cluster-api-make
   - name: pr-test
     test_group_name: pull-cluster-api-test
-  - name: kube-deploy build
-    test_group_name: ci-kube-deploy-build
-  - name: kube-deploy unit tests
-    test_group_name: ci-kube-deploy-test
-  - name: kube-deploy pr-build
-    test_group_name: pull-kube-deploy-build
-  - name: kube-deploy pr-test
-    test_group_name: pull-kube-deploy-test
 
 - name: sig-cluster-lifecycle-cluster-api-provider-openstack
   dashboard_tab:

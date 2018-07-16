@@ -861,24 +861,6 @@
       "sig-aws"
     ]
   },
-  "ci-kube-deploy-build": {
-    "args": [
-      "./scripts/ci-build.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
-  "ci-kube-deploy-test": {
-    "args": [
-      "./scripts/ci-test.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
   "ci-kubemci-image-push": {
     "args": [
       "make",
@@ -11702,24 +11684,6 @@
   "pull-kops-verify-packages": {
     "args": [
       "./hack/verify-packages.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
-  "pull-kube-deploy-build": {
-    "args": [
-      "./scripts/ci-build.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
-  "pull-kube-deploy-test": {
-    "args": [
-      "./scripts/ci-test.sh"
     ],
     "scenario": "execute",
     "sigOwners": [

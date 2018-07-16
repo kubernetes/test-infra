@@ -758,37 +758,6 @@ presubmits:
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
 
-  kubernetes/kube-deploy:
-  - name: pull-kube-deploy-build
-    agent: kubernetes
-    always_run: true
-    context: pull-kube-deploy-build
-    rerun_command: "/test pull-kube-deploy-build"
-    trigger: "/test( all| pull-kube-deploy-build)"
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
-        args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-  - name: pull-kube-deploy-test
-    agent: kubernetes
-    always_run: true
-    context: pull-kube-deploy-test
-    rerun_command: "/test pull-kube-deploy-test"
-    trigger: "/test( all| pull-kube-deploy-test)"
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kube-deploy:v20180212-214c99406
-        args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
   kubernetes/kops:
   - name: pull-kops-bazel-build
     agent: kubernetes
@@ -4436,31 +4405,6 @@ periodics:
     volumes:
     - name: docker-graph
       emptyDir: {}
-
-- name: ci-kube-deploy-build
-  interval: 1h
-  agent: kubernetes
-  labels:
-    preset-service-account: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
-      args:
-      - "--repo=k8s.io/kube-deploy"
-      - "--root=/go/src"
-      - "--upload=gs://kubernetes-jenkins/logs"
-- name: ci-kube-deploy-test
-  interval: 1h
-  agent: kubernetes
-  labels:
-    preset-service-account: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kube-deploy:v20180212-214c99406
-      args:
-      - "--repo=k8s.io/kube-deploy"
-      - "--root=/go/src"
-      - "--upload=gs://kubernetes-jenkins/logs"
 
 - interval: 60m
   agent: kubernetes
