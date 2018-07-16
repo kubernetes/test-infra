@@ -40,7 +40,7 @@ default_dashboard_tab:
   results_text: See these results in Gubernator # Text to show in the about menu as a link to another view of the results
   results_url_template: # The URL template to visit after clicking
     url: https://k8s-gubernator.appspot.com/builds/<gcs_prefix>
-  code_search_path: # empty
+  code_search_path: github.com/kubernetes/kubernetes/search # URL for regression search links.
   num_columns_recent: 10
   code_search_url_template: # The URL template to visit when searching for changelists
     url: https://github.com/kubernetes/kubernetes/compare/<start-custom-0>...<end-custom-0>
