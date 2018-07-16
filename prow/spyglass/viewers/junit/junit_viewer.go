@@ -21,8 +21,10 @@ import (
 	"bytes"
 	"fmt"
 
+	"html/template"
+
+	junit "github.com/joshdk/go-junit"
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/bazel-test-infra/external/go_sdk/src/html/template"
 	"k8s.io/test-infra/prow/spyglass/viewers"
 )
 
@@ -39,10 +41,9 @@ func init() {
 	}, ViewHandler)
 }
 
-// TestResult holds information about a test run
 type TestResult struct {
-	TestName string
-	Passed   bool
+	Junit junit.Test
+	Link  string
 }
 
 // ViewHandler creates a view for JUnit tests
@@ -51,16 +52,51 @@ func ViewHandler(artifacts []viewers.Artifact, raw string) string {
 		NumTests int
 		Passed   []TestResult
 		Failed   []TestResult
+		Skipped  []TestResult
+	}
+
+	jvd := JunitViewData{
+		Passed:   []TestResult{},
+		Failed:   []TestResult{},
+		Skipped:  []TestResult{},
+		NumTests: 0,
 	}
 
 	for _, a := range artifacts {
 		contents, err := a.ReadAll()
+		suites, err := junit.Ingest(contents)
+		if err != nil {
+			logrus.WithError(err).Error("Error parsing junit file.")
+		}
+		for _, suite := range suites {
+			for _, test := range suite.Tests {
+				if test.Status == "failed" {
+					jvd.Failed = append(jvd.Failed, TestResult{
+						Junit: test,
+						Link:  a.CanonicalLink(),
+					})
+				} else if test.Status == "skipped" {
+					jvd.Skipped = append(jvd.Skipped, TestResult{
+						Junit: test,
+						Link:  a.CanonicalLink(),
+					})
+				} else if test.Status == "passed" {
+					jvd.Passed = append(jvd.Passed, TestResult{
+						Junit: test,
+						Link:  a.CanonicalLink(),
+					})
+				} else {
+					logrus.Error("Invalid test status string: ", test.Status)
+				}
+			}
+		}
+		jvd.NumTests = len(jvd.Passed) + len(jvd.Failed) + len(jvd.Skipped)
 
 	}
 
 	var buf bytes.Buffer
 	t := template.Must(template.New(fmt.Sprintf("%sTemplate", name)).Parse(tmplt))
-	if err := t.Execute(&buf, junitViewData); err != nil {
+	if err := t.Execute(&buf, jvd); err != nil {
 		logrus.WithError(err).Error("Error executing template.")
 	}
 

@@ -17,13 +17,23 @@ limitations under the License.
 package buildlog
 
 const tmplt = `
+<style>
+.loglines {
+	list-style-type: none;
+	padding: 0;
+	margin:0;
+	line-height:1.4;
+	color:black;
+}
+</style>
 <div style="font-family:monospace;">
-  {{range .LogViews}}<h4><a href="{{.ArtifactLink}}">{{.ArtifactName}}</a> - {{.ViewMethodDescription}}</h4>
-  <ul style="list-style-type:none;padding:0;margin:0;line-height:1.4;color:black;">
+{{range .LogViews}}<h4 style="margin-top:0;"><a href="{{.ArtifactLink}}">{{.ArtifactName}}</a> - {{.ViewMethodDescription}}</h4>
+  <ul class="loglines">
     {{range $ix, $e := .LogLines}}
-    <li>{{$e}}</li>
+    <li >{{$e}}</li>
     {{end}}
   </ul>
-  <button onclick="refreshView({{.ViewName}}, '{{index $.RawRefreshRequests .ArtifactName}}')" class="mdl-button mdl-js-button mdl-button--primary">More Lines Please</button>
+  <button onclick="refreshView({{.ViewName}}, '{{index $.RawGetMoreRequests .ArtifactName}}')" class="mdl-button mdl-js-button mdl-button--primary">More Lines Please</button>
+  <button onclick="refreshView({{.ViewName}}, '{{index $.RawGetAllRequests .ArtifactName}}')" class="mdl-button mdl-js-button mdl-button--primary">More Lines Please<span style="font-family:monospace;"> -A --force</span></button>
   {{end}}
 </div>`

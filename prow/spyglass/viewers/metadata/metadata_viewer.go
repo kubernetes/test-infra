@@ -102,7 +102,7 @@ func ViewHandler(artifacts []viewers.Artifact, raw string) string {
 
 	}
 	d := Derived{
-		Elapsed: metadataViewData.Finished.Timestamp.Sub(metadataView.Started.Timestamp),
+		Elapsed: metadataViewData.Finished.Timestamp.Sub(metadataViewData.Started.Timestamp),
 	}
 	metadataViewData.Derived = d
 	t := template.Must(template.New(fmt.Sprintf("%sTemplate", name)).Parse(tmplt))

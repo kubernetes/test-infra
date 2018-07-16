@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"math"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -50,10 +51,12 @@ type LogViewerRequest struct {
 	Requests map[string]LogViewData `json:"requests"`
 }
 
-// LogViewData holds the current state of a log artifact's view and the operations to be performed on it
+// LogViewData holds the current state of a log artifact's view and the operation to be performed on it.
+// Valid operations: more, all, ""
 type LogViewData struct {
-	CurrentChunks int  `json:"currentChunks"`
-	More          bool `json:"more"`
+	CurrentChunks int    `json:"currentChunks"`
+	TotalChunks   int    `json:"totalChunks"`
+	Operation     string `json:"operation"`
 }
 
 //LogArtifactView holds a single log file's view
@@ -68,16 +71,20 @@ type LogArtifactView struct {
 // BuildLogsView holds each log file view
 type BuildLogsView struct {
 	LogViews           []LogArtifactView
-	RefreshRequests    map[string]LogViewerRequest
-	RawRefreshRequests map[string]string
+	GetAllRequests     map[string]LogViewerRequest
+	GetMoreRequests    map[string]LogViewerRequest
+	RawGetAllRequests  map[string]string
+	RawGetMoreRequests map[string]string
 }
 
 // ViewHandler creates a view for a build log (or multiple build logs)
 func ViewHandler(artifacts []viewers.Artifact, raw string) string {
 	buildLogsView := BuildLogsView{
 		LogViews:           []LogArtifactView{},
-		RefreshRequests:    make(map[string]LogViewerRequest),
-		RawRefreshRequests: make(map[string]string),
+		GetAllRequests:     make(map[string]LogViewerRequest),
+		GetMoreRequests:    make(map[string]LogViewerRequest),
+		RawGetAllRequests:  make(map[string]string),
+		RawGetMoreRequests: make(map[string]string),
 	}
 	viewReq := LogViewerRequest{
 		Requests: make(map[string]LogViewData),
@@ -86,24 +93,35 @@ func ViewHandler(artifacts []viewers.Artifact, raw string) string {
 		logrus.WithError(err).Error("Error unmarshaling log view request data.")
 	}
 
-	updatedViewReq := LogViewerRequest{
+	getAllReq := LogViewerRequest{
+		Requests: make(map[string]LogViewData),
+	}
+
+	getMoreReq := LogViewerRequest{
 		Requests: make(map[string]LogViewData),
 	}
 
 	var desc string
 	var chunks int
+	var totalChunks int
 	// Read log artifacts and construct template structs
 	for _, a := range artifacts {
 		viewData, ok := viewReq.Requests[a.JobPath()]
 		if ok {
-			logrus.Info("Found artifact in refresh request")
 			chunks = viewData.CurrentChunks
-			if viewData.More {
+			totalChunks = viewData.TotalChunks
+			switch viewData.Operation {
+			case "more":
 				logrus.Info("Requesting more for artifact ", a.JobPath())
 				chunks++
+			case "all":
+				chunks = viewData.TotalChunks
+			case "":
+			default:
+				logrus.Error("Invalid BuildLogViewer operation provided.")
 			}
 		} else {
-			logrus.Info("Did not find artifact in refresh request")
+			totalChunks = int(math.Ceil(float64(a.Size()) / float64(viewChunkSize)))
 			chunks = 1
 		}
 		logLines, err := viewers.LastNLines(a, int64(nLines*chunks))
@@ -111,7 +129,7 @@ func ViewHandler(artifacts []viewers.Artifact, raw string) string {
 		if err != nil {
 			logrus.WithError(err).Error("Last N lines failed.")
 			desc = fmt.Sprintf("viewing first %d bytes", viewChunkSize*chunks)
-			if err == viewers.ErrUnsupportedOp {
+			if err == viewers.ErrUnsupportedOp { // Try a different read operation
 				read, err := a.ReadAtMost(int64(viewChunkSize * chunks))
 				if err != nil {
 					if err != io.EOF {
@@ -131,9 +149,15 @@ func ViewHandler(artifacts []viewers.Artifact, raw string) string {
 			ViewMethodDescription: desc,
 			LogLines:              logLines,
 		})
-		updatedViewReq.Requests[a.JobPath()] = LogViewData{
+		getAllReq.Requests[a.JobPath()] = LogViewData{
 			CurrentChunks: chunks,
-			More:          false,
+			TotalChunks:   totalChunks,
+			Operation:     "",
+		}
+		getMoreReq.Requests[a.JobPath()] = LogViewData{
+			CurrentChunks: chunks,
+			TotalChunks:   totalChunks,
+			Operation:     "",
 		}
 
 	}
@@ -141,20 +165,32 @@ func ViewHandler(artifacts []viewers.Artifact, raw string) string {
 	// Build individualized requests for stateless callbacks
 	for _, a := range artifacts {
 		aName := a.JobPath()
-		buildLogsView.RefreshRequests[aName] = updatedViewReq
-		refreshReq := buildLogsView.RefreshRequests[aName]
-		reqData := refreshReq.Requests[aName]
-		reqData.More = true
-		refreshReq.Requests[aName] = reqData
-		buildLogsView.RefreshRequests[aName] = refreshReq
-		raw, err := json.Marshal(refreshReq)
+
+		buildLogsView.GetAllRequests[aName] = getAllReq
+		reqAll := buildLogsView.GetAllRequests[aName]
+
+		reqAllData := reqAll.Requests[aName]
+		reqAllData.Operation = "all"
+		reqAll.Requests[aName] = reqAllData
+		raw, err := json.Marshal(reqAll)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to marshal build log more lines request object.")
 		}
-		buildLogsView.RawRefreshRequests[aName] = string(raw)
+		buildLogsView.RawGetAllRequests[aName] = string(raw)
+
+		buildLogsView.GetMoreRequests[aName] = getMoreReq
+		reqMore := buildLogsView.GetMoreRequests[aName]
+
+		reqMoreData := reqMore.Requests[aName]
+		reqMoreData.Operation = "more"
+		reqMore.Requests[aName] = reqMoreData
+		raw, err = json.Marshal(reqMore)
+		if err != nil {
+			logrus.WithError(err).Error("Failed to marshal build log more lines request object.")
+		}
+		buildLogsView.RawGetMoreRequests[aName] = string(raw)
 	}
 
-	logrus.Info("BuildLogsView struct refresh requests: ", buildLogsView.RefreshRequests)
 	return LogViewTemplate(buildLogsView)
 }
 

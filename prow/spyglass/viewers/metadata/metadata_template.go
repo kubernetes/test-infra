@@ -16,18 +16,112 @@ limitations under the License.
 
 package metadata
 
-const tmplt = `
-<table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+const (
+	tmplt = `
+{{$passed := eq .Finished.Result "SUCCESS"}}
+{{$failed := eq .Finished.Result "FAILURE" "FAILED"}}
+<style>
+.test-row {
+	font-weight: bold;
+	font-size: 1.1em;
+}
+.failed-row {
+	background-color: #FF0000;
+	color: white;
+}
+.passed-row {
+	background-color:#00FF00;
+	color: black;
+}
+.mdl-data-table .metadata-header th {
+	font-size: 1.2em;
+}
+.metadata-table {
+	height: unset;
+	padding: 0;
+	margin: 0;
+}
+</style>
+<div class="mdl-grid">
+  <div class="mdl-cell mdl-cell--6-col">
+    <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp metadata-table">
+      <thead class="metadata-header">
+        <tr>
+	  <th class="mdl-data-table__cell--non-numeric">Prow Metadata</td>
+	  <th class="mdl-data-table__cell--non-numeric">&nbsp</td>
+	</tr>
+      </thead>
+      <tbody>
+        {{if $passed}}
+        <tr class="test-row passed-row">
+        {{else if $failed}}
+        <tr class="test-row failed-row">
+        {{else}}
+        <tr class="test-row">
+        {{end}}
+          <td class="mdl-data-table__cell--non-numeric">Result</td>
+          <td class="mdl-data-table__cell--non-numeric">{{.Finished.Result}}</td>
+        </tr>
+        <tr>
+          <td class="mdl-data-table__cell--non-numeric">Tests</td>
+          <td class="mdl-data-table__cell--non-numeric">TODO</td>
+        </tr>
+        <tr>
+          <td class="mdl-data-table__cell--non-numeric">Started</td>
+          <td class="mdl-data-table__cell--non-numeric">{{.Started.Timestamp}}</td>
+        </tr>
+        <tr>
+          <td class="mdl-data-table__cell--non-numeric">Elapsed</td>
+          <td class="mdl-data-table__cell--non-numeric">{{.Derived.Elapsed}}</td>
+        </tr>
+        <tr>
+          <td class="mdl-data-table__cell--non-numeric">Version</td>
+          <td class="mdl-data-table__cell--non-numeric">{{.Finished.Version}}</td>
+        </tr>
+        <tr>
+          <td class="mdl-data-table__cell--non-numeric">Node</td>
+          <td class="mdl-data-table__cell--non-numeric">{{.Started.Node}}</td>
+        </tr>
+        <tr>
+          <td class="mdl-data-table__cell--non-numeric">Job Version</td>
+          <td class="mdl-data-table__cell--non-numeric">{{.Finished.JobVersion}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="mdl-cell mdl-cell--6-col">
+    <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" style="height:unset;">
+      <thead class="metadata-header">
+        <tr>
+	  <th class="mdl-data-table__cell--non-numeric">Job-Provided Metadata</td>
+	  <th class="mdl-data-table__cell--non-numeric">&nbsp</td>
+	</tr>
+      </thead>
+      <tbody>
+	{{range $k, $v := .Finished.Metadata}}
+	<tr>
+          <td class="mdl-data-table__cell--non-numeric">{{$k}}</td>
+          <td class="mdl-data-table__cell--non-numeric">{{$v}}</td>
+        </tr>{{end}}
+      </tbody>
+    </table>
+  </div>
+</div>`
+
+	tmpltv1 = `
+{{$passed := eq .Finished.Result "SUCCESS"}}
+{{$failed := eq .Finished.Result "FAILURE" "FAILED"}}
+<table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp metadata-table">
   <tbody>
-  {{if eq .Finished.Result "SUCCESS"}}
-  <tr style="background-color:#B2FF59;">
-  {{else if eq .Finished.Result "FAILURE"}}
-  <tr style="background-color:#FF6E40">
-  {{else}}
+    {{if $passed}}
+    <tr style="background-color:#00FF00;color:black;">
+    {{else if $failed}}
+    <tr style="background-color:#FF0000;color:white;">
+    {{else}}
     <tr>
-  {{end}}
-      <td class="mdl-data-table__cell--non-numeric">Result</td>
-      <td class="mdl-data-table__cell--non-numeric">{{.Finished.Result}}<td>
+    {{end}}
+      <td class="mdl-data-table__cell--non-numeric" style="font-weight:bold;font-size:1.25em;">Result</td>
+      <td class="mdl-data-table__cell--non-numeric" style="font-weight:bold;font-size:1.25em;">{{.Finished.Result}}</td>
     </tr>
     <tr>
       <td class="mdl-data-table__cell--non-numeric">Tests</td>
@@ -59,3 +153,4 @@ const tmplt = `
     </tr>{{end}}
   </tbody>
 </table>`
+)

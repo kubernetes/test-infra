@@ -29,6 +29,7 @@ import (
 	"net/url"
 	"path"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/NYTimes/gziphandler"
@@ -180,8 +181,8 @@ func prodOnlyMain(o options, mux *http.ServeMux) *http.ServeMux {
 	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(configAgent)))
 	mux.Handle("/branding.js", gziphandler.GzipHandler(handleBranding(configAgent)))
 	mux.Handle("/favicon.ico", gziphandler.GzipHandler(handleFavicon(configAgent)))
-	mux.Handle("/view", gziphandler.GzipHandler(handleRequestJobViews(sg, configAgent)))
 	mux.Handle("/view/refresh", gziphandler.GzipHandler(handleArtifactView(sg)))
+	mux.Handle("/view/", gziphandler.GzipHandler(handleRequestJobViews(sg, configAgent)))
 
 	if o.hookURL != "" {
 		mux.Handle("/plugin-help.js",
@@ -423,22 +424,48 @@ func handleBadge(ja *jobs.JobAgent) http.HandlerFunc {
 // it responds with html containing all available views
 func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		setHeadersNoCaching(w)
+		urlPath := r.URL.Path
 		start := time.Now()
-		src := r.URL.Query().Get("src")
-		jobId := r.URL.Query().Get("id")
-		if src == "" {
-			http.Error(w, "missing src query parameter", http.StatusBadRequest)
-			return
+		var src string
+		var jobID string
+		logrus.Info("raw URL: ", urlPath)
+		if strings.Trim(urlPath, "/") != "view" { //TODO (paulangton): config this prefix later
+			urlPath = strings.TrimPrefix(urlPath, "/view/")
+			splitSource := strings.SplitAfterN(urlPath, "/", 2)
+			logrus.Info("split url: ", splitSource)
+			srcExt := splitSource[0]
+			srcData := splitSource[1]
+			switch srcExt {
+			case "gcs/":
+				src = fmt.Sprintf("gs://%s", srcData)
+				logrus.Info("gcs source: ", src)
+			case "prowjob/":
+				jobID = strings.Trim(srcData, "/")
+				logrus.Info("prowjob id: ", jobID)
+			default:
+				http.Error(w, "invalid view url", http.StatusBadRequest)
+			}
+
+		} else {
+			src = r.URL.Query().Get("src")
+			jobID = r.URL.Query().Get("id")
+			if src == "" {
+				http.Error(w, "missing src query parameter", http.StatusBadRequest)
+				return
+			}
+
+			if jobID == "" {
+				logrus.Info("No job id passed to spyglass, will try to extract from source.")
+			}
 		}
 
-		if jobId == "" {
-			logrus.Info("No job id passed to spyglass, will try to extract from source.")
-		}
-
-		artifactNames, err := sg.ListArtifacts(src, jobId)
+		artifactNames, err := sg.ListArtifacts(src, jobID)
 		if err != nil {
 			logrus.Error("Invalid source parameter provided: ", src)
 		}
+
+		logrus.Info("Got this many artifacts: ", len(artifactNames))
 
 		viewerCache := map[string][]string{}
 
@@ -451,6 +478,7 @@ func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent) http.Handler
 			}
 			for _, a := range artifactNames {
 				if r.MatchString(a) {
+					logrus.Info("match found: ", a)
 					matches = append(matches, a)
 				}
 			}
@@ -496,20 +524,20 @@ func handleArtifactView(sg *spyglass.Spyglass) http.HandlerFunc {
 		jobId := r.URL.Query().Get("id")
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			http.Error(w, "Failed to read body", http.StatusBadRequest)
+			http.Error(w, "failed to read body", http.StatusBadRequest)
 			return
 		}
 		if name == "" {
-			http.Error(w, "Missing name query parameter", http.StatusBadRequest)
+			http.Error(w, "missing name query parameter", http.StatusBadRequest)
 			return
 		}
 		if src == "" {
-			http.Error(w, "Missing src query parameter", http.StatusBadRequest)
+			http.Error(w, "missing src query parameter", http.StatusBadRequest)
 			return
 		}
 
 		if jobId == "" {
-			logrus.Info("No job id passed to spyglass, will try to extract from source.")
+			logrus.Info("No job id passed to spyglass view refresh, will try to extract from source.")
 		}
 
 		viewReq := &spyglass.ViewRequest{}
@@ -517,7 +545,6 @@ func handleArtifactView(sg *spyglass.Spyglass) http.HandlerFunc {
 		if err != nil {
 			logrus.WithError(err).Error("Failed to marshal request body")
 		}
-		logrus.Info("View request:  ", viewReq)
 
 		lens := sg.Refresh(src, jobId, viewReq)
 		pd, err := json.Marshal(lens)

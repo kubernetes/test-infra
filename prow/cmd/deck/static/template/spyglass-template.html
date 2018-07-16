@@ -3,15 +3,15 @@
   <head>
       <meta charset="UTF-8">
       <title>Job View</title>
-      <link id="favicon" rel="icon" type="image/png" href="favicon.ico">
-      <link rel="stylesheet" type="text/css" href="style.css">
-      <link rel="stylesheet" type="text/css" href="extensions/style.css">
+      <link id="favicon" rel="icon" type="image/png" href="/favicon.ico">
+      <link rel="stylesheet" type="text/css" href="/style.css">
+      <link rel="stylesheet" type="text/css" href="/extensions/style.css">
       <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
       <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
       <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
-      <script type="text/javascript" src="script.js"></script>
-      <script type="text/javascript" src="extensions/script.js"></script>
-      <script type="text/javascript" src="branding.js?var=branding"></script>
+      <script type="text/javascript" src="/script.js"></script>
+      <script type="text/javascript" src="/extensions/script.js"></script>
+      <script type="text/javascript" src="/branding.js?var=branding"></script>
       <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
   </head>
   <body onload="loadViews()">
@@ -37,8 +37,8 @@
         <main class="mdl-layout__content" id="lens-container">
           {{range .Views}}
           <div class="mdl-card mdl-shadow--2dp lens-card">
-          <div class="mdl-card__title"><h3 class="mdl-card__title-text">{{.Title}}</h3></div>
-          <div id="{{.Name}}-view-container" class="mdl-card__supporting-text lens-view-content">
+          <div class="mdl-card__title lens-title"><h3 class="mdl-card__title-text">{{.Title}}</h3></div>
+          <div id="{{.Name}}-view-container" class="lens-view-content mdl-card__supporting-text">
             <div class="mdl-spinner mdl-js-spinner is-active lens-card-loading" id="{{.Name}}-loading"></div>
               <div id="{{.Name}}-view"></div>
             </div>
@@ -50,7 +50,7 @@
     <script>
       var pageUrl = window.location.href;
       var urlObj = new URL(pageUrl);
-      var src = urlObj.searchParams.get("src");
+      var src = {{.Source}}
       var viewerCache = {{ .ViewerCache}};
 
       // Loads views for this job
@@ -62,7 +62,6 @@
 
       // refreshView refreshes a single view. Use this function to to communicate with your viewer backend.
       function refreshView(viewName, viewData) {
-        console.log("refreshing " + viewName + " with " + viewData)
         requestReload(viewName, createBody(viewName, viewData))
       }
 
@@ -84,7 +83,6 @@
         req.setRequestHeader('Content-Type', 'application/json')
         req.onreadystatechange = function() {
           if (req.readyState === 4 && req.status === 200) {
-            console.log("got response: " + req.responseText)
             var lensJson = JSON.parse(req.responseText);
             insertView(name, lensJson.HTMLView);
           } else if (req.readyState === 4 && !(req.status === 200)) {
@@ -95,15 +93,17 @@
         req.send(body);
       }
 
+      // Insert rendered view into page and remove loading wheel
       function insertView(name, content) {
         document.getElementById(name + "-loading").style.display = "none";
         document.getElementById(name + "-view").innerHTML = content;
       }
 
+      // Show loading wheel over view
       function insertLoading(name) {
-        document.getElementById(name + "-view").innerHTML = "";
         document.getElementById(name + "-loading").style.display = "block";
       }
+
     </script>
   </body>
 </html>

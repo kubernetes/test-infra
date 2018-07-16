@@ -27,6 +27,7 @@ func TestGCSFetchArtifacts(t *testing.T) {
 	blgArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(buildLogName), "", buildLogName)
 	srtArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(startedName), "", startedName)
 	finArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(finishedName), "", finishedName)
+	junitArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(junitName), "", junitName)
 	longLogArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(longLogName), "", longLogName)
 	testCases := []struct {
 		name              string
@@ -39,6 +40,7 @@ func TestGCSFetchArtifacts(t *testing.T) {
 			expectedArtifacts: []string{
 				blgArtifact.JobPath(),
 				srtArtifact.JobPath(),
+				junitArtifact.JobPath(),
 				finArtifact.JobPath(),
 				longLogArtifact.JobPath(),
 			},

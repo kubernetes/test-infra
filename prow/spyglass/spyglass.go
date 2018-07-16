@@ -18,7 +18,6 @@ limitations under the License.
 package spyglass
 
 import (
-	"fmt"
 	"sort"
 	"time"
 
@@ -133,15 +132,9 @@ func (s *Spyglass) ListArtifacts(src string, jobID string) ([]string, error) {
 			jobID = gcsJobSource.JobID()
 		}
 
-		artStart := time.Now()
 		artifacts = append(artifacts, artifactFetcher.Artifacts(gcsJobSource)...)
-		artElapsed := time.Since(artStart)
-		logrus.Info("Retrieved GCS artifacts in ", artElapsed)
 
-	} else {
-		return []string{}, fmt.Errorf("Invalid source: %s", src)
 	}
-
 	// Then check prowjob id for pod logs, pod spec, etc
 	if jobID != "" && jobName != "" {
 		podLog := NewPodLogArtifact(jobName, jobID, s.Ja)
@@ -173,8 +166,6 @@ func (s *Spyglass) FetchArtifacts(src string, jobID string, artifactNames []stri
 		artElapsed := time.Since(artStart)
 		logrus.Info("Retrieved GCS artifacts in ", artElapsed)
 
-	} else {
-		return []viewers.Artifact{}, fmt.Errorf("Invalid source: %s", src)
 	}
 
 	// Then check prowjob id for pod logs, pod spec, etc

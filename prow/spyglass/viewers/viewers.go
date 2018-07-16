@@ -30,7 +30,8 @@ import (
 var (
 	viewHandlerRegistry  = map[string]ViewHandler{}
 	viewMetadataRegistry = map[string]ViewMetadata{}
-	ErrUnsupportedOp     = errors.New("Unsupported Operation")
+	ErrUnsupportedOp     = errors.New("unsupported operation")
+	ErrInvalidViewName   = errors.New("invalid view name")
 )
 
 // ViewMetadata represents some metadata associated with rendering views
@@ -65,8 +66,7 @@ type ViewHandler func([]Artifact, string) string
 func View(name string, artifacts []Artifact, raw string) (string, error) {
 	handler, ok := viewHandlerRegistry[name]
 	if !ok {
-		logrus.Error("Invalid view name ", name)
-		return "", errors.New("Invalid view name provided.")
+		return "", ErrInvalidViewName
 	}
 	return handler(artifacts, raw), nil
 
@@ -76,8 +76,7 @@ func View(name string, artifacts []Artifact, raw string) (string, error) {
 func Title(name string) (string, error) {
 	m, ok := viewMetadataRegistry[name]
 	if !ok {
-		logrus.Error("Invalid view name ", name)
-		return "", errors.New("Invalid view name provided.")
+		return "", ErrInvalidViewName
 	}
 	return m.Title, nil
 
@@ -87,8 +86,7 @@ func Title(name string) (string, error) {
 func Priority(name string) (int, error) {
 	m, ok := viewMetadataRegistry[name]
 	if !ok {
-		logrus.Error("Invalid view name ", name)
-		return -1, errors.New("Invalid view name provided.")
+		return -1, ErrInvalidViewName
 	}
 	return m.Priority, nil
 
@@ -113,7 +111,19 @@ func RegisterViewer(viewerName string, metadata ViewMetadata, handler ViewHandle
 	return nil
 }
 
-// LastNLines reads the last n lines from a file in GCS
+// UnregisterViewer unregisters viewers
+func UnregisterViewer(viewerName string) error {
+	_, ok := viewHandlerRegistry[viewerName]
+	if !ok {
+		return ErrInvalidViewName
+	}
+	delete(viewHandlerRegistry, viewerName)
+	delete(viewMetadataRegistry, viewerName)
+	logrus.Infof("Unregistered viewer %s.", viewerName)
+	return nil
+}
+
+// LastNLines reads the last n lines from an artifact.
 func LastNLines(a Artifact, n int64) ([]string, error) {
 	chunkSize := int64(256e3) // 256KB
 	toRead := chunkSize + 1   // Add 1 for exclusive upper bound read range
@@ -121,7 +131,6 @@ func LastNLines(a Artifact, n int64) ([]string, error) {
 	var contents []byte
 	var linesInContents int64
 	artifactSize := a.Size()
-	logrus.Info("Artifact size: ", artifactSize)
 	offset := artifactSize - chunks*chunkSize
 	for linesInContents < n && offset != 0 {
 		offset = artifactSize - chunks*chunkSize
@@ -129,20 +138,16 @@ func LastNLines(a Artifact, n int64) ([]string, error) {
 			toRead = offset + chunkSize + 1
 			offset = 0
 		}
-		logrus.Info("toRead ", toRead)
-		logrus.Info("offset ", offset)
 		bytesRead := make([]byte, toRead)
-		numRead, err := a.ReadAt(bytesRead, offset)
+		_, err := a.ReadAt(bytesRead, offset)
 		if err != nil {
 			if err != io.EOF {
 				logrus.WithError(err).Error("Error reading artifact ", a.JobPath())
 				return []string{}, err
 			}
 		}
-		logrus.Info("Read bytes ", numRead)
 		bytesRead = bytes.Trim(bytesRead, "\x00")
 		linesInContents += int64(bytes.Count(bytesRead, []byte("\n")))
-		logrus.Info("lines so far ", linesInContents)
 		contents = append(bytesRead, contents...)
 		chunks += 1
 	}
@@ -152,7 +157,6 @@ func LastNLines(a Artifact, n int64) ([]string, error) {
 	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
 		line := scanner.Text()
-		logrus.Info("read line ", line)
 		lines = append(lines, line)
 	}
 
@@ -161,5 +165,4 @@ func LastNLines(a Artifact, n int64) ([]string, error) {
 		return lines, nil
 	}
 	return lines[l-n:], nil
-
 }

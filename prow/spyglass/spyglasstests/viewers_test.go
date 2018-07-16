@@ -23,6 +23,116 @@ import (
 	"k8s.io/test-infra/prow/spyglass/viewers"
 )
 
+func dumpViewHandler(artifacts []viewers.Artifact, raw string) string {
+	var view []byte
+	for _, a := range artifacts {
+		data, err := a.ReadAll()
+		if err != nil {
+			panic(err)
+		}
+		view = append(view, data...)
+	}
+	return string(view)
+}
+
+var dumpMetadata = viewers.ViewMetadata{
+	Title:    "Dump View",
+	Priority: 1,
+}
+
+// Tests getting a view from a viewer
+func TestView(t *testing.T) {
+	junitArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(junitKey), "", junitName)
+	buildLogArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(buildLogKey), "", buildLogName)
+	err := viewers.RegisterViewer("DumpView", dumpMetadata, dumpViewHandler)
+	if err != nil {
+		t.Fatal("Failed to register viewer for testing View")
+	}
+	testCases := []struct {
+		name       string
+		viewerName string
+		artifacts  []viewers.Artifact
+		raw        string
+		expected   string
+		err        error
+	}{
+		{
+			name:       "simple view",
+			viewerName: "DumpView",
+			artifacts: []viewers.Artifact{
+				junitArtifact, buildLogArtifact,
+			},
+			raw: "",
+			expected: `<testsuite tests="1017" failures="1017" time="0.016981535">
+<testcase name="BeforeSuite" classname="Kubernetes e2e suite" time="0.006343795">
+<failure type="Failure">
+test/e2e/e2e.go:137 BeforeSuite on Node 1 failed test/e2e/e2e.go:137
+</failure>
+</testcase>
+</testsuite>Oh wow
+logs
+this is
+crazy`,
+			err: nil,
+		},
+		{
+			name:       "fail on unregistered view name",
+			viewerName: "MicroverseBattery",
+			artifacts:  []viewers.Artifact{},
+			raw:        "",
+			expected:   "",
+			err:        viewers.ErrInvalidViewName,
+		},
+	}
+	for _, tc := range testCases {
+		view, err := viewers.View(tc.viewerName, tc.artifacts, tc.raw)
+		if tc.err != err {
+			t.Errorf("%s expected error %s but got error %s", tc.name, tc.err.Error(), err.Error())
+		}
+		if view != tc.expected {
+			t.Errorf("%s expected view to be %s but got %s", tc.name, tc.expected, view)
+		}
+	}
+	viewers.UnregisterViewer("DumpView")
+
+}
+
+// Test registering a new viewer
+func TestRegisterViewer(t *testing.T) {
+	testCases := []struct {
+		name           string
+		viewerName     string
+		viewerMetadata viewers.ViewMetadata
+		handler        viewers.ViewHandler
+		err            error
+	}{
+		{
+			name:           "register dump view",
+			viewerName:     "DumpView",
+			viewerMetadata: dumpMetadata,
+			handler:        dumpViewHandler,
+			err:            nil,
+		},
+	}
+	for _, tc := range testCases {
+		err := viewers.RegisterViewer(tc.viewerName, tc.viewerMetadata, tc.handler)
+		if err != nil {
+			if tc.err != nil {
+				if err != tc.err {
+					t.Errorf("%s expected error %s but got error %s", tc.name, tc.err.Error(), err.Error())
+				}
+			} else {
+				t.Errorf("%s expected no errors but got error %s", tc.name, err.Error())
+			}
+		} else {
+			if tc.err != nil {
+				t.Errorf("%s expected error %s but got no errors", tc.name, tc.err.Error())
+			}
+		}
+		viewers.UnregisterViewer(tc.viewerName)
+	}
+}
+
 // Tests reading last N Lines from files in GCS
 func TestGCSReadLastNLines(t *testing.T) {
 	buildLogArtifact := spyglass.NewGCSArtifact(fakeGCSBucket.Object(buildLogKey), "", buildLogName)

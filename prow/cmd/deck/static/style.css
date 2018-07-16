@@ -511,13 +511,18 @@ Plugin Help style
   flex-wrap: nowrap;
 }
 
+#lens-container .lens-title {
+  text-decoration: underline;
+  padding-bottom: 0;
+}
+
 .lens-card.mdl-card {
   width: 100%;
   align-content: center;
 }
 
-.lens-view-content {
-  line-height: 1.25;
+#lens-container .lens-view-content {
+  width: calc(100% - 32px);
 }
 
 .lens-card-loading {

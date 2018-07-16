@@ -18,14 +18,18 @@ package spyglass
 
 import (
 	"context"
+	"encoding/xml"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"path"
 	"strings"
+	"sync"
+	"time"
 
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 	"k8s.io/test-infra/prow/spyglass/viewers"
 )
@@ -35,7 +39,9 @@ type GCSArtifactFetcher struct {
 	Client *storage.Client
 }
 
-// A location in GCS where prow job-specific artifacts are stored
+// A location in GCS where prow job-specific artifacts are stored. This implementation assumes
+// Prow's native GCS upload format (treating GCS keys as a directory structure), and is not
+// intended to support arbitrary GCS bucket upload formats.
 type GCSJobSource struct {
 	source     string
 	linkPrefix string
@@ -60,11 +66,14 @@ func NewGCSArtifactFetcher() *GCSArtifactFetcher {
 func NewGCSJobSource(src string) *GCSJobSource {
 	linkPrefix := "gs://"
 	noPrefixSrc := strings.TrimPrefix(src, linkPrefix)
+	if !strings.HasSuffix(noPrefixSrc, "/") { // Cleaning up path
+		noPrefixSrc += "/"
+	}
 	tokens := strings.FieldsFunc(noPrefixSrc, func(c rune) bool { return c == '/' })
 	bucket := tokens[0]
 	jobID := tokens[len(tokens)-1]
 	name := tokens[len(tokens)-2]
-	jobPath := strings.TrimPrefix(noPrefixSrc, bucket+"/")
+	jobPath := strings.TrimPrefix(noPrefixSrc, bucket+"/") // Extra / is not part of prefix, only necessary for URI
 	return &GCSJobSource{
 		source:     src,
 		linkPrefix: linkPrefix,
@@ -80,30 +89,82 @@ func isGCSSource(src string) bool {
 	return strings.HasPrefix(src, "gs://")
 }
 
-// Artifacts gets all artifact names from a GCS job source
-// TODO this is slow for jobs with lots of artifacts (scalabilty)
-func (af *GCSArtifactFetcher) Artifacts(src JobSource) []string {
-	artifacts := []string{}
+type GCSMarker struct {
+	XMLName xml.Name `xml:"ListBucketResult"`
+	Marker  string   `xml:"NextMarker"`
+}
+type Contents struct {
+	Key string
+}
+type GCSReq struct {
+	XMLName  xml.Name `xml:"ListBucketResult"`
+	Contents []Contents
+}
 
-	bkt := af.Client.Bucket(src.BucketName())
-
-	q := storage.Query{
-		Prefix:   src.JobPath(),
-		Versions: false,
+func Names(content []byte, names chan string, wg *sync.WaitGroup) {
+	extracted := GCSReq{
+		Contents: []Contents{},
 	}
-	objIter := bkt.Objects(context.Background(), &q)
+	err := xml.Unmarshal(content, &extracted)
+	if err != nil {
+		logrus.WithError(err).Error("Error unmarshaling artifact names from XML")
+	}
+	for _, c := range extracted.Contents {
+		names <- c.Key
+	}
+	wg.Done()
+}
+
+func (af *GCSArtifactFetcher) Artifacts(src JobSource) []string {
+	var wg sync.WaitGroup
+	artStart := time.Now()
+	artifacts := []string{}
+	endpoint := fmt.Sprintf("https://%s.storage.googleapis.com", src.BucketName())
+	prefix := src.JobPath()
+	maxResults := 1000
+	bodies := [][]byte{}
+	marker := GCSMarker{}
 	for {
-		oAttrs, err := objIter.Next()
+
+		req := fmt.Sprintf("%s/?prefix=%s&max-keys=%d", endpoint, prefix, maxResults)
+		if marker.Marker != "" {
+			req += fmt.Sprintf("&marker=%s", marker.Marker)
+		}
+		resp, err := http.Get(req)
 		if err != nil {
-			if err == iterator.Done {
-				break
-			}
-			logrus.WithError(err).Error("Error accessing GCS object.")
+			logrus.WithError(err).Error("Error in GCS XML API GET request")
+		}
+		body, err := ioutil.ReadAll(resp.Body)
+		bodies = append(bodies, body)
+
+		resp.Body.Close()
+		if err != nil {
+			logrus.WithError(err).Error("Error reading body of GCS XML API response")
 		}
 
-		artifacts = append(artifacts, strings.TrimPrefix(strings.TrimPrefix(oAttrs.Name, src.JobPath()), "/"))
-
+		marker = GCSMarker{}
+		err = xml.Unmarshal(body, &marker)
+		if err != nil {
+			logrus.WithError(err).Error("Error unmarshaling body of GCS XML API response")
+		}
+		if marker.Marker == "" {
+			break
+		}
 	}
+
+	namesChan := make(chan string, maxResults*len(bodies))
+	for _, body := range bodies {
+		wg.Add(1)
+		go Names(body, namesChan, &wg)
+	}
+
+	wg.Wait()
+	close(namesChan)
+	for name := range namesChan {
+		artifacts = append(artifacts, strings.TrimPrefix(name, src.JobPath()))
+	}
+	artElapsed := time.Since(artStart)
+	logrus.Infof("Listed %d GCS artifacts in %s", len(artifacts), artElapsed)
 	return artifacts
 }
 

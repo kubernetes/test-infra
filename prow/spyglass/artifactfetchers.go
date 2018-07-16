@@ -23,12 +23,17 @@ import (
 // JobSource gets information about a location storing the results of a single Prow job
 type JobSource interface {
 	CanonicalLink() string
+	// JobPath returns the common prefix (excluding the name of the bucket) of all artifacts produced by this job
 	JobPath() string
 	BucketName() string
 }
 
 // ArtifactFetcher gets all information necessary to perform IO operations on artifacts from a storage provider
 type ArtifactFetcher interface {
+	// Lists the names of all artifacts associated with this job source.
+	// If treating the source as a directory structure, names of artifacts should be returned with the job path prefix removed.
+	// (e.g. return names of the format artifacts/junit_01.xml instead of logs/ci-example-run/1456/artifacts/junit_01.xml)
 	Artifacts(src *JobSource) []string
+	// Gets an artifact object ready for read operations from the job source and artifact name.
 	Artifact(src *JobSource, name string) viewers.Artifact
 }

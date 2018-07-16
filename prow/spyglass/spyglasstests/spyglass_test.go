@@ -40,8 +40,10 @@ var (
 	fakeGCSJobSource *spyglass.GCSJobSource
 	buildLogName     string
 	longLogName      string
+	junitName        string
 	startedName      string
 	finishedName     string
+	junitKey         string
 	buildLogKey      string
 	longLogKey       string
 	startedKey       string
@@ -82,10 +84,12 @@ func TestMain(m *testing.M) {
 	startedName = "started.json"
 	finishedName = "finished.json"
 	longLogName = "long-log.txt"
+	junitName = "artifacts/junit_01.xml"
 	buildLogKey = path.Join(fakeGCSJobSource.JobPath(), buildLogName)
 	startedKey = path.Join(fakeGCSJobSource.JobPath(), startedName)
 	finishedKey = path.Join(fakeGCSJobSource.JobPath(), finishedName)
 	longLogKey = path.Join(fakeGCSJobSource.JobPath(), longLogName)
+	junitKey = path.Join(fakeGCSJobSource.JobPath(), junitName)
 	logrus.Info("Bucket keys: ", buildLogKey, finishedKey, startedKey, longLogKey)
 	fakeGCSServer := fakestorage.NewServer([]fakestorage.Object{
 		{
@@ -97,6 +101,17 @@ func TestMain(m *testing.M) {
 			BucketName: testBucketName,
 			Name:       longLogKey,
 			Content:    longLog,
+		},
+		{
+			BucketName: testBucketName,
+			Name:       junitKey,
+			Content: []byte(`<testsuite tests="1017" failures="1017" time="0.016981535">
+<testcase name="BeforeSuite" classname="Kubernetes e2e suite" time="0.006343795">
+<failure type="Failure">
+test/e2e/e2e.go:137 BeforeSuite on Node 1 failed test/e2e/e2e.go:137
+</failure>
+</testcase>
+</testsuite>`),
 		},
 		{
 			BucketName: testBucketName,

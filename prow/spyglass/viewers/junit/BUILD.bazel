@@ -9,8 +9,8 @@ go_library(
     importpath = "k8s.io/test-infra/prow/spyglass/viewers/junit",
     visibility = ["//visibility:public"],
     deps = [
-        "//bazel-test-infra/external/go_sdk/src/html/template:go_default_library",
         "//prow/spyglass/viewers:go_default_library",
+        "//vendor/github.com/joshdk/go-junit:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
