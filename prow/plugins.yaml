@@ -367,6 +367,7 @@ plugins:
   kubernetes/test-infra:
   - approve
   - config-updater
+  - milestone
   - trigger
   - verify-owners
 
