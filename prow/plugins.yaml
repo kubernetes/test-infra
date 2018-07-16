@@ -299,7 +299,6 @@ plugins:
   kubernetes/kube-deploy:
   - approve
   - blunderbuss
-  - trigger
 
   kubernetes/kubeadm:
   - approve
