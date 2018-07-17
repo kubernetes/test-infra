@@ -76,7 +76,7 @@ func generateResultFile() {
 	root, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)
-                return  
+		return
 	}
 
 	filepath.Walk(root, func(path string, f os.FileInfo, _ error) error {
@@ -103,7 +103,7 @@ func processFile(fileName string) {
 
 	if err != nil {
 		log.Fatal(err)
-                return
+		return
 	}
 
 	var rowBuffer bytes.Buffer
@@ -147,15 +147,15 @@ func setup() {
 	}
 	sort.Strings(keys)
 
-	err:= SetupWorkGroup(*workersQuantityPtr, processFile)
-        if err != nil {
+	err := SetupWorkGroup(*workersQuantityPtr, processFile)
+	if err != nil {
 		log.Fatal(err)
-                return
+		return
 	}
 	err = SetupFileWriter(*resultFileNamePtr)
 	if err != nil {
 		log.Fatal(err)
-                return
+		return
 	}
 }
 

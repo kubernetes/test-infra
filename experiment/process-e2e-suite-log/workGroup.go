@@ -1,9 +1,9 @@
 package main
 
 import (
+	"errors"
+	"fmt"
 	"sync"
-        "errors" 
-        "fmt"
 )
 
 type ProcessFileFunction func(fileName string)
@@ -14,15 +14,15 @@ var fileNameWaitingGroup sync.WaitGroup
 var fileNameChannel chan string = make(chan string)
 
 func SetupWorkGroup(workersQuantityArg int, processFile ProcessFileFunction) error {
-        if workersQuantityArg <= 0 {
-              return errors.New(fmt.Sprintf("only positive numbers are allowed for workersQuantity, passed:[%d]", workersQuantityArg)) 
-        }
+	if workersQuantityArg <= 0 {
+		return errors.New(fmt.Sprintf("only positive numbers are allowed for workersQuantity, passed:[%d]", workersQuantityArg))
+	}
 	workersQuantity = workersQuantityArg
 
 	for i := 0; i < workersQuantity; i++ {
 		go worker(processFile)
 	}
-        return nil
+	return nil
 }
 
 func AddFile(fileName string) {
