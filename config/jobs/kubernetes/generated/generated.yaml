@@ -6028,7 +6028,7 @@ periodics:
     containers:
     - args:
       - --bare
-      - --timeout=40
+      - --timeout=60
       - --scenario=kubernetes_e2e
       - --
       - --cluster=test-eb37105e71
@@ -6039,7 +6039,7 @@ periodics:
       - --image-project=cos-cloud
       - --gcp-node-image=gci
       - --extract=ci/latest
-      - --timeout=20m
+      - --timeout=40m
       - --test_args=--ginkgo.focus=\[Feature:NoSNAT\] --minStartupPods=8
       - --ginkgo-parallel=1
       - --gcp-project=k8s-e2e-170223
