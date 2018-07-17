@@ -47,6 +47,9 @@ import (
 	"k8s.io/test-infra/prow/prstatus"
 )
 
+var pages = []string{"index", "pr", "command-help", "tide", "plugins", "github-login"}
+var pluginPages = []string{"command-help", "plugins"}
+
 type options struct {
 	configPath            string
 	jobConfigPath         string
@@ -58,6 +61,7 @@ type options struct {
 	cookieSecretFile      string
 	redirectHTTPTo        string
 	hiddenOnly            bool
+	pluginHelpOnly        bool
 	runLocal              bool
 }
 
@@ -90,6 +94,8 @@ func gatherOptions() options {
 	flag.StringVar(&o.redirectHTTPTo, "redirect-http-to", "", "Host to redirect http->https to based on x-forwarded-proto == http.")
 	// use when behind an oauth proxy
 	flag.BoolVar(&o.hiddenOnly, "hidden-only", false, "Show only hidden jobs. Useful for serving hidden jobs behind an oauth proxy.")
+	flag.BoolVar(&o.pluginHelpOnly, "plugin-help-only", false, "Only show plugin-related prow functionality, and just use Deck as a help center. Hides references " +
+		"to other prow services, but will still serve those pages if requested directly.")
 	flag.BoolVar(&o.runLocal, "run-local", false, "Serve a local copy of the UI, used by the prow/cmd/deck/runlocal script")
 	flag.Parse()
 	return o
@@ -122,6 +128,8 @@ func main() {
 		mux.Handle("/", staticHandlerFromDir("/static"))
 		mux = prodOnlyMain(o, mux)
 	}
+
+	mux.Handle("/enabled-pages", enabledPagesHandler(o))
 
 	// setup done, actually start the server
 	logrus.WithError(http.ListenAndServe(":8080", mux)).Fatal("ListenAndServe returned.")
@@ -277,6 +285,28 @@ func prodOnlyMain(o options, mux *http.ServeMux) *http.ServeMux {
 		mux = redirectMux
 	}
 	return mux
+}
+
+func enabledPagesHandler(o options) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		setHeadersNoCaching(w)
+
+		// Returns a list of pages which are 'enabled' i.e. there are links to from the toolbar
+		var enabledPages []string
+		if !o.pluginHelpOnly {
+			enabledPages = pages
+		} else {
+			enabledPages = pluginPages
+		}
+
+		resp, err := json.Marshal(enabledPages)
+		if err != nil {
+			logrus.WithError(err).Errorf("Failed to marshal list of pages (from %+v)", enabledPages)
+			resp = []byte("[]")
+		}
+		// Otherwise, just write out the JSON.
+		fmt.Fprint(w, string(resp))
+	})
 }
 
 func loadToken(file string) ([]byte, error) {
