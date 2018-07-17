@@ -3066,53 +3066,6 @@ presubmits:
           requests:
             memory: "6Gi"
 
-  tensorflow/minigo:
-  - name: pull-tf-minigo-cc
-    agent: kubernetes
-    always_run: true
-    context: pull-tf-minigo-cc
-    branches:
-    - master
-    rerun_command: "/test pull-tf-minigo-cc"
-    trigger: "(?m)^/test( all| pull-tf-minigo-cc),?(\\s+|$)"
-    decorate: true
-    spec:
-      containers:
-      - image: gcr.io/tensor-go/cc-base:latest
-        command:
-        - /bin/bash
-        - -c
-        args:
-        # Copy tensorflow libraries into repo, test with board_size=9, test with board_size=19.
-        - "cp -r /app/cc/tensorflow ./cc/tensorflow && bazel test cc:all --test_output=errors --compilation_mode=dbg --define=board_size=9 && bazel test cc:all --test_output=errors --compilation_mode=dbg --define=board_size=19"
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "2Gi"
-      imagePullSecrets:
-      - name: minigo-image-pull
-
-  - name: tf-minigo-presubmit
-    context: tf-minigo-presubmit
-    agent: kubernetes
-    always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test tf-minigo-presubmit"
-    trigger: "(?m)^/test( all| tf-minigo-presubmit),?(\\s+|$)"
-    branches:
-    - master
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/minigo-testing/minigo-prow-harness-v2:latest
-        imagePullPolicy: Always
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=github.com/tensorflow/minigo=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-
 postsubmits:
   kubernetes/ingress-gce:
   - name: ci-ingress-gce-image-push
@@ -3421,23 +3374,6 @@ postsubmits:
         resources:
           requests:
             memory: "6Gi"
-
-  tensorflow/minigo:
-  - name: tf-minigo-postsubmit
-    agent: kubernetes
-    branches:
-    - master
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/minigo-testing/minigo-prow-harness-v2:latest
-        imagePullPolicy: Always
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=github.com/tensorflow/minigo=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/logs"
 
 periodics:
 - interval: 2h
@@ -8224,18 +8160,3 @@ periodics:
     volumes:
     - name: docker-graph
       emptyDir: {}
-
-- name: tf-minigo-periodic
-  interval: 8h
-  agent: kubernetes
-  labels:
-    preset-service-account: "true"
-  spec:
-    containers:
-    - image: gcr.io/minigo-testing/minigo-prow-harness-v2:latest
-      imagePullPolicy: Always
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--repo=github.com/tensorflow/minigo=master"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
