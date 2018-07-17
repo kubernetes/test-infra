@@ -70,8 +70,7 @@ ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}
 
 # everything below will be triggered on every new image tag ...
-ADD ["e2e-runner.sh", \
-    "kops-e2e-runner.sh", \
+ADD ["kops-e2e-runner.sh", \
     "kubetest", \
     "https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/get-kube.sh", \
     "/workspace/"]
