@@ -27,7 +27,7 @@ This file has an expected and known format:
 - workers: Each worker will take a fileName from the _fileNameChannel_, process it, and build a row. The row will be put in _rowChannel_ so that there is only one writer over the resultFile.
 - workingGroups: their target is to signal the fact that elements need to be processed (add) or had already been processed (done). Since the processing is done in goroutines, we have to tell the main process to wait until everyone has finished their tasks. Once the workingGroup completeness signal is sent (everything sent was processed), the correspondent channel is closed (sending that signal) and the goroutine ends.
 
-## ouput file
+## output file
 A csv file where:
 - headers
   - made from the collection of endpoints.

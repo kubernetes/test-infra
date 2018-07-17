@@ -44,7 +44,7 @@ var skipSplittingPtr *bool
 // the quantity of workers to use
 var workersQuantityPtr *int
 
-// to accesss the endpoints map in an repeteable manner we need an ordered array.
+// to access the endpoints map in an repeteable manner we need an ordered array.
 var keys []string
 
 // result file name.
