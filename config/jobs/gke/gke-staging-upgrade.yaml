@@ -22,9 +22,9 @@ periodics:
       - --gcp-zone=us-central1-f
       - --gke-environment=staging
       - --provider=gke
-      - --test_args=--ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Flaky\]|\[Feature:.+\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=900m
-      - --upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=gke-latest-1.9 --upgrade-image=gci
+      - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=gke-latest-1.9 --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
 
 - interval: 2h
@@ -52,7 +52,7 @@ periodics:
       - --provider=gke
       - --skew
       - --timeout=900m
-      - --upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=gke-latest-1.9 --upgrade-image=gci"
+      - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=gke-latest-1.9 --upgrade-image=gci"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
 
 - interval: 2h
@@ -80,7 +80,7 @@ periodics:
       - --provider=gke
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=900m
-      - --upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=gke-latest-1.9 --upgrade-image=gci"
+      - --upgrade_args=--ginkgo.focus=\[Feature:MasterUpgrade\] --upgrade-target=gke-latest-1.9 --upgrade-image=gci"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
 
 - interval: 2h
@@ -106,9 +106,9 @@ periodics:
       - --gcp-region=us-central1
       - --gke-environment=staging
       - --provider=gke
-      - --test_args=--gce-multizone=true --gce-multimaster=true --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]|Initializers|Dashboard --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+      - --test_args=--gce-multizone=true --gce-multimaster=true --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|Initializers|Dashboard --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=900m
-      - --upgrade_args=--gce-multizone=true --gce-multimaster=true --ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=gke-latest-1.9 --upgrade-image=gci"
+      - --upgrade_args=--gce-multizone=true --gce-multimaster=true --ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=gke-latest-1.9 --upgrade-image=gci"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
 
 - interval: 2h
@@ -134,9 +134,9 @@ periodics:
       - --gcp-zone=us-central1-f
       - --gke-environment=staging
       - --provider=gke
-      - --test_args=--ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Flaky\]|\[Feature:.+\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=900m
-      - --upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=gke-latest-1.10 --upgrade-image=gci
+      - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=gke-latest-1.10 --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
 
 - interval: 2h
@@ -164,7 +164,7 @@ periodics:
       - --provider=gke
       - --skew
       - --timeout=900m
-      - --upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=gke-latest-1.10 --upgrade-image=gci
+      - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=gke-latest-1.10 --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
 
 - interval: 2h
@@ -192,7 +192,7 @@ periodics:
       - --provider=gke
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=900m
-      - --upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=gke-latest-1.10 --upgrade-image=gci
+      - --upgrade_args=--ginkgo.focus=\[Feature:MasterUpgrade\] --upgrade-target=gke-latest-1.10 --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
 
 - interval: 2h
@@ -218,9 +218,9 @@ periodics:
       - --gcp-region=us-central1
       - --gke-environment=staging
       - --provider=gke
-      - --test_args=--gce-multizone=true --gce-multimaster=true --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]|Initializers|Dashboard --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+      - --test_args=--gce-multizone=true --gce-multimaster=true --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|Initializers|Dashboard --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=900m
-      - --upgrade_args=--gce-multizone=true --gce-multimaster=true --ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=gke-latest-1.10 --upgrade-image=gci
+      - --upgrade_args=--gce-multizone=true --gce-multimaster=true --ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=gke-latest-1.10 --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
 
 - interval: 2h
@@ -246,9 +246,9 @@ periodics:
       - --gcp-zone=us-central1-f
       - --gke-environment=staging
       - --provider=gke
-      - --test_args=--ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Flaky\]|\[Feature:.+\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=900m
-      - --upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=gke-latest-1.11 --upgrade-image=gci
+      - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=gke-latest-1.11 --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
 
 - interval: 2h
@@ -276,7 +276,7 @@ periodics:
       - --provider=gke
       - --skew
       - --timeout=900m
-      - --upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=gke-latest-1.11 --upgrade-image=gci
+      - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=gke-latest-1.11 --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
 
 - interval: 2h
@@ -304,7 +304,7 @@ periodics:
       - --provider=gke
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=900m
-      - --upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=gke-latest-1.11 --upgrade-image=gci
+      - --upgrade_args=--ginkgo.focus=\[Feature:MasterUpgrade\] --upgrade-target=gke-latest-1.11 --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
 
 - interval: 2h
@@ -330,7 +330,7 @@ periodics:
       - --gcp-region=us-central1
       - --gke-environment=staging
       - --provider=gke
-      - --test_args=--gce-multizone=true --gce-multimaster=true --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]|Initializers|Dashboard --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+      - --test_args=--gce-multizone=true --gce-multimaster=true --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|Initializers|Dashboard --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=900m
-      - --upgrade_args=--gce-multizone=true --gce-multimaster=true --ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=gke-latest-1.11 --upgrade-image=gci
+      - --upgrade_args=--gce-multizone=true --gce-multimaster=true --ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=gke-latest-1.11 --upgrade-image=gci
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
