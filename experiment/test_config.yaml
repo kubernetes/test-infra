@@ -1131,7 +1131,7 @@ testSuites:
     - --ginkgo-parallel
   nosnat:
     args:
-    - --timeout=20m
+    - --timeout=40m
     - --test_args=--ginkgo.focus=\[Feature:NoSNAT\] --minStartupPods=8
     - --ginkgo-parallel=1
 
