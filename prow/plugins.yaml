@@ -478,6 +478,9 @@ plugins:
   kubernetes-sigs/kubeadm-dind-cluster:
   - approve
 
+  kubernetes-sigs/kustomize:
+  - approve
+
   containerd/cri:
   - assign
   - cla
