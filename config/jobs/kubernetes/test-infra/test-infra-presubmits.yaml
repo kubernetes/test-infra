@@ -14,7 +14,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -120,7 +120,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -151,7 +151,7 @@ presubmits:
       - name: test
         command:
         - ./hack/verify-config.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-experimental
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-experimental
         env:
         - name: TEST_TMPDIR
           value: /bazel-scratch/.cache/bazel
@@ -180,7 +180,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -251,7 +251,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-experimental
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - --root=/go/src
