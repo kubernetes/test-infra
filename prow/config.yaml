@@ -406,36 +406,6 @@ presets:
     readOnly: true
 
 presubmits:
-  kubernetes/charts:
-  - name: pull-charts-e2e
-    agent: kubernetes
-    always_run: true
-    context: pull-charts-e2e
-    rerun_command: "/test pull-charts-e2e"
-    trigger: "(?m)^/test( all| pull-charts-e2e),?(\\s+|$)"
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
-        args:
-        - "--repo=k8s.io/charts=$(PULL_REFS)"
-        - "--root=/go/src/"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
-
   kubernetes/cloud-provider-azure:
   - name: pull-cloud-provider-azure-check
     agent: kubernetes
@@ -4816,20 +4786,6 @@ periodics:
     volumes:
     - name: docker-graph
       emptyDir: {}
-
-- interval: 1h
-  agent: kubernetes
-  name: ci-kubernetes-charts-gce
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=200
-      - --repo=k8s.io/charts
-      - --root=/go/src
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
 
 - interval: 1h
   name: ci-kubernetes-cross-build
