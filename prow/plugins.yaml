@@ -424,6 +424,7 @@ plugins:
   - help
   - hold
   - trigger
+  - verify-owners
   - wip
 
   kubernetes-sigs:
