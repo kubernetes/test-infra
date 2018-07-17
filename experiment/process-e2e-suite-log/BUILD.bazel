@@ -2,12 +2,12 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = [ 
+    srcs = [
         "endpoints.go",
         "fileSplitter.go",
-        "workGroup.go",
-        "resultWriter.go",
         "main.go",
+        "resultWriter.go",
+        "workGroup.go",
     ],
     importpath = "k8s.io/test-infra/experiment/process-e2e-suite-log",
     visibility = ["//visibility:private"],
