@@ -17,8 +17,11 @@ limitations under the License.
 package trigger
 
 import (
+	"encoding/json"
 	"testing"
 
+	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/plugins"
@@ -145,5 +148,217 @@ func TestTrusted(t *testing.T) {
 				t.Errorf("actual result %t != expected %t", actual, tc.expected)
 			}
 		})
+	}
+}
+func TestHandlePullRequest(t *testing.T) {
+	var testcases = []struct {
+		name string
+
+		Author        string
+		ShouldBuild   bool
+		ShouldComment bool
+		HasOkToTest   bool
+		prLabel       string
+		prChanges     bool
+		prAction      github.PullRequestEventAction
+	}{
+		{
+			name: "Trusted user Open PR.",
+
+			Author:      "t",
+			ShouldBuild: true,
+			prAction:    github.PullRequestActionOpened,
+		},
+		{
+			name: "Untrusted user Open PR.",
+
+			Author:        "u",
+			ShouldBuild:   false,
+			ShouldComment: true,
+			prAction:      github.PullRequestActionOpened,
+		},
+		{
+			name: "Trusted user Reopen PR.",
+
+			Author:      "t",
+			ShouldBuild: true,
+			prAction:    github.PullRequestActionReopened,
+		},
+		{
+			name: "Untrusted user Reopen PR with ok-to-test.",
+
+			Author:      "u",
+			ShouldBuild: true,
+			HasOkToTest: true,
+			prAction:    github.PullRequestActionReopened,
+		},
+		{
+			name: "Untrusted user Reopen PR without ok-to-test.",
+
+			Author:      "u",
+			ShouldBuild: false,
+			prAction:    github.PullRequestActionReopened,
+		},
+		{
+			name: "Trusted user Edit PR with changes",
+
+			Author:      "t",
+			ShouldBuild: true,
+			prChanges:   true,
+			prAction:    github.PullRequestActionEdited,
+		},
+		{
+			name: "Trusted user Edit PR without changes",
+
+			Author:      "t",
+			ShouldBuild: false,
+			prAction:    github.PullRequestActionEdited,
+		},
+		{
+			name: "Untrusted user Edit PR.",
+
+			Author:      "u",
+			ShouldBuild: false,
+			prAction:    github.PullRequestActionEdited,
+		},
+		{
+			name: "Trusted user Sync PR.",
+
+			Author:      "t",
+			ShouldBuild: true,
+			prAction:    github.PullRequestActionSynchronize,
+		},
+		{
+			name: "Untrusted user Sync PR.",
+
+			Author:      "u",
+			ShouldBuild: false,
+			prAction:    github.PullRequestActionSynchronize,
+		},
+		{
+			name: "Trusted user Labeled PR.",
+
+			Author:      "t",
+			ShouldBuild: false,
+			prAction:    github.PullRequestActionLabeled,
+			prLabel:     "lgtm",
+		},
+		{
+			name: "Untrusted user Labeled PR with lgtm.",
+
+			Author:      "u",
+			ShouldBuild: true,
+			prAction:    github.PullRequestActionLabeled,
+			prLabel:     "lgtm",
+		},
+		{
+			name: "Untrusted user Labeled PR without lgtm.",
+
+			Author:      "u",
+			ShouldBuild: false,
+			prAction:    github.PullRequestActionLabeled,
+			prLabel:     "test",
+		},
+		{
+			name: "Closed PR.",
+
+			Author:      "t",
+			ShouldBuild: false,
+			prAction:    github.PullRequestActionClosed,
+		},
+	}
+	for _, tc := range testcases {
+		t.Logf("running scenario %q", tc.name)
+
+		g := &fakegithub.FakeClient{
+			IssueComments: map[int][]github.IssueComment{},
+			OrgMembers:    map[string][]string{"org": {"t"}},
+			PullRequests: map[int]*github.PullRequest{
+				0: {
+					Number: 0,
+					User:   github.User{Login: tc.Author},
+					Base: github.PullRequestBranch{
+						Ref: "master",
+						Repo: github.Repo{
+							Owner: github.User{Login: "org"},
+							Name:  "repo",
+						},
+					},
+				},
+			},
+		}
+		kc := &fkc{}
+		c := client{
+			GitHubClient: g,
+			KubeClient:   kc,
+			Config:       &config.Config{},
+			Logger:       logrus.WithField("plugin", pluginName),
+		}
+
+		presubmits := map[string][]config.Presubmit{
+			"org/repo": {
+				{
+					Name:      "jib",
+					AlwaysRun: true,
+				},
+			},
+		}
+		if err := c.Config.SetPresubmits(presubmits); err != nil {
+			t.Fatalf("failed to set presubmits: %v", err)
+		}
+
+		if tc.HasOkToTest {
+			g.IssueComments[0] = []github.IssueComment{{
+				Body: "/ok-to-test",
+				User: github.User{Login: "t"},
+			}}
+		}
+		pr := github.PullRequestEvent{
+			Action: tc.prAction,
+			Label:  github.Label{Name: tc.prLabel},
+			PullRequest: github.PullRequest{
+				Number: 0,
+				User:   github.User{Login: tc.Author},
+				Base: github.PullRequestBranch{
+					Ref: "master",
+					Repo: github.Repo{
+						Owner:    github.User{Login: "org"},
+						Name:     "repo",
+						FullName: "org/repo",
+					},
+				},
+			},
+		}
+		if tc.prChanges {
+			data := []byte(`{"base":{"ref":{"from":"REF"}, "sha":{"from":"SHA"}}}`)
+			pr.Changes = (json.RawMessage)(data)
+		}
+		trigger := plugins.Trigger{
+			TrustedOrg:     "org",
+			OnlyOrgMembers: true,
+		}
+		if err := handlePR(c, &trigger, pr); err != nil {
+			t.Fatalf("Didn't expect error: %s", err)
+		}
+		if len(kc.started) > 0 && !tc.ShouldBuild {
+			t.Errorf("Built but should not have: %+v", tc)
+		} else if len(kc.started) == 0 && tc.ShouldBuild {
+			t.Errorf("Not built but should have: %+v", tc)
+		}
+		if tc.ShouldComment && len(g.IssueCommentsAdded) == 0 {
+			t.Error("Expected comment to github")
+		} else if !tc.ShouldComment && len(g.IssueCommentsAdded) > 0 {
+			t.Errorf("Expected no comments to github, but got %d", len(g.CreatedStatuses))
+		}
+		if tc.HasOkToTest {
+			if len(g.LabelsRemoved) != 1 {
+				t.Errorf("expected a label to be removed")
+				continue
+			}
+			expected := "org/repo#0:needs-ok-to-test"
+			if g.LabelsRemoved[0] != expected {
+				t.Errorf("expected %q to be removed, got %q", expected, g.LabelsRemoved[0])
+			}
+		}
 	}
 }
