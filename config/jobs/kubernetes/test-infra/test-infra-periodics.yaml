@@ -241,3 +241,72 @@ periodics:
     - name: token
       secret:
         secretName: fejta-bot-token
+
+- name: metrics-bigquery
+  interval: 24h
+  agent: kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bigquery:v20180330-f723e8d3f
+      args:
+      - --scenario=execute
+      - --
+      - test-infra/metrics/bigquery.py
+      - --
+      - --bucket=gs://k8s-metrics
+      - --backfill-days=90
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: VELODROME_INFLUXDB_CONFIG
+        value: /etc/velodrome-influxdb/config.json
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+      - name: influxdb
+        mountPath: /etc/velodrome-influxdb
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: triage-service-account
+    - name: influxdb
+      secret:
+        secretName: velodrome-influxdb
+
+- name: metrics-kettle
+  interval: 1h
+  agent: kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bigquery:v20180330-f723e8d3f
+      args:
+      - --scenario=execute
+      - --
+      - test-infra/kettle/monitor.py
+      - --
+      - --stale=6
+      - --table
+      - k8s-gubernator:build.all
+      - k8s-gubernator:build.week
+      - k8s-gubernator:build.day
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: VELODROME_INFLUXDB_CONFIG
+        value: /etc/velodrome-influxdb/config.json
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+      - name: influxdb
+        mountPath: /etc/velodrome-influxdb
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: triage-service-account
+    - name: influxdb
+      secret:
+        secretName: velodrome-influxdb

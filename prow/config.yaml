@@ -1310,37 +1310,6 @@ presubmits:
           - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
             value: "true"
 
-  - name: pull-kubernetes-bazel-build-canary
-    agent: kubernetes
-    context: pull-kubernetes-bazel-build-canary
-    always_run: false
-    rerun_command: "/test pull-kubernetes-bazel-build-canary"
-    trigger: "(?m)^/test pull-kubernetes-bazel-build-canary,?(\\s+|$)"
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e@sha256:02fe7ded2e8e477e52f3c82eab5fb6632ad7cd09612e2d7c5944d143974f3685
-        imagePullPolicy: Always
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=kubernetes_bazel"
-        - "--timeout=60"
-        - "--" # end bootstrap args, scenario args below
-        - "--build=//... -//vendor/..."
-        - "--release=//build/release-tars"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "6Gi"
-
   - name: pull-kubernetes-bazel-test
     agent: kubernetes
     context: pull-kubernetes-bazel-test
@@ -1468,67 +1437,6 @@ presubmits:
         - "--manual-test=//hack:verify-all"
         - "--test-args=--test_tag_filters=-integration"
         - "--test-args=--flaky_test_attempts=3"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "6Gi"
-
-  - name: pull-kubernetes-bazel-test-canary
-    agent: kubernetes
-    context: pull-kubernetes-bazel-test-canary
-    always_run: false
-    rerun_command: "/test pull-kubernetes-bazel-test-canary"
-    trigger: "(?m)^/test pull-kubernetes-bazel-test-canary,?(\\s+|$)"
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e@sha256:02fe7ded2e8e477e52f3c82eab5fb6632ad7cd09612e2d7c5944d143974f3685
-        imagePullPolicy: Always
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=kubernetes_execute_bazel"
-        - "--timeout=60"
-        - "--" # end bootstrap args, scenario args below
-        - "make"
-        - "bazel-test"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "6Gi"
-
-  - name: pull-kubernetes-bazel-test-integration-canary
-    agent: kubernetes
-    context: pull-kubernetes-bazel-test-integration-canary
-    always_run: false
-    rerun_command: "/test pull-kubernetes-bazel-test-integration-canary"
-    trigger: "(?m)^/test pull-kubernetes-bazel-test-integration-canary,?(\\s+|$)"
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
-        imagePullPolicy: Always
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--" # end bootstrap args, scenario args below
-        - "--test=//test/integration/..."
-        - "--test-args=--config=integration"
-        - "--timeout=60"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -5714,20 +5622,6 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
 
-- interval: 30m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-scalability-canary
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-      imagePullPolicy: Always
-
 - cron: '1 22 * * 2,4,6' # Run at 14:01PST (22:01 UTC) on even days
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-scale-correctness
@@ -6788,20 +6682,6 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
 
-- interval: 30m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-canary
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=70
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-      imagePullPolicy: Always
-
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu
   interval: 2h
   agent: kubernetes
@@ -7636,21 +7516,6 @@ periodics:
 
 - interval: 1h
   agent: kubernetes
-  name: ci-kubernetes-e2e-kops-aws-canary
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-      imagePullPolicy: Always
-
-- interval: 1h
-  agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-channelalpha
   labels:
     preset-service-account: "true"
@@ -7850,20 +7715,6 @@ periodics:
       - --timeout=140
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
-
-- interval: 30m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-kops-gce-canary
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-      imagePullPolicy: Always
 
 - interval: 1h
   agent: kubernetes
@@ -8129,24 +7980,6 @@ periodics:
       - "--timeout=320"
       - "--upload=gs://kubernetes-jenkins/logs"
 
-- name: ci-kubernetes-e2e-node-canary
-  interval: 1h
-  agent: kubernetes
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-      imagePullPolicy: Always
-      args:
-      - --repo=k8s.io/kubernetes=master
-      - --timeout=110
-      - --root=/go/src
-      env:
-      - name: GOPATH
-        value: /go
-
 - interval: 2h
   name: ci-kubernetes-federation-build-1-8
   agent: kubernetes
@@ -8405,32 +8238,6 @@ periodics:
       resources:
         requests:
           cpu: 4
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
-
-- name: ci-kubernetes-kubemark-100-canary
-  interval: 1h
-  agent: kubernetes
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-      imagePullPolicy: Always
-      args:
-      - --bare
-      - --timeout=260
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
     volumes:
     - name: docker-graph
       emptyDir: {}
@@ -8918,58 +8725,6 @@ periodics:
       - --repo=github.com/ostromart/istio=k8s-prow-test
       - --timeout=90
       - --root=/go/src
-
-- name: metrics-bigquery
-  interval: 24h
-  agent: kubernetes
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bigquery:v20180330-f723e8d3f
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: VELODROME_INFLUXDB_CONFIG
-        value: /etc/velodrome-influxdb/config.json
-      volumeMounts:
-      - name: service
-        mountPath: /etc/service-account
-        readOnly: true
-      - name: influxdb
-        mountPath: /etc/velodrome-influxdb
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: triage-service-account
-    - name: influxdb
-      secret:
-        secretName: velodrome-influxdb
-
-- name: metrics-kettle
-  interval: 1h
-  agent: kubernetes
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bigquery:v20180330-f723e8d3f
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: VELODROME_INFLUXDB_CONFIG
-        value: /etc/velodrome-influxdb/config.json
-      volumeMounts:
-      - name: service
-        mountPath: /etc/service-account
-        readOnly: true
-      - name: influxdb
-        mountPath: /etc/velodrome-influxdb
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: triage-service-account
-    - name: influxdb
-      secret:
-        secretName: velodrome-influxdb
 
 - name: periodic-kubernetes-bazel-build-1-10
   interval: 6h

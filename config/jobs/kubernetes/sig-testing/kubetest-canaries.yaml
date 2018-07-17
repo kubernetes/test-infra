@@ -1,3 +1,98 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-bazel-build-canary
+    agent: kubernetes
+    context: pull-kubernetes-bazel-build-canary
+    always_run: false
+    rerun_command: "/test pull-kubernetes-bazel-build-canary"
+    trigger: "(?m)^/test pull-kubernetes-bazel-build-canary,?(\\s+|$)"
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e@sha256:02fe7ded2e8e477e52f3c82eab5fb6632ad7cd09612e2d7c5944d143974f3685
+        imagePullPolicy: Always
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--scenario=kubernetes_bazel"
+        - "--timeout=60"
+        - "--" # end bootstrap args, scenario args below
+        - "--build=//... -//vendor/..."
+        - "--release=//build/release-tars"
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
+
+  - name: pull-kubernetes-bazel-test-canary
+    agent: kubernetes
+    context: pull-kubernetes-bazel-test-canary
+    always_run: false
+    rerun_command: "/test pull-kubernetes-bazel-test-canary"
+    trigger: "(?m)^/test pull-kubernetes-bazel-test-canary,?(\\s+|$)"
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e@sha256:02fe7ded2e8e477e52f3c82eab5fb6632ad7cd09612e2d7c5944d143974f3685
+        imagePullPolicy: Always
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--scenario=kubernetes_execute_bazel"
+        - "--timeout=60"
+        - "--" # end bootstrap args, scenario args below
+        - "make"
+        - "bazel-test"
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
+
+  - name: pull-kubernetes-bazel-test-integration-canary
+    agent: kubernetes
+    context: pull-kubernetes-bazel-test-integration-canary
+    always_run: false
+    rerun_command: "/test pull-kubernetes-bazel-test-integration-canary"
+    trigger: "(?m)^/test pull-kubernetes-bazel-test-integration-canary,?(\\s+|$)"
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
+        imagePullPolicy: Always
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--scenario=kubernetes_execute_bazel"
+        - "--" # end bootstrap args, scenario args below
+        - "--test=//test/integration/..."
+        - "--test-args=--config=integration"
+        - "--timeout=60"
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
+
 periodics:
 - name: ci-kubernetes-e2e-prow-canary
   interval: 1h
@@ -49,3 +144,184 @@ periodics:
       - --timeout=40m
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
+
+- interval: 30m
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gce-scalability-canary
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=140
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=e2e-big-canary
+      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
+      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability.env
+      - --extract=ci/latest
+      - --gcp-nodes=100
+      - --gcp-project=google.com:k8s-jenkins-scalability
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true --minStartupPods=8
+      - --timeout=120m
+      - --use-logexporter
+      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      imagePullPolicy: Always
+
+- interval: 30m
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gke-canary
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=
+      - --deployment=gke
+      - --extract=gke-latest-1.8
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-b
+      - --ginkgo-parallel
+      - --gke-environment=staging
+      - --provider=gke
+      - --test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      imagePullPolicy: Always
+
+- interval: 1h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-kops-aws-canary
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=140
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=e2e-kops-aws-canary.test-cncf-aws.k8s.io
+      - --deployment=kops
+      - --env=KUBE_SSH_USER=admin
+      - --extract=ci/latest
+      - --ginkgo-parallel
+      - --kops-etcd-version=3.1.10
+      - --kops-master-count=3
+      - --kops-multiple-zones
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --provider=aws
+      - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort
+      - --timeout=120m
+      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      imagePullPolicy: Always
+
+- interval: 30m
+  agent: kubernetes
+  name: ci-kubernetes-e2e-kops-gce-canary
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=140
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=e2e-kops-gce-canary.k8s.local
+      - --deployment=kops
+      - --extract=ci/latest
+      - --ginkgo-parallel=30
+      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+      - --kops-zones=us-central1-c
+      - --provider=gce
+      - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort
+      - --timeout=120m
+      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      imagePullPolicy: Always
+
+- name: ci-kubernetes-e2e-node-canary
+  interval: 1h
+  agent: kubernetes
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      imagePullPolicy: Always
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --timeout=110
+      - --root=/go/src
+      - --scenario=kubernetes_e2e
+      - --
+      - --deployment=node
+      - --gcp-zone=us-central1-f
+      - --node-args=--images=cos-stable-60-9592-76-0 --image-project=cos-cloud
+      - --node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=8 --focus=\"\\[NodeConformance\\]\" --skip=\"\\[Flaky\\]|\\[Serial\\]\"
+      - --timeout=90m
+      env:
+      - name: GOPATH
+        value: /go
+
+- name: ci-kubernetes-kubemark-100-canary
+  interval: 1h
+  agent: kubernetes
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      imagePullPolicy: Always
+      args:
+      - --bare
+      - --timeout=260
+      - --scenario=kubernetes_e2e
+      - --
+      - --build=bazel
+      - --cluster=kubemark-100-canary
+      - --env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env
+      - --extract=ci/latest
+      - --gcp-master-size=n1-standard-2
+      - --gcp-node-size=n1-standard-4
+      - --gcp-nodes=3
+      - --gcp-project=k8s-jenkins-gci-kubemark
+      - --gcp-zone=us-central1-f
+      - --kubemark
+      - --kubemark-nodes=100
+      - --provider=gce
+      - --test=false
+      - --test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true
+      - --timeout=240m
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: "true"
+      volumeMounts:
+      - name: docker-graph
+        mountPath: /docker-graph
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+    volumes:
+    - name: docker-graph
+      emptyDir: {}
+
+
