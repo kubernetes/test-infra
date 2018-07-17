@@ -550,3 +550,7 @@ external_plugins:
   - name: needs-rebase
     events:
       - pull_request
+  kubernetes-incubator/service-catalog:
+  - name: needs-rebase
+    events:
+      - pull_request
