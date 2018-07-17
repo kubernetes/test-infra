@@ -218,6 +218,7 @@ tide:
     - kubernetes-sigs/gcp-compute-persistent-disk-csi-driver
     - kubernetes-sigs/gcp-filestore-csi-driver
     - kubernetes-sigs/kubebuilder
+    - kubernetes-sigs/kustomize
     - client-go/unofficial-docs
     labels:
     - lgtm
