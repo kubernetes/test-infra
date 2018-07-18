@@ -279,6 +279,7 @@ tide:
     kubernetes/website: squash
     kubernetes-sigs/cluster-api: squash
     kubernetes-sigs/cluster-api-provider-openstack: squash
+    kubernetes-incubator/service-catalog: squash
   target_url: https://prow.k8s.io/tide.html
 
 push_gateway:
