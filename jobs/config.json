@@ -1041,22 +1041,6 @@
       "sig-release"
     ]
   },
-  "ci-kubernetes-charts-gce": {
-    "args": [
-      "--charts",
-      "--check-leaked-resources",
-      "--extract=ci/latest",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test=false",
-      "--timeout=180m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-apps"
-    ]
-  },
   "ci-kubernetes-cross-build": {
     "args": [
       "--hyperkube",
@@ -6082,15 +6066,6 @@
     "scenario": "execute",
     "sigOwners": [
       "sig-cluster-lifecycle"
-    ]
-  },
-  "pull-charts-e2e": {
-    "args": [
-      "./test/e2e.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-apps"
     ]
   },
   "pull-cloud-provider-azure-check": {
