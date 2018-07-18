@@ -24,6 +24,8 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
+	"sort"
 	"strings"
 	"sync"
 	"text/template"
@@ -74,9 +76,19 @@ type Label struct {
 	parent      *Label     // Current name for previous labels (used internally)
 }
 
-// Configuration is a list of Required Labels to sync in all kubernetes repos
+// ByName implements sort.Interface for []Label based on
+// the Name field.
+type ByName []Label
+
+func (a ByName) Len() int           { return len(a) }
+func (a ByName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByName) Less(i, j int) bool { return a[i].Name < a[j].Name }
+
+// Configuration is a list of Repos defining Required Labels to sync into them
+// There is also a Default list of labels applied to every Repo
 type Configuration struct {
-	Labels []Label `json:"labels"`
+	Repos   map[string][]Label `json:"repos,omitempty"`
+	Default []Label            `json:"default"`
 }
 
 // RepoList holds a slice of repos.
@@ -186,22 +198,43 @@ func validate(labels []Label, parent string, seen map[string]string) error {
 	return nil
 }
 
+func copyStringMap(originalMap map[string]string) map[string]string {
+	newMap := make(map[string]string)
+	for k, v := range originalMap {
+		newMap[k] = v
+	}
+	return newMap
+}
+
 // Ensures the config does not duplicate label names
 func (c Configuration) validate() error {
+	// Check default labels
 	seen := make(map[string]string)
-	if err := validate(c.Labels, "", seen); err != nil {
+	if err := validate(c.Default, "default", seen); err != nil {
 		return fmt.Errorf("invalid config: %v", err)
+	}
+	// Check other repos labels
+	for repo, labels := range c.Repos {
+		// Duplicate seen to avoid modifications
+		defaultLabels := copyStringMap(seen)
+		// Validate as usual
+		// Will complain if a label is both in default and repo
+		if err := validate(labels, repo, defaultLabels); err != nil {
+			return fmt.Errorf("invalid config: %v", err)
+		}
 	}
 	return nil
 }
 
 // LabelsByTarget returns labels that have a given target
-func (c Configuration) LabelsByTarget(target LabelTarget) (labels []Label) {
-	for _, label := range c.Labels {
+func LabelsByTarget(labels []Label, target LabelTarget) (filteredLabels []Label) {
+	for _, label := range labels {
 		if target == label.Target {
-			labels = append(labels, label)
+			filteredLabels = append(filteredLabels, label)
 		}
 	}
+	// We also sort to make nice tables
+	sort.Sort(ByName(filteredLabels))
 	return
 }
 
@@ -353,22 +386,44 @@ func classifyLabels(labels []Label, required, archaic, dead map[string]Label, no
 	}
 }
 
-func syncLabels(config Configuration, repos RepoLabels) (RepoUpdates, error) {
+func copyLabelMap(originalMap map[string]Label) map[string]Label {
+	newMap := make(map[string]Label)
+	for k, v := range originalMap {
+		newMap[k] = v
+	}
+	return newMap
+}
+
+func syncLabels(config Configuration, org string, repos RepoLabels) (RepoUpdates, error) {
 	// Ensure the config is valid
 	if err := config.validate(); err != nil {
 		return nil, fmt.Errorf("invalid config: %v", err)
 	}
 
 	// Find required, dead and archaic labels
-	required := make(map[string]Label) // Must exist
-	archaic := make(map[string]Label)  // Migrate
-	dead := make(map[string]Label)     // Delete
-	classifyLabels(config.Labels, required, archaic, dead, time.Now(), nil)
+	defaultRequired := make(map[string]Label) // Must exist
+	defaultArchaic := make(map[string]Label)  // Migrate
+	defaultDead := make(map[string]Label)     // Delete
+	classifyLabels(config.Default, defaultRequired, defaultArchaic, defaultDead, time.Now(), nil)
 
 	var validationErrors []error
 	var actions []Update
 	// Process all repos
 	for repo, repoLabels := range repos {
+		var required, archaic, dead map[string]Label
+		// Check if we have more labels for repo
+		if labels, ok := config.Repos[org+"/"+repo]; ok {
+			// Duplicate required, dead and archaic labels to avoid modifying defaults
+			required = copyLabelMap(defaultRequired)
+			archaic = copyLabelMap(defaultArchaic)
+			dead = copyLabelMap(defaultDead)
+			classifyLabels(labels, required, archaic, dead, time.Now(), nil)
+		} else {
+			// Otherwise just copy the pointer
+			required = defaultRequired
+			archaic = defaultArchaic
+			dead = defaultDead
+		}
 		// Convert github.Label to Label
 		var labels []Label
 		for _, l := range repoLabels {
@@ -646,15 +701,51 @@ type labelData struct {
 }
 
 func writeDocs(template string, output string, config Configuration) error {
-	data := []labelData{
-		{"both issues and PRs", "both-issues-and-prs", config.LabelsByTarget(bothTarget)},
-		{"only issues", "only-issues", config.LabelsByTarget(issueTarget)},
-		{"only PRs", "only-prs", config.LabelsByTarget(prTarget)},
+	var desc string
+	data := []labelData{}
+	desc = "all repos, for both issues and PRs"
+	data = append(data, labelData{desc, linkify(desc), LabelsByTarget(config.Default, bothTarget)})
+	desc = "all repos, only for issues"
+	data = append(data, labelData{desc, linkify(desc), LabelsByTarget(config.Default, issueTarget)})
+	desc = "all repos, only for PRs"
+	data = append(data, labelData{desc, linkify(desc), LabelsByTarget(config.Default, prTarget)})
+	// Let's sort repos
+	repos := make([]string, 0)
+	for repo := range config.Repos {
+		repos = append(repos, repo)
+	}
+	sort.Strings(repos)
+	// And append their labels
+	for _, repo := range repos {
+		if l := LabelsByTarget(config.Repos[repo], bothTarget); len(l) > 0 {
+			desc = repo + ", for both issues and PRs"
+			data = append(data, labelData{desc, linkify(desc), l})
+		}
+		if l := LabelsByTarget(config.Repos[repo], issueTarget); len(l) > 0 {
+			desc = repo + ", only for issues"
+			data = append(data, labelData{desc, linkify(desc), l})
+		}
+		if l := LabelsByTarget(config.Repos[repo], prTarget); len(l) > 0 {
+			desc = repo + ", only for PRs"
+			data = append(data, labelData{desc, linkify(desc), l})
+		}
 	}
 	if err := writeTemplate(*docsTemplate, *docsOutput, data); err != nil {
 		return err
 	}
 	return nil
+}
+
+// linkify transforms a string into a markdown anchor link
+// I could not find a proper doc, so rules here a mostly empirical
+func linkify(text string) string {
+	// swap space with dash
+	link := strings.Replace(text, " ", "-", -1)
+	// discard some special characters
+	discard, _ := regexp.Compile("[,/]")
+	link = discard.ReplaceAllString(link, "")
+	// lowercase
+	return strings.ToLower(link)
 }
 
 func syncOrg(org string, githubClient client, config Configuration, filt filter) error {
@@ -671,7 +762,7 @@ func syncOrg(org string, githubClient client, config Configuration, filt filter)
 	}
 
 	logrus.WithField("org", org).Infof("Syncing labels for %d repos", len(repos))
-	updates, err := syncLabels(config, *currLabels)
+	updates, err := syncLabels(config, org, *currLabels)
 	if err != nil {
 		return err
 	}

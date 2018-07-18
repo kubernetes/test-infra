@@ -1,11 +1,10 @@
-# Standard labels set (common for all kubernetes repos)
+# Keys for each item: color, description, name, target, deleteAfter, previously
+#   deleteAfter: 2006-01-02T15:04:05Z (rfc3339)
+#   previously: list of previous labels (color name deleteAfter, previously)
+#   target: one of issues, prs, or both (also TBD)
+#   addedBy: human? prow plugin? other?
 ---
-labels:
-  # Keys for each item: color, description, name, target, deleteAfter, previously
-  #   deleteAfter: 2006-01-02T15:04:05Z (rfc3339)
-  #   previously: list of previous labels (color name deleteAfter, previously)
-  #   target: one of issues, prs, or both (also TBD)
-  #   addedBy: human? prow plugin? other?
+default:
   - color: 0ffa16
     description: Indicates a PR has been approved by an approver from all required OWNERS files.
     name: approved
@@ -639,3 +638,15 @@ labels:
     target: both
     prowPlugin: milestonestatus
     addedBy: "members of a configurable github team. default: [@kubernetes/kubernetes-milestone-maintainers](https://github.com/orgs/kubernetes/teams/kubernetes-milestone-maintainers/members)"
+repos:
+  kubernetes/kubernetes:
+    - color: 0052cc
+      description: Indicates an issue on admin area.
+      name: area/admin
+      target: issues
+      addedBy: humans
+    - color: 0052cc
+      description: Indicates an issue on api area.
+      name: area/api
+      target: issues
+      addedBy: humans

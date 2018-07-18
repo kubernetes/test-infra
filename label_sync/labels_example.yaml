@@ -1,6 +1,6 @@
 # Standard labels set (common for all kubernetes repos)
 ---
-labels:
+default:
   - color: green
     name: lgtm
     description: LGTM

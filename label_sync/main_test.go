@@ -45,7 +45,7 @@ func TestSyncLabels(t *testing.T) {
 		},
 		{
 			name: "Duplicate wanted label",
-			config: Configuration{Labels: []Label{
+			config: Configuration{Default: []Label{
 				{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
 				{Name: "lab1", Description: "Test Label 1", Color: "befade"},
 			}},
@@ -53,11 +53,80 @@ func TestSyncLabels(t *testing.T) {
 		},
 		{
 			name: "Required label has non unique labels when downcased",
-			config: Configuration{Labels: []Label{
+			config: Configuration{Default: []Label{
 				{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
 				{Name: "LAB1", Description: "Test Label 2", Color: "deadbe"},
 			}},
 			expectedError: true,
+		},
+		{
+			name: "Required label defined in default and repo1",
+			config: Configuration{
+				Default: []Label{
+					{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
+				},
+				Repos: map[string][]Label{
+					"org/repo1": {
+						{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
+					},
+				},
+			},
+			expectedError: true,
+		},
+		{
+			name: "Required label defined in repo1 and repo2 - no update",
+			config: Configuration{
+				Default: []Label{
+					{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
+				},
+				Repos: map[string][]Label{
+					"org/repo1": {
+						{Name: "lab2", Description: "Test Label 2", Color: "deadbe"},
+					},
+					"org/repo2": {
+						{Name: "lab2", Description: "Test Label 2", Color: "deadbe"},
+					},
+				},
+			},
+			current: RepoLabels{
+				"repo1": {
+					{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
+					{Name: "lab2", Description: "Test Label 2", Color: "deadbe"},
+				},
+				"repo2": {
+					{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
+					{Name: "lab2", Description: "Test Label 2", Color: "deadbe"},
+				},
+			},
+		},
+		{
+			name: "Required label defined in repo1 and repo2 - update required",
+			config: Configuration{
+				Default: []Label{
+					{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
+				},
+				Repos: map[string][]Label{
+					"org/repo1": {
+						{Name: "lab2", Description: "Test Label 2", Color: "deadbe"},
+					},
+					"org/repo2": {
+						{Name: "lab2", Description: "Test Label 2", Color: "deadbe"},
+					},
+				},
+			},
+			current: RepoLabels{
+				"repo1": {
+					{Name: "lab2", Description: "Test Label 2", Color: "deadbe"},
+				},
+				"repo2": {
+					{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
+					{Name: "lab2", Description: "Test Label 2", Color: "deadbe"},
+				},
+			},
+			expectedUpdates: RepoUpdates{
+				"repo1": {
+					{repo: "repo1", Why: "missing", Wanted: &Label{Name: "lab1", Description: "Test Label 1", Color: "deadbe"}}},
+			},
 		},
 		{
 			name: "Duplicate label on repo1",
@@ -88,7 +157,7 @@ func TestSyncLabels(t *testing.T) {
 		},
 		{
 			name: "Repo has exactly all wanted labels",
-			config: Configuration{Labels: []Label{
+			config: Configuration{Default: []Label{
 				{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
 			}},
 			current: RepoLabels{
@@ -99,7 +168,7 @@ func TestSyncLabels(t *testing.T) {
 		},
 		{
 			name: "Repo has label with wrong color",
-			config: Configuration{Labels: []Label{
+			config: Configuration{Default: []Label{
 				{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
 			}},
 			current: RepoLabels{
@@ -115,7 +184,7 @@ func TestSyncLabels(t *testing.T) {
 		},
 		{
 			name: "Repo has label with wrong description",
-			config: Configuration{Labels: []Label{
+			config: Configuration{Default: []Label{
 				{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
 			}},
 			current: RepoLabels{
@@ -131,7 +200,7 @@ func TestSyncLabels(t *testing.T) {
 		},
 		{
 			name: "Repo has label with wrong name (different case)",
-			config: Configuration{Labels: []Label{
+			config: Configuration{Default: []Label{
 				{Name: "Lab1", Description: "Test Label 1", Color: "deadbe"},
 			}},
 			current: RepoLabels{
@@ -147,7 +216,7 @@ func TestSyncLabels(t *testing.T) {
 		},
 		{
 			name: "old name",
-			config: Configuration{Labels: []Label{
+			config: Configuration{Default: []Label{
 				{Name: "current", Description: "Test Label 1", Color: "blue", Previously: []Label{{Name: "old", Description: "Test Label 1", Color: "gray"}}},
 			}},
 			current: RepoLabels{
@@ -168,7 +237,7 @@ func TestSyncLabels(t *testing.T) {
 		},
 		{
 			name: "Repo is missing a label",
-			config: Configuration{Labels: []Label{
+			config: Configuration{Default: []Label{
 				{Name: "Lab1", Description: "Test Label 1", Color: "deadbe"},
 			}},
 			current: RepoLabels{
@@ -182,7 +251,7 @@ func TestSyncLabels(t *testing.T) {
 		},
 		{
 			name: "Repo is missing multiple labels, and expected labels order is changed",
-			config: Configuration{Labels: []Label{
+			config: Configuration{Default: []Label{
 				{Name: "Lab1", Description: "Test Label 1", Color: "deadbe"},
 				{Name: "Lab2", Description: "Test Label 2", Color: "000000"},
 				{Name: "Lab3", Description: "Test Label 3", Color: "ffffff"},
@@ -205,7 +274,7 @@ func TestSyncLabels(t *testing.T) {
 		},
 		{
 			name: "Multiple repos complex case",
-			config: Configuration{Labels: []Label{
+			config: Configuration{Default: []Label{
 				{Name: "priority/P0", Description: "P0 Priority", Color: "ff0000"},
 				{Name: "lgtm", Description: "LGTM", Color: "00ff00"},
 			}},
@@ -253,7 +322,7 @@ func TestSyncLabels(t *testing.T) {
 
 	// Do tests
 	for _, tc := range testcases {
-		actualUpdates, err := syncLabels(tc.config, tc.current)
+		actualUpdates, err := syncLabels(tc.config, "org", tc.current)
 		if err == nil && tc.expectedError {
 			t.Errorf("%s: failed to raise error", tc.name)
 		} else if err != nil && !tc.expectedError {
@@ -320,7 +389,7 @@ func TestLoadYAML(t *testing.T) {
 	}{
 		{
 			path: "labels_example.yaml",
-			expected: Configuration{Labels: []Label{
+			expected: Configuration{Default: []Label{
 				{Name: "lgtm", Description: "LGTM", Color: "green"},
 				{Name: "priority/P0", Description: "P0 Priority", Color: "red", Previously: []Label{{Name: "P0", Description: "P0 Priority", Color: "blue"}}},
 				{Name: "dead-label", Description: "Delete Me :)", DeleteAfter: &d},
