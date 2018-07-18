@@ -68,6 +68,31 @@ func NewProwJob(spec kube.ProwJobSpec, labels map[string]string) kube.ProwJob {
 	}
 }
 
+func NewPresubmit(pr github.PullRequest, baseSHA string, job config.Presubmit, eventGUID string) kube.ProwJob {
+	org := pr.Base.Repo.Owner.Login
+	repo := pr.Base.Repo.Name
+	number := pr.Number
+	kr := kube.Refs{
+		Org:     org,
+		Repo:    repo,
+		BaseRef: pr.Base.Ref,
+		BaseSHA: baseSHA,
+		Pulls: []kube.Pull{
+			{
+				Number: number,
+				Author: pr.User.Login,
+				SHA:    pr.Head.SHA,
+			},
+		},
+	}
+	labels := make(map[string]string)
+	for k, v := range job.Labels {
+		labels[k] = v
+	}
+	labels[github.EventGUID] = eventGUID
+	return NewProwJob(PresubmitSpec(job, kr), labels)
+}
+
 // PresubmitSpec initializes a ProwJobSpec for a given presubmit job.
 func PresubmitSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 	refs.PathAlias = p.PathAlias

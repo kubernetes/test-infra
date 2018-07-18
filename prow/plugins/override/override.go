@@ -23,9 +23,13 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -40,8 +44,59 @@ type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	CreateStatus(org, repo, ref string, s github.Status) error
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
-	ListStatuses(org, repo, ref string) ([]github.Status, error)
+	GetRef(org, repo, ref string) (string, error)
 	HasPermission(org, repo, user string, role ...string) (bool, error)
+	ListStatuses(org, repo, ref string) ([]github.Status, error)
+}
+
+type kubeClient interface {
+	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
+}
+
+type overrideClient interface {
+	githubClient
+	kubeClient
+	presubmitForContext(org, repo, context string) *config.Presubmit
+}
+
+type client struct {
+	gc githubClient
+	jc config.JobConfig
+	kc kubeClient
+}
+
+func (c client) CreateComment(owner, repo string, number int, comment string) error {
+	return c.gc.CreateComment(owner, repo, number, comment)
+}
+func (c client) CreateStatus(org, repo, ref string, s github.Status) error {
+	return c.gc.CreateStatus(org, repo, ref, s)
+}
+
+func (c client) GetRef(org, repo, ref string) (string, error) {
+	return c.gc.GetRef(org, repo, ref)
+}
+
+func (c client) GetPullRequest(org, repo string, number int) (*github.PullRequest, error) {
+	return c.gc.GetPullRequest(org, repo, number)
+}
+func (c client) ListStatuses(org, repo, ref string) ([]github.Status, error) {
+	return c.gc.ListStatuses(org, repo, ref)
+}
+func (c client) HasPermission(org, repo, user string, role ...string) (bool, error) {
+	return c.gc.HasPermission(org, repo, user, role...)
+}
+
+func (c client) CreateProwJob(pj kube.ProwJob) (kube.ProwJob, error) {
+	return c.kc.CreateProwJob(pj)
+}
+
+func (c client) presubmitForContext(org, repo, context string) *config.Presubmit {
+	for _, p := range c.jc.AllPresubmits([]string{org + "/" + repo}) {
+		if p.Context == context {
+			return &p
+		}
+	}
+	return nil
 }
 
 func init() {
@@ -63,13 +118,18 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 }
 
 func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
-	return handle(pc.GitHubClient, pc.Logger, &e)
+	c := client{
+		gc: pc.GitHubClient,
+		jc: pc.Config.JobConfig,
+		kc: pc.KubeClient,
+	}
+	return handle(c, pc.Logger, &e)
 }
 
 func authorized(gc githubClient, log *logrus.Entry, org, repo, user string) bool {
 	ok, err := gc.HasPermission(org, repo, user, github.RoleAdmin)
 	if err != nil {
-		log.Warnf("cannot determine whether %s is an admin of  %s/%s", user, org, repo)
+		log.WithError(err).Warnf("cannot determine whether %s is an admin of %s/%s", user, org, repo)
 		return false
 	}
 	return ok
@@ -79,7 +139,8 @@ func description(user string) string {
 	return fmt.Sprintf("Overridden by %s", user)
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
+
 	if !e.IsPR || e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
 		return nil
 	}
@@ -100,25 +161,25 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) e
 	number := e.Number
 	user := e.User.Login
 
-	if !authorized(gc, log, org, repo, user) {
+	if !authorized(oc, log, org, repo, user) {
 		resp := fmt.Sprintf("%s unauthorized: /override is restricted to repo administrators", user)
 		log.Warn(resp)
-		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
+		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 	}
 
-	pr, err := gc.GetPullRequest(org, repo, number)
+	pr, err := oc.GetPullRequest(org, repo, number)
 	if err != nil {
-		resp := fmt.Sprintf("Cannot get PR #%d in %s/%s: %v", number, org, repo, err)
-		log.Warn(resp)
-		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
+		resp := fmt.Sprintf("Cannot get PR #%d in %s/%s", number, org, repo)
+		log.WithError(err).Warn(resp)
+		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 	}
 
 	sha := pr.Head.SHA
-	statuses, err := gc.ListStatuses(org, repo, sha)
+	statuses, err := oc.ListStatuses(org, repo, sha)
 	if err != nil {
-		resp := fmt.Sprintf("Cannot get commit statuses for PR #%d in %s/%s: %v", number, org, repo, err)
-		log.Warn(resp)
-		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
+		resp := fmt.Sprintf("Cannot get commit statuses for PR #%d in %s/%s", number, org, repo)
+		log.WithError(err).Warn(resp)
+		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 	}
 
 	done := sets.String{}
@@ -129,19 +190,44 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) e
 		}
 		msg := fmt.Sprintf("Overrode contexts on behalf of %s: %s", user, strings.Join(done.List(), ", "))
 		log.Info(msg)
-		gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, msg))
+		oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, msg))
 	}()
 
 	for _, status := range statuses {
 		if status.State == github.StatusSuccess || !overrides.Has(status.Context) {
 			continue
 		}
+		// First create the overridden prow result if necessary
+		if pre := oc.presubmitForContext(org, repo, status.Context); pre != nil {
+			baseSHA, err := oc.GetRef(org, repo, "heads/"+pr.Base.Ref)
+			if err != nil {
+				resp := fmt.Sprintf("Cannot get base ref of PR")
+				log.WithError(err).Warn(resp)
+				return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
+			}
+
+			pj := pjutil.NewPresubmit(*pr, baseSHA, *pre, e.GUID)
+			now := metav1.Now()
+			pj.Status = kube.ProwJobStatus{
+				StartTime:      now,
+				CompletionTime: &now,
+				State:          kube.SuccessState,
+				Description:    description(user),
+				URL:            e.HTMLURL,
+			}
+			log.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
+			if _, err := oc.CreateProwJob(pj); err != nil {
+				resp := fmt.Sprintf("Failed to create override job for %s", status.Context)
+				log.WithError(err).Warn(resp)
+				return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
+			}
+		}
 		status.State = github.StatusSuccess
 		status.Description = description(user)
-		if err := gc.CreateStatus(org, repo, sha, status); err != nil {
-			resp := fmt.Sprintf("Cannot update PR status for context %s: %v", status.Context, err)
-			log.Warn(resp)
-			return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
+		if err := oc.CreateStatus(org, repo, sha, status); err != nil {
+			resp := fmt.Sprintf("Cannot update PR status for context %s", status.Context)
+			log.WithError(err).Warn(resp)
+			return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 		}
 		done.Insert(status.Context)
 	}

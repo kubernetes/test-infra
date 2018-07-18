@@ -24,21 +24,27 @@ import (
 	"testing"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/sets"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/kube"
 )
 
 const (
-	fakeOrg   = "fake-org"
-	fakeRepo  = "fake-repo"
-	fakePR    = 33
-	fakeSHA   = "deadbeef"
-	adminUser = "admin-user"
+	fakeOrg     = "fake-org"
+	fakeRepo    = "fake-repo"
+	fakePR      = 33
+	fakeSHA     = "deadbeef"
+	fakeBaseSHA = "fffffff"
+	adminUser   = "admin-user"
 )
 
 type fakeClient struct {
-	comments []string
-	statuses map[string]github.Status
+	comments   []string
+	statuses   map[string]github.Status
+	presubmits map[string]config.Presubmit
+	jobs       sets.String
 }
 
 func (c *fakeClient) CreateComment(org, repo string, number int, comment string) error {
@@ -120,6 +126,32 @@ func (c *fakeClient) HasPermission(org, repo, user string, roles ...string) (boo
 	return user == adminUser, nil
 }
 
+func (c *fakeClient) GetRef(org, repo, ref string) (string, error) {
+	if repo == "fail-ref" {
+		return "", errors.New("injected GetRef error")
+	}
+	return fakeBaseSHA, nil
+}
+
+func (c *fakeClient) CreateProwJob(pj kube.ProwJob) (kube.ProwJob, error) {
+	if s := pj.Status.State; s != kube.SuccessState {
+		return pj, fmt.Errorf("bad status state: %s", s)
+	}
+	if pj.Spec.Context == "fail-create" {
+		return pj, errors.New("injected CreateProwJob error")
+	}
+	c.jobs.Insert(pj.Spec.Context)
+	return pj, nil
+}
+
+func (c *fakeClient) presubmitForContext(org, repo, context string) *config.Presubmit {
+	if p, ok := c.presubmits[context]; !ok {
+		return nil
+	} else {
+		return &p
+	}
+}
+
 func TestAuthorized(t *testing.T) {
 	cases := []struct {
 		name     string
@@ -159,9 +191,11 @@ func TestHandle(t *testing.T) {
 		state         string
 		comment       string
 		contexts      map[string]github.Status
+		presubmits    map[string]config.Presubmit
 		user          string
 		number        int
 		expected      map[string]github.Status
+		jobs          sets.String
 		checkComments []string
 		err           bool
 	}{
@@ -366,6 +400,30 @@ func TestHandle(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:    "create successful prow job",
+			comment: "/override prow-job",
+			contexts: map[string]github.Status{
+				"prow-job": {
+					Context:     "prow-job",
+					Description: "failed",
+					State:       github.StatusFailure,
+				},
+			},
+			presubmits: map[string]config.Presubmit{
+				"prow-job": {
+					Context: "prow-job",
+				},
+			},
+			jobs: sets.NewString("prow-job"),
+			expected: map[string]github.Status{
+				"prow-job": {
+					Context:     "prow-job",
+					State:       github.StatusSuccess,
+					Description: description(adminUser),
+				},
+			},
+		},
 	}
 
 	log := logrus.WithField("plugin", pluginName)
@@ -393,7 +451,13 @@ func TestHandle(t *testing.T) {
 				tc.contexts = map[string]github.Status{}
 			}
 			fc := fakeClient{
-				statuses: tc.contexts,
+				statuses:   tc.contexts,
+				presubmits: tc.presubmits,
+				jobs:       sets.String{},
+			}
+
+			if tc.jobs == nil {
+				tc.jobs = sets.String{}
 			}
 
 			err := handle(&fc, log, &event)
@@ -405,7 +469,9 @@ func TestHandle(t *testing.T) {
 			case tc.err:
 				t.Error("failed to receive an error")
 			case !reflect.DeepEqual(fc.statuses, tc.expected):
-				t.Errorf("actual statuses %#v != expected %#v", fc.statuses, tc.expected)
+				t.Errorf("bad statuses: actual %#v != expected %#v", fc.statuses, tc.expected)
+			case !reflect.DeepEqual(fc.jobs, tc.jobs):
+				t.Errorf("bad jobs: actual %#v != expected %#v", fc.jobs, tc.jobs)
 			}
 		})
 	}
