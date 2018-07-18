@@ -176,13 +176,28 @@ tide:
     - needs-ok-to-test
     - needs-rebase
   - repos:
+    - helm/charts
+    labels:
+    - lgtm
+    - approved
+    - "cncf-cla: yes"
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/blocked-paths
+    - do-not-merge/cherry-pick-not-approved
+    - do-not-merge/hold
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/release-note-label-needed
+    - do-not-merge/work-in-progress
+    - needs-ok-to-test
+    - needs-rebase
+  - repos:
     - kubernetes/client-go
     - kubernetes/cloud-provider-aws
     - kubernetes/cloud-provider-azure
     - kubernetes/cloud-provider-gcp
     - kubernetes/cloud-provider-openstack
     - kubernetes/cloud-provider-vsphere
-    - kubernetes/charts
     - kubernetes/cluster-registry
     - kubernetes/community
     - kubernetes/contrib
@@ -272,8 +287,8 @@ tide:
     - needs-ok-to-test
     - needs-rebase
   merge_method:
+    helm/charts: squash
     kubeflow: squash
-    kubernetes/charts: squash
     kubernetes/dashboard: squash
     kubernetes/kube-deploy: squash
     kubernetes/website: squash

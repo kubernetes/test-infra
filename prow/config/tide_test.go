@@ -113,6 +113,7 @@ func TestMergeMethod(t *testing.T) {
 		MergeType: map[string]github.PullRequestMergeType{
 			"kubernetes/kops":             github.MergeRebase,
 			"kubernetes/charts":           github.MergeSquash,
+			"helm/charts":                 github.MergeSquash,
 			"kubernetes-helm":             github.MergeSquash,
 			"kubernetes-helm/chartmuseum": github.MergeMerge,
 		},
