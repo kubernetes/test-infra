@@ -39,7 +39,7 @@ kubectl create clusterrolebinding cluster-admin-binding-"${USER}" --clusterrole=
 On some platforms the `USER` variable may not map correctly to the user
 in-cluster. If you see an error of the following form, this is likely the case.
 
-``` 
+```
 Error from server (Forbidden): error when creating
 "prow/cluster/starter.yaml": roles.rbac.authorization.k8s.io "<account>" is
 forbidden: attempt to grant extra privileges:
@@ -150,7 +150,7 @@ so that any errors are caught before you try to update.
 Now run the following to update the configmap, replacing the path as necessary:
 
 ```
-kubectl create configmap plugins --from-file=plugins=path/to/plugins.yaml --dry-run -o yaml | kubectl replace configmap plugins -f -
+kubectl create configmap plugins --from-file=plugins.yaml=path/to/plugins.yaml --dry-run -o yaml | kubectl replace configmap plugins -f -
 ```
 
 We added a make rule to do this for us:
