@@ -41,7 +41,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --cluster=",
+      - --cluster=
       - --deployment=gke
       - --extract=ci/k8s-beta
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
