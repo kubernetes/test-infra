@@ -267,17 +267,31 @@ function getFullPRContext(builds, contexts) {
             contextMap.set(context.Context, {
                 context: context.Context,
                 description: context.Description,
-                state: context.State.toLowerCase()
+                state: context.State.toLowerCase(),
+                discrepancy: "Prow Job not found",
         });
       }
     }
     if (builds) {
         for (let build of builds) {
+            let discrepancy = "Github context not found";
+            // If Github context exits, check if mismatch or not.
+            if (contextMap.has(build.context)) {
+                const githubContext = contextMap[build.context];
+                // TODO (qhuynh96): ProwJob's states and Github contexts states
+                // are not equivalent in some states.
+                if (githubContext.state === build.state) {
+                    discrepancy = null;
+                } else {
+                    discrepancy = "Github context and Prow Job states mismatch";
+                }
+            }
             contextMap.set(build.context, {
                 context: build.context,
                 description: build.description,
                 state: build.state,
-                url: build.url
+                url: build.url,
+                discrepancy: discrepancy
             });
         }
     }
@@ -490,11 +504,17 @@ function createContextList(contexts, itemStyle = []) {
         elCon.classList.add("mdl-list__item", "job-list-item", ...itemStyle);
         const item = getItemContainer(context);
         item.classList.add("mdl-list__item-primary-content");
-        const icon = document.createElement("I");
-        icon.textContent = getStateIcon(context.state);
-        icon.classList.add("state", context.state, "material-icons", "mdl-list__item-icon");
-        item.appendChild(icon);
+        item.appendChild(createIcon(
+            getStateIcon(context.state),
+            "",
+            ["state", context.state, "mdl-list__item-icon"]));
         item.appendChild(document.createTextNode(context.context));
+        if (context.discrepancy) {
+            item.appendChild(createIcon(
+                "warning",
+                context.discrepancy,
+                ["state", "context-warning", "mdl-list__item-icon"]));
+        }
         elCon.appendChild(item);
         if (context.description) {
             const itemDesc = document.createElement("SPAN");
@@ -816,7 +836,7 @@ function createPRCardBody(pr, builds, queries) {
  */
 function compareJobFn(a, b) {
     const stateToPrio = new Map();
-    stateToPrio["success"] = 3;
+    stateToPrio["success"] = stateToPrio["expected"] = 3;
     stateToPrio["aborted"] = 2;
     stateToPrio["pending"] = stateToPrio["triggered"] = 1;
     stateToPrio["error"] = stateToPrio["failure"] = 0;
