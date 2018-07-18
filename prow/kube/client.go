@@ -568,14 +568,24 @@ func (c *Client) CreatePod(p v1.Pod) (Pod, error) {
 	return retPod, err
 }
 
-// GetLog returns the log of the test container in the specified pod, in the client's default namespace.
+// GetLog returns the log of the default container in the specified pod, in the client's default namespace.
 //
-// Analogous to kubectl logs POD -c test
+// Analogous to kubectl logs pod
 func (c *Client) GetLog(pod string) ([]byte, error) {
 	c.log("GetLog", pod)
 	return c.requestRetry(&request{
+		path: fmt.Sprintf("/api/v1/namespaces/%s/pods/%s/log", c.namespace, pod),
+	})
+}
+
+// GetContainerLog returns the log of a container in the specified pod, in the client's default namespace.
+//
+// Analogous to kubectl logs pod -c container
+func (c *Client) GetContainerLog(pod, container string) ([]byte, error) {
+	c.log("GetContainerLog", pod)
+	return c.requestRetry(&request{
 		path:  fmt.Sprintf("/api/v1/namespaces/%s/pods/%s/log", c.namespace, pod),
-		query: map[string]string{"container": TestContainerName},
+		query: map[string]string{"container": container},
 	})
 }
 
