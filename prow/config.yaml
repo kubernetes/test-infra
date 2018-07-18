@@ -257,6 +257,20 @@ tide:
     - do-not-merge/invalid-owners-file
     - do-not-merge/work-in-progress
     - needs-ok-to-test
+  - repos:
+    - kubernetes-incubator/service-catalog
+    labels:
+    - lgtm
+    - approved
+    - "cncf-cla: yes"
+    - LGTM1
+    - LGTM2
+    missingLabels:
+    - do-not-merge/hold
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/work-in-progress
+    - needs-ok-to-test
+    - needs-rebase
   merge_method:
     kubeflow: squash
     kubernetes/charts: squash
@@ -3263,7 +3277,7 @@ presubmits:
     agent: kubernetes
     context: pull-service-catalog-unit
     always_run: true
-    skip_report: true
+    skip_report: false
     rerun_command: "/test pull-service-catalog-unit"
     trigger: "(?m)^/test (all|pull-service-catalog-unit)\\s*"
     decorate: true

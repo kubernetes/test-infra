@@ -424,6 +424,7 @@ plugins:
   - help
   - hold
   - trigger
+  - verify-owners
   - wip
 
   kubernetes-sigs:
@@ -550,6 +551,10 @@ external_plugins:
     events:
       - pull_request
   client-go/unofficial-docs:
+  - name: needs-rebase
+    events:
+      - pull_request
+  kubernetes-incubator/service-catalog:
   - name: needs-rebase
     events:
       - pull_request
