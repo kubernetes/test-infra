@@ -18,3 +18,28 @@ presubmits:
         env:
         - name: NO_DOCKER
           value: "1"
+  - name: pull-service-catalog-e2e
+    agent: kubernetes
+    context: pull-service-catalog-e2e
+    always_run: true
+    skip_report: true
+    rerun_command: "/test pull-service-catalog-e2e"
+    trigger: "(?m)^/test (all|pull-service-catalog-e2e)\\s*"
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        command:
+        - make
+        args:
+        - --repo=github.com/kubernetes-incubator/service-catalog
+        - --timeout=90
+        - --scenario=execute
+        - --
+        - make
+        - test-e2e
+        env:
+        - name: KUBECONFIG
+          value: "~/.kube/config"
+        - name: SERVICECATALOGCONFIG
+          value: "~/.kube/config"
