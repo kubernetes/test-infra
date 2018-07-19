@@ -58,7 +58,7 @@ func (o Options) Run() error {
 		select {
 		case s := <-interrupt:
 			logrus.Errorf("Received an interrupt: %s", s)
-			o.doUpload(spec, false)
+			o.doUpload(spec, false, true)
 		}
 	}()
 
@@ -108,6 +108,7 @@ func (o Options) Run() error {
 	signal.Ignore(os.Interrupt, syscall.SIGTERM)
 
 	passed := false
+	aborted := false
 	returnCodeData, err := ioutil.ReadFile(o.WrapperOptions.MarkerFile)
 	if err != nil {
 		logrus.WithError(err).Warn("Could not read return code from marker file")
@@ -117,22 +118,34 @@ func (o Options) Run() error {
 			logrus.WithError(err).Warn("Failed to parse process return code")
 		}
 		passed = returnCode == 0 && err == nil
+		aborted = returnCode == 130
 	}
 
-	return o.doUpload(spec, passed)
+	return o.doUpload(spec, passed, aborted)
 }
 
-func (o Options) doUpload(spec *downwardapi.JobSpec, passed bool) error {
+func (o Options) doUpload(spec *downwardapi.JobSpec, passed, aborted bool) error {
 	uploadTargets := map[string]gcs.UploadFunc{
 		"build-log.txt": gcs.FileUpload(o.WrapperOptions.ProcessLog),
 	}
+	var result string
+	switch {
+	case passed:
+		result = "SUCCESS"
+	case aborted:
+		result = "ABORTED"
+	default:
+		result = "FAILURE"
+	}
 
 	finished := struct {
-		Timestamp int64 `json:"timestamp"`
-		Passed    bool  `json:"passed"`
+		Timestamp int64  `json:"timestamp"`
+		Passed    bool   `json:"passed"`
+		Result    string `json:"result"`
 	}{
 		Timestamp: time.Now().Unix(),
 		Passed:    passed,
+		Result:    result,
 	}
 	finishedData, err := json.Marshal(&finished)
 	if err != nil {

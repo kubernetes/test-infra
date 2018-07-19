@@ -36,6 +36,9 @@ const (
 	// InternalErrorCode is what we write to the marker file to
 	// indicate that we failed to start the wrapped command
 	InternalErrorCode = 127
+	// AbortedErrorCode is what we write to the marker file to
+	// indicate that we were terminated via a signal.
+	AbortedErrorCode = 130
 
 	// DefaultTimeout is the default timeout for the test
 	// process before SIGINT is sent
@@ -50,6 +53,9 @@ var (
 	// errTimedOut is used as the command's error when the command
 	// is terminated after the timeout is reached
 	errTimedOut = errors.New("process timed out")
+	// errAborted is used as the command's error when the command
+	// is shut down by an external signal
+	errAborted = errors.New("process aborted")
 )
 
 // Run executes the test process then writes the exit code to the marker file.
@@ -104,7 +110,7 @@ func (o Options) ExecuteProcess() (int, error) {
 	timeout := optionOrDefault(o.Timeout, DefaultTimeout)
 	gracePeriod := optionOrDefault(o.GracePeriod, DefaultGracePeriod)
 	var commandErr error
-	cancelled := false
+	cancelled, aborted := false, false
 	done := make(chan error)
 	go func() {
 		done <- command.Wait()
@@ -119,13 +125,19 @@ func (o Options) ExecuteProcess() (int, error) {
 	case s := <-interrupt:
 		logrus.Errorf("Entrypoint received interrupt: %v", s)
 		cancelled = true
+		aborted = true
 		gracefullyTerminate(command, done, gracePeriod)
 	}
 
 	var returnCode int
 	if cancelled {
-		returnCode = InternalErrorCode
-		commandErr = errTimedOut
+		if aborted {
+			commandErr = errAborted
+			returnCode = AbortedErrorCode
+		} else {
+			commandErr = errTimedOut
+			returnCode = InternalErrorCode
+		}
 	} else {
 		if status, ok := command.ProcessState.Sys().(syscall.WaitStatus); ok {
 			returnCode = status.ExitStatus()
