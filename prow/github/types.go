@@ -699,6 +699,7 @@ type GenericCommentEvent struct {
 	IssueState   string
 	IssueBody    string
 	IssueHTMLURL string
+	GUID         string
 }
 
 // Milestone is a milestone defined on a github repository

@@ -269,25 +269,7 @@ func runOrSkipRequested(c client, pr *github.PullRequest, requestedJobs []config
 	var errors []error
 	for _, job := range toRunJobs {
 		c.Logger.Infof("Starting %s build.", job.Name)
-		kr := kube.Refs{
-			Org:     org,
-			Repo:    repo,
-			BaseRef: pr.Base.Ref,
-			BaseSHA: baseSHA,
-			Pulls: []kube.Pull{
-				{
-					Number: number,
-					Author: pr.User.Login,
-					SHA:    pr.Head.SHA,
-				},
-			},
-		}
-		labels := make(map[string]string)
-		for k, v := range job.Labels {
-			labels[k] = v
-		}
-		labels[github.EventGUID] = eventGUID
-		pj := pjutil.NewProwJob(pjutil.PresubmitSpec(job, kr), labels)
+		pj := pjutil.NewPresubmit(*pr, baseSHA, job, eventGUID)
 		c.Logger.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
 		if _, err := c.KubeClient.CreateProwJob(pj); err != nil {
 			errors = append(errors, err)
