@@ -131,6 +131,29 @@ func (ja *JobAgent) ProwJobs() []kube.ProwJob {
 
 var jobNameRE = regexp.MustCompile(`^([\w-]+)-(\d+)$`)
 
+// GetJobLogByPodName returns the job logs using the podName, works only for kubernetes agents
+func (ja *JobAgent) GetJobLogByPodName(podName string) ([]byte, error) {
+	var j kube.ProwJob
+	ja.mut.Lock()
+	job, ok := ja.jobsMap[podName]
+	if ok {
+		idMap, ok := ja.jobsIDMap[job.Job]
+		if ok {
+			j, ok = idMap[job.BuildID]
+		} else {
+			return nil, fmt.Errorf("no such id for job: %s", job.Job)
+		}
+	} else {
+		return nil, fmt.Errorf("no such job found for pod: %s", podName)
+	}
+	ja.mut.Unlock()
+	client, ok := ja.pkcs[j.ClusterAlias()]
+	if !ok {
+		return nil, fmt.Errorf("cannot get logs for prowjob %q with agent %q: unknown cluster alias %q", j.ObjectMeta.Name, j.Spec.Agent, j.ClusterAlias())
+	}
+	return client.GetLog(podName)
+}
+
 // GetJobLog returns the job logs, works for both kubernetes and jenkins agent types.
 func (ja *JobAgent) GetJobLog(job, id string) ([]byte, error) {
 	var j kube.ProwJob
