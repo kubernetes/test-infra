@@ -2655,38 +2655,6 @@
       "sig-network"
     ]
   },
-  "ci-kubernetes-e2e-gci-gce-netd": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-netd.env",
-      "--extract=ci/latest",
-      "--gcp-node-image=gci",
-      "--gcp-zone=asia-southeast1-a",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[sig-network\\] --ginkgo.skip=\\[Slow\\]|\\[Flaky\\] --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-network"
-    ]
-  },
-  "ci-kubernetes-e2e-gci-gce-netd-calico": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-netd-calico.env",
-      "--extract=ci/latest",
-      "--gcp-node-image=gci",
-      "--gcp-zone=asia-southeast1-a",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[sig-network\\] --ginkgo.skip=\\[Slow\\]|\\[Flaky\\] --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-network"
-    ]
-  },
   "ci-kubernetes-e2e-gci-gce-proto": {
     "args": [
       "--check-leaked-resources",
@@ -5323,40 +5291,6 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-testing"
-    ]
-  },
-  "ci-kubernetes-e2e-ubuntu-gce-netd": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-netd.env",
-      "--extract=ci/latest",
-      "--gcp-zone=asia-southeast1-a",
-      "--image-family=ubuntu-gke-1604-lts",
-      "--image-project=ubuntu-os-gke-cloud",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[sig-network\\] --ginkgo.skip=\\[Slow\\]|\\[Flaky\\] --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-network"
-    ]
-  },
-  "ci-kubernetes-e2e-ubuntu-gce-netd-calico": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-netd-calico.env",
-      "--extract=ci/latest",
-      "--gcp-zone=asia-southeast1-a",
-      "--image-family=ubuntu-gke-1604-lts",
-      "--image-project=ubuntu-os-gke-cloud",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[sig-network\\] --ginkgo.skip=\\[Slow\\]|\\[Flaky\\] --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-network"
     ]
   },
   "ci-kubernetes-federation-build-1-8": {
