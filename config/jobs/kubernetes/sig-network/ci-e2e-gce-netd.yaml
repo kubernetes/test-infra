@@ -1,5 +1,7 @@
 presets:
-- env:
+- labels:
+    preset-kubernetes-e2e-enable-netd: "true"
+  env:
   - name: KUBE_CUSTOM_NETD_YAML
     # we want to keep extra spaces for the yaml file.
     value: |2+
@@ -140,6 +142,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-kubernetes-e2e-enable-netd: "true"
   spec:
     containers:
     - args:
@@ -162,6 +165,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-kubernetes-e2e-enable-netd: "true"
   spec:
     containers:
     - args:
@@ -187,6 +191,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-kubernetes-e2e-enable-netd: "true"
   spec:
     containers:
     - args:
@@ -210,6 +215,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-kubernetes-e2e-enable-netd: "true"
   spec:
     containers:
     - args:
