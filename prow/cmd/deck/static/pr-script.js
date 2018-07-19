@@ -268,21 +268,19 @@ function getFullPRContext(builds, contexts) {
                 context: context.Context,
                 description: context.Description,
                 state: context.State.toLowerCase(),
-                discrepancy: "Prow Job not found",
+                discrepancy: null,
         });
       }
     }
     if (builds) {
         for (let build of builds) {
-            let discrepancy = "Github context not found";
+            let discrepancy = null;
             // If Github context exits, check if mismatch or not.
             if (contextMap.has(build.context)) {
-                const githubContext = contextMap[build.context];
+                const githubContext = contextMap.get(build.context);
                 // TODO (qhuynh96): ProwJob's states and Github contexts states
                 // are not equivalent in some states.
-                if (githubContext.state === build.state) {
-                    discrepancy = null;
-                } else {
+                if (githubContext.state !== build.state) {
                     discrepancy = "Github context and Prow Job states mismatch";
                 }
             }
@@ -835,7 +833,7 @@ function createPRCardBody(pr, builds, queries) {
  * @return {number}
  */
 function compareJobFn(a, b) {
-    const stateToPrio = new Map();
+    const stateToPrio = [];
     stateToPrio["success"] = stateToPrio["expected"] = 3;
     stateToPrio["aborted"] = 2;
     stateToPrio["pending"] = stateToPrio["triggered"] = 1;
