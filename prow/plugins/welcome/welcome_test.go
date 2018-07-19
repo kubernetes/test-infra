@@ -31,7 +31,7 @@ import (
 // There has to be a better way to write tests like this.
 
 const (
-	testWelcomeMessage = "Welcome human! 🤖"
+	testWelcomeTemplate = "Welcome human! 🤖 {{.AuthorName}} {{.AuthorLogin}} {{.Repo}} {{.Org}}}"
 )
 
 type fakeClient struct {
@@ -119,6 +119,7 @@ func makeFakePullRequestEvent(owner, repo, author string, number int, action git
 			},
 			User: github.User{
 				Login: author,
+				Name:  author + "fullname",
 			},
 		},
 	}
@@ -191,7 +192,7 @@ func TestHandlePR(t *testing.T) {
 		fc.AddPR(tc.repoOwner, tc.repoName, tc.author, tc.prNumber)
 
 		// try handling it
-		if err := handlePR(c, event, testWelcomeMessage); err != nil {
+		if err := handlePR(c, event, testWelcomeTemplate); err != nil {
 			t.Fatalf("did not expect error handling PR for case '%s': %v", tc.name, err)
 		}
 

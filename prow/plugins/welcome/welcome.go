@@ -18,7 +18,9 @@ limitations under the License.
 package welcome
 
 import (
+	"bytes"
 	"fmt"
+	"html/template"
 
 	"github.com/sirupsen/logrus"
 
@@ -31,6 +33,14 @@ const (
 	pluginName = "welcome"
 )
 
+// PRInfo contains info used provided to the welcome message template
+type PRInfo struct {
+	Org         string
+	Repo        string
+	AuthorLogin string
+	AuthorName  string
+}
+
 func init() {
 	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
 }
@@ -41,8 +51,8 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 			Description: "The welcome plugin posts a welcoming message when it detects a user's first contribution to a repo.",
 			Config: map[string]string{
 				"": fmt.Sprintf(
-					"The welcome plugin is configured to post the following welcome message: %s.",
-					config.Welcome.Message,
+					"The welcome plugin is configured to post using following welcome template: %s.",
+					config.Welcome.MessageTemplate,
 				),
 			},
 		},
@@ -67,10 +77,10 @@ func getClient(pc plugins.PluginClient) client {
 }
 
 func handlePullRequest(pc plugins.PluginClient, pre github.PullRequestEvent) error {
-	return handlePR(getClient(pc), pre, pc.PluginConfig.Welcome.Message)
+	return handlePR(getClient(pc), pre, pc.PluginConfig.Welcome.MessageTemplate)
 }
 
-func handlePR(c client, pre github.PullRequestEvent, welcomeMessage string) error {
+func handlePR(c client, pre github.PullRequestEvent, welcomeTemplate string) error {
 	// Only consider newly opened PRs
 	if pre.Action != github.PullRequestActionOpened {
 		return nil
@@ -88,7 +98,24 @@ func handlePR(c client, pre github.PullRequestEvent, welcomeMessage string) erro
 
 	// if there is exactly one result, this is the first! post the welcome comment
 	if len(issues) == 1 {
-		c.GitHubClient.CreateComment(org, repo, pre.PullRequest.Number, welcomeMessage)
+		// load the template, and run it over the PR info
+		parsedTemplate, err := template.New("welcome").Parse(welcomeTemplate)
+		if err != nil {
+			return err
+		}
+		var msgBuffer bytes.Buffer
+		err = parsedTemplate.Execute(&msgBuffer, PRInfo{
+			Org:         org,
+			Repo:        repo,
+			AuthorLogin: user,
+			AuthorName:  pre.PullRequest.User.Name,
+		})
+		if err != nil {
+			return err
+		}
+
+		// actually post the comment
+		return c.GitHubClient.CreateComment(org, repo, pre.PullRequest.Number, msgBuffer.String())
 	}
 
 	return nil

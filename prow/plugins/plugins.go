@@ -442,9 +442,10 @@ type MergeWarning struct {
 
 // Welcome is config for the welcome plugin
 type Welcome struct {
-	// Message is the welcome message to post on new-contributor PRs
+	// MessageTemplate is the welcome message template to post on new-contributor PRs
+	// For the info struct see prow/plugins/welcome/welcome.go's PRInfo
 	// TODO(bentheelder): make this be configurable per-repo?
-	Message string `json:"message,omitempty"`
+	MessageTemplate string `json:"message_template,omitempty"`
 }
 
 // TriggerFor finds the Trigger for a repo, if one exists
