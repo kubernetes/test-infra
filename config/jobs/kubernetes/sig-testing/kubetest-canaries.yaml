@@ -313,6 +313,8 @@ periodics:
       env:
       - name: DOCKER_IN_DOCKER_ENABLED
         value: "true"
+      - name: KUBEMARK_BAZEL_BUILD
+        value: "y"
       volumeMounts:
       - name: docker-graph
         mountPath: /docker-graph
