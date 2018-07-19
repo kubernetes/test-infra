@@ -1985,25 +1985,6 @@
       "sig-instrumentation"
     ]
   },
-  "ci-kubernetes-e2e-gce-scalability-canary": {
-    "args": [
-      "--cluster=e2e-big-canary",
-      "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability.env",
-      "--extract=ci/latest",
-      "--gcp-nodes=100",
-      "--gcp-project=google.com:k8s-jenkins-scalability",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true --minStartupPods=8",
-      "--timeout=120m",
-      "--use-logexporter"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
   "ci-kubernetes-e2e-gce-scale-correctness": {
     "args": [
       "--cluster=gce-scale-cluster",
@@ -3322,25 +3303,6 @@
       "sig-cli"
     ]
   },
-  "ci-kubernetes-e2e-gke-canary": {
-    "args": [
-      "--check-leaked-resources",
-      "--cluster=",
-      "--deployment=gke",
-      "--extract=gke-latest-1.8",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-b",
-      "--ginkgo-parallel",
-      "--gke-environment=staging",
-      "--provider=gke",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=50m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
   "ci-kubernetes-e2e-gke-device-plugin-gpu": {
     "args": [
       "--check-leaked-resources",
@@ -4624,26 +4586,6 @@
       "sig-aws"
     ]
   },
-  "ci-kubernetes-e2e-kops-aws-canary": {
-    "args": [
-      "--cluster=e2e-kops-aws-canary.test-cncf-aws.k8s.io",
-      "--deployment=kops",
-      "--env=KUBE_SSH_USER=admin",
-      "--extract=ci/latest",
-      "--ginkgo-parallel",
-      "--kops-etcd-version=3.1.10",
-      "--kops-master-count=3",
-      "--kops-multiple-zones",
-      "--kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt",
-      "--provider=aws",
-      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
   "ci-kubernetes-e2e-kops-aws-channelalpha": {
     "args": [
       "--cluster=e2e-kops-aws-channelalpha.test-cncf-aws.k8s.io",
@@ -4880,23 +4822,6 @@
       "--cluster=e2e-kops-gce.k8s.local",
       "--deployment=kops",
       "--env=KOPS_PUBLISH_GREEN_PATH=gs://kops-ci/bin/latest-ci-gce-green.txt",
-      "--extract=ci/latest",
-      "--ginkgo-parallel=30",
-      "--kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt",
-      "--kops-zones=us-central1-c",
-      "--provider=gce",
-      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-aws"
-    ]
-  },
-  "ci-kubernetes-e2e-kops-gce-canary": {
-    "args": [
-      "--cluster=e2e-kops-gce-canary.k8s.local",
-      "--deployment=kops",
       "--extract=ci/latest",
       "--ginkgo-parallel=30",
       "--kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt",
@@ -5277,22 +5202,6 @@
       "sig-cluster-lifecycle"
     ]
   },
-  "ci-kubernetes-e2e-node-canary": {
-    "args": [
-      "--deployment=node",
-      "--gcp-zone=us-central1-f",
-      "--node-args=--images=cos-stable-60-9592-76-0 --image-project=cos-cloud",
-      "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
-      "--node-tests=true",
-      "--provider=gce",
-      "--test_args=--nodes=8 --focus=\"\\[NodeConformance\\]\" --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
-      "--timeout=90m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
   "ci-kubernetes-federation-build-1-8": {
     "args": [
       "--allow-dup",
@@ -5476,29 +5385,6 @@
       "--prow"
     ],
     "scenario": "kubernetes_verify",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "ci-kubernetes-kubemark-100-canary": {
-    "args": [
-      "--build=bazel",
-      "--cluster=kubemark-100-canary",
-      "--env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env",
-      "--extract=ci/latest",
-      "--gcp-master-size=n1-standard-2",
-      "--gcp-node-size=n1-standard-4",
-      "--gcp-nodes=3",
-      "--gcp-project=k8s-jenkins-gci-kubemark",
-      "--gcp-zone=us-central1-f",
-      "--kubemark",
-      "--kubemark-nodes=100",
-      "--provider=gce",
-      "--test=false",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true",
-      "--timeout=240m"
-    ],
-    "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-testing"
     ]
@@ -5963,33 +5849,6 @@
       "sig-gcp"
     ]
   },
-  "metrics-bigquery": {
-    "args": [
-      "test-infra/metrics/bigquery.py",
-      "--",
-      "--bucket=gs://k8s-metrics",
-      "--backfill-days=90"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "metrics-kettle": {
-    "args": [
-      "test-infra/kettle/monitor.py",
-      "--",
-      "--stale=6",
-      "--table",
-      "k8s-gubernator:build.all",
-      "k8s-gubernator:build.week",
-      "k8s-gubernator:build.day"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
   "periodic-kubernetes-bazel-build-1-10": {
     "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
     "args": [],
@@ -6373,31 +6232,7 @@
       "sig-testing"
     ]
   },
-  "pull-kubernetes-bazel-build-canary": {
-    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
-    "args": [],
-    "scenario": "kubernetes_bazel",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
   "pull-kubernetes-bazel-test": {
-    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
-    "args": [],
-    "scenario": "kubernetes_bazel",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "pull-kubernetes-bazel-test-canary": {
-    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
-    "args": [],
-    "scenario": "kubernetes_bazel",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "pull-kubernetes-bazel-test-integration-canary": {
     "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
     "args": [],
     "scenario": "kubernetes_bazel",
