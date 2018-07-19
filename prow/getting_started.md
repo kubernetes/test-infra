@@ -160,7 +160,7 @@ get-cluster-credentials:
     gcloud container clusters get-credentials "$(CLUSTER)" --project="$(PROJECT)" --zone="$(ZONE)"
 
 update-plugins: get-cluster-credentials
-    kubectl create configmap plugins --from-file=plugins=plugins.yaml --dry-run -o yaml | kubectl replace configmap plugins -f -
+    kubectl create configmap plugins --from-file=plugins.yaml=plugins.yaml --dry-run -o yaml | kubectl replace configmap plugins -f -
 ```
 
 Now when you open a PR, it will automatically be labelled with a `size/*`
@@ -213,14 +213,14 @@ bazel run //prow/cmd/config -- --config-path=path/to/config.yaml
 Now run the following to update the configmap.
 
 ```
-kubectl create configmap config --from-file=config=path/to/config.yaml --dry-run -o yaml | kubectl replace configmap config -f -
+kubectl create configmap config --from-file=config.yaml=path/to/config.yaml --dry-run -o yaml | kubectl replace configmap config -f -
 ```
 
 We use a make rule:
 
 ```Make
 update-config: get-cluster-credentials
-    kubectl create configmap config --from-file=config=config.yaml --dry-run -o yaml | kubectl replace configmap config -f -
+    kubectl create configmap config --from-file=config.yaml=config.yaml --dry-run -o yaml | kubectl replace configmap config -f -
 ```
 
 Presubmits and postsubmits are triggered by the `trigger` plugin. Be sure to
