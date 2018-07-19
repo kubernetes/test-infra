@@ -1280,6 +1280,10 @@ func TestSync(t *testing.T) {
 			kc:     fkc,
 			logger: logrus.WithField("controller", "sync"),
 			sc:     sc,
+			changedFiles: &changedFilesAgent{
+				ghc:             fgc,
+				nextChangeCache: make(map[changeCacheKey][]string),
+			},
 		}
 
 		if err := c.Sync(); err != nil {
@@ -1759,11 +1763,11 @@ func TestPresubmitsByPull(t *testing.T) {
 	testcases := []struct {
 		name string
 
-		initialChangeCache map[string][]string
+		initialChangeCache map[changeCacheKey][]string
 		presubmits         []config.Presubmit
 
 		expectedPresubmits  map[int]sets.String
-		expectedChangeCache map[string][]string
+		expectedChangeCache map[changeCacheKey][]string
 	}{
 		{
 			name: "no matching presubmits",
@@ -1776,7 +1780,7 @@ func TestPresubmitsByPull(t *testing.T) {
 					Context: "never",
 				},
 			},
-			expectedChangeCache: map[string][]string{"org/repo#100:sha": {"CHANGED"}},
+			expectedChangeCache: map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"CHANGED"}},
 			expectedPresubmits:  map[int]sets.String{},
 		},
 		{
@@ -1791,7 +1795,7 @@ func TestPresubmitsByPull(t *testing.T) {
 					Context: "never",
 				},
 			},
-			initialChangeCache: map[string][]string{"org/repo#100:sha": {"FILE"}},
+			initialChangeCache: map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"FILE"}},
 			expectedPresubmits: map[int]sets.String{},
 		},
 		{
@@ -1805,8 +1809,8 @@ func TestPresubmitsByPull(t *testing.T) {
 					Context: "never",
 				},
 			},
-			initialChangeCache:  map[string][]string{"org/repo#100:sha": {"FILE"}},
-			expectedChangeCache: map[string][]string{"org/repo#100:sha": {"FILE"}},
+			initialChangeCache:  map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"FILE"}},
+			expectedChangeCache: map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"FILE"}},
 			expectedPresubmits:  map[int]sets.String{},
 		},
 		{
@@ -1874,7 +1878,7 @@ func TestPresubmitsByPull(t *testing.T) {
 				},
 			},
 			expectedPresubmits:  map[int]sets.String{100: sets.NewString("presubmit", "always")},
-			expectedChangeCache: map[string][]string{"org/repo#100:sha": {"CHANGED"}},
+			expectedChangeCache: map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"CHANGED"}},
 		},
 		{
 			name: "run_if_changed (cached)",
@@ -1891,9 +1895,9 @@ func TestPresubmitsByPull(t *testing.T) {
 					Context: "never",
 				},
 			},
-			initialChangeCache:  map[string][]string{"org/repo#100:sha": {"FILE"}},
+			initialChangeCache:  map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"FILE"}},
 			expectedPresubmits:  map[int]sets.String{100: sets.NewString("presubmit", "always")},
-			expectedChangeCache: map[string][]string{"org/repo#100:sha": {"FILE"}},
+			expectedChangeCache: map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"FILE"}},
 		},
 		{
 			name: "run_if_changed (cached) (skippable)",
@@ -1910,9 +1914,9 @@ func TestPresubmitsByPull(t *testing.T) {
 					Context: "never",
 				},
 			},
-			initialChangeCache:  map[string][]string{"org/repo#100:sha": {"FILE"}},
+			initialChangeCache:  map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"FILE"}},
 			expectedPresubmits:  map[int]sets.String{100: sets.NewString("always")},
-			expectedChangeCache: map[string][]string{"org/repo#100:sha": {"FILE"}},
+			expectedChangeCache: map[changeCacheKey][]string{{number: 100, sha: "sha"}: {"FILE"}},
 		},
 	}
 
@@ -1920,39 +1924,42 @@ func TestPresubmitsByPull(t *testing.T) {
 		t.Logf("Starting test case: %q", tc.name)
 
 		if tc.initialChangeCache == nil {
-			tc.initialChangeCache = map[string][]string{}
+			tc.initialChangeCache = map[changeCacheKey][]string{}
 		}
 		if tc.expectedChangeCache == nil {
-			tc.expectedChangeCache = map[string][]string{}
+			tc.expectedChangeCache = map[changeCacheKey][]string{}
 		}
 
 		cfg := &config.Config{}
 		cfg.SetPresubmits(map[string][]config.Presubmit{
-			"org/repo": tc.presubmits,
-			"foo/bar":  {{Context: "wrong-repo", AlwaysRun: true}},
+			"/":       tc.presubmits,
+			"foo/bar": {{Context: "wrong-repo", AlwaysRun: true}},
 		})
 		cfgAgent := &config.Agent{}
 		cfgAgent.Set(cfg)
 		sp := &subpool{
-			org:    "org",
-			repo:   "repo",
 			branch: "master",
 			prs:    []PullRequest{samplePR},
 		}
 		c := &Controller{
-			ca:               cfgAgent,
-			fileChangesCache: tc.initialChangeCache,
-			ghc:              &fgc{},
+			ca:  cfgAgent,
+			ghc: &fgc{},
+			changedFiles: &changedFilesAgent{
+				ghc:             &fgc{},
+				changeCache:     tc.initialChangeCache,
+				nextChangeCache: make(map[changeCacheKey][]string),
+			},
 		}
 		presubmits, err := c.presubmitsByPull(sp)
 		if err != nil {
 			t.Fatalf("unexpected error from presubmitsByPull: %v", err)
 		}
+		c.changedFiles.prune()
 		if !reflect.DeepEqual(presubmits, tc.expectedPresubmits) {
 			t.Errorf("expected presubmit mapping: %v,\nbut got %v\n", tc.expectedPresubmits, presubmits)
 		}
-		if !reflect.DeepEqual(c.fileChangesCache, tc.expectedChangeCache) {
-			t.Errorf("expected file change cache: %v,\nbut got %v\n", tc.expectedChangeCache, c.fileChangesCache)
+		if got := c.changedFiles.changeCache; !reflect.DeepEqual(got, tc.expectedChangeCache) {
+			t.Errorf("expected file change cache: %v,\nbut got %v\n", tc.expectedChangeCache, got)
 		}
 	}
 }
