@@ -19,6 +19,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"time"
 
 	resources "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
 	"github.com/Azure/go-autorest/autorest"
@@ -208,6 +209,7 @@ func getClient(env azure.Environment, subscriptionID, tenantID string, armSpt *a
 
 	authorizer := autorest.NewBearerAuthorizer(armSpt)
 	c.deploymentsClient.Authorizer = authorizer
+	c.deploymentsClient.PollingDuration = 60 * time.Minute
 	c.groupsClient.Authorizer = authorizer
 
 	return c
