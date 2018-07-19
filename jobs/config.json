@@ -2620,22 +2620,6 @@
       "sig-network"
     ]
   },
-  "ci-kubernetes-e2e-gci-gce-netd": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-netd.env",
-      "--extract=ci/latest",
-      "--gcp-node-image=gci",
-      "--gcp-zone=asia-southeast1-a",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[k8s.io\\]\\sNetworking.*\\[Conformance\\] --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-network"
-    ]
-  },
   "ci-kubernetes-e2e-gci-gce-proto": {
     "args": [
       "--check-leaked-resources",
