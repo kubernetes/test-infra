@@ -46,12 +46,12 @@ presets:
         kind: ConfigMap
         apiVersion: v1
         metadata:
-          name: netd-cni-config
+          name: netd-config
           namespace: kube-system
           labels:
             addonmanager.kubernetes.io/mode: EnsureExists
         data:
-          cni_network_config: |-
+          cni_spec_template: |-
             {
               "name": "k8s-pod-network",
               "cniVersion": "0.3.1",
@@ -63,9 +63,7 @@ presets:
                       "type": "host-local",
                       "ranges": [
                         [
-                          {
-                            "subnet": "%s"
-                          }
+                          {"subnet": podCidr}
                         ]
                       ],
                       "routes": [
@@ -82,6 +80,9 @@ presets:
                 }
               ]
             }
+          cni_spec_name: "10-k8s-ptp.conflist"
+          enable_policy_routing: "true"
+          enable_masquerade: "true"
         ---
         kind: DaemonSet
         apiVersion: extensions/v1beta1
@@ -106,24 +107,47 @@ presets:
               nodeSelector:
                 beta.kubernetes.io/kube-netd-ready: "true"
               hostNetwork: true
-              containers:
+              initContainers:
               - image: gcr.io/google-containers/netd-amd64:latest
-                name: netd
-                securityContext:
-                  privileged: true
+                name: install-cni
+                command: ["sh", "/install-cni.sh"]
                 env:
-                  - name: NETD_CNI_CONFIG_PATH
-                    value: "/host/etc/cni/net.d/10-k8s-ptp.conflist"
-                  - name: NETD_CNI_NETWORK_CONFIG_TEMPLATE
+                  - name: CNI_SPEC_TEMPLATE
                     valueFrom:
                       configMapKeyRef:
-                        name: netd-cni-config
-                        key: cni_network_config
-                args:
-                - -logtostderr
+                        name: netd-config
+                        key: cni_spec_template
+                  - name: CNI_SPEC_NAME
+                    valueFrom:
+                      configMapKeyRef:
+                        name: netd-config
+                        key: cni_spec_name
                 volumeMounts:
                 - mountPath: /host/etc/cni/net.d
                   name: cni-net-dir
+              containers:
+              - image: gcr.io/google-containers/netd-amd64:latest
+                name: netd
+                imagePullPolicy: Always
+                securityContext:
+                  privileged: true
+                  capabilities:
+                    add: ["NET_ADMIN"]
+                args:
+                - --enable-policy-routing=$(ENABLE_POLICY_ROUTING)
+                - --enable-masquerade=$(ENABLE_MASQUERADE)
+                - --logtostderr
+                env:
+                  - name: ENABLE_POLICY_ROUTING
+                    valueFrom:
+                      configMapKeyRef:
+                        name: netd-config
+                        key: enable_policy_routing
+                  - name: ENABLE_MASQUERADE
+                    valueFrom:
+                      configMapKeyRef:
+                        name: netd-config
+                        key: enable_masquerade
               volumes:
               - name: cni-net-dir
                 hostPath:
