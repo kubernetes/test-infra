@@ -250,6 +250,59 @@ function createSearchCard() {
 }
 
 /**
+ * GetFullPRContexts gathers build jobs and pr contexts. It firstly takes
+ * all pr contexts and only replaces contexts that have existing Prow Jobs. Tide
+ * context will be omitted from the list.
+ * @param builds
+ * @param contexts
+ * @returns {Array}
+ */
+function getFullPRContext(builds, contexts) {
+    const contextMap = new Map();
+    if (contexts) {
+        for (let context of contexts) {
+            if (context.Context === "tide") {
+                continue;
+            }
+            contextMap.set(context.Context, {
+                context: context.Context,
+                description: context.Description,
+                state: context.State.toLowerCase(),
+                discrepancy: "Prow Job not found",
+        });
+      }
+    }
+    if (builds) {
+        for (let build of builds) {
+            let discrepancy = "Github context not found";
+            // If Github context exits, check if mismatch or not.
+            if (contextMap.has(build.context)) {
+                const githubContext = contextMap[build.context];
+                // TODO (qhuynh96): ProwJob's states and Github contexts states
+                // are not equivalent in some states.
+                if (githubContext.state === build.state) {
+                    discrepancy = null;
+                } else {
+                    discrepancy = "Github context and Prow Job states mismatch";
+                }
+            }
+            contextMap.set(build.context, {
+                context: build.context,
+                description: build.description,
+                state: build.state,
+                url: build.url,
+                discrepancy: discrepancy
+            });
+        }
+    }
+    const fullContexts = [];
+    for (let value of contextMap.values()) {
+        fullContexts.push(value);
+    }
+    return fullContexts;
+}
+
+/**
  * Loads Pr Status
  */
 function loadPrStatus(prData) {
@@ -260,15 +313,16 @@ function loadPrStatus(prData) {
 
     const container = document.querySelector("#main-container");
     container.appendChild(createSearchCard());
-    if (!prData.PullRequests || prData.PullRequests.length === 0) {
+    if (!prData.PullRequestsWithContexts || prData.PullRequestsWithContexts.length === 0) {
         const msg = createMessage("No open PRs found", "");
         container.appendChild(msg);
         return;
     }
-    for (let pr of prData.PullRequests) {
+    for (let prWithContext of prData.PullRequestsWithContexts) {
         // There might be multiple runs of jobs for a build.
         // allBuilds is sorted with the most recent builds first, so
         // we only need to keep the first build for each job name.
+        let pr = prWithContext.PullRequest;
         let seenJobs = {};
         let builds = [];
         for (let build of allBuilds) {
@@ -283,13 +337,15 @@ function loadPrStatus(prData) {
                 }
             }
         }
+        const githubContexts = prWithContext.Contexts;
+        const contexts = getFullPRContext(builds, githubContexts);
         const validQueries = [];
         for (let query of tideQueries) {
            if (query.matchPr(pr)) {
                validQueries.push(query.getQuery());
            }
         }
-        container.appendChild(createPRCard(pr, builds, validQueries, tideData.Pools));
+        container.appendChild(createPRCard(pr, contexts, validQueries, tideData.Pools));
     }
 }
 
@@ -339,7 +395,7 @@ function createTidePoolLabel(pr, tidePool) {
  */
 function createTitleLabel(isMerge, jobStatus, mergeAbility) {
     const label = document.createElement("SPAN");
-    label.classList.add("title-label", "mdl-shadow--2dp");
+    label.classList.add("title-label");
     if (isMerge) {
         label.textContent = "Merged";
         label.classList.add("merging");
@@ -408,12 +464,12 @@ function createPRCardTitle(pr, tidePools, jobStatus, mergeAbility) {
 }
 
 /**
- * Creates a list of jobs.
- * @param list
+ * Creates a list of contexts.
+ * @param contexts
  * @param itemStyle
  * @return {Element}
  */
-function createList(list, itemStyle = []) {
+function createContextList(contexts, itemStyle = []) {
     const container = document.createElement("UL");
     container.classList.add("mdl-list", "job-list");
     const getStateIcon = (state) => {
@@ -434,18 +490,39 @@ function createList(list, itemStyle = []) {
                 return "";
         }
     };
-    list.forEach(el => {
+    const getItemContainer = (context) => {
+        if (context.url) {
+            const item = document.createElement("A");
+            item.href = context.url;
+            return item;
+        } else {
+            return document.createElement("DIV");
+        }
+    };
+    contexts.forEach(context => {
         const elCon = document.createElement("LI");
         elCon.classList.add("mdl-list__item", "job-list-item", ...itemStyle);
-        const item = document.createElement("A");
+        const item = getItemContainer(context);
         item.classList.add("mdl-list__item-primary-content");
-        item.href = el.url;
-        const icon = document.createElement("I");
-        icon.textContent = getStateIcon(el.state);
-        icon.classList.add("state", el.state, "material-icons", "mdl-list__item-icon");
-        item.appendChild(icon);
-        item.appendChild(document.createTextNode(el.context));
+        item.appendChild(createIcon(
+            getStateIcon(context.state),
+            "",
+            ["state", context.state, "mdl-list__item-icon"]));
+        item.appendChild(document.createTextNode(context.context));
+        if (context.discrepancy) {
+            item.appendChild(createIcon(
+                "warning",
+                context.discrepancy,
+                ["state", "context-warning", "mdl-list__item-icon"]));
+        }
         elCon.appendChild(item);
+        if (context.description) {
+            const itemDesc = document.createElement("SPAN");
+            itemDesc.textContent = context.description;
+            itemDesc.style.color = "grey";
+            itemDesc.style.fontSize = "14px";
+            elCon.appendChild(itemDesc);
+        }
         container.appendChild(elCon);
     });
     return container;
@@ -502,10 +579,10 @@ function createJobStatus(builds) {
     // Job list
     let failedJobsList;
     if (failedJobs.length > 0) {
-        failedJobsList = createList(failedJobs);
+        failedJobsList = createContextList(failedJobs);
         statusContainer.appendChild(failedJobsList);
     }
-    const jobList = createList(builds);
+    const jobList = createContextList(builds);
     jobList.classList.add("hidden");
     status.addEventListener("click", () => {
         if (state === "unknown") {
@@ -547,6 +624,17 @@ function createMergeLabelCell(labels, notMissingLabel = false) {
     return cell;
 }
 
+function processLabelName(label) {
+    label = label.split(" ").join("");
+    if (label.startsWith("area/")) {
+        return "area";
+    } else if (label.startsWith("size/")) {
+        return label.slice(5);
+    } else {
+        return label;
+    }
+}
+
 /**
  * Appends labels to a container
  * @param {Element} container
@@ -558,7 +646,8 @@ function appendLabelsToContainer(container, labels) {
     }
     labels.forEach(label => {
         const labelEl = document.createElement("SPAN");
-        const labelName = label.split(" ").join("");
+
+        let labelName = processLabelName(label);
         labelEl.classList.add("merge-table-label", "mdl-shadow--2dp", "label", labelName);
         labelEl.textContent = label;
         container.appendChild(labelEl);
@@ -747,7 +836,7 @@ function createPRCardBody(pr, builds, queries) {
  */
 function compareJobFn(a, b) {
     const stateToPrio = new Map();
-    stateToPrio["success"] = 3;
+    stateToPrio["success"] = stateToPrio["expected"] = 3;
     stateToPrio["aborted"] = 2;
     stateToPrio["pending"] = stateToPrio["triggered"] = 1;
     stateToPrio["error"] = stateToPrio["failure"] = 0;
@@ -839,8 +928,10 @@ function jobStatus(builds) {
     }
     switch (builds[0].state) {
         case "success":
+        case "expected":
             return "succeeded";
         case "failure":
+        case "error":
             return "failed";
         default:
             return "pending";
