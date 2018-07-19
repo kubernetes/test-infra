@@ -1,5 +1,5 @@
 presubmits:
-  kubernetes/charts:
+  helm/charts:
   - name: pull-charts-e2e
     agent: kubernetes
     always_run: true

@@ -33,7 +33,6 @@ owners:
 
 approve:
 - repos:
-  - kubernetes/charts
   - kubernetes/cluster-registry
   - kubernetes/contrib
   - kubernetes/dashboard
@@ -69,6 +68,10 @@ approve:
   - bazelbuild
   implicit_self_approve: true
   review_acts_as_approve: true
+- repos:
+  - helm/charts
+  implicit_self_approve: true
+  lgtm_acts_as_approve: true
 
 lgtm:
 - repos:
@@ -211,9 +214,13 @@ plugins:
     - wip
     - trigger
 
-  kubernetes/charts:
+  helm/charts:
   - approve
+  - assign
   - blunderbuss
+  - cla
+  - hold
+  - lgtm
   - trigger
 
   kubernetes/client-go:

@@ -356,6 +356,7 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 	for _, job := range prowConfig.AllPresubmits([]string{
 		"bazelbuild/rules_k8s",
 		"google/cadvisor",
+		"helm/charts",
 		"kubeflow/caffe2-operator",
 		"kubeflow/examples",
 		"kubeflow/experimental-beagle",
@@ -373,7 +374,6 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 		"kubernetes-sigs/cluster-api",
 		"kubernetes-sigs/cluster-api-provider-openstack",
 		"kubernetes-sigs/poseidon",
-		"kubernetes/charts",
 		"kubernetes/cluster-registry",
 		"kubernetes/federation",
 		"kubernetes/heapster",
