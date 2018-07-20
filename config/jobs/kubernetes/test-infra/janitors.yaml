@@ -44,6 +44,8 @@ periodics:
       - --service-account=/etc/service-account/service-account.json
       - --upload=gs://kubernetes-jenkins/logs
       - --scenario=kubernetes_janitor
+      - --
+      - --mode=ci
       env:
       image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
       resources:

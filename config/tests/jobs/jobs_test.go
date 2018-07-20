@@ -724,7 +724,7 @@ func hasArg(wanted string, args []string) bool {
 	return false
 }
 
-func checkScenarioArgs(jobName string, args []string) error {
+func checkScenarioArgs(jobName, imageName string, args []string) error {
 	// env files/scenarios validation
 	scenarioArgs := false
 	scenario := ""
@@ -745,10 +745,6 @@ func checkScenarioArgs(jobName string, args []string) error {
 		}
 	}
 
-	if !scenarioArgs {
-		return nil
-	}
-
 	if scenario == "" {
 		entry := jobName
 		if strings.HasPrefix(jobName, "pull-security-kubernetes") {
@@ -759,10 +755,23 @@ func checkScenarioArgs(jobName string, args []string) error {
 			// the unit test is handled in jobs/config_test.py
 			return nil
 		}
-		return fmt.Errorf("job %s: missing --scenario", jobName)
+
+		if !scenarioArgs {
+			if strings.Contains(imageName, "kubekins-e2e") ||
+				strings.Contains(imageName, "bootstrap") ||
+				strings.Contains(imageName, "gcloud-in-go") {
+				return fmt.Errorf("job %s: image %s uses bootstrap.py and need scenario args", jobName, imageName)
+			}
+			return nil
+		}
+
 	} else {
 		if _, err := os.Stat(fmt.Sprintf("../../../scenarios/%s.py", scenario)); err != nil {
 			return fmt.Errorf("job %s: scenario %s does not exist: %s", jobName, scenario, err)
+		}
+
+		if !scenarioArgs {
+			return fmt.Errorf("job %s: set --scenario and will need scenario args", jobName)
 		}
 	}
 
@@ -867,24 +876,24 @@ func checkScenarioArgs(jobName string, args []string) error {
 // TestValidScenarioArgs makes sure all scenario args in job configs are valid
 func TestValidScenarioArgs(t *testing.T) {
 	for _, job := range c.AllPresubmits(nil) {
-		if job.Spec != nil {
-			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Args); err != nil {
+		if job.Spec != nil && !job.Decorate {
+			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Image, job.Spec.Containers[0].Args); err != nil {
 				t.Errorf("Invalid Scenario Args : %s", err)
 			}
 		}
 	}
 
 	for _, job := range c.AllPostsubmits(nil) {
-		if job.Spec != nil {
-			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Args); err != nil {
+		if job.Spec != nil && !job.Decorate {
+			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Image, job.Spec.Containers[0].Args); err != nil {
 				t.Errorf("Invalid Scenario Args : %s", err)
 			}
 		}
 	}
 
 	for _, job := range c.AllPeriodics() {
-		if job.Spec != nil {
-			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Args); err != nil {
+		if job.Spec != nil && !job.Decorate {
+			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Image, job.Spec.Containers[0].Args); err != nil {
 				t.Errorf("Invalid Scenario Args : %s", err)
 			}
 		}
