@@ -263,7 +263,7 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 			return
 		}
 
-		wantState, wantDesc := expectedStatus(queryMap, pr, pool, &cr)
+		wantState, wantDesc := expectedStatus(queryMap, pr, pool, cr)
 		var actualState githubql.StatusState
 		var actualDesc string
 		for _, ctx := range contexts {
