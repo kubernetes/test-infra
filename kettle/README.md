@@ -22,3 +22,7 @@ When code changes, run 'make push update' to deploy a new version. If it fails,
 use "make rollback" to revert to the previous deploy.
 
 If deployment.yaml changes, run 'make push deploy'.
+
+Troubleshooting
+==============
+Occasionally we run into a situation where there's no data in the Bigquery metrics dashboard in Velodrome. If you run into this, you can restart the Kettle job by following the steps [here](/troubleshoot.md)
