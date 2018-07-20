@@ -263,6 +263,7 @@ func (c *Controller) Sync() error {
 	for pool := range poolChan {
 		pools = append(pools, pool)
 	}
+	sortPools(pools)
 	c.m.Lock()
 	defer c.m.Unlock()
 	c.pools = pools
@@ -848,6 +849,28 @@ func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, e
 			Blockers: blocks,
 		},
 		err
+}
+
+func sortPools(pools []Pool) {
+	sort.Slice(pools, func(i, j int) bool {
+		if string(pools[i].Org) != string(pools[j].Org) {
+			return string(pools[i].Org) < string(pools[j].Org)
+		}
+		if string(pools[i].Repo) != string(pools[j].Repo) {
+			return string(pools[i].Repo) < string(pools[j].Repo)
+		}
+		return string(pools[i].Branch) < string(pools[j].Branch)
+	})
+
+	sortPRs := func(prs []PullRequest) {
+		sort.Slice(prs, func(i, j int) bool { return int(prs[i].Number) < int(prs[j].Number) })
+	}
+	for i := range pools {
+		sortPRs(pools[i].SuccessPRs)
+		sortPRs(pools[i].PendingPRs)
+		sortPRs(pools[i].MissingPRs)
+		sortPRs(pools[i].BatchPending)
+	}
 }
 
 type subpool struct {
