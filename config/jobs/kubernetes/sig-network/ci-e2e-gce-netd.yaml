@@ -158,8 +158,6 @@ presets:
     value: true
   - name: KUBE_ENABLE_NETD
     value: true
-  - name: KUBE_GCE_ENABLE_POLICY_ROUTING
-    value: true
 
 periodics:
 - interval: 2h
@@ -210,7 +208,6 @@ periodics:
       env:
       - name: NETWORK_POLICY_PROVIDER
         value: calico
-
 
 - interval: 2h
   agent: kubernetes
