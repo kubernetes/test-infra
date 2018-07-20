@@ -2083,6 +2083,9 @@ test_groups:
 - name: pull-cluster-api-make
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-make
   num_columns_recent: 20
+- name: pull-cluster-api-provider-aws-make
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-make
+  num_columns_recent: 20
 - name: pull-cluster-api-provider-openstack-make
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-openstack-make
   num_columns_recent: 20
@@ -4866,6 +4869,11 @@ dashboards:
   - name: pr-test
     test_group_name: pull-cluster-api-test
 
+- name: sig-cluster-lifecycle-cluster-api-provider-aws
+  dashboard_tab:
+  - name: pr-make
+    test_group_name: pull-cluster-api-provider-aws-make
+
 - name: sig-cluster-lifecycle-cluster-api-provider-openstack
   dashboard_tab:
   - name: pr-make
@@ -6470,6 +6478,7 @@ dashboard_groups:
   - sig-cluster-lifecycle-upgrade-skew
   - sig-cluster-lifecycle-multi-platform
   - sig-cluster-lifecycle-cluster-api
+  - sig-cluster-lifecycle-cluster-api-provider-aws
   - sig-cluster-lifecycle-cluster-api-provider-openstack
 
 - name: sig-multicluster
