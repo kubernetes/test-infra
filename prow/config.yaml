@@ -227,6 +227,7 @@ tide:
     - kubernetes/website
     - kubernetes-sigs/application
     - kubernetes-sigs/cluster-api
+    - kubernetes-sigs/cluster-api-provider-gcp
     - kubernetes-sigs/cluster-api-provider-openstack
     - kubernetes-sigs/controller-runtime
     - kubernetes-sigs/controller-tools
@@ -293,6 +294,7 @@ tide:
     kubernetes/kube-deploy: squash
     kubernetes/website: squash
     kubernetes-sigs/cluster-api: squash
+    kubernetes-sigs/cluster-api-provider-gcp: squash
     kubernetes-sigs/cluster-api-provider-openstack: squash
     kubernetes-incubator/service-catalog: squash
   target_url: https://prow.k8s.io/tide.html
