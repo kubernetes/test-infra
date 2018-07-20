@@ -2993,7 +2993,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kube-deploy:v20180212-214c99406
+      - image: gcr.io/k8s-testimages/cluster-api:v20180720-d52d72975
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -3564,7 +3564,7 @@ periodics:
     preset-service-account: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kube-deploy:v20180212-214c99406
+    - image: gcr.io/k8s-testimages/cluster-api:v20180720-d52d72975
       args:
       - "--repo=sigs.k8s.io/cluster-api"
       - "--root=/go/src"
