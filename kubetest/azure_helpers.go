@@ -43,6 +43,7 @@ type Properties struct {
 	LinuxProfile            *LinuxProfile            `json:"linuxProfile,omitempty"`
 	WindowsProfile          *WindowsProfile          `json:"windowsProfile,omitempty"`
 	ServicePrincipalProfile *ServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
+	ExtensionProfiles       []map[string]string      `json:"extensionProfiles,omitempty"`
 }
 
 type ServicePrincipalProfile struct {
@@ -87,12 +88,13 @@ type MasterProfile struct {
 }
 
 type AgentPoolProfile struct {
-	Name                string `json:"name"`
-	Count               int    `json:"count"`
-	VMSize              string `json:"vmSize"`
-	OSType              string `json:"osType,omitempty"`
-	AvailabilityProfile string `json:"availabilityProfile"`
-	IPAddressCount      int    `json:"ipAddressCount,omitempty"`
+	Name                  string            `json:"name"`
+	Count                 int               `json:"count"`
+	VMSize                string            `json:"vmSize"`
+	OSType                string            `json:"osType,omitempty"`
+	AvailabilityProfile   string            `json:"availabilityProfile"`
+	IPAddressCount        int               `json:"ipAddressCount,omitempty"`
+	PreProvisionExtension map[string]string `json:"preProvisionExtension,omitempty"`
 }
 
 type AzureClient struct {

@@ -210,6 +210,10 @@ func (c *Cluster) generateTemplate() error {
 					OSType:              *acsAgentOSType,
 					AvailabilityProfile: "AvailabilitySet",
 					IPAddressCount:      200,
+					PreProvisionExtension: map[string]string{
+						"name":        "node_setup",
+						"singleOrAll": "all",
+					},
 				},
 			},
 			LinuxProfile: &LinuxProfile{
@@ -228,6 +232,14 @@ func (c *Cluster) generateTemplate() error {
 			ServicePrincipalProfile: &ServicePrincipalProfile{
 				ClientID: c.credentials.ClientID,
 				Secret:   c.credentials.ClientSecret,
+			},
+			ExtensionProfiles: []map[string]string{
+				{
+					"name":    "node_setup",
+					"version": "v1",
+					"rootURL": "https://k8swin.blob.core.windows.net/k8s-windows/preprovision_extensions/",
+					"script":  "node_setup.ps1",
+				},
 			},
 		},
 	}
