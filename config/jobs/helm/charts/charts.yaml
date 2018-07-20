@@ -15,6 +15,7 @@ presubmits:
         args:
         - "--repo=github.com/helm/charts=$(PULL_REFS)"
         - "--root=/go/src/"
+        - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
@@ -40,8 +41,9 @@ periodics:
     containers:
     - args:
       - --timeout=200
-      - --repo=k8s.io/charts
+      - --repo=github.com/helm/charts
       - --root=/go/src
+      - --service-account=/etc/service-account/service-account.json
       - --scenario=kubernetes_e2e
       - --
       - --charts
