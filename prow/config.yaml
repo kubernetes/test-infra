@@ -19,9 +19,9 @@ plank:
 
 spyglass:
   viewers:
-    "started.json|finished.json": "MetadataViewer"
-    "build-log.txt|pod-log": "BuildLogViewer"
-    "artifacts/junit.*\\.xml": "JUnitViewer"
+    "started.json|finished.json": ["MetadataViewer"]
+    "build-log.txt|pod-log": ["BuildLogViewer"]
+    "artifacts/junit.*\\.xml": ["JUnitViewer"]
 
 sinker:
   resync_period: 1m

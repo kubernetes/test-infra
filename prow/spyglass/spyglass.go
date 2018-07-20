@@ -19,6 +19,7 @@ package spyglass
 
 import (
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -66,24 +67,27 @@ func NewSpyglass(ja *jobs.JobAgent) *Spyglass {
 // Views gets all views of all artifact files matching each regexp with a registered viewer
 func (s *Spyglass) Views(eyepiece map[string][]string) []Lens {
 	lenses := []Lens{}
-	for viewer := range eyepiece {
-		title, err := viewers.Title(viewer)
-		if err != nil {
-			logrus.Error("Could not find artifact viewer with name ", viewer)
+	for viewer, matches := range eyepiece {
+		if len(matches) != 0 {
+			title, err := viewers.Title(viewer)
+			if err != nil {
+				logrus.Error("Could not find artifact viewer with name ", viewer)
+			}
+			priority, err := viewers.Priority(viewer)
+			if err != nil {
+				logrus.Error("Could not find artifact viewer with name ", viewer)
+			}
+			lens := Lens{
+				Name:     viewer,
+				Title:    title,
+				HTMLView: "",
+				Priority: priority,
+			}
+			lenses = append(lenses, lens)
+			s.Lenses[viewer] = lens
 		}
-		priority, err := viewers.Priority(viewer)
-		if err != nil {
-			logrus.Error("Could not find artifact viewer with name ", viewer)
-		}
-		lens := Lens{
-			Name:     viewer,
-			Title:    title,
-			HTMLView: "",
-			Priority: priority,
-		}
-		lenses = append(lenses, lens)
-		s.Lenses[viewer] = lens
 	}
+	// Make sure lenses are rendered in order by ascending priority
 	sort.Slice(lenses, func(i, j int) bool {
 		iname := lenses[i].Name
 		jname := lenses[j].Name
@@ -98,13 +102,13 @@ func (s *Spyglass) Views(eyepiece map[string][]string) []Lens {
 }
 
 // Refresh reloads the html view for a given set of objects
-func (s *Spyglass) Refresh(src string, jobID string, viewReq *ViewRequest) Lens {
+func (s *Spyglass) Refresh(src string, podName string, viewReq *ViewRequest) Lens {
 	lens, ok := s.Lenses[viewReq.ViewName]
 	if !ok {
 		logrus.Errorf("Could not find Lens with name %s.", viewReq.ViewName)
 		return Lens{}
 	}
-	artifacts, err := s.FetchArtifacts(src, jobID, viewReq.ViewerCache[viewReq.ViewName])
+	artifacts, err := s.FetchArtifacts(src, podName, viewReq.ViewerCache[viewReq.ViewName])
 	if err != nil {
 		logrus.WithError(err).Error("Error while fetching artifacts.")
 	}
@@ -120,24 +124,26 @@ func (s *Spyglass) Refresh(src string, jobID string, viewReq *ViewRequest) Lens 
 
 // ListArtifacts handles muxing artifact sources to the correct fetcher implementations to list
 // all available artifact names
-func (s *Spyglass) ListArtifacts(src string, jobID string) ([]string, error) {
+func (s *Spyglass) ListArtifacts(src string, podName string) ([]string, error) {
 	artifacts := []string{}
 	var jobName string
+	var buildID string
 	// First check src
 	if isGCSSource(src) {
 		artifactFetcher := NewGCSArtifactFetcher()
 		gcsJobSource := NewGCSJobSource(src)
 		jobName = gcsJobSource.JobName()
-		if jobID == "" {
-			jobID = gcsJobSource.JobID()
-		}
+		buildID = gcsJobSource.BuildID()
 
 		artifacts = append(artifacts, artifactFetcher.Artifacts(gcsJobSource)...)
 
 	}
 	// Then check prowjob id for pod logs, pod spec, etc
-	if jobID != "" && jobName != "" {
-		podLog := NewPodLogArtifact(jobName, jobID, s.Ja)
+	if podName != "" || isProwJobSource(src) {
+		parsed := strings.Split(strings.TrimPrefix(src, "pj://"), "/")
+		jobName = parsed[0]
+		buildID = parsed[1]
+		podLog := NewPodLogArtifact(jobName, buildID, podName, s.Ja)
 		if podLog.Size() != -1 {
 			artifacts = append(artifacts, podLog.JobPath())
 		}
@@ -146,18 +152,18 @@ func (s *Spyglass) ListArtifacts(src string, jobID string) ([]string, error) {
 	return artifacts, nil
 }
 
-// FetchArtifacts creates artifact objects for each artifact name in the list
-func (s *Spyglass) FetchArtifacts(src string, jobID string, artifactNames []string) ([]viewers.Artifact, error) {
+// FetchArtifacts constructs and returns Artifact objects for each artifact name in the list.
+// This includes getting any handles needed for read write operations, direct artifact links, etc.
+func (s *Spyglass) FetchArtifacts(src string, podName string, artifactNames []string) ([]viewers.Artifact, error) {
 	artifacts := []viewers.Artifact{}
 	var jobName string
-	// First check src
+	var buildID string
+	// Add any artifacts from GCS
 	if isGCSSource(src) {
 		artifactFetcher := NewGCSArtifactFetcher()
 		gcsJobSource := NewGCSJobSource(src)
 		jobName = gcsJobSource.JobName()
-		if jobID == "" {
-			jobID = gcsJobSource.JobID()
-		}
+		buildID = gcsJobSource.BuildID()
 
 		artStart := time.Now()
 		for _, name := range artifactNames {
@@ -168,14 +174,15 @@ func (s *Spyglass) FetchArtifacts(src string, jobID string, artifactNames []stri
 
 	}
 
-	// Then check prowjob id for pod logs, pod spec, etc
-	if jobID != "" && jobName != "" {
-		logrus.Info("Trying pod logs. ")
-		podLog := NewPodLogArtifact(jobName, jobID, s.Ja)
+	// Add any artifacts discoverable from the prowjob
+	if podName != "" || isProwJobSource(src) {
+		parsed := strings.Split(strings.TrimPrefix(src, "pj://"), "/")
+		jobName = parsed[0]
+		buildID = parsed[1]
+		podLog := NewPodLogArtifact(jobName, buildID, podName, s.Ja)
 		if podLog.Size() != -1 {
 			artifacts = append(artifacts, podLog)
 		}
-
 	}
 	return artifacts, nil
 

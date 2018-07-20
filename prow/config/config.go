@@ -66,7 +66,7 @@ type ProwConfig struct {
 	Plank            Plank                 `json:"plank,omitempty"`
 	Sinker           Sinker                `json:"sinker,omitempty"`
 	Deck             Deck                  `json:"deck,omitempty"`
-	SpyGlass         SpyGlass              `json:"spyglass,omitempty"`
+	Spyglass         Spyglass              `json:"spyglass,omitempty"`
 	BranchProtection BranchProtection      `json:"branch-protection,omitempty"`
 	Orgs             map[string]org.Config `json:"orgs,omitempty"`
 	Gerrit           Gerrit                `json:"gerrit,omitempty"`
@@ -214,10 +214,10 @@ type Sinker struct {
 	MaxPodAge time.Duration `json:"-"`
 }
 
-//SpyGlass hold config for SpyGlass
-type SpyGlass struct {
+//Spyglass hold config for Spyglass
+type Spyglass struct {
 	// Viewers defines which sets of artifacts need to be viewed by which viewers
-	Viewers map[string]string `json:"viewers,omitempty"`
+	Viewers map[string][]string `json:"viewers,omitempty"`
 }
 
 // Deck holds config for deck.

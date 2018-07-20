@@ -48,6 +48,7 @@ type ViewMetadata struct {
 // Artifact represents some output of a prow job
 type Artifact interface {
 	io.ReaderAt
+	// Reads at most n bytes from the beginning of the artifact
 	ReadAtMost(n int64) ([]byte, error)
 	CanonicalLink() string
 	JobPath() string

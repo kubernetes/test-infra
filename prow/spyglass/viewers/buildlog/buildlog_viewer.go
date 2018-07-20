@@ -112,8 +112,9 @@ func ViewHandler(artifacts []viewers.Artifact, raw string) string {
 			totalChunks = viewData.TotalChunks
 			switch viewData.Operation {
 			case "more":
-				logrus.Info("Requesting more for artifact ", a.JobPath())
-				chunks++
+				if chunks < viewData.TotalChunks {
+					chunks++
+				}
 			case "all":
 				chunks = viewData.TotalChunks
 			case "":

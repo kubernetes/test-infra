@@ -77,6 +77,13 @@ func (f fpkc) GetLog(pod string) ([]byte, error) {
 	return nil, fmt.Errorf("pod not found: %s", pod)
 }
 
+func (f fpkc) GetContainerLog(pod, container string) ([]byte, error) {
+	if pod == "wowowow" || pod == "powowow" {
+		return []byte(f), nil
+	}
+	return nil, fmt.Errorf("pod not found: %s", pod)
+}
+
 func TestMain(m *testing.M) {
 	fakeGCSJobSource = spyglass.NewGCSJobSource(testSrc)
 	testBucketName := fakeGCSJobSource.BucketName()
@@ -156,7 +163,9 @@ test/e2e/e2e.go:137 BeforeSuite on Node 1 failed test/e2e/e2e.go:137
 	fakeGCSClient := fakeGCSServer.Client()
 	fakeGCSBucket = fakeGCSClient.Bucket(testBucketName)
 	testAf = &spyglass.GCSArtifactFetcher{
-		Client: fakeGCSClient,
+		Client:      fakeGCSClient,
+		XMLEndpoint: fakeGCSServer.URL() + "/storage/v1",
+		WithTLS:     false,
 	}
 	kc := fkc{
 		kube.ProwJob{

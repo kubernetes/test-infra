@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/deck/jobs"
@@ -29,16 +30,24 @@ import (
 // PodLogArtifact holds data for reading from a specific pod log
 type PodLogArtifact struct {
 	name      string
-	jobID     string
+	buildID   string
+	podName   string
 	ja        *jobs.JobAgent
 	sizeLimit int64
 }
 
 //NewPodLogArtifact creates a new PodLogArtifact
-func NewPodLogArtifact(jobName string, jobID string, ja *jobs.JobAgent) *PodLogArtifact {
+func NewPodLogArtifact(jobName string, buildID string, podName string, ja *jobs.JobAgent) *PodLogArtifact {
+	if jobName == "" {
+		logrus.Error("Must specify non-empty jobName")
+	}
+	if buildID == "" {
+		logrus.Error("Must specify non-empty buildID")
+	}
 	return &PodLogArtifact{
 		name:      jobName,
-		jobID:     jobID,
+		buildID:   buildID,
+		podName:   podName,
 		ja:        ja,
 		sizeLimit: 500e6,
 	}
@@ -46,22 +55,25 @@ func NewPodLogArtifact(jobName string, jobID string, ja *jobs.JobAgent) *PodLogA
 
 // CanonicalLink returns a link to where pod logs are streamed
 func (a *PodLogArtifact) CanonicalLink() string {
-	return fmt.Sprintf("/log?job=%s&id=%s", a.name, a.jobID)
+	if a.name != "" && a.buildID != "" {
+		return fmt.Sprintf("/log?job=%s&id=%s", a.name, a.buildID)
+	} else {
+		//return fmt.Sprintf("/log?podname=%s", a.podName)
+		logrus.Error("podname log endpoint unsupported, use job name and build ID")
+		return ""
+	}
 }
 
-// JobPath gets the path within the job for the pod log. Note this is a special case, trying to match
-// artifacts uploaded to other storage locations with the name "pod-log" will also match this.
+// JobPath gets the path within the job for the pod log. Always returns pod-log. Note this is a
+// special case, trying to match artifacts uploaded to other storage locations with the name
+// "pod-log" will also match this.
 func (a *PodLogArtifact) JobPath() string {
 	return "pod-log"
 }
 
 // ReadAt implements reading a range of bytes from the pod logs endpoint
 func (a *PodLogArtifact) ReadAt(p []byte, off int64) (n int, err error) {
-	logs, err := a.ja.GetJobLog(a.name, a.jobID)
-	if err != nil {
-		logrus.WithError(err).Error("Could not get pod logs.")
-		return 0, err
-	}
+	logs := a.fetchLogs()
 	return bytes.NewReader(logs).ReadAt(p, off)
 }
 
@@ -70,16 +82,13 @@ func (a *PodLogArtifact) ReadAll() ([]byte, error) {
 	if a.Size() > a.sizeLimit {
 		return []byte{}, errors.New("file over size limit")
 	}
-	return a.ja.GetJobLog(a.name, a.jobID)
+	return a.fetchLogs(), nil
 }
 
 // ReadAtMost reads at most n bytes
 func (a *PodLogArtifact) ReadAtMost(n int64) ([]byte, error) {
-	joblog, err := a.ja.GetJobLog(a.name, a.jobID)
-	if err != nil {
-		return []byte{}, err
-	}
-	reader := bytes.NewReader(joblog)
+	logs := a.fetchLogs()
+	reader := bytes.NewReader(logs)
 	var byteCount int64
 	var p []byte
 	for byteCount <= n {
@@ -97,14 +106,10 @@ func (a *PodLogArtifact) ReadAtMost(n int64) ([]byte, error) {
 
 // ReadTail reads the last n bytes of the pod log
 func (a *PodLogArtifact) ReadTail(n int64) ([]byte, error) {
-	logs, err := a.ja.GetJobLog(a.name, a.jobID)
-	if err != nil {
-		logrus.WithError(err).Error("Could not get pod logs.")
-		return []byte{}, err
-	}
+	logs := a.fetchLogs()
 	off := int64(len(logs)) - n - 1
 	p := []byte{}
-	_, err = bytes.NewReader(logs).ReadAt(p, off)
+	_, err := bytes.NewReader(logs).ReadAt(p, off)
 	if err != nil {
 		logrus.WithError(err).Error("Failed to read pod logs.")
 	}
@@ -114,11 +119,24 @@ func (a *PodLogArtifact) ReadTail(n int64) ([]byte, error) {
 
 // Size gets the size of the pod log. Note: this function makes the same network call as reading the entire file.
 func (a *PodLogArtifact) Size() int64 {
-	logs, err := a.ja.GetJobLog(a.name, a.jobID)
-	if err != nil {
-		logrus.WithError(err).Error("Could not get pod logs.")
-		return -1
-	}
+	logs := a.fetchLogs()
 	return int64(len(logs))
 
+}
+
+// fetchLogs is a wrapper method for handling errors from fetching pod logs
+func (a *PodLogArtifact) fetchLogs() []byte {
+	var logs []byte
+	var err error
+	// logs, err = a.ja.GetJobLogByPodName(a.podName) TODO I'd like to support this eventually
+	logs, err = a.ja.GetJobLog(a.name, a.buildID)
+	if err != nil {
+		logrus.WithError(err).Error("Error getting pod logs")
+	}
+	return logs
+}
+
+// isProwJobSource returns true if the provided string is a valid Prowjob source and false otherwise
+func isProwJobSource(src string) bool {
+	return strings.HasPrefix(src, "pj://")
 }

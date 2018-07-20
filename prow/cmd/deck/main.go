@@ -428,8 +428,7 @@ func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent) http.Handler
 		urlPath := r.URL.Path
 		start := time.Now()
 		var src string
-		var jobID string
-		logrus.Info("raw URL: ", urlPath)
+		var podName string
 		if strings.Trim(urlPath, "/") != "view" { //TODO (paulangton): config this prefix later
 			urlPath = strings.TrimPrefix(urlPath, "/view/")
 			splitSource := strings.SplitAfterN(urlPath, "/", 2)
@@ -439,37 +438,28 @@ func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent) http.Handler
 			switch srcExt {
 			case "gcs/":
 				src = fmt.Sprintf("gs://%s", srcData)
-				logrus.Info("gcs source: ", src)
 			case "prowjob/":
-				jobID = strings.Trim(srcData, "/")
-				logrus.Info("prowjob id: ", jobID)
+				src = fmt.Sprintf("pj://%s", srcData)
 			default:
 				http.Error(w, "invalid view url", http.StatusBadRequest)
 			}
 
 		} else {
 			src = r.URL.Query().Get("src")
-			jobID = r.URL.Query().Get("id")
 			if src == "" {
 				http.Error(w, "missing src query parameter", http.StatusBadRequest)
 				return
 			}
-
-			if jobID == "" {
-				logrus.Info("No job id passed to spyglass, will try to extract from source.")
-			}
 		}
 
-		artifactNames, err := sg.ListArtifacts(src, jobID)
+		artifactNames, err := sg.ListArtifacts(src, podName)
 		if err != nil {
-			logrus.Error("Invalid source parameter provided: ", src)
+			logrus.WithError(err).Error("Error listing artifacts")
 		}
-
-		logrus.Info("Got this many artifacts: ", len(artifactNames))
 
 		viewerCache := map[string][]string{}
 
-		for re, viewer := range ca.Config().SpyGlass.Viewers {
+		for re, viewerNames := range ca.Config().Spyglass.Viewers {
 			matches := []string{}
 			r, err := regexp.Compile(re)
 			if err != nil {
@@ -478,11 +468,12 @@ func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent) http.Handler
 			}
 			for _, a := range artifactNames {
 				if r.MatchString(a) {
-					logrus.Info("match found: ", a)
 					matches = append(matches, a)
 				}
 			}
-			viewerCache[viewer] = matches
+			for _, vName := range viewerNames {
+				viewerCache[vName] = matches
+			}
 		}
 
 		viewsStart := time.Now()
@@ -521,7 +512,7 @@ func handleArtifactView(sg *spyglass.Spyglass) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		name := r.URL.Query().Get("name")
 		src := r.URL.Query().Get("src")
-		jobId := r.URL.Query().Get("id")
+		podName := r.URL.Query().Get("podname")
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, "failed to read body", http.StatusBadRequest)
@@ -536,17 +527,13 @@ func handleArtifactView(sg *spyglass.Spyglass) http.HandlerFunc {
 			return
 		}
 
-		if jobId == "" {
-			logrus.Info("No job id passed to spyglass view refresh, will try to extract from source.")
-		}
-
 		viewReq := &spyglass.ViewRequest{}
 		err = json.Unmarshal(body, viewReq)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to marshal request body")
 		}
 
-		lens := sg.Refresh(src, jobId, viewReq)
+		lens := sg.Refresh(src, podName, viewReq)
 		pd, err := json.Marshal(lens)
 		if err != nil {
 			logrus.WithError(err).Error("Error marshaling payload.")

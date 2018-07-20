@@ -18,11 +18,13 @@ package spyglass
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"path"
 	"strings"
 	"sync"
@@ -36,7 +38,9 @@ import (
 
 // A fetcher for a GCS client
 type GCSArtifactFetcher struct {
-	Client *storage.Client
+	Client      *storage.Client
+	XMLEndpoint string
+	WithTLS     bool
 }
 
 // A location in GCS where prow job-specific artifacts are stored. This implementation assumes
@@ -48,7 +52,7 @@ type GCSJobSource struct {
 	bucket     string
 	jobPath    string
 	jobName    string
-	jobID      string
+	buildID    string
 }
 
 // NewGCSArtifactFetcher creates a new ArtifactFetcher with a real GCS Client
@@ -58,7 +62,9 @@ func NewGCSArtifactFetcher() *GCSArtifactFetcher {
 		log.Fatal(err)
 	}
 	return &GCSArtifactFetcher{
-		Client: c,
+		Client:      c,
+		XMLEndpoint: "https://storage.googleapis.com/",
+		WithTLS:     true,
 	}
 }
 
@@ -71,7 +77,7 @@ func NewGCSJobSource(src string) *GCSJobSource {
 	}
 	tokens := strings.FieldsFunc(noPrefixSrc, func(c rune) bool { return c == '/' })
 	bucket := tokens[0]
-	jobID := tokens[len(tokens)-1]
+	buildID := tokens[len(tokens)-1]
 	name := tokens[len(tokens)-2]
 	jobPath := strings.TrimPrefix(noPrefixSrc, bucket+"/") // Extra / is not part of prefix, only necessary for URI
 	return &GCSJobSource{
@@ -80,7 +86,7 @@ func NewGCSJobSource(src string) *GCSJobSource {
 		bucket:     bucket,
 		jobPath:    jobPath,
 		jobName:    name,
-		jobID:      jobID,
+		buildID:    buildID,
 	}
 }
 
@@ -89,19 +95,25 @@ func isGCSSource(src string) bool {
 	return strings.HasPrefix(src, "gs://")
 }
 
+// GCSMarker holds the starting point for the next paginated GCS query
 type GCSMarker struct {
 	XMLName xml.Name `xml:"ListBucketResult"`
 	Marker  string   `xml:"NextMarker"`
 }
+
+// Contents is a single entry returned by the GCS XML API
 type Contents struct {
 	Key string
 }
+
+// GCSReq contains the contents of a GCS XML API list response
 type GCSReq struct {
 	XMLName  xml.Name `xml:"ListBucketResult"`
 	Contents []Contents
 }
 
-func Names(content []byte, names chan string, wg *sync.WaitGroup) {
+// names is a helper function for extracting artifact names in parallel from a GCS XML API response
+func names(content []byte, names chan string, wg *sync.WaitGroup) {
 	extracted := GCSReq{
 		Contents: []Contents{},
 	}
@@ -115,22 +127,33 @@ func Names(content []byte, names chan string, wg *sync.WaitGroup) {
 	wg.Done()
 }
 
+// Artifacts lists all artifacts available for the given job source.
+// Uses the GCS XML API because it is ~2x faster than the golang GCS library for large number of artifacts.
+// It should also be S3 compatible according to the GCS api docs.
 func (af *GCSArtifactFetcher) Artifacts(src JobSource) []string {
 	var wg sync.WaitGroup
 	artStart := time.Now()
 	artifacts := []string{}
-	endpoint := fmt.Sprintf("https://%s.storage.googleapis.com", src.BucketName())
+	endpoint := af.XMLEndpoint + src.BucketName()
 	prefix := src.JobPath()
 	maxResults := 1000
 	bodies := [][]byte{}
 	marker := GCSMarker{}
-	for {
-
-		req := fmt.Sprintf("%s/?prefix=%s&max-keys=%d", endpoint, prefix, maxResults)
-		if marker.Marker != "" {
-			req += fmt.Sprintf("&marker=%s", marker.Marker)
+	c := http.Client{}
+	if !af.WithTLS {
+		tr := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		}
-		resp, err := http.Get(req)
+		c = http.Client{Transport: tr}
+	}
+	for {
+		params := url.Values{}
+		params.Add("prefix", prefix)
+		if marker.Marker != "" {
+			params.Add("marker", marker.Marker)
+		}
+		req := endpoint + "/?" + params.Encode()
+		resp, err := c.Get(req)
 		if err != nil {
 			logrus.WithError(err).Error("Error in GCS XML API GET request")
 		}
@@ -155,20 +178,23 @@ func (af *GCSArtifactFetcher) Artifacts(src JobSource) []string {
 	namesChan := make(chan string, maxResults*len(bodies))
 	for _, body := range bodies {
 		wg.Add(1)
-		go Names(body, namesChan, &wg)
+		go names(body, namesChan, &wg)
 	}
 
 	wg.Wait()
 	close(namesChan)
 	for name := range namesChan {
-		artifacts = append(artifacts, strings.TrimPrefix(name, src.JobPath()))
+		aName := strings.TrimPrefix(name, src.JobPath())
+		artifacts = append(artifacts, aName)
 	}
 	artElapsed := time.Since(artStart)
 	logrus.Infof("Listed %d GCS artifacts in %s", len(artifacts), artElapsed)
 	return artifacts
 }
 
-// Artifact contructs a GCS artifact from the given GCS bucket and key
+// Artifact contructs a GCS artifact from the given GCS bucket and key. Uses the golang GCS library
+// to get read handles. If the artifactName is not a valid key in the bucket a handle will still be
+// constructed and returned, but all read operations will fail (dictated by behavior of golang GCS lib).
 func (af *GCSArtifactFetcher) Artifact(src JobSource, artifactName string) viewers.Artifact {
 	bkt := af.Client.Bucket(src.BucketName())
 	obj := bkt.Object(path.Join(src.JobPath(), artifactName))
@@ -197,6 +223,6 @@ func (src *GCSJobSource) JobName() string {
 }
 
 // JobID gets the id of the job
-func (src *GCSJobSource) JobID() string {
-	return src.jobID
+func (src *GCSJobSource) BuildID() string {
+	return src.buildID
 }

@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package spyglasstests
 
 import (
@@ -30,12 +31,12 @@ func TestPodLogReadAll(t *testing.T) {
 	}{
 		{
 			name:     "Job Podlog readall",
-			artifact: spyglass.NewPodLogArtifact("job", "123", fakeJa),
+			artifact: spyglass.NewPodLogArtifact("job", "123", "", fakeJa),
 			expected: []byte("clusterA"),
 		},
 		{
 			name:     "Jib Podlog readall",
-			artifact: spyglass.NewPodLogArtifact("jib", "123", fakeJa),
+			artifact: spyglass.NewPodLogArtifact("jib", "123", "", fakeJa),
 			expected: []byte("clusterB"),
 		},
 	}

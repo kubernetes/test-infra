@@ -33,7 +33,7 @@ func TestSpyglassConfig(t *testing.T) {
 	testCases := []struct {
 		name            string
 		spyglassConfig  string
-		expectedViewers map[string]string
+		expectedViewers map[string][]string
 		expectError     bool
 	}{
 		{
@@ -41,14 +41,14 @@ func TestSpyglassConfig(t *testing.T) {
 			spyglassConfig: `
 spyglass:
   viewers:
-    "started.json|finished.json": "MetadataViewer"
-    "build-log.txt": "BuildLogViewer"
-    "artifacts/junit.*\\.xml": "JUnitViewer"
+    "started.json|finished.json": ["MetadataViewer"]
+    "build-log.txt": ["BuildLogViewer"]
+    "artifacts/junit.*\\.xml": ["JUnitViewer"]
 `,
-			expectedViewers: map[string]string{
-				"started.json|finished.json": "MetadataViewer",
-				"build-log.txt":              "BuildLogViewer",
-				"artifacts/junit.*\\.xml":    "JUnitViewer",
+			expectedViewers: map[string][]string{
+				"started.json|finished.json": {"MetadataViewer"},
+				"build-log.txt":              {"BuildLogViewer"},
+				"artifacts/junit.*\\.xml":    {"JUnitViewer"},
 			},
 			expectError: false,
 		},
@@ -74,24 +74,24 @@ spyglass:
 		}
 
 		if err == nil {
-			got := cfg.SpyGlass.Viewers
-			for re, viewName := range got {
+			got := cfg.Spyglass.Viewers
+			for re, viewNames := range got {
 				expected, ok := tc.expectedViewers[re]
 				if !ok {
-					t.Errorf("With re %s, got %s, was not found in expected.", re, viewName)
+					t.Errorf("With re %s, got %s, was not found in expected.", re, viewNames)
 				}
-				if expected != viewName {
-					t.Errorf("With re %s, got %s, expected view name %s", re, viewName, expected)
+				if !reflect.DeepEqual(expected, viewNames) {
+					t.Errorf("With re %s, got %s, expected view name %s", re, viewNames, expected)
 				}
 
 			}
-			for re, viewName := range tc.expectedViewers {
-				gotName, ok := got[re]
+			for re, viewNames := range tc.expectedViewers {
+				gotNames, ok := got[re]
 				if !ok {
-					t.Errorf("With re %s, expected %s, was not found in got.", re, viewName)
+					t.Errorf("With re %s, expected %s, was not found in got.", re, viewNames)
 				}
-				if gotName != viewName {
-					t.Errorf("With re %s, got %s, expected view name %s", re, gotName, viewName)
+				if !reflect.DeepEqual(gotNames, viewNames) {
+					t.Errorf("With re %s, got %s, expected view name %s", re, gotNames, viewNames)
 				}
 
 			}
