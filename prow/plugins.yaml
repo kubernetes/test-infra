@@ -474,6 +474,7 @@ plugins:
 
   kubernetes-sigs/cluster-api-provider-gcp:
   - approve
+  - trigger
 
   kubernetes-sigs/cluster-api-provider-openstack:
   - approve
