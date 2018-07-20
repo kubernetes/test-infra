@@ -11,7 +11,7 @@ periodics:
       - --timeout=60
       - --service-account=/etc/service-account/service-account.json
       - --upload=gs://kubernetes-jenkins/logs
-      - --scenario=kubernetes_janitor
+      - --scenario=execute
       - --
       - /aws-janitor
       - --
