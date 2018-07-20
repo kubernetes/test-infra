@@ -15,7 +15,6 @@ mungegithub/** @cjwagner
 planter/** @bentheelder
 prow/** @cjwagner @stevekuznetsov
 prow/config.yaml @bentheelder @krzyzacy
-prow/plugins.yaml @cblecker
 scenarios/** @bentheelder @krzyzacy
 testgrid/** @krzyzacy @michelle192837
 triage/** @rmmh

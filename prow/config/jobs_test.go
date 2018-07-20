@@ -172,7 +172,7 @@ func TestPresubmits(t *testing.T) {
 					}
 					// Make sure branches are not overlapping
 					if checkOverlapBrancher(job.Brancher, job2.Brancher) {
-						t.Errorf("Two jobs have the same name: %s, and has conflicted branches", job.Name)
+						t.Errorf("Two jobs have the same name: %s, and have conflicting branches", job.Name)
 					}
 				} else {
 					if job.Context == job2.Context {

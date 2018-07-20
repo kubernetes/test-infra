@@ -28,7 +28,7 @@ var okToTestRe = regexp.MustCompile(`(?m)^/ok-to-test\s*$`)
 var testAllRe = regexp.MustCompile(`(?m)^/test all\s*$`)
 var retestRe = regexp.MustCompile(`(?m)^/retest\s*$`)
 
-func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
+func handleIC(c client, trigger *plugins.Trigger, ic github.IssueCommentEvent) error {
 	org := ic.Repo.Owner.Login
 	repo := ic.Repo.Name
 	number := ic.Issue.Number
@@ -62,12 +62,12 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 		// Check for the presence of the needs-ok-to-test label and remove it
 		// if a trusted member has commented "/ok-to-test".
 		if okToTest && ic.Issue.HasLabel(needsOkToTest) {
-			orgMember, err := isUserTrusted(c.GitHubClient, commentAuthor, trustedOrg, org)
+			trusted, err := trustedUser(c.GitHubClient, trigger, commentAuthor, org, repo)
 			if err != nil {
 				return err
 			}
-			if orgMember {
-				return c.GitHubClient.RemoveLabel(ic.Repo.Owner.Login, ic.Repo.Name, ic.Issue.Number, needsOkToTest)
+			if trusted {
+				return c.GitHubClient.RemoveLabel(org, repo, number, needsOkToTest)
 			}
 		}
 		return nil
@@ -100,25 +100,21 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 
 	var comments []github.IssueComment
 	// Skip untrusted users.
-	orgMember, err := isUserTrusted(c.GitHubClient, commentAuthor, trustedOrg, org)
+	trusted, err := trustedUser(c.GitHubClient, trigger, commentAuthor, org, repo)
 	if err != nil {
-		return err
+		return fmt.Errorf("error checking trust of %s: %v", commentAuthor, err)
 	}
-	if !orgMember {
+	if !trusted {
 		comments, err = c.GitHubClient.ListIssueComments(org, repo, number)
 		if err != nil {
-			return err
+			return fmt.Errorf("error listing issue comments: %v", err)
 		}
-		trusted, err := trustedPullRequest(c.GitHubClient, *pr, trustedOrg, comments)
+		trusted, err := trustedPullRequest(c.GitHubClient, trigger, ic.Issue.User.Login, org, repo, comments)
 		if err != nil {
 			return err
 		}
 		if !trusted {
-			var more string
-			if org != trustedOrg {
-				more = fmt.Sprintf("or [%s](https://github.com/orgs/%s/people) ", org, org)
-			}
-			resp := fmt.Sprintf("you can't request testing unless you are a [%s](https://github.com/orgs/%s/people) %smember.", trustedOrg, trustedOrg, more)
+			resp := fmt.Sprintf("Cannot trigger testing until a trusted user reviews the PR and leaves an `/ok-to-test` message.")
 			c.Logger.Infof("Commenting \"%s\".", resp)
 			return c.GitHubClient.CreateComment(org, repo, number, plugins.FormatICResponse(ic.Comment, resp))
 		}
@@ -128,7 +124,7 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 		if err := c.GitHubClient.RemoveLabel(ic.Repo.Owner.Login, ic.Repo.Name, ic.Issue.Number, needsOkToTest); err != nil {
 			c.Logger.WithError(err).Errorf("Failed at removing %s label", needsOkToTest)
 		}
-		err = clearStaleComments(c.GitHubClient, trustedOrg, *pr, comments)
+		err = clearStaleComments(c.GitHubClient, *pr, comments)
 		if err != nil {
 			c.Logger.Warnf("Failed to clear stale comments: %v.", err)
 		}

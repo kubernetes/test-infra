@@ -33,7 +33,7 @@ tide:
     missingLabels:          // List of can't have labels
     excludedBranches:       // Ignore branches
     includedBranches:       // Include-only branches
-    reviewApprovedRequired: // Review approved is must
+    reviewApprovedRequired: // Github Review approval required
   sync_period:            // Sync jobs period
   status_update_period:   // PR status update period
   merge_method:           // Set to squash, rebase or just merge PR
@@ -74,7 +74,10 @@ It can consist of the following dictionary of fields:
 * `missingLabels`: List of labels any given PR must not posses.
 * `excludedBranches`: List of branches that get excluded when querying the `repos`.
 * `includedBranches`: List of branches that get included when querying the `repos`.
-* `reviewApprovedRequired`: If set, each PR in the query must have review approved.
+* `reviewApprovedRequired`: If set, each PR in the query must have at
+  least one [approved github pull request
+  review](https://help.github.com/articles/about-pull-request-reviews/)
+  present for merge. Defaults to `false`.
 
 Under the hood, a query constructed from the fields follows rules described in
 https://help.github.com/articles/searching-issues-and-pull-requests/.

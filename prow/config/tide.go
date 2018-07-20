@@ -321,7 +321,7 @@ func parseTideContextPolicyOptions(org, repo, branch string, options TideContext
 // GetTideContextPolicy parses the prow config to find context merge options.
 // If none are set, it will use the prow jobs configured and use the default github combined status.
 // Otherwise if set it will use the branch protection setting, or the listed jobs.
-func (c Config) GetTideContextPolicy(org, repo, branch string) (TideContextPolicy, error) {
+func (c Config) GetTideContextPolicy(org, repo, branch string) (*TideContextPolicy, error) {
 	options := parseTideContextPolicyOptions(org, repo, branch, c.Tide.ContextOptions)
 	// Adding required and optional contexts from options
 	required := sets.NewString(options.RequiredContexts...)
@@ -344,7 +344,7 @@ func (c Config) GetTideContextPolicy(org, repo, branch string) (TideContextPolic
 		}
 	}
 
-	t := TideContextPolicy{
+	t := &TideContextPolicy{
 		RequiredContexts:    required.List(),
 		OptionalContexts:    optional.List(),
 		SkipUnknownContexts: options.SkipUnknownContexts,

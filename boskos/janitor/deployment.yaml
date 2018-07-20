@@ -49,7 +49,7 @@ spec:
         image: gcr.io/k8s-testimages/janitor:v20180619-83c62c891
         args:
         - --service-account=/etc/service-account/service-account.json
-        - --resource-type=gce-project,gci-qa-project,gpu-project,ingress-project,istio-project
+        - --resource-type=gce-project,gpu-project,ingress-project,istio-project
         - --pool-size=20
         volumeMounts:
         - mountPath: /etc/service-account

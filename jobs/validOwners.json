@@ -18,7 +18,7 @@
    "sig-node",
    "sig-onprem",
    "sig-openstack",
-   "kubernetes-pm",
+   "sig-pm",
    "kubernetes-release",
    "sig-scalability",
    "sig-scheduling",

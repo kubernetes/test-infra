@@ -202,7 +202,15 @@ func (fc *fpjc) GetProwJob(name string) (kube.ProwJob, error) {
 func TestRerun(t *testing.T) {
 	fc := fpjc(kube.ProwJob{
 		Spec: kube.ProwJobSpec{
-			Job: "whoa",
+			Job:  "whoa",
+			Type: kube.PresubmitJob,
+			Refs: &kube.Refs{
+				Org:  "org",
+				Repo: "repo",
+				Pulls: []kube.Pull{
+					{Number: 1},
+				},
+			},
 		},
 		Status: kube.ProwJobStatus{
 			State: kube.PendingState,

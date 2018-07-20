@@ -1,0 +1,31 @@
+presubmits:
+  kubernetes-sigs/cluster-api-provider-openstack:
+  - name: pull-cluster-api-provider-openstack-make
+    agent: kubernetes
+    always_run: true
+    context: pull-cluster-api-provider-openstack-make
+    rerun_command: "/test pull-cluster-api-provider-openstack-make"
+    trigger: "/test( all| pull-cluster-api-provider-openstack-make)"
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - args:
+        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
+        - "--scenario=execute"
+        - "--"
+        - "make"
+        - "images"
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: "true"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
+        resources:
+          requests:
+            memory: "6Gi"

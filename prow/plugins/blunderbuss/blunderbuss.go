@@ -63,6 +63,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 type reviewersClient interface {
 	FindReviewersOwnersForFile(path string) string
 	Reviewers(path string) sets.String
+	RequiredReviewers(path string) sets.String
 	LeafReviewers(path string) sets.String
 }
 
@@ -122,11 +123,12 @@ func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, reviewerCount,
 	}
 
 	var reviewers []string
+	var requiredReviewers []string
 	switch {
 	case oldReviewCount != nil:
 		reviewers = getReviewersOld(log, oc, pre.PullRequest.User.Login, changes, *oldReviewCount)
 	case reviewerCount != nil:
-		reviewers, err = getReviewers(oc, pre.PullRequest.User.Login, changes, *reviewerCount)
+		reviewers, requiredReviewers, err = getReviewers(oc, pre.PullRequest.User.Login, changes, *reviewerCount)
 		if err != nil {
 			return err
 		}
@@ -137,7 +139,7 @@ func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, reviewerCount,
 				// and approvers and the search might stop too early if it finds
 				// duplicates.
 				frc := fallbackReviewersClient{ownersClient: oc}
-				approvers, err := getReviewers(frc, pre.PullRequest.User.Login, changes, *reviewerCount)
+				approvers, _, err := getReviewers(frc, pre.PullRequest.User.Login, changes, *reviewerCount)
 				if err != nil {
 					return err
 				}
@@ -152,20 +154,25 @@ func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, reviewerCount,
 		}
 	}
 
+	if maxReviewers > 0 && len(reviewers) > maxReviewers {
+		log.Infof("Limiting request of %d reviewers to %d maxReviewers.", len(reviewers), maxReviewers)
+		reviewers = reviewers[:maxReviewers]
+	}
+
+	// add required reviewers if any
+	reviewers = append(reviewers, requiredReviewers...)
+
 	if len(reviewers) > 0 {
-		if maxReviewers > 0 && len(reviewers) > maxReviewers {
-			log.Infof("Limiting request of %d reviewers to %d maxReviewers.", len(reviewers), maxReviewers)
-			reviewers = reviewers[:maxReviewers]
-		}
 		log.Infof("Requesting reviews from users %s.", reviewers)
 		return ghc.RequestReview(pre.Repo.Owner.Login, pre.Repo.Name, pre.Number, reviewers)
 	}
 	return nil
 }
 
-func getReviewers(rc reviewersClient, author string, files []github.PullRequestChange, minReviewers int) ([]string, error) {
+func getReviewers(rc reviewersClient, author string, files []github.PullRequestChange, minReviewers int) ([]string, []string, error) {
 	authorSet := sets.NewString(author)
 	reviewers := sets.NewString()
+	requiredReviewers := sets.NewString()
 	leafReviewers := sets.NewString()
 	ownersSeen := sets.NewString()
 	// first build 'reviewers' by taking a unique reviewer from each OWNERS file.
@@ -175,6 +182,9 @@ func getReviewers(rc reviewersClient, author string, files []github.PullRequestC
 			continue
 		}
 		ownersSeen.Insert(ownersFile)
+
+		// record required reviewers if any
+		requiredReviewers.Insert(rc.RequiredReviewers(file.Filename).UnsortedList()...)
 
 		fileUnusedLeafs := rc.LeafReviewers(file.Filename).Difference(reviewers).Difference(authorSet)
 		if fileUnusedLeafs.Len() == 0 {
@@ -197,7 +207,7 @@ func getReviewers(rc reviewersClient, author string, files []github.PullRequestC
 			reviewers.Insert(popRandom(fileReviewers))
 		}
 	}
-	return reviewers.List(), nil
+	return reviewers.List(), requiredReviewers.List(), nil
 }
 
 // popRandom randomly selects an element of 'set' and pops it.

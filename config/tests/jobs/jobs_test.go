@@ -45,6 +45,8 @@ type configJSON map[string]map[string]interface{}
 var configPath = flag.String("config", "../../../prow/config.yaml", "Path to prow config")
 var jobConfigPath = flag.String("job-config", "../../jobs", "Path to prow job config")
 var configJSONPath = flag.String("config-json", "../../../jobs/config.json", "Path to prow job config")
+var gubernatorPath = flag.String("gubernator-path", "https://k8s-gubernator.appspot.com", "Path to linked gubernator")
+var bucket = flag.String("bucket", "kubernetes-jenkins", "Gcs bucket for log upload")
 
 func (c configJSON) ScenarioForJob(jobName string) string {
 	if scenario, ok := c[jobName]["scenario"]; ok {
@@ -145,7 +147,7 @@ func TestReportTemplate(t *testing.T) {
 			t.Errorf("Error executing template: %v", err)
 			continue
 		}
-		expectedPath := "https://k8s-gubernator.appspot.com/pr/" + tc.suffix
+		expectedPath := *gubernatorPath + "/pr/" + tc.suffix
 		if !strings.Contains(b.String(), expectedPath) {
 			t.Errorf("Expected template to contain %s, but it didn't: %s", expectedPath, b.String())
 		}
@@ -169,7 +171,7 @@ func TestURLTemplate(t *testing.T) {
 			repo:    "kubernetes",
 			job:     "k8s-pre-1",
 			build:   "1",
-			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/0/k8s-pre-1/1/",
+			expect:  *gubernatorPath + "/build/" + *bucket + "/pr-logs/pull/0/k8s-pre-1/1/",
 		},
 		{
 			name:    "k8s/test-infra presubmit",
@@ -178,7 +180,7 @@ func TestURLTemplate(t *testing.T) {
 			repo:    "test-infra",
 			job:     "ti-pre-1",
 			build:   "1",
-			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/test-infra/0/ti-pre-1/1/",
+			expect:  *gubernatorPath + "/build/" + *bucket + "/pr-logs/pull/test-infra/0/ti-pre-1/1/",
 		},
 		{
 			name:    "foo/k8s presubmit",
@@ -187,7 +189,7 @@ func TestURLTemplate(t *testing.T) {
 			repo:    "kubernetes",
 			job:     "k8s-pre-1",
 			build:   "1",
-			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/foo_kubernetes/0/k8s-pre-1/1/",
+			expect:  *gubernatorPath + "/build/" + *bucket + "/pr-logs/pull/foo_kubernetes/0/k8s-pre-1/1/",
 		},
 		{
 			name:    "foo-bar presubmit",
@@ -196,7 +198,7 @@ func TestURLTemplate(t *testing.T) {
 			repo:    "bar",
 			job:     "foo-pre-1",
 			build:   "1",
-			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/foo_bar/0/foo-pre-1/1/",
+			expect:  *gubernatorPath + "/build/" + *bucket + "/pr-logs/pull/foo_bar/0/foo-pre-1/1/",
 		},
 		{
 			name:    "k8s postsubmit",
@@ -205,21 +207,21 @@ func TestURLTemplate(t *testing.T) {
 			repo:    "kubernetes",
 			job:     "k8s-post-1",
 			build:   "1",
-			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/logs/k8s-post-1/1/",
+			expect:  *gubernatorPath + "/build/" + *bucket + "/logs/k8s-post-1/1/",
 		},
 		{
 			name:    "k8s periodic",
 			jobType: kube.PeriodicJob,
 			job:     "k8s-peri-1",
 			build:   "1",
-			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/logs/k8s-peri-1/1/",
+			expect:  *gubernatorPath + "/build/" + *bucket + "/logs/k8s-peri-1/1/",
 		},
 		{
 			name:    "empty periodic",
 			jobType: kube.PeriodicJob,
 			job:     "nan-peri-1",
 			build:   "1",
-			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/logs/nan-peri-1/1/",
+			expect:  *gubernatorPath + "/build/" + *bucket + "/logs/nan-peri-1/1/",
 		},
 		{
 			name:    "k8s batch",
@@ -228,7 +230,7 @@ func TestURLTemplate(t *testing.T) {
 			repo:    "kubernetes",
 			job:     "k8s-batch-1",
 			build:   "1",
-			expect:  "https://k8s-gubernator.appspot.com/build/kubernetes-jenkins/pr-logs/pull/batch/k8s-batch-1/1/",
+			expect:  *gubernatorPath + "/build/" + *bucket + "/pr-logs/pull/batch/k8s-batch-1/1/",
 		},
 	}
 
@@ -379,22 +381,18 @@ func checkDockerSocketVolumes(volumes []v1.Volume) error {
 
 // Make sure jobs are not using the docker socket as a host path
 func TestJobDoesNotHaveDockerSocket(t *testing.T) {
-	for _, pres := range c.Presubmits {
-		for _, presubmit := range pres {
-			if presubmit.Spec != nil {
-				if err := checkDockerSocketVolumes(presubmit.Spec.Volumes); err != nil {
-					t.Errorf("Error in presubmit: %v", err)
-				}
+	for _, presubmit := range c.AllPresubmits(nil) {
+		if presubmit.Spec != nil {
+			if err := checkDockerSocketVolumes(presubmit.Spec.Volumes); err != nil {
+				t.Errorf("Error in presubmit: %v", err)
 			}
 		}
 	}
 
-	for _, posts := range c.Postsubmits {
-		for _, postsubmit := range posts {
-			if postsubmit.Spec != nil {
-				if err := checkDockerSocketVolumes(postsubmit.Spec.Volumes); err != nil {
-					t.Errorf("Error in postsubmit: %v", err)
-				}
+	for _, postsubmit := range c.AllPostsubmits(nil) {
+		if postsubmit.Spec != nil {
+			if err := checkDockerSocketVolumes(postsubmit.Spec.Volumes); err != nil {
+				t.Errorf("Error in postsubmit: %v", err)
 			}
 		}
 	}
@@ -406,67 +404,6 @@ func TestJobDoesNotHaveDockerSocket(t *testing.T) {
 			}
 		}
 	}
-}
-
-// Load the config and extract all jobs, including any child jobs inside
-// RunAfterSuccess fields.
-func allJobs() ([]cfg.Presubmit, []cfg.Postsubmit, []cfg.Periodic, error) {
-	pres := []cfg.Presubmit{}
-	posts := []cfg.Postsubmit{}
-	peris := []cfg.Periodic{}
-
-	{ // Find all presubmit jobs, including child jobs.
-		q := []cfg.Presubmit{}
-
-		for _, p := range c.Presubmits {
-			for _, p2 := range p {
-				q = append(q, p2)
-			}
-		}
-
-		for len(q) > 0 {
-			pres = append(pres, q[0])
-			for _, p := range q[0].RunAfterSuccess {
-				q = append(q, p)
-			}
-			q = q[1:]
-		}
-	}
-
-	{ // Find all postsubmit jobs, including child jobs.
-		q := []cfg.Postsubmit{}
-
-		for _, p := range c.Postsubmits {
-			for _, p2 := range p {
-				q = append(q, p2)
-			}
-		}
-
-		for len(q) > 0 {
-			posts = append(posts, q[0])
-			for _, p := range q[0].RunAfterSuccess {
-				q = append(q, p)
-			}
-			q = q[1:]
-		}
-	}
-
-	{ // Find all periodic jobs, including child jobs.
-		q := []cfg.Periodic{}
-		for _, p := range c.Periodics {
-			q = append(q, p)
-		}
-
-		for len(q) > 0 {
-			peris = append(peris, q[0])
-			for _, p := range q[0].RunAfterSuccess {
-				q = append(q, p)
-			}
-			q = q[1:]
-		}
-	}
-
-	return pres, posts, peris, nil
 }
 
 // Validate any containers using a bazelbuild image, returning which bazelbuild tags are used.
@@ -583,23 +520,18 @@ func checkBazelbuildSpec(t *testing.T, name string, spec *v1.PodSpec, periodic b
 
 // Unit test jobs that use a bazelbuild image do so correctly.
 func TestBazelbuildArgs(t *testing.T) {
-	pres, posts, peris, err := allJobs()
-	if err != nil {
-		t.Fatalf("Could not load config: %v", err)
-	}
-
 	tags := map[string][]string{} // tag -> jobs map
-	for _, p := range pres {
+	for _, p := range c.AllPresubmits(nil) {
 		for t := range checkBazelbuildSpec(t, p.Name, p.Spec, false) {
 			tags[t] = append(tags[t], p.Name)
 		}
 	}
-	for _, p := range posts {
+	for _, p := range c.AllPostsubmits(nil) {
 		for t := range checkBazelbuildSpec(t, p.Name, p.Spec, false) {
 			tags[t] = append(tags[t], p.Name)
 		}
 	}
-	for _, p := range peris {
+	for _, p := range c.AllPeriodics() {
 		for t := range checkBazelbuildSpec(t, p.Name, p.Spec, true) {
 			tags[t] = append(tags[t], p.Name)
 		}
@@ -667,27 +599,23 @@ func checkLatestUsesImagePullPolicy(spec *v1.PodSpec) error {
 
 // Make sure jobs that use `latest-*` tags specify `imagePullPolicy: Always`
 func TestLatestUsesImagePullPolicy(t *testing.T) {
-	for _, pres := range c.Presubmits {
-		for _, presubmit := range pres {
-			if presubmit.Spec != nil {
-				if err := checkLatestUsesImagePullPolicy(presubmit.Spec); err != nil {
-					t.Errorf("Error in presubmit %q: %v", presubmit.Name, err)
-				}
+	for _, presubmit := range c.AllPresubmits(nil) {
+		if presubmit.Spec != nil {
+			if err := checkLatestUsesImagePullPolicy(presubmit.Spec); err != nil {
+				t.Errorf("Error in presubmit %q: %v", presubmit.Name, err)
 			}
 		}
 	}
 
-	for _, posts := range c.Postsubmits {
-		for _, postsubmit := range posts {
-			if postsubmit.Spec != nil {
-				if err := checkLatestUsesImagePullPolicy(postsubmit.Spec); err != nil {
-					t.Errorf("Error in postsubmit %q: %v", postsubmit.Name, err)
-				}
+	for _, postsubmit := range c.AllPostsubmits(nil) {
+		if postsubmit.Spec != nil {
+			if err := checkLatestUsesImagePullPolicy(postsubmit.Spec); err != nil {
+				t.Errorf("Error in postsubmit %q: %v", postsubmit.Name, err)
 			}
 		}
 	}
 
-	for _, periodic := range c.Periodics {
+	for _, periodic := range c.AllPeriodics() {
 		if periodic.Spec != nil {
 			if err := checkLatestUsesImagePullPolicy(periodic.Spec); err != nil {
 				t.Errorf("Error in periodic %q: %v", periodic.Name, err)
@@ -769,20 +697,195 @@ func TestValidPresets(t *testing.T) {
 		}
 	}
 
-	for _, posts := range c.Postsubmits {
-		for _, postsubmit := range posts {
-			if postsubmit.Spec != nil && !postsubmit.Decorate {
-				if err := checkKubekinsPresets(postsubmit.Name, postsubmit.Spec, postsubmit.Labels, validLabels); err != nil {
-					t.Errorf("Error in postsubmit %q: %v", postsubmit.Name, err)
-				}
+	for _, postsubmit := range c.AllPostsubmits(nil) {
+		if postsubmit.Spec != nil && !postsubmit.Decorate {
+			if err := checkKubekinsPresets(postsubmit.Name, postsubmit.Spec, postsubmit.Labels, validLabels); err != nil {
+				t.Errorf("Error in postsubmit %q: %v", postsubmit.Name, err)
 			}
 		}
 	}
 
-	for _, periodic := range c.Periodics {
+	for _, periodic := range c.AllPeriodics() {
 		if periodic.Spec != nil && !periodic.Decorate {
 			if err := checkKubekinsPresets(periodic.Name, periodic.Spec, periodic.Labels, validLabels); err != nil {
 				t.Errorf("Error in periodic %q: %v", periodic.Name, err)
+			}
+		}
+	}
+}
+
+func hasArg(wanted string, args []string) bool {
+	for _, arg := range args {
+		if strings.HasPrefix(arg, wanted) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func checkScenarioArgs(jobName string, args []string) error {
+	// env files/scenarios validation
+	scenarioArgs := false
+	scenario := ""
+	for _, arg := range args {
+		if strings.HasPrefix(arg, "--env-file=") {
+			env := strings.TrimPrefix(arg, "--env-file=")
+			if _, err := os.Stat("../../../" + env); err != nil {
+				return fmt.Errorf("job %s: cannot stat env file %s", jobName, env)
+			}
+		}
+
+		if arg == "--" {
+			scenarioArgs = true
+		}
+
+		if strings.HasPrefix(arg, "--scenario=") {
+			scenario = strings.TrimPrefix(arg, "--scenario=")
+		}
+	}
+
+	if !scenarioArgs {
+		return nil
+	}
+
+	if scenario == "" {
+		entry := jobName
+		if strings.HasPrefix(jobName, "pull-security-kubernetes") {
+			entry = strings.Replace(entry, "pull-security-kubernetes", "pull-kubernetes", -1)
+		}
+
+		if _, ok := cj[entry]; ok {
+			// the unit test is handled in jobs/config_test.py
+			return nil
+		}
+		return fmt.Errorf("job %s: missing --scenario", jobName)
+	} else {
+		if _, err := os.Stat(fmt.Sprintf("../../../scenarios/%s.py", scenario)); err != nil {
+			return fmt.Errorf("job %s: scenario %s does not exist: %s", jobName, scenario, err)
+		}
+	}
+
+	// shared build args
+	use_shared_build_in_args := hasArg("--use-shared-build", args)
+	extract_in_args := hasArg("--extract", args)
+	build_in_args := hasArg("--build", args)
+
+	if use_shared_build_in_args && extract_in_args {
+		return fmt.Errorf("job %s: --use-shared-build and --extract cannot be combined", jobName)
+	}
+
+	if use_shared_build_in_args && build_in_args {
+		return fmt.Errorf("job %s: --use-shared-build and --build cannot be combined", jobName)
+	}
+
+	if scenario != "kubernetes_e2e" {
+		return nil
+	}
+
+	if hasArg("--provider=gke", args) {
+		if !hasArg("--deployment=gke", args) {
+			return fmt.Errorf("with --provider=gke, job %s must use --deployment=gke", jobName)
+		}
+		if hasArg("--gcp-master-image", args) {
+			return fmt.Errorf("with --provider=gke, job %s cannot use --gcp-master-image", jobName)
+		}
+		if hasArg("--gcp-nodes", args) {
+			return fmt.Errorf("with --provider=gke, job %s cannot use --gcp-nodes", jobName)
+		}
+	}
+
+	if hasArg("--deployment=gke", args) && !hasArg("--gcp-node-image", args) {
+		return fmt.Errorf("with --deployment=gke, job %s must use --gcp-node-image", jobName)
+	}
+
+	if hasArg("--env-file=jobs/pull-kubernetes-e2e.env", args) && hasArg("--check-leaked-resources", args) {
+		return fmt.Errorf("presubmit job %s should not check for resource leaks", jobName)
+	}
+
+	extracts := hasArg("--extract=", args)
+	sharedBuilds := hasArg("--use-shared-build", args)
+	nodeE2e := hasArg("--deployment=node", args)
+	localE2e := hasArg("--deployment=local", args)
+	builds := hasArg("--build", args)
+
+	if sharedBuilds && extracts {
+		return fmt.Errorf("e2e jobs %s cannot have --use-shared-build and --extract", jobName)
+	}
+
+	if !sharedBuilds && !extracts && !nodeE2e && !builds {
+		return fmt.Errorf("e2e jobs %s should get k8s build from one of --extract, --use-shared-build, --build or use --deployment=node", jobName)
+	}
+
+	expectedExtract := 1
+	if sharedBuilds || nodeE2e || builds {
+		expectedExtract = 0
+	} else if strings.Contains(jobName, "upgrade") ||
+		strings.Contains(jobName, "skew") ||
+		strings.Contains(jobName, "rollback") ||
+		strings.Contains(jobName, "downgrade") ||
+		jobName == "ci-kubernetes-e2e-gce-canary" {
+		expectedExtract = 2
+	}
+
+	numExtract := 0
+	for _, arg := range args {
+		if strings.HasPrefix(arg, "--extract=") {
+			numExtract++
+		}
+	}
+	if numExtract != expectedExtract {
+		return fmt.Errorf("e2e jobs %s should have %d --extract flags, got %d", jobName, expectedExtract, numExtract)
+	}
+
+	if hasArg("--image-family", args) != hasArg("--image-project", args) {
+		return fmt.Errorf("e2e jobs %s should have both --image-family and --image-project, or none of them", jobName)
+	}
+
+	if strings.HasPrefix(jobName, "pull-kubernetes-") &&
+		!nodeE2e &&
+		!localE2e &&
+		!strings.Contains(jobName, "kubeadm") {
+		stage := "gs://kubernetes-release-pull/ci/" + jobName
+		if strings.Contains(jobName, "gke") {
+			stage = "gs://kubernetes-release-dev/ci"
+			if !hasArg("--stage-suffix="+jobName, args) {
+				return fmt.Errorf("presubmit gke jobs %s - need to have --stage-suffix=%s", jobName, jobName)
+			}
+		}
+
+		if !sharedBuilds {
+			if !hasArg("--stage="+stage, args) {
+				return fmt.Errorf("presubmit jobs %s - need to stage to %s", jobName, stage)
+			}
+		}
+	}
+
+	return nil
+}
+
+// TestValidScenarioArgs makes sure all scenario args in job configs are valid
+func TestValidScenarioArgs(t *testing.T) {
+	for _, job := range c.AllPresubmits(nil) {
+		if job.Spec != nil {
+			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Args); err != nil {
+				t.Errorf("Invalid Scenario Args : %s", err)
+			}
+		}
+	}
+
+	for _, job := range c.AllPostsubmits(nil) {
+		if job.Spec != nil {
+			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Args); err != nil {
+				t.Errorf("Invalid Scenario Args : %s", err)
+			}
+		}
+	}
+
+	for _, job := range c.AllPeriodics() {
+		if job.Spec != nil {
+			if err := checkScenarioArgs(job.Name, job.Spec.Containers[0].Args); err != nil {
+				t.Errorf("Invalid Scenario Args : %s", err)
 			}
 		}
 	}

@@ -1,0 +1,10 @@
+periodics:
+- name: kubeflow-periodic
+  interval: 8h
+  agent: kubernetes
+  labels:
+    preset-service-account: "true"
+  spec:
+    containers:
+    - image: gcr.io/kubeflow-ci/test-worker:latest
+      imagePullPolicy: Always

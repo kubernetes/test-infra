@@ -9,6 +9,7 @@ py_binary(
     srcs = ["generate_tests.py"],
     data = [
         "test_config.yaml",
+        "//config:prowjobs",
         "//jobs",
         "//prow:configs",
     ],

@@ -72,7 +72,7 @@ type serviceClusterClient interface {
 }
 
 type PodLogClient interface {
-	GetLog(pod string) ([]byte, error)
+	GetContainerLog(pod, container string) ([]byte, error)
 }
 
 type ConfigAgent interface {
@@ -148,7 +148,7 @@ func (ja *JobAgent) GetJobLog(job, id string) ([]byte, error) {
 		if !ok {
 			return nil, fmt.Errorf("cannot get logs for prowjob %q with agent %q: unknown cluster alias %q", j.ObjectMeta.Name, j.Spec.Agent, j.ClusterAlias())
 		}
-		return client.GetLog(j.Status.PodName)
+		return client.GetContainerLog(j.Status.PodName, kube.TestContainerName)
 	}
 	for _, agentToTmpl := range ja.c.Config().Deck.ExternalAgentLogs {
 		if agentToTmpl.Agent != string(j.Spec.Agent) {

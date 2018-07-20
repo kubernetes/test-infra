@@ -21,182 +21,129 @@ import (
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/plugins"
 )
 
 func TestTrusted(t *testing.T) {
-	var testcases = []struct {
-		PR       github.PullRequest
-		Comments []github.IssueComment
-		Trusted  bool
-	}{
-		// Org member.
-		{
-			PR: github.PullRequest{
-				User: github.User{Login: "t1"},
-			},
-			Trusted: true,
-		},
-		// Repo's org member.
-		{
-			PR: github.PullRequest{
-				User: github.User{Login: "t2"},
-			},
-			Trusted: true,
-		},
-		// Non org member, no comments.
-		{
-			PR: github.PullRequest{
-				User: github.User{Login: "u"},
-			},
-			Trusted: false,
-		},
-		// Non org member, random comment by org member.
-		{
-			PR: github.PullRequest{
-				User: github.User{Login: "u"},
-			},
-			Comments: []github.IssueComment{
-				{
-					Body: "this is evil!",
-					User: github.User{Login: "t1"},
-				},
-			},
-			Trusted: false,
-		},
-		// Non org member, "not ok to test" comment by org member.
-		{
-			PR: github.PullRequest{
-				User: github.User{Login: "u"},
-			},
-			Comments: []github.IssueComment{
-				{
-					Body: "not ok to test",
-					User: github.User{Login: "t1"},
-				},
-			},
-			Trusted: false,
-		},
-		// Non org member, ok to test comment by org member.
-		{
-			PR: github.PullRequest{
-				User: github.User{Login: "u"},
-			},
-			Comments: []github.IssueComment{
-				{
-					Body: "/ok-to-test",
-					User: github.User{Login: "t1"},
-				},
-			},
-			Trusted: true,
-		},
-		// Non org member, ok to test comment by repo's org member.
-		{
-			PR: github.PullRequest{
-				User: github.User{Login: "u"},
-			},
+	const rando = "random-person"
+	const member = "org-member"
+	const sister = "trusted-org-member"
+	const friend = "repo-collaborator"
 
-			Comments: []github.
-				IssueComment{
-				{
-					Body: "/ok-to-test",
-					User: github.User{Login: "t2"},
-				},
-			},
-			Trusted: true,
-		},
-		// Non org member, ok to test comment with carriage return by org member.
+	const accept = "/ok-to-test"
+	const chatter = "ignore random stuff"
+
+	var testcases = []struct {
+		name      string
+		author    string
+		comment   string
+		commenter string
+		onlyOrg   bool
+		expected  bool
+	}{
 		{
-			PR: github.PullRequest{
-				User: github.User{Login: "u"},
-			},
-			Comments: []github.IssueComment{
-				{
-					Body: "/ok-to-test\r",
-					User: github.User{Login: "t1"},
-				},
-			},
-			Trusted: true,
+			name:     "trust org member",
+			author:   member,
+			expected: true,
 		},
-		// Non org member, multiline ok to test comment by org member.
 		{
-			PR: github.PullRequest{
-				User: github.User{Login: "u"},
-			},
-			Comments: []github.IssueComment{
-				{
-					Body: "hello\n/ok-to-test\r\nplease",
-					User: github.User{Login: "t1"},
-				},
-			},
-			Trusted: true,
+			name:     "trust member of other trusted org",
+			author:   sister,
+			expected: true,
 		},
-		// Non org member, ok to test with additional comment before by org member.
 		{
-			PR: github.PullRequest{
-				User: github.User{Login: "u"},
-			},
-			Comments: []github.IssueComment{
-				{
-					Body: "please, /ok-to-test",
-					User: github.User{Login: "t1"},
-				},
-			},
-			Trusted: false,
+			name: "reject random author",
 		},
-		// Non org member, ok to test comment by non-org member.
 		{
-			PR: github.PullRequest{
-				User: github.User{Login: "u"},
-			},
-			Comments: []github.IssueComment{
-				{
-					Body: "/ok-to-test",
-					User: github.User{Login: "u2"},
-				},
-			},
-			Trusted: false,
+			name:      "reject random author on random org member commentary",
+			comment:   chatter,
+			commenter: member,
 		},
-		// Non org member, ok to test comment by bot.
 		{
-			PR: github.PullRequest{
-				User: github.User{Login: "u"},
-			},
-			Comments: []github.IssueComment{
-				{
-					Body: "/ok-to-test",
-					User: github.User{Login: "k8s-bot"},
-				},
-			},
-			Trusted: false,
+			name:      "accept random PR after org member ok",
+			comment:   accept,
+			commenter: member,
+			expected:  true,
 		},
-		// Non org member, ok to test comment by author.
 		{
-			PR: github.PullRequest{
-				User: github.User{Login: "u"},
-			},
-			Comments: []github.IssueComment{
-				{
-					Body: "/ok-to-test",
-					User: github.User{Login: "u"},
-				},
-			},
-			Trusted: false,
+			name:      "accept random PR after ok from trusted org member",
+			comment:   accept,
+			commenter: sister,
+			expected:  true,
+		},
+		{
+			name:      "ok may end with a \\r",
+			comment:   accept + "\r",
+			commenter: member,
+			expected:  true,
+		},
+		{
+			name:      "ok start on a middle line",
+			comment:   "hello\n" + accept + "\r\nplease",
+			commenter: member,
+			expected:  true,
+		},
+		{
+			name:      "require ok on start of line",
+			comment:   "please, " + accept,
+			commenter: member,
+		},
+		{
+			name:      "reject acceptance from random person",
+			comment:   accept,
+			commenter: rando + " III",
+		},
+		{
+			name:      "reject acceptance from this bot",
+			comment:   accept,
+			commenter: fakegithub.Bot,
+		},
+		{
+			name:      "reject acceptance from random author",
+			comment:   accept,
+			commenter: rando,
+		},
+		{
+			name:      "reject acceptance from repo collaborator in org-only mode",
+			comment:   accept,
+			commenter: friend,
+			onlyOrg:   true,
+		},
+		{
+			name:      "accept ok from repo collaborator",
+			comment:   accept,
+			commenter: friend,
+			expected:  true,
 		},
 	}
 	for _, tc := range testcases {
-		g := &fakegithub.FakeClient{
-			OrgMembers: map[string][]string{"kubernetes": {"t1"}, "kubernetes-incubator": {"t2"}},
-			IssueComments: map[int][]github.IssueComment{
-				0: tc.Comments,
-			},
-		}
-		tc.PR.Base.Repo.Owner.Login = "kubernetes-incubator"
-		trusted, err := trustedPullRequest(g, tc.PR, "kubernetes", tc.Comments)
-		if err != nil {
-			t.Fatalf("Didn't expect error: %s", err)
-		}
-		if trusted != tc.Trusted {
-			t.Errorf("Wrong trusted: %+v", tc)
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.author == "" {
+				tc.author = rando
+			}
+			g := &fakegithub.FakeClient{
+				OrgMembers:    map[string][]string{"kubernetes": {sister}, "kubernetes-incubator": {member, fakegithub.Bot}},
+				Collaborators: []string{friend},
+				IssueComments: map[int][]github.IssueComment{},
+			}
+			trigger := plugins.Trigger{
+				TrustedOrg:     "kubernetes",
+				OnlyOrgMembers: tc.onlyOrg,
+			}
+			var comments []github.IssueComment
+			if tc.comment != "" {
+				comments = append(comments, github.IssueComment{
+					Body: tc.comment,
+					User: github.User{Login: tc.commenter},
+				})
+			}
+			actual, err := trustedPullRequest(g, &trigger, tc.author, "kubernetes-incubator", "random-repo", comments)
+			if err != nil {
+				t.Fatalf("Didn't expect error: %s", err)
+			}
+			if actual != tc.expected {
+				t.Errorf("actual result %t != expected %t", actual, tc.expected)
+			}
+		})
 	}
 }
