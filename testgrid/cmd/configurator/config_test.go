@@ -372,6 +372,7 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 		"kubeflow/tf-operator",
 		"kubeflow/website",
 		"kubernetes-sigs/cluster-api",
+		"kubernetes-sigs/cluster-api-provider-aws",
 		"kubernetes-sigs/cluster-api-provider-openstack",
 		"kubernetes-sigs/poseidon",
 		"kubernetes/cluster-registry",
