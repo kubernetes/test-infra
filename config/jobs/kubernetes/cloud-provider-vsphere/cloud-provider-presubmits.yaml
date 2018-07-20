@@ -1,0 +1,25 @@
+presubmits:
+  kubernetes/cloud-provider-vsphere:
+  - name: pull-cloud-provider-vsphere-test
+    agent: kubernetes
+    context: pull-cloud-provider-vsphere-test
+    branches:
+    - master
+    always_run: true
+    rerun_command: "/test pull-cloud-provider-vsphere-test"
+    trigger: "(?m)^/test( all| pull-cloud-provider-vsphere-test),?(\\s+|$)"
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--scenario=execute"
+        - "--timeout=30"
+        - "--" # end bootstrap args, scenario args below
+        - "make"
+        - "test"
