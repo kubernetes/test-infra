@@ -31,8 +31,7 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
         args:
-        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src/github.com/kubernetes-incubator/$(REPO_NAME)"
+        - "--repo=github.com/kubernetes-incubator/$(REPO_NAME)=$(PULL_REFS)"
         - "--timeout=60"
         - "--scenario=execute"
         - "--"
