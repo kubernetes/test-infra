@@ -403,6 +403,7 @@ presubmits:
       containers:
       - image: alpine`,
 			},
+			expectError: true,
 		},
 		{
 			name:       "dup presubmits, two files",
@@ -411,8 +412,7 @@ presubmits:
 				`
 presubmits:
   foo/bar:
-  - interval: 10m
-    agent: kubernetes
+  - agent: kubernetes
     name: presubmit-bar
     context: bar
     spec:
@@ -421,8 +421,7 @@ presubmits:
 				`
 presubmits:
   foo/bar:
-  - interval: 10m
-    agent: kubernetes
+  - agent: kubernetes
     context: bar
     name: presubmit-bar
     spec:
@@ -431,6 +430,78 @@ presubmits:
 			},
 			expectError: true,
 		},
+		{
+			name:       "dup presubmits not the same branch, two files",
+			prowConfig: ``,
+			jobConfigs: []string{
+				`
+presubmits:
+  foo/bar:
+  - agent: kubernetes
+    name: presubmit-bar
+    context: bar
+    branches:
+    - master
+    spec:
+      containers:
+      - image: alpine`,
+				`
+presubmits:
+  foo/bar:
+  - agent: kubernetes
+    context: bar
+    branches:
+    - other
+    name: presubmit-bar
+    spec:
+      containers:
+      - image: alpine`,
+			},
+			expectError: false,
+		},
+		{
+			name: "dup presubmits main file",
+			prowConfig: `
+presubmits:
+  foo/bar:
+  - agent: kubernetes
+    name: presubmit-bar
+    context: bar
+    spec:
+      containers:
+      - image: alpine
+  - agent: kubernetes
+    context: bar
+    name: presubmit-bar
+    spec:
+      containers:
+      - image: alpine`,
+			expectError: true,
+		},
+		{
+			name: "dup presubmits main file not on the same branch",
+			prowConfig: `
+presubmits:
+  foo/bar:
+  - agent: kubernetes
+    name: presubmit-bar
+    context: bar
+    branches:
+    - other
+    spec:
+      containers:
+      - image: alpine
+  - agent: kubernetes
+    context: bar
+    branches:
+    - master
+    name: presubmit-bar
+    spec:
+      containers:
+      - image: alpine`,
+			expectError: false,
+		},
+
 		{
 			name:       "one postsubmit, ok",
 			prowConfig: ``,
@@ -489,6 +560,7 @@ postsubmits:
       containers:
       - image: alpine`,
 			},
+			expectError: true,
 		},
 		{
 			name:       "dup postsubmits, two files",
@@ -497,8 +569,7 @@ postsubmits:
 				`
 postsubmits:
   foo/bar:
-  - interval: 10m
-    agent: kubernetes
+  - agent: kubernetes
     name: postsubmit-bar
     context: bar
     spec:
@@ -507,8 +578,7 @@ postsubmits:
 				`
 postsubmits:
   foo/bar:
-  - interval: 10m
-    agent: kubernetes
+  - agent: kubernetes
     context: bar
     name: postsubmit-bar
     spec:
@@ -760,4 +830,96 @@ periodics:
 			}
 		}
 	}
+}
+
+func TestBrancher_Intersects(t *testing.T) {
+	testCases := []struct {
+		name   string
+		a, b   Brancher
+		result bool
+	}{
+		{
+			name: "TwodifferentBranches",
+			a: Brancher{
+				Branches: []string{"a"},
+			},
+			b: Brancher{
+				Branches: []string{"b"},
+			},
+		},
+		{
+			name: "Opposite",
+			a: Brancher{
+				SkipBranches: []string{"b"},
+			},
+			b: Brancher{
+				Branches: []string{"b"},
+			},
+		},
+		{
+			name:   "BothRunOnAllBranches",
+			a:      Brancher{},
+			b:      Brancher{},
+			result: true,
+		},
+		{
+			name: "RunsOnAllBranchesAndSpecified",
+			a:    Brancher{},
+			b: Brancher{
+				Branches: []string{"b"},
+			},
+			result: true,
+		},
+		{
+			name: "SkipBranchesAndSet",
+			a: Brancher{
+				SkipBranches: []string{"a", "b", "c"},
+			},
+			b: Brancher{
+				Branches: []string{"a"},
+			},
+		},
+		{
+			name: "SkipBranchesAndSet",
+			a: Brancher{
+				Branches: []string{"c"},
+			},
+			b: Brancher{
+				Branches: []string{"a"},
+			},
+		},
+		{
+			name: "BothSkipBranches",
+			a: Brancher{
+				SkipBranches: []string{"a", "b", "c"},
+			},
+			b: Brancher{
+				SkipBranches: []string{"d", "e", "f"},
+			},
+			result: true,
+		},
+		{
+			name: "BothSkipCommonBranches",
+			a: Brancher{
+				SkipBranches: []string{"a", "b", "c"},
+			},
+			b: Brancher{
+				SkipBranches: []string{"b", "e", "f"},
+			},
+			result: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(st *testing.T) {
+			r1 := tc.a.Intersects(tc.b)
+			r2 := tc.b.Intersects(tc.a)
+			for _, result := range []bool{r1, r2} {
+				if result != tc.result {
+					st.Errorf("Expected %v got %v", tc.result, result)
+				}
+			}
+		})
+	}
+
 }

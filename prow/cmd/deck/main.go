@@ -95,8 +95,11 @@ func gatherOptions() options {
 	return o
 }
 
-// Matches letters, numbers, hyphens, and underscores.
-var objReg = regexp.MustCompile(`^[\w-]+$`)
+var (
+	// Matches letters, numbers, hyphens, and underscores.
+	objReg              = regexp.MustCompile(`^[\w-]+$`)
+	staticFilesLocation = "static"
+)
 
 func main() {
 	o := gatherOptions()
@@ -115,11 +118,11 @@ func main() {
 			gziphandler.GzipHandler(handleCached(http.FileServer(http.Dir(dir)))))
 	}
 
-	// locally just serve from ./static, otherwise do the full main
+	// locally just serve from ./staticFilesLocation, otherwise do the full main
 	if o.runLocal {
-		mux.Handle("/", staticHandlerFromDir("./static"))
+		mux.Handle("/", staticHandlerFromDir("./"+staticFilesLocation))
 	} else {
-		mux.Handle("/", staticHandlerFromDir("/static"))
+		mux.Handle("/", staticHandlerFromDir("/"+staticFilesLocation))
 		mux = prodOnlyMain(o, mux)
 	}
 
@@ -166,6 +169,7 @@ func prodOnlyMain(o options, mux *http.ServeMux) *http.ServeMux {
 	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(kc)))
 	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(configAgent)))
 	mux.Handle("/branding.js", gziphandler.GzipHandler(handleBranding(configAgent)))
+	mux.Handle("/favicon.ico", gziphandler.GzipHandler(handleFavicon(configAgent)))
 
 	if o.hookURL != "" {
 		mux.Handle("/plugin-help.js",
@@ -564,7 +568,7 @@ func handleBranding(ca jobs.ConfigAgent) http.HandlerFunc {
 		b, err := json.Marshal(config.Deck.Branding)
 		if err != nil {
 			logrus.WithError(err).Error("Error marshaling branding config.")
-			http.Error(w, "Failed to marhshal branding config.", http.StatusInternalServerError)
+			http.Error(w, "Failed to marshal branding config.", http.StatusInternalServerError)
 			return
 		}
 		// If we have a "var" query, then write out "var value = [...];".
@@ -573,6 +577,17 @@ func handleBranding(ca jobs.ConfigAgent) http.HandlerFunc {
 			fmt.Fprintf(w, "var %s = %s;", v, string(b))
 		} else {
 			fmt.Fprint(w, string(b))
+		}
+	}
+}
+
+func handleFavicon(ca jobs.ConfigAgent) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		config := ca.Config()
+		if config.Deck.Branding != nil {
+			http.ServeFile(w, r, staticFilesLocation+"/"+config.Deck.Branding.Favicon)
+		} else {
+			http.ServeFile(w, r, staticFilesLocation+"/favicon.ico")
 		}
 	}
 }

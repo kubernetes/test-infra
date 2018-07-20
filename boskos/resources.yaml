@@ -462,14 +462,6 @@ resources:
   state: dirty
   type: gce-project
 - names:
-  - k8s-gci-boskos-16
-  - k8s-gci-boskos-17
-  - k8s-gci-boskos-18
-  - k8s-gci-boskos-19
-  - k8s-gci-boskos-20
-  state: dirty
-  type: gci-qa-project
-- names:
   - k8s-gke-gpu-boskos-02
   - k8s-gke-gpu-boskos-03
   - k8s-gke-gpu-boskos-04

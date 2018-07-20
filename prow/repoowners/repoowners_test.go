@@ -34,12 +34,40 @@ import (
 
 var (
 	testFiles = map[string][]byte{
-		"foo":                        []byte("approvers:\n- bob"),
-		"OWNERS":                     []byte("approvers: \n- cjwagner\nreviewers:\n- Alice\n- bob\nlabels:\n - EVERYTHING"),
-		"src/OWNERS":                 []byte("approvers:\n- Best-Approvers"),
-		"src/dir/OWNERS":             []byte("approvers:\n - bob\nreviewers:\n- alice\n- CJWagner\n- jakub\nlabels:\n- src-code"),
-		"src/dir/conformance/OWNERS": []byte("options:\n no_parent_owners: true\napprovers:\n - mml"),
-		"docs/file.md":               []byte("---\napprovers: \n- ALICE\n\nlabels:\n- docs\n---"),
+		"foo": []byte(`approvers:
+- bob`),
+		"OWNERS": []byte(`approvers:
+- cjwagner
+reviewers:
+- Alice
+- bob
+required_reviewers:
+- chris
+labels:
+- EVERYTHING`),
+		"src/OWNERS": []byte(`approvers:
+- Best-Approvers`),
+		"src/dir/OWNERS": []byte(`approvers:
+- bob
+reviewers:
+- alice
+- CJWagner
+- jakub
+required_reviewers:
+- ben
+labels:
+- src-code`),
+		"src/dir/conformance/OWNERS": []byte(`options:
+  no_parent_owners: true
+approvers:
+- mml`),
+		"docs/file.md": []byte(`---
+approvers:
+- ALICE
+
+labels:
+- docs
+---`),
 	}
 
 	testFilesRe = map[string][]byte{
@@ -296,7 +324,7 @@ func TestLoadRepoOwners(t *testing.T) {
 		branch                *string
 		extraBranchesAndFiles map[string]map[string][]byte
 
-		expectedApprovers, expectedReviewers, expectedLabels map[string]map[string]sets.String
+		expectedApprovers, expectedReviewers, expectedRequiredReviewers, expectedLabels map[string]map[string]sets.String
 
 		expectedOptions map[string]dirOptions
 	}{
@@ -311,6 +339,10 @@ func TestLoadRepoOwners(t *testing.T) {
 			expectedReviewers: map[string]map[string]sets.String{
 				"":        patternAll("alice", "bob"),
 				"src/dir": patternAll("alice", "cjwagner"),
+			},
+			expectedRequiredReviewers: map[string]map[string]sets.String{
+				"":        patternAll("chris"),
+				"src/dir": patternAll("ben"),
 			},
 			expectedLabels: map[string]map[string]sets.String{
 				"":        patternAll("EVERYTHING"),
@@ -334,6 +366,10 @@ func TestLoadRepoOwners(t *testing.T) {
 			expectedReviewers: map[string]map[string]sets.String{
 				"":        patternAll("alice", "bob"),
 				"src/dir": patternAll("alice", "cjwagner"),
+			},
+			expectedRequiredReviewers: map[string]map[string]sets.String{
+				"":        patternAll("chris"),
+				"src/dir": patternAll("ben"),
 			},
 			expectedLabels: map[string]map[string]sets.String{
 				"":        patternAll("EVERYTHING"),
@@ -359,6 +395,10 @@ func TestLoadRepoOwners(t *testing.T) {
 			expectedReviewers: map[string]map[string]sets.String{
 				"":        patternAll("alice", "bob"),
 				"src/dir": patternAll("alice", "cjwagner"),
+			},
+			expectedRequiredReviewers: map[string]map[string]sets.String{
+				"":        patternAll("chris"),
+				"src/dir": patternAll("ben"),
 			},
 			expectedLabels: map[string]map[string]sets.String{
 				"":             patternAll("EVERYTHING"),
@@ -390,6 +430,10 @@ func TestLoadRepoOwners(t *testing.T) {
 				"":        patternAll("alice", "bob"),
 				"src/dir": patternAll("alice", "cjwagner"),
 			},
+			expectedRequiredReviewers: map[string]map[string]sets.String{
+				"":        patternAll("chris"),
+				"src/dir": patternAll("ben"),
+			},
 			expectedLabels: map[string]map[string]sets.String{
 				"":        patternAll("EVERYTHING"),
 				"src/dir": patternAll("src-code"),
@@ -418,6 +462,10 @@ func TestLoadRepoOwners(t *testing.T) {
 				"":        patternAll("alice", "bob"),
 				"src/dir": patternAll("alice", "cjwagner"),
 			},
+			expectedRequiredReviewers: map[string]map[string]sets.String{
+				"":        patternAll("chris"),
+				"src/dir": patternAll("ben"),
+			},
 			expectedLabels: map[string]map[string]sets.String{
 				"":        patternAll("EVERYTHING"),
 				"src/dir": patternAll("src-code"),
@@ -440,6 +488,10 @@ func TestLoadRepoOwners(t *testing.T) {
 			expectedReviewers: map[string]map[string]sets.String{
 				"":        patternAll("alice", "bob"),
 				"src/dir": patternAll("alice", "cjwagner", "jakub"),
+			},
+			expectedRequiredReviewers: map[string]map[string]sets.String{
+				"":        patternAll("chris"),
+				"src/dir": patternAll("ben"),
 			},
 			expectedLabels: map[string]map[string]sets.String{
 				"":        patternAll("EVERYTHING"),
@@ -504,6 +556,7 @@ func TestLoadRepoOwners(t *testing.T) {
 		}
 		check("approvers", test.expectedApprovers, ro.approvers)
 		check("reviewers", test.expectedReviewers, ro.reviewers)
+		check("required_reviewers", test.expectedRequiredReviewers, ro.requiredReviewers)
 		check("labels", test.expectedLabels, ro.labels)
 		if !reflect.DeepEqual(test.expectedOptions, ro.options) {
 			t.Errorf("Expected options to be:\n%#v\ngot:\n%#v.", test.expectedOptions, ro.options)

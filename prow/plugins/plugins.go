@@ -161,19 +161,20 @@ type Configuration struct {
 	Owners Owners `json:"owners,omitempty"`
 
 	// Built-in plugins specific configuration.
-	Triggers      []Trigger     `json:"triggers,omitempty"`
-	Heart         Heart         `json:"heart,omitempty"`
-	Milestone     Milestone     `json:"milestone,omitempty"`
-	Slack         Slack         `json:"slack,omitempty"`
-	ConfigUpdater ConfigUpdater `json:"config_updater,omitempty"`
-	Blockades     []Blockade    `json:"blockades,omitempty"`
-	Approve       []Approve     `json:"approve,omitempty"`
-	Blunderbuss   Blunderbuss   `json:"blunderbuss,omitempty"`
-	RequireSIG    RequireSIG    `json:"requiresig,omitempty"`
-	SigMention    SigMention    `json:"sigmention,omitempty"`
-	Cat           Cat           `json:"cat,omitempty"`
-	Label         *Label        `json:"label,omitempty"`
-	Lgtm          []Lgtm        `json:"lgtm,omitempty"`
+	Triggers      []Trigger            `json:"triggers,omitempty"`
+	Heart         Heart                `json:"heart,omitempty"`
+	RepoMilestone map[string]Milestone `json:"repo_milestone,omitempty"`
+	Slack         Slack                `json:"slack,omitempty"`
+	ConfigUpdater ConfigUpdater        `json:"config_updater,omitempty"`
+	Blockades     []Blockade           `json:"blockades,omitempty"`
+	Approve       []Approve            `json:"approve,omitempty"`
+	Blunderbuss   Blunderbuss          `json:"blunderbuss,omitempty"`
+	RequireSIG    RequireSIG           `json:"requiresig,omitempty"`
+	SigMention    SigMention           `json:"sigmention,omitempty"`
+	Cat           Cat                  `json:"cat,omitempty"`
+	Label         *Label               `json:"label,omitempty"`
+	Lgtm          []Lgtm               `json:"lgtm,omitempty"`
+	Welcome       Welcome              `json:"welcome,omitempty"`
 }
 
 // ExternalPlugin holds configuration for registering an external
@@ -366,6 +367,9 @@ type Trigger struct {
 	// should be able to read more about joining the organization in order
 	// to become trusted members. Defaults to the Github link of TrustedOrg.
 	JoinOrgURL string `json:"join_org_url,omitempty"`
+	// OnlyOrgMembers requires PRs and/or /ok-to-test comments to come from org members.
+	// By default, trigger also include repo collaborators.
+	OnlyOrgMembers bool `json:"only_org_members,omitempty"`
 }
 
 type Heart struct {
@@ -434,6 +438,14 @@ type MergeWarning struct {
 	WhiteList []string `json:"whitelist,omitempty"`
 	// A slack event is published if the user is not on the branch whitelist
 	BranchWhiteList map[string][]string `json:"branch_whitelist,omitempty"`
+}
+
+// Welcome is config for the welcome plugin
+type Welcome struct {
+	// MessageTemplate is the welcome message template to post on new-contributor PRs
+	// For the info struct see prow/plugins/welcome/welcome.go's PRInfo
+	// TODO(bentheelder): make this be configurable per-repo?
+	MessageTemplate string `json:"message_template,omitempty"`
 }
 
 // TriggerFor finds the Trigger for a repo, if one exists

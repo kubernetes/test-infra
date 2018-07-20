@@ -39,7 +39,10 @@ func (f fkc) ListProwJobs(s string) ([]kube.ProwJob, error) {
 
 type fpkc string
 
-func (f fpkc) GetLog(pod string) ([]byte, error) {
+func (f fpkc) GetContainerLog(pod, container string) ([]byte, error) {
+	if container != kube.TestContainerName {
+		return nil, fmt.Errorf("wrong container: %s", container)
+	}
 	if pod == "wowowow" || pod == "powowow" {
 		return []byte(f), nil
 	}

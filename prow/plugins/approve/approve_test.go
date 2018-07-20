@@ -1100,6 +1100,10 @@ func (fro fakeRepoOwners) Reviewers(path string) sets.String {
 	return sets.NewString()
 }
 
+func (fro fakeRepoOwners) RequiredReviewers(path string) sets.String {
+	return sets.NewString()
+}
+
 // func (fro fakeRepoOwners) FindReviewersOwners
 
 func getTestHandleFunc() func(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, opts *plugins.Approve, pr *state) error {

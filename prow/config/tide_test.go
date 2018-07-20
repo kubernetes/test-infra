@@ -113,6 +113,7 @@ func TestMergeMethod(t *testing.T) {
 		MergeType: map[string]github.PullRequestMergeType{
 			"kubernetes/kops":             github.MergeRebase,
 			"kubernetes/charts":           github.MergeSquash,
+			"helm/charts":                 github.MergeSquash,
 			"kubernetes-helm":             github.MergeSquash,
 			"kubernetes-helm/chartmuseum": github.MergeMerge,
 		},
@@ -425,8 +426,8 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 
 	for _, tc := range testCases {
 		p, err := tc.config.GetTideContextPolicy(org, repo, branch)
-		if !reflect.DeepEqual(p, tc.expected) {
-			t.Errorf("%s - expected contexts %v got %v", tc.name, tc.expected, p)
+		if !reflect.DeepEqual(p, &tc.expected) {
+			t.Errorf("%s - expected contexts %v got %v", tc.name, &tc.expected, p)
 		}
 		if err != nil {
 			if err.Error() != tc.error {

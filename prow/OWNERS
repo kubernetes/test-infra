@@ -1,5 +1,10 @@
-approvers:
-- cjwagner
-- kargakis
-- spxtr
-- stevekuznetsov
+filters:
+  ".*":
+    approvers:
+      - cjwagner
+      - kargakis
+      - spxtr
+      - stevekuznetsov
+  "(plugins|config)\\.yaml$":
+    required_reviewers:
+      - cblecker

@@ -45,31 +45,28 @@ const (
 
 type githubClient interface {
 	Query(context.Context, interface{}, map[string]interface{}) error
-}
-
-type githubRestfulClient interface {
-	GetUser(login string) (*gogithub.User, error)
-}
-
-type pullRequestRestfulClient struct {
-	*ghclient.Client
-}
-
-func (grc pullRequestRestfulClient) GetUser(login string) (*gogithub.User, error) {
-	return grc.Client.GetUser(login)
+	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
 }
 
 // PullRequestQueryHandler defines an interface that query handlers should implement.
 type PullRequestQueryHandler interface {
+	HeadContexts(ghc githubClient, pr PullRequest) ([]Context, error)
 	QueryPullRequests(context.Context, githubClient, string) ([]PullRequest, error)
+	GetUser(*ghclient.Client) (*gogithub.User, error)
 }
 
 // UserData represents data returned to client request to the endpoint. It has a flag that indicates
 // whether the user has logged in his github or not and list of open pull requests owned by the
 // user.
 type UserData struct {
-	Login        bool
-	PullRequests []PullRequest
+	Login                    bool
+	PullRequestsWithContexts []PullRequestWithContext
+}
+
+// PullRequestWithContext contains a pull request with its latest context.
+type PullRequestWithContext struct {
+	Contexts    []Context
+	PullRequest PullRequest
 }
 
 // Dashboard Agent is responsible for handling request to /pr-status endpoint. It will serve
@@ -86,6 +83,14 @@ type Label struct {
 	Name githubql.String
 }
 
+// Context represent github contexts.
+type Context struct {
+	Context     string
+	Description string
+	State       string
+}
+
+// PullRequest holds graphql response data for github pull request.
 type PullRequest struct {
 	Number githubql.Int
 	Merged githubql.Boolean
@@ -174,9 +179,9 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 			// If access token exist, get user login using the access token. This is a chance
 			// to validate whether the access token is consumable or not. If not, invalidate the
 			// session.
-			grc := pullRequestRestfulClient{ghclient.NewClient(token.AccessToken, false)}
+			goGithubClient := ghclient.NewClient(token.AccessToken, false)
 			var err error
-			user, err = grc.GetUser("")
+			user, err = queryHandler.GetUser(goGithubClient)
 			if err != nil {
 				if strings.Contains(err.Error(), "401") {
 					// Invalidate access token session
@@ -236,9 +241,21 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 			if err != nil {
 				serverError("Error with querying user data.", err)
 				return
-			} else {
-				data.PullRequests = pullRequests
 			}
+			var pullRequestWithContexts []PullRequestWithContext
+			for _, pr := range pullRequests {
+				prcontext, err := queryHandler.HeadContexts(ghc, pr)
+				if err != nil {
+					serverError("Error with getting head context of pr", err)
+					continue
+				}
+				pullRequestWithContexts = append(pullRequestWithContexts, PullRequestWithContext{
+					Contexts:    prcontext,
+					PullRequest: pr,
+				})
+			}
+
+			data.PullRequestsWithContexts = pullRequestWithContexts
 		}
 		marshaledData, err := json.Marshal(data)
 		if err != nil {
@@ -282,6 +299,31 @@ func (da *DashboardAgent) QueryPullRequests(ctx context.Context, ghc githubClien
 	}
 	da.log.Infof("Search for query \"%s\" cost %d point(s). %d remaining.", query, totalCost, remaining)
 	return prs, nil
+}
+
+func (da *DashboardAgent) HeadContexts(ghc githubClient, pr PullRequest) ([]Context, error) {
+	org := string(pr.Repository.Owner.Login)
+	repo := string(pr.Repository.Name)
+	combined, err := ghc.GetCombinedStatus(org, repo, string(pr.HeadRefOID))
+	if err != nil {
+		return nil, fmt.Errorf("failed to get the combined status: %v", err)
+	}
+	contexts := make([]Context, 0, len(combined.Statuses))
+	for _, status := range combined.Statuses {
+		contexts = append(
+			contexts,
+			Context{
+				Context:     status.Context,
+				Description: status.Description,
+				State:       strings.ToUpper(status.State),
+			},
+		)
+	}
+	return contexts, nil
+}
+
+func (da *DashboardAgent) GetUser(client *ghclient.Client) (*gogithub.User, error) {
+	return client.GetUser("")
 }
 
 func (da *DashboardAgent) ConstructSearchQuery(login string) string {

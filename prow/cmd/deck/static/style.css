@@ -146,6 +146,10 @@ i.state {
     color: #BDBDBD;
 }
 
+.state.context-warning.mdl-list__item-icon.material-icons {
+    color: #F4C20D;
+}
+
 #filter-list {
     display: flex;
     flex-wrap: wrap;
@@ -394,6 +398,34 @@ span.label:not(.merge-table-label):hover {
 
 /* Known GitHub Labels, can be overridden in extensions/style.css */
 /* NOTE: spaces must be stripped from the label name */
+.label.area {
+    background-color: #1a53c5;
+    color: #fff;
+}
+.label.XS {
+    background-color: #5da447;
+    color: #000;
+}
+.label.S {
+    background-color: #99c356;
+    color: #000;
+}
+.label.M {
+    background-color: #ebc65d;
+    color: #000;
+}
+.label.L {
+    background-color: #e7ab56;
+    color: #000;
+}
+.label.XL {
+    background-color: #e27749;
+    color: #000;
+}
+.label.XXL {
+    background-color: #e14f43;
+    color: #fff;
+}
 .label.lgtm {
     background-color: #15dd18;
     color: #000000;
@@ -416,7 +448,8 @@ span.label:not(.merge-table-label):hover {
 .label.do-not-merge\/work-in-progress,
 .label.do-not-merge\/release-note-label-needed,
 .label.do-not-merge\/cherry-pick-not-approved,
-.label.do-not-merge\/blocked-paths {
+.label.do-not-merge\/blocked-paths,
+.label.do-not-merge\/invalid-owners-file {
     background-color: #e11d21;
     color: #ffffff;
 }

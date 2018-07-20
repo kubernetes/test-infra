@@ -119,6 +119,10 @@ func TestOptions(t *testing.T) {
 			args: []string{"--github-token-path=bar", "--config-path=foo", "--dump=frogger"},
 		},
 		{
+			name: "reject --fix-team-members without --fix-teams",
+			args: []string{"--github-token-path=bar", "--config-path=foo", "--fix-team-members"},
+		},
+		{
 			name: "allow disabled throttle",
 			args: []string{"--config-path=foo", "--github-token-path=bar", "--tokens=0"},
 			expected: &options{
@@ -162,17 +166,21 @@ func TestOptions(t *testing.T) {
 		},
 		{
 			name: "full",
-			args: []string{"--config-path=foo", "--github-token-path=bar", "--github-endpoint=weird://url", "--confirm=true", "--require-self=false", "--tokens=5", "--token-burst=2", "--dump="},
+			args: []string{"--config-path=foo", "--github-token-path=bar", "--github-endpoint=weird://url", "--confirm=true", "--require-self=false", "--tokens=5", "--token-burst=2", "--dump=", "--fix-org", "--fix-org-members", "--fix-teams", "--fix-team-members"},
 			expected: &options{
-				config:        "foo",
-				token:         "bar",
-				endpoint:      weirdFlags,
-				confirm:       true,
-				requireSelf:   false,
-				minAdmins:     defaultMinAdmins,
-				maximumDelta:  defaultDelta,
-				tokensPerHour: 5,
-				tokenBurst:    2,
+				config:         "foo",
+				token:          "bar",
+				endpoint:       weirdFlags,
+				confirm:        true,
+				requireSelf:    false,
+				minAdmins:      defaultMinAdmins,
+				maximumDelta:   defaultDelta,
+				tokensPerHour:  5,
+				tokenBurst:     2,
+				fixOrg:         true,
+				fixOrgMembers:  true,
+				fixTeams:       true,
+				fixTeamMembers: true,
 			},
 		},
 	}
@@ -195,6 +203,7 @@ func TestOptions(t *testing.T) {
 type fakeClient struct {
 	orgMembers sets.String
 	admins     sets.String
+	invitees   sets.String
 	members    sets.String
 	removed    sets.String
 	newAdmins  sets.String
@@ -225,9 +234,24 @@ func (c *fakeClient) ListOrgMembers(org, role string) ([]github.TeamMember, erro
 	}
 }
 
+func (c *fakeClient) ListOrgInvitations(org string) ([]github.OrgInvitation, error) {
+	var ret []github.OrgInvitation
+	for p := range c.invitees {
+		if p == "fail" {
+			return nil, errors.New("injected list org invitations failure")
+		}
+		ret = append(ret, github.OrgInvitation{
+			TeamMember: github.TeamMember{
+				Login: p,
+			},
+		})
+	}
+	return ret, nil
+}
+
 func (c *fakeClient) RemoveOrgMembership(org, user string) error {
 	if user == "fail" {
-		return fmt.Errorf("injected failure for %s", user)
+		return errors.New("injected remove org membership failure")
 	}
 	c.removed.Insert(user)
 	c.admins.Delete(user)
@@ -237,7 +261,7 @@ func (c *fakeClient) RemoveOrgMembership(org, user string) error {
 
 func (c *fakeClient) UpdateOrgMembership(org, user string, admin bool) (*github.OrgMembership, error) {
 	if user == "fail" {
-		return nil, fmt.Errorf("injected failure for %s", user)
+		return nil, errors.New("injected update org failure")
 	}
 	var state string
 	if c.members.Has(user) || c.admins.Has(user) {
@@ -396,6 +420,17 @@ func TestConfigureMembers(t *testing.T) {
 			members: sets.NewString("new-member"),
 			supers:  sets.NewString("new-admin"),
 		},
+		{
+			name: "ensure case insensitivity",
+			have: memberships{
+				super:   sets.NewString("lower"),
+				members: sets.NewString("UPPER"),
+			},
+			want: memberships{
+				super:   sets.NewString("Lower"),
+				members: sets.NewString("UpPeR"),
+			},
+		},
 	}
 
 	for _, tc := range cases {
@@ -446,15 +481,16 @@ func TestConfigureMembers(t *testing.T) {
 
 func TestConfigureOrgMembers(t *testing.T) {
 	cases := []struct {
-		name       string
-		opt        options
-		config     org.Config
-		admins     []string
-		members    []string
-		err        bool
-		remove     []string
-		addAdmins  []string
-		addMembers []string
+		name        string
+		opt         options
+		config      org.Config
+		admins      []string
+		members     []string
+		invitations []string
+		err         bool
+		remove      []string
+		addAdmins   []string
+		addMembers  []string
 	}{
 		{
 			name: "too few admins",
@@ -587,6 +623,19 @@ func TestConfigureOrgMembers(t *testing.T) {
 			addMembers: []string{"new-member"},
 			addAdmins:  []string{"new-admin"},
 		},
+		{
+			name: "do not reinvite",
+			config: org.Config{
+				Admins:  []string{"invited-admin"},
+				Members: []string{"invited-member"},
+			},
+			invitations: []string{"invited-admin", "invited-member"},
+		},
+		{
+			name:        "github list invitation rpc fails",
+			invitations: []string{"fail"},
+			err:         true,
+		},
 	}
 
 	for _, tc := range cases {
@@ -594,6 +643,7 @@ func TestConfigureOrgMembers(t *testing.T) {
 			fc := &fakeClient{
 				admins:     sets.NewString(tc.admins...),
 				members:    sets.NewString(tc.members...),
+				invitees:   sets.NewString(tc.invitations...),
 				removed:    sets.String{},
 				newAdmins:  sets.String{},
 				newMembers: sets.String{},
@@ -1064,6 +1114,7 @@ func TestConfigureTeam(t *testing.T) {
 				Parent: &github.Team{
 					ID: 2,
 				},
+				Privacy: string(org.Closed),
 			},
 		},
 		{

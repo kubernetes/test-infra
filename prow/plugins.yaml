@@ -4,12 +4,16 @@
 ---
 triggers:
 - repos:
-  - GoogleCloudPlatform/k8s-multicluster-ingress
-  - google/cadvisor
   - kubernetes
   - kubernetes-incubator
   - kubernetes-security
   - kubernetes-sigs
+  trusted_org: kubernetes
+  join_org_url: "https://git.k8s.io/community/community-membership.md#member"
+  only_org_members: true
+- repos:
+  - google/cadvisor
+  - GoogleCloudPlatform/k8s-multicluster-ingress
   trusted_org: kubernetes
   join_org_url: "https://git.k8s.io/community/community-membership.md#member"
 - repos:
@@ -29,7 +33,6 @@ owners:
 
 approve:
 - repos:
-  - kubernetes/charts
   - kubernetes/cluster-registry
   - kubernetes/contrib
   - kubernetes/dashboard
@@ -50,6 +53,7 @@ approve:
   - kubernetes/node-problem-detector
   - kubernetes/perf-tests
   - kubernetes/publishing-bot
+  - kubernetes/release
   - kubernetes/repo-infra
   - kubernetes/sig-release
   - kubernetes/steering
@@ -64,6 +68,10 @@ approve:
   - bazelbuild
   implicit_self_approve: true
   review_acts_as_approve: true
+- repos:
+  - helm/charts
+  implicit_self_approve: true
+  lgtm_acts_as_approve: true
 
 lgtm:
 - repos:
@@ -131,8 +139,6 @@ slack:
     - k8s-merge-robot # submit queue
     - k8s-release-robot # anago
     branch_whitelist:
-        release-1.7:
-            - wojtek-t # 1.7 patch release manager
         release-1.8:
             - jpbetz # 1.8 patch release manager
         release-1.9:
@@ -140,9 +146,10 @@ slack:
         release-1.10:
             - maciekpytel # 1.10 patch release manager
         release-1.11:
-            - calebamiles # 1.11 branch manager
+            - foxish # 1.11 patch release manager
         feature-serverside-apply:
             - lavalamp # feature-serverside-apply "branch manager"
+            - apelisse # feature-serverside-apply "branch manager"
   - repos:
     - kubernetes/test-infra
     channels:
@@ -150,12 +157,14 @@ slack:
     whitelist:
     - k8s-ci-robot
 
-milestone:
-  # You can curl the following endpoint in order to determine the github ID of your team
-  # responsible for maintaining the milestones:
-  # curl -H "Authorization: token <token>" https://api.github.com/orgs/<org-name>/teams
-  maintainers_id: 2460384
-  maintainers_team: kubernetes-milestone-maintainers
+repo_milestone:
+  # Default maintainer
+  '':
+    # You can curl the following endpoint in order to determine the github ID of your team
+    # responsible for maintaining the milestones:
+    # curl -H "Authorization: token <token>" https://api.github.com/orgs/<org-name>/teams
+    maintainers_id: 2460384
+    maintainers_team: kubernetes-milestone-maintainers
 
 config_updater:
   maps:
@@ -205,9 +214,13 @@ plugins:
     - wip
     - trigger
 
-  kubernetes/charts:
+  helm/charts:
   - approve
+  - assign
   - blunderbuss
+  - cla
+  - hold
+  - lgtm
   - trigger
 
   kubernetes/client-go:
@@ -293,7 +306,6 @@ plugins:
   kubernetes/kube-deploy:
   - approve
   - blunderbuss
-  - trigger
 
   kubernetes/kubeadm:
   - approve
@@ -346,6 +358,7 @@ plugins:
   - blunderbuss
 
   kubernetes/release:
+  - approve
   - trigger
 
   kubernetes/repo-infra:
@@ -361,6 +374,7 @@ plugins:
   kubernetes/test-infra:
   - approve
   - config-updater
+  - milestone
   - trigger
   - verify-owners
 
@@ -417,6 +431,7 @@ plugins:
   - help
   - hold
   - trigger
+  - verify-owners
   - wip
 
   kubernetes-sigs:
@@ -453,7 +468,18 @@ plugins:
   - approve
   - trigger
 
+  kubernetes-sigs/cluster-api-provider-gcp:
+  - approve
+
+  kubernetes-sigs/cluster-api-provider-openstack:
+  - approve
+  - trigger
+
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
+  - approve
+  - trigger
+
+  kubernetes-sigs/gcp-filestore-csi-driver:
   - approve
   - trigger
 
@@ -461,6 +487,9 @@ plugins:
   - approve
 
   kubernetes-sigs/kubeadm-dind-cluster:
+  - approve
+
+  kubernetes-sigs/kustomize:
   - approve
 
   containerd/cri:
@@ -532,6 +561,10 @@ external_plugins:
     events:
       - pull_request
   client-go/unofficial-docs:
+  - name: needs-rebase
+    events:
+      - pull_request
+  kubernetes-incubator/service-catalog:
   - name: needs-rebase
     events:
       - pull_request

@@ -26,7 +26,6 @@ import re
 import sys
 
 import config_sort
-import env_gc
 import yaml
 
 # pylint: disable=too-many-public-methods, too-many-branches, too-many-locals, too-many-statements
@@ -99,12 +98,14 @@ class JobTest(unittest.TestCase):
                 self.fail('boskos/resources.yaml is not sorted, please run '
                           '`bazel run //jobs:config_sort`')
 
-    def test_orphaned_env(self):
-        orphans = env_gc.find_orphans()
-        if orphans:
-            self.fail('the following .env files are not referenced ' +
-                      'in config.json, please run `bazel run //jobs:env_gc`: ' +
-                      ' '.join(orphans))
+    # TODO(krzyzacy): disabled as we currently have multiple source of truth.
+    # We also should migrate shared env files into presets.
+    #def test_orphaned_env(self):
+    #    orphans = env_gc.find_orphans()
+    #    if orphans:
+    #        self.fail('the following .env files are not referenced ' +
+    #                  'in config.json, please run `bazel run //jobs:env_gc`: ' +
+    #                  ' '.join(orphans))
 
     def check_job_template(self, tmpl):
         builders = tmpl.get('builders')

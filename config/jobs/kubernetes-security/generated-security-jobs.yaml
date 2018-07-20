@@ -41,7 +41,7 @@ presubmits:
           env:
           - name: SKIP_RELEASE_VALIDATION
             value: "true"
-          image: gcr.io/k8s-testimages/e2e-kubeadm:v20180605-a6ddc130d
+          image: gcr.io/k8s-testimages/e2e-kubeadm:v20180716-b9e2332f3
           name: ""
           resources: {}
           volumeMounts:
@@ -73,7 +73,7 @@ presubmits:
         - --release=//build/release-tars
         - --gcs=gs://kubernetes-security-prow/ci/pull-security-kubernetes-bazel-build
         - --gcs-shared=gs://kubernetes-security-prow/bazel
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
         name: ""
         resources:
           requests:
@@ -128,7 +128,7 @@ presubmits:
           env:
           - name: SKIP_RELEASE_VALIDATION
             value: "true"
-          image: gcr.io/k8s-testimages/e2e-kubeadm:v20180605-a6ddc130d
+          image: gcr.io/k8s-testimages/e2e-kubeadm:v20180716-b9e2332f3
           name: ""
           resources: {}
           volumeMounts:
@@ -156,7 +156,7 @@ presubmits:
         - --release=//build/release-tars
         - --gcs=gs://kubernetes-security-prow/ci/pull-security-kubernetes-bazel-build
         - --gcs-shared=gs://kubernetes-security-prow/bazel
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
         name: ""
         resources:
           requests:
@@ -211,7 +211,7 @@ presubmits:
           env:
           - name: SKIP_RELEASE_VALIDATION
             value: "true"
-          image: gcr.io/k8s-testimages/e2e-kubeadm:v20180605-a6ddc130d
+          image: gcr.io/k8s-testimages/e2e-kubeadm:v20180716-b9e2332f3
           name: ""
           resources: {}
           volumeMounts:
@@ -294,7 +294,7 @@ presubmits:
           env:
           - name: SKIP_RELEASE_VALIDATION
             value: "true"
-          image: gcr.io/k8s-testimages/e2e-kubeadm:v20180605-a6ddc130d
+          image: gcr.io/k8s-testimages/e2e-kubeadm:v20180716-b9e2332f3
           name: ""
           resources: {}
           volumeMounts:
@@ -340,50 +340,6 @@ presubmits:
           secretName: ssh-security
     trigger: (?m)^/test( all| pull-security-kubernetes-bazel-build),?(\s+|$)
   - agent: kubernetes
-    always_run: false
-    cluster: security
-    context: pull-security-kubernetes-bazel-build-canary
-    labels:
-      preset-bazel-scratch-dir: "true"
-      preset-service-account: "true"
-    max_concurrency: 0
-    name: pull-security-kubernetes-bazel-build-canary
-    rerun_command: /test pull-security-kubernetes-bazel-build-canary
-    run_if_changed: ""
-    skip_report: false
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - --job=$(JOB_NAME)
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --scenario=kubernetes_bazel
-        - --timeout=60
-        - --
-        - --build=//... -//vendor/...
-        - --release=//build/release-tars
-        - --gcs=gs://kubernetes-security-prow/ci/pull-security-kubernetes-bazel-build-canary
-        - --gcs-shared=gs://kubernetes-security-prow/bazel
-        image: gcr.io/k8s-testimages/kubekins-e2e@sha256:02fe7ded2e8e477e52f3c82eab5fb6632ad7cd09612e2d7c5944d143974f3685
-        imagePullPolicy: Always
-        name: ""
-        resources:
-          requests:
-            memory: 6Gi
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-bazel-build-canary,?(\s+|$)
-  - agent: kubernetes
     always_run: true
     cluster: security
     context: pull-security-kubernetes-bazel-test
@@ -415,7 +371,7 @@ presubmits:
         - --test-args=--build_tag_filters=-e2e,-integration
         - --test-args=--test_tag_filters=-e2e,-integration
         - --test-args=--flaky_test_attempts=3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
         name: ""
         resources:
           requests:
@@ -461,7 +417,7 @@ presubmits:
         - --test-args=--build_tag_filters=-e2e,-integration
         - --test-args=--test_tag_filters=-e2e,-integration
         - --test-args=--flaky_test_attempts=3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
         name: ""
         resources:
           requests:
@@ -567,89 +523,6 @@ presubmits:
           defaultMode: 256
           secretName: ssh-security
     trigger: (?m)^/test( all| pull-security-kubernetes-bazel-test),?(\s+|$)
-  - agent: kubernetes
-    always_run: false
-    cluster: security
-    context: pull-security-kubernetes-bazel-test-canary
-    labels:
-      preset-bazel-scratch-dir: "true"
-      preset-service-account: "true"
-    max_concurrency: 0
-    name: pull-security-kubernetes-bazel-test-canary
-    rerun_command: /test pull-security-kubernetes-bazel-test-canary
-    run_if_changed: ""
-    skip_report: false
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - --job=$(JOB_NAME)
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --scenario=kubernetes_execute_bazel
-        - --timeout=60
-        - --
-        - make
-        - bazel-test
-        image: gcr.io/k8s-testimages/kubekins-e2e@sha256:02fe7ded2e8e477e52f3c82eab5fb6632ad7cd09612e2d7c5944d143974f3685
-        imagePullPolicy: Always
-        name: ""
-        resources:
-          requests:
-            memory: 6Gi
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-bazel-test-canary,?(\s+|$)
-  - agent: kubernetes
-    always_run: false
-    cluster: security
-    context: pull-security-kubernetes-bazel-test-integration-canary
-    labels:
-      preset-bazel-scratch-dir: "true"
-      preset-service-account: "true"
-    max_concurrency: 0
-    name: pull-security-kubernetes-bazel-test-integration-canary
-    rerun_command: /test pull-security-kubernetes-bazel-test-integration-canary
-    run_if_changed: ""
-    skip_report: false
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - --job=$(JOB_NAME)
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --
-        - --test=//test/integration/...
-        - --test-args=--config=integration
-        - --timeout=60
-        image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
-        imagePullPolicy: Always
-        name: ""
-        resources:
-          requests:
-            memory: 6Gi
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-bazel-test-integration-canary,?(\s+|$)
   - agent: kubernetes
     always_run: false
     cluster: security
@@ -828,7 +701,7 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
         name: ""
         resources:
           requests:
@@ -891,7 +764,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-containerd-gce
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
         name: ""
         resources:
           requests:
@@ -935,7 +808,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
         name: ""
         resources:
           requests:
@@ -977,7 +850,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
         name: ""
         resources:
           requests:
@@ -1019,7 +892,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.9
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.9
         name: ""
         resources:
           requests:
@@ -1061,7 +934,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.8
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.8
         name: ""
         resources:
           requests:
@@ -1103,7 +976,7 @@ presubmits:
         - --timeout=120
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-100-performance
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
         name: ""
         resources:
           requests:
@@ -1145,7 +1018,7 @@ presubmits:
         - --timeout=270
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-big-performance
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
         name: ""
         resources:
           requests:
@@ -1191,7 +1064,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-device-plugin-gpu
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
         name: ""
         resources:
           requests:
@@ -1235,7 +1108,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-device-plugin-gpu
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
         name: ""
         resources:
           requests:
@@ -1279,7 +1152,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-device-plugin-gpu
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.9
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.9
         name: ""
         resources:
           requests:
@@ -1323,7 +1196,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-device-plugin-gpu
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.8
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.8
         name: ""
         resources:
           requests:
@@ -1365,7 +1238,7 @@ presubmits:
         - --timeout=570
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-large-performance
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
         name: ""
         resources:
           requests:
@@ -1409,7 +1282,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
         name: ""
         resources:
           requests:
@@ -1451,7 +1324,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
         name: ""
         resources:
           requests:
@@ -1493,7 +1366,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.9
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.9
         name: ""
         resources:
           requests:
@@ -1535,7 +1408,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.8
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.8
         name: ""
         resources:
           requests:
@@ -1581,7 +1454,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke-device-plugin-gpu
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
         name: ""
         resources:
           requests:
@@ -1625,7 +1498,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke-device-plugin-gpu
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
         name: ""
         resources:
           requests:
@@ -1669,7 +1542,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke-device-plugin-gpu
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.9
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.9
         name: ""
         resources:
           requests:
@@ -1713,7 +1586,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke-device-plugin-gpu
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.8
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.8
         name: ""
         resources:
           requests:
@@ -1760,7 +1633,7 @@ presubmits:
         - --timeout=75
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-kops-aws
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
         name: ""
         resources:
           requests:
@@ -1805,7 +1678,7 @@ presubmits:
         - --timeout=75
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-kops-aws
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
         name: ""
         resources:
           requests:
@@ -1850,7 +1723,7 @@ presubmits:
         - --timeout=75
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-kops-aws
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.9
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.9
         name: ""
         resources:
           requests:
@@ -1895,7 +1768,7 @@ presubmits:
         - --timeout=75
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-kops-aws
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.8
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.8
         name: ""
         resources:
           requests:
@@ -2031,7 +1904,7 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
         name: ""
         resources:
           requests:
@@ -2082,7 +1955,7 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
         name: ""
         resources:
           requests:
@@ -2133,7 +2006,7 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.9
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.9
         name: ""
         resources:
           requests:
@@ -2184,7 +2057,7 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.8
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.8
         name: ""
         resources:
           requests:
@@ -2235,7 +2108,7 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
         name: ""
         resources:
           requests:
@@ -2282,7 +2155,7 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
         name: ""
         resources: {}
         securityContext:
@@ -2329,7 +2202,7 @@ presubmits:
           value: "true"
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
         name: ""
         resources: {}
         securityContext:
@@ -2375,7 +2248,7 @@ presubmits:
         - --timeout=90
         - --
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
         name: ""
         resources:
           requests:
@@ -2415,7 +2288,7 @@ presubmits:
         - --timeout=90
         - --
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
         name: ""
         resources:
           requests:
@@ -2455,7 +2328,7 @@ presubmits:
         - --timeout=90
         - --
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.9
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.9
         name: ""
         resources:
           requests:
@@ -2495,7 +2368,7 @@ presubmits:
         - --timeout=90
         - --
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-1.8
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.8
         name: ""
         resources:
           requests:
@@ -2536,7 +2409,7 @@ presubmits:
         - --timeout=90
         - --
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
         name: ""
         resources:
           requests:
@@ -2574,7 +2447,7 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=75
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180605-65a672b59-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
         name: ""
         resources: {}
         volumeMounts:
@@ -2673,3 +2546,131 @@ presubmits:
           defaultMode: 256
           secretName: ssh-security
     trigger: (?m)^/test pull-security-kubernetes-verify-prow,?(\s+|$)
+  - agent: kubernetes
+    always_run: false
+    cluster: security
+    context: pull-security-kubernetes-bazel-build-canary
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-service-account: "true"
+    max_concurrency: 0
+    name: pull-security-kubernetes-bazel-build-canary
+    rerun_command: /test pull-security-kubernetes-bazel-build-canary
+    run_if_changed: ""
+    skip_report: false
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --job=$(JOB_NAME)
+        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-security-prow/pr-logs
+        - --scenario=kubernetes_bazel
+        - --timeout=60
+        - --
+        - --build=//... -//vendor/...
+        - --release=//build/release-tars
+        - --gcs=gs://kubernetes-security-prow/ci/pull-security-kubernetes-bazel-build-canary
+        - --gcs-shared=gs://kubernetes-security-prow/bazel
+        image: gcr.io/k8s-testimages/kubekins-e2e@sha256:02fe7ded2e8e477e52f3c82eab5fb6632ad7cd09612e2d7c5944d143974f3685
+        imagePullPolicy: Always
+        name: ""
+        resources:
+          requests:
+            memory: 6Gi
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test pull-security-kubernetes-bazel-build-canary,?(\s+|$)
+  - agent: kubernetes
+    always_run: false
+    cluster: security
+    context: pull-security-kubernetes-bazel-test-canary
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-service-account: "true"
+    max_concurrency: 0
+    name: pull-security-kubernetes-bazel-test-canary
+    rerun_command: /test pull-security-kubernetes-bazel-test-canary
+    run_if_changed: ""
+    skip_report: false
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --job=$(JOB_NAME)
+        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-security-prow/pr-logs
+        - --scenario=kubernetes_execute_bazel
+        - --timeout=60
+        - --
+        - make
+        - bazel-test
+        image: gcr.io/k8s-testimages/kubekins-e2e@sha256:02fe7ded2e8e477e52f3c82eab5fb6632ad7cd09612e2d7c5944d143974f3685
+        imagePullPolicy: Always
+        name: ""
+        resources:
+          requests:
+            memory: 6Gi
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test pull-security-kubernetes-bazel-test-canary,?(\s+|$)
+  - agent: kubernetes
+    always_run: false
+    cluster: security
+    context: pull-security-kubernetes-bazel-test-integration-canary
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-service-account: "true"
+    max_concurrency: 0
+    name: pull-security-kubernetes-bazel-test-integration-canary
+    rerun_command: /test pull-security-kubernetes-bazel-test-integration-canary
+    run_if_changed: ""
+    skip_report: false
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --job=$(JOB_NAME)
+        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-security-prow/pr-logs
+        - --scenario=kubernetes_execute_bazel
+        - --
+        - --test=//test/integration/...
+        - --test-args=--config=integration
+        - --timeout=60
+        image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
+        imagePullPolicy: Always
+        name: ""
+        resources:
+          requests:
+            memory: 6Gi
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test pull-security-kubernetes-bazel-test-integration-canary,?(\s+|$)

@@ -641,13 +641,17 @@ func main() {
 
 type filter func(string, string) bool
 
+type labelData struct {
+	Description, Link, Labels interface{}
+}
+
 func writeDocs(template string, output string, config Configuration) error {
-	labels := map[string][]Label{
-		"both issues and PRs": config.LabelsByTarget(bothTarget),
-		"only issues":         config.LabelsByTarget(issueTarget),
-		"only PRs":            config.LabelsByTarget(prTarget),
+	data := []labelData{
+		{"both issues and PRs", "both-issues-and-prs", config.LabelsByTarget(bothTarget)},
+		{"only issues", "only-issues", config.LabelsByTarget(issueTarget)},
+		{"only PRs", "only-prs", config.LabelsByTarget(prTarget)},
 	}
-	if err := writeTemplate(*docsTemplate, *docsOutput, labels); err != nil {
+	if err := writeTemplate(*docsTemplate, *docsOutput, data); err != nil {
 		return err
 	}
 	return nil

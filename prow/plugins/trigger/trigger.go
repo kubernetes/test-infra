@@ -45,13 +45,16 @@ func init() {
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	configInfo := map[string]string{}
-	for _, repo := range enabledRepos {
-		parts := strings.Split(repo, "/")
+	for _, orgRepo := range enabledRepos {
+		parts := strings.Split(orgRepo, "/")
 		if len(parts) != 2 {
-			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", repo)
+			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", orgRepo)
 		}
-		trusted, _ := trustedOrgForRepo(config, parts[0], parts[1])
-		configInfo[repo] = fmt.Sprintf("The trusted Github organization for this repository is %q.", trusted)
+		org, repoName := parts[0], parts[1]
+		if trigger := config.TriggerFor(org, repoName); trigger != nil && trigger.TrustedOrg != "" {
+			org = trigger.TrustedOrg
+		}
+		configInfo[orgRepo] = fmt.Sprintf("The trusted Github organization for this repository is %q.", org)
 	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: `The trigger plugin starts tests in reaction to commands and pull request events. It is responsible for ensuring that test jobs are only run on trusted PRs. A PR is considered trusted if the author is a member of the 'trusted organization' for the repository or if such a member has left an '/ok-to-test' command on the PR.
@@ -86,6 +89,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 type githubClient interface {
 	AddLabel(org, repo string, number int, label string) error
 	BotName() (string, error)
+	IsCollaborator(org, repo, user string) (bool, error)
 	IsMember(org, user string) (bool, error)
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
 	GetRef(org, repo, ref string) (string, error)
@@ -119,42 +123,53 @@ func getClient(pc plugins.PluginClient) client {
 }
 
 func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) error {
-	trustedOrg, joinOrgURL := trustedOrgForRepo(pc.PluginConfig, pr.Repo.Owner.Login, pr.Repo.Name)
-	return handlePR(getClient(pc), trustedOrg, joinOrgURL, pr)
+	org, repo, _ := orgRepoAuthor(pr.PullRequest)
+	return handlePR(getClient(pc), pc.PluginConfig.TriggerFor(org, repo), pr)
 }
 
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
-	trustedOrg, _ := trustedOrgForRepo(pc.PluginConfig, ic.Repo.Owner.Login, ic.Repo.Name)
-	return handleIC(getClient(pc), trustedOrg, ic)
+	return handleIC(getClient(pc), pc.PluginConfig.TriggerFor(ic.Repo.Owner.Login, ic.Repo.Name), ic)
 }
 
 func handlePush(pc plugins.PluginClient, pe github.PushEvent) error {
 	return handlePE(getClient(pc), pe)
 }
 
-// trustedOrgForRepo returns the configured trusted organization and a URL for it
-// for the provided org and repo combination.
-func trustedOrgForRepo(config *plugins.Configuration, org, repo string) (string, string) {
-	if trigger := config.TriggerFor(org, repo); trigger != nil && trigger.TrustedOrg != "" {
-		return trigger.TrustedOrg, trigger.JoinOrgURL
-	}
-	return org, fmt.Sprintf("https://github.com/orgs/%s/people", org)
-}
-
-func isUserTrusted(ghc githubClient, user, trustedOrg, org string) (bool, error) {
-	orgMember, err := ghc.IsMember(trustedOrg, user)
-	if err != nil {
-		return false, err
-	} else if orgMember {
-		return true, nil
-	}
-	if org != trustedOrg {
-		orgMember, err = ghc.IsMember(org, user)
-		if err != nil {
-			return false, err
+// trustedUser returns true if user is trusted in repo.
+//
+// Trusted users are either repo collaborators, org members or trusted org members.
+// Whether repo collaborators and/or a second org is trusted is configured by trigger.
+func trustedUser(ghc githubClient, trigger *plugins.Trigger, user, org, repo string) (bool, error) {
+	// First check if user is a collaborator, assuming this is allowed
+	allowCollaborators := trigger == nil || !trigger.OnlyOrgMembers
+	if allowCollaborators {
+		if ok, err := ghc.IsCollaborator(org, repo, user); err != nil {
+			return false, fmt.Errorf("error in IsCollaborator: %v", err)
+		} else if ok {
+			return true, nil
 		}
 	}
-	return orgMember, nil
+
+	// TODO(fejta): consider dropping support for org checks in the future.
+
+	// Next see if the user is an org member
+	if member, err := ghc.IsMember(org, user); err != nil {
+		return false, fmt.Errorf("error in IsMember(%s): %v", org, err)
+	} else if member {
+		return true, nil
+	}
+
+	// Determine if there is a second org to check
+	if trigger == nil || trigger.TrustedOrg == "" || trigger.TrustedOrg == org {
+		return false, nil // No trusted org and/or it is the same
+	}
+
+	// Check the second trusted org.
+	member, err := ghc.IsMember(trigger.TrustedOrg, user)
+	if err != nil {
+		return false, fmt.Errorf("error in IsMember(%s): %v", trigger.TrustedOrg, err)
+	}
+	return member, nil
 }
 
 func fileChangesGetter(ghc githubClient, org, repo string, num int) func() ([]string, error) {
@@ -173,6 +188,14 @@ func fileChangesGetter(ghc githubClient, org, repo string, num int) func() ([]st
 		}
 		return changedFiles, nil
 	}
+}
+
+func allContexts(parent config.Presubmit) []string {
+	contexts := []string{parent.Context}
+	for _, child := range parent.RunAfterSuccess {
+		contexts = append(contexts, allContexts(child)...)
+	}
+	return contexts
 }
 
 func runOrSkipRequested(c client, pr *github.PullRequest, requestedJobs []config.Presubmit, forceRunContexts map[string]bool, body, eventGUID string) error {
@@ -225,7 +248,10 @@ func runOrSkipRequested(c client, pr *github.PullRequest, requestedJobs []config
 			toRunJobs = append(toRunJobs, job)
 			toRun.Insert(job.Context)
 		} else if !job.SkipReport {
-			toSkip.Insert(job.Context)
+			// we need to post context statuses for all jobs; if a job is slated to
+			// run after the success of a parent job that is skipped, it must be
+			// skipped as well
+			toSkip.Insert(allContexts(job)...)
 		}
 	}
 	// 'Skip' any context that is requested, but doesn't have any job shards that
@@ -243,25 +269,7 @@ func runOrSkipRequested(c client, pr *github.PullRequest, requestedJobs []config
 	var errors []error
 	for _, job := range toRunJobs {
 		c.Logger.Infof("Starting %s build.", job.Name)
-		kr := kube.Refs{
-			Org:     org,
-			Repo:    repo,
-			BaseRef: pr.Base.Ref,
-			BaseSHA: baseSHA,
-			Pulls: []kube.Pull{
-				{
-					Number: number,
-					Author: pr.User.Login,
-					SHA:    pr.Head.SHA,
-				},
-			},
-		}
-		labels := make(map[string]string)
-		for k, v := range job.Labels {
-			labels[k] = v
-		}
-		labels[github.EventGUID] = eventGUID
-		pj := pjutil.NewProwJob(pjutil.PresubmitSpec(job, kr), labels)
+		pj := pjutil.NewPresubmit(*pr, baseSHA, job, eventGUID)
 		c.Logger.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
 		if _, err := c.KubeClient.CreateProwJob(pj); err != nil {
 			errors = append(errors, err)
