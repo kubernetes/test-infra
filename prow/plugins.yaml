@@ -188,6 +188,7 @@ plugins:
   - hold  # Support /hold to delay merge
   - lgtm  # Allow /lgtm
   - lifecycle  # Allow /lifecycle stale
+  - override
   - size  # Auto-label size of PR
   - trigger  # Allow people to configure CI jobs to /test
   - wip  # Auto-hold PRs with WIP in title
@@ -375,6 +376,7 @@ plugins:
   - approve
   - config-updater
   - milestone
+  - override
   - trigger
   - verify-owners
 
