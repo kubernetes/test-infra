@@ -17,6 +17,9 @@ presubmits:
         - "--root=/go/src/"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--scenario=execute"
+        - --
+        - "./test/e2e.sh"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
