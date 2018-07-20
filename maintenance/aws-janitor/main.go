@@ -1150,10 +1150,19 @@ func (route53ResourceRecordSets) MarkAndSweep(sess *session.Session, acct string
 				changes = append(changes, change)
 			}
 
-			if len(changes) != 0 {
+			for len(changes) != 0 {
+				// Limit of 1000 changes per request
+				chunk := changes
+				if len(chunk) > 1000 {
+					chunk = chunk[:1000]
+					changes = changes[1000:]
+				} else {
+					changes = nil
+				}
+				glog.Infof("deleting %d route53 resource records", len(chunk))
 				deleteRequest := &route53.ChangeResourceRecordSetsInput{
 					HostedZoneId: z.Id,
-					ChangeBatch:  &route53.ChangeBatch{Changes: changes},
+					ChangeBatch:  &route53.ChangeBatch{Changes: chunk},
 				}
 
 				if _, err := svc.ChangeResourceRecordSets(deleteRequest); err != nil {
