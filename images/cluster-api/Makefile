@@ -14,8 +14,7 @@
 
 VERSION := $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
-# TODO(roberthbailey): Rename the image (and this directory) from kube-deploy to cluster-api.
-IMG="gcr.io/k8s-testimages/kube-deploy"
+IMG="gcr.io/k8s-testimages/cluster-api"
 
 image:
 	docker build --build-arg "IMAGE_ARG=$(IMG):$(VERSION)" -t "$(IMG):$(VERSION)" .
