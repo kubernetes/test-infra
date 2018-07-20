@@ -29,24 +29,6 @@
       "sig-scheduling"
     ]
   },
-  "ci-cluster-api-build": {
-    "args": [
-      "./scripts/ci-build.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
-  "ci-cluster-api-test": {
-    "args": [
-      "./scripts/ci-test.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
   "ci-containerd-build": {
     "args": [
       "/go/src/github.com/containerd/cri/test/containerd/build.sh"
@@ -5190,33 +5172,6 @@
     "scenario": "execute",
     "sigOwners": [
       "sig-openstack"
-    ]
-  },
-  "pull-cluster-api-build": {
-    "args": [
-      "./scripts/ci-build.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
-  "pull-cluster-api-make": {
-    "args": [
-      "./scripts/ci-make.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
-  "pull-cluster-api-test": {
-    "args": [
-      "./scripts/ci-test.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
     ]
   },
   "pull-cluster-registry-verify-gensrc": {
