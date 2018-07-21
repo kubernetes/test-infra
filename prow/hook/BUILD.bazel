@@ -53,6 +53,7 @@ go_library(
         "//prow/plugins/lifecycle:go_default_library",
         "//prow/plugins/milestone:go_default_library",
         "//prow/plugins/milestonestatus:go_default_library",
+        "//prow/plugins/override:go_default_library",
         "//prow/plugins/owners-label:go_default_library",
         "//prow/plugins/releasenote:go_default_library",
         "//prow/plugins/requiresig:go_default_library",
