@@ -2083,11 +2083,23 @@ test_groups:
 - name: pull-cluster-api-make
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-make
   num_columns_recent: 20
-- name: pull-cluster-api-provider-openstack-make
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-openstack-make
-  num_columns_recent: 20
 - name: pull-cluster-api-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-test
+  num_columns_recent: 20
+- name: pull-cluster-api-provider-aws-make
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-make
+  num_columns_recent: 20
+- name: pull-cluster-api-provider-gcp-build
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-gcp-build
+  num_columns_recent: 20
+- name: pull-cluster-api-provider-gcp-make
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-gcp-make
+  num_columns_recent: 20
+- name: pull-cluster-api-provider-gcp-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-gcp-test
+  num_columns_recent: 20
+- name: pull-cluster-api-provider-openstack-make
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-openstack-make
   num_columns_recent: 20
 - name: pull-kubernetes-bazel-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel-build
@@ -4866,6 +4878,20 @@ dashboards:
   - name: pr-test
     test_group_name: pull-cluster-api-test
 
+- name: sig-cluster-lifecycle-cluster-api-provider-aws
+  dashboard_tab:
+  - name: pr-make
+    test_group_name: pull-cluster-api-provider-aws-make
+
+- name: sig-cluster-lifecycle-cluster-api-provider-gcp
+  dashboard_tab:
+  - name: pr-build
+    test_group_name: pull-cluster-api-provider-gcp-build
+  - name: pr-make
+    test_group_name: pull-cluster-api-provider-gcp-make
+  - name: pr-test
+    test_group_name: pull-cluster-api-provider-gcp-test
+
 - name: sig-cluster-lifecycle-cluster-api-provider-openstack
   dashboard_tab:
   - name: pr-make
@@ -6470,6 +6496,8 @@ dashboard_groups:
   - sig-cluster-lifecycle-upgrade-skew
   - sig-cluster-lifecycle-multi-platform
   - sig-cluster-lifecycle-cluster-api
+  - sig-cluster-lifecycle-cluster-api-provider-aws
+  - sig-cluster-lifecycle-cluster-api-provider-gcp
   - sig-cluster-lifecycle-cluster-api-provider-openstack
 
 - name: sig-multicluster

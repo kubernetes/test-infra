@@ -468,8 +468,13 @@ plugins:
   - approve
   - trigger
 
+  kubernetes-sigs/cluster-api-provider-aws:
+  - approve
+  - trigger
+
   kubernetes-sigs/cluster-api-provider-gcp:
   - approve
+  - trigger
 
   kubernetes-sigs/cluster-api-provider-openstack:
   - approve

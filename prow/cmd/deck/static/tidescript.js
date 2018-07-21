@@ -168,7 +168,6 @@ function redrawPools() {
     while (pools.firstChild)
         pools.removeChild(pools.firstChild);
 
-    // TODO(spxtr): Sort these.
     if (!tideData.Pools) {
         return;
     }

@@ -18,7 +18,7 @@ the different services interact.
   - Prow responds to GitHub events, timers and [manual commands](https://go.k8s.io/bot-commands)
     given in GitHub comments.
   - The [prow dashboard](https://prow.k8s.io/) shows what it is currently testing
-  - Configure prow to run new tests at [prow/config.yaml](prow/config.yaml)
+  - Configure prow to run new tests at [config/jobs](config/jobs)
 * [Triage Dashboard](https://go.k8s.io/triage) aggregates failures
   - Triage clusters together similar failures
   - Search for test failures across jobs
@@ -51,16 +51,37 @@ about this tool as well as e2e testing generally.
 
 Create a PR in this repo to add/update/remove a job or suite. Specifically
 you'll need to do the following:
-* Create an entry in [`jobs/config.json`] for the job
-  - If this is a kubetest job create the corresponding `jobs/env/FOO.env` file
-  - It will pick a free project from [boskos](/boskos) pool by default, or
-  - You can also set --gcp-project=foo in [`jobs/config.json`] for a dedicated project, make sure the project has the right [IAM grants](jenkins/check_projects.py)
+* Add the job to the appropriate section in [`config/jobs`](config/jobs)
+  - Directory Structure:
+    - In general for jobs for github.com/org/repo use config/jobs/org/repo/filename.yaml
+    - For Kubernetes repos we also allow config/jobs/kubernetes/sig-foo/filename.yaml
+    - We use basename of the config name as a key in the prow configmap, so the name of your config file need to be unique across the config subdir
+  - Type of jobs:
+    - Presubmit jobs run on unmerged code in PRs
+    - Postsubmit jobs run after merging code
+    - Periodic job run on a timed basis
+    - You can find more prowjob definitions at [how-to-add-new-jobs](prow#how-to-add-new-jobs)
+  - Scenario args: (if you are using [bootstrap.py](jenkins/bootstrap.py) instead of [podutils](prow/pod-utilities.md))
+    - [Scenarios](scenarios) are python wrappers used by our entry point script [bootstrap.py](jenkins/bootstrap.py).
+    - You can append scenario/kubetest args inline in your prowjob definition, example:
+    ```yaml
+      - name: foo-repo-test
+        interval: 1h
+        agent: kubernetes
+        spec:
+          containers:
+          - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+            args:
+            - --repo=github.com/org/repo
+            - --timeout=90
+            - --scenario=execute
+            - --
+            - make
+            - test
+    ```
+
 * Add the job name to the `test_groups` list in [`testgrid/config.yaml`](testgrid/config.yaml)
   - Also the group to at least one `dashboard_tab`
-* Add the job to the appropriate section in [`prow/config.yaml`](prow/config.yaml)
-  - Presubmit jobs run on unmerged code in PRs
-  - Postsubmit jobs run after merging code
-  - Periodic job run on a timed basis
 
 The configs need to be sorted and kubernetes must be in sync with the security repo, or else presubmit will fail.
 You can run the script below to keep them valid:
@@ -114,18 +135,14 @@ Merge your PR and [@k8s-ci-robot] will deploy your change automatically.
 Largely similar to creating a new job, except you can just modify the existing
 entries rather than adding new ones.
 
-Update what a job does by editing its definition in [`jobs/config.json`]. For
-the kubetest jobs this typically means editing the `jobs/FOO.env` files it uses.
-
-Update when a job runs by changing its definition in [`prow/config.yaml`].
-The [test-infra oncall] must push prow changes (`make -C prow update-config`).
+Update what a job does by editing its definition in [`config/jobs`](config/jobs).
 
 Update where the job appears on testgrid by changing [`testgrid/config.yaml`].
 
 ### Delete a job
 
 The reverse of creating a new job: delete the appropriate entries in
-[`jobs/config.json`], [`prow/config.yaml`] and [`testgrid/config.yaml`].
+[`config/jobs`] and [`testgrid/config.yaml`].
 
 Merge your PR and [@k8s-ci-robot] will deploy your change automatically.
 
@@ -147,8 +164,7 @@ how to contribute test results, see [Contributing Test Results](docs/contributin
 * [kubernetes/test-infra dependency management](docs/dep.md)
 
 
-[`jobs/config.json`]: /jobs/config.json
-[`prow/config.yaml`]: /prow/config.yaml
+[`config/jobs`]: /config/jobs
 [`testgrid/config.yaml`]: /testgrid/config.yaml
 [test-infra oncall]: https://go.k8s.io/oncall
 [@k8s-ci-robot]: (https://github.com/k8s-ci-robot)
