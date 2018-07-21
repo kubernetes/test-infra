@@ -177,11 +177,11 @@ function redrawPools() {
 
 
         var deckLink = "/?repo="+pool.Org+"%2F"+pool.Repo;
-        var repoLink = "https://github.com/" + pool.Org + "/" + pool.Repo + "/tree/" + pool.Branch;
+        var branchLink = "https://github.com/" + pool.Org + "/" + pool.Repo + "/tree/" + pool.Branch;
         var linksTD = document.createElement("td");
         linksTD.appendChild(createLink(deckLink, pool.Org + "/" + pool.Repo));
         linksTD.appendChild(document.createTextNode(" "));
-        linksTD.appendChild(createLink(repoLink, pool.Branch));
+        linksTD.appendChild(createLink(branchLink, pool.Branch));
         r.appendChild(linksTD);
         r.appendChild(createActionCell(pool));
         r.appendChild(createBatchCell(pool));
@@ -206,15 +206,19 @@ function createLinkCell(text, url, title) {
 }
 
 function createActionCell(pool) {
-    var action = pool.Action;
-    var targeted = pool.Target && pool.Target.length
-    var c = document.createElement("td");
-
-    if (targeted) {
+    var targeted = pool.Target && pool.Target.length;
+    var blocked = pool.Blockers && pool.Blockers.length;
+    var action = pool.Action.replace("_", " ");
+    if (targeted || blocked) {
         action += ": "
     }
+    var c = document.createElement("td");
     c.appendChild(document.createTextNode(action));
-    if (targeted) {
+
+    if (blocked) {
+        c.classList.add("blocked");
+        addBlockersToElem(c, pool)
+    } else if (targeted) {
         addPRsToElem(c, pool, pool.Target)
     }
     return c;
@@ -255,4 +259,34 @@ function addPRsToElem(elem, pool, prs) {
             }
         }
     }
+}
+
+// addBlockersToElem adds a space separated list of Issue numbers that link to the
+// corresponding Issues on github that are blocking merge.
+function addBlockersToElem(elem, pool) {
+    var bs = pool.Blockers
+    for (var i = 0; i < pool.Blockers.length; i++) {
+        var b = pool.Blockers[i];
+        var id = "blocker-" + pool.Org + "-" + pool.Repo + "-" + b.Number;
+        var a = document.createElement("a");
+        a.href = b.URL;
+        a.appendChild(document.createTextNode("#" + b.Number));
+        a.id = id;
+        addToolTipToElem(a, document.createTextNode(b.Title));
+
+
+        elem.appendChild(a);
+        // Add a space after each PR number except the last.
+        if (i+1 < pool.Blockers.length) {
+            elem.appendChild(document.createTextNode(" "));
+        }
+    }
+}
+
+function addToolTipToElem(elem, tipElem) {
+    var tooltip = document.createElement("div");
+    tooltip.appendChild(tipElem);
+    tooltip.setAttribute("data-mdl-for", elem.id);
+    tooltip.classList.add("mdl-tooltip", "mdl-tooltip--large");
+    elem.appendChild(tooltip);
 }

@@ -90,7 +90,7 @@ const (
 	TriggerBatch        = "TRIGGER_BATCH"
 	Merge               = "MERGE"
 	MergeBatch          = "MERGE_BATCH"
-	PoolBlocked         = "POOL_BLOCKED"
+	PoolBlocked         = "BLOCKED"
 )
 
 // Pool represents information about a tide pool. There is one for every
