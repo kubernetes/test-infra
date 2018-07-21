@@ -139,14 +139,14 @@ func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRe
 		return err
 	}
 
-	message := func(name, namespace string, data map[string]string) string {
+	message := func(name, namespace string, data map[string]string, indent string) string {
 		identifier := fmt.Sprintf("`%s` configmap", name)
 		if namespace != "" {
 			identifier = fmt.Sprintf("%s in namespace `%s`", identifier, namespace)
 		}
 		msg := fmt.Sprintf("%s using the following files:", identifier)
 		for key, file := range data {
-			msg = fmt.Sprintf("%s\n    - key `%s` using file `%s`", msg, key, file)
+			msg = fmt.Sprintf("%s\n%s- key `%s` using file `%s`", msg, indent, key, file)
 		}
 		return msg
 	}
@@ -195,11 +195,15 @@ func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRe
 		}
 	}
 
+	indent := " " // one space
+	if len(toUpdate) > 1 {
+		indent = "   " // three spaces for sub bullets
+	}
 	for cm, data := range toUpdate {
 		if err := update(gc, kc, org, repo, *pr.MergeSHA, cm.name, cm.namespace, data); err != nil {
 			return err
 		}
-		updated = append(updated, message(cm.name, cm.namespace, data))
+		updated = append(updated, message(cm.name, cm.namespace, data, indent))
 	}
 
 	var msg string
@@ -211,7 +215,7 @@ func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRe
 	default:
 		msg = fmt.Sprintf("Updated the following %d configmaps:\n", n)
 		for _, updateMsg := range updated {
-			msg += fmt.Sprintf("  * %s\n", updateMsg)
+			msg += fmt.Sprintf(" * %s\n", updateMsg) // one space indent
 		}
 	}
 
