@@ -243,6 +243,8 @@ periodics:
       - --
       - --cluster=e2e-kops-gce-canary.k8s.local
       - --deployment=kops
+      - --e2e-master-os-distro=gci
+      - --e2e-node-os-distro=gci
       - --extract=ci/latest
       - --ginkgo-parallel=30
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt

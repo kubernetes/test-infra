@@ -18,6 +18,7 @@ package e2e
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -28,6 +29,11 @@ import (
 	"time"
 
 	"k8s.io/test-infra/kubetest/process"
+)
+
+var (
+	e2eMasterOSDistribution = flag.String("e2e-master-os-distro", "", "master-os-distro flag to pass to e2e tests")
+	e2eNodeOSDistribution   = flag.String("e2e-node-os-distro", "", "node-os-distro flag to pass to e2e tests")
 )
 
 // GinkgoTester runs e2e tests directly (by calling ginkgo)
@@ -79,6 +85,9 @@ func NewGinkgoTester(o *BuildTesterOptions) *GinkgoTester {
 	t.GinkgoParallel = o.Parallelism
 	t.FocusRegex = o.FocusRegex
 	t.SkipRegex = o.SkipRegex
+
+	t.MasterOSDistribution = *e2eMasterOSDistribution
+	t.NodeOSDistribution = *e2eNodeOSDistribution
 
 	return t
 }
