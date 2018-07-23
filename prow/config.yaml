@@ -2944,63 +2944,6 @@ presubmits:
       - name: docker-graph
         emptyDir: {}
 
-  kubernetes-sigs/cluster-api:
-  - name: pull-cluster-api-build
-    agent: kubernetes
-    always_run: true
-    context: pull-cluster-api-build
-    rerun_command: "/test pull-cluster-api-build"
-    trigger: "/test( all| pull-cluster-api-build)"
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
-        args:
-        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-  - name: pull-cluster-api-make
-    agent: kubernetes
-    always_run: true
-    context: pull-cluster-api-make
-    rerun_command: "/test pull-cluster-api-make"
-    trigger: "/test( all| pull-cluster-api-make)"
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - args:
-        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=90"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
-        resources:
-          requests:
-            memory: "6Gi"
-  - name: pull-cluster-api-test
-    agent: kubernetes
-    always_run: true
-    context: pull-cluster-api-test
-    rerun_command: "/test pull-cluster-api-test"
-    trigger: "/test( all| pull-cluster-api-test)"
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/cluster-api:v20180720-d52d72975
-        args:
-        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-
   kubernetes-sigs/testing_frameworks:
   - name: pull-frameworks-test
     context: pull-frameworks-test
@@ -3546,31 +3489,6 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-
-- name: ci-cluster-api-build
-  interval: 1h
-  agent: kubernetes
-  labels:
-    preset-service-account: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
-      args:
-      - "--repo=sigs.k8s.io/cluster-api"
-      - "--root=/go/src"
-      - "--upload=gs://kubernetes-jenkins/logs"
-- name: ci-cluster-api-test
-  interval: 1h
-  agent: kubernetes
-  labels:
-    preset-service-account: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/cluster-api:v20180720-d52d72975
-      args:
-      - "--repo=sigs.k8s.io/cluster-api"
-      - "--root=/go/src"
-      - "--upload=gs://kubernetes-jenkins/logs"
 
 - name: ci-containerd-build
   interval: 30m
