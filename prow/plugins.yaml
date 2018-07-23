@@ -375,6 +375,7 @@ plugins:
 
   kubernetes/sig-release:
   - approve
+  - blunderbuss
   - stage
 
   kubernetes/steering:
