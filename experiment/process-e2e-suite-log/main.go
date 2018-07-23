@@ -17,7 +17,8 @@ limitations under the License.
 package main
 
 import (
-	"bytes"
+        "errors"	
+        "bytes"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -29,35 +30,41 @@ import (
 	"strings"
 )
 
-// input file path.
-var inputFilePathPtr *string
+type Options struct {
+	// input file path.
+	inputFilePathPtr *string
 
-// separator line to detect each section of the file.
-var separatorLine string = "----------------"
+	// separator line to detect each section of the file.
+	separatorLine string
 
-// prefix used for the sub files generated.
-var prefixForSubFilePtr *string
+	// prefix used for the sub files generated.
+	prefixForSubFilePtr *string
 
-// tells if splitting step has to be processed or not.
-var skipSplittingPtr *bool
+	// tells if splitting step has to be processed or not.
+	skipSplittingPtr *bool
 
-// the quantity of workers to use
-var workersQuantityPtr *int
+	// the quantity of workers to use
+	workersQuantityPtr *int
 
-// to access the endpoints map in an repeteable manner we need an ordered array.
-var keys []string
+	// to access the endpoints map in an repeteable manner we need an ordered array.
+	keys []string
 
-// result file name.
-var resultFileNamePtr *string
+	// result file name.
+	resultFileNamePtr *string
 
-// separator character to use in result file.
-var separatorCharacterPtr *string
+	// separator character to use in result file.
+	separatorCharacterPtr *string
 
-// this replacer is to escape the text picked in the test description, in order to replace the ocurrences of
-// the character separator by space and not break the columns
-var replacer *strings.Replacer
+	// this replacer is to escape the text picked in the test description, in order to replace the ocurrences of
+	// the character separator by space and not break the columns
+	replacer *strings.Replacer
 
-func createHeader() string {
+	// regex to pick individual lines from the complete text of the section.
+	// This will be later used to pick specific lines to extract test description.
+	lineRegEx *regexp.Regexp
+}
+
+func createHeader(separatorCharacterPtr *string, keys []string) string {
 	var headerBuffer bytes.Buffer
 	headerBuffer.WriteString("filename")
 	headerBuffer.WriteString(*separatorCharacterPtr)
@@ -70,8 +77,8 @@ func createHeader() string {
 	return headerBuffer.String()
 }
 
-func generateResultFile() {
-	AddRow(createHeader())
+func generateResultFile(optionsPtr *Options) {
+	AddRow(createHeader(optionsPtr.separatorCharacterPtr, optionsPtr.keys))
 
 	root, err := os.Getwd()
 	if err != nil {
@@ -81,7 +88,7 @@ func generateResultFile() {
 
 	filepath.Walk(root, func(path string, f os.FileInfo, _ error) error {
 		if !f.IsDir() {
-			match, err := regexp.MatchString(*prefixForSubFilePtr, f.Name())
+			match, err := regexp.MatchString(*(optionsPtr.prefixForSubFilePtr), f.Name())
 			if err == nil && match {
 				AddFile(f.Name())
 			}
@@ -93,111 +100,130 @@ func generateResultFile() {
 	WaitUntilResultWriterFinished()
 }
 
-// regex to pick individual lines from the complete text of the section.
-// This will be later used to pick specific lines to extract test description.
-var lineRegEx *regexp.Regexp = regexp.MustCompile(`(?m)^.*$`)
+func generateProcessFileFunction(optionsPtr *Options) ProcessFileFunction {
+        
+       options:= *optionsPtr
 
-// process individual file and generate a row.
-func processFile(fileName string) {
-	fileContent, err := ioutil.ReadFile(fileName)
+	// process individual file and generate a row.
+        return func(fileName string) {
+		fileContent, err := ioutil.ReadFile(fileName)
 
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-
-	var rowBuffer bytes.Buffer
-	rowBuffer.WriteString(fileName)
-	rowBuffer.WriteString(*separatorCharacterPtr)
-
-	result := lineRegEx.FindAll(fileContent, 4)
-
-	if len(result) < 4 {
-		log.Printf("skipped file:[%s]", fileName)
-
-	} else {
-		line3 := replacer.Replace(string(result[2]))
-		line4 := replacer.Replace(string(result[3]))
-
-		rowBuffer.WriteString(fmt.Sprintf("%s%s", line3, line4))
-
-		for _, key := range keys {
-			matched, err := regexp.Match(endpoints[key], fileContent)
-			if err != nil {
-				log.Fatal(err)
-			}
-			rowBuffer.WriteString(*separatorCharacterPtr)
-			if matched {
-				rowBuffer.WriteString("Y")
-			}
+		if err != nil {
+			log.Fatal(err)
+			return
 		}
-		AddRow(rowBuffer.String())
+
+		var rowBuffer bytes.Buffer
+		rowBuffer.WriteString(fileName)
+		rowBuffer.WriteString(*(options.separatorCharacterPtr))
+
+		result := options.lineRegEx.FindAll(fileContent, 4)
+
+		if len(result) < 4 {
+			log.Printf("skipped file:[%s]", fileName)
+
+		} else {
+			line3 := options.replacer.Replace(string(result[2]))
+			line4 := options.replacer.Replace(string(result[3]))
+
+			rowBuffer.WriteString(fmt.Sprintf("%s%s", line3, line4))
+
+			for _, key := range options.keys {
+				matched, err := regexp.Match(endpoints[key], fileContent)
+				if err != nil {
+					log.Fatal(err)
+				}
+				rowBuffer.WriteString(*(options.separatorCharacterPtr))
+				if matched {
+					rowBuffer.WriteString("Y")
+				}
+			}
+			AddRow(rowBuffer.String())
+		}
 	}
 }
 
 // sets up required elements for processing.
-// 1) "keys":
+// 1) invoking flag parsing
+// 2) "keys":
 // * fills "keys" visiting endpoints map in a sorted way (since maps is not sorted).
 // * This will later be used to generate each line of the result file.
-// 2) generates the selected amount of workers.
-// 3) sets up the result writer.
-func setup() {
+// 3) generates the selected amount of workers.
+// 4) sets up the result writer.
+func setup() (*Options, error) {
+
+        options := Options{} 
+       
+        err:= processFlags(&options)
+        if err != nil {
+		return nil, err
+	}
+
+        options.replacer = strings.NewReplacer(*(options.separatorCharacterPtr), "")
+        options.separatorLine = "----------------"
+        options.lineRegEx = regexp.MustCompile(`(?m)^.*$`)
+
+        var keys []string
 	for k := range endpoints {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
 
-	err := SetupWorkGroup(*workersQuantityPtr, processFile)
+	options.keys= keys
+
+	err = SetupWorkGroup(*(options.workersQuantityPtr), generateProcessFileFunction(&options))
 	if err != nil {
-		log.Fatal(err)
-		return
+		return nil, err
 	}
-	err = SetupFileWriter(*resultFileNamePtr)
+	err = SetupFileWriter(*(options.resultFileNamePtr))
 	if err != nil {
-		log.Fatal(err)
-		return
+		return nil, err
 	}
+
+	fmt.Println("> input-file-path:", *(options.inputFilePathPtr))
+	fmt.Println("> prefix-sub-file:", *(options.prefixForSubFilePtr))
+	fmt.Println("> workers:", *(options.workersQuantityPtr))
+	fmt.Println("> result-file-name:", *(options.resultFileNamePtr))
+	fmt.Println("> separator:", *(options.separatorCharacterPtr))
+
+        return &options, nil
 }
 
 // processes the mandatory and optional flags from the command line.
-func processFlags() {
-	inputFilePathPtr = flag.String("input-file-path", "", "file path for the input file")
-
-	prefixForSubFilePtr = flag.String("prefix-sub-file", "res", "prefix for sub files")
-	skipSplittingPtr = flag.Bool("skip-splitting", false, "skip splitting step of the input file")
-
-	workersQuantityPtr = flag.Int("workers", 2, "workers quantity")
-
-	resultFileNamePtr = flag.String("result-file-name", "", "file name for the output")
-	separatorCharacterPtr = flag.String("separator", ",", "separator character for output file")
-
+func processFlags(options *Options) error {
+       
+        options.inputFilePathPtr = flag.String("input-file-path", "", "file path for the input file")
+        options.resultFileNamePtr = flag.String("result-file-name", "", "file name for the output")
+        
+        options.prefixForSubFilePtr = flag.String("prefix-sub-file", "res", "prefix for sub files")
+        options.skipSplittingPtr = flag.Bool("skip-splitting", false, "skip splitting step of the input file")
+        options.workersQuantityPtr = flag.Int("workers", 2, "workers quantity")
+        options.separatorCharacterPtr = flag.String("separator", ",", "separator character for output file") 
+	
 	flag.Parse()
 
-	if *inputFilePathPtr == "" {
-		log.Fatal("[mandatory flag missing] input-file-path is a mandatory flag, please provide and try again.")
+	if *(options.inputFilePathPtr) == "" {
+                return errors.New("[mandatory flag missing] input-file-path is a mandatory flag, please provide and try again.")
 	}
-	if *resultFileNamePtr == "" {
-		log.Fatal("[mandatory flag missing] result-file-name is a mandatory flag, please provide and try again.")
+	if *(options.resultFileNamePtr) == "" {
+                return errors.New("[mandatory flag missing] result-file-name is a mandatory flag, please provide and try again.")
 	}
-
-	replacer = strings.NewReplacer(*separatorCharacterPtr, "")
-
-	fmt.Println("> input-file-path:", *inputFilePathPtr)
-	fmt.Println("> prefix-sub-file:", *prefixForSubFilePtr)
-	fmt.Println("> workers:", *workersQuantityPtr)
-	fmt.Println("> result-file-name:", *resultFileNamePtr)
-	fmt.Println("> separator:", *separatorCharacterPtr)
+	return nil
 }
 
 func main() {
-	processFlags()
-	setup()
-	if !*skipSplittingPtr {
-		err := Split(inputFilePathPtr, prefixForSubFilePtr, separatorLine)
+	optionsPtr,err := setup()
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	if !*(optionsPtr.skipSplittingPtr) {
+		err = Split(optionsPtr.inputFilePathPtr, optionsPtr.prefixForSubFilePtr, optionsPtr.separatorLine)
 		if err != nil {
 			log.Fatal(err)
 			return
 		}
 	}
-	generateResultFile()
+	generateResultFile(optionsPtr)
 }
