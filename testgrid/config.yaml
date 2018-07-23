@@ -1542,6 +1542,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-imagecentos7
 - name: ci-kubernetes-e2e-kops-aws-imageubuntu1604
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-imageubuntu1604
+- name: ci-kubernetes-e2e-kops-aws-imageubuntu1804
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-imageubuntu1804
 - name: ci-kubernetes-e2e-kops-aws-newrunner
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-newrunner
 - name: ci-kubernetes-e2e-gce-cos-k8sstable2-slow
@@ -3221,6 +3223,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-aws-imagecentos7
   - name: kops-aws-imageubuntu1604
     test_group_name: ci-kubernetes-e2e-kops-aws-imageubuntu1604
+  - name: kops-aws-imageubuntu1804
+    test_group_name: ci-kubernetes-e2e-kops-aws-imageubuntu1804
 
 - name: google-gce
   dashboard_tab:
@@ -6406,6 +6410,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-aws-imagecentos7
   - name: kops-aws-imageubuntu1604
     test_group_name: ci-kubernetes-e2e-kops-aws-imageubuntu1604
+  - name: kops-aws-imageubuntu1804
+    test_group_name: ci-kubernetes-e2e-kops-aws-imageubuntu1804
   - name: kops-gce
     test_group_name: ci-kubernetes-e2e-kops-gce
   - name: kops-gce-canary
