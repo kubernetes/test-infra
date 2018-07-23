@@ -3192,11 +3192,11 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-aws
   - name: kops-aws-canary
     test_group_name: ci-kubernetes-e2e-kops-aws-canary
-  - name: kops-aws-1.7
-    test_group_name: ci-kubernetes-e2e-kops-aws-stable3
   - name: kops-aws-1.8
-    test_group_name: ci-kubernetes-e2e-kops-aws-stable2
+    test_group_name: ci-kubernetes-e2e-kops-aws-stable3
   - name: kops-aws-1.9
+    test_group_name: ci-kubernetes-e2e-kops-aws-stable2
+  - name: kops-aws-1.10
     test_group_name: ci-kubernetes-e2e-kops-aws-stable1
   - name: kops-aws-beta
     test_group_name: ci-kubernetes-e2e-kops-aws-beta
@@ -6374,11 +6374,11 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-aws
   - name: kops-aws-canary
     test_group_name: ci-kubernetes-e2e-kops-aws-canary
-  - name: kops-aws-1.7
-    test_group_name: ci-kubernetes-e2e-kops-aws-stable3
   - name: kops-aws-1.8
-    test_group_name: ci-kubernetes-e2e-kops-aws-stable2
+    test_group_name: ci-kubernetes-e2e-kops-aws-stable3
   - name: kops-aws-1.9
+    test_group_name: ci-kubernetes-e2e-kops-aws-stable2
+  - name: kops-aws-1.10
     test_group_name: ci-kubernetes-e2e-kops-aws-stable1
   - name: kops-aws-beta
     test_group_name: ci-kubernetes-e2e-kops-aws-beta
