@@ -326,6 +326,14 @@ plugins:
   - require-sig
   - trigger
 
+  kubernetes/kubernetes-docs-ja:
+  - approve
+  - blunderbuss
+
+  kubernetes/kubernetes-docs-ko:
+  - approve
+  - blunderbuss
+
   kubernetes/kubernetes-template-project:
   - approve
 

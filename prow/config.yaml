@@ -213,6 +213,8 @@ tide:
     - kubernetes/kube-openapi
     - kubernetes/kube-state-metrics
     - kubernetes/kubeadm
+    - kubernetes/kubernetes-docs-ja
+    - kubernetes/kubernetes-docs-ko
     - kubernetes/kubernetes-template-project
     - kubernetes/minikube
     - kubernetes/node-problem-detector
@@ -294,6 +296,8 @@ tide:
     kubernetes/dashboard: squash
     kubernetes/kube-deploy: squash
     kubernetes/website: squash
+    kubernetes/kubernetes-docs-ja: squash
+    kubernetes/kubernetes-docs-ko: squash
     kubernetes-sigs/cluster-api: squash
     kubernetes-sigs/cluster-api-provider-aws: squash
     kubernetes-sigs/cluster-api-provider-gcp: squash
