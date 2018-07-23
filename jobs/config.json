@@ -5932,32 +5932,5 @@
     "sigOwners": [
       "sig-big-data"
     ]
-  },
-  "tf-minigo-periodic": {
-    "args": [
-      "./test.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-big-data"
-    ]
-  },
-  "tf-minigo-postsubmit": {
-    "args": [
-      "./test.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-big-data"
-    ]
-  },
-  "tf-minigo-presubmit": {
-    "args": [
-      "./test.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-big-data"
-    ]
   }
 }
