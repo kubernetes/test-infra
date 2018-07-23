@@ -221,6 +221,15 @@
   version = "v0.3.2"
 
 [[projects]]
+  name = "github.com/emicklei/go-restful"
+  packages = [
+    ".",
+    "log",
+  ]
+  revision = "3eb9738c1697594ea6e71a7156a9bb32ed216cf0"
+  version = "v2.8.0"
+
+[[projects]]
   name = "github.com/fsnotify/fsnotify"
   packages = ["."]
   revision = "c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9"
@@ -276,8 +285,31 @@
 [[projects]]
   name = "github.com/gogo/protobuf"
   packages = [
+    "gogoproto",
+    "plugin/compare",
+    "plugin/defaultcheck",
+    "plugin/description",
+    "plugin/embedcheck",
+    "plugin/enumstringer",
+    "plugin/equal",
+    "plugin/face",
+    "plugin/gostring",
+    "plugin/marshalto",
+    "plugin/oneofcheck",
+    "plugin/populate",
+    "plugin/size",
+    "plugin/stringer",
+    "plugin/testgen",
+    "plugin/union",
+    "plugin/unmarshal",
     "proto",
+    "protoc-gen-gogo/descriptor",
+    "protoc-gen-gogo/generator",
+    "protoc-gen-gogo/grpc",
+    "protoc-gen-gogo/plugin",
     "sortkeys",
+    "vanity",
+    "vanity/command",
   ]
   revision = "342cbe0a04158f6dcb03ca0079991a51a4248c02"
   version = "v0.5"
@@ -479,6 +511,15 @@
   packages = ["."]
   revision = "3353055b2a1a5ae1b6a8dfde887a524e7088f3a2"
   version = "1.1.2"
+
+[[projects]]
+  name = "github.com/jteeuwen/go-bindata"
+  packages = [
+    ".",
+    "go-bindata",
+  ]
+  revision = "bbd0c6e271208dce66d8fda4bc536453cd27fc4a"
+  version = "v3.0.7"
 
 [[projects]]
   branch = "master"
@@ -751,6 +792,7 @@
     "go/gcexportdata",
     "go/gcimporter15",
     "go/vcs",
+    "imports",
   ]
   revision = "1f0f7f68c993a0ff4e0fe1793c08cdd14cc243cb"
 
@@ -947,6 +989,7 @@
   name = "k8s.io/client-go"
   packages = [
     "discovery",
+    "discovery/fake",
     "kubernetes",
     "kubernetes/scheme",
     "kubernetes/typed/admissionregistration/v1alpha1",
@@ -983,6 +1026,7 @@
     "plugin/pkg/client/auth/exec",
     "rest",
     "rest/watch",
+    "testing",
     "tools/auth",
     "tools/cache",
     "tools/clientcmd",
@@ -1005,9 +1049,74 @@
   version = "v7.0.0"
 
 [[projects]]
+  branch = "release-1.10"
+  name = "k8s.io/code-generator"
+  packages = [
+    "cmd/client-gen",
+    "cmd/client-gen/args",
+    "cmd/client-gen/generators",
+    "cmd/client-gen/generators/fake",
+    "cmd/client-gen/generators/scheme",
+    "cmd/client-gen/generators/util",
+    "cmd/client-gen/path",
+    "cmd/client-gen/types",
+    "cmd/conversion-gen",
+    "cmd/conversion-gen/args",
+    "cmd/conversion-gen/generators",
+    "cmd/deepcopy-gen",
+    "cmd/deepcopy-gen/args",
+    "cmd/defaulter-gen",
+    "cmd/defaulter-gen/args",
+    "cmd/go-to-protobuf",
+    "cmd/go-to-protobuf/protobuf",
+    "cmd/import-boss",
+    "cmd/informer-gen",
+    "cmd/informer-gen/args",
+    "cmd/informer-gen/generators",
+    "cmd/lister-gen",
+    "cmd/lister-gen/args",
+    "cmd/lister-gen/generators",
+    "cmd/openapi-gen",
+    "cmd/openapi-gen/args",
+    "cmd/set-gen",
+    "pkg/util",
+    "third_party/forked/golang/reflect",
+  ]
+  revision = "9de8e796a74d16d2a285165727d04c185ebca6dc"
+
+[[projects]]
   name = "k8s.io/contrib"
   packages = ["test-utils/utils"]
   revision = "8f0f928c68f2c76ade9c1ee0249ae5cea5673cac"
+
+[[projects]]
+  branch = "master"
+  name = "k8s.io/gengo"
+  packages = [
+    "args",
+    "examples/deepcopy-gen/generators",
+    "examples/defaulter-gen/generators",
+    "examples/import-boss/generators",
+    "examples/set-gen/generators",
+    "examples/set-gen/sets",
+    "generator",
+    "namer",
+    "parser",
+    "types",
+  ]
+  revision = "fdcf9f9480fdd5bf2b3c3df9bf4ecd22b25b87e2"
+
+[[projects]]
+  branch = "master"
+  name = "k8s.io/kube-openapi"
+  packages = [
+    "cmd/openapi-gen/args",
+    "pkg/common",
+    "pkg/generators",
+    "pkg/generators/rules",
+    "pkg/util/sets",
+  ]
+  revision = "0cf8f7e6ed1d2e3d47d02e3b6e559369af24d803"
 
 [[projects]]
   branch = "master"
@@ -1018,6 +1127,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7c466fb50475e454dc5b127608948fc58b8a7426af5d69ea1e0fac4ad60c4662"
+  inputs-digest = "0fff1f34776cfc9ae925224c063afe6fb288523cc975861470bd31e52150b064"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -2253,6 +2253,9 @@ test_groups:
 - name: pull-test-infra-verify-labels
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-labels
   num_columns_recent: 20
+- name: pull-test-infra-verify-codegen
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-codegen
+  num_columns_recent: 20
 - name: pull-federation-bazel-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-federation-bazel-test
   num_columns_recent: 20
@@ -6159,6 +6162,9 @@ dashboards:
     base_options: 'width=10'
   - name: verify-labels
     test_group_name: pull-test-infra-verify-labels
+    base_options: 'width=10'
+  - name: verify-codegen
+    test_group_name: pull-test-infra-verify-codegen
     base_options: 'width=10'
 
 - name: presubmits-cluster-registry

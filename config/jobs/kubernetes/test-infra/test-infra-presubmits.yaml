@@ -196,6 +196,35 @@ presubmits:
           requests:
             memory: "2Gi"
 
+  - name: pull-test-infra-verify-codegen
+    agent: kubernetes
+    context: pull-test-infra-verify-codegen
+    branches:
+    - master
+    rerun_command: "/test pull-test-infra-verify-codegen"
+    trigger: "/test pull-test-infra-verify-codegen"
+    run_if_changed: '^(Gopkg\.|^vendor/).*$'
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-experimental
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --service-account=/etc/service-account/service-account.json
+        - --scenario=execute
+        - --
+        - ./hack/verify-codegen.sh
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "2Gi"
+
   - name: pull-test-infra-verify-gofmt
     agent: kubernetes
     context: pull-test-infra-verify-gofmt
