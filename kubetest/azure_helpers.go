@@ -88,13 +88,14 @@ type MasterProfile struct {
 }
 
 type AgentPoolProfile struct {
-	Name                  string            `json:"name"`
-	Count                 int               `json:"count"`
-	VMSize                string            `json:"vmSize"`
-	OSType                string            `json:"osType,omitempty"`
-	AvailabilityProfile   string            `json:"availabilityProfile"`
-	IPAddressCount        int               `json:"ipAddressCount,omitempty"`
-	PreProvisionExtension map[string]string `json:"preProvisionExtension,omitempty"`
+	Name                  string              `json:"name"`
+	Count                 int                 `json:"count"`
+	VMSize                string              `json:"vmSize"`
+	OSType                string              `json:"osType,omitempty"`
+	AvailabilityProfile   string              `json:"availabilityProfile"`
+	IPAddressCount        int                 `json:"ipAddressCount,omitempty"`
+	PreProvisionExtension map[string]string   `json:"preProvisionExtension,omitempty"`
+	Extensions            []map[string]string `json:"extensions,omitempty"`
 }
 
 type AzureClient struct {
