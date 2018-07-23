@@ -93,6 +93,7 @@ spec:
       labels:
         app: hook
     spec:
+      serviceAccountName: "hook"
       terminationGracePeriodSeconds: 180
       containers:
       - name: hook
@@ -294,7 +295,6 @@ spec:
           serviceName: hook
           servicePort: 8888
 ---
-
 kind: ServiceAccount
 apiVersion: v1
 metadata:
@@ -436,4 +436,39 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: "sinker"
-
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: "hook"
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: "hook"
+rules:
+  - apiGroups:
+      - "prow.k8s.io"
+    resources:
+      - prowjobs
+    verbs:
+      - create
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - update
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: "hook"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: "hook"
+subjects:
+- kind: ServiceAccount
+  name: "hook"
