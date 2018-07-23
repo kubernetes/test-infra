@@ -17,8 +17,7 @@ limitations under the License.
 package main
 
 import (
-        "errors"	
-        "bytes"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -62,23 +61,21 @@ type Options struct {
 	// regex to pick individual lines from the complete text of the section.
 	// This will be later used to pick specific lines to extract test description.
 	lineRegEx *regexp.Regexp
+
+	// rowMapper
+	rowMapper RowMapper
 }
 
-func createHeader(separatorCharacterPtr *string, keys []string) string {
-	var headerBuffer bytes.Buffer
-	headerBuffer.WriteString("filename")
-	headerBuffer.WriteString(*separatorCharacterPtr)
-	headerBuffer.WriteString("testDescription")
-
+func createHeader(keys []string) *RowData {
+	rowDataPtr := newRowData("filename", "testDescription")
 	for _, key := range keys {
-		headerBuffer.WriteString(*separatorCharacterPtr)
-		headerBuffer.WriteString(key)
+		rowDataPtr.addColumn(key, key)
 	}
-	return headerBuffer.String()
+	return rowDataPtr
 }
 
 func generateResultFile(optionsPtr *Options) {
-	AddRow(createHeader(optionsPtr.separatorCharacterPtr, optionsPtr.keys))
+	AddRow(optionsPtr.rowMapper.toRow(createHeader(optionsPtr.keys)))
 
 	root, err := os.Getwd()
 	if err != nil {
@@ -101,21 +98,15 @@ func generateResultFile(optionsPtr *Options) {
 }
 
 func generateProcessFileFunction(optionsPtr *Options) ProcessFileFunction {
-        
-       options:= *optionsPtr
-
+	options := optionsPtr
 	// process individual file and generate a row.
-        return func(fileName string) {
+	return func(fileName string) {
 		fileContent, err := ioutil.ReadFile(fileName)
 
 		if err != nil {
 			log.Fatal(err)
 			return
 		}
-
-		var rowBuffer bytes.Buffer
-		rowBuffer.WriteString(fileName)
-		rowBuffer.WriteString(*(options.separatorCharacterPtr))
 
 		result := options.lineRegEx.FindAll(fileContent, 4)
 
@@ -126,19 +117,18 @@ func generateProcessFileFunction(optionsPtr *Options) ProcessFileFunction {
 			line3 := options.replacer.Replace(string(result[2]))
 			line4 := options.replacer.Replace(string(result[3]))
 
-			rowBuffer.WriteString(fmt.Sprintf("%s%s", line3, line4))
+			rowDataPtr := newRowData(fileName, fmt.Sprintf("%s%s", line3, line4))
 
 			for _, key := range options.keys {
 				matched, err := regexp.Match(endpoints[key], fileContent)
 				if err != nil {
 					log.Fatal(err)
 				}
-				rowBuffer.WriteString(*(options.separatorCharacterPtr))
 				if matched {
-					rowBuffer.WriteString("Y")
+					rowDataPtr.addColumn(key, "Y")
 				}
 			}
-			AddRow(rowBuffer.String())
+			AddRow(options.rowMapper.toRow(rowDataPtr))
 		}
 	}
 }
@@ -150,28 +140,27 @@ func generateProcessFileFunction(optionsPtr *Options) ProcessFileFunction {
 // * This will later be used to generate each line of the result file.
 // 3) generates the selected amount of workers.
 // 4) sets up the result writer.
+// 5) sets up the rowMapper
 func setup() (*Options, error) {
-
-        options := Options{} 
-       
-        err:= processFlags(&options)
-        if err != nil {
+	options := Options{}
+	err := processFlags(&options)
+	if err != nil {
 		return nil, err
 	}
 
-        options.replacer = strings.NewReplacer(*(options.separatorCharacterPtr), "")
-        options.separatorLine = "----------------"
-        options.lineRegEx = regexp.MustCompile(`(?m)^.*$`)
+	options.replacer = strings.NewReplacer(*(options.separatorCharacterPtr), "")
+	options.separatorLine = "----------------"
+	options.lineRegEx = regexp.MustCompile(`(?m)^.*$`)
 
-        var keys []string
+	var keys []string
 	for k := range endpoints {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
+	options.keys = keys
 
-	options.keys= keys
-
-	err = SetupWorkGroup(*(options.workersQuantityPtr), generateProcessFileFunction(&options))
+	processFileFunction := generateProcessFileFunction(&options)
+	err = SetupWorkGroup(*(options.workersQuantityPtr), processFileFunction)
 	if err != nil {
 		return nil, err
 	}
@@ -180,39 +169,40 @@ func setup() (*Options, error) {
 		return nil, err
 	}
 
+	options.rowMapper = newCSVRowMapper(options.separatorCharacterPtr, options.keys)
+
 	fmt.Println("> input-file-path:", *(options.inputFilePathPtr))
 	fmt.Println("> prefix-sub-file:", *(options.prefixForSubFilePtr))
 	fmt.Println("> workers:", *(options.workersQuantityPtr))
 	fmt.Println("> result-file-name:", *(options.resultFileNamePtr))
 	fmt.Println("> separator:", *(options.separatorCharacterPtr))
 
-        return &options, nil
+	return &options, nil
 }
 
 // processes the mandatory and optional flags from the command line.
 func processFlags(options *Options) error {
-       
-        options.inputFilePathPtr = flag.String("input-file-path", "", "file path for the input file")
-        options.resultFileNamePtr = flag.String("result-file-name", "", "file name for the output")
-        
-        options.prefixForSubFilePtr = flag.String("prefix-sub-file", "res", "prefix for sub files")
-        options.skipSplittingPtr = flag.Bool("skip-splitting", false, "skip splitting step of the input file")
-        options.workersQuantityPtr = flag.Int("workers", 2, "workers quantity")
-        options.separatorCharacterPtr = flag.String("separator", ",", "separator character for output file") 
-	
+	options.inputFilePathPtr = flag.String("input-file-path", "", "file path for the input file")
+	options.resultFileNamePtr = flag.String("result-file-name", "", "file name for the output")
+
+	options.prefixForSubFilePtr = flag.String("prefix-sub-file", "res", "prefix for sub files")
+	options.skipSplittingPtr = flag.Bool("skip-splitting", false, "skip splitting step of the input file")
+	options.workersQuantityPtr = flag.Int("workers", 2, "workers quantity")
+	options.separatorCharacterPtr = flag.String("separator", ",", "separator character for output file")
+
 	flag.Parse()
 
 	if *(options.inputFilePathPtr) == "" {
-                return errors.New("[mandatory flag missing] input-file-path is a mandatory flag, please provide and try again.")
+		return errors.New("[mandatory flag missing] input-file-path is a mandatory flag, please provide and try again.")
 	}
 	if *(options.resultFileNamePtr) == "" {
-                return errors.New("[mandatory flag missing] result-file-name is a mandatory flag, please provide and try again.")
+		return errors.New("[mandatory flag missing] result-file-name is a mandatory flag, please provide and try again.")
 	}
 	return nil
 }
 
 func main() {
-	optionsPtr,err := setup()
+	optionsPtr, err := setup()
 	if err != nil {
 		log.Fatal(err)
 		return
