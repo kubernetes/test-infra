@@ -397,7 +397,9 @@ func isPassingTests(log *logrus.Entry, ghc githubClient, pr PullRequest, cc cont
 		// If we can't get the status of the commit, assume that it is failing.
 		return false
 	}
-	return len(unsuccessfulContexts(contexts, cc)) == 0
+	unsuccessful := unsuccessfulContexts(contexts, cc)
+	log.Debugf("from %d total contexts (%v) found %d failing contexts: %v", len(contexts), contextsToStrings(contexts), len(unsuccessful), contextsToStrings(unsuccessful))
+	return len(unsuccessful) == 0
 }
 
 // unsuccessfulContexts determines which contexts from the list that we care about are
@@ -447,9 +449,10 @@ func pickSmallestPassingNumber(log *logrus.Entry, ghc githubClient, prs []PullRe
 // accumulateBatch returns a list of PRs that can be merged after passing batch
 // testing, if any exist. It also returns a list of PRs currently being batch
 // tested.
-func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []kube.ProwJob) ([]PullRequest, []PullRequest) {
+func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []kube.ProwJob, log *logrus.Entry) ([]PullRequest, []PullRequest) {
+	log.Debug("accumulating PRs for batch testing")
 	if len(presubmits) == 0 {
-		// Avoid accumulating batches when no presubmits are configured.
+		log.Debug("no presubmits configured, no batch can be triggered")
 		return nil, nil
 	}
 	prNums := make(map[int]PullRequest)
@@ -471,9 +474,12 @@ func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []ku
 		// If any batch job is pending, return now.
 		if toSimpleState(pj.Status.State) == pendingState {
 			var pending []PullRequest
+			var pendingNums []int
 			for _, pull := range pj.Spec.Refs.Pulls {
 				pending = append(pending, prNums[pull.Number])
+				pendingNums = append(pendingNums, pull.Number)
 			}
+			log.Debugf("no new batch necessary, current batch pending: %v", pendingNums)
 			return nil, pending
 		}
 		// Otherwise, accumulate results.
@@ -486,8 +492,13 @@ func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []ku
 			for _, pull := range pj.Spec.Refs.Pulls {
 				if pr, ok := prNums[pull.Number]; ok && string(pr.HeadRefOID) == pull.SHA {
 					states[ref].prs = append(states[ref].prs, pr)
+				} else if !ok {
+					states[ref].validPulls = false
+					log.WithField("batch", ref).WithFields(pr.logFields()).Debug("batch invalid, PR left pool")
+					break
 				} else {
 					states[ref].validPulls = false
+					log.WithField("batch", ref).WithFields(pr.logFields()).Debug("batch invalid, PR HEAD changed")
 					break
 				}
 			}
@@ -501,7 +512,7 @@ func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []ku
 			states[ref].jobStates[job] = toSimpleState(pj.Status.State)
 		}
 	}
-	for _, state := range states {
+	for ref, state := range states {
 		if !state.validPulls {
 			continue
 		}
@@ -513,6 +524,7 @@ func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []ku
 		for _, p := range requiredPresubmits.List() {
 			if s, ok := state.jobStates[p]; !ok || s != successState {
 				passesAll = false
+				log.WithField("batch", ref).Debug("batch invalid, required presubmit %s not passing", p)
 				break
 			}
 		}
@@ -526,7 +538,7 @@ func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []ku
 
 // accumulate returns the supplied PRs sorted into three buckets based on their
 // accumulated state across the presubmits.
-func accumulate(presubmits map[int]sets.String, prs []PullRequest, pjs []kube.ProwJob) (successes, pendings, nones []PullRequest) {
+func accumulate(presubmits map[int]sets.String, prs []PullRequest, pjs []kube.ProwJob, log *logrus.Entry) (successes, pendings, nones []PullRequest) {
 	for _, pr := range prs {
 		// Accumulate the best result for each job.
 		psStates := make(map[string]simpleState)
@@ -553,10 +565,16 @@ func accumulate(presubmits map[int]sets.String, prs []PullRequest, pjs []kube.Pr
 		// The overall result is the worst of the best.
 		overallState := successState
 		for _, ps := range presubmits[int(pr.Number)].List() {
-			if s, ok := psStates[ps]; s == noneState || !ok {
+			if s, ok := psStates[ps]; !ok {
 				overallState = noneState
+				log.WithFields(pr.logFields()).Debugf("missing presubmit %s", ps)
+				break
+			} else if s == noneState {
+				overallState = noneState
+				log.WithFields(pr.logFields()).Debugf("presubmit %s not passing", ps)
 				break
 			} else if s == pendingState {
+				log.WithFields(pr.logFields()).Debugf("presubmit %s pending", ps)
 				overallState = pendingState
 			}
 		}
@@ -820,8 +838,8 @@ func (c *Controller) presubmitsByPull(sp *subpool) (map[int]sets.String, error) 
 
 func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, error) {
 	sp.log.Infof("Syncing subpool: %d PRs, %d PJs.", len(sp.prs), len(sp.pjs))
-	successes, pendings, nones := accumulate(sp.presubmits, sp.prs, sp.pjs)
-	batchMerge, batchPending := accumulateBatch(sp.presubmits, sp.prs, sp.pjs)
+	successes, pendings, nones := accumulate(sp.presubmits, sp.prs, sp.pjs, sp.log)
+	batchMerge, batchPending := accumulateBatch(sp.presubmits, sp.prs, sp.pjs, sp.log)
 	sp.log.WithFields(logrus.Fields{
 		"prs-passing":   prNumbers(successes),
 		"prs-pending":   prNumbers(pendings),
@@ -963,7 +981,7 @@ func search(ctx context.Context, ghc githubClient, log *logrus.Entry, q string) 
 		}
 		vars["searchCursor"] = githubql.NewString(sq.Search.PageInfo.EndCursor)
 	}
-	log.Debugf("Search for query \"%s\" cost %d point(s). %d remaining.", q, totalCost, remaining)
+	log.Debugf("Search for query \"%s\" returned %d PRs and cost %d point(s). %d remaining.", q, len(ret), totalCost, remaining)
 	return ret, nil
 }
 
@@ -979,8 +997,13 @@ type PullRequest struct {
 	}
 	HeadRefName githubql.String `graphql:"headRefName"`
 	HeadRefOID  githubql.String `graphql:"headRefOid"`
-	Mergeable   githubql.MergeableState
-	Repository  struct {
+	HeadRef     *struct {
+		Target struct {
+			Commit Commit `graphql:"... on Commit"`
+		}
+	}
+	Mergeable  githubql.MergeableState
+	Repository struct {
 		Name          githubql.String
 		NameWithOwner githubql.String
 		Owner         struct {
@@ -991,11 +1014,7 @@ type PullRequest struct {
 		Nodes []struct {
 			Commit Commit
 		}
-		// Request the 'last' 4 commits hoping that one of them is the logically 'last'
-		// commit with OID matching HeadRefOID. If we don't find it we have to use an
-		// additional API token. (see the 'headContexts' func for details)
-		// We can't raise this too much or we could hit the limit of 50,000 nodes
-		// per query: https://developer.github.com/v4/guides/resource-limitations/#node-limit
+		// See the 'headContexts' function for details.
 	} `graphql:"commits(last: 4)"`
 	Labels struct {
 		Nodes []struct {
@@ -1049,26 +1068,40 @@ func (pr *PullRequest) logFields() logrus.Fields {
 
 // headContexts gets the status contexts for the commit with OID == pr.HeadRefOID
 //
-// First, we try to get this value from the commits we got with the PR query.
-// Unfortunately the 'last' commit ordering is determined by author date
-// not commit date so if commits are reordered non-chronologically on the PR
-// branch the 'last' commit isn't necessarily the logically last commit.
-// We list multiple commits with the query to increase our chance of success,
-// but if we don't find the head commit we have to ask Github for it
-// specifically (this costs an API token).
+// There is no single way to use the GitHub Graphql API to get the status contexts
+// for the head commit of PR. There are 2 ways that each only work under certain
+// conditions and sometimes neither of those will work and we must fall back to
+// the REST API. Here is our process:
+//
+// First, we try to get the statuses via the `headRef` field. This works most PRs,
+// only PRs with a deleted head ref will need to continue on.
+//
+// If the head ref has been deleted, we can still get status contexts by looking
+// at the list of commits for the PR. Unfortunately the 'last' commit ordering
+// is determined by author date not commit date so if commits are reordered
+// non-chronologically on the PR branch, the 'last' commit isn't necessarily the
+// logically last commit. Most PRs won't have reorder commits so in most cases
+// we can just use the statuses from this 'last' commit.
+//
+// If the worst case occurs and neither of the above cases is suitable we have
+// to use the REST API to get the head commit statuses. This costs an extra API
+// token every sync loop.
+//
+// Here are some issues on GitHub's support forum that describe why this gross
+// work around is necessary.
+// https://platform.github.community/t/some-prs-are-missing-head-refs/4586
+// https://platform.github.community/t/github-commits-returned-in-the-incorrect-order-how-to-get-the-head-commit-for-statuses/4130
 func headContexts(log *logrus.Entry, ghc githubClient, pr *PullRequest) ([]Context, error) {
-	for _, node := range pr.Commits.Nodes {
-		if node.Commit.OID == pr.HeadRefOID {
-			return node.Commit.Status.Contexts, nil
-		}
+	if contexts, ok := headContextsNoCost(pr); ok {
+		return contexts, nil
 	}
-	// We didn't get the head commit from the query (the commits must not be
+
+	// We didn't get the head commit from the query (the PR's commits must not be
 	// logically ordered) so we need to specifically ask Github for the status
 	// and coerce it to a graphql type.
 	org := string(pr.Repository.Owner.Login)
 	repo := string(pr.Repository.Name)
-	// Log this event so we can tune the number of commits we list to minimize this.
-	log.Warnf("'last' %d commits didn't contain logical last commit. Querying Github...", len(pr.Commits.Nodes))
+	log.Warnf("HeadRef was missing and 'last' commit is not the logical last commit. Querying Github...")
 	combined, err := ghc.GetCombinedStatus(org, repo, string(pr.HeadRefOID))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get the combined status: %v", err)
@@ -1094,4 +1127,19 @@ func headContexts(log *logrus.Entry, ghc githubClient, pr *PullRequest) ([]Conte
 		},
 	)
 	return contexts, nil
+}
+
+// headContextsNoCost tries to get the head commit contexts from the PullRequest
+// struct without making additional API calls. It returns the contexts if found
+// and a bool indicating success.
+func headContextsNoCost(pr *PullRequest) ([]Context, bool) {
+	if pr.HeadRef != nil && len(pr.HeadRef.Target.Commit.Status.Contexts) != 0 {
+		return pr.HeadRef.Target.Commit.Status.Contexts, true
+	}
+	for _, node := range pr.Commits.Nodes {
+		if node.Commit.OID == pr.HeadRefOID && len(node.Commit.Status.Contexts) != 0 {
+			return node.Commit.Status.Contexts, true
+		}
+	}
+	return nil, false
 }

@@ -199,7 +199,7 @@ func TestAccumulateBatch(t *testing.T) {
 			}
 			pjs = append(pjs, npj)
 		}
-		merges, pending := accumulateBatch(test.presubmits, pulls, pjs)
+		merges, pending := accumulateBatch(test.presubmits, pulls, pjs, logrus.NewEntry(logrus.New()))
 		if (len(pending) > 0) != test.pending {
 			t.Errorf("For case \"%s\", got wrong pending.", test.name)
 		}
@@ -378,7 +378,7 @@ func TestAccumulate(t *testing.T) {
 			})
 		}
 
-		successes, pendings, nones := accumulate(test.presubmits, pulls, pjs)
+		successes, pendings, nones := accumulate(test.presubmits, pulls, pjs, logrus.NewEntry(logrus.New()))
 
 		t.Logf("test run %d", i)
 		testPullsMatchList(t, "successes", successes, test.successes)
@@ -971,10 +971,10 @@ func TestTakeAction(t *testing.T) {
 			branch:     "master",
 			sha:        "master",
 		}
-		genPulls := func(nums []int) []PullRequest {
+		genPulls := func(nums []int, state githubql.StatusState) []PullRequest {
 			var prs []PullRequest
 			for _, i := range nums {
-				if err := lg.CheckoutNewBranch("o", "r", fmt.Sprintf("pr-%d", i)); err != nil {
+				if err := lg.CheckoutNewBranch("o", "r", fmt.Sprintf("pr-%s-%d", state, i)); err != nil {
 					t.Fatalf("Error checking out new branch: %v", err)
 				}
 				if err := lg.AddCommit("o", "r", map[string][]byte{fmt.Sprintf("%d", i): []byte("WOW")}); err != nil {
@@ -983,13 +983,21 @@ func TestTakeAction(t *testing.T) {
 				if err := lg.Checkout("o", "r", "master"); err != nil {
 					t.Fatalf("Error checking out master: %v", err)
 				}
-				oid := githubql.String(fmt.Sprintf("origin/pr-%d", i))
+				oid := githubql.String(fmt.Sprintf("origin/pr-%s-%d", state, i))
 				var pr PullRequest
 				pr.Number = githubql.Int(i)
 				pr.HeadRefOID = oid
 				pr.Commits.Nodes = []struct {
 					Commit Commit
-				}{{Commit: Commit{OID: oid}}}
+				}{{Commit: Commit{
+					OID: oid,
+					Status: struct {
+						Contexts []Context
+					}{Contexts: []Context{{
+						Context: githubql.String("foo"),
+						State:   state,
+					}}},
+				}}}
 				sp.prs = append(sp.prs, pr)
 				prs = append(prs, pr)
 			}
@@ -1009,7 +1017,7 @@ func TestTakeAction(t *testing.T) {
 			batchPending = []PullRequest{{}}
 		}
 		t.Logf("Test case: %s", tc.name)
-		if act, _, err := c.takeAction(sp, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges)); err != nil {
+		if act, _, err := c.takeAction(sp, batchPending, genPulls(tc.successes, githubql.StatusStateSuccess), genPulls(tc.pendings, githubql.StatusStatePending), genPulls(tc.nones, githubql.StatusStateSuccess), genPulls(tc.batchMerges, githubql.StatusStateSuccess)); err != nil {
 			t.Errorf("Error in takeAction: %v", err)
 			continue
 		} else if act != tc.action {
@@ -1080,6 +1088,7 @@ func TestHeadContexts(t *testing.T) {
 	headSHA := "head"
 	testCases := []struct {
 		name           string
+		headRef        *commitContext
 		commitContexts []commitContext
 		expectAPICall  bool
 	}{
@@ -1108,6 +1117,21 @@ func TestHeadContexts(t *testing.T) {
 			},
 			expectAPICall: true,
 		},
+		{
+			name:    "headRef is usable",
+			headRef: &commitContext{context: win, sha: headSHA},
+			commitContexts: []commitContext{
+				{context: lose, sha: "shaaa"},
+				{context: lose, sha: "other"},
+				{context: lose, sha: "sha"},
+			},
+			expectAPICall: true,
+		},
+		{
+			name:           "headRef is usable (no other commits in list)",
+			headRef:        &commitContext{context: win, sha: headSHA},
+			commitContexts: []commitContext{},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -1129,6 +1153,28 @@ func TestHeadContexts(t *testing.T) {
 				OID: githubql.String(ctx.sha),
 			}
 			pr.Commits.Nodes = append(pr.Commits.Nodes, struct{ Commit Commit }{commit})
+		}
+		if tc.headRef != nil {
+			pr.HeadRef = &struct {
+				Target struct {
+					Commit Commit `graphql:"... on Commit"`
+				}
+			}{
+				Target: struct {
+					Commit Commit `graphql:"... on Commit"`
+				}{
+					Commit: Commit{
+						Status: struct{ Contexts []Context }{
+							Contexts: []Context{
+								{
+									Context: githubql.String(tc.headRef.context),
+								},
+							},
+						},
+						OID: githubql.String(tc.headRef.sha),
+					},
+				},
+			}
 		}
 
 		contexts, err := headContexts(logrus.WithField("component", "tide"), fgc, pr)

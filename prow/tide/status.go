@@ -167,18 +167,16 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (s
 	}
 
 	// fixing label issues takes precedence over status contexts
-	var contexts []string
-	for _, commit := range pr.Commits.Nodes {
-		if commit.Commit.OID == pr.HeadRefOID {
-			for _, ctx := range unsuccessfulContexts(commit.Commit.Status.Contexts, cc) {
-				contexts = append(contexts, string(ctx.Context))
-			}
+	var unsuccessful []string
+	if contexts, ok := headContextsNoCost(pr); ok {
+		for _, ctx := range unsuccessfulContexts(contexts, cc) {
+			unsuccessful = append(unsuccessful, string(ctx.Context))
 		}
 	}
-	diff += len(contexts)
-	if desc == "" && len(contexts) > 0 {
-		sort.Strings(contexts)
-		trunced := truncate(contexts)
+	diff += len(unsuccessful)
+	if desc == "" && len(unsuccessful) > 0 {
+		sort.Strings(unsuccessful)
+		trunced := truncate(unsuccessful)
 		if len(trunced) == 1 {
 			desc = fmt.Sprintf(" Job %s has not succeeded.", trunced[0])
 		} else {
