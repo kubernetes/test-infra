@@ -39,8 +39,8 @@ type githubClient interface {
 
 // Blocker specifies an issue number that should block tide from merging.
 type Blocker struct {
-	Number int
-	URL    string
+	Number     int
+	Title, URL string
 	// TODO: time blocked? (when blocker label was added)
 }
 
@@ -88,8 +88,10 @@ func FindAll(ghc githubClient, log *logrus.Entry, label string, orgs, repos sets
 func fromIssues(issues []Issue) Blockers {
 	res := Blockers{Repo: make(map[orgRepo][]Blocker), Branch: make(map[orgRepoBranch][]Blocker)}
 	for _, issue := range issues {
+		strippedTitle := branchRE.ReplaceAllLiteralString(string(issue.Title), "")
 		block := Blocker{
 			Number: int(issue.Number),
+			Title:  strippedTitle,
 			URL:    string(issue.HTMLURL),
 		}
 		if branches := parseBranches(string(issue.Title)); len(branches) > 0 {
