@@ -170,6 +170,14 @@ labels:
     target: both
     prowPlugin: label
     addedBy: anyone
+  - color: e11d21
+    description: Categorizes issue or PR as related to a consistently or frequently failing test.
+    name: kind/failing-test
+    previously:
+      - name: priority/failing-test
+    target: both
+    prowPlugin: label
+    addedBy: anyone
   - color: c7def8
     description: Categorizes issue or PR as related to a new feature.
     name: kind/feature
@@ -246,12 +254,6 @@ labels:
   - color: e11d21
     description: Highest priority. Must be actively worked on as someone's top priority right now. # Stuff is burning. If it's not being actively worked on, someone is expected to drop what they're doing immediately to work on it. Team leaders are responsible for making sure that all the issues, labeled with this priority, in their area are being actively worked on. Examples include user-visible bugs in core features, broken builds or tests and critical security issues.
     name: priority/critical-urgent
-    target: both
-    prowPlugin: label
-    addedBy: anyone
-  - color: e11d21
-    description: Automatically filed frequently failing test. Needs to be investigated.
-    name: priority/failing-test
     target: both
     prowPlugin: label
     addedBy: anyone
