@@ -142,7 +142,7 @@ func problemsInFiles(r *git.Repo, files map[string]string) (map[string]map[int]l
 		if err != nil {
 			return nil, fmt.Errorf("linting %s: %v", f, err)
 		}
-		al, err := addedLines(patch)
+		al, err := AddedLines(patch)
 		if err != nil {
 			return nil, fmt.Errorf("computing added lines in %s: %v", f, err)
 		}
@@ -270,12 +270,12 @@ func numProblems(ps map[string]map[int]lint.Problem) int {
 	return num
 }
 
-// addedLines returns line numbers that were added in the patch, along with
+// AddedLines returns line numbers that were added in the patch, along with
 // their line in the patch itself as a map from line to patch line.
 // https://www.gnu.org/software/diffutils/manual/diffutils.html#Detailed-Unified
 // GitHub omits the ---/+++ lines since that information is in the
 // PullRequestChange object.
-func addedLines(patch string) (map[int]int, error) {
+func AddedLines(patch string) (map[int]int, error) {
 	result := make(map[int]int)
 	if patch == "" {
 		return result, nil
