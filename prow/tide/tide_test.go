@@ -927,13 +927,13 @@ func TestTakeAction(t *testing.T) {
 			map[string][]config.Presubmit{
 				"o/r": {
 					{
-						Name:         "foo",
+						Context:      "foo",
 						Trigger:      "/test all",
 						RerunCommand: "/test all",
 						AlwaysRun:    true,
 					},
 					{
-						Name:         "if-changed",
+						Context:      "if-changed",
 						Trigger:      "/test if-changed",
 						RerunCommand: "/test if-changed",
 						RunIfChanged: "CHANGED",
@@ -963,13 +963,13 @@ func TestTakeAction(t *testing.T) {
 		}
 
 		sp := subpool{
-			log:        logrus.WithField("component", "tide"),
-			presubmits: tc.presubmits,
-			cc:         &config.TideContextPolicy{},
-			org:        "o",
-			repo:       "r",
-			branch:     "master",
-			sha:        "master",
+			log:               logrus.WithField("component", "tide"),
+			presubmitContexts: tc.presubmits,
+			cc:                &config.TideContextPolicy{},
+			org:               "o",
+			repo:              "r",
+			branch:            "master",
+			sha:               "master",
 		}
 		genPulls := func(nums []int) []PullRequest {
 			var prs []PullRequest
@@ -1590,12 +1590,12 @@ func TestFilterSubpool(t *testing.T) {
 	for _, tc := range tcs {
 		t.Run(tc.name, func(t *testing.T) {
 			sp := &subpool{
-				org:        "org",
-				repo:       "repo",
-				branch:     "branch",
-				presubmits: presubmits,
-				cc:         cc,
-				log:        logrus.WithFields(logrus.Fields{"org": "org", "repo": "repo", "branch": "branch"}),
+				org:               "org",
+				repo:              "repo",
+				branch:            "branch",
+				presubmitContexts: presubmits,
+				cc:                cc,
+				log:               logrus.WithFields(logrus.Fields{"org": "org", "repo": "repo", "branch": "branch"}),
 			}
 			for _, pull := range tc.prs {
 				pr := PullRequest{

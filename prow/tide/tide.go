@@ -290,8 +290,8 @@ func (c *Controller) filterSubpools(raw map[string]*subpool) map[string]*subpool
 	filtered := make(map[string]*subpool)
 	for key, sp := range raw {
 		var err error
-		// TODO: move initialization of 'presubmits' 'cc' and 'sha' to an 'initPool' func.
-		sp.presubmits, err = c.presubmitsByPull(sp)
+		// TODO: move initialization of 'presubmitContexts' 'cc' and 'sha' to an 'initPool' func.
+		sp.presubmitContexts, err = c.presubmitsByPull(sp)
 		if err != nil {
 			sp.log.WithError(err).Error("Determining required presubmit prowjobs.")
 			continue
@@ -353,7 +353,7 @@ func filterPR(ghc githubClient, sp *subpool, pr *PullRequest) bool {
 		log.WithError(err).Error("Getting head contexts.")
 		return true
 	}
-	pjContexts := sp.presubmits[int(pr.Number)]
+	pjContexts := sp.presubmitContexts[int(pr.Number)]
 	for _, ctx := range unsuccessfulContexts(contexts, sp.cc, log) {
 		if ctx.State != githubql.StatusStatePending || !pjContexts.Has(string(ctx.Context)) {
 			log.WithField("context", ctx.Context).Debug("filtering out PR as unsuccessful context is not a pending Prow-controlled context")
@@ -713,15 +713,15 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 	return nil
 }
 
-func (c *Controller) trigger(sp subpool, presubmits map[int]sets.String, prs []PullRequest) error {
-	requiredJobs := sets.NewString()
+func (c *Controller) trigger(sp subpool, presubmitContexts map[int]sets.String, prs []PullRequest) error {
+	requiredContexts := sets.NewString()
 	for _, pr := range prs {
-		requiredJobs = requiredJobs.Union(presubmits[int(pr.Number)])
+		requiredContexts = requiredContexts.Union(presubmitContexts[int(pr.Number)])
 	}
 
 	// TODO(cjwagner): DRY this out when generalizing triggering code (and code to determine required and to-run jobs).
 	for _, ps := range c.ca.Config().Presubmits[sp.org+"/"+sp.repo] {
-		if ps.SkipReport || !ps.RunsAgainstBranch(sp.branch) || !requiredJobs.Has(ps.Name) {
+		if ps.SkipReport || !ps.RunsAgainstBranch(sp.branch) || !requiredContexts.Has(ps.Context) {
 			continue
 		}
 
@@ -768,13 +768,13 @@ func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, n
 		}
 	}
 	// If no presubmits are configured, just wait.
-	if len(sp.presubmits) == 0 {
+	if len(sp.presubmitContexts) == 0 {
 		return Wait, nil, nil
 	}
 	// If we have no serial jobs pending or successful, trigger one.
 	if len(nones) > 0 && len(pendings) == 0 && len(successes) == 0 {
 		if ok, pr := pickSmallestPassingNumber(sp.log, c.ghc, nones, sp.cc); ok {
-			return Trigger, []PullRequest{pr}, c.trigger(sp, sp.presubmits, []PullRequest{pr})
+			return Trigger, []PullRequest{pr}, c.trigger(sp, sp.presubmitContexts, []PullRequest{pr})
 		}
 	}
 	// If we have no batch, trigger one.
@@ -784,7 +784,7 @@ func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, n
 			return Wait, nil, err
 		}
 		if len(batch) > 1 {
-			return TriggerBatch, batch, c.trigger(sp, sp.presubmits, batch)
+			return TriggerBatch, batch, c.trigger(sp, sp.presubmitContexts, batch)
 		}
 	}
 	return Wait, nil, nil
@@ -843,8 +843,8 @@ func (c *Controller) presubmitsByPull(sp *subpool) (map[int]sets.String, error) 
 
 func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, error) {
 	sp.log.Infof("Syncing subpool: %d PRs, %d PJs.", len(sp.prs), len(sp.pjs))
-	successes, pendings, nones := accumulate(sp.presubmits, sp.prs, sp.pjs, sp.log)
-	batchMerge, batchPending := accumulateBatch(sp.presubmits, sp.prs, sp.pjs, sp.log)
+	successes, pendings, nones := accumulate(sp.presubmitContexts, sp.prs, sp.pjs, sp.log)
+	batchMerge, batchPending := accumulateBatch(sp.presubmitContexts, sp.prs, sp.pjs, sp.log)
 	sp.log.WithFields(logrus.Fields{
 		"prs-passing":   prNumbers(successes),
 		"prs-pending":   prNumbers(pendings),
@@ -916,8 +916,8 @@ type subpool struct {
 	pjs []kube.ProwJob
 	prs []PullRequest
 
-	cc         contextChecker
-	presubmits map[int]sets.String
+	cc                contextChecker
+	presubmitContexts map[int]sets.String
 }
 
 // dividePool splits up the list of pull requests and prow jobs into a group
