@@ -83,6 +83,7 @@ presets:
           cni_spec_name: "10-k8s-ptp.conflist"
           enable_policy_routing: "true"
           enable_masquerade: "true"
+          enable_calico_network_policy: "false"
         ---
         kind: DaemonSet
         apiVersion: extensions/v1beta1
@@ -108,7 +109,7 @@ presets:
                 beta.kubernetes.io/kube-netd-ready: "true"
               hostNetwork: true
               initContainers:
-              - image: gcr.io/google-containers/netd-amd64:latest
+              - image: gcr.io/google-containers/netd-amd64:0.1.2
                 name: install-cni
                 command: ["sh", "/install-cni.sh"]
                 env:
@@ -122,11 +123,182 @@ presets:
                       configMapKeyRef:
                         name: netd-config
                         key: cni_spec_name
+                  - name: ENABLE_CALICO_NETWORK_POLICY
+                    valueFrom:
+                      configMapKeyRef:
+                        name: netd-config
+                        key: enable_calico_network_policy
                 volumeMounts:
                 - mountPath: /host/etc/cni/net.d
                   name: cni-net-dir
               containers:
-              - image: gcr.io/google-containers/netd-amd64:latest
+              - image: gcr.io/google-containers/netd-amd64:0.1.2
+                name: netd
+                imagePullPolicy: Always
+                securityContext:
+                  privileged: true
+                  capabilities:
+                    add: ["NET_ADMIN"]
+                args:
+                - --enable-policy-routing=$(ENABLE_POLICY_ROUTING)
+                - --enable-masquerade=$(ENABLE_MASQUERADE)
+                - --logtostderr
+                env:
+                  - name: ENABLE_POLICY_ROUTING
+                    valueFrom:
+                      configMapKeyRef:
+                        name: netd-config
+                        key: enable_policy_routing
+                  - name: ENABLE_MASQUERADE
+                    valueFrom:
+                      configMapKeyRef:
+                        name: netd-config
+                        key: enable_masquerade
+              volumes:
+              - name: cni-net-dir
+                hostPath:
+                  path: /etc/cni/net.d
+  - name: KUBE_UP_AUTOMATIC_CLEANUP
+    value: true
+  - name: KUBE_GCE_ENABLE_IP_ALIASES
+    value: true
+  - name: KUBE_ENABLE_NETD
+    value: true
+
+- labels:
+    preset-kubernetes-e2e-enable-netd-calico: "true"
+  env:
+  - name: KUBE_CUSTOM_NETD_YAML
+    # we want to keep extra spaces for the yaml file.
+    value: |2+
+        kind: ClusterRole
+        apiVersion: rbac.authorization.k8s.io/v1
+        metadata:
+          name: netd
+          namespace: kube-system
+          labels:
+            kubernetes.io/cluster-service: "true"
+            addonmanager.kubernetes.io/mode: EnsureExists
+        rules:
+        - apiGroups: [""]
+          resources: ["nodes"]
+          verbs: ["get"]
+        ---
+        kind: ServiceAccount
+        apiVersion: v1
+        metadata:
+          name: netd
+          namespace: kube-system
+          labels:
+            kubernetes.io/cluster-service: "true"
+            addonmanager.kubernetes.io/mode: EnsureExists
+        ---
+        kind: ClusterRoleBinding
+        apiVersion: rbac.authorization.k8s.io/v1
+        metadata:
+          name: netd
+          labels:
+            kubernetes.io/cluster-service: "true"
+            addonmanager.kubernetes.io/mode: EnsureExists
+        roleRef:
+          apiGroup: rbac.authorization.k8s.io
+          kind: ClusterRole
+          name: netd
+        subjects:
+        - kind: ServiceAccount
+          name: netd
+          namespace: kube-system
+        ---
+        kind: ConfigMap
+        apiVersion: v1
+        metadata:
+          name: netd-config
+          namespace: kube-system
+          labels:
+            addonmanager.kubernetes.io/mode: EnsureExists
+        data:
+          cni_spec_template: |-
+            {
+              "name": "k8s-pod-network",
+              "cniVersion": "0.3.1",
+              "plugins": [
+                {
+                  "type": "ptp",
+                  "mtu": 1460,
+                  "ipam": {
+                      "type": "host-local",
+                      "ranges": [
+                        [
+                          {"subnet": podCidr}
+                        ]
+                      ],
+                      "routes": [
+                        {"dst": "0.0.0.0/0"}
+                      ]
+                  }
+                },
+                {
+                  "type": "portmap",
+                  "capabilities": {
+                    "portMappings": true
+                  },
+                  "noSnat": true
+                }
+              ]
+            }
+          cni_spec_name: "10-k8s-ptp.conflist"
+          enable_policy_routing: "true"
+          enable_masquerade: "true"
+          enable_calico_network_policy: "true"
+        ---
+        kind: DaemonSet
+        apiVersion: extensions/v1beta1
+        metadata:
+          name: netd
+          namespace: kube-system
+          labels:
+            k8s-app: netd
+            addonmanager.kubernetes.io/mode: EnsureExists
+        spec:
+          selector:
+            matchLabels:
+              k8s-app: netd
+          template:
+            metadata:
+              labels:
+                k8s-app: netd
+            spec:
+              priorityClassName: system-node-critical
+              serviceAccountName: netd
+              terminationGracePeriodSeconds: 0
+              nodeSelector:
+                beta.kubernetes.io/kube-netd-ready: "true"
+              hostNetwork: true
+              initContainers:
+              - image: gcr.io/google-containers/netd-amd64:0.1.2
+                name: install-cni
+                command: ["sh", "/install-cni.sh"]
+                env:
+                  - name: CNI_SPEC_TEMPLATE
+                    valueFrom:
+                      configMapKeyRef:
+                        name: netd-config
+                        key: cni_spec_template
+                  - name: CNI_SPEC_NAME
+                    valueFrom:
+                      configMapKeyRef:
+                        name: netd-config
+                        key: cni_spec_name
+                  - name: ENABLE_CALICO_NETWORK_POLICY
+                    valueFrom:
+                      configMapKeyRef:
+                        name: netd-config
+                        key: enable_calico_network_policy
+                volumeMounts:
+                - mountPath: /host/etc/cni/net.d
+                  name: cni-net-dir
+              containers:
+              - image: gcr.io/google-containers/netd-amd64:0.1.2
                 name: netd
                 imagePullPolicy: Always
                 securityContext:
@@ -189,7 +361,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
-    preset-kubernetes-e2e-enable-netd: "true"
+    preset-kubernetes-e2e-enable-netd-calico: "true"
   spec:
     containers:
     - args:
@@ -239,7 +411,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
-    preset-kubernetes-e2e-enable-netd: "true"
+    preset-kubernetes-e2e-enable-netd-calico: "true"
   spec:
     containers:
     - args:
