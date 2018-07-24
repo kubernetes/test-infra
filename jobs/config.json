@@ -2307,7 +2307,7 @@
   "ci-kubernetes-e2e-gci-gce-scalability": {
     "args": [
       "--cluster=e2e-big",
-      "--env=KUBELET_TEST_LOG_LEVEL=--v=4",
+      "--env=KUBELET_TEST_LOG_LEVEL=--v=5",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability.env",
       "--extract=ci/latest",
