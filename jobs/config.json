@@ -3838,6 +3838,24 @@
       "sig-aws"
     ]
   },
+  "ci-kubernetes-e2e-kops-aws-imageamazonsystemlinux2": {
+    "args": [
+      "--cluster=e2e-kops-aws-imageasl2.test-cncf-aws.k8s.io",
+      "--deployment=kops",
+      "--env=KUBE_SSH_USER=ec2-user",
+      "--extract=ci/latest",
+      "--ginkgo-parallel",
+      "--kops-args=--image=137112412989/amzn2-ami-minimal-hvm-2.0.20180622.1-x86_64-ebs",
+      "--kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt",
+      "--provider=aws",
+      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
+      "--timeout=120m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-aws"
+    ]
+  },
   "ci-kubernetes-e2e-kops-aws-imagecentos7": {
     "args": [
       "--cluster=e2e-kops-aws-imagecentos7.test-cncf-aws.k8s.io",
