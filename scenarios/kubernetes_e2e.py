@@ -363,12 +363,17 @@ def set_up_kops_aws(workspace, args, mode, cluster, runner_args):
     if args.aws_cluster_domain:
         cluster = '%s.%s' % (cluster, args.aws_cluster_domain)
 
+    # AWS requires a username (and it varies per-image)
+    ssh_user = args.kops_ssh_user
+    if ssh_user == '':
+        ssh_user = 'admin'
+
     runner_args.extend([
         '--kops-cluster=%s' % cluster,
         '--kops-state=%s' % args.kops_state,
         '--kops-nodes=%s' % args.kops_nodes,
         '--kops-ssh-key=%s' % aws_ssh,
-        "--kops-ssh-user=admin",
+        '--kops-ssh-user=%s' % ssh_user,
     ])
 
 
@@ -396,13 +401,18 @@ def set_up_aws(workspace, args, mode, cluster, runner_args):
     if args.aws_cluster_domain:
         cluster = '%s.%s' % (cluster, args.aws_cluster_domain)
 
+    # AWS requires a username (and it varies per-image)
+    ssh_user = args.kops_ssh_user
+    if ssh_user == '':
+        ssh_user = 'admin'
+
     runner_args.extend([
         '--kops-cluster=%s' % cluster,
         '--kops-zones=%s' % zones,
         '--kops-state=%s' % args.kops_state,
         '--kops-nodes=%s' % args.kops_nodes,
         '--kops-ssh-key=%s' % aws_ssh,
-        "--kops-ssh-user=admin",
+        '--kops-ssh-user=%s' % ssh_user,
     ])
     # TODO(krzyzacy):Remove after retire kops-e2e-runner.sh
     mode.add_aws_runner()
@@ -681,6 +691,9 @@ def create_parser():
         '--aws-cluster-domain', help='Domain of the aws cluster for aws-pr jobs')
     parser.add_argument(
         '--kops-nodes', default=4, type=int, help='Number of nodes to start')
+    parser.add_argument(
+        '--kops-ssh-user', default='',
+        help='Username for ssh connections to instances')
     parser.add_argument(
         '--kops-state', default='s3://k8s-kops-prow/',
         help='Name of the aws state storage')
