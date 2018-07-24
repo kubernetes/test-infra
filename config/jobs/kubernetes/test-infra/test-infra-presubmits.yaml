@@ -199,6 +199,8 @@ presubmits:
   - name: pull-test-infra-verify-codegen
     agent: kubernetes
     context: pull-test-infra-verify-codegen
+    always_run: false
+    optional: true
     branches:
     - master
     rerun_command: "/test pull-test-infra-verify-codegen"
