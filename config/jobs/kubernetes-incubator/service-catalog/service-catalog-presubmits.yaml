@@ -38,16 +38,16 @@ presubmits:
         - "make"
         - "images-all"
         - "svcat-all"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-    # docker-in-docker needs a place to store the images
-      volumeMounts:
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: "true"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        # docker-in-docker needs a place to store the images
+        volumeMounts:
+          - name: docker-graph
+            mountPath: /docker-graph
+      volumes:
         - name: docker-graph
-          mountPath: /docker-graph
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
+          emptyDir: {}
