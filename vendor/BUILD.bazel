@@ -127,6 +127,7 @@ filegroup(
         "//vendor/github.com/jmespath/go-jmespath:all-srcs",
         "//vendor/github.com/json-iterator/go:all-srcs",
         "//vendor/github.com/jteeuwen/go-bindata:all-srcs",
+        "//vendor/github.com/knative/build/pkg/apis/build:all-srcs",
         "//vendor/github.com/kubernetes/repo-infra/kazel:all-srcs",
         "//vendor/github.com/mailru/easyjson/buffer:all-srcs",
         "//vendor/github.com/mailru/easyjson/jlexer:all-srcs",
