@@ -91,6 +91,11 @@ func TestGetLog(t *testing.T) {
 	} else if got, expect := string(res), "clusterB"; got != expect {
 		t.Errorf("Unexpected result getting logs for job 'job'. Expected %q, but got %q.", expect, got)
 	}
+	if res, err := ja.GetJobLogByPodName("powowow"); err != nil {
+		t.Fatalf("Failed to get log: %v", err)
+	} else if got, expect := string(res), "clusterB"; got != expect {
+		t.Errorf("Unexpected result getting logs for job 'job'. Expected %q, but got %q.", expect, got)
+	}
 }
 
 func TestProwJobs(t *testing.T) {

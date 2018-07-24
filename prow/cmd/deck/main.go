@@ -467,6 +467,7 @@ func handlePluginHelp(ha *helpAgent) http.HandlerFunc {
 
 type logClient interface {
 	GetJobLog(job, id string) ([]byte, error)
+	GetJobLogByPodName(podName string) ([]byte, error)
 }
 
 // TODO(spxtr): Cache, rate limit.
@@ -476,11 +477,18 @@ func handleLog(lc logClient) http.HandlerFunc {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		job := r.URL.Query().Get("job")
 		id := r.URL.Query().Get("id")
-		if err := validateLogRequest(r); err != nil {
+		podName := r.URL.Query().Get("podname")
+		var err error
+		var log []byte
+		if err = validateLogRequest(r); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		log, err := lc.GetJobLog(job, id)
+		if podName == "" {
+			log, err = lc.GetJobLog(job, id)
+		} else {
+			log, err = lc.GetJobLogByPodName(podName)
+		}
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Log not found: %v", err), http.StatusNotFound)
 			logrus.WithError(err).Warning("Log not found.")
@@ -495,18 +503,30 @@ func handleLog(lc logClient) http.HandlerFunc {
 func validateLogRequest(r *http.Request) error {
 	job := r.URL.Query().Get("job")
 	id := r.URL.Query().Get("id")
-
-	if job == "" {
-		return errors.New("Missing job query")
-	}
-	if id == "" {
-		return errors.New("Missing ID query")
-	}
-	if !objReg.MatchString(job) {
-		return fmt.Errorf("Invalid job query: %s", job)
-	}
-	if !objReg.MatchString(id) {
-		return fmt.Errorf("Invalid ID query: %s", id)
+	podName := r.URL.Query().Get("podname")
+	if podName != "" {
+		if job != "" {
+			return errors.New("Cannot include both job and podname in query")
+		}
+		if id != "" {
+			return errors.New("Cannot include both id and podname in query")
+		}
+		if !objReg.MatchString(podName) {
+			return fmt.Errorf("Invalid podname query: %s", podName)
+		}
+	} else {
+		if job == "" {
+			return errors.New("Missing job query")
+		}
+		if id == "" {
+			return errors.New("Missing ID query")
+		}
+		if !objReg.MatchString(job) {
+			return fmt.Errorf("Invalid job query: %s", job)
+		}
+		if !objReg.MatchString(id) {
+			return fmt.Errorf("Invalid ID query: %s", id)
+		}
 	}
 	return nil
 }

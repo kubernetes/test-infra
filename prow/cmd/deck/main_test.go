@@ -108,6 +108,13 @@ func (f flc) GetJobLog(job, id string) ([]byte, error) {
 	return nil, errors.New("muahaha")
 }
 
+func (f flc) GetJobLogByPodName(podName string) ([]byte, error) {
+	if podName == "powowow" {
+		return []byte("hello"), nil
+	}
+	return nil, errors.New("muahaha")
+}
+
 func TestHandleLog(t *testing.T) {
 	var testcases = []struct {
 		name string
@@ -137,6 +144,16 @@ func TestHandleLog(t *testing.T) {
 		{
 			name: "id and job, not found",
 			path: "?job=ohno&id=123",
+			code: http.StatusNotFound,
+		},
+		{
+			name: "podName, found",
+			path: "?podname=powowow",
+			code: http.StatusOK,
+		},
+		{
+			name: "podName, not found",
+			path: "?podname=notpowowow",
 			code: http.StatusNotFound,
 		},
 	}
