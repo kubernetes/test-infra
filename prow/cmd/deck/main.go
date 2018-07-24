@@ -585,7 +585,7 @@ func handleBranding(ca jobs.ConfigAgent) http.HandlerFunc {
 func handleFavicon(ca jobs.ConfigAgent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		config := ca.Config()
-		if config.Deck.Branding != nil {
+		if config.Deck.Branding != nil && config.Deck.Branding.Favicon != "" {
 			http.ServeFile(w, r, staticFilesLocation+"/"+config.Deck.Branding.Favicon)
 		} else {
 			http.ServeFile(w, r, staticFilesLocation+"/favicon.ico")
