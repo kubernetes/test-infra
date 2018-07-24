@@ -379,12 +379,16 @@ presets:
                     value: "ACCEPT"
                   - name: FELIX_HEALTHENABLED
                     value: "true"
+                  - name: FELIX_IPTABLESMANGLEALLOWACTION
+                    value: "RETURN"
                   - name: FELIX_IPV6SUPPORT
                     value: "false"
                   - name: FELIX_LOGSEVERITYSYS
                     value: "none"
                   - name: FELIX_LOGSEVERITYSCREEN
                     value: "info"
+                  - name: FELIX_IGNORELOOSERPF
+                    value: "true"
                   - name: FELIX_PROMETHEUSMETRICSENABLED
                     value: "true"
                   - name: FELIX_REPORTINGINTERVALSECS
