@@ -4956,7 +4956,7 @@
       "--gcp-node-image=gci",
       "--gcp-project=k8s-jkns-clusterloader",
       "--gcp-zone=us-central1-f",
-      "--perf-tests",
+      "--perf-tests-cluster-loader",
       "--provider=gce",
       "--test=false",
       "--timeout=60m"

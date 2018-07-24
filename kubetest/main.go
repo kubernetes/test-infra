@@ -56,69 +56,72 @@ var (
 )
 
 type options struct {
-	build               buildStrategy
-	buildFederation     buildFederationStrategy
-	charts              bool
-	checkLeaks          bool
-	checkSkew           bool
-	cluster             string
-	clusterIPRange      string
-	deployment          string
-	dindImage           string
-	down                bool
-	dump                string
-	extract             extractStrategies
-	extractFederation   extractFederationStrategies
-	extractSource       bool
-	federation          bool
-	flushMemAfterBuild  bool
-	focusRegex          string
-	gcpCloudSdk         string
-	gcpMasterImage      string
-	gcpMasterSize       string
-	gcpNetwork          string
-	gcpNodeImage        string
-	gcpImageFamily      string
-	gcpImageProject     string
-	gcpNodes            string
-	gcpNodeSize         string
-	gcpProject          string
-	gcpProjectType      string
-	gcpServiceAccount   string
-	gcpRegion           string
-	gcpZone             string
-	ginkgoParallel      ginkgoParallelValue
-	kubecfg             string
-	kubemark            bool
-	kubemarkMasterSize  string
-	kubemarkNodes       string // TODO(fejta): switch to int after migration
-	logexporterGCSPath  string
-	metadataSources     string
-	multiClusters       multiClusterDeployment
-	multipleFederations bool
-	noAllowDup          bool
-	nodeArgs            string
-	nodeTestArgs        string
-	nodeTests           bool
-	perfTests           bool
-	provider            string
-	publish             string
-	runtimeConfig       string
-	save                string
-	skew                bool
-	skipRegex           string
-	soak                bool
-	soakDuration        time.Duration
-	sshUser             string
-	stage               stageStrategy
-	stageFederation     stageFederationStrategy
-	test                bool
-	testArgs            string
-	testCmd             string
-	testCmdName         string
-	testCmdArgs         []string
-	up                  bool
-	upgradeArgs         string
+	build              	 buildStrategy
+	buildFederation    	 buildFederationStrategy
+	charts             	 bool
+	checkLeaks         	 bool
+	checkSkew          	 bool
+	cluster            	 string
+	clusterIPRange     	 string
+	deployment          	 string
+	dindImage          	 string
+	down              	 bool
+	dump               	 string
+	extract            	 extractStrategies
+	extractFederation  	 extractFederationStrategies
+	extractSource      	 bool
+	federation         	 bool
+	flushMemAfterBuild 	 bool
+	focusRegex         	 string
+	gcpCloudSdk        	 string
+	gcpMasterImage     	 string
+	gcpMasterSize      	 string
+	gcpNetwork         	 string
+	gcpNodeImage       	 string
+	gcpImageFamily     	 string
+	gcpImageProject    	 string
+	gcpNodes           	 string
+	gcpNodeSize        	 string
+	gcpProject         	 string
+	gcpProjectType     	 string
+	gcpServiceAccount  	 string
+	gcpRegion          	 string
+	gcpZone            	 string
+	ginkgoParallel     	 ginkgoParallelValue
+	kubecfg            	 string
+	kubemark           	 bool
+	kubemarkMasterSize 	 string
+	kubemarkNodes      	 string // TODO(fejta): switch to int after migration
+	logexporterGCSPath 	 string
+	metadataSources    	 string
+	multiClusters      	 multiClusterDeployment
+	multipleFederations	 bool
+	noAllowDup         	 bool
+	nodeArgs           	 string
+	nodeTestArgs       	 string
+	nodeTests          	 bool
+        perfTestsClusterLoader   bool
+        perfTestsNetPerf         bool
+        perfTestsKubeDNS         bool
+        perfTestsCoreDNS         bool
+	provider          	 string
+	publish           	 string
+	runtimeConfig       	 string
+	save               	 string
+	skew              	 bool
+	skipRegex          	 string
+	soak               	 bool
+	soakDuration       	 time.Duration
+	sshUser            	 string
+	stage              	 stageStrategy
+	stageFederation     	 stageFederationStrategy
+	test               	 bool
+	testArgs           	 string
+	testCmd            	 string
+	testCmdName        	 string
+	testCmdArgs        	 []string
+	up                 	 bool
+	upgradeArgs        	 string
 }
 
 func defineFlags() *options {
@@ -168,7 +171,10 @@ func defineFlags() *options {
 	flag.StringVar(&o.nodeTestArgs, "node-test-args", "", "Test args specifically for node e2e tests.")
 	flag.BoolVar(&o.noAllowDup, "no-allow-dup", false, "if set --allow-dup will not be passed to push-build and --stage will error if the build already exists on the gcs path")
 	flag.BoolVar(&o.nodeTests, "node-tests", false, "If true, run node-e2e tests.")
-	flag.BoolVar(&o.perfTests, "perf-tests", false, "If true, run tests from perf-tests repo.")
+        flag.BoolVar(&o.perfTestsClusterLoader, "perf-tests-cluster-loader", false, "If true, run  Cluster Loader tests from perf-tests repo.")
+        flag.BoolVar(&o.perfTestsNetPerf, "perf-tests-network-performance", false, "If true, run  Network Performance tests from perf-tests repo.")
+        flag.BoolVar(&o.perfTestsKubeDNS, "perf-tests-kube-dns", false, "If true, run  Kube DNS tests from perf-tests repo.")
+        flag.BoolVar(&o.perfTestsCoreDNS, "perf-tests-core-dns", false, "If true, run  Core DNS tests from perf-tests repo.")
 	flag.StringVar(&o.provider, "provider", "", "Kubernetes provider such as gce, gke, aws, etc")
 	flag.StringVar(&o.publish, "publish", "", "Publish version to the specified gs:// path on success")
 	flag.StringVar(&o.runtimeConfig, "runtime-config", "batch/v2alpha1=true", "If set, API versions can be turned on or off while bringing up the API server.")
