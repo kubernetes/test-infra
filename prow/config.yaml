@@ -4798,32 +4798,6 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
 
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
-
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew-serial
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
-
 - interval: 6h
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-coredns-performance
@@ -4912,19 +4886,6 @@ periodics:
     containers:
     - args:
       - --timeout=110
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
-
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-gci-serial-sig-cli
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=520
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
 
@@ -5162,32 +5123,6 @@ periodics:
           cpu: 6
           memory: "16Gi"
 
-- interval: 1h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
-
-- interval: 1h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-serial
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
-
 - interval: 24h
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-min-node-permissions
@@ -5211,32 +5146,6 @@ periodics:
     containers:
     - args:
       - --timeout=170
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
-
-- interval: 1h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
-
-- interval: 1h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew-serial
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=140
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
 
@@ -5304,84 +5213,6 @@ periodics:
         requests:
           cpu: 6
           memory: "16Gi"
-
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
-
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew-serial
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
-
-- interval: 12h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
-
-- interval: 12h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew-serial
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
-
-- interval: 12h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
-
-- interval: 12h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew-serial
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
 
 - interval: 30m
   agent: kubernetes
@@ -5529,19 +5360,6 @@ periodics:
 - interval: 30m
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-etcd3
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=70
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
-
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gce-etcd3-sig-cli
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -5743,19 +5561,6 @@ periodics:
     containers:
     - args:
       - --timeout=520
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
-
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gce-sig-cli
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=70
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
 
@@ -5993,19 +5798,6 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
 
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gke-sig-cli
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=70
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
-
 - interval: 30m
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-slow
@@ -6029,32 +5821,6 @@ periodics:
     containers:
     - args:
       - --timeout=50
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
-
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
-
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew-serial
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=140
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
 
@@ -6201,19 +5967,6 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
 
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-gci-serial-sig-cli
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=320
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
-
 - cron: "0 0 31 2 *" # manual job, set to Feb.31st so it will never be triggered
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-large-correctness
@@ -6298,58 +6051,6 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
-
-- interval: 1h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
-
-- interval: 1h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew-serial
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
-
-- interval: 1h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
-
-- interval: 1h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew-serial
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
 
 - interval: 30m
   agent: kubernetes
@@ -6524,84 +6225,6 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
 
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
-
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew-serial
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
-
-- interval: 12h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
-
-- interval: 12h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew-serial
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
-
-- interval: 12h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
-
-- interval: 12h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew-serial
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
-
 - interval: 30m
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-stackdriver
@@ -6760,20 +6383,6 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
-
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-kops-aws-sig-cli
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
 
 - interval: 2h
   agent: kubernetes
