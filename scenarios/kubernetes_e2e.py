@@ -364,9 +364,7 @@ def set_up_kops_aws(workspace, args, mode, cluster, runner_args):
         cluster = '%s.%s' % (cluster, args.aws_cluster_domain)
 
     # AWS requires a username (and it varies per-image)
-    ssh_user = args.kops_ssh_user
-    if ssh_user == '':
-        ssh_user = 'admin'
+    ssh_user = args.kops_ssh_user or 'admin'
 
     runner_args.extend([
         '--kops-cluster=%s' % cluster,
@@ -402,9 +400,7 @@ def set_up_aws(workspace, args, mode, cluster, runner_args):
         cluster = '%s.%s' % (cluster, args.aws_cluster_domain)
 
     # AWS requires a username (and it varies per-image)
-    ssh_user = args.kops_ssh_user
-    if ssh_user == '':
-        ssh_user = 'admin'
+    ssh_user = args.kops_ssh_user or 'admin'
 
     runner_args.extend([
         '--kops-cluster=%s' % cluster,
