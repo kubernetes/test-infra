@@ -547,12 +547,9 @@ periodics:
     containers:
     - args:
       - "--timeout=340"
-      - "--repo=github.com/cadmuxe/kubernetes=release-1.11-calico-fix"
-      - --build=bazel
       - --scenario=kubernetes_e2e
       - --
-      - --extract=local
-      - --stage=gs://kubernetes-release-pull/ci/ci-kubernetes-e2e-gce-netd-calico
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.18+43e1b198cd5c2f
       - --check-leaked-resources
       - --gcp-node-image=gci
       - --gcp-zone=asia-southeast1-a
@@ -601,7 +598,7 @@ periodics:
       - "--timeout=340"
       - --scenario=kubernetes_e2e
       - --
-      - --extract=gs://kubernetes-release-pull/ci/ci-kubernetes-e2e-gce-netd-calico
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.18+43e1b198cd5c2f
       - --check-leaked-resources
       - --image-family=ubuntu-gke-1604-lts
       - --image-project=ubuntu-os-gke-cloud
