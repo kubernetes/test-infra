@@ -23,6 +23,15 @@ sinker:
   max_pod_age: 30m
 
 deck:
+  spyglass:
+    size_limit: 500000000 # 500MB
+    viewers:
+      "started.json|finished.json":
+      - "metadata-viewer"
+      "build-log.txt":
+      - "build-log-viewer"
+      "artifacts/junit.*\\.xml":
+      - "junit-viewer"
   tide_update_period: 1s
   hidden_repos:
   - kubernetes-security
