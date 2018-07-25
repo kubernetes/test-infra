@@ -11,7 +11,7 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
-        args:	
+        args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"

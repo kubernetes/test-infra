@@ -17,22 +17,35 @@
 """Updates the Gubernator configuration from the Prow configuration."""
 
 import argparse
+import os
 import yaml
 
-def main(prow_config, gubernator_config):
-    prow_data = yaml.load(open(prow_config))
+def main(prow_config, prow_job_config, gubernator_config):
+    configs = [prow_config]
+    for root, _, files in os.walk(prow_job_config):
+        for name in files:
+            if name.endswith('.yaml'):
+                configs.append(os.path.join(root, name))
+
+    print configs
 
     default_presubmits = set()
-    for job in prow_data['presubmits']['kubernetes/kubernetes']:
-        if job.get('always_run'):
-            default_presubmits.add(job['name'])
+    periodic_names = set()
+    for config in configs:
+        prow_data = yaml.load(open(config))
+
+        if 'presubmits' in prow_data and 'kubernetes/kubernetes' in prow_data['presubmits']:
+            for job in prow_data['presubmits']['kubernetes/kubernetes']:
+                if job.get('always_run'):
+                    default_presubmits.add(job['name'])
+        if 'periodics' in prow_data:
+            for job in prow_data['periodics']:
+                periodic_names.add(job['name'])
 
     gubernator_data = yaml.load(open(gubernator_config))
 
     gubernator_data['jobs']['kubernetes-jenkins/pr-logs/directory/'] = sorted(
         default_presubmits)
-
-    periodic_names = {job['name'] for job in prow_data['periodics']}
 
     gubernator_data['jobs']['kubernetes-jenkins/logs/'] = sorted(
         job for job in gubernator_data['jobs']['kubernetes-jenkins/logs/']
@@ -46,6 +59,7 @@ def main(prow_config, gubernator_config):
 if __name__ == '__main__':
     PARSER = argparse.ArgumentParser()
     PARSER.add_argument('prow_config', help="Path to Prow configuration YAML.")
+    PARSER.add_argument('prow_job_config', help="Path to Prow jobs configuration YAMLs.")
     PARSER.add_argument('gubernator_config', help="Path to Gubernator configuration YAML.")
     ARGS = PARSER.parse_args()
-    main(ARGS.prow_config, ARGS.gubernator_config)
+    main(ARGS.prow_config, ARGS.prow_job_config, ARGS.gubernator_config)
