@@ -98,7 +98,7 @@ func gatherOptions() options {
 var (
 	// Matches letters, numbers, hyphens, and underscores.
 	objReg              = regexp.MustCompile(`^[\w-]+$`)
-	staticFilesLocation = "static"
+	staticFilesLocation = "./static"
 )
 
 func main() {
@@ -125,7 +125,7 @@ func main() {
 	}
 
 	// setup common handlers for local and deployed runs
-	mux.Handle("/", staticHandlerFromDir("./"+staticFilesLocation))
+	mux.Handle("/", staticHandlerFromDir(staticFilesLocation))
 	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(configAgent)))
 	mux.Handle("/branding.js", gziphandler.GzipHandler(handleBranding(configAgent)))
 	mux.Handle("/favicon.ico", gziphandler.GzipHandler(handleFavicon(configAgent)))
