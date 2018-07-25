@@ -1,0 +1,39 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "artifactfetchers.go",
+        "gcsartifact.go",
+        "gcsartifact_fetcher.go",
+        "podlogartifact.go",
+        "spyglass.go",
+    ],
+    importpath = "k8s.io/test-infra/prow/spyglass",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//prow/deck/jobs:go_default_library",
+        "//prow/spyglass/viewers:go_default_library",
+        "//vendor/cloud.google.com/go/storage:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/google.golang.org/api/option:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//prow/spyglass/spyglasstests:all-srcs",
+        "//prow/spyglass/viewers:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

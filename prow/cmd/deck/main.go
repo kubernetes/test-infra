@@ -23,11 +23,13 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/NYTimes/gziphandler"
@@ -45,6 +47,13 @@ import (
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/prstatus"
+	"k8s.io/test-infra/prow/spyglass"
+
+	// Import standard spyglass viewers
+
+	_ "k8s.io/test-infra/prow/spyglass/viewers/buildlog"
+	_ "k8s.io/test-infra/prow/spyglass/viewers/junit"
+	_ "k8s.io/test-infra/prow/spyglass/viewers/metadata"
 )
 
 type options struct {
@@ -161,6 +170,8 @@ func prodOnlyMain(o options, mux *http.ServeMux) *http.ServeMux {
 	ja := jobs.NewJobAgent(kc, plClients, configAgent)
 	ja.Start()
 
+	sg := spyglass.NewSpyglass(ja)
+
 	// setup prod only handlers
 	mux.Handle("/data.js", gziphandler.GzipHandler(handleData(ja)))
 	mux.Handle("/prowjobs.js", gziphandler.GzipHandler(handleProwJobs(ja)))
@@ -170,6 +181,8 @@ func prodOnlyMain(o options, mux *http.ServeMux) *http.ServeMux {
 	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(configAgent)))
 	mux.Handle("/branding.js", gziphandler.GzipHandler(handleBranding(configAgent)))
 	mux.Handle("/favicon.ico", gziphandler.GzipHandler(handleFavicon(configAgent)))
+	mux.Handle("/view/refresh", gziphandler.GzipHandler(handleArtifactView(sg)))
+	mux.Handle("/view/", gziphandler.GzipHandler(handleRequestJobViews(sg, configAgent)))
 
 	if o.hookURL != "" {
 		mux.Handle("/plugin-help.js",
@@ -404,6 +417,131 @@ func handleBadge(ja *jobs.JobAgent) http.HandlerFunc {
 		allJobs := ja.ProwJobs()
 		_, _, svg := renderBadge(pickLatestJobs(allJobs, wantJobs))
 		w.Write(svg)
+	}
+}
+
+// handleRequestJobViews handles requests to get all available artifact views for a given job
+// it responds with html containing all available views
+func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		setHeadersNoCaching(w)
+		urlPath := r.URL.Path
+		start := time.Now()
+		var src string
+		var podName string
+		if strings.Trim(urlPath, "/") != "view" { //TODO (paulangton): config this prefix later
+			urlPath = strings.TrimPrefix(urlPath, "/view/")
+			splitSource := strings.SplitAfterN(urlPath, "/", 2)
+			logrus.Info("split url: ", splitSource)
+			srcExt := splitSource[0]
+			srcData := splitSource[1]
+			switch srcExt {
+			case "gcs/":
+				src = fmt.Sprintf("gs://%s", srcData)
+			case "prowjob/":
+				src = fmt.Sprintf("pj://%s", srcData)
+			default:
+				http.Error(w, "invalid view url", http.StatusBadRequest)
+			}
+
+		} else {
+			src = r.URL.Query().Get("src")
+			if src == "" {
+				http.Error(w, "missing src query parameter", http.StatusBadRequest)
+				return
+			}
+		}
+
+		artifactNames, err := sg.ListArtifacts(src, podName)
+		if err != nil {
+			logrus.WithError(err).Error("Error listing artifacts")
+		}
+
+		viewerCache := map[string][]string{}
+
+		for re, viewerNames := range ca.Config().Spyglass.Viewers {
+			matches := []string{}
+			r, err := regexp.Compile(re)
+			if err != nil {
+				logrus.WithError(err).Error("Regexp failed to compile.")
+				continue
+			}
+			for _, a := range artifactNames {
+				if r.MatchString(a) {
+					matches = append(matches, a)
+				}
+			}
+			for _, vName := range viewerNames {
+				viewerCache[vName] = matches
+			}
+		}
+
+		viewsStart := time.Now()
+		lenses := sg.Views(viewerCache)
+		viewsElapsed := time.Since(viewsStart)
+		logrus.Info("Got views in ", viewsElapsed)
+
+		var viewBuf bytes.Buffer
+		type ViewsTemplate struct {
+			Views       []spyglass.Lens
+			Source      string
+			ViewerCache map[string][]string
+		}
+		vTmpl := ViewsTemplate{
+			Views:       lenses,
+			Source:      src,
+			ViewerCache: viewerCache,
+		}
+		t := template.Must(template.ParseFiles("/static/template/spyglass-template.html"))
+		tErr := t.Execute(&viewBuf, vTmpl)
+		if tErr != nil {
+			logrus.WithError(tErr).Error("Error rendering template.")
+		}
+
+		fmt.Fprint(w, viewBuf.String())
+		elapsed := time.Since(start)
+		logrus.Info("Time taken to return view page: ", elapsed)
+	}
+}
+
+// handleArtifactView handles requests to load a specific view for a job
+func handleArtifactView(sg *spyglass.Spyglass) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		setHeadersNoCaching(w)
+		w.Header().Set("Content-Type", "application/json")
+		name := r.URL.Query().Get("name")
+		src := r.URL.Query().Get("src")
+		podName := r.URL.Query().Get("podname")
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, "failed to read body", http.StatusBadRequest)
+			return
+		}
+		if name == "" {
+			http.Error(w, "missing name query parameter", http.StatusBadRequest)
+			return
+		}
+		if src == "" {
+			http.Error(w, "missing src query parameter", http.StatusBadRequest)
+			return
+		}
+
+		viewReq := &spyglass.ViewRequest{}
+		err = json.Unmarshal(body, viewReq)
+		if err != nil {
+			logrus.WithError(err).Error("Failed to marshal request body")
+		}
+
+		lens := sg.Refresh(src, podName, viewReq)
+		pd, err := json.Marshal(lens)
+		if err != nil {
+			logrus.WithError(err).Error("Error marshaling payload.")
+			pd = []byte("{}")
+		}
+		fmt.Fprint(w, string(pd))
+		elapsed := time.Since(start)
+		logrus.Infof("Time taken to refresh %s: %s", name, elapsed)
 	}
 }
 

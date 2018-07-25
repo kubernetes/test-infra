@@ -29,6 +29,77 @@ import (
 	"k8s.io/test-infra/prow/kube"
 )
 
+func TestSpyglassConfig(t *testing.T) {
+	testCases := []struct {
+		name            string
+		spyglassConfig  string
+		expectedViewers map[string][]string
+		expectError     bool
+	}{
+		{
+			name: "Default: build log, metadata, junit",
+			spyglassConfig: `
+spyglass:
+  viewers:
+    "started.json|finished.json": ["MetadataViewer"]
+    "build-log.txt": ["BuildLogViewer"]
+    "artifacts/junit.*\\.xml": ["JUnitViewer"]
+`,
+			expectedViewers: map[string][]string{
+				"started.json|finished.json": {"MetadataViewer"},
+				"build-log.txt":              {"BuildLogViewer"},
+				"artifacts/junit.*\\.xml":    {"JUnitViewer"},
+			},
+			expectError: false,
+		},
+	}
+	for _, tc := range testCases {
+		// save the config
+		spyglassConfigDir, err := ioutil.TempDir("", "spyglassConfig")
+		if err != nil {
+			t.Fatalf("fail to make tempdir: %v", err)
+		}
+		defer os.RemoveAll(spyglassConfigDir)
+
+		spyglassConfig := filepath.Join(spyglassConfigDir, "config.yaml")
+		if err := ioutil.WriteFile(spyglassConfig, []byte(tc.spyglassConfig), 0666); err != nil {
+			t.Fatalf("fail to write spyglass config: %v", err)
+		}
+
+		cfg, err := Load(spyglassConfig, "")
+		if tc.expectError && err == nil {
+			t.Errorf("tc %s: Expect error, but got nil", tc.name)
+		} else if !tc.expectError && err != nil {
+			t.Errorf("tc %s: Expect no error, but got error %v", tc.name, err)
+		}
+
+		if err == nil {
+			got := cfg.Spyglass.Viewers
+			for re, viewNames := range got {
+				expected, ok := tc.expectedViewers[re]
+				if !ok {
+					t.Errorf("With re %s, got %s, was not found in expected.", re, viewNames)
+				}
+				if !reflect.DeepEqual(expected, viewNames) {
+					t.Errorf("With re %s, got %s, expected view name %s", re, viewNames, expected)
+				}
+
+			}
+			for re, viewNames := range tc.expectedViewers {
+				gotNames, ok := got[re]
+				if !ok {
+					t.Errorf("With re %s, expected %s, was not found in got.", re, viewNames)
+				}
+				if !reflect.DeepEqual(gotNames, viewNames) {
+					t.Errorf("With re %s, got %s, expected view name %s", re, gotNames, viewNames)
+				}
+
+			}
+		}
+	}
+
+}
+
 func TestDecorationDefaulting(t *testing.T) {
 	defaults := &kube.DecorationConfig{
 		Timeout:     1 * time.Minute,

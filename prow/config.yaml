@@ -17,6 +17,12 @@ plank:
       default_repo: "kubernetes"
     gcs_credentials_secret: "service-account"
 
+spyglass:
+  viewers:
+    "started.json|finished.json": ["MetadataViewer"]
+    "build-log.txt|pod-log": ["BuildLogViewer"]
+    "artifacts/junit.*\\.xml": ["JUnitViewer"]
+
 sinker:
   resync_period: 1m
   max_prowjob_age: 48h
