@@ -547,6 +547,7 @@ periodics:
     containers:
     - args:
       - "--timeout=340"
+      - --bare
       - --scenario=kubernetes_e2e
       - --
       - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.18+43e1b198cd5c2f
@@ -597,6 +598,7 @@ periodics:
     - args:
       - "--timeout=340"
       - --scenario=kubernetes_e2e
+      - --bare
       - --
       - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.18+43e1b198cd5c2f
       - --check-leaked-resources
