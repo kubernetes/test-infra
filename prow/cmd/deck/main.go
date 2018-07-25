@@ -118,12 +118,21 @@ func main() {
 			gziphandler.GzipHandler(handleCached(http.FileServer(http.Dir(dir)))))
 	}
 
-	// locally just serve from ./staticFilesLocation, otherwise do the full main
-	if o.runLocal {
-		mux.Handle("/", staticHandlerFromDir("./"+staticFilesLocation))
-	} else {
-		mux.Handle("/", staticHandlerFromDir("/"+staticFilesLocation))
-		mux = prodOnlyMain(o, mux)
+	// setup config agent, pod log clients etc.
+	configAgent := &config.Agent{}
+	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
+		logrus.WithError(err).Fatal("Error starting config agent.")
+	}
+
+	// setup common handlers for local and deployed runs
+	mux.Handle("/", staticHandlerFromDir("./"+staticFilesLocation))
+	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(configAgent)))
+	mux.Handle("/branding.js", gziphandler.GzipHandler(handleBranding(configAgent)))
+	mux.Handle("/favicon.ico", gziphandler.GzipHandler(handleFavicon(configAgent)))
+
+	// when deployed, do the full main
+	if !o.runLocal {
+		mux = prodOnlyMain(configAgent, o, mux)
 	}
 
 	// setup done, actually start the server
@@ -131,12 +140,7 @@ func main() {
 }
 
 // prodOnlyMain contains logic only used when running deployed, not locally
-func prodOnlyMain(o options, mux *http.ServeMux) *http.ServeMux {
-	// setup config agent, pod log clients etc.
-	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
-		logrus.WithError(err).Fatal("Error starting config agent.")
-	}
+func prodOnlyMain(configAgent *config.Agent, o options, mux *http.ServeMux) *http.ServeMux {
 
 	kc, err := kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 	if err != nil {
@@ -167,9 +171,6 @@ func prodOnlyMain(o options, mux *http.ServeMux) *http.ServeMux {
 	mux.Handle("/badge.svg", gziphandler.GzipHandler(handleBadge(ja)))
 	mux.Handle("/log", gziphandler.GzipHandler(handleLog(ja)))
 	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(kc)))
-	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(configAgent)))
-	mux.Handle("/branding.js", gziphandler.GzipHandler(handleBranding(configAgent)))
-	mux.Handle("/favicon.ico", gziphandler.GzipHandler(handleFavicon(configAgent)))
 
 	if o.hookURL != "" {
 		mux.Handle("/plugin-help.js",
