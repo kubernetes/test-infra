@@ -509,6 +509,12 @@ plugins:
   kubernetes-sigs/kustomize:
   - approve
 
+  kubernetes-sigs/controller-runtime:
+  - approve  
+
+  kubernetes-sigs/controller-tools:
+  - approve  
+
   containerd/cri:
   - assign
   - cla
