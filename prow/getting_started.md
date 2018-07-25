@@ -154,7 +154,7 @@ Now run the following to update the configmap, replacing the path as necessary:
 
 ```sh
 kubectl create configmap plugins \
-  --from-file=plugins=path/to/plugins.yaml --dry-run -o yaml \
+  --from-file=plugins.yaml=path/to/plugins.yaml --dry-run -o yaml \
   | kubectl replace configmap plugins -f -
 ```
 
@@ -219,7 +219,7 @@ Now run the following to update the configmap.
 
 ```sh
 kubectl create configmap config \
-  --from-file=config=path/to/config.yaml --dry-run -o yaml | kubectl replace configmap config -f -
+  --from-file=config.yaml=path/to/config.yaml --dry-run -o yaml | kubectl replace configmap config -f -
 ```
 
 We use a make rule:
