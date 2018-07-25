@@ -1140,43 +1140,6 @@
       "sig-network"
     ]
   },
-  "ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--extract=ci/k8s-stable1",
-      "--extract=ci/k8s-beta",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel",
-      "--provider=gce",
-      "--skew",
-      "--test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\\[Serial\\] --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew-serial": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--extract=ci/k8s-stable1",
-      "--extract=ci/k8s-beta",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--skew",
-      "--test_args=--ginkgo.focus=Kubectl.*\\[Serial\\] --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
-    ]
-  },
   "ci-kubernetes-e2e-gce-coredns-performance": {
     "args": [
       "--cluster=gce-coredns-perf",
@@ -1299,21 +1262,6 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-cluster-lifecycle"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-gci-serial-sig-cli": {
-    "args": [
-      "--check-leaked-resources",
-      "--extract=ci/latest",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[sig-cli\\].*\\[Serial\\]|\\[sig-cli\\].*\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=500m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gce-gpu-beta-stable1-cluster-downgrade": {
@@ -1654,43 +1602,6 @@
       "sig-scalability"
     ]
   },
-  "ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--extract=ci/k8s-stable1",
-      "--extract=ci/latest",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel=25",
-      "--provider=gce",
-      "--skew",
-      "--test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\\[Serial\\] --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-serial": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--extract=ci/k8s-stable1",
-      "--extract=ci/latest",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--skew",
-      "--test_args=--ginkgo.focus=Kubectl.*\\[Serial\\] --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
-    ]
-  },
   "ci-kubernetes-e2e-gce-min-node-permissions": {
     "args": [
       "--check-leaked-resources",
@@ -1725,41 +1636,6 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-gcp"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--extract=ci/latest",
-      "--extract=ci/k8s-stable1",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel=25",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\\[Serial\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew-serial": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--extract=ci/latest",
-      "--extract=ci/k8s-stable1",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=Kubectl.*\\[Serial\\]  --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gce-pod-preemption": {
@@ -1836,113 +1712,6 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-scalability"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--extract=ci/k8s-beta",
-      "--extract=ci/k8s-stable1",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\\[Serial\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew-serial": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--extract=ci/k8s-beta",
-      "--extract=ci/k8s-stable1",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=Kubectl.*\\[Serial\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--extract=ci/k8s-stable2",
-      "--extract=ci/k8s-stable1",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel",
-      "--provider=gce",
-      "--skew",
-      "--test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\\[Serial\\] --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew-serial": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--extract=ci/k8s-stable2",
-      "--extract=ci/k8s-stable1",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--skew",
-      "--test_args=--ginkgo.focus=Kubectl.*\\[Serial\\] --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--extract=ci/k8s-stable1",
-      "--extract=ci/k8s-stable2",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\\[Serial\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew-serial": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--extract=ci/k8s-stable1",
-      "--extract=ci/k8s-stable2",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=Kubectl.*\\[Serial\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gce-stackdriver": {
@@ -2147,22 +1916,6 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-gcp"
-    ]
-  },
-  "ci-kubernetes-e2e-gci-gce-etcd3-sig-cli": {
-    "args": [
-      "--check-leaked-resources",
-      "--extract=ci/latest",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel=25",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[sig-cli\\] --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=50m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-flaky": {
@@ -2415,25 +2168,6 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-gcp"
-    ]
-  },
-  "ci-kubernetes-e2e-gci-gce-sig-cli": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-sig-cli.env",
-      "--extract=ci/latest",
-      "--gcp-master-image=gci",
-      "--gcp-node-image=gci",
-      "--gcp-nodes=4",
-      "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel=30",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[sig-cli\\] --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=50m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-slow": {
@@ -2792,26 +2526,6 @@
       "sig-gcp"
     ]
   },
-  "ci-kubernetes-e2e-gci-gke-sig-cli": {
-    "args": [
-      "--check-leaked-resources",
-      "--cluster=",
-      "--deployment=gke",
-      "--extract=ci/latest",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel",
-      "--gke-environment=test",
-      "--provider=gke",
-      "--test_args=--ginkgo.focus=\\[sig-cli\\] --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=50m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
-    ]
-  },
   "ci-kubernetes-e2e-gci-gke-slow": {
     "args": [
       "--check-leaked-resources",
@@ -2849,49 +2563,6 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-gcp"
-    ]
-  },
-  "ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--deployment=gke",
-      "--extract=ci/k8s-stable1",
-      "--extract=ci/k8s-beta",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-c",
-      "--ginkgo-parallel",
-      "--gke-environment=test",
-      "--provider=gke",
-      "--skew",
-      "--test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\\[Serial\\] --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
-    ]
-  },
-  "ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew-serial": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--deployment=gke",
-      "--extract=ci/k8s-stable1",
-      "--extract=ci/k8s-beta",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-c",
-      "--gke-environment=test",
-      "--provider=gke",
-      "--skew",
-      "--test_args=--ginkgo.focus=Kubectl.*\\[Serial\\] --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gke-device-plugin-gpu": {
@@ -3114,24 +2785,6 @@
       "sig-gcp"
     ]
   },
-  "ci-kubernetes-e2e-gke-gci-serial-sig-cli": {
-    "args": [
-      "--check-leaked-resources",
-      "--deployment=gke",
-      "--extract=ci/latest",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-f",
-      "--gke-environment=test",
-      "--provider=gke",
-      "--test_args=--ginkgo.focus=\\[sig-cli\\].*\\[Serial\\]|\\[sig-cli\\].*\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=300m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
-    ]
-  },
   "ci-kubernetes-e2e-gke-large-correctness": {
     "args": [
       "--cluster=gke-scale-cluster",
@@ -3246,90 +2899,6 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-scalability"
-    ]
-  },
-  "ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--deployment=gke",
-      "--extract=ci/k8s-stable1",
-      "--extract=ci/latest",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-c",
-      "--ginkgo-parallel",
-      "--gke-environment=test",
-      "--provider=gke",
-      "--skew",
-      "--test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\\[Serial\\] --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
-    ]
-  },
-  "ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew-serial": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--deployment=gke",
-      "--extract=ci/k8s-stable1",
-      "--extract=ci/latest",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-c",
-      "--gke-environment=test",
-      "--provider=gke",
-      "--skew",
-      "--test_args=--ginkgo.focus=Kubectl.*\\[Serial\\] --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
-    ]
-  },
-  "ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--deployment=gke",
-      "--extract=ci/latest",
-      "--extract=ci/k8s-stable1",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-c",
-      "--ginkgo-parallel",
-      "--gke-environment=test",
-      "--provider=gke",
-      "--test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\\[Serial\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
-    ]
-  },
-  "ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew-serial": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--deployment=gke",
-      "--extract=ci/latest",
-      "--extract=ci/k8s-stable1",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-c",
-      "--gke-environment=test",
-      "--provider=gke",
-      "--test_args=--ginkgo.focus=Kubectl.*\\[Serial\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gke-prod": {
@@ -3580,135 +3149,6 @@
       "sig-instrumentation"
     ]
   },
-  "ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--deployment=gke",
-      "--extract=ci/k8s-beta",
-      "--extract=ci/k8s-stable1",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-c",
-      "--ginkgo-parallel",
-      "--gke-create-command=container clusters create --quiet --enable-legacy-authorization",
-      "--gke-environment=test",
-      "--provider=gke",
-      "--test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\\[Serial\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
-    ]
-  },
-  "ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew-serial": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--deployment=gke",
-      "--extract=ci/k8s-beta",
-      "--extract=ci/k8s-stable1",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-c",
-      "--gke-create-command=container clusters create --quiet --enable-legacy-authorization",
-      "--gke-environment=test",
-      "--provider=gke",
-      "--test_args=--ginkgo.focus=Kubectl.*\\[Serial\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
-    ]
-  },
-  "ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--deployment=gke",
-      "--extract=ci/k8s-stable2",
-      "--extract=ci/k8s-stable1",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-c",
-      "--ginkgo-parallel",
-      "--gke-environment=test",
-      "--provider=gke",
-      "--skew",
-      "--test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\\[Serial\\] --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
-    ]
-  },
-  "ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew-serial": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--deployment=gke",
-      "--extract=ci/k8s-stable2",
-      "--extract=ci/k8s-stable1",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-c",
-      "--gke-environment=test",
-      "--provider=gke",
-      "--skew",
-      "--test_args=--ginkgo.focus=Kubectl.*\\[Serial\\] --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
-    ]
-  },
-  "ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--deployment=gke",
-      "--extract=ci/k8s-stable1",
-      "--extract=ci/k8s-stable2",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-c",
-      "--ginkgo-parallel",
-      "--gke-create-command=container clusters create --quiet --enable-legacy-authorization",
-      "--gke-environment=test",
-      "--provider=gke",
-      "--test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\\[Serial\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
-    ]
-  },
-  "ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew-serial": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--deployment=gke",
-      "--extract=ci/k8s-stable1",
-      "--extract=ci/k8s-stable2",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-c",
-      "--gke-create-command=container clusters create --quiet --enable-legacy-authorization",
-      "--gke-environment=test",
-      "--provider=gke",
-      "--test_args=--ginkgo.focus=Kubectl.*\\[Serial\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
-    ]
-  },
   "ci-kubernetes-e2e-gke-stackdriver": {
     "args": [
       "--check-leaked-resources",
@@ -3910,22 +3350,6 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-aws"
-    ]
-  },
-  "ci-kubernetes-e2e-kops-aws-sig-cli": {
-    "args": [
-      "--aws",
-      "--cluster=e2e-kops-aws-sig-cli.test-cncf-aws.k8s.io",
-      "--env-file=jobs/platform/kops_aws.env",
-      "--extract=ci/latest",
-      "--ginkgo-parallel",
-      "--provider=aws",
-      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.focus=\\[sig-cli\\] --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-kops-aws-stable1": {
