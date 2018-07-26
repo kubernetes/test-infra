@@ -18,6 +18,38 @@ presubmits:
         env:
         - name: NO_DOCKER
           value: "1"
+  - name: pull-service-catalog-integration
+    agent: kubernetes
+    context: pull-service-catalog-integration
+    always_run: true
+    skip_report: false
+    rerun_command: "/test pull-service-catalog-integration"
+    trigger: "(?m)^/test (all|pull-service-catalog-integration)\\s*"
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
+        args:
+        - "--repo=github.com/kubernetes-incubator/$(REPO_NAME)=$(PULL_REFS)"
+        - "--timeout=45"
+        - "--scenario=execute"
+        - "--"
+        - "make"
+        - "test-integration"
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: "true"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        # docker-in-docker needs a place to store the images
+        volumeMounts:
+          - name: docker-graph
+            mountPath: /docker-graph
+      volumes:
+        - name: docker-graph
+          emptyDir: {}
   - name: pull-service-catalog-xbuild
     agent: kubernetes
     context: pull-service-catalog-xbuild
