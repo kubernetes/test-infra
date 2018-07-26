@@ -508,6 +508,33 @@ Plugin Help style
     padding: 8px 16px;
 }
 /*
+ * SpyGlass style sheet
+ */
+
+#lens-container {
+  flex-direction: column;
+  flex-wrap: nowrap;
+}
+
+#lens-container .lens-title {
+  text-decoration: underline;
+  padding-bottom: 0;
+}
+
+.lens-card.mdl-card {
+  width: 100%;
+  align-content: center;
+}
+
+#lens-container .lens-view-content {
+  width: calc(100% - 32px);
+}
+
+.lens-card-loading {
+  left: 50%;
+}
+
+/*
  * User dashboard style sheet
  */
 #loading-progress {
