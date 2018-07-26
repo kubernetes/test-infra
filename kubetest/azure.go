@@ -201,6 +201,11 @@ func (c *Cluster) generateTemplate() error {
 				DNSPrefix:      c.dnsPrefix,
 				VMSize:         *acsMasterVmSize,
 				IPAddressCount: 200,
+				Extensions: []map[string]string{
+					{
+						"name": "win-e2e-master-extension",
+					},
+				},
 			},
 			AgentPoolProfiles: []*AgentPoolProfile{
 				{
@@ -240,14 +245,41 @@ func (c *Cluster) generateTemplate() error {
 			},
 			ExtensionProfiles: []map[string]string{
 				{
+					/* Agent node preprovision template
+					   Used to setup windows node for e2e tests: i.e creates c:\tmp folder that some
+					   tests expect
+
+					   Extension source:
+					   https://github.com/e2e-win/e2e-win-prow-deployment/blob/master/extensions/agent_preprovision_extension/node_setup.ps1
+					*/
 					"name":    "node_setup",
 					"version": "v1",
 					"rootURL": "https://k8swin.blob.core.windows.net/k8s-windows/preprovision_extensions/",
 					"script":  "node_setup.ps1",
 				},
 				{
+					/*
+					   WinRM template used for accessing windows nodes for debugging and logs collection.
+					*/
 					"name":    "winrm",
 					"version": "v1",
+				},
+				{
+					/*
+						Master node custom script. Runs after provisioning.
+
+						Taints master node as not schedulable for tests. As this is the only
+						Linux node in the deployment, we need to wait until kube-system pods
+						start before tainting master
+
+						Extension source:
+						https://github.com/e2e-win/e2e-win-prow-deployment/blob/master/extensions/master_extension/win-e2e-master-extension.sh
+					*/
+					"name":                "win-e2e-master-extension",
+					"version":             "v1",
+					"extensionParameters": "parameters",
+					"rootURL":             "https://k8swin.blob.core.windows.net/k8s-windows/extensions/",
+					"script":              "win-e2e-master-extension.sh",
 				},
 			},
 		},

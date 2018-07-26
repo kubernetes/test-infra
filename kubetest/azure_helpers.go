@@ -81,10 +81,11 @@ type OrchestratorProfile struct {
 }
 
 type MasterProfile struct {
-	Count          int    `json:"count"`
-	DNSPrefix      string `json:"dnsPrefix"`
-	VMSize         string `json:"vmSize" validate:"required"`
-	IPAddressCount int    `json:"ipAddressCount,omitempty"`
+	Count          int                 `json:"count"`
+	DNSPrefix      string              `json:"dnsPrefix"`
+	VMSize         string              `json:"vmSize" validate:"required"`
+	IPAddressCount int                 `json:"ipAddressCount,omitempty"`
+	Extensions     []map[string]string `json:"extensions,omitempty"`
 }
 
 type AgentPoolProfile struct {
