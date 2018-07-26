@@ -98,7 +98,7 @@ func gatherOptions() options {
 var (
 	// Matches letters, numbers, hyphens, and underscores.
 	objReg              = regexp.MustCompile(`^[\w-]+$`)
-	staticFilesLocation = "static"
+	staticFilesLocation = "./static"
 )
 
 func main() {
@@ -125,7 +125,7 @@ func main() {
 	}
 
 	// setup common handlers for local and deployed runs
-	mux.Handle("/", staticHandlerFromDir("./"+staticFilesLocation))
+	mux.Handle("/", staticHandlerFromDir(staticFilesLocation))
 	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(configAgent)))
 	mux.Handle("/branding.js", gziphandler.GzipHandler(handleBranding(configAgent)))
 	mux.Handle("/favicon.ico", gziphandler.GzipHandler(handleFavicon(configAgent)))
@@ -585,7 +585,7 @@ func handleBranding(ca jobs.ConfigAgent) http.HandlerFunc {
 func handleFavicon(ca jobs.ConfigAgent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		config := ca.Config()
-		if config.Deck.Branding != nil {
+		if config.Deck.Branding != nil && config.Deck.Branding.Favicon != "" {
 			http.ServeFile(w, r, staticFilesLocation+"/"+config.Deck.Branding.Favicon)
 		} else {
 			http.ServeFile(w, r, staticFilesLocation+"/favicon.ico")
