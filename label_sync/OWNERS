@@ -1,0 +1,9 @@
+filters:
+  ".*":
+    approvers:
+      - cblecker
+      - spiffxp
+      - fejta
+  "labels\\.yaml":
+    required_reviewers:
+      - cblecker
