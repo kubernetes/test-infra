@@ -15,5 +15,5 @@ presubmits:
         args:
         - -c
         - |
-          bazel --output_base=. build -- //... -//vendor/... \
-          bazel --output_base=. test --test_output=errors -- //... -//vendor/...
+          bazel --output_base=/tmp build -- //... -//vendor/... \
+          bazel --output_base=/tmp test --test_output=errors -- //... -//vendor/...
