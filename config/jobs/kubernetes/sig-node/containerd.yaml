@@ -1,0 +1,839 @@
+periodics:
+- name: ci-containerd-build
+  interval: 30m
+  agent: kubernetes
+  labels:
+    preset-service-account: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-experimental
+      args:
+      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/cri=master
+      - --root=/go/src
+      - --upload=gs://kubernetes-jenkins/logs
+      - --scenario=execute
+      - --
+      - /go/src/github.com/containerd/cri/test/containerd/build.sh
+
+- name: ci-containerd-build-1-1
+  interval: 30m
+  agent: kubernetes
+  labels:
+    preset-service-account: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-experimental
+      args:
+      - --repo=github.com/containerd/containerd=release/1.1
+      - --repo=github.com/containerd/cri=release/1.0
+      - --root=/go/src
+      - --upload=gs://kubernetes-jenkins/logs
+      - --scenario=execute
+      - --
+      - --env=DEPLOY_DIR=containerd/release-1.1
+      - /go/src/github.com/containerd/cri/test/containerd/build.sh
+
+- interval: 1h
+  agent: kubernetes
+  name: ci-containerd-e2e-gci-gce
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --repo=github.com/containerd/cri=master
+      - --timeout=70
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
+      - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
+      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce.env
+      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-nodes=4
+      - --gcp-zone=us-central1-f
+      - --ginkgo-parallel=30
+      - --provider=gce
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+
+- interval: 1h
+  agent: kubernetes
+  name: ci-containerd-e2e-gci-gce-1-1
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --repo=github.com/containerd/cri=release/1.0
+      - --timeout=70
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.1/env
+      - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.1/env
+      - --env=PREPULL_E2E_IMAGES=false
+      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce.env
+      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
+      - --extract=ci/latest-1.10
+      - --gcp-node-image=gci
+      - --gcp-nodes=4
+      - --gcp-zone=us-central1-f
+      - --ginkgo-parallel=30
+      - --provider=gce
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+
+- interval: 1h
+  agent: kubernetes
+  name: ci-containerd-e2e-ubuntu-gce
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --repo=github.com/containerd/cri=master
+      - --timeout=70
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
+      - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
+      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
+      - --extract=ci/latest
+      - --gcp-node-image=ubuntu
+      - --gcp-zone=us-central1-f
+      - --ginkgo-parallel=30
+      - --image-family=ubuntu-gke-1604-lts
+      - --image-project=ubuntu-os-gke-cloud
+      - --provider=gce
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+
+- name: ci-containerd-node-e2e
+  interval: 1h
+  agent: kubernetes
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes
+      - --repo=github.com/containerd/cri=master
+      - --timeout=90
+      - --scenario=kubernetes_e2e
+      - --
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/image-config.yaml
+      - --deployment=node
+      - --gcp-project=cri-containerd-node-e2e
+      - --gcp-zone=us-central1-f
+      - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Serial\]" --flakeAttempts=2
+      - --timeout=65m
+      env:
+      - name: GOPATH
+        value: /go
+
+- name: ci-containerd-node-e2e-1-1
+  interval: 1h
+  agent: kubernetes
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes=release-1.10
+      - --repo=github.com/containerd/cri=release/1.0
+      - --timeout=90
+      - --scenario=kubernetes_e2e
+      - --
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.1/image-config.yaml
+      - --deployment=node
+      - --gcp-project=cri-containerd-node-e2e
+      - --gcp-zone=us-central1-f
+      - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]" --flakeAttempts=2
+      - --timeout=65m
+      env:
+      - name: GOPATH
+        value: /go
+
+- name: ci-containerd-node-e2e-features
+  interval: 1h
+  agent: kubernetes
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes
+      - --repo=github.com/containerd/cri=master
+      - --timeout=90
+      - --scenario=kubernetes_e2e
+      - --
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/image-config.yaml
+      - --deployment=node
+      - --gcp-project=cri-containerd-node-e2e
+      - --gcp-zone=us-central1-f
+      - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]" --skip="\[Flaky\]|\[Serial\]" --flakeAttempts=2
+      - --timeout=65m
+      env:
+      - name: GOPATH
+        value: /go
+
+- interval: 12h
+  agent: kubernetes
+  name: ci-containerd-soak-gci-gce
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --repo=github.com/containerd/cri=master
+      - --timeout=1220
+      - --scenario=kubernetes_e2e
+      - --
+      - --down=false
+      - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
+      - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
+      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
+      - --extract=ci/latest
+      - --gcp-master-image=gci
+      - --gcp-node-image=gci
+      - --gcp-project=k8s-jkns-e2e-gci-gce-soak-1-4
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --save=gs://kubernetes-jenkins/soak/ci-containerd-soak-gci-gce
+      - --soak
+      - --test_args=--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
+      - --timeout=1200m
+      - --up=false
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+
+- name: ci-cri-containerd-build
+  interval: 30m
+  agent: kubernetes
+  labels:
+    preset-service-account: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-experimental
+      args:
+      - --repo=github.com/containerd/cri=master
+      - --root=/go/src
+      - --upload=gs://kubernetes-jenkins/logs
+      - --scenario=execute
+      - --
+      - ./test/build.sh
+
+- name: ci-cri-containerd-e2e-gce-device-plugin-gpu
+  interval: 3h
+  agent: kubernetes
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --repo=github.com/containerd/cri=master
+      - --timeout=300
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env-file=jobs/env/ci-kubernetes-e2e-gce-device-plugin-gpu.env
+      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-project-type=gpu-project
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
+      - --timeout=180m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+
+- interval: 2h
+  agent: kubernetes
+  name: ci-cri-containerd-e2e-gce-multizone
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --repo=github.com/containerd/cri=master
+      - --timeout=170
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=
+      - --env-file=jobs/env/ci-kubernetes-e2e-gce-multizone.env
+      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-a
+      - --ginkgo-parallel=25
+      - --provider=gce
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=150m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+
+- interval: 2h
+  agent: kubernetes
+  name: ci-cri-containerd-e2e-gce-stackdriver
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --repo=github.com/containerd/cri=master
+      - --timeout=70
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=
+      - --env-file=jobs/env/ci-kubernetes-e2e-gce-stackdriver.env
+      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
+      - --extract=ci/latest
+      - --gcp-project=k8s-jkns-e2e-gce-stackdriver
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:StackdriverMonitoring\]|\[Feature:StackdriverCustomMetrics\]|\[Feature:StackdriverMetadataAgent\]|\[Feature:StackdriverExternalMetrics\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+
+- interval: 1h
+  agent: kubernetes
+  name: ci-cri-containerd-e2e-gci-gce
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --repo=github.com/containerd/cri=master
+      - --timeout=70
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce.env
+      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-nodes=4
+      - --gcp-zone=us-central1-f
+      - --ginkgo-parallel=30
+      - --provider=gce
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+
+- interval: 2h
+  agent: kubernetes
+  name: ci-cri-containerd-e2e-gci-gce-alpha-features
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --repo=github.com/containerd/cri=master
+      - --timeout=200
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-alpha-features.env
+      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --runtime-config=api/all=true
+      - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes|VolumeSubpathEnvExpansion|RunAsGroup)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
+      - --timeout=180m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+
+- interval: 2h
+  agent: kubernetes
+  name: ci-cri-containerd-e2e-gci-gce-es-logging
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --repo=github.com/containerd/cri=master
+      - --timeout=110
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-es-logging.env
+      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:Elasticsearch\] --minStartupPods=8
+      - --timeout=90m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+
+- interval: 1h
+  agent: kubernetes
+  name: ci-cri-containerd-e2e-gci-gce-etcd3
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --repo=github.com/containerd/cri=master
+      - --timeout=70
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --ginkgo-parallel=25
+      - --provider=gce
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+
+- interval: 2h
+  agent: kubernetes
+  name: ci-cri-containerd-e2e-gci-gce-flaky
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --repo=github.com/containerd/cri=master
+      - --timeout=200
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
+      - --timeout=180m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+
+- interval: 2h
+  agent: kubernetes
+  name: ci-cri-containerd-e2e-gci-gce-ingress
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --repo=github.com/containerd/cri=master
+      - --timeout=340
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-ingress.env
+      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-project-type=ingress-project
+      - --gcp-zone=asia-southeast1-a
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:Ingress\]|\[Feature:NEG\] --ginkgo.skip=\[Unreleased\]
+      - --timeout=320m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+
+- interval: 2h
+  agent: kubernetes
+  name: ci-cri-containerd-e2e-gci-gce-ip-alias
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --repo=github.com/containerd/cri=master
+      - --timeout=70
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=
+      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-ip-alias.env
+      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-nodes=4
+      - --gcp-zone=us-central1-f
+      - --ginkgo-parallel=30
+      - --provider=gce
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+
+- interval: 2h
+  agent: kubernetes
+  name: ci-cri-containerd-e2e-gci-gce-proto
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --repo=github.com/containerd/cri=master
+      - --timeout=70
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
+      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --ginkgo-parallel=25
+      - --provider=gce
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+
+- interval: 1h
+  agent: kubernetes
+  name: ci-cri-containerd-e2e-gci-gce-reboot
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --repo=github.com/containerd/cri=master
+      - --timeout=200
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
+      - --timeout=180m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+
+- interval: 2h
+  agent: kubernetes
+  name: ci-cri-containerd-e2e-gci-gce-sd-logging
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --repo=github.com/containerd/cri=master
+      - --timeout=1340
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-sd-logging.env
+      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
+      - --timeout=1320m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+
+- interval: 2h
+  agent: kubernetes
+  name: ci-cri-containerd-e2e-gci-gce-sd-logging-k8s-resources
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --repo=github.com/containerd/cri=master
+      - --timeout=1340
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-sd-logging-k8s-resources.env
+      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
+      - --timeout=1320m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+
+- interval: 1h
+  agent: kubernetes
+  name: ci-cri-containerd-e2e-gci-gce-serial
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --repo=github.com/containerd/cri=master
+      - --timeout=520
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=500m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+
+- interval: 1h
+  agent: kubernetes
+  name: ci-cri-containerd-e2e-gci-gce-slow
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --repo=github.com/containerd/cri=master
+      - --timeout=170
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --ginkgo-parallel=25
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=150m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+
+- interval: 2h
+  agent: kubernetes
+  name: ci-cri-containerd-e2e-gci-gce-statefulset
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --repo=github.com/containerd/cri=master
+      - --timeout=110
+      - --scenario=kubernetes_e2e
+      - --
+      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:StatefulSet\] --minStartupPods=8
+      - --timeout=90m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+
+- interval: 1h
+  agent: kubernetes
+  name: ci-cri-containerd-e2e-ubuntu-gce
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --repo=github.com/containerd/cri=master
+      - --timeout=70
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
+      - --extract=ci/latest
+      - --gcp-node-image=ubuntu
+      - --gcp-zone=us-central1-f
+      - --ginkgo-parallel=30
+      - --image-family=ubuntu-gke-1604-lts
+      - --image-project=ubuntu-os-gke-cloud
+      - --provider=gce
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+
+- name: ci-cri-containerd-node-e2e
+  interval: 1h
+  agent: kubernetes
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes
+      - --repo=github.com/containerd/cri=master
+      - --timeout=90
+      - --scenario=kubernetes_e2e
+      - --
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml
+      - --deployment=node
+      - --gcp-project=cri-containerd-node-e2e
+      - --gcp-zone=us-central1-f
+      - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=8 --focus=\[NodeConformance\] --skip=\[Flaky\]|\[Serial\] --flakeAttempts=2
+      - --timeout=65m
+      env:
+      - name: GOPATH
+        value: /go
+
+- name: ci-cri-containerd-node-e2e-benchmark
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes
+      - --repo=github.com/containerd/cri=master
+      - --timeout=90
+      - --scenario=kubernetes_e2e
+      - --
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/benchmark-config.yaml
+      - --deployment=node
+      - --gcp-project=cri-containerd-node-e2e
+      - --gcp-zone=us-central1-f
+      - '--node-test-args=--feature-gates=DynamicKubeletConfig=true --container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=1 --skip=\[Flaky\]
+      - --timeout=65m
+      env:
+      - name: GOPATH
+        value: /go
+
+- name: ci-cri-containerd-node-e2e-features
+  interval: 1h
+  agent: kubernetes
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes
+      - --repo=github.com/containerd/cri=master
+      - --timeout=90
+      - --scenario=kubernetes_e2e
+      - --
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml
+      - --deployment=node
+      - --gcp-project=cri-containerd-node-e2e
+      - --gcp-zone=us-central1-f
+      - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=8 --focus=\[NodeFeature:.+\] --skip=\[Flaky\]|\[Serial\] --flakeAttempts=2
+      - --timeout=65m
+      env:
+      - name: GOPATH
+        value: /go
+
+- name: ci-cri-containerd-node-e2e-flaky
+  interval: 2h
+  agent: kubernetes
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes
+      - --repo=github.com/containerd/cri=master
+      - --timeout=140
+      - --scenario=kubernetes_e2e
+      - --
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml
+      - --deployment=node
+      - --gcp-project=cri-containerd-node-e2e
+      - --gcp-zone=us-central1-f
+      - '--node-test-args=--feature-gates=DynamicKubeletConfig=true --container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=1 --focus=\[Flaky\]
+      - --timeout=120m
+      env:
+      - name: GOPATH
+        value: /go
+
+- name: ci-cri-containerd-node-e2e-serial
+  interval: 4h
+  agent: kubernetes
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes
+      - --repo=github.com/containerd/cri=master
+      - --timeout=240
+      - --scenario=kubernetes_e2e
+      - --
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml
+      - --deployment=node
+      - --gcp-project=cri-containerd-node-e2e
+      - --gcp-zone=us-central1-f
+      - '--node-test-args=--feature-gates=DynamicKubeletConfig=true,LocalStorageCapacityIsolation=true,PodPriority=true --container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeAlphaFeature:.+\]
+      - --timeout=220m
+      env:
+      - name: GOPATH
+        value: /go
