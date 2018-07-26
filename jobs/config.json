@@ -5111,7 +5111,7 @@
   },
   "pull-kubernetes-kubemark-e2e-gce-big": {
     "args": [
-      "--build",
+      "--build=bazel",
       "--cluster=",
       "--env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-gce-big.env",
