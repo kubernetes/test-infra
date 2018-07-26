@@ -19,7 +19,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-cli\].*\[Serial\]|\[sig-cli\].*\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=500m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 2h
   agent: kubernetes
@@ -42,7 +42,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-cli\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 2h
   agent: kubernetes
@@ -68,7 +68,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-cli\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 2h
   agent: kubernetes
@@ -95,7 +95,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[sig-cli\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 2h
   agent: kubernetes
@@ -120,7 +120,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[sig-cli\].*\[Serial\]|\[sig-cli\].*\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=300m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 2h
   agent: kubernetes
@@ -144,7 +144,7 @@ periodics:
       - --provider=aws
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.focus=\[sig-cli\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 # kubectl skew tests
 - interval: 2h
@@ -171,7 +171,7 @@ periodics:
       - --skew
       - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 2h
   agent: kubernetes
@@ -196,7 +196,7 @@ periodics:
       - --skew
       - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -222,7 +222,7 @@ periodics:
       - --skew
       - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -247,7 +247,7 @@ periodics:
       - --skew
       - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -272,7 +272,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -296,7 +296,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=Kubectl.*\[Serial\]  --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 2h
   agent: kubernetes
@@ -321,7 +321,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 2h
   agent: kubernetes
@@ -345,7 +345,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 12h
   agent: kubernetes
@@ -371,7 +371,7 @@ periodics:
       - --skew
       - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 12h
   agent: kubernetes
@@ -396,7 +396,7 @@ periodics:
       - --skew
       - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 12h
   agent: kubernetes
@@ -421,7 +421,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 12h
   agent: kubernetes
@@ -445,7 +445,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 2h
   agent: kubernetes
@@ -474,7 +474,7 @@ periodics:
       - --skew
       - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 2h
   agent: kubernetes
@@ -502,7 +502,7 @@ periodics:
       - --skew
       - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -531,7 +531,7 @@ periodics:
       - --skew
       - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -559,7 +559,7 @@ periodics:
       - --skew
       - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -587,7 +587,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -614,7 +614,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 2h
   agent: kubernetes
@@ -643,7 +643,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 2h
   agent: kubernetes
@@ -671,7 +671,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 12h
   agent: kubernetes
@@ -700,7 +700,7 @@ periodics:
       - --skew
       - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 12h
   agent: kubernetes
@@ -728,7 +728,7 @@ periodics:
       - --skew
       - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 12h
   agent: kubernetes
@@ -757,7 +757,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 12h
   agent: kubernetes
@@ -785,4 +785,4 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=Kubectl.*\[Serial\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master

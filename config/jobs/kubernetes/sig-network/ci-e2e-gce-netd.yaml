@@ -534,7 +534,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 2h
   agent: kubernetes
@@ -557,7 +557,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:NetworkPolicy\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       env:
       - name: NETWORK_POLICY_PROVIDER
         value: calico
@@ -584,7 +584,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 2h
   agent: kubernetes
@@ -608,7 +608,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:NetworkPolicy\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       env:
       - name: NETWORK_POLICY_PROVIDER
         value: calico

@@ -61,7 +61,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.10
         args:
         - "--repo=github.com/kubernetes-incubator/$(REPO_NAME)=$(PULL_REFS)"
         - "--timeout=60"
