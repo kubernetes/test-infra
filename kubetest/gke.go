@@ -376,14 +376,15 @@ function log_dump_custom_get_instances() {
     return 0
   fi
 
-  gcloud compute instances list '--project=%[1]s' '--filter=%[3]s' '--format=get(name)'
+  gcloud compute instances list '--project=%[1]s' '--filter=%[4]s' '--format=get(name)'
 }
 export -f log_dump_custom_get_instances
 # Set below vars that log-dump.sh expects in order to use scp with gcloud.
 export PROJECT=%[1]s
 export ZONE='%[2]s'
 export KUBERNETES_PROVIDER=gke
-%[4]s
+export KUBE_NODE_OS_DISTRIBUTION='%[3]s'
+%[5]s
 `
 	// Prevent an obvious injection.
 	if strings.Contains(localPath, "'") || strings.Contains(gcsPath, "'") {
@@ -409,6 +410,7 @@ export KUBERNETES_PROVIDER=gke
 	return control.FinishRunning(exec.Command("bash", "-c", fmt.Sprintf(gkeLogDumpTemplate,
 		g.project,
 		g.zone,
+		os.Getenv("NODE_OS_DISTRIBUTION"),
 		strings.Join(filters, " OR "),
 		dumpCmd)))
 }
