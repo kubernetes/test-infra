@@ -175,6 +175,8 @@ labels:
     name: kind/failing-test
     previously:
       - name: priority/failing-test
+      - name: kind/e2e-test-failure
+      - name: kind/upgrade-test-failure
     target: both
     prowPlugin: label
     addedBy: anyone
