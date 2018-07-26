@@ -208,7 +208,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/rules-k8s/gcloud-bazel:v20180708-d6e1b65
+      - image: docker.io/library/golang:1.10
         command:
         - ./hack/verify-codegen.sh
         resources:
