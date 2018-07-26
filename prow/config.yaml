@@ -458,7 +458,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -477,7 +477,7 @@ presubmits:
       preset-cloud-provider-azure-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -507,7 +507,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -526,7 +526,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -544,7 +544,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -600,7 +600,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         args:
         - "--repo=k8s.io/ingress-gce=$(PULL_REFS)"
         - "--root=/go/src/"
@@ -631,7 +631,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         args:
         - "--repo=github.com/GoogleCloudPlatform/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -687,7 +687,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         args:
         - "--repo=k8s.io/federation=$(PULL_REFS)"
         - "--repo=k8s.io/release"
@@ -734,7 +734,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -761,7 +761,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -783,7 +783,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -815,7 +815,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -844,7 +844,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         args:
         - --root=/go/src
         - --job=$(JOB_NAME)
@@ -971,7 +971,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -994,7 +994,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.8
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.8
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -1021,7 +1021,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-experimental
         args:
         - "--repo=github.com/containerd/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -1042,7 +1042,7 @@ presubmits:
         preset-k8s-ssh: "true"
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
           args:
           - --root=/go/src
           - "--job=$(JOB_NAME)"
@@ -1068,7 +1068,7 @@ presubmits:
         preset-k8s-ssh: "true"
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
           args:
           - --root=/go/src
           - "--job=$(JOB_NAME)"
@@ -1092,7 +1092,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-experimental
         args:
         - "--repo=github.com/containerd/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -1115,7 +1115,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -1171,7 +1171,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.10
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -1334,7 +1334,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -1368,7 +1368,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.10
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -1575,7 +1575,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -1651,7 +1651,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         resources:
           requests:
             memory: "6Gi"
@@ -1681,7 +1681,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         resources:
           requests:
             memory: "6Gi"
@@ -1709,7 +1709,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.10
         resources:
           requests:
             memory: "6Gi"
@@ -1738,7 +1738,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.9
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.9
         resources:
           requests:
             memory: "6Gi"
@@ -1765,7 +1765,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.8
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.8
         resources:
           requests:
             memory: "6Gi"
@@ -1795,7 +1795,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         resources:
           requests:
             memory: "6Gi"
@@ -1823,7 +1823,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         resources:
           requests:
             memory: "6Gi"
@@ -1847,7 +1847,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -1879,7 +1879,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.10
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -1910,7 +1910,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.9
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.9
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -1941,7 +1941,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.8
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.8
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -1980,7 +1980,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         resources:
           requests:
             memory: "6Gi"
@@ -2013,7 +2013,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         resources:
           requests:
             memory: "6Gi"
@@ -2041,7 +2041,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.10
         resources:
           requests:
             memory: "6Gi"
@@ -2069,7 +2069,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.9
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.9
         resources:
           requests:
             memory: "6Gi"
@@ -2097,7 +2097,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.8
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.8
         resources:
           requests:
             memory: "6Gi"
@@ -2120,7 +2120,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -2151,7 +2151,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.10
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -2182,7 +2182,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.9
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.9
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -2213,7 +2213,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.8
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.8
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -2248,7 +2248,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -2280,7 +2280,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.10
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -2311,7 +2311,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.9
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.9
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -2342,7 +2342,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.8
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.8
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -2440,7 +2440,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -2483,7 +2483,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.10
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -2526,7 +2526,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.9
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.9
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -2569,7 +2569,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.8
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.8
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -2612,7 +2612,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -2656,7 +2656,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -2692,7 +2692,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -2731,7 +2731,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -2759,7 +2759,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.10
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -2787,7 +2787,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.9
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.9
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -2815,7 +2815,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.8
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.8
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -2843,7 +2843,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -2872,7 +2872,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -2980,7 +2980,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"
@@ -3010,7 +3010,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.10
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"
@@ -3065,7 +3065,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         resources:
           requests:
             memory: "6Gi"
@@ -3079,7 +3079,7 @@ postsubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         args:
         - "--repo=k8s.io/ingress-gce=$(PULL_REFS)"
         - "--root=/go/src/"
@@ -3108,7 +3108,7 @@ postsubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         args:
         - "--repo=k8s.io/test-infra=master"
         - "--root=/go/src/"
@@ -3158,7 +3158,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -3186,7 +3186,7 @@ postsubmits:
         preset-bazel-remote-cache-enabled: "true"
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
           args:
           - "--job=$(JOB_NAME)"
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -3215,7 +3215,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.10
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -3244,7 +3244,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.11
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.11
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -3301,7 +3301,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.10
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -3331,7 +3331,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.11
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.11
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -3388,7 +3388,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - "--job=$(JOB_NAME)"
       - "--repo=github.com/kubernetes-sigs/application=master"
@@ -3421,7 +3421,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=40
@@ -3437,7 +3437,7 @@ periodics:
     preset-service-account: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-experimental
       args:
       - "--repo=github.com/containerd/containerd=master"
       - "--repo=github.com/containerd/cri=master"
@@ -3451,7 +3451,7 @@ periodics:
     preset-service-account: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-experimental
       args:
       - "--repo=github.com/containerd/containerd=release/1.1"
       - "--repo=github.com/containerd/cri=release/1.0"
@@ -3469,7 +3469,7 @@ periodics:
     - args:
       - "--repo=github.com/containerd/cri=master"
       - "--timeout=70"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -3482,7 +3482,7 @@ periodics:
     - args:
       - "--repo=github.com/containerd/cri=release/1.0"
       - "--timeout=70"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -3495,7 +3495,7 @@ periodics:
     - args:
       - "--repo=github.com/containerd/cri=master"
       - "--timeout=70"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - name: ci-containerd-node-e2e
   interval: 1h
@@ -3505,7 +3505,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -3525,7 +3525,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes=release-1.10
@@ -3545,7 +3545,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -3568,7 +3568,7 @@ periodics:
     - args:
       - --repo=github.com/containerd/cri=master
       - --timeout=1220
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - name: ci-cri-containerd-build
   interval: 30m
@@ -3577,7 +3577,7 @@ periodics:
     preset-service-account: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-experimental
       args:
       - "--repo=github.com/containerd/cri=master"
       - "--root=/go/src"
@@ -3594,7 +3594,7 @@ periodics:
     - args:
       - "--repo=github.com/containerd/cri=master"
       - "--timeout=300"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 2h
   agent: kubernetes
@@ -3607,7 +3607,7 @@ periodics:
     - args:
       - "--repo=github.com/containerd/cri=master"
       - "--timeout=170"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 2h
   agent: kubernetes
@@ -3620,7 +3620,7 @@ periodics:
     - args:
       - "--repo=github.com/containerd/cri=master"
       - "--timeout=70"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -3633,7 +3633,7 @@ periodics:
     - args:
       - "--repo=github.com/containerd/cri=master"
       - "--timeout=70"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 2h
   agent: kubernetes
@@ -3646,7 +3646,7 @@ periodics:
     - args:
       - "--repo=github.com/containerd/cri=master"
       - "--timeout=200"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 2h
   agent: kubernetes
@@ -3659,7 +3659,7 @@ periodics:
     - args:
       - "--repo=github.com/containerd/cri=master"
       - "--timeout=110"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -3672,7 +3672,7 @@ periodics:
     - args:
       - "--repo=github.com/containerd/cri=master"
       - "--timeout=70"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 2h
   agent: kubernetes
@@ -3685,7 +3685,7 @@ periodics:
     - args:
       - "--repo=github.com/containerd/cri=master"
       - "--timeout=200"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 2h
   agent: kubernetes
@@ -3698,7 +3698,7 @@ periodics:
     - args:
       - "--repo=github.com/containerd/cri=master"
       - "--timeout=340"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 2h
   agent: kubernetes
@@ -3711,7 +3711,7 @@ periodics:
     - args:
       - "--repo=github.com/containerd/cri=master"
       - "--timeout=70"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 2h
   agent: kubernetes
@@ -3724,7 +3724,7 @@ periodics:
     - args:
       - "--repo=github.com/containerd/cri=master"
       - "--timeout=70"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -3737,7 +3737,7 @@ periodics:
     - args:
       - "--repo=github.com/containerd/cri=master"
       - "--timeout=200"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 2h
   agent: kubernetes
@@ -3750,7 +3750,7 @@ periodics:
     - args:
       - "--repo=github.com/containerd/cri=master"
       - "--timeout=1340"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 2h
   agent: kubernetes
@@ -3763,7 +3763,7 @@ periodics:
     - args:
       - "--repo=github.com/containerd/cri=master"
       - "--timeout=1340"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -3776,7 +3776,7 @@ periodics:
     - args:
       - "--repo=github.com/containerd/cri=master"
       - "--timeout=520"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -3789,7 +3789,7 @@ periodics:
     - args:
       - "--repo=github.com/containerd/cri=master"
       - "--timeout=170"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 2h
   agent: kubernetes
@@ -3802,7 +3802,7 @@ periodics:
     - args:
       - "--repo=github.com/containerd/cri=master"
       - "--timeout=110"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -3815,7 +3815,7 @@ periodics:
     - args:
       - "--repo=github.com/containerd/cri=master"
       - "--timeout=70"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - name: ci-cri-containerd-node-e2e
   interval: 1h
@@ -3825,7 +3825,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -3845,7 +3845,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -3866,7 +3866,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -3886,7 +3886,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -3906,7 +3906,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -3926,7 +3926,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -3943,7 +3943,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=200
@@ -3960,7 +3960,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=200
@@ -4016,7 +4016,7 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       volumeMounts:
       - name: var-lib-docker
         mountPath: /var/lib/docker
@@ -4040,7 +4040,7 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       volumeMounts:
       - name: var-lib-docker
         mountPath: /var/lib/docker
@@ -4055,7 +4055,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - "--timeout=340"
       - "--bare"
@@ -4067,7 +4067,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - "--timeout=340"
       - "--bare"
@@ -4079,7 +4079,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - "--timeout=340"
       - "--bare"
@@ -4091,7 +4091,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - "--timeout=340"
       - "--bare"
@@ -4103,7 +4103,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - "--timeout=340"
       - "--bare"
@@ -4115,7 +4115,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - "--timeout=340"
       - "--bare"
@@ -4127,7 +4127,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - "--timeout=340"
       - "--bare"
@@ -4138,7 +4138,7 @@ periodics:
     preset-service-account: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - --repo=k8s.io/kops
       - --repo=k8s.io/release
@@ -4181,7 +4181,7 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes=master"
@@ -4218,7 +4218,7 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.10
       args:
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes=release-1.10"
@@ -4255,7 +4255,7 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.11
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.11
       args:
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes=release-1.11"
@@ -4343,7 +4343,7 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - --repo=k8s.io/kubernetes
       - --root=/go/src
@@ -4606,7 +4606,7 @@ periodics:
     preset-bazel-scratch-dir: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -4663,7 +4663,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - "--repo=k8s.io/autoscaler=master"
       - "--root=/go/src"
@@ -4689,7 +4689,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - "--repo=k8s.io/autoscaler=master"
       - "--root=/go/src"
@@ -4715,7 +4715,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - "--repo=k8s.io/autoscaler=master"
       - "--root=/go/src"
@@ -4741,7 +4741,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - "--repo=k8s.io/autoscaler=master"
       - "--root=/go/src"
@@ -4767,7 +4767,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - "--repo=k8s.io/autoscaler=master"
       - "--root=/go/src"
@@ -4796,7 +4796,7 @@ periodics:
     - args:
       - --timeout=80
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 6h
   agent: kubernetes
@@ -4809,7 +4809,7 @@ periodics:
     - args:
       - --timeout=80
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu
   interval: 2h
@@ -4822,7 +4822,7 @@ periodics:
     - args:
       - --timeout=300
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
   interval: 2h
@@ -4835,7 +4835,7 @@ periodics:
     - args:
       - --timeout=300
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
   interval: 6h
@@ -4848,7 +4848,7 @@ periodics:
     - args:
       - --timeout=300
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable2
   interval: 12h
@@ -4861,7 +4861,7 @@ periodics:
     - args:
       - --timeout=300
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -4874,7 +4874,7 @@ periodics:
     - args:
       - --timeout=920
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 2h
   agent: kubernetes
@@ -4887,7 +4887,7 @@ periodics:
     - args:
       - --timeout=110
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 12h
   agent: kubernetes
@@ -4900,7 +4900,7 @@ periodics:
     - args:
       - --timeout=180
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 12h
   agent: kubernetes
@@ -4913,7 +4913,7 @@ periodics:
     - args:
       - --timeout=180
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - name: ci-kubernetes-e2e-gce-gpu-stable1
   interval: 2h
@@ -4926,7 +4926,7 @@ periodics:
     - args:
       - --timeout=300
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 12h
   agent: kubernetes
@@ -4939,7 +4939,7 @@ periodics:
     - args:
       - --timeout=180
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 12h
   agent: kubernetes
@@ -4952,7 +4952,7 @@ periodics:
     - args:
       - --timeout=180
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 12h
   agent: kubernetes
@@ -4965,7 +4965,7 @@ periodics:
     - args:
       - --timeout=180
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 12h
   agent: kubernetes
@@ -4978,7 +4978,7 @@ periodics:
     - args:
       - --timeout=180
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - name: ci-kubernetes-e2e-gce-gpu-stable2
   interval: 6h
@@ -4991,7 +4991,7 @@ periodics:
     - args:
       - --timeout=300
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 12h
   agent: kubernetes
@@ -5004,7 +5004,7 @@ periodics:
     - args:
       - --timeout=180
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 12h
   agent: kubernetes
@@ -5017,7 +5017,7 @@ periodics:
     - args:
       - --timeout=180
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5030,7 +5030,7 @@ periodics:
     - args:
       - --timeout=240
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5043,7 +5043,7 @@ periodics:
     - args:
       - --timeout=70
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 6h
   agent: kubernetes
@@ -5056,7 +5056,7 @@ periodics:
     - args:
       - --timeout=80
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - cron: '1 6 * * 2,4,6' # Run at 22:01PST on Mon,Wed,Fri (06:01 UTC Tue,Thur,Sat)
   agent: kubernetes
@@ -5069,7 +5069,7 @@ periodics:
     - args:
       - --timeout=420
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       resources:
         requests:
           cpu: 6
@@ -5117,7 +5117,7 @@ periodics:
     - args:
       - --timeout=540
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       resources:
         requests:
           cpu: 6
@@ -5134,7 +5134,7 @@ periodics:
     - args:
       - --timeout=520
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5147,7 +5147,7 @@ periodics:
     - args:
       - --timeout=170
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - name: ci-kubernetes-e2e-gce-pod-preemption
   interval: 2h
@@ -5175,7 +5175,7 @@ periodics:
     - args:
       - --timeout=70
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - cron: '1 22 * * 2,4,6' # Run at 14:01PST (22:01 UTC) on even days
   agent: kubernetes
@@ -5188,7 +5188,7 @@ periodics:
     - args:
       - --timeout=600
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       resources:
         requests:
           cpu: 6
@@ -5208,7 +5208,7 @@ periodics:
     - args:
       - --timeout=1320
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       resources:
         requests:
           cpu: 6
@@ -5225,7 +5225,7 @@ periodics:
     - args:
       - --timeout=70
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5238,7 +5238,7 @@ periodics:
     - args:
       - --timeout=80
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5251,7 +5251,7 @@ periodics:
     - args:
       - --timeout=70
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5264,7 +5264,7 @@ periodics:
     - args:
       - --timeout=100
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5277,7 +5277,7 @@ periodics:
     - args:
       - --timeout=200
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5290,7 +5290,7 @@ periodics:
     - args:
       - --timeout=350
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5303,7 +5303,7 @@ periodics:
     - args:
       - --timeout=350
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5316,7 +5316,7 @@ periodics:
     - args:
       - --timeout=350
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5329,7 +5329,7 @@ periodics:
     - args:
       - --timeout=350
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 60m
   agent: kubernetes
@@ -5342,7 +5342,7 @@ periodics:
     - args:
       - --timeout=170
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5355,7 +5355,7 @@ periodics:
     - args:
       - --timeout=110
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5368,7 +5368,7 @@ periodics:
     - args:
       - --timeout=70
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5381,7 +5381,7 @@ periodics:
     - args:
       - --timeout=200
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5394,7 +5394,7 @@ periodics:
     - args:
       - --timeout=620
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5407,7 +5407,7 @@ periodics:
     - args:
       - --timeout=340
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 - interval: 60m
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-ingress-manual-network
@@ -5419,7 +5419,7 @@ periodics:
     - args:
       - --timeout=200
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5432,7 +5432,7 @@ periodics:
     - args:
       - --timeout=70
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 60m
   agent: kubernetes
@@ -5445,7 +5445,7 @@ periodics:
     - args:
       - --timeout=170
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5458,7 +5458,7 @@ periodics:
     - args:
       - --timeout=70
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5471,7 +5471,7 @@ periodics:
     - args:
       - --timeout=200
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5488,7 +5488,7 @@ periodics:
     - args:
       - --timeout=140
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - cron: "0 */6 * * *" # every six hours
   agent: kubernetes
@@ -5504,7 +5504,7 @@ periodics:
     - args:
       - --timeout=140
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - cron: "0 0/6 * * *" # every six hours, disjoint with ci-kubernetes-e2e-gci-gce-scalability-stable2
   agent: kubernetes
@@ -5520,7 +5520,7 @@ periodics:
     - args:
       - --timeout=140
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - cron: "0 3-21/6 * * *" # every six hours, disjoint with ci-kubernetes-e2e-gci-gce-scalability-stable1
   agent: kubernetes
@@ -5536,7 +5536,7 @@ periodics:
     - args:
       - --timeout=140
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5549,7 +5549,7 @@ periodics:
     - args:
       - --timeout=1340
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5562,7 +5562,7 @@ periodics:
     - args:
       - --timeout=520
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5575,7 +5575,7 @@ periodics:
     - args:
       - --timeout=170
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5588,7 +5588,7 @@ periodics:
     - args:
       - --timeout=110
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5601,7 +5601,7 @@ periodics:
     - args:
       - --timeout=70
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5614,7 +5614,7 @@ periodics:
     - args:
       - --timeout=200
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5627,7 +5627,7 @@ periodics:
     - args:
       - --timeout=620
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 4h
   agent: kubernetes
@@ -5640,7 +5640,7 @@ periodics:
     - args:
       - --timeout=170
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 4h
   agent: kubernetes
@@ -5653,7 +5653,7 @@ periodics:
     - args:
       - --timeout=170
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 4h
   agent: kubernetes
@@ -5666,7 +5666,7 @@ periodics:
     - args:
       - --timeout=170
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5679,7 +5679,7 @@ periodics:
     - args:
       - --timeout=440
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5692,7 +5692,7 @@ periodics:
     - args:
       - --timeout=440
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5705,7 +5705,7 @@ periodics:
     - args:
       - --timeout=320
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5718,7 +5718,7 @@ periodics:
     - args:
       - --timeout=320
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5731,7 +5731,7 @@ periodics:
     - args:
       - --timeout=170
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5744,7 +5744,7 @@ periodics:
     - args:
       - --timeout=620
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5757,7 +5757,7 @@ periodics:
     - args:
       - --timeout=100
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5770,7 +5770,7 @@ periodics:
     - args:
       - --timeout=100
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5783,7 +5783,7 @@ periodics:
     - args:
       - --timeout=200
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5796,7 +5796,7 @@ periodics:
     - args:
       - --timeout=520
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5809,7 +5809,7 @@ periodics:
     - args:
       - --timeout=170
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -5822,7 +5822,7 @@ periodics:
     - args:
       - --timeout=50
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu
   interval: 2h
@@ -5835,7 +5835,7 @@ periodics:
     - args:
       - --timeout=300
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
   interval: 2h
@@ -5848,7 +5848,7 @@ periodics:
     - args:
       - --timeout=300
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-monitoring
   interval: 3h
@@ -5861,7 +5861,7 @@ periodics:
     - args:
       - --timeout=300
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100
   interval: 12h #expensive test
@@ -5874,7 +5874,7 @@ periodics:
     - args:
       - --timeout=300
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
   interval: 12h #expensive test
@@ -5887,7 +5887,7 @@ periodics:
     - args:
       - --timeout=300
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable1
   interval: 12h #expensive test
@@ -5900,7 +5900,7 @@ periodics:
     - args:
       - --timeout=300
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable2
   interval: 12h #expensive test
@@ -5913,7 +5913,7 @@ periodics:
     - args:
       - --timeout=300
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
   interval: 6h
@@ -5926,7 +5926,7 @@ periodics:
     - args:
       - --timeout=300
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable2
   interval: 12h
@@ -5939,7 +5939,7 @@ periodics:
     - args:
       - --timeout=300
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-ubuntu
   interval: 2h
@@ -5952,7 +5952,7 @@ periodics:
     - args:
       - --timeout=300
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -5965,7 +5965,7 @@ periodics:
     - args:
       - --timeout=70
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - cron: "0 0 31 2 *" # manual job, set to Feb.31st so it will never be triggered
   agent: kubernetes
@@ -5978,7 +5978,7 @@ periodics:
     - args:
       - --timeout=480
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       resources:
         requests:
           cpu: 6
@@ -6012,7 +6012,7 @@ periodics:
     - args:
       - --timeout=600
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       resources:
         requests:
           cpu: 6
@@ -6032,7 +6032,7 @@ periodics:
     - args:
       - --timeout=600
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       resources:
         requests:
           cpu: 6
@@ -6063,7 +6063,7 @@ periodics:
     - args:
       - --timeout=820
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -6076,7 +6076,7 @@ periodics:
     - args:
       - --timeout=100
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -6089,7 +6089,7 @@ periodics:
     - args:
       - --timeout=100
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -6102,7 +6102,7 @@ periodics:
     - args:
       - --timeout=170
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -6115,7 +6115,7 @@ periodics:
     - args:
       - --timeout=520
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -6128,7 +6128,7 @@ periodics:
     - args:
       - --timeout=170
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - cron: '1 18 * * 0' # Run at 10:01PST (18:01 UTC) on sunday
   agent: kubernetes
@@ -6141,7 +6141,7 @@ periodics:
     - args:
       - --timeout=240
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       resources:
         requests:
           cpu: 6
@@ -6158,7 +6158,7 @@ periodics:
     - args:
       - --timeout=1400
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -6171,7 +6171,7 @@ periodics:
     - args:
       - --timeout=1400
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -6184,7 +6184,7 @@ periodics:
     - args:
       - --timeout=1400
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -6197,7 +6197,7 @@ periodics:
     - args:
       - --timeout=1400
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -6210,7 +6210,7 @@ periodics:
     - args:
       - --timeout=1400
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -6223,7 +6223,7 @@ periodics:
     - args:
       - --timeout=1400
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -6236,7 +6236,7 @@ periodics:
     - args:
       - --timeout=70
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -6249,7 +6249,7 @@ periodics:
     - args:
       - --timeout=50
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -6263,7 +6263,7 @@ periodics:
     - args:
       - --timeout=140
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -6277,7 +6277,7 @@ periodics:
     - args:
       - --timeout=140
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -6396,7 +6396,7 @@ periodics:
     - args:
       - --timeout=140
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 4h
   agent: kubernetes
@@ -6410,7 +6410,7 @@ periodics:
     - args:
       - --timeout=140
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 6h
   agent: kubernetes
@@ -6424,7 +6424,7 @@ periodics:
     - args:
       - --timeout=140
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -6438,7 +6438,7 @@ periodics:
     - args:
       - --timeout=50
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 24h
   agent: kubernetes
@@ -6452,7 +6452,7 @@ periodics:
     - args:
       - --timeout=140
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -6465,7 +6465,7 @@ periodics:
     - args:
       - --timeout=140
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -6478,7 +6478,7 @@ periodics:
     - args:
       - --timeout=140
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 30m
   agent: kubernetes
@@ -6491,7 +6491,7 @@ periodics:
     - args:
       - --timeout=140
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 2h
   name: ci-kubernetes-e2e-kubeadm-gce
@@ -6772,7 +6772,7 @@ periodics:
     - args:
       - --timeout=220
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 - interval: 6h
   agent: kubernetes
   name: ci-kubernetes-gce-conformance-latest-1-10
@@ -6784,7 +6784,7 @@ periodics:
     - args:
       - --timeout=220
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 - interval: 6h
   agent: kubernetes
   name: ci-kubernetes-gce-conformance-latest-1-11
@@ -6796,7 +6796,7 @@ periodics:
     - args:
       - --timeout=220
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 - interval: 6h
   agent: kubernetes
   name: ci-kubernetes-gce-conformance-latest-1-8
@@ -6808,7 +6808,7 @@ periodics:
     - args:
       - --timeout=220
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 - interval: 6h
   agent: kubernetes
   name: ci-kubernetes-gce-conformance-latest-1-9
@@ -6820,7 +6820,7 @@ periodics:
     - args:
       - --timeout=220
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 6h
   agent: kubernetes
@@ -6833,7 +6833,7 @@ periodics:
     - args:
       - --timeout=220
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 - interval: 6h
   agent: kubernetes
   name: ci-kubernetes-gce-conformance-stable-1-8
@@ -6857,7 +6857,7 @@ periodics:
     - args:
       - --timeout=220
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 - interval: 2h
   name: ci-kubernetes-integration-beta
   agent: kubernetes
@@ -7004,7 +7004,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - --bare
       - --timeout=260
@@ -7029,7 +7029,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - --bare
       - --timeout=80
@@ -7057,7 +7057,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - --bare
       - --timeout=140
@@ -7085,7 +7085,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - --bare
       - --timeout=1100
@@ -7113,7 +7113,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - --bare
       - --timeout=300
@@ -7138,7 +7138,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - "--timeout=140"
       - "--bare"
@@ -7163,7 +7163,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - "--timeout=140"
       - "--bare"
@@ -7189,7 +7189,7 @@ periodics:
     preset-service-account: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - --repo=github.com/GoogleCloudPlatform/k8s-multicluster-ingress=master
       - --root=/go/src
@@ -7216,7 +7216,7 @@ periodics:
     - args:
       - --timeout=1220
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 12h
   agent: kubernetes
@@ -7229,7 +7229,7 @@ periodics:
     - args:
       - --timeout=1220
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 12h
   agent: kubernetes
@@ -7242,7 +7242,7 @@ periodics:
     - args:
       - --timeout=1220
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 12h
   agent: kubernetes
@@ -7255,7 +7255,7 @@ periodics:
     - args:
       - --timeout=820
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 12h
   agent: kubernetes
@@ -7268,7 +7268,7 @@ periodics:
     - args:
       - --timeout=820
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 12h
   agent: kubernetes
@@ -7281,7 +7281,7 @@ periodics:
     - args:
       - --timeout=820
       - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 2h
   name: ci-kubernetes-verify-beta
@@ -7426,7 +7426,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -7442,7 +7442,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - "--repo=k8s.io/kubernetes=master"
       - "--repo=k8s.io/perf-tests=master"
@@ -7457,7 +7457,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - "--repo=k8s.io/perf-tests=master"
       - "--root=/go/src"
@@ -7471,7 +7471,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - --repo=github.com/ostromart/istio=k8s-prow-test
       - --timeout=90
@@ -7486,7 +7486,7 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.10
       args:
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes=release-1.10"
@@ -7517,7 +7517,7 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.11
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.11
       args:
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes=release-1.11"
@@ -7592,7 +7592,7 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.10
       args:
       - --root=/go/src
       - "--job=$(JOB_NAME)"
@@ -7627,7 +7627,7 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.11
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.11
       args:
       - --root=/go/src
       - "--job=$(JOB_NAME)"
@@ -7721,7 +7721,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - "--job=$(JOB_NAME)"
       - "--repo=github.com/apache-spark-on-k8s/spark-integration=master"
@@ -7751,7 +7751,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       args:
       - "--job=$(JOB_NAME)"
       - "--repo=github.com/apache-spark-on-k8s/spark-integration=master"

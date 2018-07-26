@@ -73,7 +73,7 @@ presubmits:
         - --release=//build/release-tars
         - --gcs=gs://kubernetes-security-prow/ci/pull-security-kubernetes-bazel-build
         - --gcs-shared=gs://kubernetes-security-prow/bazel
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         name: ""
         resources:
           requests:
@@ -156,7 +156,7 @@ presubmits:
         - --release=//build/release-tars
         - --gcs=gs://kubernetes-security-prow/ci/pull-security-kubernetes-bazel-build
         - --gcs-shared=gs://kubernetes-security-prow/bazel
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.10
         name: ""
         resources:
           requests:
@@ -371,7 +371,7 @@ presubmits:
         - --test-args=--build_tag_filters=-e2e,-integration
         - --test-args=--test_tag_filters=-e2e,-integration
         - --test-args=--flaky_test_attempts=3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         name: ""
         resources:
           requests:
@@ -417,7 +417,7 @@ presubmits:
         - --test-args=--build_tag_filters=-e2e,-integration
         - --test-args=--test_tag_filters=-e2e,-integration
         - --test-args=--flaky_test_attempts=3
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.10
         name: ""
         resources:
           requests:
@@ -701,7 +701,7 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         name: ""
         resources:
           requests:
@@ -764,7 +764,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-containerd-gce
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         name: ""
         resources:
           requests:
@@ -808,7 +808,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         name: ""
         resources:
           requests:
@@ -850,7 +850,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.10
         name: ""
         resources:
           requests:
@@ -892,7 +892,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.9
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.9
         name: ""
         resources:
           requests:
@@ -934,7 +934,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.8
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.8
         name: ""
         resources:
           requests:
@@ -976,7 +976,7 @@ presubmits:
         - --timeout=120
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-100-performance
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         name: ""
         resources:
           requests:
@@ -1018,7 +1018,7 @@ presubmits:
         - --timeout=270
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-big-performance
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         name: ""
         resources:
           requests:
@@ -1064,7 +1064,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-device-plugin-gpu
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         name: ""
         resources:
           requests:
@@ -1108,7 +1108,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-device-plugin-gpu
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.10
         name: ""
         resources:
           requests:
@@ -1152,7 +1152,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-device-plugin-gpu
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.9
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.9
         name: ""
         resources:
           requests:
@@ -1196,7 +1196,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-device-plugin-gpu
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.8
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.8
         name: ""
         resources:
           requests:
@@ -1238,7 +1238,7 @@ presubmits:
         - --timeout=570
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-large-performance
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         name: ""
         resources:
           requests:
@@ -1282,7 +1282,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         name: ""
         resources:
           requests:
@@ -1324,7 +1324,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.10
         name: ""
         resources:
           requests:
@@ -1366,7 +1366,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.9
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.9
         name: ""
         resources:
           requests:
@@ -1408,7 +1408,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.8
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.8
         name: ""
         resources:
           requests:
@@ -1454,7 +1454,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke-device-plugin-gpu
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         name: ""
         resources:
           requests:
@@ -1498,7 +1498,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke-device-plugin-gpu
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.10
         name: ""
         resources:
           requests:
@@ -1542,7 +1542,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke-device-plugin-gpu
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.9
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.9
         name: ""
         resources:
           requests:
@@ -1586,7 +1586,7 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke-device-plugin-gpu
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.8
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.8
         name: ""
         resources:
           requests:
@@ -1633,7 +1633,7 @@ presubmits:
         - --timeout=75
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-kops-aws
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         name: ""
         resources:
           requests:
@@ -1678,7 +1678,7 @@ presubmits:
         - --timeout=75
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-kops-aws
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.10
         name: ""
         resources:
           requests:
@@ -1723,7 +1723,7 @@ presubmits:
         - --timeout=75
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-kops-aws
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.9
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.9
         name: ""
         resources:
           requests:
@@ -1768,7 +1768,7 @@ presubmits:
         - --timeout=75
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-kops-aws
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.8
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.8
         name: ""
         resources:
           requests:
@@ -1904,7 +1904,7 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         name: ""
         resources:
           requests:
@@ -1955,7 +1955,7 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.10
         name: ""
         resources:
           requests:
@@ -2006,7 +2006,7 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.9
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.9
         name: ""
         resources:
           requests:
@@ -2057,7 +2057,7 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.8
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.8
         name: ""
         resources:
           requests:
@@ -2108,7 +2108,7 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         name: ""
         resources:
           requests:
@@ -2155,7 +2155,7 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         name: ""
         resources: {}
         securityContext:
@@ -2202,7 +2202,7 @@ presubmits:
           value: "true"
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         name: ""
         resources: {}
         securityContext:
@@ -2248,7 +2248,7 @@ presubmits:
         - --timeout=90
         - --
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         name: ""
         resources:
           requests:
@@ -2288,7 +2288,7 @@ presubmits:
         - --timeout=90
         - --
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.10
         name: ""
         resources:
           requests:
@@ -2328,7 +2328,7 @@ presubmits:
         - --timeout=90
         - --
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.9
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.9
         name: ""
         resources:
           requests:
@@ -2368,7 +2368,7 @@ presubmits:
         - --timeout=90
         - --
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-1.8
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.8
         name: ""
         resources:
           requests:
@@ -2409,7 +2409,7 @@ presubmits:
         - --timeout=90
         - --
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         name: ""
         resources:
           requests:
@@ -2447,7 +2447,7 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=75
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
         name: ""
         resources: {}
         volumeMounts:
