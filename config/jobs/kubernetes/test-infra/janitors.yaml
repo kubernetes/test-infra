@@ -47,7 +47,7 @@ periodics:
       - --
       - --mode=ci
       env:
-      image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      image: gcr.io/k8s-testimages/gcloud-in-go:v20180725-a495f0247
       resources:
         requests:
           cpu: 5
@@ -69,7 +69,7 @@ periodics:
       - --
       - --mode=pr
       env:
-      image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      image: gcr.io/k8s-testimages/gcloud-in-go:v20180725-a495f0247
       resources:
         requests:
           cpu: 5
@@ -92,7 +92,7 @@ periodics:
       - --mode=scale
       - --ratelimit=5
       env:
-      image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      image: gcr.io/k8s-testimages/gcloud-in-go:v20180725-a495f0247
       resources:
         requests:
           cpu: 5
