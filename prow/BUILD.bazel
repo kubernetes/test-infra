@@ -10,6 +10,19 @@ load(
 )
 
 docker_bundle(
+    name = "release-hook",
+    images = prow_tags(
+        "hook",
+    ),
+    stamp = True,
+)
+
+docker_push(
+    name = "release-push-hook",
+    bundle = ":release-hook",
+)
+
+docker_bundle(
     name = "release",
     images = prow_tags(
         "branchprotector",
