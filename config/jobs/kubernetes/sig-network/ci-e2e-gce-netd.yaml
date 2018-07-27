@@ -599,6 +599,7 @@ periodics:
     - args:
       - "--timeout=340"
       - "--repo=k8s.io/kubernetes=release-1.11"
+      - "--repo=k8s.io/examples=master"
       - --scenario=kubernetes_e2e
       - --
       - --extract=ci/latest
@@ -606,7 +607,7 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=asia-southeast1-a
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
@@ -621,7 +622,7 @@ periodics:
     containers:
     - args:
       - "--timeout=340"
-      - --bare
+      - "--repo=k8s.io/examples=master"
       - --scenario=kubernetes_e2e
       - --
       - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.19+d2c3e19e251524
@@ -629,7 +630,7 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=asia-southeast1-a
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:NetworkPolicy\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       env:
@@ -648,6 +649,7 @@ periodics:
     - args:
       - "--timeout=340"
       - "--repo=k8s.io/kubernetes=release-1.11"
+      - "--repo=k8s.io/examples=master"
       - --scenario=kubernetes_e2e
       - --
       - --extract=ci/latest
@@ -656,7 +658,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud
       - --gcp-zone=asia-southeast1-a
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
@@ -672,7 +674,7 @@ periodics:
     - args:
       - "--timeout=340"
       - --scenario=kubernetes_e2e
-      - --bare
+      - "--repo=k8s.io/examples=master"
       - --
       - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.19+d2c3e19e251524
       - --check-leaked-resources
@@ -680,7 +682,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud
       - --gcp-zone=asia-southeast1-a
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:NetworkPolicy\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       env:
