@@ -27,11 +27,12 @@ import (
 )
 
 var (
+	lifecycleActiveLabel = "lifecycle/active"
 	lifecycleFrozenLabel = "lifecycle/frozen"
 	lifecycleStaleLabel  = "lifecycle/stale"
 	lifecycleRottenLabel = "lifecycle/rotten"
-	lifecycleLabels      = []string{lifecycleFrozenLabel, lifecycleStaleLabel, lifecycleRottenLabel}
-	lifecycleRe          = regexp.MustCompile(`(?mi)^/(remove-)?lifecycle (frozen|stale|rotten)\s*$`)
+	lifecycleLabels      = []string{lifecycleActiveLabel, lifecycleFrozenLabel, lifecycleStaleLabel, lifecycleRottenLabel}
+	lifecycleRe          = regexp.MustCompile(`(?mi)^/(remove-)?lifecycle (active|frozen|stale|rotten)\s*$`)
 )
 
 func init() {
