@@ -496,6 +496,55 @@ func TestHandlePR(t *testing.T) {
 			},
 			sizes: defaultSizes,
 		},
+		{
+			name: "different label constraints",
+			client: &ghc{
+				labels:     map[github.Label]bool{},
+				getFileErr: &github.FileNotFound{},
+				prChanges: []github.PullRequestChange{
+					{
+						SHA:       "abcd",
+						Filename:  "foobar",
+						Additions: 10,
+						Deletions: 10,
+						Changes:   20,
+					},
+					{
+						SHA:       "abcd",
+						Filename:  "barfoo",
+						Additions: 3,
+						Deletions: 4,
+						Changes:   7,
+					},
+				},
+			},
+			event: github.PullRequestEvent{
+				Action: github.PullRequestActionOpened,
+				Number: 101,
+				PullRequest: github.PullRequest{
+					Number: 101,
+					Base: github.PullRequestBranch{
+						SHA: "abcd",
+						Repo: github.Repo{
+							Owner: github.User{
+								Login: "kubernetes",
+							},
+							Name: "kubernetes",
+						},
+					},
+				},
+			},
+			finalLabels: []github.Label{
+				{Name: "size/XXL"},
+			},
+			sizes: plugins.Size{
+				S:   0,
+				M:   1,
+				L:   2,
+				Xl:  3,
+				Xxl: 4,
+			},
+		},
 	}
 
 	for _, c := range cases {
