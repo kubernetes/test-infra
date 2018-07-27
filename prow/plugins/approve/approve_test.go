@@ -729,6 +729,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			reviews: []github.Review{
 				newTestReview("cjwagner", "stuff", "COMMENTED"),
 				newTestReview("cjwagner", "unsubmitted stuff", "PENDING"),
+				newTestReview("cjwagner", "dismissed stuff", "DISMISSED"),
 			},
 			selfApprove:         false,
 			needsIssue:          false,
@@ -1355,7 +1356,7 @@ func TestHandleReviewEvent(t *testing.T) {
 				},
 			},
 			reviewActsAsApprove: true,
-			expectHandle:        false,
+			expectHandle:        true,
 		},
 		{
 			name: "approve command",
