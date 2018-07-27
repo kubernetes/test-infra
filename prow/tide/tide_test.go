@@ -185,9 +185,10 @@ func TestAccumulateBatch(t *testing.T) {
 		for _, pj := range test.prowJobs {
 			npj := kube.ProwJob{
 				Spec: kube.ProwJobSpec{
-					Job:  pj.job,
-					Type: kube.BatchJob,
-					Refs: new(kube.Refs),
+					Job:     pj.job,
+					Context: pj.job,
+					Type:    kube.BatchJob,
+					Refs:    new(kube.Refs),
 				},
 				Status: kube.ProwJobStatus{State: pj.state},
 			}
