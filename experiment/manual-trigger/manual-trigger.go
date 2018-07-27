@@ -20,11 +20,13 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/url"
 	"strings"
 
+	"github.com/sirupsen/logrus"
+
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/kube"
@@ -100,14 +102,6 @@ func sanityCheckFlags(o options) error {
 	return nil
 }
 
-func loadToken(path string) (string, error) {
-	raw, err := ioutil.ReadFile(path)
-	if err != nil {
-		return "", err
-	}
-	return strings.TrimSpace(string(raw)), nil
-}
-
 func main() {
 	o := flagOptions()
 	err := sanityCheckFlags(o)
@@ -115,24 +109,38 @@ func main() {
 		log.Fatal(err)
 	}
 
+	var tokens []string
+	tokens = append(tokens, o.githubTokenFile)
+
+	if o.jenkinsTokenFile != "" {
+		tokens = append(tokens, o.jenkinsTokenFile)
+	}
+
+	if o.jenkinsBearerTokenFile != "" {
+		tokens = append(tokens, o.jenkinsBearerTokenFile)
+	}
+
+	secretAgent := &config.SecretAgent{}
+	if err := secretAgent.Start(tokens); err != nil {
+		logrus.WithError(err).Fatal("Error starting secrets agent.")
+	}
+
+	getSecret := func(secretPath string) func() []byte {
+		return func() []byte {
+			return secretAgent.GetSecret(secretPath)
+		}
+	}
+
 	// TODO(kargakis): dry this out
 	ac := jenkins.AuthConfig{}
 	if o.jenkinsTokenFile != "" {
-		token, err := loadToken(o.jenkinsTokenFile)
-		if err != nil {
-			log.Fatalf("cannot read file specified by --jenkins-token-file: %v", err)
-		}
 		ac.Basic = &jenkins.BasicAuthConfig{
-			User:  o.jenkinsUserName,
-			Token: token,
+			User:     o.jenkinsUserName,
+			GetToken: getSecret(o.jenkinsTokenFile),
 		}
 	} else if o.jenkinsBearerTokenFile != "" {
-		token, err := loadToken(o.jenkinsBearerTokenFile)
-		if err != nil {
-			log.Fatalf("cannot read file specified by --jenkins-bearer-token-file: %v", err)
-		}
 		ac.BearerToken = &jenkins.BearerTokenAuthConfig{
-			Token: token,
+			GetToken: getSecret(o.jenkinsBearerTokenFile),
 		}
 	} else {
 		log.Fatalf("no jenkins auth token provided")
@@ -143,12 +151,7 @@ func main() {
 		log.Fatalf("cannot setup Jenkins client: %v", err)
 	}
 
-	token, err := loadToken(o.githubTokenFile)
-	if err != nil {
-		log.Fatalf("cannot read file specified by --ghtoken: %v", err)
-	}
-
-	gc := github.NewClient(token, o.githubEndpoint)
+	gc := github.NewClient(getSecret(o.githubTokenFile), o.githubEndpoint)
 
 	pr, err := gc.GetPullRequest(o.org, o.repo, o.num)
 	if err != nil {

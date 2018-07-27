@@ -37,7 +37,7 @@ import (
 const pluginName = "override"
 
 var (
-	overrideRe = regexp.MustCompile(`(?mi)^/override (.+)\s*$`)
+	overrideRe = regexp.MustCompile(`(?mi)^/override (.+?)\s*$`)
 )
 
 type githubClient interface {

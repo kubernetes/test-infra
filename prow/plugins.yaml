@@ -188,6 +188,7 @@ plugins:
   - hold  # Support /hold to delay merge
   - lgtm  # Allow /lgtm
   - lifecycle  # Allow /lifecycle stale
+  - override
   - size  # Auto-label size of PR
   - trigger  # Allow people to configure CI jobs to /test
   - wip  # Auto-hold PRs with WIP in title
@@ -325,6 +326,14 @@ plugins:
   - require-sig
   - trigger
 
+  kubernetes/kubernetes-docs-ja:
+  - approve
+  - blunderbuss
+
+  kubernetes/kubernetes-docs-ko:
+  - approve
+  - blunderbuss
+
   kubernetes/kubernetes-template-project:
   - approve
 
@@ -366,6 +375,7 @@ plugins:
 
   kubernetes/sig-release:
   - approve
+  - blunderbuss
   - stage
 
   kubernetes/steering:
@@ -373,8 +383,10 @@ plugins:
 
   kubernetes/test-infra:
   - approve
+  - blunderbuss
   - config-updater
   - milestone
+  - override
   - trigger
   - verify-owners
 
@@ -496,6 +508,12 @@ plugins:
 
   kubernetes-sigs/kustomize:
   - approve
+
+  kubernetes-sigs/controller-runtime:
+  - approve  
+
+  kubernetes-sigs/controller-tools:
+  - approve  
 
   containerd/cri:
   - assign

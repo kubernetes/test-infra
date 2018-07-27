@@ -208,13 +208,13 @@ type AuthConfig struct {
 
 // BasicAuthConfig authenticates with jenkins using user/pass.
 type BasicAuthConfig struct {
-	User  string
-	Token string
+	User     string
+	GetToken func() []byte
 }
 
 // BearerTokenAuthConfig authenticates jenkins using an oauth bearer token.
 type BearerTokenAuthConfig struct {
-	Token string
+	GetToken func() []byte
 }
 
 // NewClient instantiates a client with provided values.
@@ -376,10 +376,10 @@ func (c *Client) doRequest(method, path string) (*http.Response, error) {
 	}
 	if c.authConfig != nil {
 		if c.authConfig.Basic != nil {
-			req.SetBasicAuth(c.authConfig.Basic.User, c.authConfig.Basic.Token)
+			req.SetBasicAuth(c.authConfig.Basic.User, string(c.authConfig.Basic.GetToken()))
 		}
 		if c.authConfig.BearerToken != nil {
-			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.authConfig.BearerToken.Token))
+			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.authConfig.BearerToken.GetToken()))
 		}
 		if c.authConfig.CSRFProtect && c.authConfig.csrfRequestField != "" && c.authConfig.csrfToken != "" {
 			req.Header.Set(c.authConfig.csrfRequestField, c.authConfig.csrfToken)

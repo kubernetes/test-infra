@@ -230,6 +230,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-cluster-api-build
 - name: ci-cluster-api-test
   gcs_prefix: kubernetes-jenkins/logs/ci-cluster-api-test
+- name: ci-cluster-api-provider-gcp-build
+  gcs_prefix: kubernetes-jenkins/logs/ci-cluster-api-provider-gcp-build
+- name: ci-cluster-api-provider-gcp-test
+  gcs_prefix: kubernetes-jenkins/logs/ci-cluster-api-provider-gcp-test
 - name: ci-kubemci-image-push
   gcs_prefix: kubernetes-jenkins/logs/ci-kubemci-image-push
 - name: ci-kubernetes-build
@@ -2249,6 +2253,9 @@ test_groups:
 - name: pull-test-infra-verify-labels
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-labels
   num_columns_recent: 20
+- name: pull-test-infra-verify-codegen
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-codegen
+  num_columns_recent: 20
 - name: pull-federation-bazel-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-federation-bazel-test
   num_columns_recent: 20
@@ -3188,11 +3195,11 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-aws
   - name: kops-aws-canary
     test_group_name: ci-kubernetes-e2e-kops-aws-canary
-  - name: kops-aws-1.7
-    test_group_name: ci-kubernetes-e2e-kops-aws-stable3
   - name: kops-aws-1.8
-    test_group_name: ci-kubernetes-e2e-kops-aws-stable2
+    test_group_name: ci-kubernetes-e2e-kops-aws-stable3
   - name: kops-aws-1.9
+    test_group_name: ci-kubernetes-e2e-kops-aws-stable2
+  - name: kops-aws-1.10
     test_group_name: ci-kubernetes-e2e-kops-aws-stable1
   - name: kops-aws-beta
     test_group_name: ci-kubernetes-e2e-kops-aws-beta
@@ -4885,6 +4892,10 @@ dashboards:
 
 - name: sig-cluster-lifecycle-cluster-api-provider-gcp
   dashboard_tab:
+  - name: build
+    test_group_name: ci-cluster-api-provider-gcp-build
+  - name: unit tests
+    test_group_name: ci-cluster-api-provider-gcp-test
   - name: pr-build
     test_group_name: pull-cluster-api-provider-gcp-build
   - name: pr-make
@@ -6152,6 +6163,9 @@ dashboards:
   - name: verify-labels
     test_group_name: pull-test-infra-verify-labels
     base_options: 'width=10'
+  - name: verify-codegen
+    test_group_name: pull-test-infra-verify-codegen
+    base_options: 'width=10'
 
 - name: presubmits-cluster-registry
   dashboard_tab:
@@ -6366,11 +6380,11 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-aws
   - name: kops-aws-canary
     test_group_name: ci-kubernetes-e2e-kops-aws-canary
-  - name: kops-aws-1.7
-    test_group_name: ci-kubernetes-e2e-kops-aws-stable3
   - name: kops-aws-1.8
-    test_group_name: ci-kubernetes-e2e-kops-aws-stable2
+    test_group_name: ci-kubernetes-e2e-kops-aws-stable3
   - name: kops-aws-1.9
+    test_group_name: ci-kubernetes-e2e-kops-aws-stable2
+  - name: kops-aws-1.10
     test_group_name: ci-kubernetes-e2e-kops-aws-stable1
   - name: kops-aws-beta
     test_group_name: ci-kubernetes-e2e-kops-aws-beta

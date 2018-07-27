@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"bytes"
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
@@ -139,22 +138,38 @@ func main() {
 	ac := &jenkins.AuthConfig{
 		CSRFProtect: o.csrfProtect,
 	}
+
+	var tokens []string
+	tokens = append(tokens, o.githubTokenFile)
+
 	if o.jenkinsTokenFile != "" {
-		token, err := loadToken(o.jenkinsTokenFile)
-		if err != nil {
-			logrus.WithError(err).Fatalf("Could not read token file.")
+		tokens = append(tokens, o.jenkinsTokenFile)
+	}
+
+	if o.jenkinsBearerTokenFile != "" {
+		tokens = append(tokens, o.jenkinsBearerTokenFile)
+	}
+
+	// Start the secret agent.
+	secretAgent := &config.SecretAgent{}
+	if err := secretAgent.Start(tokens); err != nil {
+		logrus.WithError(err).Fatal("Error starting secrets agent.")
+	}
+
+	getSecret := func(secretPath string) func() []byte {
+		return func() []byte {
+			return secretAgent.GetSecret(secretPath)
 		}
+	}
+
+	if o.jenkinsTokenFile != "" {
 		ac.Basic = &jenkins.BasicAuthConfig{
-			User:  o.jenkinsUserName,
-			Token: token,
+			User:     o.jenkinsUserName,
+			GetToken: getSecret(o.jenkinsTokenFile),
 		}
 	} else if o.jenkinsBearerTokenFile != "" {
-		token, err := loadToken(o.jenkinsBearerTokenFile)
-		if err != nil {
-			logrus.WithError(err).Fatalf("Could not read bearer token file.")
-		}
 		ac.BearerToken = &jenkins.BearerTokenAuthConfig{
-			Token: token,
+			GetToken: getSecret(o.jenkinsBearerTokenFile),
 		}
 	}
 	var tlsConfig *tls.Config
@@ -171,14 +186,9 @@ func main() {
 		logrus.WithError(err).Fatalf("Could not setup Jenkins client.")
 	}
 
-	oauthSecretRaw, err := ioutil.ReadFile(o.githubTokenFile)
-	if err != nil {
-		logrus.WithError(err).Fatalf("Could not read Github oauth secret file.")
-	}
-	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
-
+	// Check if github endpoint has a valid url.
 	for _, ep := range o.githubEndpoint.Strings() {
-		_, err = url.Parse(ep)
+		_, err = url.ParseRequestURI(ep)
 		if err != nil {
 			logrus.WithError(err).Fatalf("Invalid --endpoint URL %q.", ep)
 		}
@@ -186,10 +196,10 @@ func main() {
 
 	var ghc *github.Client
 	if o.dryRun {
-		ghc = github.NewDryRunClient(oauthSecret, o.githubEndpoint.Strings()...)
+		ghc = github.NewDryRunClient(getSecret(o.githubTokenFile), o.githubEndpoint.Strings()...)
 		kc = kube.NewFakeClient(o.deckURL)
 	} else {
-		ghc = github.NewClient(oauthSecret, o.githubEndpoint.Strings()...)
+		ghc = github.NewClient(getSecret(o.githubTokenFile), o.githubEndpoint.Strings()...)
 	}
 
 	c, err := jenkins.NewController(kc, jc, ghc, nil, configAgent, o.totURL, o.selector)
@@ -228,14 +238,6 @@ func main() {
 			return
 		}
 	}
-}
-
-func loadToken(file string) (string, error) {
-	raw, err := ioutil.ReadFile(file)
-	if err != nil {
-		return "", err
-	}
-	return string(bytes.TrimSpace(raw)), nil
 }
 
 func loadCerts(certFile, keyFile, caCertFile string) (*tls.Config, error) {

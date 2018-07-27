@@ -204,14 +204,18 @@ func TestCherryPickIC(t *testing.T) {
 	expectedHead := fmt.Sprintf(botName+":"+cherryPickBranchFmt, 2, expectedBase)
 	expected := fmt.Sprintf(expectedFmt, expectedRepo, expectedTitle, expectedBody, expectedHead, expectedBase, true)
 
+	getSecret := func() []byte {
+		return []byte("sha=abcdefg")
+	}
+
 	s := &Server{
-		botName:    botName,
-		gc:         c,
-		push:       func(repo, newBranch string) error { return nil },
-		ghc:        ghc,
-		hmacSecret: []byte("sha=abcdefg"),
-		log:        logrus.StandardLogger().WithField("client", "cherrypicker"),
-		repos:      []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
+		botName:        botName,
+		gc:             c,
+		push:           func(repo, newBranch string) error { return nil },
+		ghc:            ghc,
+		tokenGenerator: getSecret,
+		log:            logrus.StandardLogger().WithField("client", "cherrypicker"),
+		repos:          []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
 
 		prowAssignments: true,
 	}
@@ -321,14 +325,19 @@ func TestCherryPickPR(t *testing.T) {
 	}
 
 	botName := "ci-robot"
+
+	getSecret := func() []byte {
+		return []byte("sha=abcdefg")
+	}
+
 	s := &Server{
-		botName:    botName,
-		gc:         c,
-		push:       func(repo, newBranch string) error { return nil },
-		ghc:        ghc,
-		hmacSecret: []byte("sha=abcdefg"),
-		log:        logrus.StandardLogger().WithField("client", "cherrypicker"),
-		repos:      []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
+		botName:        botName,
+		gc:             c,
+		push:           func(repo, newBranch string) error { return nil },
+		ghc:            ghc,
+		tokenGenerator: getSecret,
+		log:            logrus.StandardLogger().WithField("client", "cherrypicker"),
+		repos:          []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
 
 		prowAssignments: false,
 	}

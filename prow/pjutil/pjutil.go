@@ -71,8 +71,10 @@ func NewProwJob(spec kube.ProwJobSpec, labels map[string]string) kube.ProwJob {
 	}
 
 	return kube.ProwJob{
-		APIVersion: "prow.k8s.io/v1",
-		Kind:       "ProwJob",
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "prow.k8s.io/v1",
+			Kind:       "ProwJob",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   uuid.NewV1().String(),
 			Labels: allLabels,
@@ -201,7 +203,7 @@ func BatchSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 		Job:       p.Name,
 		Refs:      &refs,
 		ExtraRefs: p.ExtraRefs,
-		Context:   p.Context, // The Submit Queue's getCompleteBatches needs this.
+		Context:   p.Context,
 
 		DecorationConfig: p.DecorationConfig,
 	}
