@@ -116,6 +116,10 @@ th {
     display: none;
 }
 
+.blocked {
+    color: #EF5350;
+}
+
 .icon-cell {
     width: 32px;
 }

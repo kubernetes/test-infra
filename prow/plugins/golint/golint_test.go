@@ -223,7 +223,7 @@ func TestAddedLines(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		als, err := addedLines(tc.patch)
+		als, err := AddedLines(tc.patch)
 		if err == nil == tc.err {
 			t.Errorf("For patch %s\nExpected error %v, got error %v", tc.patch, tc.err, err)
 			continue

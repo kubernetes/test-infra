@@ -75,8 +75,9 @@ type Controller struct {
 	m     sync.Mutex
 	pools []Pool
 
-	// Cache from last sync loop. "org/repo#num:sha" -> files changed
-	fileChangesCache map[string][]string
+	// changedFiles caches the names of files changed by PRs.
+	// Cache entries expire if they are not used during a sync loop.
+	changedFiles *changedFilesAgent
 }
 
 // Action represents what actions the controller can take. It will take
@@ -90,7 +91,7 @@ const (
 	TriggerBatch        = "TRIGGER_BATCH"
 	Merge               = "MERGE"
 	MergeBatch          = "MERGE_BATCH"
-	PoolBlocked         = "POOL_BLOCKED"
+	PoolBlocked         = "BLOCKED"
 )
 
 // Pool represents information about a tide pool. There is one for every
@@ -130,13 +131,16 @@ func NewController(ghcSync, ghcStatus *github.Client, kc *kube.Client, ca *confi
 	}
 	go sc.run()
 	return &Controller{
-		logger:           logger.WithField("controller", "sync"),
-		ghc:              ghcSync,
-		kc:               kc,
-		ca:               ca,
-		gc:               gc,
-		sc:               sc,
-		fileChangesCache: map[string][]string{},
+		logger: logger.WithField("controller", "sync"),
+		ghc:    ghcSync,
+		kc:     kc,
+		ca:     ca,
+		gc:     gc,
+		sc:     sc,
+		changedFiles: &changedFilesAgent{
+			ghc:             ghcSync,
+			nextChangeCache: make(map[changeCacheKey][]string),
+		},
 	}
 }
 
@@ -181,6 +185,8 @@ func contextsToStrings(contexts []Context) []string {
 
 // Sync runs one sync iteration.
 func (c *Controller) Sync() error {
+	defer c.changedFiles.prune()
+
 	ctx := context.Background()
 	c.logger.Debug("Building tide pool.")
 	prs := make(map[string]PullRequest)
@@ -512,9 +518,9 @@ func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []ku
 			// The batch contains a PR ref that has changed. Skip it.
 			continue
 		}
-		job := pj.Spec.Job
-		if s, ok := states[ref].jobStates[job]; !ok || s == noneState {
-			states[ref].jobStates[job] = toSimpleState(pj.Status.State)
+		context := pj.Spec.Context
+		if s, ok := states[ref].jobStates[context]; !ok || s == noneState {
+			states[ref].jobStates[context] = toSimpleState(pj.Status.State)
 		}
 	}
 	for ref, state := range states {
@@ -603,6 +609,22 @@ func prNumbers(prs []PullRequest) []int {
 }
 
 func (c *Controller) pickBatch(sp subpool, cc contextChecker) ([]PullRequest, error) {
+	// we must choose the oldest PRs for the batch
+	sort.Slice(sp.prs, func(i, j int) bool { return sp.prs[i].Number < sp.prs[j].Number })
+
+	var candidates []PullRequest
+	for _, pr := range sp.prs {
+		if isPassingTests(sp.log, c.ghc, pr, cc) {
+			candidates = append(candidates, pr)
+		}
+	}
+
+	if len(candidates) == 0 {
+		sp.log.Debugf("of %d possible PRs, none were passing tests, no batch will be created", len(sp.prs))
+		return nil, nil
+	}
+	sp.log.Debugf("of %d possible PRs, %d are passing tests", len(sp.prs), len(candidates))
+
 	r, err := c.gc.Clone(sp.org + "/" + sp.repo)
 	if err != nil {
 		return nil, err
@@ -621,14 +643,8 @@ func (c *Controller) pickBatch(sp subpool, cc contextChecker) ([]PullRequest, er
 		return nil, err
 	}
 
-	// we must choose the oldest PRs for the batch
-	sort.Slice(sp.prs, func(i, j int) bool { return sp.prs[i].Number < sp.prs[j].Number })
-
 	var res []PullRequest
-	for _, pr := range sp.prs {
-		if !isPassingTests(sp.log, c.ghc, pr, cc) {
-			continue
-		}
+	for _, pr := range candidates {
 		if ok, err := r.Merge(string(pr.HeadRefOID)); err != nil {
 			// we failed to abort the merge and our git client is
 			// in a bad state; it must be cleaned before we try again
@@ -780,6 +796,76 @@ func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, n
 	return Wait, nil, nil
 }
 
+// changedFilesAgent queries and caches the names of files changed by PRs.
+// Cache entries expire if they are not used during a sync loop.
+type changedFilesAgent struct {
+	ghc         githubClient
+	changeCache map[changeCacheKey][]string
+	// nextChangeCache caches file change info that is relevant this sync for use next sync.
+	// This becomes the new changeCache when prune() is called at the end of each sync.
+	nextChangeCache map[changeCacheKey][]string
+	sync.RWMutex
+}
+
+type changeCacheKey struct {
+	org, repo string
+	number    int
+	sha       string
+}
+
+// prChanges gets the files changed by the PR, either from the cache or by
+// querying GitHub.
+func (c *changedFilesAgent) prChanges(pr *PullRequest) ([]string, error) {
+	cacheKey := changeCacheKey{
+		org:    string(pr.Repository.Owner.Login),
+		repo:   string(pr.Repository.Name),
+		number: int(pr.Number),
+		sha:    string(pr.HeadRefOID),
+	}
+
+	c.RLock()
+	changedFiles, ok := c.changeCache[cacheKey]
+	if ok {
+		c.RUnlock()
+		c.Lock()
+		c.nextChangeCache[cacheKey] = changedFiles
+		c.Unlock()
+		return changedFiles, nil
+	}
+	if changedFiles, ok = c.nextChangeCache[cacheKey]; ok {
+		c.RUnlock()
+		return changedFiles, nil
+	}
+	c.RUnlock()
+
+	// We need to query the changes from GitHub.
+	changes, err := c.ghc.GetPullRequestChanges(
+		string(pr.Repository.Owner.Login),
+		string(pr.Repository.Name),
+		int(pr.Number),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("error getting PR changes for #%d: %v", int(pr.Number), err)
+	}
+	changedFiles = make([]string, 0, len(changes))
+	for _, change := range changes {
+		changedFiles = append(changedFiles, change.Filename)
+	}
+
+	c.Lock()
+	c.nextChangeCache[cacheKey] = changedFiles
+	c.Unlock()
+	return changedFiles, nil
+}
+
+// prune removes any cached file changes that were not used since the last prune.
+func (c *changedFilesAgent) prune() {
+	c.Lock()
+	defer c.Unlock()
+	c.changeCache = c.nextChangeCache
+	c.nextChangeCache = make(map[changeCacheKey][]string)
+}
+
 func (c *Controller) presubmitsByPull(sp *subpool) (map[int]sets.String, error) {
 	presubmits := make(map[int]sets.String, len(sp.prs))
 	record := func(num int, context string) {
@@ -789,11 +875,6 @@ func (c *Controller) presubmitsByPull(sp *subpool) (map[int]sets.String, error) 
 			presubmits[num] = sets.NewString(context)
 		}
 	}
-	// nextChangeCache caches file change info that is relevant this sync for use next sync.
-	nextChangeCache := map[string][]string{}
-	defer func() {
-		c.fileChangesCache = nextChangeCache
-	}()
 
 	for _, ps := range c.ca.Config().Presubmits[sp.org+"/"+sp.repo] {
 		if !ps.ContextRequired() || !ps.RunsAgainstBranch(sp.branch) {
@@ -808,20 +889,10 @@ func (c *Controller) presubmitsByPull(sp *subpool) (map[int]sets.String, error) 
 		} else if ps.RunIfChanged != "" {
 			// This is a run if changed job so we need to check if each PR requires it.
 			for _, pr := range sp.prs {
-				cacheKey := fmt.Sprintf("%s/%s#%d:%s", sp.org, sp.repo, int(pr.Number), string(pr.HeadRefOID))
-				changedFiles, ok := c.fileChangesCache[cacheKey]
-				if !ok {
-					changes, err := c.ghc.GetPullRequestChanges(sp.org, sp.repo, int(pr.Number))
-					if err != nil {
-						return nil, fmt.Errorf("error getting PR changes for #%d: %v", int(pr.Number), err)
-					}
-					changedFiles = make([]string, 0, len(changes))
-					for _, change := range changes {
-						changedFiles = append(changedFiles, change.Filename)
-					}
-					c.fileChangesCache[cacheKey] = changedFiles
+				changedFiles, err := c.changedFiles.prChanges(&pr)
+				if err != nil {
+					return nil, err
 				}
-				nextChangeCache[cacheKey] = changedFiles
 				if ps.RunsAgainstChanges(changedFiles) {
 					record(int(pr.Number), ps.Context)
 				}

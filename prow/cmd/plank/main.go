@@ -17,10 +17,8 @@ limitations under the License.
 package main
 
 import (
-	"bytes"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -100,37 +98,47 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
-	var oauthSecret string
 	var err error
-	if o.githubTokenFile != "" {
-		oauthSecretRaw, err := ioutil.ReadFile(o.githubTokenFile)
+	// Check if github endpoint is a valid url.
+	for _, ep := range o.githubEndpoint.Strings() {
+		_, err = url.ParseRequestURI(ep)
 		if err != nil {
-			logrus.WithError(err).Fatalf("Could not read oauth secret file.")
+			logrus.WithError(err).Fatalf("Invalid --endpoint URL %q.", ep)
 		}
-
-		for _, ep := range o.githubEndpoint.Strings() {
-			_, err = url.Parse(ep)
-			if err != nil {
-				logrus.WithError(err).Fatalf("Invalid --endpoint URL %q.", ep)
-			}
-		}
-
-		oauthSecret = string(bytes.TrimSpace(oauthSecretRaw))
 	}
 
 	var ghc plank.GitHubClient
+	if o.githubTokenFile != "" {
+		secretAgent := &config.SecretAgent{}
+		if err := secretAgent.Start([]string{o.githubTokenFile}); err != nil {
+			logrus.WithError(err).Fatal("Error starting secrets agent.")
+		}
+
+		getSecret := func(secretPath string) func() []byte {
+			return func() []byte {
+				return secretAgent.GetSecret(secretPath)
+			}
+		}
+
+		if o.dryRun {
+			if string(getSecret(o.githubTokenFile)()) != "" {
+				ghc = github.NewDryRunClient(getSecret(o.githubTokenFile),
+					o.githubEndpoint.Strings()...)
+			}
+		} else {
+			if string(getSecret(o.githubTokenFile)()) != "" {
+				ghc = github.NewClient(getSecret(o.githubTokenFile),
+					o.githubEndpoint.Strings()...)
+			}
+		}
+	}
+
 	var kc *kube.Client
 	var pkcs map[string]*kube.Client
 	if o.dryRun {
-		if oauthSecret != "" {
-			ghc = github.NewDryRunClient(oauthSecret, o.githubEndpoint.Strings()...)
-		}
 		kc = kube.NewFakeClient(o.deckURL)
 		pkcs = map[string]*kube.Client{kube.DefaultClusterAlias: kc}
 	} else {
-		if oauthSecret != "" {
-			ghc = github.NewClient(oauthSecret, o.githubEndpoint.Strings()...)
-		}
 		if o.cluster == "" {
 			kc, err = kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 			if err != nil {

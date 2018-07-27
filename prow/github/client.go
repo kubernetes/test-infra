@@ -63,11 +63,11 @@ type Client struct {
 
 	gqlc     gqlClient
 	client   httpClient
-	token    string
 	bases    []string
 	dry      bool
 	fake     bool
 	throttle throttler
+	getToken func() []byte
 
 	mut     sync.Mutex // protects botName and email
 	botName string
@@ -186,40 +186,42 @@ func (c *Client) Throttle(hourlyTokens, burst int) {
 }
 
 // NewClient creates a new fully operational GitHub client.
-// 'token' is the GitHub access token to use.
+// 'getToken' is a generator for the GitHub access token to use.
 // 'bases' is a variadic slice of endpoints to use in order of preference.
 //   An endpoint is used when all preceding endpoints have returned a conn err.
 //   This should be used when using the ghproxy GitHub proxy cache to allow
 //   this client to bypass the cache if it is temporarily unavailable.
-func NewClient(token string, bases ...string) *Client {
+func NewClient(getToken func() []byte, bases ...string) *Client {
 	return &Client{
 		logger: logrus.WithField("client", "github"),
 		time:   &standardTime{},
-		gqlc:   githubql.NewClient(oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token}))),
-		client: &http.Client{},
-		token:  token,
-		bases:  bases,
-		dry:    false,
+		gqlc: githubql.NewClient(oauth2.NewClient(context.Background(),
+			oauth2.StaticTokenSource(&oauth2.Token{AccessToken: string(getToken())}))),
+		client:   &http.Client{},
+		bases:    bases,
+		getToken: getToken,
+		dry:      false,
 	}
 }
 
 // NewDryRunClient creates a new client that will not perform mutating actions
 // such as setting statuses or commenting, but it will still query GitHub and
 // use up API tokens.
-// 'token' is the GitHub access token to use.
+// 'getToken' is a generator the GitHub access token to use.
 // 'bases' is a variadic slice of endpoints to use in order of preference.
 //   An endpoint is used when all preceding endpoints have returned a conn err.
 //   This should be used when using the ghproxy GitHub proxy cache to allow
 //   this client to bypass the cache if it is temporarily unavailable.
-func NewDryRunClient(token string, bases ...string) *Client {
+func NewDryRunClient(getToken func() []byte, bases ...string) *Client {
 	return &Client{
 		logger: logrus.WithField("client", "github"),
 		time:   &standardTime{},
-		gqlc:   githubql.NewClient(oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token}))),
-		client: &http.Client{},
-		token:  token,
-		bases:  bases,
-		dry:    true,
+		gqlc: githubql.NewClient(oauth2.NewClient(context.Background(),
+			oauth2.StaticTokenSource(&oauth2.Token{AccessToken: string(getToken())}))),
+		client:   &http.Client{},
+		bases:    bases,
+		getToken: getToken,
+		dry:      true,
 	}
 }
 
@@ -391,7 +393,7 @@ func (c *Client) doRequest(method, path, accept string, body interface{}) (*http
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Authorization", "Token "+c.token)
+	req.Header.Set("Authorization", "Token "+string(c.getToken()))
 	if accept == acceptNone {
 		req.Header.Add("Accept", "application/vnd.github.v3+json")
 	} else {

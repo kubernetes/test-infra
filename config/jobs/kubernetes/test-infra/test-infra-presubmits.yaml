@@ -14,7 +14,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -120,7 +120,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -151,7 +151,7 @@ presubmits:
       - name: test
         command:
         - ./hack/verify-config.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-experimental
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-experimental
         env:
         - name: TEST_TMPDIR
           value: /bazel-scratch/.cache/bazel
@@ -180,7 +180,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -192,6 +192,26 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
+        resources:
+          requests:
+            memory: "2Gi"
+
+  - name: pull-test-infra-verify-codegen
+    agent: kubernetes
+    context: pull-test-infra-verify-codegen
+    branches:
+    - master
+    rerun_command: "/test pull-test-infra-verify-codegen"
+    trigger: "/test pull-test-infra-verify-codegen"
+    run_if_changed: '(prow/(apis|client)|vendor)/.*$'
+    path_alias: "k8s.io/test-infra"
+    optional: true
+    decorate: true
+    spec:
+      containers:
+      - image: docker.io/library/golang:1.10
+        command:
+        - ./hack/verify-codegen.sh
         resources:
           requests:
             memory: "2Gi"
@@ -251,7 +271,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-experimental
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - --root=/go/src

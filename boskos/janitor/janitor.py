@@ -49,7 +49,7 @@ DEMOLISH_ORDER = [
     Resource('', 'compute', 'instance-groups', None, 'zone', 'Yes', False, True),
     Resource('', 'compute', 'instance-groups', None, 'zone', 'No', False, True),
     Resource('', 'compute', 'instance-templates', None, None, None, False, True),
-    Resource('alpha', 'compute', 'network-endpoint-groups', None, None, None, True, True),
+    Resource('beta', 'compute', 'network-endpoint-groups', None, None, None, True, False),
     Resource('', 'compute', 'networks', 'subnets', 'region', None, True, True),
     Resource('', 'compute', 'networks', None, '', None, False, True),
     Resource('', 'compute', 'routes', None, None, None, False, True),
@@ -209,21 +209,28 @@ def clear_resources(project, cols, resource, rate_limit):
         base.append('delete')
         base.append('--project=%s' % project)
 
+        condition = None
         if resource.condition:
             if col:
-                base.append('--%s=%s' % (resource.condition, col))
+                condition = '--%s=%s' % (resource.condition, col)
             else:
-                base.append('--global')
+                condition = '--global'
 
-        base += inject_zone_for_neg(resource.name)
+        # hard code asia-southeast1-a for NEG
+        # TODO(freehan): remove this once limitation is dropped
+        if resource.name == 'network-endpoint-groups':
+            condition = '--zone=asia-southeast1-a'
 
         log('going to delete %d %s' % (len(items), resource.name))
         # try to delete at most $rate_limit items at a time
         for idx in xrange(0, len(items), rate_limit):
             clean = items[idx:idx+rate_limit]
-            log('Call %r' % (base + list(clean)))
+            cmd = base + list(clean)
+            if condition:
+                cmd.append(condition)
+            log('Call %r' % cmd)
             try:
-                subprocess.check_call(base + list(clean))
+                subprocess.check_call(cmd)
             except subprocess.CalledProcessError as exc:
                 if not resource.tolerate:
                     err = 1
@@ -290,13 +297,6 @@ def clean_gke_cluster(project, age, filt):
                     print >>sys.stderr, 'Error try to delete cluster %s: %r' % (item['name'], exc)
 
     return err
-
-# hard code asia-southeast1-a for NEG
-# TODO(freehan): remove this once limitation is dropped
-def inject_zone_for_neg(resource_name):
-    if resource_name == 'network-endpoint-groups':
-        return ['--zone=asia-southeast1-a']
-    return []
 
 def main(project, days, hours, filt, rate_limit):
     """ Clean up resources from a gcp project based on it's creation time

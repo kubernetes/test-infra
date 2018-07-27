@@ -25,7 +25,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -53,7 +53,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -81,7 +81,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -109,7 +109,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -137,7 +137,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -165,7 +165,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -193,7 +193,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -221,7 +221,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
 - interval: 1h
   agent: kubernetes
@@ -249,4 +249,4 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master

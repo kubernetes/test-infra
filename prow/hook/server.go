@@ -36,10 +36,10 @@ import (
 // Server implements http.Handler. It validates incoming GitHub webhooks and
 // then dispatches them to the appropriate plugins.
 type Server struct {
-	Plugins     *plugins.PluginAgent
-	ConfigAgent *config.Agent
-	HMACSecret  []byte
-	Metrics     *Metrics
+	Plugins        *plugins.PluginAgent
+	ConfigAgent    *config.Agent
+	TokenGenerator func() []byte
+	Metrics        *Metrics
 
 	// c is an http client used for dispatching events
 	// to external plugin services.
@@ -50,7 +50,7 @@ type Server struct {
 
 // ServeHTTP validates an incoming webhook and puts it into the event channel.
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	eventType, eventGUID, payload, ok := ValidateWebhook(w, r, s.HMACSecret)
+	eventType, eventGUID, payload, ok := ValidateWebhook(w, r, s.TokenGenerator())
 	if !ok {
 		return
 	}

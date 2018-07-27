@@ -921,5 +921,83 @@ func TestBrancher_Intersects(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Integration test for fake secrets loading in a secret agent.
+// Checking also if the agent changes the secret's values as expected.
+func TestSecretAgentLoading(t *testing.T) {
+	tempTokenValue := "121f3cb3e7f70feeb35f9204f5a988d7292c7ba1"
+	changedTokenValue := "121f3cb3e7f70feeb35f9204f5a988d7292c7ba0"
+
+	// Creating a temporary directory.
+	secretDir, err := ioutil.TempDir("", "secretDir")
+	if err != nil {
+		t.Fatalf("fail to create a temporary directory: %v", err)
+	}
+	defer os.RemoveAll(secretDir)
+
+	// Create the first temporary secret.
+	firstTempSecret := filepath.Join(secretDir, "firstTempSecret")
+	if err := ioutil.WriteFile(firstTempSecret, []byte(tempTokenValue), 0666); err != nil {
+		t.Fatalf("fail to write secret: %v", err)
+	}
+
+	// Create the second temporary secret.
+	secondTempSecret := filepath.Join(secretDir, "secondTempSecret")
+	if err := ioutil.WriteFile(secondTempSecret, []byte(tempTokenValue), 0666); err != nil {
+		t.Fatalf("fail to write secret: %v", err)
+	}
+
+	tempSecrets := []string{firstTempSecret, secondTempSecret}
+	// Starting the agent and add the two temporary secrets.
+	secretAgent := &SecretAgent{}
+	if err := secretAgent.Start(tempSecrets); err != nil {
+		t.Fatalf("Error starting secrets agent. %v", err)
+	}
+
+	// Check if the values are as expected.
+	for _, tempSecret := range tempSecrets {
+		tempSecretValue := secretAgent.GetSecret(tempSecret)
+		if string(tempSecretValue) != tempTokenValue {
+			t.Fatalf("In secret %s it was expected %s but found %s",
+				tempSecret, tempTokenValue, tempSecretValue)
+		}
+	}
+
+	// Change the values of the files.
+	if err := ioutil.WriteFile(firstTempSecret, []byte(changedTokenValue), 0666); err != nil {
+		t.Fatalf("fail to write secret: %v", err)
+	}
+	if err := ioutil.WriteFile(secondTempSecret, []byte(changedTokenValue), 0666); err != nil {
+		t.Fatalf("fail to write secret: %v", err)
+	}
+
+	retries := 10
+	var errors []string
+
+	// Check if the values changed as expected.
+	for _, tempSecret := range tempSecrets {
+		// Reset counter
+		counter := 0
+		for counter <= retries {
+			tempSecretValue := secretAgent.GetSecret(tempSecret)
+			if string(tempSecretValue) != changedTokenValue {
+				if counter == retries {
+					errors = append(errors, fmt.Sprintf("In secret %s it was expected %s but found %s\n",
+						tempSecret, changedTokenValue, tempSecretValue))
+				} else {
+					// Secret agent needs some time to update the values. So wait and retry.
+					time.Sleep(100 * time.Millisecond)
+				}
+			} else {
+				break
+			}
+			counter++
+		}
+	}
+
+	if len(errors) > 0 {
+		t.Fatal(errors)
+	}
 
 }

@@ -424,6 +424,24 @@ func TestHandle(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:    "override with explanation works",
+			comment: "/override job\r\nobnoxious flake", // github ends lines with \r\n
+			contexts: map[string]github.Status{
+				"job": {
+					Context:     "job",
+					Description: "failed",
+					State:       github.StatusFailure,
+				},
+			},
+			expected: map[string]github.Status{
+				"job": {
+					Context:     "job",
+					Description: description(adminUser),
+					State:       github.StatusSuccess,
+				},
+			},
+		},
 	}
 
 	log := logrus.WithField("plugin", pluginName)

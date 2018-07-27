@@ -20,7 +20,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"net/url"
 	"strings"
 	"sync"
@@ -43,7 +42,7 @@ type options struct {
 
 func (o *options) Validate() error {
 	if o.config == "" {
-		return errors.New("empty --config")
+		return errors.New("empty --config-path")
 	}
 
 	if o.token == "" {
@@ -105,20 +104,26 @@ func main() {
 
 	cfg, err := config.Load(o.config, o.jobConfig)
 	if err != nil {
-		logrus.WithError(err).Fatalf("Failed to load --config=%s", o.config)
+		logrus.WithError(err).Fatalf("Failed to load --config-path=%s", o.config)
 	}
 
-	b, err := ioutil.ReadFile(o.token)
-	if err != nil {
-		logrus.WithError(err).Fatalf("cannot read --token=%s", o.token)
+	secretAgent := &config.SecretAgent{}
+	if err := secretAgent.Start([]string{o.token}); err != nil {
+		logrus.WithError(err).Fatal("Error starting secrets agent.")
+	}
+
+	getSecret := func(secretPath string) func() []byte {
+		return func() []byte {
+			return secretAgent.GetSecret(secretPath)
+		}
 	}
 
 	var c *github.Client
-	tok := strings.TrimSpace(string(b))
+
 	if o.confirm {
-		c = github.NewClient(tok, o.endpoint.Strings()...)
+		c = github.NewClient(getSecret(o.token), o.endpoint.Strings()...)
 	} else {
-		c = github.NewDryRunClient(tok, o.endpoint.Strings()...)
+		c = github.NewDryRunClient(getSecret(o.token), o.endpoint.Strings()...)
 	}
 	c.Throttle(300, 100) // 300 hourly tokens, bursts of 100
 
