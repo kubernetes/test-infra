@@ -77,22 +77,22 @@ func (c *ghc) GetPullRequestChanges(_, _ string, _ int) ([]github.PullRequestCha
 
 func TestSizesOrDefault(t *testing.T) {
 	for _, c := range []struct {
-		input    *plugins.Sizes
-		expected plugins.Sizes
+		input    *plugins.Size
+		expected plugins.Size
 	}{
 		{
 			input:    &defaultSizes,
 			expected: defaultSizes,
 		},
 		{
-			input: &plugins.Sizes{
+			input: &plugins.Size{
 				S:   12,
 				M:   15,
 				L:   17,
 				Xl:  21,
 				Xxl: 51,
 			},
-			expected: plugins.Sizes{
+			expected: plugins.Size{
 				S:   12,
 				M:   15,
 				L:   17,
@@ -117,7 +117,7 @@ func TestHandlePR(t *testing.T) {
 		client      *ghc
 		event       github.PullRequestEvent
 		err         error
-		sizes       plugins.Sizes
+		sizes       plugins.Size
 		finalLabels []github.Label
 	}{
 		{

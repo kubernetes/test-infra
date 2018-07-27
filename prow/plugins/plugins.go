@@ -173,7 +173,7 @@ type Configuration struct {
 	RequireSIG    RequireSIG           `json:"requiresig,omitempty"`
 	Slack         Slack                `json:"slack,omitempty"`
 	SigMention    SigMention           `json:"sigmention,omitempty"`
-	Size          *Sizes               `json:"size,omitempty"`
+	Size          *Size                `json:"size,omitempty"`
 	Triggers      []Trigger            `json:"triggers,omitempty"`
 	Welcome       Welcome              `json:"welcome,omitempty"`
 }
@@ -287,7 +287,7 @@ type SigMention struct {
 }
 
 // Size specifies configuration for the size plugin, allowing configurable lower bounds for each size label
-type Sizes struct {
+type Size struct {
 	S   int
 	M   int
 	L   int

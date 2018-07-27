@@ -35,7 +35,7 @@ import (
 // in here represent default values used as fallback if none are provided.
 const pluginName = "size"
 
-var defaultSizes = plugins.Sizes{
+var defaultSizes = plugins.Size{
 	S:   10,
 	M:   30,
 	L:   100,
@@ -76,7 +76,7 @@ type githubClient interface {
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 }
 
-func handlePR(gc githubClient, sizes plugins.Sizes, le *logrus.Entry, pe github.PullRequestEvent) error {
+func handlePR(gc githubClient, sizes plugins.Size, le *logrus.Entry, pe github.PullRequestEvent) error {
 	if !isPRChanged(pe) {
 		return nil
 	}
@@ -188,7 +188,7 @@ func (s size) label() string {
 	return labelUnkown
 }
 
-func bucket(lineCount int, sizes plugins.Sizes) size {
+func bucket(lineCount int, sizes plugins.Size) size {
 	if lineCount < sizes.S {
 		return sizeXS
 	} else if lineCount < sizes.M {
@@ -222,7 +222,7 @@ func isPRChanged(pe github.PullRequestEvent) bool {
 
 // If they don't provide a lower bound for XXL, we assume that no
 // size configuration was passed and hence we fall back to defaults
-func sizesOrDefault(sizes *plugins.Sizes) plugins.Sizes {
+func sizesOrDefault(sizes *plugins.Size) plugins.Size {
 	if sizes == nil {
 		return defaultSizes
 	}
