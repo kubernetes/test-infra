@@ -73,6 +73,13 @@ approve:
   implicit_self_approve: true
   lgtm_acts_as_approve: true
 
+size:
+  sLines: 20
+  mLines: 50
+  lLines: 150
+  xlLines: 400
+  xxlLines: 800
+
 lgtm:
 - repos:
   - bazelbuild
