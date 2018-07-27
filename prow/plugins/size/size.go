@@ -220,8 +220,6 @@ func isPRChanged(pe github.PullRequestEvent) bool {
 	}
 }
 
-// If they don't provide a lower bound for XXL, we assume that no
-// size configuration was passed and hence we fall back to defaults
 func sizesOrDefault(sizes *plugins.Size) plugins.Size {
 	if sizes == nil {
 		return defaultSizes
