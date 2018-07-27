@@ -1524,6 +1524,7 @@
     "args": [
       "--cluster=e2e-big-beta",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-scalability-old-common.env",
       "--extract=ci/k8s-beta",
       "--gcp-node-image=gci",
       "--gcp-nodes=100",
@@ -1543,6 +1544,7 @@
     "args": [
       "--cluster=e2e-big-stable1",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-scalability-old-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-stable.env",
       "--extract=ci/k8s-stable1",
       "--gcp-node-image=gci",
@@ -1563,6 +1565,7 @@
     "args": [
       "--cluster=e2e-big-stable2",
       "--env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-scalability-old-common.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-stable.env",
       "--extract=ci/k8s-stable2",
       "--gcp-node-image=gci",
