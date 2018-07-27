@@ -209,6 +209,14 @@ labels:
     target: both
     prowPlugin: lifecycle
     addedBy: anyone
+  - color: 8fc951
+    description: Indicates that an issue or PR is actively being worked on by a contributor.
+    name: lifecycle/active
+    previously:
+    - name: active
+    target: both
+    prowPlugin: lifecycle
+    addedBy: anyone
   - color: "604460"
     description: Denotes an issue or PR that has aged beyond stale and will be auto-closed.
     name: lifecycle/rotten

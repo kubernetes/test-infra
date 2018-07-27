@@ -143,7 +143,6 @@ periodics:
 
         Send feedback to sig-testing, kubernetes/test-infra and/or [fejta](https://github.com/fejta).
         /lifecycle rotten
-        /remove-lifecycle stale
       - --template
       - --ceiling=10
       - --confirm
