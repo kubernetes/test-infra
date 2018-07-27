@@ -204,6 +204,7 @@ presubmits:
     rerun_command: "/test pull-test-infra-verify-codegen"
     trigger: "/test pull-test-infra-verify-codegen"
     run_if_changed: '(prow/(apis|client)|vendor)/.*$'
+    path_alias: "k8s.io/test-infra"
     optional: true
     decorate: true
     spec:
