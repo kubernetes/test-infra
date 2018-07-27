@@ -36,11 +36,11 @@ import (
 const pluginName = "size"
 
 var defaultSizes = plugins.Sizes{
-	SLines:   10,
-	MLines:   30,
-	LLines:   100,
-	XlLines:  500,
-	XxlLines: 1000,
+	S:   10,
+	M:   30,
+	L:   100,
+	Xl:  500,
+	Xxl: 1000,
 }
 
 func init() {
@@ -58,7 +58,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 <li>size/L    %d-%d</li>
 <li>size/XL:  %d-%d</li>
 <li>size/XXL: %d+</li>
-</ul>`, sizes.SLines-1, sizes.SLines, sizes.MLines-1, sizes.MLines, sizes.LLines-1, sizes.LLines, sizes.XlLines-1, sizes.XlLines, sizes.XxlLines-1, sizes.XxlLines),
+</ul>`, sizes.S-1, sizes.S, sizes.M-1, sizes.M, sizes.L-1, sizes.L, sizes.Xl-1, sizes.Xl, sizes.Xxl-1, sizes.Xxl),
 		},
 		nil
 }
@@ -189,15 +189,15 @@ func (s size) label() string {
 }
 
 func bucket(lineCount int, sizes plugins.Sizes) size {
-	if lineCount < sizes.SLines {
+	if lineCount < sizes.S {
 		return sizeXS
-	} else if lineCount < sizes.MLines {
+	} else if lineCount < sizes.M {
 		return sizeS
-	} else if lineCount < sizes.LLines {
+	} else if lineCount < sizes.L {
 		return sizeM
-	} else if lineCount < sizes.XlLines {
+	} else if lineCount < sizes.Xl {
 		return sizeL
-	} else if lineCount < sizes.XxlLines {
+	} else if lineCount < sizes.Xxl {
 		return sizeXL
 	}
 
@@ -222,10 +222,10 @@ func isPRChanged(pe github.PullRequestEvent) bool {
 
 // If they don't provide a lower bound for XXL, we assume that no
 // size configuration was passed and hence we fall back to defaults
-func sizesOrDefault(sizes plugins.Sizes) plugins.Sizes {
-	if sizes.XxlLines == 0 {
+func sizesOrDefault(sizes *plugins.Sizes) plugins.Sizes {
+	if sizes == nil {
 		return defaultSizes
 	}
 
-	return sizes
+	return *sizes
 }

@@ -73,12 +73,13 @@ approve:
   implicit_self_approve: true
   lgtm_acts_as_approve: true
 
+# Lower bounds; XS is assumed to be zero.
 size:
-  sLines: 20
-  mLines: 50
-  lLines: 150
-  xlLines: 400
-  xxlLines: 800
+  s:   10
+  m:   30
+  l:   100
+  xl:  500
+  xxl: 1000
 
 lgtm:
 - repos:

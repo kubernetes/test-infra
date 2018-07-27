@@ -77,31 +77,31 @@ func (c *ghc) GetPullRequestChanges(_, _ string, _ int) ([]github.PullRequestCha
 
 func TestSizesOrDefault(t *testing.T) {
 	for _, c := range []struct {
-		input    plugins.Sizes
+		input    *plugins.Sizes
 		expected plugins.Sizes
 	}{
 		{
-			input:    defaultSizes,
+			input:    &defaultSizes,
 			expected: defaultSizes,
 		},
 		{
-			input: plugins.Sizes{
-				SLines:   12,
-				MLines:   15,
-				LLines:   17,
-				XlLines:  21,
-				XxlLines: 51,
+			input: &plugins.Sizes{
+				S:   12,
+				M:   15,
+				L:   17,
+				Xl:  21,
+				Xxl: 51,
 			},
 			expected: plugins.Sizes{
-				SLines:   12,
-				MLines:   15,
-				LLines:   17,
-				XlLines:  21,
-				XxlLines: 51,
+				S:   12,
+				M:   15,
+				L:   17,
+				Xl:  21,
+				Xxl: 51,
 			},
 		},
 		{
-			input:    plugins.Sizes{},
+			input:    nil,
 			expected: defaultSizes,
 		},
 	} {
