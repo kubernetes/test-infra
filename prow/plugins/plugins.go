@@ -161,19 +161,20 @@ type Configuration struct {
 	Owners Owners `json:"owners,omitempty"`
 
 	// Built-in plugins specific configuration.
-	Triggers      []Trigger            `json:"triggers,omitempty"`
-	Heart         Heart                `json:"heart,omitempty"`
-	RepoMilestone map[string]Milestone `json:"repo_milestone,omitempty"`
-	Slack         Slack                `json:"slack,omitempty"`
-	ConfigUpdater ConfigUpdater        `json:"config_updater,omitempty"`
-	Blockades     []Blockade           `json:"blockades,omitempty"`
 	Approve       []Approve            `json:"approve,omitempty"`
+	Blockades     []Blockade           `json:"blockades,omitempty"`
 	Blunderbuss   Blunderbuss          `json:"blunderbuss,omitempty"`
-	RequireSIG    RequireSIG           `json:"requiresig,omitempty"`
-	SigMention    SigMention           `json:"sigmention,omitempty"`
 	Cat           Cat                  `json:"cat,omitempty"`
+	ConfigUpdater ConfigUpdater        `json:"config_updater,omitempty"`
+	Heart         Heart                `json:"heart,omitempty"`
 	Label         *Label               `json:"label,omitempty"`
 	Lgtm          []Lgtm               `json:"lgtm,omitempty"`
+	RepoMilestone map[string]Milestone `json:"repo_milestone,omitempty"`
+	RequireSIG    RequireSIG           `json:"requiresig,omitempty"`
+	Slack         Slack                `json:"slack,omitempty"`
+	SigMention    SigMention           `json:"sigmention,omitempty"`
+	Size          Sizes                `json:"size,omitempty"`
+	Triggers      []Trigger            `json:"triggers,omitempty"`
 	Welcome       Welcome              `json:"welcome,omitempty"`
 }
 
@@ -283,6 +284,15 @@ type SigMention struct {
 	// Compiles into Re during config load.
 	Regexp string         `json:"regexp,omitempty"`
 	Re     *regexp.Regexp `json:"-"`
+}
+
+// Size specifies configuration for the size plugin, allowing configurable lower bounds for each size label
+type Sizes struct {
+	SLines   int `json:"omitempty"`
+	MLines   int `json:"omitempty"`
+	LLines   int `json:"omitempty"`
+	XlLines  int `json:"omitempty"`
+	XxlLines int `json:"omitempty"`
 }
 
 /*
