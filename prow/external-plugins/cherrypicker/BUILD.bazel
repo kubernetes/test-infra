@@ -9,6 +9,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/external-plugins/cherrypicker",
     visibility = ["//visibility:private"],
     deps = [
+        "//prow/config:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/git:go_default_library",
         "//prow/github:go_default_library",

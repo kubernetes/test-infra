@@ -54,16 +54,15 @@ func helpProvider(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 }
 
 type server struct {
-	hmacSecret  []byte
-	credentials string
-	prowURL     string
-	configAgent *config.Agent
-	ghc         *github.Client
-	log         *logrus.Entry
+	tokenGenerator func() []byte
+	prowURL        string
+	configAgent    *config.Agent
+	ghc            *github.Client
+	log            *logrus.Entry
 }
 
 func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	eventType, eventGUID, payload, ok := hook.ValidateWebhook(w, r, s.hmacSecret)
+	eventType, eventGUID, payload, ok := hook.ValidateWebhook(w, r, s.tokenGenerator())
 	if !ok {
 		return
 	}

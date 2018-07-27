@@ -17,9 +17,7 @@ limitations under the License.
 package main
 
 import (
-	"bytes"
 	"flag"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os/signal"
@@ -28,6 +26,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
@@ -60,28 +59,28 @@ func main() {
 	// deadline.
 	signal.Ignore(syscall.SIGTERM)
 
-	webhookSecretRaw, err := ioutil.ReadFile(*webhookSecretFile)
-	if err != nil {
-		log.WithError(err).Fatal("Could not read webhook secret file.")
+	secretAgent := &config.SecretAgent{}
+	if err := secretAgent.Start([]string{*githubTokenFile, *webhookSecretFile}); err != nil {
+		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
-	webhookSecret := bytes.TrimSpace(webhookSecretRaw)
 
-	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
-	if err != nil {
-		log.WithError(err).Fatal("Could not read oauth secret file.")
+	getSecret := func(secretPath string) func() []byte {
+		return func() []byte {
+			return secretAgent.GetSecret(secretPath)
+		}
 	}
-	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
+	var err error
 	for _, ep := range githubEndpoint.Strings() {
-		_, err = url.Parse(ep)
+		_, err = url.ParseRequestURI(ep)
 		if err != nil {
 			logrus.WithError(err).Fatalf("Invalid --endpoint URL %q.", ep)
 		}
 	}
 
-	githubClient := github.NewClient(oauthSecret, githubEndpoint.Strings()...)
+	githubClient := github.NewClient(getSecret(*githubTokenFile), githubEndpoint.Strings()...)
 	if *dryRun {
-		githubClient = github.NewDryRunClient(oauthSecret, githubEndpoint.Strings()...)
+		githubClient = github.NewDryRunClient(getSecret(*githubTokenFile), githubEndpoint.Strings()...)
 	}
 
 	gitClient, err := git.NewClient()
@@ -100,7 +99,7 @@ func main() {
 	}
 	// The bot needs to be able to push to its own Github fork and potentially pull
 	// from private repos.
-	gitClient.SetCredentials(botName, oauthSecret)
+	gitClient.SetCredentials(botName, getSecret(*githubTokenFile))
 
 	repos, err := githubClient.GetRepos(botName, true)
 	if err != nil {
@@ -108,9 +107,9 @@ func main() {
 	}
 
 	server := &Server{
-		hmacSecret: webhookSecret,
-		botName:    botName,
-		email:      email,
+		tokenGenerator: getSecret(*webhookSecretFile),
+		botName:        botName,
+		email:          email,
 
 		gc:  gitClient,
 		ghc: githubClient,

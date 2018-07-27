@@ -37,6 +37,7 @@ go_library(
     srcs = ["main.go"],
     importpath = "k8s.io/test-infra/robots/commenter",
     deps = [
+        "//prow/config:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/github:go_default_library",
     ],

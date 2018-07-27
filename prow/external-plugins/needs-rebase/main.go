@@ -17,11 +17,9 @@ limitations under the License.
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os/signal"
@@ -31,6 +29,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
@@ -65,20 +64,20 @@ func main() {
 	// deadline.
 	signal.Ignore(syscall.SIGTERM)
 
-	webhookSecretRaw, err := ioutil.ReadFile(*webhookSecretFile)
-	if err != nil {
-		log.WithError(err).Fatal("Could not read webhook secret file.")
+	secretAgent := &config.SecretAgent{}
+	if err := secretAgent.Start([]string{*githubTokenFile, *webhookSecretFile}); err != nil {
+		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
-	webhookSecret := bytes.TrimSpace(webhookSecretRaw)
 
-	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
-	if err != nil {
-		log.WithError(err).Fatal("Could not read oauth secret file.")
+	getSecret := func(secretPath string) func() []byte {
+		return func() []byte {
+			return secretAgent.GetSecret(secretPath)
+		}
 	}
-	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
+	var err error
 	for _, ep := range githubEndpoint.Strings() {
-		_, err = url.Parse(ep)
+		_, err = url.ParseRequestURI(ep)
 		if err != nil {
 			logrus.WithError(err).Fatalf("Invalid --endpoint URL %q.", ep)
 		}
@@ -89,17 +88,16 @@ func main() {
 		log.WithError(err).Fatalf("Error loading plugin config from %q.", *pluginConfig)
 	}
 
-	githubClient := github.NewClient(oauthSecret, githubEndpoint.Strings()...)
+	githubClient := github.NewClient(getSecret(*githubTokenFile), githubEndpoint.Strings()...)
 	if *dryRun {
-		githubClient = github.NewDryRunClient(oauthSecret, githubEndpoint.Strings()...)
+		githubClient = github.NewDryRunClient(getSecret(*githubTokenFile), githubEndpoint.Strings()...)
 	}
 	githubClient.Throttle(360, 360)
 
 	server := &Server{
-		hmacSecret: webhookSecret,
-
-		ghc: githubClient,
-		log: log,
+		tokenGenerator: getSecret(*webhookSecretFile),
+		ghc:            githubClient,
+		log:            log,
 	}
 
 	go periodicUpdate(log, pa, githubClient, *updatePeriod)
@@ -112,17 +110,16 @@ func main() {
 // Server implements http.Handler. It validates incoming GitHub webhooks and
 // then dispatches them to the appropriate plugins.
 type Server struct {
-	hmacSecret []byte
-
-	ghc *github.Client
-	log *logrus.Entry
+	tokenGenerator func() []byte
+	ghc            *github.Client
+	log            *logrus.Entry
 }
 
 // ServeHTTP validates an incoming webhook and puts it into the event channel.
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// TODO: Move webhook handling logic out of hook binary so that we don't have to import all
 	// plugins just to validate the webhook.
-	eventType, eventGUID, payload, ok := hook.ValidateWebhook(w, r, s.hmacSecret)
+	eventType, eventGUID, payload, ok := hook.ValidateWebhook(w, r, s.tokenGenerator())
 	if !ok {
 		return
 	}

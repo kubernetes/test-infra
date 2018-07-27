@@ -222,8 +222,13 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 				serverError("Save oauth session", err)
 				return
 			}
+
+			getSecret := func() []byte {
+				return []byte(token.AccessToken)
+			}
+
 			// Construct query
-			ghc := github.NewClient(token.AccessToken, githubEndpoint)
+			ghc := github.NewClient(getSecret, githubEndpoint)
 			query := da.ConstructSearchQuery(login)
 			if err := r.ParseForm(); err == nil {
 				if q := r.Form.Get("query"); q != "" {

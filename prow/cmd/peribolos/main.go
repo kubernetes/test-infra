@@ -20,7 +20,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"strings"
@@ -137,17 +136,22 @@ func main() {
 	)
 	o := parseOptions()
 
-	b, err := ioutil.ReadFile(o.token)
-	if err != nil {
-		logrus.Fatalf("cannot read --token: %v", err)
+	var c *github.Client
+
+	secretAgent := &config.SecretAgent{}
+	if err := secretAgent.Start([]string{o.token}); err != nil {
+		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
-	var c *github.Client
-	tok := strings.TrimSpace(string(b))
+	getSecret := func(secretPath string) func() []byte {
+		return func() []byte {
+			return secretAgent.GetSecret(secretPath)
+		}
+	}
 	if o.confirm {
-		c = github.NewClient(tok, o.endpoint.Strings()...)
+		c = github.NewClient(getSecret(o.token), o.endpoint.Strings()...)
 	} else {
-		c = github.NewDryRunClient(tok, o.endpoint.Strings()...)
+		c = github.NewDryRunClient(getSecret(o.token), o.endpoint.Strings()...)
 	}
 	if o.tokensPerHour > 0 {
 		c.Throttle(o.tokensPerHour, o.tokenBurst) // 300 hourly tokens, bursts of 100 (default)
