@@ -495,10 +495,15 @@ func isApprovalState(botName string, reviewActsAsApprove bool, c *comment) bool 
 		return false
 	}
 
+	// The review webhook returns state as lowercase, while the review API
+	// returns state as uppercase. Uppercase the value here so it always
+	// matches the constant.
+	reviewState := github.ReviewState(strings.ToUpper(string(c.ReviewState)))
+
 	// consider reviews in either approved OR requested changes states as
 	// approval commands. Reviews in requested changes states will be
 	// interpreted as cancelled approvals.
-	if reviewActsAsApprove && (c.ReviewState == github.ReviewStateApproved || c.ReviewState == github.ReviewStateChangesRequested) {
+	if reviewActsAsApprove && (reviewState == github.ReviewStateApproved || reviewState == github.ReviewStateChangesRequested) {
 		return true
 	}
 	return false

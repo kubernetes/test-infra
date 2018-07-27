@@ -1269,6 +1269,11 @@ func TestHandleGenericComment(t *testing.T) {
 	}
 }
 
+// GitHub webhooks send state as lowercase, so force it to lowercase here.
+func stateToLower(s github.ReviewState) github.ReviewState {
+	return github.ReviewState(strings.ToLower(string(s)))
+}
+
 func TestHandleReviewEvent(t *testing.T) {
 	tests := []struct {
 		name                string
@@ -1286,7 +1291,7 @@ func TestHandleReviewEvent(t *testing.T) {
 					User: github.User{
 						Login: "author",
 					},
-					State: github.ReviewStateApproved,
+					State: stateToLower(github.ReviewStateApproved),
 				},
 			},
 			reviewActsAsApprove: true,
@@ -1301,7 +1306,7 @@ func TestHandleReviewEvent(t *testing.T) {
 					User: github.User{
 						Login: "author",
 					},
-					State: github.ReviewStateChangesRequested,
+					State: stateToLower(github.ReviewStateChangesRequested),
 				},
 			},
 			reviewActsAsApprove: true,
@@ -1316,7 +1321,7 @@ func TestHandleReviewEvent(t *testing.T) {
 					User: github.User{
 						Login: "author",
 					},
-					State: github.ReviewStatePending,
+					State: stateToLower(github.ReviewStatePending),
 				},
 			},
 			reviewActsAsApprove: true,
@@ -1331,7 +1336,7 @@ func TestHandleReviewEvent(t *testing.T) {
 					User: github.User{
 						Login: "author",
 					},
-					State: github.ReviewStateApproved,
+					State: stateToLower(github.ReviewStateApproved),
 				},
 			},
 			reviewActsAsApprove: true,
@@ -1346,7 +1351,7 @@ func TestHandleReviewEvent(t *testing.T) {
 					User: github.User{
 						Login: "author",
 					},
-					State: github.ReviewStateDismissed,
+					State: stateToLower(github.ReviewStateDismissed),
 				},
 			},
 			reviewActsAsApprove: true,
@@ -1361,7 +1366,7 @@ func TestHandleReviewEvent(t *testing.T) {
 					User: github.User{
 						Login: "author",
 					},
-					State: github.ReviewStateApproved,
+					State: stateToLower(github.ReviewStateApproved),
 				},
 			},
 			reviewActsAsApprove: true,
@@ -1376,7 +1381,7 @@ func TestHandleReviewEvent(t *testing.T) {
 					User: github.User{
 						Login: "author",
 					},
-					State: github.ReviewStateApproved,
+					State: stateToLower(github.ReviewStateApproved),
 				},
 			},
 			lgtmActsAsApprove:   true,
@@ -1392,7 +1397,7 @@ func TestHandleReviewEvent(t *testing.T) {
 					User: github.User{
 						Login: "author",
 					},
-					State: github.ReviewStateApproved,
+					State: stateToLower(github.ReviewStateApproved),
 				},
 			},
 			reviewActsAsApprove: false,
