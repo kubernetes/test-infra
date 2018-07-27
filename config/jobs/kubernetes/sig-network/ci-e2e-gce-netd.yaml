@@ -62,12 +62,10 @@ presets:
                   "ipam": {
                       "type": "host-local",
                       "ranges": [
-                        [
-                          {"subnet": podCidr}
-                        ]
+                      @ipv4Subnet@ipv6SubnetOptional
                       ],
                       "routes": [
-                        {"dst": "0.0.0.0/0"}
+                        {"dst": "0.0.0.0/0"}@ipv6RouteOptional
                       ]
                   }
                 },
@@ -84,6 +82,7 @@ presets:
           enable_policy_routing: "true"
           enable_masquerade: "true"
           enable_calico_network_policy: "false"
+          enable_private_ipv6_access: "false"
         ---
         kind: DaemonSet
         apiVersion: extensions/v1beta1
@@ -109,7 +108,7 @@ presets:
                 beta.kubernetes.io/kube-netd-ready: "true"
               hostNetwork: true
               initContainers:
-              - image: gcr.io/google-containers/netd-amd64:0.1.2
+              - image: gcr.io/google-containers/netd-amd64:0.1.3
                 name: install-cni
                 command: ["sh", "/install-cni.sh"]
                 env:
@@ -128,11 +127,16 @@ presets:
                       configMapKeyRef:
                         name: netd-config
                         key: enable_calico_network_policy
+                  - name: ENABLE_PRIVATE_IPV6_ACCESS
+                    valueFrom:
+                      configMapKeyRef:
+                        name: netd-config
+                        key: enable_private_ipv6_access
                 volumeMounts:
                 - mountPath: /host/etc/cni/net.d
                   name: cni-net-dir
               containers:
-              - image: gcr.io/google-containers/netd-amd64:0.1.2
+              - image: gcr.io/google-containers/netd-amd64:0.1.3
                 name: netd
                 imagePullPolicy: Always
                 securityContext:
@@ -228,12 +232,10 @@ presets:
                   "ipam": {
                       "type": "host-local",
                       "ranges": [
-                        [
-                          {"subnet": podCidr}
-                        ]
+                      @ipv4Subnet@ipv6SubnetOptional
                       ],
                       "routes": [
-                        {"dst": "0.0.0.0/0"}
+                        {"dst": "0.0.0.0/0"}@ipv6RouteOptional
                       ]
                   }
                 },
@@ -250,6 +252,7 @@ presets:
           enable_policy_routing: "true"
           enable_masquerade: "true"
           enable_calico_network_policy: "true"
+          enable_private_ipv6_access: "false"
         ---
         kind: DaemonSet
         apiVersion: extensions/v1beta1
@@ -275,7 +278,7 @@ presets:
                 beta.kubernetes.io/kube-netd-ready: "true"
               hostNetwork: true
               initContainers:
-              - image: gcr.io/google-containers/netd-amd64:0.1.2
+              - image: gcr.io/google-containers/netd-amd64:0.1.3
                 name: install-cni
                 command: ["sh", "/install-cni.sh"]
                 env:
@@ -294,11 +297,16 @@ presets:
                       configMapKeyRef:
                         name: netd-config
                         key: enable_calico_network_policy
+                  - name: ENABLE_PRIVATE_IPV6_ACCESS
+                    valueFrom:
+                      configMapKeyRef:
+                        name: netd-config
+                        key: enable_private_ipv6_access
                 volumeMounts:
                 - mountPath: /host/etc/cni/net.d
                   name: cni-net-dir
               containers:
-              - image: gcr.io/google-containers/netd-amd64:0.1.2
+              - image: gcr.io/google-containers/netd-amd64:0.1.3
                 name: netd
                 imagePullPolicy: Always
                 securityContext:
@@ -607,7 +615,7 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=asia-southeast1-a
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Feature:Networking-IPv6\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
@@ -625,12 +633,12 @@ periodics:
       - "--repo=k8s.io/examples=master"
       - --scenario=kubernetes_e2e
       - --
-      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+f627080408fe8d
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+39d0b71432c167
       - --check-leaked-resources
       - --gcp-node-image=gci
       - --gcp-zone=asia-southeast1-a
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       env:
@@ -658,7 +666,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud
       - --gcp-zone=asia-southeast1-a
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Feature:Networking-IPv6\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
 
@@ -676,13 +684,13 @@ periodics:
       - --scenario=kubernetes_e2e
       - "--repo=k8s.io/examples=master"
       - --
-      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+f627080408fe8d
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+39d0b71432c167
       - --check-leaked-resources
       - --image-family=ubuntu-gke-1604-lts
       - --image-project=ubuntu-os-gke-cloud
       - --gcp-zone=asia-southeast1-a
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
       env:
