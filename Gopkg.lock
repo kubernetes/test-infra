@@ -522,6 +522,15 @@
   version = "v3.0.7"
 
 [[projects]]
+  name = "github.com/knative/build"
+  packages = [
+    "pkg/apis/build",
+    "pkg/apis/build/v1alpha1",
+  ]
+  revision = "5c1d8c8469d1ed34b2aecf4c2305b3a57fff2ee3"
+  version = "v0.1.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/kubernetes/repo-infra"
   packages = ["kazel"]
@@ -1127,6 +1136,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "0fff1f34776cfc9ae925224c063afe6fb288523cc975861470bd31e52150b064"
+  inputs-digest = "8058530518244a05fadddf47fb00fa8e48376da0eac9a0d52237dab4cf7bf87f"
   solver-name = "gps-cdcl"
   solver-version = 1

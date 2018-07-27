@@ -3,16 +3,17 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
+        "build_template_types.go",
+        "build_types.go",
         "doc.go",
         "register.go",
-        "types.go",
         "zz_generated.deepcopy.go",
     ],
-    importpath = "k8s.io/test-infra/prow/apis/prowjobs/v1",
+    importmap = "vendor/github.com/knative/build/pkg/apis/build/v1alpha1",
+    importpath = "github.com/knative/build/pkg/apis/build/v1alpha1",
     visibility = ["//visibility:public"],
     deps = [
-        "//prow/apis/prowjobs:go_default_library",
-        "//vendor/github.com/knative/build/pkg/apis/build/v1alpha1:go_default_library",
+        "//vendor/github.com/knative/build/pkg/apis/build:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
