@@ -518,9 +518,9 @@ func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []ku
 			// The batch contains a PR ref that has changed. Skip it.
 			continue
 		}
-		job := pj.Spec.Job
-		if s, ok := states[ref].jobStates[job]; !ok || s == noneState {
-			states[ref].jobStates[job] = toSimpleState(pj.Status.State)
+		context := pj.Spec.Context
+		if s, ok := states[ref].jobStates[context]; !ok || s == noneState {
+			states[ref].jobStates[context] = toSimpleState(pj.Status.State)
 		}
 	}
 	for ref, state := range states {

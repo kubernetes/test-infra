@@ -203,7 +203,7 @@ func BatchSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 		Job:       p.Name,
 		Refs:      &refs,
 		ExtraRefs: p.ExtraRefs,
-		Context:   p.Context, // The Submit Queue's getCompleteBatches needs this.
+		Context:   p.Context,
 
 		DecorationConfig: p.DecorationConfig,
 	}
