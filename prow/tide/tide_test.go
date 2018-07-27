@@ -199,7 +199,7 @@ func TestAccumulateBatch(t *testing.T) {
 			}
 			pjs = append(pjs, npj)
 		}
-		merges, pending := accumulateBatch(test.presubmits, pulls, pjs, logrus.NewEntry(logrus.New()))
+		merges, pending := accumulateBatch(test.presubmits, pulls, pjs)
 		if (len(pending) > 0) != test.pending {
 			t.Errorf("For case \"%s\", got wrong pending.", test.name)
 		}
@@ -378,7 +378,7 @@ func TestAccumulate(t *testing.T) {
 			})
 		}
 
-		successes, pendings, nones := accumulate(test.presubmits, pulls, pjs, logrus.NewEntry(logrus.New()))
+		successes, pendings, nones := accumulate(test.presubmits, pulls, pjs)
 
 		t.Logf("test run %d", i)
 		testPullsMatchList(t, "successes", successes, test.successes)
