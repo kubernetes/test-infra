@@ -50,28 +50,29 @@ type options struct {
 	oneshot   bool
 	output    string
 	printText bool
+	validate  bool
 }
 
-func gatherOptions() options {
+func gatherOptions() (options, error) {
 	o := options{}
 	flag.StringVar(&o.creds, "gcp-service-account", "", "/path/to/gcp/creds (use local creds if empty")
 	flag.BoolVar(&o.oneshot, "oneshot", false, "Write proto once and exit instead of monitoring --yaml files for changes")
 	flag.StringVar(&o.output, "output", "", "write proto to gs://bucket/obj or /local/path")
 	flag.BoolVar(&o.printText, "print-text", false, "print generated proto in text format to stdout")
+	flag.BoolVar(&o.validate, "validate", false, "validate the given config files")
 	flag.Var(&o.inputs, "yaml", "comma-separated list of input YAML files")
 	flag.Parse()
-	return o
-}
-
-func (o *options) validate() error {
 	if len(o.inputs) == 0 || o.inputs[0] == "" {
-		return errors.New("--yaml must include at least one file")
+		return o, errors.New("--yaml must include at least one file")
 	}
 
-	if !o.printText && o.output == "" {
-		return errors.New("--print-text or --output=gs://path required")
+	if !o.printText && !o.validate && o.output == "" {
+		return o, errors.New("--print-text or --output=gs://path required")
 	}
-	return nil
+	if o.validate && o.output != "" {
+		return o, errors.New("--validate implies no output")
+	}
+	return o, nil
 }
 
 // announceChanges watches for changes to files and writes one of them to the channel
@@ -176,13 +177,23 @@ func doOneshot(ctx context.Context, client *storage.Client, opt options) error {
 
 func main() {
 	// Parse flags
-	opt := gatherOptions()
-	if err := opt.validate(); err != nil {
+	opt, err := gatherOptions()
+	if err != nil {
 		log.Fatalf("Bad flags: %v", err)
 	}
 
-	// Setup stuff
 	ctx := context.Background()
+
+	// Validation only
+	if opt.validate {
+		if err := doOneshot(ctx, nil, opt); err != nil {
+			log.Fatalf("FAIL: %v", err)
+		}
+		log.Println("Config validated successfully")
+		return
+	}
+
+	// Setup GCS client
 	client, err := gcs.ClientWithCreds(ctx, opt.creds)
 	if err != nil {
 		log.Fatalf("Failed to create storage client: %v", err)
