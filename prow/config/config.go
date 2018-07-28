@@ -19,6 +19,7 @@ limitations under the License.
 package config
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -31,7 +32,7 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
-	"gopkg.in/robfig/cron.v2"
+	cron "gopkg.in/robfig/cron.v2"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -392,7 +393,7 @@ func LoadSingleSecret(path string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error reading %s: %v", path, err)
 	}
-	return b, nil
+	return bytes.TrimSpace(b), nil
 }
 
 // yamlToConfig converts a yaml file into a Config object
