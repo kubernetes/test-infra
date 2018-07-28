@@ -62,6 +62,7 @@ filegroup(
         "//prow/cluster:all-srcs",
         "//prow/cmd/artifact-uploader:all-srcs",
         "//prow/cmd/branchprotector:all-srcs",
+        "//prow/cmd/build:all-srcs",
         "//prow/cmd/clonerefs:all-srcs",
         "//prow/cmd/config:all-srcs",
         "//prow/cmd/deck:all-srcs",

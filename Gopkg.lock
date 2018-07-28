@@ -346,6 +346,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/golang/groupcache"
+  packages = ["lru"]
+  revision = "24b0969c4cb722950103eed87108c8d291a8df00"
+
+[[projects]]
+  branch = "master"
   name = "github.com/golang/lint"
   packages = [
     ".",
@@ -526,6 +532,14 @@
   packages = [
     "pkg/apis/build",
     "pkg/apis/build/v1alpha1",
+    "pkg/client/clientset/versioned",
+    "pkg/client/clientset/versioned/scheme",
+    "pkg/client/clientset/versioned/typed/build/v1alpha1",
+    "pkg/client/informers/externalversions",
+    "pkg/client/informers/externalversions/build",
+    "pkg/client/informers/externalversions/build/v1alpha1",
+    "pkg/client/informers/externalversions/internalinterfaces",
+    "pkg/client/listers/build/v1alpha1",
   ]
   revision = "5c1d8c8469d1ed34b2aecf4c2305b3a57fff2ee3"
   version = "v0.1.0"
@@ -975,15 +989,18 @@
     "pkg/util/framer",
     "pkg/util/intstr",
     "pkg/util/json",
+    "pkg/util/mergepatch",
     "pkg/util/net",
     "pkg/util/runtime",
     "pkg/util/sets",
+    "pkg/util/strategicpatch",
     "pkg/util/validation",
     "pkg/util/validation/field",
     "pkg/util/wait",
     "pkg/util/yaml",
     "pkg/version",
     "pkg/watch",
+    "third_party/forked/golang/json",
     "third_party/forked/golang/reflect",
   ]
   revision = "01bc873149a1802eb74df583613872d126449ed5"
@@ -1044,6 +1061,7 @@
     "tools/clientcmd/api/v1",
     "tools/metrics",
     "tools/pager",
+    "tools/record",
     "tools/reference",
     "transport",
     "util/buffer",
@@ -1123,6 +1141,7 @@
     "pkg/common",
     "pkg/generators",
     "pkg/generators/rules",
+    "pkg/util/proto",
     "pkg/util/sets",
   ]
   revision = "0cf8f7e6ed1d2e3d47d02e3b6e559369af24d803"
@@ -1136,6 +1155,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "8058530518244a05fadddf47fb00fa8e48376da0eac9a0d52237dab4cf7bf87f"
+  inputs-digest = "14e47ed967e5575e1415f795176f2b8e19a9a1f3015e2820b67cf14433ecddc1"
   solver-name = "gps-cdcl"
   solver-version = 1
