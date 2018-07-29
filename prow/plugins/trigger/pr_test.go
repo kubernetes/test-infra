@@ -269,7 +269,7 @@ func TestHandlePullRequest(t *testing.T) {
 			prAction:    github.PullRequestActionSynchronize,
 		},
 		{
-			name: "Trusted user labeled PR wiht lgtm should not build",
+			name: "Trusted user labeled PR with lgtm should not build",
 
 			Author:      "t",
 			ShouldBuild: false,
