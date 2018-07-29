@@ -163,14 +163,14 @@ func TestHandlePullRequest(t *testing.T) {
 		prAction      github.PullRequestEventAction
 	}{
 		{
-			name: "Trusted user Open PR.",
+			name: "Trusted user open PR should build",
 
 			Author:      "t",
 			ShouldBuild: true,
 			prAction:    github.PullRequestActionOpened,
 		},
 		{
-			name: "Untrusted user Open PR.",
+			name: "Untrusted user open PR should not build and should comment",
 
 			Author:        "u",
 			ShouldBuild:   false,
@@ -178,14 +178,14 @@ func TestHandlePullRequest(t *testing.T) {
 			prAction:      github.PullRequestActionOpened,
 		},
 		{
-			name: "Trusted user Reopen PR.",
+			name: "Trusted user reopen PR should build",
 
 			Author:      "t",
 			ShouldBuild: true,
 			prAction:    github.PullRequestActionReopened,
 		},
 		{
-			name: "Untrusted user Reopen PR with ok-to-test.",
+			name: "Untrusted user reopen PR with ok-to-test should build",
 
 			Author:      "u",
 			ShouldBuild: true,
@@ -193,14 +193,14 @@ func TestHandlePullRequest(t *testing.T) {
 			prAction:    github.PullRequestActionReopened,
 		},
 		{
-			name: "Untrusted user Reopen PR without ok-to-test.",
+			name: "Untrusted user reopen PR without ok-to-test should not build",
 
 			Author:      "u",
 			ShouldBuild: false,
 			prAction:    github.PullRequestActionReopened,
 		},
 		{
-			name: "Trusted user Edit PR with changes",
+			name: "Trusted user edit PR with changes should build",
 
 			Author:      "t",
 			ShouldBuild: true,
@@ -208,35 +208,68 @@ func TestHandlePullRequest(t *testing.T) {
 			prAction:    github.PullRequestActionEdited,
 		},
 		{
-			name: "Trusted user Edit PR without changes",
+			name: "Trusted user edit PR without changes should not build",
 
 			Author:      "t",
 			ShouldBuild: false,
 			prAction:    github.PullRequestActionEdited,
 		},
 		{
-			name: "Untrusted user Edit PR.",
+			name: "Untrusted user edit PR without changes and without ok-to-test should not build",
 
 			Author:      "u",
 			ShouldBuild: false,
 			prAction:    github.PullRequestActionEdited,
 		},
 		{
-			name: "Trusted user Sync PR.",
+			name: "Untrusted user edit PR with changes and without ok-to-test should not build",
+
+			Author:      "u",
+			ShouldBuild: false,
+			prChanges:   true,
+			prAction:    github.PullRequestActionEdited,
+		},
+		{
+			name: "Untrusted user edit PR without changes and with ok-to-test should not build",
+
+			Author:      "u",
+			ShouldBuild: false,
+			HasOkToTest: true,
+			prAction:    github.PullRequestActionEdited,
+		},
+		{
+			name: "Untrusted user edit PR with changes and with ok-to-test should build",
+
+			Author:      "u",
+			ShouldBuild: true,
+			HasOkToTest: true,
+			prChanges:   true,
+			prAction:    github.PullRequestActionEdited,
+		},
+		{
+			name: "Trusted user sync PR should build",
 
 			Author:      "t",
 			ShouldBuild: true,
 			prAction:    github.PullRequestActionSynchronize,
 		},
 		{
-			name: "Untrusted user Sync PR.",
+			name: "Untrusted user sync PR without ok-to-test should not build",
 
 			Author:      "u",
 			ShouldBuild: false,
 			prAction:    github.PullRequestActionSynchronize,
 		},
 		{
-			name: "Trusted user Labeled PR.",
+			name: "Untrusted user sync PR with ok-to-test should build",
+
+			Author:      "u",
+			ShouldBuild: true,
+			HasOkToTest: true,
+			prAction:    github.PullRequestActionSynchronize,
+		},
+		{
+			name: "Trusted user labeled PR wiht lgtm should not build",
 
 			Author:      "t",
 			ShouldBuild: false,
@@ -244,7 +277,7 @@ func TestHandlePullRequest(t *testing.T) {
 			prLabel:     "lgtm",
 		},
 		{
-			name: "Untrusted user Labeled PR with lgtm.",
+			name: "Untrusted user labeled PR with lgtm should build",
 
 			Author:      "u",
 			ShouldBuild: true,
@@ -252,7 +285,7 @@ func TestHandlePullRequest(t *testing.T) {
 			prLabel:     "lgtm",
 		},
 		{
-			name: "Untrusted user Labeled PR without lgtm.",
+			name: "Untrusted user labeled PR without lgtm should not build",
 
 			Author:      "u",
 			ShouldBuild: false,
@@ -260,7 +293,7 @@ func TestHandlePullRequest(t *testing.T) {
 			prLabel:     "test",
 		},
 		{
-			name: "Closed PR.",
+			name: "Trusted user closed PR should not build",
 
 			Author:      "t",
 			ShouldBuild: false,
@@ -349,16 +382,6 @@ func TestHandlePullRequest(t *testing.T) {
 			t.Error("Expected comment to github")
 		} else if !tc.ShouldComment && len(g.IssueCommentsAdded) > 0 {
 			t.Errorf("Expected no comments to github, but got %d", len(g.CreatedStatuses))
-		}
-		if tc.HasOkToTest {
-			if len(g.LabelsRemoved) != 1 {
-				t.Errorf("expected a label to be removed")
-				continue
-			}
-			expected := "org/repo#0:needs-ok-to-test"
-			if g.LabelsRemoved[0] != expected {
-				t.Errorf("expected %q to be removed, got %q", expected, g.LabelsRemoved[0])
-			}
 		}
 	}
 }
