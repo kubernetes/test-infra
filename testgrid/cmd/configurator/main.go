@@ -45,12 +45,12 @@ func (m *multiString) Set(v string) error {
 }
 
 type options struct {
-	creds               string
-	inputs              multiString
-	oneshot             bool
-	output              string
-	printText           bool
-	validateConfigFile  bool
+	creds              string
+	inputs             multiString
+	oneshot            bool
+	output             string
+	printText          bool
+	validateConfigFile bool
 }
 
 func gatherOptions() (options, error) {
