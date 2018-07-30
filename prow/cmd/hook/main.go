@@ -131,8 +131,6 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
-	teamToken := string(secretAgent.GetSecret(o.slackTokenFile))
-
 	var githubClient *github.Client
 	var kubeClient *kube.Client
 	if o.dryRun {
@@ -156,9 +154,9 @@ func main() {
 	}
 
 	var slackClient *slack.Client
-	if !o.dryRun && teamToken != "" {
+	if !o.dryRun && string(secretAgent.GetSecret(o.slackTokenFile)) != "" {
 		logrus.Info("Using real slack client.")
-		slackClient = slack.NewClient(teamToken)
+		slackClient = slack.NewClient(secretAgent.GetTokenGenerator(o.slackTokenFile))
 	}
 	if slackClient == nil {
 		logrus.Info("Using fake slack client.")
