@@ -6509,6 +6509,7 @@ dashboard_groups:
 - name: presubmits
   dashboard_names:
   - presubmits-cluster-registry
+  - presubmits-cloud-provider-vsphere-blocking
   - presubmits-federation
   - presubmits-kubernetes-blocking
   - presubmits-kubernetes-nonblocking

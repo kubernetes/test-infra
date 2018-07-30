@@ -5,7 +5,7 @@ presubmits:
     context: pull-cloud-provider-vsphere-test
     branches:
     - master
-    always_run: true
+    always_run: false
     rerun_command: "/test pull-cloud-provider-vsphere-test"
     trigger: "(?m)^/test( all| pull-cloud-provider-vsphere-test),?(\\s+|$)"
     labels:
@@ -16,6 +16,7 @@ presubmits:
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--scenario=execute"
