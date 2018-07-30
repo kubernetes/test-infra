@@ -87,18 +87,13 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
-	getSecret := func(secretPath string) func() []byte {
-		return func() []byte {
-			return secretAgent.GetSecret(secretPath)
-		}
-	}
-	ghc := github.NewClient(getSecret(*githubTokenFile), githubEndpoint.Strings()...)
+	ghc := github.NewClient(secretAgent.GetTokenGenerator(*githubTokenFile), githubEndpoint.Strings()...)
 	if *dryRun {
-		ghc = github.NewDryRunClient(getSecret(*githubTokenFile), githubEndpoint.Strings()...)
+		ghc = github.NewDryRunClient(secretAgent.GetTokenGenerator(*githubTokenFile), githubEndpoint.Strings()...)
 	}
 
 	serv := &server{
-		tokenGenerator: getSecret(*webhookSecretFile),
+		tokenGenerator: secretAgent.GetTokenGenerator(*webhookSecretFile),
 		prowURL:        *prowURL,
 		configAgent:    configAgent,
 		ghc:            ghc,

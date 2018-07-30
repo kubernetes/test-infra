@@ -554,16 +554,10 @@ func newClient(tokenPath string, tokens, tokenBurst int, dryRun bool, hosts ...s
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
-	getSecret := func(secretPath string) func() []byte {
-		return func() []byte {
-			return secretAgent.GetSecret(secretPath)
-		}
-	}
-
 	if dryRun {
-		return github.NewDryRunClient(getSecret(tokenPath), hosts...), nil
+		return github.NewDryRunClient(secretAgent.GetTokenGenerator(tokenPath), hosts...), nil
 	}
-	c := github.NewClient(getSecret(tokenPath), hosts...)
+	c := github.NewClient(secretAgent.GetTokenGenerator(tokenPath), hosts...)
 	if tokens > 0 && tokenBurst >= tokens {
 		return nil, fmt.Errorf("--tokens=%d must exceed --token-burst=%d", tokens, tokenBurst)
 	}

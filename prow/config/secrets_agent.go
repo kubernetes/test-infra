@@ -95,3 +95,10 @@ func (sa *SecretAgent) SetSecret(secretPath string, secretValue []byte) {
 	defer sa.Unlock()
 	sa.secretsMap[secretPath] = secretValue
 }
+
+// GetTokenGenerator returns a function that gets the value of a given secret.
+func (sa *SecretAgent) GetTokenGenerator(secretPath string) func() []byte {
+	return func() []byte {
+		return sa.GetSecret(secretPath)
+	}
+}
