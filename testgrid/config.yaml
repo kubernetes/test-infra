@@ -3536,7 +3536,7 @@ dashboards:
   - name: bazel-build
     test_group_name: ci-kubernetes-bazel-build
   - name: bazel-build-periodic
-    test_group_name: periodic-kubernetes-bazel-build
+    test_group_name: periodic-kubernetes-bazel-build-master
   - name: bazel-build-1.8
     test_group_name: periodic-kubernetes-bazel-build-1-8
   - name: bazel-build-1.9
@@ -3548,7 +3548,7 @@ dashboards:
   - name: bazel-test
     test_group_name: ci-kubernetes-bazel-test
   - name: bazel-test-periodic
-    test_group_name: periodic-kubernetes-bazel-test
+    test_group_name: periodic-kubernetes-bazel-test-master
   - name: bazel-test-1.8
     test_group_name: periodic-kubernetes-bazel-test-1-8
   - name: bazel-test-1.9
