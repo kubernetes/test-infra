@@ -156,20 +156,14 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
-	getSecret := func(secretPath string) func() []byte {
-		return func() []byte {
-			return secretAgent.GetSecret(secretPath)
-		}
-	}
-
 	if o.jenkinsTokenFile != "" {
 		ac.Basic = &jenkins.BasicAuthConfig{
 			User:     o.jenkinsUserName,
-			GetToken: getSecret(o.jenkinsTokenFile),
+			GetToken: secretAgent.GetTokenGenerator(o.jenkinsTokenFile),
 		}
 	} else if o.jenkinsBearerTokenFile != "" {
 		ac.BearerToken = &jenkins.BearerTokenAuthConfig{
-			GetToken: getSecret(o.jenkinsBearerTokenFile),
+			GetToken: secretAgent.GetTokenGenerator(o.jenkinsBearerTokenFile),
 		}
 	}
 	var tlsConfig *tls.Config
@@ -196,10 +190,10 @@ func main() {
 
 	var ghc *github.Client
 	if o.dryRun {
-		ghc = github.NewDryRunClient(getSecret(o.githubTokenFile), o.githubEndpoint.Strings()...)
+		ghc = github.NewDryRunClient(secretAgent.GetTokenGenerator(o.githubTokenFile), o.githubEndpoint.Strings()...)
 		kc = kube.NewFakeClient(o.deckURL)
 	} else {
-		ghc = github.NewClient(getSecret(o.githubTokenFile), o.githubEndpoint.Strings()...)
+		ghc = github.NewClient(secretAgent.GetTokenGenerator(o.githubTokenFile), o.githubEndpoint.Strings()...)
 	}
 
 	c, err := jenkins.NewController(kc, jc, ghc, nil, configAgent, o.totURL, o.selector)

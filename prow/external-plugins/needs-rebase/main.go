@@ -69,12 +69,6 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
-	getSecret := func(secretPath string) func() []byte {
-		return func() []byte {
-			return secretAgent.GetSecret(secretPath)
-		}
-	}
-
 	var err error
 	for _, ep := range githubEndpoint.Strings() {
 		_, err = url.ParseRequestURI(ep)
@@ -88,14 +82,14 @@ func main() {
 		log.WithError(err).Fatalf("Error loading plugin config from %q.", *pluginConfig)
 	}
 
-	githubClient := github.NewClient(getSecret(*githubTokenFile), githubEndpoint.Strings()...)
+	githubClient := github.NewClient(secretAgent.GetTokenGenerator(*githubTokenFile), githubEndpoint.Strings()...)
 	if *dryRun {
-		githubClient = github.NewDryRunClient(getSecret(*githubTokenFile), githubEndpoint.Strings()...)
+		githubClient = github.NewDryRunClient(secretAgent.GetTokenGenerator(*githubTokenFile), githubEndpoint.Strings()...)
 	}
 	githubClient.Throttle(360, 360)
 
 	server := &Server{
-		tokenGenerator: getSecret(*webhookSecretFile),
+		tokenGenerator: secretAgent.GetTokenGenerator(*webhookSecretFile),
 		ghc:            githubClient,
 		log:            log,
 	}

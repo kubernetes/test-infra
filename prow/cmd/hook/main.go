@@ -133,19 +133,15 @@ func main() {
 
 	teamToken := string(secretAgent.GetSecret(o.slackTokenFile))
 
-	getSecret := func(secretPath string) func() []byte {
-		return func() []byte {
-			return secretAgent.GetSecret(secretPath)
-		}
-	}
-
 	var githubClient *github.Client
 	var kubeClient *kube.Client
 	if o.dryRun {
-		githubClient = github.NewDryRunClient(getSecret(o.githubTokenFile), o.githubEndpoint.Strings()...)
+		githubClient = github.NewDryRunClient(
+			secretAgent.GetTokenGenerator(o.githubTokenFile), o.githubEndpoint.Strings()...)
 		kubeClient = kube.NewFakeClient(o.deckURL)
 	} else {
-		githubClient = github.NewClient(getSecret(o.githubTokenFile), o.githubEndpoint.Strings()...)
+		githubClient = github.NewClient(
+			secretAgent.GetTokenGenerator(o.githubTokenFile), o.githubEndpoint.Strings()...)
 		if o.cluster == "" {
 			kubeClient, err = kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 			if err != nil {
@@ -179,7 +175,7 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting bot name.")
 	}
-	gitClient.SetCredentials(botName, getSecret(o.githubTokenFile))
+	gitClient.SetCredentials(botName, secretAgent.GetTokenGenerator(o.githubTokenFile))
 
 	pluginAgent := &plugins.PluginAgent{}
 
@@ -213,7 +209,7 @@ func main() {
 		ConfigAgent:    configAgent,
 		Plugins:        pluginAgent,
 		Metrics:        promMetrics,
-		TokenGenerator: getSecret(o.webhookSecretFile),
+		TokenGenerator: secretAgent.GetTokenGenerator(o.webhookSecretFile),
 	}
 	defer server.GracefulShutdown()
 
