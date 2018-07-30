@@ -58,7 +58,7 @@ periodics:
     preset-cadvisor-docker-credential: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
+    - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
       args:
       - --repo=github.com/google/cadvisor
       - --root=/go/src

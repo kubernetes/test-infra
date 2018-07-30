@@ -549,7 +549,7 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
+        image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
         name: ""
         resources:
           requests:
@@ -596,7 +596,7 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
+        image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
         name: ""
         resources:
           requests:
@@ -1807,7 +1807,7 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
+        image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
         name: ""
         resources:
           requests:
@@ -2482,7 +2482,7 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
+        image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
         name: ""
         resources:
           requests:
