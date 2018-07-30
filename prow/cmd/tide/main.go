@@ -95,11 +95,8 @@ func main() {
 		}
 	}
 
-	var tokens []string
-	tokens = append(tokens, o.githubTokenFile)
-
 	secretAgent := &config.SecretAgent{}
-	if err := secretAgent.Start(tokens); err != nil {
+	if err := secretAgent.Start([]string{o.githubTokenFile}); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
