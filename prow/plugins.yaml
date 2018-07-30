@@ -73,7 +73,7 @@ approve:
   implicit_self_approve: true
   lgtm_acts_as_approve: true
 
-# Lower bounds; XS is assumed to be zero.
+# Lower bounds in number of lines changed; XS is assumed to be zero.
 size:
   s:   10
   m:   30
