@@ -214,14 +214,15 @@ const (
 
 // PullRequestChange contains information about what a PR changed.
 type PullRequestChange struct {
-	SHA       string `json:"sha"`
-	Filename  string `json:"filename"`
-	Status    string `json:"status"`
-	Additions int    `json:"additions"`
-	Deletions int    `json:"deletions"`
-	Changes   int    `json:"changes"`
-	Patch     string `json:"patch"`
-	BlobURL   string `json:"blob_url"`
+	SHA              string `json:"sha"`
+	Filename         string `json:"filename"`
+	Status           string `json:"status"`
+	Additions        int    `json:"additions"`
+	Deletions        int    `json:"deletions"`
+	Changes          int    `json:"changes"`
+	Patch            string `json:"patch"`
+	BlobURL          string `json:"blob_url"`
+	PreviousFilename string `json:"previous_filename"`
 }
 
 // Repo contains general repository information.

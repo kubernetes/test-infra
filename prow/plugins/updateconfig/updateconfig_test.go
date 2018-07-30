@@ -450,6 +450,42 @@ func TestUpdateConfig(t *testing.T) {
 			},
 		},
 		{
+			name:        "renamed dir/subdir/fejtaverse/krzyzacy.yaml, 1 update",
+			prAction:    github.PullRequestActionClosed,
+			merged:      true,
+			mergeCommit: "54321",
+			changes: []github.PullRequestChange{
+				{
+					Filename:         "dir/subdir/fejtaverse/fejtabot.yaml",
+					PreviousFilename: "dir/subdir/fejtaverse/krzyzacy.yaml",
+					Status:           "renamed",
+					Additions:        1,
+				},
+			},
+			existConfigMaps: map[string]kube.ConfigMap{
+				"glob-config": {
+					ObjectMeta: kube.ObjectMeta{
+						Name:      "glob-config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"krzyzacy.yaml": "old-krzyzacy-config",
+					},
+				},
+			},
+			expectedConfigMaps: map[string]kube.ConfigMap{
+				"glob-config": {
+					ObjectMeta: kube.ObjectMeta{
+						Name:      "glob-config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"fejtabot.yaml": "new-fejtabot-config",
+					},
+				},
+			},
+		},
+		{
 			name:        "add delete edit glob config, 3 update",
 			prAction:    github.PullRequestActionClosed,
 			merged:      true,
@@ -547,6 +583,9 @@ func TestUpdateConfig(t *testing.T) {
 				"dir/subdir/fejtaverse/krzyzacy.yaml": {
 					"master": "old-krzyzacy-config",
 					"12345":  "new-krzyzacy-config",
+				},
+				"dir/subdir/fejtaverse/fejtabot.yaml": {
+					"54321": "new-fejtabot-config",
 				},
 				"dir/subdir/fejtaverse/sig-foo/added.yaml": {
 					"12345": "new-added-config",
