@@ -45,12 +45,12 @@ func (m *multiString) Set(v string) error {
 }
 
 type options struct {
-	creds     string
-	inputs    multiString
-	oneshot   bool
-	output    string
-	printText bool
-	validate  bool
+	creds               string
+	inputs              multiString
+	oneshot             bool
+	output              string
+	printText           bool
+	validateConfigFile  bool
 }
 
 func gatherOptions() (options, error) {
@@ -59,18 +59,18 @@ func gatherOptions() (options, error) {
 	flag.BoolVar(&o.oneshot, "oneshot", false, "Write proto once and exit instead of monitoring --yaml files for changes")
 	flag.StringVar(&o.output, "output", "", "write proto to gs://bucket/obj or /local/path")
 	flag.BoolVar(&o.printText, "print-text", false, "print generated proto in text format to stdout")
-	flag.BoolVar(&o.validate, "validate", false, "validate the given config files")
+	flag.BoolVar(&o.validateConfigFile, "validate-config-file", false, "validate that the given config files are syntactically correct")
 	flag.Var(&o.inputs, "yaml", "comma-separated list of input YAML files")
 	flag.Parse()
 	if len(o.inputs) == 0 || o.inputs[0] == "" {
 		return o, errors.New("--yaml must include at least one file")
 	}
 
-	if !o.printText && !o.validate && o.output == "" {
+	if !o.printText && !o.validateConfigFile && o.output == "" {
 		return o, errors.New("--print-text or --output=gs://path required")
 	}
-	if o.validate && o.output != "" {
-		return o, errors.New("--validate implies no output")
+	if o.validateConfigFile && o.output != "" {
+		return o, errors.New("--validate-config-file implies no output")
 	}
 	return o, nil
 }
@@ -184,8 +184,8 @@ func main() {
 
 	ctx := context.Background()
 
-	// Validation only
-	if opt.validate {
+	// Config file validation only
+	if opt.validateConfigFile {
 		if err := doOneshot(ctx, nil, opt); err != nil {
 			log.Fatalf("FAIL: %v", err)
 		}
