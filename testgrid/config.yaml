@@ -2265,6 +2265,9 @@ test_groups:
 - name: pull-federation-verify
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-federation-verify
   num_columns_recent: 20
+- name: pull-cloud-provider-vsphere-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-vsphere-test
+  num_columns_recent: 20 
 # release-1.8
 - name: ci-kubernetes-e2e-gce-cos-k8sstable1-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable1-default
@@ -6116,6 +6119,11 @@ dashboards:
     test_group_name: pull-kubernetes-e2e-kubeadm-gce
     base_options: 'width=10'
 
+- name: presubmits-cloud-provider-vsphere-blocking
+  dashboard_tab:
+  - name: pull-cloud-provider-vsphere-test
+    test_group_name: pull-cloud-provider-vsphere-test
+    base_options: 'width=10'
 
 - name: presubmits-kubernetes-scalability
   dashboard_tab:
