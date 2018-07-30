@@ -16,21 +16,24 @@ limitations under the License.
 
 package main
 
-// rowData will hold common information for each row.
-type RowData struct {
+// RowData will hold common information for each row.
+// filename: the name of the file processed.
+// testDescription: description of the testcase.
+// columns: map holding the column as a key and the value as the corresponding value for that column.
+type rowData struct {
 	fileName        string
 	testDescription string
 	columns         map[string]string
 }
 
-func newRowData(fileName string, testDescription string) *RowData {
-	return &RowData{
+func newRowData(fileName string, testDescription string) *rowData {
+	return &rowData{
 		fileName:        fileName,
 		testDescription: testDescription,
 		columns:         make(map[string]string),
 	}
 }
 
-func (rowData *RowData) addColumn(key string, value string) {
+func (rowData *rowData) addColumn(key string, value string) {
 	rowData.columns[key] = value
 }

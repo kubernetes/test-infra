@@ -16,7 +16,7 @@ limitations under the License.
 
 package main
 
-// Interface that translates a RowData object into a string row.
-type RowMapper interface {
-	toRow(rowDataPtr *RowData) string
+// RowMapper transforms a RowData object into a string row.
+type rowMapper interface {
+	toRow(rowDataPtr *rowData) string
 }

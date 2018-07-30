@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// This package is in charge of processing the master file and generating a result file.
 package main
 
 import (
@@ -29,7 +30,7 @@ import (
 	"strings"
 )
 
-type Options struct {
+type options struct {
 	// input file path.
 	inputFilePathPtr *string
 
@@ -63,10 +64,10 @@ type Options struct {
 	lineRegEx *regexp.Regexp
 
 	// rowMapper
-	rowMapper RowMapper
+	rowMapper rowMapper
 }
 
-func createHeader(keys []string) *RowData {
+func createHeader(keys []string) *rowData {
 	rowDataPtr := newRowData("filename", "testDescription")
 	for _, key := range keys {
 		rowDataPtr.addColumn(key, key)
@@ -74,7 +75,7 @@ func createHeader(keys []string) *RowData {
 	return rowDataPtr
 }
 
-func generateResultFile(optionsPtr *Options) {
+func generateResultFile(optionsPtr *options) {
 	AddRow(optionsPtr.rowMapper.toRow(createHeader(optionsPtr.keys)))
 
 	root, err := os.Getwd()
@@ -97,7 +98,7 @@ func generateResultFile(optionsPtr *Options) {
 	WaitUntilResultWriterFinished()
 }
 
-func generateProcessFileFunction(optionsPtr *Options) ProcessFileFunction {
+func generateProcessFileFunction(optionsPtr *options) ProcessFileFunction {
 	options := optionsPtr
 	// process individual file and generate a row.
 	return func(fileName string) {
@@ -141,8 +142,8 @@ func generateProcessFileFunction(optionsPtr *Options) ProcessFileFunction {
 // 3) generates the selected amount of workers.
 // 4) sets up the result writer.
 // 5) sets up the rowMapper
-func setup() (*Options, error) {
-	options := Options{}
+func setup() (*options, error) {
+	options := options{}
 	err := processFlags(&options)
 	if err != nil {
 		return nil, err
@@ -181,11 +182,11 @@ func setup() (*Options, error) {
 }
 
 // processes the mandatory and optional flags from the command line.
-func processFlags(options *Options) error {
+func processFlags(options *options) error {
 	options.inputFilePathPtr = flag.String("input-file-path", "", "file path for the input file")
 	options.resultFileNamePtr = flag.String("result-file-name", "", "file name for the output")
 
-	options.prefixForSubFilePtr = flag.String("prefix-sub-file", "res", "prefix for sub files")
+	options.prefixForSubFilePtr = flag.String("prefix-sub-file", "res_", "prefix for sub files")
 	options.skipSplittingPtr = flag.Bool("skip-splitting", false, "skip splitting step of the input file")
 	options.workersQuantityPtr = flag.Int("workers", 2, "workers quantity")
 	options.separatorCharacterPtr = flag.String("separator", ",", "separator character for output file")
@@ -193,10 +194,10 @@ func processFlags(options *Options) error {
 	flag.Parse()
 
 	if *(options.inputFilePathPtr) == "" {
-		return errors.New("[mandatory flag missing] input-file-path is a mandatory flag, please provide and try again.")
+		return errors.New("[mandatory flag missing] input-file-path is a mandatory flag, please provide and try again")
 	}
 	if *(options.resultFileNamePtr) == "" {
-		return errors.New("[mandatory flag missing] result-file-name is a mandatory flag, please provide and try again.")
+		return errors.New("[mandatory flag missing] result-file-name is a mandatory flag, please provide and try again")
 	}
 	return nil
 }

@@ -20,19 +20,22 @@ import (
 	"bytes"
 )
 
-type CSVRowMapper struct {
+// CSVRowMapper is a struct that holds
+// 1) separatorCharacterPtr: is the character used to delimit each item in the row.
+// 2) keys: array (ordered) with keys to build the row consistently.
+type csvRowMapper struct {
 	separatorCharacterPtr *string
 	keys                  []string
 }
 
-func newCSVRowMapper(separatorCharacterPtr *string, keys []string) *CSVRowMapper {
-	return &CSVRowMapper{
+func newCSVRowMapper(separatorCharacterPtr *string, keys []string) *csvRowMapper {
+	return &csvRowMapper{
 		separatorCharacterPtr: separatorCharacterPtr,
 		keys: keys,
 	}
 }
 
-func (rowMapper *CSVRowMapper) toRow(rowDataPtr *RowData) string {
+func (rowMapper *csvRowMapper) toRow(rowDataPtr *rowData) string {
 	var headerBuffer bytes.Buffer
 
 	headerBuffer.WriteString(rowDataPtr.fileName)

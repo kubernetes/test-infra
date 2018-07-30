@@ -17,21 +17,24 @@ limitations under the License.
 package main
 
 import (
-	"errors"
 	"fmt"
 	"sync"
 )
 
+// ProcessFileFunction is an alias for a function that will process the file
+// given as an argument.
 type ProcessFileFunction func(fileName string)
 
 // quantity of workers to use in processing
 var workersQuantity int
 var fileNameWaitingGroup sync.WaitGroup
-var fileNameChannel chan string = make(chan string)
+var fileNameChannel = make(chan string)
 
+// SetupWorkGroup will set up the workers creating as many workers asthe quantity given as an argument.
+// Each worker will use the given ProcessFileFunction to apply it against
 func SetupWorkGroup(workersQuantityArg int, processFile ProcessFileFunction) error {
 	if workersQuantityArg <= 0 {
-		return errors.New(fmt.Sprintf("only positive numbers are allowed for workersQuantity, passed:[%d]", workersQuantityArg))
+		return fmt.Errorf("only positive numbers are allowed for workersQuantity, passed:[%d]", workersQuantityArg)
 	}
 	workersQuantity = workersQuantityArg
 
@@ -41,11 +44,16 @@ func SetupWorkGroup(workersQuantityArg int, processFile ProcessFileFunction) err
 	return nil
 }
 
+// AddFile will add a file to be added in the fileChannel and manages the logic
+// to increment the waiting group that controls that there were items sent
+// into the fileChannel and need to be processed.
 func AddFile(fileName string) {
 	fileNameWaitingGroup.Add(1)
 	fileNameChannel <- fileName
 }
 
+// WaitUntilWorkGroupFinished will close the channel (since no more items will
+// be sent) and wait untill all pending items are finished.
 func WaitUntilWorkGroupFinished() {
 	close(fileNameChannel)
 	fileNameWaitingGroup.Wait()

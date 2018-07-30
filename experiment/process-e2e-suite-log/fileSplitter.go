@@ -22,7 +22,11 @@ import (
 	"os"
 )
 
-type FileElement struct {
+// fileElement is an object that holds the writer and the corresponding file behind it.
+// The idea is to have both references in order to write to the writer in a buffered fashion
+// and then when processing has finished, be able to flush data into the writer and close
+// the related file.
+type fileElement struct {
 	file   *os.File
 	writer *bufio.Writer
 }
@@ -30,21 +34,21 @@ type FileElement struct {
 // This returns a function that will return a fileElement. This fileElement will be referencing a file
 // whose name will respond to an expression like <prefix>_<counter>.
 // "counter" will increase on each invocation.
-func newFileElementSequencer(prefixToUse string) func() (*FileElement, error) {
+func newFileElementSequencer(prefixToUse string) func() (*fileElement, error) {
 	counter := 0
 	prefix := prefixToUse
 
-	return func() (*FileElement, error) {
-		counter += 1
-		file, err := os.Create(fmt.Sprintf("%s_%d.tmp", prefix, counter))
+	return func() (*fileElement, error) {
+		counter++
+		file, err := os.Create(fmt.Sprintf("%s%d.tmp", prefix, counter))
 		if err != nil {
 			return nil, err
 		}
-		return &FileElement{file, bufio.NewWriter(file)}, nil
+		return &fileElement{file, bufio.NewWriter(file)}, nil
 	}
 }
 
-func (fileElement *FileElement) tearDown() {
+func (fileElement *fileElement) tearDown() {
 	if fileElement.writer != nil {
 		fileElement.writer.Flush()
 	}
@@ -53,11 +57,11 @@ func (fileElement *FileElement) tearDown() {
 	}
 }
 
-func (fileElement *FileElement) writeLine(line string) {
+func (fileElement *fileElement) writeLine(line string) {
 	fmt.Fprintln(fileElement.writer, line)
 }
 
-// takes in a file and splits it based on the given separatorLine, into subFiles
+// Split function takes in a file and splits it based on the given separatorLine, into subFiles
 // that will folllow <prefix>_<counter> grammar names.
 func Split(inputFilePathPtr *string, prefixForSubFilePtr *string, separatorLine string) error {
 	file, err := os.Open(*inputFilePathPtr)
@@ -88,9 +92,6 @@ func Split(inputFilePathPtr *string, prefixForSubFilePtr *string, separatorLine 
 	}
 
 	fileElement.tearDown()
-	if err := scanner.Err(); err != nil {
-		return err
-	}
 
-	return nil
+	return scanner.Err()
 }
