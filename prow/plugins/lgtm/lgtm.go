@@ -19,6 +19,7 @@ package lgtm
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -171,12 +172,17 @@ func handlePullRequestReview(gc githubClient, config *plugins.Configuration, own
 		return nil
 	}
 
+	// The review webhook returns state as lowercase, while the review API
+	// returns state as uppercase. Uppercase the value here so it always
+	// matches the constant.
+	reviewState := github.ReviewState(strings.ToUpper(string(e.Review.State)))
+
 	// If we review with Approve, add lgtm if necessary.
 	// If we review with Request Changes, remove lgtm if necessary.
 	wantLGTM := false
-	if e.Review.State == github.ReviewStateApproved {
+	if reviewState == github.ReviewStateApproved {
 		wantLGTM = true
-	} else if e.Review.State == github.ReviewStateChangesRequested {
+	} else if reviewState == github.ReviewStateChangesRequested {
 		wantLGTM = false
 	} else {
 		return nil
