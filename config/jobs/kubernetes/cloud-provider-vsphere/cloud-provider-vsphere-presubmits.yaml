@@ -5,7 +5,7 @@ presubmits:
     context: pull-cloud-provider-vsphere-test
     branches:
     - master
-    always_run: false
+    always_run: true
     rerun_command: "/test pull-cloud-provider-vsphere-test"
     trigger: "(?m)^/test( all| pull-cloud-provider-vsphere-test),?(\\s+|$)"
     labels:
