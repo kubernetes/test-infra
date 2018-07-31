@@ -85,6 +85,34 @@ periodics:
 
 - interval: 1h
   agent: kubernetes
+  name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=
+      - --deployment=gke
+      - --extract=ci/k8s-beta
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=cos_containerd
+      - --gcp-zone=us-central1-f
+      - --ginkgo-parallel
+      - --gke-create-command=container clusters create --quiet
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+
+- interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-cluster
   labels:
     preset-service-account: "true"
