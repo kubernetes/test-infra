@@ -6136,6 +6136,12 @@ dashboards:
     test_group_name: pull-cloud-provider-vsphere-test
     base_options: 'width=10'
 
+- name: vmware-presubmits-cloud-provider-vsphere
+  dashboard_tab:
+  - name: pull-cloud-provider-vsphere-test
+    test_group_name: pull-cloud-provider-vsphere-test
+    base_options: 'width=10'
+
 - name: presubmits-kubernetes-scalability
   dashboard_tab:
   - name: pull-kubernetes-e2e-gce-100-performance
@@ -6618,3 +6624,7 @@ dashboard_groups:
   - conformance-providerless
   - conformance-cloud-provider-openstack
   - conformance-gardener
+
+- name: vmware
+  dashboard_names:
+  - vmware-presubmits-cloud-provider-vsphere
