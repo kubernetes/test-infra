@@ -604,6 +604,8 @@ func validateSizes(size *Size) error {
 	if size.S > size.M || size.M > size.L || size.L > size.Xl || size.Xl > size.Xxl {
 		return errors.New("invalid size plugin configuration - one of the smaller sizes is bigger than a larger one")
 	}
+
+	return nil
 }
 
 func findDuplicatedPluginConfig(repoConfig, orgConfig []string) []string {
