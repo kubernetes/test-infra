@@ -286,7 +286,8 @@ type SigMention struct {
 	Re     *regexp.Regexp `json:"-"`
 }
 
-// Size specifies configuration for the size plugin, defining lower bounds (in # lines changed) for each size label
+// Size specifies configuration for the size plugin, defining lower bounds (in # lines changed) for each size label.
+// XS is assumed to be zero.
 type Size struct {
 	S   int `json:"s"`
 	M   int `json:"m"`
