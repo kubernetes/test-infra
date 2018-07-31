@@ -197,9 +197,11 @@ var (
 	}
 
 	kindMap = map[string]string{
-		"kind/bug":     "Fixes a bug discovered during the current release.",
-		"kind/feature": "New functionality.",
-		"kind/cleanup": "Adding tests, refactoring, fixing old bugs.",
+		"kind/bug":          "Fixes a bug discovered during the current release.",
+		"kind/feature":      "New functionality.",
+		"kind/cleanup":      "Adding tests, refactoring, fixing old bugs.",
+		"kind/failing-test": "Continuously failing test.",
+		"kind/flake":        "Flaking test.",
 	}
 
 	priorityMap = map[string]string{
