@@ -1,16 +1,5 @@
 package(default_visibility = ["//visibility:public"])
 
-py_binary(
-    name = "config_sort",
-    srcs = ["config_sort.py"],
-    data = [
-        ":jobs",
-        "//boskos:resources.yaml",
-        "//prow:configs",
-    ],
-    deps = ["@ruamel_yaml//ruamel/yaml:ruamel.yaml"],
-)
-
 py_test(
     name = "config_test",
     srcs = [
@@ -20,9 +9,9 @@ py_test(
         "//boskos:resources.yaml",
         "//jobs",
         "//prow:config.yaml",
+        "//scenarios",
     ],
     deps = [
-        ":config_sort",
         ":env_gc",
         "@yaml",
     ],
