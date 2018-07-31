@@ -552,6 +552,9 @@ func (pa *PluginAgent) Load(path string) error {
 	if err := validateConfigUpdater(&np.ConfigUpdater); err != nil {
 		return err
 	}
+	if err := validateSizes(np.Size); err != nil {
+		return err
+	}
 	// regexp compilation should run after defaulting
 	if err := compileRegexps(np); err != nil {
 		return err
@@ -591,6 +594,16 @@ func validatePlugins(plugins map[string][]string) error {
 		return fmt.Errorf("invalid plugin configuration:\n\t%v", strings.Join(errors, "\n\t"))
 	}
 	return nil
+}
+
+func validateSizes(size *Size) error {
+	if size == nil {
+		return nil
+	}
+
+	if size.S > size.M || size.M > size.L || size.L > size.Xl || size.Xl > size.Xxl {
+		return errors.New("invalid size plugin configuration - one of the smaller sizes is bigger than a larger one")
+	}
 }
 
 func findDuplicatedPluginConfig(repoConfig, orgConfig []string) []string {
