@@ -580,6 +580,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-cluster-features
 - name: ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-cluster-features
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-cluster-features
+- name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-containerd-gke-k8sbeta
 - name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta-alpha-cluster
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-containerd-gke-k8sbeta-alpha-cluster
 - name: ci-kubernetes-e2e-cos-gke-k8sbeta-alpha-cluster
@@ -3401,6 +3403,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-cluster-features
   - name: gke-cos-alpha-cluster-features-1.10
     test_group_name: ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-cluster-features
+  - name: gke-cos-containerd-1.11
+    test_group_name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta
   - name: gke-cos-containerd-alpha-cluster-1.11
     test_group_name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta-alpha-cluster
   - name: gke-cos-alpha-cluster-1.11
