@@ -111,7 +111,7 @@ RUN echo 'DOCKER_OPTS="${DOCKER_OPTS} --data-root=/docker-graph"' | \
 RUN mkdir /docker-graph
 
 # add custom docker cleanup binary
-ADD ["./barnacle/barnacle", "/usr/local/bin"]
+COPY ["barnacle/barnacle", "/usr/local/bin/"]
 
 #
 # END: DOCKER IN DOCKER SETUP
@@ -121,7 +121,7 @@ ADD ["./barnacle/barnacle", "/usr/local/bin"]
 # note the runner is also responsible for making docker in docker function if
 # env DOCKER_IN_DOCKER_ENABLED is set and similarly responsible for generating
 # .bazelrc files if bazel remote caching is enabled 
-ADD ["runner", \
-    "/workspace/"]
+COPY ["entrypoint.sh", "runner.sh", "create_bazel_cache_rcs.sh", \
+        "/usr/local/bin/"]
 
-ENTRYPOINT ["/workspace/runner"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

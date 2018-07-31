@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2016 The Kubernetes Authors.
+# Copyright 2018 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,20 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o errexit
-set -o nounset
-set -o pipefail
-
-# get test-infra for latest bootstrap etc
-git clone https://github.com/kubernetes/test-infra
-
+# generic runner script, handles DIND, bazelrc for caching, etc.
 
 # Check if the job has opted-in to bazel remote caching and if so generate 
 # .bazelrc entries pointing to the remote cache
 export BAZEL_REMOTE_CACHE_ENABLED=${BAZEL_REMOTE_CACHE_ENABLED:-false}
 if [[ "${BAZEL_REMOTE_CACHE_ENABLED}" == "true" ]]; then
     echo "Bazel remote cache is enabled, generating .bazelrcs ..."
-    ./test-infra/images/bootstrap/create_bazel_cache_rcs.sh
+    # if we have a test-infra checkout (because bootstrap), use that since
+    # it is newer and this is probably k/k so we can push fixes faster this way
+    # otherwise run the one baked into the image
+    # TODO(bentheelder): someday only support the pod-utils
+    if [[ -d "./test-infra" ]]; then
+        ./test-infra/images/bootstrap/create_bazel_cache_rcs.sh
+    else
+        /usr/local/bin/create_bazel_cache_rcs.sh
+    fi
 fi
 
 
@@ -90,11 +92,7 @@ fi
 # disable error exit so we can run post-command cleanup
 set +o errexit
 # actually start bootstrap and the job
-./test-infra/jenkins/bootstrap.py \
-    --job=${JOB_NAME} \
-    --service-account=${GOOGLE_APPLICATION_CREDENTIALS} \
-    --upload='gs://kubernetes-jenkins/logs' \
-    "$@"
+"$@"
 EXIT_VALUE=$?
 
 # cleanup after job
