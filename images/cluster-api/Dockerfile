@@ -13,12 +13,39 @@
 # limitations under the License.
 
 # Includes go, gcloud, and etcd
-FROM gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+FROM golang:1.10.3
 LABEL maintainer="krousey@google.com"
 
 # add env we can debug with the image name:tag
 ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}
+
+RUN apt-get update && apt-get install -y \
+    python \
+    rsync \
+    wget && \
+    apt-get clean
+
+# Install gcloud
+
+ENV PATH=/google-cloud-sdk/bin:/workspace:${PATH} \
+    CLOUDSDK_CORE_DISABLE_PROMPTS=1
+
+WORKDIR /workspace
+
+RUN wget -q https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz && \
+    tar xzf google-cloud-sdk.tar.gz -C / && \
+    rm google-cloud-sdk.tar.gz && \
+    /google-cloud-sdk/install.sh \
+        --disable-installation-options \
+        --bash-completion=false \
+        --path-update=false \
+        --usage-reporting=false && \
+    gcloud components install alpha beta kubectl && \
+    gcloud info | tee /workspace/gcloud-info.txt
+
+ADD runner /
+ENTRYPOINT ["/bin/bash", "/runner"]
 
 ENV ETCD_VER=v3.3.0
 ENV ETCD_URL=https://storage.googleapis.com/etcd
