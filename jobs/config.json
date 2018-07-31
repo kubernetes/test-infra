@@ -1520,7 +1520,7 @@
       "--gcp-project=k8s-e2e-gce-scalability-1-1",
       "--gcp-zone=us-east1-b",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --minStartupPods=8",
       "--timeout=120m",
       "--use-logexporter"
     ],
@@ -1541,7 +1541,7 @@
       "--gcp-project=k8s-e2e-gci-gce-scale-1-4",
       "--gcp-zone=us-east1-b",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --minStartupPods=8",
       "--timeout=120m",
       "--use-logexporter"
     ],
@@ -1562,7 +1562,7 @@
       "--gcp-project=k8s-e2e-gci-gce-scale-1-4",
       "--gcp-zone=us-east1-b",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --minStartupPods=8",
       "--timeout=120m",
       "--use-logexporter"
     ],
