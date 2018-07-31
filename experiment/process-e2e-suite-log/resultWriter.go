@@ -35,7 +35,7 @@ func AddRow(row string) {
 }
 
 // WaitUntilResultWriterFinished will close the channel (since no more items will
-// be sent) and wait untill all pending items are finished.
+// be sent) and wait until all pending items are finished.
 func WaitUntilResultWriterFinished() {
 	close(rowChannel)
 	rowWaitingGroup.Wait()

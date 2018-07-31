@@ -53,7 +53,7 @@ func AddFile(fileName string) {
 }
 
 // WaitUntilWorkGroupFinished will close the channel (since no more items will
-// be sent) and wait untill all pending items are finished.
+// be sent) and wait until all pending items are finished.
 func WaitUntilWorkGroupFinished() {
 	close(fileNameChannel)
 	fileNameWaitingGroup.Wait()
