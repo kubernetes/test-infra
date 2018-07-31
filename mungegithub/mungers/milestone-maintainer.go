@@ -91,7 +91,7 @@ const (
 	milestoneDetail = `<details>
 <summary>Help</summary>
 <ul>
- <li><a href="https://git.k8s.io/sig-release/ephemera/issues.md">Additional instructions</a></li>
+ <li><a href="https://git.k8s.io/community/contributors/devel/issues.md">Additional instructions</a></li>
  <li><a href="https://go.k8s.io/bot-commands">Commands for setting labels</a></li>
 </ul>
 </details>
