@@ -59,7 +59,7 @@ func gatherOptions() (options, error) {
 	flag.BoolVar(&o.oneshot, "oneshot", false, "Write proto once and exit instead of monitoring --yaml files for changes")
 	flag.StringVar(&o.output, "output", "", "write proto to gs://bucket/obj or /local/path")
 	flag.BoolVar(&o.printText, "print-text", false, "print generated proto in text format to stdout")
-	flag.BoolVar(&o.validateConfigFile, "validate-config-file", false, "validate that the given config files are syntactically correct")
+	flag.BoolVar(&o.validateConfigFile, "validate-config-file", false, "validate that the given config files are syntactically correct and exit (proto is not written anywhere)")
 	flag.Var(&o.inputs, "yaml", "comma-separated list of input YAML files")
 	flag.Parse()
 	if len(o.inputs) == 0 || o.inputs[0] == "" {
@@ -70,7 +70,7 @@ func gatherOptions() (options, error) {
 		return o, errors.New("--print-text or --output=gs://path required")
 	}
 	if o.validateConfigFile && o.output != "" {
-		return o, errors.New("--validate-config-file implies no output")
+		return o, errors.New("--validate-config-file doesn't write the proto anywhere")
 	}
 	return o, nil
 }
