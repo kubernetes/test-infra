@@ -43,6 +43,7 @@ var (
 		"kopeio",
 		"tectonic",
 		"redhat",
+		"vmware",
 	}
 	orgs = []string{
 		"conformance",
