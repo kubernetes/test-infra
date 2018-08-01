@@ -10,7 +10,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -39,7 +39,7 @@ postsubmits:
         preset-bazel-remote-cache-enabled: "true"
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
           args:
           - "--job=$(JOB_NAME)"
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -99,7 +99,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.10
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -129,7 +129,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.11
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.11
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -188,7 +188,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.10
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -218,7 +218,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.11
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.11
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -250,7 +250,7 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
       args:
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes=master"
@@ -337,7 +337,7 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.10
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.10
       args:
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes=release-1.10"
@@ -369,7 +369,7 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.11
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.11
       args:
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes=release-1.11"
@@ -403,7 +403,7 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
       args:
       - --repo=k8s.io/kubernetes
       - --root=/go/src
@@ -491,7 +491,7 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.10
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.10
       args:
       - --root=/go/src
       - "--job=$(JOB_NAME)"
@@ -527,7 +527,7 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-1.11
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.11
       args:
       - --root=/go/src
       - "--job=$(JOB_NAME)"

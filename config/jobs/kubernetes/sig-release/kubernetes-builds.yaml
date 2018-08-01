@@ -6,7 +6,7 @@ periodics:
     preset-service-account: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
+    - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
       args:
       - --repo=k8s.io/kubernetes
       - --repo=k8s.io/release
@@ -40,7 +40,7 @@ periodics:
     preset-service-account: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
+    - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
       args:
       - --repo=k8s.io/kubernetes=release-1.11
       - --repo=k8s.io/release
@@ -76,7 +76,7 @@ periodics:
     preset-service-account: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
+    - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
       args:
       - --repo=k8s.io/release
       - --root=/go/src
@@ -108,7 +108,7 @@ periodics:
     preset-service-account: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
+    - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
       args:
       - --repo=k8s.io/kubernetes=release-1.10
       - --repo=k8s.io/release
@@ -144,7 +144,7 @@ periodics:
     preset-service-account: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
+    - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
       args:
       - --repo=k8s.io/kubernetes=release-1.9
       - --repo=k8s.io/release
@@ -180,7 +180,7 @@ periodics:
     preset-service-account: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
+    - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
       args:
       - --repo=k8s.io/kubernetes=release-1.8
       - --repo=k8s.io/release
@@ -214,7 +214,7 @@ periodics:
     preset-service-account: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180510-809cd85b5
+    - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
       args:
       - --repo=k8s.io/kubernetes
       - --repo=k8s.io/release
