@@ -24,5 +24,3 @@ bazel run //config/jobs/kubernetes-security:genjobs -- \
 "--config-json=${TESTINFRA_ROOT}/jobs/config.json" \
 "--jobs=${TESTINFRA_ROOT}/config/jobs" \
 "--output=${TESTINFRA_ROOT}/config/jobs/kubernetes-security/generated-security-jobs.yaml"
-
-bazel run //jobs:config_sort

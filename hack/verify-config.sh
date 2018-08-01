@@ -35,17 +35,8 @@ bazel run //config/jobs/kubernetes-security:genjobs -- \
 "--jobs=${JOBS_DIR}" \
 "--output=${TMP_GENERATED_JOBS}"
 
-bazel run //jobs:config_sort -- "--prow-config=${TMP_CONFIG}" --only-prow
-
-DIFF=$(diff "${TMP_CONFIG}" "${PROW_CONFIG}")
+DIFF=$(diff "${TMP_GENERATED_JOBS}" "${JOBS_DIR}/kubernetes-security/generated-security-jobs.yaml")
 if [ ! -z "$DIFF" ]; then
-    echo "config is not correct, please run \\\`hack/update-config.sh\\\`"
-    exit 1
-fi
-
-
-DIFF2=$(diff "${TMP_GENERATED_JOBS}" "${JOBS_DIR}/kubernetes-security/generated-security-jobs.yaml")
-if [ ! -z "$DIFF2" ]; then
     echo "config is not correct, please run \\\`hack/update-config.sh\\\`"
     exit 1
 fi
