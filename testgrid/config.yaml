@@ -779,8 +779,6 @@ test_groups:
 # bazel, run on prow
 - name: ci-kubernetes-bazel-build
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build
-- name: ci-kubernetes-bazel-build-1-8
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build-1-8
 - name: ci-kubernetes-bazel-build-1-9
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build-1-9
 - name: ci-kubernetes-bazel-build-1-10
@@ -789,8 +787,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build-1-11
 - name: ci-kubernetes-bazel-test
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test
-- name: ci-kubernetes-bazel-test-1-8
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test-1-8
 - name: ci-kubernetes-bazel-test-1-9
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test-1-9
 - name: ci-kubernetes-bazel-test-1-10
@@ -1501,6 +1497,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/metrics-kettle
 - name: periodic-features-unfreeze
   gcs_prefix: kubernetes-jenkins/logs/periodic-features-unfreeze
+- name: periodic-kubernetes-bazel-test-master
+  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-master
 - name: periodic-kubernetes-bazel-test-1-8
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-8
 - name: periodic-kubernetes-bazel-test-1-9
@@ -1509,6 +1507,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-10
 - name: periodic-kubernetes-bazel-test-1-11
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-11
+- name: periodic-kubernetes-bazel-build-master
+  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-master
 - name: periodic-kubernetes-bazel-build-1-8
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-8
 - name: periodic-kubernetes-bazel-build-1-9
@@ -3543,8 +3543,10 @@ dashboards:
     test_group_name: ci-kubernetes-build-beta
   - name: bazel-build
     test_group_name: ci-kubernetes-bazel-build
+  - name: bazel-build-periodic
+    test_group_name: periodic-kubernetes-bazel-build-master
   - name: bazel-build-1.8
-    test_group_name: ci-kubernetes-bazel-build-1-8
+    test_group_name: periodic-kubernetes-bazel-build-1-8
   - name: bazel-build-1.9
     test_group_name: ci-kubernetes-bazel-build-1-9
   - name: bazel-build-1.10
@@ -3553,8 +3555,10 @@ dashboards:
     test_group_name: ci-kubernetes-bazel-build-1-11
   - name: bazel-test
     test_group_name: ci-kubernetes-bazel-test
+  - name: bazel-test-periodic
+    test_group_name: periodic-kubernetes-bazel-test-master
   - name: bazel-test-1.8
-    test_group_name: ci-kubernetes-bazel-test-1-8
+    test_group_name: periodic-kubernetes-bazel-test-1-8
   - name: bazel-test-1.9
     test_group_name: ci-kubernetes-bazel-test-1-9
   - name: bazel-test-1.10
@@ -4260,10 +4264,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-aws-stable3
   - name: ci-gce-kubeadm-1.8
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8
-  - name: ci-bazel-build-1.8
-    test_group_name: ci-kubernetes-bazel-build-1-8
-  - name: ci-bazel-test-1.8
-    test_group_name: ci-kubernetes-bazel-test-1-8
   - name: periodic-bazel-build-1.8
     test_group_name: periodic-kubernetes-bazel-build-1-8
   - name: periodic-bazel-test-1.8
