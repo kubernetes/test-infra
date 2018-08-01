@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+        <meta charset="UTF-8">
+        <title>Documentation</title>
+        <link id="favicon" rel="icon" type="image/png" href="favicon.ico">
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <link rel="stylesheet" type="text/css" href="extensions/style.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+        <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
+        <link rel="stylesheet" href="dialog-polyfill.css">
+        <link rel="stylesheet" href="prism.css">
+        <link rel="stylesheet" href="docs.css">
+        <script type="text/javascript" src="prism.js"></script>
+        <script type="text/javascript" src="dialog-polyfill.js"></script>
+        <script type="text/javascript" src="plugin-help.js?var=allHelp"></script>
+        <script type="text/javascript" src="extensions/script.js"></script>
+        <script type="text/javascript" src="branding.js?var=branding"></script>
+        <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+</head>
+
+
+<body>
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+        <header class="mdl-layout__header">
+            <div class="mdl-layout__header-row">
+                <a href="https://github.com/kubernetes/test-infra/tree/master/prow#prow" class="logo"><img id="img" src="/logo.svg" alt="kubernetes logo" class="logo" /></a>
+                <span class="mdl-layout-title header-title">Documentation</span>
+            </div>
+        </header>
+
+        <div class="mdl-layout__drawer">
+            <span class="mdl-layout-title">Prow Dashboard</span>
+            <nav class="mdl-navigation">
+                <a class="mdl-navigation__link" href="/">Prow Status</a>
+                <a class="mdl-navigation__link" href="/pr">PR Status</a>
+                <a class="mdl-navigation__link" href="/command-help">Command Help</a>
+                <a class="mdl-navigation__link" href="/tide">Tide Status</a>
+                <a class="mdl-navigation__link" href="/plugins">Plugins</a>
+                <a class="mdl-navigation__link mdl-navigation__link--current" href="/docs">Documentation</a>
+            </nav>
+        </div>
+
+        <main class="mdl-layout__content">
+            <div class="container">
+                <article class="markdown-body">
+                    <h2><a id="Create_cluster_role_bindings">
+                    </a>Create cluster role bindings</h2>
+
+                    <p>As of 1.8 Kubernetes uses <a href="https://kubernetes.io/docs/admin/authorization/rbac/">Role-Based Access Control (“RBAC”)</a> to drive authorization decisions, allowing <strong>cluster-admin</strong> to dynamically configure policies. To create cluster resources you need to grant a user <strong>cluster-admin</strong> role in all namespaces for the cluster. You can find the required RBAC in <a href="https://github.com/openshift/release/tree/master/cluster/ci/config/prow/openshift">here</a></p>
+                    <p>or run</p>
+                   
+
+                    <pre class="pl-0">
+                        <code class="language-command-line">git clone https://github.com/openshift/release.git | \
+                            ls release/cluster/ci/config/prow/openshift | \
+                            grep _rbac.yaml | \
+                            awk '{system("kubectl process -f release/cluster/ci/config/prow/openshift/" $1 " | kubectl create -f - ")}'</code></pre>
+
+                    <h2><a id="Create_the_GitHub_secrets"></a>Create the GitHub secrets</h2>
+                    <p>You will need two secrets to talk to GitHub. The <strong>hmac-token</strong> is the token that you give to GitHub for validating webhooks. Generate it using any reasonable randomness-generator, eg <code class="language-command-line">openssl rand -hex 20</code>. The <strong>oauth-token</strong> is an OAuth2 token that has read and write access to the bot account. Generate it from the <a href="https://github.com/settings/tokens">account’s settings -&gt; Personal access tokens -&gt; Generate new token</a>.</p>
+                    
+                    <pre><code class="language-command-line">kubectl create secret generic hmac-token --from-file=hmac=/path/to/hook/secret
+                kubectl create secret generic oauth-token --from-file=oauth=/path/to/oauth/secret</code></pre>
+
+                    <h2><a id="Bot_account"></a>Bot account</h2>
+                    <p>The bot account used by prow must be granted owner level access to the Github orgs that prow will operate on. Note that events triggered by this account are ignored by some prow plugins. It is prudent to use a different bot account for other Github automation that prow should interact with to prevent events from being ignored unjustly.</p>
+
+                    <h2><a id="Run_the_prow_components_in_the_cluster"></a>Run the prow components in the cluster</h2>
+                    <p>Run the following command to start up a basic set of prow components.</p>
+
+                    <pre><code class="language-command-line">kubectl apply -f cluster/starter.yaml</code></pre>
+                    
+                    <p>After a moment, the cluster components will be running.</p>
+                    <pre><code class="language-command-line">kubectl get deployments</code>
+                        <table>
+                            <tr>
+                                <th>NAME</th>
+                                <th>DESIRED</th>
+                                <th>CURRENT</th>
+                                <th>UP-TO-DATE</th>
+                                <th>AVAILABLE</th>
+                                <th>AGE</th>
+                            </tr>
+                        <tr>
+                            <td>deck</td>
+                            <td>2</td>
+                            <td>2</td>
+                            <td>2</td>
+                            <td>2</td>
+                            <td>1</td>  
+                        </tr>
+                        <tr>
+                            <td>hook</td>
+                            <td>2</td>
+                            <td>2</td>
+                            <td>2</td>
+                            <td>2</td>
+                            <td>1</td>  
+                        </tr>  
+                        <tr>
+                            <td>horologium</td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td>1</td>  
+                        </tr>                         
+                        <tr>
+                            <td>plank</td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td>1</td>  
+                        </tr>
+                        <tr>
+                            <td>sinker</td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td>1</td>  
+                        </tr>
+                     </table>
+                    </pre>
+                    <p>Find out your external address. It might take a couple minutes for the IP to show up.</p>
+                    <pre><code class="language-command-line">kubectl get ingress ing</code></pre>
+                        <table>
+                            <tr>
+                                <th>NAME</th>
+                                <th>HOSTS</th>
+                                <th>ADDRESS</th>
+                                <th>PORTS</th>
+                                <th>AGE</th>
+                            </tr>
+                            <tr>
+                                <td>ing</td>
+                                <td>*</td>
+                                <td>an.ip.addr.ess</td>
+                                <td>80</td>
+                                <td>3m</td>
+                            </tr>
+                        </table>
+
+                    <h2><a id="Add_the_webhook_to_GitHub"></a>Add the webhook to GitHub</h2>
+                    
+                    <p>On the GitHub repo you would like to use, go to Settings -&gt; Webhooks -&gt; Add webhook. You can also add org-level webhooks.</p>
+                    <p>Set the payload URL to <strong>http://&lt;IP-FROM-INGRESS&gt;/hook</strong>, the content type to
+                    <strong>application/json</strong>, the secret to your HMAC secret, and ask it to send everything.After you’ve created your webhook, GitHub will indicate that it successfully sent an event by putting a green checkmark under “Recent Deliveries.”</p>
+                    
+
+                    <h1><a id="Next_steps"></a>Next steps</h1>
+                    <h2><a id="Enable_some_plugins_by_modifying_pluginsyaml">
+                    </a>Enable some plugins by modifying <strong>plugins.yaml</strong></h2>
+                    <p>Create a file called <strong>plugins.yaml</strong> and add the following to it:</p>
+                    <pre class="line-numbers"><code class="language-yaml">plugins:
+                                  YOUR_ORG/YOUR_REPO:
+                                  - size</code></pre>
+                    <p>Replace <code class="language-yaml">YOUR_ORG/YOUR_REPO:</code> with the appropriate values. If you want, you can instead just say <code class="language-yaml">YOUR_ORG:</code> and the plugin will run for every repo in the org.</p>
+                    <p>Run the following to test the file, replacing the path as necessary:</p>
+                    
+                    <pre><code class="language-command-line">bazel run //prow/cmd/config -- --plugin-config=path/to/plugins.yaml</code></pre>
+
+                    <p>There should be no errors. You can run this as a part of your presubmit testing so that any errors are caught before you try to update.</p>
+                    <p>Now run the following to update the configmap, replacing the path as necessary:</p>
+                    <pre><code class="language-command-line">kubectl create configmap plugins -from-file=plugins=path/to/plugins.yaml --dry-run -o yaml | kubectl replace configmap plugins -f -</code></pre>
+                    
+                    <p>Now when you open a PR, it will automatically be labelled with a <strong>size/*</strong> label. When you make a change to the plugin config and push it with <strong>make update-plugins</strong>, you do not need to redeploy any of your cluster components. They will pick up the change within a few minutes.</p>
+                    
+                    <h2><a id="Add_more_jobs_by_modifying_configyaml_122">
+                    </a>Add more jobs by modifying <strong>config.yaml</strong></h2>
+                    <p>Create a file called <strong>config.yaml</strong>, and add the following to it:</p>
+
+                    <pre class="line-numbers"><code class="language-yaml">periodics:
+                                - interval: 10m
+                                  agent: kubernetes
+                                  name: echo-test
+                                  spec:
+                                  containers:
+                                   &nbsp - image: alpine
+                                     &nbsp&nbsp command: [&quot;/bin/date&quot;]
+                                postsubmits:
+                                  YOUR_ORG/YOUR_REPO:
+                                  - name: test-postsubmit
+                                    agent: kubernetes
+                                    spec:
+                                      containers:
+                                      - image: alpine
+                                        command: [&quot;/bin/printenv&quot;]
+                                presubmits:
+                                  YOUR_ORG/YOUR_REPO:
+                                  - name: test-presubmit
+                                    trigger: &quot;(?m)^/test this&quot;
+                                    rerun_command: &quot;/test this&quot;
+                                    context: test-presubmit
+                                    always_run: true
+                                    skip_report: true
+                                    agent: kubernetes
+                                    spec:
+                                      containers:
+                                      - image: alpine
+                                        command: [&quot;/bin/printenv&quot;]</code></pre>
+                    <p>Run the following to test the file, replacing the path as necessary:</p>
+                    <pre><code class="language-command-line">bazel run //prow/cmd/config -- --config-path=path/to/config.yaml</code></pre>
+                    <p>Now run the following to update the configmap.</p>
+                    <pre><code class="language-command-line">kubectl create configmap config --from-file=config=path/to/config.yaml --dry-run -o yaml | kubectl replace configmap config -f -</code></pre>
+
+                    <p>Presubmits and postsubmits are triggered by the <code>trigger</code> plugin. Be sure to enable that plugin by adding it to the list you created in the last section.</p>
+                    <p>Now when you open a PR it will automatically run the presubmit that you added to this file. You can see it on your prow dashboard. Once you are happy that it is stable, switch <strong>skip_report</strong> to <strong>false</strong>. Then, it will post a status on the PR. When you make a change to the config and push it with <strong>make update-config</strong>, you do not need to redeploy any of your cluster components. They will pick up the change within a few minutes.
+                    When you push a new change, the postsubmit job will run.
+                    For more information on the job environment, see <a href="./README.md##how-to-add-new-jobs">How to add new jobs</a>.</p>
+                    
+                    <h2><a id="Run_test_pods_in_a_different_namespace_192"></a>Run test pods in a different namespace</h2>
+                    <p>You may choose to keep prowjobs or run tests in a different namespace. First create the namespace by <code>kubectl create -f</code>ing this:</p>
+                    
+                    <pre class="line-numbers"><code class="language-yaml">apiVersion: v1
+                                kind: Namespace
+                                metadata:
+                                  name: prow</code></pre>
+                    
+                    <p>Now, in <strong>config.yaml</strong>, set <strong>prowjob_namespace</strong> or <strong>pod_namespace</strong> to the name from the YAML file. You can then use RBAC roles to limit what test pods can do.</p>
+                    <h2><a id="Run_test_pods_in_different_clusters_209"></a>Run test pods in different clusters</h2>
+                    
+                    <p>You may choose to run test pods in a separate cluster entirely. Create a secret containing a <strong>{&quot;cluster-name&quot;: {cluster-details}}</strong> map like this:</p>
+                    
+                    <pre class="line-numbers"><code class="language-vim">default:
+                                  endpoint: https://&lt;master-ip&gt;
+                                  clientCertificate: &lt;base64-encoded cert&gt;
+                                  clientKey: &lt;base64-encoded key&gt;
+                                  clusterCaCertificate: &lt;base64-encoded cert&gt;
+                                other:
+                                  endpoint: https://&lt;master-ip&gt;
+                                  clientCertificate: &lt;base64-encoded cert&gt;
+                                  clientKey: &lt;base64-encoded key&gt;
+                                  clusterCaCertificate: &lt;base64-encoded cert&gt;
+                    </code></pre>
+                    
+                    <p>Use <a href="/prow/cmd/mkbuild-cluster/">mkbuild-cluster</a> to determine these values:</p>
+                    
+                    <pre><code class="language-command-line">bazel run //prow/cmd/mkbuild-cluster -- \
+                                  --project=P --zone=Z --cluster=C \
+                                  --alias=A \
+                                  --print-entry | tee cluster.yaml
+                                kubectl create secret generic build-cluster --from-file=cluster.yaml</code></pre>
+                    
+                    <p>Mount this secret into the prow components that need it and set the <strong>--build-cluster</strong> flag to the location you mount it at. For instance, you will need to merge the following into the plank deployment:</p>
+                    
+                    <pre class="line-numbers"><code class="language-vim">spec:
+                                  containers:
+                                  - name: plank
+                                    args:
+                                    - --build-cluster=/etc/foo/cluster.yaml # basename matches --from-file key
+                                    volumeMounts:
+                                    - mountPath: /etc/foo
+                                      name: cluster
+                                      readOnly: true
+                                  volumes:
+                                  - name: cluster
+                                    secret:
+                                      defaultMode: 420
+                                      secretName: build-cluster # example above contains a cluster.yaml key</code></pre>
+                    <p>Configure jobs to use the non-default cluster with the <strong>cluster:</strong> field. The above example <strong>cluster.yaml</strong> defines two clusters: <strong>default</strong> and <strong>other</strong> to schedule jobs, which we can use as follows:</p>
+                    <pre class="line-numbers"><code class="language-vim">periodics:
+                                - name: cluster-unspecified
+                                  # cluster: 
+                                  interval: 10m
+                                  agent: kubernetes
+                                  spec:
+                                    containers:
+                                    - image: alpine
+                                      command: [&quot;/bin/date&quot;]
+                                - name: cluster-default
+                                  cluster: default
+                                  interval: 10m
+                                  agent: kubernetes
+                                  spec:
+                                    containers:
+                                    - image: alpine
+                                      command: [&quot;/bin/date&quot;]
+                                - name: cluster-other
+                                  cluster: other
+                                  interval: 10m
+                                  agent: kubernetes
+                                  spec:
+                                    containers:
+                                    - image: alpine
+                                      command: [&quot;/bin/date&quot;]
+            </code></pre>
+                    <p>This results in:</p>
+                    <ul>
+                        <li>The <strong>cluster-unspecified</strong> and <strong>default-cluster</strong> jobs run in the <strong>default</strong> cluster.</li>
+                        <li>The <strong>cluster-other</strong> job runs in the <strong>other</strong> cluster.</li>
+                    </ul>
+                    <p>See <a href="/prow/cmd/mkbuild-cluster/">mkbuild-cluster</a> for more details about how to create/update <strong>cluster.yaml</strong>.</p>
+            </div>
+        </main>
+    </div>
+    </article>
+</body>
+
+</html>
