@@ -624,7 +624,7 @@ periodics:
       - "--repo=k8s.io/examples=master"
       - --scenario=kubernetes_e2e
       - --
-      - --extract=ci/latest
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+39d0b71432c167
       - --check-leaked-resources
       - --gcp-node-image=gci
       - --gcp-zone=asia-southeast1-a
@@ -674,7 +674,7 @@ periodics:
       - "--repo=k8s.io/examples=master"
       - --scenario=kubernetes_e2e
       - --
-      - --extract=ci/latest
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+39d0b71432c167
       - --check-leaked-resources
       - --image-family=ubuntu-gke-1604-lts
       - --image-project=ubuntu-os-gke-cloud
@@ -730,7 +730,7 @@ periodics:
       - --check-leaked-resources
       - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
       - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
-      - --extract=ci/latest
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+39d0b71432c167
       - --gcp-node-image=gci
       - --gcp-nodes=4
       - --gcp-zone=us-central1-f
