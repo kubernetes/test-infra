@@ -186,7 +186,7 @@
       "--gcp-project-type=ingress-project",
       "--ginkgo-parallel=1",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Ingress\\]",
+      "--test_args=--ginkgo.focus=\\[Feature:Ingress\\] --ginkgo.skip=HTTP2|multiple\\sTLS",
       "--timeout=320m"
     ],
     "scenario": "kubernetes_e2e",
