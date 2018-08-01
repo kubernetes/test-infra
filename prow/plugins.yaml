@@ -525,7 +525,6 @@ plugins:
 
   kubernetes-sigs/contributor-site:
   - approve
-  - blunderbuss
 
   containerd/cri:
   - assign
