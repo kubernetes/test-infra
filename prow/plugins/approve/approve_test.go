@@ -729,6 +729,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			reviews: []github.Review{
 				newTestReview("cjwagner", "stuff", "COMMENTED"),
 				newTestReview("cjwagner", "unsubmitted stuff", "PENDING"),
+				newTestReview("cjwagner", "dismissed stuff", "DISMISSED"),
 			},
 			selfApprove:         false,
 			needsIssue:          false,
@@ -800,6 +801,43 @@ Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comme
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":["cjwagner"]} -->`,
+		},
+		{
+			name:     "dismissed review doesn't cancel prior approval",
+			hasLabel: true,
+			files:    []string{"a/a.go"},
+			comments: []github.IssueComment{
+				newTestCommentTime(time.Now().Add(time.Hour), "k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"), // second
+			},
+			reviews: []github.Review{
+				newTestReviewTime(time.Now(), "Alice", "yep", github.ReviewStateApproved),                         // first
+				newTestReviewTime(time.Now().Add(time.Hour*2), "Alice", "dismissed", github.ReviewStateDismissed), // third
+			},
+			selfApprove:         false,
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: true,
+
+			expectDelete:  true,
+			expectToggle:  false,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+<details >
+Needs approval from an approver in each of these files:
+
+- ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [Alice]
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":[]} -->`,
 		},
 		{
 			name:     "approve cancel command supersedes earlier approved review",
@@ -1269,6 +1307,11 @@ func TestHandleGenericComment(t *testing.T) {
 	}
 }
 
+// GitHub webhooks send state as lowercase, so force it to lowercase here.
+func stateToLower(s github.ReviewState) github.ReviewState {
+	return github.ReviewState(strings.ToLower(string(s)))
+}
+
 func TestHandleReviewEvent(t *testing.T) {
 	tests := []struct {
 		name                string
@@ -1286,7 +1329,7 @@ func TestHandleReviewEvent(t *testing.T) {
 					User: github.User{
 						Login: "author",
 					},
-					State: github.ReviewStateApproved,
+					State: stateToLower(github.ReviewStateApproved),
 				},
 			},
 			reviewActsAsApprove: true,
@@ -1301,7 +1344,7 @@ func TestHandleReviewEvent(t *testing.T) {
 					User: github.User{
 						Login: "author",
 					},
-					State: github.ReviewStateChangesRequested,
+					State: stateToLower(github.ReviewStateChangesRequested),
 				},
 			},
 			reviewActsAsApprove: true,
@@ -1316,7 +1359,7 @@ func TestHandleReviewEvent(t *testing.T) {
 					User: github.User{
 						Login: "author",
 					},
-					State: github.ReviewStatePending,
+					State: stateToLower(github.ReviewStatePending),
 				},
 			},
 			reviewActsAsApprove: true,
@@ -1331,7 +1374,7 @@ func TestHandleReviewEvent(t *testing.T) {
 					User: github.User{
 						Login: "author",
 					},
-					State: github.ReviewStateApproved,
+					State: stateToLower(github.ReviewStateApproved),
 				},
 			},
 			reviewActsAsApprove: true,
@@ -1346,11 +1389,11 @@ func TestHandleReviewEvent(t *testing.T) {
 					User: github.User{
 						Login: "author",
 					},
-					State: github.ReviewStateDismissed,
+					State: stateToLower(github.ReviewStateDismissed),
 				},
 			},
 			reviewActsAsApprove: true,
-			expectHandle:        false,
+			expectHandle:        true,
 		},
 		{
 			name: "approve command",
@@ -1361,7 +1404,7 @@ func TestHandleReviewEvent(t *testing.T) {
 					User: github.User{
 						Login: "author",
 					},
-					State: github.ReviewStateApproved,
+					State: stateToLower(github.ReviewStateApproved),
 				},
 			},
 			reviewActsAsApprove: true,
@@ -1376,7 +1419,7 @@ func TestHandleReviewEvent(t *testing.T) {
 					User: github.User{
 						Login: "author",
 					},
-					State: github.ReviewStateApproved,
+					State: stateToLower(github.ReviewStateApproved),
 				},
 			},
 			lgtmActsAsApprove:   true,
@@ -1392,7 +1435,7 @@ func TestHandleReviewEvent(t *testing.T) {
 					User: github.User{
 						Login: "author",
 					},
-					State: github.ReviewStateApproved,
+					State: stateToLower(github.ReviewStateApproved),
 				},
 			},
 			reviewActsAsApprove: false,
