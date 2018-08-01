@@ -4200,8 +4200,6 @@ dashboards:
   - name: "Conformance - GCE"
     description: Runs conformance tests using kubetest against kubernetes release 1.9 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-9
-  - name: gce-kubeadm-1.7-on-1.9
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8-on-1-9
   - name: ci-gce-kubeadm-1.9
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-9
   - name: kubelet-1.9
