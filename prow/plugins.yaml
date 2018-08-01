@@ -523,6 +523,9 @@ plugins:
   kubernetes-sigs/controller-tools:
   - approve  
 
+  kubernetes-sigs/contributor-site:
+  - approve
+
   containerd/cri:
   - assign
   - cla
