@@ -87,8 +87,13 @@ func (a ByName) Less(i, j int) bool { return a[i].Name < a[j].Name }
 // Configuration is a list of Repos defining Required Labels to sync into them
 // There is also a Default list of labels applied to every Repo
 type Configuration struct {
-	Repos   map[string][]Label `json:"repos,omitempty"`
-	Default []Label            `json:"default"`
+	Repos   map[string]RepoConfig `json:"repos,omitempty"`
+	Default RepoConfig            `json:"default"`
+}
+
+// RepoConfig contains only labels for the moment
+type RepoConfig struct {
+	Labels []Label `json:"labels"`
 }
 
 // RepoList holds a slice of repos.
@@ -210,16 +215,16 @@ func copyStringMap(originalMap map[string]string) map[string]string {
 func (c Configuration) validate() error {
 	// Check default labels
 	seen := make(map[string]string)
-	if err := validate(c.Default, "default", seen); err != nil {
+	if err := validate(c.Default.Labels, "default", seen); err != nil {
 		return fmt.Errorf("invalid config: %v", err)
 	}
 	// Check other repos labels
-	for repo, labels := range c.Repos {
+	for repo, repoconfig := range c.Repos {
 		// Duplicate seen to avoid modifications
 		defaultLabels := copyStringMap(seen)
 		// Validate as usual
 		// Will complain if a label is both in default and repo
-		if err := validate(labels, repo, defaultLabels); err != nil {
+		if err := validate(repoconfig.Labels, repo, defaultLabels); err != nil {
 			return fmt.Errorf("invalid config: %v", err)
 		}
 	}
@@ -404,7 +409,7 @@ func syncLabels(config Configuration, org string, repos RepoLabels) (RepoUpdates
 	defaultRequired := make(map[string]Label) // Must exist
 	defaultArchaic := make(map[string]Label)  // Migrate
 	defaultDead := make(map[string]Label)     // Delete
-	classifyLabels(config.Default, defaultRequired, defaultArchaic, defaultDead, time.Now(), nil)
+	classifyLabels(config.Default.Labels, defaultRequired, defaultArchaic, defaultDead, time.Now(), nil)
 
 	var validationErrors []error
 	var actions []Update
@@ -412,12 +417,12 @@ func syncLabels(config Configuration, org string, repos RepoLabels) (RepoUpdates
 	for repo, repoLabels := range repos {
 		var required, archaic, dead map[string]Label
 		// Check if we have more labels for repo
-		if labels, ok := config.Repos[org+"/"+repo]; ok {
+		if repoconfig, ok := config.Repos[org+"/"+repo]; ok {
 			// Duplicate required, dead and archaic labels to avoid modifying defaults
 			required = copyLabelMap(defaultRequired)
 			archaic = copyLabelMap(defaultArchaic)
 			dead = copyLabelMap(defaultDead)
-			classifyLabels(labels, required, archaic, dead, time.Now(), nil)
+			classifyLabels(repoconfig.Labels, required, archaic, dead, time.Now(), nil)
 		} else {
 			// Otherwise just copy the pointer
 			required = defaultRequired
@@ -704,11 +709,11 @@ func writeDocs(template string, output string, config Configuration) error {
 	var desc string
 	data := []labelData{}
 	desc = "all repos, for both issues and PRs"
-	data = append(data, labelData{desc, linkify(desc), LabelsByTarget(config.Default, bothTarget)})
+	data = append(data, labelData{desc, linkify(desc), LabelsByTarget(config.Default.Labels, bothTarget)})
 	desc = "all repos, only for issues"
-	data = append(data, labelData{desc, linkify(desc), LabelsByTarget(config.Default, issueTarget)})
+	data = append(data, labelData{desc, linkify(desc), LabelsByTarget(config.Default.Labels, issueTarget)})
 	desc = "all repos, only for PRs"
-	data = append(data, labelData{desc, linkify(desc), LabelsByTarget(config.Default, prTarget)})
+	data = append(data, labelData{desc, linkify(desc), LabelsByTarget(config.Default.Labels, prTarget)})
 	// Let's sort repos
 	repos := make([]string, 0)
 	for repo := range config.Repos {
@@ -717,15 +722,15 @@ func writeDocs(template string, output string, config Configuration) error {
 	sort.Strings(repos)
 	// And append their labels
 	for _, repo := range repos {
-		if l := LabelsByTarget(config.Repos[repo], bothTarget); len(l) > 0 {
+		if l := LabelsByTarget(config.Repos[repo].Labels, bothTarget); len(l) > 0 {
 			desc = repo + ", for both issues and PRs"
 			data = append(data, labelData{desc, linkify(desc), l})
 		}
-		if l := LabelsByTarget(config.Repos[repo], issueTarget); len(l) > 0 {
+		if l := LabelsByTarget(config.Repos[repo].Labels, issueTarget); len(l) > 0 {
 			desc = repo + ", only for issues"
 			data = append(data, labelData{desc, linkify(desc), l})
 		}
-		if l := LabelsByTarget(config.Repos[repo], prTarget); len(l) > 0 {
+		if l := LabelsByTarget(config.Repos[repo].Labels, prTarget); len(l) > 0 {
 			desc = repo + ", only for PRs"
 			data = append(data, labelData{desc, linkify(desc), l})
 		}
