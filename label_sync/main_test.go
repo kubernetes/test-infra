@@ -66,7 +66,7 @@ func TestSyncLabels(t *testing.T) {
 					{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
 				}},
 				Repos: map[string]RepoConfig{
-					"org/repo1": RepoConfig{Labels: []Label{
+					"org/repo1": {Labels: []Label{
 						{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
 					}},
 				},
@@ -80,10 +80,10 @@ func TestSyncLabels(t *testing.T) {
 					{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
 				}},
 				Repos: map[string]RepoConfig{
-					"org/repo1": RepoConfig{Labels: []Label{
+					"org/repo1": {Labels: []Label{
 						{Name: "lab2", Description: "Test Label 2", Color: "deadbe"},
 					}},
-					"org/repo2": RepoConfig{Labels: []Label{
+					"org/repo2": {Labels: []Label{
 						{Name: "lab2", Description: "Test Label 2", Color: "deadbe"},
 					}},
 				},
@@ -106,10 +106,10 @@ func TestSyncLabels(t *testing.T) {
 					{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
 				}},
 				Repos: map[string]RepoConfig{
-					"org/repo1": RepoConfig{Labels: []Label{
+					"org/repo1": {Labels: []Label{
 						{Name: "lab2", Description: "Test Label 2", Color: "deadbe"},
 					}},
-					"org/repo2": RepoConfig{Labels: []Label{
+					"org/repo2": {Labels: []Label{
 						{Name: "lab2", Description: "Test Label 2", Color: "deadbe"},
 					}},
 				},
