@@ -223,8 +223,8 @@ func (c Configuration) validate() error {
 	return nil
 }
 
-// LabelsByTarget returns labels that have a given target
-func LabelsByTarget(labels []Label, target LabelTarget) (filteredLabels []Label) {
+// LabelsForTarget returns labels that have a given target
+func LabelsForTarget(labels []Label, target LabelTarget) (filteredLabels []Label) {
 	for _, label := range labels {
 		if target == label.Target {
 			filteredLabels = append(filteredLabels, label)
@@ -701,11 +701,11 @@ func writeDocs(template string, output string, config Configuration) error {
 	var desc string
 	data := []labelData{}
 	desc = "all repos, for both issues and PRs"
-	data = append(data, labelData{desc, linkify(desc), LabelsByTarget(config.Default.Labels, bothTarget)})
+	data = append(data, labelData{desc, linkify(desc), LabelsForTarget(config.Default.Labels, bothTarget)})
 	desc = "all repos, only for issues"
-	data = append(data, labelData{desc, linkify(desc), LabelsByTarget(config.Default.Labels, issueTarget)})
+	data = append(data, labelData{desc, linkify(desc), LabelsForTarget(config.Default.Labels, issueTarget)})
 	desc = "all repos, only for PRs"
-	data = append(data, labelData{desc, linkify(desc), LabelsByTarget(config.Default.Labels, prTarget)})
+	data = append(data, labelData{desc, linkify(desc), LabelsForTarget(config.Default.Labels, prTarget)})
 	// Let's sort repos
 	repos := make([]string, 0)
 	for repo := range config.Repos {
@@ -714,15 +714,15 @@ func writeDocs(template string, output string, config Configuration) error {
 	sort.Strings(repos)
 	// And append their labels
 	for _, repo := range repos {
-		if l := LabelsByTarget(config.Repos[repo].Labels, bothTarget); len(l) > 0 {
+		if l := LabelsForTarget(config.Repos[repo].Labels, bothTarget); len(l) > 0 {
 			desc = repo + ", for both issues and PRs"
 			data = append(data, labelData{desc, linkify(desc), l})
 		}
-		if l := LabelsByTarget(config.Repos[repo].Labels, issueTarget); len(l) > 0 {
+		if l := LabelsForTarget(config.Repos[repo].Labels, issueTarget); len(l) > 0 {
 			desc = repo + ", only for issues"
 			data = append(data, labelData{desc, linkify(desc), l})
 		}
-		if l := LabelsByTarget(config.Repos[repo].Labels, prTarget); len(l) > 0 {
+		if l := LabelsForTarget(config.Repos[repo].Labels, prTarget); len(l) > 0 {
 			desc = repo + ", only for PRs"
 			data = append(data, labelData{desc, linkify(desc), l})
 		}
