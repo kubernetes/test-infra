@@ -3392,58 +3392,6 @@
       "sig-cluster-lifecycle"
     ]
   },
-  "pull-cloud-provider-azure-check": {
-    "args": [
-      "make",
-      "test-check"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-azure"
-    ]
-  },
-  "pull-cloud-provider-azure-e2e": {
-    "args": [
-      "make",
-      "test-e2e",
-      "SUITE=default",
-      "SUBJECT=${PULL_NUMBER}"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-azure"
-    ]
-  },
-  "pull-cloud-provider-azure-unit": {
-    "args": [
-      "make",
-      "test-unit"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-azure"
-    ]
-  },
-  "pull-cloud-provider-openstack-check": {
-    "args": [
-      "make",
-      "check"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-openstack"
-    ]
-  },
-  "pull-cloud-provider-openstack-test": {
-    "args": [
-      "make",
-      "test"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-openstack"
-    ]
-  },
   "pull-cluster-registry-verify-gensrc": {
     "args": [
       "./hack/verify-all-gensrc.sh"
