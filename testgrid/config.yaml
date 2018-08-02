@@ -5347,6 +5347,10 @@ dashboards:
     test_group_name: ci-docker-node-features
   - name: sig-node-docker-node-legacy
     test_group_name: ci-docker-node-legacy
+  - name: sig-node-containerd-node-conformance
+    test_group_name: ci-containerd-node-e2e
+  - name: sig-node-containerd-node-features
+    test_group_name: ci-containerd-node-e2e-features
 
 - name: sig-node-cadvisor
   dashboard_tab:
