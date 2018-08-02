@@ -24,26 +24,26 @@ presubmits:
 #        env:
 #        - name: ZONE
 #          value: us-central1-c
-#  - name: pull-gcp-filestore-csi-driver-sanity
-#    context: pull-gcp-filestore-csi-driver-sanity
-#    always_run: true
-#    rerun_command: "/test pull-gcp-filestore-csi-driver-sanity"
-#    trigger: "(?m)^/test( all| pull-gcp-filestore-csi-driver-sanity),?(\\s+|$)"
-#    agent: kubernetes
-#    labels:
-#      preset-service-account: "true"
-#    spec:
-#      containers:
-#      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
-#        args:
-#        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-#        - "--root=/go/src"
-#        - "--upload=gs://kubernetes-jenkins/pr-logs"
-#        - "--clean"
-#        - "--timeout=10"
-#        - "--scenario=execute"
-#        - "--" # end bootstrap args, scenario args below
-#        - "test/run_sanity.sh"
+  - name: pull-gcp-filestore-csi-driver-sanity
+    context: pull-gcp-filestore-csi-driver-sanity
+    always_run: true
+    rerun_command: "/test pull-gcp-filestore-csi-driver-sanity"
+    trigger: "(?m)^/test( all| pull-gcp-filestore-csi-driver-sanity),?(\\s+|$)"
+    agent: kubernetes
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+        args:
+        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+        - "--timeout=10"
+        - "--scenario=execute"
+        - "--" # end bootstrap args, scenario args below
+        - "test/run_sanity.sh"
   - name: pull-gcp-filestore-csi-driver-unit
     context: pull-gcp-filestore-csi-driver-unit
     always_run: true
