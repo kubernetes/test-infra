@@ -76,14 +76,6 @@ type Label struct {
 	parent      *Label     // Current name for previous labels (used internally)
 }
 
-// ByName implements sort.Interface for []Label based on
-// the Name field.
-type ByName []Label
-
-func (a ByName) Len() int           { return len(a) }
-func (a ByName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByName) Less(i, j int) bool { return a[i].Name < a[j].Name }
-
 // Configuration is a list of Repos defining Required Labels to sync into them
 // There is also a Default list of labels applied to every Repo
 type Configuration struct {
@@ -239,7 +231,7 @@ func LabelsByTarget(labels []Label, target LabelTarget) (filteredLabels []Label)
 		}
 	}
 	// We also sort to make nice tables
-	sort.Sort(ByName(filteredLabels))
+	sort.Slice(filteredLabels, func(i, j int) bool { return filteredLabels[i].Name < filteredLabels[j].Name })
 	return
 }
 
