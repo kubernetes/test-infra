@@ -25,7 +25,7 @@ import (
 )
 
 var okToTestRe = regexp.MustCompile(`(?m)^/ok-to-test\s*$`)
-var testAllRe = regexp.MustCompile(`(?m)^/test all\s*$`)
+var testAllRe = regexp.MustCompile(`(?m)^/test all,?($|\s.*)`)
 var retestRe = regexp.MustCompile(`(?m)^/retest\s*$`)
 
 func handleIC(c client, trigger *plugins.Trigger, ic github.IssueCommentEvent) error {

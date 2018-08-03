@@ -517,6 +517,7 @@ func (c *Config) finalizeJobConfig() error {
 
 	// Ensure that regexes are valid.
 	for _, vs := range c.Presubmits {
+		defaultPresubmitFields(vs)
 		if err := SetPresubmitRegexes(vs); err != nil {
 			return fmt.Errorf("could not set regex: %v", err)
 		}
@@ -1015,6 +1016,31 @@ func ValidateController(c *Controller) error {
 	return nil
 }
 
+// DefaultTriggerFor returns the default regexp string used to match comments
+// that should trigger the job with this name.
+func DefaultTriggerFor(name string) string {
+	return fmt.Sprintf(`(?m)^/test( | .* )%s,?($|\s.*)`, name)
+}
+
+// DefaultRerunCommandFor returns the default rerun command for the job with
+// this name.
+func DefaultRerunCommandFor(name string) string {
+	return fmt.Sprintf("/test %s", name)
+}
+
+func defaultPresubmitFields(js []Presubmit) {
+	for i, j := range js {
+		// Default the values of Trigger and RerunCommand if both fields are
+		// specified. Otherwise let validation fail as both or neither should have
+		// been specified.
+		if j.Trigger == "" && j.RerunCommand == "" {
+			js[i].Trigger = DefaultTriggerFor(j.Name)
+			js[i].RerunCommand = DefaultRerunCommandFor(j.Name)
+		}
+		defaultPresubmitFields(js[i].RunAfterSuccess)
+	}
+}
+
 // SetPresubmitRegexes compiles and validates all the regular expressions for
 // the provided presubmits.
 func SetPresubmitRegexes(js []Presubmit) error {
@@ -1026,9 +1052,6 @@ func SetPresubmitRegexes(js []Presubmit) error {
 		}
 		if !js[i].re.MatchString(j.RerunCommand) {
 			return fmt.Errorf("for job %s, rerun command \"%s\" does not match trigger \"%s\"", j.Name, j.RerunCommand, j.Trigger)
-		}
-		if err := SetPresubmitRegexes(j.RunAfterSuccess); err != nil {
-			return err
 		}
 		if j.RunIfChanged != "" {
 			re, err := regexp.Compile(j.RunIfChanged)
@@ -1042,6 +1065,10 @@ func SetPresubmitRegexes(js []Presubmit) error {
 			return fmt.Errorf("could not set branch regexes for %s: %v", j.Name, err)
 		}
 		js[i].Brancher = b
+
+		if err := SetPresubmitRegexes(j.RunAfterSuccess); err != nil {
+			return err
+		}
 	}
 	return nil
 }
