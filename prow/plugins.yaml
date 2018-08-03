@@ -455,6 +455,7 @@ plugins:
   - wip
 
   kubernetes-sigs:
+  - approve
   - assign
   - blunderbuss
   - cat
@@ -473,58 +474,31 @@ plugins:
   - yuks
 
   kubernetes-sigs/federation-v2:
-  - approve
   - trigger
 
   kubernetes-sigs/testing_frameworks:
-  - approve
   - trigger
 
   kubernetes-sigs/poseidon:
-  - approve
   - trigger
 
   kubernetes-sigs/cluster-api:
-  - approve
   - trigger
 
   kubernetes-sigs/cluster-api-provider-aws:
-  - approve
   - trigger
 
   kubernetes-sigs/cluster-api-provider-gcp:
-  - approve
   - trigger
 
   kubernetes-sigs/cluster-api-provider-openstack:
-  - approve
   - trigger
 
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
-  - approve
   - trigger
 
   kubernetes-sigs/gcp-filestore-csi-driver:
-  - approve
   - trigger
-
-  kubernetes-sigs/application:
-  - approve
-
-  kubernetes-sigs/kubeadm-dind-cluster:
-  - approve
-
-  kubernetes-sigs/kustomize:
-  - approve
-
-  kubernetes-sigs/controller-runtime:
-  - approve  
-
-  kubernetes-sigs/controller-tools:
-  - approve  
-
-  kubernetes-sigs/contributor-site:
-  - approve
 
   containerd/cri:
   - assign
