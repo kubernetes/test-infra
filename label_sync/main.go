@@ -177,22 +177,23 @@ func writeTemplate(templatePath string, outputPath string, data interface{}) err
 // validate runs checks to ensure the label inputs are valid
 // It ensures that no two label names (including previous names) have the same
 // lowercase value, and that the description is not over 100 characters.
-func validate(labels []Label, parent string, seen map[string]string) error {
+func validate(labels []Label, parent string, seen map[string]string) (map[string]string, error) {
+	newSeen := copyStringMap(seen)
 	for _, l := range labels {
 		name := strings.ToLower(l.Name)
 		path := parent + "." + name
-		if other, present := seen[name]; present {
-			return fmt.Errorf("duplicate label %s at %s and %s", name, path, other)
+		if other, present := newSeen[name]; present {
+			return newSeen, fmt.Errorf("duplicate label %s at %s and %s", name, path, other)
 		}
-		seen[name] = path
-		if err := validate(l.Previously, path, seen); err != nil {
-			return err
+		newSeen[name] = path
+		if newSeen, err := validate(l.Previously, path, newSeen); err != nil {
+			return newSeen, err
 		}
 		if len(l.Description) > 99 { // github limits the description field to 100 chars
-			return fmt.Errorf("description for %s is too long", name)
+			return newSeen, fmt.Errorf("description for %s is too long", name)
 		}
 	}
-	return nil
+	return newSeen, nil
 }
 
 func copyStringMap(originalMap map[string]string) map[string]string {
@@ -206,17 +207,14 @@ func copyStringMap(originalMap map[string]string) map[string]string {
 // Ensures the config does not duplicate label names
 func (c Configuration) validate() error {
 	// Check default labels
-	seen := make(map[string]string)
-	if err := validate(c.Default.Labels, "default", seen); err != nil {
+	seen, err := validate(c.Default.Labels, "default", make(map[string]string))
+	if err != nil {
 		return fmt.Errorf("invalid config: %v", err)
 	}
 	// Check other repos labels
 	for repo, repoconfig := range c.Repos {
-		// Duplicate seen to avoid modifications
-		defaultLabels := copyStringMap(seen)
-		// Validate as usual
 		// Will complain if a label is both in default and repo
-		if err := validate(repoconfig.Labels, repo, defaultLabels); err != nil {
+		if _, err := validate(repoconfig.Labels, repo, seen); err != nil {
 			return fmt.Errorf("invalid config: %v", err)
 		}
 	}
@@ -363,7 +361,10 @@ func move(repo string, previous, wanted Label) Update {
 }
 
 // classifyLabels will put labels into the required, archaic, dead maps as appropriate.
-func classifyLabels(labels []Label, required, archaic, dead map[string]Label, now time.Time, parent *Label) {
+func classifyLabels(labels []Label, required, archaic, dead map[string]Label, now time.Time, parent *Label) (map[string]Label, map[string]Label, map[string]Label) {
+	newRequired := copyLabelMap(required)
+	newArchaic := copyLabelMap(archaic)
+	newDead := copyLabelMap(dead)
 	for i, l := range labels {
 		first := parent
 		if first == nil {
@@ -372,15 +373,16 @@ func classifyLabels(labels []Label, required, archaic, dead map[string]Label, no
 		lower := strings.ToLower(l.Name)
 		switch {
 		case parent == nil && l.DeleteAfter == nil: // Live label
-			required[lower] = l
+			newRequired[lower] = l
 		case l.DeleteAfter != nil && now.After(*l.DeleteAfter):
-			dead[lower] = l
+			newDead[lower] = l
 		case parent != nil:
 			l.parent = parent
-			archaic[lower] = l
+			newArchaic[lower] = l
 		}
-		classifyLabels(l.Previously, required, archaic, dead, now, first)
+		newRequired, newArchaic, newDead = classifyLabels(l.Previously, newRequired, newArchaic, newDead, now, first)
 	}
+	return newRequired, newArchaic, newDead
 }
 
 func copyLabelMap(originalMap map[string]Label) map[string]Label {
@@ -398,10 +400,7 @@ func syncLabels(config Configuration, org string, repos RepoLabels) (RepoUpdates
 	}
 
 	// Find required, dead and archaic labels
-	defaultRequired := make(map[string]Label) // Must exist
-	defaultArchaic := make(map[string]Label)  // Migrate
-	defaultDead := make(map[string]Label)     // Delete
-	classifyLabels(config.Default.Labels, defaultRequired, defaultArchaic, defaultDead, time.Now(), nil)
+	defaultRequired, defaultArchaic, defaultDead := classifyLabels(config.Default.Labels, make(map[string]Label), make(map[string]Label), make(map[string]Label), time.Now(), nil)
 
 	var validationErrors []error
 	var actions []Update
@@ -410,16 +409,13 @@ func syncLabels(config Configuration, org string, repos RepoLabels) (RepoUpdates
 		var required, archaic, dead map[string]Label
 		// Check if we have more labels for repo
 		if repoconfig, ok := config.Repos[org+"/"+repo]; ok {
-			// Duplicate required, dead and archaic labels to avoid modifying defaults
-			required = copyLabelMap(defaultRequired)
-			archaic = copyLabelMap(defaultArchaic)
-			dead = copyLabelMap(defaultDead)
-			classifyLabels(repoconfig.Labels, required, archaic, dead, time.Now(), nil)
+			// Use classifyLabels() to add them to default ones
+			required, archaic, dead = classifyLabels(repoconfig.Labels, defaultRequired, defaultArchaic, defaultDead, time.Now(), nil)
 		} else {
-			// Otherwise just copy the pointer
-			required = defaultRequired
-			archaic = defaultArchaic
-			dead = defaultDead
+			// Otherwise just copy the pointers
+			required = defaultRequired // Must exist
+			archaic = defaultArchaic   // Migrate
+			dead = defaultDead         // Delete
 		}
 		// Convert github.Label to Label
 		var labels []Label
@@ -427,7 +423,7 @@ func syncLabels(config Configuration, org string, repos RepoLabels) (RepoUpdates
 			labels = append(labels, Label{Name: l.Name, Description: l.Description, Color: l.Color})
 		}
 		// Check for any duplicate labels
-		if err := validate(labels, "", make(map[string]string)); err != nil {
+		if _, err := validate(labels, "", make(map[string]string)); err != nil {
 			validationErrors = append(validationErrors, fmt.Errorf("invalid labels in %s: %v", repo, err))
 			continue
 		}
