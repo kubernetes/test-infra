@@ -1030,6 +1030,9 @@ func DefaultRerunCommandFor(name string) string {
 
 func defaultPresubmitFields(js []Presubmit) {
 	for i, j := range js {
+		if j.Context == "" {
+			js[i].Context = j.Name
+		}
 		// Default the values of Trigger and RerunCommand if both fields are
 		// specified. Otherwise let validation fail as both or neither should have
 		// been specified.

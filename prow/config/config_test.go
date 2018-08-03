@@ -330,7 +330,7 @@ periodics:
 			expectError: true,
 		},
 		{
-			name:       "one presubmit, no context",
+			name:       "one presubmit no context will default",
 			prowConfig: ``,
 			jobConfigs: []string{
 				`
@@ -342,7 +342,6 @@ presubmits:
       containers:
       - image: alpine`,
 			},
-			expectError: true,
 		},
 		{
 			name:       "one presubmit, ok",
