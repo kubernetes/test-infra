@@ -1240,6 +1240,12 @@ test_groups:
   - configuration_value: node_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-gpu
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-gpu
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-reboot
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-reboot
   column_header:
@@ -1286,6 +1292,12 @@ test_groups:
   - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-flaky
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-flaky
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-gpu
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-gpu
   column_header:
   - configuration_value: node_os_image
   - configuration_value: Commit
@@ -1340,6 +1352,12 @@ test_groups:
   - configuration_value: node_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-gpu
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-gpu
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-reboot
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-reboot
   column_header:
@@ -1386,6 +1404,12 @@ test_groups:
   - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-flaky
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-flaky
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-gpu
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-gpu
   column_header:
   - configuration_value: node_os_image
   - configuration_value: Commit
@@ -3082,6 +3106,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-default
   - name: gke-ubuntu2-k8sbeta-flaky
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-flaky
+  - name: gke-ubuntu2-k8sbeta-gpu
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-gpu
   - name: gke-ubuntu2-k8sbeta-reboot
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-reboot
   - name: gke-ubuntu2-k8sbeta-serial
@@ -3111,6 +3137,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-default
   - name: gke-ubuntu2-k8sstable1-flaky
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-flaky
+  - name: gke-ubuntu2-k8sstable1-gpu
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-gpu
   - name: gke-ubuntu2-k8sstable1-reboot
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-reboot
   - name: gke-ubuntu2-k8sstable1-serial
@@ -3140,6 +3168,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-default
   - name: gke-ubuntu2-k8sstable2-flaky
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-flaky
+  - name: gke-ubuntu2-k8sstable2-gpu
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-gpu
   - name: gke-ubuntu2-k8sstable2-reboot
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-reboot
   - name: gke-ubuntu2-k8sstable2-serial
@@ -3169,6 +3199,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-default
   - name: gke-ubuntu2-k8sstable3-flaky
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-flaky
+  - name: gke-ubuntu2-k8sstable3-gpu
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-gpu
   - name: gke-ubuntu2-k8sstable3-reboot
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-reboot
   - name: gke-ubuntu2-k8sstable3-serial
