@@ -715,7 +715,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
-    preset-kubernetes-e2e-enable-netd: "true"
     preset-kubernetes-e2e-containerd: "true"
   spec:
     containers:
