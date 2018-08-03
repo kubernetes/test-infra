@@ -17,11 +17,9 @@ limitations under the License.
 package main
 
 import (
-	"bytes"
 	"context"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -89,31 +87,34 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
-	oauthSecretRaw, err := ioutil.ReadFile(o.githubTokenFile)
-	if err != nil {
-		logrus.WithError(err).Fatalf("Could not read oauth secret file.")
-	}
-	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
-
+	var err error
 	for _, ep := range o.githubEndpoint.Strings() {
-		_, err = url.Parse(ep)
+		_, err = url.ParseRequestURI(ep)
 		if err != nil {
 			logrus.WithError(err).Fatalf("Invalid --endpoint URL %q.", ep)
 		}
 	}
 
+	var tokens []string
+	tokens = append(tokens, o.githubTokenFile)
+
+	secretAgent := &config.SecretAgent{}
+	if err := secretAgent.Start(tokens); err != nil {
+		logrus.WithError(err).Fatal("Error starting secrets agent.")
+	}
+
 	var ghcSync, ghcStatus *github.Client
 	var kc *kube.Client
 	if o.dryRun {
-		ghcSync = github.NewDryRunClient(oauthSecret, o.githubEndpoint.Strings()...)
-		ghcStatus = github.NewDryRunClient(oauthSecret, o.githubEndpoint.Strings()...)
+		ghcSync = github.NewDryRunClient(secretAgent.GetTokenGenerator(o.githubTokenFile), o.githubEndpoint.Strings()...)
+		ghcStatus = github.NewDryRunClient(secretAgent.GetTokenGenerator(o.githubTokenFile), o.githubEndpoint.Strings()...)
 		if o.deckURL == "" {
 			logrus.Fatal("no deck URL was given for read-only ProwJob access")
 		}
 		kc = kube.NewFakeClient(o.deckURL)
 	} else {
-		ghcSync = github.NewClient(oauthSecret, o.githubEndpoint.Strings()...)
-		ghcStatus = github.NewClient(oauthSecret, o.githubEndpoint.Strings()...)
+		ghcSync = github.NewClient(secretAgent.GetTokenGenerator(o.githubTokenFile), o.githubEndpoint.Strings()...)
+		ghcStatus = github.NewClient(secretAgent.GetTokenGenerator(o.githubTokenFile), o.githubEndpoint.Strings()...)
 		if o.cluster == "" {
 			kc, err = kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 			if err != nil {
@@ -145,7 +146,7 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting bot name.")
 	}
-	gc.SetCredentials(botName, oauthSecret)
+	gc.SetCredentials(botName, secretAgent.GetTokenGenerator(o.githubTokenFile))
 
 	c := tide.NewController(ghcSync, ghcStatus, kc, configAgent, gc, nil)
 	defer c.Shutdown()

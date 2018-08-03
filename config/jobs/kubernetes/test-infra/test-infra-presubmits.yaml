@@ -14,7 +14,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -65,8 +65,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
-        imagePullPolicy: Always
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -120,7 +119,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -151,7 +150,7 @@ presubmits:
       - name: test
         command:
         - ./hack/verify-config.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-experimental
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-experimental
         env:
         - name: TEST_TMPDIR
           value: /bazel-scratch/.cache/bazel
@@ -180,7 +179,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -199,30 +198,18 @@ presubmits:
   - name: pull-test-infra-verify-codegen
     agent: kubernetes
     context: pull-test-infra-verify-codegen
-    always_run: false
-    optional: true
     branches:
     - master
     rerun_command: "/test pull-test-infra-verify-codegen"
     trigger: "/test pull-test-infra-verify-codegen"
-    run_if_changed: '^(Gopkg\.|^vendor/).*$'
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
+    always_run: true
+    path_alias: "k8s.io/test-infra"
+    decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180706-944ac61f8-experimental
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --service-account=/etc/service-account/service-account.json
-        - --scenario=execute
-        - --
+      - image: docker.io/library/golang:1.10
+        command:
         - ./hack/verify-codegen.sh
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
         resources:
           requests:
             memory: "2Gi"
@@ -282,7 +269,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-experimental
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - --root=/go/src

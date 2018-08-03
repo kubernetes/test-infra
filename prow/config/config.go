@@ -15,9 +15,11 @@ limitations under the License.
 */
 
 // Package config knows how to read and parse config.yaml.
+// It also implements an agent to read the secrets.
 package config
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -30,7 +32,7 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
-	"gopkg.in/robfig/cron.v2"
+	cron "gopkg.in/robfig/cron.v2"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -369,6 +371,29 @@ func loadConfig(prowConfig, jobConfig string) (*Config, error) {
 	}
 
 	return &nc, nil
+}
+
+// LoadSecrets loads multiple paths of secrets and add them in a map.
+func LoadSecrets(paths []string) (map[string][]byte, error) {
+	secretsMap := make(map[string][]byte, len(paths))
+
+	for _, path := range paths {
+		secretValue, err := LoadSingleSecret(path)
+		if err != nil {
+			return nil, err
+		}
+		secretsMap[path] = secretValue
+	}
+	return secretsMap, nil
+}
+
+// LoadSingleSecret reads and returns the value of a single file.
+func LoadSingleSecret(path string) ([]byte, error) {
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("error reading %s: %v", path, err)
+	}
+	return bytes.TrimSpace(b), nil
 }
 
 // yamlToConfig converts a yaml file into a Config object

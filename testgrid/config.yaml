@@ -394,6 +394,9 @@ test_groups:
 - name: ci-kubernetes-e2e-ubuntu-gce-netd-calico
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gce-netd-calico
   alert_stale_results_hours: 24
+- name: ci-kubernetes-e2e-containerd-gce-netd
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-containerd-gce-netd
+  alert_stale_results_hours: 24
 - name: ci-kubemci-ingress-conformance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubemci-ingress-conformance
 - name: ci-kubernetes-e2e-gci-gce-ingress-manual-network
@@ -540,8 +543,12 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-default-serial
 - name: ci-kubernetes-e2e-gke-staging-beta-parallel
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-beta-parallel
+- name: ci-kubernetes-e2e-gke-staging-beta-cos-containerd-parallel
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-beta-cos-containerd-parallel
 - name: ci-kubernetes-e2e-gke-staging-beta-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-beta-serial
+- name: ci-kubernetes-e2e-gke-staging-beta-cos-containerd-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-beta-cos-containerd-serial
 - name: ci-kubernetes-e2e-gke-staging-stable1-parallel
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-stable1-parallel
 - name: ci-kubernetes-e2e-gke-staging-stable1-serial
@@ -580,6 +587,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-cluster-features
 - name: ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-cluster-features
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-cluster-features
+- name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-containerd-gke-k8sbeta
 - name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta-alpha-cluster
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-containerd-gke-k8sbeta-alpha-cluster
 - name: ci-kubernetes-e2e-cos-gke-k8sbeta-alpha-cluster
@@ -770,8 +779,6 @@ test_groups:
 # bazel, run on prow
 - name: ci-kubernetes-bazel-build
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build
-- name: ci-kubernetes-bazel-build-1-8
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build-1-8
 - name: ci-kubernetes-bazel-build-1-9
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build-1-9
 - name: ci-kubernetes-bazel-build-1-10
@@ -780,8 +787,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build-1-11
 - name: ci-kubernetes-bazel-test
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test
-- name: ci-kubernetes-bazel-test-1-8
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test-1-8
 - name: ci-kubernetes-bazel-test-1-9
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test-1-9
 - name: ci-kubernetes-bazel-test-1-10
@@ -1492,6 +1497,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/metrics-kettle
 - name: periodic-features-unfreeze
   gcs_prefix: kubernetes-jenkins/logs/periodic-features-unfreeze
+- name: periodic-kubernetes-bazel-test-master
+  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-master
 - name: periodic-kubernetes-bazel-test-1-8
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-8
 - name: periodic-kubernetes-bazel-test-1-9
@@ -1500,6 +1507,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-10
 - name: periodic-kubernetes-bazel-test-1-11
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-11
+- name: periodic-kubernetes-bazel-build-master
+  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-master
 - name: periodic-kubernetes-bazel-build-1-8
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-8
 - name: periodic-kubernetes-bazel-build-1-9
@@ -2265,6 +2274,9 @@ test_groups:
 - name: pull-federation-verify
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-federation-verify
   num_columns_recent: 20
+- name: pull-cloud-provider-vsphere-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-vsphere-test
+  num_columns_recent: 20 
 # release-1.8
 - name: ci-kubernetes-e2e-gce-cos-k8sstable1-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable1-default
@@ -2391,6 +2403,8 @@ test_groups:
   gcs_prefix: compute-image-tools-test/logs/ci-daisy-e2e
 - name: linux-image-tests
   gcs_prefix: compute-image-tools-test/logs/linux-image-tests
+- name: windows-image-tests
+  gcs_prefix: compute-image-tools-test/logs/windows-image-tests
 # Cluster registry
 - name: pull-cluster-registry-verify-gensrc
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-registry-verify-gensrc
@@ -3297,6 +3311,15 @@ dashboards:
           value: 'linux-image-tests issue: <test-name>'
         - key: body
           value: <test-url>
+    - name: windows-image-tests
+      test_group_name: windows-image-tests
+      file_bug_template:
+        url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
+        options:
+        - key: title
+          value: 'windows-image-tests issue: <test-name>'
+        - key: body
+          value: <test-url>
 
 - name: google-kops-gce
   dashboard_tab:
@@ -3401,6 +3424,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-cluster-features
   - name: gke-cos-alpha-cluster-features-1.10
     test_group_name: ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-cluster-features
+  - name: gke-cos-containerd-1.11
+    test_group_name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta
   - name: gke-cos-containerd-alpha-cluster-1.11
     test_group_name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta-alpha-cluster
   - name: gke-cos-alpha-cluster-1.11
@@ -3437,6 +3462,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-staging-beta-parallel
   - name: gke-staging-1.11-serial
     test_group_name: ci-kubernetes-e2e-gke-staging-beta-serial
+  - name: gke-staging-1.11-cos-containerd-parallel
+    test_group_name: ci-kubernetes-e2e-gke-staging-beta-cos-containerd-parallel
+  - name: gke-staging-1.11-cos-containerd-serial
+    test_group_name: ci-kubernetes-e2e-gke-staging-beta-cos-containerd-serial
   - name: gke-staging-1.10-parallel
     test_group_name: ci-kubernetes-e2e-gke-staging-stable1-parallel
   - name: gke-staging-1.10-serial
@@ -3514,8 +3543,10 @@ dashboards:
     test_group_name: ci-kubernetes-build-beta
   - name: bazel-build
     test_group_name: ci-kubernetes-bazel-build
+  - name: bazel-build-periodic
+    test_group_name: periodic-kubernetes-bazel-build-master
   - name: bazel-build-1.8
-    test_group_name: ci-kubernetes-bazel-build-1-8
+    test_group_name: periodic-kubernetes-bazel-build-1-8
   - name: bazel-build-1.9
     test_group_name: ci-kubernetes-bazel-build-1-9
   - name: bazel-build-1.10
@@ -3524,8 +3555,10 @@ dashboards:
     test_group_name: ci-kubernetes-bazel-build-1-11
   - name: bazel-test
     test_group_name: ci-kubernetes-bazel-test
+  - name: bazel-test-periodic
+    test_group_name: periodic-kubernetes-bazel-test-master
   - name: bazel-test-1.8
-    test_group_name: ci-kubernetes-bazel-test-1-8
+    test_group_name: periodic-kubernetes-bazel-test-1-8
   - name: bazel-test-1.9
     test_group_name: ci-kubernetes-bazel-test-1-9
   - name: bazel-test-1.10
@@ -4179,8 +4212,6 @@ dashboards:
   - name: "Conformance - GCE"
     description: Runs conformance tests using kubetest against kubernetes release 1.9 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-9
-  - name: gce-kubeadm-1.7-on-1.9
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8-on-1-9
   - name: ci-gce-kubeadm-1.9
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-9
   - name: kubelet-1.9
@@ -4233,10 +4264,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-aws-stable3
   - name: ci-gce-kubeadm-1.8
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8
-  - name: ci-bazel-build-1.8
-    test_group_name: ci-kubernetes-bazel-build-1-8
-  - name: ci-bazel-test-1.8
-    test_group_name: ci-kubernetes-bazel-test-1-8
   - name: periodic-bazel-build-1.8
     test_group_name: periodic-kubernetes-bazel-build-1-8
   - name: periodic-bazel-test-1.8
@@ -5215,6 +5242,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-ubuntu-gce-netd-calico
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: e2e-containerd-gce-netd
+    test_group_name: ci-kubernetes-e2e-containerd-gce-netd
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
 
 - name: sig-node-cri-o
   dashboard_tab:
@@ -5316,6 +5347,10 @@ dashboards:
     test_group_name: ci-docker-node-features
   - name: sig-node-docker-node-legacy
     test_group_name: ci-docker-node-legacy
+  - name: sig-node-containerd-node-conformance
+    test_group_name: ci-containerd-node-e2e
+  - name: sig-node-containerd-node-features
+    test_group_name: ci-containerd-node-e2e-features
 
 - name: sig-node-cadvisor
   dashboard_tab:
@@ -6105,6 +6140,17 @@ dashboards:
     test_group_name: pull-kubernetes-e2e-kubeadm-gce
     base_options: 'width=10'
 
+- name: presubmits-cloud-provider-vsphere-blocking
+  dashboard_tab:
+  - name: pull-cloud-provider-vsphere-test
+    test_group_name: pull-cloud-provider-vsphere-test
+    base_options: 'width=10'
+
+- name: vmware-presubmits-cloud-provider-vsphere
+  dashboard_tab:
+  - name: pull-cloud-provider-vsphere-test
+    test_group_name: pull-cloud-provider-vsphere-test
+    base_options: 'width=10'
 
 - name: presubmits-kubernetes-scalability
   dashboard_tab:
@@ -6490,6 +6536,7 @@ dashboard_groups:
 - name: presubmits
   dashboard_names:
   - presubmits-cluster-registry
+  - presubmits-cloud-provider-vsphere-blocking
   - presubmits-federation
   - presubmits-kubernetes-blocking
   - presubmits-kubernetes-nonblocking
@@ -6587,3 +6634,7 @@ dashboard_groups:
   - conformance-providerless
   - conformance-cloud-provider-openstack
   - conformance-gardener
+
+- name: vmware
+  dashboard_names:
+  - vmware-presubmits-cloud-provider-vsphere

@@ -173,7 +173,7 @@ type Configuration struct {
 	RequireSIG    RequireSIG           `json:"requiresig,omitempty"`
 	Slack         Slack                `json:"slack,omitempty"`
 	SigMention    SigMention           `json:"sigmention,omitempty"`
-	Size          Sizes                `json:"size,omitempty"`
+	Size          *Size                `json:"size,omitempty"`
 	Triggers      []Trigger            `json:"triggers,omitempty"`
 	Welcome       Welcome              `json:"welcome,omitempty"`
 }
@@ -286,13 +286,14 @@ type SigMention struct {
 	Re     *regexp.Regexp `json:"-"`
 }
 
-// Size specifies configuration for the size plugin, allowing configurable lower bounds for each size label
-type Sizes struct {
-	SLines   int `json:"omitempty"`
-	MLines   int `json:"omitempty"`
-	LLines   int `json:"omitempty"`
-	XlLines  int `json:"omitempty"`
-	XxlLines int `json:"omitempty"`
+// Size specifies configuration for the size plugin, defining lower bounds (in # lines changed) for each size label.
+// XS is assumed to be zero.
+type Size struct {
+	S   int `json:"s"`
+	M   int `json:"m"`
+	L   int `json:"l"`
+	Xl  int `json:"xl"`
+	Xxl int `json:"xxl"`
 }
 
 /*
@@ -551,6 +552,9 @@ func (pa *PluginAgent) Load(path string) error {
 	if err := validateConfigUpdater(&np.ConfigUpdater); err != nil {
 		return err
 	}
+	if err := validateSizes(np.Size); err != nil {
+		return err
+	}
 	// regexp compilation should run after defaulting
 	if err := compileRegexps(np); err != nil {
 		return err
@@ -589,6 +593,18 @@ func validatePlugins(plugins map[string][]string) error {
 	if len(errors) > 0 {
 		return fmt.Errorf("invalid plugin configuration:\n\t%v", strings.Join(errors, "\n\t"))
 	}
+	return nil
+}
+
+func validateSizes(size *Size) error {
+	if size == nil {
+		return nil
+	}
+
+	if size.S > size.M || size.M > size.L || size.L > size.Xl || size.Xl > size.Xxl {
+		return errors.New("invalid size plugin configuration - one of the smaller sizes is bigger than a larger one")
+	}
+
 	return nil
 }
 

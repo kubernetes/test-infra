@@ -18,7 +18,6 @@ limitations under the License.
 package main
 
 import (
-	"bytes"
 	"errors"
 	"flag"
 	"fmt"
@@ -33,6 +32,7 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 )
@@ -548,16 +548,16 @@ func newClient(tokenPath string, tokens, tokenBurst int, dryRun bool, hosts ...s
 	if tokenPath == "" {
 		return nil, errors.New("--token unset")
 	}
-	b, err := ioutil.ReadFile(tokenPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read --token=%s: %v", tokenPath, err)
+
+	secretAgent := &config.SecretAgent{}
+	if err := secretAgent.Start([]string{tokenPath}); err != nil {
+		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
-	oauthSecret := string(bytes.TrimSpace(b))
 
 	if dryRun {
-		return github.NewDryRunClient(oauthSecret, hosts...), nil
+		return github.NewDryRunClient(secretAgent.GetTokenGenerator(tokenPath), hosts...), nil
 	}
-	c := github.NewClient(oauthSecret, hosts...)
+	c := github.NewClient(secretAgent.GetTokenGenerator(tokenPath), hosts...)
 	if tokens > 0 && tokenBurst >= tokens {
 		return nil, fmt.Errorf("--tokens=%d must exceed --token-burst=%d", tokens, tokenBurst)
 	}

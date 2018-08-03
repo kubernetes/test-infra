@@ -21,6 +21,7 @@ limitations under the License.
 package v1
 
 import (
+	v1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
@@ -155,6 +156,11 @@ func (in *ProwJobSpec) DeepCopyInto(out *ProwJobSpec) {
 	if in.PodSpec != nil {
 		in, out := &in.PodSpec, &out.PodSpec
 		*out = new(corev1.PodSpec)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.BuildSpec != nil {
+		in, out := &in.BuildSpec, &out.BuildSpec
+		*out = new(v1alpha1.BuildSpec)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.DecorationConfig != nil {

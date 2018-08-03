@@ -175,6 +175,8 @@ labels:
     name: kind/failing-test
     previously:
       - name: priority/failing-test
+      - name: kind/e2e-test-failure
+      - name: kind/upgrade-test-failure
     target: both
     prowPlugin: label
     addedBy: anyone
@@ -204,6 +206,14 @@ labels:
     name: lifecycle/frozen
     previously:
     - name: keep-open
+    target: both
+    prowPlugin: lifecycle
+    addedBy: anyone
+  - color: 8fc951
+    description: Indicates that an issue or PR is actively being worked on by a contributor.
+    name: lifecycle/active
+    previously:
+    - name: active
     target: both
     prowPlugin: lifecycle
     addedBy: anyone

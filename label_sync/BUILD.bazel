@@ -57,6 +57,7 @@ go_library(
     importpath = "k8s.io/test-infra/label_sync",
     tags = ["automanaged"],
     deps = [
+        "//prow/config:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/github:go_default_library",
         "//vendor/github.com/ghodss/yaml:go_default_library",

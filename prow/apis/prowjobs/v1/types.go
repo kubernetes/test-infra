@@ -21,6 +21,7 @@ import (
 	"strings"
 	"time"
 
+	buildv1alpha1 "github.com/knative/build/pkg/apis/build/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -67,6 +68,8 @@ const (
 	KubernetesAgent ProwJobAgent = "kubernetes"
 	// JenkinsAgent means prow will schedule the job on jenkins.
 	JenkinsAgent = "jenkins"
+	// BuildAgent means prow will schedule the job via a build-crd resource.
+	BuildAgent = "build-crd"
 )
 
 const (
@@ -126,6 +129,11 @@ type ProwJobSpec struct {
 	// PodSpec provides the basis for running the test under
 	// a Kubernetes agent
 	PodSpec *corev1.PodSpec `json:"pod_spec,omitempty"`
+
+	// BuildSpec provides the basis for running the test as
+	// a build-crd resource
+	// https://github.com/knative/build
+	BuildSpec *buildv1alpha1.BuildSpec `json:"build_spec,omitempty"`
 
 	// DecorationConfig holds configuration options for
 	// decorating PodSpecs that users provide

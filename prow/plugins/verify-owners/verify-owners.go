@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
+	"regexp"
+	"strconv"
 
 	"github.com/sirupsen/logrus"
 
@@ -28,6 +30,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/plugins/golint"
 	"k8s.io/test-infra/prow/repoowners"
 )
 
@@ -70,10 +73,15 @@ func handlePullRequest(pc plugins.PluginClient, pre github.PullRequestEvent) err
 	return handle(pc.GitHubClient, pc.GitClient, pc.Logger, &pre, pc.PluginConfig.Owners.LabelsBlackList)
 }
 
+type messageWithLine struct {
+	line    int
+	message string
+}
+
 func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.PullRequestEvent, labelsBlackList []string) error {
 	org := pre.Repo.Owner.Login
 	repo := pre.Repo.Name
-	wrongOwnersFiles := map[string]string{}
+	wrongOwnersFiles := map[string]messageWithLine{}
 
 	// Get changes.
 	changes, err := ghc.GetPullRequestChanges(org, repo, pre.Number)
@@ -82,10 +90,10 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 	}
 
 	// List modified OWNERS files.
-	var modifiedOwnersFiles []string
+	var modifiedOwnersFiles []github.PullRequestChange
 	for _, change := range changes {
 		if filepath.Base(change.Filename) == ownersFileName {
-			modifiedOwnersFiles = append(modifiedOwnersFiles, change.Filename)
+			modifiedOwnersFiles = append(modifiedOwnersFiles, change)
 		}
 	}
 	if len(modifiedOwnersFiles) == 0 {
@@ -107,9 +115,9 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 	}
 
 	// Check each OWNERS file.
-	for _, f := range modifiedOwnersFiles {
+	for _, c := range modifiedOwnersFiles {
 		// Try to load OWNERS file.
-		path := filepath.Join(r.Dir, f)
+		path := filepath.Join(r.Dir, c.Filename)
 		b, err := ioutil.ReadFile(path)
 		if err != nil {
 			log.WithError(err).Errorf("Failed to read %s.", path)
@@ -117,11 +125,30 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 		}
 		var approvers []string
 		var labels []string
+		// by default we bind errors to line 1
+		lineNumber := 1
 		simple, err := repoowners.ParseSimpleConfig(b)
 		if err != nil || simple.Empty() {
 			full, err := repoowners.ParseFullConfig(b)
 			if err != nil {
-				wrongOwnersFiles[f] = fmt.Sprintf("Cannot parse file: %v.", err)
+				lineNumberRe, _ := regexp.Compile(`line (\d+)`)
+				lineNumberMatches := lineNumberRe.FindStringSubmatch(err.Error())
+				// try to find a line number for the error
+				if len(lineNumberMatches) > 1 {
+					// we're sure it will convert as it passed the regexp already
+					absoluteLineNumber, _ := strconv.Atoi(lineNumberMatches[1])
+					// we need to convert it to a line number relative to the patch
+					al, err := golint.AddedLines(c.Patch)
+					if err != nil {
+						log.WithError(err).Errorf("Failed to compute added lines in %s: %v", c.Filename, err)
+					} else if val, ok := al[absoluteLineNumber]; ok {
+						lineNumber = val
+					}
+				}
+				wrongOwnersFiles[c.Filename] = messageWithLine{
+					lineNumber,
+					fmt.Sprintf("Cannot parse file: %v.", err),
+				}
 				continue
 			} else {
 				// it's a FullConfig
@@ -137,12 +164,18 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 		}
 		// Check labels against blacklist
 		if sets.NewString(labels...).HasAny(labelsBlackList...) {
-			wrongOwnersFiles[f] = fmt.Sprintf("File contains blacklisted labels: %s.", sets.NewString(labels...).Intersection(sets.NewString(labelsBlackList...)).List())
+			wrongOwnersFiles[c.Filename] = messageWithLine{
+				lineNumber,
+				fmt.Sprintf("File contains blacklisted labels: %s.", sets.NewString(labels...).Intersection(sets.NewString(labelsBlackList...)).List()),
+			}
 			continue
 		}
 		// Check approvers isn't empty
-		if filepath.Dir(f) == "." && len(approvers) == 0 {
-			wrongOwnersFiles[f] = fmt.Sprintf("No approvers defined in this root directory %s file.", ownersFileName)
+		if filepath.Dir(c.Filename) == "." && len(approvers) == 0 {
+			wrongOwnersFiles[c.Filename] = messageWithLine{
+				lineNumber,
+				fmt.Sprintf("No approvers defined in this root directory %s file.", ownersFileName),
+			}
 			continue
 		}
 	}
@@ -157,12 +190,11 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 		}
 		log.Debugf("Creating a review for %d %s file%s.", len(wrongOwnersFiles), ownersFileName, s)
 		var comments []github.DraftReviewComment
-		for errFile, errMsg := range wrongOwnersFiles {
-			resp := errMsg
+		for errFile, err := range wrongOwnersFiles {
 			comments = append(comments, github.DraftReviewComment{
 				Path:     errFile,
-				Body:     resp,
-				Position: 1,
+				Body:     err.message,
+				Position: err.line,
 			})
 		}
 		// Make the review body.

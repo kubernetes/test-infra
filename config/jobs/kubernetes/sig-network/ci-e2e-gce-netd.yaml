@@ -367,7 +367,7 @@ presets:
                 # container programs network policy and routes on each
                 # host.
                 - name: calico-node
-                  image: gcr.io/projectcalico-org/node:v2.6.7
+                  image: gcr.io/projectcalico-org/node:v3.1.3
                   env:
                     - name: CALICO_DISABLE_FILE_LOGGING
                       value: "true"
@@ -435,7 +435,7 @@ presets:
                 # This container installs the Calico CNI binaries
                 # and CNI network config file on each node.
                 - name: install-cni
-                  image: gcr.io/projectcalico-org/cni:v1.11.2
+                  image: gcr.io/projectcalico-org/cni:v3.1.3
                   command: ["/install-cni.sh"]
                   env:
                     - name: CNI_CONF_NAME
@@ -448,6 +448,7 @@ presets:
                           "plugins": [
                             {
                               "type": "calico",
+                              "mtu": 1460,
                               "log_level": "debug",
                               "datastore_type": "kubernetes",
                               "nodename": "__KUBERNETES_NODE_NAME__",
@@ -511,6 +512,101 @@ presets:
                   operator: Exists
                 - key: CriticalAddonsOnly
                   operator: Exists
+  - name: KUBE_CUSTOM_TYPHA_DEPLOYMENT_YAML
+    value: |2+
+        apiVersion: extensions/v1beta1
+        kind: Deployment
+        metadata:
+          name: calico-typha
+          namespace: kube-system
+          labels:
+            kubernetes.io/cluster-service: "true"
+            addonmanager.kubernetes.io/mode: Reconcile
+            k8s-app: calico-typha
+        spec:
+          revisionHistoryLimit: 2
+          template:
+            metadata:
+              labels:
+                k8s-app: calico-typha
+              annotations:
+                scheduler.alpha.kubernetes.io/critical-pod: ''
+            spec:
+              priorityClassName: system-cluster-critical
+              tolerations:
+              - key: CriticalAddonsOnly
+                operator: Exists
+              hostNetwork: true
+              serviceAccountName: calico
+              containers:
+              - image: gcr.io/projectcalico-org/typha:v0.7.4
+                name: calico-typha
+                ports:
+                - containerPort: 5473
+                  name: calico-typha
+                  protocol: TCP
+                env:
+                  - name: TYPHA_LOGFILEPATH
+                    value: "none"
+                  - name: TYPHA_LOGSEVERITYSYS
+                    value: "none"
+                  - name: TYPHA_LOGSEVERITYSCREEN
+                    value: "info"
+                  - name: TYPHA_PROMETHEUSMETRICSENABLED
+                    value: "true"
+                  - name: TYPHA_CONNECTIONREBALANCINGMODE
+                    value: "kubernetes"
+                  - name: TYPHA_REPORTINGINTERVALSECS
+                    value: "0"
+                  - name: TYPHA_PROMETHEUSMETRICSPORT
+                    value: "9093"
+                  - name: TYPHA_DATASTORETYPE
+                    value: "kubernetes"
+                  - name: TYPHA_MAXCONNECTIONSLOWERLIMIT
+                    value: "1"
+                  - name: TYPHA_HEALTHENABLED
+                    value: "true"
+                volumeMounts:
+                - mountPath: /etc/calico
+                  name: etc-calico
+                  readOnly: true
+                livenessProbe:
+                  httpGet:
+                    path: /liveness
+                    port: 9098
+                  periodSeconds: 30
+                  initialDelaySeconds: 30
+                readinessProbe:
+                  httpGet:
+                    path: /readiness
+                    port: 9098
+                  periodSeconds: 10
+              volumes:
+              - name: etc-calico
+                hostPath:
+                  path: /etc/calico
+
+- labels:
+    preset-kubernetes-e2e-containerd: "true"
+  env:
+  - name: LOG_DUMP_SYSTEMD_SERVICES
+    value: containerd containerd-installation
+  - name: KUBE_MASTER_EXTRA_METADATA
+    value: user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/env
+  - name: KUBE_NODE_EXTRA_METADATA
+    value: user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/env
+  - name: KUBE_CONTAINER_RUNTIME
+    value: remote
+  - name: KUBE_CONTAINER_RUNTIME_ENDPOINT
+    value: unix:///run/containerd/containerd.sock
+  - name: KUBE_CONTAINER_RUNTIME_NAME
+    value: containerd
+  - name: KUBE_LOAD_IMAGE_COMMAND
+    value: /home/containerd/usr/local/bin/ctr cri load
+  - name: NON_MASQUERADE_CIDR
+    value: 0.0.0.0/0
+  - name: KUBELET_TEST_ARGS
+    value: --runtime-cgroups=/system.slice/containerd.service
 
 periodics:
 - interval: 2h
@@ -525,16 +621,17 @@ periodics:
     - args:
       - "--timeout=340"
       - "--repo=k8s.io/kubernetes=release-1.11"
+      - "--repo=k8s.io/examples=master"
       - --scenario=kubernetes_e2e
       - --
-      - --extract=ci/latest
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+39d0b71432c167
       - --check-leaked-resources
       - --gcp-node-image=gci
       - --gcp-zone=asia-southeast1-a
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Feature:Networking-IPv6\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
   agent: kubernetes
@@ -547,17 +644,17 @@ periodics:
     containers:
     - args:
       - "--timeout=340"
-      - --bare
+      - "--repo=k8s.io/examples=master"
       - --scenario=kubernetes_e2e
       - --
-      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.18+43e1b198cd5c2f
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+39d0b71432c167
       - --check-leaked-resources
       - --gcp-node-image=gci
       - --gcp-zone=asia-southeast1-a
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:NetworkPolicy\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
       env:
       - name: NETWORK_POLICY_PROVIDER
         value: calico
@@ -574,17 +671,18 @@ periodics:
     - args:
       - "--timeout=340"
       - "--repo=k8s.io/kubernetes=release-1.11"
+      - "--repo=k8s.io/examples=master"
       - --scenario=kubernetes_e2e
       - --
-      - --extract=ci/latest
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+39d0b71432c167
       - --check-leaked-resources
       - --image-family=ubuntu-gke-1604-lts
       - --image-project=ubuntu-os-gke-cloud
       - --gcp-zone=asia-southeast1-a
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Feature:Networking-IPv6\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
   agent: kubernetes
@@ -598,17 +696,46 @@ periodics:
     - args:
       - "--timeout=340"
       - --scenario=kubernetes_e2e
-      - --bare
+      - "--repo=k8s.io/examples=master"
       - --
-      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.18+43e1b198cd5c2f
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+39d0b71432c167
       - --check-leaked-resources
       - --image-family=ubuntu-gke-1604-lts
       - --image-project=ubuntu-os-gke-cloud
       - --gcp-zone=asia-southeast1-a
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:NetworkPolicy\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180716-9145034c9-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
       env:
       - name: NETWORK_POLICY_PROVIDER
         value: calico
+
+- interval: 2h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-containerd-gce-netd
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-kubernetes-e2e-enable-netd: "true"
+    preset-kubernetes-e2e-containerd: "true"
+  spec:
+    containers:
+    - args:
+      - "--timeout=340"
+      - --repo=github.com/containerd/cri=master
+      - "--repo=k8s.io/examples=master"
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
+      - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+39d0b71432c167
+      - --gcp-node-image=gci
+      - --gcp-nodes=4
+      - --gcp-zone=us-central1-f
+      - --ginkgo-parallel=30
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\] --minStartupPods=8
+      - --timeout=120m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master

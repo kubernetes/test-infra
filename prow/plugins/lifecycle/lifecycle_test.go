@@ -169,6 +169,13 @@ func TestAddLifecycleLabels(t *testing.T) {
 			labels:  []string{lifecycleFrozenLabel},
 		},
 		{
+			name:    "add stale, have active -> stale added, remove active",
+			body:    "/lifecycle stale",
+			added:   []string{lifecycleStaleLabel},
+			removed: []string{lifecycleActiveLabel},
+			labels:  []string{lifecycleActiveLabel},
+		},
+		{
 			name:    "add frozen, have rotten -> frozen added, rotten removed",
 			body:    "/lifecycle frozen",
 			added:   []string{lifecycleFrozenLabel},

@@ -17,11 +17,9 @@ limitations under the License.
 package main
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"flag"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -109,41 +107,39 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
-	webhookSecretRaw, err := ioutil.ReadFile(o.webhookSecretFile)
-	if err != nil {
-		logrus.WithError(err).Fatal("Could not read webhook secret file.")
-	}
-	webhookSecret := bytes.TrimSpace(webhookSecretRaw)
-
-	oauthSecretRaw, err := ioutil.ReadFile(o.githubTokenFile)
-	if err != nil {
-		logrus.WithError(err).Fatal("Could not read oauth secret file.")
-	}
-	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
-
-	var teamToken string
-	if o.slackTokenFile != "" {
-		teamTokenRaw, err := ioutil.ReadFile(o.slackTokenFile)
-		if err != nil {
-			logrus.WithError(err).Fatal("Could not read slack token file.")
-		}
-		teamToken = string(bytes.TrimSpace(teamTokenRaw))
-	}
-
+	var err error
 	for _, ep := range o.githubEndpoint.Strings() {
-		_, err = url.Parse(ep)
+		_, err = url.ParseRequestURI(ep)
 		if err != nil {
 			logrus.WithError(err).Fatalf("Invalid --endpoint URL %q.", ep)
 		}
 	}
 
+	var tokens []string
+
+	// Append the path of hmac and github secrets.
+	tokens = append(tokens, o.githubTokenFile)
+	tokens = append(tokens, o.webhookSecretFile)
+
+	// This is necessary since slack token is optional.
+	if o.slackTokenFile != "" {
+		tokens = append(tokens, o.slackTokenFile)
+	}
+
+	secretAgent := &config.SecretAgent{}
+	if err := secretAgent.Start(tokens); err != nil {
+		logrus.WithError(err).Fatal("Error starting secrets agent.")
+	}
+
 	var githubClient *github.Client
 	var kubeClient *kube.Client
 	if o.dryRun {
-		githubClient = github.NewDryRunClient(oauthSecret, o.githubEndpoint.Strings()...)
+		githubClient = github.NewDryRunClient(
+			secretAgent.GetTokenGenerator(o.githubTokenFile), o.githubEndpoint.Strings()...)
 		kubeClient = kube.NewFakeClient(o.deckURL)
 	} else {
-		githubClient = github.NewClient(oauthSecret, o.githubEndpoint.Strings()...)
+		githubClient = github.NewClient(
+			secretAgent.GetTokenGenerator(o.githubTokenFile), o.githubEndpoint.Strings()...)
 		if o.cluster == "" {
 			kubeClient, err = kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 			if err != nil {
@@ -158,9 +154,9 @@ func main() {
 	}
 
 	var slackClient *slack.Client
-	if !o.dryRun && teamToken != "" {
+	if !o.dryRun && string(secretAgent.GetSecret(o.slackTokenFile)) != "" {
 		logrus.Info("Using real slack client.")
-		slackClient = slack.NewClient(teamToken)
+		slackClient = slack.NewClient(secretAgent.GetTokenGenerator(o.slackTokenFile))
 	}
 	if slackClient == nil {
 		logrus.Info("Using fake slack client.")
@@ -177,7 +173,7 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting bot name.")
 	}
-	gitClient.SetCredentials(botName, oauthSecret)
+	gitClient.SetCredentials(botName, secretAgent.GetTokenGenerator(o.githubTokenFile))
 
 	pluginAgent := &plugins.PluginAgent{}
 
@@ -208,10 +204,10 @@ func main() {
 	}
 
 	server := &hook.Server{
-		HMACSecret:  webhookSecret,
-		ConfigAgent: configAgent,
-		Plugins:     pluginAgent,
-		Metrics:     promMetrics,
+		ConfigAgent:    configAgent,
+		Plugins:        pluginAgent,
+		Metrics:        promMetrics,
+		TokenGenerator: secretAgent.GetTokenGenerator(o.webhookSecretFile),
 	}
 	defer server.GracefulShutdown()
 

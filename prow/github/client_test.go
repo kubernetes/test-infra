@@ -48,8 +48,13 @@ func (tt *testTime) Until(t time.Time) time.Duration {
 }
 
 func getClient(url string) *Client {
+	getToken := func() []byte {
+		return []byte("")
+	}
+
 	return &Client{
-		time: &standardTime{},
+		time:     &standardTime{},
+		getToken: getToken,
 		client: &http.Client{
 			Transport: &http.Transport{
 				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},

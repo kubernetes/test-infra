@@ -77,31 +77,31 @@ func (c *ghc) GetPullRequestChanges(_, _ string, _ int) ([]github.PullRequestCha
 
 func TestSizesOrDefault(t *testing.T) {
 	for _, c := range []struct {
-		input    plugins.Sizes
-		expected plugins.Sizes
+		input    *plugins.Size
+		expected plugins.Size
 	}{
 		{
-			input:    defaultSizes,
+			input:    &defaultSizes,
 			expected: defaultSizes,
 		},
 		{
-			input: plugins.Sizes{
-				SLines:   12,
-				MLines:   15,
-				LLines:   17,
-				XlLines:  21,
-				XxlLines: 51,
+			input: &plugins.Size{
+				S:   12,
+				M:   15,
+				L:   17,
+				Xl:  21,
+				Xxl: 51,
 			},
-			expected: plugins.Sizes{
-				SLines:   12,
-				MLines:   15,
-				LLines:   17,
-				XlLines:  21,
-				XxlLines: 51,
+			expected: plugins.Size{
+				S:   12,
+				M:   15,
+				L:   17,
+				Xl:  21,
+				Xxl: 51,
 			},
 		},
 		{
-			input:    plugins.Sizes{},
+			input:    nil,
 			expected: defaultSizes,
 		},
 	} {
@@ -117,7 +117,7 @@ func TestHandlePR(t *testing.T) {
 		client      *ghc
 		event       github.PullRequestEvent
 		err         error
-		sizes       plugins.Sizes
+		sizes       plugins.Size
 		finalLabels []github.Label
 	}{
 		{
@@ -495,6 +495,55 @@ func TestHandlePR(t *testing.T) {
 				{Name: "size/M"},
 			},
 			sizes: defaultSizes,
+		},
+		{
+			name: "different label constraints",
+			client: &ghc{
+				labels:     map[github.Label]bool{},
+				getFileErr: &github.FileNotFound{},
+				prChanges: []github.PullRequestChange{
+					{
+						SHA:       "abcd",
+						Filename:  "foobar",
+						Additions: 10,
+						Deletions: 10,
+						Changes:   20,
+					},
+					{
+						SHA:       "abcd",
+						Filename:  "barfoo",
+						Additions: 3,
+						Deletions: 4,
+						Changes:   7,
+					},
+				},
+			},
+			event: github.PullRequestEvent{
+				Action: github.PullRequestActionOpened,
+				Number: 101,
+				PullRequest: github.PullRequest{
+					Number: 101,
+					Base: github.PullRequestBranch{
+						SHA: "abcd",
+						Repo: github.Repo{
+							Owner: github.User{
+								Login: "kubernetes",
+							},
+							Name: "kubernetes",
+						},
+					},
+				},
+			},
+			finalLabels: []github.Label{
+				{Name: "size/XXL"},
+			},
+			sizes: plugins.Size{
+				S:   0,
+				M:   1,
+				L:   2,
+				Xl:  3,
+				Xxl: 4,
+			},
 		},
 	}
 
