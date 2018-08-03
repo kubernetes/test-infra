@@ -5373,16 +5373,21 @@ dashboards:
 
 - name: sig-node-cri
   dashboard_tab:
-  - name: sig-node-docker-node-conformance
+  - name: docker-node-conformance
     test_group_name: ci-docker-node-conformance
-  - name: sig-node-docker-node-features
+  - name: docker-node-features
     test_group_name: ci-docker-node-features
-  - name: sig-node-docker-node-legacy
+  - name: docker-node-legacy
     test_group_name: ci-docker-node-legacy
-  - name: sig-node-containerd-node-conformance
+  - name: containerd-node-conformance
     test_group_name: ci-containerd-node-e2e
-  - name: sig-node-containerd-node-features
+  - name: containerd-node-features
     test_group_name: ci-containerd-node-e2e-features
+
+- name: sig-node-cri-1.11
+  dashboard_tab:
+  - name: docker-node-conformance-1.11
+    test_group_name: ci-kubernetes-node-kubelet-beta
 
 - name: sig-node-cadvisor
   dashboard_tab:
@@ -6615,6 +6620,7 @@ dashboard_groups:
   - sig-node-ppc64le
   - sig-node-cri-o
   - sig-node-cri
+  - sig-node-cri-1.11
 
 - name: sig-release
   dashboard_names:
