@@ -122,6 +122,7 @@ filegroup(
         "//prow/report:all-srcs",
         "//prow/sidecar:all-srcs",
         "//prow/slack:all-srcs",
+        "//prow/spyglass:all-srcs",
         "//prow/test:all-srcs",
         "//prow/tide:all-srcs",
     ],

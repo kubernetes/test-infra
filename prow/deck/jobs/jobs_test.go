@@ -49,6 +49,62 @@ func (f fpkc) GetContainerLog(pod, container string) ([]byte, error) {
 	return nil, fmt.Errorf("pod not found: %s", pod)
 }
 
+func (f fpkc) GetLogTail(pod, container string, n int64) ([]byte, error) {
+	log, err := f.GetContainerLog(pod, container)
+	if err != nil {
+		return nil, err
+	}
+	logLen := int64(len(log))
+	if n >= logLen {
+		return log, nil
+	}
+	return log[logLen-n:], nil
+}
+
+func TestGetLogTail(t *testing.T) {
+	kc := fkc{
+		kube.ProwJob{
+			Spec: kube.ProwJobSpec{
+				Agent: kube.KubernetesAgent,
+				Job:   "job",
+			},
+			Status: kube.ProwJobStatus{
+				PodName: "wowowow",
+				BuildID: "123",
+			},
+		},
+		kube.ProwJob{
+			Spec: kube.ProwJobSpec{
+				Agent:   kube.KubernetesAgent,
+				Job:     "jib",
+				Cluster: "trusted",
+			},
+			Status: kube.ProwJobStatus{
+				PodName: "powowow",
+				BuildID: "123",
+			},
+		},
+	}
+	ja := &JobAgent{
+		kc:   kc,
+		pkcs: map[string]PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")},
+	}
+	if err := ja.update(); err != nil {
+		t.Fatalf("Updating: %v", err)
+	}
+	if res, err := ja.GetJobLogTail("job", "123", 5); err != nil {
+		t.Fatalf("Failed to get log: %v", err)
+	} else if got, expect := string(res), "sterA"; got != expect {
+		t.Errorf("Unexpected result getting logs tail for job 'job'. Expected %q, but got %q.", expect, got)
+	}
+
+	if res, err := ja.GetJobLogTail("jib", "123", 40); err != nil {
+		t.Fatalf("Failed to get log: %v", err)
+	} else if got, expect := string(res), "clusterB"; got != expect {
+		t.Errorf("Unexpected result getting logs tail for job 'job'. Expected %q, but got %q.", expect, got)
+	}
+}
+
 func TestGetLog(t *testing.T) {
 	kc := fkc{
 		kube.ProwJob{

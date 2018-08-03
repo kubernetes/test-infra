@@ -180,13 +180,18 @@ func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRe
 		}
 
 		// Yes, update the configmap with the contents of this file
-		key := cm.Key
-		if key == "" {
-			key = path.Base(change.Filename)
-		}
 		id := configMapID{name: cm.Name, namespace: cm.Namespace}
 		if _, ok := toUpdate[id]; !ok {
 			toUpdate[id] = map[string]string{}
+		}
+		key := cm.Key
+		if key == "" {
+			key = path.Base(change.Filename)
+			// if the key changed, we need to remove the old key
+			if change.Status == "renamed" {
+				oldKey := path.Base(change.PreviousFilename)
+				toUpdate[id][oldKey] = ""
+			}
 		}
 		if change.Status == "removed" {
 			toUpdate[id][key] = ""

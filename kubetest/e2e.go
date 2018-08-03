@@ -25,6 +25,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"k8s.io/test-infra/kubetest/e2e"
@@ -234,10 +235,14 @@ func run(deploy deployer, o options) error {
 
 	// TODO(bentheelder): consider remapping charts, etc to testCmd
 
+	var kubemarkWg sync.WaitGroup
+	var kubemarkDownErr error
 	if o.kubemark {
 		errs = util.AppendError(errs, control.XMLWrap(&suite, "Kubemark Overall", func() error {
 			return kubemarkTest(testArgs, dump, o, deploy)
 		}))
+		kubemarkWg.Add(1)
+		go kubemarkDown(&kubemarkDownErr, &kubemarkWg)
 	}
 
 	if o.charts {
@@ -290,6 +295,10 @@ func run(deploy deployer, o options) error {
 			return nil
 		}))
 	}
+
+	// Wait for kubemarkDown step to finish before going further.
+	kubemarkWg.Wait()
+	errs = util.AppendError(errs, kubemarkDownErr)
 
 	// Save the state if we upped a new cluster without downing it
 	// or we are turning up federated clusters without turning up
@@ -589,15 +598,6 @@ func kubemarkTest(testArgs []string, dump string, o options, deploy deployer) er
 	}); err != nil {
 		return err
 	}
-	// If we tried to bring the Kubemark cluster up, make a courtesy
-	// attempt to bring it down so we're not leaving resources around.
-	//
-	// TODO: We should try calling stop-kubemark exactly once. Though to
-	// stop the leaking resources for now, we want to be on the safe side
-	// and call it explicitly in defer if the other one is not called.
-	defer control.XMLWrap(&suite, "Kubemark TearDown (Deferred)", func() error {
-		return control.FinishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
-	})
 
 	if err := control.XMLWrap(&suite, "IsUp", deploy.IsUp); err != nil {
 		return err
@@ -681,14 +681,17 @@ func kubemarkTest(testArgs []string, dump string, o options, deploy deployer) er
 		return control.FinishRunning(exec.Command("./test/kubemark/master-log-dump.sh", dump))
 	})
 
-	// Stop the kubemark cluster.
-	if err := control.XMLWrap(&suite, "Kubemark TearDown", func() error {
-		return control.FinishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
-	}); err != nil {
-		return err
-	}
-
+	// 'Stop kubemark cluster' step has now been moved outside this function
+	// to make it asynchronous with other steps (to speed test execution).
 	return nil
+}
+
+// Brings down the kubemark cluster.
+func kubemarkDown(err *error, wg *sync.WaitGroup) {
+	defer wg.Done()
+	*err = control.XMLWrap(&suite, "Kubemark TearDown", func() error {
+		return control.FinishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
+	})
 }
 
 // Runs tests in the kubernetes_skew directory, appending --report-prefix flag to the run

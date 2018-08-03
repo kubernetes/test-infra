@@ -23,16 +23,20 @@ import collections
 import json
 import os
 import re
-import sys
 
-import config_sort
 import yaml
 
 # pylint: disable=too-many-public-methods, too-many-branches, too-many-locals, too-many-statements
 
+ORIG_CWD = os.getcwd()
+
+def test_infra(*paths):
+    """Return path relative to root of test-infra repo."""
+    return os.path.join(ORIG_CWD, os.path.dirname(__file__), '..', *paths)
+
 def get_required_jobs():
     required_jobs = set()
-    configs_dir = config_sort.test_infra('mungegithub', 'submit-queue', 'deployment')
+    configs_dir = test_infra('mungegithub', 'submit-queue', 'deployment')
     for root, _, files in os.walk(configs_dir):
         for file_name in files:
             if file_name == 'configmap.yaml':
@@ -50,7 +54,6 @@ class JobTest(unittest.TestCase):
         'BUILD.bazel',  # For bazel
         'config.json',  # For --json mode
         'validOwners.json', # Contains a list of current sigs; sigs are allowed to own jobs
-        'config_sort.py', # Tool script to sort config.json
         'config_test.py', # Script for testing config.json and Prow config.
         'env_gc.py', # Tool script to garbage collect unused .env files.
         'move_extract.py',
@@ -67,36 +70,10 @@ class JobTest(unittest.TestCase):
     @property
     def jobs(self):
         """[(job, job_path)] sequence"""
-        for path, _, filenames in os.walk(config_sort.test_infra('jobs')):
-            print >>sys.stderr, path
-            if 'e2e_node' in path:
-                # Node e2e image configs, ignore them
-                continue
+        for path, _, filenames in os.walk(test_infra('jobs/env')):
             for job in [f for f in filenames if f not in self.excludes]:
                 job_path = os.path.join(path, job)
                 yield job, job_path
-
-    def test_config_is_sorted(self):
-        """Test jobs/config.json, prow/config.yaml and boskos/resources.yaml are sorted."""
-        with open(config_sort.test_infra('jobs/config.json')) as fp:
-            original = fp.read()
-            expect = config_sort.sorted_job_config().getvalue()
-            if original != expect:
-                self.fail('jobs/config.json is not sorted, please run '
-                          '`bazel run //jobs:config_sort`')
-        with open(config_sort.test_infra('prow/config.yaml')) as fp:
-            original = fp.read()
-            expect = config_sort.sorted_prow_config(
-                config_sort.test_infra('prow/config.yaml')).getvalue()
-            if original != expect:
-                self.fail('prow/config.yaml is not sorted, please run '
-                          '`bazel run //jobs:config_sort`')
-        with open(config_sort.test_infra('boskos/resources.yaml')) as fp:
-            original = fp.read()
-            expect = config_sort.sorted_boskos_config().getvalue()
-            if original != expect:
-                self.fail('boskos/resources.yaml is not sorted, please run '
-                          '`bazel run //jobs:config_sort`')
 
     # TODO(krzyzacy): disabled as we currently have multiple source of truth.
     # We also should migrate shared env files into presets.
@@ -186,7 +163,7 @@ class JobTest(unittest.TestCase):
     def test_valid_timeout(self):
         """All e2e jobs has 20min or more container timeout than kubetest timeout."""
         bad_jobs = set()
-        with open(config_sort.test_infra('jobs/config.json')) as fp:
+        with open(test_infra('jobs/config.json')) as fp:
             config = json.loads(fp.read())
 
         for job in config:
@@ -230,8 +207,8 @@ class JobTest(unittest.TestCase):
         ]
 
         self.load_prow_yaml(self.prow_config)
-        config = config_sort.test_infra('jobs/config.json')
-        owners = config_sort.test_infra('jobs/validOwners.json')
+        config = test_infra('jobs/config.json')
+        owners = test_infra('jobs/validOwners.json')
         with open(config) as fp, open(owners) as ownfp:
             config = json.loads(fp.read())
             valid_owners = json.loads(ownfp.read())
@@ -251,7 +228,7 @@ class JobTest(unittest.TestCase):
 
                 # env assertions
                 self.assertTrue('scenario' in config[job], job)
-                scenario = config_sort.test_infra('scenarios/%s.py' % config[job]['scenario'])
+                scenario = test_infra('scenarios/%s.py' % config[job]['scenario'])
                 self.assertTrue(os.path.isfile(scenario), job)
                 self.assertTrue(os.access(scenario, os.X_OK|os.R_OK), job)
                 args = config[job].get('args', [])
@@ -269,7 +246,7 @@ class JobTest(unittest.TestCase):
                     if match:
                         env_path = match.group(1)
                         self.assertTrue(env_path.startswith('jobs/'), env_path)
-                        path = config_sort.test_infra('%s.env' % env_path)
+                        path = test_infra('%s.env' % env_path)
                         self.assertTrue(
                             os.path.isfile(path),
                             '%s does not exist for %s' % (path, job))
@@ -415,7 +392,6 @@ class JobTest(unittest.TestCase):
             # Jobs should point to a real, executable file
             # Note: it is easy to forget to chmod +x
             self.assertTrue(os.path.isfile(job_path), job_path)
-            self.assertFalse(os.path.islink(job_path), job_path)
             self.assertTrue(os.access(job_path, os.R_OK), job_path)
 
     def test_all_project_are_unique(self):
@@ -590,14 +566,14 @@ class JobTest(unittest.TestCase):
         # pylint: enable=line-too-long
         projects = collections.defaultdict(set)
         boskos = []
-        with open(config_sort.test_infra('boskos/resources.yaml')) as fp:
+        with open(test_infra('boskos/resources.yaml')) as fp:
             boskos_config = yaml.safe_load(fp)
             for rtype in boskos_config['resources']:
                 if 'project' in rtype['type']:
                     for name in rtype['names']:
                         boskos.append(name)
 
-        with open(config_sort.test_infra('jobs/config.json')) as fp:
+        with open(test_infra('jobs/config.json')) as fp:
             job_config = json.load(fp)
             for job in job_config:
                 project = ''
