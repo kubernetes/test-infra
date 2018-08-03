@@ -1,0 +1,320 @@
+{
+  "sender": {
+    "avatar_url": "https://avatars1.githubusercontent.com/u/5442475?v=4", 
+    "html_url": "https://github.com/luxas", 
+    "node_id": "MDQ6VXNlcjU0NDI0NzU=", 
+    "gravatar_id": "", 
+    "site_admin": false, 
+    "login": "luxas", 
+    "type": "User", 
+    "id": 5442475
+  }, 
+  "repository": {
+    "stargazers_count": 39280, 
+    "mirror_url": null, 
+    "updated_at": "2018-07-27T16:53:46Z", 
+    "private": false, 
+    "has_wiki": false, 
+    "full_name": "kubernetes/kubernetes", 
+    "owner": {
+      "avatar_url": "https://avatars2.githubusercontent.com/u/13629408?v=4", 
+      "html_url": "https://github.com/kubernetes", 
+      "node_id": "MDEyOk9yZ2FuaXphdGlvbjEzNjI5NDA4", 
+      "gravatar_id": "", 
+      "site_admin": false, 
+      "login": "kubernetes", 
+      "type": "Organization", 
+      "id": 13629408
+    }, 
+    "id": 20580498, 
+    "description": "Production-Grade Container Scheduling and Management", 
+    "archived": false, 
+    "has_pages": false, 
+    "open_issues_count": 3190, 
+    "has_projects": true, 
+    "clone_url": "https://github.com/kubernetes/kubernetes.git", 
+    "watchers_count": 39280, 
+    "size": 794946, 
+    "homepage": "http://kubernetes.io", 
+    "fork": false, 
+    "watchers": 39280, 
+    "html_url": "https://github.com/kubernetes/kubernetes", 
+    "forks": 13699, 
+    "open_issues": 3190, 
+    "node_id": "MDEwOlJlcG9zaXRvcnkyMDU4MDQ5OA==", 
+    "git_url": "git://github.com/kubernetes/kubernetes.git", 
+    "svn_url": "https://github.com/kubernetes/kubernetes", 
+    "has_issues": true, 
+    "ssh_url": "git@github.com:kubernetes/kubernetes.git", 
+    "has_downloads": true, 
+    "license": {
+      "spdx_id": "Apache-2.0", 
+      "node_id": "MDc6TGljZW5zZTI=", 
+      "name": "Apache License 2.0", 
+      "key": "apache-2.0"
+    }, 
+    "name": "kubernetes", 
+    "language": "Go", 
+    "created_at": "2014-06-06T22:56:04Z", 
+    "pushed_at": "2018-07-27T16:56:47Z", 
+    "forks_count": 13699, 
+    "default_branch": "master"
+  }, 
+  "review": {
+    "body": "This LGTM now\r\nWhat I came to think about now is, do we actually support building these images _on the non-amd64 platform_ or do we instead crossbuild and publish?\r\nIf we go with the \"crossbuild and publish\" approach (which I think is in the end is kinda okay), we can just use the `golang:1.9` image as-is for the build.", 
+    "commit_id": "90680e35391e777b5d1e49ad0c9dd7c4946bb459", 
+    "submitted_at": "2018-07-27T17:01:20Z", 
+    "author_association": "MEMBER", 
+    "html_url": "https://github.com/kubernetes/kubernetes/pull/66686#pullrequestreview-141192367", 
+    "state": "approved", 
+    "node_id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MTQxMTkyMzY3", 
+    "_links": {
+      "html": {
+        "href": "https://github.com/kubernetes/kubernetes/pull/66686#pullrequestreview-141192367"
+      }, 
+      "pull_request": {
+        "href": "https://api.github.com/repos/kubernetes/kubernetes/pulls/66686"
+      }
+    }, 
+    "user": {
+      "avatar_url": "https://avatars1.githubusercontent.com/u/5442475?v=4", 
+      "html_url": "https://github.com/luxas", 
+      "node_id": "MDQ6VXNlcjU0NDI0NzU=", 
+      "gravatar_id": "", 
+      "site_admin": false, 
+      "login": "luxas", 
+      "type": "User", 
+      "id": 5442475
+    }, 
+    "id": 141192367
+  }, 
+  "pull_request": {
+    "merge_commit_sha": "29375fdfddac11ccf9922d7bd49e246efa74d255", 
+    "labels": [
+      {
+        "default": false, 
+        "name": "cncf-cla: yes", 
+        "color": "bfe5bf", 
+        "node_id": "MDU6TGFiZWw0NzczOTcwODY=", 
+        "id": 477397086
+      }, 
+      {
+        "default": false, 
+        "name": "do-not-merge/hold", 
+        "color": "e11d21", 
+        "node_id": "MDU6TGFiZWw2ODc1NjU4MDQ=", 
+        "id": 687565804
+      }, 
+      {
+        "default": false, 
+        "name": "release-note-none", 
+        "color": "c2e0c6", 
+        "node_id": "MDU6TGFiZWwzNDk1MzAyNDk=", 
+        "id": 349530249
+      }, 
+      {
+        "default": false, 
+        "name": "size/M", 
+        "color": "eebb00", 
+        "node_id": "MDU6TGFiZWwyNTM0NTA5MzQ=", 
+        "id": 253450934
+      }
+    ], 
+    "number": 66686, 
+    "assignee": null, 
+    "closed_at": null, 
+    "requested_reviewers": [], 
+    "id": 204248756, 
+    "title": "test image for a release 1.7 based sample-apiserver", 
+    "merged_at": null, 
+    "state": "open", 
+    "_links": {
+      "review_comment": {
+        "href": "https://api.github.com/repos/kubernetes/kubernetes/pulls/comments{/number}"
+      }, 
+      "commits": {
+        "href": "https://api.github.com/repos/kubernetes/kubernetes/pulls/66686/commits"
+      }, 
+      "self": {
+        "href": "https://api.github.com/repos/kubernetes/kubernetes/pulls/66686"
+      }, 
+      "review_comments": {
+        "href": "https://api.github.com/repos/kubernetes/kubernetes/pulls/66686/comments"
+      }, 
+      "html": {
+        "href": "https://github.com/kubernetes/kubernetes/pull/66686"
+      }, 
+      "comments": {
+        "href": "https://api.github.com/repos/kubernetes/kubernetes/issues/66686/comments"
+      }, 
+      "issue": {
+        "href": "https://api.github.com/repos/kubernetes/kubernetes/issues/66686"
+      }, 
+      "statuses": {
+        "href": "https://api.github.com/repos/kubernetes/kubernetes/statuses/90680e35391e777b5d1e49ad0c9dd7c4946bb459"
+      }
+    }, 
+    "diff_url": "https://github.com/kubernetes/kubernetes/pull/66686.diff", 
+    "body": "<!--  Thanks for sending a pull request!  Here are some tips for you:\r\n1. If this is your first time, read our contributor guidelines https://git.k8s.io/community/contributors/guide#your-first-contribution and developer guide https://git.k8s.io/community/contributors/devel/development.md#development-guide\r\n2. If you want *faster* PR reviews, read how: https://git.k8s.io/community/contributors/guide/pull-requests.md#best-practices-for-faster-reviews\r\n3. Follow the instructions for writing a release note: https://git.k8s.io/community/contributors/guide/release-notes.md\r\n4. If the PR is unfinished, see how to mark it: https://git.k8s.io/community/contributors/guide/pull-requests.md#marking-unfinished-pull-requests\r\n-->\r\n\r\n**What this PR does / why we need it**:\r\nIn our e2e test suite we have use an image \"gcr.io/kubernetes-e2e-test-images:k8s-aggregator-sample-apiserver:1.7v2\". We need a way to build a fresh image that can we can use instead of that one. Especially we need one that has a multi-arch fat manifest so e2e tests can be run across multiple architectures.\r\n\r\nThis is especially important since we are in the process of promoting the test in question to the conformance suite - https://github.com/kubernetes/kubernetes/pull/63947\r\n\r\n**Which issue(s) this PR fixes** *(optional, in `fixes #<issue number>(, fixes #<issue_number>, ...)` format, will close the issue(s) when PR gets merged)*:\r\nFixes #\r\n\r\n**Special notes for your reviewer**:\r\n/cc @mkumatag \r\n/cc @ixdy \r\n/cc @luxas \r\n\r\n**Release note**:\r\n<!--  Write your release note:\r\n1. Enter your extended release note in the below block. If the PR requires additional action from users switching to the new release, include the string \"action required\".\r\n2. If no release note is required, just write \"NONE\".\r\n-->\r\n```release-note\r\nNONE\r\n```\r\n", 
+    "head": {
+      "repo": {
+        "stargazers_count": 1, 
+        "mirror_url": null, 
+        "updated_at": "2018-07-27T11:33:41Z", 
+        "private": false, 
+        "has_wiki": true, 
+        "full_name": "dims/kubernetes", 
+        "owner": {
+          "avatar_url": "https://avatars2.githubusercontent.com/u/23304?v=4", 
+          "html_url": "https://github.com/dims", 
+          "node_id": "MDQ6VXNlcjIzMzA0", 
+          "gravatar_id": "", 
+          "site_admin": false, 
+          "login": "dims", 
+          "type": "User", 
+          "id": 23304
+        }, 
+        "id": 58837596, 
+        "description": "Container Cluster Manager from Google", 
+        "archived": false, 
+        "has_pages": false, 
+        "open_issues_count": 0, 
+        "has_projects": true, 
+        "clone_url": "https://github.com/dims/kubernetes.git", 
+        "watchers_count": 1, 
+        "size": 570894, 
+        "homepage": "http://kubernetes.io", 
+        "fork": true, 
+        "watchers": 1, 
+        "html_url": "https://github.com/dims/kubernetes", 
+        "forks": 0, 
+        "open_issues": 0, 
+        "node_id": "MDEwOlJlcG9zaXRvcnk1ODgzNzU5Ng==", 
+        "git_url": "git://github.com/dims/kubernetes.git", 
+        "svn_url": "https://github.com/dims/kubernetes", 
+        "has_issues": false, 
+        "ssh_url": "git@github.com:dims/kubernetes.git", 
+        "has_downloads": true, 
+        "license": {
+          "spdx_id": "Apache-2.0", 
+          "node_id": "MDc6TGljZW5zZTI=", 
+          "name": "Apache License 2.0", 
+          "key": "apache-2.0"
+        }, 
+        "name": "kubernetes", 
+        "language": "Go", 
+        "created_at": "2016-05-15T01:04:18Z", 
+        "pushed_at": "2018-07-27T16:37:17Z", 
+        "forks_count": 0, 
+        "default_branch": "master"
+      }, 
+      "sha": "90680e35391e777b5d1e49ad0c9dd7c4946bb459", 
+      "ref": "test-image-for-a-release-1.7-based-sample-apiserver", 
+      "user": {
+        "avatar_url": "https://avatars2.githubusercontent.com/u/23304?v=4", 
+        "html_url": "https://github.com/dims", 
+        "node_id": "MDQ6VXNlcjIzMzA0", 
+        "gravatar_id": "", 
+        "site_admin": false, 
+        "login": "dims", 
+        "type": "User", 
+        "id": 23304
+      }, 
+      "label": "dims:test-image-for-a-release-1.7-based-sample-apiserver"
+    }, 
+    "author_association": "MEMBER", 
+    "html_url": "https://github.com/kubernetes/kubernetes/pull/66686", 
+    "updated_at": "2018-07-27T17:01:20Z", 
+    "node_id": "MDExOlB1bGxSZXF1ZXN0MjA0MjQ4NzU2", 
+    "user": {
+      "avatar_url": "https://avatars2.githubusercontent.com/u/23304?v=4", 
+      "html_url": "https://github.com/dims", 
+      "node_id": "MDQ6VXNlcjIzMzA0", 
+      "gravatar_id": "", 
+      "site_admin": false, 
+      "login": "dims", 
+      "type": "User", 
+      "id": 23304
+    }, 
+    "milestone": null, 
+    "requested_teams": [], 
+    "locked": false, 
+    "created_at": "2018-07-26T19:51:45Z", 
+    "assignees": [], 
+    "base": {
+      "repo": {
+        "stargazers_count": 39280, 
+        "mirror_url": null, 
+        "updated_at": "2018-07-27T16:53:46Z", 
+        "private": false, 
+        "has_wiki": false, 
+        "full_name": "kubernetes/kubernetes", 
+        "owner": {
+          "avatar_url": "https://avatars2.githubusercontent.com/u/13629408?v=4", 
+          "html_url": "https://github.com/kubernetes", 
+          "node_id": "MDEyOk9yZ2FuaXphdGlvbjEzNjI5NDA4", 
+          "gravatar_id": "", 
+          "site_admin": false, 
+          "login": "kubernetes", 
+          "type": "Organization", 
+          "id": 13629408
+        }, 
+        "id": 20580498, 
+        "description": "Production-Grade Container Scheduling and Management", 
+        "archived": false, 
+        "has_pages": false, 
+        "open_issues_count": 3190, 
+        "has_projects": true, 
+        "clone_url": "https://github.com/kubernetes/kubernetes.git", 
+        "watchers_count": 39280, 
+        "size": 794946, 
+        "homepage": "http://kubernetes.io", 
+        "fork": false, 
+        "watchers": 39280, 
+        "html_url": "https://github.com/kubernetes/kubernetes", 
+        "forks": 13699, 
+        "open_issues": 3190, 
+        "node_id": "MDEwOlJlcG9zaXRvcnkyMDU4MDQ5OA==", 
+        "git_url": "git://github.com/kubernetes/kubernetes.git", 
+        "svn_url": "https://github.com/kubernetes/kubernetes", 
+        "has_issues": true, 
+        "ssh_url": "git@github.com:kubernetes/kubernetes.git", 
+        "has_downloads": true, 
+        "license": {
+          "spdx_id": "Apache-2.0", 
+          "node_id": "MDc6TGljZW5zZTI=", 
+          "name": "Apache License 2.0", 
+          "key": "apache-2.0"
+        }, 
+        "name": "kubernetes", 
+        "language": "Go", 
+        "created_at": "2014-06-06T22:56:04Z", 
+        "pushed_at": "2018-07-27T16:56:47Z", 
+        "forks_count": 13699, 
+        "default_branch": "master"
+      }, 
+      "sha": "4d5d2664c3b038a3da2e16c5285460c32fc0e15c", 
+      "ref": "master", 
+      "user": {
+        "avatar_url": "https://avatars2.githubusercontent.com/u/13629408?v=4", 
+        "html_url": "https://github.com/kubernetes", 
+        "node_id": "MDEyOk9yZ2FuaXphdGlvbjEzNjI5NDA4", 
+        "gravatar_id": "", 
+        "site_admin": false, 
+        "login": "kubernetes", 
+        "type": "Organization", 
+        "id": 13629408
+      }, 
+      "label": "kubernetes:master"
+    }, 
+    "patch_url": "https://github.com/kubernetes/kubernetes/pull/66686.patch"
+  }, 
+  "action": "submitted", 
+  "organization": {
+    "description": "Kubernetes", 
+    "avatar_url": "https://avatars2.githubusercontent.com/u/13629408?v=4", 
+    "node_id": "MDEyOk9yZ2FuaXphdGlvbjEzNjI5NDA4", 
+    "login": "kubernetes", 
+    "id": 13629408
+  }
+}

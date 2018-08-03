@@ -1,0 +1,160 @@
+periodics:
+- interval: 2h
+  name: ci-kubernetes-integration-beta
+  agent: kubernetes
+  labels:
+    preset-service-account: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
+      args:
+      - --repo=k8s.io/kubernetes=release-1.11
+      - --timeout=100
+      - --scenario=kubernetes_verify
+      - --
+      - --branch=release-1.11
+      - --force
+      - --prow
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: "true"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: docker-graph
+        mountPath: /docker-graph
+      resources:
+        requests:
+          cpu: 4
+    volumes:
+    - name: docker-graph
+      emptyDir: {}
+
+- interval: 1h
+  name: ci-kubernetes-integration-master
+  agent: kubernetes
+  labels:
+    preset-service-account: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
+      args:
+      - --repo=k8s.io/kubernetes
+      - --timeout=100
+      - --scenario=kubernetes_verify
+      - --
+      - --branch=master
+      - --force
+      - --prow
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: "true"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: docker-graph
+        mountPath: /docker-graph
+      resources:
+        requests:
+          cpu: 4
+    volumes:
+    - name: docker-graph
+      emptyDir: {}
+
+- interval: 2h
+  name: ci-kubernetes-integration-stable1
+  agent: kubernetes
+  labels:
+    preset-service-account: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
+      args:
+      - --repo=k8s.io/kubernetes=release-1.10
+      - --timeout=100
+      - --scenario=kubernetes_verify
+      - --
+      - --branch=release-1.10
+      - --force
+      - --prow
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: "true"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: docker-graph
+        mountPath: /docker-graph
+      resources:
+        requests:
+          cpu: 4
+    volumes:
+    - name: docker-graph
+      emptyDir: {}
+
+- interval: 6h
+  name: ci-kubernetes-integration-stable2
+  agent: kubernetes
+  labels:
+    preset-service-account: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
+      args:
+      - --repo=k8s.io/kubernetes=release-1.9
+      - --timeout=100"
+      - --scenario=kubernetes_verify
+      - --
+      - --branch=release-1.9
+      - --force
+      - --prow
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: "true"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: docker-graph
+        mountPath: /docker-graph
+      resources:
+        requests:
+          cpu: 4
+    volumes:
+    - name: docker-graph
+      emptyDir: {}
+
+- interval: 24h
+  name: ci-kubernetes-integration-stable3
+  agent: kubernetes
+  labels:
+    preset-service-account: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
+      args:
+      - --repo=k8s.io/kubernetes=release-1.8
+      - --timeout=100"
+      - --scenario=kubernetes_verify
+      - --
+      - --branch=release-1.8
+      - --force
+      - --prow
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: "true"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: docker-graph
+        mountPath: /docker-graph
+      resources:
+        requests:
+          cpu: 4
+    volumes:
+    - name: docker-graph
+      emptyDir: {}

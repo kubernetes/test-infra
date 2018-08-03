@@ -201,7 +201,7 @@ func handleReviewEvent(pc plugins.PluginClient, re github.ReviewEvent) error {
 }
 
 func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, config *plugins.Configuration, re *github.ReviewEvent) error {
-	if re.Action != github.ReviewActionSubmitted {
+	if re.Action != github.ReviewActionSubmitted && re.Action != github.ReviewActionDismissed {
 		return nil
 	}
 
@@ -495,10 +495,19 @@ func isApprovalState(botName string, reviewActsAsApprove bool, c *comment) bool 
 		return false
 	}
 
-	// consider reviews in either approved OR requested changes states as
-	// approval commands. Reviews in requested changes states will be
-	// interpreted as cancelled approvals.
-	if reviewActsAsApprove && (c.ReviewState == github.ReviewStateApproved || c.ReviewState == github.ReviewStateChangesRequested) {
+	// The review webhook returns state as lowercase, while the review API
+	// returns state as uppercase. Uppercase the value here so it always
+	// matches the constant.
+	reviewState := github.ReviewState(strings.ToUpper(string(c.ReviewState)))
+
+	// ReviewStateApproved = /approve
+	// ReviewStateChangesRequested = /approve cancel
+	// ReviewStateDismissed = remove previous approval or disapproval
+	// (Reviews can go from Approved or ChangesRequested to Dismissed
+	// state if the Dismiss action is used)
+	if reviewActsAsApprove && (reviewState == github.ReviewStateApproved ||
+		reviewState == github.ReviewStateChangesRequested ||
+		reviewState == github.ReviewStateDismissed) {
 		return true
 	}
 	return false

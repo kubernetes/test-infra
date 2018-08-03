@@ -143,15 +143,10 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
-	getSecret := func(secretPath string) func() []byte {
-		return func() []byte {
-			return secretAgent.GetSecret(secretPath)
-		}
-	}
 	if o.confirm {
-		c = github.NewClient(getSecret(o.token), o.endpoint.Strings()...)
+		c = github.NewClient(secretAgent.GetTokenGenerator(o.token), o.endpoint.Strings()...)
 	} else {
-		c = github.NewDryRunClient(getSecret(o.token), o.endpoint.Strings()...)
+		c = github.NewDryRunClient(secretAgent.GetTokenGenerator(o.token), o.endpoint.Strings()...)
 	}
 	if o.tokensPerHour > 0 {
 		c.Throttle(o.tokensPerHour, o.tokenBurst) // 300 hourly tokens, bursts of 100 (default)

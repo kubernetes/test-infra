@@ -148,12 +148,6 @@ func main() {
 		log.Fatalf("Error starting secrets agent: %v", err)
 	}
 
-	getSecret := func(secretPath string) func() []byte {
-		return func() []byte {
-			return secretAgent.GetSecret(secretPath)
-		}
-	}
-
 	var err error
 	for _, ep := range o.endpoint.Strings() {
 		_, err = url.ParseRequestURI(ep)
@@ -164,9 +158,9 @@ func main() {
 
 	var c client
 	if o.confirm {
-		c = github.NewClient(getSecret(o.token), o.endpoint.Strings()...)
+		c = github.NewClient(secretAgent.GetTokenGenerator(o.token), o.endpoint.Strings()...)
 	} else {
-		c = github.NewDryRunClient(getSecret(o.token), o.endpoint.Strings()...)
+		c = github.NewDryRunClient(secretAgent.GetTokenGenerator(o.token), o.endpoint.Strings()...)
 	}
 
 	query, err := makeQuery(o.query, o.includeClosed, o.updated)

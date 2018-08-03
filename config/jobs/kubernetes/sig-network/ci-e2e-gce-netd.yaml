@@ -586,6 +586,26 @@ presets:
                 hostPath:
                   path: /etc/calico
 
+- labels:
+    preset-kubernetes-e2e-containerd: "true"
+  env:
+  - name: LOG_DUMP_SYSTEMD_SERVICES
+    value: containerd containerd-installation
+  - name: KUBE_MASTER_EXTRA_METADATA
+    value: user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/env
+  - name: KUBE_NODE_EXTRA_METADATA
+    value: user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/env
+  - name: KUBE_CONTAINER_RUNTIME
+    value: remote
+  - name: KUBE_CONTAINER_RUNTIME_ENDPOINT
+    value: unix:///run/containerd/containerd.sock
+  - name: KUBE_CONTAINER_RUNTIME_NAME
+    value: containerd
+  - name: KUBE_LOAD_IMAGE_COMMAND
+    value: /home/containerd/usr/local/bin/ctr cri load
+  - name: KUBELET_TEST_ARGS
+    value: --runtime-cgroups=/system.slice/containerd.service
+
 periodics:
 - interval: 2h
   agent: kubernetes
@@ -602,14 +622,14 @@ periodics:
       - "--repo=k8s.io/examples=master"
       - --scenario=kubernetes_e2e
       - --
-      - --extract=ci/latest
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+39d0b71432c167
       - --check-leaked-resources
       - --gcp-node-image=gci
       - --gcp-zone=asia-southeast1-a
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Feature:Networking-IPv6\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
   agent: kubernetes
@@ -632,7 +652,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
       env:
       - name: NETWORK_POLICY_PROVIDER
         value: calico
@@ -652,7 +672,7 @@ periodics:
       - "--repo=k8s.io/examples=master"
       - --scenario=kubernetes_e2e
       - --
-      - --extract=ci/latest
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+39d0b71432c167
       - --check-leaked-resources
       - --image-family=ubuntu-gke-1604-lts
       - --image-project=ubuntu-os-gke-cloud
@@ -660,7 +680,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Feature:Networking-IPv6\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
   agent: kubernetes
@@ -684,7 +704,36 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
       env:
       - name: NETWORK_POLICY_PROVIDER
         value: calico
+
+- interval: 2h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-containerd-gce-netd
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-kubernetes-e2e-enable-netd: "true"
+    preset-kubernetes-e2e-containerd: "true"
+  spec:
+    containers:
+    - args:
+      - "--timeout=340"
+      - --repo=github.com/containerd/cri=master
+      - "--repo=k8s.io/examples=master"
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
+      - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+39d0b71432c167
+      - --gcp-node-image=gci
+      - --gcp-nodes=4
+      - --gcp-zone=asia-southeast1-a
+      - --ginkgo-parallel=30
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Disruptive\] --minStartupPods=8
+      - --timeout=120m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master

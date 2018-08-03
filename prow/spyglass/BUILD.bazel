@@ -1,0 +1,26 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["placeholder.go"],
+    importpath = "k8s.io/test-infra/prow/spyglass",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/fsouza/fake-gcs-server/fakestorage:go_default_library",
+        "//vendor/github.com/joshdk/go-junit:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

@@ -14,7 +14,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -65,8 +65,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
-        imagePullPolicy: Always
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -120,7 +119,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -151,7 +150,7 @@ presubmits:
       - name: test
         command:
         - ./hack/verify-config.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-experimental
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-experimental
         env:
         - name: TEST_TMPDIR
           value: /bazel-scratch/.cache/bazel
@@ -180,7 +179,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -203,9 +202,8 @@ presubmits:
     - master
     rerun_command: "/test pull-test-infra-verify-codegen"
     trigger: "/test pull-test-infra-verify-codegen"
-    run_if_changed: '(prow/(apis|client)|vendor)/.*$'
+    always_run: true
     path_alias: "k8s.io/test-infra"
-    optional: true
     decorate: true
     spec:
       containers:
@@ -271,7 +269,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-experimental
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - --root=/go/src

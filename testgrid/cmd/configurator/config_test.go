@@ -43,6 +43,7 @@ var (
 		"kopeio",
 		"tectonic",
 		"redhat",
+		"vmware",
 	}
 	orgs = []string{
 		"conformance",
@@ -377,6 +378,7 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 		"kubernetes-sigs/cluster-api-provider-openstack",
 		"kubernetes-sigs/poseidon",
 		"kubernetes/cluster-registry",
+		"kubernetes/cloud-provider-vsphere",
 		"kubernetes/federation",
 		"kubernetes/heapster",
 		"kubernetes/kops",

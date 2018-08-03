@@ -22,6 +22,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/plugins"
 )
 
 type ghc struct {
@@ -74,12 +75,49 @@ func (c *ghc) GetPullRequestChanges(_, _ string, _ int) ([]github.PullRequestCha
 	return c.prChanges, c.getPullRequestChangesErr
 }
 
+func TestSizesOrDefault(t *testing.T) {
+	for _, c := range []struct {
+		input    *plugins.Size
+		expected plugins.Size
+	}{
+		{
+			input:    &defaultSizes,
+			expected: defaultSizes,
+		},
+		{
+			input: &plugins.Size{
+				S:   12,
+				M:   15,
+				L:   17,
+				Xl:  21,
+				Xxl: 51,
+			},
+			expected: plugins.Size{
+				S:   12,
+				M:   15,
+				L:   17,
+				Xl:  21,
+				Xxl: 51,
+			},
+		},
+		{
+			input:    nil,
+			expected: defaultSizes,
+		},
+	} {
+		if c.expected != sizesOrDefault(c.input) {
+			t.Fatalf("Unexpected sizes from sizesOrDefault - expected %+v but got %+v", c.expected, sizesOrDefault(c.input))
+		}
+	}
+}
+
 func TestHandlePR(t *testing.T) {
 	cases := []struct {
 		name        string
 		client      *ghc
 		event       github.PullRequestEvent
 		err         error
+		sizes       plugins.Size
 		finalLabels []github.Label
 	}{
 		{
@@ -123,6 +161,7 @@ func TestHandlePR(t *testing.T) {
 			finalLabels: []github.Label{
 				{Name: "size/S"},
 			},
+			sizes: defaultSizes,
 		},
 		{
 			name: "simple size/M, with .generated_files",
@@ -185,6 +224,7 @@ func TestHandlePR(t *testing.T) {
 			finalLabels: []github.Label{
 				{Name: "size/M"},
 			},
+			sizes: defaultSizes,
 		},
 		{
 			name: "simple size/XS, with .generated_files and paths-from-repo",
@@ -273,6 +313,7 @@ func TestHandlePR(t *testing.T) {
 			finalLabels: []github.Label{
 				{Name: "size/XS"},
 			},
+			sizes: defaultSizes,
 		},
 		{
 			name:   "pr closed event",
@@ -281,6 +322,7 @@ func TestHandlePR(t *testing.T) {
 				Action: github.PullRequestActionClosed,
 			},
 			finalLabels: []github.Label{},
+			sizes:       defaultSizes,
 		},
 		{
 			name: "XS -> S transition",
@@ -373,6 +415,7 @@ func TestHandlePR(t *testing.T) {
 				{Name: "irrelevant"},
 				{Name: "size/XS"},
 			},
+			sizes: defaultSizes,
 		},
 		{
 			name: "pull request reopened",
@@ -415,6 +458,7 @@ func TestHandlePR(t *testing.T) {
 			finalLabels: []github.Label{
 				{Name: "size/S"},
 			},
+			sizes: defaultSizes,
 		},
 		{
 			name: "pull request edited",
@@ -450,6 +494,56 @@ func TestHandlePR(t *testing.T) {
 			finalLabels: []github.Label{
 				{Name: "size/M"},
 			},
+			sizes: defaultSizes,
+		},
+		{
+			name: "different label constraints",
+			client: &ghc{
+				labels:     map[github.Label]bool{},
+				getFileErr: &github.FileNotFound{},
+				prChanges: []github.PullRequestChange{
+					{
+						SHA:       "abcd",
+						Filename:  "foobar",
+						Additions: 10,
+						Deletions: 10,
+						Changes:   20,
+					},
+					{
+						SHA:       "abcd",
+						Filename:  "barfoo",
+						Additions: 3,
+						Deletions: 4,
+						Changes:   7,
+					},
+				},
+			},
+			event: github.PullRequestEvent{
+				Action: github.PullRequestActionOpened,
+				Number: 101,
+				PullRequest: github.PullRequest{
+					Number: 101,
+					Base: github.PullRequestBranch{
+						SHA: "abcd",
+						Repo: github.Repo{
+							Owner: github.User{
+								Login: "kubernetes",
+							},
+							Name: "kubernetes",
+						},
+					},
+				},
+			},
+			finalLabels: []github.Label{
+				{Name: "size/XXL"},
+			},
+			sizes: plugins.Size{
+				S:   0,
+				M:   1,
+				L:   2,
+				Xl:  3,
+				Xxl: 4,
+			},
 		},
 	}
 
@@ -462,7 +556,7 @@ func TestHandlePR(t *testing.T) {
 			// Set up test logging.
 			c.client.T = t
 
-			err := handlePR(c.client, logrus.NewEntry(logrus.New()), c.event)
+			err := handlePR(c.client, c.sizes, logrus.NewEntry(logrus.New()), c.event)
 
 			if err != nil && c.err == nil {
 				t.Fatalf("handlePR error: %v", err)
