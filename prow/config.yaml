@@ -417,6 +417,24 @@ presets:
   env:
   - name: BAZEL_REMOTE_CACHE_ENABLED
     value: "true"
+# docker-in-docker (with images/bootstrap) preset
+# NOTE: using this also requires using that image,
+# ensuring you run your test under either the ENTRYPOINT or:
+# /usr/local/bin/runner my-test-command --foo --bar
+# AND setting the following on your PodSpec:
+# securityContext: 
+#   privileged: true
+- labels:
+    preset-dind-enabled: "true"
+  env:
+  - name: DOCKER_IN_DOCKER_ENABLED
+    value: "true"
+  volumes:
+  - name: docker-graph
+    emptyDir: {}
+  volumeMounts:
+  - name: docker-graph
+    mountPath: /docker-graph
 
 presubmits:
   kubernetes/community:
@@ -467,6 +485,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -474,18 +493,9 @@ presubmits:
         - "--repo=k8s.io/ingress-gce=$(PULL_REFS)"
         - "--root=/go/src/"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
 
   GoogleCloudPlatform/k8s-multicluster-ingress:
   - name: pull-kubernetes-multicluster-ingress-test
@@ -554,6 +564,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -563,18 +574,9 @@ presubmits:
         - "--root=/go/src/"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=110"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
   - name: pull-federation-verify
     agent: kubernetes
     context: pull-federation-verify
@@ -601,6 +603,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -608,17 +611,8 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
         securityContext:
           privileged: true
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
   - name: pull-heapster-unit
     agent: kubernetes
     always_run: true
@@ -711,6 +705,7 @@ presubmits:
       preset-service-account: "true"
       preset-aws-ssh: "true"
       preset-aws-credential: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -721,21 +716,12 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-jenkins/pr-logs
         - --timeout=90
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
 
   - name: pull-kops-verify-bazel
     agent: kubernetes
@@ -1332,6 +1318,7 @@ presubmits:
     - release-1.8
     labels:
       preset-service-account: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
@@ -1341,22 +1328,13 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=90"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
         resources:
           requests:
             cpu: 7
             memory: "41Gi"
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
 
   - name: pull-kubernetes-cross
     agent: kubernetes
@@ -1370,6 +1348,7 @@ presubmits:
     - release-1.9
     labels:
       preset-service-account: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
@@ -1379,22 +1358,13 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=90"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
         resources:
           requests:
             cpu: 7
             memory: "41Gi"
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
 
   - name: pull-kubernetes-cross-prow
     agent: kubernetes
@@ -1404,6 +1374,7 @@ presubmits:
     always_run: false
     labels:
       preset-service-account: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bootstrap:latest
@@ -1414,22 +1385,13 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=90"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
         resources:
           requests:
             cpu: 7
             memory: "41Gi"
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
   - name: pull-kubernetes-dind-e2e
     agent: kubernetes
     context: pull-kubernetes-dind-e2e
@@ -1442,6 +1404,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -1463,9 +1426,6 @@ presubmits:
         - "--up"
         - "--test"
         - "--down"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -1477,8 +1437,6 @@ presubmits:
           readOnly: true
         - mountPath: /sys/fs/cgroup
           name: cgroup
-        - mountPath: /docker-graph
-          name: auto-generated-docker-graph-volume-mount
         resources:
           requests:
             # We can adjust this after we know the requirements.
@@ -1492,8 +1450,6 @@ presubmits:
         hostPath:
           path: /sys/fs/cgroup
           type: Directory
-      - name: auto-generated-docker-graph-volume-mount
-        emptyDir: {}
 
   - name: pull-kubernetes-e2e-containerd-gce
     agent: kubernetes
@@ -2234,6 +2190,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-kubernetes-integration),?(\\s+|$)"
     labels:
       preset-service-account: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
@@ -2243,21 +2200,12 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=60"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
         resources:
           requests:
             cpu: 4
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
   - name: pull-kubernetes-integration-prow
     agent: kubernetes
     always_run: false
@@ -2266,6 +2214,7 @@ presubmits:
     trigger: "(?m)^/test pull-kubernetes-integration-prow,?(\\s+|$)"
     labels:
       preset-service-account: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bootstrap:latest
@@ -2276,21 +2225,12 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=60"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
         resources:
           requests:
             cpu: 4
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
   - name: pull-kubernetes-kubemark-e2e-gce-big
     agent: kubernetes
     always_run: true
@@ -2307,6 +2247,7 @@ presubmits:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -2318,24 +2259,16 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=120"
-        env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
+        #env:
         # - name: KUBEMARK_BAZEL_BUILD
         # value: "y"
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
   - name: pull-kubernetes-kubemark-e2e-gce-big
     agent: kubernetes
     always_run: true
@@ -2350,6 +2283,7 @@ presubmits:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.10
@@ -2361,24 +2295,16 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=120"
-        env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
+        #env:
         # - name: KUBEMARK_BAZEL_BUILD
         # value: "y"
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
   - name: pull-kubernetes-kubemark-e2e-gce-big
     agent: kubernetes
     always_run: true
@@ -2393,6 +2319,7 @@ presubmits:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.9
@@ -2404,24 +2331,16 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=120"
-        env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
+        #env:
         # - name: KUBEMARK_BAZEL_BUILD
         # value: "y"
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
   - name: pull-kubernetes-kubemark-e2e-gce-big
     agent: kubernetes
     always_run: false
@@ -2436,6 +2355,7 @@ presubmits:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.8
@@ -2447,24 +2367,16 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=120"
-        env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
+        #env:
         # - name: KUBEMARK_BAZEL_BUILD
         # value: "y"
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
 
   - name: pull-kubernetes-kubemark-e2e-gce-scale
     agent: kubernetes
@@ -2479,6 +2391,7 @@ presubmits:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -2490,24 +2403,16 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=1220"
-        env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
+        #env:
         # - name: KUBEMARK_BAZEL_BUILD
         # value: "y"
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
 
   - name: pull-kubernetes-local-e2e
     agent: kubernetes
@@ -2523,6 +2428,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -2533,18 +2439,9 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=140"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
 
   - name: pull-kubernetes-local-e2e-containerized
     agent: kubernetes
@@ -2559,6 +2456,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -2572,17 +2470,9 @@ presubmits:
         env:
         - name: DOCKERIZE_KUBELET
           value: "true"
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
 
   - name: pull-kubernetes-node-e2e
     agent: kubernetes
@@ -2758,6 +2648,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-kubernetes-verify),?(\\s+|$)"
     labels:
       preset-service-account: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
@@ -2767,21 +2658,12 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=75"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
         resources:
           requests:
             cpu: 4
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
 
   - name: pull-kubernetes-verify-prow
     agent: kubernetes
@@ -2791,6 +2673,7 @@ presubmits:
     trigger: "(?m)^/test pull-kubernetes-verify-prow,?(\\s+|$)"
     labels:
       preset-service-account: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bootstrap:latest
@@ -2801,21 +2684,12 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=75"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
         resources:
           requests:
             cpu: 4
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
 
   kubernetes-sigs/testing_frameworks:
   - name: pull-frameworks-test
@@ -2847,6 +2721,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -2857,17 +2732,8 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=110"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
   - name: pull-poseidon-bazel
     agent: kubernetes
     context: pull-poseidon-bazel
@@ -2946,6 +2812,7 @@ postsubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -2955,18 +2822,9 @@ postsubmits:
         - "--timeout=320"
         - "--"
         - "--env=VERSION=$(PULL_BASE_REF)"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
 
   GoogleCloudPlatform/k8s-multicluster-ingress:
   - name: ci-kubemci-image-push
@@ -2975,6 +2833,7 @@ postsubmits:
     - master
     labels:
       preset-service-account: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -2982,18 +2841,9 @@ postsubmits:
         - "--repo=k8s.io/test-infra=master"
         - "--root=/go/src/"
         - "--timeout=90"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
 
   kubernetes/federation:
   - agent: kubernetes
@@ -3023,6 +2873,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -3031,21 +2882,13 @@ periodics:
       - "--repo=github.com/kubernetes-sigs/application=master"
       - "--upload=gs://kubernetes-jenkins/logs/"
       - "--timeout=150"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
+      resources:
         requests:
           cpu: 6
           memory: "8Gi"
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - name: ci-benchmark-scheduler-master
   tags:
@@ -3123,6 +2966,7 @@ periodics:
   agent: kubernetes
   labels:
     preset-service-account: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
@@ -3131,22 +2975,13 @@ periodics:
       - --repo=k8s.io/release
       - --root=/go/src
       - --timeout=50
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
       resources:
         requests:
           cpu: 4
           memory: "8Gi"
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - interval: 30m
   agent: kubernetes
@@ -3154,48 +2989,32 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - args:
       - --timeout=920
       - --bare
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-      volumeMounts:
-      - name: var-lib-docker
-        mountPath: /var/lib/docker
-    volumes:
-    - name: var-lib-docker
-      emptyDir: {}
 - interval: 30m
   agent: kubernetes
   name: ci-federation-e2e-gce-serial
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - args:
       - --timeout=920
       - --bare
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-      volumeMounts:
-      - name: var-lib-docker
-        mountPath: /var/lib/docker
-    volumes:
-    - name: var-lib-docker
-      emptyDir: {}
 - name: ci-ingress-gce-downgrade-e2e
   agent: kubernetes
   interval: 60m
@@ -3301,6 +3120,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -3321,9 +3141,6 @@ periodics:
       - "--test"
       - "--ginkgo-focus=\\[Conformance\\]"
       - "--down"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # Bazel needs privileged mode in order to sandbox builds.
       securityContext:
         privileged: true
@@ -3335,8 +3152,6 @@ periodics:
         readOnly: true
       - mountPath: /sys/fs/cgroup
         name: cgroup
-      - mountPath: /docker-graph
-        name: docker-storage
       resources:
         requests:
           # We can adjust this after we know the requirements.
@@ -3350,14 +3165,13 @@ periodics:
       hostPath:
         path: /sys/fs/cgroup
         type: Directory
-    - name: docker-storage
-      emptyDir: {}
 - name: ci-kubernetes-e2e-autoscaling-vpa-actuation
   interval: 2h
   agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -3365,18 +3179,9 @@ periodics:
       - "--repo=k8s.io/autoscaler=master"
       - "--root=/go/src"
       - "--timeout=80"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - name: ci-kubernetes-e2e-autoscaling-vpa-admission-controller
   interval: 2h
@@ -3384,6 +3189,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -3391,18 +3197,9 @@ periodics:
       - "--repo=k8s.io/autoscaler=master"
       - "--root=/go/src"
       - "--timeout=80"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - name: ci-kubernetes-e2e-autoscaling-vpa-full
   interval: 2h
@@ -3410,6 +3207,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -3417,18 +3215,9 @@ periodics:
       - "--repo=k8s.io/autoscaler=master"
       - "--root=/go/src"
       - "--timeout=80"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - name: ci-kubernetes-e2e-autoscaling-vpa-recommender
   interval: 2h
@@ -3436,6 +3225,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -3443,18 +3233,9 @@ periodics:
       - "--repo=k8s.io/autoscaler=master"
       - "--root=/go/src"
       - "--timeout=80"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - name: ci-kubernetes-e2e-autoscaling-vpa-updater
   interval: 2h
@@ -3462,6 +3243,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -3469,18 +3251,9 @@ periodics:
       - "--repo=k8s.io/autoscaler=master"
       - "--root=/go/src"
       - "--timeout=80"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - interval: 30m
   agent: kubernetes
@@ -5191,6 +4964,7 @@ periodics:
   agent: kubernetes
   labels:
     preset-service-account: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
@@ -5199,22 +4973,13 @@ periodics:
       - --repo=k8s.io/release
       - --root=/go/src
       - --timeout=50
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
       resources:
         requests:
           cpu: 4
           memory: "8Gi"
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - interval: 6h
   agent: kubernetes
@@ -5323,24 +5088,16 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
       args:
       - --bare
       - --timeout=260
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - name: ci-kubernetes-kubemark-5-gce-last-release
   interval: 30m
@@ -5348,24 +5105,16 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
       args:
       - --bare
       - --timeout=80
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - name: ci-kubernetes-kubemark-500-gce
   tags:
@@ -5376,24 +5125,16 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
       args:
       - --bare
       - --timeout=140
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
       # docker-in-docker needs privilged mode
       securityContext:
         privileged: true
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - name: ci-kubernetes-kubemark-gce-scale
   tags:
@@ -5404,24 +5145,16 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
       args:
       - --bare
       - --timeout=1100
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
       # docker-in-docker needs privilged mode
       securityContext:
         privileged: true
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - name: ci-kubernetes-kubemark-high-density-100-gce
   tags:
@@ -5432,24 +5165,16 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
       args:
       - --bare
       - --timeout=300
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - name: ci-kubernetes-local-e2e
   agent: kubernetes
@@ -5457,24 +5182,16 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
       args:
       - "--timeout=140"
       - "--bare"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - name: ci-kubernetes-local-e2e-containerized
   agent: kubernetes
@@ -5482,6 +5199,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -5491,17 +5209,9 @@ periodics:
       env:
       - name: DOCKERIZE_KUBELET
         value: "true"
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - interval: 6h
   name: ci-kubernetes-multicluster-ingress-test
@@ -5609,135 +5319,94 @@ periodics:
   agent: kubernetes
   labels:
     preset-service-account: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
       args:
       - "--repo=k8s.io/kubernetes=release-1.11"
       - "--timeout=75"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
       resources:
         requests:
           cpu: 4
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - interval: 1h
   name: ci-kubernetes-verify-master
   agent: kubernetes
   labels:
     preset-service-account: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
       args:
       - "--repo=k8s.io/kubernetes"
       - "--timeout=75"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
       resources:
         requests:
           cpu: 4
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - interval: 2h
   name: ci-kubernetes-verify-stable1
   agent: kubernetes
   labels:
     preset-service-account: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
       args:
       - "--repo=k8s.io/kubernetes=release-1.10"
-      - "--timeout=75"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
       resources:
         requests:
           cpu: 4
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - interval: 6h
   name: ci-kubernetes-verify-stable2
   agent: kubernetes
   labels:
     preset-service-account: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
       args:
       - "--repo=k8s.io/kubernetes=release-1.9"
       - "--timeout=75"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
       resources:
         requests:
           cpu: 4
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - interval: 24h
   name: ci-kubernetes-verify-stable3
   agent: kubernetes
   labels:
     preset-service-account: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
       args:
       - "--repo=k8s.io/kubernetes=release-1.8"
       - "--timeout=75"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
       resources:
         requests:
           cpu: 4
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - interval: 2h
   agent: kubernetes
@@ -5818,6 +5487,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -5826,21 +5496,13 @@ periodics:
       - "--repo=github.com/apache-spark-on-k8s/spark-integration=master"
       - "--upload=gs://kubernetes-jenkins/logs/"
       - "--timeout=150"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
+      resources:
         requests:
           cpu: 6
           memory: "8Gi"
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - interval: 2h
   agent: kubernetes
@@ -5848,6 +5510,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -5856,19 +5519,10 @@ periodics:
       - "--repo=github.com/apache-spark-on-k8s/spark-integration=master"
       - "--upload=gs://kubernetes-jenkins/logs/"
       - "--timeout=150"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
       resources:
         requests:
           cpu: 6
           memory: "8Gi"
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
