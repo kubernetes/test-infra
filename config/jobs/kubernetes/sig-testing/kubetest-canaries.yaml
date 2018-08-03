@@ -287,6 +287,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
@@ -310,15 +311,6 @@ periodics:
       - --test=false
       - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true
       - --timeout=240m
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
