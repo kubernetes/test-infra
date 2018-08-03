@@ -62,6 +62,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-cloud-provider-azure-account: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -76,17 +77,8 @@ presubmits:
         - test-e2e
         - SUITE=default
         - "SUBJECT=${PULL_NUMBER}"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         securityContext:
           privileged: true
-        volumeMounts:
-        - mountPath: /docker-graph
-          name: auto-generated-docker-graph-volume-mount
-      volumes:
-      - name: auto-generated-docker-graph-volume-mount
-        emptyDir: {}
 
   - name: pull-cloud-provider-azure-unit
     agent: kubernetes

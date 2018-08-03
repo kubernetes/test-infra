@@ -26,6 +26,7 @@ presubmits:
     trigger: "/test( all| pull-cluster-api-make)"
     labels:
       preset-service-account: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - args:
@@ -36,9 +37,6 @@ presubmits:
         - "--scenario=execute"
         - "--"
         - "./scripts/ci-make.sh"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true

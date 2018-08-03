@@ -8,6 +8,7 @@ presubmits:
     trigger: "/test( all| pull-cluster-api-provider-aws-make)"
     labels:
       preset-service-account: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - args:
@@ -19,9 +20,6 @@ presubmits:
         - "--"
         - "make"
         - "images"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
