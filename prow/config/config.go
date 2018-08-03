@@ -515,7 +515,7 @@ func (c *Config) finalizeJobConfig() error {
 		}
 	}
 
-	// Ensure that regexes are valid.
+	// Ensure that regexes are valid and set defaults.
 	for _, vs := range c.Presubmits {
 		defaultPresubmitFields(vs)
 		if err := SetPresubmitRegexes(vs); err != nil {
@@ -523,10 +523,13 @@ func (c *Config) finalizeJobConfig() error {
 		}
 	}
 	for _, js := range c.Postsubmits {
+		defaultPostsubmitFields(js)
 		if err := SetPostsubmitRegexes(js); err != nil {
 			return fmt.Errorf("could not set regex: %v", err)
 		}
 	}
+
+	defaultPeriodicFields(c.Periodics)
 
 	for _, v := range c.AllPresubmits(nil) {
 		if err := resolvePresets(v.Name, v.Labels, v.Spec, c.Presets); err != nil {
@@ -1029,18 +1032,39 @@ func DefaultRerunCommandFor(name string) string {
 }
 
 func defaultPresubmitFields(js []Presubmit) {
-	for i, j := range js {
-		if j.Context == "" {
-			js[i].Context = j.Name
+	for i := range js {
+		if js[i].Context == "" {
+			js[i].Context = js[i].Name
+		}
+		if js[i].Agent == "" {
+			js[i].Agent = string(kube.KubernetesAgent)
 		}
 		// Default the values of Trigger and RerunCommand if both fields are
 		// specified. Otherwise let validation fail as both or neither should have
 		// been specified.
-		if j.Trigger == "" && j.RerunCommand == "" {
-			js[i].Trigger = DefaultTriggerFor(j.Name)
-			js[i].RerunCommand = DefaultRerunCommandFor(j.Name)
+		if js[i].Trigger == "" && js[i].RerunCommand == "" {
+			js[i].Trigger = DefaultTriggerFor(js[i].Name)
+			js[i].RerunCommand = DefaultRerunCommandFor(js[i].Name)
 		}
 		defaultPresubmitFields(js[i].RunAfterSuccess)
+	}
+}
+
+func defaultPostsubmitFields(js []Postsubmit) {
+	for i := range js {
+		if js[i].Agent == "" {
+			js[i].Agent = string(kube.KubernetesAgent)
+		}
+		defaultPostsubmitFields(js[i].RunAfterSuccess)
+	}
+}
+
+func defaultPeriodicFields(js []Periodic) {
+	for i := range js {
+		if js[i].Agent == "" {
+			js[i].Agent = string(kube.KubernetesAgent)
+		}
+		defaultPeriodicFields(js[i].RunAfterSuccess)
 	}
 }
 

@@ -285,6 +285,19 @@ periodics:
 			},
 		},
 		{
+			name:       "one periodic no agent, should default",
+			prowConfig: ``,
+			jobConfigs: []string{
+				`
+periodics:
+- interval: 10m
+  name: foo
+  spec:
+    containers:
+    - image: alpine`,
+			},
+		},
+		{
 			name:       "two periodics",
 			prowConfig: ``,
 			jobConfigs: []string{
@@ -330,13 +343,27 @@ periodics:
 			expectError: true,
 		},
 		{
-			name:       "one presubmit no context will default",
+			name:       "one presubmit no context should default",
 			prowConfig: ``,
 			jobConfigs: []string{
 				`
 presubmits:
   foo/bar:
   - agent: kubernetes
+    name: presubmit-bar
+    spec:
+      containers:
+      - image: alpine`,
+			},
+		},
+		{
+			name:       "one presubmit no agent should default",
+			prowConfig: ``,
+			jobConfigs: []string{
+				`
+presubmits:
+  foo/bar:
+  - context: bar
     name: presubmit-bar
     spec:
       containers:
@@ -510,6 +537,19 @@ postsubmits:
   foo/bar:
   - agent: kubernetes
     name: postsubmit-bar
+    spec:
+      containers:
+      - image: alpine`,
+			},
+		},
+		{
+			name:       "one postsubmit no agent, should default",
+			prowConfig: ``,
+			jobConfigs: []string{
+				`
+postsubmits:
+  foo/bar:
+  - name: postsubmit-bar
     spec:
       containers:
       - image: alpine`,
