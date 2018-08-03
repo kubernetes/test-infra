@@ -228,6 +228,7 @@ tide:
     - kubernetes/test-infra
     - kubernetes/website
     - kubernetes-sigs/application
+    - kubernetes-sigs/aws-encryption-provider
     - kubernetes-sigs/cluster-api
     - kubernetes-sigs/cluster-api-provider-aws
     - kubernetes-sigs/cluster-api-provider-gcp
