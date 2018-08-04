@@ -350,7 +350,10 @@ func (sc *statusController) waitSync() {
 func (sc *statusController) sync(pool map[string]PullRequest) {
 	sc.lastSyncStart = time.Now()
 
-	sinceTime := sc.lastSuccessfulQueryStart.Add(-10 * time.Second)
+	// Query for PRs changed since the last time we successfully queried.
+	// We offset for 30 seconds of overlap because GitHub sometimes doesn't
+	// include recently changed/new PRs in the query results.
+	sinceTime := sc.lastSuccessfulQueryStart.Add(-30 * time.Second)
 	query := sc.ca.Config().Tide.Queries.AllPRsSince(sinceTime)
 	queryStartTime := time.Now()
 	allPRs, err := search(context.Background(), sc.ghc, sc.logger, query)
