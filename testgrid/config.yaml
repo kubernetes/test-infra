@@ -568,9 +568,7 @@ test_groups:
 - name: ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu-v100
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu-v100
   alert_stale_results_hours: 36
-  num_failures_to_alert: 3 # Runs every 12h. Alert when it's been failing for 36h.
-- name: ci-kubernetes-e2e-gke-updown
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-updown
+  num_failures_to_alert: 3 # Runs every 12h. Alert when it's been failing for 36h
 - name: ci-kubernetes-e2e-gci-gke-updown
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-updown
 - name: ci-kubernetes-e2e-gke-gci-ci-master
@@ -3403,8 +3401,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-regional-slow
   - name: gci-gke-reboot
     test_group_name: ci-kubernetes-e2e-gci-gke-reboot
-  - name: gke-updown
-    test_group_name: ci-kubernetes-e2e-gke-updown
   - name: gci-gke-updown
     test_group_name: ci-kubernetes-e2e-gci-gke-updown
   - name: gke-device-plugin-gpu
