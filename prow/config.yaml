@@ -476,28 +476,6 @@ presubmits:
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
 
-  kubernetes/ingress-gce:
-  - name: pull-ingress-gce-test
-    agent: kubernetes
-    context: pull-ingress-gce-test
-    rerun_command: "/test pull-ingress-gce-test"
-    trigger: "(?m)^/test( all| pull-ingress-gce-test),?(\\s+|$)"
-    always_run: true
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-        args:
-        - "--repo=k8s.io/ingress-gce=$(PULL_REFS)"
-        - "--root=/go/src/"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-
   GoogleCloudPlatform/k8s-multicluster-ingress:
   - name: pull-kubernetes-multicluster-ingress-test
     agent: kubernetes
@@ -2807,26 +2785,6 @@ presubmits:
             memory: "6Gi"
 
 postsubmits:
-  kubernetes/ingress-gce:
-  - name: ci-ingress-gce-image-push
-    agent: kubernetes
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-        args:
-        - "--repo=k8s.io/ingress-gce=$(PULL_REFS)"
-        - "--root=/go/src/"
-        - "--timeout=320"
-        - "--"
-        - "--env=VERSION=$(PULL_BASE_REF)"
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-
   GoogleCloudPlatform/k8s-multicluster-ingress:
   - name: ci-kubemci-image-push
     agent: kubernetes
@@ -3016,90 +2974,6 @@ periodics:
       securityContext:
         privileged: true
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-- name: ci-ingress-gce-downgrade-e2e
-  agent: kubernetes
-  interval: 60m
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-      args:
-      - "--timeout=340"
-      - "--bare"
-- name: ci-ingress-gce-e2e
-  agent: kubernetes
-  interval: 60m
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-      args:
-      - "--timeout=340"
-      - "--bare"
-- name: ci-ingress-gce-e2e-release-1-0
-  agent: kubernetes
-  interval: 480m
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-      args:
-      - "--timeout=340"
-      - "--bare"
-- name: ci-ingress-gce-e2e-release-1-1
-  agent: kubernetes
-  interval: 240m
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-      args:
-      - "--timeout=340"
-      - "--bare"
-- name: ci-ingress-gce-e2e-release-1-2
-  agent: kubernetes
-  interval: 240m
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-      args:
-      - "--timeout=340"
-      - "--bare"
-- name: ci-ingress-gce-e2e-scale
-  agent: kubernetes
-  interval: 6h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-      args:
-      - "--timeout=340"
-      - "--bare"
-- name: ci-ingress-gce-upgrade-e2e
-  agent: kubernetes
-  interval: 60m
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-      args:
-      - "--timeout=340"
-      - "--bare"
 
 - interval: 60m
   agent: kubernetes
