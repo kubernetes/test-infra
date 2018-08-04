@@ -627,7 +627,7 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=asia-southeast1-a
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Feature:Networking-IPv6\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
@@ -650,7 +650,7 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=asia-southeast1-a
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
       env:
@@ -678,7 +678,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud
       - --gcp-zone=asia-southeast1-a
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Feature:Networking-IPv6\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
@@ -702,7 +702,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud
       - --gcp-zone=asia-southeast1-a
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
       env:
@@ -734,6 +734,72 @@ periodics:
       - --gcp-zone=asia-southeast1-a
       - --ginkgo-parallel=30
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Disruptive\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+
+- interval: 2h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-containerd-gce-netd-calico
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-kubernetes-e2e-containerd: "true"
+    preset-kubernetes-e2e-enable-netd-calico: "true"
+  spec:
+    containers:
+    - args:
+      - "--timeout=340"
+      - --repo=github.com/containerd/cri=master
+      - "--repo=k8s.io/examples=master"
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
+      - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+39d0b71432c167
+      - --gcp-node-image=gci
+      - --gcp-nodes=4
+      - --gcp-zone=asia-southeast1-a
+      - --ginkgo-parallel=30
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\] --minStartupPods=8
+      - --timeout=120m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      env:
+      - name: NETWORK_POLICY_PROVIDER
+        value: calico
+
+- interval: 2h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-containerd-gce-calico
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-kubernetes-e2e-containerd: "true"
+    preset-kubernetes-e2e-enable-netd-calico: "true"
+  spec:
+    containers:
+    - args:
+      - "--timeout=340"
+      - --repo=github.com/containerd/cri=master
+      - "--repo=k8s.io/examples=master"
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
+      - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+39d0b71432c167
+      - --gcp-node-image=gci
+      - --gcp-nodes=4
+      - --gcp-zone=asia-southeast1-a
+      - --ginkgo-parallel=30
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\] --minStartupPods=8
+      - --timeout=120m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      env:
+      - name: NETWORK_POLICY_PROVIDER
+        value: calico
+      - name: KUBE_ENABLE_NETD
+        value: false

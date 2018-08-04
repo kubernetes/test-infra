@@ -397,6 +397,12 @@ test_groups:
 - name: ci-kubernetes-e2e-containerd-gce-netd
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-containerd-gce-netd
   alert_stale_results_hours: 24
+- name: ci-kubernetes-e2e-containerd-gce-netd-calico
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-containerd-gce-netd-calico
+  alert_stale_results_hours: 24
+- name: ci-kubernetes-e2e-containerd-gce-calico
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-containerd-gce-calico
+  alert_stale_results_hours: 24
 - name: ci-kubemci-ingress-conformance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubemci-ingress-conformance
 - name: ci-kubernetes-e2e-gci-gce-ingress-manual-network
@@ -2276,7 +2282,7 @@ test_groups:
   num_columns_recent: 20
 - name: pull-cloud-provider-vsphere-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-vsphere-test
-  num_columns_recent: 20 
+  num_columns_recent: 20
 # release-1.8
 - name: ci-kubernetes-e2e-gce-cos-k8sstable1-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable1-default
@@ -5244,6 +5250,14 @@ dashboards:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: e2e-containerd-gce-netd
     test_group_name: ci-kubernetes-e2e-containerd-gce-netd
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: e2e-containerd-gce-netd-calico
+    test_group_name: ci-kubernetes-e2e-containerd-gce-netd-calico
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: e2e-containerd-gce-calico
+    test_group_name: ci-kubernetes-e2e-containerd-gce-calico
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
 
