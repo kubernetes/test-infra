@@ -885,7 +885,7 @@ periodics:
       - "--repo=k8s.io/examples=master"
       - --scenario=kubernetes_e2e
       - --
-      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+39d0b71432c167
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+2abe9a1b70cc3f
       - --check-leaked-resources
       - --gcp-node-image=gci
       - --gcp-zone=asia-southeast1-a
@@ -908,7 +908,7 @@ periodics:
       - "--repo=k8s.io/examples=master"
       - --scenario=kubernetes_e2e
       - --
-      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+39d0b71432c167
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+2abe9a1b70cc3f
       - --check-leaked-resources
       - --gcp-node-image=gci
       - --gcp-zone=asia-southeast1-a
@@ -935,7 +935,7 @@ periodics:
       - "--repo=k8s.io/examples=master"
       - --scenario=kubernetes_e2e
       - --
-      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+39d0b71432c167
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+2abe9a1b70cc3f
       - --check-leaked-resources
       - --image-family=ubuntu-gke-1604-lts
       - --image-project=ubuntu-os-gke-cloud
@@ -959,7 +959,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - "--repo=k8s.io/examples=master"
       - --
-      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+39d0b71432c167
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+2abe9a1b70cc3f
       - --check-leaked-resources
       - --image-family=ubuntu-gke-1604-lts
       - --image-project=ubuntu-os-gke-cloud
@@ -991,13 +991,13 @@ periodics:
       - --check-leaked-resources
       - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
       - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
-      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+39d0b71432c167
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+2abe9a1b70cc3f
       - --gcp-node-image=gci
       - --gcp-nodes=4
       - --gcp-zone=asia-southeast1-a
       - --ginkgo-parallel=30
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
@@ -1020,13 +1020,13 @@ periodics:
       - --check-leaked-resources
       - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
       - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
-      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+39d0b71432c167
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+2abe9a1b70cc3f
       - --gcp-node-image=gci
       - --gcp-nodes=4
       - --gcp-zone=asia-southeast1-a
       - --ginkgo-parallel=30
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
       env:
@@ -1052,12 +1052,12 @@ periodics:
       - --check-leaked-resources
       - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
       - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
-      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+39d0b71432c167
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+2abe9a1b70cc3f
       - --gcp-node-image=gci
       - --gcp-nodes=4
       - --gcp-zone=asia-southeast1-a
       - --ginkgo-parallel=30
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
