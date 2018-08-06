@@ -9,6 +9,7 @@
 - [Labels that apply to all repos, only for issues](#labels-that-apply-to-all-repos-only-for-issues)
 - [Labels that apply to all repos, only for PRs](#labels-that-apply-to-all-repos-only-for-prs)
 - [Labels that apply to kubernetes/kubernetes, only for issues](#labels-that-apply-to-kuberneteskubernetes-only-for-issues)
+- [Labels that apply to kubernetes/test-infra, for both issues and PRs](#labels-that-apply-to-kubernetestest-infra-for-both-issues-and-prs)
 
 
 ## Intro
@@ -152,7 +153,21 @@ larger set of contributors to apply/remove them.
 
 | Name | Description | Added By | Prow Plugin |
 | ---- | ----------- | -------- | --- |
-| <a id="area/admin" href="#area/admin">`area/admin`</a> | Indicates an issue on admin area.| humans | |
-| <a id="area/api" href="#area/api">`area/api`</a> | Indicates an issue on api area.| humans | |
+| <a id="area/admin" href="#area/admin">`area/admin`</a> | Indicates an issue on admin area.| label | |
+| <a id="area/api" href="#area/api">`area/api`</a> | Indicates an issue on api area.| label | |
+
+## Labels that apply to kubernetes/test-infra, for both issues and PRs
+
+| Name | Description | Added By | Prow Plugin |
+| ---- | ----------- | -------- | --- |
+| <a id="area/boskos" href="#area/boskos">`area/boskos`</a> | Issues or PRs related to code in /boskos| label | |
+| <a id="area/config" href="#area/config">`area/config`</a> | Issues or PRs related to code in /config| label | |
+| <a id="area/ghproxy" href="#area/ghproxy">`area/ghproxy`</a> | Issues or PRs related to code in /ghproxy| label | |
+| <a id="area/greenhouse" href="#area/greenhouse">`area/greenhouse`</a> | Issues or PRs related to code in /greenhouse (our remote bazel cache)| label | |
+| <a id="area/gubernator" href="#area/gubernator">`area/gubernator`</a> | Issues or PRs related to code in /gubernator| label | |
+| <a id="area/label_sync" href="#area/label_sync">`area/label_sync`</a> | Issues or PRs related to code in /label_sync| label | |
+| <a id="area/mungegithub" href="#area/mungegithub">`area/mungegithub`</a> | Issues or PRs related to code in /mungegithub| label | |
+| <a id="area/planter" href="#area/planter">`area/planter`</a> | Issues or PRs related to code in /planter| label | |
+| <a id="area/prow" href="#area/prow">`area/prow`</a> | Issues or PRs related to code in /prow| label | |
 
 
