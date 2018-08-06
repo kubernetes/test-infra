@@ -284,8 +284,6 @@ tide:
     - lgtm
     - approved
     - "cncf-cla: yes"
-    - LGTM1
-    - LGTM2
     missingLabels:
     - do-not-merge/hold
     - do-not-merge/invalid-owners-file
