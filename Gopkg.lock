@@ -933,6 +933,7 @@
   branch = "release-1.10"
   name = "k8s.io/api"
   packages = [
+    "admission/v1beta1",
     "admissionregistration/v1alpha1",
     "admissionregistration/v1beta1",
     "apps/v1",
@@ -1175,6 +1176,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "87487fbeaa7802a14fc43cd736070768cdd95503d25cf998de622642717dd141"
+  inputs-digest = "8476c16c47c23ba3682a1fc12173e56480631305cebb2fff12524ba81db346ca"
   solver-name = "gps-cdcl"
   solver-version = 1
