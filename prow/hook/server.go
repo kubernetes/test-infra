@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -50,7 +51,15 @@ type Server struct {
 
 // ServeHTTP validates an incoming webhook and puts it into the event channel.
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	eventType, eventGUID, payload, ok := github.ValidateWebhook(w, r, s.TokenGenerator())
+	eventType, eventGUID, payload, ok, resp := github.ValidateWebhook(w, r, s.TokenGenerator())
+	if counter, err := s.Metrics.WebhookCounter.GetMetricWithLabelValues(strconv.Itoa(resp)); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"status-code": resp,
+		}).WithError(err).Warn("Failed to get metric for reporting webhook status code")
+	} else {
+		counter.Inc()
+	}
+
 	if !ok {
 		return
 	}
