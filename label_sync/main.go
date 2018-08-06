@@ -24,6 +24,8 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
+	"sort"
 	"strings"
 	"sync"
 	"text/template"
@@ -74,8 +76,15 @@ type Label struct {
 	parent      *Label     // Current name for previous labels (used internally)
 }
 
-// Configuration is a list of Required Labels to sync in all kubernetes repos
+// Configuration is a list of Repos defining Required Labels to sync into them
+// There is also a Default list of labels applied to every Repo
 type Configuration struct {
+	Repos   map[string]RepoConfig `json:"repos,omitempty"`
+	Default RepoConfig            `json:"default"`
+}
+
+// RepoConfig contains only labels for the moment
+type RepoConfig struct {
 	Labels []Label `json:"labels"`
 }
 
@@ -168,45 +177,82 @@ func writeTemplate(templatePath string, outputPath string, data interface{}) err
 // validate runs checks to ensure the label inputs are valid
 // It ensures that no two label names (including previous names) have the same
 // lowercase value, and that the description is not over 100 characters.
-func validate(labels []Label, parent string, seen map[string]string) error {
+func validate(labels []Label, parent string, seen map[string]string) (map[string]string, error) {
+	newSeen := copyStringMap(seen)
 	for _, l := range labels {
 		name := strings.ToLower(l.Name)
 		path := parent + "." + name
-		if other, present := seen[name]; present {
-			return fmt.Errorf("duplicate label %s at %s and %s", name, path, other)
+		if other, present := newSeen[name]; present {
+			return newSeen, fmt.Errorf("duplicate label %s at %s and %s", name, path, other)
 		}
-		seen[name] = path
-		if err := validate(l.Previously, path, seen); err != nil {
-			return err
+		newSeen[name] = path
+		if newSeen, err := validate(l.Previously, path, newSeen); err != nil {
+			return newSeen, err
 		}
 		if len(l.Description) > 99 { // github limits the description field to 100 chars
-			return fmt.Errorf("description for %s is too long", name)
+			return newSeen, fmt.Errorf("description for %s is too long", name)
 		}
 	}
-	return nil
+	return newSeen, nil
+}
+
+func copyStringMap(originalMap map[string]string) map[string]string {
+	newMap := make(map[string]string)
+	for k, v := range originalMap {
+		newMap[k] = v
+	}
+	return newMap
+}
+
+func stringInSortedSlice(a string, list []string) bool {
+	i := sort.SearchStrings(list, a)
+	if i < len(list) && list[i] == a {
+		return true
+	}
+	return false
 }
 
 // Ensures the config does not duplicate label names
-func (c Configuration) validate() error {
-	seen := make(map[string]string)
-	if err := validate(c.Labels, "", seen); err != nil {
+func (c Configuration) validate(orgs string) error {
+	// Generate list of orgs
+	sortedOrgs := strings.Split(orgs, ",")
+	sort.Strings(sortedOrgs)
+	// Check default labels
+	seen, err := validate(c.Default.Labels, "default", make(map[string]string))
+	if err != nil {
 		return fmt.Errorf("invalid config: %v", err)
+	}
+	// Check other repos labels
+	for repo, repoconfig := range c.Repos {
+		// Will complain if a label is both in default and repo
+		if _, err := validate(repoconfig.Labels, repo, seen); err != nil {
+			return fmt.Errorf("invalid config: %v", err)
+		}
+		// Warn if repo isn't under org
+		data := strings.Split(repo, "/")
+		if len(data) == 2 {
+			if !stringInSortedSlice(data[0], sortedOrgs) {
+				logrus.WithField("orgs", orgs).WithField("org", data[0]).WithField("repo", repo).Warn("Repo isn't inside orgs")
+			}
+		}
 	}
 	return nil
 }
 
-// LabelsByTarget returns labels that have a given target
-func (c Configuration) LabelsByTarget(target LabelTarget) (labels []Label) {
-	for _, label := range c.Labels {
+// LabelsForTarget returns labels that have a given target
+func LabelsForTarget(labels []Label, target LabelTarget) (filteredLabels []Label) {
+	for _, label := range labels {
 		if target == label.Target {
-			labels = append(labels, label)
+			filteredLabels = append(filteredLabels, label)
 		}
 	}
+	// We also sort to make nice tables
+	sort.Slice(filteredLabels, func(i, j int) bool { return filteredLabels[i].Name < filteredLabels[j].Name })
 	return
 }
 
 // LoadConfig reads the yaml config at path
-func LoadConfig(path string) (*Configuration, error) {
+func LoadConfig(path string, orgs string) (*Configuration, error) {
 	if path == "" {
 		return nil, errors.New("empty path")
 	}
@@ -218,7 +264,7 @@ func LoadConfig(path string) (*Configuration, error) {
 	if err = yaml.Unmarshal(data, &c); err != nil {
 		return nil, err
 	}
-	if err = c.validate(); err != nil { // Ensure no dups
+	if err = c.validate(orgs); err != nil { // Ensure no dups
 		return nil, err
 	}
 	return &c, nil
@@ -333,7 +379,10 @@ func move(repo string, previous, wanted Label) Update {
 }
 
 // classifyLabels will put labels into the required, archaic, dead maps as appropriate.
-func classifyLabels(labels []Label, required, archaic, dead map[string]Label, now time.Time, parent *Label) {
+func classifyLabels(labels []Label, required, archaic, dead map[string]Label, now time.Time, parent *Label) (map[string]Label, map[string]Label, map[string]Label) {
+	newRequired := copyLabelMap(required)
+	newArchaic := copyLabelMap(archaic)
+	newDead := copyLabelMap(dead)
 	for i, l := range labels {
 		first := parent
 		if first == nil {
@@ -342,40 +391,52 @@ func classifyLabels(labels []Label, required, archaic, dead map[string]Label, no
 		lower := strings.ToLower(l.Name)
 		switch {
 		case parent == nil && l.DeleteAfter == nil: // Live label
-			required[lower] = l
+			newRequired[lower] = l
 		case l.DeleteAfter != nil && now.After(*l.DeleteAfter):
-			dead[lower] = l
+			newDead[lower] = l
 		case parent != nil:
 			l.parent = parent
-			archaic[lower] = l
+			newArchaic[lower] = l
 		}
-		classifyLabels(l.Previously, required, archaic, dead, now, first)
+		newRequired, newArchaic, newDead = classifyLabels(l.Previously, newRequired, newArchaic, newDead, now, first)
 	}
+	return newRequired, newArchaic, newDead
 }
 
-func syncLabels(config Configuration, repos RepoLabels) (RepoUpdates, error) {
-	// Ensure the config is valid
-	if err := config.validate(); err != nil {
-		return nil, fmt.Errorf("invalid config: %v", err)
+func copyLabelMap(originalMap map[string]Label) map[string]Label {
+	newMap := make(map[string]Label)
+	for k, v := range originalMap {
+		newMap[k] = v
 	}
+	return newMap
+}
 
+func syncLabels(config Configuration, org string, repos RepoLabels) (RepoUpdates, error) {
 	// Find required, dead and archaic labels
-	required := make(map[string]Label) // Must exist
-	archaic := make(map[string]Label)  // Migrate
-	dead := make(map[string]Label)     // Delete
-	classifyLabels(config.Labels, required, archaic, dead, time.Now(), nil)
+	defaultRequired, defaultArchaic, defaultDead := classifyLabels(config.Default.Labels, make(map[string]Label), make(map[string]Label), make(map[string]Label), time.Now(), nil)
 
 	var validationErrors []error
 	var actions []Update
 	// Process all repos
 	for repo, repoLabels := range repos {
+		var required, archaic, dead map[string]Label
+		// Check if we have more labels for repo
+		if repoconfig, ok := config.Repos[org+"/"+repo]; ok {
+			// Use classifyLabels() to add them to default ones
+			required, archaic, dead = classifyLabels(repoconfig.Labels, defaultRequired, defaultArchaic, defaultDead, time.Now(), nil)
+		} else {
+			// Otherwise just copy the pointers
+			required = defaultRequired // Must exist
+			archaic = defaultArchaic   // Migrate
+			dead = defaultDead         // Delete
+		}
 		// Convert github.Label to Label
 		var labels []Label
 		for _, l := range repoLabels {
 			labels = append(labels, Label{Name: l.Name, Description: l.Description, Color: l.Color})
 		}
 		// Check for any duplicate labels
-		if err := validate(labels, "", make(map[string]string)); err != nil {
+		if _, err := validate(labels, "", make(map[string]string)); err != nil {
 			validationErrors = append(validationErrors, fmt.Errorf("invalid labels in %s: %v", repo, err))
 			continue
 		}
@@ -572,7 +633,6 @@ func newClient(tokenPath string, tokens, tokenBurst int, dryRun bool, hosts ...s
 // It expects:
 // "labels" file in "/etc/config/labels.yaml"
 // github OAuth2 token in "/etc/github/oauth", this token must have write access to all org's repos
-// default org is "kubernetes"
 // It uses request retrying (in case of run out of GH API points)
 // It took about 10 minutes to process all my 8 repos with all wanted "kubernetes" labels (70+)
 // Next run takes about 22 seconds to check if all labels are correct on all repos
@@ -582,7 +642,7 @@ func main() {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
 
-	config, err := LoadConfig(*labelsPath)
+	config, err := LoadConfig(*labelsPath, *orgs)
 	if err != nil {
 		logrus.WithError(err).Fatalf("failed to load --config=%s", *labelsPath)
 	}
@@ -646,15 +706,51 @@ type labelData struct {
 }
 
 func writeDocs(template string, output string, config Configuration) error {
-	data := []labelData{
-		{"both issues and PRs", "both-issues-and-prs", config.LabelsByTarget(bothTarget)},
-		{"only issues", "only-issues", config.LabelsByTarget(issueTarget)},
-		{"only PRs", "only-prs", config.LabelsByTarget(prTarget)},
+	var desc string
+	data := []labelData{}
+	desc = "all repos, for both issues and PRs"
+	data = append(data, labelData{desc, linkify(desc), LabelsForTarget(config.Default.Labels, bothTarget)})
+	desc = "all repos, only for issues"
+	data = append(data, labelData{desc, linkify(desc), LabelsForTarget(config.Default.Labels, issueTarget)})
+	desc = "all repos, only for PRs"
+	data = append(data, labelData{desc, linkify(desc), LabelsForTarget(config.Default.Labels, prTarget)})
+	// Let's sort repos
+	repos := make([]string, 0)
+	for repo := range config.Repos {
+		repos = append(repos, repo)
+	}
+	sort.Strings(repos)
+	// And append their labels
+	for _, repo := range repos {
+		if l := LabelsForTarget(config.Repos[repo].Labels, bothTarget); len(l) > 0 {
+			desc = repo + ", for both issues and PRs"
+			data = append(data, labelData{desc, linkify(desc), l})
+		}
+		if l := LabelsForTarget(config.Repos[repo].Labels, issueTarget); len(l) > 0 {
+			desc = repo + ", only for issues"
+			data = append(data, labelData{desc, linkify(desc), l})
+		}
+		if l := LabelsForTarget(config.Repos[repo].Labels, prTarget); len(l) > 0 {
+			desc = repo + ", only for PRs"
+			data = append(data, labelData{desc, linkify(desc), l})
+		}
 	}
 	if err := writeTemplate(*docsTemplate, *docsOutput, data); err != nil {
 		return err
 	}
 	return nil
+}
+
+// linkify transforms a string into a markdown anchor link
+// I could not find a proper doc, so rules here a mostly empirical
+func linkify(text string) string {
+	// swap space with dash
+	link := strings.Replace(text, " ", "-", -1)
+	// discard some special characters
+	discard, _ := regexp.Compile("[,/]")
+	link = discard.ReplaceAllString(link, "")
+	// lowercase
+	return strings.ToLower(link)
 }
 
 func syncOrg(org string, githubClient client, config Configuration, filt filter) error {
@@ -671,7 +767,7 @@ func syncOrg(org string, githubClient client, config Configuration, filt filter)
 	}
 
 	logrus.WithField("org", org).Infof("Syncing labels for %d repos", len(repos))
-	updates, err := syncLabels(config, *currLabels)
+	updates, err := syncLabels(config, org, *currLabels)
 	if err != nil {
 		return err
 	}
