@@ -204,8 +204,19 @@ func copyStringMap(originalMap map[string]string) map[string]string {
 	return newMap
 }
 
+func stringInSortedSlice(a string, list []string) bool {
+	i := sort.SearchStrings(list, a)
+	if i < len(list) && list[i] == a {
+		return true
+	}
+	return false
+}
+
 // Ensures the config does not duplicate label names
-func (c Configuration) validate() error {
+func (c Configuration) validate(orgs string) error {
+	// Generate list of orgs
+	sortedOrgs := strings.Split(orgs, ",")
+	sort.Strings(sortedOrgs)
 	// Check default labels
 	seen, err := validate(c.Default.Labels, "default", make(map[string]string))
 	if err != nil {
@@ -216,6 +227,13 @@ func (c Configuration) validate() error {
 		// Will complain if a label is both in default and repo
 		if _, err := validate(repoconfig.Labels, repo, seen); err != nil {
 			return fmt.Errorf("invalid config: %v", err)
+		}
+		// Warn if repo isn't under org
+		data := strings.Split(repo, "/")
+		if len(data) == 2 {
+			if !stringInSortedSlice(data[0], sortedOrgs) {
+				logrus.WithField("orgs", orgs).WithField("org", data[0]).WithField("repo", repo).Warn("Repo isn't inside orgs")
+			}
 		}
 	}
 	return nil
@@ -234,7 +252,7 @@ func LabelsForTarget(labels []Label, target LabelTarget) (filteredLabels []Label
 }
 
 // LoadConfig reads the yaml config at path
-func LoadConfig(path string) (*Configuration, error) {
+func LoadConfig(path string, orgs string) (*Configuration, error) {
 	if path == "" {
 		return nil, errors.New("empty path")
 	}
@@ -246,7 +264,7 @@ func LoadConfig(path string) (*Configuration, error) {
 	if err = yaml.Unmarshal(data, &c); err != nil {
 		return nil, err
 	}
-	if err = c.validate(); err != nil { // Ensure no dups
+	if err = c.validate(orgs); err != nil { // Ensure no dups
 		return nil, err
 	}
 	return &c, nil
@@ -394,11 +412,6 @@ func copyLabelMap(originalMap map[string]Label) map[string]Label {
 }
 
 func syncLabels(config Configuration, org string, repos RepoLabels) (RepoUpdates, error) {
-	// Ensure the config is valid
-	if err := config.validate(); err != nil {
-		return nil, fmt.Errorf("invalid config: %v", err)
-	}
-
 	// Find required, dead and archaic labels
 	defaultRequired, defaultArchaic, defaultDead := classifyLabels(config.Default.Labels, make(map[string]Label), make(map[string]Label), make(map[string]Label), time.Now(), nil)
 
@@ -620,7 +633,6 @@ func newClient(tokenPath string, tokens, tokenBurst int, dryRun bool, hosts ...s
 // It expects:
 // "labels" file in "/etc/config/labels.yaml"
 // github OAuth2 token in "/etc/github/oauth", this token must have write access to all org's repos
-// default org is "kubernetes"
 // It uses request retrying (in case of run out of GH API points)
 // It took about 10 minutes to process all my 8 repos with all wanted "kubernetes" labels (70+)
 // Next run takes about 22 seconds to check if all labels are correct on all repos
@@ -630,7 +642,7 @@ func main() {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
 
-	config, err := LoadConfig(*labelsPath)
+	config, err := LoadConfig(*labelsPath, *orgs)
 	if err != nil {
 		logrus.WithError(err).Fatalf("failed to load --config=%s", *labelsPath)
 	}

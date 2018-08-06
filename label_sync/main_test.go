@@ -27,18 +27,13 @@ import (
 // Tests for getting data from GitHub are not needed:
 // The would have to use real API point or test stubs
 
-// Test syncLabels(config *Configuration, curr *RepoLabels) (updates RepoUpdates, err error)
-// Input: Configuration list and Current labels list on multiple repos
-// Output: list of wanted label updates (update due to name or color) addition due to missing labels
-// This is main testing for this program
-func TestSyncLabels(t *testing.T) {
+// Test func (c Configuration) validate(orgs string) error
+// Input: Configuration list
+func TestValidate(t *testing.T) {
 	var testcases = []struct {
-		name            string
-		config          Configuration
-		current         RepoLabels
-		expectedUpdates RepoUpdates
-		expectedError   bool
-		now             time.Time
+		name          string
+		config        Configuration
+		expectedError bool
 	}{
 		{
 			name: "All empty",
@@ -73,6 +68,45 @@ func TestSyncLabels(t *testing.T) {
 			},
 			expectedError: true,
 		},
+		{
+			name: "Org2 not in orgs, should warn in logs",
+			config: Configuration{
+				Default: RepoConfig{Labels: []Label{
+					{Name: "lab1", Description: "Test Label 1", Color: "deadbe"},
+				}},
+				Repos: map[string]RepoConfig{
+					"org2/repo1": {Labels: []Label{
+						{Name: "lab2", Description: "Test Label 2", Color: "deadbe"},
+					}},
+				},
+			},
+			expectedError: false,
+		},
+	}
+	// Do tests
+	for _, tc := range testcases {
+		err := tc.config.validate("org")
+		if err == nil && tc.expectedError {
+			t.Errorf("%s: failed to raise error", tc.name)
+		} else if err != nil && !tc.expectedError {
+			t.Errorf("%s: unexpected error: %v", tc.name, err)
+		}
+	}
+}
+
+// Test syncLabels(config *Configuration, curr *RepoLabels) (updates RepoUpdates, err error)
+// Input: Configuration list and Current labels list on multiple repos
+// Output: list of wanted label updates (update due to name or color) addition due to missing labels
+// This is main testing for this program
+func TestSyncLabels(t *testing.T) {
+	var testcases = []struct {
+		name            string
+		config          Configuration
+		current         RepoLabels
+		expectedUpdates RepoUpdates
+		expectedError   bool
+		now             time.Time
+	}{
 		{
 			name: "Required label defined in repo1 and repo2 - no update",
 			config: Configuration{
@@ -410,7 +444,7 @@ func TestLoadYAML(t *testing.T) {
 		},
 	}
 	for i, tc := range testcases {
-		actual, err := LoadConfig(tc.path)
+		actual, err := LoadConfig(tc.path, "org")
 		errNil := (err == nil)
 		if errNil != tc.ok {
 			t.Errorf("TestLoadYAML: test case number %d, expected ok: %v, got %v (error=%v)", i+1, tc.ok, err == nil, err)
