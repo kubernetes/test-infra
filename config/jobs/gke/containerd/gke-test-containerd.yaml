@@ -1,3 +1,10 @@
+presets:
+- labels:
+    preset-cos-containerd-env: "true"
+  env:
+  - name: LOG_DUMP_SYSTEMD_SERVICES
+    value: "containerd containerd-installation"
+
 periodics:
 - interval: 1h
   agent: kubernetes
@@ -5,6 +12,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-cos-containerd-env: "true"
   spec:
     containers:
     - args:
@@ -33,6 +41,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-cos-containerd-env: "true"
   spec:
     containers:
     - args:
@@ -61,6 +70,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-cos-containerd-env: "true"
   spec:
     containers:
     - args:
@@ -89,6 +99,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-cos-containerd-env: "true"
   spec:
     containers:
     - args:
@@ -117,6 +128,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-cos-containerd-env: "true"
   spec:
     containers:
     - args:
@@ -145,6 +157,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-cos-containerd-env: "true"
   spec:
     containers:
     - args:
