@@ -671,17 +671,17 @@ repos:
         name: area/ghproxy
         target: both
         addedBy: label
-      - color: 0052c
+      - color: 0052cc
         description: Issues or PRs related to code in /greenhouse (our remote bazel cache)
         name: area/greenhouse
         target: both
         addedBy: label
-      - color: 0052c
+      - color: 0052cc
         description: Issues or PRs related to code in /gubernator
         name: area/gubernator
         target: both
         addedBy: label
-      - color: 0052c
+      - color: 0052cc
         description: Issues or PRs related to code in /label_sync
         name: area/label_sync
         target: both
@@ -691,7 +691,7 @@ repos:
         name: area/mungegithub
         target: both
         addedBy: label
-      - color: 0052c
+      - color: 0052cc
         description: Issues or PRs related to code in /planter
         name: area/planter
         target: both
