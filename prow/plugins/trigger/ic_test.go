@@ -470,6 +470,15 @@ func TestHandleIssueComment(t *testing.T) {
 			},
 			ShouldReport: true,
 		},
+		{
+			name:        "accept /test all from submit-queue",
+			Author:      "t",
+			PRAuthor:    "t",
+			Body:        "/test all [submit-queue is verifying that this PR is safe to merge]",
+			State:       "open",
+			IsPR:        true,
+			ShouldBuild: true,
+		},
 	}
 	for _, tc := range testcases {
 		t.Logf("running scenario %q", tc.name)
