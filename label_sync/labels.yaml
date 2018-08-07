@@ -648,9 +648,56 @@ repos:
         description: Indicates an issue on admin area.
         name: area/admin
         target: issues
-        addedBy: humans
+        addedBy: label
       - color: 0052cc
         description: Indicates an issue on api area.
         name: area/api
         target: issues
-        addedBy: humans
+        addedBy: label
+  kubernetes/test-infra:
+    labels:
+      - color: 0052cc
+        description: Issues or PRs related to code in /boskos
+        name: area/boskos
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to code in /config
+        name: area/config
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to code in /ghproxy
+        name: area/ghproxy
+        target: both
+        addedBy: label
+      - color: 0052c
+        description: Issues or PRs related to code in /greenhouse (our remote bazel cache)
+        name: area/greenhouse
+        target: both
+        addedBy: label
+      - color: 0052c
+        description: Issues or PRs related to code in /gubernator
+        name: area/gubernator
+        target: both
+        addedBy: label
+      - color: 0052c
+        description: Issues or PRs related to code in /label_sync
+        name: area/label_sync
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to code in /mungegithub
+        name: area/mungegithub
+        target: both
+        addedBy: label
+      - color: 0052c
+        description: Issues or PRs related to code in /planter
+        name: area/planter
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to code in /prow
+        name: area/prow
+        target: both
+        addedBy: label
