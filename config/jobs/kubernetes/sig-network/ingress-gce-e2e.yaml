@@ -43,6 +43,7 @@ postsubmits:
         - --scenario=execute
         - --
         - --env=VERSION=$(PULL_BASE_REF)
+        - --env=REGISTRY=gcr.io/k8s-ingress-image-push
         - make
         - push-e2e
         # docker-in-docker needs privileged mode
