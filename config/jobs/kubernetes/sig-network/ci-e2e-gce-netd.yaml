@@ -885,7 +885,7 @@ periodics:
       - "--repo=k8s.io/examples=master"
       - --scenario=kubernetes_e2e
       - --
-      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+2abe9a1b70cc3f
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+21777efd99bd59
       - --check-leaked-resources
       - --gcp-node-image=gci
       - --gcp-zone=asia-southeast1-a
@@ -908,7 +908,7 @@ periodics:
       - "--repo=k8s.io/examples=master"
       - --scenario=kubernetes_e2e
       - --
-      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+2abe9a1b70cc3f
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+21777efd99bd59
       - --check-leaked-resources
       - --gcp-node-image=gci
       - --gcp-zone=asia-southeast1-a
@@ -935,7 +935,7 @@ periodics:
       - "--repo=k8s.io/examples=master"
       - --scenario=kubernetes_e2e
       - --
-      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+2abe9a1b70cc3f
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+21777efd99bd59
       - --check-leaked-resources
       - --image-family=ubuntu-gke-1604-lts
       - --image-project=ubuntu-os-gke-cloud
@@ -959,7 +959,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - "--repo=k8s.io/examples=master"
       - --
-      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+2abe9a1b70cc3f
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+21777efd99bd59
       - --check-leaked-resources
       - --image-family=ubuntu-gke-1604-lts
       - --image-project=ubuntu-os-gke-cloud
@@ -991,7 +991,7 @@ periodics:
       - --check-leaked-resources
       - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
       - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
-      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+2abe9a1b70cc3f
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+21777efd99bd59
       - --gcp-node-image=gci
       - --gcp-nodes=4
       - --gcp-zone=asia-southeast1-a
@@ -1020,7 +1020,7 @@ periodics:
       - --check-leaked-resources
       - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
       - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
-      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+2abe9a1b70cc3f
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+21777efd99bd59
       - --gcp-node-image=gci
       - --gcp-nodes=4
       - --gcp-zone=asia-southeast1-a
@@ -1052,7 +1052,7 @@ periodics:
       - --check-leaked-resources
       - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
       - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
-      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+2abe9a1b70cc3f
+      - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+21777efd99bd59
       - --gcp-node-image=gci
       - --gcp-nodes=4
       - --gcp-zone=asia-southeast1-a
