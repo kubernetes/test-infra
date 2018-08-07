@@ -881,6 +881,7 @@ periodics:
     containers:
     - args:
       - "--timeout=340"
+      - --root=/go/src
       - "--repo=k8s.io/kubernetes=release-1.11"
       - "--repo=k8s.io/examples=master"
       - --scenario=kubernetes_e2e
@@ -890,7 +891,7 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=asia-southeast1-a
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
@@ -905,6 +906,7 @@ periodics:
     containers:
     - args:
       - "--timeout=340"
+      - --root=/go/src
       - "--repo=k8s.io/examples=master"
       - --scenario=kubernetes_e2e
       - --
@@ -913,7 +915,7 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=asia-southeast1-a
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
       env:
@@ -931,6 +933,7 @@ periodics:
     containers:
     - args:
       - "--timeout=340"
+      - --root=/go/src
       - "--repo=k8s.io/kubernetes=release-1.11"
       - "--repo=k8s.io/examples=master"
       - --scenario=kubernetes_e2e
@@ -941,7 +944,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud
       - --gcp-zone=asia-southeast1-a
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
@@ -956,6 +959,7 @@ periodics:
     containers:
     - args:
       - "--timeout=340"
+      - --root=/go/src
       - --scenario=kubernetes_e2e
       - "--repo=k8s.io/examples=master"
       - --
@@ -965,7 +969,7 @@ periodics:
       - --image-project=ubuntu-os-gke-cloud
       - --gcp-zone=asia-southeast1-a
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
       env:
@@ -984,6 +988,7 @@ periodics:
     containers:
     - args:
       - "--timeout=340"
+      - --root=/go/src
       - --repo=github.com/containerd/cri=master
       - "--repo=k8s.io/examples=master"
       - --scenario=kubernetes_e2e
@@ -997,7 +1002,7 @@ periodics:
       - --gcp-zone=asia-southeast1-a
       - --ginkgo-parallel=30
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
@@ -1013,6 +1018,7 @@ periodics:
     containers:
     - args:
       - "--timeout=340"
+      - --root=/go/src
       - --repo=github.com/containerd/cri=master
       - "--repo=k8s.io/examples=master"
       - --scenario=kubernetes_e2e
@@ -1026,7 +1032,7 @@ periodics:
       - --gcp-zone=asia-southeast1-a
       - --ginkgo-parallel=30
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
       env:
@@ -1045,6 +1051,7 @@ periodics:
     containers:
     - args:
       - "--timeout=340"
+      - --root=/go/src
       - --repo=github.com/containerd/cri=master
       - "--repo=k8s.io/examples=master"
       - --scenario=kubernetes_e2e
@@ -1058,6 +1065,6 @@ periodics:
       - --gcp-zone=asia-southeast1-a
       - --ginkgo-parallel=30
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:Networking-IPv6\]|\[Disruptive\]|\[Feature:ServiceLoadBalancer\]|\[Feature:PerformanceDNS\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
