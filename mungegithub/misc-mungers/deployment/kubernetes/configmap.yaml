@@ -3,7 +3,7 @@ app: misc-mungers
 http-cache-dir: /cache/httpcache
 organization: kubernetes
 project: kubernetes
-pr-mungers: label-unapproved-picks,path-label,stale-green-ci,comment-deleter,milestone-maintainer
+pr-mungers: label-unapproved-picks,path-label,stale-green-ci,comment-deleter
 state: open
 token-file: /etc/secret-volume/token
 period: 60s
@@ -33,7 +33,3 @@ generated-files-config: .generated_files
 label-file: "/gitrepos/kubernetes/labels.yaml"
 alias-file: "/gitrepos/kubernetes/OWNERS_ALIASES"
 use-reviewers: true
-# milestone-maintainer
-milestone-modes: v1.8=dev,v1.9=dev,v1.10=dev,v1.11=dev,v1.12=dev
-milestone-freeze-date: "TBD"
-milestone-approval-grace-period: 96h

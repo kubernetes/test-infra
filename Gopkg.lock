@@ -236,6 +236,15 @@
   version = "v1.4.7"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/fsouza/fake-gcs-server"
+  packages = [
+    "fakestorage",
+    "internal/backend",
+  ]
+  revision = "e85be23bdaa80eeb20556c77d64fa1197ee18164"
+
+[[projects]]
   name = "github.com/ghodss/yaml"
   packages = ["."]
   revision = "0ca9ea5df5451ffdf184b4428c902747c2c11cd7"
@@ -420,6 +429,12 @@
   version = "v1.1"
 
 [[projects]]
+  name = "github.com/gorilla/mux"
+  packages = ["."]
+  revision = "e3702bed27f0d39777b0b37b664b6280e8ef8fbf"
+  version = "v1.6.2"
+
+[[projects]]
   name = "github.com/gorilla/securecookie"
   packages = ["."]
   revision = "667fe4e3466a040b780561fe9b51a83a3753eefc"
@@ -511,6 +526,12 @@
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
   revision = "0b12d6b5"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/joshdk/go-junit"
+  packages = ["."]
+  revision = "bf76511d08693cfcf6e5d1bd8b46b62518c496f3"
 
 [[projects]]
   name = "github.com/json-iterator/go"
@@ -1155,6 +1176,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "14e47ed967e5575e1415f795176f2b8e19a9a1f3015e2820b67cf14433ecddc1"
+  inputs-digest = "5c0c8a007d7e8b55851e8d2207ef6799d8a93c06340c8197c3da4f597989ceec"
   solver-name = "gps-cdcl"
   solver-version = 1

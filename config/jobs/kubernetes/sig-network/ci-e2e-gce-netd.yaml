@@ -603,8 +603,6 @@ presets:
     value: containerd
   - name: KUBE_LOAD_IMAGE_COMMAND
     value: /home/containerd/usr/local/bin/ctr cri load
-  - name: NON_MASQUERADE_CIDR
-    value: 0.0.0.0/0
   - name: KUBELET_TEST_ARGS
     value: --runtime-cgroups=/system.slice/containerd.service
 
@@ -733,9 +731,9 @@ periodics:
       - --extract=gs://koonwah-repo-pub/devel/v1.11.2-beta.0.20+39d0b71432c167
       - --gcp-node-image=gci
       - --gcp-nodes=4
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=asia-southeast1-a
       - --ginkgo-parallel=30
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[sig-network\] --ginkgo.skip=\[Slow\]|\[Flaky\]|\[Feature:NetworkPolicy\]|\[Disruptive\] --minStartupPods=8
       - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180725-795cceb4c-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master

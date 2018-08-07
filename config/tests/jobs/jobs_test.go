@@ -829,6 +829,8 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 	expectedExtract := 1
 	if sharedBuilds || nodeE2e || builds {
 		expectedExtract = 0
+	} else if strings.Contains(jobName, "ingress") {
+		expectedExtract = 1
 	} else if strings.Contains(jobName, "upgrade") ||
 		strings.Contains(jobName, "skew") ||
 		strings.Contains(jobName, "rollback") ||
@@ -867,6 +869,22 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 			if !hasArg("--stage="+stage, args) {
 				return fmt.Errorf("presubmit jobs %s - need to stage to %s", jobName, stage)
 			}
+		}
+	}
+
+	// test_args should not have double slashes on ginkgo flags
+	for _, arg := range args {
+		ginkgo_args := ""
+		if strings.HasPrefix(arg, "--test_args=") {
+			splitted := strings.SplitN(arg, "=", 2)
+			ginkgo_args = splitted[1]
+		} else if strings.HasPrefix(arg, "--upgrade_args=") {
+			splitted := strings.SplitN(arg, "=", 2)
+			ginkgo_args = splitted[1]
+		}
+
+		if strings.Contains(ginkgo_args, "\\\\") {
+			return fmt.Errorf("jobs %s - double slashes in ginkgo args should be single slash now : arg %s", jobName, arg)
 		}
 	}
 
