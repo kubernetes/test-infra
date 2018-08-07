@@ -176,6 +176,7 @@ type Configuration struct {
 	Size          *Size                `json:"size,omitempty"`
 	Triggers      []Trigger            `json:"triggers,omitempty"`
 	Welcome       Welcome              `json:"welcome,omitempty"`
+	JiraLinker    JiraLinker           `json:"jira_linker,omitempty"`
 }
 
 // ExternalPlugin holds configuration for registering an external
@@ -457,6 +458,11 @@ type Welcome struct {
 	// For the info struct see prow/plugins/welcome/welcome.go's PRInfo
 	// TODO(bentheelder): make this be configurable per-repo?
 	MessageTemplate string `json:"message_template,omitempty"`
+}
+
+// JiraLinker is the config for the jira-linker plugin
+type JiraLinker struct {
+	JiraBaseUrl string `json:"jira_base_url"`
 }
 
 // TriggerFor finds the Trigger for a repo, if one exists

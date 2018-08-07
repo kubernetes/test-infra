@@ -32,6 +32,7 @@ import (
 	_ "k8s.io/test-infra/prow/plugins/heart"
 	_ "k8s.io/test-infra/prow/plugins/help"
 	_ "k8s.io/test-infra/prow/plugins/hold"
+	_ "k8s.io/test-infra/prow/plugins/jira-linker"
 	_ "k8s.io/test-infra/prow/plugins/label"
 	_ "k8s.io/test-infra/prow/plugins/lgtm"
 	_ "k8s.io/test-infra/prow/plugins/lifecycle"
