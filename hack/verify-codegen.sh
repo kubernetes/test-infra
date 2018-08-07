@@ -47,3 +47,5 @@ else
   exit 1
 fi
 
+# verify generated code in kind/...
+"${SCRIPT_ROOT}/kind/hack/verify-generated.sh"
