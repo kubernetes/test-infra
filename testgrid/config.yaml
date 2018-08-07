@@ -2809,6 +2809,17 @@ test_groups:
 - name: pull-rules-k8s-e2e
   gcs_prefix: kubernetes-jenkins/logs/pull-rules-k8s-e2e
 
+# Alibaba Cloud Provider Test Groups
+- name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.10
+  gcs_prefix: k8s-conformance-alibaba/cloud-provider-alibaba-cloud/e2e-conformance-release-v1.10
+
+- name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.9
+  gcs_prefix: k8s-conformance-alibaba/cloud-provider-alibaba-cloud/e2e-conformance-release-v1.9
+
+- name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.8
+  gcs_prefix: k8s-conformance-alibaba/cloud-provider-alibaba-cloud/e2e-conformance-release-v1.8
+
+
 #
 # Start dashboards
 #
@@ -2973,6 +2984,20 @@ dashboards:
     test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.11
     alert_options:
       alert_mail_to_addresses: 'davanum+testgrid@gmail.com'
+
+# Alibaba Cloud Provider Dashboard
+- name: conformance-alibaba-cloud-provider
+  dashboard_tab:
+  - name: "Alibaba Cloud Provider, v1.10"
+    description: "Runs conformance tests for cloud provier alibaba cloud on release v1.10"
+    test_group_name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.10
+  - name: "Alibaba Cloud Provider, v1.9"
+    description: "Runs conformance tests for cloud provier alibaba cloud on release v1.9"
+    test_group_name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.9
+  - name: "Alibaba Cloud Provider, v1.8"
+    description: "Runs conformance tests for cloud provier alibaba cloud on release v1.8"
+    test_group_name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.8
+
 
 - name: canonical-ubuntu1-k8sbeta
   dashboard_tab:
@@ -6681,6 +6706,7 @@ dashboard_groups:
   - conformance-gce
   - conformance-providerless
   - conformance-cloud-provider-openstack
+  - conformance-alibaba-cloud-provider
   - conformance-gardener
 
 - name: vmware
