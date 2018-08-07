@@ -54,6 +54,7 @@ filegroup(
         "//kind/images/node:all-srcs",
         "//kind/pkg/build:all-srcs",
         "//kind/pkg/cluster:all-srcs",
+        "//kind/pkg/exec:all-srcs",
         "//kubetest:all-srcs",
         "//label_sync:all-srcs",
         "//logexporter/cmd:all-srcs",
