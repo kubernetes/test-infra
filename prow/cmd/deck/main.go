@@ -141,6 +141,8 @@ func main() {
 
 // prodOnlyMain contains logic only used when running deployed, not locally
 func prodOnlyMain(configAgent *config.Agent, o options, mux *http.ServeMux) *http.ServeMux {
+	// in the container we place static here, locally there are at
+	staticFilesLocation = "/static"
 
 	kc, err := kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 	if err != nil {
