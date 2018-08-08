@@ -1502,180 +1502,6 @@ presubmits:
   - agent: kubernetes
     always_run: true
     cluster: security
-    context: pull-security-kubernetes-e2e-kops-aws
-    labels:
-      preset-aws-credential: "true"
-      preset-aws-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-service-account: "true"
-    max_concurrency: 12
-    name: pull-security-kubernetes-e2e-kops-aws
-    rerun_command: /test pull-security-kubernetes-e2e-kops-aws
-    skip_branches:
-    - release-1.10
-    - release-1.9
-    - release-1.8
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - --root=/go/src
-        - --job=$(JOB_NAME)
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=75
-        - --
-        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-kops-aws
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-        name: ""
-        resources:
-          requests:
-            memory: 6Gi
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-kops-aws,?($|\s.*)
-  - agent: kubernetes
-    always_run: true
-    branches:
-    - release-1.10
-    cluster: security
-    context: pull-security-kubernetes-e2e-kops-aws
-    labels:
-      preset-aws-credential: "true"
-      preset-aws-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-service-account: "true"
-    max_concurrency: 12
-    name: pull-security-kubernetes-e2e-kops-aws
-    rerun_command: /test pull-security-kubernetes-e2e-kops-aws
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - --root=/go/src
-        - --job=$(JOB_NAME)
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=75
-        - --
-        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-kops-aws
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.10
-        name: ""
-        resources:
-          requests:
-            memory: 6Gi
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-kops-aws,?($|\s.*)
-  - agent: kubernetes
-    always_run: true
-    branches:
-    - release-1.9
-    cluster: security
-    context: pull-security-kubernetes-e2e-kops-aws
-    labels:
-      preset-aws-credential: "true"
-      preset-aws-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-service-account: "true"
-    max_concurrency: 12
-    name: pull-security-kubernetes-e2e-kops-aws
-    rerun_command: /test pull-security-kubernetes-e2e-kops-aws
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - --root=/go/src
-        - --job=$(JOB_NAME)
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=75
-        - --
-        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-kops-aws
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.9
-        name: ""
-        resources:
-          requests:
-            memory: 6Gi
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-kops-aws,?($|\s.*)
-  - agent: kubernetes
-    always_run: true
-    branches:
-    - release-1.8
-    cluster: security
-    context: pull-security-kubernetes-e2e-kops-aws
-    labels:
-      preset-aws-credential: "true"
-      preset-aws-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-service-account: "true"
-    max_concurrency: 12
-    name: pull-security-kubernetes-e2e-kops-aws
-    rerun_command: /test pull-security-kubernetes-e2e-kops-aws
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - --root=/go/src
-        - --job=$(JOB_NAME)
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=75
-        - --
-        - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-kops-aws
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.8
-        name: ""
-        resources:
-          requests:
-            memory: 6Gi
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-kops-aws,?($|\s.*)
-  - agent: kubernetes
-    always_run: true
-    cluster: security
     context: pull-security-kubernetes-integration
     labels:
       preset-dind-enabled: "true"
@@ -2344,12 +2170,10 @@ presubmits:
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-kops-aws
     rerun_command: /test pull-security-kubernetes-e2e-kops-aws
-    run_if_changed: ""
     skip_branches:
     - release-1.10
     - release-1.9
     - release-1.8
-    skip_report: false
     spec:
       containers:
       - args:
@@ -2392,7 +2216,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-e2e-kops-aws),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-kops-aws,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -2407,8 +2231,6 @@ presubmits:
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-kops-aws
     rerun_command: /test pull-security-kubernetes-e2e-kops-aws
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -2451,7 +2273,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-e2e-kops-aws),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-kops-aws,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -2466,8 +2288,6 @@ presubmits:
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-kops-aws
     rerun_command: /test pull-security-kubernetes-e2e-kops-aws
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -2510,7 +2330,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-e2e-kops-aws),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-kops-aws,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -2525,8 +2345,6 @@ presubmits:
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-kops-aws
     rerun_command: /test pull-security-kubernetes-e2e-kops-aws
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -2569,7 +2387,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-e2e-kops-aws),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-kops-aws,?($|\s.*)
   - agent: kubernetes
     always_run: false
     cluster: security

@@ -1,16 +1,12 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-kops-aws
-    agent: kubernetes
     skip_branches:
     - release-1.10  # per-release image
     - release-1.9  # per-release image
     - release-1.8  # per-release image
     max_concurrency: 12
     always_run: true
-    context: pull-kubernetes-e2e-kops-aws
-    rerun_command: "/test pull-kubernetes-e2e-kops-aws"
-    trigger: "(?m)^/test( all| pull-kubernetes-e2e-kops-aws),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
@@ -50,14 +46,10 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-kops-aws
-    agent: kubernetes
     branches:
     - release-1.10  # per-release image
     max_concurrency: 12
     always_run: true
-    context: pull-kubernetes-e2e-kops-aws
-    rerun_command: "/test pull-kubernetes-e2e-kops-aws"
-    trigger: "(?m)^/test( all| pull-kubernetes-e2e-kops-aws),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
@@ -97,14 +89,10 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-kops-aws
-    agent: kubernetes
     branches:
     - release-1.9  # per-release image
     max_concurrency: 12
     always_run: true
-    context: pull-kubernetes-e2e-kops-aws
-    rerun_command: "/test pull-kubernetes-e2e-kops-aws"
-    trigger: "(?m)^/test( all| pull-kubernetes-e2e-kops-aws),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
@@ -143,14 +131,10 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-kops-aws
-    agent: kubernetes
     branches:
     - release-1.8
     max_concurrency: 12
     always_run: true
-    context: pull-kubernetes-e2e-kops-aws
-    rerun_command: "/test pull-kubernetes-e2e-kops-aws"
-    trigger: "(?m)^/test( all| pull-kubernetes-e2e-kops-aws),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
@@ -188,215 +172,3 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
-
-  kubernetes/kops:
-  - name: pull-kops-bazel-build
-    agent: kubernetes
-    context: pull-kops-bazel-build
-    branches:
-    - master
-    always_run: true
-    skip_report: false
-    rerun_command: "/test pull-kops-bazel-build"
-    trigger: "(?m)^/test( all| pull-kops-bazel-build),?(\\s+|$)"
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-experimental
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=kubernetes_execute_bazel"
-        - "--" # end bootstrap args, scenario args below
-        - "make"
-        - "bazel-build"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "2Gi"
-
-  - name: pull-kops-bazel-test
-    agent: kubernetes
-    context: pull-kops-bazel-test
-    branches:
-    - master
-    always_run: true
-    skip_report: false
-    rerun_command: "/test pull-kops-bazel-test"
-    trigger: "(?m)^/test( all| pull-kops-bazel-test),?(\\s+|$)"
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-experimental
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=kubernetes_execute_bazel"
-        - "--" # end bootstrap args, scenario args below
-        - "make"
-        - "bazel-test"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "2Gi"
-
-  - name: pull-kops-e2e-kubernetes-aws
-    agent: kubernetes
-    always_run: true
-    context: pull-kops-e2e-kubernetes-aws
-    rerun_command: "/test pull-kops-e2e-kubernetes-aws"
-    trigger: "(?m)^/test( all| pull-kops-e2e-kubernetes-aws),?(\\s+|$)"
-    labels:
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-aws-credential: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-        args:
-        - --root=/go/src
-        - --job=$(JOB_NAME)
-        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=90
-        - --scenario=kubernetes_e2e
-        - --
-        - --aws
-        - --aws-cluster-domain=test-cncf-aws.k8s.io
-        - --check-leaked-resources=false
-        - --cluster=
-        - --env-file=jobs/platform/kops_aws.env
-        - --extract=ci/latest
-        - --ginkgo-parallel
-        - --kops-build
-        - --provider=aws
-        - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-        - --timeout=55
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "6Gi"
-
-  - name: pull-kops-verify-bazel
-    agent: kubernetes
-    context: pull-kops-verify-bazel
-    branches:
-    - master
-    rerun_command: "/test pull-kops-verify-bazel"
-    trigger: "(?m)^/test( all| pull-kops-verify-bazel),?(\\s+|$)"
-    always_run: true
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
-        args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - --scenario=execute
-        - --
-        - ./hack/verify-bazel.sh
-
-  - name: pull-kops-verify-boilerplate
-    agent: kubernetes
-    context: pull-kops-verify-boilerplate
-    branches:
-    - master
-    rerun_command: "/test pull-kops-verify-boilerplate"
-    trigger: "(?m)^/test( all| pull-kops-verify-boilerplate),?(\\s+|$)"
-    always_run: true
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
-        args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - --scenario=execute
-        - --
-        - ./hack/verify-boilerplate.sh
-
-  - name: pull-kops-verify-gofmt
-    agent: kubernetes
-    context: pull-kops-verify-gofmt
-    branches:
-    - master
-    rerun_command: "/test pull-kops-verify-gofmt"
-    trigger: "(?m)^/test( all| pull-kops-verify-gofmt),?(\\s+|$)"
-    always_run: true
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
-        args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - --scenario=execute
-        - --
-        - ./hack/verify-gofmt.sh
-
-  - name: pull-kops-verify-govet
-    agent: kubernetes
-    context: pull-kops-verify-govet
-    branches:
-    - master
-    rerun_command: "/test pull-kops-verify-govet"
-    trigger: "(?m)^/test( all| pull-kops-verify-govet),?(\\s+|$)"
-    always_run: true
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
-        args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - --scenario=execute
-        - --
-        - make
-        - govet
-
-  - name: pull-kops-verify-packages
-    agent: kubernetes
-    context: pull-kops-verify-packages
-    branches:
-    - master
-    rerun_command: "/test pull-kops-verify-packages"
-    trigger: "(?m)^/test( all| pull-kops-verify-packages),?(\\s+|$)"
-    always_run: true
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
-        args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - --scenario=execute
-        - --
-        - ./hack/verify-packages.sh
