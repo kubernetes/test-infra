@@ -52,7 +52,7 @@ var (
 	// Cloud provider specific logfiles.
 	awsLogs      = []string{"cloud-init-output"}
 	gceLogs      = []string{"startupscript"}
-	kubemarkLogs = []string{}
+	kubemarkLogs = []string{"*-hollow-node-*"}
 
 	// System services/kernel related logfiles.
 	kernelLog            = "kern"
