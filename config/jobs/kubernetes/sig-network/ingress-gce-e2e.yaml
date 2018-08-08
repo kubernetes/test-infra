@@ -74,6 +74,7 @@ periodics:
       - --ginkgo-parallel
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:IngressDowngrade\]
+      - --timeout=320m
 
 - name: ci-ingress-gce-e2e
   agent: kubernetes
@@ -99,6 +100,7 @@ periodics:
       - --ginkgo-parallel=1
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Ingress\]|\[Feature:NEG\]
+      - --timeout=320m
 
 - name: ci-ingress-gce-e2e-release-1-0
   agent: kubernetes
@@ -122,6 +124,7 @@ periodics:
       - --ginkgo-parallel=1
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=HTTP2|multiple\sTLS
+      - --timeout=320m
 
 - name: ci-ingress-gce-e2e-release-1-1
   agent: kubernetes
@@ -145,6 +148,7 @@ periodics:
       - --ginkgo-parallel=1
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Ingress\]
+      - --timeout=320m
 
 - name: ci-ingress-gce-e2e-release-1-2
   agent: kubernetes
@@ -168,6 +172,7 @@ periodics:
       - --ginkgo-parallel=1
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Ingress\]
+      - --timeout=320m
 
 - name: ci-ingress-gce-e2e-scale
   agent: kubernetes
@@ -192,6 +197,7 @@ periodics:
       - --ginkgo-parallel=1
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:IngressScale\]
+      - --timeout=320m
 
 - name: ci-ingress-gce-upgrade-e2e
   agent: kubernetes
@@ -216,3 +222,4 @@ periodics:
       - --ginkgo-parallel
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:IngressUpgrade\]
+      - --timeout=320m
