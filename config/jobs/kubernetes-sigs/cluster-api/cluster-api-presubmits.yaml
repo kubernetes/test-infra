@@ -3,8 +3,6 @@ presubmits:
   - name: pull-cluster-api-build
     always_run: true
     context: pull-cluster-api-build
-    rerun_command: "/test pull-cluster-api-build"
-    trigger: "/test( all| pull-cluster-api-build)"
     labels:
       preset-service-account: "true"
     spec:
@@ -20,8 +18,6 @@ presubmits:
   - name: pull-cluster-api-make
     always_run: true
     context: pull-cluster-api-make
-    rerun_command: "/test pull-cluster-api-make"
-    trigger: "/test( all| pull-cluster-api-make)"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -45,8 +41,6 @@ presubmits:
   - name: pull-cluster-api-test
     always_run: true
     context: pull-cluster-api-test
-    rerun_command: "/test pull-cluster-api-test"
-    trigger: "/test( all| pull-cluster-api-test)"
     labels:
       preset-service-account: "true"
     spec:

@@ -3,8 +3,6 @@ presubmits:
   - name: pull-cluster-api-provider-gcp-build
     always_run: true
     context: pull-cluster-api-provider-gcp-build
-    rerun_command: "/test pull-cluster-api-provider-gcp-build"
-    trigger: "/test( all| pull-cluster-api-provider-gcp-build)"
     labels:
       preset-service-account: "true"
     spec:
@@ -20,8 +18,6 @@ presubmits:
   - name: pull-cluster-api-provider-gcp-make
     always_run: true
     context: pull-cluster-api-provider-gcp-make
-    rerun_command: "/test pull-cluster-api-provider-gcp-make"
-    trigger: "/test( all| pull-cluster-api-provider-gcp-make)"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -45,8 +41,6 @@ presubmits:
   - name: pull-cluster-api-provider-gcp-test
     always_run: true
     context: pull-cluster-api-provider-gcp-test
-    rerun_command: "/test pull-cluster-api-provider-gcp-test"
-    trigger: "/test( all| pull-cluster-api-provider-gcp-test)"
     labels:
       preset-service-account: "true"
     spec:

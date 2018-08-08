@@ -4,8 +4,6 @@ presubmits:
     max_concurrency: 5
     always_run: true
     context: cloud-provider-gcp-tests
-    rerun_command: "/test cloud-provider-gcp-tests"
-    trigger: "(?m)^/test( all| cloud-provider-gcp-tests),?(\\s+|$)"
     decorate: true
     spec:
       containers:

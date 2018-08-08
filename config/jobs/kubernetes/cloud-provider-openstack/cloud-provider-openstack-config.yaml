@@ -3,8 +3,6 @@ presubmits:
   - name: pull-cloud-provider-openstack-check
     always_run: true
     context: pull-cloud-provider-openstack-check
-    rerun_command: "/test pull-cloud-provider-openstack-check"
-    trigger: "(?m)^/test( all| pull-cloud-provider-openstack-check),?(\\s+|$)"
     branches:
     - master
     labels:
@@ -24,8 +22,6 @@ presubmits:
   - name: pull-cloud-provider-openstack-test
     always_run: true
     context: pull-cloud-provider-openstack-test
-    rerun_command: "/test pull-cloud-provider-openstack-test"
-    trigger: "(?m)^/test( all| pull-cloud-provider-openstack-test),?(\\s+|$)"
     branches:
     - master
     labels:

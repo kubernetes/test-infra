@@ -3,8 +3,6 @@ presubmits:
   - name: pull-cluster-api-provider-openstack-make
     always_run: true
     context: pull-cluster-api-provider-openstack-make
-    rerun_command: "/test pull-cluster-api-provider-openstack-make"
-    trigger: "/test( all| pull-cluster-api-provider-openstack-make)"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"

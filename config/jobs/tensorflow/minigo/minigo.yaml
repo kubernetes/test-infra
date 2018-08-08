@@ -5,8 +5,6 @@ presubmits:
     context: pull-tf-minigo-cc
     branches:
     - master
-    rerun_command: "/test pull-tf-minigo-cc"
-    trigger: "(?m)^/test( all| pull-tf-minigo-cc),?(\\s+|$)"
     decorate: true
     spec:
       containers:
@@ -28,8 +26,6 @@ presubmits:
   - name: tf-minigo-presubmit
     context: tf-minigo-presubmit
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test tf-minigo-presubmit"
-    trigger: "(?m)^/test( all| tf-minigo-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:

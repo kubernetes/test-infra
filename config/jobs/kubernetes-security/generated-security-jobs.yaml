@@ -52,7 +52,7 @@ presubmits:
           secret:
             defaultMode: 256
             secretName: ssh-security
-      trigger: (?m)^/test pull-security-kubernetes-e2e-kubeadm-gce,?(\s+|$)
+      trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-kubeadm-gce,?($|\s.*)
     run_if_changed: ""
     skip_branches:
     - release-1.10
@@ -88,7 +88,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-bazel-build),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-build,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -139,7 +139,7 @@ presubmits:
           secret:
             defaultMode: 256
             secretName: ssh-security
-      trigger: (?m)^/test pull-security-kubernetes-e2e-kubeadm-gce,?(\s+|$)
+      trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-kubeadm-gce,?($|\s.*)
     run_if_changed: ""
     skip_report: false
     spec:
@@ -171,7 +171,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-bazel-build),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-build,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -222,7 +222,7 @@ presubmits:
           secret:
             defaultMode: 256
             secretName: ssh-security
-      trigger: (?m)^/test pull-security-kubernetes-e2e-kubeadm-gce,?(\s+|$)
+      trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-kubeadm-gce,?($|\s.*)
     run_if_changed: ""
     skip_report: false
     spec:
@@ -254,7 +254,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-bazel-build),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-build,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -305,7 +305,7 @@ presubmits:
           secret:
             defaultMode: 256
             secretName: ssh-security
-      trigger: (?m)^/test pull-security-kubernetes-e2e-kubeadm-gce,?(\s+|$)
+      trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-kubeadm-gce,?($|\s.*)
     run_if_changed: ""
     skip_report: false
     spec:
@@ -338,7 +338,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-bazel-build),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-build,?($|\s.*)
   - agent: kubernetes
     always_run: true
     cluster: security
@@ -386,7 +386,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-bazel-test),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-test,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -432,7 +432,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-bazel-test),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-test,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -477,7 +477,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-bazel-test),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-test,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -522,7 +522,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-bazel-test),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-test,?($|\s.*)
   - agent: kubernetes
     always_run: false
     cluster: security
@@ -563,7 +563,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-cross,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-cross,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -604,7 +604,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-cross,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-cross,?($|\s.*)
   - agent: kubernetes
     always_run: false
     cluster: security
@@ -643,7 +643,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-cross-prow,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-cross-prow,?($|\s.*)
   - agent: kubernetes
     always_run: false
     cluster: security
@@ -712,7 +712,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-dind-e2e,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-dind-e2e,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -755,7 +755,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test (containerd|pull-security-kubernetes-e2e-containerd-gce),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-containerd-gce,?($|\s.*)
   - agent: kubernetes
     always_run: true
     cluster: security
@@ -799,7 +799,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test (all|pull-security-kubernetes-e2e-gce),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -841,7 +841,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test (all|pull-security-kubernetes-e2e-gce),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -883,7 +883,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test (all|pull-security-kubernetes-e2e-gce),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -925,7 +925,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test (all|pull-security-kubernetes-e2e-gce),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -967,7 +967,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test (all|pull-security-kubernetes-e2e-gce-100-performance),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce-100-performance,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -1009,7 +1009,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-e2e-gce-big-performance,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce-big-performance,?($|\s.*)
   - agent: kubernetes
     always_run: true
     cluster: security
@@ -1055,7 +1055,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-e2e-gce-device-plugin-gpu),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce-device-plugin-gpu,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -1099,7 +1099,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-e2e-gce-device-plugin-gpu),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce-device-plugin-gpu,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -1143,7 +1143,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-e2e-gce-device-plugin-gpu),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce-device-plugin-gpu,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -1187,7 +1187,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-e2e-gce-device-plugin-gpu),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce-device-plugin-gpu,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -1229,7 +1229,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-e2e-gce-large-performance,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce-large-performance,?($|\s.*)
   - agent: kubernetes
     always_run: false
     cluster: security
@@ -1273,7 +1273,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-e2e-gke,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gke,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -1315,7 +1315,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-e2e-gke,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gke,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -1357,7 +1357,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-e2e-gke,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gke,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -1399,7 +1399,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-e2e-gke,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gke,?($|\s.*)
   - agent: kubernetes
     always_run: false
     cluster: security
@@ -1445,7 +1445,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-e2e-gke-device-plugin-gpu,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gke-device-plugin-gpu,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -1489,7 +1489,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-e2e-gke-device-plugin-gpu,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gke-device-plugin-gpu,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -1533,7 +1533,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-e2e-gke-device-plugin-gpu,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gke-device-plugin-gpu,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -1577,7 +1577,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-e2e-gke-device-plugin-gpu,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gke-device-plugin-gpu,?($|\s.*)
   - agent: kubernetes
     always_run: true
     cluster: security
@@ -1624,7 +1624,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-e2e-kops-aws),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-kops-aws,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -1669,7 +1669,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-e2e-kops-aws),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-kops-aws,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -1714,7 +1714,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-e2e-kops-aws),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-kops-aws,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -1759,7 +1759,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-e2e-kops-aws),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-kops-aws,?($|\s.*)
   - agent: kubernetes
     always_run: true
     cluster: security
@@ -1796,7 +1796,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-integration),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-integration,?($|\s.*)
   - agent: kubernetes
     always_run: false
     cluster: security
@@ -1834,7 +1834,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-integration-prow,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-integration-prow,?($|\s.*)
   - agent: kubernetes
     always_run: true
     cluster: security
@@ -1881,7 +1881,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test (all|pull-security-kubernetes-kubemark-e2e-gce-big),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-kubemark-e2e-gce-big,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -1926,7 +1926,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test (all|pull-security-kubernetes-kubemark-e2e-gce-big),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-kubemark-e2e-gce-big,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -1971,7 +1971,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test (all|pull-security-kubernetes-kubemark-e2e-gce-big),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-kubemark-e2e-gce-big,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -2016,7 +2016,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-kubemark-e2e-gce-big,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-kubemark-e2e-gce-big,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -2061,7 +2061,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-kubemark-e2e-gce-scale,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-kubemark-e2e-gce-scale,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -2100,7 +2100,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-local-e2e,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-local-e2e,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -2142,7 +2142,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-local-e2e-containerized,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-local-e2e-containerized,?($|\s.*)
   - agent: kubernetes
     always_run: true
     cluster: security
@@ -2184,7 +2184,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-node-e2e),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-node-e2e,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -2224,7 +2224,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-node-e2e),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-node-e2e,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -2264,7 +2264,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-node-e2e),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-node-e2e,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -2304,7 +2304,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-node-e2e),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-node-e2e,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -2345,7 +2345,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test (containerd|pull-security-kubernetes-node-e2e-containerd),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-node-e2e-containerd,?($|\s.*)
   - agent: kubernetes
     always_run: true
     cluster: security
@@ -2381,7 +2381,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-typecheck),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-typecheck,?($|\s.*)
   - agent: kubernetes
     always_run: true
     cluster: security
@@ -2418,7 +2418,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-verify),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-verify,?($|\s.*)
   - agent: kubernetes
     always_run: false
     cluster: security
@@ -2456,7 +2456,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-verify-prow,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-verify-prow,?($|\s.*)
   - agent: kubernetes
     always_run: false
     cluster: security
@@ -2500,7 +2500,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-bazel-build-canary,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-build-canary,?($|\s.*)
   - agent: kubernetes
     always_run: false
     cluster: security
@@ -2542,7 +2542,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-bazel-test-canary,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-test-canary,?($|\s.*)
   - agent: kubernetes
     always_run: false
     cluster: security
@@ -2584,4 +2584,4 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-bazel-test-integration-canary,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-test-integration-canary,?($|\s.*)

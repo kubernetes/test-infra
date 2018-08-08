@@ -3,8 +3,6 @@ presubmits:
   - name: kubeflow-examples-presubmit
     context: kubeflow-examples-presubmit
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test kubeflow-examples-presubmit"
-    trigger: "(?m)^/test( all| kubeflow-examples-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
@@ -18,8 +16,6 @@ presubmits:
   - name: kubeflow-presubmit
     context: kubeflow-presubmit
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test kubeflow-presubmit"
-    trigger: "(?m)^/test( all| kubeflow-presubmit),?(\\s+|$)"
     labels:
       preset-service-account: "true"
     spec:
@@ -31,8 +27,6 @@ presubmits:
   - name: kubeflow-pytorch-operator-presubmit
     context: kubeflow-pytorch-operator-presubmit
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test kubeflow-pytorch-operator-presubmit"
-    trigger: "(?m)^/test( all| kubeflow-pytorch-operator-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
@@ -46,8 +40,6 @@ presubmits:
   - name: kubeflow-reporting-presubmit
     context: kubeflow-reporting-presubmit
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test kubeflow-reporting-presubmit"
-    trigger: "(?m)^/test( all| kubeflow-reporting-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
@@ -61,8 +53,6 @@ presubmits:
   - name: kubeflow-website-presubmit
     context: kubeflow-website-presubmit
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test kubeflow-website-presubmit"
-    trigger: "(?m)^/test( all| kubeflow-website-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
@@ -76,8 +66,6 @@ presubmits:
   - name: kubeflow-testing-presubmit
     context: kubeflow-testing-presubmit
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test kubeflow-testing-presubmit"
-    trigger: "(?m)^/test( all| kubeflow-testing-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
@@ -91,8 +79,6 @@ presubmits:
   - name: kubeflow-tf-operator-presubmit
     context: kubeflow-tf-operator-presubmit
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test kubeflow-tf-operator-presubmit"
-    trigger: "(?m)^/test( all| kubeflow-tf-operator-presubmit),?(\\s+|$)"
     labels:
       preset-service-account: "true"
     spec:
@@ -104,8 +90,6 @@ presubmits:
   - name: kubeflow-katib-presubmit
     context: kubeflow-katib-presubmit
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test kubeflow-katib-presubmit"
-    trigger: "(?m)^/test( all| kubeflow-katib-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
@@ -119,8 +103,6 @@ presubmits:
   - name: kubeflow-experimental-kvc-presubmit
     context: kubeflow-experimental-kvc-presubmit
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test kubeflow-experimental-kvc-presubmit"
-    trigger: "(?m)^/test( all| kubeflow-experimental-kvc-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
@@ -134,8 +116,6 @@ presubmits:
   - name: kubeflow-experimental-seldon-presubmit
     context: kubeflow-experimental-seldon-presubmit
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test kubeflow-experimental-seldon-presubmit"
-    trigger: "(?m)^/test( all| kubeflow-experimental-seldon-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
@@ -149,8 +129,6 @@ presubmits:
   - name: kubeflow-experimental-beagle-presubmit
     context: kubeflow-experimental-beagle-presubmit
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test kubeflow-experimental-beagle-presubmit"
-    trigger: "(?m)^/test( all| kubeflow-experimental-beagle-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
@@ -164,8 +142,6 @@ presubmits:
   - name: kubeflow-caffe2-operator-presubmit
     context: kubeflow-caffe2-operator-presubmit
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test kubeflow-caffe2-operator-presubmit"
-    trigger: "(?m)^/test( all| kubeflow-caffe2-operator-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
@@ -179,8 +155,6 @@ presubmits:
   - name: kubeflow-kubebench-presubmit
     context: kubeflow-kubebench-presubmit
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test kubeflow-kubebench-presubmit"
-    trigger: "(?m)^/test( all| kubeflow-kubebench-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
@@ -194,8 +168,6 @@ presubmits:
   - name: kubeflow-mpi-operator-presubmit
     context: kubeflow-mpi-operator-presubmit
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test kubeflow-mpi-operator-presubmit"
-    trigger: "(?m)^/test( all| kubeflow-mpi-operator-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:

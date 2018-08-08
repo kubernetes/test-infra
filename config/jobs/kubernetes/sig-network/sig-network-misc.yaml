@@ -4,8 +4,6 @@ presubmits:
     context: pull-kubernetes-dns-test
     branches:
     - master
-    rerun_command: "/test pull-kubernetes-dns-test"
-    trigger: "(?m)^/test( all| pull-kubernetes-dns-test),?(\\s+|$)"
     always_run: true
     labels:
       preset-service-account: "true"
