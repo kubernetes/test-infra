@@ -56,6 +56,8 @@ ARTIFACT_UPLOADER_VERSION ?= $(TAG)
 NEEDS_REBASE_VERSION      ?= $(TAG)
 # CHECKCONFIG_VERSION is the version of the checkconfig image
 CHECKCONFIG_VERSION       ?= $(TAG)
+# CRIER_VERSION is the version of the crier image
+CRIER_VERSION             ?= $(TAG)
 
 # These are the usual GKE variables.
 PROJECT       ?= k8s-prow
@@ -269,3 +271,10 @@ checkconfig-image: alpine-image
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/checkconfig:$(CHECKCONFIG_VERSION)"
 
 .PHONY: checkconfig-image
+
+crier-image: alpine-image
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/crier/crier k8s.io/test-infra/prow/cmd/crier
+	docker build -t "$(REGISTRY)/$(PROJECT)/crier:$(CRIER_VERSION)" $(DOCKER_LABELS) cmd/crier
+	$(PUSH) "$(REGISTRY)/$(PROJECT)/crier:$(CRIER_VERSION)"
+
+.PHONY: crier-image

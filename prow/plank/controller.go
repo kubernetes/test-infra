@@ -414,7 +414,9 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 	} else {
 		pj.Status.URL = b.String()
 	}
+
 	reports <- pj
+
 	if prevState != pj.Status.State {
 		c.log.WithFields(pjutil.ProwJobFields(&pj)).
 			WithField("from", prevState).
