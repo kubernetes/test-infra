@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: splice
-        image: gcr.io/k8s-prow/splice:v20180723-3632407bc
+        image: gcr.io/k8s-prow/splice:v20180808-95b28d09b
         args:
         - --job-config-path=/etc/job-config
         volumeMounts:
