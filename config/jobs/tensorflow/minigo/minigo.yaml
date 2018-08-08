@@ -2,7 +2,6 @@ presubmits:
   tensorflow/minigo:
   - name: pull-tf-minigo-cc
     always_run: true
-    context: pull-tf-minigo-cc
     branches:
     - master
     decorate: true
@@ -24,7 +23,6 @@ presubmits:
       - name: minigo-image-pull
 
   - name: tf-minigo-presubmit
-    context: tf-minigo-presubmit
     always_run: true         # Run for every PR, or only when requested.
     branches:
     - master

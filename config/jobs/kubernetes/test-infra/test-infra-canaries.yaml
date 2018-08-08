@@ -1,7 +1,6 @@
 presubmits:  
   kubernetes/test-infra:
   - name: pull-test-infra-bazel-canary
-    context: pull-test-infra-bazel-canary
     always_run: false
     labels:
       preset-service-account: "true"

@@ -20,7 +20,6 @@ presubmits:
   google/cadvisor:
   - name: pull-cadvisor-e2e
     always_run: true
-    context: pull-cadvisor-e2e
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"

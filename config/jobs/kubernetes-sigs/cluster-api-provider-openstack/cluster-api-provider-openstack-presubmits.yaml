@@ -2,7 +2,6 @@ presubmits:
   kubernetes-sigs/cluster-api-provider-openstack:
   - name: pull-cluster-api-provider-openstack-make
     always_run: true
-    context: pull-cluster-api-provider-openstack-make
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"

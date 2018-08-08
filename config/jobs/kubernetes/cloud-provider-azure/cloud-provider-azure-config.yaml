@@ -31,7 +31,6 @@ presubmits:
   kubernetes/cloud-provider-azure:
   - name: pull-cloud-provider-azure-check
     always_run: true
-    context: pull-cloud-provider-azure-check
     branches:
     - master
     labels:
@@ -50,7 +49,6 @@ presubmits:
 
   - name: pull-cloud-provider-azure-e2e
     always_run: false
-    context: pull-cloud-provider-azure-e2e
     branches:
     - master
     labels:
@@ -76,7 +74,6 @@ presubmits:
 
   - name: pull-cloud-provider-azure-unit
     always_run: true
-    context: pull-cloud-provider-azure-unit
     branches:
     - master
     labels:

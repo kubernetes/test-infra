@@ -2,7 +2,6 @@ presubmits:
   helm/charts:
   - name: pull-charts-e2e
     always_run: true
-    context: pull-charts-e2e
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"

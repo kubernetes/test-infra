@@ -3,7 +3,6 @@ presubmits:
   - name: cloud-provider-gcp-tests
     max_concurrency: 5
     always_run: true
-    context: cloud-provider-gcp-tests
     decorate: true
     spec:
       containers:

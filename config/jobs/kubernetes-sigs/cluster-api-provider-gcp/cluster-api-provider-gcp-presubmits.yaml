@@ -2,7 +2,6 @@ presubmits:
   kubernetes-sigs/cluster-api-provider-gcp:
   - name: pull-cluster-api-provider-gcp-build
     always_run: true
-    context: pull-cluster-api-provider-gcp-build
     labels:
       preset-service-account: "true"
     spec:
@@ -17,7 +16,6 @@ presubmits:
         - "./scripts/ci-build.sh"
   - name: pull-cluster-api-provider-gcp-make
     always_run: true
-    context: pull-cluster-api-provider-gcp-make
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -40,7 +38,6 @@ presubmits:
             memory: "6Gi"
   - name: pull-cluster-api-provider-gcp-test
     always_run: true
-    context: pull-cluster-api-provider-gcp-test
     labels:
       preset-service-account: "true"
     spec:

@@ -439,7 +439,6 @@ presets:
 presubmits:
   kubernetes/community:
   - name: pull-community-verify
-    context: pull-community-verify
     branches:
     - master
     always_run: true
@@ -455,7 +454,6 @@ presubmits:
 
   GoogleCloudPlatform/k8s-multicluster-ingress:
   - name: pull-kubernetes-multicluster-ingress-test
-    context: pull-kubernetes-multicluster-ingress-test
     branches:
     - master
     always_run: true
@@ -479,7 +477,6 @@ presubmits:
 
   kubernetes/federation:
   - name: pull-federation-bazel-test
-    context: pull-federation-bazel-test
     always_run: true
     labels:
       preset-service-account: "true"
@@ -507,7 +504,6 @@ presubmits:
 
   - name: pull-federation-e2e-gce
     always_run: true
-    context: pull-federation-e2e-gce
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -525,7 +521,6 @@ presubmits:
         securityContext:
           privileged: true
   - name: pull-federation-verify
-    context: pull-federation-verify
     always_run: true
     labels:
       preset-service-account: "true"
@@ -540,7 +535,6 @@ presubmits:
   kubernetes/heapster:
   - name: pull-heapster-e2e
     always_run: true
-    context: pull-heapster-e2e
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -556,7 +550,6 @@ presubmits:
           privileged: true
   - name: pull-heapster-unit
     always_run: true
-    context: pull-heapster-unit
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -570,7 +563,6 @@ presubmits:
 
   kubernetes/kops:
   - name: pull-kops-bazel-build
-    context: pull-kops-bazel-build
     branches:
     - master
     always_run: true
@@ -599,7 +591,6 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-kops-bazel-test
-    context: pull-kops-bazel-test
     branches:
     - master
     always_run: true
@@ -629,7 +620,6 @@ presubmits:
 
   - name: pull-kops-e2e-kubernetes-aws
     always_run: true
-    context: pull-kops-e2e-kubernetes-aws
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
@@ -653,7 +643,6 @@ presubmits:
             memory: "6Gi"
 
   - name: pull-kops-verify-bazel
-    context: pull-kops-verify-bazel
     branches:
     - master
     always_run: true
@@ -668,7 +657,6 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
 
   - name: pull-kops-verify-boilerplate
-    context: pull-kops-verify-boilerplate
     branches:
     - master
     always_run: true
@@ -683,7 +671,6 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
 
   - name: pull-kops-verify-gofmt
-    context: pull-kops-verify-gofmt
     branches:
     - master
     always_run: true
@@ -698,7 +685,6 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
 
   - name: pull-kops-verify-govet
-    context: pull-kops-verify-govet
     branches:
     - master
     always_run: true
@@ -713,7 +699,6 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
 
   - name: pull-kops-verify-packages
-    context: pull-kops-verify-packages
     branches:
     - master
     always_run: true
@@ -729,7 +714,6 @@ presubmits:
 
   kubernetes/cluster-registry:
   - name: pull-cluster-registry-verify-gensrc
-    context: pull-cluster-registry-verify-gensrc
     always_run: true
     labels:
       preset-service-account: "true"
@@ -750,7 +734,6 @@ presubmits:
           requests:
             memory: "2Gi"
   - name: pull-cluster-registry-verify-gosrc
-    context: pull-cluster-registry-verify-gosrc
     always_run: true
     labels:
       preset-service-account: "true"
@@ -774,7 +757,6 @@ presubmits:
   containerd/cri:
   - name: pull-cri-containerd-build
     always_run: true
-    context: pull-cri-containerd-build
     skip_branches:
     - v0.1
     labels:
@@ -793,7 +775,6 @@ presubmits:
       always_run: true
       skip_report: false
       max_concurrency: 8
-      context: pull-cri-containerd-node-e2e
       labels:
         preset-service-account: "true"
         preset-k8s-ssh: "true"
@@ -816,7 +797,6 @@ presubmits:
       always_run: true
       skip_report: false
       max_concurrency: 8
-      context: pull-cri-containerd-node-e2e
       labels:
         preset-service-account: "true"
         preset-k8s-ssh: "true"
@@ -836,7 +816,6 @@ presubmits:
 
   - name: pull-cri-containerd-verify
     always_run: true
-    context: pull-cri-containerd-verify
     skip_branches:
     - v0.1
     labels:
@@ -851,7 +830,6 @@ presubmits:
 
   kubernetes/kubernetes:
   - name: pull-kubernetes-bazel-build
-    context: pull-kubernetes-bazel-build
     always_run: true
     skip_branches:
     - release-1.10 # different bazel version
@@ -881,7 +859,6 @@ presubmits:
             memory: "6Gi"
     run_after_success:
     - name: pull-kubernetes-e2e-kubeadm-gce
-      context: pull-kubernetes-e2e-kubeadm-gce
       max_concurrency: 8
       skip_report: true
       run_if_changed: '^(cmd/kubeadm|build/debs).*$'
@@ -903,7 +880,6 @@ presubmits:
           - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
             value: "true"
   - name: pull-kubernetes-bazel-build
-    context: pull-kubernetes-bazel-build
     always_run: true
     branches:
     - release-1.10
@@ -931,7 +907,6 @@ presubmits:
             memory: "6Gi"
     run_after_success:
     - name: pull-kubernetes-e2e-kubeadm-gce
-      context: pull-kubernetes-e2e-kubeadm-gce
       max_concurrency: 8
       skip_report: true
       run_if_changed: '^(cmd/kubeadm|build/debs).*$'
@@ -951,7 +926,6 @@ presubmits:
           - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
             value: "true"
   - name: pull-kubernetes-bazel-build
-    context: pull-kubernetes-bazel-build
     always_run: true
     branches:
     - release-1.9
@@ -978,7 +952,6 @@ presubmits:
             memory: "6Gi"
     run_after_success:
     - name: pull-kubernetes-e2e-kubeadm-gce
-      context: pull-kubernetes-e2e-kubeadm-gce
       max_concurrency: 8
       skip_report: true
       run_if_changed: '^(cmd/kubeadm|build/debs).*$'
@@ -998,7 +971,6 @@ presubmits:
           - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
             value: "true"
   - name: pull-kubernetes-bazel-build
-    context: pull-kubernetes-bazel-build
     always_run: true
     branches:
     - release-1.8
@@ -1025,7 +997,6 @@ presubmits:
             memory: "6Gi"
     run_after_success:
     - name: pull-kubernetes-e2e-kubeadm-gce
-      context: pull-kubernetes-e2e-kubeadm-gce
       max_concurrency: 8
       skip_report: true
       run_if_changed: '^(cmd/kubeadm|build/debs).*$'
@@ -1046,7 +1017,6 @@ presubmits:
             value: "true"
 
   - name: pull-kubernetes-bazel-test
-    context: pull-kubernetes-bazel-test
     always_run: true
     skip_branches:
     - release-1.10 # different bazel version
@@ -1079,7 +1049,6 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-bazel-test
-    context: pull-kubernetes-bazel-test
     always_run: true
     branches:
     - release-1.10
@@ -1110,7 +1079,6 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-bazel-test
-    context: pull-kubernetes-bazel-test
     always_run: true
     branches:
     - release-1.9
@@ -1139,7 +1107,6 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-bazel-test
-    context: pull-kubernetes-bazel-test
     always_run: true
     branches:
     - release-1.8
@@ -1168,7 +1135,6 @@ presubmits:
             memory: "6Gi"
 
   - name: pull-kubernetes-cross
-    context: pull-kubernetes-cross
     run_if_changed: '^(build\/|hack\/lib\/)|(Makefile)$'
     skip_branches:
     - release-1.9
@@ -1194,7 +1160,6 @@ presubmits:
             memory: "41Gi"
 
   - name: pull-kubernetes-cross
-    context: pull-kubernetes-cross
     # typecheck doesn't exist for < 1.10 currently, so we still run cross more often
     run_if_changed: '^(build\/|hack\/lib\/)|(Makefile)|(.*_(windows|linux|osx|unsupported)(_test)?\.go)$'
     branches:
@@ -1221,7 +1186,6 @@ presubmits:
             memory: "41Gi"
 
   - name: pull-kubernetes-cross-prow
-    context: pull-kubernetes-cross-prow
     always_run: false
     labels:
       preset-service-account: "true"
@@ -1244,7 +1208,6 @@ presubmits:
             cpu: 7
             memory: "41Gi"
   - name: pull-kubernetes-dind-e2e
-    context: pull-kubernetes-dind-e2e
     always_run: false
     skip_branches:
     - release-1.9
@@ -1300,7 +1263,6 @@ presubmits:
           type: Directory
 
   - name: pull-kubernetes-e2e-containerd-gce
-    context: pull-kubernetes-e2e-containerd-gce
     always_run: false
     branches:
     - master
@@ -1326,7 +1288,6 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gce
-    context: pull-kubernetes-e2e-gce
     always_run: true
     skip_branches:
     - release-1.10 # per-release image
@@ -1353,7 +1314,6 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gce
-    context: pull-kubernetes-e2e-gce
     always_run: true
     branches:
     - release-1.10
@@ -1378,7 +1338,6 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gce
-    context: pull-kubernetes-e2e-gce
     always_run: true
     # TODO(bentheelder): enforce this pattern (skip all releases) or implement
     # something better like https://github.com/kubernetes/test-infra/pull/4918
@@ -1404,7 +1363,6 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gce
-    context: pull-kubernetes-e2e-gce
     always_run: true
     branches:
     - release-1.8
@@ -1429,7 +1387,6 @@ presubmits:
             memory: "6Gi"
 
   - name: pull-kubernetes-e2e-gce-100-performance
-    context: pull-kubernetes-e2e-gce-100-performance
     always_run: true
     skip_report: false
     max_concurrency: 12
@@ -1455,7 +1412,6 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gce-big-performance
-    context: pull-kubernetes-e2e-gce-big-performance
     always_run: false
     max_concurrency: 1
     branches:
@@ -1488,7 +1444,6 @@ presubmits:
     always_run: true
     skip_report: false
     max_concurrency: 12
-    context: pull-kubernetes-e2e-gce-device-plugin-gpu
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -1517,7 +1472,6 @@ presubmits:
     always_run: true
     skip_report: false
     max_concurrency: 12
-    context: pull-kubernetes-e2e-gce-device-plugin-gpu
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -1546,7 +1500,6 @@ presubmits:
     always_run: true
     skip_report: false
     max_concurrency: 12
-    context: pull-kubernetes-e2e-gce-device-plugin-gpu
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -1574,7 +1527,6 @@ presubmits:
     always_run: true
     skip_report: false
     max_concurrency: 12
-    context: pull-kubernetes-e2e-gce-device-plugin-gpu
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -1597,7 +1549,6 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gce-large-performance
-    context: pull-kubernetes-e2e-gce-large-performance
     always_run: false
     max_concurrency: 1
     branches:
@@ -1623,7 +1574,6 @@ presubmits:
             memory: "6Gi"
 
   - name: pull-kubernetes-e2e-gke
-    context: pull-kubernetes-e2e-gke
     always_run: false
     run_if_changed: '^(cluster/gce|cluster/addons).*$'
     # TODO(bentheelder): enforce this pattern (skip all releases) or implement
@@ -1652,7 +1602,6 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gke
-    context: pull-kubernetes-e2e-gke
     always_run: false
     run_if_changed: '^(cluster/gce|cluster/addons).*$'
     branches:
@@ -1677,7 +1626,6 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gke
-    context: pull-kubernetes-e2e-gke
     always_run: false
     run_if_changed: '^(cluster/gce|cluster/addons).*$'
     branches:
@@ -1702,7 +1650,6 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gke
-    context: pull-kubernetes-e2e-gke
     always_run: false
     run_if_changed: '^(cluster/gce|cluster/addons).*$'
     branches:
@@ -1735,7 +1682,6 @@ presubmits:
     always_run: false
     skip_report: false
     max_concurrency: 1
-    context: pull-kubernetes-e2e-gke-device-plugin-gpu
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -1763,7 +1709,6 @@ presubmits:
     always_run: false
     skip_report: false
     max_concurrency: 1
-    context: pull-kubernetes-e2e-gke-device-plugin-gpu
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -1791,7 +1736,6 @@ presubmits:
     always_run: false
     skip_report: false
     max_concurrency: 1
-    context: pull-kubernetes-e2e-gke-device-plugin-gpu
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -1819,7 +1763,6 @@ presubmits:
     always_run: false
     skip_report: false
     max_concurrency: 1
-    context: pull-kubernetes-e2e-gke-device-plugin-gpu
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -1849,7 +1792,6 @@ presubmits:
     - release-1.8  # per-release image
     max_concurrency: 12
     always_run: true
-    context: pull-kubernetes-e2e-kops-aws
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
@@ -1878,7 +1820,6 @@ presubmits:
     - release-1.10  # per-release image
     max_concurrency: 12
     always_run: true
-    context: pull-kubernetes-e2e-kops-aws
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
@@ -1907,7 +1848,6 @@ presubmits:
     - release-1.9  # per-release image
     max_concurrency: 12
     always_run: true
-    context: pull-kubernetes-e2e-kops-aws
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
@@ -1935,7 +1875,6 @@ presubmits:
     - release-1.8
     max_concurrency: 12
     always_run: true
-    context: pull-kubernetes-e2e-kops-aws
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
@@ -1960,7 +1899,6 @@ presubmits:
             memory: "6Gi"
   - name: pull-kubernetes-integration
     always_run: true
-    context: pull-kubernetes-integration
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -1981,7 +1919,6 @@ presubmits:
             cpu: 4
   - name: pull-kubernetes-integration-prow
     always_run: false
-    context: pull-kubernetes-integration-prow
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -2009,7 +1946,6 @@ presubmits:
     - release-1.10  # per-release image
     - release-1.9  # per-release image
     - release-1.8  # per-release image
-    context: pull-kubernetes-kubemark-e2e-gce-big
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -2042,7 +1978,6 @@ presubmits:
     max_concurrency: 12
     branches:
     - release-1.10  # per-release image
-    context: pull-kubernetes-kubemark-e2e-gce-big
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -2075,7 +2010,6 @@ presubmits:
     max_concurrency: 12
     branches:
     - release-1.9  # per-release image
-    context: pull-kubernetes-kubemark-e2e-gce-big
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -2108,7 +2042,6 @@ presubmits:
     max_concurrency: 12
     branches:
     - release-1.8
-    context: pull-kubernetes-kubemark-e2e-gce-big
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -2141,7 +2074,6 @@ presubmits:
     max_concurrency: 1
     branches:
     - master
-    context: pull-kubernetes-kubemark-e2e-gce-scale
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -2175,7 +2107,6 @@ presubmits:
     always_run: false
     skip_report: false
     max_concurrency: 8
-    context: pull-kubernetes-local-e2e
     run_if_changed: '(hyperkube|local-up-cluster)'
     labels:
       preset-service-account: "true"
@@ -2200,7 +2131,6 @@ presubmits:
     - master
     always_run: false
     skip_report: false
-    context: pull-kubernetes-local-e2e-containerized
     run_if_changed: '^(pkg|cmd)/kubelet.*$'
     labels:
       preset-service-account: "true"
@@ -2230,7 +2160,6 @@ presubmits:
     - release-1.8  # per-release image
     always_run: true
     max_concurrency: 12
-    context: pull-kubernetes-node-e2e
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -2255,7 +2184,6 @@ presubmits:
     - release-1.10  # per-release image
     always_run: true
     max_concurrency: 12
-    context: pull-kubernetes-node-e2e
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -2280,7 +2208,6 @@ presubmits:
     - release-1.9  # per-release image
     always_run: true
     max_concurrency: 12
-    context: pull-kubernetes-node-e2e
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -2305,7 +2232,6 @@ presubmits:
     - release-1.8
     always_run: true
     max_concurrency: 12
-    context: pull-kubernetes-node-e2e
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -2330,7 +2256,6 @@ presubmits:
     - master
     always_run: false
     max_concurrency: 12
-    context: pull-kubernetes-node-e2e-containerd
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -2354,7 +2279,6 @@ presubmits:
   - name: pull-kubernetes-typecheck
     always_run: true
     skip_report: false
-    context: pull-kubernetes-typecheck
     skip_branches:
     - release-1.9 # doesn't have typecheck
     - release-1.8 # doesn't have typecheck
@@ -2373,7 +2297,6 @@ presubmits:
 
   - name: pull-kubernetes-verify
     always_run: true
-    context: pull-kubernetes-verify
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -2395,7 +2318,6 @@ presubmits:
 
   - name: pull-kubernetes-verify-prow
     always_run: false
-    context: pull-kubernetes-verify-prow
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -2418,7 +2340,6 @@ presubmits:
 
   kubernetes-sigs/testing_frameworks:
   - name: pull-frameworks-test
-    context: pull-frameworks-test
     branches:
     - master
     always_run: true
@@ -2435,7 +2356,6 @@ presubmits:
 
   kubernetes-sigs/poseidon:
   - name: ci-poseidon-e2e-gce
-    context: ci-poseidon-e2e-gce
     always_run: true
     labels:
       preset-service-account: "true"
@@ -2454,7 +2374,6 @@ presubmits:
         securityContext:
           privileged: true
   - name: pull-poseidon-bazel
-    context: pull-poseidon-bazel
     always_run: true
     labels:
       preset-service-account: "true"
@@ -2475,7 +2394,6 @@ presubmits:
           requests:
             memory: "2Gi"
   - name: pull-poseidon-verify
-    context: pull-poseidon-verify
     branches:
     - master
     always_run: true
@@ -2492,7 +2410,6 @@ presubmits:
         - "--timeout=45"
   kubernetes/release:
   - name: pull-release-cluster-up
-    context: pull-release-cluster-up
     always_run: true
     labels:
       preset-service-account: "true"

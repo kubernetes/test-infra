@@ -1,7 +1,6 @@
 presubmits:
   kubernetes/cloud-provider-vsphere:
   - name: pull-cloud-provider-vsphere-test
-    context: pull-cloud-provider-vsphere-test
     branches:
     - master
     always_run: true

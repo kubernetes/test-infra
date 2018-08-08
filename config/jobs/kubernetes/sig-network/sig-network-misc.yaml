@@ -1,7 +1,6 @@
 presubmits:
   kubernetes/dns:
   - name: pull-kubernetes-dns-test
-    context: pull-kubernetes-dns-test
     branches:
     - master
     always_run: true

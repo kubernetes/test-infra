@@ -1,7 +1,6 @@
 presubmits:
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
   - name: pull-gcp-compute-persistent-disk-csi-driver-e2e
-    context: pull-gcp-compute-persistent-disk-csi-driver-e2e
     always_run: true
     labels:
       preset-service-account: "true"
@@ -22,7 +21,6 @@ presubmits:
         - name: ZONE
           value: us-central1-c
   - name: pull-gcp-compute-persistent-disk-csi-driver-sanity
-    context: pull-gcp-compute-persistent-disk-csi-driver-sanity
     always_run: true
     labels:
       preset-service-account: "true"
@@ -39,7 +37,6 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "test/run-sanity.sh"
   - name: pull-gcp-compute-persistent-disk-csi-driver-unit
-    context: pull-gcp-compute-persistent-disk-csi-driver-unit
     always_run: true
     labels:
       preset-service-account: "true"
@@ -56,7 +53,6 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "test/run-unit.sh"
   - name: pull-gcp-compute-persistent-disk-csi-driver-verify
-    context: pull-gcp-compute-persistent-disk-csi-driver-verify
     always_run: true
     labels:
       preset-service-account: "true"

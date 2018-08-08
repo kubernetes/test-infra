@@ -21,7 +21,6 @@ presubmits:
 #        - name: ZONE
 #          value: us-central1-c
   - name: pull-gcp-filestore-csi-driver-sanity
-    context: pull-gcp-filestore-csi-driver-sanity
     always_run: true
     labels:
       preset-service-account: "true"
@@ -38,7 +37,6 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "test/run_sanity.sh"
   - name: pull-gcp-filestore-csi-driver-unit
-    context: pull-gcp-filestore-csi-driver-unit
     always_run: true
     labels:
       preset-service-account: "true"
@@ -55,7 +53,6 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "test/run_unit.sh"
   - name: pull-gcp-filestore-csi-driver-verify
-    context: pull-gcp-filestore-csi-driver-verify
     always_run: true
     labels:
       preset-service-account: "true"

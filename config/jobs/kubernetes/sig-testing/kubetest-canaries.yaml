@@ -1,7 +1,6 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-bazel-build-canary
-    context: pull-kubernetes-bazel-build-canary
     always_run: false
     labels:
       preset-service-account: "true"
@@ -29,7 +28,6 @@ presubmits:
             memory: "6Gi"
 
   - name: pull-kubernetes-bazel-test-canary
-    context: pull-kubernetes-bazel-test-canary
     always_run: false
     labels:
       preset-service-account: "true"
@@ -57,7 +55,6 @@ presubmits:
             memory: "6Gi"
 
   - name: pull-kubernetes-bazel-test-integration-canary
-    context: pull-kubernetes-bazel-test-integration-canary
     always_run: false
     labels:
       preset-service-account: "true"

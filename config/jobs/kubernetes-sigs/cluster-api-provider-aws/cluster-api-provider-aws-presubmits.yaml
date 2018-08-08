@@ -2,7 +2,6 @@ presubmits:
   kubernetes-sigs/cluster-api-provider-aws:
   - name: pull-cluster-api-provider-aws-make
     always_run: true
-    context: pull-cluster-api-provider-aws-make
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"

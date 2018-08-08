@@ -2,7 +2,6 @@ presubmits:
   kubernetes-sigs/cluster-api:
   - name: pull-cluster-api-build
     always_run: true
-    context: pull-cluster-api-build
     labels:
       preset-service-account: "true"
     spec:
@@ -17,7 +16,6 @@ presubmits:
         - "./scripts/ci-build.sh"
   - name: pull-cluster-api-make
     always_run: true
-    context: pull-cluster-api-make
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -40,7 +38,6 @@ presubmits:
             memory: "6Gi"
   - name: pull-cluster-api-test
     always_run: true
-    context: pull-cluster-api-test
     labels:
       preset-service-account: "true"
     spec:

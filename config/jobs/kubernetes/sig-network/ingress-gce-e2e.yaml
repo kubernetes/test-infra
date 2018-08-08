@@ -1,7 +1,6 @@
 presubmits:
   kubernetes/ingress-gce:
   - name: pull-ingress-gce-test
-    context: pull-ingress-gce-test
     always_run: true
     labels:
       preset-service-account: "true"

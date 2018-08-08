@@ -1,7 +1,6 @@
 presubmits:
   kubernetes-incubator/service-catalog:
   - name: pull-service-catalog-unit
-    context: pull-service-catalog-unit
     always_run: true
     skip_report: false
     decorate: true
@@ -16,7 +15,6 @@ presubmits:
         - name: NO_DOCKER
           value: "1"
   - name: pull-service-catalog-integration
-    context: pull-service-catalog-integration
     always_run: true
     skip_report: false
     labels:
@@ -36,7 +34,6 @@ presubmits:
         securityContext:
           privileged: true
   - name: pull-service-catalog-xbuild
-    context: pull-service-catalog-xbuild
     always_run: true
     skip_report: false
     labels:

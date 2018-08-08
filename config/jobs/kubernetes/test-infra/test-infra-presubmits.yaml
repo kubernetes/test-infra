@@ -1,7 +1,6 @@
 presubmits:
   kubernetes/test-infra:
   - name: pull-test-infra-bazel
-    context: pull-test-infra-bazel
     branches:
     - master
     always_run: true
@@ -29,7 +28,6 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-test-infra-gubernator
-    context: pull-test-infra-gubernator
     branches:
     - master
     run_if_changed: 'gubernator|prow/config.yaml'
@@ -48,7 +46,6 @@ presubmits:
         - ./gubernator/test-gubernator.sh
 
   - name: pull-test-infra-lint
-    context: pull-test-infra-lint
     always_run: true
     labels:
       preset-service-account: "true"
@@ -77,7 +74,6 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-test-infra-verify-bazel
-    context: pull-test-infra-verify-bazel
     branches:
     - master
     always_run: true
@@ -95,7 +91,6 @@ presubmits:
         - ./hack/verify-bazel.sh
 
   - name: pull-test-infra-verify-config
-    context: pull-test-infra-verify-config
     branches:
     - master
     run_if_changed: '^prow/config.yaml$'
@@ -122,7 +117,6 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-test-infra-verify-config-canary
-    context: pull-test-infra-verify-config-canary
     branches:
     - master
     path_alias: "k8s.io/test-infra"
@@ -149,7 +143,6 @@ presubmits:
         emptyDir: {}
 
   - name: pull-test-infra-verify-deps
-    context: pull-test-infra-verify-deps
     branches:
     - master
     run_if_changed: '^(Gopkg\.|^vendor/).*$'
@@ -175,7 +168,6 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-test-infra-verify-codegen
-    context: pull-test-infra-verify-codegen
     branches:
     - master
     always_run: true
@@ -191,7 +183,6 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-test-infra-verify-gofmt
-    context: pull-test-infra-verify-gofmt
     branches:
     - master
     always_run: true
@@ -209,7 +200,6 @@ presubmits:
         - ./hack/verify-gofmt.sh
 
   - name: pull-test-infra-verify-govet
-    context: pull-test-infra-verify-govet
     branches:
     - master
     always_run: true
@@ -227,7 +217,6 @@ presubmits:
         - ./hack/verify-govet.sh
 
   - name: pull-test-infra-verify-labels
-    context: pull-test-infra-verify-labels
     branches:
     - master
     run_if_changed: '^label_sync'
