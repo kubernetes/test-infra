@@ -1,7 +1,6 @@
 presubmits:
   tensorflow/minigo:
   - name: pull-tf-minigo-cc
-    agent: kubernetes
     always_run: true
     context: pull-tf-minigo-cc
     branches:
@@ -28,7 +27,6 @@ presubmits:
 
   - name: tf-minigo-presubmit
     context: tf-minigo-presubmit
-    agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
     rerun_command: "/test tf-minigo-presubmit"
     trigger: "(?m)^/test( all| tf-minigo-presubmit),?(\\s+|$)"
@@ -52,7 +50,6 @@ presubmits:
 postsubmits:
   tensorflow/minigo:
   - name: tf-minigo-postsubmit
-    agent: kubernetes
     branches:
     - master
     labels:
@@ -73,7 +70,6 @@ postsubmits:
 periodics:
 - name: tf-minigo-periodic
   interval: 8h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
   spec:

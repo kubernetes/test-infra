@@ -1,7 +1,6 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-bazel-build-canary
-    agent: kubernetes
     context: pull-kubernetes-bazel-build-canary
     always_run: false
     rerun_command: "/test pull-kubernetes-bazel-build-canary"
@@ -32,7 +31,6 @@ presubmits:
             memory: "6Gi"
 
   - name: pull-kubernetes-bazel-test-canary
-    agent: kubernetes
     context: pull-kubernetes-bazel-test-canary
     always_run: false
     rerun_command: "/test pull-kubernetes-bazel-test-canary"
@@ -63,7 +61,6 @@ presubmits:
             memory: "6Gi"
 
   - name: pull-kubernetes-bazel-test-integration-canary
-    agent: kubernetes
     context: pull-kubernetes-bazel-test-integration-canary
     always_run: false
     rerun_command: "/test pull-kubernetes-bazel-test-integration-canary"
@@ -96,7 +93,6 @@ presubmits:
 periodics:
 - name: ci-kubernetes-e2e-prow-canary
   interval: 1h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -118,7 +114,6 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=65m
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-canary
   labels:
     preset-service-account: "true"
@@ -146,7 +141,6 @@ periodics:
       imagePullPolicy: Always
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-scalability-canary
   labels:
     preset-service-account: "true"
@@ -173,7 +167,6 @@ periodics:
       imagePullPolicy: Always
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-canary
   labels:
     preset-service-account: "true"
@@ -200,7 +193,6 @@ periodics:
       imagePullPolicy: Always
 
 - interval: 1h
-  agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-canary
   labels:
     preset-service-account: "true"
@@ -229,7 +221,6 @@ periodics:
       imagePullPolicy: Always
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-kops-gce-canary
   labels:
     preset-service-account: "true"
@@ -255,7 +246,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-node-canary
   interval: 1h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -283,7 +273,6 @@ periodics:
 
 - name: ci-kubernetes-kubemark-100-canary
   interval: 1h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"

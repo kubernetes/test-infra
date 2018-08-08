@@ -1,11 +1,7 @@
 presubmits:
   kubernetes-sigs/gcp-filestore-csi-driver:
 #  - name: pull-gcp-filestore-csi-driver-e2e
-#    context: pull-gcp-filestore-csi-driver-e2e
 #    always_run: true
-#    rerun_command: "/test pull-gcp-filestore-csi-driver-e2e"
-#    trigger: "(?m)^/test( all| pull-gcp-filestore-csi-driver-e2e),?(\\s+|$)"
-#    agent: kubernetes
 #    labels:
 #      preset-service-account: "true"
 #      preset-k8s-ssh: "true"
@@ -29,7 +25,6 @@ presubmits:
     always_run: true
     rerun_command: "/test pull-gcp-filestore-csi-driver-sanity"
     trigger: "(?m)^/test( all| pull-gcp-filestore-csi-driver-sanity),?(\\s+|$)"
-    agent: kubernetes
     labels:
       preset-service-account: "true"
     spec:
@@ -49,7 +44,6 @@ presubmits:
     always_run: true
     rerun_command: "/test pull-gcp-filestore-csi-driver-unit"
     trigger: "(?m)^/test( all| pull-gcp-filestore-csi-driver-unit),?(\\s+|$)"
-    agent: kubernetes
     labels:
       preset-service-account: "true"
     spec:
@@ -69,7 +63,6 @@ presubmits:
     always_run: true
     rerun_command: "/test pull-gcp-filestore-csi-driver-verify"
     trigger: "(?m)^/test( all| pull-gcp-filestore-csi-driver-verify),?(\\s+|$)"
-    agent: kubernetes
     labels:
       preset-service-account: "true"
     spec:

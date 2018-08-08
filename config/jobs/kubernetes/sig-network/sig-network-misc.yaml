@@ -1,7 +1,6 @@
 presubmits:
   kubernetes/dns:
   - name: pull-kubernetes-dns-test
-    agent: kubernetes
     context: pull-kubernetes-dns-test
     branches:
     - master
@@ -23,7 +22,6 @@ presubmits:
 
 periodics:
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-alpha-api
   labels:
     preset-service-account: "true"
@@ -50,7 +48,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 6h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-coredns-performance
   labels:
     preset-service-account: "true"
@@ -76,7 +73,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 6h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-kubedns-performance
   labels:
     preset-service-account: "true"
@@ -102,7 +98,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 60m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-coredns
   labels:
     preset-service-account: "true"
@@ -126,7 +121,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-ingress
   labels:
     preset-service-account: "true"
@@ -150,7 +144,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 60m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-ingress-manual-network
   labels:
     preset-service-account: "true"
@@ -174,7 +167,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-ip-alias
   labels:
     preset-service-account: "true"
@@ -201,7 +193,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 60m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-ipvs
   labels:
     preset-service-account: "true"
@@ -228,7 +219,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-ingress
   labels:
     preset-service-account: "true"

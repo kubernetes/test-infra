@@ -5,7 +5,6 @@ presubmits:
     always_run: true
     rerun_command: "/test pull-gcp-compute-persistent-disk-csi-driver-e2e"
     trigger: "(?m)^/test( all| pull-gcp-compute-persistent-disk-csi-driver-e2e),?(\\s+|$)"
-    agent: kubernetes
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -29,7 +28,6 @@ presubmits:
     always_run: true
     rerun_command: "/test pull-gcp-compute-persistent-disk-csi-driver-sanity"
     trigger: "(?m)^/test( all| pull-gcp-compute-persistent-disk-csi-driver-sanity),?(\\s+|$)"
-    agent: kubernetes
     labels:
       preset-service-account: "true"
     spec:
@@ -49,7 +47,6 @@ presubmits:
     always_run: true
     rerun_command: "/test pull-gcp-compute-persistent-disk-csi-driver-unit"
     trigger: "(?m)^/test( all| pull-gcp-compute-persistent-disk-csi-driver-unit),?(\\s+|$)"
-    agent: kubernetes
     labels:
       preset-service-account: "true"
     spec:
@@ -69,7 +66,6 @@ presubmits:
     always_run: true
     rerun_command: "/test pull-gcp-compute-persistent-disk-csi-driver-verify"
     trigger: "(?m)^/test( all| pull-gcp-compute-persistent-disk-csi-driver-verify),?(\\s+|$)"
-    agent: kubernetes
     labels:
       preset-service-account: "true"
     spec:

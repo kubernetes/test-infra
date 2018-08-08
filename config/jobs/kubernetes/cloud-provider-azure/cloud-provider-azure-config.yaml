@@ -30,7 +30,6 @@ presets:
 presubmits:
   kubernetes/cloud-provider-azure:
   - name: pull-cloud-provider-azure-check
-    agent: kubernetes
     always_run: true
     context: pull-cloud-provider-azure-check
     rerun_command: "/test pull-cloud-provider-azure-check"
@@ -52,7 +51,6 @@ presubmits:
         - test-check
 
   - name: pull-cloud-provider-azure-e2e
-    agent: kubernetes
     always_run: false
     context: pull-cloud-provider-azure-e2e
     rerun_command: "/test pull-cloud-provider-azure-e2e"
@@ -81,7 +79,6 @@ presubmits:
           privileged: true
 
   - name: pull-cloud-provider-azure-unit
-    agent: kubernetes
     always_run: true
     context: pull-cloud-provider-azure-unit
     rerun_command: "/test pull-cloud-provider-azure-unit"

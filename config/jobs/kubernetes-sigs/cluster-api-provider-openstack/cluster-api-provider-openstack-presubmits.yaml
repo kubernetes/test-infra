@@ -1,7 +1,6 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-openstack:
   - name: pull-cluster-api-provider-openstack-make
-    agent: kubernetes
     always_run: true
     context: pull-cluster-api-provider-openstack-make
     rerun_command: "/test pull-cluster-api-provider-openstack-make"

@@ -1,7 +1,6 @@
 presubmits:
   helm/charts:
   - name: pull-charts-e2e
-    agent: kubernetes
     always_run: true
     context: pull-charts-e2e
     rerun_command: "/test pull-charts-e2e"
@@ -27,7 +26,6 @@ presubmits:
 
 periodics:
 - interval: 1h
-  agent: kubernetes
   name: ci-kubernetes-charts-gce
   labels:
     preset-service-account: "true"

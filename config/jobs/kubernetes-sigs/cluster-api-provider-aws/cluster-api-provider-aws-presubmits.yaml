@@ -1,7 +1,6 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-aws:
   - name: pull-cluster-api-provider-aws-make
-    agent: kubernetes
     always_run: true
     context: pull-cluster-api-provider-aws-make
     rerun_command: "/test pull-cluster-api-provider-aws-make"

@@ -1,7 +1,6 @@
 periodics:
 - name: ci-test-infra-bazel
   interval: 1h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
@@ -29,7 +28,6 @@ periodics:
 
 - name: ci-test-infra-triage
   interval: 1h
-  agent: kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-testimages/triage:latest
@@ -48,7 +46,6 @@ periodics:
 
 - name: periodic-test-infra-close
   interval: 1h
-  agent: kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782
@@ -79,7 +76,6 @@ periodics:
 
 - name: periodic-test-infra-retester
   interval: 20m  # Retest at most 1 PR per 20m, which should not DOS the queue.
-  agent: kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782
@@ -122,7 +118,6 @@ periodics:
 
 - name: periodic-test-infra-rotten
   interval: 1h
-  agent: kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782
@@ -156,7 +151,6 @@ periodics:
 
 - name: periodic-test-infra-stale
   interval: 1h
-  agent: kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782
@@ -189,7 +183,6 @@ periodics:
         secretName: fejta-bot-token
 
 - name: issue-creator
-  agent: kubernetes
   interval: 24h
   labels:
     preset-service-account: "true"
@@ -216,7 +209,6 @@ periodics:
 
 - name: periodic-features-unfreeze
   interval: 30m
-  agent: kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782
@@ -243,7 +235,6 @@ periodics:
 
 - name: metrics-bigquery
   interval: 24h
-  agent: kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bigquery:v20180330-f723e8d3f
@@ -276,7 +267,6 @@ periodics:
 
 - name: metrics-kettle
   interval: 1h
-  agent: kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bigquery:v20180330-f723e8d3f

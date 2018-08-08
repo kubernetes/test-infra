@@ -1,7 +1,6 @@
 presubmits:
   kubernetes/cloud-provider-gcp:
   - name: cloud-provider-gcp-tests
-    agent: kubernetes
     max_concurrency: 5
     always_run: true
     context: cloud-provider-gcp-tests

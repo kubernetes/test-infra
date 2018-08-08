@@ -1,7 +1,6 @@
 periodics:
 - interval: 5m
   name: ci-kubernetes-build
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -27,7 +26,6 @@ periodics:
 
 - interval: 1h
   name: ci-kubernetes-build-beta
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -55,7 +53,6 @@ periodics:
 
 - interval: 2h
   name: ci-kubernetes-build-debian-unstable
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -79,7 +76,6 @@ periodics:
 
 - interval: 30m
   name: ci-kubernetes-build-stable1
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -107,7 +103,6 @@ periodics:
 
 - interval: 1h
   name: ci-kubernetes-build-stable2
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -135,7 +130,6 @@ periodics:
 
 - interval: 2h
   name: ci-kubernetes-build-stable3
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -161,7 +155,6 @@ periodics:
 
 - interval: 1h
   name: ci-kubernetes-cross-build
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"

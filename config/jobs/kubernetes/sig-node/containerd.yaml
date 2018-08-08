@@ -1,7 +1,6 @@
 periodics:
 - name: ci-containerd-build
   interval: 30m
-  agent: kubernetes
   labels:
     preset-service-account: "true"
   spec:
@@ -18,7 +17,6 @@ periodics:
 
 - name: ci-containerd-build-1-1
   interval: 30m
-  agent: kubernetes
   labels:
     preset-service-account: "true"
   spec:
@@ -35,7 +33,6 @@ periodics:
       - /go/src/github.com/containerd/cri/test/containerd/build.sh
 
 - interval: 1h
-  agent: kubernetes
   name: ci-containerd-e2e-gci-gce
   labels:
     preset-service-account: "true"
@@ -63,7 +60,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 1h
-  agent: kubernetes
   name: ci-containerd-e2e-gci-gce-1-1
   labels:
     preset-service-account: "true"
@@ -92,7 +88,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 1h
-  agent: kubernetes
   name: ci-containerd-e2e-ubuntu-gce
   labels:
     preset-service-account: "true"
@@ -121,7 +116,6 @@ periodics:
 
 - name: ci-containerd-node-e2e
   interval: 1h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -150,7 +144,6 @@ periodics:
 
 - name: ci-containerd-node-e2e-1-1
   interval: 1h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -179,7 +172,6 @@ periodics:
 
 - name: ci-containerd-node-e2e-features
   interval: 1h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -207,7 +199,6 @@ periodics:
         value: /go
 
 - interval: 12h
-  agent: kubernetes
   name: ci-containerd-soak-gci-gce
   labels:
     preset-service-account: "true"
@@ -238,7 +229,6 @@ periodics:
 
 - name: ci-cri-containerd-build
   interval: 30m
-  agent: kubernetes
   labels:
     preset-service-account: "true"
   spec:
@@ -254,7 +244,6 @@ periodics:
 
 - name: ci-cri-containerd-e2e-gce-device-plugin-gpu
   interval: 3h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -278,7 +267,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-cri-containerd-e2e-gce-multizone
   labels:
     preset-service-account: "true"
@@ -304,7 +292,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-cri-containerd-e2e-gce-stackdriver
   labels:
     preset-service-account: "true"
@@ -329,7 +316,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 1h
-  agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce
   labels:
     preset-service-account: "true"
@@ -355,7 +341,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce-alpha-features
   labels:
     preset-service-account: "true"
@@ -380,7 +365,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce-es-logging
   labels:
     preset-service-account: "true"
@@ -404,7 +388,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 1h
-  agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce-etcd3
   labels:
     preset-service-account: "true"
@@ -428,7 +411,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce-flaky
   labels:
     preset-service-account: "true"
@@ -451,7 +433,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce-ingress
   labels:
     preset-service-account: "true"
@@ -476,7 +457,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce-ip-alias
   labels:
     preset-service-account: "true"
@@ -503,7 +483,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce-proto
   labels:
     preset-service-account: "true"
@@ -528,7 +507,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 1h
-  agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce-reboot
   labels:
     preset-service-account: "true"
@@ -551,7 +529,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce-sd-logging
   labels:
     preset-service-account: "true"
@@ -575,7 +552,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce-sd-logging-k8s-resources
   labels:
     preset-service-account: "true"
@@ -599,7 +575,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 1h
-  agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce-serial
   labels:
     preset-service-account: "true"
@@ -622,7 +597,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 1h
-  agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce-slow
   labels:
     preset-service-account: "true"
@@ -646,7 +620,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce-statefulset
   labels:
     preset-service-account: "true"
@@ -668,7 +641,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 1h
-  agent: kubernetes
   name: ci-cri-containerd-e2e-ubuntu-gce
   labels:
     preset-service-account: "true"
@@ -695,7 +667,6 @@ periodics:
 
 - name: ci-cri-containerd-node-e2e
   interval: 1h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -724,7 +695,6 @@ periodics:
 
 - name: ci-cri-containerd-node-e2e-benchmark
   interval: 2h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -753,7 +723,6 @@ periodics:
 
 - name: ci-cri-containerd-node-e2e-features
   interval: 1h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -782,7 +751,6 @@ periodics:
 
 - name: ci-cri-containerd-node-e2e-flaky
   interval: 2h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -811,7 +779,6 @@ periodics:
 
 - name: ci-cri-containerd-node-e2e-serial
   interval: 4h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"

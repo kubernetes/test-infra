@@ -1,7 +1,6 @@
 presubmits:  
   kubernetes/test-infra:
   - name: pull-test-infra-bazel-canary
-    agent: kubernetes
     context: pull-test-infra-bazel-canary
     always_run: false
     rerun_command: "/test pull-test-infra-bazel-canary"

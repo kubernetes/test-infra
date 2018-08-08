@@ -1,7 +1,6 @@
 presubmits:
   kubernetes/test-infra:
   - name: pull-test-infra-bazel
-    agent: kubernetes
     context: pull-test-infra-bazel
     branches:
     - master
@@ -32,7 +31,6 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-test-infra-gubernator
-    agent: kubernetes
     context: pull-test-infra-gubernator
     branches:
     - master
@@ -54,7 +52,6 @@ presubmits:
         - ./gubernator/test-gubernator.sh
 
   - name: pull-test-infra-lint
-    agent: kubernetes
     context: pull-test-infra-lint
     always_run: true
     rerun_command: "/test pull-test-infra-lint"
@@ -86,7 +83,6 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-test-infra-verify-bazel
-    agent: kubernetes
     context: pull-test-infra-verify-bazel
     branches:
     - master
@@ -107,7 +103,6 @@ presubmits:
         - ./hack/verify-bazel.sh
 
   - name: pull-test-infra-verify-config
-    agent: kubernetes
     context: pull-test-infra-verify-config
     branches:
     - master
@@ -137,7 +132,6 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-test-infra-verify-config-canary
-    agent: kubernetes
     context: pull-test-infra-verify-config-canary
     branches:
     - master
@@ -167,7 +161,6 @@ presubmits:
         emptyDir: {}
 
   - name: pull-test-infra-verify-deps
-    agent: kubernetes
     context: pull-test-infra-verify-deps
     branches:
     - master
@@ -196,7 +189,6 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-test-infra-verify-codegen
-    agent: kubernetes
     context: pull-test-infra-verify-codegen
     branches:
     - master
@@ -215,7 +207,6 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-test-infra-verify-gofmt
-    agent: kubernetes
     context: pull-test-infra-verify-gofmt
     branches:
     - master
@@ -236,7 +227,6 @@ presubmits:
         - ./hack/verify-gofmt.sh
 
   - name: pull-test-infra-verify-govet
-    agent: kubernetes
     context: pull-test-infra-verify-govet
     branches:
     - master
@@ -257,7 +247,6 @@ presubmits:
         - ./hack/verify-govet.sh
 
   - name: pull-test-infra-verify-labels
-    agent: kubernetes
     context: pull-test-infra-verify-labels
     branches:
     - master

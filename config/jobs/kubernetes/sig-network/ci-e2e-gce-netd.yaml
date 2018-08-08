@@ -871,7 +871,6 @@ presets:
 
 periodics:
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-netd
   labels:
     preset-service-account: "true"
@@ -896,7 +895,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-netd-calico
   labels:
     preset-service-account: "true"
@@ -923,7 +921,6 @@ periodics:
         value: calico
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-ubuntu-gce-netd
   labels:
     preset-service-account: "true"
@@ -949,7 +946,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-ubuntu-gce-netd-calico
   labels:
     preset-service-account: "true"
@@ -977,7 +973,6 @@ periodics:
         value: calico
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-containerd-gce-netd
   labels:
     preset-service-account: "true"
@@ -1007,7 +1002,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-containerd-gce-netd-calico
   labels:
     preset-service-account: "true"
@@ -1040,7 +1034,6 @@ periodics:
         value: calico
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-containerd-gce-calico
   labels:
     preset-service-account: "true"

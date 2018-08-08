@@ -1,7 +1,6 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-gcp:
   - name: pull-cluster-api-provider-gcp-build
-    agent: kubernetes
     always_run: true
     context: pull-cluster-api-provider-gcp-build
     rerun_command: "/test pull-cluster-api-provider-gcp-build"
@@ -19,7 +18,6 @@ presubmits:
         - "--"
         - "./scripts/ci-build.sh"
   - name: pull-cluster-api-provider-gcp-make
-    agent: kubernetes
     always_run: true
     context: pull-cluster-api-provider-gcp-make
     rerun_command: "/test pull-cluster-api-provider-gcp-make"
@@ -45,7 +43,6 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-cluster-api-provider-gcp-test
-    agent: kubernetes
     always_run: true
     context: pull-cluster-api-provider-gcp-test
     rerun_command: "/test pull-cluster-api-provider-gcp-test"

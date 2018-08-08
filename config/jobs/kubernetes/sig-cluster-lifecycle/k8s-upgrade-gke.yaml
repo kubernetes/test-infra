@@ -1,7 +1,6 @@
 periodics:
 # GKE upgrades
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster
   labels:
     preset-service-account: "true"
@@ -29,7 +28,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
   labels:
     preset-service-account: "true"
@@ -57,7 +55,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-parallel
   labels:
     preset-service-account: "true"
@@ -86,7 +83,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-master
   labels:
     preset-service-account: "true"
@@ -114,7 +110,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-stable-gci-master-upgrade-master
   labels:
     preset-service-account: "true"
@@ -142,7 +137,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 12h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster
   labels:
     preset-service-account: "true"
@@ -171,7 +165,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 12h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster-parallel
   labels:
     preset-service-account: "true"
@@ -201,7 +194,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 12h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster
   labels:
     preset-service-account: "true"
@@ -230,7 +222,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 12h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster-new
   labels:
     preset-service-account: "true"
@@ -259,7 +250,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 12h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-master
   labels:
     preset-service-account: "true"
@@ -288,7 +278,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster
   labels:
     preset-service-account: "true"
@@ -317,7 +306,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster-new
   labels:
     preset-service-account: "true"
@@ -347,7 +335,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-master
   labels:
     preset-service-account: "true"
@@ -376,7 +363,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster
   labels:
     preset-service-account: "true"
@@ -405,7 +391,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster-new
   labels:
     preset-service-account: "true"
@@ -434,7 +419,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-master
   labels:
     preset-service-account: "true"
@@ -463,7 +447,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster
   labels:
     preset-service-account: "true"
@@ -492,7 +475,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster-parallel
   labels:
     preset-service-account: "true"
@@ -522,7 +504,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster
   labels:
     preset-service-account: "true"
@@ -551,7 +532,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster-parallel
   labels:
     preset-service-account: "true"

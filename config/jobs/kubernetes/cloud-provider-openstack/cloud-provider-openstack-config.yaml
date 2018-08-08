@@ -1,7 +1,6 @@
 presubmits:
   kubernetes/cloud-provider-openstack:
   - name: pull-cloud-provider-openstack-check
-    agent: kubernetes
     always_run: true
     context: pull-cloud-provider-openstack-check
     rerun_command: "/test pull-cloud-provider-openstack-check"
@@ -23,7 +22,6 @@ presubmits:
         - check
 
   - name: pull-cloud-provider-openstack-test
-    agent: kubernetes
     always_run: true
     context: pull-cloud-provider-openstack-test
     rerun_command: "/test pull-cloud-provider-openstack-test"

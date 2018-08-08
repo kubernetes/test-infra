@@ -2,7 +2,6 @@ presubmits:
   kubeflow/examples:
   - name: kubeflow-examples-presubmit
     context: kubeflow-examples-presubmit
-    agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
     rerun_command: "/test kubeflow-examples-presubmit"
     trigger: "(?m)^/test( all| kubeflow-examples-presubmit),?(\\s+|$)"
@@ -18,7 +17,6 @@ presubmits:
   kubeflow/kubeflow:
   - name: kubeflow-presubmit
     context: kubeflow-presubmit
-    agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
     rerun_command: "/test kubeflow-presubmit"
     trigger: "(?m)^/test( all| kubeflow-presubmit),?(\\s+|$)"
@@ -32,7 +30,6 @@ presubmits:
   kubeflow/pytorch-operator:
   - name: kubeflow-pytorch-operator-presubmit
     context: kubeflow-pytorch-operator-presubmit
-    agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
     rerun_command: "/test kubeflow-pytorch-operator-presubmit"
     trigger: "(?m)^/test( all| kubeflow-pytorch-operator-presubmit),?(\\s+|$)"
@@ -48,7 +45,6 @@ presubmits:
   kubeflow/reporting:
   - name: kubeflow-reporting-presubmit
     context: kubeflow-reporting-presubmit
-    agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
     rerun_command: "/test kubeflow-reporting-presubmit"
     trigger: "(?m)^/test( all| kubeflow-reporting-presubmit),?(\\s+|$)"
@@ -64,7 +60,6 @@ presubmits:
   kubeflow/website:
   - name: kubeflow-website-presubmit
     context: kubeflow-website-presubmit
-    agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
     rerun_command: "/test kubeflow-website-presubmit"
     trigger: "(?m)^/test( all| kubeflow-website-presubmit),?(\\s+|$)"
@@ -80,7 +75,6 @@ presubmits:
   kubeflow/testing:
   - name: kubeflow-testing-presubmit
     context: kubeflow-testing-presubmit
-    agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
     rerun_command: "/test kubeflow-testing-presubmit"
     trigger: "(?m)^/test( all| kubeflow-testing-presubmit),?(\\s+|$)"
@@ -96,7 +90,6 @@ presubmits:
   kubeflow/tf-operator:
   - name: kubeflow-tf-operator-presubmit
     context: kubeflow-tf-operator-presubmit
-    agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
     rerun_command: "/test kubeflow-tf-operator-presubmit"
     trigger: "(?m)^/test( all| kubeflow-tf-operator-presubmit),?(\\s+|$)"
@@ -110,7 +103,6 @@ presubmits:
   kubeflow/katib:
   - name: kubeflow-katib-presubmit
     context: kubeflow-katib-presubmit
-    agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
     rerun_command: "/test kubeflow-katib-presubmit"
     trigger: "(?m)^/test( all| kubeflow-katib-presubmit),?(\\s+|$)"
@@ -126,7 +118,6 @@ presubmits:
   kubeflow/experimental-kvc:
   - name: kubeflow-experimental-kvc-presubmit
     context: kubeflow-experimental-kvc-presubmit
-    agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
     rerun_command: "/test kubeflow-experimental-kvc-presubmit"
     trigger: "(?m)^/test( all| kubeflow-experimental-kvc-presubmit),?(\\s+|$)"
@@ -142,7 +133,6 @@ presubmits:
   kubeflow/experimental-seldon:
   - name: kubeflow-experimental-seldon-presubmit
     context: kubeflow-experimental-seldon-presubmit
-    agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
     rerun_command: "/test kubeflow-experimental-seldon-presubmit"
     trigger: "(?m)^/test( all| kubeflow-experimental-seldon-presubmit),?(\\s+|$)"
@@ -158,7 +148,6 @@ presubmits:
   kubeflow/experimental-beagle:
   - name: kubeflow-experimental-beagle-presubmit
     context: kubeflow-experimental-beagle-presubmit
-    agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
     rerun_command: "/test kubeflow-experimental-beagle-presubmit"
     trigger: "(?m)^/test( all| kubeflow-experimental-beagle-presubmit),?(\\s+|$)"
@@ -174,7 +163,6 @@ presubmits:
   kubeflow/caffe2-operator:
   - name: kubeflow-caffe2-operator-presubmit
     context: kubeflow-caffe2-operator-presubmit
-    agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
     rerun_command: "/test kubeflow-caffe2-operator-presubmit"
     trigger: "(?m)^/test( all| kubeflow-caffe2-operator-presubmit),?(\\s+|$)"
@@ -190,7 +178,6 @@ presubmits:
   kubeflow/kubebench:
   - name: kubeflow-kubebench-presubmit
     context: kubeflow-kubebench-presubmit
-    agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
     rerun_command: "/test kubeflow-kubebench-presubmit"
     trigger: "(?m)^/test( all| kubeflow-kubebench-presubmit),?(\\s+|$)"
@@ -206,7 +193,6 @@ presubmits:
   kubeflow/mpi-operator:
   - name: kubeflow-mpi-operator-presubmit
     context: kubeflow-mpi-operator-presubmit
-    agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
     rerun_command: "/test kubeflow-mpi-operator-presubmit"
     trigger: "(?m)^/test( all| kubeflow-mpi-operator-presubmit),?(\\s+|$)"
