@@ -631,6 +631,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-gci
 - name: ci-kubernetes-soak-gke-gci
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gke-gci
+- name: ci-kubernetes-soak-gke-cos-containerd
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gke-cos-containerd
 - name: ci-kubernetes-integration-beta
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-integration-beta
 - name: ci-kubernetes-integration-master
@@ -3562,6 +3564,8 @@ dashboards:
     test_group_name: ci-kubernetes-soak-gce-gci
   - name: gke-gci
     test_group_name: ci-kubernetes-soak-gke-gci
+  - name: gke-cos-containerd
+    test_group_name: ci-kubernetes-soak-gke-cos-containerd
 
 - name: google-unit
   dashboard_tab:
