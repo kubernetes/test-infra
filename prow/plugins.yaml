@@ -364,7 +364,6 @@ plugins:
   - approve
   - blunderbuss
   - owners-label
-  - require-sig
 
   kubernetes/perf-tests:
   - approve
