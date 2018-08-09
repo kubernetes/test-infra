@@ -158,10 +158,10 @@ presets:
                       configMapKeyRef:
                         name: netd-config
                         key: enable_masquerade
-      volumes:
-      - name: cni-net-dir
-        hostPath:
-          path: /etc/cni/net.d
+              volumes:
+              - name: cni-net-dir
+                hostPath:
+                  path: /etc/cni/net.d
   - name: KUBE_UP_AUTOMATIC_CLEANUP
     value: true
   - name: KUBE_GCE_ENABLE_IP_ALIASES
@@ -328,6 +328,10 @@ presets:
                       configMapKeyRef:
                         name: netd-config
                         key: enable_masquerade
+              volumes:
+              - name: cni-net-dir
+                hostPath:
+                  path: /etc/cni/net.d
   - name: KUBE_UP_AUTOMATIC_CLEANUP
     value: true
   - name: KUBE_GCE_ENABLE_IP_ALIASES
