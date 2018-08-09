@@ -59,6 +59,7 @@ type options struct {
 	redirectHTTPTo        string
 	hiddenOnly            bool
 	runLocal              bool
+	staticFilesLocation   string
 }
 
 func (o *options) Validate() error {
@@ -91,14 +92,14 @@ func gatherOptions() options {
 	// use when behind an oauth proxy
 	flag.BoolVar(&o.hiddenOnly, "hidden-only", false, "Show only hidden jobs. Useful for serving hidden jobs behind an oauth proxy.")
 	flag.BoolVar(&o.runLocal, "run-local", false, "Serve a local copy of the UI, used by the prow/cmd/deck/runlocal script")
+	flag.StringVar(&o.staticFilesLocation, "static-files-location", "/static", "Path to the static files")
 	flag.Parse()
 	return o
 }
 
 var (
 	// Matches letters, numbers, hyphens, and underscores.
-	objReg              = regexp.MustCompile(`^[\w-]+$`)
-	staticFilesLocation = "./static"
+	objReg = regexp.MustCompile(`^[\w-]+$`)
 )
 
 func main() {
@@ -125,10 +126,10 @@ func main() {
 	}
 
 	// setup common handlers for local and deployed runs
-	mux.Handle("/", staticHandlerFromDir(staticFilesLocation))
+	mux.Handle("/", staticHandlerFromDir(o.staticFilesLocation))
 	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(configAgent)))
 	mux.Handle("/branding.js", gziphandler.GzipHandler(handleBranding(configAgent)))
-	mux.Handle("/favicon.ico", gziphandler.GzipHandler(handleFavicon(configAgent)))
+	mux.Handle("/favicon.ico", gziphandler.GzipHandler(handleFavicon(o.staticFilesLocation, configAgent)))
 
 	// when deployed, do the full main
 	if !o.runLocal {
@@ -141,9 +142,6 @@ func main() {
 
 // prodOnlyMain contains logic only used when running deployed, not locally
 func prodOnlyMain(configAgent *config.Agent, o options, mux *http.ServeMux) *http.ServeMux {
-	// in the container we place static here, locally there are at
-	staticFilesLocation = "/static"
-
 	kc, err := kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting client.")
@@ -584,7 +582,7 @@ func handleBranding(ca jobs.ConfigAgent) http.HandlerFunc {
 	}
 }
 
-func handleFavicon(ca jobs.ConfigAgent) http.HandlerFunc {
+func handleFavicon(staticFilesLocation string, ca jobs.ConfigAgent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		config := ca.Config()
 		if config.Deck.Branding != nil && config.Deck.Branding.Favicon != "" {
