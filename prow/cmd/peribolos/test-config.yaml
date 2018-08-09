@@ -10,9 +10,10 @@ orgs:
     members:
     - fejta-bot
     - cblecker
-    - bentheelder
     - krzyzacy
     - cjwagner
+    - spiffxp
+    - paulangton
     teams:
       bots:
         members:
@@ -26,8 +27,8 @@ orgs:
         maintainers:
         - fejta
         members:
-        - bentheelder
-        - cblecker
+        - spiffxp
         superlative-humans:
           members:
           - krzyzacy
+          - cblecker
