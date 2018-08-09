@@ -62,12 +62,10 @@ presets:
                   "ipam": {
                       "type": "host-local",
                       "ranges": [
-                        [
-                          {"subnet": podCidr}
-                        ]
+                      @ipv4Subnet@ipv6SubnetOptional
                       ],
                       "routes": [
-                        {"dst": "0.0.0.0/0"}
+                        {"dst": "0.0.0.0/0"}@ipv6RouteOptional
                       ]
                   }
                 },
@@ -84,6 +82,7 @@ presets:
           enable_policy_routing: "true"
           enable_masquerade: "true"
           enable_calico_network_policy: "false"
+          enable_private_ipv6_access: "false"
         ---
         kind: DaemonSet
         apiVersion: extensions/v1beta1
@@ -109,7 +108,7 @@ presets:
                 beta.kubernetes.io/kube-netd-ready: "true"
               hostNetwork: true
               initContainers:
-              - image: gcr.io/google-containers/netd-amd64:0.1.2
+              - image: gcr.io/google-containers/netd-amd64:0.1.5
                 name: install-cni
                 command: ["sh", "/install-cni.sh"]
                 env:
@@ -128,11 +127,16 @@ presets:
                       configMapKeyRef:
                         name: netd-config
                         key: enable_calico_network_policy
+                  - name: ENABLE_PRIVATE_IPV6_ACCESS
+                    valueFrom:
+                      configMapKeyRef:
+                        name: netd-config
+                        key: enable_private_ipv6_access
                 volumeMounts:
                 - mountPath: /host/etc/cni/net.d
                   name: cni-net-dir
               containers:
-              - image: gcr.io/google-containers/netd-amd64:0.1.2
+              - image: gcr.io/google-containers/netd-amd64:0.1.5
                 name: netd
                 imagePullPolicy: Always
                 securityContext:
@@ -154,10 +158,10 @@ presets:
                       configMapKeyRef:
                         name: netd-config
                         key: enable_masquerade
-              volumes:
-              - name: cni-net-dir
-                hostPath:
-                  path: /etc/cni/net.d
+      volumes:
+      - name: cni-net-dir
+        hostPath:
+          path: /etc/cni/net.d
   - name: KUBE_UP_AUTOMATIC_CLEANUP
     value: true
   - name: KUBE_GCE_ENABLE_IP_ALIASES
@@ -228,12 +232,10 @@ presets:
                   "ipam": {
                       "type": "host-local",
                       "ranges": [
-                        [
-                          {"subnet": podCidr}
-                        ]
+                      @ipv4Subnet@ipv6SubnetOptional
                       ],
                       "routes": [
-                        {"dst": "0.0.0.0/0"}
+                        {"dst": "0.0.0.0/0"}@ipv6RouteOptional
                       ]
                   }
                 },
@@ -250,6 +252,7 @@ presets:
           enable_policy_routing: "true"
           enable_masquerade: "true"
           enable_calico_network_policy: "true"
+          enable_private_ipv6_access: "false"
         ---
         kind: DaemonSet
         apiVersion: extensions/v1beta1
@@ -275,7 +278,7 @@ presets:
                 beta.kubernetes.io/kube-netd-ready: "true"
               hostNetwork: true
               initContainers:
-              - image: gcr.io/google-containers/netd-amd64:0.1.2
+              - image: gcr.io/google-containers/netd-amd64:0.1.5
                 name: install-cni
                 command: ["sh", "/install-cni.sh"]
                 env:
@@ -294,11 +297,16 @@ presets:
                       configMapKeyRef:
                         name: netd-config
                         key: enable_calico_network_policy
+                  - name: ENABLE_PRIVATE_IPV6_ACCESS
+                    valueFrom:
+                      configMapKeyRef:
+                        name: netd-config
+                        key: enable_private_ipv6_access
                 volumeMounts:
                 - mountPath: /host/etc/cni/net.d
                   name: cni-net-dir
               containers:
-              - image: gcr.io/google-containers/netd-amd64:0.1.2
+              - image: gcr.io/google-containers/netd-amd64:0.1.5
                 name: netd
                 imagePullPolicy: Always
                 securityContext:
@@ -320,10 +328,6 @@ presets:
                       configMapKeyRef:
                         name: netd-config
                         key: enable_masquerade
-              volumes:
-              - name: cni-net-dir
-                hostPath:
-                  path: /etc/cni/net.d
   - name: KUBE_UP_AUTOMATIC_CLEANUP
     value: true
   - name: KUBE_GCE_ENABLE_IP_ALIASES
