@@ -2096,6 +2096,11 @@ test_groups:
   num_columns_recent: 30
 - name: kubeflow-mpi-operator-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_mpi-operator/kubeflow-mpi-operator-postsubmit
+- name: kubeflow-chainer-operator-presubmit
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/kubeflow-chainer-operator-presubmit
+  num_columns_recent: 30
+- name: kubeflow-chainer-operator-postsubmit
+  gcs_prefix: kubernetes-jenkins/logs/kubeflow_chainer-operator/kubeflow-chainer-operator-postsubmit
 - name: tf-minigo-periodic
   gcs_prefix: kubernetes-jenkins/logs/tf-minigo-periodic
 - name: tf-minigo-presubmit
@@ -4767,6 +4772,12 @@ dashboards:
   - name: kubeflow-mpi-operator-presubmit
     description: Presubmit tests for kubeflow/mpi-operator.
     test_group_name: kubeflow-mpi-operator-presubmit
+  - name: kubeflow-chainer-operator-postsubmit
+    description: Postsubmit tests for kubeflow/chainer-operator.
+    test_group_name: kubeflow-chainer-operator-postsubmit
+  - name: kubeflow-chainer-operator-presubmit
+    description: Presubmit tests for kubeflow/chainer-operator.
+    test_group_name: kubeflow-chainer-operator-presubmit
   - name: spark-periodic-default-gke
     description: Periodic builds and testing of Apache Spark on default version of GKE.
     test_group_name: spark-periodic-default-gke

@@ -136,3 +136,14 @@ postsubmits:
       containers:
       - image: gcr.io/kubeflow-ci/test-worker:latest
         imagePullPolicy: Always
+
+  kubeflow/chainer-operator:
+  - name: kubeflow-chainer-operator-postsubmit
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/kubeflow-ci/test-worker:latest
+        imagePullPolicy: Always
