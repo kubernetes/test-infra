@@ -19,7 +19,6 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"net/http"
 	"net/url"
 	"os"
@@ -36,6 +35,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/tide"
 )
 
@@ -150,8 +150,13 @@ func main() {
 
 	c := tide.NewController(ghcSync, ghcStatus, kc, configAgent, gc, nil)
 	defer c.Shutdown()
-
 	server := &http.Server{Addr: ":" + strconv.Itoa(o.port), Handler: c}
+
+	// Push metrics to the configured prometheus pushgateway endpoint.
+	pushGateway := configAgent.Config().PushGateway
+	if pushGateway.Endpoint != "" {
+		go metrics.PushMetrics("tide", pushGateway.Endpoint, pushGateway.Interval)
+	}
 
 	start := time.Now()
 	sync(c)
@@ -181,9 +186,7 @@ func main() {
 }
 
 func sync(c *tide.Controller) {
-	start := time.Now()
 	if err := c.Sync(); err != nil {
 		logrus.WithError(err).Error("Error syncing.")
 	}
-	logrus.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Synced")
 }
