@@ -1,4 +1,4 @@
-load("@io_bazel_rules_docker//go:image.bzl", "go_image")
+load("@io_bazel_rules_docker//container:image.bzl", "container_image")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_library(
@@ -14,11 +14,11 @@ go_library(
     ],
 )
 
-go_image(
+container_image(
     name = "image",
     base = "@git-base//image",
-    binary = ":clonerefs",
     directory = "/",
+    files = [":clonerefs"],
     visibility = ["//visibility:public"],
 )
 
