@@ -249,8 +249,17 @@ func run(deploy deployer, o options) error {
 		errs = util.AppendError(errs, control.XMLWrap(&suite, "Helm Charts", chartsTest))
 	}
 
-	if o.perfTests {
-		errs = util.AppendError(errs, control.XMLWrap(&suite, "Perf Tests", perfTest))
+	if o.perfTestsClusterLoader {
+		errs = util.AppendError(errs, control.XMLWrap(&suite, "Perf Tests ClusterLoader", perfTestClusterLoader))
+	}
+	if o.perfTestsNetPerf {
+		errs = util.AppendError(errs, control.XMLWrap(&suite, "Perf Tests Network Performance", perfTestNetPerf))
+	}
+	if o.perfTestsKubeDNS {
+		errs = util.AppendError(errs, control.XMLWrap(&suite, "Perf Tests Kube DNS", perfTestKubeDNS))
+	}
+	if o.perfTestsCoreDNS {
+		errs = util.AppendError(errs, control.XMLWrap(&suite, "Perf Tests Core DNS", perfTestCoreDNS))
 	}
 
 	if dump != "" {
@@ -541,13 +550,52 @@ func dumpFederationLogs(location string) error {
 	return nil
 }
 
-func perfTest() error {
-	// Run perf tests
-	cmdline := util.K8s("perf-tests", "clusterloader", "run-e2e.sh")
-	if err := control.FinishRunning(exec.Command(cmdline)); err != nil {
+func perfTestClusterLoader() error {
+	// Run perf tests clusterloader
+	cmdline := []string{
+		util.K8s("perf-tests", "run-e2e.sh"),
+		"--cluster-loader",
+	}
+	if err := control.FinishRunning(exec.Command("bash", cmdline...)); err != nil {
 		return err
 	}
 	return nil
+}
+func perfTestNetPerf() error {
+	// Run perf tests Network Performance
+	cmdline := []string{
+		util.K8s("perf-tests", "run-e2e.sh"),
+		"--network-performance",
+	}
+	if err := control.FinishRunning(exec.Command("bash", cmdline...)); err != nil {
+		return err
+	}
+	return nil
+
+}
+func perfTestKubeDNS() error {
+	// Run perf tests KubeDNS
+	cmdline := []string{
+		util.K8s("perf-tests", "run-e2e.sh"),
+		"--kube-dns",
+	}
+	if err := control.FinishRunning(exec.Command("bash", cmdline...)); err != nil {
+		return err
+	}
+	return nil
+
+}
+func perfTestCoreDNS() error {
+	// Run perf tests coreDNS
+	cmdline := []string{
+		util.K8s("perf-tests", "run-e2e.sh"),
+		"--core-dns",
+	}
+	if err := control.FinishRunning(exec.Command("bash", cmdline...)); err != nil {
+		return err
+	}
+	return nil
+
 }
 
 func chartsTest() error {
