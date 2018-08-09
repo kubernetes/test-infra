@@ -1,13 +1,9 @@
 presubmits:
   kubernetes/cloud-provider-vsphere:
   - name: pull-cloud-provider-vsphere-test
-    agent: kubernetes
-    context: pull-cloud-provider-vsphere-test
     branches:
     - master
     always_run: true
-    rerun_command: "/test pull-cloud-provider-vsphere-test"
-    trigger: "(?m)^/test( all| pull-cloud-provider-vsphere-test),?(\\s+|$)"
     labels:
       preset-service-account: "true"
     spec:

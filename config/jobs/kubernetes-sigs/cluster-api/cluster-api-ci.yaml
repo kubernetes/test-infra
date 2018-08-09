@@ -1,7 +1,6 @@
 periodics:
 - name: ci-cluster-api-build
   interval: 1h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
   spec:
@@ -16,7 +15,6 @@ periodics:
       - "./scripts/ci-build.sh"
 - name: ci-cluster-api-test
   interval: 1h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
   spec:

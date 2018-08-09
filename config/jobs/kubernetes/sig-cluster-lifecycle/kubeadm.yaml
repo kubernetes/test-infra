@@ -1,7 +1,6 @@
 periodics:
 - interval: 2h
   name: ci-kubernetes-e2e-kubeadm-gce
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -29,7 +28,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-kubeadm-gce-1-10
   interval: 6h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -55,7 +53,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
   interval: 6h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -81,7 +78,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-kubeadm-gce-1-11
   interval: 6h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -107,7 +103,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-kubeadm-gce-1-8
   interval: 12h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -134,7 +129,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-kubeadm-gce-1-8-on-1-9
   interval: 12h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -160,7 +154,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-kubeadm-gce-1-9
   interval: 6h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -186,7 +179,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
   interval: 6h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -212,7 +204,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
   interval: 6h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -239,7 +230,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-kubeadm-gce-dns-coredns
   interval: 6h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -266,7 +256,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-kubeadm-gce-ipvs
   interval: 6h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -293,7 +282,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-kubeadm-gce-selfhosting
   interval: 6h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -320,7 +308,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
   interval: 6h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -346,7 +333,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11
   interval: 2h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -377,7 +363,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9
   interval: 6h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -408,7 +393,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
   interval: 6h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -439,7 +423,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-stable-master
   interval: 6h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -469,7 +452,6 @@ periodics:
       - --upgrade_args=--ginkgo.focus=\[Feature:MasterUpgrade\] --ginkgo.skip=statefulset-upgrade|hpa-upgrade|service-upgrade --upgrade-target=ci-cross/latest
 
 - interval: 24h
-  agent: kubernetes
   name: periodic-kubernetes-e2e-packages-pushed
   labels:
     preset-service-account: "true"

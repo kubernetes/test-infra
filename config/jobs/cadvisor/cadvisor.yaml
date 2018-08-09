@@ -19,11 +19,7 @@ presets:
 presubmits:
   google/cadvisor:
   - name: pull-cadvisor-e2e
-    agent: kubernetes
     always_run: true
-    context: pull-cadvisor-e2e
-    rerun_command: "/test pull-cadvisor-e2e"
-    trigger: "(?m)^/test( all| pull-cadvisor-e2e),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -52,7 +48,6 @@ presubmits:
 periodics:
 - interval: 24h
   name: ci-cadvisor-canarypush
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-cadvisor-docker-credential: "true"
@@ -75,7 +70,6 @@ periodics:
 
 - name: ci-cadvisor-e2e
   interval: 8h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"

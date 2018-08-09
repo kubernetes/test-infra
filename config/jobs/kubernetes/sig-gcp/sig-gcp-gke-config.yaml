@@ -1,6 +1,5 @@
 periodics:
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke
   labels:
     preset-service-account: "true"
@@ -28,7 +27,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-alpha-features
   labels:
     preset-service-account: "true"
@@ -55,7 +53,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-flaky
   labels:
     preset-service-account: "true"
@@ -81,7 +78,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-multizone
   labels:
     preset-service-account: "true"
@@ -109,7 +105,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-reboot
   labels:
     preset-service-account: "true"
@@ -135,7 +130,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-serial
   labels:
     preset-service-account: "true"
@@ -161,7 +155,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-slow
   labels:
     preset-service-account: "true"
@@ -188,7 +181,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-updown
   labels:
     preset-service-account: "true"
@@ -214,7 +206,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 1h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-regional
   labels:
     preset-service-account: "true"
@@ -241,7 +232,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 1h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-regional-serial
   labels:
     preset-service-account: "true"
@@ -266,7 +256,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 1h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-regional-slow
   labels:
     preset-service-account: "true"

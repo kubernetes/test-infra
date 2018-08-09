@@ -7,7 +7,6 @@ presets:
 
 periodics:
 - interval: 1h
-  agent: kubernetes
   name: ci-kubernetes-e2e-cos-containerd-gke-alpha-cluster
   labels:
     preset-service-account: "true"
@@ -36,7 +35,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 1h
-  agent: kubernetes
   name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta-alpha-cluster
   labels:
     preset-service-account: "true"
@@ -65,7 +63,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 1h
-  agent: kubernetes
   name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta-alpha-cluster-features
   labels:
     preset-service-account: "true"
@@ -94,7 +91,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 1h
-  agent: kubernetes
   name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta
   labels:
     preset-service-account: "true"
@@ -123,7 +119,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 1h
-  agent: kubernetes
   name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-cluster
   labels:
     preset-service-account: "true"
@@ -152,7 +147,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 1h
-  agent: kubernetes
   name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-cluster-features
   labels:
     preset-service-account: "true"
@@ -181,7 +175,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 1h
-  agent: kubernetes
   name: ci-kubernetes-e2e-cos-gke-k8sbeta-alpha-cluster
   labels:
     preset-service-account: "true"
@@ -209,7 +202,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 1h
-  agent: kubernetes
   name: ci-kubernetes-e2e-cos-gke-k8sbeta-alpha-cluster-features
   labels:
     preset-service-account: "true"
@@ -237,7 +229,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 1h
-  agent: kubernetes
   name: ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-cluster
   labels:
     preset-service-account: "true"
@@ -265,7 +256,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 1h
-  agent: kubernetes
   name: ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-cluster-features
   labels:
     preset-service-account: "true"
@@ -293,7 +283,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 12h
-  agent: kubernetes
   name: ci-kubernetes-soak-gke-cos-containerd
   labels:
     preset-service-account: "true"
@@ -325,7 +314,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-beta-cos-containerd-parallel
   labels:
     preset-service-account: "true"
@@ -354,7 +342,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-beta-cos-containerd-serial
   labels:
     preset-service-account: "true"

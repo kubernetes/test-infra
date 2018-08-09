@@ -1,7 +1,6 @@
 periodics:
 - interval: 2h
   name: ci-kubernetes-integration-beta
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -25,7 +24,6 @@ periodics:
 
 - interval: 1h
   name: ci-kubernetes-integration-master
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -49,7 +47,6 @@ periodics:
 
 - interval: 2h
   name: ci-kubernetes-integration-stable1
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -73,7 +70,6 @@ periodics:
 
 - interval: 6h
   name: ci-kubernetes-integration-stable2
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -97,7 +93,6 @@ periodics:
 
 - interval: 24h
   name: ci-kubernetes-integration-stable3
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"

@@ -1,13 +1,9 @@
 presubmits:
   kubernetes/test-infra:
   - name: pull-test-infra-bazel
-    agent: kubernetes
-    context: pull-test-infra-bazel
     branches:
     - master
     always_run: true
-    rerun_command: "/test pull-test-infra-bazel"
-    trigger: "(?m)^/test( all| pull-test-infra-bazel),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -32,12 +28,8 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-test-infra-gubernator
-    agent: kubernetes
-    context: pull-test-infra-gubernator
     branches:
     - master
-    rerun_command: "/test pull-test-infra-gubernator"
-    trigger: "(?m)^/test pull-test-infra-gubernator,?(\\s+|$)"
     run_if_changed: 'gubernator|prow/config.yaml'
     labels:
       preset-service-account: "true"
@@ -54,11 +46,7 @@ presubmits:
         - ./gubernator/test-gubernator.sh
 
   - name: pull-test-infra-lint
-    agent: kubernetes
-    context: pull-test-infra-lint
     always_run: true
-    rerun_command: "/test pull-test-infra-lint"
-    trigger: "(?m)^/test( all| pull-test-infra-lint),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -86,12 +74,8 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-test-infra-verify-bazel
-    agent: kubernetes
-    context: pull-test-infra-verify-bazel
     branches:
     - master
-    rerun_command: "/test pull-test-infra-verify-bazel"
-    trigger: "(?m)^/test( all| pull-test-infra-verify-bazel),?(\\s+|$)"
     always_run: true
     labels:
       preset-service-account: "true"
@@ -107,12 +91,8 @@ presubmits:
         - ./hack/verify-bazel.sh
 
   - name: pull-test-infra-verify-config
-    agent: kubernetes
-    context: pull-test-infra-verify-config
     branches:
     - master
-    rerun_command: "/test pull-test-infra-verify-config"
-    trigger: "/test pull-test-infra-verify-config"
     run_if_changed: '^prow/config.yaml$'
     labels:
       preset-service-account: "true"
@@ -137,12 +117,8 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-test-infra-verify-config-canary
-    agent: kubernetes
-    context: pull-test-infra-verify-config-canary
     branches:
     - master
-    rerun_command: "/test pull-test-infra-verify-config-canary"
-    trigger: "/test pull-test-infra-verify-config-canary"
     path_alias: "k8s.io/test-infra"
     decorate: true
     spec:
@@ -167,12 +143,8 @@ presubmits:
         emptyDir: {}
 
   - name: pull-test-infra-verify-deps
-    agent: kubernetes
-    context: pull-test-infra-verify-deps
     branches:
     - master
-    rerun_command: "/test pull-test-infra-verify-deps"
-    trigger: "/test pull-test-infra-verify-deps"
     run_if_changed: '^(Gopkg\.|^vendor/).*$'
     labels:
       preset-service-account: "true"
@@ -196,12 +168,8 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-test-infra-verify-codegen
-    agent: kubernetes
-    context: pull-test-infra-verify-codegen
     branches:
     - master
-    rerun_command: "/test pull-test-infra-verify-codegen"
-    trigger: "/test pull-test-infra-verify-codegen"
     always_run: true
     path_alias: "k8s.io/test-infra"
     decorate: true
@@ -215,12 +183,8 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-test-infra-verify-gofmt
-    agent: kubernetes
-    context: pull-test-infra-verify-gofmt
     branches:
     - master
-    rerun_command: "/test pull-test-infra-verify-gofmt"
-    trigger: "/test( all| pull-test-infra-verify-gofmt)"
     always_run: true
     labels:
       preset-service-account: "true"
@@ -236,12 +200,8 @@ presubmits:
         - ./hack/verify-gofmt.sh
 
   - name: pull-test-infra-verify-govet
-    agent: kubernetes
-    context: pull-test-infra-verify-govet
     branches:
     - master
-    rerun_command: "/test pull-test-infra-verify-govet"
-    trigger: "/test( all| pull-test-infra-verify-govet)"
     always_run: true
     labels:
       preset-service-account: "true"
@@ -257,12 +217,8 @@ presubmits:
         - ./hack/verify-govet.sh
 
   - name: pull-test-infra-verify-labels
-    agent: kubernetes
-    context: pull-test-infra-verify-labels
     branches:
     - master
-    rerun_command: "/test pull-test-infra-verify-labels"
-    trigger: "/test pull-test-infra-verify-labels"
     run_if_changed: '^label_sync'
     labels:
       preset-service-account: "true"

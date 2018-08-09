@@ -1,13 +1,9 @@
 presubmits:  
   bazelbuild/rules_k8s:
   - name: pull-rules-k8s-e2e
-    agent: kubernetes
     cluster: gke_rules-k8s_us-central1-f_testing
     max_concurrency: 1  # TODO(fejta): increase this
     always_run: true
-    context: pull-rules-k8s-e2e
-    rerun_command: "/test pull-rules-k8s-e2e"
-    trigger: "(?m)^/test( all| pull-rules-k8s-e2e),?(\\s+|$)"
     decorate: true
     spec:
       containers:
