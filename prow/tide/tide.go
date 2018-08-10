@@ -29,6 +29,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/shurcooL/githubql"
 	"github.com/sirupsen/logrus"
 
@@ -117,6 +118,64 @@ type Pool struct {
 	Blockers []blockers.Blocker
 }
 
+// Prometheus Metrics
+var (
+	tideMetrics = struct {
+		// Per pool
+		pooledPRs  *prometheus.GaugeVec
+		updateTime *prometheus.GaugeVec
+		merges     *prometheus.HistogramVec
+
+		// Singleton
+		syncDuration         prometheus.Gauge
+		statusUpdateDuration prometheus.Gauge
+	}{
+		pooledPRs: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Name: "pooledprs",
+			Help: "Number of PRs in each Tide pool.",
+		}, []string{
+			"org",
+			"repo",
+			"branch",
+		}),
+		updateTime: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Name: "updatetime",
+			Help: "The last time each subpool was synced. (Used to determine 'pooledprs' freshness.)",
+		}, []string{
+			"org",
+			"repo",
+			"branch",
+		}),
+
+		merges: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+			Name:    "merges",
+			Help:    "Histogram of merges where values are the number of PRs merged together.",
+			Buckets: []float64{1, 2, 3, 4, 5, 7, 10, 15, 25},
+		}, []string{
+			"org",
+			"repo",
+			"branch",
+		}),
+
+		syncDuration: prometheus.NewGauge(prometheus.GaugeOpts{
+			Name: "syncdur",
+			Help: "The duration of the last loop of the sync controller.",
+		}),
+
+		statusUpdateDuration: prometheus.NewGauge(prometheus.GaugeOpts{
+			Name: "statusupdatedur",
+			Help: "The duration of the last loop of the status update controller.",
+		}),
+	}
+)
+
+func init() {
+	prometheus.MustRegister(tideMetrics.pooledPRs)
+	prometheus.MustRegister(tideMetrics.syncDuration)
+	prometheus.MustRegister(tideMetrics.statusUpdateDuration)
+	prometheus.MustRegister(tideMetrics.merges)
+}
+
 // NewController makes a Controller out of the given clients.
 func NewController(ghcSync, ghcStatus *github.Client, kc *kube.Client, ca *config.Agent, gc *git.Client, logger *logrus.Entry) *Controller {
 	if logger == nil {
@@ -185,6 +244,12 @@ func contextsToStrings(contexts []Context) []string {
 
 // Sync runs one sync iteration.
 func (c *Controller) Sync() error {
+	start := time.Now()
+	defer func() {
+		duration := time.Since(start)
+		c.logger.WithField("duration", duration.String()).Info("Synced")
+		tideMetrics.syncDuration.Set(duration.Seconds())
+	}()
 	defer c.changedFiles.prune()
 
 	ctx := context.Background()
@@ -661,6 +726,14 @@ func (c *Controller) pickBatch(sp subpool, cc contextChecker) ([]PullRequest, er
 }
 
 func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
+	successCount := 0
+	defer func() {
+		if successCount == 0 {
+			return
+		}
+		tideMetrics.merges.WithLabelValues(sp.org, sp.repo, sp.branch).Observe(float64(successCount))
+	}()
+
 	maxRetries := 3
 	for i, pr := range prs {
 		backoff := time.Second * 4
@@ -927,6 +1000,8 @@ func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, e
 		"action":  string(act),
 		"targets": prNumbers(targets),
 	}).Info("Subpool synced.")
+	tideMetrics.pooledPRs.WithLabelValues(sp.org, sp.repo, sp.branch).Set(float64(len(sp.prs)))
+	tideMetrics.updateTime.WithLabelValues(sp.org, sp.repo, sp.branch).Set(float64(time.Now().Unix()))
 	return Pool{
 			Org:    sp.org,
 			Repo:   sp.repo,

@@ -349,6 +349,11 @@ func (sc *statusController) waitSync() {
 
 func (sc *statusController) sync(pool map[string]PullRequest) {
 	sc.lastSyncStart = time.Now()
+	defer func() {
+		duration := time.Since(sc.lastSyncStart)
+		sc.logger.WithField("duration", duration.String()).Info("Statuses synced.")
+		tideMetrics.statusUpdateDuration.Set(duration.Seconds())
+	}()
 
 	// Query for PRs changed since the last time we successfully queried.
 	// We offset for 30 seconds of overlap because GitHub sometimes doesn't
