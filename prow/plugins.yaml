@@ -423,14 +423,6 @@ plugins:
   - wip
   - yuks
 
-  kubernetes-incubator:
-  - assign
-  - cla
-  - label
-  - lgtm
-  - lifecycle
-  - size
-
   kubernetes-client:
   - assign
   - cla
@@ -443,6 +435,33 @@ plugins:
   - help
   - cat
   - dog
+
+  kubernetes-csi:
+  - approve
+  - assign
+  - blunderbuss
+  - cat
+  - cla
+  - dog
+  - heart
+  - help
+  - hold
+  - label
+  - lgtm
+  - lifecycle
+  - shrug
+  - size
+  - skip
+  - wip
+  - yuks
+
+  kubernetes-incubator:
+  - assign
+  - cla
+  - label
+  - lgtm
+  - lifecycle
+  - size
 
   kubernetes-incubator/service-catalog:
   - approve
