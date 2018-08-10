@@ -31,6 +31,7 @@ filegroup(
         "//experiment/bootstrap:all-srcs",
         "//experiment/coverage:all-srcs",
         "//experiment/manual-trigger:all-srcs",
+        "//experiment/process-e2e-suite-log:all-srcs",
         "//experiment/tracer:all-srcs",
     ],
     tags = ["automanaged"],
