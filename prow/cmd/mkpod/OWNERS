@@ -1,2 +1,4 @@
 approvers:
 - stevekuznetsov
+labels:
+ - area/prow/mkpod

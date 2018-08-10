@@ -697,7 +697,122 @@ repos:
         target: both
         addedBy: label
       - color: 0052cc
-        description: Issues or PRs related to code in /prow
+        description: Issues or PRs related to prow
         name: area/prow
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's artifact-uploader component
+        name: area/prow/artifact-uploader
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's branchprotector component
+        name: area/prow/branchprotector
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's clonerefs component
+        name: area/prow/clonerefs
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's deck component
+        name: area/prow/deck
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's entrypoint component
+        name: area/prow/entrypoint
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's gcsupload component
+        name: area/prow/gcsupload
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's gerrit component
+        name: area/prow/gerrit
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's hook component
+        name: area/prow/hook
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's horologium component
+        name: area/prow/horologium
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's initupload component
+        name: area/prow/initupload
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's jenkins-operator component
+        name: area/prow/jenkins-operator
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's mkbuild-cluster component
+        name: area/prow/mkbuild-cluster
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's mkpj component
+        name: area/prow/mkpj
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's mkpod component
+        name: area/prow/mkpod
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's peribolos component
+        name: area/prow/peribolos
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's phony component
+        name: area/prow/phony
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's plank component
+        name: area/prow/plank
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's sidecar component
+        name: area/prow/sidecar
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's sinker component
+        name: area/prow/sinker
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's splice component
+        name: area/prow/splice
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's tide component
+        name: area/prow/tide
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's tot component
+        name: area/prow/tot
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to prow's pod-utilities component
+        name: area/prow/pod-utilities
         target: both
         addedBy: label
