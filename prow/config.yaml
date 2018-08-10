@@ -155,6 +155,11 @@ branch-protection:
               protect: true
             release-1.9:
               protect: true
+    kubernetes-csi:
+      protect: true
+      required_status_checks:
+        contexts:
+        - cla/linuxfoundation
     kubernetes-sigs:
       protect: true
       required_status_checks:
