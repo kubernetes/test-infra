@@ -1,4 +1,4 @@
-package githubql
+package githubv4
 
 import (
 	"context"
@@ -13,13 +13,25 @@ type Client struct {
 }
 
 // NewClient creates a new GitHub GraphQL API v4 client with the provided http.Client.
-// If it's nil, then http.DefaultClient is used.
+// If httpClient is nil, then http.DefaultClient is used.
 //
 // Note that GitHub GraphQL API v4 requires authentication, so
 // the provided http.Client is expected to take care of that.
 func NewClient(httpClient *http.Client) *Client {
 	return &Client{
-		client: graphql.NewClient("https://api.github.com/graphql", httpClient, scalars),
+		client: graphql.NewClient("https://api.github.com/graphql", httpClient),
+	}
+}
+
+// NewEnterpriseClient creates a new GitHub GraphQL API v4 client for the GitHub Enterprise
+// instance with the specified GraphQL endpoint URL, using the provided http.Client.
+// If httpClient is nil, then http.DefaultClient is used.
+//
+// Note that GitHub GraphQL API v4 requires authentication, so
+// the provided http.Client is expected to take care of that.
+func NewEnterpriseClient(url string, httpClient *http.Client) *Client {
+	return &Client{
+		client: graphql.NewClient(url, httpClient),
 	}
 }
 

@@ -695,9 +695,10 @@
   revision = "836a144573533ea4da4e6929c235fd348aed1c80"
 
 [[projects]]
-  name = "github.com/shurcooL/githubql"
+  branch = "master"
+  name = "github.com/shurcooL/githubv4"
   packages = ["."]
-  revision = "71882d9f5f43fe50be204fe37db8994bf70072bb"
+  revision = "19298c78142b5fe80c2cdaa2091bc51cbc3a94fc"
 
 [[projects]]
   name = "github.com/shurcooL/go"
@@ -1176,6 +1177,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "8476c16c47c23ba3682a1fc12173e56480631305cebb2fff12524ba81db346ca"
+  inputs-digest = "b5213975990940df4092d5a812e8d180dd9edc64a5f4f7c846fd114182e743f7"
   solver-name = "gps-cdcl"
   solver-version = 1

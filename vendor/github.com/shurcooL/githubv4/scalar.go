@@ -1,11 +1,10 @@
-package githubql
+package githubv4
 
 import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"net/url"
-	"reflect"
 	"time"
 
 	"github.com/shurcooL/graphql"
@@ -13,16 +12,19 @@ import (
 
 // Note: These custom types are meant to be used in queries for now.
 // But the plan is to switch to using native Go types (string, int, bool, time.Time, etc.).
-// See https://github.com/shurcooL/githubql/issues/9 for details.
+// See https://github.com/shurcooL/githubv4/issues/9 for details.
 //
 // These custom types currently provide documentation, and their use
 // is required for sending outbound queries. However, native Go types
-// can be used for unmarshaling. Once https://github.com/shurcooL/githubql/issues/9
+// can be used for unmarshaling. Once https://github.com/shurcooL/githubv4/issues/9
 // is resolved, native Go types can completely replace these.
 
 type (
 	// Boolean represents true or false values.
 	Boolean graphql.Boolean
+
+	// Date is an ISO-8601 encoded date.
+	Date struct{ time.Time }
 
 	// DateTime is an ISO-8601 encoded UTC date.
 	DateTime struct{ time.Time }
@@ -66,13 +68,6 @@ type (
 	X509Certificate struct{ *x509.Certificate }
 )
 
-var scalars = []reflect.Type{
-	reflect.TypeOf(DateTime{}),
-	reflect.TypeOf(GitTimestamp{}),
-	reflect.TypeOf(URI{}),
-	reflect.TypeOf(X509Certificate{}),
-}
-
 // MarshalJSON implements the json.Marshaler interface.
 // The URI is a quoted string.
 func (u URI) MarshalJSON() ([]byte, error) {
@@ -109,6 +104,9 @@ func (x *X509Certificate) UnmarshalJSON(data []byte) error {
 
 // NewBoolean is a helper to make a new *Boolean.
 func NewBoolean(v Boolean) *Boolean { return &v }
+
+// NewDate is a helper to make a new *Date.
+func NewDate(v Date) *Date { return &v }
 
 // NewDateTime is a helper to make a new *DateTime.
 func NewDateTime(v DateTime) *DateTime { return &v }
