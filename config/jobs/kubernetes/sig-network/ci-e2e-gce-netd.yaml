@@ -1080,7 +1080,7 @@ periodics:
   spec:
     containers:
     - args:
-      - "--timeout=340"
+      - "--timeout=180"
       - --root=/go/src
       - --repo=github.com/containerd/cri=master
       - "--repo=k8s.io/examples=master"
@@ -1109,7 +1109,7 @@ periodics:
   spec:
     containers:
     - args:
-      - "--timeout=340"
+      - "--timeout=180"
       - --root=/go/src
       - --repo=github.com/containerd/cri=master
       - "--repo=k8s.io/examples=master"
