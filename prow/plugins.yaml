@@ -62,6 +62,7 @@ approve:
   implicit_self_approve: true
   lgtm_acts_as_approve: true
 - repos:
+  - kubernetes-csi
   - kubernetes-sigs
   - client-go/unofficial-docs
   implicit_self_approve: true
