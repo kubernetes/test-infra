@@ -393,6 +393,7 @@ plugins:
   - blunderbuss
   - config-updater
   - milestone
+  - owners-label
   - override
   - trigger
   - verify-owners
