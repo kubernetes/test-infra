@@ -1,6 +1,5 @@
 periodics:
 - interval: 1h
-  agent: kubernetes
   name: maintenance-ci-aws-janitor
   labels:
     preset-service-account: "true"
@@ -32,7 +31,6 @@ periodics:
         secretName: aws-cred-new
 
 - interval: 24h
-  agent: kubernetes
   name: maintenance-ci-janitor
   labels:
     preset-service-account: "true"
@@ -54,7 +52,6 @@ periodics:
           memory: "8Gi"
 
 - interval: 1h
-  agent: kubernetes
   name: maintenance-pull-janitor
   labels:
     preset-service-account: "true"
@@ -76,7 +73,6 @@ periodics:
           memory: "8Gi"
 
 - interval: 1h
-  agent: kubernetes
   name: maintenance-pull-scale-janitor
   labels:
     preset-service-account: "true"

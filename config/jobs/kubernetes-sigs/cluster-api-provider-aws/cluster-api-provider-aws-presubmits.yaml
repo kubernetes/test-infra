@@ -1,13 +1,10 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-aws:
   - name: pull-cluster-api-provider-aws-make
-    agent: kubernetes
     always_run: true
-    context: pull-cluster-api-provider-aws-make
-    rerun_command: "/test pull-cluster-api-provider-aws-make"
-    trigger: "/test( all| pull-cluster-api-provider-aws-make)"
     labels:
       preset-service-account: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - args:
@@ -19,9 +16,6 @@ presubmits:
         - "--"
         - "make"
         - "images"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true

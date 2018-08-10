@@ -515,17 +515,21 @@ func (c *Config) finalizeJobConfig() error {
 		}
 	}
 
-	// Ensure that regexes are valid.
+	// Ensure that regexes are valid and set defaults.
 	for _, vs := range c.Presubmits {
+		defaultPresubmitFields(vs)
 		if err := SetPresubmitRegexes(vs); err != nil {
 			return fmt.Errorf("could not set regex: %v", err)
 		}
 	}
 	for _, js := range c.Postsubmits {
+		defaultPostsubmitFields(js)
 		if err := SetPostsubmitRegexes(js); err != nil {
 			return fmt.Errorf("could not set regex: %v", err)
 		}
 	}
+
+	defaultPeriodicFields(c.Periodics)
 
 	for _, v := range c.AllPresubmits(nil) {
 		if err := resolvePresets(v.Name, v.Labels, v.Spec, c.Presets); err != nil {
@@ -1015,6 +1019,55 @@ func ValidateController(c *Controller) error {
 	return nil
 }
 
+// DefaultTriggerFor returns the default regexp string used to match comments
+// that should trigger the job with this name.
+func DefaultTriggerFor(name string) string {
+	return fmt.Sprintf(`(?m)^/test( | .* )%s,?($|\s.*)`, name)
+}
+
+// DefaultRerunCommandFor returns the default rerun command for the job with
+// this name.
+func DefaultRerunCommandFor(name string) string {
+	return fmt.Sprintf("/test %s", name)
+}
+
+func defaultPresubmitFields(js []Presubmit) {
+	for i := range js {
+		if js[i].Context == "" {
+			js[i].Context = js[i].Name
+		}
+		if js[i].Agent == "" {
+			js[i].Agent = string(kube.KubernetesAgent)
+		}
+		// Default the values of Trigger and RerunCommand if both fields are
+		// specified. Otherwise let validation fail as both or neither should have
+		// been specified.
+		if js[i].Trigger == "" && js[i].RerunCommand == "" {
+			js[i].Trigger = DefaultTriggerFor(js[i].Name)
+			js[i].RerunCommand = DefaultRerunCommandFor(js[i].Name)
+		}
+		defaultPresubmitFields(js[i].RunAfterSuccess)
+	}
+}
+
+func defaultPostsubmitFields(js []Postsubmit) {
+	for i := range js {
+		if js[i].Agent == "" {
+			js[i].Agent = string(kube.KubernetesAgent)
+		}
+		defaultPostsubmitFields(js[i].RunAfterSuccess)
+	}
+}
+
+func defaultPeriodicFields(js []Periodic) {
+	for i := range js {
+		if js[i].Agent == "" {
+			js[i].Agent = string(kube.KubernetesAgent)
+		}
+		defaultPeriodicFields(js[i].RunAfterSuccess)
+	}
+}
+
 // SetPresubmitRegexes compiles and validates all the regular expressions for
 // the provided presubmits.
 func SetPresubmitRegexes(js []Presubmit) error {
@@ -1026,9 +1079,6 @@ func SetPresubmitRegexes(js []Presubmit) error {
 		}
 		if !js[i].re.MatchString(j.RerunCommand) {
 			return fmt.Errorf("for job %s, rerun command \"%s\" does not match trigger \"%s\"", j.Name, j.RerunCommand, j.Trigger)
-		}
-		if err := SetPresubmitRegexes(j.RunAfterSuccess); err != nil {
-			return err
 		}
 		if j.RunIfChanged != "" {
 			re, err := regexp.Compile(j.RunIfChanged)
@@ -1042,6 +1092,10 @@ func SetPresubmitRegexes(js []Presubmit) error {
 			return fmt.Errorf("could not set branch regexes for %s: %v", j.Name, err)
 		}
 		js[i].Brancher = b
+
+		if err := SetPresubmitRegexes(j.RunAfterSuccess); err != nil {
+			return err
+		}
 	}
 	return nil
 }

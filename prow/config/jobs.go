@@ -76,36 +76,49 @@ func mergePreset(preset Preset, labels map[string]string, pod *v1.PodSpec) error
 	return nil
 }
 
-// Presubmit is the job-specific trigger info.
+// Presubmit runs on PRs.
 type Presubmit struct {
-	// eg kubernetes-pull-build-test-e2e-gce
+	// The name of the job.
+	// e.g. pull-test-infra-bazel-build
 	Name string `json:"name"`
-	// Labels are added in prowjobs created for this job.
+	// Labels are added to prowjobs and pods created for this job.
 	Labels map[string]string `json:"labels"`
-	// Run for every PR, or only when a comment triggers it.
+
+	// AlwaysRun automatically for every PR, or only when a comment triggers it.
 	AlwaysRun bool `json:"always_run"`
-	// Run if the PR modifies a file that matches this regex.
+	// RunIfChanged automatically run if the PR modifies a file that matches this regex.
 	RunIfChanged string `json:"run_if_changed"`
-	// Context line for GitHub status.
+
+	// Context is the name of the GitHub status context for the job.
 	Context string `json:"context"`
-	// eg @k8s-bot e2e test this
-	Trigger string `json:"trigger"`
-	// Valid rerun command to give users. Must match Trigger.
-	RerunCommand string `json:"rerun_command"`
-	// Whether or not to skip commenting and setting status on GitHub.
+	// Optional indicates that the job's status context should not be required for merge.
+	Optional bool `json:"optional,omitempty"`
+	// SkipReport skips commenting and setting status on GitHub.
 	SkipReport bool `json:"skip_report"`
-	// Maximum number of this job running concurrently, 0 implies no limit.
+
+	// Trigger is the regular expression to trigger the job.
+	// e.g. `@k8s-bot e2e test this`
+	// RerunCommand must also be specified if this field is specified.
+	// (Default: `(?m)^/test (?:.*? )?<job name>(?: .*?)?$`)
+	Trigger string `json:"trigger"`
+	// The RerunCommand to give users. Must match Trigger.
+	// Trigger must also be specified if this field is specified.
+	// (Default: `/test <job name>`)
+	RerunCommand string `json:"rerun_command"`
+
+	// MaximumConcurrency of this job, 0 implies no limit.
 	MaxConcurrency int `json:"max_concurrency"`
 	// Agent that will take care of running this job.
 	Agent string `json:"agent"`
-	// Cluster is the alias of the cluster to run this job in. (Default: kube.DefaultClusterAlias)
+	// Cluster is the alias of the cluster to run this job in.
+	// (Default: kube.DefaultClusterAlias)
 	Cluster string `json:"cluster"`
-	// Kubernetes pod spec.
+
+	// Spec is the Kubernetes pod spec used if Agent is Kubernetes.
 	Spec *v1.PodSpec `json:"spec,omitempty"`
-	// Run these jobs after successfully running this one.
+
+	// RunAfterSuccess is a list of jobs to run after successfully running this one.
 	RunAfterSuccess []Presubmit `json:"run_after_success"`
-	// Consider job optional for branch protection.
-	Optional bool `json:"optional,omitempty"`
 
 	Brancher
 

@@ -545,8 +545,7 @@
     ".",
     "go-bindata",
   ]
-  revision = "bbd0c6e271208dce66d8fda4bc536453cd27fc4a"
-  version = "v3.0.7"
+  revision = "6025e8de665b31fa74ab1a66f2cddd8c0abf887e"
 
 [[projects]]
   name = "github.com/knative/build"
@@ -696,9 +695,10 @@
   revision = "836a144573533ea4da4e6929c235fd348aed1c80"
 
 [[projects]]
-  name = "github.com/shurcooL/githubql"
+  branch = "master"
+  name = "github.com/shurcooL/githubv4"
   packages = ["."]
-  revision = "71882d9f5f43fe50be204fe37db8994bf70072bb"
+  revision = "19298c78142b5fe80c2cdaa2091bc51cbc3a94fc"
 
 [[projects]]
   name = "github.com/shurcooL/go"
@@ -706,13 +706,14 @@
   revision = "5924e6132c2f184e262d4bc779e5745fa297d093"
 
 [[projects]]
+  branch = "master"
   name = "github.com/shurcooL/graphql"
   packages = [
     ".",
     "ident",
     "internal/jsonutil",
   ]
-  revision = "68e5b1b3ab56633e42939506bc61f0b9fb2b7a79"
+  revision = "62c9ce094e75302d560f7adcdf16c06d05aaa958"
 
 [[projects]]
   name = "github.com/sirupsen/logrus"
@@ -934,6 +935,7 @@
   branch = "release-1.10"
   name = "k8s.io/api"
   packages = [
+    "admission/v1beta1",
     "admissionregistration/v1alpha1",
     "admissionregistration/v1beta1",
     "apps/v1",
@@ -1176,6 +1178,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "5c0c8a007d7e8b55851e8d2207ef6799d8a93c06340c8197c3da4f597989ceec"
+  inputs-digest = "b5213975990940df4092d5a812e8d180dd9edc64a5f4f7c846fd114182e743f7"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -102,8 +102,6 @@ func (c *realClowder) setKey(keyPath string, log *logrus.Entry) {
 	c.key = ""
 }
 
-var client = http.Client{}
-
 type catResult struct {
 	Source string `xml:"data>images>image>source_url"`
 	Image  string `xml:"data>images>image>url"`
@@ -143,26 +141,27 @@ func (r *realClowder) Url(category string) string {
 
 func (r *realClowder) readCat(category string) (string, error) {
 	uri := r.Url(category)
-	req, err := http.NewRequest("GET", uri, nil)
-	if err != nil {
-		return "", fmt.Errorf("could not create request %s: %v", uri, err)
-	}
-	req.Header.Add("Accept", "application/json")
-	resp, err := client.Do(req)
+	resp, err := http.Get(uri)
 	if err != nil {
 		return "", fmt.Errorf("could not read cat from %s: %v", uri, err)
 	}
 	defer resp.Body.Close()
+	if sc := resp.StatusCode; sc > 299 || sc < 200 {
+		return "", fmt.Errorf("failing %d response from %s", sc, uri)
+	}
 	var a catResult
 	if err = xml.NewDecoder(resp.Body).Decode(&a); err != nil {
 		return "", err
 	}
+	if a.Image == "" {
+		return "", fmt.Errorf("no image url in response from %s", uri)
+	}
 	// checking size, GitHub doesn't support big images
 	toobig, err := github.ImageTooBig(a.Image)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("could not validate image size %s: %v", a.Image, err)
 	} else if toobig {
-		return "", errors.New("unsupported cat :( size too big: " + a.Image)
+		return "", fmt.Errorf("longcat is too long: %s", a.Image)
 	}
 	return a.Format()
 }

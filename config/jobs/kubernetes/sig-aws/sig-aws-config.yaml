@@ -1,9 +1,9 @@
 periodics:
 - interval: 30m
   name: ci-kops-build
-  agent: kubernetes
   labels:
     preset-service-account: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -17,21 +17,11 @@ periodics:
       - make
       - gcs-publish-ci
       - GCS_LOCATION=gs://kops-ci/bin
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws
   labels:
     preset-service-account: "true"
@@ -56,7 +46,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 1h
-  agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-beta
   labels:
     preset-service-account: "true"
@@ -81,7 +70,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 1h
-  agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-channelalpha
   labels:
     preset-service-account: "true"
@@ -108,7 +96,6 @@ periodics:
       imagePullPolicy: Always
 
 - interval: 1h
-  agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-ena-nvme
   labels:
     preset-service-account: "true"
@@ -136,7 +123,6 @@ periodics:
       imagePullPolicy: Always
 
 - interval: 1h
-  agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-ha-uswest2
   labels:
     preset-service-account: "true"
@@ -164,7 +150,6 @@ periodics:
       imagePullPolicy: Always
 
 - interval: 4h
-  agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-imagecentos7
   labels:
     preset-service-account: "true"
@@ -193,7 +178,6 @@ periodics:
       imagePullPolicy: Always
 
 - interval: 4h
-  agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-imageubuntu1604
   labels:
     preset-service-account: "true"
@@ -221,7 +205,6 @@ periodics:
       imagePullPolicy: Always
 
 - interval: 1h
-  agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-networking-kopeio-vxlan
   labels:
     preset-service-account: "true"
@@ -248,7 +231,6 @@ periodics:
       imagePullPolicy: Always
 
 - interval: 1h
-  agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-newrunner
   labels:
     preset-service-account: "true"
@@ -274,7 +256,6 @@ periodics:
       imagePullPolicy: Always
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-stable1
   labels:
     preset-service-account: "true"
@@ -299,7 +280,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 4h
-  agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-stable2
   labels:
     preset-service-account: "true"
@@ -324,7 +304,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 6h
-  agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-stable3
   labels:
     preset-service-account: "true"
@@ -349,7 +328,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 1h
-  agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-updown
   labels:
     preset-service-account: "true"
@@ -375,7 +353,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 24h
-  agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-weave
   labels:
     preset-service-account: "true"
@@ -401,7 +378,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-kops-gce
   labels:
     preset-service-account: "true"
@@ -426,7 +402,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 1h
-  agent: kubernetes
   name: ci-kubernetes-e2e-kops-gce-channelalpha
   labels:
     preset-service-account: "true"
@@ -451,7 +426,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-kops-gce-ha
   labels:
     preset-service-account: "true"

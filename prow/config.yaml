@@ -228,6 +228,8 @@ tide:
     - kubernetes/test-infra
     - kubernetes/website
     - kubernetes-sigs/application
+    - kubernetes-sigs/architecture-tracking
+    - kubernetes-sigs/aws-encryption-provider
     - kubernetes-sigs/cluster-api
     - kubernetes-sigs/cluster-api-provider-aws
     - kubernetes-sigs/cluster-api-provider-gcp
@@ -283,8 +285,6 @@ tide:
     - lgtm
     - approved
     - "cncf-cla: yes"
-    - LGTM1
-    - LGTM2
     missingLabels:
     - do-not-merge/hold
     - do-not-merge/invalid-owners-file
@@ -417,16 +417,30 @@ presets:
   env:
   - name: BAZEL_REMOTE_CACHE_ENABLED
     value: "true"
+# docker-in-docker (with images/bootstrap) preset
+# NOTE: using this also requires using that image,
+# ensuring you run your test under either the ENTRYPOINT or:
+# /usr/local/bin/runner my-test-command --foo --bar
+# AND setting the following on your PodSpec:
+# securityContext: 
+#   privileged: true
+- labels:
+    preset-dind-enabled: "true"
+  env:
+  - name: DOCKER_IN_DOCKER_ENABLED
+    value: "true"
+  volumes:
+  - name: docker-graph
+    emptyDir: {}
+  volumeMounts:
+  - name: docker-graph
+    mountPath: /docker-graph
 
 presubmits:
   kubernetes/community:
   - name: pull-community-verify
-    agent: kubernetes
-    context: pull-community-verify
     branches:
     - master
-    rerun_command: "/test pull-community-verify"
-    trigger: "(?m)^/test( all| pull-community-verify),?(\\s+|$)"
     always_run: true
     labels:
       preset-service-account: "true"
@@ -437,64 +451,11 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-
-  kubernetes/dns:
-  - name: pull-kubernetes-dns-test
-    agent: kubernetes
-    context: pull-kubernetes-dns-test
-    branches:
-    - master
-    rerun_command: "/test pull-kubernetes-dns-test"
-    trigger: "(?m)^/test( all| pull-kubernetes-dns-test),?(\\s+|$)"
-    always_run: true
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
-        args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-
-  kubernetes/ingress-gce:
-  - name: pull-ingress-gce-test
-    agent: kubernetes
-    context: pull-ingress-gce-test
-    rerun_command: "/test pull-ingress-gce-test"
-    trigger: "(?m)^/test( all| pull-ingress-gce-test),?(\\s+|$)"
-    always_run: true
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-        args:
-        - "--repo=k8s.io/ingress-gce=$(PULL_REFS)"
-        - "--root=/go/src/"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
 
   GoogleCloudPlatform/k8s-multicluster-ingress:
   - name: pull-kubernetes-multicluster-ingress-test
-    agent: kubernetes
-    context: pull-kubernetes-multicluster-ingress-test
     branches:
     - master
-    rerun_command: "/test pull-kubernetes-multicluster-ingress-test"
-    trigger: "(?m)^/test( all| pull-kubernetes-multicluster-ingress-test),?(\\s+|$)"
     always_run: true
     labels:
       preset-service-account: "true"
@@ -516,11 +477,7 @@ presubmits:
 
   kubernetes/federation:
   - name: pull-federation-bazel-test
-    agent: kubernetes
-    context: pull-federation-bazel-test
     always_run: true
-    rerun_command: "/test pull-federation-bazel-test"
-    trigger: "(?m)^/test( all| pull-federation-bazel-test),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -546,14 +503,11 @@ presubmits:
             memory: "6Gi"
 
   - name: pull-federation-e2e-gce
-    agent: kubernetes
     always_run: true
-    context: pull-federation-e2e-gce
-    rerun_command: "/test pull-federation-e2e-gce"
-    trigger: "(?m)^/test( all| pull-federation-e2e-gce),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -563,23 +517,10 @@ presubmits:
         - "--root=/go/src/"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=110"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
   - name: pull-federation-verify
-    agent: kubernetes
-    context: pull-federation-verify
-    rerun_command: "/test pull-federation-verify"
-    trigger: "/test( all| pull-federation-verify)"
     always_run: true
     labels:
       preset-service-account: "true"
@@ -593,14 +534,11 @@ presubmits:
 
   kubernetes/heapster:
   - name: pull-heapster-e2e
-    agent: kubernetes
     always_run: true
-    context: pull-heapster-e2e
-    rerun_command: "/test pull-heapster-e2e"
-    trigger: "(?m)^/test( all| pull-heapster-e2e),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -608,23 +546,10 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
         securityContext:
           privileged: true
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
   - name: pull-heapster-unit
-    agent: kubernetes
     always_run: true
-    context: pull-heapster-unit
-    rerun_command: "/test pull-heapster-unit"
-    trigger: "(?m)^/test( all| pull-heapster-unit),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -638,14 +563,10 @@ presubmits:
 
   kubernetes/kops:
   - name: pull-kops-bazel-build
-    agent: kubernetes
-    context: pull-kops-bazel-build
     branches:
     - master
     always_run: true
     skip_report: false
-    rerun_command: "/test pull-kops-bazel-build"
-    trigger: "(?m)^/test( all| pull-kops-bazel-build),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -670,14 +591,10 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-kops-bazel-test
-    agent: kubernetes
-    context: pull-kops-bazel-test
     branches:
     - master
     always_run: true
     skip_report: false
-    rerun_command: "/test pull-kops-bazel-test"
-    trigger: "(?m)^/test( all| pull-kops-bazel-test),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -702,15 +619,12 @@ presubmits:
             memory: "2Gi"
 
   - name: pull-kops-e2e-kubernetes-aws
-    agent: kubernetes
     always_run: true
-    context: pull-kops-e2e-kubernetes-aws
-    rerun_command: "/test pull-kops-e2e-kubernetes-aws"
-    trigger: "(?m)^/test( all| pull-kops-e2e-kubernetes-aws),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
       preset-aws-credential: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -721,29 +635,16 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-jenkins/pr-logs
         - --timeout=90
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
 
   - name: pull-kops-verify-bazel
-    agent: kubernetes
-    context: pull-kops-verify-bazel
     branches:
     - master
-    rerun_command: "/test pull-kops-verify-bazel"
-    trigger: "(?m)^/test( all| pull-kops-verify-bazel),?(\\s+|$)"
     always_run: true
     labels:
       preset-service-account: "true"
@@ -756,12 +657,8 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
 
   - name: pull-kops-verify-boilerplate
-    agent: kubernetes
-    context: pull-kops-verify-boilerplate
     branches:
     - master
-    rerun_command: "/test pull-kops-verify-boilerplate"
-    trigger: "(?m)^/test( all| pull-kops-verify-boilerplate),?(\\s+|$)"
     always_run: true
     labels:
       preset-service-account: "true"
@@ -774,12 +671,8 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
 
   - name: pull-kops-verify-gofmt
-    agent: kubernetes
-    context: pull-kops-verify-gofmt
     branches:
     - master
-    rerun_command: "/test pull-kops-verify-gofmt"
-    trigger: "(?m)^/test( all| pull-kops-verify-gofmt),?(\\s+|$)"
     always_run: true
     labels:
       preset-service-account: "true"
@@ -792,12 +685,8 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
 
   - name: pull-kops-verify-govet
-    agent: kubernetes
-    context: pull-kops-verify-govet
     branches:
     - master
-    rerun_command: "/test pull-kops-verify-govet"
-    trigger: "(?m)^/test( all| pull-kops-verify-govet),?(\\s+|$)"
     always_run: true
     labels:
       preset-service-account: "true"
@@ -810,12 +699,8 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
 
   - name: pull-kops-verify-packages
-    agent: kubernetes
-    context: pull-kops-verify-packages
     branches:
     - master
-    rerun_command: "/test pull-kops-verify-packages"
-    trigger: "(?m)^/test( all| pull-kops-verify-packages),?(\\s+|$)"
     always_run: true
     labels:
       preset-service-account: "true"
@@ -829,11 +714,7 @@ presubmits:
 
   kubernetes/cluster-registry:
   - name: pull-cluster-registry-verify-gensrc
-    agent: kubernetes
-    context: pull-cluster-registry-verify-gensrc
     always_run: true
-    rerun_command: "/test pull-cluster-registry-verify-gensrc"
-    trigger: "(?m)^/test( all| pull-cluster-registry-verify-gensrc),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -853,11 +734,7 @@ presubmits:
           requests:
             memory: "2Gi"
   - name: pull-cluster-registry-verify-gosrc
-    agent: kubernetes
-    context: pull-cluster-registry-verify-gosrc
     always_run: true
-    rerun_command: "/test pull-cluster-registry-verify-gosrc"
-    trigger: "(?m)^/test( all| pull-cluster-registry-verify-gosrc),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -879,11 +756,7 @@ presubmits:
             memory: "2Gi"
   containerd/cri:
   - name: pull-cri-containerd-build
-    agent: kubernetes
     always_run: true
-    context: pull-cri-containerd-build
-    rerun_command: "/test pull-cri-containerd-build"
-    trigger: "(?m)^/test( all| pull-cri-containerd-build),?(\\s+|$)"
     skip_branches:
     - v0.1
     labels:
@@ -897,15 +770,11 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
     run_after_success:
     - name: pull-cri-containerd-node-e2e
-      agent: kubernetes
       branches:
       - master
       always_run: true
       skip_report: false
       max_concurrency: 8
-      context: pull-cri-containerd-node-e2e
-      rerun_command: "/test pull-cri-containerd-node-e2e"
-      trigger: "(?m)^/test( all| pull-cri-containerd-node-e2e),?(\\s+|$)"
       labels:
         preset-service-account: "true"
         preset-k8s-ssh: "true"
@@ -923,15 +792,11 @@ presubmits:
           - "--"
           - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml -node-env=PULL_REFS=$(PULL_REFS)"
     - name: pull-cri-containerd-node-e2e
-      agent: kubernetes
       branches:
       - release/1.0
       always_run: true
       skip_report: false
       max_concurrency: 8
-      context: pull-cri-containerd-node-e2e
-      rerun_command: "/test pull-cri-containerd-node-e2e"
-      trigger: "(?m)^/test( all| pull-cri-containerd-node-e2e),?(\\s+|$)"
       labels:
         preset-service-account: "true"
         preset-k8s-ssh: "true"
@@ -950,11 +815,7 @@ presubmits:
           - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/image-config.yaml -node-env=PULL_REFS=$(PULL_REFS)"
 
   - name: pull-cri-containerd-verify
-    agent: kubernetes
     always_run: true
-    context: pull-cri-containerd-verify
-    rerun_command: "/test pull-cri-containerd-verify"
-    trigger: "(?m)^/test( all| pull-cri-containerd-verify),?(\\s+|$)"
     skip_branches:
     - v0.1
     labels:
@@ -969,11 +830,7 @@ presubmits:
 
   kubernetes/kubernetes:
   - name: pull-kubernetes-bazel-build
-    agent: kubernetes
-    context: pull-kubernetes-bazel-build
     always_run: true
-    rerun_command: "/test pull-kubernetes-bazel-build"
-    trigger: "(?m)^/test( all| pull-kubernetes-bazel-build),?(\\s+|$)"
     skip_branches:
     - release-1.10 # different bazel version
     - release-1.9 # need to cherry pick back https://github.com/kubernetes/kubernetes/pull/59251, possibly others
@@ -1002,13 +859,9 @@ presubmits:
             memory: "6Gi"
     run_after_success:
     - name: pull-kubernetes-e2e-kubeadm-gce
-      agent: kubernetes
-      context: pull-kubernetes-e2e-kubeadm-gce
       max_concurrency: 8
       skip_report: true
       run_if_changed: '^(cmd/kubeadm|build/debs).*$'
-      rerun_command: "/test pull-kubernetes-e2e-kubeadm-gce"
-      trigger: "(?m)^/test pull-kubernetes-e2e-kubeadm-gce,?(\\s+|$)"
       skip_branches:
       - release-1.10 # different bazel version
       - release-1.9 # need to cherry pick back https://github.com/kubernetes/kubernetes/pull/59251, possibly others
@@ -1027,11 +880,7 @@ presubmits:
           - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
             value: "true"
   - name: pull-kubernetes-bazel-build
-    agent: kubernetes
-    context: pull-kubernetes-bazel-build
     always_run: true
-    rerun_command: "/test pull-kubernetes-bazel-build"
-    trigger: "(?m)^/test( all| pull-kubernetes-bazel-build),?(\\s+|$)"
     branches:
     - release-1.10
     labels:
@@ -1058,13 +907,9 @@ presubmits:
             memory: "6Gi"
     run_after_success:
     - name: pull-kubernetes-e2e-kubeadm-gce
-      agent: kubernetes
-      context: pull-kubernetes-e2e-kubeadm-gce
       max_concurrency: 8
       skip_report: true
       run_if_changed: '^(cmd/kubeadm|build/debs).*$'
-      rerun_command: "/test pull-kubernetes-e2e-kubeadm-gce"
-      trigger: "(?m)^/test pull-kubernetes-e2e-kubeadm-gce,?(\\s+|$)"
       branches:
       - release-1.10
       labels:
@@ -1081,11 +926,7 @@ presubmits:
           - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
             value: "true"
   - name: pull-kubernetes-bazel-build
-    agent: kubernetes
-    context: pull-kubernetes-bazel-build
     always_run: true
-    rerun_command: "/test pull-kubernetes-bazel-build"
-    trigger: "(?m)^/test( all| pull-kubernetes-bazel-build),?(\\s+|$)"
     branches:
     - release-1.9
     labels:
@@ -1111,13 +952,9 @@ presubmits:
             memory: "6Gi"
     run_after_success:
     - name: pull-kubernetes-e2e-kubeadm-gce
-      agent: kubernetes
-      context: pull-kubernetes-e2e-kubeadm-gce
       max_concurrency: 8
       skip_report: true
       run_if_changed: '^(cmd/kubeadm|build/debs).*$'
-      rerun_command: "/test pull-kubernetes-e2e-kubeadm-gce"
-      trigger: "(?m)^/test pull-kubernetes-e2e-kubeadm-gce,?(\\s+|$)"
       branches:
       - release-1.9
       labels:
@@ -1134,11 +971,7 @@ presubmits:
           - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
             value: "true"
   - name: pull-kubernetes-bazel-build
-    agent: kubernetes
-    context: pull-kubernetes-bazel-build
     always_run: true
-    rerun_command: "/test pull-kubernetes-bazel-build"
-    trigger: "(?m)^/test( all| pull-kubernetes-bazel-build),?(\\s+|$)"
     branches:
     - release-1.8
     labels:
@@ -1164,13 +997,9 @@ presubmits:
             memory: "6Gi"
     run_after_success:
     - name: pull-kubernetes-e2e-kubeadm-gce
-      agent: kubernetes
-      context: pull-kubernetes-e2e-kubeadm-gce
       max_concurrency: 8
       skip_report: true
       run_if_changed: '^(cmd/kubeadm|build/debs).*$'
-      rerun_command: "/test pull-kubernetes-e2e-kubeadm-gce"
-      trigger: "(?m)^/test pull-kubernetes-e2e-kubeadm-gce,?(\\s+|$)"
       branches:
       - release-1.8
       labels:
@@ -1188,11 +1017,7 @@ presubmits:
             value: "true"
 
   - name: pull-kubernetes-bazel-test
-    agent: kubernetes
-    context: pull-kubernetes-bazel-test
     always_run: true
-    rerun_command: "/test pull-kubernetes-bazel-test"
-    trigger: "(?m)^/test( all| pull-kubernetes-bazel-test),?(\\s+|$)"
     skip_branches:
     - release-1.10 # different bazel version
     - release-1.9 # need to cherry pick back https://github.com/kubernetes/kubernetes/pull/59251, possibly others
@@ -1224,11 +1049,7 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-bazel-test
-    agent: kubernetes
-    context: pull-kubernetes-bazel-test
     always_run: true
-    rerun_command: "/test pull-kubernetes-bazel-test"
-    trigger: "(?m)^/test( all| pull-kubernetes-bazel-test),?(\\s+|$)"
     branches:
     - release-1.10
     labels:
@@ -1258,11 +1079,7 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-bazel-test
-    agent: kubernetes
-    context: pull-kubernetes-bazel-test
     always_run: true
-    rerun_command: "/test pull-kubernetes-bazel-test"
-    trigger: "(?m)^/test( all| pull-kubernetes-bazel-test),?(\\s+|$)"
     branches:
     - release-1.9
     labels:
@@ -1290,11 +1107,7 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-bazel-test
-    agent: kubernetes
-    context: pull-kubernetes-bazel-test
     always_run: true
-    rerun_command: "/test pull-kubernetes-bazel-test"
-    trigger: "(?m)^/test( all| pull-kubernetes-bazel-test),?(\\s+|$)"
     branches:
     - release-1.8
     labels:
@@ -1322,16 +1135,13 @@ presubmits:
             memory: "6Gi"
 
   - name: pull-kubernetes-cross
-    agent: kubernetes
-    context: pull-kubernetes-cross
-    rerun_command: "/test pull-kubernetes-cross"
-    trigger: "(?m)^/test pull-kubernetes-cross,?(\\s+|$)"
     run_if_changed: '^(build\/|hack\/lib\/)|(Makefile)$'
     skip_branches:
     - release-1.9
     - release-1.8
     labels:
       preset-service-account: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
@@ -1341,28 +1151,15 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=90"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
         resources:
           requests:
             cpu: 7
             memory: "41Gi"
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
 
   - name: pull-kubernetes-cross
-    agent: kubernetes
-    context: pull-kubernetes-cross
-    rerun_command: "/test pull-kubernetes-cross"
-    trigger: "(?m)^/test pull-kubernetes-cross,?(\\s+|$)"
     # typecheck doesn't exist for < 1.10 currently, so we still run cross more often
     run_if_changed: '^(build\/|hack\/lib\/)|(Makefile)|(.*_(windows|linux|osx|unsupported)(_test)?\.go)$'
     branches:
@@ -1370,6 +1167,7 @@ presubmits:
     - release-1.9
     labels:
       preset-service-account: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
@@ -1379,31 +1177,19 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=90"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
         resources:
           requests:
             cpu: 7
             memory: "41Gi"
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
 
   - name: pull-kubernetes-cross-prow
-    agent: kubernetes
-    context: pull-kubernetes-cross-prow
-    rerun_command: "/test pull-kubernetes-cross-prow"
-    trigger: "(?m)^/test pull-kubernetes-cross-prow,?(\\s+|$)"
     always_run: false
     labels:
       preset-service-account: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bootstrap:latest
@@ -1414,34 +1200,22 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=90"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
         resources:
           requests:
             cpu: 7
             memory: "41Gi"
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
   - name: pull-kubernetes-dind-e2e
-    agent: kubernetes
-    context: pull-kubernetes-dind-e2e
     always_run: false
-    rerun_command: "/test pull-kubernetes-dind-e2e"
-    trigger: "(?m)^/test pull-kubernetes-dind-e2e,?(\\s+|$)"
     skip_branches:
     - release-1.9
     - release-1.8
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -1463,9 +1237,6 @@ presubmits:
         - "--up"
         - "--test"
         - "--down"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -1477,8 +1248,6 @@ presubmits:
           readOnly: true
         - mountPath: /sys/fs/cgroup
           name: cgroup
-        - mountPath: /docker-graph
-          name: auto-generated-docker-graph-volume-mount
         resources:
           requests:
             # We can adjust this after we know the requirements.
@@ -1492,14 +1261,8 @@ presubmits:
         hostPath:
           path: /sys/fs/cgroup
           type: Directory
-      - name: auto-generated-docker-graph-volume-mount
-        emptyDir: {}
 
   - name: pull-kubernetes-e2e-containerd-gce
-    agent: kubernetes
-    context: pull-kubernetes-e2e-containerd-gce
-    rerun_command: "/test pull-kubernetes-e2e-containerd-gce"
-    trigger: "(?m)^/test (containerd|pull-kubernetes-e2e-containerd-gce),?(\\s+|$)"
     always_run: false
     branches:
     - master
@@ -1525,10 +1288,6 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gce
-    agent: kubernetes
-    context: pull-kubernetes-e2e-gce
-    rerun_command: "/test pull-kubernetes-e2e-gce"
-    trigger: "(?m)^/test (all|pull-kubernetes-e2e-gce),?(\\s+|$)"
     always_run: true
     skip_branches:
     - release-1.10 # per-release image
@@ -1555,10 +1314,6 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gce
-    agent: kubernetes
-    context: pull-kubernetes-e2e-gce
-    rerun_command: "/test pull-kubernetes-e2e-gce"
-    trigger: "(?m)^/test (all|pull-kubernetes-e2e-gce),?(\\s+|$)"
     always_run: true
     branches:
     - release-1.10
@@ -1583,10 +1338,6 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gce
-    agent: kubernetes
-    context: pull-kubernetes-e2e-gce
-    rerun_command: "/test pull-kubernetes-e2e-gce"
-    trigger: "(?m)^/test (all|pull-kubernetes-e2e-gce),?(\\s+|$)"
     always_run: true
     # TODO(bentheelder): enforce this pattern (skip all releases) or implement
     # something better like https://github.com/kubernetes/test-infra/pull/4918
@@ -1612,10 +1363,6 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gce
-    agent: kubernetes
-    context: pull-kubernetes-e2e-gce
-    rerun_command: "/test pull-kubernetes-e2e-gce"
-    trigger: "(?m)^/test (all|pull-kubernetes-e2e-gce),?(\\s+|$)"
     always_run: true
     branches:
     - release-1.8
@@ -1640,10 +1387,6 @@ presubmits:
             memory: "6Gi"
 
   - name: pull-kubernetes-e2e-gce-100-performance
-    agent: kubernetes
-    context: pull-kubernetes-e2e-gce-100-performance
-    rerun_command: "/test pull-kubernetes-e2e-gce-100-performance"
-    trigger: "(?m)^/test (all|pull-kubernetes-e2e-gce-100-performance),?(\\s+|$)"
     always_run: true
     skip_report: false
     max_concurrency: 12
@@ -1669,10 +1412,6 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gce-big-performance
-    agent: kubernetes
-    context: pull-kubernetes-e2e-gce-big-performance
-    rerun_command: "/test pull-kubernetes-e2e-gce-big-performance"
-    trigger: "(?m)^/test pull-kubernetes-e2e-gce-big-performance,?(\\s+|$)"
     always_run: false
     max_concurrency: 1
     branches:
@@ -1698,7 +1437,6 @@ presubmits:
             memory: "6Gi"
 
   - name: pull-kubernetes-e2e-gce-device-plugin-gpu
-    agent: kubernetes
     skip_branches:
     - release-1.10  # per-release image
     - release-1.9  # per-release image
@@ -1706,9 +1444,6 @@ presubmits:
     always_run: true
     skip_report: false
     max_concurrency: 12
-    context: pull-kubernetes-e2e-gce-device-plugin-gpu
-    rerun_command: "/test pull-kubernetes-e2e-gce-device-plugin-gpu"
-    trigger: "(?m)^/test( all| pull-kubernetes-e2e-gce-device-plugin-gpu),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -1732,15 +1467,11 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gce-device-plugin-gpu
-    agent: kubernetes
     branches:
     - release-1.10  # per-release image
     always_run: true
     skip_report: false
     max_concurrency: 12
-    context: pull-kubernetes-e2e-gce-device-plugin-gpu
-    rerun_command: "/test pull-kubernetes-e2e-gce-device-plugin-gpu"
-    trigger: "(?m)^/test( all| pull-kubernetes-e2e-gce-device-plugin-gpu),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -1764,15 +1495,11 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gce-device-plugin-gpu
-    agent: kubernetes
     branches:
     - release-1.9 # per-release image
     always_run: true
     skip_report: false
     max_concurrency: 12
-    context: pull-kubernetes-e2e-gce-device-plugin-gpu
-    rerun_command: "/test pull-kubernetes-e2e-gce-device-plugin-gpu"
-    trigger: "(?m)^/test( all| pull-kubernetes-e2e-gce-device-plugin-gpu),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -1795,15 +1522,11 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gce-device-plugin-gpu
-    agent: kubernetes
     branches:
     - release-1.8
     always_run: true
     skip_report: false
     max_concurrency: 12
-    context: pull-kubernetes-e2e-gce-device-plugin-gpu
-    rerun_command: "/test pull-kubernetes-e2e-gce-device-plugin-gpu"
-    trigger: "(?m)^/test( all| pull-kubernetes-e2e-gce-device-plugin-gpu),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -1826,10 +1549,6 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gce-large-performance
-    agent: kubernetes
-    context: pull-kubernetes-e2e-gce-large-performance
-    rerun_command: "/test pull-kubernetes-e2e-gce-large-performance"
-    trigger: "(?m)^/test pull-kubernetes-e2e-gce-large-performance,?(\\s+|$)"
     always_run: false
     max_concurrency: 1
     branches:
@@ -1855,10 +1574,6 @@ presubmits:
             memory: "6Gi"
 
   - name: pull-kubernetes-e2e-gke
-    agent: kubernetes
-    context: pull-kubernetes-e2e-gke
-    rerun_command: "/test pull-kubernetes-e2e-gke"
-    trigger: "(?m)^/test pull-kubernetes-e2e-gke,?(\\s+|$)"
     always_run: false
     run_if_changed: '^(cluster/gce|cluster/addons).*$'
     # TODO(bentheelder): enforce this pattern (skip all releases) or implement
@@ -1887,10 +1602,6 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gke
-    agent: kubernetes
-    context: pull-kubernetes-e2e-gke
-    rerun_command: "/test pull-kubernetes-e2e-gke"
-    trigger: "(?m)^/test pull-kubernetes-e2e-gke,?(\\s+|$)"
     always_run: false
     run_if_changed: '^(cluster/gce|cluster/addons).*$'
     branches:
@@ -1915,10 +1626,6 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gke
-    agent: kubernetes
-    context: pull-kubernetes-e2e-gke
-    rerun_command: "/test pull-kubernetes-e2e-gke"
-    trigger: "(?m)^/test pull-kubernetes-e2e-gke,?(\\s+|$)"
     always_run: false
     run_if_changed: '^(cluster/gce|cluster/addons).*$'
     branches:
@@ -1943,10 +1650,6 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gke
-    agent: kubernetes
-    context: pull-kubernetes-e2e-gke
-    rerun_command: "/test pull-kubernetes-e2e-gke"
-    trigger: "(?m)^/test pull-kubernetes-e2e-gke,?(\\s+|$)"
     always_run: false
     run_if_changed: '^(cluster/gce|cluster/addons).*$'
     branches:
@@ -1972,7 +1675,6 @@ presubmits:
             memory: "6Gi"
 
   - name: pull-kubernetes-e2e-gke-device-plugin-gpu
-    agent: kubernetes
     skip_branches:
     - release-1.10  # per-release image
     - release-1.9  # per-release image
@@ -1980,9 +1682,6 @@ presubmits:
     always_run: false
     skip_report: false
     max_concurrency: 1
-    context: pull-kubernetes-e2e-gke-device-plugin-gpu
-    rerun_command: "/test pull-kubernetes-e2e-gke-device-plugin-gpu"
-    trigger: "(?m)^/test pull-kubernetes-e2e-gke-device-plugin-gpu,?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -2005,15 +1704,11 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gke-device-plugin-gpu
-    agent: kubernetes
     branches:
     - release-1.10  # per-release image
     always_run: false
     skip_report: false
     max_concurrency: 1
-    context: pull-kubernetes-e2e-gke-device-plugin-gpu
-    rerun_command: "/test pull-kubernetes-e2e-gke-device-plugin-gpu"
-    trigger: "(?m)^/test pull-kubernetes-e2e-gke-device-plugin-gpu,?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -2036,15 +1731,11 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gke-device-plugin-gpu
-    agent: kubernetes
     branches:
     - release-1.9  # per-release image
     always_run: false
     skip_report: false
     max_concurrency: 1
-    context: pull-kubernetes-e2e-gke-device-plugin-gpu
-    rerun_command: "/test pull-kubernetes-e2e-gke-device-plugin-gpu"
-    trigger: "(?m)^/test pull-kubernetes-e2e-gke-device-plugin-gpu,?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -2067,15 +1758,11 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-gke-device-plugin-gpu
-    agent: kubernetes
     branches:
     - release-1.8  # per-release image
     always_run: false
     skip_report: false
     max_concurrency: 1
-    context: pull-kubernetes-e2e-gke-device-plugin-gpu
-    rerun_command: "/test pull-kubernetes-e2e-gke-device-plugin-gpu"
-    trigger: "(?m)^/test pull-kubernetes-e2e-gke-device-plugin-gpu,?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -2099,16 +1786,12 @@ presubmits:
             memory: "6Gi"
 
   - name: pull-kubernetes-e2e-kops-aws
-    agent: kubernetes
     skip_branches:
     - release-1.10  # per-release image
     - release-1.9  # per-release image
     - release-1.8  # per-release image
     max_concurrency: 12
     always_run: true
-    context: pull-kubernetes-e2e-kops-aws
-    rerun_command: "/test pull-kubernetes-e2e-kops-aws"
-    trigger: "(?m)^/test( all| pull-kubernetes-e2e-kops-aws),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
@@ -2133,14 +1816,10 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-kops-aws
-    agent: kubernetes
     branches:
     - release-1.10  # per-release image
     max_concurrency: 12
     always_run: true
-    context: pull-kubernetes-e2e-kops-aws
-    rerun_command: "/test pull-kubernetes-e2e-kops-aws"
-    trigger: "(?m)^/test( all| pull-kubernetes-e2e-kops-aws),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
@@ -2165,14 +1844,10 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-kops-aws
-    agent: kubernetes
     branches:
     - release-1.9  # per-release image
     max_concurrency: 12
     always_run: true
-    context: pull-kubernetes-e2e-kops-aws
-    rerun_command: "/test pull-kubernetes-e2e-kops-aws"
-    trigger: "(?m)^/test( all| pull-kubernetes-e2e-kops-aws),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
@@ -2196,14 +1871,10 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-e2e-kops-aws
-    agent: kubernetes
     branches:
     - release-1.8
     max_concurrency: 12
     always_run: true
-    context: pull-kubernetes-e2e-kops-aws
-    rerun_command: "/test pull-kubernetes-e2e-kops-aws"
-    trigger: "(?m)^/test( all| pull-kubernetes-e2e-kops-aws),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
@@ -2227,13 +1898,10 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-integration
-    agent: kubernetes
     always_run: true
-    context: pull-kubernetes-integration
-    rerun_command: "/test pull-kubernetes-integration"
-    trigger: "(?m)^/test( all| pull-kubernetes-integration),?(\\s+|$)"
     labels:
       preset-service-account: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
@@ -2243,29 +1911,17 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=60"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
         resources:
           requests:
             cpu: 4
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
   - name: pull-kubernetes-integration-prow
-    agent: kubernetes
     always_run: false
-    context: pull-kubernetes-integration-prow
-    rerun_command: "/test pull-kubernetes-integration-prow"
-    trigger: "(?m)^/test pull-kubernetes-integration-prow,?(\\s+|$)"
     labels:
       preset-service-account: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bootstrap:latest
@@ -2276,23 +1932,13 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=60"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
         resources:
           requests:
             cpu: 4
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
   - name: pull-kubernetes-kubemark-e2e-gce-big
-    agent: kubernetes
     always_run: true
     skip_report: false
     max_concurrency: 12
@@ -2300,13 +1946,11 @@ presubmits:
     - release-1.10  # per-release image
     - release-1.9  # per-release image
     - release-1.8  # per-release image
-    context: pull-kubernetes-kubemark-e2e-gce-big
-    rerun_command: "/test pull-kubernetes-kubemark-e2e-gce-big"
-    trigger: "(?m)^/test (all|pull-kubernetes-kubemark-e2e-gce-big),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -2318,38 +1962,27 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=120"
-        env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
+        #env:
         # - name: KUBEMARK_BAZEL_BUILD
         # value: "y"
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
   - name: pull-kubernetes-kubemark-e2e-gce-big
-    agent: kubernetes
     always_run: true
     skip_report: false
     max_concurrency: 12
     branches:
     - release-1.10  # per-release image
-    context: pull-kubernetes-kubemark-e2e-gce-big
-    rerun_command: "/test pull-kubernetes-kubemark-e2e-gce-big"
-    trigger: "(?m)^/test (all|pull-kubernetes-kubemark-e2e-gce-big),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.10
@@ -2361,38 +1994,27 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=120"
-        env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
+        #env:
         # - name: KUBEMARK_BAZEL_BUILD
         # value: "y"
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
   - name: pull-kubernetes-kubemark-e2e-gce-big
-    agent: kubernetes
     always_run: true
     skip_report: false
     max_concurrency: 12
     branches:
     - release-1.9  # per-release image
-    context: pull-kubernetes-kubemark-e2e-gce-big
-    rerun_command: "/test pull-kubernetes-kubemark-e2e-gce-big"
-    trigger: "(?m)^/test (all|pull-kubernetes-kubemark-e2e-gce-big),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.9
@@ -2404,38 +2026,27 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=120"
-        env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
+        #env:
         # - name: KUBEMARK_BAZEL_BUILD
         # value: "y"
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
   - name: pull-kubernetes-kubemark-e2e-gce-big
-    agent: kubernetes
     always_run: false
     skip_report: false
     max_concurrency: 12
     branches:
     - release-1.8
-    context: pull-kubernetes-kubemark-e2e-gce-big
-    rerun_command: "/test pull-kubernetes-kubemark-e2e-gce-big"
-    trigger: "(?m)^/test pull-kubernetes-kubemark-e2e-gce-big,?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.8
@@ -2447,38 +2058,27 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=120"
-        env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
+        #env:
         # - name: KUBEMARK_BAZEL_BUILD
         # value: "y"
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
 
   - name: pull-kubernetes-kubemark-e2e-gce-scale
-    agent: kubernetes
     always_run: false
     max_concurrency: 1
     branches:
     - master
-    context: pull-kubernetes-kubemark-e2e-gce-scale
-    rerun_command: "/test pull-kubernetes-kubemark-e2e-gce-scale"
-    trigger: "(?m)^/test pull-kubernetes-kubemark-e2e-gce-scale,?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
       preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -2490,39 +2090,28 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=1220"
-        env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
+        #env:
         # - name: KUBEMARK_BAZEL_BUILD
         # value: "y"
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
         resources:
           requests:
             memory: "6Gi"
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
 
   - name: pull-kubernetes-local-e2e
-    agent: kubernetes
     branches:
     - master
     always_run: false
     skip_report: false
     max_concurrency: 8
-    context: pull-kubernetes-local-e2e
-    rerun_command: "/test pull-kubernetes-local-e2e"
-    trigger: "(?m)^/test pull-kubernetes-local-e2e,?(\\s+|$)"
     run_if_changed: '(hyperkube|local-up-cluster)'
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -2533,32 +2122,20 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=140"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
 
   - name: pull-kubernetes-local-e2e-containerized
-    agent: kubernetes
     branches:
     - master
     always_run: false
     skip_report: false
-    context: pull-kubernetes-local-e2e-containerized
-    rerun_command: "/test pull-kubernetes-local-e2e-containerized"
-    trigger: "(?m)^/test pull-kubernetes-local-e2e-containerized,?(\\s+|$)"
     run_if_changed: '^(pkg|cmd)/kubelet.*$'
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -2572,29 +2149,17 @@ presubmits:
         env:
         - name: DOCKERIZE_KUBELET
           value: "true"
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
 
   - name: pull-kubernetes-node-e2e
-    agent: kubernetes
     skip_branches:
     - release-1.10  # per-release image
     - release-1.9  # per-release image
     - release-1.8  # per-release image
     always_run: true
     max_concurrency: 12
-    context: pull-kubernetes-node-e2e
-    rerun_command: "/test pull-kubernetes-node-e2e"
-    trigger: "(?m)^/test( all| pull-kubernetes-node-e2e),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -2615,14 +2180,10 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-node-e2e
-    agent: kubernetes
     branches:
     - release-1.10  # per-release image
     always_run: true
     max_concurrency: 12
-    context: pull-kubernetes-node-e2e
-    rerun_command: "/test pull-kubernetes-node-e2e"
-    trigger: "(?m)^/test( all| pull-kubernetes-node-e2e),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -2643,14 +2204,10 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-node-e2e
-    agent: kubernetes
     branches:
     - release-1.9  # per-release image
     always_run: true
     max_concurrency: 12
-    context: pull-kubernetes-node-e2e
-    rerun_command: "/test pull-kubernetes-node-e2e"
-    trigger: "(?m)^/test( all| pull-kubernetes-node-e2e),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -2671,14 +2228,10 @@ presubmits:
           requests:
             memory: "6Gi"
   - name: pull-kubernetes-node-e2e
-    agent: kubernetes
     branches:
     - release-1.8
     always_run: true
     max_concurrency: 12
-    context: pull-kubernetes-node-e2e
-    rerun_command: "/test pull-kubernetes-node-e2e"
-    trigger: "(?m)^/test( all| pull-kubernetes-node-e2e),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -2699,14 +2252,10 @@ presubmits:
             memory: "6Gi"
 
   - name: pull-kubernetes-node-e2e-containerd
-    agent: kubernetes
     branches:
     - master
     always_run: false
     max_concurrency: 12
-    context: pull-kubernetes-node-e2e-containerd
-    rerun_command: "/test pull-kubernetes-node-e2e-containerd"
-    trigger: "(?m)^/test (containerd|pull-kubernetes-node-e2e-containerd),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -2728,12 +2277,8 @@ presubmits:
             memory: "6Gi"
 
   - name: pull-kubernetes-typecheck
-    agent: kubernetes
     always_run: true
     skip_report: false
-    context: pull-kubernetes-typecheck
-    rerun_command: "/test pull-kubernetes-typecheck"
-    trigger: "(?m)^/test( all| pull-kubernetes-typecheck),?(\\s+|$)"
     skip_branches:
     - release-1.9 # doesn't have typecheck
     - release-1.8 # doesn't have typecheck
@@ -2751,13 +2296,10 @@ presubmits:
         - "--timeout=75"
 
   - name: pull-kubernetes-verify
-    agent: kubernetes
     always_run: true
-    context: pull-kubernetes-verify
-    rerun_command: "/test pull-kubernetes-verify"
-    trigger: "(?m)^/test( all| pull-kubernetes-verify),?(\\s+|$)"
     labels:
       preset-service-account: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
@@ -2767,30 +2309,18 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=75"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
         resources:
           requests:
             cpu: 4
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
 
   - name: pull-kubernetes-verify-prow
-    agent: kubernetes
     always_run: false
-    context: pull-kubernetes-verify-prow
-    rerun_command: "/test pull-kubernetes-verify-prow"
-    trigger: "(?m)^/test pull-kubernetes-verify-prow,?(\\s+|$)"
     labels:
       preset-service-account: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bootstrap:latest
@@ -2801,32 +2331,19 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=75"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
         resources:
           requests:
             cpu: 4
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
 
   kubernetes-sigs/testing_frameworks:
   - name: pull-frameworks-test
-    context: pull-frameworks-test
-    agent: kubernetes
     branches:
     - master
     always_run: true
     skip_report: false
-    trigger: "/test (all|pull-frameworks-test)"
-    rerun_command: "/test pull-frameworks-test"
     labels:
       preset-service-account: "true"
     spec:
@@ -2839,14 +2356,11 @@ presubmits:
 
   kubernetes-sigs/poseidon:
   - name: ci-poseidon-e2e-gce
-    context: ci-poseidon-e2e-gce
     always_run: true
-    rerun_command: "/test ci-poseidon-e2e-gce"
-    trigger: "(?m)^/test( all| ci-poseidon-e2e-gce),?(\\s+|$)"
-    agent: kubernetes
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -2857,23 +2371,10 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=110"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
   - name: pull-poseidon-bazel
-    agent: kubernetes
-    context: pull-poseidon-bazel
     always_run: true
-    rerun_command: "/test pull-poseidon-bazel"
-    trigger: "(?m)^/test( all| pull-poseidon-bazel),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -2893,13 +2394,9 @@ presubmits:
           requests:
             memory: "2Gi"
   - name: pull-poseidon-verify
-    context: pull-poseidon-verify
-    agent: kubernetes
     branches:
     - master
     always_run: true
-    trigger: "(?m)^/test( all| pull-poseidon-verify),?(\\s+|$)"
-    rerun_command: "/test pull-poseidon-verify"
     labels:
       preset-service-account: "true"
     spec:
@@ -2913,10 +2410,6 @@ presubmits:
         - "--timeout=45"
   kubernetes/release:
   - name: pull-release-cluster-up
-    agent: kubernetes
-    context: pull-release-cluster-up
-    rerun_command: "/test pull-release-cluster-up"
-    trigger: "(?m)^/test (all|pull-release-cluster-up),?(\\s+|$)"
     always_run: true
     labels:
       preset-service-account: "true"
@@ -2940,41 +2433,13 @@ presubmits:
             memory: "6Gi"
 
 postsubmits:
-  kubernetes/ingress-gce:
-  - name: ci-ingress-gce-image-push
-    agent: kubernetes
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-        args:
-        - "--repo=k8s.io/ingress-gce=$(PULL_REFS)"
-        - "--root=/go/src/"
-        - "--timeout=320"
-        - "--"
-        - "--env=VERSION=$(PULL_BASE_REF)"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
-
   GoogleCloudPlatform/k8s-multicluster-ingress:
   - name: ci-kubemci-image-push
-    agent: kubernetes
     branches:
     - master
     labels:
       preset-service-account: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -2982,22 +2447,12 @@ postsubmits:
         - "--repo=k8s.io/test-infra=master"
         - "--root=/go/src/"
         - "--timeout=90"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
 
   kubernetes/federation:
-  - agent: kubernetes
-    name: ci-federation-release
+  - name: ci-federation-release
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -3018,11 +2473,11 @@ postsubmits:
 
 periodics:
 - interval: 2h
-  agent: kubernetes
   name: application-periodic-default-gke
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -3031,28 +2486,19 @@ periodics:
       - "--repo=github.com/kubernetes-sigs/application=master"
       - "--upload=gs://kubernetes-jenkins/logs/"
       - "--timeout=150"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
+      resources:
         requests:
           cpu: 6
           memory: "8Gi"
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - name: ci-benchmark-scheduler-master
   tags:
   - "perfDashPrefix: scheduler-benchmark"
   - "perfDashJobType: benchmark"
   interval: 1h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -3069,7 +2515,6 @@ periodics:
 
 - name: ci-docker-node-conformance
   interval: 2h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -3086,7 +2531,6 @@ periodics:
 
 - name: ci-docker-node-features
   interval: 4h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -3103,7 +2547,6 @@ periodics:
 
 - name: ci-docker-node-legacy
   interval: 2h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -3120,9 +2563,9 @@ periodics:
 
 - interval: 1h
   name: ci-federation-build
-  agent: kubernetes
   labels:
     preset-service-account: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
@@ -3131,158 +2574,46 @@ periodics:
       - --repo=k8s.io/release
       - --root=/go/src
       - --timeout=50
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
       resources:
         requests:
           cpu: 4
           memory: "8Gi"
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - interval: 30m
-  agent: kubernetes
   name: ci-federation-e2e-gce
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - args:
       - --timeout=920
       - --bare
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-      volumeMounts:
-      - name: var-lib-docker
-        mountPath: /var/lib/docker
-    volumes:
-    - name: var-lib-docker
-      emptyDir: {}
 - interval: 30m
-  agent: kubernetes
   name: ci-federation-e2e-gce-serial
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - args:
       - --timeout=920
       - --bare
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-      volumeMounts:
-      - name: var-lib-docker
-        mountPath: /var/lib/docker
-    volumes:
-    - name: var-lib-docker
-      emptyDir: {}
-- name: ci-ingress-gce-downgrade-e2e
-  agent: kubernetes
-  interval: 60m
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-      args:
-      - "--timeout=340"
-      - "--bare"
-- name: ci-ingress-gce-e2e
-  agent: kubernetes
-  interval: 60m
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-      args:
-      - "--timeout=340"
-      - "--bare"
-- name: ci-ingress-gce-e2e-release-1-0
-  agent: kubernetes
-  interval: 480m
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-      args:
-      - "--timeout=340"
-      - "--bare"
-- name: ci-ingress-gce-e2e-release-1-1
-  agent: kubernetes
-  interval: 240m
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-      args:
-      - "--timeout=340"
-      - "--bare"
-- name: ci-ingress-gce-e2e-release-1-2
-  agent: kubernetes
-  interval: 240m
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-      args:
-      - "--timeout=340"
-      - "--bare"
-- name: ci-ingress-gce-e2e-scale
-  agent: kubernetes
-  interval: 6h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-      args:
-      - "--timeout=340"
-      - "--bare"
-- name: ci-ingress-gce-upgrade-e2e
-  agent: kubernetes
-  interval: 60m
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-      args:
-      - "--timeout=340"
-      - "--bare"
 
 - interval: 60m
-  agent: kubernetes
   name: ci-kubemci-ingress-conformance
   labels:
     preset-service-account: "true"
@@ -3297,10 +2628,10 @@ periodics:
 
 - interval: 6h
   name: ci-kubernetes-dind-conformance
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -3321,9 +2652,6 @@ periodics:
       - "--test"
       - "--ginkgo-focus=\\[Conformance\\]"
       - "--down"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # Bazel needs privileged mode in order to sandbox builds.
       securityContext:
         privileged: true
@@ -3335,8 +2663,6 @@ periodics:
         readOnly: true
       - mountPath: /sys/fs/cgroup
         name: cgroup
-      - mountPath: /docker-graph
-        name: docker-storage
       resources:
         requests:
           # We can adjust this after we know the requirements.
@@ -3350,14 +2676,12 @@ periodics:
       hostPath:
         path: /sys/fs/cgroup
         type: Directory
-    - name: docker-storage
-      emptyDir: {}
 - name: ci-kubernetes-e2e-autoscaling-vpa-actuation
   interval: 2h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -3365,25 +2689,16 @@ periodics:
       - "--repo=k8s.io/autoscaler=master"
       - "--root=/go/src"
       - "--timeout=80"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - name: ci-kubernetes-e2e-autoscaling-vpa-admission-controller
   interval: 2h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -3391,25 +2706,16 @@ periodics:
       - "--repo=k8s.io/autoscaler=master"
       - "--root=/go/src"
       - "--timeout=80"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - name: ci-kubernetes-e2e-autoscaling-vpa-full
   interval: 2h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -3417,25 +2723,16 @@ periodics:
       - "--repo=k8s.io/autoscaler=master"
       - "--root=/go/src"
       - "--timeout=80"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - name: ci-kubernetes-e2e-autoscaling-vpa-recommender
   interval: 2h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -3443,25 +2740,16 @@ periodics:
       - "--repo=k8s.io/autoscaler=master"
       - "--root=/go/src"
       - "--timeout=80"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - name: ci-kubernetes-e2e-autoscaling-vpa-updater
   interval: 2h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -3469,48 +2757,12 @@ periodics:
       - "--repo=k8s.io/autoscaler=master"
       - "--root=/go/src"
       - "--timeout=80"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
-
-- interval: 30m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-alpha-api
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=80
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
-- interval: 6h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-coredns-performance
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=80
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu
   interval: 2h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -3523,7 +2775,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
   interval: 2h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -3536,7 +2787,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
   interval: 6h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -3549,7 +2799,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable2
   interval: 12h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -3561,7 +2810,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 1h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-federation-release-1-8
   labels:
     preset-service-account: "true"
@@ -3574,7 +2822,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-latest-rollback-etcd
   labels:
     preset-service-account: "true"
@@ -3587,7 +2834,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 12h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gpu-beta-stable1-cluster-downgrade
   labels:
     preset-service-account: "true"
@@ -3600,7 +2846,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 12h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gpu-master-stable1-cluster-downgrade
   labels:
     preset-service-account: "true"
@@ -3614,7 +2859,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-gce-gpu-stable1
   interval: 2h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -3626,7 +2870,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 12h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gpu-stable1-beta-cluster-upgrade
   labels:
     preset-service-account: "true"
@@ -3639,7 +2882,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 12h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gpu-stable1-beta-master-upgrade
   labels:
     preset-service-account: "true"
@@ -3652,7 +2894,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 12h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gpu-stable1-master-cluster-upgrade
   labels:
     preset-service-account: "true"
@@ -3665,7 +2906,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 12h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gpu-stable1-master-master-upgrade
   labels:
     preset-service-account: "true"
@@ -3679,7 +2919,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-gce-gpu-stable2
   interval: 6h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -3691,7 +2930,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 12h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gpu-stable2-stable1-cluster-upgrade
   labels:
     preset-service-account: "true"
@@ -3704,7 +2942,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 12h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gpu-stable2-stable1-master-upgrade
   labels:
     preset-service-account: "true"
@@ -3717,7 +2954,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-ha-master
   labels:
     preset-service-account: "true"
@@ -3730,7 +2966,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-influxdb
   labels:
     preset-service-account: "true"
@@ -3742,21 +2977,7 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
-- interval: 6h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-kubedns-performance
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=80
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
 - cron: '1 6 * * 2,4,6' # Run at 22:01PST on Mon,Wed,Fri (06:01 UTC Tue,Thur,Sat)
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-large-correctness
   labels:
     preset-service-account: "true"
@@ -3773,7 +2994,6 @@ periodics:
           memory: "16Gi"
 
 - cron: "0 0 31 2 *" # manual job, set to Feb.31st so it will never be triggered
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-large-manual-down
   labels:
     preset-service-account: "true"
@@ -3787,7 +3007,6 @@ periodics:
       imagePullPolicy: Always
 
 - cron: "0 0 31 2 *" # manual job, set to Feb.31st so it will never be triggered
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-large-manual-up
   labels:
     preset-service-account: "true"
@@ -3801,7 +3020,6 @@ periodics:
       imagePullPolicy: Always
 
 - cron: '1 13 * * 2,4,6' # Run at 5:01PST (13:01 UTC) on even days
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-large-performance
   tags:
   - "perfDashPrefix: gce-2000Nodes"
@@ -3821,7 +3039,6 @@ periodics:
           memory: "16Gi"
 
 - interval: 24h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-min-node-permissions
   labels:
     preset-service-account: "true"
@@ -3834,7 +3051,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-multizone
   labels:
     preset-service-account: "true"
@@ -3848,7 +3064,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-gce-pod-preemption
   interval: 2h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -3862,7 +3077,6 @@ periodics:
 
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-prometheus
   labels:
     preset-service-account: "true"
@@ -3875,7 +3089,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - cron: '1 22 * * 2,4,6' # Run at 14:01PST (22:01 UTC) on even days
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-scale-correctness
   labels:
     preset-service-account: "true"
@@ -3892,7 +3105,6 @@ periodics:
           memory: "16Gi"
 
 - cron: '1 8 * * 1,3,5' # Run at 00:01PST (8:01 UTC) on odd days (except sunday)
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-scale-performance
   tags:
   - "perfDashPrefix: gce-5000Nodes"
@@ -3912,7 +3124,6 @@ periodics:
           memory: "16Gi"
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-stackdriver
   labels:
     preset-service-account: "true"
@@ -3925,7 +3136,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gce-taint-evict
   labels:
     preset-service-account: "true"
@@ -3938,46 +3148,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gce
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=70
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
-- interval: 30m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gce-alpha-enabled-default
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=100
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
-- interval: 30m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gce-alpha-features
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=200
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
-- interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-autoscaling
   labels:
     preset-service-account: "true"
@@ -3990,7 +3160,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-autoscaling-hpa
   labels:
     preset-service-account: "true"
@@ -4003,7 +3172,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-autoscaling-migs
   labels:
     preset-service-account: "true"
@@ -4016,7 +3184,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-autoscaling-migs-hpa
   labels:
     preset-service-account: "true"
@@ -4028,21 +3195,7 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
-- interval: 60m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gce-coredns
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=170
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-es-logging
   labels:
     preset-service-account: "true"
@@ -4055,33 +3208,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gce-etcd3
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=70
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
-- interval: 30m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gce-flaky
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=200
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
-- interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-garbage
   labels:
     preset-service-account: "true"
@@ -4094,58 +3220,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gce-ingress
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=340
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-- interval: 60m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gce-ingress-manual-network
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=200
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
-- interval: 30m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gce-ip-alias
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=70
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
-- interval: 60m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gce-ipvs
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=170
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
-- interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-proto
   labels:
     preset-service-account: "true"
@@ -4158,20 +3232,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gce-reboot
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=200
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
-- interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-scalability
   tags:
   - "perfDashPrefix: gce-100Nodes"
@@ -4188,7 +3248,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - cron: "0 */6 * * *" # every six hours
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-scalability-beta
   tags:
   - "perfDashPrefix: gce-100Nodes-beta"
@@ -4204,7 +3263,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - cron: "0 0/6 * * *" # every six hours, disjoint with ci-kubernetes-e2e-gci-gce-scalability-stable2
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-scalability-stable1
   tags:
   - "perfDashPrefix: gce-100Nodes-stable1"
@@ -4220,7 +3278,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - cron: "0 3-21/6 * * *" # every six hours, disjoint with ci-kubernetes-e2e-gci-gce-scalability-stable1
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-scalability-stable2
   tags:
   - "perfDashPrefix: gce-100Nodes-stable2"
@@ -4236,7 +3293,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-sd-logging
   labels:
     preset-service-account: "true"
@@ -4249,33 +3305,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gce-serial
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=520
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
-- interval: 30m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gce-slow
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=170
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
-- interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-statefulset
   labels:
     preset-service-account: "true"
@@ -4288,33 +3317,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gke
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=70
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
-- interval: 30m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gke-alpha-features
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=200
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
-- interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-autoscaling
   labels:
     preset-gke-alpha-service: "true"
@@ -4327,7 +3329,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 4h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu-k80
   labels:
     preset-service-account: "true"
@@ -4340,7 +3341,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 4h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu-p100
   labels:
     preset-service-account: "true"
@@ -4353,7 +3353,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 4h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu-v100
   labels:
     preset-service-account: "true"
@@ -4366,7 +3365,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-autoscaling-hpa
   labels:
     preset-gke-alpha-service: "true"
@@ -4379,7 +3377,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-autoscaling-regional
   labels:
     preset-gke-alpha-service: "true"
@@ -4392,46 +3389,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gke-flaky
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=320
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
-- interval: 30m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gke-ingress
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=320
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
-- interval: 30m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gke-multizone
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=170
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
-- interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-prod
   labels:
     preset-service-account: "true"
@@ -4444,7 +3401,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-prod-parallel
   labels:
     preset-service-account: "true"
@@ -4457,7 +3413,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-prod-smoke
   labels:
     preset-service-account: "true"
@@ -4469,61 +3424,8 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
-- interval: 30m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gke-reboot
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=200
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
-- interval: 30m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gke-serial
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=520
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
-- interval: 30m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gke-slow
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=170
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
-- interval: 30m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gke-updown
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=50
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu
   interval: 2h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -4536,7 +3438,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
   interval: 2h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -4549,7 +3450,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-monitoring
   interval: 3h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -4562,7 +3462,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100
   interval: 12h #expensive test
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -4575,7 +3474,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
   interval: 12h #expensive test
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -4588,7 +3486,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable1
   interval: 12h #expensive test
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -4601,7 +3498,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-stable2
   interval: 12h #expensive test
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -4614,7 +3510,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
   interval: 6h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -4627,7 +3522,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable2
   interval: 12h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -4640,7 +3534,6 @@ periodics:
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-ubuntu
   interval: 2h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -4652,7 +3545,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 1h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-ci-master
   labels:
     preset-service-account: "true"
@@ -4665,7 +3557,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - cron: "0 0 31 2 *" # manual job, set to Feb.31st so it will never be triggered
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-large-correctness
   labels:
     preset-service-account: "true"
@@ -4682,7 +3573,6 @@ periodics:
           memory: "16Gi"
 
 - cron: "0 0 31 2 *" # manual job, set to Feb.31st so it will never be triggered
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-large-deploy
   labels:
     preset-service-account: "true"
@@ -4696,7 +3586,6 @@ periodics:
       imagePullPolicy: Always
 
 - cron: '1 8 * * 0' # Run at 00:01PST (8:01 UTC) on sunday
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-large-performance
   tags:
   - "perfDashPrefix: gke-2000Nodes"
@@ -4716,7 +3605,6 @@ periodics:
           memory: "16Gi"
 
 - cron: '1 8 * * 0' # Run at 00:01PST (8:01 UTC) on sunday
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-large-performance-regional
   tags:
   - "perfDashPrefix: gke-2000Nodes-regional"
@@ -4736,7 +3624,6 @@ periodics:
           memory: "16Gi"
 
 - cron: "0 0 31 2 *" # manual job, set to Feb.31st so it will never be triggered
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-large-teardown
   labels:
     preset-service-account: "true"
@@ -4750,7 +3637,6 @@ periodics:
       imagePullPolicy: Always
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-prod
   labels:
     preset-service-account: "true"
@@ -4763,7 +3649,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-prod-parallel
   labels:
     preset-service-account: "true"
@@ -4776,7 +3661,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-prod-smoke
   labels:
     preset-service-account: "true"
@@ -4788,47 +3672,7 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
-- interval: 1h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-regional
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=170
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
-- interval: 1h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-regional-serial
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=520
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
-- interval: 1h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-regional-slow
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=170
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
 - cron: '1 18 * * 0' # Run at 10:01PST (18:01 UTC) on sunday
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-scale-correctness
   labels:
     preset-service-account: "true"
@@ -4845,7 +3689,6 @@ periodics:
           memory: "16Gi"
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-sd-logging-gci-beta
   labels:
     preset-service-account: "true"
@@ -4858,7 +3701,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-sd-logging-gci-latest
   labels:
     preset-service-account: "true"
@@ -4871,7 +3713,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-sd-logging-gci-stable1
   labels:
     preset-service-account: "true"
@@ -4884,7 +3725,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-beta
   labels:
     preset-service-account: "true"
@@ -4897,7 +3737,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-latest
   labels:
     preset-service-account: "true"
@@ -4910,7 +3749,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-stable1
   labels:
     preset-service-account: "true"
@@ -4923,7 +3761,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-stackdriver
   labels:
     preset-service-account: "true"
@@ -4935,262 +3772,11 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
-- interval: 30m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-updown
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=50
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
-- interval: 2h
-  name: ci-kubernetes-e2e-kubeadm-gce
-  agent: kubernetes
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180730-c8036c3a7
-      args:
-      - "--repo=k8s.io/kubernetes=master"
-      - "--timeout=320"
-      - "--upload=gs://kubernetes-jenkins/logs"
-
-- name: ci-kubernetes-e2e-kubeadm-gce-1-10
-  interval: 6h
-  agent: kubernetes
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180730-c8036c3a7
-      args:
-      - "--repo=k8s.io/kubernetes=release-1.10"
-      - "--timeout=320"
-      - "--upload=gs://kubernetes-jenkins/logs"
-
-# TODO(bentheelder): switch ci-kubernetes-bazel-build to 100% periodic,
-# like the other build job once we don't have run_after_success
-- name: ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
-  interval: 6h
-  agent: kubernetes
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180730-c8036c3a7
-      args:
-      - "--repo=k8s.io/kubernetes=release-1.11"
-      - "--timeout=320"
-      - "--upload=gs://kubernetes-jenkins/logs"
-
-- name: ci-kubernetes-e2e-kubeadm-gce-1-11
-  interval: 6h
-  agent: kubernetes
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180730-c8036c3a7
-      args:
-      - "--repo=k8s.io/kubernetes=release-1.11"
-      - "--timeout=320"
-      - "--upload=gs://kubernetes-jenkins/logs"
-
-- name: ci-kubernetes-e2e-kubeadm-gce-1-8
-  interval: 12h
-  agent: kubernetes
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-bazel-scratch-dir: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180730-c8036c3a7
-      args:
-      - "--repo=k8s.io/kubernetes=release-1.8"
-      - "--timeout=320"
-      - "--upload=gs://kubernetes-jenkins/logs"
-
-- name: ci-kubernetes-e2e-kubeadm-gce-1-8-on-1-9
-  interval: 12h
-  agent: kubernetes
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180730-c8036c3a7
-      args:
-      - "--repo=k8s.io/kubernetes=release-1.9"
-      - "--timeout=320"
-      - "--upload=gs://kubernetes-jenkins/logs"
-
-- name: ci-kubernetes-e2e-kubeadm-gce-1-9
-  interval: 6h
-  agent: kubernetes
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180730-c8036c3a7
-      args:
-      - "--repo=k8s.io/kubernetes=release-1.9"
-      - "--timeout=320"
-      - "--upload=gs://kubernetes-jenkins/logs"
-
-- name: ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
-  interval: 6h
-  agent: kubernetes
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180730-c8036c3a7
-      args:
-      - "--repo=k8s.io/kubernetes=release-1.10"
-      - "--timeout=320"
-      - "--upload=gs://kubernetes-jenkins/logs"
-
-- name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
-  interval: 6h
-  agent: kubernetes
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180730-c8036c3a7
-      args:
-      - "--repo=k8s.io/kubernetes=master"
-      - "--timeout=320"
-      - "--upload=gs://kubernetes-jenkins/logs"
-- name: ci-kubernetes-e2e-kubeadm-gce-dns-coredns
-  interval: 6h
-  agent: kubernetes
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180730-c8036c3a7
-      args:
-      - "--repo=k8s.io/kubernetes=master"
-      - "--timeout=320"
-      - "--upload=gs://kubernetes-jenkins/logs"
-
-- name: ci-kubernetes-e2e-kubeadm-gce-ipvs
-  interval: 6h
-  agent: kubernetes
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180730-c8036c3a7
-      args:
-      - "--repo=k8s.io/kubernetes=master"
-      - "--timeout=320"
-      - "--upload=gs://kubernetes-jenkins/logs"
-- name: ci-kubernetes-e2e-kubeadm-gce-selfhosting
-  interval: 6h
-  agent: kubernetes
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180730-c8036c3a7
-      args:
-      - "--repo=k8s.io/kubernetes=master"
-      - "--timeout=320"
-      - "--upload=gs://kubernetes-jenkins/logs"
-- name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
-  interval: 6h
-  agent: kubernetes
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180730-c8036c3a7
-      args:
-      - "--repo=k8s.io/kubernetes=master"
-      - "--timeout=320"
-      - "--upload=gs://kubernetes-jenkins/logs"
-
-- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11
-  interval: 2h
-  agent: kubernetes
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180730-c8036c3a7
-      args:
-      - "--repo=k8s.io/kubernetes=release-1.11"
-      - "--timeout=320"
-      - "--upload=gs://kubernetes-jenkins/logs"
-
-- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9
-  interval: 6h
-  agent: kubernetes
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180730-c8036c3a7
-      args:
-      - "--repo=k8s.io/kubernetes=release-1.9"
-      - "--timeout=320"
-      - "--upload=gs://kubernetes-jenkins/logs"
-
-- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
-  interval: 6h
-  agent: kubernetes
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180730-c8036c3a7
-      args:
-      - "--repo=k8s.io/kubernetes=release-1.10"
-      - "--timeout=320"
-      - "--upload=gs://kubernetes-jenkins/logs"
-
-- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-stable-master
-  interval: 6h
-  agent: kubernetes
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180730-c8036c3a7
-      args:
-      - "--repo=k8s.io/kubernetes=master"
-      - "--timeout=320"
-      - "--upload=gs://kubernetes-jenkins/logs"
-
 - interval: 2h
   name: ci-kubernetes-federation-build-1-8
-  agent: kubernetes
   labels:
     preset-service-account: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
@@ -5199,289 +3785,128 @@ periodics:
       - --repo=k8s.io/release
       - --root=/go/src
       - --timeout=50
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
       resources:
         requests:
           cpu: 4
           memory: "8Gi"
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
-
-- interval: 6h
-  agent: kubernetes
-  name: ci-kubernetes-gce-conformance
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=220
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-- interval: 6h
-  agent: kubernetes
-  name: ci-kubernetes-gce-conformance-latest-1-10
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=220
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-- interval: 6h
-  agent: kubernetes
-  name: ci-kubernetes-gce-conformance-latest-1-11
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=220
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-- interval: 6h
-  agent: kubernetes
-  name: ci-kubernetes-gce-conformance-latest-1-8
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=220
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-- interval: 6h
-  agent: kubernetes
-  name: ci-kubernetes-gce-conformance-latest-1-9
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=220
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
-- interval: 6h
-  agent: kubernetes
-  name: ci-kubernetes-gce-conformance-stable-1-10
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=220
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-- interval: 6h
-  agent: kubernetes
-  name: ci-kubernetes-gce-conformance-stable-1-8
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=220
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e@sha256:773f00d30eca8fc577729f65102aed86febca82a7ce52fbfe6d38ce6a5d63ba0
-- interval: 6h
-  agent: kubernetes
-  name: ci-kubernetes-gce-conformance-stable-1-9
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=220
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - name: ci-kubernetes-kubemark-100-gce
   tags:
   - "perfDashPrefix: kubemark-100Nodes"
   - "perfDashJobType: performance"
   interval: 3h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
       args:
       - --bare
       - --timeout=260
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - name: ci-kubernetes-kubemark-5-gce-last-release
   interval: 30m
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
       args:
       - --bare
       - --timeout=80
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - name: ci-kubernetes-kubemark-500-gce
   tags:
   - "perfDashPrefix: kubemark-500Nodes"
   - "perfDashJobType: performance"
   interval: 1h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
       args:
       - --bare
       - --timeout=140
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
       # docker-in-docker needs privilged mode
       securityContext:
         privileged: true
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - name: ci-kubernetes-kubemark-gce-scale
   tags:
   - "perfDashPrefix: kubemark-5000Nodes"
   - "perfDashJobType: performance"
   interval: 12h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
       args:
       - --bare
       - --timeout=1100
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
       # docker-in-docker needs privilged mode
       securityContext:
         privileged: true
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - name: ci-kubernetes-kubemark-high-density-100-gce
   tags:
   - "perfDashPrefix: kubemark-100Nodes-highDensity"
   - "perfDashJobType: performance"
   interval: 24h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
       args:
       - --bare
       - --timeout=300
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - name: ci-kubernetes-local-e2e
-  agent: kubernetes
   interval: 60m
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
       args:
       - "--timeout=140"
       - "--bare"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - name: ci-kubernetes-local-e2e-containerized
-  agent: kubernetes
   interval: 60m
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -5491,21 +3916,12 @@ periodics:
       env:
       - name: DOCKERIZE_KUBELET
         value: "true"
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - interval: 6h
   name: ci-kubernetes-multicluster-ingress-test
-  agent: kubernetes
   labels:
     preset-service-account: "true"
   spec:
@@ -5527,7 +3943,6 @@ periodics:
         secretName: k8s-multicluster-ingress-coveralls-token
 
 - interval: 12h
-  agent: kubernetes
   name: ci-kubernetes-soak-gce-gci
   labels:
     preset-service-account: "true"
@@ -5540,7 +3955,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 12h
-  agent: kubernetes
   name: ci-kubernetes-soak-gci-gce-beta
   labels:
     preset-service-account: "true"
@@ -5553,7 +3967,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 12h
-  agent: kubernetes
   name: ci-kubernetes-soak-gci-gce-stable1
   labels:
     preset-service-account: "true"
@@ -5566,7 +3979,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 12h
-  agent: kubernetes
   name: ci-kubernetes-soak-gci-gce-stable2
   labels:
     preset-service-account: "true"
@@ -5579,7 +3991,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 12h
-  agent: kubernetes
   name: ci-kubernetes-soak-gci-gce-stable3
   labels:
     preset-service-account: "true"
@@ -5592,7 +4003,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 12h
-  agent: kubernetes
   name: ci-kubernetes-soak-gke-gci
   labels:
     preset-service-account: "true"
@@ -5606,141 +4016,94 @@ periodics:
 
 - interval: 2h
   name: ci-kubernetes-verify-beta
-  agent: kubernetes
   labels:
     preset-service-account: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
       args:
       - "--repo=k8s.io/kubernetes=release-1.11"
       - "--timeout=75"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
       resources:
         requests:
           cpu: 4
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - interval: 1h
   name: ci-kubernetes-verify-master
-  agent: kubernetes
   labels:
     preset-service-account: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
       args:
       - "--repo=k8s.io/kubernetes"
       - "--timeout=75"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
       resources:
         requests:
           cpu: 4
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - interval: 2h
   name: ci-kubernetes-verify-stable1
-  agent: kubernetes
   labels:
     preset-service-account: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
       args:
       - "--repo=k8s.io/kubernetes=release-1.10"
-      - "--timeout=75"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
       resources:
         requests:
           cpu: 4
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - interval: 6h
   name: ci-kubernetes-verify-stable2
-  agent: kubernetes
   labels:
     preset-service-account: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
       args:
       - "--repo=k8s.io/kubernetes=release-1.9"
       - "--timeout=75"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
       resources:
         requests:
           cpu: 4
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - interval: 24h
   name: ci-kubernetes-verify-stable3
-  agent: kubernetes
   labels:
     preset-service-account: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
       args:
       - "--repo=k8s.io/kubernetes=release-1.8"
       - "--timeout=75"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
       resources:
         requests:
           cpu: 4
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kustomize-periodic-default-gke
   labels:
     preset-service-account: "true"
@@ -5757,7 +4120,6 @@ periodics:
 
 - name: ci-perf-tests-e2e-gce-clusterloader
   interval: 2h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -5772,7 +4134,6 @@ periodics:
 
 - name: ci-perf-tests-kubemark-100-benchmark
   interval: 2h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -5785,7 +4146,6 @@ periodics:
       - "--timeout=10"
 
 - interval: 2h
-  agent: kubernetes
   name: istio-periodic-e2e-gke-addon
   labels:
     preset-istio-service: "true"
@@ -5798,26 +4158,12 @@ periodics:
       - --timeout=90
       - --root=/go/src
 
-- interval: 24h
-  agent: kubernetes
-  name: periodic-kubernetes-e2e-packages-pushed
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=60
-      - --repo=k8s.io/kubeadm=master
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-      imagePullPolicy: Always
-
 - interval: 2h
-  agent: kubernetes
   name: spark-periodic-default-gke
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -5826,49 +4172,32 @@ periodics:
       - "--repo=github.com/apache-spark-on-k8s/spark-integration=master"
       - "--upload=gs://kubernetes-jenkins/logs/"
       - "--timeout=150"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
-        requests:
-          cpu: 6
-          memory: "8Gi"
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
-
-- interval: 2h
-  agent: kubernetes
-  name: spark-periodic-latest-gke
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--repo=github.com/apache-spark-on-k8s/spark-integration=master"
-      - "--upload=gs://kubernetes-jenkins/logs/"
-      - "--timeout=150"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: "true"
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      volumeMounts:
-      - name: docker-graph
-        mountPath: /docker-graph
       resources:
         requests:
           cpu: 6
           memory: "8Gi"
-    volumes:
-    - name: docker-graph
-      emptyDir: {}
+
+- interval: 2h
+  name: spark-periodic-latest-gke
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      args:
+      - "--job=$(JOB_NAME)"
+      - "--repo=github.com/apache-spark-on-k8s/spark-integration=master"
+      - "--upload=gs://kubernetes-jenkins/logs/"
+      - "--timeout=150"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 6
+          memory: "8Gi"

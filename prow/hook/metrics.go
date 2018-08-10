@@ -26,18 +26,25 @@ var (
 		Name: "prow_webhook_counter",
 		Help: "A counter of the webhooks made to prow.",
 	}, []string{"event_type"})
+	responseCounter = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "prow_webhook_response_codes",
+		Help: "A counter of the different responses hook has responded to webhooks with.",
+	}, []string{"response_code"})
 )
 
 func init() {
 	prometheus.MustRegister(webhookCounter)
+	prometheus.MustRegister(responseCounter)
 }
 
 type Metrics struct {
-	WebhookCounter *prometheus.CounterVec
+	WebhookCounter  *prometheus.CounterVec
+	ResponseCounter *prometheus.CounterVec
 }
 
 func NewMetrics() *Metrics {
 	return &Metrics{
-		WebhookCounter: webhookCounter,
+		WebhookCounter:  webhookCounter,
+		ResponseCounter: responseCounter,
 	}
 }

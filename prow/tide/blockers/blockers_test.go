@@ -22,7 +22,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/shurcooL/githubql"
+	githubql "github.com/shurcooL/githubv4"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 )

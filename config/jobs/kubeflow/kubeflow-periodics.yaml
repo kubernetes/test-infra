@@ -1,7 +1,6 @@
 periodics:
 - name: kubeflow-periodic
   interval: 8h
-  agent: kubernetes
   labels:
     preset-service-account: "true"
   spec:

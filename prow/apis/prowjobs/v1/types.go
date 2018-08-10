@@ -68,8 +68,8 @@ const (
 	KubernetesAgent ProwJobAgent = "kubernetes"
 	// JenkinsAgent means prow will schedule the job on jenkins.
 	JenkinsAgent = "jenkins"
-	// BuildAgent means prow will schedule the job via a build-crd resource.
-	BuildAgent = "build-crd"
+	// KnativeBuildAgent means prow will schedule the job via a build-crd resource.
+	KnativeBuildAgent = "knative-build"
 )
 
 const (

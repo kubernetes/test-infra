@@ -105,7 +105,7 @@ gate-approved: true
 gate-cla: true
 
 # extra message when PR is merged to master branch, it must not end in a period.
-merge-to-master-message: "If you want to cherry-pick this change to another branch, please follow the instructions <a href=\"https://github.com/kubernetes/community/blob/master/contributors/devel/cherry-picks.md\">here</a>"
+merge-to-master-message: "If you want to cherry-pick this change to another branch, please follow the instructions here: https://github.com/kubernetes/community/blob/master/contributors/devel/cherry-picks.md"
 
 protected-branches: "master"
 protected-branches-extra-contexts: "cla/linuxfoundation"

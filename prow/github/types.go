@@ -660,7 +660,8 @@ type TeamMembership struct {
 // OrgInvitation contains Login and other details about the invitation.
 type OrgInvitation struct {
 	TeamMember
-	Inviter TeamMember `json:"login"`
+	Email   string     `json:"email"`
+	Inviter TeamMember `json:"inviter"`
 }
 
 // GenericCommentEventAction coerces multiple actions into its generic equivalent.

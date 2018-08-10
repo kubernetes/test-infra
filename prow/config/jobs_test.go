@@ -18,6 +18,7 @@ package config
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -25,7 +26,6 @@ import (
 	"strings"
 	"testing"
 
-	"flag"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -37,11 +37,6 @@ var configJSONPath = flag.String("config-json", "../../jobs/config.json", "Path 
 var podRe = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`)
 
 type configJSON map[string]map[string]interface{}
-
-const (
-	testThis   = "/test all"
-	retestBody = "/test all [submit-queue is verifying that this PR is safe to merge]"
-)
 
 type JSONJob struct {
 	Scenario string   `json:"scenario"`
@@ -143,21 +138,6 @@ func TestPresubmits(t *testing.T) {
 			if job.RerunCommand == "" || job.Trigger == "" {
 				t.Errorf("Job %s needs a trigger and a rerun command.", job.Name)
 				continue
-			}
-			// Check that the merge bot will run AlwaysRun jobs, otherwise it
-			// will attempt to rerun forever.
-			if job.AlwaysRun && !job.re.MatchString(testThis) {
-				t.Errorf("AlwaysRun job %s: \"%s\" does not match regex \"%v\".", job.Name, testThis, job.Trigger)
-			}
-			if job.AlwaysRun && !job.re.MatchString(retestBody) {
-				t.Errorf("AlwaysRun job %s: \"%s\" does not match regex \"%v\".", job.Name, retestBody, job.Trigger)
-			}
-			// Check that the merge bot will not run Non-AlwaysRun jobs
-			if !job.AlwaysRun && job.re.MatchString(testThis) {
-				t.Errorf("Non-AlwaysRun job %s: \"%s\" matches regex \"%v\".", job.Name, testThis, job.Trigger)
-			}
-			if !job.AlwaysRun && job.re.MatchString(retestBody) {
-				t.Errorf("Non-AlwaysRun job %s: \"%s\" matches regex \"%v\".", job.Name, retestBody, job.Trigger)
 			}
 
 			if len(job.Brancher.Branches) > 0 && len(job.Brancher.SkipBranches) > 0 {

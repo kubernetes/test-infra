@@ -1,6 +1,5 @@
 periodics:
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-cluster
   labels:
     preset-service-account: "true"
@@ -28,7 +27,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-cluster-new
   labels:
     preset-service-account: "true"
@@ -56,7 +54,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-master
   labels:
     preset-service-account: "true"
@@ -84,7 +81,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-regional-cluster
   labels:
     preset-service-account: "true"
@@ -112,7 +108,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-cluster
   labels:
     preset-service-account: "true"
@@ -140,7 +135,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-cluster-new
   labels:
     preset-service-account: "true"
@@ -168,7 +162,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-master
   labels:
     preset-service-account: "true"
@@ -196,7 +189,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-regional-cluster
   labels:
     preset-service-account: "true"
@@ -224,7 +216,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-1-10-1-11-upgrade-cluster
   labels:
     preset-service-account: "true"
@@ -252,7 +243,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-1-10-1-11-upgrade-cluster-new
   labels:
     preset-service-account: "true"
@@ -280,7 +270,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-1-10-1-11-upgrade-master
   labels:
     preset-service-account: "true"
@@ -308,7 +297,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-1-10-1-11-upgrade-regional-cluster
   labels:
     preset-service-account: "true"
