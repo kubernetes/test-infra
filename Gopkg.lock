@@ -706,13 +706,14 @@
   revision = "5924e6132c2f184e262d4bc779e5745fa297d093"
 
 [[projects]]
+  branch = "master"
   name = "github.com/shurcooL/graphql"
   packages = [
     ".",
     "ident",
     "internal/jsonutil",
   ]
-  revision = "68e5b1b3ab56633e42939506bc61f0b9fb2b7a79"
+  revision = "62c9ce094e75302d560f7adcdf16c06d05aaa958"
 
 [[projects]]
   name = "github.com/sirupsen/logrus"
