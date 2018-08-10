@@ -366,6 +366,7 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 		"kubeflow/katib",
 		"kubeflow/kubebench",
 		"kubeflow/kubeflow",
+		"kubeflow/chainer-operator",
 		"kubeflow/mpi-operator",
 		"kubeflow/pytorch-operator",
 		"kubeflow/reporting",

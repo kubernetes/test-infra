@@ -15,9 +15,7 @@
 # To generate the test definitions and Prow configurations from this file:
 #
 #   bazel run //experiment:generate_tests -- \
-#     --yaml-config-path=experiment/test_config.yaml \
-#     --json-config-path=jobs/config.json \
-#     --prow-config-path=prow/config.yaml && bazel run //jobs:config_sort
+#     --yaml-config-path=experiment/test_config.yaml
 
 # Supported tests:
 #
@@ -643,6 +641,11 @@ jobs:
   ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-updown:
     interval: 2h
     sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-gpu:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+    args:
+    - --gcp-zone=us-west1-b
 
   # ci-kubernetes-gke-ubuntu2-k8sstable1-*
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-alphafeatures:
@@ -671,6 +674,11 @@ jobs:
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-updown:
     interval: 4h
     sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sstable1-gpu:
+    interval: 4h
+    sigOwners: ['sig-gcp']
+    args:
+    - --gcp-zone=us-west1-b
 
   # ci-kubernetes-gke-ubuntu2-k8sstable2-*
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-alphafeatures:
@@ -699,6 +707,11 @@ jobs:
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-updown:
     interval: 6h
     sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-gpu:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+    args:
+    - --gcp-zone=us-west1-b
 
   # ci-kubernetes-gke-ubuntu2-k8sstable3-*
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-alphafeatures:
@@ -727,6 +740,11 @@ jobs:
   ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-updown:
     interval: 6h
     sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-gpu:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+    args:
+    - --gcp-zone=us-west1-b
 
   # Others
   ci-kubernetes-e2e-gce-cosbeta-k8sdev-nosnat:
@@ -1134,6 +1152,13 @@ testSuites:
     - --timeout=40m
     - --test_args=--ginkgo.focus=\[Feature:NoSNAT\] --minStartupPods=8
     - --ginkgo-parallel=1
+  gpu:
+    args:
+    - --gcp-project-type=gpu-project
+    - --timeout=180m
+    - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
+    - --env=NVIDIA_DRIVER_INSTALLER_DAEMONSET=https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/ubuntu/daemonset-preloaded.yaml
+    - --gke-create-command=container clusters create --accelerator=type=nvidia-tesla-k80,count=2
 
 # The following settings are used by node e2e tests.
 

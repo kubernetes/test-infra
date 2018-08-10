@@ -1,11 +1,7 @@
 presubmits:
   kubernetes/cloud-provider-openstack:
   - name: pull-cloud-provider-openstack-check
-    agent: kubernetes
     always_run: true
-    context: pull-cloud-provider-openstack-check
-    rerun_command: "/test pull-cloud-provider-openstack-check"
-    trigger: "(?m)^/test( all| pull-cloud-provider-openstack-check),?(\\s+|$)"
     branches:
     - master
     labels:
@@ -23,11 +19,7 @@ presubmits:
         - check
 
   - name: pull-cloud-provider-openstack-test
-    agent: kubernetes
     always_run: true
-    context: pull-cloud-provider-openstack-test
-    rerun_command: "/test pull-cloud-provider-openstack-test"
-    trigger: "(?m)^/test( all| pull-cloud-provider-openstack-test),?(\\s+|$)"
     branches:
     - master
     labels:

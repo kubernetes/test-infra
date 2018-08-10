@@ -1,14 +1,11 @@
 presubmits:
   helm/charts:
   - name: pull-charts-e2e
-    agent: kubernetes
     always_run: true
-    context: pull-charts-e2e
-    rerun_command: "/test pull-charts-e2e"
-    trigger: "(?m)^/test( all| pull-charts-e2e),?(\\s+|$)"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
@@ -20,22 +17,12 @@ presubmits:
         - "--scenario=execute"
         - --
         - "./test/e2e.sh"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: docker-graph
-          mountPath: /docker-graph
-      volumes:
-      - name: docker-graph
-        emptyDir: {}
 
 periodics:
 - interval: 1h
-  agent: kubernetes
   name: ci-kubernetes-charts-gce
   labels:
     preset-service-account: "true"

@@ -35,7 +35,15 @@ trap 'echo "FAILED" >&2' ERR
 # dep should probably be removing it, but it doesn't:
 # https://github.com/golang/dep/issues/1580
 rm -rf vendor/github.com/golang/dep/internal/fs/testdata
+# go-bindata does too, and is not maintained ...
+rm -rf vendor/github.com/jteeuwen/go-bindata/testdata
+# docker has a contrib dir with nothing we use in it, dep will retain the licenses
+# which includes some GPL, so we manually prune this. 
+# See https://github.com/kubernetes/steering/issues/57
+rm -rf vendor/github.com/docker/docker/contrib
 bazel run //:dep -- ensure -v "$@"
 rm -rf vendor/github.com/golang/dep/internal/fs/testdata
+rm -rf vendor/github.com/jteeuwen/go-bindata/testdata
+rm -rf vendor/github.com/docker/docker/contrib
 hack/update-bazel.sh
 echo SUCCESS

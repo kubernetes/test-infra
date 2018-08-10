@@ -1,0 +1,41 @@
+kind: ProwJob
+apiVersion: prow.k8s.io/v1
+metadata:
+  name: test-pass
+spec:
+  agent: knative-build
+  build_spec:
+    steps:
+    - name: hello
+      image: busybox
+      args: ['echo', 'hello', 'world']
+---
+kind: ProwJob
+apiVersion: prow.k8s.io/v1
+metadata:
+  name: test-multi-step
+spec:
+  agent: knative-build
+  build_spec:
+    steps:
+    - name: hello
+      image: busybox
+      args: ['echo', 'hello']
+    - name: world
+      image: busybox
+      args: ['echo', 'world']
+---
+kind: ProwJob
+apiVersion: prow.k8s.io/v1
+metadata:
+  name: test-fail
+spec:
+  agent: knative-build
+  build_spec:
+    steps:
+    - name: hello
+      image: busybox
+      args: ['echo', 'hello']
+    - name: doh
+      image: busybox
+      args: ['doh']

@@ -631,11 +631,6 @@ func TestConfigureOrgMembers(t *testing.T) {
 			},
 			invitations: []string{"invited-admin", "invited-member"},
 		},
-		{
-			name:        "github list invitation rpc fails",
-			invitations: []string{"fail"},
-			err:         true,
-		},
 	}
 
 	for _, tc := range cases {
@@ -643,12 +638,11 @@ func TestConfigureOrgMembers(t *testing.T) {
 			fc := &fakeClient{
 				admins:     sets.NewString(tc.admins...),
 				members:    sets.NewString(tc.members...),
-				invitees:   sets.NewString(tc.invitations...),
 				removed:    sets.String{},
 				newAdmins:  sets.String{},
 				newMembers: sets.String{},
 			}
-			err := configureOrgMembers(tc.opt, fc, fakeOrg, tc.config)
+			err := configureOrgMembers(tc.opt, fc, fakeOrg, tc.config, sets.NewString(tc.invitations...))
 			switch {
 			case err != nil:
 				if !tc.err {
@@ -1209,6 +1203,7 @@ func TestConfigureTeamMembers(t *testing.T) {
 		remove         sets.String
 		addMembers     sets.String
 		addMaintainers sets.String
+		invitees       sets.String
 		team           org.Team
 		id             int
 	}{
@@ -1241,6 +1236,15 @@ func TestConfigureTeamMembers(t *testing.T) {
 			addMembers:     sets.NewString("new-member"),
 			addMaintainers: sets.NewString("new-maintainer"),
 		},
+		{
+			name: "do not reinvitee invitees",
+			team: org.Team{
+				Maintainers: []string{"invited-maintainer", "newbie"},
+				Members:     []string{"invited-member"},
+			},
+			invitees:       sets.NewString("invited-maintainer", "invited-member"),
+			addMaintainers: sets.NewString("newbie"),
+		},
 	}
 
 	for _, tc := range cases {
@@ -1255,7 +1259,7 @@ func TestConfigureTeamMembers(t *testing.T) {
 				newAdmins:  sets.String{},
 				newMembers: sets.String{},
 			}
-			err := configureTeamMembers(fc, tc.id, tc.team)
+			err := configureTeamMembers(fc, tc.id, tc.team, tc.invitees)
 			switch {
 			case err != nil:
 				if !tc.err {
@@ -1878,5 +1882,65 @@ func fixup(ret *org.Config) {
 		sort.Strings(team.Maintainers)
 		sort.Strings(team.Previously)
 		ret.Teams[name] = team
+	}
+}
+
+func TestOrgInvitations(t *testing.T) {
+	cases := []struct {
+		name     string
+		opt      options
+		invitees sets.String // overrides
+		expected sets.String
+		err      bool
+	}{
+		{
+			name:     "do not call on empty options",
+			invitees: sets.NewString("him", "her", "them"),
+			expected: sets.String{},
+		},
+		{
+			name: "call if fixOrgMembers",
+			opt: options{
+				fixOrgMembers: true,
+			},
+			invitees: sets.NewString("him", "her", "them"),
+			expected: sets.NewString("him", "her", "them"),
+		},
+		{
+			name: "call if fixTeamMembers",
+			opt: options{
+				fixTeamMembers: true,
+			},
+			invitees: sets.NewString("him", "her", "them"),
+			expected: sets.NewString("him", "her", "them"),
+		},
+		{
+			name: "error if list fails",
+			opt: options{
+				fixTeamMembers: true,
+				fixOrgMembers:  true,
+			},
+			invitees: sets.NewString("erick", "fail"),
+			err:      true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			fc := &fakeClient{
+				invitees: tc.invitees,
+			}
+			actual, err := orgInvitations(tc.opt, fc, "random-org")
+			switch {
+			case err != nil:
+				if !tc.err {
+					t.Errorf("unexpected error: %v", err)
+				}
+			case tc.err:
+				t.Errorf("failed to receive an error")
+			case !reflect.DeepEqual(actual, tc.expected):
+				t.Errorf("%#v != expected %#v", actual, tc.expected)
+			}
+		})
 	}
 }

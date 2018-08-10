@@ -1,7 +1,6 @@
 postsubmits:
   kubernetes/test-infra:
   - name: ci-test-infra-bazel
-    agent: kubernetes
     branches:
     - master
     labels:
@@ -30,7 +29,6 @@ postsubmits:
             memory: "2Gi"
 
   - name: maintenance-boskos-config-upload
-    agent: kubernetes
     branches:
     - master
     labels:
@@ -59,7 +57,6 @@ postsubmits:
           secretName: prow-build-service
 
   - name: maintenance-ci-testgrid-config-upload
-    agent: kubernetes
     branches:
     - master
     labels:

@@ -52,7 +52,7 @@ presubmits:
           secret:
             defaultMode: 256
             secretName: ssh-security
-      trigger: (?m)^/test pull-security-kubernetes-e2e-kubeadm-gce,?(\s+|$)
+      trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-kubeadm-gce,?($|\s.*)
     run_if_changed: ""
     skip_branches:
     - release-1.10
@@ -88,7 +88,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-bazel-build),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-build,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -139,7 +139,7 @@ presubmits:
           secret:
             defaultMode: 256
             secretName: ssh-security
-      trigger: (?m)^/test pull-security-kubernetes-e2e-kubeadm-gce,?(\s+|$)
+      trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-kubeadm-gce,?($|\s.*)
     run_if_changed: ""
     skip_report: false
     spec:
@@ -171,7 +171,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-bazel-build),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-build,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -222,7 +222,7 @@ presubmits:
           secret:
             defaultMode: 256
             secretName: ssh-security
-      trigger: (?m)^/test pull-security-kubernetes-e2e-kubeadm-gce,?(\s+|$)
+      trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-kubeadm-gce,?($|\s.*)
     run_if_changed: ""
     skip_report: false
     spec:
@@ -254,7 +254,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-bazel-build),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-build,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -305,7 +305,7 @@ presubmits:
           secret:
             defaultMode: 256
             secretName: ssh-security
-      trigger: (?m)^/test pull-security-kubernetes-e2e-kubeadm-gce,?(\s+|$)
+      trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-kubeadm-gce,?($|\s.*)
     run_if_changed: ""
     skip_report: false
     spec:
@@ -338,7 +338,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-bazel-build),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-build,?($|\s.*)
   - agent: kubernetes
     always_run: true
     cluster: security
@@ -386,7 +386,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-bazel-test),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-test,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -432,7 +432,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-bazel-test),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-test,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -477,7 +477,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-bazel-test),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-test,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -522,12 +522,13 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-bazel-test),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-test,?($|\s.*)
   - agent: kubernetes
     always_run: false
     cluster: security
     context: pull-security-kubernetes-cross
     labels:
+      preset-dind-enabled: "true"
       preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-cross
@@ -546,9 +547,6 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=90
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
         name: ""
         resources:
@@ -558,18 +556,14 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /docker-graph
-          name: docker-graph
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - emptyDir: {}
-        name: docker-graph
       - name: ssh-security
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-cross,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-cross,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -578,6 +572,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-cross
     labels:
+      preset-dind-enabled: "true"
       preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-cross
@@ -593,9 +588,6 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=90
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
         name: ""
         resources:
@@ -605,23 +597,20 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /docker-graph
-          name: docker-graph
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - emptyDir: {}
-        name: docker-graph
       - name: ssh-security
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-cross,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-cross,?($|\s.*)
   - agent: kubernetes
     always_run: false
     cluster: security
     context: pull-security-kubernetes-cross-prow
     labels:
+      preset-dind-enabled: "true"
       preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-cross-prow
@@ -637,9 +626,6 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=90
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         image: gcr.io/k8s-testimages/bootstrap:latest
         imagePullPolicy: Always
         name: ""
@@ -650,24 +636,21 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /docker-graph
-          name: docker-graph
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - emptyDir: {}
-        name: docker-graph
       - name: ssh-security
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-cross-prow,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-cross-prow,?($|\s.*)
   - agent: kubernetes
     always_run: false
     cluster: security
     context: pull-security-kubernetes-dind-e2e
     labels:
       preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
       preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-dind-e2e
@@ -698,9 +681,6 @@ presubmits:
         - --up
         - --test
         - --down
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
         name: ""
         resources:
@@ -717,8 +697,6 @@ presubmits:
           readOnly: true
         - mountPath: /sys/fs/cgroup
           name: cgroup
-        - mountPath: /docker-graph
-          name: auto-generated-docker-graph-volume-mount
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
@@ -730,13 +708,11 @@ presubmits:
           path: /sys/fs/cgroup
           type: Directory
         name: cgroup
-      - emptyDir: {}
-        name: auto-generated-docker-graph-volume-mount
       - name: ssh-security
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-dind-e2e,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-dind-e2e,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -779,7 +755,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test (containerd|pull-security-kubernetes-e2e-containerd-gce),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-containerd-gce,?($|\s.*)
   - agent: kubernetes
     always_run: true
     cluster: security
@@ -823,7 +799,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test (all|pull-security-kubernetes-e2e-gce),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -865,7 +841,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test (all|pull-security-kubernetes-e2e-gce),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -907,7 +883,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test (all|pull-security-kubernetes-e2e-gce),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -949,7 +925,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test (all|pull-security-kubernetes-e2e-gce),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -991,7 +967,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test (all|pull-security-kubernetes-e2e-gce-100-performance),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce-100-performance,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -1033,7 +1009,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-e2e-gce-big-performance,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce-big-performance,?($|\s.*)
   - agent: kubernetes
     always_run: true
     cluster: security
@@ -1079,7 +1055,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-e2e-gce-device-plugin-gpu),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce-device-plugin-gpu,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -1123,7 +1099,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-e2e-gce-device-plugin-gpu),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce-device-plugin-gpu,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -1167,7 +1143,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-e2e-gce-device-plugin-gpu),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce-device-plugin-gpu,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -1211,7 +1187,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-e2e-gce-device-plugin-gpu),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce-device-plugin-gpu,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -1253,7 +1229,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-e2e-gce-large-performance,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gce-large-performance,?($|\s.*)
   - agent: kubernetes
     always_run: false
     cluster: security
@@ -1297,7 +1273,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-e2e-gke,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gke,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -1339,7 +1315,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-e2e-gke,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gke,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -1381,7 +1357,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-e2e-gke,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gke,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -1423,7 +1399,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-e2e-gke,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gke,?($|\s.*)
   - agent: kubernetes
     always_run: false
     cluster: security
@@ -1469,7 +1445,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-e2e-gke-device-plugin-gpu,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gke-device-plugin-gpu,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -1513,7 +1489,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-e2e-gke-device-plugin-gpu,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gke-device-plugin-gpu,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -1557,7 +1533,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-e2e-gke-device-plugin-gpu,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gke-device-plugin-gpu,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -1601,7 +1577,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-e2e-gke-device-plugin-gpu,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gke-device-plugin-gpu,?($|\s.*)
   - agent: kubernetes
     always_run: true
     cluster: security
@@ -1648,7 +1624,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-e2e-kops-aws),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-kops-aws,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -1693,7 +1669,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-e2e-kops-aws),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-kops-aws,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -1738,7 +1714,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-e2e-kops-aws),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-kops-aws,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -1783,12 +1759,13 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-e2e-kops-aws),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-kops-aws,?($|\s.*)
   - agent: kubernetes
     always_run: true
     cluster: security
     context: pull-security-kubernetes-integration
     labels:
+      preset-dind-enabled: "true"
       preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-integration
@@ -1804,9 +1781,6 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=60
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
         name: ""
         resources:
@@ -1815,23 +1789,20 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /docker-graph
-          name: docker-graph
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - emptyDir: {}
-        name: docker-graph
       - name: ssh-security
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-integration),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-integration,?($|\s.*)
   - agent: kubernetes
     always_run: false
     cluster: security
     context: pull-security-kubernetes-integration-prow
     labels:
+      preset-dind-enabled: "true"
       preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-integration-prow
@@ -1847,9 +1818,6 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=60
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         image: gcr.io/k8s-testimages/bootstrap:latest
         imagePullPolicy: Always
         name: ""
@@ -1859,24 +1827,21 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /docker-graph
-          name: docker-graph
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - emptyDir: {}
-        name: docker-graph
       - name: ssh-security
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-integration-prow,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-integration-prow,?($|\s.*)
   - agent: kubernetes
     always_run: true
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce-big
     labels:
       preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
@@ -1901,9 +1866,6 @@ presubmits:
         - --timeout=120
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce-big
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
         name: ""
         resources:
@@ -1912,18 +1874,14 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /docker-graph
-          name: docker-graph
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - emptyDir: {}
-        name: docker-graph
       - name: ssh-security
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test (all|pull-security-kubernetes-kubemark-e2e-gce-big),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-kubemark-e2e-gce-big,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -1932,6 +1890,7 @@ presubmits:
     context: pull-security-kubernetes-kubemark-e2e-gce-big
     labels:
       preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
@@ -1952,9 +1911,6 @@ presubmits:
         - --timeout=120
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce-big
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.10
         name: ""
         resources:
@@ -1963,18 +1919,14 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /docker-graph
-          name: docker-graph
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - emptyDir: {}
-        name: docker-graph
       - name: ssh-security
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test (all|pull-security-kubernetes-kubemark-e2e-gce-big),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-kubemark-e2e-gce-big,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -1983,6 +1935,7 @@ presubmits:
     context: pull-security-kubernetes-kubemark-e2e-gce-big
     labels:
       preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
@@ -2003,9 +1956,6 @@ presubmits:
         - --timeout=120
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce-big
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.9
         name: ""
         resources:
@@ -2014,18 +1964,14 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /docker-graph
-          name: docker-graph
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - emptyDir: {}
-        name: docker-graph
       - name: ssh-security
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test (all|pull-security-kubernetes-kubemark-e2e-gce-big),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-kubemark-e2e-gce-big,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -2034,6 +1980,7 @@ presubmits:
     context: pull-security-kubernetes-kubemark-e2e-gce-big
     labels:
       preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
@@ -2054,9 +2001,6 @@ presubmits:
         - --timeout=120
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce-big
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.8
         name: ""
         resources:
@@ -2065,18 +2009,14 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /docker-graph
-          name: docker-graph
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - emptyDir: {}
-        name: docker-graph
       - name: ssh-security
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-kubemark-e2e-gce-big,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-kubemark-e2e-gce-big,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -2085,6 +2025,7 @@ presubmits:
     context: pull-security-kubernetes-kubemark-e2e-gce-scale
     labels:
       preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 1
@@ -2105,9 +2046,6 @@ presubmits:
         - --timeout=1220
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-kubemark-e2e-gce-scale
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
         name: ""
         resources:
@@ -2116,18 +2054,14 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /docker-graph
-          name: docker-graph
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - emptyDir: {}
-        name: docker-graph
       - name: ssh-security
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-kubemark-e2e-gce-scale,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-kubemark-e2e-gce-scale,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -2135,6 +2069,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-local-e2e
     labels:
+      preset-dind-enabled: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 8
@@ -2152,27 +2087,20 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=140
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
         name: ""
         resources: {}
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /docker-graph
-          name: docker-graph
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - emptyDir: {}
-        name: docker-graph
       - name: ssh-security
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-local-e2e,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-local-e2e,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -2180,6 +2108,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-local-e2e-containerized
     labels:
+      preset-dind-enabled: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 0
@@ -2200,26 +2129,20 @@ presubmits:
         env:
         - name: DOCKERIZE_KUBELET
           value: "true"
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
         name: ""
         resources: {}
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /docker-graph
-          name: docker-graph
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - emptyDir: {}
-        name: docker-graph
       - name: ssh-security
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-local-e2e-containerized,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-local-e2e-containerized,?($|\s.*)
   - agent: kubernetes
     always_run: true
     cluster: security
@@ -2261,7 +2184,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-node-e2e),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-node-e2e,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -2301,7 +2224,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-node-e2e),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-node-e2e,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -2341,7 +2264,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-node-e2e),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-node-e2e,?($|\s.*)
   - agent: kubernetes
     always_run: true
     branches:
@@ -2381,7 +2304,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-node-e2e),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-node-e2e,?($|\s.*)
   - agent: kubernetes
     always_run: false
     branches:
@@ -2422,7 +2345,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test (containerd|pull-security-kubernetes-node-e2e-containerd),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-node-e2e-containerd,?($|\s.*)
   - agent: kubernetes
     always_run: true
     cluster: security
@@ -2458,12 +2381,13 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-typecheck),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-typecheck,?($|\s.*)
   - agent: kubernetes
     always_run: true
     cluster: security
     context: pull-security-kubernetes-verify
     labels:
+      preset-dind-enabled: "true"
       preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-verify
@@ -2479,9 +2403,6 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=75
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
         name: ""
         resources:
@@ -2490,23 +2411,20 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /docker-graph
-          name: docker-graph
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - emptyDir: {}
-        name: docker-graph
       - name: ssh-security
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-verify),?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-verify,?($|\s.*)
   - agent: kubernetes
     always_run: false
     cluster: security
     context: pull-security-kubernetes-verify-prow
     labels:
+      preset-dind-enabled: "true"
       preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-verify-prow
@@ -2522,9 +2440,6 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=75
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: "true"
         image: gcr.io/k8s-testimages/bootstrap:latest
         imagePullPolicy: Always
         name: ""
@@ -2534,18 +2449,14 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /docker-graph
-          name: docker-graph
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - emptyDir: {}
-        name: docker-graph
       - name: ssh-security
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-verify-prow,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-verify-prow,?($|\s.*)
   - agent: kubernetes
     always_run: false
     cluster: security
@@ -2589,7 +2500,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-bazel-build-canary,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-build-canary,?($|\s.*)
   - agent: kubernetes
     always_run: false
     cluster: security
@@ -2631,7 +2542,7 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-bazel-test-canary,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-test-canary,?($|\s.*)
   - agent: kubernetes
     always_run: false
     cluster: security
@@ -2673,4 +2584,4 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-security
-    trigger: (?m)^/test pull-security-kubernetes-bazel-test-integration-canary,?(\s+|$)
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-test-integration-canary,?($|\s.*)

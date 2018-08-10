@@ -1,8 +1,34 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")
+load(
+    "//prow:prow.bzl",
+    prow_tags = "tags",
+)
+
+k8s_object(
+    name = "dev",
+    cluster = "gke_fejta-prod_us-central1-f_erick",
+    image_chroot = "gcr.io/fejta-prod",
+    images = {"gcr.io/k8s-testimages/build:latest": ":image"},
+    template = ":dev.yaml",
+)
+
+load("@io_bazel_rules_docker//go:image.bzl", "go_image")
+
+go_image(
+    name = "image",
+    binary = ":build",
+    visibility = ["//prow:__subpackages__"],
+)
+
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
-    srcs = ["controller.go"],
+    srcs = [
+        "admission.go",
+        "controller.go",
+        "main.go",
+    ],
     importpath = "k8s.io/test-infra/prow/cmd/build",
     visibility = ["//visibility:public"],
     deps = [
@@ -19,10 +45,15 @@ go_library(
         "//vendor/github.com/knative/build/pkg/client/informers/externalversions/build/v1alpha1:go_default_library",
         "//vendor/github.com/knative/build/pkg/client/listers/build/v1alpha1:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/k8s.io/api/admission/v1beta1:go_default_library",
+        "//vendor/k8s.io/api/admissionregistration/v1beta1:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/api/equality:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime/serializer:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/runtime:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/wait:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes:go_default_library",
@@ -54,4 +85,22 @@ go_binary(
     embed = [":go_default_library"],
     pure = "on",
     visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "admission_test.go",
+        "controller_test.go",
+        "main_test.go",
+    ],
+    embed = [":go_default_library"],
+    deps = [
+        "//prow/apis/prowjobs/v1:go_default_library",
+        "//vendor/github.com/knative/build/pkg/apis/build/v1alpha1:go_default_library",
+        "//vendor/k8s.io/api/admission/v1beta1:go_default_library",
+        "//vendor/k8s.io/api/core/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+    ],
 )

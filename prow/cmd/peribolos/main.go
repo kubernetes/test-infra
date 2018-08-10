@@ -161,7 +161,7 @@ func main() {
 		if err != nil {
 			logrus.WithError(err).Fatalf("Dump %s failed to marshal output.", o.dump)
 		}
-		logrus.Info("Dumping orgs[\"%s\"]:", o.dump)
+		logrus.Infof("Dumping orgs[\"%s\"]:", o.dump)
 		fmt.Println(string(out))
 		return
 	}
@@ -290,12 +290,11 @@ func dumpOrgConfig(client dumpClient, orgName string) (*org.Config, error) {
 type orgClient interface {
 	BotName() (string, error)
 	ListOrgMembers(org, role string) ([]github.TeamMember, error)
-	ListOrgInvitations(org string) ([]github.OrgInvitation, error)
 	RemoveOrgMembership(org, user string) error
 	UpdateOrgMembership(org, user string, admin bool) (*github.OrgMembership, error)
 }
 
-func configureOrgMembers(opt options, client orgClient, orgName string, orgConfig org.Config) error {
+func configureOrgMembers(opt options, client orgClient, orgName string, orgConfig org.Config, invitees sets.String) error {
 	// Get desired state
 	wantAdmins := sets.NewString(orgConfig.Admins...)
 	wantMembers := sets.NewString(orgConfig.Members...)
@@ -337,14 +336,6 @@ func configureOrgMembers(opt options, client orgClient, orgName string, orgConfi
 	for _, m := range ms {
 		haveMembers.Insert(m.Login)
 	}
-	is, err := client.ListOrgInvitations(orgName)
-	if err != nil {
-		return fmt.Errorf("failed to list %s invitations: %v", orgName, err)
-	}
-	for _, i := range is { // Do not reinvite anyone
-		haveMembers.Insert(i.Login)
-		haveAdmins.Insert(i.Login)
-	}
 
 	have := memberships{members: haveMembers, super: haveAdmins}
 	want := memberships{members: wantMembers, super: wantAdmins}
@@ -385,6 +376,10 @@ func configureOrgMembers(opt options, client orgClient, orgName string, orgConfi
 	}
 
 	adder := func(user string, super bool) error {
+		if invitees.Has(user) { // Do not add them, as this causes another invite.
+			logrus.Infof("Waiting for %s to accept invitation to %s", user, orgName)
+			return nil
+		}
 		role := github.RoleMember
 		if super {
 			role = github.RoleAdmin
@@ -680,6 +675,28 @@ func configureOrgMeta(client orgMetadataClient, orgName string, want org.Metadat
 	return nil
 }
 
+type inviteClient interface {
+	ListOrgInvitations(org string) ([]github.OrgInvitation, error)
+}
+
+func orgInvitations(opt options, client inviteClient, orgName string) (sets.String, error) {
+	invitees := sets.String{}
+	if !opt.fixOrgMembers && !opt.fixTeamMembers {
+		return invitees, nil
+	}
+	is, err := client.ListOrgInvitations(orgName)
+	if err != nil {
+		return nil, err
+	}
+	for _, i := range is {
+		if i.Login == "" {
+			continue
+		}
+		invitees.Insert(i.Login)
+	}
+	return invitees, nil
+}
+
 func configureOrg(opt options, client *github.Client, orgName string, orgConfig org.Config) error {
 	// Ensure that metadata is configured correctly.
 	if !opt.fixOrg {
@@ -688,10 +705,15 @@ func configureOrg(opt options, client *github.Client, orgName string, orgConfig 
 		return err
 	}
 
+	invitees, err := orgInvitations(opt, client, orgName)
+	if err != nil {
+		return fmt.Errorf("failed to list %s invitations: %v", orgName, err)
+	}
+
 	// Invite/remove/update members to the org.
 	if !opt.fixOrgMembers {
 		logrus.Infof("Skipping org member configuration")
-	} else if err := configureOrgMembers(opt, client, orgName, orgConfig); err != nil {
+	} else if err := configureOrgMembers(opt, client, orgName, orgConfig, invitees); err != nil {
 		return fmt.Errorf("failed to configure %s members: %v", orgName, err)
 	}
 
@@ -707,7 +729,7 @@ func configureOrg(opt options, client *github.Client, orgName string, orgConfig 
 	}
 
 	for name, team := range orgConfig.Teams {
-		err := configureTeamAndMembers(client, opt.fixTeamMembers, githubTeams, name, orgName, team, nil)
+		err := configureTeamAndMembers(client, opt.fixTeamMembers, githubTeams, name, orgName, team, invitees, nil)
 		if err != nil {
 			return fmt.Errorf("failed to configure %s teams: %v", orgName, err)
 		}
@@ -715,7 +737,7 @@ func configureOrg(opt options, client *github.Client, orgName string, orgConfig 
 	return nil
 }
 
-func configureTeamAndMembers(client *github.Client, fixMembers bool, githubTeams map[string]github.Team, name, orgName string, team org.Team, parent *int) error {
+func configureTeamAndMembers(client *github.Client, fixMembers bool, githubTeams map[string]github.Team, name, orgName string, team org.Team, invitees sets.String, parent *int) error {
 	gt, ok := githubTeams[name]
 	if !ok { // configureTeams is buggy if this is the case
 		return fmt.Errorf("%s not found in id list", name)
@@ -730,12 +752,12 @@ func configureTeamAndMembers(client *github.Client, fixMembers bool, githubTeams
 	// Configure team members
 	if !fixMembers {
 		logrus.Infof("Skipping %s member configuration", name)
-	} else if err = configureTeamMembers(client, gt.ID, team); err != nil {
+	} else if err = configureTeamMembers(client, gt.ID, team, invitees); err != nil {
 		return fmt.Errorf("failed to update %s members: %v", name, err)
 	}
 
 	for childName, childTeam := range team.Children {
-		err = configureTeamAndMembers(client, fixMembers, githubTeams, childName, orgName, childTeam, &gt.ID)
+		err = configureTeamAndMembers(client, fixMembers, githubTeams, childName, orgName, childTeam, invitees, &gt.ID)
 		if err != nil {
 			return fmt.Errorf("failed to update %s child teams: %v", name, err)
 		}
@@ -804,7 +826,7 @@ type teamMembersClient interface {
 }
 
 // configureTeamMembers will add/update people to the appropriate role on the team, and remove anyone else.
-func configureTeamMembers(client teamMembersClient, id int, team org.Team) error {
+func configureTeamMembers(client teamMembersClient, id int, team org.Team, invitees sets.String) error {
 	// Get desired state
 	wantMaintainers := sets.NewString(team.Maintainers...)
 	wantMembers := sets.NewString(team.Members...)
@@ -830,6 +852,10 @@ func configureTeamMembers(client teamMembersClient, id int, team org.Team) error
 	}
 
 	adder := func(user string, super bool) error {
+		if invitees.Has(user) {
+			logrus.Infof("Waiting for %s to accept invitation to %d", user, id)
+			return nil
+		}
 		role := github.RoleMember
 		if super {
 			role = github.RoleMaintainer

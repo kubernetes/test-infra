@@ -20,6 +20,7 @@ go_library(
 go_binary(
     name = "peribolos",
     embed = [":go_default_library"],
+    pure = "on",
     visibility = ["//visibility:public"],
 )
 
@@ -48,4 +49,80 @@ go_test(
         "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
+)
+
+# Usage:
+# bazel run :e2e-dump -- --github-token-path ~/whatever # --dump=whatever etc
+go_binary(
+    name = "e2e",
+    args = [
+        "--tokens=0",
+    ],
+    data = [":test-config.yaml"],
+    embed = [":go_default_library"],
+)
+
+go_binary(
+    name = "e2e-dump",
+    args = [
+        "--tokens=0",
+        "--dump=fejtaverse",
+    ],
+    embed = [":go_default_library"],
+)
+
+go_binary(
+    name = "e2e-change",
+    args = [
+        "--tokens=0",
+        "--config-path=prow/cmd/peribolos/test-config.yaml",
+        "--min-admins=2",
+        "--fix-org",
+        "--fix-org-members",
+        "--fix-teams",
+        "--fix-team-members",
+    ],
+    data = [":test-config.yaml"],
+    embed = [":go_default_library"],
+)
+
+# Usage:
+#   bazel run :dev-job.{create,delete,describe}
+load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")
+load("@io_bazel_rules_k8s//k8s:objects.bzl", "k8s_objects")
+load("//def:configmap.bzl", "k8s_configmap")
+
+CLUSTER = "gke_fejta-prod_us-central1-f_erick"  # TODO(fejta): fix
+
+k8s_object(
+    name = "peribolos-job",
+    cluster = CLUSTER,
+    image_chroot = "{STABLE_DOCKER_REPO}",
+    images = {"gcr.io/k8s-testimages/peribolos:latest": ":image"},
+    kind = "Job",
+    template = ":dev.yaml",
+)
+
+k8s_configmap(
+    name = "peribolos-test-config",
+    cluster = CLUSTER,
+    data = {
+        "config.yaml": ":test-config.yaml",
+    },
+)
+
+k8s_objects(
+    name = "dev",
+    objects = [
+        ":peribolos-job",
+        ":peribolos-test-config",
+    ],
+)
+
+load("@io_bazel_rules_docker//go:image.bzl", "go_image")
+
+go_image(
+    name = "image",
+    binary = ":peribolos",
+    visibility = ["//prow:__subpackages__"],
 )

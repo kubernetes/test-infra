@@ -1,11 +1,7 @@
 presubmits:
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
   - name: pull-gcp-compute-persistent-disk-csi-driver-e2e
-    context: pull-gcp-compute-persistent-disk-csi-driver-e2e
     always_run: true
-    rerun_command: "/test pull-gcp-compute-persistent-disk-csi-driver-e2e"
-    trigger: "(?m)^/test( all| pull-gcp-compute-persistent-disk-csi-driver-e2e),?(\\s+|$)"
-    agent: kubernetes
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -17,7 +13,7 @@ presubmits:
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
-        - "--timeout=300"
+        - "--timeout=900"
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "test/run-e2e.sh"
@@ -25,11 +21,7 @@ presubmits:
         - name: ZONE
           value: us-central1-c
   - name: pull-gcp-compute-persistent-disk-csi-driver-sanity
-    context: pull-gcp-compute-persistent-disk-csi-driver-sanity
     always_run: true
-    rerun_command: "/test pull-gcp-compute-persistent-disk-csi-driver-sanity"
-    trigger: "(?m)^/test( all| pull-gcp-compute-persistent-disk-csi-driver-sanity),?(\\s+|$)"
-    agent: kubernetes
     labels:
       preset-service-account: "true"
     spec:
@@ -45,11 +37,7 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "test/run-sanity.sh"
   - name: pull-gcp-compute-persistent-disk-csi-driver-unit
-    context: pull-gcp-compute-persistent-disk-csi-driver-unit
     always_run: true
-    rerun_command: "/test pull-gcp-compute-persistent-disk-csi-driver-unit"
-    trigger: "(?m)^/test( all| pull-gcp-compute-persistent-disk-csi-driver-unit),?(\\s+|$)"
-    agent: kubernetes
     labels:
       preset-service-account: "true"
     spec:
@@ -65,11 +53,7 @@ presubmits:
         - "--" # end bootstrap args, scenario args below
         - "test/run-unit.sh"
   - name: pull-gcp-compute-persistent-disk-csi-driver-verify
-    context: pull-gcp-compute-persistent-disk-csi-driver-verify
     always_run: true
-    rerun_command: "/test pull-gcp-compute-persistent-disk-csi-driver-verify"
-    trigger: "(?m)^/test( all| pull-gcp-compute-persistent-disk-csi-driver-verify),?(\\s+|$)"
-    agent: kubernetes
     labels:
       preset-service-account: "true"
     spec:
