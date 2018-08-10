@@ -5,6 +5,7 @@
 triggers:
 - repos:
   - kubernetes
+  - kubernetes-csi
   - kubernetes-incubator
   - kubernetes-security
   - kubernetes-sigs
