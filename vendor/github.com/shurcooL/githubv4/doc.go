@@ -1,4 +1,4 @@
-// Package githubql is a client library for accessing GitHub
+// Package githubv4 is a client library for accessing GitHub
 // GraphQL API v4 (https://developer.github.com/v4/).
 //
 // If you're looking for a client library for GitHub REST API v3,
@@ -8,6 +8,6 @@
 // opportunities for improvement are discovered; it is not yet frozen.
 //
 // For now, see README for more details.
-package githubql // import "github.com/shurcooL/githubql"
+package githubv4 // import "github.com/shurcooL/githubv4"
 
 //go:generate go run gen.go
