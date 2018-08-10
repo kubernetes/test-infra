@@ -1,0 +1,5 @@
+package targetPkgs
+
+func doNothing() {
+
+}

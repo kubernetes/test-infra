@@ -1,0 +1,5 @@
+package presubmit
+
+func doNothing() {
+
+}

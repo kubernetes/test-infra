@@ -1,0 +1,5 @@
+package subPkg
+
+func doNothing() {
+
+}
