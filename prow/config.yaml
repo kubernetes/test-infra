@@ -249,6 +249,15 @@ tide:
     - kubernetes/steering
     - kubernetes/test-infra
     - kubernetes/website
+    - kubernetes-csi/csi-test
+    - kubernetes-csi/docs
+    - kubernetes-csi/driver-registrar
+    - kubernetes-csi/drivers
+    - kubernetes-csi/external-attacher
+    - kubernetes-csi/external-provisioner
+    - kubernetes-csi/external-snapshotter
+    - kubernetes-csi/kubernetes-csi.github.io
+    - kubernetes-csi/livenessprobe
     - kubernetes-sigs/application
     - kubernetes-sigs/architecture-tracking
     - kubernetes-sigs/aws-encryption-provider
