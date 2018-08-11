@@ -1,13 +1,22 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
-go_library(
-    name = "go_default_library",
-    srcs = ["placeholder.go"],
-    importpath = "k8s.io/test-infra/prow/spyglass",
-    visibility = ["//visibility:public"],
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "gcsartifact_fetcher_test.go",
+        "gcsartifact_test.go",
+        "podlogartifact_test.go",
+        "spyglass_test.go",
+    ],
+    embed = [":go_default_library"],
     deps = [
+        "//prow/config:go_default_library",
+        "//prow/deck/jobs:go_default_library",
+        "//prow/kube:go_default_library",
+        "//prow/spyglass/viewers:go_default_library",
+        "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/fsouza/fake-gcs-server/fakestorage:go_default_library",
-        "//vendor/github.com/joshdk/go-junit:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
 
@@ -20,7 +29,34 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//prow/spyglass/viewers:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
+)
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "artifactfetchers.go",
+        "gcsartifact.go",
+        "gcsartifact_fetcher.go",
+        "placeholder.go",
+        "podlogartifact.go",
+        "spyglass.go",
+    ],
+    importpath = "k8s.io/test-infra/prow/spyglass",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//prow/deck/jobs:go_default_library",
+        "//prow/spyglass/viewers:go_default_library",
+        "//testgrid/util/gcs:go_default_library",
+        "//vendor/cloud.google.com/go/storage:go_default_library",
+        "//vendor/github.com/fsouza/fake-gcs-server/fakestorage:go_default_library",
+        "//vendor/github.com/joshdk/go-junit:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/google.golang.org/api/iterator:go_default_library",
+    ],
 )
