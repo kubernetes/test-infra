@@ -182,7 +182,7 @@ func prodOnlyMain(configAgent *config.Agent, o options, mux *http.ServeMux) *htt
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GCS client")
 	}
-	sg := spyglass.New(ja, []spyglass.ArtifactFetcher{spyglass.NewGCSArtifactFetcher(c, "storage.googleapis.com", true)})
+	sg := spyglass.New(ja, []spyglass.ArtifactFetcher{spyglass.NewGCSArtifactFetcher(c)})
 
 	// setup prod only handlers
 	mux.Handle("/data.js", gziphandler.GzipHandler(handleData(ja)))
@@ -577,12 +577,19 @@ func handleArtifactView(sg *spyglass.Spyglass, ca *config.Agent) http.HandlerFun
 			return
 		}
 
-		lens := sg.Refresh(src, "", ca.Config().Deck.Spyglass.SizeLimit, viewReq)
-		pd, err := json.Marshal(lens)
+		pd := []byte("{}")
+		lens, err := sg.Refresh(src, "", ca.Config().Deck.Spyglass.SizeLimit, viewReq)
 		if err != nil {
-			logrus.WithError(err).Error("Error marshaling payload.")
-			pd = []byte("{}")
+			logrus.WithError(err).Error("failed to refresh page")
+			return
+		} else {
+			pd, err := json.Marshal(lens)
+			if err != nil {
+				logrus.WithError(err).Error("Error marshaling payload.")
+				pd = []byte("{}")
+			}
 		}
+
 		fmt.Fprint(w, string(pd))
 		elapsed := time.Since(start)
 		logrus.Infof("Time taken to refresh %s: %s", name, elapsed) //TODO (paulangton): move these load times next to the title of the viewer expose in Prometheus metrics
