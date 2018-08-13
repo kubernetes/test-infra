@@ -1879,87 +1879,6 @@
       "sig-instrumentation"
     ]
   },
-  "pull-kops-bazel-build": {
-    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
-    "args": [],
-    "scenario": "kubernetes_execute_bazel",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
-  "pull-kops-bazel-test": {
-    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
-    "args": [],
-    "scenario": "kubernetes_execute_bazel",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
-  "pull-kops-e2e-kubernetes-aws": {
-    "args": [
-      "--aws",
-      "--aws-cluster-domain=test-cncf-aws.k8s.io",
-      "--check-leaked-resources=false",
-      "--cluster=",
-      "--env-file=jobs/platform/kops_aws.env",
-      "--extract=ci/latest",
-      "--ginkgo-parallel",
-      "--kops-build",
-      "--provider=aws",
-      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
-      "--timeout=55m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-aws"
-    ]
-  },
-  "pull-kops-verify-bazel": {
-    "args": [
-      "./hack/verify-bazel.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
-  "pull-kops-verify-boilerplate": {
-    "args": [
-      "./hack/verify-boilerplate.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
-  "pull-kops-verify-gofmt": {
-    "args": [
-      "./hack/verify-gofmt.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
-  "pull-kops-verify-govet": {
-    "args": [
-      "make",
-      "govet"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
-  "pull-kops-verify-packages": {
-    "args": [
-      "./hack/verify-packages.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
   "pull-kubernetes-bazel-build": {
     "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
     "args": [],
@@ -2180,27 +2099,6 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-scheduling"
-    ]
-  },
-  "pull-kubernetes-e2e-kops-aws": {
-    "args": [
-      "--aws",
-      "--aws-cluster-domain=test-cncf-aws.k8s.io",
-      "--build=bazel",
-      "--check-leaked-resources=false",
-      "--cluster=",
-      "--env-file=jobs/platform/kops_aws.env",
-      "--env-file=jobs/env/pull-kubernetes-e2e-kops-aws.env",
-      "--extract=local",
-      "--ginkgo-parallel",
-      "--provider=aws",
-      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kops-aws",
-      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
-      "--timeout=55m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-aws"
     ]
   },
   "pull-kubernetes-e2e-kubeadm-gce": {
