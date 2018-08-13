@@ -17,7 +17,12 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//prow/spyglass/viewers/buildlog:all-srcs",
+        "//prow/spyglass/viewers/junit:all-srcs",
+        "//prow/spyglass/viewers/metadata:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )
