@@ -3650,6 +3650,7 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
+# manual-release-bump-required
 - interval: 2h
   name: ci-kubernetes-verify-beta
   labels:
@@ -3686,6 +3687,7 @@ periodics:
         requests:
           cpu: 4
 
+# manual-release-bump-required
 - interval: 2h
   name: ci-kubernetes-verify-stable1
   labels:
@@ -3696,6 +3698,7 @@ periodics:
     - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
       args:
       - "--repo=k8s.io/kubernetes=release-1.11"
+      - "--timeout=75"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
@@ -3703,6 +3706,7 @@ periodics:
         requests:
           cpu: 4
 
+# manual-release-bump-required
 - interval: 6h
   name: ci-kubernetes-verify-stable2
   labels:
@@ -3721,6 +3725,7 @@ periodics:
         requests:
           cpu: 4
 
+# manual-release-bump-required
 - interval: 24h
   name: ci-kubernetes-verify-stable3
   labels:
