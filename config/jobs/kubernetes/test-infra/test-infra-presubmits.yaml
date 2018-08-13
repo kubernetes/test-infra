@@ -93,7 +93,7 @@ presubmits:
   - name: pull-test-infra-verify-config
     branches:
     - master
-    run_if_changed: '^prow/config.yaml$'
+    always_run: true
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
