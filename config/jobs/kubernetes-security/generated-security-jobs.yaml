@@ -9,7 +9,6 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
-    max_concurrency: 0
     name: pull-security-kubernetes-bazel-build
     rerun_command: /test pull-security-kubernetes-bazel-build
     run_after_success:
@@ -53,12 +52,10 @@ presubmits:
             defaultMode: 256
             secretName: ssh-security
       trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-kubeadm-gce,?($|\s.*)
-    run_if_changed: ""
     skip_branches:
     - release-1.10
     - release-1.9
     - release-1.8
-    skip_report: false
     spec:
       containers:
       - args:
@@ -98,7 +95,6 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
-    max_concurrency: 0
     name: pull-security-kubernetes-bazel-build
     rerun_command: /test pull-security-kubernetes-bazel-build
     run_after_success:
@@ -140,8 +136,6 @@ presubmits:
             defaultMode: 256
             secretName: ssh-security
       trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-kubeadm-gce,?($|\s.*)
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -181,7 +175,6 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
-    max_concurrency: 0
     name: pull-security-kubernetes-bazel-build
     rerun_command: /test pull-security-kubernetes-bazel-build
     run_after_success:
@@ -223,8 +216,6 @@ presubmits:
             defaultMode: 256
             secretName: ssh-security
       trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-kubeadm-gce,?($|\s.*)
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -264,7 +255,6 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
-    max_concurrency: 0
     name: pull-security-kubernetes-bazel-build
     rerun_command: /test pull-security-kubernetes-bazel-build
     run_after_success:
@@ -306,8 +296,6 @@ presubmits:
             defaultMode: 256
             secretName: ssh-security
       trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-kubeadm-gce,?($|\s.*)
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -346,15 +334,12 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
-    max_concurrency: 0
     name: pull-security-kubernetes-bazel-test
     rerun_command: /test pull-security-kubernetes-bazel-test
-    run_if_changed: ""
     skip_branches:
     - release-1.10
     - release-1.9
     - release-1.8
-    skip_report: false
     spec:
       containers:
       - args:
@@ -396,11 +381,8 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
-    max_concurrency: 0
     name: pull-security-kubernetes-bazel-test
     rerun_command: /test pull-security-kubernetes-bazel-test
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -442,11 +424,8 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
-    max_concurrency: 0
     name: pull-security-kubernetes-bazel-test
     rerun_command: /test pull-security-kubernetes-bazel-test
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -487,11 +466,8 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
-    max_concurrency: 0
     name: pull-security-kubernetes-bazel-test
     rerun_command: /test pull-security-kubernetes-bazel-test
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -530,14 +506,12 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
-    max_concurrency: 0
     name: pull-security-kubernetes-cross
     rerun_command: /test pull-security-kubernetes-cross
     run_if_changed: ^(build\/|hack\/lib\/)|(Makefile)$
     skip_branches:
     - release-1.9
     - release-1.8
-    skip_report: false
     spec:
       containers:
       - args:
@@ -574,11 +548,9 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
-    max_concurrency: 0
     name: pull-security-kubernetes-cross
     rerun_command: /test pull-security-kubernetes-cross
     run_if_changed: ^(build\/|hack\/lib\/)|(Makefile)|(.*_(windows|linux|osx|unsupported)(_test)?\.go)$
-    skip_report: false
     spec:
       containers:
       - args:
@@ -612,11 +584,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
-    max_concurrency: 0
     name: pull-security-kubernetes-cross-prow
     rerun_command: /test pull-security-kubernetes-cross-prow
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -652,14 +621,11 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-dind-enabled: "true"
       preset-service-account: "true"
-    max_concurrency: 0
     name: pull-security-kubernetes-dind-e2e
     rerun_command: /test pull-security-kubernetes-dind-e2e
-    run_if_changed: ""
     skip_branches:
     - release-1.9
     - release-1.8
-    skip_report: false
     spec:
       containers:
       - args:
@@ -723,11 +689,8 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
-    max_concurrency: 0
     name: pull-security-kubernetes-e2e-containerd-gce
     rerun_command: /test pull-security-kubernetes-e2e-containerd-gce
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -764,15 +727,12 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
-    max_concurrency: 0
     name: pull-security-kubernetes-e2e-gce
     rerun_command: /test pull-security-kubernetes-e2e-gce
-    run_if_changed: ""
     skip_branches:
     - release-1.10
     - release-1.9
     - release-1.8
-    skip_report: false
     spec:
       containers:
       - args:
@@ -810,11 +770,8 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
-    max_concurrency: 0
     name: pull-security-kubernetes-e2e-gce
     rerun_command: /test pull-security-kubernetes-e2e-gce
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -852,11 +809,8 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
-    max_concurrency: 0
     name: pull-security-kubernetes-e2e-gce
     rerun_command: /test pull-security-kubernetes-e2e-gce
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -894,11 +848,8 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
-    max_concurrency: 0
     name: pull-security-kubernetes-e2e-gce
     rerun_command: /test pull-security-kubernetes-e2e-gce
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -939,8 +890,6 @@ presubmits:
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-gce-100-performance
     rerun_command: /test pull-security-kubernetes-e2e-gce-100-performance
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -981,8 +930,6 @@ presubmits:
     max_concurrency: 1
     name: pull-security-kubernetes-e2e-gce-big-performance
     rerun_command: /test pull-security-kubernetes-e2e-gce-big-performance
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -1021,12 +968,10 @@ presubmits:
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-gce-device-plugin-gpu
     rerun_command: /test pull-security-kubernetes-e2e-gce-device-plugin-gpu
-    run_if_changed: ""
     skip_branches:
     - release-1.10
     - release-1.9
     - release-1.8
-    skip_report: false
     spec:
       containers:
       - args:
@@ -1069,8 +1014,6 @@ presubmits:
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-gce-device-plugin-gpu
     rerun_command: /test pull-security-kubernetes-e2e-gce-device-plugin-gpu
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -1113,8 +1056,6 @@ presubmits:
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-gce-device-plugin-gpu
     rerun_command: /test pull-security-kubernetes-e2e-gce-device-plugin-gpu
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -1157,8 +1098,6 @@ presubmits:
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-gce-device-plugin-gpu
     rerun_command: /test pull-security-kubernetes-e2e-gce-device-plugin-gpu
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -1201,8 +1140,6 @@ presubmits:
     max_concurrency: 1
     name: pull-security-kubernetes-e2e-gce-large-performance
     rerun_command: /test pull-security-kubernetes-e2e-gce-large-performance
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -1238,7 +1175,6 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
-    max_concurrency: 0
     name: pull-security-kubernetes-e2e-gke
     rerun_command: /test pull-security-kubernetes-e2e-gke
     run_if_changed: ^(cluster/gce|cluster/addons).*$
@@ -1246,7 +1182,6 @@ presubmits:
     - release-1.10
     - release-1.9
     - release-1.8
-    skip_report: false
     spec:
       containers:
       - args:
@@ -1284,11 +1219,9 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
-    max_concurrency: 0
     name: pull-security-kubernetes-e2e-gke
     rerun_command: /test pull-security-kubernetes-e2e-gke
     run_if_changed: ^(cluster/gce|cluster/addons).*$
-    skip_report: false
     spec:
       containers:
       - args:
@@ -1326,11 +1259,9 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
-    max_concurrency: 0
     name: pull-security-kubernetes-e2e-gke
     rerun_command: /test pull-security-kubernetes-e2e-gke
     run_if_changed: ^(cluster/gce|cluster/addons).*$
-    skip_report: false
     spec:
       containers:
       - args:
@@ -1368,11 +1299,9 @@ presubmits:
       preset-bazel-scratch-dir: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
-    max_concurrency: 0
     name: pull-security-kubernetes-e2e-gke
     rerun_command: /test pull-security-kubernetes-e2e-gke
     run_if_changed: ^(cluster/gce|cluster/addons).*$
-    skip_report: false
     spec:
       containers:
       - args:
@@ -1411,12 +1340,10 @@ presubmits:
     max_concurrency: 1
     name: pull-security-kubernetes-e2e-gke-device-plugin-gpu
     rerun_command: /test pull-security-kubernetes-e2e-gke-device-plugin-gpu
-    run_if_changed: ""
     skip_branches:
     - release-1.10
     - release-1.9
     - release-1.8
-    skip_report: false
     spec:
       containers:
       - args:
@@ -1459,8 +1386,6 @@ presubmits:
     max_concurrency: 1
     name: pull-security-kubernetes-e2e-gke-device-plugin-gpu
     rerun_command: /test pull-security-kubernetes-e2e-gke-device-plugin-gpu
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -1503,8 +1428,6 @@ presubmits:
     max_concurrency: 1
     name: pull-security-kubernetes-e2e-gke-device-plugin-gpu
     rerun_command: /test pull-security-kubernetes-e2e-gke-device-plugin-gpu
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -1547,8 +1470,6 @@ presubmits:
     max_concurrency: 1
     name: pull-security-kubernetes-e2e-gke-device-plugin-gpu
     rerun_command: /test pull-security-kubernetes-e2e-gke-device-plugin-gpu
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -1590,12 +1511,10 @@ presubmits:
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-kops-aws
     rerun_command: /test pull-security-kubernetes-e2e-kops-aws
-    run_if_changed: ""
     skip_branches:
     - release-1.10
     - release-1.9
     - release-1.8
-    skip_report: false
     spec:
       containers:
       - args:
@@ -1639,8 +1558,6 @@ presubmits:
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-kops-aws
     rerun_command: /test pull-security-kubernetes-e2e-kops-aws
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -1684,8 +1601,6 @@ presubmits:
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-kops-aws
     rerun_command: /test pull-security-kubernetes-e2e-kops-aws
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -1729,8 +1644,6 @@ presubmits:
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-kops-aws
     rerun_command: /test pull-security-kubernetes-e2e-kops-aws
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -1767,11 +1680,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
-    max_concurrency: 0
     name: pull-security-kubernetes-integration
     rerun_command: /test pull-security-kubernetes-integration
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -1804,11 +1714,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
-    max_concurrency: 0
     name: pull-security-kubernetes-integration-prow
     rerun_command: /test pull-security-kubernetes-integration-prow
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -1847,12 +1754,10 @@ presubmits:
     max_concurrency: 12
     name: pull-security-kubernetes-kubemark-e2e-gce-big
     rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce-big
-    run_if_changed: ""
     skip_branches:
     - release-1.10
     - release-1.9
     - release-1.8
-    skip_report: false
     spec:
       containers:
       - args:
@@ -1896,8 +1801,6 @@ presubmits:
     max_concurrency: 12
     name: pull-security-kubernetes-kubemark-e2e-gce-big
     rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce-big
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -1941,8 +1844,6 @@ presubmits:
     max_concurrency: 12
     name: pull-security-kubernetes-kubemark-e2e-gce-big
     rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce-big
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -1986,8 +1887,6 @@ presubmits:
     max_concurrency: 12
     name: pull-security-kubernetes-kubemark-e2e-gce-big
     rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce-big
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -2031,8 +1930,6 @@ presubmits:
     max_concurrency: 1
     name: pull-security-kubernetes-kubemark-e2e-gce-scale
     rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce-scale
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -2076,7 +1973,6 @@ presubmits:
     name: pull-security-kubernetes-local-e2e
     rerun_command: /test pull-security-kubernetes-local-e2e
     run_if_changed: (hyperkube|local-up-cluster)
-    skip_report: false
     spec:
       containers:
       - args:
@@ -2111,11 +2007,9 @@ presubmits:
       preset-dind-enabled: "true"
       preset-k8s-ssh: "true"
       preset-service-account: "true"
-    max_concurrency: 0
     name: pull-security-kubernetes-local-e2e-containerized
     rerun_command: /test pull-security-kubernetes-local-e2e-containerized
     run_if_changed: ^(pkg|cmd)/kubelet.*$
-    skip_report: false
     spec:
       containers:
       - args:
@@ -2153,12 +2047,10 @@ presubmits:
     max_concurrency: 12
     name: pull-security-kubernetes-node-e2e
     rerun_command: /test pull-security-kubernetes-node-e2e
-    run_if_changed: ""
     skip_branches:
     - release-1.10
     - release-1.9
     - release-1.8
-    skip_report: false
     spec:
       containers:
       - args:
@@ -2197,8 +2089,6 @@ presubmits:
     max_concurrency: 12
     name: pull-security-kubernetes-node-e2e
     rerun_command: /test pull-security-kubernetes-node-e2e
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -2237,8 +2127,6 @@ presubmits:
     max_concurrency: 12
     name: pull-security-kubernetes-node-e2e
     rerun_command: /test pull-security-kubernetes-node-e2e
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -2277,8 +2165,6 @@ presubmits:
     max_concurrency: 12
     name: pull-security-kubernetes-node-e2e
     rerun_command: /test pull-security-kubernetes-node-e2e
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -2317,8 +2203,6 @@ presubmits:
     max_concurrency: 12
     name: pull-security-kubernetes-node-e2e-containerd
     rerun_command: /test pull-security-kubernetes-node-e2e-containerd
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -2352,14 +2236,11 @@ presubmits:
     context: pull-security-kubernetes-typecheck
     labels:
       preset-service-account: "true"
-    max_concurrency: 0
     name: pull-security-kubernetes-typecheck
     rerun_command: /test pull-security-kubernetes-typecheck
-    run_if_changed: ""
     skip_branches:
     - release-1.9
     - release-1.8
-    skip_report: false
     spec:
       containers:
       - args:
@@ -2389,11 +2270,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
-    max_concurrency: 0
     name: pull-security-kubernetes-verify
     rerun_command: /test pull-security-kubernetes-verify
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -2426,11 +2304,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
-    max_concurrency: 0
     name: pull-security-kubernetes-verify-prow
     rerun_command: /test pull-security-kubernetes-verify-prow
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -2464,11 +2339,8 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
-    max_concurrency: 0
     name: pull-security-kubernetes-bazel-build-canary
     rerun_command: /test pull-security-kubernetes-bazel-build-canary
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -2508,11 +2380,8 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
-    max_concurrency: 0
     name: pull-security-kubernetes-bazel-test-canary
     rerun_command: /test pull-security-kubernetes-bazel-test-canary
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
@@ -2550,11 +2419,8 @@ presubmits:
     labels:
       preset-bazel-scratch-dir: "true"
       preset-service-account: "true"
-    max_concurrency: 0
     name: pull-security-kubernetes-bazel-test-integration-canary
     rerun_command: /test pull-security-kubernetes-bazel-test-integration-canary
-    run_if_changed: ""
-    skip_report: false
     spec:
       containers:
       - args:
