@@ -5,6 +5,7 @@
 triggers:
 - repos:
   - kubernetes
+  - kubernetes-csi
   - kubernetes-incubator
   - kubernetes-security
   - kubernetes-sigs
@@ -61,6 +62,7 @@ approve:
   implicit_self_approve: true
   lgtm_acts_as_approve: true
 - repos:
+  - kubernetes-csi
   - kubernetes-sigs
   - client-go/unofficial-docs
   implicit_self_approve: true
@@ -422,14 +424,6 @@ plugins:
   - wip
   - yuks
 
-  kubernetes-incubator:
-  - assign
-  - cla
-  - label
-  - lgtm
-  - lifecycle
-  - size
-
   kubernetes-client:
   - assign
   - cla
@@ -442,6 +436,33 @@ plugins:
   - help
   - cat
   - dog
+
+  kubernetes-csi:
+  - approve
+  - assign
+  - blunderbuss
+  - cat
+  - cla
+  - dog
+  - heart
+  - help
+  - hold
+  - label
+  - lgtm
+  - lifecycle
+  - shrug
+  - size
+  - skip
+  - wip
+  - yuks
+
+  kubernetes-incubator:
+  - assign
+  - cla
+  - label
+  - lgtm
+  - lifecycle
+  - size
 
   kubernetes-incubator/service-catalog:
   - approve

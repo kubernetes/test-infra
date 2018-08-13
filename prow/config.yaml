@@ -155,6 +155,28 @@ branch-protection:
               protect: true
             release-1.9:
               protect: true
+    kubernetes-csi:
+      protect: true
+      required_status_checks:
+        contexts:
+        - cla/linuxfoundation
+      repos:
+        csi-test:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+        drivers:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+        external-attacher:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+        external-provisioner:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
     kubernetes-sigs:
       protect: true
       required_status_checks:
@@ -227,6 +249,15 @@ tide:
     - kubernetes/steering
     - kubernetes/test-infra
     - kubernetes/website
+    - kubernetes-csi/csi-test
+    - kubernetes-csi/docs
+    - kubernetes-csi/driver-registrar
+    - kubernetes-csi/drivers
+    - kubernetes-csi/external-attacher
+    - kubernetes-csi/external-provisioner
+    - kubernetes-csi/external-snapshotter
+    - kubernetes-csi/kubernetes-csi.github.io
+    - kubernetes-csi/livenessprobe
     - kubernetes-sigs/application
     - kubernetes-sigs/architecture-tracking
     - kubernetes-sigs/aws-encryption-provider
