@@ -82,19 +82,19 @@ type Presubmit struct {
 	// e.g. pull-test-infra-bazel-build
 	Name string `json:"name"`
 	// Labels are added to prowjobs and pods created for this job.
-	Labels map[string]string `json:"labels"`
+	Labels map[string]string `json:"labels,omitempty"`
 
 	// AlwaysRun automatically for every PR, or only when a comment triggers it.
 	AlwaysRun bool `json:"always_run"`
 	// RunIfChanged automatically run if the PR modifies a file that matches this regex.
-	RunIfChanged string `json:"run_if_changed"`
+	RunIfChanged string `json:"run_if_changed,omitempty"`
 
 	// Context is the name of the GitHub status context for the job.
 	Context string `json:"context"`
 	// Optional indicates that the job's status context should not be required for merge.
 	Optional bool `json:"optional,omitempty"`
 	// SkipReport skips commenting and setting status on GitHub.
-	SkipReport bool `json:"skip_report"`
+	SkipReport bool `json:"skip_report,omitempty"`
 
 	// Trigger is the regular expression to trigger the job.
 	// e.g. `@k8s-bot e2e test this`
@@ -107,18 +107,18 @@ type Presubmit struct {
 	RerunCommand string `json:"rerun_command"`
 
 	// MaximumConcurrency of this job, 0 implies no limit.
-	MaxConcurrency int `json:"max_concurrency"`
+	MaxConcurrency int `json:"max_concurrency,omitempty"`
 	// Agent that will take care of running this job.
 	Agent string `json:"agent"`
 	// Cluster is the alias of the cluster to run this job in.
 	// (Default: kube.DefaultClusterAlias)
-	Cluster string `json:"cluster"`
+	Cluster string `json:"cluster,omitempty"`
 
 	// Spec is the Kubernetes pod spec used if Agent is Kubernetes.
 	Spec *v1.PodSpec `json:"spec,omitempty"`
 
 	// RunAfterSuccess is a list of jobs to run after successfully running this one.
-	RunAfterSuccess []Presubmit `json:"run_after_success"`
+	RunAfterSuccess []Presubmit `json:"run_after_success,omitempty"`
 
 	Brancher
 
@@ -133,33 +133,33 @@ type Presubmit struct {
 type Postsubmit struct {
 	Name string `json:"name"`
 	// Labels are added in prowjobs created for this job.
-	Labels map[string]string `json:"labels"`
+	Labels map[string]string `json:"labels,omitempty"`
 	// Agent that will take care of running this job.
 	Agent string `json:"agent"`
 	// Cluster is the alias of the cluster to run this job in. (Default: kube.DefaultClusterAlias)
-	Cluster string `json:"cluster"`
+	Cluster string `json:"cluster,omitempty"`
 	// Kubernetes pod spec.
 	Spec *v1.PodSpec `json:"spec,omitempty"`
 	// Maximum number of this job running concurrently, 0 implies no limit.
-	MaxConcurrency int `json:"max_concurrency"`
+	MaxConcurrency int `json:"max_concurrency,omitempty"`
 
 	Brancher
 
 	UtilityConfig
 
 	// Run these jobs after successfully running this one.
-	RunAfterSuccess []Postsubmit `json:"run_after_success"`
+	RunAfterSuccess []Postsubmit `json:"run_after_success,omitempty"`
 }
 
 // Periodic runs on a timer.
 type Periodic struct {
 	Name string `json:"name"`
 	// Labels are added in prowjobs created for this job.
-	Labels map[string]string `json:"labels"`
+	Labels map[string]string `json:"labels,omitempty"`
 	// Agent that will take care of running this job.
 	Agent string `json:"agent"`
 	// Cluster is the alias of the cluster to run this job in. (Default: kube.DefaultClusterAlias)
-	Cluster string `json:"cluster"`
+	Cluster string `json:"cluster,omitempty"`
 	// Kubernetes pod spec.
 	Spec *v1.PodSpec `json:"spec,omitempty"`
 	// (deprecated)Interval to wait between two runs of the job.
@@ -169,7 +169,7 @@ type Periodic struct {
 	// Tags for config entries
 	Tags []string `json:"tags,omitempty"`
 	// Run these jobs after successfully running this one.
-	RunAfterSuccess []Periodic `json:"run_after_success"`
+	RunAfterSuccess []Periodic `json:"run_after_success,omitempty"`
 
 	UtilityConfig
 
@@ -190,9 +190,9 @@ func (p *Periodic) GetInterval() time.Duration {
 // branches. An empty brancher runs against all branches.
 type Brancher struct {
 	// Do not run against these branches. Default is no branches.
-	SkipBranches []string `json:"skip_branches"`
+	SkipBranches []string `json:"skip_branches,omitempty"`
 	// Only run against these branches. Default is all branches.
-	Branches []string `json:"branches"`
+	Branches []string `json:"branches,omitempty"`
 
 	// We'll set these when we load it.
 	re     *regexp.Regexp
