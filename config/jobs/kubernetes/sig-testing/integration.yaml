@@ -8,11 +8,11 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
       args:
-      - --repo=k8s.io/kubernetes=release-1.11
+      - --repo=k8s.io/kubernetes=release-1.12
       - --timeout=100
       - --scenario=kubernetes_verify
       - --
-      - --branch=release-1.11
+      - --branch=release-1.12
       - --force
       - --prow
       # docker-in-docker needs privileged mode
@@ -54,11 +54,11 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
       args:
-      - --repo=k8s.io/kubernetes=release-1.10
+      - --repo=k8s.io/kubernetes=release-1.11
       - --timeout=100
       - --scenario=kubernetes_verify
       - --
-      - --branch=release-1.10
+      - --branch=release-1.11
       - --force
       - --prow
       # docker-in-docker needs privileged mode
@@ -77,11 +77,11 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
       args:
-      - --repo=k8s.io/kubernetes=release-1.9
+      - --repo=k8s.io/kubernetes=release-1.10
       - --timeout=100"
       - --scenario=kubernetes_verify
       - --
-      - --branch=release-1.9
+      - --branch=release-1.10
       - --force
       - --prow
       # docker-in-docker needs privileged mode
@@ -100,11 +100,11 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
       args:
-      - --repo=k8s.io/kubernetes=release-1.8
+      - --repo=k8s.io/kubernetes=release-1.9
       - --timeout=100"
       - --scenario=kubernetes_verify
       - --
-      - --branch=release-1.8
+      - --branch=release-1.9
       - --force
       - --prow
       # docker-in-docker needs privileged mode

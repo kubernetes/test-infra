@@ -33,7 +33,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
       args:
-      - --repo=k8s.io/kubernetes=release-1.11
+      - --repo=k8s.io/kubernetes=release-1.12
       - --repo=k8s.io/release
       - --root=/go/src
       - --timeout=180
@@ -83,7 +83,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
       args:
-      - --repo=k8s.io/kubernetes=release-1.10
+      - --repo=k8s.io/kubernetes=release-1.11
       - --repo=k8s.io/release
       - --root=/go/src
       - --timeout=180
@@ -110,7 +110,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
       args:
-      - --repo=k8s.io/kubernetes=release-1.9
+      - --repo=k8s.io/kubernetes=release-1.10
       - --repo=k8s.io/release
       - --root=/go/src
       - --timeout=180
@@ -137,7 +137,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
       args:
-      - --repo=k8s.io/kubernetes=release-1.8
+      - --repo=k8s.io/kubernetes=release-1.9
       - --repo=k8s.io/release
       - --root=/go/src
       - --timeout=180
@@ -145,6 +145,8 @@ periodics:
       - --
       - --allow-dup
       - --extra-publish-file=k8s-stable3
+      - --hyperkube
+      - --registry=gcr.io/kubernetes-ci-images
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
