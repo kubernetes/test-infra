@@ -21,7 +21,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"io"
 	"strconv"
 	"strings"
@@ -190,20 +189,25 @@ func nextViewData(artifact viewers.Artifact, currentViewData LogViewData) (LogAr
 				newArtifactView.ViewMethodDescription = fmt.Sprintf("viewing first %d bytes", nBytes)
 				newLogViewData.HeadBytes = nBytes
 				newLogViewData.UseBytes = true
-				logLines = logLinesHead(artifact, nBytes)
+				logLines, err = logLinesHead(artifact, nBytes)
+				if err != nil {
+					logrus.WithError(err).Error("Reading log lines failed.")
+					newArtifactView.ViewMethodDescription = fmt.Sprintf("failed to read log file - is it compressed?")
+					logLines = []string{}
+				}
 			}
 		} else {
 			nLines := currentViewData.TailLines + lineChunkSize
 			logLines, err = viewers.LastNLines(artifact, nLines)
 			if err != nil {
-				if err == viewers.ErrGzipOffsetRead { // Try a different read operation
-					nBytes := int64(byteChunkSize)
-					newLogViewData.UseBytes = true
-					newLogViewData.HeadBytes = nBytes
-					newArtifactView.ViewMethodDescription = fmt.Sprintf("viewing first %d bytes", nBytes)
-					logLines = logLinesHead(artifact, nBytes)
-				} else {
+				nBytes := int64(byteChunkSize)
+				newLogViewData.UseBytes = true
+				newLogViewData.HeadBytes = nBytes
+				newArtifactView.ViewMethodDescription = fmt.Sprintf("viewing first %d bytes", nBytes)
+				logLines, err = logLinesHead(artifact, nBytes)
+				if err != nil {
 					logrus.WithError(err).Error("Reading log lines failed.")
+					newArtifactView.ViewMethodDescription = fmt.Sprintf("failed to read log file - is it compressed?")
 					logLines = []string{}
 				}
 			} else {
@@ -221,7 +225,7 @@ func nextViewData(artifact viewers.Artifact, currentViewData LogViewData) (LogAr
 }
 
 // logLinesHead reads the first n bytes of an artifact and splits it into lines.
-func logLinesHead(artifact viewers.Artifact, n int64) []string {
+func logLinesHead(artifact viewers.Artifact, n int64) ([]string, error) {
 	read, err := artifact.ReadAtMost(n)
 	if err != nil {
 		if err == io.ErrUnexpectedEOF {
@@ -231,19 +235,21 @@ func logLinesHead(artifact viewers.Artifact, n int64) []string {
 					"n":        strconv.FormatInt(n, 10),
 					"artifact": artifact.JobPath(),
 				}).Error("Unexpected EOF, failed to get size of artifact.")
-			} else {
-				logrus.WithError(err).WithFields(logrus.Fields{
-					"n":            strconv.FormatInt(n, 10),
-					"artifactSize": strconv.FormatInt(artifactSize, 10),
-				}).Info("Unexpected EOF, continuing...")
+				return nil, fmt.Errorf("error getting size of artifact after unexpected EOF: %v", err)
 			}
+			logrus.WithError(err).WithFields(logrus.Fields{
+				"n":            strconv.FormatInt(n, 10),
+				"artifactSize": strconv.FormatInt(artifactSize, 10),
+			}).Info("Unexpected EOF, continuing...")
+		} else {
+			return nil, fmt.Errorf("error reading at most n bytes from artifact: %v", err)
 		}
 	}
 	logLines := strings.Split(string(read), "\n")
 	for ix, line := range logLines {
 		logLines[ix] = fmt.Sprintf("%d.\t%s", ix+1, line)
 	}
-	return logLines
+	return logLines, nil
 }
 
 // logLinesAll reads all of an artifact and splits it into lines.
@@ -265,8 +271,7 @@ func logLinesAll(artifact viewers.Artifact) []string {
 // LogViewTemplate executes the log viewer template ready for rendering
 func LogViewTemplate(buildLogsView BuildLogsView) string {
 	var buf bytes.Buffer
-	t := template.Must(template.New(fmt.Sprintf("%sTemplate", name)).Parse(tmplt))
-	if err := t.Execute(&buf, buildLogsView); err != nil {
+	if err := buildLogTemplate.Execute(&buf, buildLogsView); err != nil {
 		logrus.WithError(err).Error("Error executing template.")
 	}
 	return buf.String()

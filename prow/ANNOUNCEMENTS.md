@@ -1,8 +1,8 @@
 # Announcements
 
 New features added to each component:
- - *July 26, 2018* `spyglass` is a pluggable viewing framework for artifacts
-   produced by prowjobs. See a demo [here](prow.k8s.io/view/gcs/kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-large-performance/121)!
+ - *August 22, 2018* `spyglass` is a pluggable viewing framework for artifacts
+   produced by Prowjobs. See a demo [here](https://prow.k8s.io/view/gcs/kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-large-performance/121)!
  - *July 13, 2018* `blunderbluss` plugin will now support `required_reviewers` in
    OWNERS file to specify a person or github team to be cc'd on every PR that
    touches the corresponding part of the code.

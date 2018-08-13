@@ -20,10 +20,7 @@ package metadata
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"time"
-
-	"html/template"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/spyglass/viewers"
@@ -105,8 +102,7 @@ func ViewHandler(artifacts []viewers.Artifact, raw string) string {
 		Elapsed: metadataViewData.Finished.Timestamp.Sub(metadataViewData.Started.Timestamp),
 	}
 	metadataViewData.Derived = d
-	t := template.Must(template.New(fmt.Sprintf("%sTemplate", name)).Parse(tmplt))
-	if err := t.Execute(&buf, metadataViewData); err != nil {
+	if err := metadataTemplate.Execute(&buf, metadataViewData); err != nil {
 		logrus.WithError(err).Error("Error executing template.")
 	}
 	return buf.String()

@@ -31,11 +31,12 @@ import (
 
 func TestSpyglassConfig(t *testing.T) {
 	testCases := []struct {
-		name              string
-		spyglassConfig    string
-		expectedViewers   map[string][]string
-		expectedSizeLimit int64
-		expectError       bool
+		name                 string
+		spyglassConfig       string
+		expectedViewers      map[string][]string
+		expectedRegexMatches map[string][]string
+		expectedSizeLimit    int64
+		expectError          bool
 	}{
 		{
 			name: "Default: build log, metadata, junit",
@@ -56,8 +57,41 @@ deck:
 				"build-log.txt":              {"build-log-viewer"},
 				"artifacts/junit.*\\.xml":    {"junit-viewer"},
 			},
+			expectedRegexMatches: map[string][]string{
+				"started.json|finished.json": {"started.json", "finished.json"},
+				"build-log.txt":              {"build-log.txt"},
+				"artifacts/junit.*\\.xml":    {"artifacts/junit01.xml", "artifacts/junit_runner.xml"},
+			},
 			expectedSizeLimit: 500e6,
 			expectError:       false,
+		},
+		{
+			name: "Invalid spyglass size limit",
+			spyglassConfig: `
+deck:
+  spyglass:
+    size_limit: -4
+    viewers:
+      "started.json|finished.json":
+      - "metadata-viewer"
+      "build-log.txt":
+      - "build-log-viewer"
+      "artifacts/junit.*\\.xml":
+      - "junit-viewer"
+`,
+			expectError: true,
+		},
+		{
+			name: "Invalid Spyglass regexp",
+			spyglassConfig: `
+deck:
+  spyglass:
+    size_limit: 5
+    viewers:
+      "started.json\|]finished.json":
+      - "metadata-viewer"
+`,
+			expectError: true,
 		},
 	}
 	for _, tc := range testCases {
@@ -86,6 +120,7 @@ deck:
 			expected, ok := tc.expectedViewers[re]
 			if !ok {
 				t.Errorf("With re %s, got %s, was not found in expected.", re, viewNames)
+				continue
 			}
 			if !reflect.DeepEqual(expected, viewNames) {
 				t.Errorf("With re %s, got %s, expected view name %s", re, viewNames, expected)
@@ -96,10 +131,25 @@ deck:
 			gotNames, ok := got[re]
 			if !ok {
 				t.Errorf("With re %s, expected %s, was not found in got.", re, viewNames)
+				continue
 			}
 			if !reflect.DeepEqual(gotNames, viewNames) {
 				t.Errorf("With re %s, got %s, expected view name %s", re, gotNames, viewNames)
 			}
+		}
+
+		for expectedRegex, matches := range tc.expectedRegexMatches {
+			compiledRegex, ok := cfg.Deck.Spyglass.RegexCache[expectedRegex]
+			if !ok {
+				t.Errorf("tc %s, regex %s was not found in the spyglass regex cache", tc.name, expectedRegex)
+				continue
+			}
+			for _, match := range matches {
+				if !compiledRegex.MatchString(match) {
+					t.Errorf("tc %s expected compiled regex %s to match %s, did not match.", tc.name, expectedRegex, match)
+				}
+			}
+
 		}
 		if cfg.Deck.Spyglass.SizeLimit != tc.expectedSizeLimit {
 			t.Errorf("%s expected SizeLimit %d, got %d", tc.name, tc.expectedSizeLimit, cfg.Deck.Spyglass.SizeLimit)

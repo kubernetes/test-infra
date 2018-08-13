@@ -16,8 +16,11 @@ limitations under the License.
 
 package junit
 
-const tmplt = `
-{{$numF := len .Failed}}
+import (
+	"html/template"
+)
+
+var junitTemplateText = `{{$numF := len .Failed}}
 {{$numP := len .Passed}}
 {{$numS := len .Skipped}}
 <div id="junit-container">
@@ -116,6 +119,6 @@ const tmplt = `
     </table>
   </div>
   {{end}}
-</div>
+</div>`
 
-`
+var junitTemplate = template.Must(template.New("junit").Parse(junitTemplateText))

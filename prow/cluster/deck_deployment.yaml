@@ -46,6 +46,7 @@ spec:
         - --redirect-http-to=prow.k8s.io
         - --oauth-url=/github-login
         - --job-config-path=/etc/job-config
+        - --spyglass=true
         volumeMounts:
         - name: oauth-config
           mountPath: /etc/github

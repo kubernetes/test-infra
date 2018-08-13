@@ -220,12 +220,15 @@ type Sinker struct {
 	MaxPodAge time.Duration `json:"-"`
 }
 
-// Spyglass hold config for Spyglass
+// Spyglass holds config for Spyglass
 type Spyglass struct {
-	// Viewers is a map of Regexp to viewer names that defines which sets
-	// of artifacts need to be consumed by which viewers
+	// Viewers is a map of Regexp strings to viewer names that defines which sets
+	// of artifacts need to be consumed by which viewers. The keys are compiled
+	// and stored in RegexCache at load time.
 	Viewers map[string][]string `json:"viewers,omitempty"`
-	// SizeLimit is the max size artifact that Spyglass will attempt to
+	// RegexCache is a map of viewer regexp strings to their compiled equivalents.
+	RegexCache map[string]*regexp.Regexp `json:"-"`
+	// SizeLimit is the max size artifact in bytes that Spyglass will attempt to
 	// read in entirety. This will only affect viewers attempting to use
 	// artifact.ReadAll(). To exclude outlier artifacts, set this limit to
 	// expected file size + variance. To include all artifacts with high
@@ -768,8 +771,19 @@ func parseProwConfig(c *Config) error {
 		c.Deck.TideUpdatePeriod = period
 	}
 
-	if c.Deck.Spyglass.SizeLimit <= 0 {
+	if c.Deck.Spyglass.SizeLimit == 0 {
 		c.Deck.Spyglass.SizeLimit = 100e6
+	} else if c.Deck.Spyglass.SizeLimit <= 0 {
+		return fmt.Errorf("invalid value for deck.spyglass.size_limit, must be >=0")
+	}
+
+	c.Deck.Spyglass.RegexCache = make(map[string]*regexp.Regexp)
+	for k := range c.Deck.Spyglass.Viewers {
+		r, err := regexp.Compile(k)
+		if err != nil {
+			return fmt.Errorf("cannot compile regexp %s, err: %v", k, err)
+		}
+		c.Deck.Spyglass.RegexCache[k] = r
 	}
 
 	if c.PushGateway.IntervalString == "" {

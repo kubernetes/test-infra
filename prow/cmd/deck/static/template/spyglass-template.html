@@ -69,7 +69,7 @@
       function createBody(viewName, viewData) {
         var body = new Object();
         body.name = viewName;
-        body.viewerCache = viewerCache;
+        body.viewMatches = viewerCache[viewName];
         body.viewData = viewData;
         return JSON.stringify(body);
       }

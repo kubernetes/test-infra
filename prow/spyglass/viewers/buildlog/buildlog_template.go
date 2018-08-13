@@ -16,8 +16,11 @@ limitations under the License.
 
 package buildlog
 
-const tmplt = `
-<style>
+import (
+	"html/template"
+)
+
+var buildLogTemplateText = `<style>
 .loglines {
 	list-style-type: none;
 	padding: 0;
@@ -39,3 +42,4 @@ const tmplt = `
   {{end}}
   {{end}}
 </div>`
+var buildLogTemplate = template.Must(template.New("build-log").Parse(buildLogTemplateText))

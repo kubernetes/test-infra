@@ -19,9 +19,6 @@ package junit
 
 import (
 	"bytes"
-	"fmt"
-
-	"html/template"
 
 	junit "github.com/joshdk/go-junit"
 	"github.com/sirupsen/logrus"
@@ -42,6 +39,7 @@ func init() {
 	}, ViewHandler)
 }
 
+// TestResult holds data about a test extracted from junit output
 type TestResult struct {
 	Junit junit.Test
 	Link  string
@@ -96,8 +94,7 @@ func ViewHandler(artifacts []viewers.Artifact, raw string) string {
 	}
 
 	var buf bytes.Buffer
-	t := template.Must(template.New(fmt.Sprintf("%sTemplate", name)).Parse(tmplt))
-	if err := t.Execute(&buf, jvd); err != nil {
+	if err := junitTemplate.Execute(&buf, jvd); err != nil {
 		logrus.WithError(err).Error("Error executing template.")
 	}
 

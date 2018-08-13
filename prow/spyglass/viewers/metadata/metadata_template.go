@@ -16,9 +16,11 @@ limitations under the License.
 
 package metadata
 
-const (
-	tmplt = `
-{{$passed := eq .Finished.Result "SUCCESS"}}
+import (
+	"html/template"
+)
+
+var metadataTemplateText = `{{$passed := eq .Finished.Result "SUCCESS"}}
 {{$failed := eq .Finished.Result "FAILURE" "FAILED"}}
 <style>
 .test-row {
@@ -108,49 +110,4 @@ const (
   </div>
 </div>`
 
-	tmpltv1 = `
-{{$passed := eq .Finished.Result "SUCCESS"}}
-{{$failed := eq .Finished.Result "FAILURE" "FAILED"}}
-<table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp metadata-table">
-  <tbody>
-    {{if $passed}}
-    <tr style="background-color:#00FF00;color:black;">
-    {{else if $failed}}
-    <tr style="background-color:#FF0000;color:white;">
-    {{else}}
-    <tr>
-    {{end}}
-      <td class="mdl-data-table__cell--non-numeric" style="font-weight:bold;font-size:1.25em;">Result</td>
-      <td class="mdl-data-table__cell--non-numeric" style="font-weight:bold;font-size:1.25em;">{{.Finished.Result}}</td>
-    </tr>
-    <tr>
-      <td class="mdl-data-table__cell--non-numeric">Tests</td>
-      <td class="mdl-data-table__cell--non-numeric">TODO</td>
-    </tr>
-    <tr>
-      <td class="mdl-data-table__cell--non-numeric">Started</td>
-      <td class="mdl-data-table__cell--non-numeric">{{.Started.Timestamp}}</td>
-    </tr>
-    <tr>
-      <td class="mdl-data-table__cell--non-numeric">Elapsed</td>
-      <td class="mdl-data-table__cell--non-numeric">{{.Derived.Elapsed}}</td>
-    </tr>
-    <tr>
-      <td class="mdl-data-table__cell--non-numeric">Version</td>
-      <td class="mdl-data-table__cell--non-numeric">{{.Finished.Version}}</td>
-    </tr>
-    <tr>
-      <td class="mdl-data-table__cell--non-numeric">Node</td>
-      <td class="mdl-data-table__cell--non-numeric">{{.Started.Node}}</td>
-    </tr>
-    <tr>
-      <td class="mdl-data-table__cell--non-numeric">Job Version</td>
-      <td class="mdl-data-table__cell--non-numeric">{{.Finished.JobVersion}}</td>
-    </tr>
-    {{range $k, $v := .Finished.Metadata}}<tr>
-      <td class="mdl-data-table__cell--non-numeric">{{$k}}</td>
-      <td class="mdl-data-table__cell--non-numeric">{{$v}}</td>
-    </tr>{{end}}
-  </tbody>
-</table>`
-)
+var metadataTemplate = template.Must(template.New("metadata").Parse(metadataTemplateText))

@@ -536,8 +536,6 @@ function redraw(fz) {
 
         r.appendChild(createTimeCell(i, parseInt(build.started)));
         r.appendChild(createTextCell(build.duration));
-        // TODO: Uncomment this when ready to deploy Spyglass to the main Deck UI
-        // r.appendChild(createLinkCell("View", gubernatorToSpyglass(build.job, build.build_id), "")) 
         builds.appendChild(r);
     }
     const jobCount = document.getElementById("job-count");
