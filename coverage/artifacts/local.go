@@ -5,8 +5,8 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"strings"
 	"path"
+	"strings"
 )
 
 type LocalArtifacts struct {
@@ -22,6 +22,7 @@ func NewLocalArtifacts(directory string, ProfileName string,
 		CovStdoutName)}
 }
 
+// ProfileReader create and returns a ProfileReader by opening the file stored in profile path
 func (arts *LocalArtifacts) ProfileReader() *ProfileReader {
 	f, err := os.Open(arts.ProfilePath())
 	if err != nil {
@@ -35,15 +36,18 @@ func (arts *LocalArtifacts) ProfileName() string {
 	return arts.profileName
 }
 
+// KeyProfileCreator creates a key profile file that will be used to hold a
+// filtered version of coverage profile that only stores the entries that
+// will be displayed by line coverage tool
 func (arts *LocalArtifacts) KeyProfileCreator() *os.File {
 	keyProfilePath := arts.KeyProfilePath()
-	filteredProfileFile, err := os.Create(keyProfilePath)
+	keyProfileFile, err := os.Create(keyProfilePath)
 	log.Printf("os.Create(keyProfilePath)=%s", keyProfilePath)
 	if err != nil {
 		logUtil.LogFatalf("file(%s) creation error: %v", keyProfilePath, err)
 	}
 
-	return filteredProfileFile
+	return keyProfileFile
 }
 
 // ProduceProfileFile produce coverage profile (&its stdout) by running go test on target package
@@ -58,7 +62,7 @@ func (arts *LocalArtifacts) ProduceProfileFile(covTargetsStr string) {
 	// convert targets from a single string to a lists of strings
 	var covTargets []string
 	for _, target := range strings.Split(covTargetsStr, " ") {
-		covTargets = append(covTargets, "./" + path.Join(target, "..."))
+		covTargets = append(covTargets, "./"+path.Join(target, "..."))
 	}
 	log.Printf("covTargets = %v\n", covTargets)
 

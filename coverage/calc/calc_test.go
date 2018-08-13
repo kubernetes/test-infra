@@ -1,9 +1,9 @@
 package calc
 
 import (
+	"github.com/kubernetes/test-infra/coverage/artifacts/artsTest"
 	"github.com/kubernetes/test-infra/coverage/test"
 	"testing"
-	"github.com/kubernetes/test-infra/coverage/artifacts/artsTest"
 )
 
 func TestReadLocalProfile(t *testing.T) {

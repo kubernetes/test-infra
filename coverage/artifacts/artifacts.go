@@ -1,3 +1,5 @@
+//package artifacts is responsible for generating and structuring artifacts
+// directory
 package artifacts
 
 import (

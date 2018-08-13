@@ -1,3 +1,6 @@
+// package gcs stores functions that relates to GCS operations,
+// without dependency on the package calc
+
 package gcs
 
 import (
@@ -15,6 +18,7 @@ const (
 	gcsUrlHost = "storage.cloud.google.com/"
 )
 
+// DoesObjectExist checks whether an object exists in GCS bucket
 func (client StorageClient) DoesObjectExist(ctx context.Context, bucket, object string) bool {
 	_, err := client.Bucket(bucket).Object(object).Attrs(ctx)
 	if err != nil {
@@ -46,7 +50,8 @@ func NewStorageClient(ctx context.Context) *StorageClient {
 	return &StorageClient{*client}
 }
 
-func (client *StorageClient) ListGcsObjects(ctx context.Context, bucketName, prefix, delim string) (objects []string) {
+func (client *StorageClient) ListGcsObjects(ctx context.Context, bucketName,
+	prefix, delim string) (objects []string) {
 	it := client.Bucket(bucketName).Objects(ctx, &storage.Query{
 		Prefix:    prefix,
 		Delimiter: delim,

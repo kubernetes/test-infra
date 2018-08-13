@@ -2,11 +2,11 @@ package artifacts
 
 import (
 	covIo "github.com/kubernetes/test-infra/coverage/io"
+	"github.com/kubernetes/test-infra/coverage/logUtil"
 	"io"
 	"log"
 	"os"
 	"os/exec"
-	"github.com/kubernetes/test-infra/coverage/logUtil"
 )
 
 type ProfileReader struct {
@@ -17,7 +17,8 @@ func NewProfileReader(reader io.ReadCloser) *ProfileReader {
 	return &ProfileReader{reader}
 }
 
-// runProfiling returns coverage profile (&its stdout) by running go test on target package
+// runProfiling writes coverage profile (&its stdout) by running go test on
+// target package
 func runProfiling(covTargets []string, localArts *LocalArtifacts) {
 	log.Println("\nStarts calc.runProfiling(...)")
 

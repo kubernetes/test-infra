@@ -1,11 +1,11 @@
 package io
 
 import (
+	"github.com/kubernetes/test-infra/coverage/test"
 	"io/ioutil"
 	"log"
 	"path"
 	"testing"
-	"github.com/kubernetes/test-infra/coverage/test"
 )
 
 func TestWriteToArtifacts(t *testing.T) {

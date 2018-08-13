@@ -1,4 +1,5 @@
-// variables & objects for external packages to use as fakes
+// package calcTestExports stores calc functions for tests,
+// used by other packages
 package calcTestExports
 
 import (
@@ -11,5 +12,4 @@ func CovList() *calc.CoverageList {
 	covList := calc.CovList(arts.ProfileReader(), nil, nil, 50)
 	covList.Report(true)
 	return covList
-
 }

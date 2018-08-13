@@ -31,6 +31,7 @@ func (g *CoverageList) CovThresInt() int {
 	return g.covThresholdInt
 }
 
+// writeToFile writes file level coverage in a file
 func (g *CoverageList) writeToFile(filePath string) {
 	f, err := os.Create(filePath)
 	if err != nil {
@@ -66,6 +67,7 @@ func (g *CoverageList) Percentage() string {
 	return str.PercentStr(ratio)
 }
 
+// Summarize summarizes all items in the group and stores the result
 func (g *CoverageList) Summarize() {
 	for _, item := range g.group {
 		g.nCoveredStmts += item.nCoveredStmts
@@ -73,6 +75,8 @@ func (g *CoverageList) Summarize() {
 	}
 }
 
+// hasCoverageBelowThreshold checks whether any item in the list has a
+// coverage below the threshold
 func (g *CoverageList) hasCoverageBelowThreshold(threshold float32) bool {
 	for _, item := range g.group {
 		ratio, err := item.Ratio()
@@ -107,6 +111,8 @@ func (g *CoverageList) Subset(prefix string) *CoverageList {
 	return s
 }
 
+// Map returns maps the file name to its coverage for faster retrieval
+// & membership check
 func (g *CoverageList) Map() map[string]Coverage {
 	m := make(map[string]Coverage)
 	for _, c := range g.group {

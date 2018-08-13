@@ -1,3 +1,5 @@
+// package artsTest stores artifacts functions for tests,
+// used by other packages
 package artsTest
 
 import (
@@ -6,8 +8,8 @@ import (
 )
 
 type LocalArtifacts = artifacts.LocalArtifacts
-var NewArtifacts = artifacts.NewArtifacts
 
+var NewArtifacts = artifacts.NewArtifacts
 
 func LocalArtsForTest(dirPrefix string) *LocalArtifacts {
 	return &LocalArtifacts{Artifacts: *NewArtifacts(

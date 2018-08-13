@@ -1,10 +1,10 @@
 package test
 
 import (
+	"io/ioutil"
 	"log"
 	"os"
 	"path"
-	"io/ioutil"
 )
 
 func DeleteDir(dir string) {

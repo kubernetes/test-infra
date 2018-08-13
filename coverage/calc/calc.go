@@ -1,17 +1,19 @@
-/*
-
- */
-
+// package calc calculates coverage through summarizing and also stores all
+// the coverage structs used by or produced by the process
 package calc
 
 import (
-	"bufio"
-	"fmt"
 	"github.com/kubernetes/test-infra/coverage/artifacts"
-	"log"
 	"os"
+	"bufio"
+	"log"
+	"fmt"
 )
 
+// CovList read profiling information from reader and constructs CoverageList.
+// If called in presubmit, it also creates a filtered version of profile,
+// that only includes files in corresponding github commit,
+// less those files that are excluded from coverage calculation
 func CovList(f *artifacts.ProfileReader, keyProfileFile *os.File,
 	concernedFiles *map[string]bool, covThresInt int) (g *CoverageList) {
 
@@ -46,6 +48,7 @@ func CovList(f *artifacts.ProfileReader, keyProfileFile *os.File,
 	return
 }
 
+// writeLine writes a line in the given file, if the file pointer is not nil
 func writeLine(file *os.File, content string) {
 	if file != nil {
 		fmt.Fprintln(file, content)

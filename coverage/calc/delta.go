@@ -54,14 +54,6 @@ type GroupChanges struct {
 	NewGroup  *CoverageList
 }
 
-func (changes *GroupChanges) writeToFile() {
-	fileName := "Pre-submit_Incr_Cov.txt"
-
-	f, _ := os.Create(fileName)
-	for _, c := range changes.Changed {
-		fmt.Fprintln(f, c.String())
-	}
-}
 
 func sorted(m map[string]Coverage) (result []Coverage) {
 	var keys []string
@@ -76,11 +68,13 @@ func sorted(m map[string]Coverage) (result []Coverage) {
 	return
 }
 
-func NewGroupChanges(baseGroup *CoverageList, newGroup *CoverageList) *GroupChanges {
+// NewGroupChanges compares the newList of coverage against the base list and
+// returns the result
+func NewGroupChanges(baseList *CoverageList, newList *CoverageList) *GroupChanges {
 	var added, unchanged []Coverage
 	var changed []Incremental
-	baseFilesMap := baseGroup.Map()
-	for _, newCov := range newGroup.group {
+	baseFilesMap := baseList.Map()
+	for _, newCov := range newList.group {
 		newCovName := newCov.Name()
 		baseCov, ok := baseFilesMap[newCovName]
 		isNewFile := false
@@ -104,10 +98,14 @@ func NewGroupChanges(baseGroup *CoverageList, newGroup *CoverageList) *GroupChan
 	}
 
 	return &GroupChanges{Added: added, Deleted: sorted(baseFilesMap), Unchanged: unchanged,
-		Changed: changed, BaseGroup: baseGroup, NewGroup: newGroup}
+		Changed: changed, BaseGroup: baseList, NewGroup: newList}
 }
 
-func (changes *GroupChanges) processChangedFiles(githubFilePaths *map[string]bool, rows *[]string, isEmpty, isCoverageLow *bool) {
+// processChangedFiles checks each entry in GroupChanges and see if it is
+// include in the github commit. If yes, then include that in the covbot report
+func (changes *GroupChanges) processChangedFiles(
+	githubFilePaths *map[string]bool, rows *[]string, isEmpty,
+	isCoverageLow *bool) {
 	log.Printf("\nFinding joining set of changed files from profile[count=%d"+
 		"] & github\n", len(changes.Changed))
 	covThres := changes.NewGroup.covThresholdInt
@@ -134,23 +132,27 @@ func (inc Incremental) filePathWithHyperlink(filepath string) string {
 	return fmt.Sprintf("[%s](%s)", filepath, inc.new.lineCovLink)
 }
 
+// githubBotRow returns a string as the content of a row covbot posts
 func (inc Incremental) githubBotRow(index int, filepath string) string {
 	return fmt.Sprintf("%s | %s | %s | %s",
-		inc.filePathWithHyperlink(filepath), inc.oldCovForCovbot(), inc.new.Percentage(), inc.deltaForCovbot())
+		inc.filePathWithHyperlink(filepath), inc.oldCovForCovbot(),
+		inc.new.Percentage(), inc.deltaForCovbot())
 }
 
-func (changes *GroupChanges) ContentForGithubPost(githubFilePaths *map[string]bool) (res string, isEmpty, isCoverageLow bool) {
+// ContentForGithubPost constructs the message covbot posts
+func (changes *GroupChanges) ContentForGithubPost(files *map[string]bool) (
+	res string, isEmpty, isCoverageLow bool) {
 	jobName := os.Getenv("JOB_NAME")
 	rows := []string{
 		"The following is the coverage report on pkg/.",
-		fmt.Sprintf(" Say `/test %s` to run the coverage report again", jobName),
+		fmt.Sprintf("Say `/test %s` to re-run this coverage report", jobName),
 		"",
 		"File | Old Coverage | New Coverage | Delta",
 		"---- |:------------:|:------------:|:-----:",
 	}
 
-	fmt.Printf("\n%d files changed, reported by github:\n", len(*githubFilePaths))
-	for githubFilePath := range *githubFilePaths {
+	fmt.Printf("\n%d files changed, reported by github:\n", len(*files))
+	for githubFilePath := range *files {
 		fmt.Printf("%s\t", githubFilePath)
 	}
 	fmt.Printf("\n\n")
@@ -158,7 +160,7 @@ func (changes *GroupChanges) ContentForGithubPost(githubFilePaths *map[string]bo
 	isEmpty = true
 	isCoverageLow = false
 
-	changes.processChangedFiles(githubFilePaths, &rows, &isEmpty, &isCoverageLow)
+	changes.processChangedFiles(files, &rows, &isEmpty, &isCoverageLow)
 
 	rows = append(rows, "")
 
