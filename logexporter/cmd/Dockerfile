@@ -15,10 +15,13 @@
 # This file builds an image for the log exporter tool. For more info,
 # have a look at the tool's README.md file.
 
-FROM python:2.7-alpine
+# Base image must have 'journalctl' binary.
+FROM fedora
 LABEL maintainer="Shyam Jeedigunta <shyamjvs@google.com>"
 
 # Setup gcloud SDK for using gsutil.
+RUN dnf -y -q install which
+RUN dnf -y -q install python27
 ADD ["https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz", \
      "/workspace/"]
 ENV PATH=/google-cloud-sdk/bin:/workspace:${PATH} \
