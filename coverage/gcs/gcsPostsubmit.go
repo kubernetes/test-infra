@@ -2,7 +2,7 @@ package gcs
 
 import (
 	"context"
-	util "github.com/kubernetes/test-infra/coverage/artifacts"
+	"github.com/kubernetes/test-infra/coverage/artifacts"
 	"github.com/kubernetes/test-infra/coverage/logUtil"
 	"log"
 	"path"
@@ -74,7 +74,7 @@ func (p *PostSubmit) dirOfArtifacts(build int) (result string) {
 }
 
 func (p *PostSubmit) dirOfCompletionMarker(build int) (result string) {
-	return path.Join(p.dirOfArtifacts(build), util.CovProfileCompletionMarker)
+	return path.Join(p.dirOfArtifacts(build), artifacts.CovProfileCompletionMarker)
 }
 
 func (p *PostSubmit) isBuildHealthy(build int) bool {
@@ -103,7 +103,7 @@ func (p *PostSubmit) searchForLatestHealthyBuild() int {
 }
 
 // ProfileReader returns the reader for the most recent healthy profile
-func (p *PostSubmit) ProfileReader() *util.ProfileReader {
+func (p *PostSubmit) ProfileReader() *artifacts.ProfileReader {
 	profilePath := p.pathToGoodCoverageProfile()
 	log.Printf("Reading base (master) coverage from <%s>...\n", profilePath)
 	return p.StorageClient.ProfileReader(p.Ctx, p.Bucket, profilePath)

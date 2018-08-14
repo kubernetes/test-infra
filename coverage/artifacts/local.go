@@ -15,7 +15,7 @@ type LocalArtifacts struct {
 
 func NewLocalArtifacts(directory string, ProfileName string,
 	KeyProfileName string, CovStdoutName string) *LocalArtifacts {
-	return &LocalArtifacts{*NewArtifacts(
+	return &LocalArtifacts{*New(
 		directory,
 		ProfileName,
 		KeyProfileName,

@@ -1,0 +1,33 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["artsTest.go"],
+    importpath = "k8s.io/test-infra/coverage/artifacts/artsTest",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/kubernetes/test-infra/coverage/artifacts:go_default_library",
+        "//vendor/github.com/kubernetes/test-infra/coverage/test:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["artsTest_test.go"],
+    embed = [":go_default_library"],
+    deps = ["//vendor/github.com/kubernetes/test-infra/coverage/test:go_default_library"],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

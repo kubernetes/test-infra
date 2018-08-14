@@ -1,0 +1,77 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "main.go",
+        "presubmit.go",
+    ],
+    importpath = "k8s.io/test-infra/coverage",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//vendor/github.com/kubernetes/test-infra/coverage/artifacts:go_default_library",
+        "//vendor/github.com/kubernetes/test-infra/coverage/calc:go_default_library",
+        "//vendor/github.com/kubernetes/test-infra/coverage/gcs:go_default_library",
+        "//vendor/github.com/kubernetes/test-infra/coverage/githubUtil:go_default_library",
+        "//vendor/github.com/kubernetes/test-infra/coverage/githubUtil/githubPr:go_default_library",
+        "//vendor/github.com/kubernetes/test-infra/coverage/io:go_default_library",
+        "//vendor/github.com/kubernetes/test-infra/coverage/line:go_default_library",
+        "//vendor/github.com/kubernetes/test-infra/coverage/logUtil:go_default_library",
+        "//vendor/github.com/kubernetes/test-infra/coverage/testgrid:go_default_library",
+    ],
+)
+
+go_binary(
+    name = "coverage",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "main_test.go",
+        "presubmit_test.go",
+    ],
+    data = glob(["testdata/**"]),
+    embed = [":go_default_library"],
+    deps = [
+        "//vendor/github.com/kubernetes/test-infra/coverage/artifacts/artsTest:go_default_library",
+        "//vendor/github.com/kubernetes/test-infra/coverage/gcs:go_default_library",
+        "//vendor/github.com/kubernetes/test-infra/coverage/gcs/gcsFakes:go_default_library",
+        "//vendor/github.com/kubernetes/test-infra/coverage/githubUtil/githubFakes:go_default_library",
+        "//vendor/github.com/kubernetes/test-infra/coverage/githubUtil/githubPr:go_default_library",
+        "//vendor/github.com/kubernetes/test-infra/coverage/test:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//coverage/artifacts:all-srcs",
+        "//coverage/calc:all-srcs",
+        "//coverage/gcs:all-srcs",
+        "//coverage/git:all-srcs",
+        "//coverage/githubUtil:all-srcs",
+        "//coverage/io:all-srcs",
+        "//coverage/line:all-srcs",
+        "//coverage/logUtil:all-srcs",
+        "//coverage/str:all-srcs",
+        "//coverage/test:all-srcs",
+        "//coverage/testTarget/presubmit:all-srcs",
+        "//coverage/testTarget/subPkg1:all-srcs",
+        "//coverage/testTarget/subPkg2:all-srcs",
+        "//coverage/testTarget/targetPkgs_postsubmit:all-srcs",
+        "//coverage/testgrid:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

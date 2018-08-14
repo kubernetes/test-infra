@@ -9,7 +9,7 @@ import (
 
 type LocalArtifacts = artifacts.LocalArtifacts
 
-var NewArtifacts = artifacts.NewArtifacts
+var NewArtifacts = artifacts.New
 
 func LocalArtsForTest(dirPrefix string) *LocalArtifacts {
 	return &LocalArtifacts{Artifacts: *NewArtifacts(
@@ -21,7 +21,7 @@ func LocalArtsForTest(dirPrefix string) *LocalArtifacts {
 }
 
 func LocalInputArtsForTest() *artifacts.LocalArtifacts {
-	return &artifacts.LocalArtifacts{Artifacts: *artifacts.NewArtifacts(
+	return &artifacts.LocalArtifacts{Artifacts: *artifacts.New(
 		test.InputArtifactsDir,
 		"cov-profile.txt",
 		"key-cov-profile.txt",
@@ -30,7 +30,7 @@ func LocalInputArtsForTest() *artifacts.LocalArtifacts {
 }
 
 func LocalArtsForTest_KeyfileNotExist(dirPrefix string) *artifacts.LocalArtifacts {
-	return &artifacts.LocalArtifacts{Artifacts: *artifacts.NewArtifacts(
+	return &artifacts.LocalArtifacts{Artifacts: *artifacts.New(
 		test.NewArtsDir(dirPrefix),
 		test.ProfileName,
 		"key-cov-profile-dne.txt",

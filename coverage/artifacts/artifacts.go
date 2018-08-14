@@ -1,4 +1,4 @@
-//package artifacts is responsible for generating and structuring artifacts
+// Package artifacts is responsible for generating and structuring artifacts
 // directory
 package artifacts
 
@@ -12,7 +12,7 @@ const (
 	LineCovFileName            = "line-cov.html"
 )
 
-type ArtifactsIntf interface {
+type Intf interface {
 	ProfilePath() string
 	KeyProfilePath() string
 	ProfileReader() *ProfileReader
@@ -25,7 +25,7 @@ type Artifacts struct {
 	covStdoutName  string
 }
 
-func NewArtifacts(directory string, profileName string, keyProfileName string,
+func New(directory string, profileName string, keyProfileName string,
 	covStdoutName string) *Artifacts {
 	return &Artifacts{
 		directory,

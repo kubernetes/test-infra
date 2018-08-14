@@ -38,7 +38,7 @@ func TestProfiling(t *testing.T) {
 }
 
 func localArtsForTest(dirPrefix string) *LocalArtifacts {
-	return &LocalArtifacts{Artifacts: *NewArtifacts(
+	return &LocalArtifacts{Artifacts: *New(
 		test.NewArtsDir(dirPrefix),
 		"cov-profile.txt",
 		"key-cov-profile.txt",
