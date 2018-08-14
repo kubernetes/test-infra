@@ -3820,6 +3820,112 @@ dashboards:
   - name: periodic-kubernetes-e2e-packages-pushed
     test_group_name: periodic-kubernetes-e2e-packages-pushed
 
+- name: sig-release-1.12-all
+  dashboard_tab:
+  - name: build-1.12
+    test_group_name: ci-kubernetes-build-beta
+  - name: verify-1.12
+    test_group_name: ci-kubernetes-verify-beta
+  - name: integration-1.12
+    test_group_name: ci-kubernetes-integration-beta
+  - name: gce-1.12
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
+  - name: gce-reboot-1.12
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-reboot
+  - name: gce-serial-1.12
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-serial
+  - name: gce-slow-1.12
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-slow
+  - name: gce-ingress-1.12
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-ingress
+  - name: gce-alpha-features-1.12
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures
+  - name: gke-1.12
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-default
+  - name: gke-reboot-1.12
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-reboot
+  - name: gci-gce-soak-1.12
+    test_group_name: ci-kubernetes-soak-gci-gce-beta
+  - name: gke-serial-1.12
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-serial
+  - name: gke-slow-1.12
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-slow
+  - name: gke-ingress-1.12
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
+  - name: gce-device-plugin-gpu-1.12
+    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
+  - name: gke-device-plugin-gpu-1.12
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
+  - name: gke-device-plugin-gpu-p100-1.12
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
+  - name: kops-aws-1.12
+    test_group_name: ci-kubernetes-e2e-kops-aws-beta
+  - name: kubelet-1.12
+    test_group_name: ci-kubernetes-node-kubelet-beta
+  - name: kubelet-1.12-features
+    test_group_name: ci-kubernetes-node-kubelet-beta-features
+  - name: gce-scalability-1.12
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-beta
+  - name: bazel-build-1.12
+    test_group_name: ci-kubernetes-bazel-build-1-12
+  - name: bazel-test-1.12
+    test_group_name: ci-kubernetes-bazel-test-1-12
+  - name: periodic-bazel-build-1.12
+    test_group_name: periodic-kubernetes-bazel-build-1-12
+  - name: periodic-bazel-test-1.12
+    test_group_name: periodic-kubernetes-bazel-test-1-12
+
+- name: sig-release-1.12-blocking
+  dashboard_tab:
+  - name: build-1.12
+    test_group_name: ci-kubernetes-build-beta
+  - name: verify-1.12
+    test_group_name: ci-kubernetes-verify-beta
+  - name: integration-1.12
+    test_group_name: ci-kubernetes-integration-beta
+  - name: gce-1.12
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
+  - name: gce-reboot-1.12
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-reboot
+  - name: gce-serial-1.12
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-serial
+  - name: gce-slow-1.12
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-slow
+  - name: gce-ingress-1.12
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-ingress
+  - name: gce-alpha-features-1.12
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures
+  - name: gke-1.12
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-default
+  - name: gke-reboot-1.12
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-reboot
+  - name: gke-serial-1.12
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-serial
+  - name: gke-slow-1.12
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-slow
+  - name: gke-ingress-1.12
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
+  - name: gce-device-plugin-gpu-1.12
+    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
+  - name: gke-device-plugin-gpu-1.12
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
+  - name: gke-device-plugin-gpu-p100-1.12
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
+  - name: kops-aws-1.12
+    test_group_name: ci-kubernetes-e2e-kops-aws-beta
+  - name: kubelet-1.12
+    test_group_name: ci-kubernetes-node-kubelet-beta
+  - name: gce-scalability-1.12
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-beta
+  - name: bazel-build-1.12
+    test_group_name: ci-kubernetes-bazel-build-1-12
+  - name: bazel-test-1.12
+    test_group_name: ci-kubernetes-bazel-test-1-12
+  - name: periodic-bazel-build-1.12
+    test_group_name: periodic-kubernetes-bazel-build-1-12
+  - name: periodic-bazel-test-1.12
+    test_group_name: periodic-kubernetes-bazel-test-1-12
+
 - name: sig-release-1.11-all
   dashboard_tab:
   - name: build-1.11
