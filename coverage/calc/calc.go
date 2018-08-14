@@ -3,11 +3,11 @@
 package calc
 
 import (
-	"github.com/kubernetes/test-infra/coverage/artifacts"
-	"os"
 	"bufio"
-	"log"
 	"fmt"
+	"github.com/kubernetes/test-infra/coverage/artifacts"
+	"log"
+	"os"
 )
 
 // CovList read profiling information from reader and constructs CoverageList.

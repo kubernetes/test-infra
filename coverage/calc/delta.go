@@ -54,7 +54,6 @@ type GroupChanges struct {
 	NewGroup  *CoverageList
 }
 
-
 func sorted(m map[string]Coverage) (result []Coverage) {
 	var keys []string
 	for k := range m {
