@@ -147,8 +147,25 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 		return nil
 	}
 
+	cherryPickMatches := cherryPickRe.FindAllStringSubmatch(ic.Comment.Body, -1)
+	if len(cherryPickMatches) == 0 || len(cherryPickMatches[0]) != 2 {
+		return nil
+	}
+
 	org := ic.Repo.Owner.Login
 	repo := ic.Repo.Name
+
+	targets := parseCommentArguments(strings.TrimSpace(cherryPickMatches[0][1]))
+	if _, exists := targets["org"]; exists {
+		org = targets["org"]
+	}
+
+	if _, exists := targets["repo"]; exists {
+		repo = targets["repo"]
+	}
+
+	// targets["branch"] will never be empty.
+	targetBranch := targets["branch"]
 	num := ic.Issue.Number
 	commentAuthor := ic.Comment.User.Login
 
@@ -157,12 +174,6 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 		github.RepoLogField: repo,
 		github.PrLogField:   num,
 	})
-
-	cherryPickMatches := cherryPickRe.FindAllStringSubmatch(ic.Comment.Body, -1)
-	if len(cherryPickMatches) == 0 || len(cherryPickMatches[0]) != 2 {
-		return nil
-	}
-	targetBranch := strings.TrimSpace(cherryPickMatches[0][1])
 
 	if ic.Issue.State != "closed" {
 		if !s.allowAll {
@@ -177,7 +188,7 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 				return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(ic.Comment, resp))
 			}
 		}
-		resp := fmt.Sprintf("once the present PR merges, I will cherry-pick it on top of %s in a new PR and assign it to you.", targetBranch)
+		resp := fmt.Sprintf("once the present PR merges, I will cherry-pick it on top of %s/%s#%s in a new PR and assign it to you.", org, repo, targetBranch)
 		s.log.WithFields(l.Data).Info(resp)
 		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(ic.Comment, resp))
 	}
@@ -491,4 +502,22 @@ func (s *Server) getPatch(org, repo, targetBranch string, num int) (string, erro
 
 func normalize(input string) string {
 	return strings.Replace(input, "/", "-", -1)
+}
+
+func parseCommentArguments(args string) map[string]string {
+	targets := make(map[string]string, 3)
+
+	if regexp.MustCompile("(.*)/(.*)#(.*)").MatchString(args) {
+		orgRepo := strings.Split(args, "#")[0]
+		targets["org"] = strings.Split(orgRepo, "/")[0]
+		targets["repo"] = strings.Split(orgRepo, "/")[1]
+		targets["branch"] = strings.Split(args, "#")[1]
+
+	} else if regexp.MustCompile("(.*)#(.*)").MatchString(args) {
+		targets["repo"] = strings.Split(args, "#")[0]
+		targets["branch"] = strings.Split(args, "#")[1]
+	} else {
+		targets["branch"] = args
+	}
+	return targets
 }

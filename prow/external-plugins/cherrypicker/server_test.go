@@ -18,6 +18,7 @@ package main
 
 import (
 	"fmt"
+	"reflect"
 	"sync"
 	"testing"
 
@@ -373,5 +374,29 @@ func TestCherryPickPR(t *testing.T) {
 	}
 	if len(seenBranches) != 2 {
 		t.Fatalf("Expected to see PRs for %d branches, got %d (%v)", 2, len(seenBranches), seenBranches)
+	}
+}
+
+func TestParseCommentArguments(t *testing.T) {
+	testCases := []string{
+		"openshift/origin#master",
+		"origin#master",
+		"branch/name",
+		"master",
+		"org123/repo123#branch12345",
+	}
+	testCasesExpected := []map[string]string{
+		{"org": "openshift", "repo": "origin", "branch": "master"},
+		{"repo": "origin", "branch": "master"},
+		{"branch": "branch/name"},
+		{"branch": "master"},
+		{"org": "org123", "repo": "repo123", "branch": "branch12345"},
+	}
+
+	for num, testCase := range testCases {
+		targets := parseCommentArguments(testCase)
+		if !reflect.DeepEqual(targets, testCasesExpected[num]) {
+			t.Errorf("Expected %s but found %s ", testCasesExpected[num], targets)
+		}
 	}
 }
