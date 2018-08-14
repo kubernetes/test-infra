@@ -2140,8 +2140,14 @@ test_groups:
 - name: pull-cluster-api-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-test
   num_columns_recent: 20
+- name: pull-cluster-api-provider-aws-build
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-build
+  num_columns_recent: 20
 - name: pull-cluster-api-provider-aws-make
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-make
+  num_columns_recent: 20
+- name: pull-cluster-api-provider-aws-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-aws-test
   num_columns_recent: 20
 - name: pull-cluster-api-provider-gcp-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-provider-gcp-build
@@ -4994,8 +5000,12 @@ dashboards:
 
 - name: sig-cluster-lifecycle-cluster-api-provider-aws
   dashboard_tab:
+  - name: pr-build
+    test_group_name: pull-cluster-api-provider-aws-build
   - name: pr-make
     test_group_name: pull-cluster-api-provider-aws-make
+  - name: pr-test
+    test_group_name: pull-cluster-api-provider-aws-test
 
 - name: sig-cluster-lifecycle-cluster-api-provider-gcp
   dashboard_tab:
