@@ -204,8 +204,20 @@ func (c *Controller) ProcessChange(instance string, change gerrit.ChangeInfo) er
 		}
 
 		// TODO(krzyzacy): Support AlwaysRun and RunIfChanged
-		pj := pjutil.NewProwJob(pjutil.PresubmitSpec(spec, kr), map[string]string{})
+
+		pj := pjutil.NewProwJobWithAnnotation(
+			pjutil.PresubmitSpec(spec, kr),
+			map[string]string{
+				"gerrit-revision": change.CurrentRevision,
+			},
+			map[string]string{
+				"gerrit-id":       change.ID,
+				"gerrit-instance": instance,
+			},
+		)
+
 		logger.WithFields(pjutil.ProwJobFields(&pj)).Infof("Creating a new prowjob for change %s.", change.Number)
+
 		if _, err := c.kc.CreateProwJob(pj); err != nil {
 			logger.WithError(err).Errorf("fail to create prowjob %v", pj)
 		} else {
@@ -228,6 +240,7 @@ func (c *Controller) ProcessChange(instance string, change gerrit.ChangeInfo) er
 				// TODO(krzyzacy): gerrit path can be foo.googlesource.com/bar/baz, which means we took bar/baz as the repo
 				// we are mangling the path in bootstrap.py, we need to handle this better in podutils
 				url = strings.Replace(url, change.Project, strings.Replace(change.Project, "/", "_", -1), 1)
+				url = strings.Replace(url, change.Project, strings.Replace(change.Project, "//", "/", -1), 1)
 				url = strings.TrimSuffix(url, "//")
 			}
 			triggeredJobs = append(triggeredJobs, triggeredJob{Name: spec.Name, URL: url})

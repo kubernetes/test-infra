@@ -10,6 +10,7 @@ go_library(
         "//prow/client/clientset/versioned:go_default_library",
         "//prow/client/informers/externalversions:go_default_library",
         "//prow/crier:go_default_library",
+        "//prow/gerrit/client:go_default_library",
         "//prow/gerrit/reporter:go_default_library",
         "//prow/logrusutil:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",

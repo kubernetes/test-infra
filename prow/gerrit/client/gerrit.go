@@ -28,6 +28,32 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// ProjectsFlag is the flag type for gerrit projects when initializing a gerrit client
+type ProjectsFlag map[string][]string
+
+func (p ProjectsFlag) String() string {
+	var hosts []string
+	for host, repos := range p {
+		hosts = append(hosts, host+"="+strings.Join(repos, ","))
+	}
+	return strings.Join(hosts, " ")
+}
+
+// Set populates ProjectsFlag upon flag.Parse()
+func (p ProjectsFlag) Set(value string) error {
+	parts := strings.SplitN(value, "=", 2)
+	if len(parts) != 2 {
+		return fmt.Errorf("%s not in the form of host=repo-a,repo-b,etc", value)
+	}
+	host := parts[0]
+	if _, ok := p[host]; ok {
+		return fmt.Errorf("duplicate host: %s", host)
+	}
+	repos := strings.Split(parts[1], ",")
+	p[host] = repos
+	return nil
+}
+
 type gerritAuthentication interface {
 	SetCookieAuth(name, value string)
 }
