@@ -336,6 +336,7 @@ tide:
     kubernetes-sigs/cluster-api-provider-openstack: squash
     kubernetes-incubator/service-catalog: squash
   target_url: https://prow.k8s.io/tide.html
+  blocker_label: merge-blocker
 
 push_gateway:
   endpoint: pushgateway
