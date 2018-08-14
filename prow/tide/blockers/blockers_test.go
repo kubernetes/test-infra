@@ -137,9 +137,9 @@ func TestBlockerQuery(t *testing.T) {
 
 func testIssue(number int, title, org, repo string) Issue {
 	return Issue{
-		Number:  githubql.Int(number),
-		Title:   githubql.String(title),
-		HTMLURL: githubql.String(strconv.Itoa(number)),
+		Number: githubql.Int(number),
+		Title:  githubql.String(title),
+		URL:    githubql.String(strconv.Itoa(number)),
 		Repository: struct {
 			Name  githubql.String
 			Owner struct {
