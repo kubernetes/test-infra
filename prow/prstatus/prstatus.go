@@ -119,6 +119,7 @@ type PullRequest struct {
 		ID     githubql.ID
 		Closed githubql.Boolean
 	}
+	Mergeable githubql.MergeableState
 }
 
 type UserLoginQuery struct {
