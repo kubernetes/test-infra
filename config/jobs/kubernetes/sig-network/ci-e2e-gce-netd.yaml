@@ -887,7 +887,7 @@ periodics:
   spec:
     containers:
     - args:
-      - "--timeout=340"
+      - "--timeout=180"
       - --root=/go/src
       - "--repo=k8s.io/kubernetes=release-1.11"
       - "--repo=k8s.io/examples=master"
@@ -911,7 +911,7 @@ periodics:
   spec:
     containers:
     - args:
-      - "--timeout=340"
+      - "--timeout=180"
       - --root=/go/src
       - "--repo=k8s.io/examples=master"
       - --scenario=kubernetes_e2e
@@ -937,7 +937,7 @@ periodics:
   spec:
     containers:
     - args:
-      - "--timeout=340"
+      - "--timeout=180"
       - --root=/go/src
       - "--repo=k8s.io/kubernetes=release-1.11"
       - "--repo=k8s.io/examples=master"
@@ -962,7 +962,7 @@ periodics:
   spec:
     containers:
     - args:
-      - "--timeout=340"
+      - "--timeout=180"
       - --root=/go/src
       - --scenario=kubernetes_e2e
       - "--repo=k8s.io/examples=master"
@@ -990,7 +990,7 @@ periodics:
   spec:
     containers:
     - args:
-      - "--timeout=340"
+      - "--timeout=180"
       - --root=/go/src
       - --repo=github.com/containerd/cri=master
       - "--repo=k8s.io/examples=master"
@@ -1019,7 +1019,7 @@ periodics:
   spec:
     containers:
     - args:
-      - "--timeout=340"
+      - "--timeout=180"
       - --root=/go/src
       - --repo=github.com/containerd/cri=master
       - "--repo=k8s.io/examples=master"
@@ -1051,7 +1051,7 @@ periodics:
   spec:
     containers:
     - args:
-      - "--timeout=340"
+      - "--timeout=180"
       - --root=/go/src
       - --repo=github.com/containerd/cri=master
       - "--repo=k8s.io/examples=master"
