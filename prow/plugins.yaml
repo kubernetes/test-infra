@@ -157,6 +157,8 @@ slack:
             - maciekpytel # 1.10 patch release manager
         release-1.11:
             - foxish # 1.11 patch release manager
+        release-1.12:
+            - dougm # 1.12 branch manager
         feature-serverside-apply:
             - lavalamp # feature-serverside-apply "branch manager"
             - apelisse # feature-serverside-apply "branch manager"
