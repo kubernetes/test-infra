@@ -203,6 +203,10 @@ func TestAddedLines(t *testing.T) {
 			lines: map[int]int{1: 1},
 		},
 		{
+			patch: "@@ -0,0 +1 @@\n+wow\n\\ No newline at end of file",
+			lines: map[int]int{1: 1},
+		},
+		{
 			patch: "@@ -1 +1 @@\n-doge\n+wow",
 			lines: map[int]int{2: 1},
 		},

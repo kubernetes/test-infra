@@ -1,27 +1,5 @@
 periodics:
 - interval: 30m
-  name: ci-kops-build
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-      args:
-      - --repo=k8s.io/kops
-      - --repo=k8s.io/release
-      - --root=/go/src
-      - --timeout=30
-      - --scenario=execute
-      - --
-      - make
-      - gcs-publish-ci
-      - GCS_LOCATION=gs://kops-ci/bin
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-
-- interval: 30m
   name: ci-kubernetes-e2e-kops-aws
   labels:
     preset-service-account: "true"

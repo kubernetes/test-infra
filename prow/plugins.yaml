@@ -5,6 +5,7 @@
 triggers:
 - repos:
   - kubernetes
+  - kubernetes-csi
   - kubernetes-incubator
   - kubernetes-security
   - kubernetes-sigs
@@ -61,6 +62,7 @@ approve:
   implicit_self_approve: true
   lgtm_acts_as_approve: true
 - repos:
+  - kubernetes-csi
   - kubernetes-sigs
   - client-go/unofficial-docs
   implicit_self_approve: true
@@ -155,6 +157,8 @@ slack:
             - maciekpytel # 1.10 patch release manager
         release-1.11:
             - foxish # 1.11 patch release manager
+        release-1.12:
+            - dougm # 1.12 branch manager
         feature-serverside-apply:
             - lavalamp # feature-serverside-apply "branch manager"
             - apelisse # feature-serverside-apply "branch manager"
@@ -422,14 +426,6 @@ plugins:
   - wip
   - yuks
 
-  kubernetes-incubator:
-  - assign
-  - cla
-  - label
-  - lgtm
-  - lifecycle
-  - size
-
   kubernetes-client:
   - assign
   - cla
@@ -442,6 +438,33 @@ plugins:
   - help
   - cat
   - dog
+
+  kubernetes-csi:
+  - approve
+  - assign
+  - blunderbuss
+  - cat
+  - cla
+  - dog
+  - heart
+  - help
+  - hold
+  - label
+  - lgtm
+  - lifecycle
+  - shrug
+  - size
+  - skip
+  - wip
+  - yuks
+
+  kubernetes-incubator:
+  - assign
+  - cla
+  - label
+  - lgtm
+  - lifecycle
+  - size
 
   kubernetes-incubator/service-catalog:
   - approve

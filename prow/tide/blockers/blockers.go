@@ -92,7 +92,7 @@ func fromIssues(issues []Issue) Blockers {
 		block := Blocker{
 			Number: int(issue.Number),
 			Title:  strippedTitle,
-			URL:    string(issue.HTMLURL),
+			URL:    string(issue.URL),
 		}
 		if branches := parseBranches(string(issue.Title)); len(branches) > 0 {
 			for _, branch := range branches {
@@ -165,7 +165,7 @@ func search(ctx context.Context, ghc githubClient, log *logrus.Entry, q string) 
 type Issue struct {
 	Number     githubql.Int
 	Title      githubql.String
-	HTMLURL    githubql.String
+	URL        githubql.String
 	Repository struct {
 		Name  githubql.String
 		Owner struct {
