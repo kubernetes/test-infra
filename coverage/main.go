@@ -18,15 +18,15 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/kubernetes/test-infra/coverage/artifacts"
-	"github.com/kubernetes/test-infra/coverage/gcs"
-	"github.com/kubernetes/test-infra/coverage/githubUtil/githubPr"
-	"github.com/kubernetes/test-infra/coverage/testgrid"
+	"k8s.io/test-infra/coverage/artifacts"
+	"k8s.io/test-infra/coverage/gcs"
+	"k8s.io/test-infra/coverage/githubUtil/githubPr"
+	"k8s.io/test-infra/coverage/testgrid"
 	"log"
 	"os"
 	"strconv"
-	//"github.com/kubernetes/test-infra/coverage"
-	"github.com/kubernetes/test-infra/coverage/logUtil"
+	//"k8s.io/test-infra/coverage"
+	"k8s.io/test-infra/coverage/logUtil"
 )
 
 const (

@@ -1,4 +1,4 @@
-package targetPkgs
+package postsubmitTarget
 
 func fakeFuncCovExcl_1() {
 	doNothing()

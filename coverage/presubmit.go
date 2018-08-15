@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/kubernetes/test-infra/coverage/artifacts"
-	"github.com/kubernetes/test-infra/coverage/calc"
-	"github.com/kubernetes/test-infra/coverage/gcs"
-	"github.com/kubernetes/test-infra/coverage/githubUtil"
-	"github.com/kubernetes/test-infra/coverage/io"
-	"github.com/kubernetes/test-infra/coverage/line"
+	"k8s.io/test-infra/coverage/artifacts"
+	"k8s.io/test-infra/coverage/calc"
+	"k8s.io/test-infra/coverage/gcs"
+	"k8s.io/test-infra/coverage/githubUtil"
+	"k8s.io/test-infra/coverage/io"
+	"k8s.io/test-infra/coverage/line"
 	"log"
 )
 

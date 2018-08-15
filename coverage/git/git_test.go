@@ -2,7 +2,7 @@ package git
 
 import (
 	"fmt"
-	"github.com/kubernetes/test-infra/coverage/test"
+	"k8s.io/test-infra/coverage/test"
 	"os"
 	"path"
 	"testing"

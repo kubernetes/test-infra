@@ -6,9 +6,9 @@ go_library(
     importpath = "k8s.io/test-infra/coverage/githubUtil/githubPr",
     visibility = ["//visibility:public"],
     deps = [
+        "//coverage/githubUtil/githubClient:go_default_library",
+        "//coverage/logUtil:go_default_library",
         "//vendor/github.com/google/go-github/github:go_default_library",
-        "//vendor/github.com/kubernetes/test-infra/coverage/githubUtil/githubClient:go_default_library",
-        "//vendor/github.com/kubernetes/test-infra/coverage/logUtil:go_default_library",
     ],
 )
 

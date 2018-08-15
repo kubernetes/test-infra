@@ -1,8 +1,8 @@
 package testgrid
 
 import (
-	"github.com/kubernetes/test-infra/coverage/artifacts/artsTest"
-	"github.com/kubernetes/test-infra/coverage/test"
+	"k8s.io/test-infra/coverage/artifacts/artsTest"
+	"k8s.io/test-infra/coverage/test"
 	"testing"
 )
 

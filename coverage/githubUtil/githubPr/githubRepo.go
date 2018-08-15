@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/google/go-github/github"
-	"github.com/kubernetes/test-infra/coverage/githubUtil/githubClient"
-	"github.com/kubernetes/test-infra/coverage/logUtil"
 	"io/ioutil"
+	"k8s.io/test-infra/coverage/githubUtil/githubClient"
+	"k8s.io/test-infra/coverage/logUtil"
 	"log"
 	"strconv"
 )

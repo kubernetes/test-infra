@@ -5,7 +5,7 @@ import (
 	"path"
 )
 
-const projectPathLessGoPath = "src/github.com/kubernetes/test-infra/coverage"
+const projectPathLessGoPath = "src/k8s.io/test-infra/coverage"
 
 func ProjDir() string {
 	gopath := os.Getenv("GOPATH")

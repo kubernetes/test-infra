@@ -3,8 +3,8 @@
 package artsTest
 
 import (
-	"github.com/kubernetes/test-infra/coverage/artifacts"
-	"github.com/kubernetes/test-infra/coverage/test"
+	"k8s.io/test-infra/coverage/artifacts"
+	"k8s.io/test-infra/coverage/test"
 )
 
 type LocalArtifacts = artifacts.LocalArtifacts

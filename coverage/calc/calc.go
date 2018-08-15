@@ -5,7 +5,7 @@ package calc
 import (
 	"bufio"
 	"fmt"
-	"github.com/kubernetes/test-infra/coverage/artifacts"
+	"k8s.io/test-infra/coverage/artifacts"
 	"log"
 	"os"
 )

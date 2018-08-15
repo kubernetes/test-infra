@@ -1,4 +1,4 @@
-package targetPkgs
+package postsubmitTarget
 
 func fakeFuncD_1() {
 	doNothing()

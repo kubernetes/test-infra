@@ -6,9 +6,9 @@ package gcs
 import (
 	"cloud.google.com/go/storage"
 	"context"
-	"github.com/kubernetes/test-infra/coverage/artifacts"
-	"github.com/kubernetes/test-infra/coverage/logUtil"
 	"google.golang.org/api/iterator"
+	"k8s.io/test-infra/coverage/artifacts"
+	"k8s.io/test-infra/coverage/logUtil"
 	"log"
 	"path"
 	"strconv"

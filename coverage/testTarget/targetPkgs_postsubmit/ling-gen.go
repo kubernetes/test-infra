@@ -1,4 +1,4 @@
-package targetPkgs
+package postsubmitTarget
 
 func fakeFuncLingGen_1() {
 	doNothing()

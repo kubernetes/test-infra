@@ -1,8 +1,8 @@
 package githubUtil
 
 import (
-	"github.com/kubernetes/test-infra/coverage/githubUtil/githubFakes"
-	"github.com/kubernetes/test-infra/coverage/test"
+	"k8s.io/test-infra/coverage/githubUtil/githubFakes"
+	"k8s.io/test-infra/coverage/test"
 	"path"
 	"testing"
 )

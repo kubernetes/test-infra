@@ -3,10 +3,10 @@ package gcs
 import (
 	"context"
 	"fmt"
-	"github.com/kubernetes/test-infra/coverage/artifacts/artsTest"
-	"github.com/kubernetes/test-infra/coverage/gcs/gcsFakes"
-	"github.com/kubernetes/test-infra/coverage/logUtil"
-	"github.com/kubernetes/test-infra/coverage/test"
+	"k8s.io/test-infra/coverage/artifacts/artsTest"
+	"k8s.io/test-infra/coverage/gcs/gcsFakes"
+	"k8s.io/test-infra/coverage/logUtil"
+	"k8s.io/test-infra/coverage/test"
 	"log"
 	"testing"
 )

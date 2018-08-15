@@ -3,8 +3,8 @@ package artifacts
 import (
 	"bufio"
 	"fmt"
-	"github.com/kubernetes/test-infra/coverage/logUtil"
-	"github.com/kubernetes/test-infra/coverage/test"
+	"k8s.io/test-infra/coverage/logUtil"
+	"k8s.io/test-infra/coverage/test"
 	"log"
 	"testing"
 )
@@ -19,7 +19,7 @@ func TestProfiling(t *testing.T) {
 
 	t.Logf("Verifying profile file...\n")
 	expectedFirstLine := "mode: count"
-	expectedLine := "github.com/kubernetes/test-infra/coverage/testTarget/subPkg1/common.go:3.19,5.2 0 2"
+	expectedLine := "k8s.io/test-infra/coverage/testTarget/subPkg1/common.go:4.19,6.2 0 2"
 
 	scanner := bufio.NewScanner(arts.ProfileReader())
 	scanner.Scan()

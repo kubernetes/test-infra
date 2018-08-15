@@ -5,9 +5,9 @@ package calc
 
 import (
 	"fmt"
-	"github.com/kubernetes/test-infra/coverage/git"
-	"github.com/kubernetes/test-infra/coverage/githubUtil"
-	"github.com/kubernetes/test-infra/coverage/str"
+	"k8s.io/test-infra/coverage/git"
+	"k8s.io/test-infra/coverage/githubUtil"
+	"k8s.io/test-infra/coverage/str"
 	"sort"
 	"strconv"
 	"strings"

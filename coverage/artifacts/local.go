@@ -1,7 +1,7 @@
 package artifacts
 
 import (
-	"github.com/kubernetes/test-infra/coverage/logUtil"
+	"k8s.io/test-infra/coverage/logUtil"
 	"log"
 	"os"
 	"os/exec"

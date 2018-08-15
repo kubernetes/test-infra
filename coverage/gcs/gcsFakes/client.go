@@ -3,8 +3,8 @@ package gcsFakes
 import (
 	"cloud.google.com/go/storage"
 	"context"
-	"github.com/kubernetes/test-infra/coverage/artifacts"
-	"github.com/kubernetes/test-infra/coverage/artifacts/artsTest"
+	"k8s.io/test-infra/coverage/artifacts"
+	"k8s.io/test-infra/coverage/artifacts/artsTest"
 	"log"
 )
 

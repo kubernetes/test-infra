@@ -1,4 +1,4 @@
-package subPkg
+package subPkg2
 
 import "testing"
 

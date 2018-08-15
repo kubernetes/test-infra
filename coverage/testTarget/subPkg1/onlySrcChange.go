@@ -1,4 +1,4 @@
-package subPkg
+package subPkg1
 
 // source code changes, but test code stays the same
 

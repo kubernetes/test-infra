@@ -1,4 +1,4 @@
-package targetPkgs
+package postsubmitTarget
 
 // source code changes, but test code stays the same
 

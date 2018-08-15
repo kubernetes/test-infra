@@ -9,10 +9,10 @@ go_library(
     importpath = "k8s.io/test-infra/coverage/githubUtil",
     visibility = ["//visibility:public"],
     deps = [
+        "//coverage/git:go_default_library",
+        "//coverage/githubUtil/githubPr:go_default_library",
+        "//coverage/logUtil:go_default_library",
         "//vendor/github.com/google/go-github/github:go_default_library",
-        "//vendor/github.com/kubernetes/test-infra/coverage/git:go_default_library",
-        "//vendor/github.com/kubernetes/test-infra/coverage/githubUtil/githubPr:go_default_library",
-        "//vendor/github.com/kubernetes/test-infra/coverage/logUtil:go_default_library",
     ],
 )
 
@@ -24,8 +24,8 @@ go_test(
     ],
     embed = [":go_default_library"],
     deps = [
-        "//vendor/github.com/kubernetes/test-infra/coverage/githubUtil/githubFakes:go_default_library",
-        "//vendor/github.com/kubernetes/test-infra/coverage/test:go_default_library",
+        "//coverage/githubUtil/githubFakes:go_default_library",
+        "//coverage/test:go_default_library",
     ],
 )
 

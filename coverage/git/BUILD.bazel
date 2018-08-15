@@ -11,7 +11,7 @@ go_test(
     name = "go_default_test",
     srcs = ["git_test.go"],
     embed = [":go_default_library"],
-    deps = ["//vendor/github.com/kubernetes/test-infra/coverage/test:go_default_library"],
+    deps = ["//coverage/test:go_default_library"],
 )
 
 filegroup(

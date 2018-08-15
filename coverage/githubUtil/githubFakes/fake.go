@@ -3,9 +3,9 @@ package githubFakes
 import (
 	"context"
 	"github.com/google/go-github/github"
-	"github.com/kubernetes/test-infra/coverage/githubUtil/githubClient"
-	"github.com/kubernetes/test-infra/coverage/githubUtil/githubPr"
-	"github.com/kubernetes/test-infra/coverage/test"
+	"k8s.io/test-infra/coverage/githubUtil/githubClient"
+	"k8s.io/test-infra/coverage/githubUtil/githubPr"
+	"k8s.io/test-infra/coverage/test"
 	"log"
 	"path"
 )

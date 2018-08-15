@@ -3,8 +3,8 @@
 package calcTestExports
 
 import (
-	"github.com/kubernetes/test-infra/coverage/artifacts/artsTest"
-	"github.com/kubernetes/test-infra/coverage/calc"
+	"k8s.io/test-infra/coverage/artifacts/artsTest"
+	"k8s.io/test-infra/coverage/calc"
 )
 
 func CovList() *calc.CoverageList {

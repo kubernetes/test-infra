@@ -6,8 +6,8 @@ go_library(
     importpath = "k8s.io/test-infra/coverage/calc/calcTestExports",
     visibility = ["//visibility:public"],
     deps = [
-        "//vendor/github.com/kubernetes/test-infra/coverage/artifacts/artsTest:go_default_library",
-        "//vendor/github.com/kubernetes/test-infra/coverage/calc:go_default_library",
+        "//coverage/artifacts/artsTest:go_default_library",
+        "//coverage/calc:go_default_library",
     ],
 )
 

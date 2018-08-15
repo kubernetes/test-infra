@@ -1,8 +1,8 @@
 package io
 
 import (
-	"github.com/kubernetes/test-infra/coverage/test"
 	"io/ioutil"
+	"k8s.io/test-infra/coverage/test"
 	"log"
 	"path"
 	"testing"

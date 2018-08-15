@@ -3,9 +3,9 @@ package line
 
 import (
 	"fmt"
-	"github.com/kubernetes/test-infra/coverage/artifacts"
-	"github.com/kubernetes/test-infra/coverage/calc"
-	"github.com/kubernetes/test-infra/coverage/gcs"
+	"k8s.io/test-infra/coverage/artifacts"
+	"k8s.io/test-infra/coverage/calc"
+	"k8s.io/test-infra/coverage/gcs"
 	"log"
 	"os/exec"
 )

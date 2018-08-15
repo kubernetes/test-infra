@@ -10,10 +10,10 @@ go_library(
     importpath = "k8s.io/test-infra/coverage/gcs",
     visibility = ["//visibility:public"],
     deps = [
+        "//coverage/artifacts:go_default_library",
+        "//coverage/githubUtil/githubPr:go_default_library",
+        "//coverage/logUtil:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
-        "//vendor/github.com/kubernetes/test-infra/coverage/artifacts:go_default_library",
-        "//vendor/github.com/kubernetes/test-infra/coverage/githubUtil/githubPr:go_default_library",
-        "//vendor/github.com/kubernetes/test-infra/coverage/logUtil:go_default_library",
         "//vendor/google.golang.org/api/iterator:go_default_library",
     ],
 )
@@ -27,10 +27,10 @@ go_test(
     ],
     embed = [":go_default_library"],
     deps = [
-        "//vendor/github.com/kubernetes/test-infra/coverage/artifacts/artsTest:go_default_library",
-        "//vendor/github.com/kubernetes/test-infra/coverage/gcs/gcsFakes:go_default_library",
-        "//vendor/github.com/kubernetes/test-infra/coverage/logUtil:go_default_library",
-        "//vendor/github.com/kubernetes/test-infra/coverage/test:go_default_library",
+        "//coverage/artifacts/artsTest:go_default_library",
+        "//coverage/gcs/gcsFakes:go_default_library",
+        "//coverage/logUtil:go_default_library",
+        "//coverage/test:go_default_library",
     ],
 )
 

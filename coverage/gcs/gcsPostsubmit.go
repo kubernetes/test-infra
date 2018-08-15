@@ -2,8 +2,8 @@ package gcs
 
 import (
 	"context"
-	"github.com/kubernetes/test-infra/coverage/artifacts"
-	"github.com/kubernetes/test-infra/coverage/logUtil"
+	"k8s.io/test-infra/coverage/artifacts"
+	"k8s.io/test-infra/coverage/logUtil"
 	"log"
 	"path"
 	"sort"

@@ -3,9 +3,9 @@ package githubUtil
 import (
 	"fmt"
 	"github.com/google/go-github/github"
-	"github.com/kubernetes/test-infra/coverage/git"
-	"github.com/kubernetes/test-infra/coverage/githubUtil/githubPr"
-	"github.com/kubernetes/test-infra/coverage/logUtil"
+	"k8s.io/test-infra/coverage/git"
+	"k8s.io/test-infra/coverage/githubUtil/githubPr"
+	"k8s.io/test-infra/coverage/logUtil"
 	"log"
 	"path"
 	"strings"

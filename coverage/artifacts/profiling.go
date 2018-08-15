@@ -1,9 +1,9 @@
 package artifacts
 
 import (
-	covIo "github.com/kubernetes/test-infra/coverage/io"
-	"github.com/kubernetes/test-infra/coverage/logUtil"
 	"io"
+	covIo "k8s.io/test-infra/coverage/io"
+	"k8s.io/test-infra/coverage/logUtil"
 	"log"
 	"os"
 	"os/exec"

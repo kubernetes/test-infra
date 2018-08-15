@@ -9,15 +9,15 @@ go_library(
     importpath = "k8s.io/test-infra/coverage",
     visibility = ["//visibility:private"],
     deps = [
-        "//vendor/github.com/kubernetes/test-infra/coverage/artifacts:go_default_library",
-        "//vendor/github.com/kubernetes/test-infra/coverage/calc:go_default_library",
-        "//vendor/github.com/kubernetes/test-infra/coverage/gcs:go_default_library",
-        "//vendor/github.com/kubernetes/test-infra/coverage/githubUtil:go_default_library",
-        "//vendor/github.com/kubernetes/test-infra/coverage/githubUtil/githubPr:go_default_library",
-        "//vendor/github.com/kubernetes/test-infra/coverage/io:go_default_library",
-        "//vendor/github.com/kubernetes/test-infra/coverage/line:go_default_library",
-        "//vendor/github.com/kubernetes/test-infra/coverage/logUtil:go_default_library",
-        "//vendor/github.com/kubernetes/test-infra/coverage/testgrid:go_default_library",
+        "//coverage/artifacts:go_default_library",
+        "//coverage/calc:go_default_library",
+        "//coverage/gcs:go_default_library",
+        "//coverage/githubUtil:go_default_library",
+        "//coverage/githubUtil/githubPr:go_default_library",
+        "//coverage/io:go_default_library",
+        "//coverage/line:go_default_library",
+        "//coverage/logUtil:go_default_library",
+        "//coverage/testgrid:go_default_library",
     ],
 )
 
@@ -36,12 +36,12 @@ go_test(
     data = glob(["testdata/**"]),
     embed = [":go_default_library"],
     deps = [
-        "//vendor/github.com/kubernetes/test-infra/coverage/artifacts/artsTest:go_default_library",
-        "//vendor/github.com/kubernetes/test-infra/coverage/gcs:go_default_library",
-        "//vendor/github.com/kubernetes/test-infra/coverage/gcs/gcsFakes:go_default_library",
-        "//vendor/github.com/kubernetes/test-infra/coverage/githubUtil/githubFakes:go_default_library",
-        "//vendor/github.com/kubernetes/test-infra/coverage/githubUtil/githubPr:go_default_library",
-        "//vendor/github.com/kubernetes/test-infra/coverage/test:go_default_library",
+        "//coverage/artifacts/artsTest:go_default_library",
+        "//coverage/gcs:go_default_library",
+        "//coverage/gcs/gcsFakes:go_default_library",
+        "//coverage/githubUtil/githubFakes:go_default_library",
+        "//coverage/githubUtil/githubPr:go_default_library",
+        "//coverage/test:go_default_library",
     ],
 )
 

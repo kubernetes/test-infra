@@ -11,10 +11,10 @@ go_library(
     importpath = "k8s.io/test-infra/coverage/calc",
     visibility = ["//visibility:public"],
     deps = [
-        "//vendor/github.com/kubernetes/test-infra/coverage/artifacts:go_default_library",
-        "//vendor/github.com/kubernetes/test-infra/coverage/git:go_default_library",
-        "//vendor/github.com/kubernetes/test-infra/coverage/githubUtil:go_default_library",
-        "//vendor/github.com/kubernetes/test-infra/coverage/str:go_default_library",
+        "//coverage/artifacts:go_default_library",
+        "//coverage/git:go_default_library",
+        "//coverage/githubUtil:go_default_library",
+        "//coverage/str:go_default_library",
     ],
 )
 
@@ -28,8 +28,8 @@ go_test(
     ],
     embed = [":go_default_library"],
     deps = [
-        "//vendor/github.com/kubernetes/test-infra/coverage/artifacts/artsTest:go_default_library",
-        "//vendor/github.com/kubernetes/test-infra/coverage/test:go_default_library",
+        "//coverage/artifacts/artsTest:go_default_library",
+        "//coverage/test:go_default_library",
     ],
 )
 

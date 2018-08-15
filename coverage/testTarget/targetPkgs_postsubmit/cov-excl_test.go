@@ -1,4 +1,4 @@
-package targetPkgs
+package postsubmitTarget
 
 import "testing"
 
