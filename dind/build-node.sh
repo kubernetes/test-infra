@@ -45,6 +45,7 @@ cd -
 cp ${KUBE_ROOT}/bazel-bin/build/debs/kubernetes-cni.deb ${NODE_DIR}
 cp ${KUBE_ROOT}/bazel-bin/build/debs/kubelet.deb ${NODE_DIR}
 cp ${KUBE_ROOT}/bazel-bin/build/debs/kubeadm.deb ${NODE_DIR}
+cp ${KUBE_ROOT}/bazel-bin/build/debs/cri-tools.deb ${NODE_DIR}
 cp ${KUBE_ROOT}/bazel-bin/build/debs/kubectl.deb ${NODE_DIR}
 
 # Get the docker images for components. Docker's build context rejects symlinks.

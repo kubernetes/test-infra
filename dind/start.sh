@@ -95,8 +95,46 @@ start_master ()
   docker tag k8s.gcr.io/kube-proxy:$(cat /docker_version) k8s.gcr.io/kube-proxy-amd64:$(cat /docker_version)
   docker tag k8s.gcr.io/kube-scheduler:$(cat /docker_version) k8s.gcr.io/kube-scheduler-amd64:$(cat /docker_version)
 
+  cat <<EOPOLICY > /etc/kubernetes/audit-policy.yaml
+apiVersion: audit.k8s.io/v1beta1
+kind: Policy
+omitStages:
+  - "RequestReceived"
+rules:
+- level: RequestResponse
+  resources:
+  - group: "" # core
+    resources: ["pods", "secrets"]
+  - group: "extensions"
+    resources: ["deployments"]
+EOPOLICY
+  chmod 0600 /etc/kubernetes/audit-policy.yaml
+  cat <<EOF > /etc/kubernetes/kubeadm.conf
+# Only adding items not in 'kubeadm config print-default'
+apiVersion: kubeadm.k8s.io/v1alpha3
+kind: InitConfiguration
+kubernetesVersion: $(cat source_version | sed 's/^.//')
+auditPolicy:
+  path: /etc/kubernetes/audit-policy.yaml
+  logDir: /etc/kubernetes/audit
+featureGates:
+  Auditing: true
+networking:
+  podSubnet: 192.168.0.0/16
+bootstrapTokens:
+- groups:
+  - system:bootstrappers:kubeadm:default-node-token
+  token: abcdef.abcdefghijklmnop
+apiServerCertSANs:
+$(echo $1 | sed -e 's: :\n:g' | sed 's:^:- :')
+- kubernetes
+# ^^^ SANs need to be in yaml list form starting from v1alpha3
+EOF
+  chmod 0600 /etc/kubernetes/kubeadm.conf
   # Run kubeadm init to config a master.
-  /usr/bin/kubeadm init --token=abcdef.abcdefghijklmnop --ignore-preflight-errors=all --kubernetes-version=$(cat source_version | sed 's/^.//') --pod-network-cidr=192.168.0.0/16 --apiserver-cert-extra-sans $1 2>&1
+  /usr/bin/kubeadm -v 999 init --ignore-preflight-errors=all --config /etc/kubernetes/kubeadm.conf 2>&1
+  # Unsure how to map this to the config file
+  # TODO: Document this format
 
   # We'll want to read the kube-config from outside the container, so open read
   # permissions on admin.conf.

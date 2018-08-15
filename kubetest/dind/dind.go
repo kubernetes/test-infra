@@ -98,6 +98,7 @@ func (d *Deployer) BuildTester(o *e2e.BuildTesterOptions) (e2e.Tester, error) {
 	// dind tester sets parallelism a little differently
 	t.GinkgoParallel = 1
 	t.NumNodes = o.Parallelism
+	t.Provider = "skeleton"
 
 	t.Kubeconfig = d.RealKubecfg
 	t.FlakeAttempts = 2
