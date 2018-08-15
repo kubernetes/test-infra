@@ -30,7 +30,7 @@ spec:
         args:
         - --config=/etc/config/labels.yaml
         - --confirm=true
-        - --orgs=kubernetes,kubernetes-sigs
+        - --orgs=kubernetes,kubernetes-client,kubernetes-csi,kubernetes-incubator,kubernetes-sigs
         - --token=/etc/github/oauth
         volumeMounts:
         - name: oauth
