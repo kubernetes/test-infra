@@ -50,7 +50,9 @@ class JUnitParser(object):
         if child.find('skipped') is not None:
             self.skipped.append(name)
         elif child.find('failure') is not None:
-            time = float(child.attrib['time'])
+            time = 0.0
+            if 'time' in child.attrib:
+                time = float(child.attrib['time'])
             out = []
             for param in child.findall('system-out') + child.findall('system-err'):
                 if param.text:
