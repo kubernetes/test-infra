@@ -39,8 +39,17 @@ const (
 	pullLabel    = "prow.k8s.io/refs.pull"
 )
 
+// NewProwJob initializes a ProwJob out of a ProwJobSpec with annotations.
+func NewProwJobWithAnnotation(spec kube.ProwJobSpec, labels, annotations map[string]string) kube.ProwJob {
+	return newProwJob(spec, labels, annotations)
+}
+
 // NewProwJob initializes a ProwJob out of a ProwJobSpec.
 func NewProwJob(spec kube.ProwJobSpec, labels map[string]string) kube.ProwJob {
+	return newProwJob(spec, labels, nil)
+}
+
+func newProwJob(spec kube.ProwJobSpec, labels, annotations map[string]string) kube.ProwJob {
 	allLabels := map[string]string{
 		jobNameLabel: spec.Job,
 		jobTypeLabel: string(spec.Type),
@@ -76,8 +85,9 @@ func NewProwJob(spec kube.ProwJobSpec, labels map[string]string) kube.ProwJob {
 			Kind:       "ProwJob",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   uuid.NewV1().String(),
-			Labels: allLabels,
+			Name:        uuid.NewV1().String(),
+			Labels:      allLabels,
+			Annotations: annotations,
 		},
 		Spec: spec,
 		Status: kube.ProwJobStatus{

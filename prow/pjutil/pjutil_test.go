@@ -292,3 +292,45 @@ func TestNewProwJob(t *testing.T) {
 		}
 	}
 }
+
+func TestNewProwJobWithAnnotations(t *testing.T) {
+	var testCases = []struct {
+		name                string
+		spec                kube.ProwJobSpec
+		annotations         map[string]string
+		expectedAnnotations map[string]string
+	}{
+		{
+			name: "job without annotation",
+			spec: kube.ProwJobSpec{
+				Job:  "job",
+				Type: kube.PeriodicJob,
+			},
+			annotations:         nil,
+			expectedAnnotations: nil,
+		},
+		{
+			name: "job with empty annotation",
+			spec: kube.ProwJobSpec{
+				Job:  "job",
+				Type: kube.PeriodicJob,
+			},
+			annotations: map[string]string{
+				"annotation": "foo",
+			},
+			expectedAnnotations: map[string]string{
+				"annotation": "foo",
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		pj := NewProwJobWithAnnotation(testCase.spec, nil, testCase.annotations)
+		if actual, expected := pj.Spec, testCase.spec; !equality.Semantic.DeepEqual(actual, expected) {
+			t.Errorf("%s: incorrect ProwJobSpec created: %s", testCase.name, diff.ObjectReflectDiff(actual, expected))
+		}
+		if actual, expected := pj.Annotations, testCase.expectedAnnotations; !reflect.DeepEqual(actual, expected) {
+			t.Errorf("%s: incorrect ProwJob labels created: %s", testCase.name, diff.ObjectReflectDiff(actual, expected))
+		}
+	}
+}
