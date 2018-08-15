@@ -1,0 +1,47 @@
+% extends 'base.html'
+{% block title %}{{job}} #{{build}} {{log_file}}{% endblock %}
+% block header
+	<h1>{% if pr %}<a href="/pr/{{pr}}">PR #{{pr}}</a> {% endif %}<a href="/builds{{job_dir}}">{{job}}</a> <a href="/build{{build_dir}}">#{{build}}</a> {{log_file}}</h1>
+% endblock
+% block content
+<div id="failures">
+	<form method="get" onchange="submit()">
+		<h3> Failed pod: <input type="text" name="pod" value="{{pod}}" style="width: 300px;">
+		</h3>
+		<input type="hidden" name="junit" value="{{junit}}">
+		<hr>
+		<label><input type="checkbox" name="wrap"{% if wrap %} checked{% endif %}> Wrap lines </label>
+		<label><input type="checkbox" name="weave"{% if weave %} checked{% endif %}> Weave by timestamp </label>
+		% for folder, filenames in all_logs.items()|sort
+			<hr>
+			<h4> {{folder|basename or folder|dirname|basename}} </h4>
+			% for filename in filenames
+				% set log_name = filename|basename
+				<label><input type="checkbox" name="logfiles" value={{filename}} {% if filename in log_files %} checked {% endif %}> {{log_name}}</label>
+				<a href="https://storage.googleapis.com{{filename}}">(Full Log)</a> <br>
+			% endfor
+		% endfor
+		<hr>
+		<label><input type="checkbox" name="UID"{% if uid %} checked {% endif %}> Highlight Pod UID: <input type="text" name="poduid" value="{{objref_dict['UID']}}" style="width: 300px;"></label><br>
+		<label><input type="checkbox" name="Namespace"{% if namespace %} checked {% endif %}> Highlight Namespace: <input type="text" name="ns" value="{{objref_dict['Namespace']}}" style="width: 300px;"></label><br>
+		<label><input type="checkbox" name="ContainerID"{% if containerID %} checked {% endif %}> Highlight ContainerID: <input type="text" name="cID" value="{{objref_dict['ContainerID']}}" style="width: 300px;"></label><br>
+		Add filter: <input type="text" name="others"><br>
+		% for other in others|sort
+			% if other
+				<label><input type="checkbox" name="others" value="{{other}}" {% if other in others %} checked {% endif %}> {{other}}</label><br>
+			% endif
+		% endfor
+	</form>
+	% if weave
+		<pre {% if not wrap %} style="white-space:pre"{% endif %}>
+			{{woven_logs | safe}}
+		</pre>
+	% else
+		<button onclick="javascript:expand_all(this)">Expand Skipped Lines</button>
+		% for file in log_files|sort
+			<h3>{{file}}</h3>
+			<pre {% if not wrap %} style="white-space:pre"{% endif %} data-src="{{file}}">{{logs[file] | safe}}</pre>
+		% endfor
+	% endif
+</div>
+% endblock

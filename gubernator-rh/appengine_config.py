@@ -12,9 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/k8s-prow/alpine:0.1
-LABEL maintainer="spxtr@google.com"
+import os
 
-COPY deck /deck
-COPY static/ /static
-ENTRYPOINT ["/deck"]
+from google.appengine.ext import vendor
+
+# Add any libraries installed in the "third_party" folder.
+vendor.add('third_party')
+
+# Use remote GCS calls for local development.
+if os.environ.get('SERVER_SOFTWARE', '').startswith('Development'):
+    os.environ['SERVER_SOFTWARE'] += ' remote_api'

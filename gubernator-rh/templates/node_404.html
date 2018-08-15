@@ -1,0 +1,5 @@
+% extends 'base.html'
+{% block title %}Missing {% for log_file in log_files %} {{log_file}} file {% endfor %}{% endblock %}
+% block content
+Unable to find {% for log_file in log_files %} {{log_file}} {% endfor %} file from <a href="{{build_dir | gcs_browse_url}}">gs:/{{build_dir}}</a> for {{pod_name}}
+% endblock

@@ -1,0 +1,59 @@
+body {
+  background-color: #be1628;
+}
+
+md-content.main-content {
+  background-color: #f5f5f5;
+}
+
+.md-tab.md-active {
+  font-weight: bolder;
+  border-top-right-radius: 5px;
+  border-top-left-radius: 5px;
+}
+
+md-tab-item.md-active {
+  background-color: black;
+  color: white !important;
+}
+
+md-toolbar.md-default-theme:not(.md-menu-toolbar),
+md-toolbar:not(.md-menu-toolbar) {
+  background-color: black;
+  color: rgba(255,255,255,0.87);
+}
+
+.layout-column {
+  background-color: #be1628;
+}
+
+.md-list-item-text.layout-column {
+  background-color: #f5f5f5;
+}
+
+.titleLogo {
+  width: 84px;
+}
+
+md-list-item .md-list-item-inner > .md-avatar img,
+md-list-item > .md-avatar img {
+  border-radius: 50%;
+  box-sizing: content-box;
+  height: 40px;
+  margin-bottom: 8px;
+  margin-right: 16px;
+  margin-top: 8px;
+  width: 40px;
+}
+
+.yellowTab {
+  padding: 14px;
+  background-color: #FF8A65;
+  color: black;
+}
+
+.redTab {
+  padding: 14px;
+  background-color: #F4511E;
+  color: white;
+}

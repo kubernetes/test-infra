@@ -1,0 +1,5 @@
+github/webhook_secret
+secrets.json
+.coverage
+htmlcov/
+node_modules
