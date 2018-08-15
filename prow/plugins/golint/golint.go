@@ -282,6 +282,10 @@ func AddedLines(patch string) (map[int]int, error) {
 	}
 	lines := strings.Split(patch, "\n")
 	for i := 0; i < len(lines); i++ {
+		// dodge the "\ No newline at end of file" line
+		if lines[i] == "\\ No newline at end of file" {
+			continue
+		}
 		_, oldLen, newLine, newLen, err := parseHunkLine(lines[i])
 		if err != nil {
 			return nil, fmt.Errorf("couldn't parse hunk on line %d in patch %s: %v", i, patch, err)

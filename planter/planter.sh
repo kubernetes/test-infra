@@ -104,6 +104,11 @@ RUN_OPTS="${RUN_OPTS} -v ${REPO}:${REPO}:delegated"
 #   $PWD specifically can also make commands other than bazel more consistent
 RUN_OPTS="${RUN_OPTS} -w ${PWD}"
 
+# Preserve GOPATH if any
+if [ -n "${GOPATH:-}" ]; then
+    RUN_OPTS="${RUN_OPTS} -e GOPATH=${GOPATH}"
+fi
+
 # - pass through any extra user-supplied options
 if [ -n "${DOCKER_EXTRA:-}" ]; then
     RUN_OPTS="${RUN_OPTS} ${DOCKER_EXTRA}"

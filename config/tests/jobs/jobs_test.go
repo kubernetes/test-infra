@@ -827,7 +827,9 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 	}
 
 	expectedExtract := 1
-	if sharedBuilds || nodeE2e || builds {
+	if sharedBuilds || nodeE2e {
+		expectedExtract = 0
+	} else if builds && !extracts {
 		expectedExtract = 0
 	} else if strings.Contains(jobName, "ingress") {
 		expectedExtract = 1
