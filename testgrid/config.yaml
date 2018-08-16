@@ -795,6 +795,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build-1-10
 - name: ci-kubernetes-bazel-build-1-11
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build-1-11
+- name: ci-kubernetes-bazel-build-1-12
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-build-1-12
 - name: ci-kubernetes-bazel-test
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test
 - name: ci-kubernetes-bazel-test-1-9
@@ -803,6 +805,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test-1-10
 - name: ci-kubernetes-bazel-test-1-11
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test-1-11
+- name: ci-kubernetes-bazel-test-1-12
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test-1-12
 - name: ci-test-infra-bazel
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-bazel
 # Tectonic (contact: @ethernetdan on GitHub)
@@ -1533,24 +1537,24 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/periodic-features-unfreeze
 - name: periodic-kubernetes-bazel-test-master
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-master
-- name: periodic-kubernetes-bazel-test-1-8
-  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-8
 - name: periodic-kubernetes-bazel-test-1-9
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-9
 - name: periodic-kubernetes-bazel-test-1-10
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-10
 - name: periodic-kubernetes-bazel-test-1-11
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-11
+- name: periodic-kubernetes-bazel-test-1-12
+  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-test-1-12
 - name: periodic-kubernetes-bazel-build-master
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-master
-- name: periodic-kubernetes-bazel-build-1-8
-  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-8
 - name: periodic-kubernetes-bazel-build-1-9
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-9
 - name: periodic-kubernetes-bazel-build-1-10
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-10
 - name: periodic-kubernetes-bazel-build-1-11
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-11
+- name: periodic-kubernetes-bazel-build-1-12
+  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-12
 - name: periodic-test-infra-stale
   gcs_prefix: kubernetes-jenkins/logs/periodic-test-infra-stale
 - name: periodic-test-infra-rotten
@@ -3621,26 +3625,26 @@ dashboards:
     test_group_name: ci-kubernetes-bazel-build
   - name: bazel-build-periodic
     test_group_name: periodic-kubernetes-bazel-build-master
-  - name: bazel-build-1.8
-    test_group_name: periodic-kubernetes-bazel-build-1-8
   - name: bazel-build-1.9
     test_group_name: ci-kubernetes-bazel-build-1-9
   - name: bazel-build-1.10
     test_group_name: ci-kubernetes-bazel-build-1-10
   - name: bazel-build-1.11
     test_group_name: ci-kubernetes-bazel-build-1-11
+  - name: bazel-build-1.12
+    test_group_name: ci-kubernetes-bazel-build-1-12
   - name: bazel-test
     test_group_name: ci-kubernetes-bazel-test
   - name: bazel-test-periodic
     test_group_name: periodic-kubernetes-bazel-test-master
-  - name: bazel-test-1.8
-    test_group_name: periodic-kubernetes-bazel-test-1-8
   - name: bazel-test-1.9
     test_group_name: ci-kubernetes-bazel-test-1-9
   - name: bazel-test-1.10
     test_group_name: ci-kubernetes-bazel-test-1-10
   - name: bazel-test-1.11
     test_group_name: ci-kubernetes-bazel-test-1-11
+  - name: bazel-test-1.12
+    test_group_name: ci-kubernetes-bazel-test-1-12
   - name: integration-master
     test_group_name: ci-kubernetes-integration-master
   - name: integration-1.8
@@ -3809,6 +3813,112 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-selfhosting
   - name: periodic-kubernetes-e2e-packages-pushed
     test_group_name: periodic-kubernetes-e2e-packages-pushed
+
+- name: sig-release-1.12-all
+  dashboard_tab:
+  - name: build-1.12
+    test_group_name: ci-kubernetes-build-beta
+  - name: verify-1.12
+    test_group_name: ci-kubernetes-verify-beta
+  - name: integration-1.12
+    test_group_name: ci-kubernetes-integration-beta
+  - name: gce-1.12
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
+  - name: gce-reboot-1.12
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-reboot
+  - name: gce-serial-1.12
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-serial
+  - name: gce-slow-1.12
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-slow
+  - name: gce-ingress-1.12
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-ingress
+  - name: gce-alpha-features-1.12
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures
+  - name: gke-1.12
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-default
+  - name: gke-reboot-1.12
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-reboot
+  - name: gci-gce-soak-1.12
+    test_group_name: ci-kubernetes-soak-gci-gce-beta
+  - name: gke-serial-1.12
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-serial
+  - name: gke-slow-1.12
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-slow
+  - name: gke-ingress-1.12
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
+  - name: gce-device-plugin-gpu-1.12
+    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
+  - name: gke-device-plugin-gpu-1.12
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
+  - name: gke-device-plugin-gpu-p100-1.12
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
+  - name: kops-aws-1.12
+    test_group_name: ci-kubernetes-e2e-kops-aws-beta
+  - name: kubelet-1.12
+    test_group_name: ci-kubernetes-node-kubelet-beta
+  - name: kubelet-1.12-features
+    test_group_name: ci-kubernetes-node-kubelet-beta-features
+  - name: gce-scalability-1.12
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-beta
+  - name: bazel-build-1.12
+    test_group_name: ci-kubernetes-bazel-build-1-12
+  - name: bazel-test-1.12
+    test_group_name: ci-kubernetes-bazel-test-1-12
+  - name: periodic-bazel-build-1.12
+    test_group_name: periodic-kubernetes-bazel-build-1-12
+  - name: periodic-bazel-test-1.12
+    test_group_name: periodic-kubernetes-bazel-test-1-12
+
+- name: sig-release-1.12-blocking
+  dashboard_tab:
+  - name: build-1.12
+    test_group_name: ci-kubernetes-build-beta
+  - name: verify-1.12
+    test_group_name: ci-kubernetes-verify-beta
+  - name: integration-1.12
+    test_group_name: ci-kubernetes-integration-beta
+  - name: gce-1.12
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
+  - name: gce-reboot-1.12
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-reboot
+  - name: gce-serial-1.12
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-serial
+  - name: gce-slow-1.12
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-slow
+  - name: gce-ingress-1.12
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-ingress
+  - name: gce-alpha-features-1.12
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures
+  - name: gke-1.12
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-default
+  - name: gke-reboot-1.12
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-reboot
+  - name: gke-serial-1.12
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-serial
+  - name: gke-slow-1.12
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-slow
+  - name: gke-ingress-1.12
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
+  - name: gce-device-plugin-gpu-1.12
+    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
+  - name: gke-device-plugin-gpu-1.12
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
+  - name: gke-device-plugin-gpu-p100-1.12
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
+  - name: kops-aws-1.12
+    test_group_name: ci-kubernetes-e2e-kops-aws-beta
+  - name: kubelet-1.12
+    test_group_name: ci-kubernetes-node-kubelet-beta
+  - name: gce-scalability-1.12
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-beta
+  - name: bazel-build-1.12
+    test_group_name: ci-kubernetes-bazel-build-1-12
+  - name: bazel-test-1.12
+    test_group_name: ci-kubernetes-bazel-test-1-12
+  - name: periodic-bazel-build-1.12
+    test_group_name: periodic-kubernetes-bazel-build-1-12
+  - name: periodic-bazel-test-1.12
+    test_group_name: periodic-kubernetes-bazel-test-1-12
 
 - name: sig-release-1.11-all
   dashboard_tab:
@@ -4336,10 +4446,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-aws-stable3
   - name: ci-gce-kubeadm-1.8
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8
-  - name: periodic-bazel-build-1.8
-    test_group_name: periodic-kubernetes-bazel-build-1-8
-  - name: periodic-bazel-test-1.8
-    test_group_name: periodic-kubernetes-bazel-test-1-8
   - name: kubelet-1.8
     test_group_name: ci-kubernetes-node-kubelet-stable3
   - name: gci-gce-alpha-features-1.8

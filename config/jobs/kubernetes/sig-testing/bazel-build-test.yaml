@@ -58,6 +58,7 @@ postsubmits:
             requests:
               memory: "6Gi"
 
+  # manual-release-bump-required (add a job for the new release branch and delete the one for the deprecated release.)
   - name: ci-kubernetes-bazel-build-1-9
     branches:
     - release-1.9
@@ -144,7 +145,37 @@ postsubmits:
         resources:
           requests:
             memory: "6Gi"
+  - name: ci-kubernetes-bazel-build-1-12
+    branches:
+    - release-1.12
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180813-2350e17e8-1.12
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/logs"
+        - "--timeout=60"
+        - "--scenario=kubernetes_bazel"
+        - "--" # end bootstrap args, scenario args below
+        - "--build=//... -//vendor/..."
+        - "--release=//build/release-tars"
+        - "--gcs=gs://kubernetes-release-dev/ci"
+        - "--version-suffix=-bazel"
+        - "--publish-version=gs://kubernetes-release-dev/ci/latest-bazel-1.12.txt"
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
 
+  # manual-release-bump-required (add a job for the new release branch and delete the one for the deprecated release.)
   - name: ci-kubernetes-bazel-test-1-9
     branches:
     - release-1.9
@@ -230,6 +261,35 @@ postsubmits:
         resources:
           requests:
             memory: "6Gi"
+  - name: ci-kubernetes-bazel-test-1-12
+    branches:
+    - release-1.12
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180813-2350e17e8-1.12
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/logs"
+        - "--timeout=60"
+        - "--scenario=kubernetes_bazel"
+        - "--" # end bootstrap args, scenario args below
+        - "--test=//... -//build/... -//vendor/..."
+        - "--manual-test=//hack:verify-all"
+        - "--test-args=--config=unit"
+        - "--test-args=--build_tag_filters=-e2e,-integration"
+        - "--test-args=--test_tag_filters=-e2e,-integration"
+        - "--test-args=--flaky_test_attempts=3"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "6Gi"
 
 periodics:
 # periodic bazel build jobs
@@ -269,30 +329,7 @@ periodics:
         requests:
           memory: "6Gi"
 
-- name: periodic-kubernetes-bazel-build-1-8
-  interval: 6h
-  labels:
-    preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--repo=k8s.io/kubernetes=release-1.8"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - --scenario=kubernetes_bazel
-      - --
-      - --build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/... //vendor/k8s.io/...
-      - --release=//build/release-tars
-      # Bazel needs privileged mode in order to sandbox builds.
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          memory: "6Gi"
-
+# manual-release-bump-required (add a job for the new release branch and delete the one for the deprecated release.)
 - name: periodic-kubernetes-bazel-build-1-9
   interval: 6h
   labels:
@@ -379,6 +416,39 @@ periodics:
         requests:
           memory: "6Gi"
 
+- name: periodic-kubernetes-bazel-build-1-12
+  interval: 6h
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180813-2350e17e8-1.12
+      args:
+      - "--job=$(JOB_NAME)"
+      - "--repo=k8s.io/kubernetes=release-1.12"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--timeout=60"
+      - "--scenario=kubernetes_bazel"
+      - "--" # end bootstrap args, scenario args below
+      - "--build=//... -//vendor/..."
+      - "--release=//build/release-tars"
+      env:
+      # so we can use the right cache id
+      # TODO(bentheelder): switch to kubernetes_execute_bazel and consider dropping this
+      - name: REPO_OWNER
+        value: kubernetes
+      - name: REPO_NAME
+        value: kubernetes
+      # Bazel needs privileged mode in order to sandbox builds.
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "6Gi"
+
 
 # periodic bazel test jobs
 - interval: 5m
@@ -416,30 +486,7 @@ periodics:
         requests:
           memory: "6Gi"
 
-- name: periodic-kubernetes-bazel-test-1-8
-  interval: 12h
-  labels:
-    preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
-      args:
-      - "--job=$(JOB_NAME)"
-      - "--repo=k8s.io/kubernetes=release-1.8"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - --scenario=kubernetes_bazel
-      - --
-      - --test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //hack:verify-all //vendor/k8s.io/...
-      - --test-args=--test_tag_filters=-integration
-      - --test-args=--flaky_test_attempts=3
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          memory: "6Gi"
-
+# manual-release-bump-required (add a job for the new release branch and delete the one for the deprecated release.)
 - name: periodic-kubernetes-bazel-test-1-9
   interval: 6h
   labels:
@@ -516,6 +563,41 @@ periodics:
       - "--repo=k8s.io/kubernetes=release-1.11"
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
+      - "--scenario=kubernetes_bazel"
+      - "--" # end bootstrap args, scenario args below
+      - "--test=//... -//build/... -//vendor/..."
+      - "--manual-test=//hack:verify-all"
+      - "--test-args=--config=unit"
+      - "--test-args=--build_tag_filters=-e2e,-integration"
+      - "--test-args=--test_tag_filters=-e2e,-integration"
+      - "--test-args=--flaky_test_attempts=3"
+      env:
+      # TODO(bentheelder): switch to kubernetes_execute_bazel and consider dropping this
+      - name: REPO_OWNER
+        value: kubernetes
+      - name: REPO_NAME
+        value: kubernetes
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "6Gi"
+
+- name: periodic-kubernetes-bazel-test-1-12
+  interval: 6h
+  labels:
+    preset-service-account: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180813-2350e17e8-1.12
+      args:
+      - "--repo=k8s.io/kubernetes=release-1.12"
+      - --root=/go/src
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--timeout=60"
       - "--scenario=kubernetes_bazel"
       - "--" # end bootstrap args, scenario args below
       - "--test=//... -//build/... -//vendor/..."
