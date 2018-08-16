@@ -1,27 +1,4 @@
 periodics:
-- interval: 2h
-  name: ci-kubernetes-integration-beta
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
-      args:
-      - --repo=k8s.io/kubernetes=release-1.11
-      - --timeout=100
-      - --scenario=kubernetes_verify
-      - --
-      - --branch=release-1.11
-      - --force
-      - --prow
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          cpu: 4
-
 - interval: 1h
   name: ci-kubernetes-integration-master
   labels:
@@ -45,6 +22,31 @@ periodics:
         requests:
           cpu: 4
 
+# manual-release-bump-required
+- interval: 2h
+  name: ci-kubernetes-integration-beta
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
+      args:
+      - --repo=k8s.io/kubernetes=release-1.12
+      - --timeout=100
+      - --scenario=kubernetes_verify
+      - --
+      - --branch=release-1.12
+      - --force
+      - --prow
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 4
+
+# manual-release-bump-required
 - interval: 2h
   name: ci-kubernetes-integration-stable1
   labels:
@@ -54,8 +56,32 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
       args:
-      - --repo=k8s.io/kubernetes=release-1.10
+      - --repo=k8s.io/kubernetes=release-1.11
       - --timeout=100
+      - --scenario=kubernetes_verify
+      - --
+      - --branch=release-1.11
+      - --force
+      - --prow
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 4
+
+# manual-release-bump-required
+- interval: 6h
+  name: ci-kubernetes-integration-stable2
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
+      args:
+      - --repo=k8s.io/kubernetes=release-1.10
+      - --timeout=100"
       - --scenario=kubernetes_verify
       - --
       - --branch=release-1.10
@@ -68,8 +94,9 @@ periodics:
         requests:
           cpu: 4
 
-- interval: 6h
-  name: ci-kubernetes-integration-stable2
+# manual-release-bump-required
+- interval: 24h
+  name: ci-kubernetes-integration-stable3
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -82,29 +109,6 @@ periodics:
       - --scenario=kubernetes_verify
       - --
       - --branch=release-1.9
-      - --force
-      - --prow
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          cpu: 4
-
-- interval: 24h
-  name: ci-kubernetes-integration-stable3
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
-      args:
-      - --repo=k8s.io/kubernetes=release-1.8
-      - --timeout=100"
-      - --scenario=kubernetes_verify
-      - --
-      - --branch=release-1.8
       - --force
       - --prow
       # docker-in-docker needs privileged mode

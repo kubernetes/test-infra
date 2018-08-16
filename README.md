@@ -108,10 +108,10 @@ We test different master/node image versions against multiple k8s branches on di
 
 Those jobs are using channel based versions, current supported testing map is:
 - k8s-dev : master
-- k8s-beta : release-1.11
-- k8s-stable1 : release-1.10
-- k8s-stable2 : release-1.9
-- k8s-stable3 : release-1.8
+- k8s-beta : release-1.12
+- k8s-stable1 : release-1.11
+- k8s-stable2 : release-1.10
+- k8s-stable3 : release-1.9
 
 Our build job will generate a ci/(channel-name) file pointer in gcs.
 
