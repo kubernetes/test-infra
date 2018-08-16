@@ -2563,18 +2563,6 @@ periodics:
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
-- interval: 1h
-  name: ci-kubernetes-e2e-gce-federation-release-1-8
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=920
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
 - interval: 2h
   name: ci-kubernetes-e2e-gce-gci-latest-rollback-etcd
   labels:
@@ -3272,27 +3260,6 @@ periodics:
       - --timeout=70
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
-- interval: 2h
-  name: ci-kubernetes-federation-build-1-8
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
-      args:
-      - --repo=k8s.io/kubernetes=release-1.8
-      - --repo=k8s.io/release
-      - --root=/go/src
-      - --timeout=50
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          cpu: 4
-          memory: "8Gi"
 
 - name: ci-kubernetes-local-e2e
   interval: 60m

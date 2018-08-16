@@ -350,8 +350,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-sd-logging
 - name: ci-kubernetes-e2e-gci-gce-etcd3
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-etcd3
-- name: ci-kubernetes-federation-build-1-8
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1-8
 - name: ci-kubernetes-e2e-gci-gce-flaky
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-flaky
 - name: ci-kubernetes-e2e-gci-gce
@@ -2375,8 +2373,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sstable1-reboot
 - name: ci-kubernetes-soak-gci-gce-stable1
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-stable1
-- name: ci-kubernetes-e2e-gce-federation-release-1-8
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-federation-release-1-8
 - name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-master
 - name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-master
@@ -4338,8 +4334,6 @@ dashboards:
   - name: "Conformance - GCE"
     description: Runs conformance tests using kubetest against kubernetes release 1.8 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-8
-  - name: federation-build-1.8
-    test_group_name: ci-kubernetes-federation-build-1-8
   - name: kops-aws-release-1.8
     test_group_name: ci-kubernetes-e2e-kops-aws-stable3
   - name: ci-gce-kubeadm-1.8
@@ -5024,13 +5018,6 @@ dashboards:
   dashboard_tab:
   - name: pr-make
     test_group_name: pull-cluster-api-provider-openstack-make
-
-- name: sig-multicluster-federation-gce-old
-  dashboard_tab:
-  - name: gce-1.8
-    test_group_name: ci-kubernetes-e2e-gce-federation-release-1-8
-  - name: build-1.8
-    test_group_name: ci-kubernetes-federation-build-1-8
 
 - name: sig-multicluster-federation-gce
   dashboard_tab:
@@ -6674,7 +6661,6 @@ dashboard_groups:
 
 - name: sig-multicluster
   dashboard_names:
-  - sig-multicluster-federation-gce-old
   - sig-multicluster-federation-gce
   - sig-multicluster-kubemci
 
