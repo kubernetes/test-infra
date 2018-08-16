@@ -26,6 +26,8 @@ import (
 	"path/filepath"
 
 	"github.com/ghodss/yaml"
+	"k8s.io/apimachinery/pkg/util/sets"
+
 	prow_config "k8s.io/test-infra/prow/config"
 	config_pb "k8s.io/test-infra/testgrid/config"
 )
@@ -170,8 +172,11 @@ func TestConfig(t *testing.T) {
 			t.Errorf("Dashboard %v: - Must have more than one dashboardtab", dashboard.Name)
 		}
 
-		// dashboardtab name set, to check duplicated tabs within each dashboard
-		dashboardtabmap := make(map[string]bool)
+		// dashboardtabSet is a set that checks duplicate tab name within each dashboard
+		dashboardtabSet := sets.NewString()
+
+		// dashboardtestgroupSet is a set that checks duplicate testgroups within each dashboard
+		dashboardtestgroupSet := sets.NewString()
 
 		// All notifications in dashboard must have a summary
 		if len(dashboard.Notifications) != 0 {
@@ -190,10 +195,17 @@ func TestConfig(t *testing.T) {
 			}
 
 			// All dashboardtab within a dashboard must not have duplicated names
-			if dashboardtabmap[dashboardtab.Name] {
-				t.Errorf("Duplicated dashboardtab: %v", dashboardtab.Name)
+			if dashboardtabSet.Has(dashboardtab.Name) {
+				t.Errorf("Duplicated name in dashboard %s: %v", dashboard.Name, dashboardtab.Name)
 			} else {
-				dashboardtabmap[dashboardtab.Name] = true
+				dashboardtabSet.Insert(dashboardtab.Name)
+			}
+
+			// All dashboardtab within a dashboard must not have duplicated testgroupnames
+			if dashboardtestgroupSet.Has(dashboardtab.TestGroupName) {
+				t.Errorf("Duplicated testgroupnames in dashboard %s: %v", dashboard.Name, dashboardtab.TestGroupName)
+			} else {
+				dashboardtestgroupSet.Insert(dashboardtab.TestGroupName)
 			}
 
 			// All testgroup in dashboard must be defined in testgroups
