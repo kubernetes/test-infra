@@ -39,7 +39,7 @@ For running the conformance tests and obtaining the result files (`b)` and `c)`)
    ```sh
    git clone https://github.com/kubernetes/kubernetes.git && cd kubernetes && git checkout release-1.11
    ```
-   - run `make WHAT=test/e2e.test` to build the test binaries
+   - run `make WHAT=test/e2e/e2e.test` to build the test binaries
    - make sure `kubectl` / `$KUBECONFIG` is authed to your cluster
    - run [kubetest](https://github.com/kubernetes/test-infra/tree/master/kubetest) with:
     ```sh
