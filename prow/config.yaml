@@ -723,7 +723,6 @@ presubmits:
     skip_branches:
     - release-1.10 # different bazel version
     - release-1.9 # need to cherry pick back https://github.com/kubernetes/kubernetes/pull/59251, possibly others
-    - release-1.8 # different set of targets
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -754,7 +753,6 @@ presubmits:
       skip_branches:
       - release-1.10 # different bazel version
       - release-1.9 # need to cherry pick back https://github.com/kubernetes/kubernetes/pull/59251, possibly others
-      - release-1.8 # different set of targets
       labels:
         preset-service-account: "true"
         preset-k8s-ssh: "true"
@@ -859,58 +857,12 @@ presubmits:
           env:
           - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
             value: "true"
-  - name: pull-kubernetes-bazel-build
-    always_run: true
-    branches:
-    - release-1.8
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=60"
-        - "--" # end bootstrap args, scenario args below
-        - "--build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/... //vendor/k8s.io/..."
-        - "--release=//build/release-tars"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "6Gi"
-    run_after_success:
-    - name: pull-kubernetes-e2e-kubeadm-gce
-      max_concurrency: 8
-      skip_report: true
-      run_if_changed: '^(cmd/kubeadm|build/debs).*$'
-      branches:
-      - release-1.8
-      labels:
-        preset-service-account: "true"
-        preset-k8s-ssh: "true"
-      spec:
-        containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180730-c8036c3a7
-          args:
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-          - "--upload=gs://kubernetes-jenkins/pr-logs"
-          - "--timeout=75"
-          env:
-          - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
-            value: "true"
-
+  
   - name: pull-kubernetes-bazel-test
     always_run: true
     skip_branches:
     - release-1.10 # different bazel version
     - release-1.9 # need to cherry pick back https://github.com/kubernetes/kubernetes/pull/59251, possibly others
-    - release-1.8 # different set of targets
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -995,39 +947,11 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
-  - name: pull-kubernetes-bazel-test
-    always_run: true
-    branches:
-    - release-1.8
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=60"
-        - "--" # end bootstrap args, scenario args below
-        - "--test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //vendor/k8s.io/..."
-        - "--manual-test=//hack:verify-all"
-        - "--test-args=--test_tag_filters=-integration"
-        - "--test-args=--flaky_test_attempts=3"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "6Gi"
 
   - name: pull-kubernetes-cross
     run_if_changed: '^(build\/|hack\/lib\/)|(Makefile)$'
     skip_branches:
     - release-1.9
-    - release-1.8
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -1052,7 +976,6 @@ presubmits:
     # typecheck doesn't exist for < 1.10 currently, so we still run cross more often
     run_if_changed: '^(build\/|hack\/lib\/)|(Makefile)|(.*_(windows|linux|osx|unsupported)(_test)?\.go)$'
     branches:
-    - release-1.8
     - release-1.9
     labels:
       preset-service-account: "true"
@@ -1100,7 +1023,6 @@ presubmits:
     always_run: false
     skip_branches:
     - release-1.9
-    - release-1.8
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -1181,7 +1103,6 @@ presubmits:
     skip_branches:
     - release-1.10 # per-release image
     - release-1.9 # per-release image
-    - release-1.8 # per-release image
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -1251,29 +1172,6 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
-  - name: pull-kubernetes-e2e-gce
-    always_run: true
-    branches:
-    - release-1.8
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-    spec:
-      containers:
-      - args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=90
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.8
-        resources:
-          requests:
-            memory: "6Gi"
 
   - name: pull-kubernetes-e2e-gce-100-performance
     always_run: true
@@ -1329,7 +1227,6 @@ presubmits:
     skip_branches:
     - release-1.10  # per-release image
     - release-1.9  # per-release image
-    - release-1.8  # per-release image
     always_run: true
     skip_report: false
     max_concurrency: 12
@@ -1410,33 +1307,7 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
-  - name: pull-kubernetes-e2e-gce-device-plugin-gpu
-    branches:
-    - release-1.8
-    always_run: true
-    skip_report: false
-    max_concurrency: 12
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.8
-        args:
-        - --root=/go/src
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/release"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=90"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "6Gi"
+
   - name: pull-kubernetes-e2e-gce-large-performance
     always_run: false
     max_concurrency: 1
@@ -1470,7 +1341,6 @@ presubmits:
     skip_branches:
     - release-1.10 # per-release image
     - release-1.9 # per-release image
-    - release-1.8 # per-release image
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -1538,36 +1408,11 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
-  - name: pull-kubernetes-e2e-gke
-    always_run: false
-    run_if_changed: '^(cluster/gce|cluster/addons).*$'
-    branches:
-    - release-1.8
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-    spec:
-      containers:
-      - args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=90
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.8
-        resources:
-          requests:
-            memory: "6Gi"
 
   - name: pull-kubernetes-e2e-gke-device-plugin-gpu
     skip_branches:
     - release-1.10  # per-release image
     - release-1.9  # per-release image
-    - release-1.8  # per-release image
     always_run: false
     skip_report: false
     max_concurrency: 1
@@ -1632,33 +1477,6 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.9
-        args:
-        - --root=/go/src
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/release"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=90"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "6Gi"
-  - name: pull-kubernetes-e2e-gke-device-plugin-gpu
-    branches:
-    - release-1.8  # per-release image
-    always_run: false
-    skip_report: false
-    max_concurrency: 1
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.8
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -1722,7 +1540,6 @@ presubmits:
     skip_branches:
     - release-1.10  # per-release image
     - release-1.9  # per-release image
-    - release-1.8  # per-release image
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -1795,38 +1612,6 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.9
-        args:
-        - --root=/go/src
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/release"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=120"
-        # TODO(krzyzacy): Figure out bazel built kubemark image
-        #env:
-        # - name: KUBEMARK_BAZEL_BUILD
-        # value: "y"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "6Gi"
-  - name: pull-kubernetes-kubemark-e2e-gce-big
-    always_run: false
-    skip_report: false
-    max_concurrency: 12
-    branches:
-    - release-1.8
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.8
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -1934,7 +1719,6 @@ presubmits:
     skip_branches:
     - release-1.10  # per-release image
     - release-1.9  # per-release image
-    - release-1.8  # per-release image
     always_run: true
     max_concurrency: 12
     labels:
@@ -2004,29 +1788,6 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
-  - name: pull-kubernetes-node-e2e
-    branches:
-    - release-1.8
-    always_run: true
-    max_concurrency: 12
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-1.8
-        args:
-        - --root=/go/src
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=90"
-        - "--" # end bootstrap args, scenario args below
-        - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml"
-        resources:
-          requests:
-            memory: "6Gi"
 
   - name: pull-kubernetes-node-e2e-containerd
     branches:
@@ -2058,7 +1819,6 @@ presubmits:
     skip_report: false
     skip_branches:
     - release-1.9 # doesn't have typecheck
-    - release-1.8 # doesn't have typecheck
     labels:
       preset-service-account: "true"
     spec:
