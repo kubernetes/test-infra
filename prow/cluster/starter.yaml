@@ -93,7 +93,7 @@ spec:
       labels:
         app: hook
     spec:
-      serviceAccountName: "hook"
+      # serviceAccountName: "hook"  # Uncomment for use with RBAC
       terminationGracePeriodSeconds: 180
       containers:
       - name: hook
@@ -155,7 +155,7 @@ spec:
       labels:
         app: plank
     spec:
-      serviceAccountName: "plank"
+      # serviceAccountName: "plank" # Uncomment for use with RBAC
       containers:
       - name: plank
         image: gcr.io/k8s-prow/plank:v20180814-0a3efc115
@@ -189,7 +189,7 @@ spec:
       labels:
         app: sinker
     spec:
-      serviceAccountName: "sinker"
+      # serviceAccountName: "sinker"  # Uncomment for use with RBAC
       containers:
       - name: sinker
         image: gcr.io/k8s-prow/sinker:v20180814-0a3efc115
@@ -220,7 +220,7 @@ spec:
       labels:
         app: deck
     spec:
-      serviceAccountName: "deck"
+      # serviceAccountName: "deck"  # Uncomment for use with RBAC
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
@@ -264,7 +264,7 @@ spec:
       labels:
         app: horologium
     spec:
-      serviceAccountName: "horologium"
+      # serviceAccountName: "horologium"  # Uncomment for use with RBAC
       terminationGracePeriodSeconds: 30
       containers:
       - name: horologium
