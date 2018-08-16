@@ -477,6 +477,7 @@ func handleLog(lc logClient) http.HandlerFunc {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		job := r.URL.Query().Get("job")
 		id := r.URL.Query().Get("id")
+		logger := logrus.WithFields(logrus.Fields{"job": job, "id": id})
 		if err := validateLogRequest(r); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -484,11 +485,11 @@ func handleLog(lc logClient) http.HandlerFunc {
 		log, err := lc.GetJobLog(job, id)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Log not found: %v", err), http.StatusNotFound)
-			logrus.WithError(err).Warning("Log not found.")
+			logger.WithError(err).Warning("Log not found.")
 			return
 		}
 		if _, err = w.Write(log); err != nil {
-			logrus.WithError(err).Warning("Error writing log.")
+			logger.WithError(err).Warning("Error writing log.")
 		}
 	}
 }
