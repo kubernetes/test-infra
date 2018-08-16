@@ -177,6 +177,10 @@ branch-protection:
           required_status_checks:
             contexts:
             - continuous-integration/travis-ci
+        external-snapshotter:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
         livenessprobe:
           required_status_checks:
             contexts:
