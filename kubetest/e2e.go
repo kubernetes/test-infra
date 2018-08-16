@@ -249,8 +249,8 @@ func run(deploy deployer, o options) error {
 		errs = util.AppendError(errs, control.XMLWrap(&suite, "Helm Charts", chartsTest))
 	}
 
-	if o.perfTests {
-		errs = util.AppendError(errs, control.XMLWrap(&suite, "Perf Tests", perfTest))
+	if o.perfTest != "" {
+		errs = util.AppendError(errs, control.XMLWrap(&suite, "Perf Tests", perfTest(o.perfTest, o.perfTestArgs)))
 	}
 
 	if dump != "" {
@@ -541,13 +541,17 @@ func dumpFederationLogs(location string) error {
 	return nil
 }
 
-func perfTest() error {
+func perfTest(tool, args string) func() error {
 	// Run perf tests
-	cmdline := util.K8s("perf-tests", "clusterloader", "run-e2e.sh")
-	if err := control.FinishRunning(exec.Command(cmdline)); err != nil {
-		return err
+	flagArgs := []string{tool}
+	flagArgs = append(flagArgs, argFields(args, "", "")...)
+	return func() error {
+		cmdline := util.K8s("perf-tests", "run-e2e.sh")
+		if err := control.FinishRunning(exec.Command(cmdline, flagArgs...)); err != nil {
+			return err
+		}
+		return nil
 	}
-	return nil
 }
 
 func chartsTest() error {
