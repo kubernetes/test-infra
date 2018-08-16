@@ -47,6 +47,7 @@ var jobConfigPath = flag.String("job-config", "../../jobs", "Path to prow job co
 var configJSONPath = flag.String("config-json", "../../../jobs/config.json", "Path to prow job config")
 var gubernatorPath = flag.String("gubernator-path", "https://k8s-gubernator.appspot.com", "Path to linked gubernator")
 var bucket = flag.String("bucket", "kubernetes-jenkins", "Gcs bucket for log upload")
+var k8sProw = flag.Bool("k8s-prow", true, "If the config is for k8s prow cluster")
 
 func (c configJSON) ScenarioForJob(jobName string) string {
 	if scenario, ok := c[jobName]["scenario"]; ok {
@@ -163,6 +164,7 @@ func TestURLTemplate(t *testing.T) {
 		job     string
 		build   string
 		expect  string
+		k8sOnly bool
 	}{
 		{
 			name:    "k8s presubmit",
@@ -172,6 +174,7 @@ func TestURLTemplate(t *testing.T) {
 			job:     "k8s-pre-1",
 			build:   "1",
 			expect:  *gubernatorPath + "/build/" + *bucket + "/pr-logs/pull/0/k8s-pre-1/1/",
+			k8sOnly: true,
 		},
 		{
 			name:    "k8s/test-infra presubmit",
@@ -181,6 +184,7 @@ func TestURLTemplate(t *testing.T) {
 			job:     "ti-pre-1",
 			build:   "1",
 			expect:  *gubernatorPath + "/build/" + *bucket + "/pr-logs/pull/test-infra/0/ti-pre-1/1/",
+			k8sOnly: true,
 		},
 		{
 			name:    "foo/k8s presubmit",
@@ -231,10 +235,24 @@ func TestURLTemplate(t *testing.T) {
 			job:     "k8s-batch-1",
 			build:   "1",
 			expect:  *gubernatorPath + "/build/" + *bucket + "/pr-logs/pull/batch/k8s-batch-1/1/",
+			k8sOnly: true,
+		},
+		{
+			name:    "foo bar batch",
+			jobType: kube.BatchJob,
+			org:     "foo",
+			repo:    "bar",
+			job:     "k8s-batch-1",
+			build:   "1",
+			expect:  *gubernatorPath + "/build/" + *bucket + "/pr-logs/pull/foo_bar/batch/k8s-batch-1/1/",
 		},
 	}
 
 	for _, tc := range testcases {
+		if !*k8sProw && tc.k8sOnly {
+			continue
+		}
+
 		var pj = kube.ProwJob{
 			ObjectMeta: metav1.ObjectMeta{Name: tc.name},
 			Spec: kube.ProwJobSpec{
