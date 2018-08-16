@@ -1,4 +1,4 @@
-# Copyright 2016 The Kubernetes Authors.
+# Copyright 2017 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,9 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/k8s-prow/alpine:0.1
-LABEL maintainer="spxtr@google.com"
+FROM docker.io/openshift/origin:v3.9
+LABEL maintainer="dthau@redhat.com"
 
-COPY deck /deck
-COPY static/ /static
-ENTRYPOINT ["/deck"]
+ENV GIT_COMMITTER_NAME=developer \
+    GIT_COMMITTER_EMAIL=developer@redhat.com
+
+RUN yum install -y make
+
+COPY config-updater /config-updater
+ENTRYPOINT ["/config-updater"]

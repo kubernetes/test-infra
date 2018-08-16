@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2016 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,9 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/k8s-prow/alpine:0.1
-LABEL maintainer="spxtr@google.com"
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o xtrace
 
-COPY deck /deck
-COPY static/ /static
-ENTRYPOINT ["/deck"]
+cd "$(dirname "$0")"
+pip install -r test_requirements.txt
+./test.sh --nologcapture
+./lint.sh
+mocha static/build_test.js
+./verify_config.sh

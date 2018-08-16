@@ -1,4 +1,5 @@
-# Copyright 2016 The Kubernetes Authors.
+#!/bin/bash
+# Copyright 2017 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,9 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/k8s-prow/alpine:0.1
-LABEL maintainer="spxtr@google.com"
+# This script verifies the Gubernator configuration
+# file is in sync with Prow.
 
-COPY deck /deck
-COPY static/ /static
-ENTRYPOINT ["/deck"]
+cd "$( dirname "${BASH_SOURCE[0]}" )"
+config="$( mktemp )"
+trap "rm ${config}" EXIT
+
+cp ./config.yaml "${config}"
+./update_config.py ./../prow/config.yaml "${config}"
+
+if ! output="$( diff ./config.yaml "${config}" )"; then
+    echo "Gubernator configuration file is out of sync!"
+    echo "${output}"
+    echo "Run gubernator/update-config.sh"
+    exit 1
+fi

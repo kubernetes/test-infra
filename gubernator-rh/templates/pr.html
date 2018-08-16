@@ -1,0 +1,38 @@
+% extends 'base.html'
+{% block title %}PR #{{pr}}{% endblock %}
+% block header
+  <h1><a href="https://github.com/{{org}}/{{repo}}/pull/{{pr}}">{{org}}/{{repo}}#{{pr}}</a> Test Results</h1>
+% endblock
+% block content
+% if digest
+% set pl = digest.payload
+<center><h3><a href="/pr/{{pl['author']}}">{{pl['author']}}</a>: {{pl['title']}}</h3></center>
+
+% endif
+% if not rows
+  <h2>No Results</h2>
+% else
+  <table class="pr">
+  <thead>
+    <tr><th>Job</th><th colspan="{{max_builds}}">Build</th></tr>
+    <tr class="pr-version"><td></td>
+    {%- for version, width, started in header -%}
+      <th{% if width != 1 %} colspan="{{width}}"{% endif %}>{{version|github_commit_link("%s/%s" % (org, repo))}}<br>{{started|shorttimestamp}}</th>
+    {% endfor %}
+  </thead>
+  % for job, results in rows
+    <tr><td>{{job or ''}}</td>
+    % for result in results
+      % if result == None
+        <td></td>
+      % else
+        % set build, status = result
+        <td class="build-{{status | slugify}}">
+          <a href="/build/{{path}}/{{job}}/{{build}}/" title="Result: {{status}}">{{build}}</a>
+        </td>
+      % endif
+    % endfor
+    </tr>
+  % endfor
+% endif
+% endblock

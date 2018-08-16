@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2016 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,9 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/k8s-prow/alpine:0.1
-LABEL maintainer="spxtr@google.com"
-
-COPY deck /deck
-COPY static/ /static
-ENTRYPOINT ["/deck"]
+set -o errexit -o pipefail -o nounset
+export PYTHONPATH="third_party:${GAE_ROOT}:${GAE_ROOT}/lib/webapp2-2.5.2:${GAE_ROOT}/lib/jinja2-2.6"
+cd "$(dirname "$0")"
+pylint ../gubernator
+shopt -s extglob
+status=0
+for f in templates/!(base).html; do
+  if ! grep -q "% extends 'base.html'" "$f"; then
+    status=1
+    echo "ERROR: $f should begin with '% extends 'base.html'"
+  fi
+done
+exit $status

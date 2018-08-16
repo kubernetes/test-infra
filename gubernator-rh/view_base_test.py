@@ -12,9 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/k8s-prow/alpine:0.1
-LABEL maintainer="spxtr@google.com"
+import unittest
 
-COPY deck /deck
-COPY static/ /static
-ENTRYPOINT ["/deck"]
+import view_base
+
+
+class HelperTest(unittest.TestCase):
+    def test_pad_numbers(self):
+        self.assertEqual(view_base.pad_numbers('a3b45'),
+                         'a' + '0' * 15 + '3b' + '0' * 14 + '45')

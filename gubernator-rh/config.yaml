@@ -1,0 +1,46 @@
+---
+default_org: openshift
+default_repo: origin
+external_services:
+  kubernetes:
+    gcs_pull_prefix: origin-federated-results/pr-logs/pull
+    prow_url: deck-ci.svc.ci.openshift.org
+  kubernetes-incubator:
+    gcs_pull_prefix: origin-federated-results/pr-logs/pull
+    prow_url: deck-ci.svc.ci.openshift.org
+  openshift:
+    gcs_pull_prefix: origin-ci-test/pr-logs/pull
+    prow_url: deck-ci.svc.ci.openshift.org
+jobs:
+  origin-ci-test/logs/:
+    - test_branch_origin_check
+    - test_branch_origin_cmd
+    - test_branch_origin_cross
+    - test_branch_origin_end_to_end
+    - test_branch_origin_extended_builds
+    - test_branch_origin_extended_conformance_gce
+    - test_branch_origin_extended_conformance_install_update
+    - test_branch_origin_extended_conformance_install
+    - test_branch_origin_extended_gssapi
+    - test_branch_origin_extended_image_ecosystem
+    - test_branch_origin_extended_ldap_groups
+    - test_branch_origin_extended_networking
+    - test_branch_origin_extended_templates
+    - test_branch_origin_integration
+    - test_branch_origin_verify
+  origin-ci-test/pr-logs/directory/:
+    - test_pull_request_origin_verify
+    - test_pull_request_origin_cmd
+    - test_pull_request_origin_unit
+    - test_pull_request_origin_integration
+    - test_pull_request_origin_end_to_end
+    - test_pull_request_origin_extended_conformance_gce
+    - test_pull_request_origin_extended_conformance_install_update
+    - test_pull_request_origin_extended_networking_minimal
+  origin-ci-test/pr-logs/directory/:
+    - test_pull_request_crio_ami_fedora
+    - test_pull_request_crio_ami_rhel
+    - test_pull_request_crio_e2e_fedora
+    - test_pull_request_crio_e2e_rhel
+    - test_pull_request_crio_integration_fedora
+    - test_pull_request_crio_integration_rhel

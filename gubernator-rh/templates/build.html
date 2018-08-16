@@ -1,0 +1,137 @@
+% extends 'base.html'
+{% block title %}{{job}} #{{build}} Results{% endblock %}
+% block head
+{{super()}}
+% if finished and finished['passed'] and not res['failed']
+<link rel="icon" type="image/png" href="{{'favicon-green.png'|static}}" />
+% endif
+% endblock
+% block header
+<div>
+<h1>{% if pr and pr != "batch"  %}<a href="/pr/{{pr_path}}{{pr}}">{% if repo != "kubernetes/kubernetes"%}{{repo}} {% endif %}PR #{{pr}}</a> {% endif %}
+	<span>
+	% if testgrid_query
+		<a href="{{testgrid_query|tg_url}}">{{job}}</a>
+	% else
+		{{job}}
+	% endif
+	#{{build}}</span></h1>
+	<p><a href="/builds{{job_dir}}">Recent runs</a> |
+       <a href="https://ci.openshift.redhat.com/jenkins/job/{{job}}/{{build}}/">View job in Jenkins</a>
+</div>
+% endblock
+% block content
+<div id="summary">
+	<table class="build-meta">
+	% if pr and pr_digest
+		% set pl = pr_digest.payload
+		<tr><td>PR<td><a href="/pr/{{pl['author']}}">{{pl['author']}}</a>: {{pl['title']}}
+	% endif
+		% if finished
+			% set result = finished['result']
+		% else
+			% set result = 'Not Finished'
+		% endif
+		<tr><td>Result<td class="build-{{result | slugify}}">{{result}}
+	% if started
+		% if finished
+			<tr><td>Tests<td>
+			% if res['failed']
+				<span class="text-failure">{{res['failed']|length}} failed</span>
+			% else
+				{{res['failed']|length}} failed
+			% endif
+			/ {{res['passed']|length}} succeeded
+		% endif
+		<tr><td>Started<td>{{started['timestamp']|timestamp}}
+		{% if finished %}<tr><td>Elapsed<td>{{(finished['timestamp']-started['timestamp'])|duration}}{% endif %}
+		<tr><td>Version<td><a href="https://github.com/{{repo}}/commit/{{commit}}">{{started['version'] or finished['version']}}</a>
+		% if 'jenkins-node' in started
+			<tr><td>Builder<td>{{started['jenkins-node']}}
+		% endif
+		% if refs
+			<tr><td>Refs<td>
+			% for name, sha in refs
+				{%- if name.isdigit() -%}
+					<a href="https://github.com/{{repo}}/pull/{{name}}">{{name}}</a>
+				{%- else -%}
+					{{name}}
+				{%- endif -%}
+				{%- if sha %}:{{sha|github_commit_link(repo)}}{% endif %}<br>
+			{%- endfor %}
+		% endif
+	% endif
+	</table>
+	<ul class="nav">
+		<li class="nav"><a href="{{build_dir | gcs_browse_url}}">artifacts</a></li>
+		<li class="nav"><a href="?log#log">build log</a></li>
+	</ul>
+	</div>
+	<div id="failures">
+	% if issues
+		<h4>References</h4>
+		% for issue in issues
+		<a href="https://github.com/{{issue.repo}}/issues/{{issue.number}}">
+		{% if issue.is_pr %}PR{% else %}Issue{% endif %} #{{issue.number}} {{issue.payload['title']}}</a>
+		<br>
+		% endfor
+		<hr>
+	% endif
+	% if res['failed']
+		<h2>Test Failures</h2>
+		% for name, time, text, filename, output in res['failed']
+			<hr>
+			<h3><a class="anchor" id="{{name|slugify}}" href="#{{name|slugify}}">{{name}}<span class="time"> {{time|duration}}</span></h3></a>
+			% if 'junit_runner' not in filename
+				<pre class="cmd" onclick="select(this)">{{name | testcmd}}</pre>
+			% endif
+			% if text
+				<pre class="error">{{text|linkify_stacktrace(commit, repo)}}
+				% if output
+				<div class="hidden"><hr>{{output|linkify_stacktrace(commit, repo)}}</div>
+				<span class="expand inset-expand">Click to see stdout/stderr</span><span class="inset-filename">from <a href="https://storage.googleapis.com{{filename}}">{{filename|basename}}</a></span></pre>
+				% else
+				<span class="inset-filename">from <a href="https://storage.googleapis.com{{filename}}">{{filename|basename}}</a></span></pre>
+				% endif
+				% set pod_name = text|parse_pod_name
+				% if pod_name
+					<p>Find <tt>{{pod_name}}</tt> mentions in <a id="{{pod_name|slugify}}" href="/build{{build_dir}}/nodelog?pod={{pod_name}}&junit={{filename|basename}}&wrap=on">log files</a>
+				% else
+					<p>Filter through <a href="/build{{build_dir}}/nodelog?junit={{filename|basename}}&wrap=on">log files</a>
+				% endif
+				% if testgrid_query
+					| View <a href="{{testgrid_query|tg_url(name)}}">test history</a> on testgrid
+				% endif
+			% else
+				<span class="inset-filename">from <a href="https://storage.googleapis.com{{filename}}">{{filename|basename}}</a></span>
+			% endif
+		% endfor
+	% else
+		<h2>{{"No Test Failures!" if finished else "Build Still Running!"}}</h2>
+	% endif
+	</div>
+	% for kind in ['passed', 'skipped']
+		% if res[kind]
+			<hr>
+			<div id="{{kind}}" class="testlist">
+			<span class="expand">Show {{res[kind]|length}} {{kind|title}} Tests</span>
+			<h2 class="hidden">{{kind|title}}</h2>
+			% for name in res[kind]
+				<p class="hidden">{{name}}
+			% endfor
+			</div>
+		% endif
+	% endfor
+	% if build_log
+	<div id="log">
+		<a name="log"></a>
+		<hr>
+		<h2 id="log">Error lines from build-log.txt</h2>
+		<ul class="log">
+			<li class="log"><button onclick="javascript:expand_all(this.parentElement)">Expand Skipped Lines</button></li>
+			<li class="log"><a href="{{build_log_src or "https://storage.googleapis.com%s/build-log.txt" % build_dir}}">Raw build-log.txt</a></li>
+		</ul>
+		<pre data-src="{{build_log_src or "%s/build-log.txt" % build_dir}}">{{build_log | safe}}</pre>
+	</div>
+	% endif
+% endblock

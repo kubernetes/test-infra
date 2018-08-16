@@ -1,0 +1,9 @@
+% extends 'base.html'
+{% block title %}Missing build {{build_dir}}{% endblock %}
+% block header
+<h1><a href="/builds{{job_dir}}">{{job}}</a> #{{build}}</h1>
+% endblock
+% block content
+<h3>Unable to load build details from <a href="{{build_dir | gcs_browse_url}}">gs:/{{build_dir}}</a></h3>
+<h3>This may mean the job has not yet uploaded any artifacts, or that it failed to upload. Take a look at the <a href="https://ci.openshift.redhat.com/jenkins/job/{{job}}/{{build}}/">job in Jenkins</a> for more information.<h3>
+% endblock
