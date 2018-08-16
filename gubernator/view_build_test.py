@@ -64,6 +64,27 @@ class ParseJunitTest(unittest.TestCase):
             "out: first line\nout: second line\nerr: first line",
             )])
 
+    def test_testsuites_no_time(self):
+        results = self.parse("""
+            <testsuites>
+                <testsuite name="k8s.io/suite">
+                    <properties>
+                        <property name="go.version" value="go1.6"/>
+                    </properties>
+                    <testcase name="TestBad">
+                        <failure>something bad</failure>
+                        <system-out>out: first line</system-out>
+                        <system-err>err: first line</system-err>
+                        <system-out>out: second line</system-out>
+                    </testcase>
+                </testsuite>
+            </testsuites>""")
+        self.assertEqual(results['failed'], [(
+            'k8s.io/suite TestBad', 0.0, 'something bad', "junit_filename.xml",
+            "out: first line\nout: second line\nerr: first line",
+            )])
+
+
     def test_nested_testsuites(self):
         results = self.parse("""
             <testsuites>

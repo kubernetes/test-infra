@@ -171,9 +171,10 @@ var (
 
 func init() {
 	prometheus.MustRegister(tideMetrics.pooledPRs)
+	prometheus.MustRegister(tideMetrics.updateTime)
+	prometheus.MustRegister(tideMetrics.merges)
 	prometheus.MustRegister(tideMetrics.syncDuration)
 	prometheus.MustRegister(tideMetrics.statusUpdateDuration)
-	prometheus.MustRegister(tideMetrics.merges)
 }
 
 // NewController makes a Controller out of the given clients.
@@ -780,6 +781,7 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 				}
 			} else {
 				log.Info("Merged.")
+				successCount++
 				// If we have more PRs to merge, sleep to give Github time to recalculate
 				// mergeability.
 				if i+1 < len(prs) {

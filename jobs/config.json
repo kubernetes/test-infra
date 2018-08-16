@@ -311,26 +311,6 @@
       "sig-scheduling"
     ]
   },
-  "ci-kubernetes-e2e-gce-federation-release-1-8": {
-    "args": [
-      "--check-leaked-resources",
-      "--cluster=prow-us-central1-f",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-federation-release-1-8.env",
-      "--extract=ci/latest-1.8",
-      "--federation",
-      "--gcp-node-image=gci",
-      "--gcp-project=k8s-jkns-e2e-gce-f8n-1-8",
-      "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel=25",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Federation\\] --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[NoCluster\\] --minStartupPods=8",
-      "--timeout=900m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-multicluster"
-    ]
-  },
   "ci-kubernetes-e2e-gce-gci-latest-rollback-etcd": {
     "args": [
       "--check-leaked-resources",
@@ -1420,18 +1400,6 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-instrumentation"
-    ]
-  },
-  "ci-kubernetes-federation-build-1-8": {
-    "args": [
-      "--allow-dup",
-      "--fast",
-      "--federation=k8s-jkns-e2e-gce-f8n-1-8",
-      "--release=kubernetes-federation-release-1-8"
-    ],
-    "scenario": "kubernetes_build",
-    "sigOwners": [
-      "sig-multicluster"
     ]
   },
   "ci-kubernetes-local-e2e": {

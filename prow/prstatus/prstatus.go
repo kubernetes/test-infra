@@ -223,12 +223,8 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 				return
 			}
 
-			getSecret := func() []byte {
-				return []byte(token.AccessToken)
-			}
-
 			// Construct query
-			ghc := github.NewClient(getSecret, githubEndpoint)
+			ghc := github.NewClient(func() []byte { return []byte(token.AccessToken) }, githubEndpoint)
 			query := da.ConstructSearchQuery(login)
 			if err := r.ParseForm(); err == nil {
 				if q := r.Form.Get("query"); q != "" {
