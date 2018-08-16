@@ -134,12 +134,10 @@ func main() {
 	var githubClient *github.Client
 	var kubeClient *kube.Client
 	if o.dryRun {
-		githubClient = github.NewDryRunClient(
-			secretAgent.GetTokenGenerator(o.githubTokenFile), o.githubEndpoint.Strings()...)
+		githubClient = github.NewDryRunClient(secretAgent.GetTokenGenerator(o.githubTokenFile), o.githubEndpoint.Strings()...)
 		kubeClient = kube.NewFakeClient(o.deckURL)
 	} else {
-		githubClient = github.NewClient(
-			secretAgent.GetTokenGenerator(o.githubTokenFile), o.githubEndpoint.Strings()...)
+		githubClient = github.NewClient(secretAgent.GetTokenGenerator(o.githubTokenFile), o.githubEndpoint.Strings()...)
 		if o.cluster == "" {
 			kubeClient, err = kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 			if err != nil {

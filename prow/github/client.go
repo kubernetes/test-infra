@@ -86,6 +86,14 @@ const (
 	acceptNone = ""
 )
 
+// Force the compiler to check if the TokenSource is implementing correctly.
+// Tokensource is needed to dynamically update the token in the GraphQL client.
+var _ oauth2.TokenSource = &reloadingTokenSource{}
+
+type reloadingTokenSource struct {
+	getToken func() []byte
+}
+
 // Interface for how prow interacts with the http client, which we may throttle.
 type httpClient interface {
 	Do(req *http.Request) (*http.Response, error)
@@ -193,10 +201,9 @@ func (c *Client) Throttle(hourlyTokens, burst int) {
 //   this client to bypass the cache if it is temporarily unavailable.
 func NewClient(getToken func() []byte, bases ...string) *Client {
 	return &Client{
-		logger: logrus.WithField("client", "github"),
-		time:   &standardTime{},
-		gqlc: githubql.NewClient(oauth2.NewClient(context.Background(),
-			oauth2.StaticTokenSource(&oauth2.Token{AccessToken: string(getToken())}))),
+		logger:   logrus.WithField("client", "github"),
+		time:     &standardTime{},
+		gqlc:     githubql.NewClient(&http.Client{Transport: &oauth2.Transport{Source: newReloadingTokenSource(getToken)}}),
 		client:   &http.Client{},
 		bases:    bases,
 		getToken: getToken,
@@ -214,10 +221,9 @@ func NewClient(getToken func() []byte, bases ...string) *Client {
 //   this client to bypass the cache if it is temporarily unavailable.
 func NewDryRunClient(getToken func() []byte, bases ...string) *Client {
 	return &Client{
-		logger: logrus.WithField("client", "github"),
-		time:   &standardTime{},
-		gqlc: githubql.NewClient(oauth2.NewClient(context.Background(),
-			oauth2.StaticTokenSource(&oauth2.Token{AccessToken: string(getToken())}))),
+		logger:   logrus.WithField("client", "github"),
+		time:     &standardTime{},
+		gqlc:     githubql.NewClient(&http.Client{Transport: &oauth2.Transport{Source: newReloadingTokenSource(getToken)}}),
 		client:   &http.Client{},
 		bases:    bases,
 		getToken: getToken,
@@ -2147,4 +2153,18 @@ func (c *Client) ListMilestones(org, repo string) ([]Milestone, error) {
 		return nil, err
 	}
 	return milestones, nil
+}
+
+// newReloadingTokenSource creates a reloadingTokenSource.
+func newReloadingTokenSource(getToken func() []byte) *reloadingTokenSource {
+	return &reloadingTokenSource{
+		getToken: getToken,
+	}
+}
+
+// Token is an implementation for oauth2.TokenSource interface.
+func (s *reloadingTokenSource) Token() (*oauth2.Token, error) {
+	return &oauth2.Token{
+		AccessToken: string(s.getToken()),
+	}, nil
 }

@@ -116,13 +116,11 @@ func main() {
 
 		if o.dryRun {
 			if string(secretAgent.GetTokenGenerator(o.githubTokenFile)()) != "" {
-				ghc = github.NewDryRunClient(secretAgent.GetTokenGenerator(o.githubTokenFile),
-					o.githubEndpoint.Strings()...)
+				ghc = github.NewDryRunClient(secretAgent.GetTokenGenerator(o.githubTokenFile), o.githubEndpoint.Strings()...)
 			}
 		} else {
 			if string(secretAgent.GetTokenGenerator(o.githubTokenFile)()) != "" {
-				ghc = github.NewClient(secretAgent.GetTokenGenerator(o.githubTokenFile),
-					o.githubEndpoint.Strings()...)
+				ghc = github.NewClient(secretAgent.GetTokenGenerator(o.githubTokenFile), o.githubEndpoint.Strings()...)
 			}
 		}
 	}
