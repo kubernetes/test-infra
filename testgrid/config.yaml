@@ -4106,7 +4106,7 @@ dashboards:
   - name: gci-gce-1.10
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-default
   - name: gci-gce-slow-1.10
-    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-default
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-slow
   - name: gci-gce-serial-1.10
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-serial
   - name: gci-gce-alpha-features-1.10
@@ -4229,8 +4229,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-9
   - name: gce-kubeadm-1.8-on-1.9
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8-on-1-9
-  - name: ci-gce-kubeadm-1.9
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-9
   - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1.8-1.9
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9
   - name: periodic-kubernetes-e2e-packages-pushed
@@ -4826,7 +4824,7 @@ dashboards:
   - name: gke-ubuntu1-k8sstable2-autoscaling
     test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-autoscaling
   - name: gke-ubuntu1-k8sstable3-autoscaling
-    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-autoscaling
   - name: gke-ubuntu2-k8sbeta-autoscaling
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-autoscaling
   - name: gke-ubuntu2-k8sstable1-autoscaling
@@ -4834,7 +4832,7 @@ dashboards:
   - name: gke-ubuntu2-k8sstable2-autoscaling
     test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-autoscaling
   - name: gke-ubuntu2-k8sstable3-autoscaling
-    test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable2-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-ubuntu2-k8sstable3-autoscaling
 
 - name: sig-autoscaling-hpa
   dashboard_tab:

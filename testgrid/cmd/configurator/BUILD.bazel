@@ -27,6 +27,7 @@ go_test(
         "//prow/config:go_default_library",
         "//testgrid:config",
         "//vendor/github.com/ghodss/yaml:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )
 
