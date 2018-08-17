@@ -177,6 +177,8 @@ default:
     - color: c7def8
       description: Categorizes issue or PR as related to documentation.
       name: kind/documentation
+      previously:
+        - name: kind/old-docs
       target: both
       prowPlugin: label
       addedBy: anyone
