@@ -532,7 +532,6 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --cluster=kubemark-100
-      - --env=KUBE_FEATURE_GATES=TaintBasedEvictions=true
       - --env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env
       - --extract=ci/latest
       - --gcp-master-size=n1-standard-2
