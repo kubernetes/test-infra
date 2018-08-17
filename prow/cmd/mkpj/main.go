@@ -41,6 +41,8 @@ type options struct {
 	pullNumber int
 	pullSha    string
 	pullAuthor string
+
+	extraLabels []string
 }
 
 func (o *options) Validate() error {
@@ -52,11 +54,19 @@ func (o *options) Validate() error {
 		return errors.New("required flag --config-path was unset")
 	}
 
+	for _, l := range o.extraLabels {
+		if (len(strings.Split(l, "=")) != 2) {
+			return errors.New(
+				"each extra-label should be separated by comma and follow the pattern <label_name>=<label_value>")
+		}
+	}
+
 	return nil
 }
 
 func gatherOptions() options {
 	o := options{}
+	var extraLabelsString string
 	flag.StringVar(&o.jobName, "job", "", "Job to run.")
 	flag.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
@@ -65,7 +75,11 @@ func gatherOptions() options {
 	flag.IntVar(&o.pullNumber, "pull-number", 0, "Git pull number under test")
 	flag.StringVar(&o.pullSha, "pull-sha", "", "Git pull SHA under test")
 	flag.StringVar(&o.pullAuthor, "pull-author", "", "Git pull author under test")
+	flag.StringVar(&extraLabelsString, "extra-labels", "",
+		"Extra labels puts into Prowjob: <label1-name>=<label1-value>,<label2-name>=<label2-value>...")
 	flag.Parse()
+
+	o.extraLabels = strings.Split(extraLabelsString, ",")
 	return o
 }
 
@@ -163,6 +177,12 @@ func main() {
 			fmt.Scanln(&pjs.Refs.Pulls[0].SHA)
 		}
 	}
+
+	for _, l := range o.extraLabels {
+		p := strings.Split(l, "=")
+		labels[p[0]] = p[1]
+	}
+
 	pj := pjutil.NewProwJob(pjs, labels)
 	b, err := yaml.Marshal(&pj)
 	if err != nil {
