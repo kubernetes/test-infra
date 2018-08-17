@@ -62,6 +62,7 @@ approve:
   - kubernetes/sig-release
   - kubernetes/steering
   - kubernetes/test-infra
+  - kubernetes/utils
   - kubernetes-incubator/ip-masq-agent
   implicit_self_approve: true
   lgtm_acts_as_approve: true
@@ -431,6 +432,10 @@ plugins:
   - override
   - trigger
   - verify-owners
+
+  kubernetes/utils:
+  - approve
+  - blunderbuss
 
   kubernetes/website:
   - approve

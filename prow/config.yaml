@@ -130,8 +130,6 @@ branch-protection:
             teams:
             - stage-bots
         utils:
-          required_pull_request_reviews:
-            required_approving_review_count: 1
           required_status_checks:
             contexts:
             - continuous-integration/travis-ci
@@ -259,6 +257,7 @@ tide:
     - kubernetes/sig-release
     - kubernetes/steering
     - kubernetes/test-infra
+    - kubernetes/utils
     - kubernetes/website
     - kubernetes-csi/csi-test
     - kubernetes-csi/docs
