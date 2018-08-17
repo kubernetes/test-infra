@@ -147,6 +147,14 @@ default:
       prowPlugin: help
       addedBy: anyone
     - color: e11d21
+      description: Categorizes issue or PR as related to adding, removing, or otherwise changing an API
+      name: kind/api-change
+      previously:
+        - name: kind/new-api
+      target: both
+      prowPlugin: label
+      addedBy: anyone
+    - color: e11d21
       description: Categorizes issue or PR as related to a bug.
       name: kind/bug
       previously:
