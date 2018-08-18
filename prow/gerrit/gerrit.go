@@ -212,6 +212,8 @@ func (c *Controller) queryProjectChanges(proj string) ([]gerrit.ChangeInfo, erro
 				continue
 			}
 
+			logrus.Infof("Change %s, last updated %s", change.Number, change.Updated)
+
 			// process if updated later than last updated
 			// stop if update was stale
 			if updated.After(c.lastUpdate) {
