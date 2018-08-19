@@ -34,6 +34,7 @@ owners:
 
 approve:
 - repos:
+  - kubernetes/cloud-provider-azure
   - kubernetes/cluster-registry
   - kubernetes/contrib
   - kubernetes/dashboard
