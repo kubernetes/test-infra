@@ -869,36 +869,6 @@
       "sig-instrumentation"
     ]
   },
-  "ci-kubernetes-local-e2e": {
-    "args": [
-      "--deployment=local",
-      "--extract=ci/latest",
-      "--extract-source",
-      "--ginkgo-parallel=1",
-      "--provider=local",
-      "--test_args=--ginkgo.focus=\\[Conformance\\]",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "ci-kubernetes-local-e2e-containerized": {
-    "args": [
-      "--deployment=local",
-      "--extract=ci/latest",
-      "--extract-source",
-      "--ginkgo-parallel=1",
-      "--provider=local",
-      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Containerized\\] --ginkgo.skip=\\[Disruptive\\]",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-node"
-    ]
-  },
   "ci-kubernetes-multicluster-ingress-test": {
     "args": [
       "make",
@@ -1576,35 +1546,6 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-scalability"
-    ]
-  },
-  "pull-kubernetes-local-e2e": {
-    "args": [
-      "--build=bazel",
-      "--deployment=local",
-      "--ginkgo-parallel=1",
-      "--provider=local",
-      "--test_args=--ginkgo.focus=\\[Conformance\\]",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "pull-kubernetes-local-e2e-containerized": {
-    "args": [
-      "--build=bazel",
-      "--deployment=local",
-      "--ginkgo-parallel=1",
-      "--provider=local",
-      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Containerized\\] --ginkgo.skip=\\[Disruptive\\]",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-node",
-      "sig-storage"
     ]
   },
   "pull-kubernetes-multicluster-ingress-test": {
