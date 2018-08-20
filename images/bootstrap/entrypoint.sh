@@ -17,6 +17,12 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+# enable IPv6 if requested (requires container to be run privileged mode)
+export IPV6_ENABLED=${IPV6_ENABLED:-false}
+if [[ "${IPV6_ENABLED}" == "true" ]]; then
+    sysctl -w net.ipv6.conf.all.disable_ipv6=0
+fi
+
 # get test-infra for latest bootstrap etc
 git clone https://github.com/kubernetes/test-infra
 
