@@ -38,11 +38,13 @@ approve:
   - kubernetes/cluster-registry
   - kubernetes/contrib
   - kubernetes/dashboard
+  - kubernetes/dns
   - kubernetes/examples
   - kubernetes/features
   - kubernetes/federation
   - kubernetes/gengo
   - kubernetes/heapster
+  - kubernetes/ingress-gce
   - kubernetes/ingress-nginx
   - kubernetes/kops
   - kubernetes/kube-deploy
@@ -60,6 +62,7 @@ approve:
   - kubernetes/sig-release
   - kubernetes/steering
   - kubernetes/test-infra
+  - kubernetes-incubator/ip-masq-agent
   implicit_self_approve: true
   lgtm_acts_as_approve: true
 - repos:

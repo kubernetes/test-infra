@@ -232,11 +232,13 @@ tide:
     - kubernetes/community
     - kubernetes/contrib
     - kubernetes/dashboard
+    - kubernetes/dns
     - kubernetes/examples
     - kubernetes/features
     - kubernetes/federation
     - kubernetes/gengo
     - kubernetes/heapster
+    - kubernetes/ingress-gce
     - kubernetes/ingress-nginx
     - kubernetes/kops
     - kubernetes/kube-deploy
@@ -280,6 +282,7 @@ tide:
     - kubernetes-sigs/gcp-filestore-csi-driver
     - kubernetes-sigs/kubebuilder
     - kubernetes-sigs/kustomize
+    - kubernetes-incubator/ip-masq-agent
     - client-go/unofficial-docs
     labels:
     - lgtm
