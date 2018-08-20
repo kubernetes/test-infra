@@ -1012,61 +1012,6 @@
       "sig-gcp"
     ]
   },
-  "ci-kubernetes-verify-beta": {
-    "args": [
-      "--branch=release-1.11",
-      "--force",
-      "--script=./hack/jenkins/verify-dockerized.sh"
-    ],
-    "scenario": "kubernetes_verify",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "ci-kubernetes-verify-master": {
-    "args": [
-      "--branch=master",
-      "--force",
-      "--script=./hack/jenkins/verify-dockerized.sh"
-    ],
-    "scenario": "kubernetes_verify",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "ci-kubernetes-verify-stable1": {
-    "args": [
-      "--branch=release-1.10",
-      "--force",
-      "--script=./hack/jenkins/verify-dockerized.sh"
-    ],
-    "scenario": "kubernetes_verify",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "ci-kubernetes-verify-stable2": {
-    "args": [
-      "--branch=release-1.9",
-      "--force",
-      "--script=./hack/jenkins/verify-dockerized.sh"
-    ],
-    "scenario": "kubernetes_verify",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "ci-kubernetes-verify-stable3": {
-    "args": [
-      "--branch=release-1.8",
-      "--force",
-      "--script=./hack/jenkins/verify-dockerized.sh"
-    ],
-    "scenario": "kubernetes_verify",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
   "ci-kustomize-periodic-default-gke": {
     "args": [
       "--check-leaked-resources",
