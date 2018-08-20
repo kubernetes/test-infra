@@ -288,6 +288,7 @@ plugins:
   - approve
 
   kubernetes/dns:
+  - approve
   - trigger
 
   kubernetes/examples:
@@ -299,6 +300,7 @@ plugins:
   - stage
 
   kubernetes/ingress-gce:
+  - approve
   - trigger
 
   kubernetes/ingress-nginx:
@@ -480,6 +482,11 @@ plugins:
   - trigger
   - verify-owners
   - wip
+
+  kubernetes-incubator/ip-masq-agent:
+  - approve
+  - hold
+  - trigger
 
   kubernetes-sigs:
   - approve
