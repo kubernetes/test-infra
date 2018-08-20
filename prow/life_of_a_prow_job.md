@@ -25,9 +25,8 @@ kind: ProwJob
 metadata:
   name: 32456927-35d9-11e7-8d95-0a580a6c1504
 spec:
-  agent: kubernetes
-  context: Bazel test
   job: pull-test-infra-bazel
+  decorate: true
   pod_spec:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:0.11
@@ -40,8 +39,6 @@ spec:
       number: 2716
       sha: dc32ccc9ea3672ccc523b7cbaa8b00360b4183cd
     repo: test-infra
-  report: true
-  rerun_command: '@k8s-bot bazel test this'
   type: presubmit
 status:
   startTime: 2017-05-10T23:34:22.567457715Z
