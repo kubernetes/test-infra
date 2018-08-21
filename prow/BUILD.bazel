@@ -65,7 +65,6 @@ filegroup(
         "//prow/cmd/build:all-srcs",
         "//prow/cmd/checkconfig:all-srcs",
         "//prow/cmd/clonerefs:all-srcs",
-        "//prow/cmd/config:all-srcs",
         "//prow/cmd/deck:all-srcs",
         "//prow/cmd/entrypoint:all-srcs",
         "//prow/cmd/gcsupload:all-srcs",
