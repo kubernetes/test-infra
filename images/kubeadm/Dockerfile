@@ -49,5 +49,3 @@ RUN mkdir -p /tmp/terraform/ && \
     rm -rf /tmp/terraform
 
 WORKDIR /workspace
-ADD runner /
-ENTRYPOINT ["/bin/bash", "/runner"]
