@@ -487,71 +487,6 @@ presubmits:
     trigger: (?m)^/test( | .* )pull-security-kubernetes-cross-prow,?($|\s.*)
   - agent: kubernetes
     always_run: false
-    cluster: security
-    context: pull-security-kubernetes-dind-e2e
-    labels:
-      preset-bazel-scratch-dir: "true"
-      preset-dind-enabled: "true"
-      preset-service-account: "true"
-    name: pull-security-kubernetes-dind-e2e
-    rerun_command: /test pull-security-kubernetes-dind-e2e
-    skip_branches:
-    - release-1.9
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - --job=$(JOB_NAME)
-        - --root=/go/src
-        - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/test-infra=master
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --scenario=dindind_execute
-        - --
-        - kubetest
-        - --
-        - --build=dind
-        - --deployment=dind
-        - --ginkgo-focus=\[Conformance\]
-        - --ginkgo-skip=(DNS)|(NodeSelector)
-        - --up
-        - --test
-        - --down
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-        name: ""
-        resources:
-          requests:
-            memory: 6Gi
-        securityContext:
-          capabilities:
-            add:
-            - SYS_ADMIN
-          privileged: true
-        volumeMounts:
-        - mountPath: /lib/modules
-          name: modules
-          readOnly: true
-        - mountPath: /sys/fs/cgroup
-          name: cgroup
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - hostPath:
-          path: /lib/modules
-          type: Directory
-        name: modules
-      - hostPath:
-          path: /sys/fs/cgroup
-          type: Directory
-        name: cgroup
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test( | .* )pull-security-kubernetes-dind-e2e,?($|\s.*)
-  - agent: kubernetes
-    always_run: false
     branches:
     - master
     cluster: security
@@ -1191,84 +1126,6 @@ presubmits:
           defaultMode: 256
           secretName: ssh-security
     trigger: (?m)^/test( | .* )pull-security-kubernetes-kubemark-e2e-gce-scale,?($|\s.*)
-  - agent: kubernetes
-    always_run: false
-    branches:
-    - master
-    cluster: security
-    context: pull-security-kubernetes-local-e2e
-    labels:
-      preset-dind-enabled: "true"
-      preset-k8s-ssh: "true"
-      preset-service-account: "true"
-    max_concurrency: 8
-    name: pull-security-kubernetes-local-e2e
-    rerun_command: /test pull-security-kubernetes-local-e2e
-    run_if_changed: (hyperkube|local-up-cluster)
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - --root=/go/src
-        - --job=$(JOB_NAME)
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=140
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-        name: ""
-        resources: {}
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test( | .* )pull-security-kubernetes-local-e2e,?($|\s.*)
-  - agent: kubernetes
-    always_run: false
-    branches:
-    - master
-    cluster: security
-    context: pull-security-kubernetes-local-e2e-containerized
-    labels:
-      preset-dind-enabled: "true"
-      preset-k8s-ssh: "true"
-      preset-service-account: "true"
-    name: pull-security-kubernetes-local-e2e-containerized
-    rerun_command: /test pull-security-kubernetes-local-e2e-containerized
-    run_if_changed: ^(pkg|cmd)/kubelet.*$
-    spec:
-      containers:
-      - args:
-        - --ssh=/etc/ssh-security/ssh-security
-        - --root=/go/src
-        - --job=$(JOB_NAME)
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-prow/pr-logs
-        - --timeout=140
-        env:
-        - name: DOCKERIZE_KUBELET
-          value: "true"
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-        name: ""
-        resources: {}
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test( | .* )pull-security-kubernetes-local-e2e-containerized,?($|\s.*)
   - agent: kubernetes
     always_run: true
     cluster: security
@@ -2048,6 +1905,119 @@ presubmits:
     trigger: (?m)^/test( | .* )pull-security-kubernetes-e2e-gke-device-plugin-gpu,?($|\s.*)
   - agent: kubernetes
     always_run: false
+    branches:
+    - master
+    cluster: security
+    context: pull-security-kubernetes-local-e2e-containerized
+    labels:
+      preset-dind-enabled: "true"
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    name: pull-security-kubernetes-local-e2e-containerized
+    rerun_command: /test pull-security-kubernetes-local-e2e-containerized
+    run_if_changed: ^(pkg|cmd)/kubelet.*$
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --root=/go/src
+        - --job=$(JOB_NAME)
+        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-security-prow/pr-logs
+        - --timeout=140
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --deployment=local
+        - --ginkgo-parallel=1
+        - --provider=local
+        - --test_args=--ginkgo.focus=\[Conformance\]|\[Containerized\] --ginkgo.skip=\[Disruptive\]
+        - --timeout=120m
+        env:
+        - name: DOCKERIZE_KUBELET
+          value: "true"
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+        name: ""
+        resources: {}
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-local-e2e-containerized,?($|\s.*)
+  - agent: kubernetes
+    always_run: false
+    cluster: security
+    context: pull-security-kubernetes-dind-e2e
+    labels:
+      preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
+      preset-service-account: "true"
+    name: pull-security-kubernetes-dind-e2e
+    rerun_command: /test pull-security-kubernetes-dind-e2e
+    skip_branches:
+    - release-1.9
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --job=$(JOB_NAME)
+        - --root=/go/src
+        - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/test-infra=master
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-security-prow/pr-logs
+        - --scenario=dindind_execute
+        - --
+        - kubetest
+        - --
+        - --build=dind
+        - --deployment=dind
+        - --ginkgo-focus=\[Conformance\]
+        - --ginkgo-skip=(DNS)|(NodeSelector)
+        - --up
+        - --test
+        - --down
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+        name: ""
+        resources:
+          requests:
+            memory: 6Gi
+        securityContext:
+          capabilities:
+            add:
+            - SYS_ADMIN
+          privileged: true
+        volumeMounts:
+        - mountPath: /lib/modules
+          name: modules
+          readOnly: true
+        - mountPath: /sys/fs/cgroup
+          name: cgroup
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - hostPath:
+          path: /lib/modules
+          type: Directory
+        name: modules
+      - hostPath:
+          path: /sys/fs/cgroup
+          type: Directory
+        name: cgroup
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-dind-e2e,?($|\s.*)
+  - agent: kubernetes
+    always_run: false
     cluster: security
     context: pull-security-kubernetes-bazel-build-canary
     labels:
@@ -2165,3 +2135,49 @@ presubmits:
           defaultMode: 256
           secretName: ssh-security
     trigger: (?m)^/test( | .* )pull-security-kubernetes-bazel-test-integration-canary,?($|\s.*)
+  - agent: kubernetes
+    always_run: false
+    branches:
+    - master
+    cluster: security
+    context: pull-security-kubernetes-local-e2e
+    labels:
+      preset-dind-enabled: "true"
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+    max_concurrency: 8
+    name: pull-security-kubernetes-local-e2e
+    rerun_command: /test pull-security-kubernetes-local-e2e
+    run_if_changed: (hyperkube|local-up-cluster)
+    spec:
+      containers:
+      - args:
+        - --ssh=/etc/ssh-security/ssh-security
+        - --root=/go/src
+        - --job=$(JOB_NAME)
+        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-security-prow/pr-logs
+        - --timeout=140
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=bazel
+        - --deployment=local
+        - --ginkgo-parallel=1
+        - --provider=local
+        - --test_args=--ginkgo.focus=\[Conformance\]
+        - --timeout=120m
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+        name: ""
+        resources: {}
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test( | .* )pull-security-kubernetes-local-e2e,?($|\s.*)
