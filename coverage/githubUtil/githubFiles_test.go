@@ -1,10 +1,11 @@
 package githubUtil
 
 import (
-	"k8s.io/test-infra/coverage/githubUtil/githubFakes"
-	"k8s.io/test-infra/coverage/test"
 	"path"
 	"testing"
+
+	"k8s.io/test-infra/coverage/githubUtil/githubFakes"
+	"k8s.io/test-infra/coverage/test"
 )
 
 func TestGetConcernedFiles(t *testing.T) {

@@ -5,12 +5,13 @@ package calc
 
 import (
 	"fmt"
-	"k8s.io/test-infra/coverage/git"
-	"k8s.io/test-infra/coverage/githubUtil"
-	"k8s.io/test-infra/coverage/str"
 	"sort"
 	"strconv"
 	"strings"
+
+	"k8s.io/test-infra/coverage/git"
+	"k8s.io/test-infra/coverage/githubUtil"
+	"k8s.io/test-infra/coverage/str"
 )
 
 type codeBlock struct {

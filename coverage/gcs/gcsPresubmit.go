@@ -5,10 +5,11 @@ if enable debug, then the reading from GCS feature would be run as well
 package gcs
 
 import (
-	"k8s.io/test-infra/coverage/artifacts"
-	"k8s.io/test-infra/coverage/githubUtil/githubPr"
 	"path"
 	"strconv"
+
+	"k8s.io/test-infra/coverage/artifacts"
+	"k8s.io/test-infra/coverage/githubUtil/githubPr"
 )
 
 const ArtifactsDirNameOnGcs = "artifacts"

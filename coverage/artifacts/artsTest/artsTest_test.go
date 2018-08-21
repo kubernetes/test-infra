@@ -1,8 +1,9 @@
 package artsTest
 
 import (
-	"k8s.io/test-infra/coverage/test"
 	"testing"
+
+	"k8s.io/test-infra/coverage/test"
 )
 
 func TestLocalInputArts(t *testing.T) {

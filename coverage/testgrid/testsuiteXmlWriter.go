@@ -3,11 +3,12 @@ package testgrid
 import (
 	"encoding/xml"
 	"fmt"
+	"log"
+	"os"
+
 	"k8s.io/test-infra/coverage/artifacts"
 	"k8s.io/test-infra/coverage/calc"
 	"k8s.io/test-infra/coverage/logUtil"
-	"log"
-	"os"
 )
 
 type Property struct {

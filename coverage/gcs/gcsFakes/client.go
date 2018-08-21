@@ -3,9 +3,10 @@ package gcsFakes
 import (
 	"cloud.google.com/go/storage"
 	"context"
+	"log"
+
 	"k8s.io/test-infra/coverage/artifacts"
 	"k8s.io/test-infra/coverage/artifacts/artsTest"
-	"log"
 )
 
 type fakeStorageClient struct{}

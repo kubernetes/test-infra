@@ -5,9 +5,10 @@ package calc
 import (
 	"bufio"
 	"fmt"
-	"k8s.io/test-infra/coverage/artifacts"
-	"log"
 	"io"
+	"log"
+
+	"k8s.io/test-infra/coverage/artifacts"
 )
 
 // CovList read profiling information from reader and constructs CoverageList.

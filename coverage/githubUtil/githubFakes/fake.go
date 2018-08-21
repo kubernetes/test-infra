@@ -2,12 +2,14 @@ package githubFakes
 
 import (
 	"context"
+	"log"
+	"path"
+
 	"github.com/google/go-github/github"
+
 	"k8s.io/test-infra/coverage/githubUtil/githubClient"
 	"k8s.io/test-infra/coverage/githubUtil/githubPr"
 	"k8s.io/test-infra/coverage/test"
-	"log"
-	"path"
 )
 
 func FakeGithubClient() *githubClient.GithubClient {

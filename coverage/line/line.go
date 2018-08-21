@@ -3,11 +3,12 @@ package line
 
 import (
 	"fmt"
+	"log"
+	"os/exec"
+
 	"k8s.io/test-infra/coverage/artifacts"
 	"k8s.io/test-infra/coverage/calc"
 	"k8s.io/test-infra/coverage/gcs"
-	"log"
-	"os/exec"
 )
 
 func CreateLineCovFile(arts *artifacts.LocalArtifacts) error {

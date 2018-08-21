@@ -4,14 +4,16 @@
 package gcs
 
 import (
-	"cloud.google.com/go/storage"
 	"context"
-	"google.golang.org/api/iterator"
-	"k8s.io/test-infra/coverage/artifacts"
-	"k8s.io/test-infra/coverage/logUtil"
 	"log"
 	"path"
 	"strconv"
+
+	"cloud.google.com/go/storage"
+	"google.golang.org/api/iterator"
+
+	"k8s.io/test-infra/coverage/artifacts"
+	"k8s.io/test-infra/coverage/logUtil"
 )
 
 const (

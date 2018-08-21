@@ -3,12 +3,14 @@ package githubPr
 import (
 	"context"
 	"fmt"
-	"github.com/google/go-github/github"
 	"io/ioutil"
-	"k8s.io/test-infra/coverage/githubUtil/githubClient"
-	"k8s.io/test-infra/coverage/logUtil"
 	"log"
 	"strconv"
+
+	"github.com/google/go-github/github"
+
+	"k8s.io/test-infra/coverage/githubUtil/githubClient"
+	"k8s.io/test-infra/coverage/logUtil"
 )
 
 type GithubPr struct {

@@ -2,12 +2,13 @@ package gcs
 
 import (
 	"context"
-	"k8s.io/test-infra/coverage/artifacts"
-	"k8s.io/test-infra/coverage/logUtil"
 	"log"
 	"path"
 	"sort"
 	"strconv"
+
+	"k8s.io/test-infra/coverage/artifacts"
+	"k8s.io/test-infra/coverage/logUtil"
 )
 
 type PostSubmit struct {

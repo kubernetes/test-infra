@@ -2,10 +2,11 @@ package io
 
 import (
 	"fmt"
-	"k8s.io/test-infra/coverage/logUtil"
 	"log"
 	"os"
 	"path"
+
+	"k8s.io/test-infra/coverage/logUtil"
 )
 
 // CreateMarker produces empty file as marker

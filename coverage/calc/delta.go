@@ -2,12 +2,13 @@ package calc
 
 import (
 	"fmt"
-	"k8s.io/test-infra/coverage/githubUtil"
-	"k8s.io/test-infra/coverage/str"
 	"log"
 	"os"
 	"sort"
 	"strings"
+
+	"k8s.io/test-infra/coverage/githubUtil"
+	"k8s.io/test-infra/coverage/str"
 )
 
 type Incremental struct {

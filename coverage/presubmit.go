@@ -1,13 +1,14 @@
 package main
 
 import (
+	"log"
+
 	"k8s.io/test-infra/coverage/artifacts"
 	"k8s.io/test-infra/coverage/calc"
 	"k8s.io/test-infra/coverage/gcs"
 	"k8s.io/test-infra/coverage/githubUtil"
 	"k8s.io/test-infra/coverage/io"
 	"k8s.io/test-infra/coverage/line"
-	"log"
 )
 
 func RunPresubmit(p *gcs.PreSubmit, arts *artifacts.LocalArtifacts) (isCoverageLow bool) {

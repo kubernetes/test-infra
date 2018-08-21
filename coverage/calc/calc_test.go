@@ -1,9 +1,10 @@
 package calc
 
 import (
+	"testing"
+
 	"k8s.io/test-infra/coverage/artifacts/artsTest"
 	"k8s.io/test-infra/coverage/test"
-	"testing"
 )
 
 func TestReadLocalProfile(t *testing.T) {

@@ -2,11 +2,12 @@ package artifacts
 
 import (
 	"io"
-	covIo "k8s.io/test-infra/coverage/io"
-	"k8s.io/test-infra/coverage/logUtil"
 	"log"
 	"os"
 	"os/exec"
+
+	covIo "k8s.io/test-infra/coverage/io"
+	"k8s.io/test-infra/coverage/logUtil"
 )
 
 type ProfileReader struct {

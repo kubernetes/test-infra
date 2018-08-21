@@ -2,10 +2,11 @@ package calc
 
 import (
 	"fmt"
-	"k8s.io/test-infra/coverage/str"
 	"log"
 	"os"
 	"strings"
+
+	"k8s.io/test-infra/coverage/str"
 )
 
 // CoverageList is a collection and summary over multiple file Coverage objects

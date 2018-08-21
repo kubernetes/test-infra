@@ -2,13 +2,15 @@ package githubUtil
 
 import (
 	"fmt"
-	"github.com/google/go-github/github"
-	"k8s.io/test-infra/coverage/git"
-	"k8s.io/test-infra/coverage/githubUtil/githubPr"
-	"k8s.io/test-infra/coverage/logUtil"
 	"log"
 	"path"
 	"strings"
+
+	"github.com/google/go-github/github"
+
+	"k8s.io/test-infra/coverage/git"
+	"k8s.io/test-infra/coverage/githubUtil/githubPr"
+	"k8s.io/test-infra/coverage/logUtil"
 )
 
 // return corresponding source file path of given path (abc_test.go -> abc.go)

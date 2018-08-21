@@ -1,12 +1,13 @@
 package artifacts
 
 import (
-	"k8s.io/test-infra/coverage/logUtil"
 	"log"
 	"os"
 	"os/exec"
 	"path"
 	"strings"
+
+	"k8s.io/test-infra/coverage/logUtil"
 )
 
 type LocalArtifacts struct {

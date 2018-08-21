@@ -2,10 +2,11 @@ package git
 
 import (
 	"fmt"
-	"k8s.io/test-infra/coverage/test"
 	"os"
 	"path"
 	"testing"
+
+	"k8s.io/test-infra/coverage/test"
 )
 
 var (

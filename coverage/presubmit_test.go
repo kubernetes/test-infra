@@ -3,14 +3,15 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
+	"testing"
+
 	"k8s.io/test-infra/coverage/artifacts/artsTest"
 	"k8s.io/test-infra/coverage/gcs"
 	"k8s.io/test-infra/coverage/gcs/gcsFakes"
 	"k8s.io/test-infra/coverage/githubUtil/githubFakes"
 	"k8s.io/test-infra/coverage/githubUtil/githubPr"
 	"k8s.io/test-infra/coverage/test"
-	"log"
-	"testing"
 )
 
 const (

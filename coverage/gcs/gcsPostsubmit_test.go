@@ -3,12 +3,13 @@ package gcs
 import (
 	"context"
 	"fmt"
+	"log"
+	"testing"
+
 	"k8s.io/test-infra/coverage/artifacts/artsTest"
 	"k8s.io/test-infra/coverage/gcs/gcsFakes"
 	"k8s.io/test-infra/coverage/logUtil"
 	"k8s.io/test-infra/coverage/test"
-	"log"
-	"testing"
 )
 
 func testPostSubmit() (p *PostSubmit) {
