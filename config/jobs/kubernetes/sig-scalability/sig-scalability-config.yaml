@@ -336,7 +336,7 @@ periodics:
       - --gke-command-group=beta
       - --gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork name=ip-alias-subnet --cluster-ipv4-cidr=/12 --services-ipv4-cidr=/19
       - --gke-environment=test
-      - --gke-shape={\"default\":{\"Nodes\":2000,\"MachineType\":\"g1-small\"},\"heapster-pool\":{\"Nodes\":1,\"MachineType\":\"n1-standard-8\"}}
+      - --gke-shape='{"default":{"Nodes":2000,"MachineType":"g1-small"},"heapster-pool":{"Nodes":1,"MachineType":"n1-standard-8"}}'
       - --provider=gke
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8
       - --timeout=450m
@@ -370,7 +370,7 @@ periodics:
       - --gke-command-group=beta
       - --gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork name=ip-alias-subnet --cluster-ipv4-cidr=/11 --services-ipv4-cidr=/18
       - --gke-environment=test
-      - --gke-shape={\"default\":{\"Nodes\":4999,\"MachineType\":\"g1-small\"},\"heapster-pool\":{\"Nodes\":1,\"MachineType\":\"n1-standard-16\"}}
+      - --gke-shape='{"default":{"Nodes":4999,"MachineType":"g1-small"},"heapster-pool":{"Nodes":1,"MachineType":"n1-standard-16"}}'
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:Empty\] --minStartupPods=8
       - --timeout=1200m
@@ -403,7 +403,7 @@ periodics:
       - --gke-command-group=beta
       - --gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork name=ip-alias-subnet --cluster-ipv4-cidr=/12 --services-ipv4-cidr=/19
       - --gke-environment=test
-      - --gke-shape={\"default\":{\"Nodes\":1999,\"MachineType\":\"n1-standard-1\"},\"heapster-pool\":{\"Nodes\":1,\"MachineType\":\"n1-standard-8\"}}
+      - --gke-shape='{"default":{"Nodes":1999,"MachineType":"n1-standard-1"},"heapster-pool":{"Nodes":1,"MachineType":"n1-standard-8"}}'
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:Performance\]
       - --timeout=570m
@@ -440,7 +440,7 @@ periodics:
       - --gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork name=ip-alias-subnet-regional --cluster-ipv4-cidr=/12 --services-ipv4-cidr=/19
       - --gke-environment=staging
       - --gke-node-locations=us-east1-a
-      - --gke-shape={\"default\":{\"Nodes\":1999,\"MachineType\":\"n1-standard-1\"},\"heapster-pool\":{\"Nodes\":1,\"MachineType\":\"n1-standard-8\"}}
+      - --gke-shape='{"default":{"Nodes":1999,"MachineType":"n1-standard-1"},"heapster-pool":{"Nodes":1,"MachineType":"n1-standard-8"}}'
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:Performance\]
       - --timeout=570m
@@ -471,7 +471,7 @@ periodics:
       - --gcp-project=k8s-scale-testing
       - --gcp-zone=us-east1-a
       - --gke-environment=test
-      - --gke-shape={\"default\":{\"Nodes\":5000,\"MachineType\":\"g1-small\"}}
+      - --gke-shape='{"default":{"Nodes":5000,"MachineType":"g1-small"}}'
       - --provider=gke
       - --test=false
       - --timeout=180m
@@ -502,7 +502,7 @@ periodics:
       - --gke-command-group=beta
       - --gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork name=ip-alias-subnet --cluster-ipv4-cidr=/11 --services-ipv4-cidr=/18
       - --gke-environment=test
-      - --gke-shape={\"default\":{\"Nodes\":4999,\"MachineType\":\"g1-small\"},\"heapster-pool\":{\"Nodes\":1,\"MachineType\":\"n1-standard-16\"}}
+      - --gke-shape='{"default":{"Nodes":4999,"MachineType":"g1-small"},"heapster-pool":{"Nodes":1,"MachineType":"n1-standard-16"}}'
       - --provider=gke
       - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8
       - --timeout=210m
