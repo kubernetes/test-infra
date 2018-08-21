@@ -352,6 +352,10 @@ plugins:
   - approve
   - blunderbuss
 
+  kubernetes/kubernetes-docs-zh:
+  - approve
+  - blunderbuss
+
   kubernetes/kubernetes-template-project:
   - approve
 

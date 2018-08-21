@@ -247,6 +247,7 @@ tide:
     - kubernetes/kubeadm
     - kubernetes/kubernetes-docs-ja
     - kubernetes/kubernetes-docs-ko
+    - kubernetes/kubernetes-docs-zh
     - kubernetes/kubernetes-template-project
     - kubernetes/minikube
     - kubernetes/node-problem-detector
