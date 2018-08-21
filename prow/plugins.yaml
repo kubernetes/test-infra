@@ -240,6 +240,26 @@ plugins:
   - lgtm
   - trigger
 
+  kubernetes:
+  - assign
+  - cat
+  - cla
+  - dog
+  - golint
+  - heart
+  - help
+  - hold
+  - label
+  - lgtm
+  - lifecycle
+  - shrug
+  - sigmention
+  - size
+  - skip
+  - slackevents
+  - wip
+  - yuks
+
   kubernetes/client-go:
   - approve
 
@@ -416,26 +436,6 @@ plugins:
   - approve
   - blunderbuss
 
-  kubernetes:
-  - assign
-  - cat
-  - cla
-  - dog
-  - golint
-  - heart
-  - help
-  - hold
-  - label
-  - lgtm
-  - lifecycle
-  - shrug
-  - sigmention
-  - size
-  - skip
-  - slackevents
-  - wip
-  - yuks
-
   kubernetes-client:
   - assign
   - cla
@@ -492,6 +492,9 @@ plugins:
   - hold
   - trigger
 
+  kubernetes-security/kubernetes:
+  - trigger
+
   kubernetes-sigs:
   - approve
   - assign
@@ -545,9 +548,6 @@ plugins:
   - lgtm
   - lifecycle
   - size
-  - trigger
-
-  kubernetes-security/kubernetes:
   - trigger
 
   tensorflow/k8s:

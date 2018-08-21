@@ -284,6 +284,7 @@ tide:
     - kubernetes-sigs/kubebuilder
     - kubernetes-sigs/kustomize
     - kubernetes-incubator/ip-masq-agent
+    - kubernetes-incubator/service-catalog
     - client-go/unofficial-docs
     labels:
     - lgtm
@@ -322,18 +323,6 @@ tide:
     - do-not-merge/invalid-owners-file
     - do-not-merge/work-in-progress
     - needs-ok-to-test
-  - repos:
-    - kubernetes-incubator/service-catalog
-    labels:
-    - lgtm
-    - approved
-    - "cncf-cla: yes"
-    missingLabels:
-    - do-not-merge/hold
-    - do-not-merge/invalid-owners-file
-    - do-not-merge/work-in-progress
-    - needs-ok-to-test
-    - needs-rebase
   merge_method:
     helm/charts: squash
     kubeflow: squash
