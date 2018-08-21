@@ -276,6 +276,7 @@ tide:
     - kubernetes-sigs/cluster-api-provider-aws
     - kubernetes-sigs/cluster-api-provider-gcp
     - kubernetes-sigs/cluster-api-provider-openstack
+    - kubernetes-sigs/cluster-api-provider-vsphere
     - kubernetes-sigs/contributor-site
     - kubernetes-sigs/controller-runtime
     - kubernetes-sigs/controller-tools
@@ -346,6 +347,7 @@ tide:
     kubernetes-sigs/cluster-api-provider-aws: squash
     kubernetes-sigs/cluster-api-provider-gcp: squash
     kubernetes-sigs/cluster-api-provider-openstack: squash
+    kubernetes-sigs/cluster-api-provider-vsphere: squash
     kubernetes-incubator/service-catalog: squash
   target_url: https://prow.k8s.io/tide.html
   blocker_label: merge-blocker
