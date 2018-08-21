@@ -7,18 +7,20 @@ import (
 	"fmt"
 	"k8s.io/test-infra/coverage/artifacts"
 	"log"
-	"os"
+	"io"
 )
 
 // CovList read profiling information from reader and constructs CoverageList.
 // If called in presubmit, it also creates a filtered version of profile,
 // that only includes files in corresponding github commit,
 // less those files that are excluded from coverage calculation
-func CovList(f *artifacts.ProfileReader, keyProfileFile *os.File,
+func CovList(f *artifacts.ProfileReader, keyProfileFile io.WriteCloser,
 	concernedFiles *map[string]bool, covThresInt int) (g *CoverageList) {
 
 	defer f.Close()
-	defer keyProfileFile.Close()
+	if keyProfileFile != nil {
+		defer keyProfileFile.Close()
+	}
 
 	scanner := bufio.NewScanner(f)
 	scanner.Scan() // discard first line
@@ -49,7 +51,7 @@ func CovList(f *artifacts.ProfileReader, keyProfileFile *os.File,
 }
 
 // writeLine writes a line in the given file, if the file pointer is not nil
-func writeLine(file *os.File, content string) {
+func writeLine(file io.Writer, content string) {
 	if file != nil {
 		fmt.Fprintln(file, content)
 	}

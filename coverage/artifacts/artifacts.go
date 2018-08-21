@@ -12,7 +12,7 @@ const (
 	LineCovFileName            = "line-cov.html"
 )
 
-type Intf interface {
+type Profile interface {
 	ProfilePath() string
 	KeyProfilePath() string
 	ProfileReader() *ProfileReader
@@ -25,8 +25,7 @@ type Artifacts struct {
 	covStdoutName  string
 }
 
-func New(directory string, profileName string, keyProfileName string,
-	covStdoutName string) *Artifacts {
+func New(directory, profileName, keyProfileName, covStdoutName string) *Artifacts {
 	return &Artifacts{
 		directory,
 		profileName,

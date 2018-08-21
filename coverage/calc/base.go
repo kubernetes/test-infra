@@ -113,13 +113,11 @@ func (c *Coverage) PercentageForTestgrid() string {
 	return ""
 }
 
-func (c *Coverage) Ratio() (ratio float32, err error) {
+func (c *Coverage) Ratio() (float32, error) {
 	if c.nAllStmts == 0 {
-		err = fmt.Errorf("[%s] has 0 statement", c.Name())
-	} else {
-		ratio = float32(c.nCoveredStmts) / float32(c.nAllStmts)
+		return -1, fmt.Errorf("[%s] has 0 statement", c.Name())
 	}
-	return
+	return float32(c.nCoveredStmts) / float32(c.nAllStmts), nil
 }
 
 // String returns the summary of coverage in string
@@ -147,7 +145,7 @@ func (c *Coverage) IsCoverageLow(covThresholdInt int) bool {
 	if err == nil {
 		return ratio < covThreshold
 	}
-	return true
+	return false
 }
 
 func SortCoverages(cs []Coverage) {
