@@ -160,6 +160,15 @@ branch-protection:
       required_status_checks:
         contexts:
         - cla/linuxfoundation
+      repos:
+        python:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+        python-base:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
     kubernetes-csi:
       protect: true
       required_status_checks:
@@ -195,6 +204,19 @@ branch-protection:
       required_status_checks:
         contexts:
         - cla/linuxfoundation
+      repos:
+        bootkube:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+        kube-arbitrator:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+        node-feature-discovery:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
     kubernetes-sigs:
       protect: true
       required_status_checks:
