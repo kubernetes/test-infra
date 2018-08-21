@@ -716,7 +716,7 @@ periodics:
       - --provider=gce
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-      - --test-args=cluster-loader
+      - --test-cmd-args=cluster-loader
       - --test-cmd-name=ClusterLoader
       - --timeout=60m
 
@@ -743,7 +743,7 @@ periodics:
       - --provider=gce
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-      - --test-args=cluster-loader2 --testconfig=testing/density/config.yaml --nodes=3
+      - --test-cmd-args=cluster-loader2 --testconfig=testing/density/config.yaml --nodes=3
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=60m
 
