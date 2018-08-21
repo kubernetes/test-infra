@@ -285,6 +285,7 @@ tide:
     - kubernetes-sigs/kubebuilder
     - kubernetes-sigs/kustomize
     - kubernetes-incubator/ip-masq-agent
+    - kubernetes-incubator/kubespray
     - kubernetes-incubator/service-catalog
     - client-go/unofficial-docs
     labels:
