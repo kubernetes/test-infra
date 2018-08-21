@@ -249,10 +249,6 @@ func run(deploy deployer, o options) error {
 		errs = util.AppendError(errs, control.XMLWrap(&suite, "Helm Charts", chartsTest))
 	}
 
-	if o.perfTest != "" {
-		errs = util.AppendError(errs, control.XMLWrap(&suite, "Perf Tests", perfTest(o.perfTest, o.perfTestArgs)))
-	}
-
 	if dump != "" {
 		errs = util.AppendError(errs, control.XMLWrap(&suite, "DumpClusterLogs", func() error {
 			return deploy.DumpClusterLogs(dump, o.logexporterGCSPath)
@@ -539,19 +535,6 @@ func dumpFederationLogs(location string) error {
 	}
 	log.Printf("Could not find %s. This is expected if running tests against a Kubernetes 1.6 or older tree.", logDumpPath)
 	return nil
-}
-
-func perfTest(tool, args string) func() error {
-	// Run perf tests
-	flagArgs := []string{tool}
-	flagArgs = append(flagArgs, argFields(args, "", "")...)
-	return func() error {
-		cmdline := util.K8s("perf-tests", "run-e2e.sh")
-		if err := control.FinishRunning(exec.Command(cmdline, flagArgs...)); err != nil {
-			return err
-		}
-		return nil
-	}
 }
 
 func chartsTest() error {
