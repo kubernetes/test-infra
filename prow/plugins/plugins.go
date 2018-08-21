@@ -366,6 +366,9 @@ type Lgtm struct {
 	// ReviewActsAsLgtm indicates that a Github review of "approve" or "request changes"
 	// acts as adding or removing the lgtm label
 	ReviewActsAsLgtm bool `json:"review_acts_as_lgtm,omitempty"`
+	// StoreTreeHash indicates if tree_hash should be stored inside a comment to detect
+	// squashed commits before removing lgtm labels
+	StoreTreeHash bool `json:"store_tree_hash,omitempty"`
 }
 
 type Cat struct {

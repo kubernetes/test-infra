@@ -97,6 +97,9 @@ lgtm:
 - repos:
   - bazelbuild
   review_acts_as_lgtm: true
+- repos:
+  - kubernetes/test-infra
+  store_tree_hash: true
 
 blockades:
 - repos:
