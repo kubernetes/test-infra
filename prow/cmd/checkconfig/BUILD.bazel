@@ -1,22 +1,17 @@
+load("@io_bazel_rules_docker//container:image.bzl", "container_image")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
-    importpath = "k8s.io/test-infra/prow/cmd/config",
+    importpath = "k8s.io/test-infra/prow/cmd/checkconfig",
     visibility = ["//visibility:private"],
     deps = [
         "//prow/config:go_default_library",
-        "//prow/hook:go_default_library",
+        "//prow/logrusutil:go_default_library",
         "//prow/plugins:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
-)
-
-go_binary(
-    name = "config",
-    data = ["//prow:configs"],
-    embed = [":go_default_library"],
-    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -30,5 +25,20 @@ filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
     tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
+
+container_image(
+    name = "image",
+    base = "@git-base//image",
+    directory = "/",
+    files = [":checkconfig"],
+    visibility = ["//visibility:public"],
+)
+
+go_binary(
+    name = "checkconfig",
+    embed = [":go_default_library"],
+    pure = "on",
     visibility = ["//visibility:public"],
 )

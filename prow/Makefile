@@ -50,10 +50,12 @@ GCSUPLOAD_VERSION         ?= $(TAG)
 ENTRYPOINT_VERSION        ?= $(TAG)
 # SIDECAR_VERSION is the version of the sidecar image
 SIDECAR_VERSION           ?= $(TAG)
-# ARTIFACT-UPLOADER_VERSION is the version of the artifact uploader image
-ARTIFACT-UPLOADER_VERSION ?= $(TAG)
-# NEEDS-REBASE_VERSION is the version of the needs-rebase image
+# ARTIFACT_UPLOADER_VERSION is the version of the artifact uploader image
+ARTIFACT_UPLOADER_VERSION ?= $(TAG)
+# NEEDS_REBASE_VERSION is the version of the needs-rebase image
 NEEDS_REBASE_VERSION      ?= $(TAG)
+# CHECKCONFIG_VERSION is the version of the checkconfig image
+CHECKCONFIG_VERSION       ?= $(TAG)
 
 # These are the usual GKE variables.
 PROJECT       ?= k8s-prow
@@ -243,8 +245,8 @@ sidecar-image: alpine-image
 
 artifact-uploader-image: alpine-image
 	CGO_ENABLED=0 go build -o cmd/artifact-uploader/artifact-uploader k8s.io/test-infra/prow/cmd/artifact-uploader
-	docker build -t "$(REGISTRY)/$(PROJECT)/artifact-uploader:$(ARTIFACT-UPLOADER_VERSION)" $(DOCKER_LABELS) cmd/artifact-uploader
-	$(PUSH) "$(REGISTRY)/$(PROJECT)/artifact-uploader:$(ARTIFACT-UPLOADER_VERSION)"
+	docker build -t "$(REGISTRY)/$(PROJECT)/artifact-uploader:$(ARTIFACT_UPLOADER_VERSION)" $(DOCKER_LABELS) cmd/artifact-uploader
+	$(PUSH) "$(REGISTRY)/$(PROJECT)/artifact-uploader:$(ARTIFACT_UPLOADER_VERSION)"
 
 .PHONY: clonerefs-image initupload-image gcsupload-image entrypoint-image sidecar-image artifact-uploader-image
 
@@ -260,3 +262,10 @@ needs-rebase-service: get-cluster-credentials
 	kubectl apply -f cluster/needs-rebase_service.yaml
 
 .PHONY: needs-rebase-image needs-rebase-deployment needs-rebase-service
+
+checkconfig-image: alpine-image
+	CGO_ENABLED=0 go build -o cmd/checkconfig/checkconfig k8s.io/test-infra/prow/cmd/checkconfig
+	docker build -t "$(REGISTRY)/$(PROJECT)/checkconfig:$(CHECKCONFIG_VERSION)" $(DOCKER_LABELS) cmd/checkconfig
+	$(PUSH) "$(REGISTRY)/$(PROJECT)/checkconfig:$(CHECKCONFIG_VERSION)"
+
+.PHONY: checkconfig-image

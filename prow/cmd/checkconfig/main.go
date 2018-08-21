@@ -1,5 +1,5 @@
 /*
-Copyright 2017 The Kubernetes Authors.
+Copyright 2018 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,16 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package main knows how to validate config files.
+// checkconfig loads configuration for Prow to validate it
 package main
 
 import (
+	"errors"
 	"flag"
-	"fmt"
-	"os"
+
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
-	_ "k8s.io/test-infra/prow/hook"
+	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -33,9 +34,19 @@ type options struct {
 	pluginConfig  string
 }
 
+func (o *options) Validate() error {
+	if o.configPath == "" {
+		return errors.New("required flag --config-path was unset")
+	}
+	if o.pluginConfig == "" {
+		return errors.New("required flag --plugin-config was unset")
+	}
+	return nil
+}
+
 func gatherOptions() options {
 	o := options{}
-	flag.StringVar(&o.configPath, "config-path", "", "Path to config file.")
+	flag.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	flag.StringVar(&o.pluginConfig, "plugin-config", "", "Path to plugin config file.")
 	flag.Parse()
@@ -44,21 +55,21 @@ func gatherOptions() options {
 
 func main() {
 	o := gatherOptions()
-	var foundError bool
-	if o.pluginConfig != "" {
-		pa := &plugins.PluginAgent{}
-		if err := pa.Load(o.pluginConfig); err != nil {
-			fmt.Fprintf(os.Stderr, "Error reading %s: %v.", o.pluginConfig, err)
-			foundError = true
-		}
+	if err := o.Validate(); err != nil {
+		logrus.Fatalf("Invalid options: %v", err)
 	}
-	if o.configPath != "" {
-		if _, err := config.Load(o.configPath, o.jobConfigPath); err != nil {
-			fmt.Fprintf(os.Stderr, "Error reading %s: %v.", o.configPath, err)
-			foundError = true
-		}
+
+	logrus.SetFormatter(
+		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "checkconfig"}),
+	)
+
+	configAgent := config.Agent{}
+	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
+		logrus.WithError(err).Fatal("Error loading Prow config.")
 	}
-	if foundError {
-		os.Exit(1)
+
+	pluginAgent := plugins.PluginAgent{}
+	if err := pluginAgent.Load(o.pluginConfig); err != nil {
+		logrus.WithError(err).Fatal("Error loading Prow plugin config.")
 	}
 }
