@@ -713,9 +713,38 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-project=k8s-jkns-clusterloader
       - --gcp-zone=us-central1-f
-      - --perf-tests
       - --provider=gce
       - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-args=cluster-loader
+      - --test-cmd-name=ClusterLoader
+      - --timeout=60m
+
+- name: ci-perf-tests-e2e-gce-clusterloader2
+  interval: 2h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/perf-tests=master
+      - --root=/go/src
+      - --timeout=80
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --extract=ci/latest
+      - --gcp-nodes=3
+      - --gcp-project=k8s-jkns-clusterloader
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test=false
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-args=cluster-loader2 --testconfig=testing/density/config.yaml --nodes=3
+      - --test-cmd-name=ClusterLoaderV2
       - --timeout=60m
 
 - name: ci-perf-tests-kubemark-100-benchmark
