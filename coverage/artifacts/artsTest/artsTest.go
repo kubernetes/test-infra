@@ -7,12 +7,8 @@ import (
 	"k8s.io/test-infra/coverage/test"
 )
 
-type LocalArtifacts = artifacts.LocalArtifacts
-
-var NewArtifacts = artifacts.New
-
-func LocalArtsForTest(dirPrefix string) *LocalArtifacts {
-	return &LocalArtifacts{Artifacts: *NewArtifacts(
+func LocalArtsForTest(dirPrefix string) *artifacts.LocalArtifacts {
+	return &artifacts.LocalArtifacts{Artifacts: *artifacts.New(
 		test.NewArtsDir(dirPrefix),
 		"cov-profile.txt",
 		"key-cov-profile.txt",
