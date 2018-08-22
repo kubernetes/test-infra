@@ -5,6 +5,7 @@
 triggers:
 - repos:
   - kubernetes
+  - kubernetes-client
   - kubernetes-csi
   - kubernetes-incubator
   - kubernetes-security
@@ -28,6 +29,7 @@ triggers:
   join_org_url: "https://github.com/tensorflow/minigo/blob/master/CONTRIBUTING.md"
 - repos:
   - bazelbuild
+
 owners:
   mdyamlrepos:
   - kubernetes/website
@@ -67,6 +69,7 @@ approve:
   implicit_self_approve: true
   lgtm_acts_as_approve: true
 - repos:
+  - kubernetes-client
   - kubernetes-csi
   - kubernetes-sigs
   - client-go/unofficial-docs
