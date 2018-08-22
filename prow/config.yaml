@@ -259,6 +259,16 @@ tide:
     - kubernetes/test-infra
     - kubernetes/utils
     - kubernetes/website
+    - kubernetes-client/csharp
+    - kubernetes-client/gen
+    - kubernetes-client/go
+    - kubernetes-client/go-base
+    - kubernetes-client/haskell
+    - kubernetes-client/java
+    - kubernetes-client/javascript
+    - kubernetes-client/python
+    - kubernetes-client/python-base
+    - kubernetes-client/ruby
     - kubernetes-csi/csi-test
     - kubernetes-csi/docs
     - kubernetes-csi/driver-registrar
@@ -332,6 +342,8 @@ tide:
     kubernetes/website: squash
     kubernetes/kubernetes-docs-ja: squash
     kubernetes/kubernetes-docs-ko: squash
+    kubernetes-client/csharp: squash
+    kubernetes-client/gen: squash
     kubernetes-sigs/cluster-api: squash
     kubernetes-sigs/cluster-api-provider-aws: squash
     kubernetes-sigs/cluster-api-provider-gcp: squash
