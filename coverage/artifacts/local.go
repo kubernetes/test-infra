@@ -2,13 +2,13 @@ package artifacts
 
 import (
 	"os"
-	"os/exec"
 	"path"
 	"strings"
 
 	"github.com/sirupsen/logrus"
 	"io"
 	"k8s.io/test-infra/coverage/logUtil"
+	io2 "k8s.io/test-infra/coverage/io"
 )
 
 type LocalArtifacts struct {
@@ -56,10 +56,7 @@ func (arts *LocalArtifacts) KeyProfileCreator() *os.File {
 // for periodic job, produce junit xml for testgrid in addition
 func (arts *LocalArtifacts) ProduceProfileFile(covTargetsStr string) {
 	// creates artifacts directory
-	logrus.Infof("mkdir -p %s\n", arts.directory)
-	cmd := exec.Command("mkdir", "-p", arts.directory)
-	logrus.Infof("artifacts dir=%s\n", arts.directory)
-	cmd.Run()
+	io2.MkdirAll(arts.directory)
 
 	// convert targets from a single string to a lists of strings
 	var covTargets []string

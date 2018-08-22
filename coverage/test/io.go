@@ -16,12 +16,6 @@ func DeleteDir(dir string) {
 	}
 }
 
-func MkdirAll(path string) {
-	if err := os.MkdirAll(path, 0755); err != nil {
-		log.Fatalf("Failed os.MkdirAll(path='%s', 0755); err='%v'", path, err)
-	}
-}
-
 func linkInputArt(artsDir, artName string) {
 	err := os.Symlink(path.Join(InputArtifactsDir, artName),
 		path.Join(artsDir, artName))
@@ -39,7 +33,7 @@ func LinkInputArts(artsDir string, artNames ...string) {
 }
 
 func NewArtsDir(dirPrefix string) string {
-	MkdirAll(tmpArtsDir)
+	os.MkdirAll(tmpArtsDir, 0755)
 	dir, err := ioutil.TempDir(tmpArtsDir, dirPrefix+"_")
 	logrus.Infof("artsDir='%s'", dir)
 	if err != nil {

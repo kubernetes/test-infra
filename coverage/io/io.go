@@ -32,3 +32,12 @@ func Write(content *string, destinationDir, fileName string) {
 	}
 	defer file.Close()
 }
+
+func MkdirAll(path string) {
+	logrus.Infof("Making directory (MkdirAll): path=%s", path)
+	if err := os.MkdirAll(path, 0755); err != nil {
+		logrus.Fatalf("Failed os.MkdirAll(path='%s', 0755); err='%v'", path, err)
+	} else {
+		logrus.Infof("artifacts dir (path=%s) created successfully =%s\n", path)
+	}
+}
