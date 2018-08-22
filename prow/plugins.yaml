@@ -442,17 +442,23 @@ plugins:
   - blunderbuss
 
   kubernetes-client:
+  - approve
   - assign
+  - blunderbuss
+  - cat
   - cla
+  - dog
+  - heart
+  - help
+  - hold
   - label
   - lgtm
   - lifecycle
+  - shrug
   - size
+  - skip
   - wip
-  - hold
-  - help
-  - cat
-  - dog
+  - yuks
 
   kubernetes-csi:
   - approve
