@@ -3,9 +3,9 @@ package testgrid
 import (
 	"encoding/xml"
 	"fmt"
-	"log"
 	"os"
 
+	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/coverage/artifacts"
 	"k8s.io/test-infra/coverage/calc"
 	"k8s.io/test-infra/coverage/logUtil"
@@ -59,13 +59,13 @@ func toTestsuite(g *calc.CoverageList, dirs []string) (ts *Testsuite) {
 		g.IsCoverageLow(covThresInt)))
 
 	fmt.Println("")
-	log.Println("Constructing Testsuite Struct for Testgrid")
+	logrus.Info("Constructing Testsuite Struct for Testgrid")
 	for _, cov := range *g.Group() {
 		coverage := cov.PercentageForTestgrid()
 		if coverage != "" {
 			ts.addTestCase(*NewTestCase(cov.Name(), coverage, cov.IsCoverageLow(covThresInt)))
 		} else {
-			log.Printf("Skipping file %s as it has no coverage data.\n", cov.Name())
+			logrus.Infof("Skipping file %s as it has no coverage data.\n", cov.Name())
 		}
 	}
 
@@ -75,10 +75,10 @@ func toTestsuite(g *calc.CoverageList, dirs []string) (ts *Testsuite) {
 		if coverage != "" {
 			ts.addTestCase(*NewTestCase(dir, coverage, dirCov.IsCoverageLow(covThresInt)))
 		} else {
-			log.Printf("Skipping directory %s as it has no files with coverage data.\n", dir)
+			logrus.Infof("Skipping directory %s as it has no files with coverage data.\n", dir)
 		}
 	}
-	log.Println("Finished Constructing Testsuite Struct for Testgrid")
+	logrus.Info("Finished Constructing Testsuite Struct for Testgrid")
 	fmt.Println("")
 	return
 }

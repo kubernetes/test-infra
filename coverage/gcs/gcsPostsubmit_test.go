@@ -3,8 +3,9 @@ package gcs
 import (
 	"context"
 	"fmt"
-	"log"
 	"testing"
+
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/coverage/artifacts/artsTest"
 	"k8s.io/test-infra/coverage/gcs/gcsFakes"
@@ -13,7 +14,7 @@ import (
 )
 
 func testPostSubmit() (p *PostSubmit) {
-	log.Printf("testPostSubmit() called")
+	logrus.Infof("testPostSubmit() called")
 
 	p = NewPostSubmit(context.Background(), gcsFakes.NewFakeStorageClient(),
 		gcsFakes.FakeGcsBucketName, gcsFakes.FakePostSubmitProwJobName, ArtifactsDirNameOnGcs, artsTest.LocalInputArtsForTest().ProfileName())
@@ -75,7 +76,7 @@ func TestSearchForLatestHealthyBuildFailure(t *testing.T) {
 	p.Bucket = "do-not-exist"
 
 	logFatalSaved := logUtil.LogFatalf
-	logUtil.LogFatalf = log.Printf
+	logUtil.LogFatalf = logrus.Infof
 	if p.searchForLatestHealthyBuild() != -1 {
 		t.Fatalf("p.searchForLatestHealthyBuild() != -1\n")
 	}

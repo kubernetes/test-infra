@@ -12,6 +12,7 @@ import (
 	"cloud.google.com/go/storage"
 	"google.golang.org/api/iterator"
 
+	"github.com/sirupsen/logrus"
 	"io"
 	"k8s.io/test-infra/coverage/artifacts"
 	"k8s.io/test-infra/coverage/logUtil"
@@ -25,7 +26,7 @@ const (
 func (client StorageClient) DoesObjectExist(ctx context.Context, bucket, object string) bool {
 	_, err := client.Bucket(bucket).Object(object).Attrs(ctx)
 	if err != nil {
-		log.Printf("Error getting attrs from object '%s': %v", object, err)
+		logrus.Infof("Error getting attrs from object '%s': %v", object, err)
 		return false
 	}
 	return true
@@ -73,13 +74,13 @@ func (client *StorageClient) ListGcsObjects(ctx context.Context, bucketName,
 			objects = append(objects, path.Base(attrs.Prefix))
 		}
 	}
-	log.Println("end of ListGcsObjects(...)")
+	logrus.Info("end of ListGcsObjects(...)")
 	return
 }
 
 func (client StorageClient) ProfileReader(ctx context.Context, bucket,
 	object string) io.ReadCloser {
-	log.Printf("Running ProfileReader on bucket '%s', object='%s'\n",
+	logrus.Infof("Running ProfileReader on bucket '%s', object='%s'\n",
 		bucket, object)
 
 	o := client.Bucket(bucket).Object(object)

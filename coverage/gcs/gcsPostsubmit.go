@@ -2,12 +2,13 @@ package gcs
 
 import (
 	"context"
-	"log"
+	"io"
 	"path"
 	"sort"
 	"strconv"
 
-	"io"
+	"github.com/sirupsen/logrus"
+
 	"k8s.io/test-infra/coverage/artifacts"
 	"k8s.io/test-infra/coverage/logUtil"
 )
@@ -23,7 +24,7 @@ type PostSubmit struct {
 func NewPostSubmit(ctx context.Context, client StorageClientIntf,
 	bucket, prowJobName, artifactsDirName, covProfileName string) (p *PostSubmit) {
 
-	log.Println("NewPostSubmit(Ctx, client StorageClientIntf, ...) started")
+	logrus.Info("NewPostSubmit(Ctx, client StorageClientIntf, ...) started")
 	gcsBuild := GcsBuild{
 		StorageClient: client,
 		Bucket:        bucket,
@@ -48,7 +49,7 @@ func (p *PostSubmit) listBuilds() (res []int) {
 	for _, buildStr := range lstBuildStrs {
 		num, err := strconv.Atoi(buildStr)
 		if err != nil {
-			log.Printf("None int build number found: '%s'", buildStr)
+			logrus.Infof("None int build number found: '%s'", buildStr)
 		} else {
 			res = append(res, num)
 		}
@@ -59,7 +60,7 @@ func (p *PostSubmit) listBuilds() (res []int) {
 	}
 	sort.Sort(sort.Reverse(sort.IntSlice(res)))
 	p.BuildsSorted = &res
-	log.Printf("Sorted Builds: %v\n", res)
+	logrus.Infof("Sorted Builds: %v\n", res)
 	return res
 }
 
@@ -107,6 +108,6 @@ func (p *PostSubmit) searchForLatestHealthyBuild() int {
 // ProfileReader returns the reader for the most recent healthy profile
 func (p *PostSubmit) ProfileReader() io.ReadCloser {
 	profilePath := p.pathToGoodCoverageProfile()
-	log.Printf("Reading base (master) coverage from <%s>...\n", profilePath)
+	logrus.Infof("Reading base (master) coverage from <%s>...\n", profilePath)
 	return p.StorageClient.ProfileReader(p.Ctx, p.Bucket, profilePath)
 }

@@ -3,9 +3,10 @@ package git
 import (
 	"bytes"
 	"io"
-	"log"
 	"os/exec"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -40,10 +41,10 @@ func hasGitAttr(attr string, fileName string) bool {
 
 func IsCoverageSkipped(filePath string) bool {
 	if hasGitAttr(gitAttrLinguistGenerated, filePath) {
-		log.Println("Skipping as file is linguist-generated: ", filePath)
+		logrus.Info("Skipping as file is linguist-generated: ", filePath)
 		return true
 	} else if hasGitAttr(gitAttrCoverageExcluded, filePath) {
-		log.Println("Skipping as file is coverage-excluded: ", filePath)
+		logrus.Info("Skipping as file is coverage-excluded: ", filePath)
 		return true
 	}
 	return false

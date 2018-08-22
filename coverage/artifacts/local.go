@@ -1,12 +1,12 @@
 package artifacts
 
 import (
-	"log"
 	"os"
 	"os/exec"
 	"path"
 	"strings"
 
+	"github.com/sirupsen/logrus"
 	"io"
 	"k8s.io/test-infra/coverage/logUtil"
 )
@@ -44,7 +44,7 @@ func (arts *LocalArtifacts) ProfileName() string {
 func (arts *LocalArtifacts) KeyProfileCreator() *os.File {
 	keyProfilePath := arts.KeyProfilePath()
 	keyProfileFile, err := os.Create(keyProfilePath)
-	log.Printf("os.Create(keyProfilePath)=%s", keyProfilePath)
+	logrus.Infof("os.Create(keyProfilePath)=%s", keyProfilePath)
 	if err != nil {
 		logUtil.LogFatalf("file(%s) creation error: %v", keyProfilePath, err)
 	}
@@ -56,9 +56,9 @@ func (arts *LocalArtifacts) KeyProfileCreator() *os.File {
 // for periodic job, produce junit xml for testgrid in addition
 func (arts *LocalArtifacts) ProduceProfileFile(covTargetsStr string) {
 	// creates artifacts directory
-	log.Printf("mkdir -p %s\n", arts.directory)
+	logrus.Infof("mkdir -p %s\n", arts.directory)
 	cmd := exec.Command("mkdir", "-p", arts.directory)
-	log.Printf("artifacts dir=%s\n", arts.directory)
+	logrus.Infof("artifacts dir=%s\n", arts.directory)
 	cmd.Run()
 
 	// convert targets from a single string to a lists of strings
@@ -66,7 +66,7 @@ func (arts *LocalArtifacts) ProduceProfileFile(covTargetsStr string) {
 	for _, target := range strings.Split(covTargetsStr, " ") {
 		covTargets = append(covTargets, "./"+path.Join(target, "..."))
 	}
-	log.Printf("covTargets = %v\n", covTargets)
+	logrus.Infof("covTargets = %v\n", covTargets)
 
 	runProfiling(covTargets, arts)
 }

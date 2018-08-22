@@ -2,9 +2,8 @@ package githubClient
 
 import (
 	"context"
-	"log"
-
 	"github.com/google/go-github/github"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 )
 
@@ -20,7 +19,7 @@ func New(issues Issues, pullRequests PullRequests) *GithubClient {
 // Get the github client
 func Make(ctx context.Context, githubToken string) *GithubClient {
 	if len(githubToken) == 0 {
-		log.Println("Warning: Github token empty")
+		logrus.Info("Warning: Github token empty")
 	}
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: githubToken},

@@ -2,11 +2,11 @@ package calc
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"sort"
 	"strings"
 
+	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/coverage/githubUtil"
 	"k8s.io/test-infra/coverage/str"
 )
@@ -106,7 +106,7 @@ func NewGroupChanges(baseList *CoverageList, newList *CoverageList) *GroupChange
 func (changes *GroupChanges) processChangedFiles(
 	githubFilePaths *map[string]bool, rows *[]string, isEmpty,
 	isCoverageLow *bool) {
-	log.Printf("\nFinding joining set of changed files from profile[count=%d"+
+	logrus.Infof("\nFinding joining set of changed files from profile[count=%d"+
 		"] & github\n", len(changes.Changed))
 	covThres := changes.NewGroup.covThresholdInt
 	for i, inc := range changes.Changed {

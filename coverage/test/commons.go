@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 	"testing"
+
+	"github.com/sirupsen/logrus"
 )
 
 // StrFailure is used to display discrepancy between expected and actual result in test
@@ -26,7 +28,7 @@ func FileOrDirExists(path string) bool {
 	if _, err := os.Stat(path); err != nil {
 		if os.IsNotExist(err) {
 			cwd, _ := os.Getwd()
-			log.Printf("file or dir not found: %s; cwd=%s", path, cwd)
+			logrus.Infof("file or dir not found: %s; cwd=%s", path, cwd)
 			return false
 		}
 		log.Fatalf("File stats (path=%s) err: %v", path, err)

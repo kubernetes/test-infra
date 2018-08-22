@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 	"path"
+
+	"github.com/sirupsen/logrus"
 )
 
 func DeleteDir(dir string) {
@@ -30,7 +32,7 @@ func linkInputArt(artsDir, artName string) {
 }
 
 func LinkInputArts(artsDir string, artNames ...string) {
-	log.Printf("LinkInputArts(artsDir='%s', artNames...='%v') called ", artsDir, artNames)
+	logrus.Infof("LinkInputArts(artsDir='%s', artNames...='%v') called ", artsDir, artNames)
 	for _, art := range artNames {
 		linkInputArt(artsDir, art)
 	}
@@ -39,11 +41,11 @@ func LinkInputArts(artsDir string, artNames ...string) {
 func NewArtsDir(dirPrefix string) string {
 	MkdirAll(tmpArtsDir)
 	dir, err := ioutil.TempDir(tmpArtsDir, dirPrefix+"_")
-	log.Printf("artsDir='%s'", dir)
+	logrus.Infof("artsDir='%s'", dir)
 	if err != nil {
 		log.Fatalf("Error making TempDir for arts: %v\n", err)
 	} else {
-		log.Printf("Temp arts dir created: %s\n", dir)
+		logrus.Infof("Temp arts dir created: %s\n", dir)
 	}
 	return dir
 }

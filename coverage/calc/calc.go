@@ -6,7 +6,8 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"log"
+
+	"github.com/sirupsen/logrus"
 )
 
 // CovList read profiling information from reader and constructs CoverageList.
@@ -26,8 +27,8 @@ func CovList(f io.ReadCloser, keyProfileFile io.WriteCloser,
 	writeLine(keyProfileFile, scanner.Text())
 
 	isPresubmit := concernedFiles != nil
-	log.Printf("isPresubmit=%v", isPresubmit)
-	log.Printf("concerned Files=%v", concernedFiles)
+	logrus.Infof("isPresubmit=%v", isPresubmit)
+	logrus.Infof("concerned Files=%v", concernedFiles)
 
 	if !isPresubmit {
 		concernedFiles = &map[string]bool{}
@@ -42,7 +43,7 @@ func CovList(f io.ReadCloser, keyProfileFile io.WriteCloser,
 		if isConcerned {
 			blk.addToGroupCov(g)
 			writeLine(keyProfileFile, row)
-			log.Printf("concerned line: %s", row)
+			logrus.Infof("concerned line: %s", row)
 		}
 	}
 

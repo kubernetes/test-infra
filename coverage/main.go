@@ -18,10 +18,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 
+	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/coverage/artifacts"
 	"k8s.io/test-infra/coverage/gcs"
 	"k8s.io/test-infra/coverage/githubUtil/githubPr"
@@ -56,13 +56,13 @@ func main() {
 	covbotUserName := flag.String("covbot-username", "covbot", "github user name for coverage robot")
 	flag.Parse()
 
-	log.Printf("container flag list: postsubmit-gcs-bucket=%s; postSubmitJobName=%s; "+
+	logrus.Infof("container flag list: postsubmit-gcs-bucket=%s; postSubmitJobName=%s; "+
 		"artifacts=%s; cov-target=%s; profile-name=%s; github-token=%s; "+
 		"cov-threshold-percentage=%d; covbot-username=%s;",
 		*gcsBucketName, *postSubmitJobName, *artifactsDirFlag, *coverageTargetDir, coverageProfileName,
 		*githubTokenPath, *covThresholdFlag, *covbotUserName)
 
-	log.Println("Getting env values")
+	logrus.Info("Getting env values")
 	pr := os.Getenv("PULL_NUMBER")
 	pullSha := os.Getenv("PULL_PULL_SHA")
 	baseSha := os.Getenv("PULL_BASE_SHA")
@@ -117,7 +117,7 @@ func main() {
 				"fail presubmit workflow intentionally", *covThresholdFlag)
 		}
 	case "periodic":
-		log.Printf("job type is %v, producing testsuite xml...\n", jobType)
+		logrus.Infof("job type is %v, producing testsuite xml...\n", jobType)
 		testgrid.ProfileToTestsuiteXML(localArtifacts, *covThresholdFlag)
 	}
 

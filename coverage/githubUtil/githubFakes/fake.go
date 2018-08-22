@@ -2,11 +2,11 @@ package githubFakes
 
 import (
 	"context"
-	"log"
 	"path"
 
 	"github.com/google/go-github/github"
 
+	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/coverage/githubUtil/githubClient"
 	"k8s.io/test-infra/coverage/githubUtil/githubPr"
 	"k8s.io/test-infra/coverage/test"
@@ -53,21 +53,21 @@ func fakePullRequests() githubClient.PullRequests {
 
 func (issues *FakeGithubIssues) CreateComment(ctx context.Context, owner string, repo string,
 	number int, comment *github.IssueComment) (*github.IssueComment, *github.Response, error) {
-	log.Printf("FakeGithubIssues.CreateComment(Ctx, owner=%s, repo=%s, number=%d, "+
+	logrus.Infof("FakeGithubIssues.CreateComment(Ctx, owner=%s, repo=%s, number=%d, "+
 		"comment.GetBody()=%s) called\n", owner, repo, number, comment.GetBody())
 	return nil, nil, nil
 }
 
 func (issues *FakeGithubIssues) DeleteComment(ctx context.Context, owner string, repo string,
 	commentID int) (*github.Response, error) {
-	log.Printf("FakeGithubIssues.DeleteComment(Ctx, owner=%s, repo=%s, commentID=%d) called\n",
+	logrus.Infof("FakeGithubIssues.DeleteComment(Ctx, owner=%s, repo=%s, commentID=%d) called\n",
 		owner, repo, commentID)
 	return nil, nil
 }
 
 func (issues *FakeGithubIssues) ListComments(ctx context.Context, owner string, repo string, number int,
 	opt *github.IssueListCommentsOptions) ([]*github.IssueComment, *github.Response, error) {
-	log.Printf("FakeGithubIssues.ListComment(Ctx, owner=%s, repo=%s, number=%d, "+
+	logrus.Infof("FakeGithubIssues.ListComment(Ctx, owner=%s, repo=%s, number=%d, "+
 		"opt=%v) called\n", owner, repo, number, opt)
 	return nil, nil, nil
 }
@@ -79,7 +79,7 @@ func (pr *FakeGithubPullRequests) ListFiles(ctx context.Context, owner string, r
 
 func FakeRepoData() *githubPr.GithubPr {
 	ctx := context.Background()
-	log.Printf("creating fake repo data \n")
+	logrus.Infof("creating fake repo data \n")
 
 	return &githubPr.GithubPr{
 		RepoOwner:     "fakeRepoOwner",

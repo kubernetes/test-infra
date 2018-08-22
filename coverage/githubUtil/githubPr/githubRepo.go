@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"strconv"
 
 	"github.com/google/go-github/github"
 
+	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/coverage/githubUtil/githubClient"
 	"k8s.io/test-infra/coverage/logUtil"
 )
@@ -55,19 +55,19 @@ func New(githubTokenLocation, repoOwner, repoName, prNumStr,
 
 // Create a comment on the repo
 func (data *GithubPr) postComment(content string) (err error) {
-	log.Printf("client.Issues.CreateComment(Ctx, repoOwner=%s, RepoName=%s, prNum=%v, commentBody)\n",
+	logrus.Infof("client.Issues.CreateComment(Ctx, repoOwner=%s, RepoName=%s, prNum=%v, commentBody)\n",
 		data.RepoOwner, data.RepoName, data.Pr)
 	commentBody := &github.IssueComment{Body: &content}
 	_, _, err = data.GithubClient.Issues.CreateComment(data.Ctx, data.RepoOwner, data.RepoName, data.Pr, commentBody)
 	if err != nil {
-		log.Printf("error running data.GithubClient.Issues.CreateComment(...):%v\n", err)
+		logrus.Infof("error running data.GithubClient.Issues.CreateComment(...):%v\n", err)
 	}
 	return
 }
 
 // Create a comment on the repo
 func (data *GithubPr) removeAllBotComments() (nRemoved int, err error) {
-	log.Println("removing all bot comments")
+	logrus.Info("removing all bot comments")
 	comments, _, err := data.GithubClient.Issues.ListComments(data.Ctx, data.RepoOwner, data.RepoName, data.Pr, nil)
 
 	if err != nil {
@@ -79,7 +79,7 @@ func (data *GithubPr) removeAllBotComments() (nRemoved int, err error) {
 	for _, cmt := range comments {
 		userName := *cmt.User.Login
 		if userName == data.RobotUserName {
-			log.Printf("TO DEL comment: <author=%s> %s\n", userName, *cmt.Body)
+			logrus.Infof("TO DEL comment: <author=%s> %s\n", userName, *cmt.Body)
 			_, err = data.GithubClient.Issues.DeleteComment(
 				data.Ctx, data.RepoOwner, data.RepoName, cmt.GetID())
 
@@ -93,7 +93,7 @@ func (data *GithubPr) removeAllBotComments() (nRemoved int, err error) {
 		}
 	}
 
-	log.Printf(
+	logrus.Infof(
 		"Removed %d comments by robot <%s>", nRemoved, data.RobotUserName)
 
 	return
@@ -101,7 +101,7 @@ func (data *GithubPr) removeAllBotComments() (nRemoved int, err error) {
 
 // Remove all existing bot comments, and then create a new comment on the repo
 func (data *GithubPr) CleanAndPostComment(content string) (err error) {
-	log.Printf("posting on PR *%v*\n", data.Pr)
+	logrus.Infof("posting on PR *%v*\n", data.Pr)
 	_, err = data.removeAllBotComments()
 	if err != nil {
 		return

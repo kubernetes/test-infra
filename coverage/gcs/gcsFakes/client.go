@@ -1,11 +1,10 @@
 package gcsFakes
 
 import (
-	"context"
-	"log"
-
 	"cloud.google.com/go/storage"
+	"context"
 
+	"github.com/sirupsen/logrus"
 	"io"
 	"k8s.io/test-infra/coverage/artifacts/artsTest"
 )
@@ -21,12 +20,12 @@ func (client *fakeStorageClient) Bucket(bucketName string) *storage.BucketHandle
 }
 
 func (client *fakeStorageClient) ListGcsObjects(ctx context.Context, bucketName, prefix, delim string) (objects []string) {
-	log.Printf("fakeStorageClient.ListGcsObjects\n")
+	logrus.Infof("fakeStorageClient.ListGcsObjects\n")
 	return []string{"3", "9", "1", "5"}
 }
 
 func (client *fakeStorageClient) DoesObjectExist(ctx context.Context, bucket, object string) bool {
-	log.Printf("running fakeStorageClient.DoesObjectExist(Ctx, bucket=%s, object=%s)\n",
+	logrus.Infof("running fakeStorageClient.DoesObjectExist(Ctx, bucket=%s, object=%s)\n",
 		bucket, object)
 	if bucket == "do-not-exist" || object == "do-not-exist" {
 		return false

@@ -2,9 +2,10 @@ package io
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path"
+
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/coverage/logUtil"
 )
@@ -12,7 +13,7 @@ import (
 // CreateMarker produces empty file as marker
 func CreateMarker(dir, fileName string) {
 	Write(nil, dir, fileName)
-	log.Printf("Created marker file '%s'\n", fileName)
+	logrus.Infof("Created marker file '%s'\n", fileName)
 }
 
 // Write writes the content of the string to a file in the directory
@@ -22,9 +23,9 @@ func Write(content *string, destinationDir, fileName string) {
 	if err != nil {
 		logUtil.LogFatalf("Error writing file: %v", err)
 	} else {
-		log.Printf("Created file:%s", filePath)
+		logrus.Infof("Created file:%s", filePath)
 		if content == nil {
-			log.Printf("No content to be written to file '%s'", fileName)
+			logrus.Infof("No content to be written to file '%s'", fileName)
 		} else {
 			fmt.Fprint(file, *content)
 		}
