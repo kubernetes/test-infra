@@ -739,7 +739,6 @@ Plugin Help style
 
 .status {
     align-items: center;
-    border-bottom: 1px solid #EFEBE9;
     cursor: pointer;
     background-color: #ffffff;
     display: flex;
@@ -749,6 +748,10 @@ Plugin Help style
     line-height: 24px;
     padding: 12px 16px 2px 17px;
     user-select: none;
+}
+
+.status.expandable {
+    border-bottom: 1px solid #EFEBE9;
 }
 
 .status > .status-icon {
@@ -888,4 +891,16 @@ Plugin Help style
         width: 320px;
     }
 
+}
+
+.alert{
+    padding: 15px;
+    background-color: #FFCB50;
+}
+
+.closebutton {
+    color: black;
+    float: right;
+    font-size: 24px;
+    cursor: pointer;
 }
