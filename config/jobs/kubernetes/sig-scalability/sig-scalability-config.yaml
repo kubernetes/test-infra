@@ -709,6 +709,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
+      - --cluster=clusterloader
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-project=k8s-jkns-clusterloader
@@ -736,6 +737,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
+      - --cluster=clusterloader2
       - --extract=ci/latest
       - --gcp-nodes=3
       - --gcp-project=k8s-jkns-clusterloader
@@ -743,7 +745,9 @@ periodics:
       - --provider=gce
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-      - --test-cmd-args=cluster-loader2 --testconfig=testing/density/config.yaml --nodes=3
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--testconfig=testing/density/config.yaml
+      - --test-cmd-args=--nodes=3
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=60m
 
