@@ -165,6 +165,9 @@ default:
     - color: c7def8
       description: Categorizes issue or PR as related to cleaning up code, process, or technical debt.
       name: kind/cleanup
+      previously:
+        - name: kind/friction
+        - name: kind/technical-debt
       target: both
       prowPlugin: label
       addedBy: anyone
