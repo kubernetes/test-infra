@@ -481,6 +481,10 @@ plugins:
   - lifecycle
   - size
 
+  kubernetes-incubator/kubespray:
+  - approve
+  - blunderbuss
+
   kubernetes-incubator/service-catalog:
   - approve
   - blunderbuss
