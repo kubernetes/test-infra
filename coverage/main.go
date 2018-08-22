@@ -27,6 +27,7 @@ import (
 	"k8s.io/test-infra/coverage/githubUtil/githubPr"
 	"k8s.io/test-infra/coverage/logUtil"
 	"k8s.io/test-infra/coverage/testgrid"
+	"k8s.io/test-infra/coverage/workflows"
 )
 
 const (
@@ -110,7 +111,7 @@ func main() {
 
 		presubmit.Artifacts = *presubmit.MakeGcsArtifacts(*localArtifacts)
 
-		isCoverageLow := RunPresubmit(presubmit, localArtifacts)
+		isCoverageLow := workflows.RunPresubmit(presubmit, localArtifacts)
 
 		if isCoverageLow {
 			logUtil.LogFatalf("Code coverage is below threshold (%d%%), "+

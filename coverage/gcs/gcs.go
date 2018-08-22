@@ -37,7 +37,6 @@ type StorageClientIntf interface {
 	ListGcsObjects(ctx context.Context, bucketName, prefix, delim string) (
 		objects []string)
 	ProfileReader(ctx context.Context, bucket, object string) io.ReadCloser
-	////CovList(Ctx context.Context, bucket, object string, concernedFiles *map[string]bool) (g *CoverageList)
 	DoesObjectExist(ctx context.Context, bucket, object string) bool
 }
 
@@ -110,7 +109,7 @@ type GcsArtifacts struct {
 	Bucket string
 }
 
-func NewGcsArtifacts(ctx context.Context, client StorageClientIntf,
+func newGcsArtifacts(ctx context.Context, client StorageClientIntf,
 	bucket string, baseArtifacts artifacts.Artifacts) *GcsArtifacts {
 	return &GcsArtifacts{baseArtifacts, ctx, client, bucket}
 }

@@ -5,5 +5,5 @@ import (
 )
 
 func Test(t *testing.T) {
-	t.Logf(AbsPath("middle/of/nowhere"))
+	t.Logf(absPath("middle/of/nowhere"))
 }

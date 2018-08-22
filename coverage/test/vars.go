@@ -8,7 +8,7 @@ const (
 )
 
 var (
-	tmpArtsDir        = AbsPath("test_output/tmp_artifacts")
-	InputArtifactsDir = AbsPath("testdata/artifacts")
-	CovTargetDir      = AbsPath(CovTargetRelPath) + "/"
+	tmpArtsDir        = absPath("test_output/tmp_artifacts")
+	InputArtifactsDir = absPath("testdata/artifacts")
+	CovTargetDir      = absPath(CovTargetRelPath) + "/"
 )

@@ -11,7 +11,7 @@ import (
 	"k8s.io/test-infra/coverage/logUtil"
 )
 
-type Property struct {
+type property struct {
 	XMLName string `xml:"property"`
 	Name    string `xml:"name,attr"`
 	Value   string `xml:"value,attr"`
@@ -19,7 +19,7 @@ type Property struct {
 
 type Properties struct {
 	XMLName      string `xml:"properties"`
-	PropertyList []Property
+	PropertyList []property
 }
 
 type TestCase struct {
@@ -34,7 +34,7 @@ type TestCase struct {
 // NewTestCase constructs the TestCase struct
 func NewTestCase(targetName, coverage string, failure bool) *TestCase {
 	properties := &Properties{}
-	properties.PropertyList = append(properties.PropertyList, Property{"", "coverage", coverage})
+	properties.PropertyList = append(properties.PropertyList, property{"", "coverage", coverage})
 
 	return &TestCase{"", "go_coverage", targetName, "0", failure, *properties}
 }

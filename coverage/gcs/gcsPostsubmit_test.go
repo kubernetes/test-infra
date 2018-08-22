@@ -13,7 +13,7 @@ import (
 	"k8s.io/test-infra/coverage/test"
 )
 
-func testPostSubmit() (p *PostSubmit) {
+func testPostSubmit() (p *postSubmit) {
 	logrus.Infof("testPostSubmit() called")
 
 	p = NewPostSubmit(context.Background(), gcsFakes.NewFakeStorageClient(),

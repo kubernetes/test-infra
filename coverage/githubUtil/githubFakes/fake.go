@@ -35,44 +35,44 @@ func testCommitFiles() (res []*github.CommitFile) {
 	}
 }
 
-type FakeGithubIssues struct {
+type githubIssues struct {
 	githubClient.Issues
 }
 
-type FakeGithubPullRequests struct {
+type githubPullRequests struct {
 	githubClient.PullRequests
 }
 
 func fakeGithubIssues() githubClient.Issues {
-	return &FakeGithubIssues{}
+	return &githubIssues{}
 }
 
 func fakePullRequests() githubClient.PullRequests {
-	return &FakeGithubPullRequests{}
+	return &githubPullRequests{}
 }
 
-func (issues *FakeGithubIssues) CreateComment(ctx context.Context, owner string, repo string,
+func (issues *githubIssues) CreateComment(ctx context.Context, owner string, repo string,
 	number int, comment *github.IssueComment) (*github.IssueComment, *github.Response, error) {
-	logrus.Infof("FakeGithubIssues.CreateComment(Ctx, owner=%s, repo=%s, number=%d, "+
+	logrus.Infof("githubIssues.CreateComment(Ctx, owner=%s, repo=%s, number=%d, "+
 		"comment.GetBody()=%s) called\n", owner, repo, number, comment.GetBody())
 	return nil, nil, nil
 }
 
-func (issues *FakeGithubIssues) DeleteComment(ctx context.Context, owner string, repo string,
+func (issues *githubIssues) DeleteComment(ctx context.Context, owner string, repo string,
 	commentID int) (*github.Response, error) {
-	logrus.Infof("FakeGithubIssues.DeleteComment(Ctx, owner=%s, repo=%s, commentID=%d) called\n",
+	logrus.Infof("githubIssues.DeleteComment(Ctx, owner=%s, repo=%s, commentID=%d) called\n",
 		owner, repo, commentID)
 	return nil, nil
 }
 
-func (issues *FakeGithubIssues) ListComments(ctx context.Context, owner string, repo string, number int,
+func (issues *githubIssues) ListComments(ctx context.Context, owner string, repo string, number int,
 	opt *github.IssueListCommentsOptions) ([]*github.IssueComment, *github.Response, error) {
-	logrus.Infof("FakeGithubIssues.ListComment(Ctx, owner=%s, repo=%s, number=%d, "+
+	logrus.Infof("githubIssues.ListComment(Ctx, owner=%s, repo=%s, number=%d, "+
 		"opt=%v) called\n", owner, repo, number, opt)
 	return nil, nil, nil
 }
 
-func (pr *FakeGithubPullRequests) ListFiles(ctx context.Context, owner string, repo string, number int, opt *github.ListOptions) (
+func (pr *githubPullRequests) ListFiles(ctx context.Context, owner string, repo string, number int, opt *github.ListOptions) (
 	[]*github.CommitFile, *github.Response, error) {
 	return testCommitFiles(), nil, nil
 }

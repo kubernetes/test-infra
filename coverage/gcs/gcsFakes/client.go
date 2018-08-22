@@ -11,6 +11,7 @@ import (
 
 type fakeStorageClient struct{}
 
+//NewFakeStorageClient create a new fake storage client
 func NewFakeStorageClient() *fakeStorageClient {
 	return &fakeStorageClient{}
 }

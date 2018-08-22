@@ -1,6 +1,4 @@
-/*
-This file stores the main structs and their methods used by the coverage app
-*/
+// Package calc calculates & summarized code coverage from coverage profile
 package calc
 
 import (
@@ -25,7 +23,7 @@ func (blk *codeBlock) filePathInGithub() string {
 }
 
 // add blk Coverage to file Coverage
-func (blk *codeBlock) addToFileCov(coverage *Coverage) {
+func (blk *codeBlock) addToFileCov(coverage *coverage) {
 
 	coverage.nAllStmts += blk.numStatements
 	if blk.coverageCount > 0 {
@@ -77,26 +75,26 @@ func toBlock(line string) (res *codeBlock) {
 	}
 }
 
-// Coverage stores test coverage summary data for one file
-type Coverage struct {
+// coverage stores test coverage summary data for one file
+type coverage struct {
 	name          string
 	nCoveredStmts int
 	nAllStmts     int
 	lineCovLink   string
 }
 
-func newCoverage(name string) *Coverage {
-	return &Coverage{name, 0, 0, ""}
+func newCoverage(name string) *coverage {
+	return &coverage{name, 0, 0, ""}
 }
 
 // Name returns the file name
-func (c *Coverage) Name() string {
+func (c *coverage) Name() string {
 	return c.name
 }
 
-// Percentage returns the percentage of statements covered
-func (c *Coverage) Percentage() string {
-	ratio, err := c.Ratio()
+// percentage returns the percentage of statements covered
+func (c *coverage) percentage() string {
+	ratio, err := c.ratio()
 	if err == nil {
 		return str.PercentStr(ratio)
 	}
@@ -105,8 +103,8 @@ func (c *Coverage) Percentage() string {
 }
 
 // PercentageForTestgrid returns the percentage of statements covered
-func (c *Coverage) PercentageForTestgrid() string {
-	ratio, err := c.Ratio()
+func (c *coverage) PercentageForTestgrid() string {
+	ratio, err := c.ratio()
 	if err == nil {
 		return str.PercentageForTestgrid(ratio)
 	}
@@ -114,7 +112,7 @@ func (c *Coverage) PercentageForTestgrid() string {
 	return ""
 }
 
-func (c *Coverage) Ratio() (float32, error) {
+func (c *coverage) ratio() (float32, error) {
 	if c.nAllStmts == 0 {
 		return -1, fmt.Errorf("[%s] has 0 statement", c.Name())
 	}
@@ -122,8 +120,8 @@ func (c *Coverage) Ratio() (float32, error) {
 }
 
 // String returns the summary of coverage in string
-func (c *Coverage) String() string {
-	ratio, err := c.Ratio()
+func (c *coverage) string() string {
+	ratio, err := c.ratio()
 	if err == nil {
 		return fmt.Sprintf("[%s]\t%s (%d of %d stmts) covered", c.Name(),
 			str.PercentStr(ratio), c.nCoveredStmts, c.nAllStmts)
@@ -131,25 +129,26 @@ func (c *Coverage) String() string {
 	return "ratio not exist"
 }
 
-func (c *Coverage) LineCovLink() string {
+//LineCovLink
+func (c *coverage) LineCovLink() string {
 	return c.lineCovLink
 }
 
-func (c *Coverage) SetLineCovLink(link string) {
+func (c *coverage) SetLineCovLink(link string) {
 	c.lineCovLink = link
 }
 
 // IsCoverageLow checks if the coverage is less than the threshold.
-func (c *Coverage) IsCoverageLow(covThresholdInt int) bool {
+func (c *coverage) IsCoverageLow(covThresholdInt int) bool {
 	covThreshold := float32(covThresholdInt) / 100
-	ratio, err := c.Ratio()
+	ratio, err := c.ratio()
 	if err == nil {
 		return ratio < covThreshold
 	}
 	return false
 }
 
-func SortCoverages(cs []Coverage) {
+func SortCoverages(cs []coverage) {
 	sort.Slice(cs, func(i, j int) bool {
 		return cs[i].Name() < cs[j].Name()
 	})

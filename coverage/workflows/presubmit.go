@@ -1,4 +1,4 @@
-package main
+package workflows
 
 import (
 	"github.com/sirupsen/logrus"

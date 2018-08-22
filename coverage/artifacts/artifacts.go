@@ -3,22 +3,18 @@
 package artifacts
 
 import (
-	"io"
 	"path"
 )
 
 const (
+	//CovProfileCompletionMarker is the file name of the completion marker for coverage profiling
 	CovProfileCompletionMarker = "profile-completed"
-	JunitXmlForTestgrid        = "junit_bazel.xml"
+	junitXmlForTestgrid        = "junit_bazel.xml"
+	//LineCovFileName is the file name for line coverage html
 	LineCovFileName            = "line-cov.html"
 )
 
-type Profile interface {
-	ProfilePath() string
-	KeyProfilePath() string
-	ProfileReader() io.ReadCloser
-}
-
+//Artifacts stores information about artifacts directory and files in it
 type Artifacts struct {
 	directory      string
 	profileName    string
@@ -26,6 +22,7 @@ type Artifacts struct {
 	covStdoutName  string
 }
 
+//New Artifact object
 func New(directory, profileName, keyProfileName, covStdoutName string) *Artifacts {
 	return &Artifacts{
 		directory,
@@ -34,34 +31,37 @@ func New(directory, profileName, keyProfileName, covStdoutName string) *Artifact
 		covStdoutName}
 }
 
+//SetDirectory sets directory to given string
 func (arts *Artifacts) SetDirectory(dir string) {
 	arts.directory = dir
 }
 
+//Directory gets directory string
 func (arts *Artifacts) Directory() string {
 	return arts.directory
 }
 
+//ProfilePath returns profile path
 func (arts *Artifacts) ProfilePath() string {
 	return path.Join(arts.directory, arts.profileName)
 }
 
+//KeyProfilePath returns key profile path
 func (arts *Artifacts) KeyProfilePath() string {
 	return path.Join(arts.directory, arts.keyProfileName)
 }
 
+//CovStdoutPath returns stdout path
 func (arts *Artifacts) CovStdoutPath() string {
 	return path.Join(arts.directory, arts.covStdoutName)
 }
 
+//JunitXmlForTestgridPath returns path for xml used by testgrid
 func (arts *Artifacts) JunitXmlForTestgridPath() string {
-	return path.Join(arts.directory, JunitXmlForTestgrid)
+	return path.Join(arts.directory, junitXmlForTestgrid)
 }
 
-func LineCovFilePath(directory string) string {
-	return path.Join(directory, LineCovFileName)
-}
-
+//LineCovFilePath returns path for line coverage
 func (arts *Artifacts) LineCovFilePath() string {
-	return LineCovFilePath(arts.directory)
+	return path.Join(arts.directory, LineCovFileName)
 }

@@ -16,5 +16,4 @@ func TestXMLProduction(t *testing.T) {
 	arts := artsTest.LocalArtsForTest("TestXMLProduction")
 	test.LinkInputArts(arts.Directory(), covProfileName, stdoutFileName)
 	ProfileToTestsuiteXML(arts, 50)
-	test.DeleteDir(arts.Directory())
 }

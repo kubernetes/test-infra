@@ -99,7 +99,7 @@ func (data *GithubPr) removeAllBotComments() (nRemoved int, err error) {
 	return
 }
 
-// Remove all existing bot comments, and then create a new comment on the repo
+// CleanAndPostComment Remove all existing bot comments, and then create a new comment on the repo
 func (data *GithubPr) CleanAndPostComment(content string) (err error) {
 	logrus.Infof("posting on PR *%v*\n", data.Pr)
 	_, err = data.removeAllBotComments()

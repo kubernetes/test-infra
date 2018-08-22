@@ -1,4 +1,4 @@
-// package calc calculates coverage through summarizing and also stores all
+// Package calc calculates coverage through summarizing and also stores all
 // the coverage structs used by or produced by the process
 package calc
 
@@ -34,7 +34,7 @@ func CovList(f io.ReadCloser, keyProfileFile io.WriteCloser,
 		concernedFiles = &map[string]bool{}
 	}
 
-	g = NewCoverageList("localSummary", concernedFiles, covThresInt)
+	g = newCoverageList("localSummary", concernedFiles, covThresInt)
 	for scanner.Scan() {
 		row := scanner.Text()
 		blk := toBlock(row)

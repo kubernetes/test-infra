@@ -14,6 +14,7 @@ func StrFailure(input, expected, actual string) string {
 	return fmt.Sprintf("input=%s; expected=%s; actual=%s\n", input, expected, actual)
 }
 
+//Fail fails a test and prints out info about expected and actual value
 func Fail(t *testing.T, input, expected, actual interface{}) {
 	t.Fatalf("input=%s; expected=%v; actual=%v\n", input, expected, actual)
 }
@@ -36,38 +37,33 @@ func FileOrDirExists(path string) bool {
 	return true
 }
 
-type Set interface {
-	Add(interface{})
-	Has(interface{}) bool
-}
-
-type StringSet struct {
+type stringSet struct {
 	data map[string]bool
 }
 
-func (set *StringSet) Add(s string) {
+func (set *stringSet) Add(s string) {
 	set.data[s] = true
 }
 
-func (set *StringSet) Has(s string) bool {
+func (set *stringSet) Has(s string) bool {
 	return set.data[s]
 }
 
-func NewStringSet() *StringSet {
-	return &StringSet{
+func newStringSet() *stringSet {
+	return &stringSet{
 		data: make(map[string]bool),
 	}
 }
 
-func MakeStringSet(members ...string) (set *StringSet) {
-	set = NewStringSet()
+func MakeStringSet(members ...string) (set *stringSet) {
+	set = newStringSet()
 	for _, member := range members {
 		set.Add(member)
 	}
 	return set
 }
 
-func (set *StringSet) AllMembers() (res []string) {
+func (set *stringSet) AllMembers() (res []string) {
 	for item, valid := range set.data {
 		if valid {
 			res = append(res, item)

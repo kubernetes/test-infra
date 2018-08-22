@@ -21,7 +21,7 @@ func sourceFilePath(path string) string {
 	return path
 }
 
-// Get the list of files in a commit, excluding those to be ignored by coverage
+// GetConcernedFiles gets the list of files in a commit, excluding those to be ignored by coverage
 func GetConcernedFiles(data *githubPr.GithubPr, filePathPrefix string) *map[string]bool {
 	listOptions := &github.ListOptions{Page: 1}
 

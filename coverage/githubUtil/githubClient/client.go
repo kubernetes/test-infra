@@ -7,6 +7,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
+//GithubClient stores all github client objects used by code coverage tool
 type GithubClient struct {
 	Issues       Issues
 	PullRequests PullRequests
@@ -16,7 +17,7 @@ func New(issues Issues, pullRequests PullRequests) *GithubClient {
 	return &GithubClient{issues, pullRequests}
 }
 
-// Get the github client
+// Make makes & gets a github client
 func Make(ctx context.Context, githubToken string) *GithubClient {
 	if len(githubToken) == 0 {
 		logrus.Info("Warning: Github token empty")
