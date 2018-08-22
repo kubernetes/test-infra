@@ -295,12 +295,15 @@ periodics:
       - --env=ENABLE_APISERVER_ADVANCED_AUDIT=false
       - --env=HEAPSTER_MACHINE_TYPE=n1-standard-16
       - --env=MASTER_MIN_CPU_ARCHITECTURE=Intel Broadwell
+      - --env=KUBE_PROXY_MODE=ipvs
       - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
       - --env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env
       - --extract=ci/latest
       - --gcp-nodes=5000
       - --gcp-project=kubernetes-scale
       - --gcp-zone=us-east1-b
+      - --image-family=ubuntu-gke-1604-lts
+      - --image-project=ubuntu-os-gke-cloud
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master
       - --timeout=1290m
