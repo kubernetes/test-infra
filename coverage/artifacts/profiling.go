@@ -1,7 +1,6 @@
 package artifacts
 
 import (
-	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -9,14 +8,6 @@ import (
 	covIo "k8s.io/test-infra/coverage/io"
 	"k8s.io/test-infra/coverage/logUtil"
 )
-
-type ProfileReader struct {
-	io.ReadCloser
-}
-
-func NewProfileReader(reader io.ReadCloser) *ProfileReader {
-	return &ProfileReader{reader}
-}
 
 // runProfiling writes coverage profile (&its stdout) by running go test on
 // target package

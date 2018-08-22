@@ -7,15 +7,13 @@ import (
 	"fmt"
 	"io"
 	"log"
-
-	"k8s.io/test-infra/coverage/artifacts"
 )
 
 // CovList read profiling information from reader and constructs CoverageList.
 // If called in presubmit, it also creates a filtered version of profile,
 // that only includes files in corresponding github commit,
 // less those files that are excluded from coverage calculation
-func CovList(f *artifacts.ProfileReader, keyProfileFile io.WriteCloser,
+func CovList(f io.ReadCloser, keyProfileFile io.WriteCloser,
 	concernedFiles *map[string]bool, covThresInt int) (g *CoverageList) {
 
 	defer f.Close()

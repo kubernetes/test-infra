@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strconv"
 
+	"io"
 	"k8s.io/test-infra/coverage/artifacts"
 	"k8s.io/test-infra/coverage/logUtil"
 )
@@ -104,7 +105,7 @@ func (p *PostSubmit) searchForLatestHealthyBuild() int {
 }
 
 // ProfileReader returns the reader for the most recent healthy profile
-func (p *PostSubmit) ProfileReader() *artifacts.ProfileReader {
+func (p *PostSubmit) ProfileReader() io.ReadCloser {
 	profilePath := p.pathToGoodCoverageProfile()
 	log.Printf("Reading base (master) coverage from <%s>...\n", profilePath)
 	return p.StorageClient.ProfileReader(p.Ctx, p.Bucket, profilePath)

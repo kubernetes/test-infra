@@ -87,7 +87,7 @@ func toTestsuite(g *calc.CoverageList, dirs []string) (ts *Testsuite) {
 // which serves as the input for test coverage testgrid
 func ProfileToTestsuiteXML(arts *artifacts.LocalArtifacts, covThres int) {
 	groupCov := calc.CovList(
-		artifacts.NewProfileReader(arts.ProfileReader()),
+		arts.ProfileReader(),
 		nil,
 		nil,
 		covThres,

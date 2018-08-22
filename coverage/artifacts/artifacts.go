@@ -3,6 +3,7 @@
 package artifacts
 
 import (
+	"io"
 	"path"
 )
 
@@ -15,7 +16,7 @@ const (
 type Profile interface {
 	ProfilePath() string
 	KeyProfilePath() string
-	ProfileReader() *ProfileReader
+	ProfileReader() io.ReadCloser
 }
 
 type Artifacts struct {

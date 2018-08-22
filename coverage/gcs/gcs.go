@@ -12,6 +12,7 @@ import (
 	"cloud.google.com/go/storage"
 	"google.golang.org/api/iterator"
 
+	"io"
 	"k8s.io/test-infra/coverage/artifacts"
 	"k8s.io/test-infra/coverage/logUtil"
 )
@@ -34,7 +35,7 @@ type StorageClientIntf interface {
 	Bucket(bucketName string) *storage.BucketHandle
 	ListGcsObjects(ctx context.Context, bucketName, prefix, delim string) (
 		objects []string)
-	ProfileReader(ctx context.Context, bucket, object string) *artifacts.ProfileReader
+	ProfileReader(ctx context.Context, bucket, object string) io.ReadCloser
 	////CovList(Ctx context.Context, bucket, object string, concernedFiles *map[string]bool) (g *CoverageList)
 	DoesObjectExist(ctx context.Context, bucket, object string) bool
 }
@@ -77,7 +78,7 @@ func (client *StorageClient) ListGcsObjects(ctx context.Context, bucketName,
 }
 
 func (client StorageClient) ProfileReader(ctx context.Context, bucket,
-	object string) *artifacts.ProfileReader {
+	object string) io.ReadCloser {
 	log.Printf("Running ProfileReader on bucket '%s', object='%s'\n",
 		bucket, object)
 
@@ -86,7 +87,7 @@ func (client StorageClient) ProfileReader(ctx context.Context, bucket,
 	if err != nil {
 		logUtil.LogFatalf("o.NewReader(Ctx) error: %v", err)
 	}
-	return artifacts.NewProfileReader(reader)
+	return reader
 }
 
 type GcsBuild struct {
@@ -113,6 +114,6 @@ func NewGcsArtifacts(ctx context.Context, client StorageClientIntf,
 	return &GcsArtifacts{baseArtifacts, ctx, client, bucket}
 }
 
-func (arts *GcsArtifacts) ProfileReader() *artifacts.ProfileReader {
+func (arts *GcsArtifacts) ProfileReader() io.ReadCloser {
 	return arts.Client.ProfileReader(arts.Ctx, arts.Bucket, arts.ProfilePath())
 }

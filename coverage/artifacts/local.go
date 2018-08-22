@@ -7,6 +7,7 @@ import (
 	"path"
 	"strings"
 
+	"io"
 	"k8s.io/test-infra/coverage/logUtil"
 )
 
@@ -24,13 +25,13 @@ func NewLocalArtifacts(directory string, ProfileName string,
 }
 
 // ProfileReader create and returns a ProfileReader by opening the file stored in profile path
-func (arts *LocalArtifacts) ProfileReader() *ProfileReader {
+func (arts *LocalArtifacts) ProfileReader() io.ReadCloser {
 	f, err := os.Open(arts.ProfilePath())
 	if err != nil {
 		wd, _ := os.Getwd()
 		logUtil.LogFatalf("LocalArtifacts.ProfileReader(): os.Open(profilePath) error: %v, cwd=%s", err, wd)
 	}
-	return NewProfileReader(f)
+	return f
 }
 
 func (arts *LocalArtifacts) ProfileName() string {

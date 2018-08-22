@@ -6,7 +6,7 @@ import (
 
 	"cloud.google.com/go/storage"
 
-	"k8s.io/test-infra/coverage/artifacts"
+	"io"
 	"k8s.io/test-infra/coverage/artifacts/artsTest"
 )
 
@@ -34,6 +34,6 @@ func (client *fakeStorageClient) DoesObjectExist(ctx context.Context, bucket, ob
 	return true
 }
 
-func (client *fakeStorageClient) ProfileReader(ctx context.Context, bucket, object string) *artifacts.ProfileReader {
+func (client *fakeStorageClient) ProfileReader(ctx context.Context, bucket, object string) io.ReadCloser {
 	return artsTest.LocalInputArtsForTest().ProfileReader()
 }
