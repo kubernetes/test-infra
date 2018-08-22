@@ -1,9 +1,10 @@
 package gcsFakes
 
 import (
-	"cloud.google.com/go/storage"
 	"context"
 	"log"
+
+	"cloud.google.com/go/storage"
 
 	"k8s.io/test-infra/coverage/artifacts"
 	"k8s.io/test-infra/coverage/artifacts/artsTest"

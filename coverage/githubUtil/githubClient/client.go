@@ -2,9 +2,10 @@ package githubClient
 
 import (
 	"context"
+	"log"
+
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
-	"log"
 )
 
 type GithubClient struct {
