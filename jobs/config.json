@@ -67,69 +67,6 @@
       "sig-node"
     ]
   },
-  "ci-federation-build": {
-    "args": [
-      "--allow-dup",
-      "--fast",
-      "--release=kubernetes-federation-dev",
-      "--release-kind=federation"
-    ],
-    "scenario": "kubernetes_build",
-    "sigOwners": [
-      "sig-multicluster"
-    ]
-  },
-  "ci-federation-e2e-gce": {
-    "args": [
-      "--check-leaked-resources",
-      "--cluster=prow-us-central1-f",
-      "--env-file=jobs/env/ci-federation-e2e-gce.env",
-      "--extract=ci/latest",
-      "--extract-federation=ci/latest",
-      "--federation",
-      "--gcp-node-image=gci",
-      "--gcp-project=k8s-jkns-e2e-gce-federation",
-      "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel=25",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Federation\\] --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[NoCluster\\] --minStartupPods=8",
-      "--timeout=900m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-multicluster"
-    ]
-  },
-  "ci-federation-e2e-gce-serial": {
-    "args": [
-      "--check-leaked-resources",
-      "--cluster=prow-us-central1-f",
-      "--env-file=jobs/env/ci-federation-e2e-gce-serial.env",
-      "--extract=ci/latest",
-      "--extract-federation=ci/latest",
-      "--federation",
-      "--gcp-node-image=gci",
-      "--gcp-project=k8s-jkns-e2e-gce-f8n-serial",
-      "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel=25",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=(\\[Feature:Federation\\].*(\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[NoCluster\\])) --minStartupPods=8",
-      "--timeout=900m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-multicluster"
-    ]
-  },
-  "ci-federation-release": {
-    "args": [
-      "./hack/release.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-multicluster"
-    ]
-  },
   "ci-kubemci-image-push": {
     "args": [
       "make",
@@ -1162,46 +1099,6 @@
     "scenario": "execute",
     "sigOwners": [
       "sig-node"
-    ]
-  },
-  "pull-federation-bazel-test": {
-    "args": [],
-    "scenario": "kubernetes_bazel",
-    "sigOwners": [
-      "sig-multicluster"
-    ]
-  },
-  "pull-federation-e2e-gce": {
-    "args": [
-      "--build-federation",
-      "--cluster=",
-      "--env-file=jobs/env/pull-kubernetes-e2e.env",
-      "--env-file=jobs/env/pull-federation-e2e-gce.env",
-      "--extract=ci/latest",
-      "--extract-federation=local",
-      "--federation",
-      "--gcp-project=k8s-jkns-pr-bldr-e2e-gce-fdrtn",
-      "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel=30",
-      "--multiple-federations",
-      "--provider=gce",
-      "--stage-federation=gs://kubernetes-release-pull/ci/pull-federation-e2e-gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Federation\\] --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[NoCluster\\] --minStartupPods=8",
-      "--timeout=90m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-multicluster"
-    ]
-  },
-  "pull-federation-verify": {
-    "args": [
-      "make",
-      "verify"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-multicluster"
     ]
   },
   "pull-frameworks-test": {
