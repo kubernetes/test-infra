@@ -164,6 +164,8 @@ slack:
             - foxish # 1.11 patch release manager
         release-1.12:
             - dougm # 1.12 branch manager
+            - hoegaarden # 1.12 branch manager shadow
+            - idealhack # 1.12 branch manager shadow
         feature-serverside-apply:
             - lavalamp # feature-serverside-apply "branch manager"
             - apelisse # feature-serverside-apply "branch manager"
