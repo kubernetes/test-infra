@@ -2728,13 +2728,23 @@ test_groups:
   num_columns_recent: 3
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
-- name: ci-kubernetes-gce-conformance-stable-1-10
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-stable-1-10
+- name: ci-kubernetes-gce-conformance-latest-1-12
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-latest-1-12
+  num_columns_recent: 3
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1
+- name: ci-kubernetes-gce-conformance-stable-1-11
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-stable-1-11
   num_columns_recent: 3
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
 - name: ci-kubernetes-gce-conformance-latest-1-11
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-latest-1-11
+  num_columns_recent: 3
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1
+- name: ci-kubernetes-gce-conformance-stable-1-10
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-stable-1-10
   num_columns_recent: 3
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
@@ -2852,15 +2862,27 @@ dashboards:
   - name: GCE, master (dev)
     description: Runs conformance tests using kubetest against latest kubernetes master CI build on GCE
     test_group_name: ci-kubernetes-gce-conformance
-  - name: GCE, v1.10 (release)
-    description: Runs conformance tests using kubetest against kubernetes release 1.10 stable tag on GCE
-    test_group_name: ci-kubernetes-gce-conformance-stable-1-10
+  - name: GCE, v1.12 (dev)
+    description: Runs conformance tests using kubetest against kubernetes release 1.12 branch on GCE
+    test_group_name: ci-kubernetes-gce-conformance-latest-1-12
+    # TODO(bentheelder): there's probably a more appropriate alias to alert this to
+    alert_options:
+      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
+  - name: GCE, v1.11 (release)
+    description: Runs conformance tests using kubetest against kubernetes release 1.11 stable tag on GCE
+    test_group_name: ci-kubernetes-gce-conformance-stable-1-11
     # TODO(bentheelder): there's probably a more appropriate alias to alert this to
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: GCE, v1.11 (dev)
     description: Runs conformance tests using kubetest against kubernetes release 1.11 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-11
+    # TODO(bentheelder): there's probably a more appropriate alias to alert this to
+    alert_options:
+      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
+  - name: GCE, v1.10 (release)
+    description: Runs conformance tests using kubetest against kubernetes release 1.10 stable tag on GCE
+    test_group_name: ci-kubernetes-gce-conformance-stable-1-10
     # TODO(bentheelder): there's probably a more appropriate alias to alert this to
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
@@ -2918,6 +2940,18 @@ dashboards:
   - name: GCE, master (dev)
     description: Runs conformance tests using kubetest against latest kubernetes master CI build on GCE
     test_group_name: ci-kubernetes-gce-conformance
+  - name: GCE, v1.12 (dev)
+    description: Runs conformance tests using kubetest against kubernetes release 1.12 branch on GCE
+    test_group_name: ci-kubernetes-gce-conformance-latest-1-12
+    # TODO(bentheelder): there's probably a more appropriate alias to alert this to
+    alert_options:
+      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
+  - name: GCE, v1.11 (release)
+    description: Runs conformance tests using kubetest against kubernetes release 1.11 stable tag on GCE
+    test_group_name: ci-kubernetes-gce-conformance-stable-1-11
+    # TODO(bentheelder): there's probably a more appropriate alias to alert this to
+    alert_options:
+      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: GCE, v1.11 (dev)
     description: Runs conformance tests using kubetest against kubernetes release 1.11 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-11
@@ -3824,6 +3858,9 @@ dashboards:
     test_group_name: ci-kubernetes-verify-beta
   - name: integration-1.12
     test_group_name: ci-kubernetes-integration-beta
+  - name: gce-conformance-latest-1-12
+    description: Runs conformance tests using kubetest against kubernetes release 1.12 branch on GCE
+    test_group_name: ci-kubernetes-gce-conformance-latest-1-12
   - name: gce-cos-1.12-default
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
   - name: gce-cos-1.12-reboot
@@ -3915,6 +3952,9 @@ dashboards:
     test_group_name: ci-kubernetes-verify-beta
   - name: integration-1.12
     test_group_name: ci-kubernetes-integration-beta
+  - name: gce-conformance-latest-1-12
+    description: Runs conformance tests using kubetest against kubernetes release 1.12 branch on GCE
+    test_group_name: ci-kubernetes-gce-conformance-latest-1-12
   - name: gce-cos-1.12-default
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
   - name: gce-cos-1.12-reboot
