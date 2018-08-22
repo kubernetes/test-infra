@@ -9,14 +9,17 @@ class TideQuery {
         this.orgs = query.orgs;
         this.labels = query.labels;
         this.missingLabels = query.missingLabels;
+        this.excludedBranches = query.excludedBranches;
+        this.includedBranches = query.includedBranches;
+        this.milestone = query.milestone
     }
 
-  /**
-   * Returns true if the pr is covered by the query.
-   * @param pr
-   * @returns {boolean}
-   */
-  matchPr(pr) {
+    /**
+     * Returns true if the pr is covered by the query.
+     * @param pr
+     * @returns {boolean}
+     */
+    matchPr(pr) {
         let isMatched = false;
         if (this.repos) {
             isMatched |= this.repos.indexOf(pr.Repository.NameWithOwner) !== -1;
@@ -26,11 +29,11 @@ class TideQuery {
         return isMatched;
     }
 
-  /**
-   * Returns labels and missing labels of the query.
-   * @returns {{labels: string[], missingLabels: string[]}}
-   */
-  getQuery() {
+    /**
+     * Returns labels and missing labels of the query.
+     * @returns {{labels: string[], missingLabels: string[]}}
+     */
+    getLabels() {
         return {
             labels: this.labels,
             missingLabels: this.missingLabels
@@ -161,7 +164,7 @@ function getCookieByName(name) {
  * @param {Object} tidePool
  * @param {Object} blockers
  */
-function createMergeBlockingIssueAlert(tidePool,blockers) {
+function createMergeBlockingIssueAlert(tidePool, blockers) {
     const alert = document.createElement("DIV");
     alert.classList.add("alert");
     alert.textContent = `Currently Prow is not merging any PRs to ${tidePool.Org}/${tidePool.Repo} on branch ${tidePool.Branch}. Refer to `;
@@ -195,7 +198,7 @@ function showAlerts() {
     for (let pool of tidePools) {
         const blockers = pool.Blockers ? pool.Blockers : [];
         if (blockers.length > 0) {
-            alertContainer.appendChild(createMergeBlockingIssueAlert(pool,blockers))
+            alertContainer.appendChild(createMergeBlockingIssueAlert(pool, blockers))
         }
     }
 }
@@ -221,7 +224,7 @@ window.onload = () => {
     }, () => {
         loadProgress(false);
         const mainContainer = document.querySelector("#main-container");
-            mainContainer.appendChild(createMessage("Something wrongs! We could not fulfill your request"));
+        mainContainer.appendChild(createMessage("Something wrongs! We could not fulfill your request"));
     });
     showAlerts();
     loadProgress(true);
@@ -245,13 +248,13 @@ function createSearchCard() {
             submitQuery(input);
         } else {
             const el = event.target;
-            el.style.height  = "auto";
+            el.style.height = "auto";
             el.style.height = event.target.scrollHeight + "px";
         }
     });
     input.addEventListener("focus", (event) => {
         const el = event.target;
-        el.style.height  = "auto";
+        el.style.height = "auto";
         el.style.height = event.target.scrollHeight + "px";
     });
     // Refresh button
@@ -314,8 +317,8 @@ function getFullPRContext(builds, contexts) {
                 description: context.Description,
                 state: context.State.toLowerCase(),
                 discrepancy: null,
-        });
-      }
+            });
+        }
     }
     if (builds) {
         for (let build of builds) {
@@ -384,11 +387,11 @@ function loadPrStatus(prData) {
         const contexts = getFullPRContext(builds, githubContexts);
         const validQueries = [];
         for (let query of tideQueries) {
-           if (query.matchPr(pr)) {
-               validQueries.push(query.getQuery());
-           }
+            if (query.matchPr(pr)) {
+                validQueries.push(query);
+            }
         }
-        container.appendChild(createPRCard(pr, contexts, validQueries, tideData.Pools));
+        container.appendChild(createPRCard(pr, contexts, closestMatchingQueries(pr, validQueries), tideData.Pools));
     }
 }
 
@@ -439,20 +442,34 @@ function createTidePoolLabel(pr, tidePool) {
  * requirements, it will show that the PR needs to resolve labels.
  * @param isMerge {boolean}
  * @param jobStatus {string}
- * @param mergeAbility {number}
+ * @param noQuery {boolean}
+ * @param labelConflict {boolean}
+ * @param mergeConflict {boolean}
+ * @param branchConflict {boolean}
+ * @param milestoneConflict {boolean}
  * @return {Element}
  */
-function createTitleLabel(isMerge, jobStatus, mergeAbility) {
+function createTitleLabel(isMerge, jobStatus, noQuery, labelConflict, mergeConflict, branchConflict, milestoneConflict) {
     const label = document.createElement("SPAN");
     label.classList.add("title-label");
-    if (isMerge) {
-        label.textContent = "Merged";
-        label.classList.add("merging");
-    } else if (mergeAbility === -1) {
+
+    if (noQuery) {
         label.textContent = "Unknown Merge Requirements";
         label.classList.add("unknown");
-    } else if (mergeAbility === 0) {
-        label.textContent = "Needs to Resolve Labels";
+    } else if (isMerge) {
+        label.textContent = "Merged";
+        label.classList.add("merging");
+    } else if (branchConflict) {
+        label.textContent = "Blocked from merging into target branch";
+        label.classList.add("pending");
+    } else if (milestoneConflict) {
+        label.textContent = "Blocked from merging by current milestone";
+        label.classList.add("pending");
+    } else if (mergeConflict) {
+        label.textContent = "Needs to resolve merge conflicts";
+        label.classList.add("pending");
+    } else if (labelConflict) {
+        label.textContent = "Needs to resolve labels";
         label.classList.add("pending");
     } else {
         if (jobStatus === "succeeded") {
@@ -472,10 +489,14 @@ function createTitleLabel(isMerge, jobStatus, mergeAbility) {
  * @param {Object} pr
  * @param {Array<Object>} tidePools
  * @param {string} jobStatus
- * @param {number} mergeAbility
+ * @param {boolean} noQuery
+ * @param {boolean} labelConflict
+ * @param {boolean} mergeConflict
+ * @param {boolean} branchConflict
+ * @param {boolean} milestoneConflict
  * @return {Element}
  */
-function createPRCardTitle(pr, tidePools, jobStatus, mergeAbility) {
+function createPRCardTitle(pr, tidePools, jobStatus, noQuery, labelConflict, mergeConflict, branchConflict, milestoneConflict) {
     const prTitle = document.createElement("DIV");
     prTitle.classList.add("mdl-card__title");
 
@@ -484,7 +505,7 @@ function createPRCardTitle(pr, tidePools, jobStatus, mergeAbility) {
     title.classList.add("mdl-card__title-text");
 
     const subtitle = document.createElement("H5");
-    subtitle.textContent = pr.Repository.NameWithOwner;
+    subtitle.textContent = pr.Repository.NameWithOwner + ":" + pr.BaseRef.Name;
     subtitle.classList.add("mdl-card__subtitle-text");
 
     const link = document.createElement("A");
@@ -505,7 +526,7 @@ function createPRCardTitle(pr, tidePools, jobStatus, mergeAbility) {
     });
     let tidePoolLabel = createTidePoolLabel(pr, pool[0]);
     if (!tidePoolLabel) {
-        tidePoolLabel = createTitleLabel(pr.Merged, jobStatus, mergeAbility);
+        tidePoolLabel = createTitleLabel(pr.Merged, jobStatus, noQuery, labelConflict, mergeConflict, branchConflict, milestoneConflict);
     }
     prTitle.appendChild(tidePoolLabel);
 
@@ -785,22 +806,50 @@ function createMergeLabelStatus(prLabels, queries) {
     const statusContainer = document.createElement("DIV");
     statusContainer.classList.add("status-container");
     const status = document.createElement("DIV");
-    const mergeAbility = isAbleToMerge(queries);
-    if (mergeAbility === 0) {
-        status.appendChild(createIcon("error", "", ["status-icon", "failed"]));
-        status.appendChild(document.createTextNode("Does not meet label requirements"));
-        // Creates help button
-        const iconButton = createIcon("help", "", ["help-icon-button"], true);
-        status.appendChild(iconButton);
-        // Shows dialog
-        const dialog = document.querySelector("#merge-help-dialog");
-        iconButton.addEventListener("click", (event) => {
-            dialog.showModal();
-            event.stopPropagation();
+    statusContainer.appendChild(status);
+    if (queries.length > 0) {
+        const labelConflict = !hasResolvedLabels(queries[0]);
+        if (labelConflict) {
+            status.appendChild(createIcon("error", "", ["status-icon", "failed"]));
+            status.appendChild(document.createTextNode("Does not meet label requirements"));
+            // Creates help button
+            const iconButton = createIcon("help", "", ["help-icon-button"], true);
+            status.appendChild(iconButton);
+            // Shows dialog
+            const dialog = document.querySelector("#merge-help-dialog");
+            iconButton.addEventListener("click", (event) => {
+                dialog.showModal();
+                event.stopPropagation();
+            });
+        } else {
+            status.appendChild(createIcon("check_circle", "", ["status-icon", "succeeded"]));
+            status.appendChild(document.createTextNode("Meets label requirements"));
+        }
+
+        const arrowIcon = createIcon("expand_less");
+        arrowIcon.classList.add("arrow-icon");
+
+        status.classList.add("status", "expandable");
+        status.appendChild(arrowIcon);
+
+        const queriesTable = createQueriesTable(prLabels, queries);
+        if (!labelConflict) {
+            queriesTable.classList.add("hidden");
+            arrowIcon.textContent = "expand_more";
+        }
+        status.addEventListener("click", () => {
+            queriesTable.classList.toggle("hidden");
+            if (queriesTable.classList.contains("hidden")) {
+                const offLabels = queriesTable.querySelectorAll(
+                    ".merge-table-label.off");
+                offLabels.forEach(offLabel => {
+                    offLabel.classList.add("hidden");
+                });
+            }
+            arrowIcon.textContent = arrowIcon.textContent === "expand_more"
+                ? "expand_less" : "expand_more";
         });
-    } else if (mergeAbility === 1) {
-        status.appendChild(createIcon("check_circle", "", ["status-icon", "succeeded"]));
-        status.appendChild(document.createTextNode("Meets merge requirements"));
+        statusContainer.appendChild(queriesTable);
     } else {
         status.appendChild(document.createTextNode("No Tide query found"));
         status.classList.add("no-status");
@@ -808,45 +857,19 @@ function createMergeLabelStatus(prLabels, queries) {
         p.textContent = "This repo may not be configured to use Tide.";
         status.appendChild(createStatusHelp("Tide query not found", [p]));
     }
-    const arrowIcon= createIcon("expand_less");
-    arrowIcon.classList.add("arrow-icon");
-
-    status.classList.add("status", "expandable");
-    status.appendChild(arrowIcon);
-
-    const queriesTable = createQueriesTable(prLabels, queries);
-    if (mergeAbility !== 0) {
-        queriesTable.classList.add("hidden");
-        arrowIcon.textContent = "expand_more";
-    }
-    status.addEventListener("click", () => {
-        queriesTable.classList.toggle("hidden");
-        if (queriesTable.classList.contains("hidden")) {
-            const offLabels = queriesTable.querySelectorAll(
-                ".merge-table-label.off");
-            offLabels.forEach(offLabel => {
-                offLabel.classList.add("hidden");
-            });
-        }
-        arrowIcon.textContent = arrowIcon.textContent === "expand_more"
-            ? "expand_less" : "expand_more";
-    });
-
-    statusContainer.appendChild(status);
-    statusContainer.appendChild(queriesTable);
     return statusContainer;
 }
 
 /**
  * Creates the merge conflict status.
- * @param prMergeability
+ * @param mergeConflict
  * @return {Element}
  */
-function createMergeConflictStatus(prMergeability) {
+function createMergeConflictStatus(mergeConflict) {
     const statusContainer = document.createElement("DIV");
     statusContainer.classList.add("status-container");
     const status = document.createElement("DIV");
-    if (prMergeability === "CONFLICTING") {
+    if (mergeConflict) {
         status.appendChild(createIcon("error", "", ["status-icon", "failed"]));
         status.appendChild(
             document.createTextNode("Has merge conflicts"));
@@ -887,7 +910,49 @@ function createStatusHelp(title, content) {
     return helpIcon;
 }
 
-function createPRCardBody(pr, builds, queries) {
+/**
+ * Creates the branch conflict status.
+ * @param pr
+ * @param branchConflict
+ * @return {Element}
+ */
+function createBranchConflictStatus(pr, branchConflict) {
+    const statusContainer = document.createElement("DIV");
+    statusContainer.classList.add("status-container");
+    const status = document.createElement("DIV");
+    if (branchConflict) {
+        status.appendChild(createIcon("error", "", ["status-icon", "failed"]));
+        status.appendChild(
+            document.createTextNode(`Merging into branch ${pr.BaseRef.Name} is currently forbidden`));
+        status.classList.add("status");
+        statusContainer.appendChild(status);
+    }
+    return statusContainer;
+}
+
+/**
+ * Creates the milestone conflict status.
+ * @param pr
+ * @param queries
+ * @param milestoneConflict
+ * @return {Element}
+ */
+function createMilestoneConflictStatus(pr, queries, milestoneConflict) {
+    const statusContainer = document.createElement("DIV");
+    statusContainer.classList.add("status-container");
+    const status = document.createElement("DIV");
+    if (milestoneConflict) {
+        status.appendChild(createIcon("error", "", ["status-icon", "failed"]));
+        status.appendChild(
+            document.createTextNode(`Only merges into milestone ${queries[0].milestone} are currently allowed`));
+        status.classList.add("status");
+        statusContainer.appendChild(status);
+    }
+    return statusContainer;
+}
+
+
+function createPRCardBody(pr, builds, queries, mergeable, branchConflict, milestoneConflict) {
     const cardBody = document.createElement("DIV");
     const title = document.createElement("H3");
     title.textContent = pr.Title;
@@ -897,8 +962,9 @@ function createPRCardBody(pr, builds, queries) {
     cardBody.appendChild(createJobStatus(builds));
     const nodes = pr.Labels && pr.Labels.Nodes ? pr.Labels.Nodes : [];
     cardBody.appendChild(createMergeLabelStatus(nodes, queries));
-    const mergeable = pr.Mergeable ? pr.Mergeable : "UNKNOWN";
     cardBody.appendChild(createMergeConflictStatus(mergeable));
+    cardBody.appendChild(createBranchConflictStatus(pr, branchConflict));
+    cardBody.appendChild(createMilestoneConflictStatus(pr, queries, milestoneConflict));
 
     return cardBody;
 }
@@ -921,28 +987,19 @@ function compareJobFn(a, b) {
 }
 
 /**
- * Creates a PR card.
- * @param {Object} pr
- * @param {Array<Object>} builds
- * @param {Array<Object>} queries
- * @param {Array<Object>} tidePools
+ * closestMatchingQueries returns a list of processed TideQueries that match the PR in descending order of likeliness.
+ * @param pr
+ * @param queries
  * @return {Element}
  */
-function createPRCard(pr, builds = [], queries = [], tidePools = []) {
-    builds = builds ? builds : [];
-    queries = queries ? queries : [];
-    tidePools = tidePools ? tidePools : [];
-    const prCard = document.createElement("DIV");
-    // jobs need to be sorted from high priority (failure, error) to low
-    // priority (success)
-    builds.sort(compareJobFn);
+function closestMatchingQueries(pr, queries) {
     const prLabelsSet = new Set();
     if (pr.Labels && pr.Labels.Nodes) {
         pr.Labels.Nodes.forEach(label => {
             prLabelsSet.add(label.Label.Name);
         });
     }
-    const processedQuery = [];
+    const processedQueries = [];
     queries.forEach(query => {
         let score = 0.0;
         const labels = [];
@@ -969,19 +1026,79 @@ function createPRCard(pr, builds = [], queries = [], tidePools = []) {
         });
         score = (labels.length + missingLabels.length > 0) ? score
             / (labels.length + missingLabels.length) : 1.0;
-        processedQuery.push(
-            {score: score, labels: labels, missingLabels: missingLabels});
+        processedQueries.push(
+            {
+                score: score, labels: labels, missingLabels: missingLabels, excludedBranches: query.excludedBranches,
+                includedBranches: query.includedBranches, milestone: query.milestone
+            });
     });
     // Sort queries by descending score order.
-    processedQuery.sort((q1, q2) => {
+    processedQueries.sort((q1, q2) => {
+        if (pr.BaseRef && pr.BaseRef.Name) {
+            let q1Excluded = 0, q2Excluded = 0;
+            if (q1.excludedBranches && q1.excludedBranches.indexOf(pr.BaseRef.Name) !== -1) {
+                q1Excluded = 1;
+            }
+            if (q2.excludedBranches && q2.excludedBranches.indexOf(pr.BaseRef.Name) !== -1) {
+                q2Excluded = -1;
+            }
+            if (q1Excluded + q2Excluded !== 0) {
+                return q1Excluded + q2Excluded;
+            }
+
+            let q1Included = 0, q2Included = 0;
+            if (q1.includedBranches && q1.includedBranches.indexOf(pr.BaseRef.Name) !== -1) {
+                q1Included = -1;
+            }
+            if (q2.includedBranches && q2.includedBranches.indexOf(pr.BaseRef.Name) !== -1) {
+                q2Included = 1;
+            }
+            if (q1Included + q2Included !== 0) {
+                return q1Included + q2Included;
+            }
+        }
+        if (pr.Milestone && pr.Milestone.Title && q1.Milestone !== q2.Milestone) {
+            if (q1.milestone && pr.Milestone.Title === q1.milestone) {
+                return -1;
+            }
+            if (q2.milestone && pr.Milestone.Title === q2.milestone) {
+                return 1;
+            }
+        }
         if (Math.abs(q1.score - q2.score) < Number.EPSILON) {
             return 0;
         }
         return q1.score > q2.score ? -1 : 1;
     });
+    return processedQueries
+}
+
+/**
+ * Creates a PR card.
+ * @param {Object} pr
+ * @param {Array<Object>} builds
+ * @param {Array<Object>} queries
+ * @param {Array<Object>} tidePools
+ * @return {Element}
+ */
+function createPRCard(pr, builds = [], queries = [], tidePools = []) {
+    builds = builds ? builds : [];
+    queries = queries ? queries : [];
+    tidePools = tidePools ? tidePools : [];
+    const prCard = document.createElement("DIV");
+    // jobs need to be sorted from high priority (failure, error) to low
+    // priority (success)
+    builds.sort(compareJobFn);
     prCard.classList.add("pr-card", "mdl-card");
-    prCard.appendChild(createPRCardTitle(pr, tidePools, jobStatus(builds), isAbleToMerge(processedQuery)));
-    prCard.appendChild(createPRCardBody(pr, builds, processedQuery));
+    const hasMatchingQuery = queries.length > 0;
+    const mergeConflict = pr.Mergeable ? pr.Mergeable === "CONFLICTING" : false;
+    const branchConflict = !!((pr.BaseRef && pr.BaseRef.Name && hasMatchingQuery) &&
+        ((queries[0].excludedBranches && queries[0].excludedBranches.indexOf(pr.BaseRef.Name) !== -1) ||
+            (queries[0].includedBranches && queries[0].includedBranches.indexOf(pr.BaseRef.Name) === -1)));
+    const milestoneConflict = hasMatchingQuery && queries[0].milestone ? (!pr.Milestone || !pr.Milestone.Title || pr.Milestone.Title !== queries[0].milestone) : false;
+    const labelConflict = hasMatchingQuery ? !hasResolvedLabels(queries[0]) : false;
+    prCard.appendChild(createPRCardTitle(pr, tidePools, jobStatus(builds), !hasMatchingQuery, labelConflict, mergeConflict, branchConflict, milestoneConflict));
+    prCard.appendChild(createPRCardBody(pr, builds, queries, mergeConflict, branchConflict, milestoneConflict));
     return prCard;
 }
 
@@ -989,7 +1106,7 @@ function createPRCard(pr, builds = [], queries = [], tidePools = []) {
  * Redirect to initiate github login flow.
  */
 function forceGithubLogin() {
-	window.location.href = window.location.origin + "/github-login";
+    window.location.href = window.location.origin + "/github-login";
 }
 
 /**
@@ -1017,14 +1134,11 @@ function jobStatus(builds) {
  * Returns -1 if there is no query. 1 if the PR is able to be merged by checking
  * the score of the first query in the query list (score === 1), the list has
  * been sorted by scores, otherwise 0.
- * @param queries
- * @return {number}
+ * @param query
+ * @return {boolean}
  */
-function isAbleToMerge(queries) {
-    if (queries.length === 0) {
-        return -1;
-    }
-    return Math.abs(queries[0].score - 1.0) < Number.EPSILON ? 1 : 0;
+function hasResolvedLabels(query) {
+    return Math.abs(query.score - 1.0) < Number.EPSILON;
 }
 
 /**
@@ -1074,12 +1188,12 @@ function createMessage(msg, icStr) {
     return msgContainer;
 }
 
-document.addEventListener("DOMContentLoaded", function(event) {
-   configure();
+document.addEventListener("DOMContentLoaded", function (event) {
+    configure();
 });
 
 function configure() {
-    if (!branding){
+    if (!branding) {
         return;
     }
     if (branding.logo !== '') {
