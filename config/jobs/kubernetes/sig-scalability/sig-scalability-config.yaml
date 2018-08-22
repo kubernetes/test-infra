@@ -295,7 +295,6 @@ periodics:
       - --env=ENABLE_APISERVER_ADVANCED_AUDIT=false
       - --env=HEAPSTER_MACHINE_TYPE=n1-standard-16
       - --env=MASTER_MIN_CPU_ARCHITECTURE=Intel Broadwell
-      - --env=KUBE_PROXY_MODE=ipvs
       - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
       - --env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env
       - --extract=ci/latest
