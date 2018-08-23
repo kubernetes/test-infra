@@ -2,13 +2,15 @@ package githubUtil
 
 import (
 	"fmt"
+	"path"
+	"strings"
+
 	"github.com/google/go-github/github"
+
+	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/coverage/git"
 	"k8s.io/test-infra/coverage/githubUtil/githubPr"
 	"k8s.io/test-infra/coverage/logUtil"
-	"log"
-	"path"
-	"strings"
 )
 
 // return corresponding source file path of given path (abc_test.go -> abc.go)
@@ -19,12 +21,12 @@ func sourceFilePath(path string) string {
 	return path
 }
 
-// Get the list of files in a commit, excluding those to be ignored by coverage
+// GetConcernedFiles gets the list of files in a commit, excluding those to be ignored by coverage
 func GetConcernedFiles(data *githubPr.GithubPr, filePathPrefix string) *map[string]bool {
 	listOptions := &github.ListOptions{Page: 1}
 
 	fmt.Println()
-	log.Printf("GetConcernedFiles(...) started\n")
+	logrus.Infof("GetConcernedFiles(...) started\n")
 
 	commitFiles, _, err := data.GithubClient.PullRequests.ListFiles(data.Ctx, data.RepoOwner, data.RepoName,
 		data.Pr, listOptions)
@@ -39,10 +41,10 @@ func GetConcernedFiles(data *githubPr.GithubPr, filePathPrefix string) *map[stri
 	for i, commitFile := range commitFiles {
 		filePath := path.Join(filePathPrefix, sourceFilePath(*commitFile.Filename))
 		isFileConcerned := !git.IsCoverageSkipped(filePath)
-		log.Printf("github file #%d: %s, concerned=%v\n", i, filePath, isFileConcerned)
+		logrus.Infof("github file #%d: %s, concerned=%v\n", i, filePath, isFileConcerned)
 		fileNames[filePath] = isFileConcerned
 	}
 
-	log.Printf("GetConcernedFiles(...) completed\n\n")
+	logrus.Infof("GetConcernedFiles(...) completed\n\n")
 	return &fileNames
 }

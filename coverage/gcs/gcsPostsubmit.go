@@ -2,15 +2,18 @@ package gcs
 
 import (
 	"context"
-	"k8s.io/test-infra/coverage/artifacts"
-	"k8s.io/test-infra/coverage/logUtil"
-	"log"
+	"io"
 	"path"
 	"sort"
 	"strconv"
+
+	"github.com/sirupsen/logrus"
+
+	"k8s.io/test-infra/coverage/artifacts"
+	"k8s.io/test-infra/coverage/logUtil"
 )
 
-type PostSubmit struct {
+type postSubmit struct {
 	GcsBuild
 	covProfileName   string
 	ArtifactsDirName string
@@ -19,16 +22,16 @@ type PostSubmit struct {
 }
 
 func NewPostSubmit(ctx context.Context, client StorageClientIntf,
-	bucket, prowJobName, artifactsDirName, covProfileName string) (p *PostSubmit) {
+	bucket, prowJobName, artifactsDirName, covProfileName string) (p *postSubmit) {
 
-	log.Println("NewPostSubmit(Ctx, client StorageClientIntf, ...) started")
+	logrus.Info("NewPostSubmit(Ctx, client StorageClientIntf, ...) started")
 	gcsBuild := GcsBuild{
 		StorageClient: client,
 		Bucket:        bucket,
 		Build:         -1,
 		Job:           prowJobName,
 	}
-	p = &PostSubmit{
+	p = &postSubmit{
 		GcsBuild:         gcsBuild,
 		ArtifactsDirName: artifactsDirName,
 		covProfileName:   covProfileName,
@@ -41,12 +44,12 @@ func NewPostSubmit(ctx context.Context, client StorageClientIntf,
 
 // listBuilds returns all builds in descending order and stores the result in
 // .BuildsSorted
-func (p *PostSubmit) listBuilds() (res []int) {
+func (p *postSubmit) listBuilds() (res []int) {
 	lstBuildStrs := p.StorageClient.ListGcsObjects(p.Ctx, p.Bucket, p.dirOfJob()+"/", "/")
 	for _, buildStr := range lstBuildStrs {
 		num, err := strconv.Atoi(buildStr)
 		if err != nil {
-			log.Printf("None int build number found: '%s'", buildStr)
+			logrus.Infof("None int build number found: '%s'", buildStr)
 		} else {
 			res = append(res, num)
 		}
@@ -57,40 +60,40 @@ func (p *PostSubmit) listBuilds() (res []int) {
 	}
 	sort.Sort(sort.Reverse(sort.IntSlice(res)))
 	p.BuildsSorted = &res
-	log.Printf("Sorted Builds: %v\n", res)
+	logrus.Infof("Sorted Builds: %v\n", res)
 	return res
 }
 
-func (p *PostSubmit) dirOfJob() (result string) {
+func (p *postSubmit) dirOfJob() (result string) {
 	return path.Join("logs", p.Job)
 }
 
-func (p *PostSubmit) dirOfBuild(build int) (result string) {
+func (p *postSubmit) dirOfBuild(build int) (result string) {
 	return path.Join(p.dirOfJob(), strconv.Itoa(build))
 }
 
-func (p *PostSubmit) dirOfArtifacts(build int) (result string) {
+func (p *postSubmit) dirOfArtifacts(build int) (result string) {
 	return path.Join(p.dirOfBuild(build), p.ArtifactsDirName)
 }
 
-func (p *PostSubmit) dirOfCompletionMarker(build int) (result string) {
+func (p *postSubmit) dirOfCompletionMarker(build int) (result string) {
 	return path.Join(p.dirOfArtifacts(build), artifacts.CovProfileCompletionMarker)
 }
 
-func (p *PostSubmit) isBuildHealthy(build int) bool {
+func (p *postSubmit) isBuildHealthy(build int) bool {
 	return p.StorageClient.DoesObjectExist(p.Ctx, p.Bucket,
 		p.dirOfCompletionMarker(build))
 }
 
-func (p *PostSubmit) pathToGoodCoverageArtifacts() (result string) {
+func (p *postSubmit) pathToGoodCoverageArtifacts() (result string) {
 	return p.dirOfArtifacts(p.Build)
 }
 
-func (p *PostSubmit) pathToGoodCoverageProfile() (result string) {
+func (p *postSubmit) pathToGoodCoverageProfile() (result string) {
 	return path.Join(p.pathToGoodCoverageArtifacts(), p.covProfileName)
 }
 
-func (p *PostSubmit) searchForLatestHealthyBuild() int {
+func (p *postSubmit) searchForLatestHealthyBuild() int {
 	builds := p.listBuilds()
 	for _, build := range builds {
 		if p.isBuildHealthy(build) {
@@ -103,8 +106,8 @@ func (p *PostSubmit) searchForLatestHealthyBuild() int {
 }
 
 // ProfileReader returns the reader for the most recent healthy profile
-func (p *PostSubmit) ProfileReader() *artifacts.ProfileReader {
+func (p *postSubmit) ProfileReader() io.ReadCloser {
 	profilePath := p.pathToGoodCoverageProfile()
-	log.Printf("Reading base (master) coverage from <%s>...\n", profilePath)
+	logrus.Infof("Reading base (master) coverage from <%s>...\n", profilePath)
 	return p.StorageClient.ProfileReader(p.Ctx, p.Bucket, profilePath)
 }

@@ -3,24 +3,26 @@ package line
 
 import (
 	"fmt"
+	"os/exec"
+
+	"github.com/sirupsen/logrus"
+
 	"k8s.io/test-infra/coverage/artifacts"
 	"k8s.io/test-infra/coverage/calc"
 	"k8s.io/test-infra/coverage/gcs"
-	"log"
-	"os/exec"
 )
 
 func CreateLineCovFile(arts *artifacts.LocalArtifacts) error {
 	pathKeyProfile := arts.KeyProfilePath()
 	pathLineCov := arts.LineCovFilePath()
 	cmdTxt := fmt.Sprintf("go tool cover -html=%s -o %s", pathKeyProfile, pathLineCov)
-	log.Printf("Running command '%s'\n", cmdTxt)
+	logrus.Infof("Running command '%s'\n", cmdTxt)
 	cmd := exec.Command("go", "tool", "cover", "-html="+pathKeyProfile, "-o", pathLineCov)
-	log.Printf("Finished running '%s'\n", cmdTxt)
+	logrus.Infof("Finished running '%s'\n", cmdTxt)
 	err := cmd.Run()
-	log.Printf("cmd.Args=%v", cmd.Args)
+	logrus.Infof("cmd.Args=%v", cmd.Args)
 	if err != nil {
-		log.Printf("Error executing cmd: %v", err)
+		logrus.Infof("Error executing cmd: %v", err)
 	}
 	return err
 }

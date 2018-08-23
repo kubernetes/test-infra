@@ -1,25 +1,26 @@
-package main
+package workflows
 
 import (
+	"github.com/sirupsen/logrus"
+
 	"k8s.io/test-infra/coverage/artifacts"
 	"k8s.io/test-infra/coverage/calc"
 	"k8s.io/test-infra/coverage/gcs"
 	"k8s.io/test-infra/coverage/githubUtil"
 	"k8s.io/test-infra/coverage/io"
 	"k8s.io/test-infra/coverage/line"
-	"log"
 )
 
 
 // RunPresubmit performs all actions to be performed for presubmit workflow only
 func RunPresubmit(p *gcs.PreSubmit, arts *artifacts.LocalArtifacts) (isCoverageLow bool) {
-	log.Println("starting PreSubmit.RunPresubmit(...)")
+	logrus.Info("starting PreSubmit.RunPresubmit(...)")
 	coverageThresholdInt := p.CovThreshold
 
 	concernedFiles := githubUtil.GetConcernedFiles(&p.GithubPr, "")
 
 	if len(*concernedFiles) == 0 {
-		log.Printf("List of concerned committed files is empty, " +
+		logrus.Infof("List of concerned committed files is empty, " +
 			"don't need to run coverage profile in presubmit\n")
 		return false
 	}
@@ -42,6 +43,6 @@ func RunPresubmit(p *gcs.PreSubmit, arts *artifacts.LocalArtifacts) (isCoverageL
 		p.GithubPr.CleanAndPostComment(postContent)
 	}
 
-	log.Println("completed PreSubmit.RunPresubmit(...)")
+	logrus.Info("completed PreSubmit.RunPresubmit(...)")
 	return
 }

@@ -12,6 +12,6 @@ func ProjDir() string {
 	return path.Join(gopath, projectPathLessGoPath)
 }
 
-func AbsPath(pathRelToProj string) string {
+func absPath(pathRelToProj string) string {
 	return path.Join(ProjDir(), pathRelToProj)
 }

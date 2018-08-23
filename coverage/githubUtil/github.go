@@ -16,16 +16,17 @@ limitations under the License.
 package githubUtil
 
 import (
-	"log"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
-// convert filepath from profile format to github format
+// FilePathProfileToGithub converts filepath from profile format to github format
 // (github.com/$REPO_OWNER/$REPO_NAME/pkg/... -> pkg/...)
 func FilePathProfileToGithub(filePath string) string {
 	slice := strings.SplitN(filePath, "/", 4)
 	if len(slice) < 4 {
-		log.Printf("FilePath string cannot be splitted into 4 parts: [sep=%s] %s; "+
+		logrus.Infof("FilePath string cannot be splitted into 4 parts: [sep=%s] %s; "+
 			"Original string is returned\n", "/", filePath)
 		return filePath
 	}

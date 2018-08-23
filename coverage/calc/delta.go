@@ -2,59 +2,56 @@ package calc
 
 import (
 	"fmt"
-	"k8s.io/test-infra/coverage/githubUtil"
-	"k8s.io/test-infra/coverage/str"
-	"log"
 	"os"
 	"sort"
 	"strings"
+
+	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/coverage/githubUtil"
+	"k8s.io/test-infra/coverage/str"
 )
 
-type Incremental struct {
-	base Coverage
-	new  Coverage
+type incremental struct {
+	base coverage
+	new  coverage
 }
 
-func (inc Incremental) delta() float32 {
-	baseRatio, _ := inc.base.Ratio()
-	newRatio, _ := inc.new.Ratio()
+func (inc incremental) delta() float32 {
+	baseRatio, _ := inc.base.ratio()
+	newRatio, _ := inc.new.ratio()
 	return newRatio - baseRatio
 }
 
-func (inc Incremental) Delta() string {
-	return str.PercentStr(inc.delta())
-}
-
-func (inc Incremental) deltaForCovbot() string {
+func (inc incremental) deltaForCovbot() string {
 	if inc.base.nAllStmts == 0 {
 		return ""
 	}
 	return str.PercentageForCovbotDelta(inc.delta())
 }
 
-func (inc Incremental) oldCovForCovbot() string {
+func (inc incremental) oldCovForCovbot() string {
 	if inc.base.nAllStmts == 0 {
 		return "Do not exist"
 	}
-	return inc.base.Percentage()
+	return inc.base.percentage()
 }
 
-func (inc Incremental) String() string {
+func (inc incremental) String() string {
 	return fmt.Sprintf("<%s> (%d / %d) %s ->(%d / %d) %s", inc.base.Name(),
-		inc.base.nCoveredStmts, inc.base.nAllStmts, inc.base.Percentage(),
-		inc.new.nCoveredStmts, inc.new.nAllStmts, inc.new.Percentage())
+		inc.base.nCoveredStmts, inc.base.nAllStmts, inc.base.percentage(),
+		inc.new.nCoveredStmts, inc.new.nAllStmts, inc.new.percentage())
 }
 
-type GroupChanges struct {
-	Added     []Coverage
-	Deleted   []Coverage
-	Unchanged []Coverage
-	Changed   []Incremental
+type groupChanges struct {
+	Added     []coverage
+	Deleted   []coverage
+	Unchanged []coverage
+	Changed   []incremental
 	BaseGroup *CoverageList
 	NewGroup  *CoverageList
 }
 
-func sorted(m map[string]Coverage) (result []Coverage) {
+func sorted(m map[string]coverage) (result []coverage) {
 	var keys []string
 	for k := range m {
 		keys = append(keys, k)
@@ -69,9 +66,9 @@ func sorted(m map[string]Coverage) (result []Coverage) {
 
 // NewGroupChanges compares the newList of coverage against the base list and
 // returns the result
-func NewGroupChanges(baseList *CoverageList, newList *CoverageList) *GroupChanges {
-	var added, unchanged []Coverage
-	var changed []Incremental
+func NewGroupChanges(baseList *CoverageList, newList *CoverageList) *groupChanges {
+	var added, unchanged []coverage
+	var changed []incremental
 	baseFilesMap := baseList.Map()
 	for _, newCov := range newList.group {
 		newCovName := newCov.Name()
@@ -87,7 +84,7 @@ func NewGroupChanges(baseList *CoverageList, newList *CoverageList) *GroupChange
 		// in other words, the files that is deleted in the new group
 		delete(baseFilesMap, newCovName)
 
-		incremental := Incremental{baseCov, newCov}
+		incremental := incremental{baseCov, newCov}
 		delta := incremental.delta()
 		if delta == 0 && !isNewFile {
 			unchanged = append(unchanged, newCov)
@@ -96,16 +93,16 @@ func NewGroupChanges(baseList *CoverageList, newList *CoverageList) *GroupChange
 		}
 	}
 
-	return &GroupChanges{Added: added, Deleted: sorted(baseFilesMap), Unchanged: unchanged,
+	return &groupChanges{Added: added, Deleted: sorted(baseFilesMap), Unchanged: unchanged,
 		Changed: changed, BaseGroup: baseList, NewGroup: newList}
 }
 
 // processChangedFiles checks each entry in GroupChanges and see if it is
 // include in the github commit. If yes, then include that in the covbot report
-func (changes *GroupChanges) processChangedFiles(
+func (changes *groupChanges) processChangedFiles(
 	githubFilePaths *map[string]bool, rows *[]string, isEmpty,
 	isCoverageLow *bool) {
-	log.Printf("\nFinding joining set of changed files from profile[count=%d"+
+	logrus.Infof("\nFinding joining set of changed files from profile[count=%d"+
 		"] & github\n", len(changes.Changed))
 	covThres := changes.NewGroup.covThresholdInt
 	for i, inc := range changes.Changed {
@@ -127,19 +124,19 @@ func (changes *GroupChanges) processChangedFiles(
 	return
 }
 
-func (inc Incremental) filePathWithHyperlink(filepath string) string {
+func (inc incremental) filePathWithHyperlink(filepath string) string {
 	return fmt.Sprintf("[%s](%s)", filepath, inc.new.lineCovLink)
 }
 
 // githubBotRow returns a string as the content of a row covbot posts
-func (inc Incremental) githubBotRow(index int, filepath string) string {
+func (inc incremental) githubBotRow(index int, filepath string) string {
 	return fmt.Sprintf("%s | %s | %s | %s",
 		inc.filePathWithHyperlink(filepath), inc.oldCovForCovbot(),
-		inc.new.Percentage(), inc.deltaForCovbot())
+		inc.new.percentage(), inc.deltaForCovbot())
 }
 
 // ContentForGithubPost constructs the message covbot posts
-func (changes *GroupChanges) ContentForGithubPost(files *map[string]bool) (
+func (changes *groupChanges) ContentForGithubPost(files *map[string]bool) (
 	res string, isEmpty, isCoverageLow bool) {
 	jobName := os.Getenv("JOB_NAME")
 	rows := []string{

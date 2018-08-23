@@ -1,16 +1,18 @@
-package main
+package workflows
 
 import (
 	"context"
 	"fmt"
+	"testing"
+
+	"github.com/sirupsen/logrus"
+
 	"k8s.io/test-infra/coverage/artifacts/artsTest"
 	"k8s.io/test-infra/coverage/gcs"
 	"k8s.io/test-infra/coverage/gcs/gcsFakes"
 	"k8s.io/test-infra/coverage/githubUtil/githubFakes"
 	"k8s.io/test-infra/coverage/githubUtil/githubPr"
 	"k8s.io/test-infra/coverage/test"
-	"log"
-	"testing"
 )
 
 const (
@@ -19,7 +21,7 @@ const (
 
 func repoDataForTest() *githubPr.GithubPr {
 	ctx := context.Background()
-	log.Printf("creating fake repo data \n")
+	logrus.Infof("creating fake repo data \n")
 
 	return &githubPr.GithubPr{
 		RepoOwner:     "fakeRepoOwner",
@@ -57,14 +59,14 @@ func preSubmitForTest() (data *gcs.PreSubmit) {
 		GithubPr:       *repoData,
 		PresubmitBuild: pbuild,
 	}
-	log.Println("finished preSubmitForTest()")
+	logrus.Info("finished preSubmitForTest()")
 	return
 }
 
 func TestRunPresubmit(t *testing.T) {
-	log.Println("Starting TestRunPresubmit")
+	logrus.Info("Starting TestRunPresubmit")
 	arts := artsTest.LocalArtsForTest("TestRunPresubmit")
-	arts.ProduceProfileFile("./" + test.CovTargetRelPath)
+	arts.ProduceProfileFile("../" + test.CovTargetRelPath)
 	p := preSubmitForTest()
 	RunPresubmit(p, arts)
 	if !test.FileOrDirExists(arts.LineCovFilePath()) {

@@ -7,15 +7,11 @@ import (
 	"k8s.io/test-infra/coverage/test"
 )
 
-type localArtifacts = artifacts.LocalArtifacts
-
-var newArtifacts = artifacts.New
-
 // LocalArtsForTest creates a LocalArtifacts object with a new unique
 // artifact directory (to store intermediate output and prevent race
 // condition in file IO); other fields filled up with test values
-func LocalArtsForTest(dirPrefix string) *localArtifacts {
-	return &localArtifacts{Artifacts: *newArtifacts(
+func LocalArtsForTest(dirPrefix string) *artifacts.LocalArtifacts {
+	return &artifacts.LocalArtifacts{Artifacts: *artifacts.New(
 		test.NewArtsDir(dirPrefix),
 		"cov-profile.txt",
 		"key-cov-profile.txt",

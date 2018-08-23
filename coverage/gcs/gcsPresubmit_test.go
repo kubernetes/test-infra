@@ -1,5 +1,1 @@
 package gcs
-
-func fakePresubmit() {
-
-}

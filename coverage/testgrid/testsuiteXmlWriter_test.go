@@ -1,9 +1,10 @@
 package testgrid
 
 import (
+	"testing"
+
 	"k8s.io/test-infra/coverage/artifacts/artsTest"
 	"k8s.io/test-infra/coverage/test"
-	"testing"
 )
 
 const (
@@ -15,5 +16,4 @@ func TestXMLProduction(t *testing.T) {
 	arts := artsTest.LocalArtsForTest("TestXMLProduction")
 	test.LinkInputArts(arts.Directory(), covProfileName, stdoutFileName)
 	ProfileToTestsuiteXML(arts, 50)
-	test.DeleteDir(arts.Directory())
 }

@@ -1,12 +1,14 @@
 package artifacts
 
 import (
-	"k8s.io/test-infra/coverage/logUtil"
-	"log"
 	"os"
-	"os/exec"
 	"path"
 	"strings"
+
+	"github.com/sirupsen/logrus"
+	"io"
+	"k8s.io/test-infra/coverage/logUtil"
+	io2 "k8s.io/test-infra/coverage/io"
 )
 
 type LocalArtifacts struct {
@@ -23,13 +25,13 @@ func NewLocalArtifacts(directory string, ProfileName string,
 }
 
 // ProfileReader create and returns a ProfileReader by opening the file stored in profile path
-func (arts *LocalArtifacts) ProfileReader() *ProfileReader {
+func (arts *LocalArtifacts) ProfileReader() io.ReadCloser {
 	f, err := os.Open(arts.ProfilePath())
 	if err != nil {
 		wd, _ := os.Getwd()
 		logUtil.LogFatalf("LocalArtifacts.ProfileReader(): os.Open(profilePath) error: %v, cwd=%s", err, wd)
 	}
-	return NewProfileReader(f)
+	return f
 }
 
 func (arts *LocalArtifacts) ProfileName() string {
@@ -42,7 +44,7 @@ func (arts *LocalArtifacts) ProfileName() string {
 func (arts *LocalArtifacts) KeyProfileCreator() *os.File {
 	keyProfilePath := arts.KeyProfilePath()
 	keyProfileFile, err := os.Create(keyProfilePath)
-	log.Printf("os.Create(keyProfilePath)=%s", keyProfilePath)
+	logrus.Infof("os.Create(keyProfilePath)=%s", keyProfilePath)
 	if err != nil {
 		logUtil.LogFatalf("file(%s) creation error: %v", keyProfilePath, err)
 	}
@@ -54,17 +56,14 @@ func (arts *LocalArtifacts) KeyProfileCreator() *os.File {
 // for periodic job, produce junit xml for testgrid in addition
 func (arts *LocalArtifacts) ProduceProfileFile(covTargetsStr string) {
 	// creates artifacts directory
-	log.Printf("mkdir -p %s\n", arts.directory)
-	cmd := exec.Command("mkdir", "-p", arts.directory)
-	log.Printf("artifacts dir=%s\n", arts.directory)
-	cmd.Run()
+	io2.MkdirAll(arts.directory)
 
 	// convert targets from a single string to a lists of strings
 	var covTargets []string
 	for _, target := range strings.Split(covTargetsStr, " ") {
 		covTargets = append(covTargets, "./"+path.Join(target, "..."))
 	}
-	log.Printf("covTargets = %v\n", covTargets)
+	logrus.Infof("covTargets = %v\n", covTargets)
 
 	runProfiling(covTargets, arts)
 }

@@ -2,10 +2,11 @@ package io
 
 import (
 	"io/ioutil"
-	"k8s.io/test-infra/coverage/test"
 	"log"
 	"path"
 	"testing"
+
+	"k8s.io/test-infra/coverage/test"
 )
 
 func TestWriteToArtifacts(t *testing.T) {

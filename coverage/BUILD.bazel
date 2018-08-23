@@ -29,10 +29,7 @@ go_binary(
 
 go_test(
     name = "go_default_test",
-    srcs = [
-        "main_test.go",
-        "presubmit_test.go",
-    ],
+    srcs = ["presubmit_test.go"],
     data = glob(["testdata/**"]),
     embed = [":go_default_library"],
     deps = [

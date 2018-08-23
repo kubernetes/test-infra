@@ -1,9 +1,10 @@
 package line
 
 import (
+	"testing"
+
 	"k8s.io/test-infra/coverage/artifacts/artsTest"
 	"k8s.io/test-infra/coverage/test"
-	"testing"
 	"k8s.io/test-infra/coverage/artifacts"
 )
 
@@ -28,7 +29,7 @@ func TestCreateLineCovFile(t *testing.T) {
 }
 
 func TestCreateLineCovFileFailure(t *testing.T) {
-	arts := artsTest.LocalArtsForTest_KeyfileNotExist("TestCreateLineCovFileFailure")
+	arts := LocalArtsForTest_KeyfileNotExist("TestCreateLineCovFileFailure")
 	if CreateLineCovFile(arts) == nil {
 		t.Fatalf("CreateLineCovFile(arts=%v) should fail, but not", arts)
 	}

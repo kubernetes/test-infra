@@ -2,26 +2,27 @@ package calc
 
 import (
 	"fmt"
-	"k8s.io/test-infra/coverage/str"
 	"log"
 	"os"
 	"strings"
+
+	"k8s.io/test-infra/coverage/str"
 )
 
 // CoverageList is a collection and summary over multiple file Coverage objects
 type CoverageList struct {
-	*Coverage
-	group           []Coverage
+	*coverage
+	group           []coverage
 	concernedFiles  *map[string]bool
 	covThresholdInt int
 }
 
 // CovList constructs new (file) group Coverage
-func NewCoverageList(name string, concernedFiles *map[string]bool,
+func newCoverageList(name string, concernedFiles *map[string]bool,
 	covThresholdInt int) *CoverageList {
 	return &CoverageList{
-		Coverage:        newCoverage(name),
-		group:           []Coverage{},
+		coverage:        newCoverage(name),
+		group:           []coverage{},
 		concernedFiles:  concernedFiles,
 		covThresholdInt: covThresholdInt,
 	}
@@ -39,30 +40,30 @@ func (g *CoverageList) writeToFile(filePath string) {
 	}
 	defer f.Close()
 	for _, c := range *g.Group() {
-		fmt.Fprintln(f, c.String())
+		fmt.Fprintln(f, c.string())
 	}
 }
 
 // Group returns the collection of file Coverage objects
-func (g *CoverageList) Group() *[]Coverage {
+func (g *CoverageList) Group() *[]coverage {
 	return &g.group
 }
 
 // Item returns the Coverage item in group by index
-func (g *CoverageList) Item(index int) *Coverage {
+func (g *CoverageList) Item(index int) *coverage {
 	return &g.group[index]
 }
 
 func (g *CoverageList) ratio() (float32, error) {
 	g.Summarize()
-	ratio, err := g.Coverage.Ratio()
+	ratio, err := g.coverage.ratio()
 	if err != nil {
 		log.Fatal(err)
 	}
 	return ratio, err
 }
 
-func (g *CoverageList) Percentage() string {
+func (g *CoverageList) percentage() string {
 	ratio, _ := g.ratio()
 	return str.PercentStr(ratio)
 }
@@ -79,7 +80,7 @@ func (g *CoverageList) Summarize() {
 // coverage below the threshold
 func (g *CoverageList) hasCoverageBelowThreshold(threshold float32) bool {
 	for _, item := range g.group {
-		ratio, err := item.Ratio()
+		ratio, err := item.ratio()
 		if err != nil && ratio < threshold {
 			return true
 		}
@@ -87,7 +88,7 @@ func (g *CoverageList) hasCoverageBelowThreshold(threshold float32) bool {
 	return false
 }
 
-func (g *CoverageList) append(c *Coverage) {
+func (g *CoverageList) append(c *coverage) {
 	g.group = append(g.group, *c)
 }
 
@@ -95,13 +96,13 @@ func (g *CoverageList) size() int {
 	return len(g.group)
 }
 
-func (g *CoverageList) lastElement() *Coverage {
+func (g *CoverageList) lastElement() *coverage {
 	return &g.group[g.size()-1]
 }
 
 // Subset returns the subset obtained through applying filter
 func (g *CoverageList) Subset(prefix string) *CoverageList {
-	s := NewCoverageList("Filtered Summary", g.concernedFiles, g.covThresholdInt)
+	s := newCoverageList("Filtered Summary", g.concernedFiles, g.covThresholdInt)
 	for _, c := range g.group {
 		if strings.HasPrefix(c.Name(), prefix) {
 			s.append(&c)
@@ -113,8 +114,8 @@ func (g *CoverageList) Subset(prefix string) *CoverageList {
 
 // Map returns maps the file name to its coverage for faster retrieval
 // & membership check
-func (g *CoverageList) Map() map[string]Coverage {
-	m := make(map[string]Coverage)
+func (g *CoverageList) Map() map[string]coverage {
+	m := make(map[string]coverage)
 	for _, c := range g.group {
 		m[c.Name()] = c
 	}
@@ -122,12 +123,12 @@ func (g *CoverageList) Map() map[string]Coverage {
 }
 
 // Report summarizes overall coverage and then prints report
-func (g *CoverageList) Report(itemized bool) {
+func (g *CoverageList) report(itemized bool) {
 	if itemized {
 		for _, item := range g.group {
-			fmt.Println(item.String())
+			fmt.Println(item.string())
 		}
 	}
 	g.Summarize()
-	fmt.Printf("summarized ratio: %v\n", g.String())
+	fmt.Printf("summarized ratio: %v\n", g.string())
 }

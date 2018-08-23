@@ -3,10 +3,11 @@ package artifacts
 import (
 	"bufio"
 	"fmt"
-	"k8s.io/test-infra/coverage/logUtil"
-	"k8s.io/test-infra/coverage/test"
 	"log"
 	"testing"
+
+	"k8s.io/test-infra/coverage/logUtil"
+	"k8s.io/test-infra/coverage/test"
 )
 
 // generates coverage profile by running go test on target package
