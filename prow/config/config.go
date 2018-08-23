@@ -345,7 +345,7 @@ func loadConfig(prowConfig, jobConfig string) (*Config, error) {
 			return nil
 		}
 
-		if filepath.Ext(path) != ".yaml" {
+		if filepath.Ext(path) != ".yaml" && filepath.Ext(path) != ".yml" {
 			return nil
 		}
 
