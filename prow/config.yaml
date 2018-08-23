@@ -286,6 +286,7 @@ tide:
     - kubernetes-sigs/cluster-api-provider-gcp
     - kubernetes-sigs/cluster-api-provider-openstack
     - kubernetes-sigs/cluster-api-provider-vsphere
+    - kubernetes-sigs/contributor-playground
     - kubernetes-sigs/contributor-site
     - kubernetes-sigs/controller-runtime
     - kubernetes-sigs/controller-tools
@@ -469,7 +470,7 @@ presets:
 # ensuring you run your test under either the ENTRYPOINT or:
 # /usr/local/bin/runner my-test-command --foo --bar
 # AND setting the following on your PodSpec:
-# securityContext: 
+# securityContext:
 #   privileged: true
 - labels:
     preset-dind-enabled: "true"

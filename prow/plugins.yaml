@@ -638,3 +638,7 @@ external_plugins:
   - name: needs-rebase
     events:
       - pull_request
+  kubernetes-sigs/contributor-playground:
+  - name: needs-rebase
+    events:
+      - pull_request
