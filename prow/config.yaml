@@ -522,63 +522,6 @@ presubmits:
         secret:
           secretName: k8s-multicluster-ingress-coveralls-token
 
-  kubernetes/federation:
-  - name: pull-federation-bazel-test
-    always_run: true
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--" # end bootstrap args, scenario args below
-        - "--test=//... -//build/... -//vendor/..."
-        - "--manual-test=//hack:verify-all"
-        - "--test-args=--build_tag_filters=-e2e"
-        - "--test-args=--test_tag_filters=-e2e"
-        - "--test-args=--flaky_test_attempts=3"
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "6Gi"
-
-  - name: pull-federation-e2e-gce
-    always_run: true
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-      preset-dind-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-        args:
-        - "--repo=k8s.io/federation=$(PULL_REFS)"
-        - "--repo=k8s.io/release"
-        - "--root=/go/src/"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=110"
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-  - name: pull-federation-verify
-    always_run: true
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
-        args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-
   kubernetes/heapster:
   - name: pull-heapster-e2e
     always_run: true
@@ -1722,26 +1665,6 @@ postsubmits:
         securityContext:
           privileged: true
 
-  kubernetes/federation:
-  - name: ci-federation-release
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/logs"
-          # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "2Gi"
-
 periodics:
 - interval: 2h
   name: application-periodic-default-gke
@@ -1812,58 +1735,6 @@ periodics:
       env:
       - name: GOPATH
         value: /go
-
-- interval: 1h
-  name: ci-federation-build
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20180730-c3257f6c0
-      args:
-      - --repo=k8s.io/federation=master
-      - --repo=k8s.io/release
-      - --root=/go/src
-      - --timeout=50
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          cpu: 4
-          memory: "8Gi"
-
-- interval: 30m
-  name: ci-federation-e2e-gce
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=920
-      - --bare
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-- interval: 30m
-  name: ci-federation-e2e-gce-serial
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=920
-      - --bare
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
 - interval: 60m
   name: ci-kubemci-ingress-conformance
