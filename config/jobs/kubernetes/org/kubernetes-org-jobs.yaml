@@ -1,0 +1,9 @@
+presubmit:
+  kubernetes/org:
+  - name: kubernetes-org-verify-all
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/rules-k8s/gcloud-bazel:v20180708-d6e1b65
+        args: ./hack/verify-all.sh
