@@ -10,6 +10,8 @@ import (
 	"log"
 )
 
+
+// RunPresubmit performs all actions to be performed for presubmit workflow only
 func RunPresubmit(p *gcs.PreSubmit, arts *artifacts.LocalArtifacts) (isCoverageLow bool) {
 	log.Println("starting PreSubmit.RunPresubmit(...)")
 	coverageThresholdInt := p.CovThreshold

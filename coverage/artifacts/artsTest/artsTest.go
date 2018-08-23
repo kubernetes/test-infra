@@ -1,4 +1,4 @@
-// package artsTest stores artifacts functions for tests,
+// Package artsTest stores artifacts functions for tests,
 // used by other packages
 package artsTest
 
@@ -7,12 +7,15 @@ import (
 	"k8s.io/test-infra/coverage/test"
 )
 
-type LocalArtifacts = artifacts.LocalArtifacts
+type localArtifacts = artifacts.LocalArtifacts
 
-var NewArtifacts = artifacts.New
+var newArtifacts = artifacts.New
 
-func LocalArtsForTest(dirPrefix string) *LocalArtifacts {
-	return &LocalArtifacts{Artifacts: *NewArtifacts(
+// LocalArtsForTest creates a LocalArtifacts object with a new unique
+// artifact directory (to store intermediate output and prevent race
+// condition in file IO); other fields filled up with test values
+func LocalArtsForTest(dirPrefix string) *localArtifacts {
+	return &localArtifacts{Artifacts: *newArtifacts(
 		test.NewArtsDir(dirPrefix),
 		"cov-profile.txt",
 		"key-cov-profile.txt",
@@ -20,6 +23,9 @@ func LocalArtsForTest(dirPrefix string) *LocalArtifacts {
 	)}
 }
 
+// LocalInputArtsForTest creates a LocalArtifacts object with an artifact dir
+// directory that stores artifacts for tests; other fields filled up with test
+// values
 func LocalInputArtsForTest() *artifacts.LocalArtifacts {
 	return &artifacts.LocalArtifacts{Artifacts: *artifacts.New(
 		test.InputArtifactsDir,
@@ -29,11 +35,4 @@ func LocalInputArtsForTest() *artifacts.LocalArtifacts {
 	)}
 }
 
-func LocalArtsForTest_KeyfileNotExist(dirPrefix string) *artifacts.LocalArtifacts {
-	return &artifacts.LocalArtifacts{Artifacts: *artifacts.New(
-		test.NewArtsDir(dirPrefix),
-		test.ProfileName,
-		"key-cov-profile-dne.txt",
-		test.StdoutName,
-	)}
-}
+
