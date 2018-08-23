@@ -1126,69 +1126,6 @@
       "sig-instrumentation"
     ]
   },
-  "pull-kubernetes-bazel-build": {
-    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
-    "args": [],
-    "scenario": "kubernetes_bazel",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "pull-kubernetes-bazel-test": {
-    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
-    "args": [],
-    "scenario": "kubernetes_bazel",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "pull-kubernetes-cross": {
-    "args": [
-      "--env=KUBE_RELEASE_RUN_TESTS=n",
-      "make",
-      "release"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-release"
-    ]
-  },
-  "pull-kubernetes-cross-prow": {
-    "args": [
-      "--env=KUBE_RELEASE_RUN_TESTS=n",
-      "make",
-      "release"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "pull-kubernetes-e2e-containerd-gce": {
-    "args": [
-      "--build=bazel",
-      "--cluster=",
-      "--env=KUBE_MASTER_EXTRA_METADATA=user-data=/go/src/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/env",
-      "--env=KUBE_NODE_EXTRA_METADATA=user-data=/go/src/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/go/src/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/cri-master/env",
-      "--env-file=jobs/env/pull-kubernetes-e2e.env",
-      "--env-file=jobs/env/pull-kubernetes-e2e-gce.env",
-      "--env-file=jobs/env/ci-cri-containerd-e2e-gce.env",
-      "--extract=local",
-      "--gcp-node-image=gci",
-      "--gcp-project=k8s-c8d-pr-e2e",
-      "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel=30",
-      "--provider=gce",
-      "--runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true",
-      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-containerd-gce",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=65m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-node"
-    ]
-  },
   "pull-kubernetes-e2e-gce": {
     "args": [
       "--build=bazel",
@@ -1302,44 +1239,6 @@
       "sig-gcp"
     ]
   },
-  "pull-kubernetes-e2e-kubeadm-gce": {
-    "args": [
-      "--cluster=",
-      "--deployment=kubernetes-anywhere",
-      "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel=30",
-      "--kubeadm=pull",
-      "--kubernetes-anywhere-kubernetes-version=ci-cross/latest",
-      "--provider=kubernetes-anywhere",
-      "--test_args=--ginkgo.focus=\\[Conformance\\] --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\] --minStartupPods=8",
-      "--timeout=55m",
-      "--use-shared-build=bazel"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
-  "pull-kubernetes-integration": {
-    "args": [
-      "--branch=${PULL_BASE_REF}",
-      "--prow"
-    ],
-    "scenario": "kubernetes_verify",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "pull-kubernetes-integration-prow": {
-    "args": [
-      "--branch=${PULL_BASE_REF}",
-      "--prow"
-    ],
-    "scenario": "kubernetes_verify",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
   "pull-kubernetes-kubemark-e2e-gce-big": {
     "args": [
       "--build=bazel",
@@ -1439,39 +1338,6 @@
       "sig-node"
     ]
   },
-  "pull-kubernetes-typecheck": {
-    "args": [
-      "make",
-      "verify",
-      "WHAT=typecheck",
-      "KUBE_JUNIT_REPORT_DIR=${WORKSPACE}/_artifacts"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "pull-kubernetes-verify": {
-    "args": [
-      "--branch=${PULL_BASE_REF}",
-      "--script=./hack/jenkins/verify-dockerized.sh"
-    ],
-    "scenario": "kubernetes_verify",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "pull-kubernetes-verify-prow": {
-    "args": [
-      "--branch=${PULL_BASE_REF}",
-      "--prow",
-      "--script=./hack/jenkins/verify-dockerized.sh"
-    ],
-    "scenario": "kubernetes_verify",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
   "pull-poseidon-bazel": {
     "args": [
       "--build=//cmd/poseidon",
@@ -1493,26 +1359,6 @@
     "scenario": "execute",
     "sigOwners": [
       "sig-scheduling"
-    ]
-  },
-  "pull-release-cluster-up": {
-    "args": [
-      "--build=bazel",
-      "--cluster=",
-      "--down=false",
-      "--env-file=jobs/env/pull-kubernetes-e2e.env",
-      "--extract=local",
-      "--gcp-node-image=gci",
-      "--gcp-nodes=4",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--stage=gs://kubernetes-release-pull/ci/pull-release-cluster-up",
-      "--test_args=--ginkgo.focus=definitely-not-a-real-focus",
-      "--timeout=65m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-release"
     ]
   },
   "random_job": {

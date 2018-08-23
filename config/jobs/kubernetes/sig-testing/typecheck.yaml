@@ -1,0 +1,25 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-typecheck
+    always_run: true
+    skip_report: false
+    skip_branches:
+    - release-1.9 # doesn't have typecheck
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--root=/go/src"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=75"
+        - --scenario=execute
+        - --
+        - make
+        - verify
+        - WHAT=typecheck
+        - KUBE_JUNIT_REPORT_DIR=${WORKSPACE}/_artifacts

@@ -2183,9 +2183,6 @@ test_groups:
 - name: pull-kubernetes-cross
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-cross
   num_columns_recent: 20
-- name: pull-kubernetes-cross-prow
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-cross-prow
-  num_columns_recent: 20
 - name: pull-kubernetes-e2e-gce
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce
   num_columns_recent: 20
@@ -5918,8 +5915,6 @@ dashboards:
     test_group_name: pull-kubernetes-verify-prow
   - name: pull-kubernetes-integration-prow
     test_group_name: pull-kubernetes-integration-prow
-  - name: pull-kubernetes-cross-prow
-    test_group_name: pull-kubernetes-cross-prow
 
 - name: sig-ui
   dashboard_tab:
