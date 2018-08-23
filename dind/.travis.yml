@@ -1,0 +1,10 @@
+sudo: required
+dist: trusty
+
+language: generic
+
+services:
+- docker
+
+script:
+- cd dind && bash -x start.sh
