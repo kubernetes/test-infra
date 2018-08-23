@@ -56,7 +56,6 @@ go_library(
         "check-labels.go",
         "cherrypick-auto-approve.go",
         "cherrypick-clear-after-merge.go",
-        "cherrypick-label-unapproved.go",
         "cherrypick-must-have-milestone.go",
         "cherrypick-queue.go",
         "comment-deleter.go",

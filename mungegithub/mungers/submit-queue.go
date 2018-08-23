@@ -59,6 +59,7 @@ const (
 	wipLabel                       = "do-not-merge/work-in-progress"
 	holdLabel                      = "do-not-merge/hold"
 	releaseNoteLabelNeeded         = "do-not-merge/release-note-label-needed"
+	cherrypickUnapprovedLabel      = "do-not-merge/cherry-pick-not-approved"
 	cncfClaYesLabel                = "cncf-cla: yes"
 	cncfClaNoLabel                 = "cncf-cla: no"
 	claHumanLabel                  = "cla: human-approved"

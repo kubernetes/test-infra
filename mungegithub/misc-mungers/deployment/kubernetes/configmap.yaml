@@ -3,7 +3,7 @@ app: misc-mungers
 http-cache-dir: /cache/httpcache
 organization: kubernetes
 project: kubernetes
-pr-mungers: label-unapproved-picks,stale-green-ci,comment-deleter
+pr-mungers: stale-green-ci,comment-deleter
 state: open
 token-file: /etc/secret-volume/token
 period: 60s
