@@ -404,6 +404,7 @@ plugins:
   - approve
   - blunderbuss
   - owners-label
+  - trigger
 
   kubernetes/perf-tests:
   - approve
