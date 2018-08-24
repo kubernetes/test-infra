@@ -89,28 +89,6 @@ periodics:
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
 
-- name: ci-kubernetes-e2e-gce-gpu-stable1
-  interval: 2h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=300
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-leaked-resources
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-gpu.env
-      - --extract=ci/k8s-stable1
-      - --gcp-project-type=gpu-project
-      - --gcp-zone=us-west1-b
-      - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:GPU\] --minStartupPods=8
-      - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
-
 - name: ci-kubernetes-e2e-gce-gpu-stable2
   interval: 6h
   labels:
