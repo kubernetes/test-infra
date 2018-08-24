@@ -464,6 +464,8 @@ test_groups:
   num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
 - name: ci-kubernetes-e2e-gci-gke-alpha-features
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-alpha-features
+- name: ci-kubernetes-e2e-gci-gke-alpha-enabled-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-alpha-enabled-default
 - name: ci-kubernetes-e2e-gci-gke-autoscaling
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-autoscaling
 - name: ci-kubernetes-e2e-gci-gke-autoscaling-gpu-k80
@@ -3435,6 +3437,8 @@ dashboards:
   dashboard_tab:
   - name: gci-gke-alpha-features
     test_group_name: ci-kubernetes-e2e-gci-gke-alpha-features
+  - name: gci-gke-alpha-enabled-default
+    test_group_name: ci-kubernetes-e2e-gci-gke-alpha-enabled-default
   - name: gci-gke-flaky
     test_group_name: ci-kubernetes-e2e-gci-gke-flaky
   - name: gci-gke
@@ -5946,6 +5950,12 @@ dashboards:
     - configuration_value: infra-commit
   - name: gci-gke-alpha-features
     test_group_name: ci-kubernetes-e2e-gci-gke-alpha-features
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gci-gke-alpha-enabled-default
+    test_group_name: ci-kubernetes-e2e-gci-gke-alpha-enabled-default
     column_header:
     - configuration_value: node_os_image
     - configuration_value: Commit
