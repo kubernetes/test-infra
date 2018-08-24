@@ -1982,7 +1982,7 @@ presubmits:
         - --release=//build/release-tars
         - --gcs=gs://kubernetes-security-prow/ci/pull-security-kubernetes-bazel-build-canary
         - --gcs-shared=gs://kubernetes-security-prow/bazel
-        image: gcr.io/k8s-testimages/kubekins-e2e@sha256:02fe7ded2e8e477e52f3c82eab5fb6632ad7cd09612e2d7c5944d143974f3685
+        image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
         imagePullPolicy: Always
         name: ""
         resources:
@@ -2021,7 +2021,7 @@ presubmits:
         - --
         - make
         - bazel-test
-        image: gcr.io/k8s-testimages/kubekins-e2e@sha256:02fe7ded2e8e477e52f3c82eab5fb6632ad7cd09612e2d7c5944d143974f3685
+        image: gcr.io/k8s-testimages/kubekins-e2e@sha256:latest-experimental
         imagePullPolicy: Always
         name: ""
         resources:
