@@ -15,13 +15,15 @@ default:
       prowPlugin: approve
       addedBy: approvers
     - color: fef2c0
-      description: Indicates a cherrypick PR into a release branch has been approved by the release branch manager. # Consumed by the kubernetes/kubernetes cherrypick-queue.
-      name: cherrypick-approved
+      description: Indicates a cherry-pick PR into a release branch has been approved by the release branch manager. # Consumed by the kubernetes/kubernetes cherry-pick-queue.
+      name: cherry-pick-approved
       target: prs
       addedBy: humans
+      previously:
+        - name: cherrypick-approved
     - color: fef2c0
       description: Denotes a PR to master as a candidate for cherry picking into a release branch.
-      name: cherrypick-candidate
+      name: cherrypick-candidate # TODO: rename as cherry-pick-candidate
       target: prs
       addedBy: humans
     - color: d455d0
@@ -103,7 +105,8 @@ default:
       description: Indicates that a PR is not yet approved to merge into a release branch.
       name: do-not-merge/cherry-pick-not-approved
       target: prs
-      addedBy: mungegithub cherrypick-label-unapproved munger
+      addedBy: prow
+      prowPlugin: cherrypickunapproved
     - color: e11d21
       description: Indicates that a PR should not merge because someone has issued a /hold command.
       name: do-not-merge/hold
