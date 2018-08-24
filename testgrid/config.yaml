@@ -2049,6 +2049,11 @@ test_groups:
   num_columns_recent: 30
 - name: kubeflow-pytorch-operator-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/kubeflow_pytorch-operator/kubeflow-pytorch-operator-postsubmit
+- name: kubeflow-mxnet-operator-presubmit
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/kubeflow-mxnet-operator-presubmit
+  num_columns_recent: 30
+- name: kubeflow-mxnet-operator-postsubmit
+  gcs_prefix: kubernetes-jenkins/logs/kubeflow_mxnet-operator/kubeflow-mxnet-operator-postsubmit
 - name: kubeflow-reporting-presubmit
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/kubeflow-reporting-presubmit
   num_columns_recent: 30
@@ -4694,6 +4699,12 @@ dashboards:
   - name: kubeflow-pytorch-operator-presubmit
     description: Presubmits for kubeflow/pytorch-operator.
     test_group_name: kubeflow-pytorch-operator-presubmit
+  - name: kubeflow-mxnet-operator-postsubmit
+    description: Postsubmit kubeflow/mxnet-operator.
+    test_group_name: kubeflow-mxnet-operator-postsubmit
+  - name: kubeflow-mxnet-operator-presubmit
+    description: Presubmits for kubeflow/mxnet-operator.
+    test_group_name: kubeflow-mxnet-operator-presubmit
   - name: kubeflow-website-postsubmit
     description: Postsubmit kubeflow/website.
     test_group_name: kubeflow-website-postsubmit
