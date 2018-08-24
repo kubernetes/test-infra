@@ -2520,6 +2520,7 @@ test_groups:
   gcs_prefix: istio-prow/directory/istio-presubmit
 - name: istio-unit-tests-presubmit
   gcs_prefix: istio-prow/directory/istio-unit-tests
+  days_of_results: 7
 - name: istio-pilot-e2e-presubmit
   gcs_prefix: istio-prow/directory/istio-pilot-e2e
 - name: istio-pilot-e2e-envoyv2-v1alpha3-presubmit
@@ -2537,6 +2538,7 @@ test_groups:
 # Istio Prow Postsubmits
 - name: istio-istio-postsubmit
   gcs_prefix: istio-prow/istio-postsubmit
+  days_of_results: 7
 - name: istio-e2e-simpleTests
   gcs_prefix: istio-prow/e2e-simpleTests
   num_failures_to_alert: 1
@@ -2572,6 +2574,7 @@ test_groups:
   gcs_prefix: istio-circleci/presubmit/e2e-pilot-noauth-v1alpha3-v2
 - name: istio-circleci-test-presubmit
   gcs_prefix: istio-circleci/presubmit/test
+  days_of_results: 7
 - name: istio-circleci-racetest-presubmit
   gcs_prefix: istio-circleci/presubmit/racetest
 # Istio CircleCI Postsubmits
