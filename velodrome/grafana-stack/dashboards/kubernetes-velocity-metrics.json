@@ -1,0 +1,1227 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_GITHUB",
+      "label": "github",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "influxdb",
+      "pluginName": "InfluxDB"
+    }
+  ],
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "4.4.2"
+    },
+    {
+      "type": "panel",
+      "id": "graph",
+      "name": "Graph",
+      "version": ""
+    },
+    {
+      "type": "datasource",
+      "id": "influxdb",
+      "name": "InfluxDB",
+      "version": "1.0.0"
+    }
+  ],
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "hideControls": false,
+  "id": null,
+  "links": [],
+  "refresh": false,
+  "rows": [
+    {
+      "collapse": false,
+      "height": 503,
+      "panels": [
+        {
+          "aliasColors": {
+            "All": "#FCEACA",
+            "Merge per day (All)": "#FCEACA"
+          },
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_GITHUB}",
+          "editable": true,
+          "error": false,
+          "fill": 5,
+          "grid": {},
+          "id": 1,
+          "legend": {
+            "alignAsTable": false,
+            "avg": false,
+            "current": true,
+            "max": false,
+            "min": false,
+            "rightSide": false,
+            "show": true,
+            "sideWidth": null,
+            "total": false,
+            "values": true
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 1,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [
+            {
+              "alias": "Sum of All Repos",
+              "fill": 0,
+              "linewidth": 2
+            }
+          ],
+          "spaceLength": 10,
+          "span": 12,
+          "stack": true,
+          "steppedLine": false,
+          "targets": [
+            {
+              "alias": "$tag_repository",
+              "dsType": "influxdb",
+              "groupBy": [
+                {
+                  "params": [
+                    "1d"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "repository"
+                  ],
+                  "type": "tag"
+                },
+                {
+                  "params": [
+                    "0"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "hide": false,
+              "measurement": "merge",
+              "orderByTime": "ASC",
+              "policy": "default",
+              "query": "",
+              "rawQuery": false,
+              "refId": "B",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "event"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "sum"
+                  },
+                  {
+                    "params": [
+                      "7"
+                    ],
+                    "type": "moving_average"
+                  }
+                ]
+              ],
+              "tags": []
+            },
+            {
+              "alias": "Sum of All Repos",
+              "dsType": "influxdb",
+              "groupBy": [
+                {
+                  "params": [
+                    "1d"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "0"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "hide": true,
+              "measurement": "merge",
+              "orderByTime": "ASC",
+              "policy": "default",
+              "query": "",
+              "rawQuery": false,
+              "refId": "A",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "event"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "sum"
+                  },
+                  {
+                    "params": [
+                      "7"
+                    ],
+                    "type": "moving_average"
+                  }
+                ]
+              ],
+              "tags": []
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Merge Rate (7 Day MA) Kubernetes Repos",
+          "tooltip": {
+            "msResolution": false,
+            "shared": true,
+            "sort": 1,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": "Merges / Day (7 day MA)",
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Row",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 338,
+      "panels": [
+        {
+          "aliasColors": {
+            "All": "#FCEACA",
+            "Comments per day (All)": "#FCEACA",
+            "Number of comments (All)": "#FCEACA",
+            "Number of comments (all)": "#FCEACA",
+            "contributions.moving_average": "#FCEACA"
+          },
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_GITHUB}",
+          "editable": true,
+          "error": false,
+          "fill": 3,
+          "grid": {},
+          "height": "",
+          "id": 2,
+          "legend": {
+            "avg": false,
+            "current": true,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": true
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [
+            {
+              "alias": "/All/",
+              "fill": 2,
+              "linewidth": 0
+            }
+          ],
+          "spaceLength": 10,
+          "span": 6,
+          "stack": true,
+          "steppedLine": false,
+          "targets": [
+            {
+              "alias": "$tag_repository",
+              "dsType": "influxdb",
+              "groupBy": [
+                {
+                  "params": [
+                    "1d"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "repository"
+                  ],
+                  "type": "tag"
+                },
+                {
+                  "params": [
+                    "0"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "measurement": "contributions",
+              "orderByTime": "ASC",
+              "policy": "default",
+              "query": "SELECT count(distinct(\"author\")) FROM \"contributions\" WHERE $timeFilter GROUP BY time(1w), \"repository\" fill(0)",
+              "rawQuery": false,
+              "refId": "A",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "comment"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "count"
+                  },
+                  {
+                    "params": [
+                      "7"
+                    ],
+                    "type": "moving_average"
+                  }
+                ]
+              ],
+              "tags": []
+            },
+            {
+              "alias": "All",
+              "dsType": "influxdb",
+              "groupBy": [
+                {
+                  "params": [
+                    "1d"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "0"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "hide": true,
+              "measurement": "contributions",
+              "orderByTime": "ASC",
+              "policy": "default",
+              "query": "SELECT count(distinct(\"author\")) FROM \"contributions\" WHERE $timeFilter GROUP BY time(1w), \"repository\" fill(0)",
+              "rawQuery": false,
+              "refId": "B",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "comment"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "count"
+                  },
+                  {
+                    "params": [
+                      "7"
+                    ],
+                    "type": "moving_average"
+                  }
+                ]
+              ],
+              "tags": []
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Number of Comments (7 Day MA) Per Repo",
+          "tooltip": {
+            "msResolution": false,
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": "Comments per day (7 day MA)",
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {
+            "All": "#FCEACA",
+            "Commenters per week (All)": "#FCEACA"
+          },
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_GITHUB}",
+          "editable": true,
+          "error": false,
+          "fill": 0,
+          "grid": {},
+          "id": 3,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [
+            {
+              "alias": "/All/",
+              "fill": 2,
+              "linewidth": 0
+            }
+          ],
+          "spaceLength": 10,
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "alias": "$tag_repository",
+              "dsType": "influxdb",
+              "groupBy": [
+                {
+                  "params": [
+                    "1d"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "repository"
+                  ],
+                  "type": "tag"
+                },
+                {
+                  "params": [
+                    "0"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "measurement": "contributions",
+              "orderByTime": "ASC",
+              "policy": "default",
+              "query": "SELECT count(distinct(\"author\")) FROM \"contributions\" WHERE $timeFilter AND comment = 1 GROUP BY time(1w), \"repository\" fill(0)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "author"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "count"
+                  },
+                  {
+                    "params": [
+                      "7"
+                    ],
+                    "type": "moving_average"
+                  }
+                ]
+              ],
+              "tags": []
+            },
+            {
+              "alias": "All",
+              "dsType": "influxdb",
+              "groupBy": [
+                {
+                  "params": [
+                    "1d"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "repository"
+                  ],
+                  "type": "tag"
+                },
+                {
+                  "params": [
+                    "0"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "measurement": "contributions",
+              "orderByTime": "ASC",
+              "policy": "default",
+              "query": "SELECT count(distinct(\"author\")) FROM \"contributions\" WHERE $timeFilter AND comment = 1 GROUP BY time(1w) fill(0)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "author"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "count"
+                  },
+                  {
+                    "params": [
+                      "7"
+                    ],
+                    "type": "moving_average"
+                  }
+                ]
+              ],
+              "tags": []
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Number of Unique Commenters (7 Day MA)",
+          "tooltip": {
+            "msResolution": false,
+            "shared": true,
+            "sort": 0,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": "Unique commenters per week",
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "New row",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 265,
+      "panels": [
+        {
+          "aliasColors": {
+            "All": "#FCEACA"
+          },
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_GITHUB}",
+          "editable": true,
+          "error": false,
+          "fill": 0,
+          "grid": {},
+          "id": 4,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [
+            {
+              "alias": "/All/",
+              "fill": 2,
+              "linewidth": 0
+            }
+          ],
+          "spaceLength": 10,
+          "span": 3,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "alias": "$tag_repository",
+              "dsType": "influxdb",
+              "groupBy": [
+                {
+                  "params": [
+                    "1d"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "repository"
+                  ],
+                  "type": "tag"
+                },
+                {
+                  "params": [
+                    "0"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "measurement": "contributions",
+              "policy": "default",
+              "refId": "A",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "event"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "sum"
+                  },
+                  {
+                    "params": [
+                      "7"
+                    ],
+                    "type": "moving_average"
+                  }
+                ]
+              ],
+              "tags": []
+            },
+            {
+              "alias": "All",
+              "dsType": "influxdb",
+              "groupBy": [
+                {
+                  "params": [
+                    "1d"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "0"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "measurement": "contributions",
+              "policy": "default",
+              "refId": "B",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "event"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "sum"
+                  },
+                  {
+                    "params": [
+                      "7"
+                    ],
+                    "type": "moving_average"
+                  }
+                ]
+              ],
+              "tags": []
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "New pull-requests",
+          "tooltip": {
+            "msResolution": false,
+            "shared": true,
+            "sort": 0,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": "Pull-requests opened per day (7 day MA)",
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {
+            "Median open age": "#FCEACA",
+            "Median opened age": "#FCEACA"
+          },
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_GITHUB}",
+          "editable": true,
+          "error": false,
+          "fill": 0,
+          "grid": {},
+          "id": 6,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [
+            {
+              "alias": "/Age/",
+              "fill": 2,
+              "linewidth": 0,
+              "yaxis": 1
+            },
+            {
+              "alias": "/Open/",
+              "yaxis": 2
+            }
+          ],
+          "spaceLength": 10,
+          "span": 5,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "alias": "Age ($tag_repository)",
+              "dsType": "influxdb",
+              "groupBy": [
+                {
+                  "params": [
+                    "1d"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "repository"
+                  ],
+                  "type": "tag"
+                },
+                {
+                  "params": [
+                    "previous"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "measurement": "open",
+              "policy": "default",
+              "query": "SELECT \"sum\"/\"count\", \"50%\" FROM \"open\" WHERE \"repository\" = 'kubernetes/test-infra' AND $timeFilter GROUP BY \"repository\" fill(0)",
+              "rawQuery": false,
+              "refId": "A",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "50%"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "last"
+                  },
+                  {
+                    "params": [
+                      "7"
+                    ],
+                    "type": "moving_average"
+                  },
+                  {
+                    "params": [
+                      "/ 1000000000"
+                    ],
+                    "type": "math"
+                  }
+                ]
+              ],
+              "tags": []
+            },
+            {
+              "alias": "Open ($tag_repository)",
+              "dsType": "influxdb",
+              "groupBy": [
+                {
+                  "params": [
+                    "1d"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "repository"
+                  ],
+                  "type": "tag"
+                },
+                {
+                  "params": [
+                    "previous"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "measurement": "open",
+              "policy": "default",
+              "refId": "B",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "count"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "max"
+                  },
+                  {
+                    "params": [
+                      "7"
+                    ],
+                    "type": "moving_average"
+                  }
+                ]
+              ],
+              "tags": []
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Number/Age of open pull-requests",
+          "tooltip": {
+            "msResolution": false,
+            "shared": true,
+            "sort": 0,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "s",
+              "label": "Median age of open pull-requests (7 day MA)",
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": "Number of open pull-requests (7 day MA)",
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {
+            "All": "#FCEACA"
+          },
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_GITHUB}",
+          "editable": true,
+          "error": false,
+          "fill": 0,
+          "grid": {},
+          "id": 5,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [
+            {
+              "alias": "All",
+              "fill": 2,
+              "linewidth": 0
+            }
+          ],
+          "spaceLength": 10,
+          "span": 4,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "alias": "$tag_repository",
+              "dsType": "influxdb",
+              "groupBy": [
+                {
+                  "params": [
+                    "1w"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "repository"
+                  ],
+                  "type": "tag"
+                },
+                {
+                  "params": [
+                    "0"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "measurement": "contributions",
+              "policy": "default",
+              "query": "SELECT count(distinct(\"author\")) FROM \"contributions\" WHERE $timeFilter AND event = 1 GROUP BY time(1w), \"repository\" fill(0)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "author"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "count"
+                  }
+                ]
+              ],
+              "tags": []
+            },
+            {
+              "alias": "All",
+              "dsType": "influxdb",
+              "groupBy": [
+                {
+                  "params": [
+                    "1w"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "repository"
+                  ],
+                  "type": "tag"
+                },
+                {
+                  "params": [
+                    "0"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "measurement": "contributions",
+              "policy": "default",
+              "query": "SELECT count(distinct(\"author\")) FROM \"contributions\" WHERE $timeFilter AND event = 1 GROUP BY time(1w) fill(0)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "author"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "count"
+                  }
+                ]
+              ],
+              "tags": []
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Number of pull-requests authors",
+          "tooltip": {
+            "msResolution": false,
+            "shared": true,
+            "sort": 0,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": "Unique pull-requests authors per week",
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "New row",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 484,
+      "panels": [],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "New row",
+      "titleSize": "h4"
+    },
+    {
+      "collapse": false,
+      "height": 250,
+      "panels": [],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Dashboard Row",
+      "titleSize": "h6"
+    }
+  ],
+  "schemaVersion": 14,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-4y",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ],
+    "time_options": [
+      "5m",
+      "15m",
+      "1h",
+      "6h",
+      "12h",
+      "24h",
+      "2d",
+      "7d",
+      "30d"
+    ]
+  },
+  "timezone": "browser",
+  "title": "Kubernetes Velocity Metrics",
+  "version": 12
+}
