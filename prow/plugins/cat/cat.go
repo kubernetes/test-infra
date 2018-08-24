@@ -18,7 +18,7 @@ limitations under the License.
 package cat
 
 import (
-	"encoding/xml"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -39,7 +39,7 @@ import (
 var (
 	match = regexp.MustCompile(`(?mi)^/meow( .+)?\s*$`)
 	meow  = &realClowder{
-		url: "http://thecatapi.com/api/images/get?format=xml&results_per_page=1",
+		url: "https://api.thecatapi.com/api/images/get?format=json",
 	}
 )
 
@@ -61,7 +61,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		Description: "Add a cat image to the issue",
 		Featured:    false,
 		WhoCanUse:   "Anyone",
-		Examples:    []string{"/meow", "/meow caturday"},
+		Examples:    []string{"/meow"},
 	})
 	return pluginHelp, nil
 }
@@ -71,7 +71,7 @@ type githubClient interface {
 }
 
 type clowder interface {
-	readCat(string) (string, error)
+	readCat() (string, error)
 }
 
 type realClowder struct {
@@ -103,44 +103,34 @@ func (c *realClowder) setKey(keyPath string, log *logrus.Entry) {
 }
 
 type catResult struct {
-	Source string `xml:"data>images>image>source_url"`
-	Image  string `xml:"data>images>image>url"`
+	Id  string `json:"id"`
+	URL string `json:"url"`
 }
 
 func (cr catResult) Format() (string, error) {
-	if cr.Source == "" {
-		return "", errors.New("empty source_url")
-	}
-	if cr.Image == "" {
+	if cr.URL == "" {
 		return "", errors.New("empty image url")
 	}
-	src, err := url.Parse(cr.Source)
+	url, err := url.Parse(cr.URL)
 	if err != nil {
-		return "", fmt.Errorf("invalid source_url %s: %v", cr.Source, err)
-	}
-	img, err := url.Parse(cr.Image)
-	if err != nil {
-		return "", fmt.Errorf("invalid image url %s: %v", cr.Image, err)
+		return "", fmt.Errorf("invalid image url %s: %v", cr.URL, err)
 	}
 
-	return fmt.Sprintf("[![cat image](%s)](%s)", img, src), nil
+	return fmt.Sprintf("[![cat image](%s)](%s)", url, url), nil
 }
 
-func (r *realClowder) Url(category string) string {
+func (r *realClowder) Url() string {
 	r.lock.RLock()
 	defer r.lock.RUnlock()
 	uri := string(r.url)
-	if category != "" {
-		uri += "&category=" + url.QueryEscape(category)
-	}
 	if r.key != "" {
 		uri += "&api_key=" + url.QueryEscape(r.key)
 	}
 	return uri
 }
 
-func (r *realClowder) readCat(category string) (string, error) {
-	uri := r.Url(category)
+func (r *realClowder) readCat() (string, error) {
+	uri := r.Url()
 	resp, err := http.Get(uri)
 	if err != nil {
 		return "", fmt.Errorf("could not read cat from %s: %v", uri, err)
@@ -149,19 +139,23 @@ func (r *realClowder) readCat(category string) (string, error) {
 	if sc := resp.StatusCode; sc > 299 || sc < 200 {
 		return "", fmt.Errorf("failing %d response from %s", sc, uri)
 	}
-	var a catResult
-	if err = xml.NewDecoder(resp.Body).Decode(&a); err != nil {
+	cats := make([]catResult, 0)
+	if err = json.NewDecoder(resp.Body).Decode(&cats); err != nil {
 		return "", err
 	}
-	if a.Image == "" {
+	if len(cats) < 1 {
+		return "", fmt.Errorf("no cats in response from %s", uri)
+	}
+	var a catResult = cats[0]
+	if a.URL == "" {
 		return "", fmt.Errorf("no image url in response from %s", uri)
 	}
 	// checking size, GitHub doesn't support big images
-	toobig, err := github.ImageTooBig(a.Image)
+	toobig, err := github.ImageTooBig(a.URL)
 	if err != nil {
-		return "", fmt.Errorf("could not validate image size %s: %v", a.Image, err)
+		return "", fmt.Errorf("could not validate image size %s: %v", a.URL, err)
 	} else if toobig {
-		return "", fmt.Errorf("longcat is too long: %s", a.Image)
+		return "", fmt.Errorf("longcat is too long: %s", a.URL)
 	}
 	return a.Format()
 }
@@ -190,17 +184,19 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c
 	// Now that we know this is a relevant event we can set the key.
 	setKey()
 
-	category := mat[1]
-	if len(category) > 1 {
-		category = category[1:]
-	}
-
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
 	number := e.Number
 
+	// Provide an error message when a category is requested
+	// TODO: remove after a grace period
+	if len(strings.TrimSpace(mat[1])) > 0 {
+		msg := "**chomp** CATegories are no longer supported"
+		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
+	}
+
 	for i := 0; i < 3; i++ {
-		resp, err := c.readCat(category)
+		resp, err := c.readCat()
 		if err != nil {
 			log.WithError(err).Error("Failed to get cat img")
 			continue
@@ -208,12 +204,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c
 		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
 	}
 
-	var msg string
-	if category != "" {
-		msg = "Bad category. Please see http://thecatapi.com/api/categories/list"
-	} else {
-		msg = "http://thecatapi.com appears to be down"
-	}
+	msg := "https://thecatapi.com appears to be down"
 	if err := gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg)); err != nil {
 		log.WithError(err).Error("Failed to leave comment")
 	}
