@@ -1036,13 +1036,13 @@ cloudProviders:
     args:
     - --check-leaked-resources
     - --provider=gce
-    - --gcp-zone=us-central1-f
+    - --gcp-zone=us-west1-b
   gke:
     args:
     - --check-leaked-resources
     - --provider=gke
     - --deployment=gke
-    - --gcp-zone=us-central1-f
+    - --gcp-zone=us-west1-b
     - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
     - --gke-environment=test
 
