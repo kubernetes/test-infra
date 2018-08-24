@@ -409,6 +409,7 @@ plugins:
   kubernetes/perf-tests:
   - approve
   - blunderbuss
+  - trigger
 
   kubernetes/publishing-bot:
   - approve
