@@ -41,6 +41,7 @@ func TestPush(t *testing.T) {
   "ref": "refs/heads/master",
   "before": "d73a75b4b1ddb63870954b9a60a63acaa4cb1ca5",
   "after": "045a6dca07840efaf3311450b615e19b5c75f787",
+  "size": 2,
   "compare": "https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...045a6dca0784",
   "commits": [
     {
@@ -92,8 +93,8 @@ func TestPush(t *testing.T) {
 
 	noMessages := map[string][]string{}
 	stdWarningMessages := map[string][]string{
-		"sig-contribex":  {"*Warning:* tester (<@tester>) manually merged https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...045a6dca0784"},
-		"kubernetes-dev": {"*Warning:* tester (<@tester>) manually merged https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...045a6dca0784"}}
+		"sig-contribex":  {"*Warning:* tester (<@tester>) manually merged 2 commit(s) into master: https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...045a6dca0784"},
+		"kubernetes-dev": {"*Warning:* tester (<@tester>) manually merged 2 commit(s) into master: https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...045a6dca0784"}}
 
 	type testCase struct {
 		name             string
