@@ -161,21 +161,22 @@ type Configuration struct {
 	Owners Owners `json:"owners,omitempty"`
 
 	// Built-in plugins specific configuration.
-	Approve       []Approve            `json:"approve,omitempty"`
-	Blockades     []Blockade           `json:"blockades,omitempty"`
-	Blunderbuss   Blunderbuss          `json:"blunderbuss,omitempty"`
-	Cat           Cat                  `json:"cat,omitempty"`
-	ConfigUpdater ConfigUpdater        `json:"config_updater,omitempty"`
-	Heart         Heart                `json:"heart,omitempty"`
-	Label         *Label               `json:"label,omitempty"`
-	Lgtm          []Lgtm               `json:"lgtm,omitempty"`
-	RepoMilestone map[string]Milestone `json:"repo_milestone,omitempty"`
-	RequireSIG    RequireSIG           `json:"requiresig,omitempty"`
-	Slack         Slack                `json:"slack,omitempty"`
-	SigMention    SigMention           `json:"sigmention,omitempty"`
-	Size          *Size                `json:"size,omitempty"`
-	Triggers      []Trigger            `json:"triggers,omitempty"`
-	Welcome       Welcome              `json:"welcome,omitempty"`
+	Approve              []Approve            `json:"approve,omitempty"`
+	Blockades            []Blockade           `json:"blockades,omitempty"`
+	Blunderbuss          Blunderbuss          `json:"blunderbuss,omitempty"`
+	Cat                  Cat                  `json:"cat,omitempty"`
+	ConfigUpdater        ConfigUpdater        `json:"config_updater,omitempty"`
+	Heart                Heart                `json:"heart,omitempty"`
+	Label                *Label               `json:"label,omitempty"`
+	Lgtm                 []Lgtm               `json:"lgtm,omitempty"`
+	RepoMilestone        map[string]Milestone `json:"repo_milestone,omitempty"`
+	RequireSIG           RequireSIG           `json:"requiresig,omitempty"`
+	Slack                Slack                `json:"slack,omitempty"`
+	SigMention           SigMention           `json:"sigmention,omitempty"`
+	Size                 *Size                `json:"size,omitempty"`
+	Triggers             []Trigger            `json:"triggers,omitempty"`
+	Welcome              Welcome              `json:"welcome,omitempty"`
+	CherryPickUnapproved CherryPickUnapproved `json:"cherry_pick_unapproved,omitempty"`
 }
 
 // ExternalPlugin holds configuration for registering an external
@@ -459,6 +460,18 @@ type Welcome struct {
 	MessageTemplate string `json:"message_template,omitempty"`
 }
 
+// CherryPickUnapproved is the config for the cherrypick-unapproved plugin.
+type CherryPickUnapproved struct {
+	// BranchRegexp is the regular expression for branch names such that
+	// the plugin treats only PRs against these branch names as cherrypick PRs.
+	// Compiles into BranchRe during config load.
+	BranchRegexp string         `json:"branchregexp,omitempty"`
+	BranchRe     *regexp.Regexp `json:"-"`
+	// Comment is the comment added by the plugin while adding the
+	// `do-not-merge/cherry-pick-not-approved` label.
+	Comment string `json:"comment,omitempty"`
+}
+
 // TriggerFor finds the Trigger for a repo, if one exists
 // a trigger can be listed for the repo itself or for the
 // owning organization
@@ -519,6 +532,15 @@ func (c *Configuration) setDefaults() {
 	}
 	if c.Owners.LabelsBlackList == nil {
 		c.Owners.LabelsBlackList = []string{"approved", "lgtm"}
+	}
+	if c.CherryPickUnapproved.BranchRegexp == "" {
+		c.CherryPickUnapproved.BranchRegexp = `^release-.*$`
+	}
+	if c.CherryPickUnapproved.Comment == "" {
+		c.CherryPickUnapproved.Comment = `
+This PR is not for the master branch but does not have the ` + "`cherry-pick-approved`" + `  label. Adding the ` + "`do-not-merge/cherry-pick-not-approved`" + `  label.
+To approve the cherry-pick, please assign the patch release manager for the release branch by writing ` + "`/assign @username`" + ` in a comment when ready.
+The list of patch release managers for each release can be found [here](https://git.k8s.io/sig-release/release-managers.md).`
 	}
 }
 
@@ -696,6 +718,13 @@ func compileRegexps(pc *Configuration) error {
 		return err
 	}
 	pc.SigMention.Re = cRe
+
+	branchRe, err := regexp.Compile(pc.CherryPickUnapproved.BranchRegexp)
+	if err != nil {
+		return err
+	}
+	pc.CherryPickUnapproved.BranchRe = branchRe
+
 	return nil
 }
 

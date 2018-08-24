@@ -247,7 +247,7 @@ func TestSetDefault_Maps(t *testing.T) {
 	}
 }
 
-func TestSetDefaults(t *testing.T) {
+func TestSetTriggerDefaults(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -312,6 +312,71 @@ func TestSetDefaults(t *testing.T) {
 		}
 		if c.Triggers[0].JoinOrgURL != test.expectedJoinOrgURL {
 			t.Errorf("unexpected join_org_url: %s, expected: %s", c.Triggers[0].JoinOrgURL, test.expectedJoinOrgURL)
+		}
+	}
+}
+
+func TestSetCherryPickUnapprovedDefaults(t *testing.T) {
+	defaultBranchRegexp := `^release-.*$`
+	defaultComment := `
+This PR is not for the master branch but does not have the ` + "`cherry-pick-approved`" + `  label. Adding the ` + "`do-not-merge/cherry-pick-not-approved`" + `  label.
+To approve the cherry-pick, please assign the patch release manager for the release branch by writing ` + "`/assign @username`" + ` in a comment when ready.
+The list of patch release managers for each release can be found [here](https://git.k8s.io/sig-release/release-managers.md).`
+
+	testcases := []struct {
+		name string
+
+		branchRegexp string
+		comment      string
+
+		expectedBranchRegexp string
+		expectedComment      string
+	}{
+		{
+			name:                 "none of branchRegexp and comment are set",
+			branchRegexp:         "",
+			comment:              "",
+			expectedBranchRegexp: defaultBranchRegexp,
+			expectedComment:      defaultComment,
+		},
+		{
+			name:                 "only branchRegexp is set",
+			branchRegexp:         `release-1.1.*$`,
+			comment:              "",
+			expectedBranchRegexp: `release-1.1.*$`,
+			expectedComment:      defaultComment,
+		},
+		{
+			name:                 "only comment is set",
+			branchRegexp:         "",
+			comment:              "custom comment",
+			expectedBranchRegexp: defaultBranchRegexp,
+			expectedComment:      "custom comment",
+		},
+		{
+			name:                 "both branchRegexp and comment are set",
+			branchRegexp:         `release-1.1.*$`,
+			comment:              "custom comment",
+			expectedBranchRegexp: `release-1.1.*$`,
+			expectedComment:      "custom comment",
+		},
+	}
+
+	for _, tc := range testcases {
+		c := &Configuration{
+			CherryPickUnapproved: CherryPickUnapproved{
+				BranchRegexp: tc.branchRegexp,
+				Comment:      tc.comment,
+			},
+		}
+
+		c.setDefaults()
+
+		if c.CherryPickUnapproved.BranchRegexp != tc.expectedBranchRegexp {
+			t.Errorf("unexpected branchRegexp: %s, expected: %s", c.CherryPickUnapproved.BranchRegexp, tc.expectedBranchRegexp)
+		}
+		if c.CherryPickUnapproved.Comment != tc.expectedComment {
+			t.Errorf("unexpected comment: %s, expected: %s", c.CherryPickUnapproved.Comment, tc.expectedComment)
 		}
 	}
 }
