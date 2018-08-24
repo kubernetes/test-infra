@@ -2021,7 +2021,7 @@ presubmits:
         - --
         - make
         - bazel-test
-        image: gcr.io/k8s-testimages/kubekins-e2e@sha256:latest-experimental
+        image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
         imagePullPolicy: Always
         name: ""
         resources:
