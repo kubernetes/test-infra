@@ -16,28 +16,35 @@ var (
 )
 
 func TestHasGitAttrLingGenPositive(t *testing.T) {
-	fmt.Printf("getenv=*%v*\n", os.Getenv("GOPATH"))
+	gopath := os.Getenv("GOPATH")
+	fmt.Printf("gopath=*%v*\n", gopath)
 	fmt.Printf("filePath=*%s*\n", lingGenFilePath)
 
-	if !hasGitAttr(gitAttrLinguistGenerated, lingGenFilePath) {
+	if gopath != "" && !hasGitAttr(gitAttrLinguistGenerated, lingGenFilePath) {
 		t.Fail()
 	}
 }
 
 func TestHasGitAttrLingGenNegative(t *testing.T) {
-	if hasGitAttr(gitAttrLinguistGenerated, noAttrFilePath) {
+	gopath := os.Getenv("GOPATH")
+	fmt.Printf("gopath=*%v*\n", gopath)
+	if gopath != "" && hasGitAttr(gitAttrLinguistGenerated, noAttrFilePath) {
 		t.Fail()
 	}
 }
 
 func TestHasGitAttrCovExcPositive(t *testing.T) {
-	if !hasGitAttr(gitAttrCoverageExcluded, covExclFilePath) {
+	gopath := os.Getenv("GOPATH")
+	fmt.Printf("gopath=*%v*\n", gopath)
+	if gopath != "" && !hasGitAttr(gitAttrCoverageExcluded, covExclFilePath) {
 		t.Fail()
 	}
 }
 
 func TestHasGitAttrCovExcNegative(t *testing.T) {
-	if hasGitAttr(gitAttrCoverageExcluded, noAttrFilePath) {
+	gopath := os.Getenv("GOPATH")
+	fmt.Printf("gopath=*%v*\n", gopath)
+	if gopath != "" && hasGitAttr(gitAttrCoverageExcluded, noAttrFilePath) {
 		t.Fail()
 	}
 }

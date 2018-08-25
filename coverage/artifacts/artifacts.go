@@ -11,7 +11,7 @@ const (
 	CovProfileCompletionMarker = "profile-completed"
 	junitXmlForTestgrid        = "junit_bazel.xml"
 	//LineCovFileName is the file name for line coverage html
-	LineCovFileName            = "line-cov.html"
+	LineCovFileName = "line-cov.html"
 )
 
 //Artifacts stores information about artifacts directory and files in it

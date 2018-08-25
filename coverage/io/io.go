@@ -41,3 +41,15 @@ func MkdirAll(path string) {
 		logrus.Infof("artifacts dir (path=%s) created successfully\n", path)
 	}
 }
+
+func FileOrDirExists(path string) bool {
+	if _, err := os.Stat(path); err != nil {
+		if os.IsNotExist(err) {
+			cwd, _ := os.Getwd()
+			logrus.Infof("file or dir not found: %s; cwd=%s", path, cwd)
+			return false
+		}
+		logrus.Fatalf("File stats (path=%s) err: %v", path, err)
+	}
+	return true
+}

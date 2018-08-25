@@ -2,6 +2,7 @@ package githubClient
 
 import (
 	"context"
+
 	"github.com/google/go-github/github"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"

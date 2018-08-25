@@ -30,5 +30,3 @@ func LocalInputArtsForTest() *artifacts.LocalArtifacts {
 		"stdout.txt",
 	)}
 }
-
-

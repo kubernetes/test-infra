@@ -12,6 +12,7 @@ go_library(
     deps = [
         "//coverage/io:go_default_library",
         "//coverage/logUtil:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
 

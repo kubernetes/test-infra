@@ -10,6 +10,7 @@ go_library(
     ],
     importpath = "k8s.io/test-infra/coverage/test",
     visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/sirupsen/logrus:go_default_library"],
 )
 
 go_test(

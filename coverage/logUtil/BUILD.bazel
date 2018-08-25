@@ -5,6 +5,7 @@ go_library(
     srcs = ["logUtil.go"],
     importpath = "k8s.io/test-infra/coverage/logUtil",
     visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/sirupsen/logrus:go_default_library"],
 )
 
 filegroup(

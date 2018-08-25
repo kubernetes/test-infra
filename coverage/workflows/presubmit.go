@@ -11,7 +11,6 @@ import (
 	"k8s.io/test-infra/coverage/line"
 )
 
-
 // RunPresubmit performs all actions to be performed for presubmit workflow only
 func RunPresubmit(p *gcs.PreSubmit, arts *artifacts.LocalArtifacts) (isCoverageLow bool) {
 	logrus.Info("starting PreSubmit.RunPresubmit(...)")

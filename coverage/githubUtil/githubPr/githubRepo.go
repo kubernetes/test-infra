@@ -117,7 +117,7 @@ func getGithubToken(githubTokenLocation string) (res string, err error) {
 	}
 	res = string(buf)
 	if len(res) != 40 {
-		fmt.Printf("Warning: token len = %d, which is differnt from 40\n", len(res))
+		fmt.Printf("Warning: token len = %d, which is different from 40\n", len(res))
 	}
 	return
 }

@@ -5,11 +5,16 @@ go_library(
     srcs = ["git.go"],
     importpath = "k8s.io/test-infra/coverage/git",
     visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/sirupsen/logrus:go_default_library"],
 )
 
 go_test(
     name = "go_default_test",
     srcs = ["git_test.go"],
+    data = [
+        "//coverage:test-input",
+        "//coverage:test-target",
+    ],
     embed = [":go_default_library"],
     deps = ["//coverage/test:go_default_library"],
 )

@@ -9,6 +9,7 @@ go_library(
         "//coverage/githubUtil/githubClient:go_default_library",
         "//coverage/logUtil:go_default_library",
         "//vendor/github.com/google/go-github/github:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
 

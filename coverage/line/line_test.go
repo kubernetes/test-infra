@@ -3,9 +3,10 @@ package line
 import (
 	"testing"
 
+	"k8s.io/test-infra/coverage/artifacts"
 	"k8s.io/test-infra/coverage/artifacts/artsTest"
 	"k8s.io/test-infra/coverage/test"
-	"k8s.io/test-infra/coverage/artifacts"
+	"os"
 )
 
 func LocalArtsForTest_KeyfileNotExist(dirPrefix string) *artifacts.LocalArtifacts {
@@ -18,14 +19,15 @@ func LocalArtsForTest_KeyfileNotExist(dirPrefix string) *artifacts.LocalArtifact
 }
 
 func TestCreateLineCovFile(t *testing.T) {
-	arts := artsTest.LocalArtsForTest("TestCreateLineCovFile")
-	test.LinkInputArts(arts.Directory(), "key-cov-profile.txt")
+	if os.Getenv("GOPATH") != "" {
+		arts := artsTest.LocalArtsForTest("TestCreateLineCovFile")
+		test.LinkInputArts(arts.Directory(), "key-cov-profile.txt")
 
-	err := CreateLineCovFile(arts)
-	if err != nil {
-		t.Fatalf("CreateLineCovFile(arts=%v) failed, err=%v", arts, err)
+		err := CreateLineCovFile(arts)
+		if err != nil {
+			t.Fatalf("CreateLineCovFile(arts=%v) failed, err=%v", arts, err)
+		}
 	}
-	test.DeleteDir(arts.Directory())
 }
 
 func TestCreateLineCovFileFailure(t *testing.T) {

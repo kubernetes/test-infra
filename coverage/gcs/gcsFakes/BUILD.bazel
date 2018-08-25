@@ -10,9 +10,9 @@ go_library(
     importpath = "k8s.io/test-infra/coverage/gcs/gcsFakes",
     visibility = ["//visibility:public"],
     deps = [
-        "//coverage/artifacts:go_default_library",
         "//coverage/artifacts/artsTest:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
 

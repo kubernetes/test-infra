@@ -7,8 +7,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"io"
-	"k8s.io/test-infra/coverage/logUtil"
 	io2 "k8s.io/test-infra/coverage/io"
+	"k8s.io/test-infra/coverage/logUtil"
 )
 
 type LocalArtifacts struct {

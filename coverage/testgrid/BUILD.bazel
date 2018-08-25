@@ -12,6 +12,7 @@ go_library(
         "//coverage/artifacts:go_default_library",
         "//coverage/calc:go_default_library",
         "//coverage/logUtil:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
 
