@@ -38,7 +38,7 @@ bazel test //label_sync/...
 
 # add or migrate labels on all repos in the kubernetes org
 bazel run //label_sync -- \
-  --config $(pwd)/labels.yaml \
+  --config $(pwd)/label_sync/labels.yaml \
   --token /path/to/github_oauth_token \
   --orgs kubernetes
   # actually you need to pass the --confirm flag too, it will
@@ -47,7 +47,7 @@ bazel run //label_sync -- \
 
 # add or migrate labels on all repos except helm in the kubernetes org
 bazel run //label_sync -- \
-  --config $(pwd)/labels.yaml \
+  --config $(pwd)/label_sync/labels.yaml \
   --token /path/to/github_oauth_token \
   --orgs kubernetes \
   --skip kubernetes/helm
@@ -55,7 +55,7 @@ bazel run //label_sync -- \
 
 # add or migrate labels on the community and steering repos in the kubernetes org
 bazel run //label_sync -- \
-  --config $(pwd)/labels.yaml \
+  --config $(pwd)/label_sync/labels.yaml \
   --token /path/to/github_oauth_token \
   --orgs kubernetes \
   --only kubernetes/community,kubernetes/steering
