@@ -59,6 +59,20 @@ As mentioned earlier, we use configuration file to store repository specific inf
         - "--coverage_threshold=70%" # minimum level of acceptable presubmit coverage on a per-file level
 ```
 
+#Acceptance Criteria
+##Presubmit Workflow
+- When user made a new commit, if any file in the commit has a coverage change, post a covbot comment concluding the coverage change
+- When user made a new commit, if non of the files in the commit has a coverage change, do not post any comment
+- The covbot comment should have the following information on each file with a coverage change:
+  - file name
+  - old coverage (coverage before any change in the PR)
+  - new coverage (coverage after applied all changes in the PR)
+  - change the coverage
+- After each new posting, any previous posting by covbot should be removed
+- When coverage threshold is enforced, block PR from merging
 
- 
-
+##Periodical Workflow
+- During each run of the periodical job, a junit_bazel.xml is dumped in the artifacts folder
+- The junit_bazel.xml should be a valid junit xml file. See 
+[JUnit XML format](https://www.ibm.com/support/knowledgecenter/en/SSQ2R2_14.1.0/com.ibm.rsar.analysis.codereview.cobol.doc/topics/cac_useresults_junit.html)
+- For each file that has a coverage level lower than the threshold, the corresponding entry on testgrid should be red; otherwise, the entry should be green
