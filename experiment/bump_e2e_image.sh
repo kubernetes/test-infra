@@ -57,7 +57,6 @@ $SED -i "s/\\/kubekins-e2e:v.*-\\(.*\\)$/\\/kubekins-e2e:${TAG}-\\1/" "${TREE}/e
 bazel run //experiment:generate_tests -- \
   "--yaml-config-path=${TREE}/experiment/test_config.yaml" \
   "--output-dir=${TREE}/config/jobs/kubernetes/generated/"
-bazel run //jobs:config_sort
 
 # Scan for kubekins-e2e:v.* as a rudimentary way to avoid
 # replacing :latest.
