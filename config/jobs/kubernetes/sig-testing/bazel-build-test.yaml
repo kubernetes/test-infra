@@ -41,7 +41,7 @@ presubmits:
         preset-k8s-ssh: "true"
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180730-c8036c3a7
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180827-b4a364eb9
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -100,7 +100,7 @@ presubmits:
         preset-k8s-ssh: "true"
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180730-c8036c3a7
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180827-b4a364eb9
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -158,7 +158,7 @@ presubmits:
         preset-k8s-ssh: "true"
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180730-c8036c3a7
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180827-b4a364eb9
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
