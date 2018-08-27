@@ -3,10 +3,15 @@ Code coverage tool has two major features.
 1. As a pre-submit tool, it runs code coverage on every single commit to Github and reports coverage change back to the PR as a comment by a robot account. It also has the ability to block a PR from merging if coverage falls below threshold
 2. As a post-submit / periodical running job, it reports on TestGrid to show users how coverage changes over time.
 
+##Users
+The presubmit tool is intended for a developer to see the impact on code coverage of his/her commit. It can also be used by repo managers to block any PR from merging if the coverage falls under customized threshold.
+
+The periodical testgrid report is for repo managers and/or test infra team to monitor code coverage stats over time.
+
 ##Background - Prow
 Prow is a system that handles github events and commands and allow you to perform actions. It was originally built for kubernetes, but now is extended to other teams wanting to use it as well. cmd/hook is the main entry point for Prow and listens to the github events. Prow provides two ways to handle events:
 1. Prow Jobs: Jobs that perform simple actions when certain events occur. Can only report the result as PASS or FAIL. For eg. running tests
-2. Plugins: Some logic that perform more complicated actions like talking to external service. Can report any kind of status. For eg. golint plugin that checks out code from github and performs linting. Plugins can be:
+2. Plugins: Some logic that perform more complicated actions like talking to external service. Can report any kind of status. For eg. Golint plugin that checks out code from github and performs linting. Plugins can be:
   - Internal: Live within the cmd/hook binary.
   - External: Live as a separate binary. Events are forwarded to these by cmd/hook.
 
