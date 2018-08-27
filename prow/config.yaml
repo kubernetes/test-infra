@@ -240,7 +240,7 @@ tide:
     labels:
     - lgtm
     - approved
-    - "cncf-cla: yes"
+    - "Contribution Allowed"
     missingLabels:
     - do-not-merge
     - do-not-merge/blocked-paths
