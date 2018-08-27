@@ -17,7 +17,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -47,7 +47,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -77,7 +77,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=cos-beta
@@ -106,7 +106,7 @@ periodics:
       - --cluster=test-2d7a8aa9e6
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-beta
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -163,7 +163,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -191,7 +191,7 @@ periodics:
       - --cluster=test-28f4c52467
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-stable
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -246,7 +246,7 @@ periodics:
       - --
       - --cluster=test-0d4c6b9a5b
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=ubuntu-gke-1804-lts-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
@@ -275,7 +275,7 @@ periodics:
       - --cluster=test-9b5cf462ff
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-beta
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -332,7 +332,7 @@ periodics:
       - --cluster=test-7c91d4db34
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-dev
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -359,7 +359,7 @@ periodics:
       - --cluster=test-34cf3ed1e3
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/k8s-beta
       - --timeout=500m
@@ -384,7 +384,7 @@ periodics:
       - --cluster=test-16f7a6f1b2
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-dev
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -410,7 +410,7 @@ periodics:
       - --
       - --cluster=test-e3f7439f85
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=ubuntu-gke-1804-lts-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
@@ -439,7 +439,7 @@ periodics:
       - --cluster=test-58d04d5cd7
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-stable
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -467,7 +467,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --gcp-node-image=gci
@@ -492,7 +492,7 @@ periodics:
       - --
       - --cluster=test-665fca7985
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=ubuntu-gke-1804-lts-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
@@ -521,7 +521,7 @@ periodics:
       - --cluster=test-0cc7e0a4a8
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-beta
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -549,7 +549,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -578,7 +578,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -607,7 +607,7 @@ periodics:
       - --cluster=test-12c21e8bb2
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-dev
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -634,7 +634,7 @@ periodics:
       - --cluster=test-63180d3429
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-stable
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -661,7 +661,7 @@ periodics:
       - --cluster=test-2448497393
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-stable
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -689,7 +689,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -719,7 +719,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -746,7 +746,7 @@ periodics:
       - --
       - --cluster=test-72f5019039
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=ubuntu-gke-1804-lts-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
@@ -775,7 +775,7 @@ periodics:
       - --cluster=test-6a3a13513d
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-beta
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -803,7 +803,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -860,7 +860,7 @@ periodics:
       - --cluster=test-45011ec97a
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-beta
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -888,7 +888,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -918,7 +918,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --gcp-node-image=gci
@@ -945,7 +945,7 @@ periodics:
       - --cluster=test-018ded2eb1
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-dev
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -973,7 +973,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -1032,7 +1032,7 @@ periodics:
       - --
       - --cluster=test-a98f256c2b
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=ubuntu-gke-1804-lts-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
@@ -1090,7 +1090,7 @@ periodics:
       - --cluster=test-e629d25701
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-beta
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -1117,7 +1117,7 @@ periodics:
       - --cluster=test-694be857a6
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/k8s-stable3
       - --timeout=150m
@@ -1173,7 +1173,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --gcp-node-image=gci
@@ -1200,7 +1200,7 @@ periodics:
       - --cluster=test-86260199f2
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-stable
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -1228,7 +1228,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -1256,7 +1256,7 @@ periodics:
       - --
       - --cluster=test-bf27c33c25
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=ubuntu-gke-1604-lts-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
@@ -1285,7 +1285,7 @@ periodics:
       - --cluster=test-52f5d909b5
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-beta
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -1313,7 +1313,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -1343,7 +1343,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -1373,7 +1373,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -1403,7 +1403,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -1431,7 +1431,7 @@ periodics:
       - --cluster=test-b829ee97f8
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-stable
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -1459,7 +1459,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --gcp-node-image=gci
@@ -1516,7 +1516,7 @@ periodics:
       - --cluster=test-981311ee2d
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-beta
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -1571,7 +1571,7 @@ periodics:
       - --
       - --cluster=test-21b1dbcad3
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=ubuntu-gke-1804-lts-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
@@ -1600,7 +1600,7 @@ periodics:
       - --cluster=test-f76fffef8e
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-stable
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -1628,7 +1628,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=cos-beta
@@ -1686,7 +1686,7 @@ periodics:
       - --cluster=test-0eae043a2d
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-stable
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -1713,7 +1713,7 @@ periodics:
       - --cluster=test-069c75dc09
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-beta
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -1769,7 +1769,7 @@ periodics:
       - --cluster=test-c2db0160cf
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/k8s-stable1
       - --timeout=180m
@@ -1792,7 +1792,7 @@ periodics:
       - --
       - --cluster=test-709fb85030
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=ubuntu-gke-1804-lts-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
@@ -1821,7 +1821,7 @@ periodics:
       - --cluster=test-4ebf21441e
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-beta
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -1848,7 +1848,7 @@ periodics:
       - --cluster=test-fa64f85611
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-stable
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -1934,7 +1934,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -1963,7 +1963,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=cos-beta
@@ -1992,7 +1992,7 @@ periodics:
       - --cluster=test-5881f7ab7e
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/k8s-stable2
       - --timeout=50m
@@ -2017,7 +2017,7 @@ periodics:
       - --cluster=test-d29293ae78
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-beta
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -2045,7 +2045,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --gcp-node-image=gci
@@ -2071,7 +2071,7 @@ periodics:
       - --cluster=test-349504ad4b
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-dev
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -2099,7 +2099,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --gcp-node-image=gci
@@ -2127,7 +2127,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -2155,7 +2155,7 @@ periodics:
       - --cluster=test-764f8afa34
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=cos-beta
@@ -2189,7 +2189,7 @@ periodics:
       - --
       - --cluster=test-eca67f767b
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=ubuntu-gke-1604-lts-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
@@ -2217,7 +2217,7 @@ periodics:
       - --
       - --cluster=test-f49fb1d994
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=ubuntu-gke-1604-lts-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
@@ -2247,7 +2247,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --gcp-node-image=gci
@@ -2274,7 +2274,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --gcp-node-image=gci
@@ -2302,7 +2302,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -2330,7 +2330,7 @@ periodics:
       - --cluster=test-97384bb7a5
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=cos-beta
@@ -2366,7 +2366,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -2396,7 +2396,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -2424,7 +2424,7 @@ periodics:
       - --
       - --cluster=test-009ca57a5d
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=ubuntu-gke-1604-lts-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
@@ -2453,7 +2453,7 @@ periodics:
       - --cluster=test-86ab064463
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/k8s-stable1
       - --timeout=180m
@@ -2479,7 +2479,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -2509,7 +2509,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -2538,7 +2538,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -2567,7 +2567,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -2626,7 +2626,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -2685,7 +2685,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -2713,7 +2713,7 @@ periodics:
       - --cluster=test-ef6e185752
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/k8s-stable1
       - --timeout=500m
@@ -2739,7 +2739,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -2766,7 +2766,7 @@ periodics:
       - --
       - --cluster=test-a8efc7dc1e
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=ubuntu-gke-1804-lts-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
@@ -2795,7 +2795,7 @@ periodics:
       - --cluster=test-96f446fc82
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/k8s-stable2
       - --timeout=150m
@@ -2850,7 +2850,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -2879,7 +2879,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -2907,7 +2907,7 @@ periodics:
       - --cluster=test-c8c4b0ff1c
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/k8s-stable2
       - --timeout=180m
@@ -2932,7 +2932,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -2960,7 +2960,7 @@ periodics:
       - --
       - --cluster=test-be0876f9fb
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=ubuntu-gke-1604-lts-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
@@ -2989,7 +2989,7 @@ periodics:
       - --cluster=test-6724261826
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/k8s-beta
       - --gcp-project-type=ingress-project
@@ -3014,7 +3014,7 @@ periodics:
       - --cluster=test-26653b91cd
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-dev
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -3042,7 +3042,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -3071,7 +3071,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -3100,7 +3100,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -3216,7 +3216,7 @@ periodics:
       - --
       - --cluster=test-532dba062e
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=ubuntu-gke-1604-lts-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
@@ -3246,7 +3246,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -3275,7 +3275,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --gcp-node-image=gci
@@ -3301,7 +3301,7 @@ periodics:
       - --
       - --cluster=test-946c584740
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=ubuntu-gke-1604-lts-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
@@ -3331,7 +3331,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -3359,7 +3359,7 @@ periodics:
       - --cluster=test-0eda36b5c4
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/k8s-beta
       - --timeout=180m
@@ -3384,7 +3384,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -3414,7 +3414,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -3472,7 +3472,7 @@ periodics:
       - --cluster=test-d4e43e5c09
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-beta
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -3499,7 +3499,7 @@ periodics:
       - --cluster=test-3e0b31d18c
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-stable
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -3526,7 +3526,7 @@ periodics:
       - --cluster=test-c41a7aaf03
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-beta
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -3554,7 +3554,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=cos-beta
@@ -3612,7 +3612,7 @@ periodics:
       - --
       - --cluster=test-6bbac58e9d
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=ubuntu-gke-1804-lts-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
@@ -3671,7 +3671,7 @@ periodics:
       - --cluster=test-ce1e942232
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-dev
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -3699,7 +3699,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -3727,7 +3727,7 @@ periodics:
       - --cluster=test-359c739436
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/k8s-stable1
       - --timeout=50m
@@ -3752,7 +3752,7 @@ periodics:
       - --
       - --cluster=test-dae63501eb
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=ubuntu-gke-1604-lts-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
@@ -3781,7 +3781,7 @@ periodics:
       - --cluster=test-eef92b583b
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/k8s-beta
       - --timeout=180m
@@ -3807,7 +3807,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -3836,7 +3836,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --gcp-node-image=gci
@@ -3864,7 +3864,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=cos-beta
@@ -3893,7 +3893,7 @@ periodics:
       - --cluster=test-a43174570e
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=cos-beta
@@ -3959,7 +3959,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --gcp-node-image=gci
@@ -3986,7 +3986,7 @@ periodics:
       - --cluster=test-7d3ed76582
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/k8s-stable1
       - --timeout=150m
@@ -4040,7 +4040,7 @@ periodics:
       - --cluster=test-3154607d16
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/k8s-stable3
       - --timeout=500m
@@ -4065,7 +4065,7 @@ periodics:
       - --cluster=test-4b7fa88c7e
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/k8s-stable3
       - --timeout=180m
@@ -4090,7 +4090,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --gcp-node-image=gci
@@ -4117,7 +4117,7 @@ periodics:
       - --cluster=test-cd3f14e5ae
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-dev
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -4145,7 +4145,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -4175,7 +4175,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -4232,7 +4232,7 @@ periodics:
       - --
       - --cluster=test-3b8f6466e9
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=ubuntu-gke-1804-lts-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
@@ -4261,7 +4261,7 @@ periodics:
       - --cluster=test-ba4378bb1a
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-stable
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -4319,7 +4319,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --gcp-node-image=gci
@@ -4377,7 +4377,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --gcp-node-image=gci
@@ -4404,7 +4404,7 @@ periodics:
       - --cluster=test-df914a9cd5
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/k8s-stable3
       - --gcp-project-type=ingress-project
@@ -4428,7 +4428,7 @@ periodics:
       - --
       - --cluster=test-6827b2df7c
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=ubuntu-gke-1604-lts-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
@@ -4458,7 +4458,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -4488,7 +4488,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -4545,7 +4545,7 @@ periodics:
       - --cluster=test-603851a011
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-dev
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -4573,7 +4573,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -4603,7 +4603,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -4632,7 +4632,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -4661,7 +4661,7 @@ periodics:
       - --cluster=test-183d8deac8
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/k8s-stable3
       - --timeout=50m
@@ -4687,7 +4687,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -4716,7 +4716,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -4745,7 +4745,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -4834,7 +4834,7 @@ periodics:
       - --cluster=test-df7ff40165
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/k8s-stable2
       - --gcp-project-type=ingress-project
@@ -4860,7 +4860,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -4890,7 +4890,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -4919,7 +4919,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --gcp-node-image=gci
@@ -4947,7 +4947,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -4975,7 +4975,7 @@ periodics:
       - --cluster=test-85dd292325
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-stable
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -5033,7 +5033,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -5061,7 +5061,7 @@ periodics:
       - --
       - --cluster=test-4c74069865
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=ubuntu-gke-1604-lts-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
@@ -5090,7 +5090,7 @@ periodics:
       - --cluster=test-860e3c0e94
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-stable
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -5116,7 +5116,7 @@ periodics:
       - --
       - --cluster=test-1d0e56237d
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=ubuntu-gke-1804-lts-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
@@ -5146,7 +5146,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -5204,7 +5204,7 @@ periodics:
       - --cluster=test-9b5ed62f1f
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/k8s-stable2
       - --timeout=500m
@@ -5260,7 +5260,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -5287,7 +5287,7 @@ periodics:
       - --
       - --cluster=test-869bd83cc7
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=ubuntu-gke-1804-lts-1
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
@@ -5317,7 +5317,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -5347,7 +5347,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -5408,7 +5408,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -5437,7 +5437,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -5465,7 +5465,7 @@ periodics:
       - --cluster=test-519f5e2df7
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/k8s-stable1
       - --gcp-project-type=ingress-project
@@ -5490,7 +5490,7 @@ periodics:
       - --cluster=test-9f6a2cfa0f
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-stable
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -5517,7 +5517,7 @@ periodics:
       - --cluster=test-606c50aeb1
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=cos-beta
@@ -5553,7 +5553,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -5582,7 +5582,7 @@ periodics:
       - --cluster=test-1d30227e33
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/k8s-stable3
       - --timeout=180m
@@ -5607,7 +5607,7 @@ periodics:
       - --cluster=test-c2fd36a600
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=cos-beta
@@ -5672,7 +5672,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --gcp-node-image=gci
@@ -5699,7 +5699,7 @@ periodics:
       - --cluster=test-d19fb74eb5
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-beta
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -5726,7 +5726,7 @@ periodics:
       - --cluster=test-f76dcc51ae
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-stable
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -5754,7 +5754,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -5784,7 +5784,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -5813,7 +5813,7 @@ periodics:
       - --cluster=test-ed00047953
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-beta
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -5870,7 +5870,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1804-lts-1
@@ -5899,7 +5899,7 @@ periodics:
       - --cluster=test-a8a0b221b9
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/k8s-stable2
       - --timeout=180m
@@ -5924,7 +5924,7 @@ periodics:
       - --cluster=test-eb37105e71
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=cos-beta
       - --image-project=cos-cloud
       - --gcp-node-image=gci
@@ -5953,7 +5953,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --gcp-node-image=gci
@@ -6042,7 +6042,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --image-family=ubuntu-gke-1604-lts-2
@@ -6071,7 +6071,7 @@ periodics:
       - --cluster=test-3ec9d97448
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/k8s-beta
       - --timeout=150m
@@ -6095,7 +6095,7 @@ periodics:
       - --
       - --cluster=test-79194b4fe0
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=ubuntu-gke-1604-lts-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
@@ -6125,7 +6125,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --gcp-node-image=gci
@@ -6153,7 +6153,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --gcp-node-image=gci
@@ -6207,7 +6207,7 @@ periodics:
       - --
       - --cluster=test-896dd46063
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --image-family=ubuntu-gke-1604-lts-2
       - --image-project=ubuntu-os-gke-cloud-devel
       - --gcp-node-image=custom
@@ -6236,7 +6236,7 @@ periodics:
       - --cluster=test-1789b1211d
       - --check-leaked-resources
       - --provider=gce
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
       - --extract=ci/k8s-beta
       - --timeout=50m
@@ -6263,7 +6263,7 @@ periodics:
       - --check-leaked-resources
       - --provider=gke
       - --deployment=gke
-      - --gcp-zone=us-central1-f
+      - --gcp-zone=us-west1-b
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gke-environment=test
       - --gcp-node-image=gci
