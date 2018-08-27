@@ -245,7 +245,9 @@ class JobTest(unittest.TestCase):
                     match = re.match(r'--env-file=([^\"]+)\.env', arg)
                     if match:
                         env_path = match.group(1)
-                        self.assertTrue(env_path.startswith('jobs/'), env_path)
+                        self.assertTrue(
+                            env_path.startswith('jobs/') or env_path.startswith('config/jobs/'),
+                            env_path)
                         path = test_infra('%s.env' % env_path)
                         self.assertTrue(
                             os.path.isfile(path),

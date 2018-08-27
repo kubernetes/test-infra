@@ -7,6 +7,7 @@ py_test(
     ],
     data = [
         "//boskos:resources.yaml",
+        "//config:envfiles",
         "//jobs",
         "//prow:config.yaml",
         "//scenarios",

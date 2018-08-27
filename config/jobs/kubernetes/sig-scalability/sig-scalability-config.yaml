@@ -17,8 +17,8 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --cluster=e2e-big
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
-      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability.env
+      - --env-file=config/jobs/kubernetes/sig-scalability/env/ci-kubernetes-e2e-scalability-common.env
+      - --env-file=config/jobs/kubernetes/sig-scalability/env/ci-kubernetes-e2e-gci-gce-scalability.env
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-nodes=100
@@ -46,8 +46,8 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --cluster=e2e-big-beta
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-old-common.env
+      - --env-file=config/jobs/kubernetes/sig-scalability/env/ci-kubernetes-e2e-scalability-common.env
+      - --env-file=config/jobs/kubernetes/sig-scalability/env/ci-kubernetes-e2e-scalability-old-common.env
       - --extract=ci/k8s-beta
       - --gcp-node-image=gci
       - --gcp-nodes=100
@@ -75,9 +75,9 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --cluster=e2e-big-stable1
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-old-common.env
-      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-stable.env
+      - --env-file=config/jobs/kubernetes/sig-scalability/env/ci-kubernetes-e2e-scalability-common.env
+      - --env-file=config/jobs/kubernetes/sig-scalability/env/ci-kubernetes-e2e-scalability-old-common.env
+      - --env-file=config/jobs/kubernetes/sig-scalability/env/ci-kubernetes-e2e-gci-gce-scalability-stable.env
       - --extract=ci/k8s-stable1
       - --gcp-node-image=gci
       - --gcp-nodes=100
@@ -105,9 +105,9 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --cluster=e2e-big-stable2
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-old-common.env
-      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-stable.env
+      - --env-file=config/jobs/kubernetes/sig-scalability/env/ci-kubernetes-e2e-scalability-common.env
+      - --env-file=config/jobs/kubernetes/sig-scalability/env/ci-kubernetes-e2e-scalability-old-common.env
+      - --env-file=config/jobs/kubernetes/sig-scalability/env/ci-kubernetes-e2e-gci-gce-scalability-stable.env
       - --extract=ci/k8s-stable2
       - --gcp-node-image=gci
       - --gcp-nodes=100
@@ -133,8 +133,8 @@ periodics:
       - --
       - --cluster=gce-scale-cluster
       - --env=HEAPSTER_MACHINE_TYPE=n1-standard-8
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env
+      - --env-file=config/jobs/kubernetes/sig-scalability/env/ci-kubernetes-e2e-scalability-common.env
+      - --env-file=config/jobs/kubernetes/sig-scalability/env/ci-kubernetes-e2e-scalability-highspeed-common.env
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -192,8 +192,8 @@ periodics:
       - --cluster=$USER-large-manual
       - --down=false
       - --env=HEAPSTER_MACHINE_TYPE=n1-standard-8
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env
+      - --env-file=config/jobs/kubernetes/sig-scalability/env/ci-kubernetes-e2e-scalability-common.env
+      - --env-file=config/jobs/kubernetes/sig-scalability/env/ci-kubernetes-e2e-scalability-highspeed-common.env
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -223,8 +223,8 @@ periodics:
       - --
       - --cluster=gce-scale-cluster
       - --env=HEAPSTER_MACHINE_TYPE=n1-standard-8
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env
+      - --env-file=config/jobs/kubernetes/sig-scalability/env/ci-kubernetes-e2e-scalability-common.env
+      - --env-file=config/jobs/kubernetes/sig-scalability/env/ci-kubernetes-e2e-scalability-highspeed-common.env
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -256,8 +256,8 @@ periodics:
       - --cluster=gce-scale-cluster
       - --env=HEAPSTER_MACHINE_TYPE=n1-standard-16
       - --env=MASTER_MIN_CPU_ARCHITECTURE=Intel Broadwell
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env
+      - --env-file=config/jobs/kubernetes/sig-scalability/env/ci-kubernetes-e2e-scalability-common.env
+      - --env-file=config/jobs/kubernetes/sig-scalability/env/ci-kubernetes-e2e-scalability-highspeed-common.env
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -295,8 +295,8 @@ periodics:
       - --env=ENABLE_APISERVER_ADVANCED_AUDIT=false
       - --env=HEAPSTER_MACHINE_TYPE=n1-standard-16
       - --env=MASTER_MIN_CPU_ARCHITECTURE=Intel Broadwell
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-common.env
-      - --env-file=jobs/env/ci-kubernetes-e2e-scalability-highspeed-common.env
+      - --env-file=config/jobs/kubernetes/sig-scalability/env/ci-kubernetes-e2e-scalability-common.env
+      - --env-file=config/jobs/kubernetes/sig-scalability/env/ci-kubernetes-e2e-scalability-highspeed-common.env
       - --extract=ci/latest
       - --gcp-nodes=5000
       - --gcp-project=kubernetes-scale
@@ -531,7 +531,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --cluster=kubemark-100
-      - --env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env
+      - --env-file=config/jobs/kubernetes/sig-scalability/env/ci-kubernetes-e2e-kubemark-common.env
       - --extract=ci/latest
       - --gcp-master-size=n1-standard-2
       - --gcp-node-image=gci
@@ -564,7 +564,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --cluster=kubemark-latest
-      - --env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env
+      - --env-file=config/jobs/kubernetes/sig-scalability/env/ci-kubernetes-e2e-kubemark-common.env
       - --extract=ci/latest-1.9
       - --gcp-node-size=n1-standard-2
       - --gcp-nodes=1
@@ -598,8 +598,8 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --cluster=kubemark-500
-      - --env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env
-      - --env-file=jobs/env/ci-kubernetes-kubemark-gce-big.env
+      - --env-file=config/jobs/kubernetes/sig-scalability/env/ci-kubernetes-e2e-kubemark-common.env
+      - --env-file=config/jobs/kubernetes/sig-scalability/env/ci-kubernetes-kubemark-gce-big.env
       - --extract=ci/latest
       - --gcp-master-size=n1-standard-4
       - --gcp-node-image=gci
@@ -635,8 +635,8 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --cluster=kubemark-5000
-      - --env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env
-      - --env-file=jobs/env/ci-kubernetes-kubemark-gce-scale.env
+      - --env-file=config/jobs/kubernetes/sig-scalability/env/ci-kubernetes-e2e-kubemark-common.env
+      - --env-file=config/jobs/kubernetes/sig-scalability/env/ci-kubernetes-kubemark-gce-scale.env
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-node-size=n1-standard-8
@@ -672,8 +672,8 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --cluster=kubemark-100pods
-      - --env-file=jobs/env/ci-kubernetes-e2e-kubemark-common.env
-      - --env-file=jobs/env/ci-kubernetes-kubemark-high-density-100-gce.env
+      - --env-file=config/jobs/kubernetes/sig-scalability/env/ci-kubernetes-e2e-kubemark-common.env
+      - --env-file=config/jobs/kubernetes/sig-scalability/env/ci-kubernetes-kubemark-high-density-100-gce.env
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-node-size=n1-standard-8

@@ -8,6 +8,11 @@ filegroup(
 )
 
 filegroup(
+    name = "envfiles",
+    srcs = glob(["jobs/**/*.env"]),
+)
+
+filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
     tags = ["automanaged"],
