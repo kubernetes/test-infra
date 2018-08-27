@@ -1,9 +1,10 @@
 <!--TODO(bentheelder): fill this in much more thoroughly-->
 # `kind` - **K**ubernetes **IN** **D**ocker
 
-## WARNING: `kind` is still a work in progress!
+## WARNING: `kind` is still a work in progress! See [docs/todo.md](./docs/todo.md)
 
 `kind` is a toolset for running local Kubernetes clusters using Docker container "nodes".
+`kind` is designed to be suitable for testing Kubernetes, initially targeting the conformance suite.
 
 It consists of:
  - Go [packages](./pkg) implementing [cluster creation](./pkg/cluster), [image build](./pkg/build), etc.
@@ -17,7 +18,7 @@ For more details see [the design documentation](./docs/design.md).
 
 ## Building
 
-You can build `kind` with `go install ./cmd/kind` or `bazel build //kind/cmd/kind`.
+You can build `kind` with `go install k8s.io/test-infra/kind/cmd/kind` or `bazel build //kind/cmd/kind`.
 
 ## Usage
 
@@ -29,4 +30,6 @@ For more usage, run `kind --help` or `kind [command] --help`.
 
 ## Advanced
 
-`kind build image` will build the node image.
+`kind build base` will build the base image.
+
+`kind build node` will build the node image.

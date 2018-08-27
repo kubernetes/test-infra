@@ -5,10 +5,17 @@ go_library(
     srcs = [
         "cluster.go",
         "config.go",
+        "doc.go",
+        "node.go",
     ],
     importpath = "k8s.io/test-infra/kind/pkg/cluster",
     visibility = ["//visibility:public"],
-    deps = ["//kind/pkg/exec:go_default_library"],
+    deps = [
+        "//kind/pkg/cluster/kubeadm:go_default_library",
+        "//kind/pkg/exec:go_default_library",
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/github.com/pkg/errors:go_default_library",
+    ],
 )
 
 filegroup(
@@ -20,7 +27,10 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//kind/pkg/cluster/kubeadm:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

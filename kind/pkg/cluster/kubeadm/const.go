@@ -14,26 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package build implements the `build` command
-package build
+package kubeadm
 
-import (
-	"github.com/spf13/cobra"
-
-	"k8s.io/test-infra/kind/cmd/kind/cmd/build/base"
-	"k8s.io/test-infra/kind/cmd/kind/cmd/build/node"
-)
-
-// NewCommand returns a new cobra.Command for building
-func NewCommand() *cobra.Command {
-	cmd := &cobra.Command{
-		// TODO(bentheelder): more detailed usage
-		Use:   "build",
-		Short: "build",
-		Long:  "build",
-	}
-	// add subcommands
-	cmd.AddCommand(base.NewCommand())
-	cmd.AddCommand(node.NewCommand())
-	return cmd
-}
+// APIServerPort is the expected default APIServerPort on the control plane node(s)
+// https://kubernetes.io/docs/reference/access-authn-authz/controlling-access/#api-server-ports-and-ips
+const APIServerPort = 6443

@@ -14,26 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package build implements the `build` command
-package build
-
-import (
-	"github.com/spf13/cobra"
-
-	"k8s.io/test-infra/kind/cmd/kind/cmd/build/base"
-	"k8s.io/test-infra/kind/cmd/kind/cmd/build/node"
-)
-
-// NewCommand returns a new cobra.Command for building
-func NewCommand() *cobra.Command {
-	cmd := &cobra.Command{
-		// TODO(bentheelder): more detailed usage
-		Use:   "build",
-		Short: "build",
-		Long:  "build",
-	}
-	// add subcommands
-	cmd.AddCommand(base.NewCommand())
-	cmd.AddCommand(node.NewCommand())
-	return cmd
-}
+// Package kube implements functionality to build Kubernetes for the purposes
+// of installing into the kind node image
+package kube

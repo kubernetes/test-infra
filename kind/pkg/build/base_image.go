@@ -29,20 +29,20 @@ import (
 	"k8s.io/test-infra/kind/pkg/exec"
 )
 
-// NodeImageBuildContext is used to build the kind node image, and contains
+// BaseImageBuildContext is used to build the kind node base image, and contains
 // build configuration
-type NodeImageBuildContext struct {
+type BaseImageBuildContext struct {
 	SourceDir string
 	ImageTag  string
 	GoCmd     string
 	Arch      string
 }
 
-// NewNodeImageBuildContext creates a new NodeImageBuildContext with
+// NewBaseImageBuildContext creates a new BaseImageBuildContext with
 // default configuration
-func NewNodeImageBuildContext() *NodeImageBuildContext {
-	return &NodeImageBuildContext{
-		ImageTag: "kind-node",
+func NewBaseImageBuildContext() *BaseImageBuildContext {
+	return &BaseImageBuildContext{
+		ImageTag: "kind-base",
 		GoCmd:    "go",
 		Arch:     "amd64",
 	}
@@ -50,9 +50,9 @@ func NewNodeImageBuildContext() *NodeImageBuildContext {
 
 // Build builds the cluster node image, the sourcedir must be set on
 // the NodeImageBuildContext
-func (c *NodeImageBuildContext) Build() (err error) {
+func (c *BaseImageBuildContext) Build() (err error) {
 	// create tempdir to build in
-	tmpDir, err := ioutil.TempDir("", "kind-build")
+	tmpDir, err := ioutil.TempDir("", "kind-base-image")
 	if err != nil {
 		return err
 	}
@@ -63,11 +63,11 @@ func (c *NodeImageBuildContext) Build() (err error) {
 	buildDir := tmpDir
 	if c.SourceDir == "" {
 		// populate with image sources
-		err = sources.RestoreAssets(buildDir, "images/node")
+		err = sources.RestoreAssets(buildDir, "images/base")
 		if err != nil {
 			return err
 		}
-		buildDir = filepath.Join(buildDir, "images", "node")
+		buildDir = filepath.Join(buildDir, "images", "base")
 
 	} else {
 		err = copyDir(c.SourceDir, buildDir)
@@ -77,7 +77,7 @@ func (c *NodeImageBuildContext) Build() (err error) {
 		}
 	}
 
-	glog.Infof("Building node image in: %s", buildDir)
+	glog.Infof("Building base image in: %s", buildDir)
 
 	// build the entrypoint binary first
 	if err := c.buildEntrypoint(buildDir); err != nil {
@@ -89,7 +89,7 @@ func (c *NodeImageBuildContext) Build() (err error) {
 }
 
 // builds the entrypoint binary
-func (c *NodeImageBuildContext) buildEntrypoint(dir string) error {
+func (c *BaseImageBuildContext) buildEntrypoint(dir string) error {
 	// NOTE: this binary only uses the go1 stdlib, and is a single file
 	entrypointSrc := filepath.Join(dir, "entrypoint", "main.go")
 	entrypointDest := filepath.Join(dir, "entrypoint", "entrypoint")
@@ -110,7 +110,7 @@ func (c *NodeImageBuildContext) buildEntrypoint(dir string) error {
 	return nil
 }
 
-func (c *NodeImageBuildContext) buildImage(dir string) error {
+func (c *BaseImageBuildContext) buildImage(dir string) error {
 	// build the image, tagged as tagImageAs, using the our tempdir as the context
 	cmd := exec.Command("docker", "build", "-t", c.ImageTag, dir)
 	cmd.Debug = true
@@ -124,14 +124,4 @@ func (c *NodeImageBuildContext) buildImage(dir string) error {
 	}
 	glog.Info("Docker build completed.")
 	return nil
-}
-
-// TODO(bentheelder): vendor a portable go library for this and use instead
-func copyDir(src, dst string) error {
-	src = filepath.Clean(src) + string(filepath.Separator) + "."
-	dst = filepath.Clean(dst)
-	cmd := exec.Command("cp", "-r", src, dst)
-	cmd.Debug = true
-	cmd.InheritOutput = true
-	return cmd.Run()
 }

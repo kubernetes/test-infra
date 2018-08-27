@@ -51,7 +51,7 @@ filegroup(
         "//kettle:all-srcs",
         "//kind/cmd/kind:all-srcs",
         "//kind/hack:all-srcs",
-        "//kind/images/node:all-srcs",
+        "//kind/images:all-srcs",
         "//kind/pkg/build:all-srcs",
         "//kind/pkg/cluster:all-srcs",
         "//kind/pkg/exec:all-srcs",
