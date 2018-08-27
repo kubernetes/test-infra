@@ -18,7 +18,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180827-b09cde7d7-master
 
 - interval: 6h
   name: ci-kubernetes-gce-conformance-latest-1-8
@@ -39,7 +39,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180827-b09cde7d7-master
 
 - interval: 6h
   name: ci-kubernetes-gce-conformance-latest-1-9
@@ -60,7 +60,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180827-b09cde7d7-master
 
 - interval: 6h
   name: ci-kubernetes-gce-conformance-latest-1-10
@@ -81,7 +81,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180827-b09cde7d7-master
 
 - interval: 6h
   name: ci-kubernetes-gce-conformance-latest-1-11
@@ -102,7 +102,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180827-b09cde7d7-master
 
 - interval: 6h
   name: ci-kubernetes-gce-conformance-latest-1-12
@@ -123,7 +123,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180827-b09cde7d7-master
 
 - interval: 6h
   name: ci-kubernetes-gce-conformance-stable-1-8
@@ -165,7 +165,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180827-b09cde7d7-master
 
 - interval: 6h
   name: ci-kubernetes-gce-conformance-stable-1-10
@@ -186,7 +186,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180827-b09cde7d7-master
 
 - interval: 6h
   name: ci-kubernetes-gce-conformance-stable-1-11
@@ -207,4 +207,4 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180827-b09cde7d7-master
