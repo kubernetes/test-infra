@@ -362,6 +362,7 @@ plugins:
   - approve
   - blockade
   - blunderbuss
+  - cherry-pick-unapproved
   - docs-no-retest
   - milestone
   - milestonestatus
