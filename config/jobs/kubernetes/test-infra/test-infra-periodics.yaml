@@ -7,7 +7,7 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180730-8b7ab3104-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180827-b09cde7d7-experimental
       args:
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/test-infra=master"
