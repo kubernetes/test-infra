@@ -31,8 +31,8 @@ import (
 const pluginName = "label"
 
 var (
-	labelRegex              = regexp.MustCompile(`(?m)^/(area|committee|kind|priority|sig|triage|wg)\s*(.*)$`)
-	removeLabelRegex        = regexp.MustCompile(`(?m)^/remove-(area|committee|kind|priority|sig|triage|wg)\s*(.*)$`)
+	labelRegexp             = `(?m)^/(%s)\s*(.*)$`
+	removeLabelRegexp       = `(?m)^/remove-(%s)\s*(.*)$`
 	customLabelRegex        = regexp.MustCompile(`(?m)^/label\s*(.*)$`)
 	customRemoveLabelRegex  = regexp.MustCompile(`(?m)^/remove-label\s*(.*)$`)
 	nonExistentLabelOnIssue = "Those labels are not set on the issue: `%v`"
@@ -43,9 +43,27 @@ func init() {
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
-	// The Config field is omitted because this plugin is not configurable.
+	labelConfig := map[string]string{}
+	for _, repo := range enabledRepos {
+		parts := strings.Split(repo, "/")
+		if len(parts) != 2 {
+			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", repo)
+		}
+		opts := optionsForRepo(config, parts[0], parts[1])
+
+		var prefixConfigMsg, additionalLabelsConfigMsg string
+		if opts.Prefixes != nil {
+			prefixConfigMsg = fmt.Sprintf("The label plugin also includes commands based on %v prefixes.", opts.Prefixes)
+		}
+		if opts.AdditionalLabels != nil {
+			additionalLabelsConfigMsg = fmt.Sprintf("%v labels can be used with the `/[remove-]label` command.", opts.AdditionalLabels)
+		}
+		labelConfig[repo] = prefixConfigMsg + additionalLabelsConfigMsg
+	}
+
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The label plugin provides commands that add or remove certain types of labels. Labels of the following types can be manipulated: 'area/*', 'committee/*', 'kind/*', 'priority/*', 'sig/*', 'triage/*', and 'wg/*'. More labels can be configured to be used via the /label command.",
+		Config:      labelConfig,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/[remove-](area|committee|kind|priority|sig|triage|wg|label) <target>",
@@ -58,11 +76,16 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 }
 
 func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
-	var labels []string
-	if pc.PluginConfig.Label != nil {
-		labels = pc.PluginConfig.Label.AdditionalLabels
+	opts := optionsForRepo(pc.PluginConfig, e.Repo.Owner.Login, e.Repo.Name)
+
+	var additionalLabels, prefixes = []string{}, []string{}
+	if opts.AdditionalLabels != nil {
+		additionalLabels = opts.AdditionalLabels
 	}
-	return handle(pc.GitHubClient, pc.Logger, labels, &e)
+	if opts.Prefixes != nil {
+		prefixes = opts.Prefixes
+	}
+	return handle(pc.GitHubClient, pc.Logger, additionalLabels, prefixes, &e)
 }
 
 type githubClient interface {
@@ -105,7 +128,47 @@ func getLabelsFromGenericMatches(matches [][]string, additionalLabels []string) 
 	return labels
 }
 
-func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *github.GenericCommentEvent) error {
+// optionsForRepo gets the plugins.Label struct that is applicable to the indicated repo.
+func optionsForRepo(config *plugins.Configuration, org, repo string) *plugins.Label {
+	fullName := fmt.Sprintf("%s/%s", org, repo)
+	for i := range config.Label {
+		if !strInSlice(org, config.Label[i].Repos) && !strInSlice(fullName, config.Label[i].Repos) {
+			continue
+		}
+		return &config.Label[i]
+	}
+	return &plugins.Label{}
+}
+func strInSlice(str string, slice []string) bool {
+	for _, elem := range slice {
+		if elem == str {
+			return true
+		}
+	}
+	return false
+}
+
+func handle(gc githubClient, log *logrus.Entry, additionalLabels, prefixes []string, e *github.GenericCommentEvent) error {
+	// arrange prefixes in the format "area|kind|priority|..."
+	// so that they can be used to create labelRegex and removeLabelRegex
+	var labelPrefixes string
+	for k, prefix := range prefixes {
+		if k == 0 {
+			labelPrefixes = prefix
+			continue
+		}
+		labelPrefixes = labelPrefixes + "|" + prefix
+	}
+
+	labelRegex, err := regexp.Compile(fmt.Sprintf(labelRegexp, labelPrefixes))
+	if err != nil {
+		return err
+	}
+	removeLabelRegex, err := regexp.Compile(fmt.Sprintf(removeLabelRegexp, labelPrefixes))
+	if err != nil {
+		return err
+	}
+
 	labelMatches := labelRegex.FindAllStringSubmatch(e.Body, -1)
 	removeLabelMatches := removeLabelRegex.FindAllStringSubmatch(e.Body, -1)
 	customLabelMatches := customLabelRegex.FindAllStringSubmatch(e.Body, -1)

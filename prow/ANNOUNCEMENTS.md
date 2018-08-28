@@ -23,6 +23,11 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *August 29, 2018* `label` plugin will now be a slice of label configs.
+ It will now support organization and repository-scoped configs and
+ custom label prefixes.
+ `area`, `kind`, `priority` and `triage` are the default prefixes.
+ Prefixes specified in the label config will replace these default prefixes.
  - *July 9, 2018* `milestone` format has changed from
     ```yaml
     milestone:

@@ -27,11 +27,6 @@ import (
 	"k8s.io/test-infra/prow/github/fakegithub"
 )
 
-const (
-	orgMember    = "Alice"
-	nonOrgMember = "Bob"
-)
-
 func formatLabels(labels ...string) []string {
 	r := []string{}
 	for _, l := range labels {
@@ -47,8 +42,8 @@ func TestLabel(t *testing.T) {
 	type testCase struct {
 		name                  string
 		body                  string
-		commenter             string
 		extraLabels           []string
+		prefixes              []string
 		expectedNewLabels     []string
 		expectedRemovedLabels []string
 		expectedBotComment    bool
@@ -63,7 +58,6 @@ func TestLabel(t *testing.T) {
 			expectedRemovedLabels: []string{},
 			repoLabels:            []string{},
 			issueLabels:           []string{},
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Empty Area",
@@ -72,7 +66,6 @@ func TestLabel(t *testing.T) {
 			expectedRemovedLabels: []string{},
 			repoLabels:            []string{"area/infra"},
 			issueLabels:           []string{"area/infra"},
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Add Single Area Label",
@@ -81,7 +74,6 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{},
 			expectedNewLabels:     formatLabels("area/infra"),
 			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Add Single Area Label when already present on Issue",
@@ -90,7 +82,6 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{"area/infra"},
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Add Single Priority Label",
@@ -99,7 +90,6 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{},
 			expectedNewLabels:     formatLabels("priority/critical"),
 			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Add Single Kind Label",
@@ -108,7 +98,6 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{},
 			expectedNewLabels:     formatLabels("kind/bug"),
 			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Add Single Triage Label",
@@ -117,7 +106,6 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{"area/infra"},
 			expectedNewLabels:     formatLabels("triage/needs-information"),
 			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Adding Labels is Case Insensitive",
@@ -126,7 +114,6 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{},
 			expectedNewLabels:     formatLabels("kind/bug"),
 			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Adding Labels is Case Insensitive",
@@ -135,7 +122,6 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{},
 			expectedNewLabels:     formatLabels("kind/BUG"),
 			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Can't Add Non Existent Label",
@@ -144,7 +130,6 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{},
 			expectedNewLabels:     formatLabels(),
 			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Non Org Member Can't Add",
@@ -153,7 +138,6 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{},
 			expectedNewLabels:     formatLabels("area/infra"),
 			expectedRemovedLabels: []string{},
-			commenter:             nonOrgMember,
 		},
 		{
 			name:                  "Command must start at the beginning of the line",
@@ -162,7 +146,6 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{},
 			expectedNewLabels:     formatLabels(),
 			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Can't Add Labels Non Existing Labels",
@@ -171,7 +154,6 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{},
 			expectedNewLabels:     formatLabels(),
 			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Add Multiple Area Labels",
@@ -180,7 +162,6 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{},
 			expectedNewLabels:     formatLabels("area/api", "area/infra"),
 			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Add Multiple Area Labels one already present on Issue",
@@ -189,7 +170,6 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{"area/api"},
 			expectedNewLabels:     formatLabels("area/infra"),
 			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Add Multiple Priority Labels",
@@ -198,7 +178,6 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{},
 			expectedNewLabels:     formatLabels("priority/critical", "priority/important"),
 			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Label Prefix Must Match Command (Area-Priority Mismatch)",
@@ -207,7 +186,6 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{},
 			expectedNewLabels:     formatLabels(),
 			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Label Prefix Must Match Command (Priority-Area Mismatch)",
@@ -216,7 +194,6 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{},
 			expectedNewLabels:     formatLabels(),
 			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Add Multiple Area Labels (Some Valid)",
@@ -225,16 +202,15 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{},
 			expectedNewLabels:     formatLabels("area/infra"),
 			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Add Multiple Committee Labels (Some Valid)",
 			body:                  "/committee steering calamity",
+			prefixes:              []string{"committee"},
 			repoLabels:            []string{"committee/conduct", "committee/steering"},
 			issueLabels:           []string{},
 			expectedNewLabels:     formatLabels("committee/steering"),
 			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Add Multiple Types of Labels Different Lines",
@@ -243,7 +219,6 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{},
 			expectedNewLabels:     formatLabels("priority/urgent", "area/infra"),
 			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Remove Area Label when no such Label on Repo",
@@ -252,7 +227,6 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{},
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
 			expectedBotComment:    true,
 		},
 		{
@@ -262,7 +236,6 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{},
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
 			expectedBotComment:    true,
 		},
 		{
@@ -272,16 +245,15 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{"area/infra"},
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("area/infra"),
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Remove Committee Label",
 			body:                  "/remove-committee infinite-monkeys",
+			prefixes:              []string{"committee"},
 			repoLabels:            []string{"area/infra", "sig/testing", "committee/infinite-monkeys"},
 			issueLabels:           []string{"area/infra", "sig/testing", "committee/infinite-monkeys"},
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("committee/infinite-monkeys"),
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Remove Kind Label",
@@ -290,7 +262,6 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{"area/infra", "priority/high", "kind/api-server"},
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("kind/api-server"),
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Remove Priority Label",
@@ -299,25 +270,24 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{"area/infra", "priority/high"},
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("priority/high"),
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Remove SIG Label",
 			body:                  "/remove-sig testing",
+			prefixes:              []string{"sig"},
 			repoLabels:            []string{"area/infra", "sig/testing"},
 			issueLabels:           []string{"area/infra", "sig/testing"},
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("sig/testing"),
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Remove WG Policy",
 			body:                  "/remove-wg policy",
+			prefixes:              []string{"wg"},
 			repoLabels:            []string{"area/infra", "wg/policy"},
 			issueLabels:           []string{"area/infra", "wg/policy"},
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("wg/policy"),
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Remove Triage Label",
@@ -326,7 +296,6 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{"area/infra", "triage/needs-information"},
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("triage/needs-information"),
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Remove Multiple Labels",
@@ -335,7 +304,6 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{"area/infra", "priority/high", "priority/low", "kind/api-server"},
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("priority/low", "priority/high", "kind/api-server", "area/infra"),
-			commenter:             orgMember,
 			expectedBotComment:    true,
 		},
 		{
@@ -345,7 +313,6 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{"area/infra"},
 			expectedNewLabels:     formatLabels("area/test"),
 			expectedRemovedLabels: formatLabels("area/infra"),
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Add and Remove the same Label",
@@ -354,7 +321,6 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{"area/infra"},
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("area/infra"),
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Multiple Add and Delete Labels",
@@ -363,7 +329,6 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{"area/ruby", "kind/srv", "priority/l", "priority/m"},
 			expectedNewLabels:     formatLabels("area/go", "kind/cli", "priority/h"),
 			expectedRemovedLabels: formatLabels("area/ruby", "kind/srv", "priority/l", "priority/m"),
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Do nothing with empty /label command",
@@ -373,7 +338,6 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{},
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Do nothing with empty /remove-label command",
@@ -383,7 +347,6 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{},
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Add custom label",
@@ -393,7 +356,6 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{},
 			expectedNewLabels:     formatLabels("orchestrator/foo"),
 			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Cannot add missing custom label",
@@ -403,7 +365,6 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{},
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Remove custom label",
@@ -413,7 +374,6 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{"orchestrator/foo"},
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("orchestrator/foo"),
-			commenter:             orgMember,
 		},
 		{
 			name:                  "Cannot remove missing custom label",
@@ -423,7 +383,83 @@ func TestLabel(t *testing.T) {
 			issueLabels:           []string{"orchestrator/foo"},
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
+		},
+		{
+			name:                  "Do nothing with empty custom prefixed label",
+			body:                  "/orchestrator",
+			prefixes:              []string{"orchestrator"},
+			extraLabels:           []string{},
+			repoLabels:            []string{"orchestrator/foo"},
+			issueLabels:           []string{},
+			expectedNewLabels:     []string{},
+			expectedRemovedLabels: []string{},
+		},
+		{
+			name:                  "Do nothing with empty remove custom prefixed label",
+			body:                  "/remove-orchestrator",
+			prefixes:              []string{"orchestrator"},
+			extraLabels:           []string{},
+			repoLabels:            []string{"orchestrator/foo"},
+			issueLabels:           []string{},
+			expectedNewLabels:     []string{},
+			expectedRemovedLabels: []string{},
+		},
+		{
+			name:                  "Add custom prefixed label",
+			body:                  "/orchestrator foo",
+			prefixes:              []string{"orchestrator"},
+			extraLabels:           []string{},
+			repoLabels:            []string{"orchestrator/foo"},
+			issueLabels:           []string{},
+			expectedNewLabels:     formatLabels("orchestrator/foo"),
+			expectedRemovedLabels: []string{},
+		},
+		{
+			name:                  "Add already existing custom prefixed label",
+			body:                  "/orchestrator foo",
+			prefixes:              []string{"orchestrator"},
+			repoLabels:            []string{"orchestrator/foo"},
+			issueLabels:           []string{"orchestrator/foo"},
+			expectedNewLabels:     []string{},
+			expectedRemovedLabels: []string{},
+		},
+		{
+			name:                  "Add non-existent custom prefixed label",
+			body:                  "/orchestrator bar",
+			prefixes:              []string{"orchestrator"},
+			repoLabels:            []string{"orchestrator/foo"},
+			issueLabels:           []string{},
+			expectedNewLabels:     []string{},
+			expectedRemovedLabels: []string{},
+		},
+		{
+			name:                  "Remove custom prefixed label",
+			body:                  "/remove-orchestrator foo",
+			prefixes:              []string{"orchestrator"},
+			repoLabels:            []string{"orchestrator/foo", "orchestrator/bar"},
+			issueLabels:           []string{"orchestrator/foo", "orchestrator/bar"},
+			expectedNewLabels:     []string{},
+			expectedRemovedLabels: formatLabels("orchestrator/foo"),
+		},
+		{
+			name:                  "Remove already missing custom prefixed label",
+			body:                  "/remove-orchestrator foo",
+			prefixes:              []string{"orchestrator"},
+			repoLabels:            []string{"orchestrator/foo", "orchestrator/bar"},
+			issueLabels:           []string{"orchestrator/bar"},
+			expectedNewLabels:     []string{},
+			expectedRemovedLabels: []string{},
+			expectedBotComment:    true,
+		},
+		{
+			name:                  "Remove non-existent custom prefixed label",
+			body:                  "/remove-orchestrator jar",
+			prefixes:              []string{"orchestrator"},
+			repoLabels:            []string{"orchestrator/foo", "orchestrator/bar"},
+			issueLabels:           []string{"orchestrator/bar"},
+			expectedNewLabels:     []string{},
+			expectedRemovedLabels: []string{},
+			expectedBotComment:    true,
 		},
 	}
 
@@ -434,7 +470,6 @@ func TestLabel(t *testing.T) {
 			Issues:         make([]github.Issue, 1),
 			IssueComments:  make(map[int][]github.IssueComment),
 			ExistingLabels: tc.repoLabels,
-			OrgMembers:     map[string][]string{"org": {orgMember}},
 			LabelsAdded:    []string{},
 			LabelsRemoved:  []string{},
 		}
@@ -447,9 +482,13 @@ func TestLabel(t *testing.T) {
 			Body:   tc.body,
 			Number: 1,
 			Repo:   github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
-			User:   github.User{Login: tc.commenter},
+			User:   github.User{Login: "Alice"},
 		}
-		err := handle(fakeClient, logrus.WithField("plugin", pluginName), tc.extraLabels, e)
+		// Add default prefixes if none present
+		if tc.prefixes == nil {
+			tc.prefixes = []string{"area", "kind", "priority", "triage"}
+		}
+		err := handle(fakeClient, logrus.WithField("plugin", pluginName), tc.extraLabels, tc.prefixes, e)
 		if err != nil {
 			t.Errorf("didn't expect error from label test: %v", err)
 			continue

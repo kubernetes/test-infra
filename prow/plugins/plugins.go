@@ -167,7 +167,7 @@ type Configuration struct {
 	Cat                  Cat                  `json:"cat,omitempty"`
 	ConfigUpdater        ConfigUpdater        `json:"config_updater,omitempty"`
 	Heart                Heart                `json:"heart,omitempty"`
-	Label                *Label               `json:"label,omitempty"`
+	Label                []Label              `json:"label,omitempty"`
 	Lgtm                 []Lgtm               `json:"lgtm,omitempty"`
 	RepoMilestone        map[string]Milestone `json:"repo_milestone,omitempty"`
 	RequireSIG           RequireSIG           `json:"requiresig,omitempty"`
@@ -363,10 +363,21 @@ type Cat struct {
 	KeyPath string `json:"key_path,omitempty"`
 }
 
+// Label is the config for the label plugin.
 type Label struct {
+	// Repos is either of the form org/repos or just org.
+	// The AdditionalLabels and Prefixes values are applicable
+	// to these repos.
+	Repos []string `json:"repos,omitempty"`
 	// AdditionalLabels is a set of additional labels enabled for use
-	// on top of the existing "kind/*", "priority/*", and "area/*" labels.
-	AdditionalLabels []string `json:"additional_labels"`
+	// on top of the existing "kind/*", "priority/*", "area/*"
+	// and "triage/*" labels.
+	// Labels can be used with `/[remove-]label <additionalLabel>` commands.
+	AdditionalLabels []string `json:"additional_labels,omitempty"`
+	// Prefixes is a set of label prefixes which replaces the existing
+	// "area", "kind", "priority" and "triage" label prefixes.
+	// Labels can be used with `/[remove-]<prefix> <target>` commands.
+	Prefixes []string `json:"prefixes,omitempty"`
 }
 
 type Trigger struct {
@@ -541,6 +552,13 @@ func (c *Configuration) setDefaults() {
 This PR is not for the master branch but does not have the ` + "`cherry-pick-approved`" + `  label. Adding the ` + "`do-not-merge/cherry-pick-not-approved`" + `  label.
 To approve the cherry-pick, please assign the patch release manager for the release branch by writing ` + "`/assign @username`" + ` in a comment when ready.
 The list of patch release managers for each release can be found [here](https://git.k8s.io/sig-release/release-managers.md).`
+	}
+	if c.Label != nil {
+		for _, labelConfig := range c.Label {
+			if labelConfig.Prefixes == nil {
+				labelConfig.Prefixes = []string{"area", "kind", "priority", "triage"}
+			}
+		}
 	}
 }
 

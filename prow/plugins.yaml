@@ -199,6 +199,25 @@ config_updater:
     config/jobs/**/*.yaml:
       name: job-config
 
+label:
+- repos:
+  - client-go/unofficial-docs
+  - containerd/cri
+  - kubeflow
+  - kubernetes
+  - kubernetes-client
+  - kubernetes-csi
+  - kubernetes-incubator
+  - kubernetes-sigs
+  prefixes:
+    - area
+    - committee
+    - kind
+    - priority
+    - sig
+    - triage
+    - wg
+
 plugins:
   bazelbuild/rules_k8s:
   - approve  # Allow OWNERS to /approve
