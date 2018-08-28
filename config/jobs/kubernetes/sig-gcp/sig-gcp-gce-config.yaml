@@ -42,6 +42,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f
+      - --ginkgo-parallel=30
       - --provider=gce
       - --runtime-config=api/all=true
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
