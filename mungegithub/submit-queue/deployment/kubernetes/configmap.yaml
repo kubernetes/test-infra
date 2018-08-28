@@ -94,7 +94,7 @@ nonblocking-jobs: "\
   ci-kubernetes-soak-gke-test,\
   ci-kubernetes-integration-master,\
   ci-kubernetes-verify-master"
-do-not-merge-milestones: ""
+do-not-merge-milestones: "v1.13,v1.14,next-candidate,NO-MILESTONE"
 additional-required-labels: ""
 admin-port: 9999
 chart-url: https://storage.googleapis.com/kubernetes-test-history/k8s-queue-health.svg
