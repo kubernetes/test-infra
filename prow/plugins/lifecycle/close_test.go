@@ -47,19 +47,11 @@ func (c *fakeClientClose) ClosePR(owner, repo string, number int) error {
 	return nil
 }
 
-func (c *fakeClientClose) IsMember(owner, login string) (bool, error) {
-	if login == "non-member" {
-		return false, nil
+func (c *fakeClientClose) IsCollaborator(owner, repo, login string) (bool, error) {
+	if login == "collaborator" {
+		return true, nil
 	}
-	return true, nil
-}
-
-func (c *fakeClientClose) AssignIssue(owner, repo string, number int, assignees []string) error {
-	if assignees[0] == "non-member" || assignees[0] == "non-owner-assign-error" {
-		return errors.New("Failed to assign")
-	}
-	c.AssigneesAdded = append(c.AssigneesAdded, assignees...)
-	return nil
+	return false, nil
 }
 
 func (c *fakeClientClose) GetIssueLabels(owner, repo string, number int) ([]github.Label, error) {
@@ -83,14 +75,13 @@ func TestCloseComment(t *testing.T) {
 		labels        []string
 		shouldClose   bool
 		shouldComment bool
-		shouldAssign  bool
 	}{
 		{
 			name:          "non-close comment",
 			action:        github.GenericCommentActionCreated,
 			state:         "open",
 			body:          "uh oh",
-			commenter:     "o",
+			commenter:     "random-person",
 			shouldClose:   false,
 			shouldComment: false,
 		},
@@ -99,34 +90,34 @@ func TestCloseComment(t *testing.T) {
 			action:        github.GenericCommentActionCreated,
 			state:         "open",
 			body:          "/close",
-			commenter:     "a",
+			commenter:     "author",
 			shouldClose:   true,
-			shouldComment: false,
+			shouldComment: true,
 		},
 		{
 			name:          "close by author, trailing space.",
 			action:        github.GenericCommentActionCreated,
 			state:         "open",
 			body:          "/close \r",
-			commenter:     "a",
+			commenter:     "author",
 			shouldClose:   true,
-			shouldComment: false,
+			shouldComment: true,
 		},
 		{
-			name:          "close by reviewer",
+			name:          "close by collaborator",
 			action:        github.GenericCommentActionCreated,
 			state:         "open",
 			body:          "/close",
-			commenter:     "r1",
+			commenter:     "collaborator",
 			shouldClose:   true,
-			shouldComment: false,
+			shouldComment: true,
 		},
 		{
 			name:          "close edited by author",
 			action:        github.GenericCommentActionEdited,
 			state:         "open",
 			body:          "/close",
-			commenter:     "a",
+			commenter:     "author",
 			shouldClose:   false,
 			shouldComment: false,
 		},
@@ -135,68 +126,45 @@ func TestCloseComment(t *testing.T) {
 			action:        github.GenericCommentActionCreated,
 			state:         "closed",
 			body:          "/close",
-			commenter:     "a",
+			commenter:     "author",
 			shouldClose:   false,
 			shouldComment: false,
 		},
 		{
-			name:          "close by other person, non-member cannot close",
+			name:          "close by non-collaborator on active issue, cannot close",
 			action:        github.GenericCommentActionCreated,
 			state:         "open",
 			body:          "/close",
-			commenter:     "non-member",
+			commenter:     "non-collaborator",
 			shouldClose:   false,
 			shouldComment: true,
-			shouldAssign:  false,
 		},
 		{
-			name:          "close by other person, failed to assign",
+			name:          "close by non-collaborator on stale issue",
 			action:        github.GenericCommentActionCreated,
 			state:         "open",
 			body:          "/close",
-			commenter:     "non-owner-assign-error",
-			shouldClose:   false,
-			shouldComment: true,
-			shouldAssign:  false,
-		},
-		{
-			name:          "close by other person, assign and close",
-			action:        github.GenericCommentActionCreated,
-			state:         "open",
-			body:          "/close",
-			commenter:     "non-owner",
-			shouldClose:   true,
-			shouldComment: false,
-			shouldAssign:  true,
-		},
-		{
-			name:          "close by other person, stale issue",
-			action:        github.GenericCommentActionCreated,
-			state:         "open",
-			body:          "/close",
-			commenter:     "non-member",
+			commenter:     "non-collaborator",
 			labels:        []string{"lifecycle/stale"},
 			shouldClose:   true,
-			shouldComment: false,
-			shouldAssign:  false,
+			shouldComment: true,
 		},
 		{
-			name:          "close by other person, rotten issue",
+			name:          "close by non-collaborator on rotten issue",
 			action:        github.GenericCommentActionCreated,
 			state:         "open",
 			body:          "/close",
-			commenter:     "non-member",
+			commenter:     "non-collaborator",
 			labels:        []string{"lifecycle/rotten"},
 			shouldClose:   true,
-			shouldComment: false,
-			shouldAssign:  false,
+			shouldComment: true,
 		},
 		{
-			name:          "cannot close stale issue by other person when list issue fails",
+			name:          "cannot close stale issue by non-collaborator when list issue fails",
 			action:        github.GenericCommentActionCreated,
 			state:         "open",
 			body:          "/close",
-			commenter:     "non-member",
+			commenter:     "non-collaborator",
 			labels:        []string{"error"},
 			shouldClose:   false,
 			shouldComment: true,
@@ -210,8 +178,7 @@ func TestCloseComment(t *testing.T) {
 			Body:        tc.body,
 			User:        github.User{Login: tc.commenter},
 			Number:      5,
-			Assignees:   []github.User{{Login: "a"}, {Login: "r1"}, {Login: "r2"}},
-			IssueAuthor: github.User{Login: "a"},
+			IssueAuthor: github.User{Login: "author"},
 		}
 		if err := handleClose(fc, logrus.WithField("plugin", "fake-close"), e); err != nil {
 			t.Errorf("For case %s, didn't expect error from handle: %v", tc.name, err)
@@ -226,11 +193,6 @@ func TestCloseComment(t *testing.T) {
 			t.Errorf("For case %s, should have commented but didn't.", tc.name)
 		} else if !tc.shouldComment && fc.commented {
 			t.Errorf("For case %s, should not have commented but did.", tc.name)
-		}
-		if tc.shouldAssign && len(fc.AssigneesAdded) != 1 {
-			t.Errorf("For case %s, should have assigned but didn't.", tc.name)
-		} else if !tc.shouldAssign && len(fc.AssigneesAdded) == 1 {
-			t.Errorf("For case %s, should not have assigned but did.", tc.name)
 		}
 	}
 }
