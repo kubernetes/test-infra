@@ -21,6 +21,7 @@ type postSubmit struct {
 	Ctx              context.Context
 }
 
+//NewPostSubmit creates a new postSubmit object
 func NewPostSubmit(ctx context.Context, client StorageClientIntf,
 	bucket, prowJobName, artifactsDirName, covProfileName string) (p *postSubmit) {
 

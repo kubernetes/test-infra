@@ -1,17 +1,35 @@
 package githubUtil
 
 import (
+	"context"
+	"os"
 	"path"
 	"testing"
 
+	"github.com/sirupsen/logrus"
+
 	"k8s.io/test-infra/coverage/githubUtil/githubFakes"
+	"k8s.io/test-infra/coverage/githubUtil/githubPR"
 	"k8s.io/test-infra/coverage/test"
-	"os"
 )
+
+func fakeRepoData() *githubPR.GithubPr {
+	ctx := context.Background()
+	logrus.Infof("creating fake repo data \n")
+
+	return &githubPR.GithubPr{
+		RepoOwner:     "fakeRepoOwner",
+		RepoName:      "fakeRepoName",
+		Pr:            7,
+		RobotUserName: "fakeCovbot",
+		GithubClient:  githubFakes.FakeGithubClient(),
+		Ctx:           ctx,
+	}
+}
 
 func TestGetConcernedFiles(t *testing.T) {
 	if os.Getenv("GOPATH") != "" {
-		data := githubFakes.FakeRepoData()
+		data := fakeRepoData()
 		actualConcernMap := GetConcernedFiles(data, test.ProjDir())
 		t.Logf("concerned files for PR %v:%v", data.Pr, actualConcernMap)
 		expectedConcerns := test.MakeStringSet()

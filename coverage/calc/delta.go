@@ -36,6 +36,7 @@ func (inc incremental) oldCovForCovbot() string {
 	return inc.base.percentage()
 }
 
+//String represent the content of the incremental struct in human readable way
 func (inc incremental) String() string {
 	return fmt.Sprintf("<%s> (%d / %d) %s ->(%d / %d) %s", inc.base.Name(),
 		inc.base.nCoveredStmts, inc.base.nAllStmts, inc.base.percentage(),
@@ -69,7 +70,7 @@ func sorted(m map[string]coverage) (result []coverage) {
 func NewGroupChanges(baseList *CoverageList, newList *CoverageList) *groupChanges {
 	var added, unchanged []coverage
 	var changed []incremental
-	baseFilesMap := baseList.Map()
+	baseFilesMap := baseList.toMap()
 	for _, newCov := range newList.group {
 		newCovName := newCov.Name()
 		baseCov, ok := baseFilesMap[newCovName]
@@ -84,12 +85,12 @@ func NewGroupChanges(baseList *CoverageList, newList *CoverageList) *groupChange
 		// in other words, the files that is deleted in the new group
 		delete(baseFilesMap, newCovName)
 
-		incremental := incremental{baseCov, newCov}
-		delta := incremental.delta()
+		incr := incremental{baseCov, newCov}
+		delta := incr.delta()
 		if delta == 0 && !isNewFile {
 			unchanged = append(unchanged, newCov)
 		} else {
-			changed = append(changed, incremental)
+			changed = append(changed, incr)
 		}
 	}
 

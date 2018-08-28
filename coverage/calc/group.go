@@ -28,6 +28,7 @@ func newCoverageList(name string, concernedFiles *map[string]bool,
 	}
 }
 
+//CovThresInt gets coverage threshold (as a integer between 0 to 100)
 func (g *CoverageList) CovThresInt() int {
 	return g.covThresholdInt
 }
@@ -112,9 +113,9 @@ func (g *CoverageList) Subset(prefix string) *CoverageList {
 	return s
 }
 
-// Map returns maps the file name to its coverage for faster retrieval
+// toMap returns maps the file name to its coverage for faster retrieval
 // & membership check
-func (g *CoverageList) Map() map[string]coverage {
+func (g *CoverageList) toMap() map[string]coverage {
 	m := make(map[string]coverage)
 	for _, c := range g.group {
 		m[c.Name()] = c

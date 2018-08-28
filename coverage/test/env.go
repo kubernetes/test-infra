@@ -12,6 +12,7 @@ const projectPathLessTestSrc = "__main__/coverage"
 
 //const projectPathLessGoPath = ""
 
+//ProjDir returns the absolute project directory in os
 func ProjDir() string {
 	testSrcDir := os.Getenv("TEST_SRCDIR")
 	if testSrcDir != "" {

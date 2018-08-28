@@ -9,7 +9,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/coverage/git"
-	"k8s.io/test-infra/coverage/githubUtil/githubPr"
+	"k8s.io/test-infra/coverage/githubUtil/githubPR"
 	"k8s.io/test-infra/coverage/logUtil"
 )
 
@@ -22,7 +22,7 @@ func sourceFilePath(path string) string {
 }
 
 // GetConcernedFiles gets the list of files in a commit, excluding those to be ignored by coverage
-func GetConcernedFiles(data *githubPr.GithubPr, filePathPrefix string) *map[string]bool {
+func GetConcernedFiles(data *githubPR.GithubPr, filePathPrefix string) *map[string]bool {
 	listOptions := &github.ListOptions{Page: 1}
 
 	fmt.Println()

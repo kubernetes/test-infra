@@ -24,7 +24,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/coverage/artifacts"
 	"k8s.io/test-infra/coverage/gcs"
-	"k8s.io/test-infra/coverage/githubUtil/githubPr"
+	"k8s.io/test-infra/coverage/githubUtil/githubPR"
 	"k8s.io/test-infra/coverage/logUtil"
 	"k8s.io/test-infra/coverage/testgrid"
 	"k8s.io/test-infra/coverage/workflows"
@@ -94,7 +94,7 @@ func main() {
 				buildStr, err)
 		}
 
-		prData := githubPr.New(*githubTokenPath, repoOwner, repoName, pr, *covbotUserName)
+		prData := githubPR.New(*githubTokenPath, repoOwner, repoName, pr, *covbotUserName)
 		gcsData := &gcs.PresubmitBuild{GcsBuild: gcs.GcsBuild{
 			StorageClient: gcs.NewStorageClient(prData.Ctx),
 			Bucket:        *gcsBucketName,

@@ -13,11 +13,16 @@ import (
 	"k8s.io/test-infra/coverage/test"
 )
 
+const (
+	gcsBucketNameForTest = "knative-prow"
+	prowjobNameForTest   = "post-fakeRepoOwner-fakeRepoName-go-coverage"
+)
+
 func testPostSubmit() (p *postSubmit) {
 	logrus.Infof("testPostSubmit() called")
 
 	p = NewPostSubmit(context.Background(), gcsFakes.NewFakeStorageClient(),
-		gcsFakes.FakeGcsBucketName, gcsFakes.FakePostSubmitProwJobName, ArtifactsDirNameOnGcs, artsTest.LocalInputArtsForTest().ProfileName())
+		gcsBucketNameForTest, prowjobNameForTest, ArtifactsDirNameOnGcs, artsTest.LocalInputArtsForTest().ProfileName())
 	p.Build = -9
 	return
 }

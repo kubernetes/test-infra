@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"k8s.io/test-infra/coverage/artifacts"
-	"k8s.io/test-infra/coverage/githubUtil/githubPr"
+	"k8s.io/test-infra/coverage/githubUtil/githubPR"
 )
 
 const ArtifactsDirNameOnGcs = "artifacts"
@@ -19,7 +19,7 @@ type PresubmitBuild struct {
 }
 
 type PreSubmit struct {
-	githubPr.GithubPr
+	githubPR.GithubPr
 	PresubmitBuild
 }
 

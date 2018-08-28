@@ -8,10 +8,10 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/coverage/githubUtil/githubClient"
-	"k8s.io/test-infra/coverage/githubUtil/githubPr"
 	"k8s.io/test-infra/coverage/test"
 )
 
+//FakeGithubClient fakes a GithubClient struct
 func FakeGithubClient() *githubClient.GithubClient {
 	return githubClient.New(fakeGithubIssues(), fakePullRequests())
 }
@@ -51,6 +51,8 @@ func fakePullRequests() githubClient.PullRequests {
 	return &githubPullRequests{}
 }
 
+//CreateComment implements Issues interface. As a fake function,
+// it does nothing but prints the parameters and return nils
 func (issues *githubIssues) CreateComment(ctx context.Context, owner string, repo string,
 	number int, comment *github.IssueComment) (*github.IssueComment, *github.Response, error) {
 	logrus.Infof("githubIssues.CreateComment(Ctx, owner=%s, repo=%s, number=%d, "+
@@ -58,6 +60,8 @@ func (issues *githubIssues) CreateComment(ctx context.Context, owner string, rep
 	return nil, nil, nil
 }
 
+//DeleteComment implements Issues interface. As a fake function,
+// it does nothing but prints the parameters and return nils
 func (issues *githubIssues) DeleteComment(ctx context.Context, owner string, repo string,
 	commentID int) (*github.Response, error) {
 	logrus.Infof("githubIssues.DeleteComment(Ctx, owner=%s, repo=%s, commentID=%d) called\n",
@@ -65,6 +69,8 @@ func (issues *githubIssues) DeleteComment(ctx context.Context, owner string, rep
 	return nil, nil
 }
 
+//ListComments implements Issues interface. As a fake function,
+// it does nothing but prints the parameters and return nils
 func (issues *githubIssues) ListComments(ctx context.Context, owner string, repo string, number int,
 	opt *github.IssueListCommentsOptions) ([]*github.IssueComment, *github.Response, error) {
 	logrus.Infof("githubIssues.ListComment(Ctx, owner=%s, repo=%s, number=%d, "+
@@ -72,21 +78,9 @@ func (issues *githubIssues) ListComments(ctx context.Context, owner string, repo
 	return nil, nil, nil
 }
 
+//ListFiles implements PullRequest interface. As a fake function,
+// it does nothing but prints the parameters and return nils
 func (pr *githubPullRequests) ListFiles(ctx context.Context, owner string, repo string, number int, opt *github.ListOptions) (
 	[]*github.CommitFile, *github.Response, error) {
 	return testCommitFiles(), nil, nil
-}
-
-func FakeRepoData() *githubPr.GithubPr {
-	ctx := context.Background()
-	logrus.Infof("creating fake repo data \n")
-
-	return &githubPr.GithubPr{
-		RepoOwner:     "fakeRepoOwner",
-		RepoName:      "fakeRepoName",
-		Pr:            7,
-		RobotUserName: "fakeCovbot",
-		GithubClient:  FakeGithubClient(),
-		Ctx:           ctx,
-	}
 }

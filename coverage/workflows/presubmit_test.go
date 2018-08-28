@@ -11,19 +11,23 @@ import (
 	"k8s.io/test-infra/coverage/gcs"
 	"k8s.io/test-infra/coverage/gcs/gcsFakes"
 	"k8s.io/test-infra/coverage/githubUtil/githubFakes"
-	"k8s.io/test-infra/coverage/githubUtil/githubPr"
+	"k8s.io/test-infra/coverage/githubUtil/githubPR"
+	"k8s.io/test-infra/coverage/io"
 	"k8s.io/test-infra/coverage/test"
 )
 
 const (
-	testPresubmitBuild = 787
+	testPresubmitBuild      = 787
+	gcsBucketNameForTest    = "knative-prow"
+	presubmitJobNameForTest = "pull-fakeRepoOwner-fakeRepoName-go-coverage"
+	postsubmitJobName       = "post-fakeRepoOwner-fakeRepoName-go-coverage"
 )
 
-func repoDataForTest() *githubPr.GithubPr {
+func repoDataForTest() *githubPR.GithubPr {
 	ctx := context.Background()
 	logrus.Infof("creating fake repo data \n")
 
-	return &githubPr.GithubPr{
+	return &githubPR.GithubPr{
 		RepoOwner:     "fakeRepoOwner",
 		RepoName:      "fakeRepoName",
 		Pr:            7,
@@ -46,14 +50,14 @@ func preSubmitForTest() (data *gcs.PreSubmit) {
 	repoData := repoDataForTest()
 	build := gcs.GcsBuild{
 		StorageClient: gcsFakes.NewFakeStorageClient(),
-		Bucket:        gcsFakes.FakeGcsBucketName,
-		Job:           gcsFakes.FakePreSubmitProwJobName,
+		Bucket:        gcsBucketNameForTest,
+		Job:           presubmitJobNameForTest,
 		Build:         testPresubmitBuild,
 	}
 	pbuild := gcs.PresubmitBuild{
 		GcsBuild:      build,
 		Artifacts:     *gcsArtifactsForTest(),
-		PostSubmitJob: gcsFakes.FakePostSubmitProwJobName,
+		PostSubmitJob: postsubmitJobName,
 	}
 	data = &gcs.PreSubmit{
 		GithubPr:       *repoData,
@@ -69,7 +73,7 @@ func TestRunPresubmit(t *testing.T) {
 	arts.ProduceProfileFile("../" + test.CovTargetRelPath)
 	p := preSubmitForTest()
 	RunPresubmit(p, arts)
-	if !test.FileOrDirExists(arts.LineCovFilePath()) {
+	if !io.FileOrDirExists(arts.LineCovFilePath()) {
 		t.Fatalf("No line cov file found in %s\n", arts.LineCovFilePath())
 	}
 }
@@ -82,7 +86,7 @@ func TestK8sGcsAddress(t *testing.T) {
 
 	expected := fmt.Sprintf("https://storage.cloud.google.com/%s/pr-logs/pull/"+
 		"%s_%s/%s/%s/%s/artifacts/line-cov.html#file3",
-		gcsFakes.FakeGcsBucketName, data.RepoOwner, data.RepoName, data.PrStr(), gcsFakes.FakePreSubmitProwJobName, data.BuildStr())
+		gcsBucketNameForTest, data.RepoOwner, data.RepoName, data.PrStr(), presubmitJobNameForTest, data.BuildStr())
 	if actual != expected {
 		t.Fatal(test.StrFailure("", expected, actual))
 	}

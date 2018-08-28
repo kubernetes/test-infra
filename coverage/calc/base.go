@@ -55,8 +55,8 @@ func updateConcernedFiles(concernedFiles *map[string]bool, filePath string,
 func (blk *codeBlock) addToGroupCov(g *CoverageList) (isConcerned bool) {
 	if g.size() == 0 || g.lastElement().Name() != blk.fileName {
 		// when a new file name is processed
-		coverage := newCoverage(blk.fileName)
-		g.append(coverage)
+		cov := newCoverage(blk.fileName)
+		g.append(cov)
 	}
 	blk.addToFileCov(g.lastElement())
 	return true

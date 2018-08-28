@@ -2,11 +2,8 @@ package test
 
 import (
 	"fmt"
-	"log"
-	"os"
 	"testing"
 
-	"github.com/sirupsen/logrus"
 )
 
 // StrFailure is used to display discrepancy between expected and actual result in test
@@ -24,19 +21,6 @@ func AssertEqual(t *testing.T, expected, actual interface{}) {
 	if expected != actual {
 		t.Fatalf("expected='%v'; actual='%v'\n", expected, actual)
 	}
-}
-
-//FileOrDirExists checks the existence of given file or directory
-func FileOrDirExists(path string) bool {
-	if _, err := os.Stat(path); err != nil {
-		if os.IsNotExist(err) {
-			cwd, _ := os.Getwd()
-			logrus.Infof("file or dir not found: %s; cwd=%s", path, cwd)
-			return false
-		}
-		log.Fatalf("File stats (path=%s) err: %v", path, err)
-	}
-	return true
 }
 
 type stringSet struct {
@@ -59,6 +43,7 @@ func newStringSet() *stringSet {
 	}
 }
 
+//MakeStringSet makes a set of string out of given strings
 func MakeStringSet(members ...string) (set *stringSet) {
 	set = newStringSet()
 	for _, member := range members {
@@ -67,6 +52,7 @@ func MakeStringSet(members ...string) (set *stringSet) {
 	return set
 }
 
+//AllMembers returns all member of the set in a list
 func (set *stringSet) AllMembers() (res []string) {
 	for item, valid := range set.data {
 		if valid {

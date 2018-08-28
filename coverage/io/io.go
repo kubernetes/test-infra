@@ -33,6 +33,7 @@ func Write(content *string, destinationDir, fileName string) {
 	defer file.Close()
 }
 
+//MkdirAll makes directory on disk. Recursively adds parents directory if not exist.
 func MkdirAll(path string) {
 	logrus.Infof("Making directory (MkdirAll): path=%s", path)
 	if err := os.MkdirAll(path, 0755); err != nil {
@@ -42,6 +43,7 @@ func MkdirAll(path string) {
 	}
 }
 
+//FileOrDirExists checks whether a file or dir on disk exist
 func FileOrDirExists(path string) bool {
 	if _, err := os.Stat(path); err != nil {
 		if os.IsNotExist(err) {

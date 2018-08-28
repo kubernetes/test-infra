@@ -14,6 +14,7 @@ import (
 	"k8s.io/test-infra/coverage/io"
 )
 
+//CreateLineCovFile creates the html file of line-by-line coverage
 func CreateLineCovFile(arts *artifacts.LocalArtifacts) error {
 	pathKeyProfile := arts.KeyProfilePath()
 	pathLineCov := arts.LineCovFilePath()
@@ -35,6 +36,7 @@ func CreateLineCovFile(arts *artifacts.LocalArtifacts) error {
 	return err
 }
 
+//GenerateLineCovLinks adds line coverage link to each coverage object in the CoverageList
 func GenerateLineCovLinks(
 	presubmitBuild *gcs.PreSubmit, g *calc.CoverageList) {
 	calc.SortCoverages(*g.Group())

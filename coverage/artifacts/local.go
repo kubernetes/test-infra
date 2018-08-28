@@ -11,10 +11,13 @@ import (
 	"k8s.io/test-infra/coverage/logUtil"
 )
 
+//LocalArtifacts sub-type of Artifacts. Represent artifacts stored locally (
+// as oppose to artifacts stored in GCS bucket)
 type LocalArtifacts struct {
 	Artifacts
 }
 
+//NewLocalArtifacts constructs LocalArtifacts
 func NewLocalArtifacts(directory string, ProfileName string,
 	KeyProfileName string, CovStdoutName string) *LocalArtifacts {
 	return &LocalArtifacts{*New(
@@ -34,6 +37,7 @@ func (arts *LocalArtifacts) ProfileReader() io.ReadCloser {
 	return f
 }
 
+//ProfileName gets name of profile
 func (arts *LocalArtifacts) ProfileName() string {
 	return arts.profileName
 }

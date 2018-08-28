@@ -45,6 +45,7 @@ type storageClient struct {
 	storage.Client
 }
 
+//NewStorageClient creates a new storage client
 func NewStorageClient(ctx context.Context) *storageClient {
 	client, err := storage.NewClient(ctx)
 
@@ -54,6 +55,7 @@ func NewStorageClient(ctx context.Context) *storageClient {
 	return &storageClient{*client}
 }
 
+//ListGcsObjects implements StorageClientIntf and lists gcs objects under a given path
 func (client *storageClient) ListGcsObjects(ctx context.Context, bucketName,
 	prefix, delim string) (objects []string) {
 	it := client.Bucket(bucketName).Objects(ctx, &storage.Query{
@@ -78,6 +80,7 @@ func (client *storageClient) ListGcsObjects(ctx context.Context, bucketName,
 	return
 }
 
+//ProfileReader implements StorageClientIntf and reads the coverage profile from a given object path
 func (client storageClient) ProfileReader(ctx context.Context, bucket,
 	object string) io.ReadCloser {
 	logrus.Infof("Running ProfileReader on bucket '%s', object='%s'\n",
@@ -91,6 +94,7 @@ func (client storageClient) ProfileReader(ctx context.Context, bucket,
 	return reader
 }
 
+//GcsBuild contains information to locate a prowjob build record in GCS and properties associated with the build
 type GcsBuild struct {
 	StorageClient StorageClientIntf
 	Bucket        string
@@ -99,10 +103,12 @@ type GcsBuild struct {
 	CovThreshold  int
 }
 
+//BuildStr returns the build id as a string
 func (b *GcsBuild) BuildStr() string {
 	return strconv.Itoa(b.Build)
 }
 
+//GcsArtifacts is the sub-struct of Artifacts with attributes specific to gcs storage
 type GcsArtifacts struct {
 	artifacts.Artifacts
 	Ctx    context.Context
@@ -115,6 +121,7 @@ func newGcsArtifacts(ctx context.Context, client StorageClientIntf,
 	return &GcsArtifacts{baseArtifacts, ctx, client, bucket}
 }
 
+//ProfileReader read the profile pointed by the GcsArtifacts
 func (arts *GcsArtifacts) ProfileReader() io.ReadCloser {
 	return arts.Client.ProfileReader(arts.Ctx, arts.Bucket, arts.ProfilePath())
 }

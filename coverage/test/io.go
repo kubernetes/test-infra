@@ -9,6 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+//DeleteDir deletes a directory on disk
 func DeleteDir(dir string) {
 	err := os.RemoveAll(dir)
 	if err != nil {
@@ -25,6 +26,7 @@ func linkInputArt(artsDir, artName string) {
 	}
 }
 
+//LinkInputArts create a symbolic link of artifact in input directory to output directory
 func LinkInputArts(artsDir string, artNames ...string) {
 	logrus.Infof("LinkInputArts(artsDir='%s', artNames...='%v') called ", artsDir, artNames)
 	for _, art := range artNames {
@@ -32,6 +34,7 @@ func LinkInputArts(artsDir string, artNames ...string) {
 	}
 }
 
+//NewArtsDir create an artifact directory on disk
 func NewArtsDir(dirPrefix string) string {
 	os.MkdirAll(tmpArtsDir, 0755)
 	dir, err := ioutil.TempDir(tmpArtsDir, dirPrefix+"_")

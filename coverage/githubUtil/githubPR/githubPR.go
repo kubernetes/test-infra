@@ -1,4 +1,4 @@
-package githubPr
+package githubPR
 
 import (
 	"context"
@@ -7,12 +7,13 @@ import (
 	"strconv"
 
 	"github.com/google/go-github/github"
-
 	"github.com/sirupsen/logrus"
+
 	"k8s.io/test-infra/coverage/githubUtil/githubClient"
 	"k8s.io/test-infra/coverage/logUtil"
 )
 
+//GithubPr collects data to identify and access a github pull request
 type GithubPr struct {
 	RobotUserName string
 	RepoOwner     string
@@ -22,10 +23,12 @@ type GithubPr struct {
 	GithubClient  *githubClient.GithubClient
 }
 
+//PrStr gets the pr number
 func (data *GithubPr) PrStr() string {
 	return strconv.Itoa(data.Pr)
 }
 
+//New construct a new GithubPr object
 func New(githubTokenLocation, repoOwner, repoName, prNumStr,
 	botUserName string) *GithubPr {
 	ctx := context.Background()

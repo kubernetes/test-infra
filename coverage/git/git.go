@@ -35,10 +35,10 @@ func hasGitAttr(attr string, fileName string) bool {
 	}()
 	valCmd.Wait()
 
-	//fmt.Println(strings.ToLower(strings.TrimSpace(val.String())))
 	return strings.ToLower(strings.TrimSpace(val.String())) == "true"
 }
 
+//IsCoverageSkipped checks whether a file should be ignored by the code coverage tool
 func IsCoverageSkipped(filePath string) bool {
 	if hasGitAttr(gitAttrLinguistGenerated, filePath) {
 		logrus.Info("Skipping as file is linguist-generated: ", filePath)
