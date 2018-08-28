@@ -23,7 +23,7 @@ const (
 )
 
 // DoesObjectExist checks whether an object exists in GCS bucket
-func (client StorageClient) DoesObjectExist(ctx context.Context, bucket, object string) bool {
+func (client storageClient) DoesObjectExist(ctx context.Context, bucket, object string) bool {
 	_, err := client.Bucket(bucket).Object(object).Attrs(ctx)
 	if err != nil {
 		logrus.Infof("Error getting attrs from object '%s': %v", object, err)
@@ -32,28 +32,29 @@ func (client StorageClient) DoesObjectExist(ctx context.Context, bucket, object 
 	return true
 }
 
+//StorageClientIntf collects methods depending on storage client. It needs to be implemented by fake
+// struct as well.
 type StorageClientIntf interface {
-	Bucket(bucketName string) *storage.BucketHandle
 	ListGcsObjects(ctx context.Context, bucketName, prefix, delim string) (
 		objects []string)
 	ProfileReader(ctx context.Context, bucket, object string) io.ReadCloser
 	DoesObjectExist(ctx context.Context, bucket, object string) bool
 }
 
-type StorageClient struct {
+type storageClient struct {
 	storage.Client
 }
 
-func NewStorageClient(ctx context.Context) *StorageClient {
+func NewStorageClient(ctx context.Context) *storageClient {
 	client, err := storage.NewClient(ctx)
 
 	if err != nil {
 		logUtil.LogFatalf("Failed to create client: %v", err)
 	}
-	return &StorageClient{*client}
+	return &storageClient{*client}
 }
 
-func (client *StorageClient) ListGcsObjects(ctx context.Context, bucketName,
+func (client *storageClient) ListGcsObjects(ctx context.Context, bucketName,
 	prefix, delim string) (objects []string) {
 	it := client.Bucket(bucketName).Objects(ctx, &storage.Query{
 		Prefix:    prefix,
@@ -77,7 +78,7 @@ func (client *StorageClient) ListGcsObjects(ctx context.Context, bucketName,
 	return
 }
 
-func (client StorageClient) ProfileReader(ctx context.Context, bucket,
+func (client storageClient) ProfileReader(ctx context.Context, bucket,
 	object string) io.ReadCloser {
 	logrus.Infof("Running ProfileReader on bucket '%s', object='%s'\n",
 		bucket, object)

@@ -129,11 +129,12 @@ func (c *coverage) string() string {
 	return "ratio not exist"
 }
 
-//LineCovLink
+//LineCovLink returns the link to line coverage html
 func (c *coverage) LineCovLink() string {
 	return c.lineCovLink
 }
 
+//SetLineCovLink sets the link to line coverage html
 func (c *coverage) SetLineCovLink(link string) {
 	c.lineCovLink = link
 }
@@ -148,6 +149,7 @@ func (c *coverage) IsCoverageLow(covThresholdInt int) bool {
 	return false
 }
 
+//SortCoverages sorts coverage based on name alphabetically
 func SortCoverages(cs []coverage) {
 	sort.Slice(cs, func(i, j int) bool {
 		return cs[i].Name() < cs[j].Name()

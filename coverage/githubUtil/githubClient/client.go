@@ -14,6 +14,7 @@ type GithubClient struct {
 	PullRequests PullRequests
 }
 
+//New constructs GithubClient
 func New(issues Issues, pullRequests PullRequests) *GithubClient {
 	return &GithubClient{issues, pullRequests}
 }
@@ -32,6 +33,7 @@ func Make(ctx context.Context, githubToken string) *GithubClient {
 	return New(client.Issues, client.PullRequests)
 }
 
+//Issues collects operations on github issues and allows fake implementation to happen
 type Issues interface {
 	CreateComment(ctx context.Context, owner string, repo string, number int,
 		comment *github.IssueComment) (*github.IssueComment, *github.Response, error)
@@ -41,6 +43,7 @@ type Issues interface {
 		opt *github.IssueListCommentsOptions) ([]*github.IssueComment, *github.Response, error)
 }
 
+//PullRequests collects methods on github pull requests and allows fake implementation
 type PullRequests interface {
 	ListFiles(ctx context.Context, owner string, repo string, number int, opt *github.ListOptions) (
 		[]*github.CommitFile, *github.Response, error)

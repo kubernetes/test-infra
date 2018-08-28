@@ -1,7 +1,6 @@
 package gcsFakes
 
 import (
-	"cloud.google.com/go/storage"
 	"context"
 
 	"github.com/sirupsen/logrus"
@@ -16,15 +15,13 @@ func NewFakeStorageClient() *fakeStorageClient {
 	return &fakeStorageClient{}
 }
 
-func (client *fakeStorageClient) Bucket(bucketName string) *storage.BucketHandle {
-	return nil
-}
-
+//ListGcsObjects implements StorageClientIntf and returns made-up gcs objects names in a list
 func (client *fakeStorageClient) ListGcsObjects(ctx context.Context, bucketName, prefix, delim string) (objects []string) {
 	logrus.Infof("fakeStorageClient.ListGcsObjects\n")
 	return []string{"3", "9", "1", "5"}
 }
 
+//DoesObjectExist implements StorageClientIntf and returns true/false based on bucket name
 func (client *fakeStorageClient) DoesObjectExist(ctx context.Context, bucket, object string) bool {
 	logrus.Infof("running fakeStorageClient.DoesObjectExist(Ctx, bucket=%s, object=%s)\n",
 		bucket, object)
@@ -34,6 +31,7 @@ func (client *fakeStorageClient) DoesObjectExist(ctx context.Context, bucket, ob
 	return true
 }
 
+//ProfileReader implements StorageClientIntf and returns a profile reader for testing purpose
 func (client *fakeStorageClient) ProfileReader(ctx context.Context, bucket, object string) io.ReadCloser {
 	return artsTest.LocalInputArtsForTest().ProfileReader()
 }

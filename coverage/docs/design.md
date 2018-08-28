@@ -56,14 +56,42 @@ Produces periodical coverage result as input for TestGrid
   
 ##Prow Configuration File
 As mentioned earlier, we use configuration file to store repository specific information. Below is an example that contains the args that will be supplied to the coverage container
-```
+```$xslt
+  - name: pull-knative-serving-go-coverage
+    labels:
+      preset-service-account: "true"
+    agent: kubernetes
+    context: pull-knative-serving-go-coverage
+    always_run: true
+    rerun_command: "/test pull-knative-serving-go-coverage"
+    trigger: "(?m)^/test (all|pull-knative-serving-go-coverage),?(\\s+|$)"
+    optional: true
+    decorate: true
+    clone_uri: "git@github.com:knative/serving.git"
+    ssh_key_secrets:
+    - ssh-knative
     spec:
       containers:
-      - image:  gcr.io/coverage-prow/coverage:version123
+      - image: gcr.io/knative-tests/test-infra/coverage:latest
+        imagePullPolicy: Always
+        command:
+        - "/coverage"
         args:
-        - "--artifacts=./artifacts/" # folder to store artifacts, such as the coverage profile
-        - "--target=./pkg/" # target directory of test coverage
-        - "--coverage_threshold=70%" # minimum level of acceptable presubmit coverage on a per-file level
+        - "--postsubmit-gcs-bucket=knative-prow"
+        - "--postsubmit-job-name=post-knative-serving-go-coverage"
+        - "--artifacts=$(ARTIFACTS)" # folder to store artifacts, such as the coverage profile
+        - "--profile-name=coverage_profile.txt"
+        - "--cov-target=./pkg/" # target directory of test coverage
+        - "--cov-threshold-percentage=50" # minimum level of acceptable presubmit coverage on a per-file level
+        - "--github-token=/etc/github-token/token"
+        volumeMounts:
+        - name: github-token
+          mountPath: /etc/github-token
+          readOnly: true
+      volumes:
+      - name: github-token
+        secret:
+          secretName: covbot-token
 ```
 
 #Acceptance Criteria

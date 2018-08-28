@@ -19,12 +19,14 @@ func Fail(t *testing.T, input, expected, actual interface{}) {
 	t.Fatalf("input=%s; expected=%v; actual=%v\n", input, expected, actual)
 }
 
+//AssertEqual checks equality of expected and actual results, fail the test if not equal
 func AssertEqual(t *testing.T, expected, actual interface{}) {
 	if expected != actual {
 		t.Fatalf("expected='%v'; actual='%v'\n", expected, actual)
 	}
 }
 
+//FileOrDirExists checks the existence of given file or directory
 func FileOrDirExists(path string) bool {
 	if _, err := os.Stat(path); err != nil {
 		if os.IsNotExist(err) {
@@ -41,10 +43,12 @@ type stringSet struct {
 	data map[string]bool
 }
 
+//Add adds a string to the string set
 func (set *stringSet) Add(s string) {
 	set.data[s] = true
 }
 
+//Has checks if the string is a member of the string set
 func (set *stringSet) Has(s string) bool {
 	return set.data[s]
 }
