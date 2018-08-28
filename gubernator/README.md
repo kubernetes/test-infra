@@ -78,6 +78,30 @@ The following fields in `finished.json` are honored:
 Any artifacts from the build should be placed under `./artifacts/`. Any jUnit
 XML reports should be named `junit_*.xml` and placed under `./artifacts` as well.
 
+## Test Properties [Optional]
+
+Test properties are a set of key value pairs defined on the test case and are optional. The test 
+result file `junit_*.xml` contains a list of test cases and the properties associated with it.
+These properties can be later parsed by any aggregator like testgrid, and used to collect metrics 
+about the test case.
+
+The properties can be defined as:
+
+```xml
+<testcase ...>
+  <properties>
+    <property>
+        <name>key1</name>
+        <value>value1</value>
+    </property>
+    <property>
+        <name>key2</name>
+        <value>value2</value>
+    </property>
+  </properties>
+</testcase>
+```
+
 ## GCS Bucket Layout
 
 In your bucket, a number of directories are required to store the output of all
