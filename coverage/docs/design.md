@@ -1,5 +1,5 @@
 #Overview
-Code coverage tool has two major features.
+This code coverage tool has two major features.
 1. As a pre-submit tool, it runs code coverage on every single commit to Github and reports coverage change back to the PR as a comment by a robot account. It also has the ability to block a PR from merging if coverage falls below threshold
 2. As a post-submit / periodical running job, it reports on TestGrid to show users how coverage changes over time.
 
@@ -7,6 +7,9 @@ Code coverage tool has two major features.
 The presubmit tool is intended for a developer to see the impact on code coverage of his/her commit. It can also be used by repo managers to block any PR from merging if the coverage falls under customized threshold.
 
 The periodical testgrid report is for repo managers and/or test infra team to monitor code coverage stats over time.
+
+##Limitation
+As of now, the code coverage tool only collect code coverage for Go files. The support for more programming languages may be added later
 
 ##Background - Prow
 Prow is a system that handles github events and commands and allow you to perform actions. It was originally built for kubernetes, but now is extended to other teams wanting to use it as well. cmd/hook is the main entry point for Prow and listens to the github events. Prow provides two ways to handle events:
@@ -16,7 +19,9 @@ Prow is a system that handles github events and commands and allow you to perfor
   - External: Live as a separate binary. Events are forwarded to these by cmd/hook.
 
 #Design of Test Coverage Tool
-We pack the test coverage feature in a container, that is triggered by prow. The feature takes input from three sources
+We pack the test coverage feature in a container, that is triggered by prow as a prow job. There is a separate prow job configured for each of the following workflows (which is discussed in later sections): pre-submit, post-submit and periodic. 
+
+The feature takes input from three sources
 1. It runs test coverage profiling on target repository. Prow clones the target repository as the current working directory for the container.
 2. It receives github related variables, such as pull request number & commit number, from Prow. Those variables are used as meta-data for the profiles. Metadata allows us to do presumbit coverage comparisons.
 3. It allows user to supply variables in prowjob configs. Those variables include directory to run test coverage, file filters and threshold for desired coverage level.  
@@ -30,15 +35,17 @@ Runs code coverage tool to report coverage change in a new commit or new PR
 1. Developer submit new commit to an open PR on github
 2. Matching pre-submit prow job is started 
 3. Test coverage profile generated
-4. Calculate coverage change against master branch. Compare the coverage file generated in this cycle against the most recent successful post-submit build. Coverage file for post-submit commits were generated in post-submit workflow
-5. Use PR data from github, git-attributes, as well as coverage change data calculated above, to produce a list of files that we care about in the line-by-line coverage report. produce line by line coverage html and add link to covbot report.
+4. Calculate coverage changes. Compare the coverage file generated in this cycle against the most recent successful post-submit build. Coverage file for post-submit commits were generated in post-submit workflow
+5. Use PR data from github, git-attributes, as well as coverage change data calculated above, to produce a list of files that we care about in the line-by-line coverage report. produce line by line coverage html and add link to covbot report. Note that covbot is the robot github account used to report code coverage change results.
 6. Let covbot post presubmit coverage on github, under that conversation of the PR. 
+7. When coverage threshold is enforced, block PR from merging by making this prow job 'required' and return with a code other than 0
 
 ##Post-submit workflow
 Produces & stores coverage profile for later presubmit jobs to compare against
 1. A PR is merged
 2. Post-submit prow job started
-3. Test coverage profile generated. Completion marker generated upon successful run.
+3. Test coverage profile generated. Completion marker generated upon successful run. Both stored as prow artifacts.
+    - Completion marker is used by later pre-submit job when searching for a healthy and complete code coverage profile in the post-submit jobs
 
 ##Periodical workflow
 Produces periodical coverage result as input for TestGrid
