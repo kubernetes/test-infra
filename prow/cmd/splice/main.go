@@ -336,6 +336,10 @@ func main() {
 			if job.Spec.Type != kube.BatchJob {
 				continue
 			}
+			// Ignore batches for other repos.
+			if job.Spec.Refs == nil || job.Spec.Refs.Org != o.orgName || job.Spec.Refs.Repo != o.repoName {
+				continue
+			}
 			if !job.Complete() {
 				running = append(running, job.Spec.Job)
 			}
