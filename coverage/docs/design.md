@@ -50,9 +50,9 @@ Produces & stores coverage profile for later presubmit jobs to compare against
 ##Periodical workflow
 Produces periodical coverage result as input for TestGrid
 1. Periodical prow job starts periodically based on the specification in prow job config
-2. Test coverage profile & metadata generated 
+2. Generate coverage profile
 3. Generate / store per-file coverage data
-  - Stores in the XML format that is used by TestGrid
+  - Stores in the XML format, that is used by TestGrid, and dump it in prow artifacts directory 
   
 ##Prow Configuration File
 As mentioned earlier, we use configuration file to store repository specific information. Below is an example that contains the args that will be supplied to the coverage container
