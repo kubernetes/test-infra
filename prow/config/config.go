@@ -431,6 +431,48 @@ func yamlToConfig(path string, nc interface{}) error {
 	if err := yaml.Unmarshal(b, nc); err != nil {
 		return fmt.Errorf("error unmarshaling %s: %v", path, err)
 	}
+	var jc *JobConfig
+	switch v := nc.(type) {
+	case *JobConfig:
+		jc = v
+	case *Config:
+		jc = &v.JobConfig
+	}
+	for rep := range jc.Presubmits {
+		var fix func(*Presubmit)
+		fix = func(job *Presubmit) {
+			job.SourcePath = path
+			for i := range job.RunAfterSuccess {
+				fix(&job.RunAfterSuccess[i])
+			}
+		}
+		for i := range jc.Presubmits[rep] {
+			fix(&jc.Presubmits[rep][i])
+		}
+	}
+	for rep := range jc.Postsubmits {
+		var fix func(*Postsubmit)
+		fix = func(job *Postsubmit) {
+			job.SourcePath = path
+			for i := range job.RunAfterSuccess {
+				fix(&job.RunAfterSuccess[i])
+			}
+		}
+		for i := range jc.Postsubmits[rep] {
+			fix(&jc.Postsubmits[rep][i])
+		}
+	}
+
+	var fix func(*Periodic)
+	fix = func(job *Periodic) {
+		job.SourcePath = path
+		for i := range job.RunAfterSuccess {
+			fix(&job.RunAfterSuccess[i])
+		}
+	}
+	for i := range jc.Periodics {
+		fix(&jc.Periodics[i])
+	}
 	return nil
 }
 

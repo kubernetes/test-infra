@@ -26,6 +26,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path"
 	"regexp"
 	"strings"
 	"testing"
@@ -301,6 +302,40 @@ func findRequired(t *testing.T, presubmits []cfg.Presubmit) []string {
 		required = append(required, p.Context)
 	}
 	return required
+}
+
+func TestTrustedJobs(t *testing.T) {
+	// TODO(fejta): allow each config/jobs/kubernetes/foo/foo-trusted.yaml
+	// that uses a foo-trusted cluster
+	const trusted = "test-infra-trusted"
+	trustedPath := path.Join(*jobConfigPath, "kubernetes", "test-infra", "test-infra-trusted.yaml")
+
+	// Presubmits may not use trusted clusters.
+	for _, pre := range c.AllPresubmits(nil) {
+		if pre.Cluster == trusted {
+			t.Errorf("%s: presubmits cannot use trusted clusters", pre.Name)
+		}
+	}
+
+	// Trusted postsubmits must be defined in trustedPath
+	for _, post := range c.AllPostsubmits(nil) {
+		if post.Cluster != trusted {
+			continue
+		}
+		if post.SourcePath != trustedPath {
+			t.Errorf("%s defined in %s may not run in trusted cluster", post.Name, post.SourcePath)
+		}
+	}
+
+	// Trusted periodics must be defined in trustedPath
+	for _, per := range c.AllPeriodics() {
+		if per.Cluster != trusted {
+			continue
+		}
+		if per.SourcePath != trustedPath {
+			t.Errorf("%s defined in %s may not run in trusted cluster", per.Name, per.SourcePath)
+		}
+	}
 }
 
 func TestConfigSecurityJobsMatch(t *testing.T) {
