@@ -201,7 +201,7 @@ periodics:
       - --gcp-project=k8s-scale-testing
       - --gcp-zone=us-east1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:Empty\]
+      - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master
       - --timeout=300m
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
@@ -371,7 +371,7 @@ periodics:
       - --gke-environment=test
       - '--gke-shape={"default":{"Nodes":4999,"MachineType":"g1-small"},"heapster-pool":{"Nodes":1,"MachineType":"n1-standard-16"}}'
       - --provider=gke
-      - --test_args=--ginkgo.focus=\[Feature:Empty\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8
       - --timeout=1200m
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
@@ -574,7 +574,7 @@ periodics:
       - --kubemark-nodes=5
       - --provider=gce
       - --test=false
-      - --test_args=--ginkgo.focus=\[Feature:Empty\] --gather-resource-usage=true --gather-metrics-at-teardown=true
+      - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true
       - --timeout=60m
       # docker-in-docker needs privileged mode
       securityContext:
