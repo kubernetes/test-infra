@@ -68,6 +68,8 @@ def get_pool_sizes(project, zone, cluster):
         '--format=json',
     ]))
     for group in groups:
+        if group['name'] not in group_to_pool:
+            continue
         sizes[group_to_pool[group['name']]] += group['size']
 
     return sizes
