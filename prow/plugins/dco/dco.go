@@ -32,13 +32,21 @@ import (
 const (
 	pluginName               = "dco"
 	dcoContextName           = "dco"
-	dcoContextMessageFailed  = "A commit in PR is missing Signed-off-by"
+	dcoContextMessageFailed  = "Commits in PR missing Signed-off-by"
 	dcoContextMessageSuccess = "All commits have Signed-off-by"
 
 	dcoYesLabel        = "dco-signoff: yes"
 	dcoNoLabel         = "dco-signoff: no"
 	dcoMsgPruneMatch   = "Thanks for your pull request. Before we can look at your pull request, you'll need to add a 'DCO signoff' to your commits."
 	dcoNotFoundMessage = `Thanks for your pull request. Before we can look at your pull request, you'll need to add a 'DCO signoff' to your commits.
+
+:memo: **Please follow instructions in the [contributing guide](%s) to update your commits with the DCO**
+
+Full details of the Developer Certificate of Origin can be found at [developercertificate.org](https://developercertificate.org/).
+
+**The list of commits missing DCO signoff**:
+
+%s
 
 <details>
 
@@ -92,23 +100,24 @@ type commentPruner interface {
 // checkCommitMessages will perform the actual DCO check by retrieving all
 // commits contained within the PR with the given number.
 // *All* commits in the pull request *must* match the 'testRe' in order to pass.
-func checkCommitMessages(gc gitHubClient, l *logrus.Entry, org, repo string, number int) (bool, error) {
+func checkCommitMessages(gc gitHubClient, l *logrus.Entry, org, repo string, number int) ([]github.GitCommit, error) {
 	allCommits, err := gc.ListPRCommits(org, repo, number)
 	if err != nil {
-		return false, fmt.Errorf("error listing commits for pull request: %v", err)
+		return nil, fmt.Errorf("error listing commits for pull request: %v", err)
 	}
 	l.Infof("Found %d commits in PR", len(allCommits))
 
-	signMissing := false
+	var commitsMissingDCO []github.GitCommit
 	for _, commit := range allCommits {
 		if !testRe.MatchString(*commit.Commit.Message) {
-			signMissing = true
-			break
+			c := *commit.Commit
+			c.SHA = &(*commit.SHA)
+			commitsMissingDCO = append(commitsMissingDCO, c)
 		}
 	}
 
-	l.Infof("All commits in PR have DCO signoff: %t", !signMissing)
-	return !signMissing, nil
+	l.Infof("All commits in PR have DCO signoff: %t", len(commitsMissingDCO) == 0)
+	return commitsMissingDCO, nil
 }
 
 // checkExistingStatus will retrieve the current status of the DCO context for
@@ -153,12 +162,14 @@ func checkExistingLabels(gc gitHubClient, l *logrus.Entry, org, repo string, num
 
 // takeAction will take appropriate action on the pull request according to its
 // current state.
-func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo string, pr github.PullRequest, signedOff bool, existingStatus string, hasYesLabel, hasNoLabel bool) error {
+func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo string, pr github.PullRequest, commitsMissingDCO []github.GitCommit, existingStatus string, hasYesLabel, hasNoLabel bool) error {
 	targetURL := fmt.Sprintf("https://github.com/%s/%s/blob/master/CONTRIBUTING.md", org, repo)
 	botName, err := gc.BotName()
 	if err != nil {
 		return fmt.Errorf("failed to get bot name: %v", err)
 	}
+
+	signedOff := len(commitsMissingDCO) == 0
 
 	// handle the 'all commits signed off' case by adding appropriate labels
 	// TODO: clean-up old comments?
@@ -194,14 +205,6 @@ func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo st
 	}
 
 	// handle the 'not all commits signed off' case
-
-	// we handle this 'base case' early on to avoid adding more comments when
-	// they are not needed.
-	if hasNoLabel && !hasYesLabel && existingStatus == github.StatusFailure {
-		l.Infof("DCO status context and label already up to date")
-		return nil
-	}
-
 	if !hasNoLabel {
 		l.Infof("Adding %q label", dcoNoLabel)
 		// add 'dco-signoff: no' label
@@ -228,9 +231,11 @@ func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo st
 		}
 	}
 
+	// we always prune and create a comment if the check is failing, to ensure
+	// the list of failing commits is up to date.
 	cp.PruneComments(shouldPrune(l, botName))
 	l.Infof("Commenting on PR to advise users of DCO check")
-	if err := gc.CreateComment(org, repo, pr.Number, fmt.Sprintf(dcoNotFoundMessage, plugins.AboutThisBot)); err != nil {
+	if err := gc.CreateComment(org, repo, pr.Number, fmt.Sprintf(dcoNotFoundMessage, targetURL, markdownSHAList(org, repo, commitsMissingDCO), plugins.AboutThisBot)); err != nil {
 		l.WithError(err).Warning("Could not create DCO not found comment.")
 	}
 
@@ -245,7 +250,7 @@ func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo st
 func handle(gc gitHubClient, cp commentPruner, log *logrus.Entry, org, repo string, pr github.PullRequest) error {
 	l := log.WithField("pr", pr.Number)
 
-	signedOff, err := checkCommitMessages(gc, l, org, repo, pr.Number)
+	commitsMissingDCO, err := checkCommitMessages(gc, l, org, repo, pr.Number)
 	if err != nil {
 		l.WithError(err).Infof("Error running DCO check against commits in PR")
 		return err
@@ -263,7 +268,33 @@ func handle(gc gitHubClient, cp commentPruner, log *logrus.Entry, org, repo stri
 		return err
 	}
 
-	return takeAction(gc, cp, l, org, repo, pr, signedOff, existingStatus, hasYesLabel, hasNoLabel)
+	return takeAction(gc, cp, l, org, repo, pr, commitsMissingDCO, existingStatus, hasYesLabel, hasNoLabel)
+}
+
+func markdownSHAList(org, repo string, list []github.GitCommit) string {
+	lines := make([]string, len(list))
+	lineFmt := "- [%s](https://github.com/%s/%s/commits/%s) %s"
+	for i, commit := range list {
+		if commit.SHA == nil {
+			continue
+		}
+		// if we somehow encounter a SHA that's less than 7 characters, we will
+		// just use it as is.
+		shortSHA := *commit.SHA
+		if len(shortSHA) > 7 {
+			shortSHA = shortSHA[:7]
+		}
+		message := ""
+		if commit.Message != nil {
+			message = *commit.Message
+		}
+
+		// get the first line of the commit
+		message = strings.Split(message, "\n")[0]
+
+		lines[i] = fmt.Sprintf(lineFmt, shortSHA, org, repo, *commit.SHA, message)
+	}
+	return strings.Join(lines, "\n")
 }
 
 // shouldPrune finds comments left by this plugin.
@@ -315,5 +346,4 @@ func handleCommentEvent(pc plugins.PluginClient, ce github.GenericCommentEvent) 
 	}
 
 	return handle(gc, pc.CommentPruner, pc.Logger, org, repo, *pr)
-
 }
