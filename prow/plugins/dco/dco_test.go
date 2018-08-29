@@ -70,7 +70,7 @@ func TestCheckDCO(t *testing.T) {
 
 			addedLabel:     fmt.Sprintf("/#3:%s", dcoNoLabel),
 			expectedStatus: github.StatusFailure,
-			addedComment: `/#3:Thanks for your pull request. Before we can look at your pull request, you'll need to add a 'DCO signoff' to your commits.
+			addedComment: `/#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
 
 :memo: **Please follow instructions in the [contributing guide](https://github.com///blob/master/CONTRIBUTING.md) to update your commits with the DCO**
 
@@ -99,7 +99,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			addedLabel:     fmt.Sprintf("/#3:%s", dcoNoLabel),
 			removedLabel:   fmt.Sprintf("/#3:%s", dcoYesLabel),
 			expectedStatus: github.StatusFailure,
-			addedComment: `/#3:Thanks for your pull request. Before we can look at your pull request, you'll need to add a 'DCO signoff' to your commits.
+			addedComment: `/#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
 
 :memo: **Please follow instructions in the [contributing guide](https://github.com///blob/master/CONTRIBUTING.md) to update your commits with the DCO**
 
@@ -127,7 +127,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			status:      github.StatusFailure,
 
 			expectedStatus: github.StatusFailure,
-			addedComment: `/#3:Thanks for your pull request. Before we can look at your pull request, you'll need to add a 'DCO signoff' to your commits.
+			addedComment: `/#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
 
 :memo: **Please follow instructions in the [contributing guide](https://github.com///blob/master/CONTRIBUTING.md) to update your commits with the DCO**
 
@@ -157,7 +157,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			addedLabel:     fmt.Sprintf("/#3:%s", dcoNoLabel),
 			removedLabel:   fmt.Sprintf("/#3:%s", dcoYesLabel),
 			expectedStatus: github.StatusFailure,
-			addedComment: `/#3:Thanks for your pull request. Before we can look at your pull request, you'll need to add a 'DCO signoff' to your commits.
+			addedComment: `/#3:Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
 
 :memo: **Please follow instructions in the [contributing guide](https://github.com///blob/master/CONTRIBUTING.md) to update your commits with the DCO**
 

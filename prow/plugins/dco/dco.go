@@ -37,8 +37,8 @@ const (
 
 	dcoYesLabel        = "dco-signoff: yes"
 	dcoNoLabel         = "dco-signoff: no"
-	dcoMsgPruneMatch   = "Thanks for your pull request. Before we can look at your pull request, you'll need to add a 'DCO signoff' to your commits."
-	dcoNotFoundMessage = `Thanks for your pull request. Before we can look at your pull request, you'll need to add a 'DCO signoff' to your commits.
+	dcoMsgPruneMatch   = "Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits."
+	dcoNotFoundMessage = `Thanks for your pull request. Before we can look at it, you'll need to add a 'DCO signoff' to your commits.
 
 :memo: **Please follow instructions in the [contributing guide](%s) to update your commits with the DCO**
 
