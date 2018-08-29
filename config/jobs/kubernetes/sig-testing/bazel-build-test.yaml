@@ -44,6 +44,7 @@ presubmits:
         - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180827-b4a364eb9
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+          - "--repo=k8s.io/kubernetes-anywhere=kubeadm-e2e"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
           - "--timeout=75"
           - --scenario=kubernetes_e2e
@@ -103,6 +104,7 @@ presubmits:
         - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180827-b4a364eb9
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+          - "--repo=k8s.io/kubernetes-anywhere=kubeadm-e2e"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
           - "--timeout=75"
           - --scenario=kubernetes_e2e
@@ -161,6 +163,7 @@ presubmits:
         - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180827-b4a364eb9
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+          - "--repo=k8s.io/kubernetes-anywhere=kubeadm-e2e"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
           - "--timeout=75"
           - --scenario=kubernetes_e2e

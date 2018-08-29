@@ -1433,6 +1433,7 @@ presubmits:
         - args:
           - --ssh=/etc/ssh-security/ssh-security
           - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
+          - --repo=github.com/kubernetes-security/kubernetes-anywhere=kubeadm-e2e
           - --upload=gs://kubernetes-security-prow/pr-logs
           - --timeout=75
           - --scenario=kubernetes_e2e
@@ -1529,6 +1530,7 @@ presubmits:
         - args:
           - --ssh=/etc/ssh-security/ssh-security
           - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
+          - --repo=github.com/kubernetes-security/kubernetes-anywhere=kubeadm-e2e
           - --upload=gs://kubernetes-security-prow/pr-logs
           - --timeout=75
           - --scenario=kubernetes_e2e
@@ -1622,6 +1624,7 @@ presubmits:
         - args:
           - --ssh=/etc/ssh-security/ssh-security
           - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
+          - --repo=github.com/kubernetes-security/kubernetes-anywhere=kubeadm-e2e
           - --upload=gs://kubernetes-security-prow/pr-logs
           - --timeout=75
           - --scenario=kubernetes_e2e
