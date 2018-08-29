@@ -1,3 +1,11 @@
+# **dind/ is deprecated**
+
+A major refactor is under way in [`kind/`](./../kind), please look there going 
+forward.
+
+----------------------------------------------
+----------------------------------------------
+
 # A dind test cluster for Kubernetes CI
 
 This is a docker-in-docker-in-docker cluster for integration testing. The nodes are

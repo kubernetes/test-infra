@@ -698,6 +698,11 @@ repos:
         target: both
         addedBy: label
       - color: 0052cc
+        description: Issues or PRs related to code in /kind
+        name: area/kind
+        target: both
+        addedBy: label
+      - color: 0052cc
         description: Issues or PRs related to code in /label_sync
         name: area/label_sync
         target: both
