@@ -261,14 +261,14 @@ func TestLGTMComment(t *testing.T) {
 			HTMLURL:     "<url>",
 		}
 		if tc.hasLGTM {
-			fc.LabelsAdded = []string{"org/repo#5:" + lgtmLabel}
+			fc.LabelsAdded = []string{"org/repo#5:" + LgtmLabel}
 		}
 		oc := &fakeOwnersClient{approvers: approvers, reviewers: reviewers}
 		pc := &plugins.Configuration{}
 		if tc.skipCollab {
 			pc.Owners.SkipCollaborators = []string{"org/repo"}
 		}
-		if err := handleGenericComment(fc, pc, oc, logrus.WithField("plugin", pluginName), *e); err != nil {
+		if err := handleGenericComment(fc, pc, oc, logrus.WithField("plugin", PluginName), *e); err != nil {
 			t.Errorf("didn't expect error from lgtmComment: %v", err)
 			continue
 		}
@@ -410,7 +410,7 @@ func TestLGTMCommentWithLGTMNoti(t *testing.T) {
 		fc.IssueComments[5] = append(fc.IssueComments[5], ic)
 		oc := &fakeOwnersClient{approvers: approvers, reviewers: reviewers}
 		pc := &plugins.Configuration{}
-		if err := handleGenericComment(fc, pc, oc, logrus.WithField("plugin", pluginName), *e); err != nil {
+		if err := handleGenericComment(fc, pc, oc, logrus.WithField("plugin", PluginName), *e); err != nil {
 			t.Errorf("For case %s, didn't expect error from lgtmComment: %v", tc.name, err)
 			continue
 		}
@@ -543,11 +543,11 @@ func TestLGTMFromApproveReview(t *testing.T) {
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 		}
 		if tc.hasLGTM {
-			fc.LabelsAdded = []string{"org/repo#5:" + lgtmLabel}
+			fc.LabelsAdded = []string{"org/repo#5:" + LgtmLabel}
 		}
 		oc := &fakeOwnersClient{approvers: approvers, reviewers: reviewers}
 		pc := &plugins.Configuration{}
-		if err := handlePullRequestReview(fc, pc, oc, logrus.WithField("plugin", pluginName), *e); err != nil {
+		if err := handlePullRequestReview(fc, pc, oc, logrus.WithField("plugin", PluginName), *e); err != nil {
 			t.Errorf("For case %s, didn't expect error from pull request review: %v", tc.name, err)
 			continue
 		}
@@ -651,7 +651,7 @@ func TestHandlePullRequest(t *testing.T) {
 					},
 				},
 			},
-			labelsRemoved: []string{lgtmLabel},
+			labelsRemoved: []string{LgtmLabel},
 			issueComments: []fakeIssueComment{
 				{
 					Owner:   "kubernetes",
@@ -689,9 +689,9 @@ func TestHandlePullRequest(t *testing.T) {
 				Owner:  "kubernetes",
 				Repo:   "kubernetes",
 				Number: 101,
-				Label:  lgtmLabel,
+				Label:  LgtmLabel,
 			},
-			labelsRemoved:    []string{lgtmLabel},
+			labelsRemoved:    []string{LgtmLabel},
 			expectNoComments: true,
 		},
 	}
@@ -702,7 +702,7 @@ func TestHandlePullRequest(t *testing.T) {
 				removeLabelErr:   c.removeLabelErr,
 				createCommentErr: c.createCommentErr,
 			}
-			err := handlePullRequest(fakeGitHub, c.event, logrus.WithField("plugin", pluginName))
+			err := handlePullRequest(fakeGitHub, c.event, logrus.WithField("plugin", PluginName))
 
 			if err != nil && c.err == nil {
 				t.Fatalf("handlePullRequest error: %v", err)

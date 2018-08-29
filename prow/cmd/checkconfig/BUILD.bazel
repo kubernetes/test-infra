@@ -1,5 +1,5 @@
 load("@io_bazel_rules_docker//container:image.bzl", "container_image")
-load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
@@ -8,10 +8,14 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//prow/config:go_default_library",
+        "//prow/errorutil:go_default_library",
         "//prow/hook:go_default_library",
         "//prow/logrusutil:go_default_library",
         "//prow/plugins:go_default_library",
+        "//prow/plugins/approve:go_default_library",
+        "//prow/plugins/lgtm:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )
 
@@ -42,4 +46,10 @@ go_binary(
     embed = [":go_default_library"],
     pure = "on",
     visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["main_test.go"],
+    embed = [":go_default_library"],
 )

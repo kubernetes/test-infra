@@ -1532,7 +1532,7 @@ func TestHandlePullRequestEvent(t *testing.T) {
 			prEvent: github.PullRequestEvent{
 				Action: github.PullRequestActionLabeled,
 				Label: github.Label{
-					Name: approvedLabel,
+					Name: ApprovedLabel,
 				},
 			},
 			expectHandle: true,
@@ -1552,7 +1552,7 @@ func TestHandlePullRequestEvent(t *testing.T) {
 			prEvent: github.PullRequestEvent{
 				Action: github.PullRequestActionLabeled,
 				Label: github.Label{
-					Name: approvedLabel,
+					Name: ApprovedLabel,
 				},
 				PullRequest: github.PullRequest{
 					State: "closed",
