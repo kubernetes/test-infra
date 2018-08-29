@@ -47,9 +47,6 @@ var (
 		github.IssueActionLabeled:   true,
 		github.IssueActionUnlabeled: true,
 	}
-
-	// sleep is mocked in tests.
-	sleep = time.Sleep
 )
 
 const (
@@ -166,7 +163,14 @@ func handle(log *logrus.Entry, ghc githubClient, cp commentPruner, configs []plu
 	if e.label == "" /* not a label event */ {
 		// If we are reacting to a PR or Issue being created or reopened, we should wait a
 		// few seconds to allow other automation to apply labels in order to minimize thrashing.
-		sleep(time.Second * 5)
+		// We use the max grace period from applicable configs.
+		gracePeriod := time.Duration(0)
+		for _, cfg := range matchConfigs {
+			if cfg.GracePeriodDuration > gracePeriod {
+				gracePeriod = cfg.GracePeriodDuration
+			}
+		}
+		time.Sleep(gracePeriod)
 		// If currentLabels was populated it is now stale.
 		e.currentLabels = nil
 	}

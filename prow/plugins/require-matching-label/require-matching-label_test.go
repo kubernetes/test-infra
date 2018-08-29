@@ -19,7 +19,6 @@ package requirematchinglabel
 import (
 	"regexp"
 	"testing"
-	"time"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -71,10 +70,6 @@ type fakePruner struct{}
 func (fp *fakePruner) PruneComments(shouldPrune func(github.IssueComment) bool) {}
 
 func TestHandle(t *testing.T) {
-	// Disable sleeping for testing.
-	sleep = func(_ time.Duration) {}
-	defer func() { sleep = time.Sleep }()
-
 	configs := []plugins.RequireMatchingLabel{
 		// needs-sig over k8s org (issues)
 		{

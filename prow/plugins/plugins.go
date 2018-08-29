@@ -503,13 +503,21 @@ type RequireMatchingLabel struct {
 	// how to move forward.
 	// This field is optional. If unspecified, no comment is created when labeling.
 	MissingComment string `json:"missing_comment,omitempty"`
+
+	// GracePeriod is the amount of time to wait before processing newly opened
+	// or reopened issues and PRs. This delay allows other automation to apply
+	// labels before we look for matching labels.
+	// Defaults to '5s'.
+	GracePeriod         string        `json:"grace_period,omitempty"`
+	GracePeriodDuration time.Duration `json:"-"`
 }
 
 // validate checks the following properties:
-// - Org, Regexp, and MissingLabel must be non-empty.
+// - Org, Regexp, MissingLabel, and GracePeriod must be non-empty.
 // - Repo does not contain a '/' (should use Org+Repo).
 // - At least one of PRs or Issues must be true.
 // - Branch only specified if 'prs: true'
+// - MissingLabel must not match Regexp.
 func (r RequireMatchingLabel) validate() error {
 	if r.Org == "" {
 		return errors.New("must specify 'org'")
@@ -522,6 +530,9 @@ func (r RequireMatchingLabel) validate() error {
 	}
 	if r.MissingLabel == "" {
 		return errors.New("must specify 'missing_label'")
+	}
+	if r.GracePeriod == "" {
+		return errors.New("must specify 'grace_period'")
 	}
 	if !r.PRs && !r.Issues {
 		return errors.New("must specify 'prs: true' and/or 'issues: true'")
@@ -638,6 +649,12 @@ This PR is not for the master branch but does not have the ` + "`cherry-pick-app
 To approve the cherry-pick, please assign the patch release manager for the release branch by writing ` + "`/assign @username`" + ` in a comment when ready.
 The list of patch release managers for each release can be found [here](https://git.k8s.io/sig-release/release-managers.md).`
 	}
+
+	for i, rml := range c.RequireMatchingLabel {
+		if rml.GracePeriod == "" {
+			c.RequireMatchingLabel[i].GracePeriod = "5s"
+		}
+	}
 }
 
 // Load attempts to load config from the path. It returns an error if either
@@ -659,7 +676,7 @@ func (pa *PluginAgent) Load(path string) error {
 	// Defaulting should run before validation.
 	np.setDefaults()
 	// Regexp compilation should run after defaulting, but before validation.
-	if err := compileRegexps(np); err != nil {
+	if err := compileRegexpsAndDurations(np); err != nil {
 		return err
 	}
 
@@ -820,7 +837,7 @@ func validateRequireMatchingLabel(rs []RequireMatchingLabel) error {
 	return nil
 }
 
-func compileRegexps(pc *Configuration) error {
+func compileRegexpsAndDurations(pc *Configuration) error {
 	cRe, err := regexp.Compile(pc.SigMention.Regexp)
 	if err != nil {
 		return err
@@ -840,6 +857,13 @@ func compileRegexps(pc *Configuration) error {
 			return fmt.Errorf("failed to compile label regexp: %q, error: %v", rs[i].Regexp, err)
 		}
 		rs[i].Re = re
+
+		var dur time.Duration
+		dur, err = time.ParseDuration(rs[i].GracePeriod)
+		if err != nil {
+			return fmt.Errorf("failed to compile grace period duration: %q, error: %v", rs[i].GracePeriod, err)
+		}
+		rs[i].GracePeriodDuration = dur
 	}
 	return nil
 }
