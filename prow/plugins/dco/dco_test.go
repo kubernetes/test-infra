@@ -206,3 +206,40 @@ func TestCheckDCO(t *testing.T) {
 		})
 	}
 }
+
+func TestMarkdownSHAList(t *testing.T) {
+	var testcases = []struct {
+		name string
+
+		org, repo    string
+		commits      []github.GitCommit
+		expectedList string
+	}{
+		{
+			name: "return a single git commit in a list",
+			org:  "org",
+			repo: "repo",
+			commits: []github.GitCommit{
+				{SHA: strP("sha"), Message: strP("msg")},
+			},
+			expectedList: `- [sha](https://github.com/org/repo/commits/sha) msg`,
+		},
+		{
+			name: "return two git commits in a list",
+			org:  "org",
+			repo: "repo",
+			commits: []github.GitCommit{
+				{SHA: strP("sha1"), Message: strP("msg1")},
+				{SHA: strP("sha2"), Message: strP("msg2")},
+			},
+			expectedList: `- [sha1](https://github.com/org/repo/commits/sha1) msg1
+- [sha2](https://github.com/org/repo/commits/sha2) msg2`,
+		},
+	}
+	for _, tc := range testcases {
+		actualList := markdownSHAList(tc.org, tc.repo, tc.commits)
+		if actualList != tc.expectedList {
+			t.Errorf("Expected returned list to be %q but it was %q", tc.expectedList, actualList)
+		}
+	}
+}
