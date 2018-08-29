@@ -20,6 +20,8 @@ import (
 	"encoding/json"
 	"strings"
 	"time"
+
+	"k8s.io/test-infra/prow/errorutil"
 )
 
 const (
@@ -68,6 +70,23 @@ const (
 	MergeSquash PullRequestMergeType = "squash"
 )
 
+func unmarshalClientError(b []byte) error {
+	var errors []error
+	clientError := ClientError{}
+	err := json.Unmarshal(b, &clientError)
+	if err == nil {
+		return clientError
+	}
+	errors = append(errors, err)
+	alternativeClientError := AlternativeClientError{}
+	err = json.Unmarshal(b, &alternativeClientError)
+	if err == nil {
+		return alternativeClientError
+	}
+	errors = append(errors, err)
+	return errorutil.NewAggregate(errors...)
+}
+
 // ClientError represents https://developer.github.com/v3/#client-errors
 type ClientError struct {
 	Message string `json:"message"`
@@ -77,6 +96,22 @@ type ClientError struct {
 		Code     string `json:"code"`
 		Message  string `json:"message,omitempty"`
 	} `json:"errors,omitempty"`
+}
+
+func (r ClientError) Error() string {
+	return r.Message
+}
+
+// AlternativeClientError represents an alternative format for https://developer.github.com/v3/#client-errors
+// This is probably a GitHub bug, as documentation_url should appear only in custom errors
+type AlternativeClientError struct {
+	Message          string   `json:"message"`
+	Errors           []string `json:"errors,omitempty"`
+	DocumentationURL string   `json:"documentation_url,omitempty"`
+}
+
+func (r AlternativeClientError) Error() string {
+	return r.Message
 }
 
 // Reaction holds the type of emotional reaction.

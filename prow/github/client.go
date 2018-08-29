@@ -261,12 +261,28 @@ type request struct {
 }
 
 type requestError struct {
-	ClientError
+	ClientError error
 	ErrorString string
 }
 
 func (r requestError) Error() string {
 	return r.ErrorString
+}
+
+func (r requestError) ErrorMessages() []string {
+	clientErr, isClientError := r.ClientError.(ClientError)
+	if isClientError {
+		errors := []string{}
+		for _, subErr := range clientErr.Errors {
+			errors = append(errors, subErr.Message)
+		}
+		return errors
+	}
+	alternativeClientErr, isAlternativeClientError := r.ClientError.(AlternativeClientError)
+	if isAlternativeClientError {
+		return alternativeClientErr.Errors
+	}
+	return []string{}
 }
 
 // Make a request with retries. If ret is not nil, unmarshal the response body
@@ -307,16 +323,13 @@ func (c *Client) requestRaw(r *request) (int, []byte, error) {
 		}
 	}
 	if !okCode {
-		clientError := ClientError{}
-		if err := json.Unmarshal(b, &clientError); err != nil {
-			return resp.StatusCode, b, err
-		}
-		return resp.StatusCode, b, requestError{
+		clientError := unmarshalClientError(b)
+		err = requestError{
 			ClientError: clientError,
 			ErrorString: fmt.Sprintf("status code %d not one of %v, body: %s", resp.StatusCode, r.exitCodes, string(b)),
 		}
 	}
-	return resp.StatusCode, b, nil
+	return resp.StatusCode, b, err
 }
 
 // Retry on transport failures. Retries on 500s, retries after sleep on
@@ -1552,11 +1565,11 @@ var _ error = (*StateCannotBeChanged)(nil)
 // convert to a StateCannotBeChanged if appropriate or else return the original error
 func stateCannotBeChangedOrOriginalError(err error) error {
 	requestErr, ok := err.(requestError)
-	if ok && len(requestErr.Errors) > 0 {
-		for _, subErr := range requestErr.Errors {
-			if strings.Contains(subErr.Message, stateCannotBeChangedMessagePrefix) {
+	if ok {
+		for _, errorMsg := range requestErr.ErrorMessages() {
+			if strings.Contains(errorMsg, stateCannotBeChangedMessagePrefix) {
 				return StateCannotBeChanged{
-					Message: subErr.Message,
+					Message: errorMsg,
 				}
 			}
 		}
