@@ -527,16 +527,10 @@ test_groups:
   days_of_results: 60
   num_columns_recent: 3
   num_failures_to_alert: 1
-- name: ci-kubernetes-e2e-gke-prod
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-prod
 - name: ci-kubernetes-e2e-gci-gke-prod
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-prod
-- name: ci-kubernetes-e2e-gke-prod-parallel
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-prod-parallel
 - name: ci-kubernetes-e2e-gci-gke-prod-parallel
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-prod-parallel
-- name: ci-kubernetes-e2e-gke-prod-smoke
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-prod-smoke
 - name: ci-kubernetes-e2e-gci-gke-prod-smoke
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-prod-smoke
 - name: ci-kubernetes-e2e-gci-gke-reboot
@@ -3587,16 +3581,10 @@ dashboards:
 
 - name: google-gke-prod
   dashboard_tab:
-  - name: gke-prod
-    test_group_name: ci-kubernetes-e2e-gke-prod
   - name: gci-gke-prod
     test_group_name: ci-kubernetes-e2e-gci-gke-prod
-  - name: gke-prod-parallel
-    test_group_name: ci-kubernetes-e2e-gke-prod-parallel
   - name: gci-gke-prod-parallel
     test_group_name: ci-kubernetes-e2e-gci-gke-prod-parallel
-  - name: gke-prod-smoke
-    test_group_name: ci-kubernetes-e2e-gke-prod-smoke
   - name: gci-gke-prod-smoke
     test_group_name: ci-kubernetes-e2e-gci-gke-prod-smoke
 
