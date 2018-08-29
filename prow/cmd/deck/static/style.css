@@ -318,6 +318,7 @@ span.label:not(.merge-table-label):hover {
     color: #757575;
     font-size: 15px;
     font-weight: bolder;
+    max-width: 170px;
 }
 
 .command-example-list {
@@ -346,6 +347,10 @@ span.label:not(.merge-table-label):hover {
 }
 
 #usage-col {
+    min-width: 200px;
+}
+
+#description-col {
     min-width: 200px;
 }
 
