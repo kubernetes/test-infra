@@ -1,2 +1,5 @@
 approvers:
 - stevekuznetsov
+labels:
+ - area/prow/clonerefs
+ - area/prow/pod-utilities
