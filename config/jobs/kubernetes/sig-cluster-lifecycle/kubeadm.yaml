@@ -6,7 +6,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180827-b4a364eb9
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180829-29d5569b7
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -34,7 +34,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180827-b4a364eb9
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180829-29d5569b7
       args:
       - --repo=k8s.io/kubernetes=release-1.10
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -60,7 +60,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180827-b4a364eb9
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180829-29d5569b7
       args:
       - --repo=k8s.io/kubernetes=release-1.11
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -86,7 +86,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180827-b4a364eb9
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180829-29d5569b7
       args:
       - --repo=k8s.io/kubernetes=release-1.11
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -113,7 +113,7 @@ periodics:
     preset-bazel-scratch-dir: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180827-b4a364eb9
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180829-29d5569b7
       args:
       - --repo=k8s.io/kubernetes=release-1.8
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -139,7 +139,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180827-b4a364eb9
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180829-29d5569b7
       args:
       - --repo=k8s.io/kubernetes=release-1.9
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -165,7 +165,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180827-b4a364eb9
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180829-29d5569b7
       args:
       - --repo=k8s.io/kubernetes=release-1.9
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -191,7 +191,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180827-b4a364eb9
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180829-29d5569b7
       args:
       - --repo=k8s.io/kubernetes=release-1.10
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -217,7 +217,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180827-b4a364eb9
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180829-29d5569b7
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -244,7 +244,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180827-b4a364eb9
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180829-29d5569b7
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -271,7 +271,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180827-b4a364eb9
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180829-29d5569b7
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -298,7 +298,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180827-b4a364eb9
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180829-29d5569b7
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -325,7 +325,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180827-b4a364eb9
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180829-29d5569b7
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -351,7 +351,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180827-b4a364eb9
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180829-29d5569b7
       args:
       - --repo=k8s.io/kubernetes=release-1.11
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -382,7 +382,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180827-b4a364eb9
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180829-29d5569b7
       args:
       - --repo=k8s.io/kubernetes=release-1.9
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -413,7 +413,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180827-b4a364eb9
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180829-29d5569b7
       args:
       - --repo=k8s.io/kubernetes=release-1.10
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
@@ -444,7 +444,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180827-b4a364eb9
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180829-29d5569b7
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
