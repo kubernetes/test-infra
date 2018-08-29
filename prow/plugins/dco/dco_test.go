@@ -53,9 +53,13 @@ func TestCheckDCO(t *testing.T) {
 		addedLabel     string
 		removedLabel   string
 		expectedStatus string
+		// org/repo#number:body
+		addedComment string
+		// org/repo#issuecommentid
+		removedComment string
 	}{
 		{
-			name: "should add 'dco-signoff: no' label and status context if no commits have sign off",
+			name: "should add 'no' label & status context and add a comment if no commits have sign off",
 			commits: []github.RepositoryCommit{
 				{SHA: strP("sha"), Commit: &github.GitCommit{Message: strP("not a sign off")}},
 			},
@@ -66,9 +70,24 @@ func TestCheckDCO(t *testing.T) {
 
 			addedLabel:     fmt.Sprintf("/#3:%s", dcoNoLabel),
 			expectedStatus: github.StatusFailure,
+			addedComment: `/#3:Thanks for your pull request. Before we can look at your pull request, you'll need to add a 'DCO signoff' to your commits.
+
+:memo: **Please follow instructions in the [contributing guide](https://github.com///blob/master/CONTRIBUTING.md) to update your commits with the DCO**
+
+Full details of the Developer Certificate of Origin can be found at [developercertificate.org](https://developercertificate.org/).
+
+**The list of commits missing DCO signoff**:
+
+- [sha](https://github.com///commits/sha) not a sign off
+
+<details>
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+</details>
+`,
 		},
 		{
-			name: "should add 'dco-signoff: no' label and status context and remove old labels if no commits have sign off",
+			name: "should add 'no' label & status context, remove old labels and add a comment if no commits have sign off",
 			commits: []github.RepositoryCommit{
 				{SHA: strP("sha"), Commit: &github.GitCommit{Message: strP("not a sign off")}},
 			},
@@ -80,9 +99,24 @@ func TestCheckDCO(t *testing.T) {
 			addedLabel:     fmt.Sprintf("/#3:%s", dcoNoLabel),
 			removedLabel:   fmt.Sprintf("/#3:%s", dcoYesLabel),
 			expectedStatus: github.StatusFailure,
+			addedComment: `/#3:Thanks for your pull request. Before we can look at your pull request, you'll need to add a 'DCO signoff' to your commits.
+
+:memo: **Please follow instructions in the [contributing guide](https://github.com///blob/master/CONTRIBUTING.md) to update your commits with the DCO**
+
+Full details of the Developer Certificate of Origin can be found at [developercertificate.org](https://developercertificate.org/).
+
+**The list of commits missing DCO signoff**:
+
+- [sha](https://github.com///commits/sha) not a sign off
+
+<details>
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+</details>
+`,
 		},
 		{
-			name: "should do nothing if labels and status are up to date and sign off is failing",
+			name: "should update comment if labels and status are up to date and sign off is failing",
 			commits: []github.RepositoryCommit{
 				{SHA: strP("sha"), Commit: &github.GitCommit{Message: strP("not a sign off")}},
 			},
@@ -93,11 +127,26 @@ func TestCheckDCO(t *testing.T) {
 			status:      github.StatusFailure,
 
 			expectedStatus: github.StatusFailure,
+			addedComment: `/#3:Thanks for your pull request. Before we can look at your pull request, you'll need to add a 'DCO signoff' to your commits.
+
+:memo: **Please follow instructions in the [contributing guide](https://github.com///blob/master/CONTRIBUTING.md) to update your commits with the DCO**
+
+Full details of the Developer Certificate of Origin can be found at [developercertificate.org](https://developercertificate.org/).
+
+**The list of commits missing DCO signoff**:
+
+- [sha](https://github.com///commits/sha) not a sign off
+
+<details>
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+</details>
+`,
 		},
 		{
 			name: "should mark the PR as failed if just one commit is missing sign-off",
 			commits: []github.RepositoryCommit{
-				{SHA: strP("sha"), Commit: &github.GitCommit{Message: strP("Signed-off-by: someone")}},
+				{SHA: strP("sha1"), Commit: &github.GitCommit{Message: strP("Signed-off-by: someone")}},
 				{SHA: strP("sha"), Commit: &github.GitCommit{Message: strP("not signed off")}},
 			},
 			issueState:  "open",
@@ -108,6 +157,21 @@ func TestCheckDCO(t *testing.T) {
 			addedLabel:     fmt.Sprintf("/#3:%s", dcoNoLabel),
 			removedLabel:   fmt.Sprintf("/#3:%s", dcoYesLabel),
 			expectedStatus: github.StatusFailure,
+			addedComment: `/#3:Thanks for your pull request. Before we can look at your pull request, you'll need to add a 'DCO signoff' to your commits.
+
+:memo: **Please follow instructions in the [contributing guide](https://github.com///blob/master/CONTRIBUTING.md) to update your commits with the DCO**
+
+Full details of the Developer Certificate of Origin can be found at [developercertificate.org](https://developercertificate.org/).
+
+**The list of commits missing DCO signoff**:
+
+- [sha](https://github.com///commits/sha) not signed off
+
+<details>
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+</details>
+`,
 		},
 		{
 			name: "should add label and update status context if all commits are signed-off",
@@ -202,6 +266,18 @@ func TestCheckDCO(t *testing.T) {
 			}
 			if !found && tc.expectedStatus != "" {
 				t.Errorf("Expect dco status to be %q, but it was not found", tc.expectedStatus)
+			}
+
+			comments := fc.IssueCommentsAdded
+			if len(comments) == 0 && tc.addedComment != "" {
+				t.Errorf("Expected comment with body %q to be added, but it was not", tc.addedComment)
+				return
+			}
+			if len(comments) > 1 {
+				t.Errorf("did not expect more than one comment to be created")
+			}
+			if len(comments) != 0 && comments[0] != tc.addedComment {
+				t.Errorf("expected comment to be %q but it was %q", tc.addedComment, comments[0])
 			}
 		})
 	}
