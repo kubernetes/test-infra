@@ -1626,3 +1626,19 @@ func TestListMilestones(t *testing.T) {
 		t.Errorf("Didn't expect error: %v", err)
 	}
 }
+
+func TestListPRCommits(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/theorg/therepo/pulls/3/commits" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if err, _ := c.ListPRCommits("theorg", "therepo", 3); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	}
+}
