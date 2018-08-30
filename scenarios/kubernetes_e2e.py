@@ -551,7 +551,8 @@ def main(args):
     if args.kubeadm:
         version = kubeadm_version(args.kubeadm, shared_build_gcs_path)
         runner_args.extend([
-            '--kubernetes-anywhere-path=%s' % os.path.join(workspace, 'kubernetes-anywhere'),
+            '--kubernetes-anywhere-path=%s' % os.path.join(workspace, 'k8s.io',
+                'kubernetes-anywhere'),
             '--kubernetes-anywhere-phase2-provider=kubeadm',
             '--kubernetes-anywhere-cluster=%s' % cluster,
             '--kubernetes-anywhere-kubeadm-version=%s' % version,
