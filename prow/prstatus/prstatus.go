@@ -116,8 +116,7 @@ type PullRequest struct {
 		}
 	} `graphql:"labels(first: 100)"`
 	Milestone struct {
-		ID     githubql.ID
-		Closed githubql.Boolean
+		Title githubql.String
 	}
 	Mergeable githubql.MergeableState
 }
