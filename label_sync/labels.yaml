@@ -657,6 +657,12 @@ default:
       target: both
       prowPlugin: milestonestatus
       addedBy: "members of a configurable github team. default: [@kubernetes/kubernetes-milestone-maintainers](https://github.com/orgs/kubernetes/teams/kubernetes-milestone-maintainers/members)"
+    - color: f9d0c4
+      description: "¯\\_(ツ)_/¯"
+      name: "¯\\_(ツ)_/¯"
+      target: both
+      prowPlugin: shrug
+      addedBy: humans
 repos:
   kubernetes/kubernetes:
     labels:
