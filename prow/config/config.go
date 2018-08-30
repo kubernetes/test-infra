@@ -36,6 +36,7 @@ import (
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/validation"
 
 	"k8s.io/test-infra/prow/config/org"
 	"k8s.io/test-infra/prow/github"
@@ -896,6 +897,12 @@ func validateLabels(name string, labels map[string]string) error {
 			if label == prowLabel {
 				return fmt.Errorf("job %s attempted to set Prow-controlled label %s to %s", name, label, labels[label])
 			}
+		}
+		if errs := validation.IsQualifiedName(label); len(errs) != 0 {
+			return fmt.Errorf("job %s sets an invalid label key %s: %v", name, label, errs)
+		}
+		if errs := validation.IsValidLabelValue(labels[label]); len(errs) != 0 {
+			return fmt.Errorf("job %s sets an invalid label value %s for key %s: %v", name, labels[label], label, errs)
 		}
 	}
 	return nil
