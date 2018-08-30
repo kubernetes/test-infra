@@ -1,0 +1,118 @@
+presubmits:
+  GoogleCloudPlatform/k8s-multicluster-ingress:
+  - name: pull-kubernetes-multicluster-ingress-test
+    branches:
+    - master
+    always_run: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+        args:
+        - "--repo=github.com/GoogleCloudPlatform/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - --scenario=execute
+        - --
+        - make
+        - --
+        - -j
+        - "5"
+        - test
+        - coveralls
+        - vet
+        - fmt
+        - lint
+        volumeMounts:
+        - name: coveralls
+          mountPath: /etc/coveralls-token
+          readOnly: true
+      volumes:
+      - name: coveralls
+        secret:
+          secretName: k8s-multicluster-ingress-coveralls-token
+
+postsubmits:
+  GoogleCloudPlatform/k8s-multicluster-ingress:
+  - name: ci-kubemci-image-push
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+        args:
+        - "--repo=k8s.io/test-infra=master"
+        - "--root=/go/src/"
+        - "--timeout=90"
+        - --scenario=execute
+        - --
+        - make
+        - --
+        - -C
+        - images/kubemci
+        - push-latest
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+
+periodics:
+- interval: 6h
+  name: ci-kubernetes-multicluster-ingress-test
+  labels:
+    preset-service-account: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+      args:
+      - --repo=github.com/GoogleCloudPlatform/k8s-multicluster-ingress=master
+      - --root=/go/src
+      - --timeout=50
+      - --service-account=/etc/service-account/service-account.json
+      - --upload=gs://kubernetes-jenkins/logs
+      - --scenario=execute
+      - --
+      - make
+      - --
+      - -j
+      - "5"
+      - test
+      - coveralls
+      - vet
+      - fmt
+      - lint
+      volumeMounts:
+      - name: coveralls
+        mountPath: /etc/coveralls-token
+        readOnly: true
+    volumes:
+    - name: coveralls
+      secret:
+        secretName: k8s-multicluster-ingress-coveralls-token
+
+- interval: 60m
+  name: ci-kubemci-ingress-conformance
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=110
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:master
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-project-type=ingress-project
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:kubemci\] --minStartupPods=8
+      - --timeout=90m
+      image: gcr.io/k8s-testimages/e2e-kubemci:latest
+      imagePullPolicy: Always

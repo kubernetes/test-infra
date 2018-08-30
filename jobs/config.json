@@ -67,36 +67,6 @@
       "sig-node"
     ]
   },
-  "ci-kubemci-image-push": {
-    "args": [
-      "make",
-      "--",
-      "-C",
-      "images/kubemci",
-      "push-latest"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-multicluster"
-    ]
-  },
-  "ci-kubemci-ingress-conformance": {
-    "args": [
-      "--check-leaked-resources",
-      "--env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:master",
-      "--extract=ci/latest",
-      "--gcp-node-image=gci",
-      "--gcp-project-type=ingress-project",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:kubemci\\] --minStartupPods=8",
-      "--timeout=90m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-multicluster"
-    ]
-  },
   "ci-kubernetes-e2e-autoscaling-vpa-actuation": {
     "args": [
       "--check-leaked-resources",
@@ -647,23 +617,6 @@
       "sig-instrumentation"
     ]
   },
-  "ci-kubernetes-multicluster-ingress-test": {
-    "args": [
-      "make",
-      "--",
-      "-j",
-      "5",
-      "test",
-      "coveralls",
-      "vet",
-      "fmt",
-      "lint"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-multicluster"
-    ]
-  },
   "ci-kustomize-periodic-default-gke": {
     "args": [
       "--check-leaked-resources",
@@ -682,22 +635,6 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-cli"
-    ]
-  },
-  "ci-poseidon-e2e-gce": {
-    "args": [
-      "--check-leaked-resources",
-      "--cluster=",
-      "--extract=ci/latest",
-      "--gcp-node-image=ubuntu",
-      "--provider=gce",
-      "--test=false",
-      "--test-cmd=../test/e2e-poseidon-gce.sh",
-      "--timeout=60m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-scheduling"
     ]
   },
   "fake-branch": {
@@ -725,34 +662,6 @@
     "scenario": "execute",
     "sigOwners": [
       "sig-testing"
-    ]
-  },
-  "pull-cluster-registry-verify-gensrc": {
-    "args": [
-      "./hack/verify-all-gensrc.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-multicluster"
-    ]
-  },
-  "pull-cluster-registry-verify-gosrc": {
-    "args": [
-      "./hack/verify-go-src.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-multicluster"
-    ]
-  },
-  "pull-community-verify": {
-    "args": [
-      "make",
-      "verify"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-contributor-experience"
     ]
   },
   "pull-cri-containerd-build": {
@@ -789,48 +698,6 @@
       "sig-node"
     ]
   },
-  "pull-frameworks-test": {
-    "args": [
-      "./bin/test-on-prow.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "pull-heapster-e2e": {
-    "scenario": "kubernetes_heapster",
-    "sigOwners": [
-      "sig-instrumentation"
-    ]
-  },
-  "pull-heapster-unit": {
-    "args": [
-      "make",
-      "test-unit"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-instrumentation"
-    ]
-  },
-  "pull-kubernetes-multicluster-ingress-test": {
-    "args": [
-      "make",
-      "--",
-      "-j",
-      "5",
-      "test",
-      "coveralls",
-      "vet",
-      "fmt",
-      "lint"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-multicluster"
-    ]
-  },
   "pull-kubernetes-node-e2e": {
     "args": [
       "--deployment=node",
@@ -861,29 +728,6 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-node"
-    ]
-  },
-  "pull-poseidon-bazel": {
-    "args": [
-      "--build=//cmd/poseidon",
-      "--test=//... -//hack/... -//vendor/... -//test/e2e/...",
-      "--test-args=--build_tag_filters=-e2e",
-      "--test-args=--test_tag_filters=-e2e",
-      "--test-args=--flaky_test_attempts=3"
-    ],
-    "scenario": "kubernetes_bazel",
-    "sigOwners": [
-      "sig-scheduling"
-    ]
-  },
-  "pull-poseidon-verify": {
-    "args": [
-      "make",
-      "verify"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-scheduling"
     ]
   },
   "random_job": {
