@@ -6,7 +6,11 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
 go_image(
     name = "image",
     base = "@git-base//image",
-    binary = ":hook",
+    embed = [":go_default_library"],
+    goarch = "amd64",
+    goos = "linux",
+    pure = "on",
+    visibility = ["//visibility:public"],
 )
 
 go_binary(

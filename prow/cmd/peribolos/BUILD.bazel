@@ -123,6 +123,10 @@ load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 
 go_image(
     name = "image",
-    binary = ":peribolos",
-    visibility = ["//prow:__subpackages__"],
+    base = "@alpine-base//image",
+    embed = [":go_default_library"],
+    goarch = "amd64",
+    goos = "linux",
+    pure = "on",
+    visibility = ["//visibility:public"],
 )

@@ -18,6 +18,18 @@ go_library(
     ],
 )
 
+load("@io_bazel_rules_docker//go:image.bzl", "go_image")
+
+go_image(
+    name = "image",
+    base = "@alpine-base//image",
+    embed = [":go_default_library"],
+    goarch = "amd64",
+    goos = "linux",
+    pure = "on",
+    visibility = ["//visibility:public"],
+)
+
 go_binary(
     name = "artifact-uploader",
     embed = [":go_default_library"],
