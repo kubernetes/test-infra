@@ -561,6 +561,9 @@ plugins:
   kubernetes-sigs/cluster-api-provider-vsphere:
   - trigger
 
+  kubernetes-sigs/contributor-playground:
+  - require-sig
+
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
   - trigger
 
