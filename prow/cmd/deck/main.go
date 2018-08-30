@@ -27,7 +27,6 @@ import (
 	"net/http"
 	"net/url"
 	"path"
-	"regexp"
 	"time"
 
 	"github.com/NYTimes/gziphandler"
@@ -96,11 +95,6 @@ func gatherOptions() options {
 	flag.Parse()
 	return o
 }
-
-var (
-	// Matches letters, numbers, hyphens, and underscores.
-	objReg = regexp.MustCompile(`^[\w-]+$`)
-)
 
 func main() {
 	o := gatherOptions()
@@ -499,16 +493,10 @@ func validateLogRequest(r *http.Request) error {
 	id := r.URL.Query().Get("id")
 
 	if job == "" {
-		return errors.New("Missing job query")
+		return errors.New("request did not provide the 'job' query parameter")
 	}
 	if id == "" {
-		return errors.New("Missing ID query")
-	}
-	if !objReg.MatchString(job) {
-		return fmt.Errorf("Invalid job query: %s", job)
-	}
-	if !objReg.MatchString(id) {
-		return fmt.Errorf("Invalid ID query: %s", id)
+		return errors.New("request did not provide the 'id' query parameter")
 	}
 	return nil
 }
@@ -520,8 +508,8 @@ type pjClient interface {
 func handleRerun(kc pjClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := r.URL.Query().Get("prowjob")
-		if !objReg.MatchString(name) {
-			http.Error(w, "Invalid ProwJob query", http.StatusBadRequest)
+		if name == "" {
+			http.Error(w, "request did not provide the 'name' query parameter", http.StatusBadRequest)
 			return
 		}
 		pj, err := kc.GetProwJob(name)
