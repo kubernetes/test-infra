@@ -30,7 +30,11 @@ container_image(
 go_image(
     name = "image",
     base = ":asset-base",
-    binary = ":deck",
+    embed = [":go_default_library"],
+    goarch = "amd64",
+    goos = "linux",
+    pure = "on",
+    visibility = ["//visibility:public"],
 )
 
 go_binary(

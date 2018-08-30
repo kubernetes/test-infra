@@ -1,17 +1,26 @@
 package(default_visibility = ["//visibility:public"])
 
-load("@io_bazel_rules_docker//container:image.bzl", "container_image")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("@io_bazel_rules_docker//container:image.bzl", "container_image")
 load("@io_bazel_rules_docker//docker:docker.bzl", "container_push")
+load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 
 container_image(
-    name = "image",
+    name = "base-image",
     base = "@python//image",
-    cmd = ["./gerrit"],
     files = [
         "third_party/git-cookie-authdaemon",
-        ":gerrit",
     ],
+    visibility = ["//visibility:private"],
+)
+
+go_image(
+    name = "image",
+    base = ":base-image",
+    embed = [":go_default_library"],
+    goarch = "amd64",
+    goos = "linux",
+    pure = "on",
     visibility = ["//visibility:public"],
 )
 

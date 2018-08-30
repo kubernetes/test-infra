@@ -8,7 +8,10 @@ load(
 go_image(
     name = "image",
     base = "@git-base//image",
-    binary = ":tide",
+    embed = [":go_default_library"],
+    goarch = "amd64",
+    goos = "linux",
+    pure = "on",
     visibility = ["//visibility:public"],
 )
 

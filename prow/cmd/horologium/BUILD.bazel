@@ -11,7 +11,11 @@ load(
 go_image(
     name = "image",
     base = "@alpine-base//image",
-    binary = ":horologium",
+    embed = [":go_default_library"],
+    goarch = "amd64",
+    goos = "linux",
+    pure = "on",
+    visibility = ["//visibility:public"],
 )
 
 go_binary(
