@@ -132,16 +132,15 @@ func prepareLogfiles(logDir string) {
 	switch *cloudProvider {
 	case "gce", "gke":
 		logfiles = append(logfiles, gceLogs...)
-	case "kubemark":
-		// TODO(shyamjvs): Pick logs based on kubemark's real provider.
-		logfiles = append(logfiles, gceLogs...)
-		if *enableHollowNodeLogs {
-			logfiles = append(logfiles, kubemarkLogs...)
-		}
 	case "aws":
 		logfiles = append(logfiles, awsLogs...)
 	default:
 		glog.Errorf("Unknown cloud provider '%v' provided, skipping any provider specific logs", *cloudProvider)
+	}
+
+	// Grab kubemark logs too, if asked for.
+	if *enableHollowNodeLogs {
+		logfiles = append(logfiles, kubemarkLogs...)
 	}
 
 	// Select system/service specific logs.
