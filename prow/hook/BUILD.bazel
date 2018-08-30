@@ -57,6 +57,7 @@ go_library(
         "//prow/plugins/override:go_default_library",
         "//prow/plugins/owners-label:go_default_library",
         "//prow/plugins/releasenote:go_default_library",
+        "//prow/plugins/require-matching-label:go_default_library",
         "//prow/plugins/requiresig:go_default_library",
         "//prow/plugins/shrug:go_default_library",
         "//prow/plugins/sigmention:go_default_library",
