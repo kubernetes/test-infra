@@ -222,7 +222,7 @@ Instructions for interacting with me using PR comments are available [here](http
 					{Context: dcoContextName, State: tc.status},
 				}
 			}
-			if err := handle(fc, &fakePruner{}, logrus.WithField("plugin", pluginName), "", "", tc.pullRequest); err != nil {
+			if err := handle(fc, &fakePruner{}, logrus.WithField("plugin", pluginName), "", "", tc.pullRequest, true); err != nil {
 				t.Errorf("For case %s, didn't expect error from dco plugin: %v", tc.name, err)
 			}
 			ok := tc.addedLabel == ""

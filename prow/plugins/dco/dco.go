@@ -162,7 +162,7 @@ func checkExistingLabels(gc gitHubClient, l *logrus.Entry, org, repo string, num
 
 // takeAction will take appropriate action on the pull request according to its
 // current state.
-func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo string, pr github.PullRequest, commitsMissingDCO []github.GitCommit, existingStatus string, hasYesLabel, hasNoLabel bool) error {
+func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo string, pr github.PullRequest, commitsMissingDCO []github.GitCommit, existingStatus string, hasYesLabel, hasNoLabel, addComment bool) error {
 	targetURL := fmt.Sprintf("https://github.com/%s/%s/blob/master/CONTRIBUTING.md", org, repo)
 	botName, err := gc.BotName()
 	if err != nil {
@@ -231,12 +231,14 @@ func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo st
 		}
 	}
 
-	// we always prune and create a comment if the check is failing, to ensure
-	// the list of failing commits is up to date.
-	cp.PruneComments(shouldPrune(l, botName))
-	l.Infof("Commenting on PR to advise users of DCO check")
-	if err := gc.CreateComment(org, repo, pr.Number, fmt.Sprintf(dcoNotFoundMessage, targetURL, markdownSHAList(org, repo, commitsMissingDCO), plugins.AboutThisBot)); err != nil {
-		l.WithError(err).Warning("Could not create DCO not found comment.")
+	if addComment {
+		// we only prune and recreate the comment on *synchronize* events to
+		// prevent us commenting every time a label is added/deleted.
+		cp.PruneComments(shouldPrune(l, botName))
+		l.Infof("Commenting on PR to advise users of DCO check")
+		if err := gc.CreateComment(org, repo, pr.Number, fmt.Sprintf(dcoNotFoundMessage, targetURL, markdownSHAList(org, repo, commitsMissingDCO), plugins.AboutThisBot)); err != nil {
+			l.WithError(err).Warning("Could not create DCO not found comment.")
+		}
 	}
 
 	return nil
@@ -247,7 +249,7 @@ func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo st
 // 3. Check the existing PR labels
 // 4. If signed off, apply appropriate labels and status context.
 // 5. If not signed off, apply appropriate labels and status context and add a comment.
-func handle(gc gitHubClient, cp commentPruner, log *logrus.Entry, org, repo string, pr github.PullRequest) error {
+func handle(gc gitHubClient, cp commentPruner, log *logrus.Entry, org, repo string, pr github.PullRequest, addComment bool) error {
 	l := log.WithField("pr", pr.Number)
 
 	commitsMissingDCO, err := checkCommitMessages(gc, l, org, repo, pr.Number)
@@ -268,7 +270,7 @@ func handle(gc gitHubClient, cp commentPruner, log *logrus.Entry, org, repo stri
 		return err
 	}
 
-	return takeAction(gc, cp, l, org, repo, pr, commitsMissingDCO, existingStatus, hasYesLabel, hasNoLabel)
+	return takeAction(gc, cp, l, org, repo, pr, commitsMissingDCO, existingStatus, hasYesLabel, hasNoLabel, addComment)
 }
 
 func markdownSHAList(org, repo string, list []github.GitCommit) string {
@@ -323,7 +325,9 @@ func handlePullRequestEvent(pc plugins.PluginClient, pe github.PullRequestEvent)
 		return nil
 	}
 
-	return handle(pc.GitHubClient, pc.CommentPruner, pc.Logger, org, repo, pe.PullRequest)
+	synchronizeEvent := pe.Action == github.PullRequestActionSynchronize
+
+	return handle(pc.GitHubClient, pc.CommentPruner, pc.Logger, org, repo, pe.PullRequest, synchronizeEvent)
 }
 
 func handleCommentEvent(pc plugins.PluginClient, ce github.GenericCommentEvent) error {
@@ -345,5 +349,5 @@ func handleCommentEvent(pc plugins.PluginClient, ce github.GenericCommentEvent) 
 		return fmt.Errorf("error getting pull request for comment: %v", err)
 	}
 
-	return handle(gc, pc.CommentPruner, pc.Logger, org, repo, *pr)
+	return handle(gc, pc.CommentPruner, pc.Logger, org, repo, *pr, true)
 }
