@@ -16,7 +16,6 @@ package test
 import (
 	"fmt"
 	"testing"
-
 )
 
 // StrFailure is used to display discrepancy between expected and actual result in test

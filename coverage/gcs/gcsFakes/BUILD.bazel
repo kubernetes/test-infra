@@ -11,7 +11,6 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//coverage/artifacts/artsTest:go_default_library",
-        "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )

@@ -27,7 +27,6 @@ const (
 	stdoutName  = "stdout.txt"
 )
 
-
 func LocalArtsForTest_KeyfileNotExist(dirPrefix string) *artifacts.LocalArtifacts {
 	return &artifacts.LocalArtifacts{Artifacts: *artifacts.New(
 		test.NewArtsDir(dirPrefix),

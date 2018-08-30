@@ -18,10 +18,7 @@ go_test(
         "//coverage:test-input",
     ],
     embed = [":go_default_library"],
-    deps = [
-        "//coverage/io:go_default_library",
-        "//coverage/test:go_default_library",
-    ],
+    deps = ["//coverage/io:go_default_library"],
 )
 
 filegroup(

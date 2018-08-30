@@ -8,7 +8,7 @@ go_library(
     deps = [
         "//coverage/artifacts:go_default_library",
         "//coverage/gcs:go_default_library",
-        "//coverage/githubUtil/githubPr:go_default_library",
+        "//coverage/githubUtil/githubPR:go_default_library",
         "//coverage/logUtil:go_default_library",
         "//coverage/testgrid:go_default_library",
         "//coverage/workflows:go_default_library",

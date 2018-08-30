@@ -10,7 +10,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//coverage/git:go_default_library",
-        "//coverage/githubUtil/githubPr:go_default_library",
+        "//coverage/githubUtil/githubPR:go_default_library",
         "//coverage/logUtil:go_default_library",
         "//vendor/github.com/google/go-github/github:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
@@ -26,7 +26,9 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//coverage/githubUtil/githubFakes:go_default_library",
+        "//coverage/githubUtil/githubPR:go_default_library",
         "//coverage/test:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
 
@@ -43,7 +45,7 @@ filegroup(
         ":package-srcs",
         "//coverage/githubUtil/githubClient:all-srcs",
         "//coverage/githubUtil/githubFakes:all-srcs",
-        "//coverage/githubUtil/githubPr:all-srcs",
+        "//coverage/githubUtil/githubPR:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
