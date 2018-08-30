@@ -325,9 +325,9 @@ func handlePullRequestEvent(pc plugins.PluginClient, pe github.PullRequestEvent)
 		return nil
 	}
 
-	synchronizeEvent := pe.Action == github.PullRequestActionSynchronize
+	shouldComment := pe.Action == github.PullRequestActionSynchronize || pe.Action == github.PullRequestActionOpened
 
-	return handle(pc.GitHubClient, pc.CommentPruner, pc.Logger, org, repo, pe.PullRequest, synchronizeEvent)
+	return handle(pc.GitHubClient, pc.CommentPruner, pc.Logger, org, repo, pe.PullRequest, shouldComment)
 }
 
 func handleCommentEvent(pc plugins.PluginClient, ce github.GenericCommentEvent) error {
