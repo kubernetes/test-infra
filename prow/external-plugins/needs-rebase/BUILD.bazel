@@ -19,7 +19,11 @@ docker_push(
 
 go_image(
     name = "image",
-    binary = ":needs-rebase",
+    base = "@git-base//image",
+    embed = [":go_default_library"],
+    goarch = "amd64",
+    goos = "linux",
+    pure = "on",
     visibility = ["//visibility:public"],
 )
 
