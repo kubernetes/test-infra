@@ -789,7 +789,9 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 		}
 
 		if !scenarioArgs {
-			return fmt.Errorf("job %s: set --scenario and will need scenario args", jobName)
+			if scenario != "kubernetes_heapster" { // this scenario does not have any args
+				return fmt.Errorf("job %s: set --scenario=%s and will need scenario args", jobName, scenario)
+			}
 		}
 	}
 

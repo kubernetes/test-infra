@@ -1,0 +1,76 @@
+presubmits:  
+  kubernetes-sigs/poseidon:
+  - name: ci-poseidon-e2e-gce
+    always_run: true
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=110"
+        - --scenario=kubernetes_e2e
+        - --
+        - --check-leaked-resources
+        - --cluster=
+        - --extract=ci/latest
+        - --gcp-node-image=ubuntu
+        - --provider=gce
+        - --test=false
+        - --test-cmd=../test/e2e-poseidon-gce.sh
+        - --timeout=60m
+        securityContext:
+          privileged: true
+  - name: pull-poseidon-bazel
+    always_run: true
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-1.10
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=45"
+        - --scenario=kubernetes_bazel
+        - --
+        - --build=//cmd/poseidon
+        - --test=//... -//hack/... -//vendor/... -//test/e2e/...
+        - --test-args=--build_tag_filters=-e2e
+        - --test-args=--test_tag_filters=-e2e
+        - --test-args=--flaky_test_attempts=3
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "2Gi"
+  - name: pull-poseidon-verify
+    branches:
+    - master
+    always_run: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+        args:
+        - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+        - "--timeout=45"
+        - --scenario=execute
+        - --
+        - make
+        - verify

@@ -143,13 +143,9 @@ class JobTest(unittest.TestCase):
         for item in doc.get('periodics'):
             self.add_prow_job(item)
 
-        if 'postsubmits' not in doc:
-            self.fail('No postsubmits in prow config!')
-
         self.presubmits = doc.get('presubmits')
-        postsubmits = doc.get('postsubmits')
 
-        for _repo, joblist in self.presubmits.items() + postsubmits.items():
+        for _repo, joblist in self.presubmits.items():
             for job in joblist:
                 self.add_prow_job(job)
 
