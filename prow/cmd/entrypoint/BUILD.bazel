@@ -14,26 +14,6 @@ go_library(
     ],
 )
 
-load("@io_bazel_rules_docker//go:image.bzl", "go_image")
-
-container_image(
-    name = "base-image",
-    # TODO: this base image is *different* to the one defined in the Dockerfile?
-    base = "@git-base//image",
-    directory = "/",
-    visibility = ["//visibility:private"],
-)
-
-go_image(
-    name = "image",
-    base = ":base-image",
-    embed = [":go_default_library"],
-    goarch = "amd64",
-    goos = "linux",
-    pure = "on",
-    visibility = ["//visibility:public"],
-)
-
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
@@ -45,6 +25,14 @@ filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
     tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
+
+container_image(
+    name = "image",
+    base = "@git-base//image",
+    directory = "/",
+    files = [":entrypoint"],
     visibility = ["//visibility:public"],
 )
 
