@@ -32,7 +32,7 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
-	cron "gopkg.in/robfig/cron.v2"
+	"gopkg.in/robfig/cron.v2"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -1110,15 +1110,31 @@ func SetPresubmitRegexes(js []Presubmit) error {
 // setBrancherRegexes compiles and validates all the regular expressions for
 // the provided branch specifiers.
 func setBrancherRegexes(br Brancher) (Brancher, error) {
+
+	branchRegexFunc := func(branches []string) (*regexp.Regexp, error) {
+		branchRegexes := make([]string, len(branches))
+		for i, b := range branches {
+			br := b
+			if !strings.HasPrefix(b, "^") {
+				br = "^" + br
+			}
+			if !strings.HasSuffix(b, "$") {
+				br = br + "$"
+			}
+			branchRegexes[i] = br
+		}
+		return regexp.Compile(strings.Join(branchRegexes, `|`))
+	}
+
 	if len(br.Branches) > 0 {
-		if re, err := regexp.Compile(strings.Join(br.Branches, `|`)); err == nil {
+		if re, err := branchRegexFunc(br.Branches); err == nil {
 			br.re = re
 		} else {
 			return br, fmt.Errorf("could not compile positive branch regex: %v", err)
 		}
 	}
 	if len(br.SkipBranches) > 0 {
-		if re, err := regexp.Compile(strings.Join(br.SkipBranches, `|`)); err == nil {
+		if re, err := branchRegexFunc(br.SkipBranches); err == nil {
 			br.reSkip = re
 		} else {
 			return br, fmt.Errorf("could not compile negative branch regex: %v", err)
