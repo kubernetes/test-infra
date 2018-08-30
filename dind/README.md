@@ -106,7 +106,7 @@ a kubernetes node.
 
 Some resources are expected to be on the host itself. Since we're running in a
 debian environment under systemd, consuming the deb packages for these
-components is trivial.
+components are trivial.
 
 1. kubelet.deb
 1. kubectl.deb
