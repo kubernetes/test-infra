@@ -130,9 +130,7 @@ func prepareLogfiles(logDir string) {
 	logfiles := nodeLogs[:]
 
 	switch *cloudProvider {
-	case "gce", "gke":
-		logfiles = append(logfiles, gceLogs...)
-	case "kubemark":
+	case "gce", "gke", "kubemark":
 		// TODO(shyamjvs): Pick logs based on kubemark's real provider.
 		logfiles = append(logfiles, gceLogs...)
 		if *enableHollowNodeLogs {
