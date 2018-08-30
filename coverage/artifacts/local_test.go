@@ -1,3 +1,16 @@
+/*
+ * Copyright 2018 The Kubernetes Authors.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package artifacts
 
 import (
@@ -11,6 +24,11 @@ import (
 	"os"
 )
 
+const (
+	covTargetRootRel = "testTarget"
+	CovTargetRelPath = covTargetRootRel + "/presubmit"
+)
+
 // generates coverage profile by running go test on target package
 func TestProfiling(t *testing.T) {
 	if os.Getenv("GOPATH") != "" {
@@ -18,7 +36,7 @@ func TestProfiling(t *testing.T) {
 
 		arts := localArtsForTest("TestProfiling")
 		arts.ProduceProfileFile(fmt.Sprintf("../%s/subPkg1/ "+
-			"../%s/subPkg2/", test.CovTargetRootRel, test.CovTargetRootRel))
+			"../%s/subPkg2/", covTargetRootRel, covTargetRootRel))
 
 		t.Logf("Verifying profile file...\n")
 		expectedFirstLine := "mode: count"
