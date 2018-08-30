@@ -19,6 +19,7 @@ package plank
 import (
 	"bytes"
 	"fmt"
+	"path"
 	"strings"
 	"sync"
 	"time"
@@ -26,12 +27,13 @@ import (
 	"github.com/bwmarrin/snowflake"
 	"github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
-
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
+	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	reportlib "k8s.io/test-infra/prow/report"
 )
 
@@ -408,12 +410,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 		}
 	}
 
-	var b bytes.Buffer
-	if err := c.ca.Config().Plank.JobURLTemplate.Execute(&b, &pj); err != nil {
-		c.log.WithFields(pjutil.ProwJobFields(&pj)).Errorf("error executing URL template: %v", err)
-	} else {
-		pj.Status.URL = b.String()
-	}
+	pj.Status.URL = jobURL(c.ca.Config().Plank, pj, c.log)
 
 	reports <- pj
 
@@ -465,12 +462,7 @@ func (c *Controller) syncTriggeredJob(pj kube.ProwJob, pm map[string]kube.Pod, r
 		pj.Status.State = kube.PendingState
 		pj.Status.PodName = pn
 		pj.Status.Description = "Job triggered."
-		var b bytes.Buffer
-		if err := c.ca.Config().Plank.JobURLTemplate.Execute(&b, &pj); err != nil {
-			c.log.WithFields(pjutil.ProwJobFields(&pj)).Errorf("error executing URL template: %v", err)
-		} else {
-			pj.Status.URL = b.String()
-		}
+		pj.Status.URL = jobURL(c.ca.Config().Plank, pj, c.log)
 	}
 	reports <- pj
 	if prevState != pj.Status.State {
@@ -558,4 +550,20 @@ func (c *Controller) RunAfterSuccessCanRun(parent, child *kube.ProwJob, ca confi
 		changes = append(changes, change.Filename)
 	}
 	return ps.RunsAgainstChanges(changes)
+}
+
+func jobURL(plank config.Plank, pj kube.ProwJob, log *logrus.Entry) string {
+	if pj.Spec.DecorationConfig != nil && plank.JobURLPrefix != "" {
+		spec := downwardapi.NewJobSpec(pj.Spec, pj.Status.BuildID, pj.Name)
+		gcsConfig := pj.Spec.DecorationConfig.GCSConfiguration
+		_, gcsPath, _ := gcsupload.PathsForJob(gcsConfig, &spec, "")
+		return path.Join(plank.JobURLPrefix, gcsConfig.Bucket, gcsPath)
+	}
+	var b bytes.Buffer
+	if err := plank.JobURLTemplate.Execute(&b, &pj); err != nil {
+		log.WithFields(pjutil.ProwJobFields(&pj)).Errorf("error executing URL template: %v", err)
+	} else {
+		return b.String()
+	}
+	return ""
 }

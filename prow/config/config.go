@@ -23,6 +23,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -32,7 +33,7 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
-	cron "gopkg.in/robfig/cron.v2"
+	"gopkg.in/robfig/cron.v2"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -168,6 +169,9 @@ type Plank struct {
 	// DefaultDecorationConfig are defaults for shared fields for ProwJobs
 	// that request to have their PodSpecs decorated
 	DefaultDecorationConfig *kube.DecorationConfig `json:"default_decoration_config,omitempty"`
+	// JobURLPrefix is the host and path prefix under
+	// which job details will be viewable
+	JobURLPrefix string `json:"job_url_prefix,omitempty"`
 }
 
 // Gerrit is config for the gerrit controller.
@@ -275,6 +279,9 @@ func Load(prowConfig, jobConfig string) (c *Config, err error) {
 		return nil, err
 	}
 	if err := c.finalizeJobConfig(); err != nil {
+		return nil, err
+	}
+	if err := c.validateComponentConfig(); err != nil {
 		return nil, err
 	}
 	if err := c.validateJobConfig(); err != nil {
@@ -549,6 +556,14 @@ func (c *Config) finalizeJobConfig() error {
 		}
 	}
 
+	return nil
+}
+
+// validateComponentConfig validates the infrastructure component configuration
+func (c *Config) validateComponentConfig() error {
+	if _, err := url.Parse(c.Plank.JobURLPrefix); c.Plank.JobURLPrefix != "" && err != nil {
+		return fmt.Errorf("plank declares an invalid job URL prefix %q: %v", c.Plank.JobURLPrefix, err)
+	}
 	return nil
 }
 
