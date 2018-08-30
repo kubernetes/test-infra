@@ -65,7 +65,6 @@ class JobTest(unittest.TestCase):
 
     realjobs = {}
     prowjobs = []
-    presubmits = []
 
     @property
     def jobs(self):
@@ -137,17 +136,8 @@ class JobTest(unittest.TestCase):
         if 'periodics' not in doc:
             self.fail('No periodics in prow config!')
 
-        if 'presubmits' not in doc:
-            self.fail('No presubmits in prow config!')
-
         for item in doc.get('periodics'):
             self.add_prow_job(item)
-
-        self.presubmits = doc.get('presubmits')
-
-        for _repo, joblist in self.presubmits.items():
-            for job in joblist:
-                self.add_prow_job(job)
 
     def get_real_bootstrap_job(self, job):
         key = os.path.splitext(job.strip())[0]
