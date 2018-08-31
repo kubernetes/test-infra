@@ -31,6 +31,7 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -908,6 +909,35 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 		if strings.Contains(ginkgo_args, "\\\\") {
 			return fmt.Errorf("jobs %s - double slashes in ginkgo args should be single slash now : arg %s", jobName, arg)
 		}
+	}
+
+	// timeout should be valid
+	bootstrap_timeout := 0 * time.Minute
+	kubetest_timeout := 0 * time.Minute
+	var err error
+	kubetest := false
+	for _, arg := range args {
+		if strings.HasPrefix(arg, "--timeout=") {
+			timeout := strings.SplitN(arg, "=", 2)[1]
+			if kubetest {
+				if kubetest_timeout, err = time.ParseDuration(timeout); err != nil {
+					return fmt.Errorf("jobs %s - invalid kubetest timeout : arg %s", jobName, arg)
+				}
+			} else {
+				if bootstrap_timeout, err = time.ParseDuration(timeout + "m"); err != nil {
+					return fmt.Errorf("jobs %s - invalid bootstrap timeout : arg %s", jobName, arg)
+				}
+			}
+		}
+
+		if arg == "--" {
+			kubetest = true
+		}
+	}
+
+	if bootstrap_timeout.Minutes()-kubetest_timeout.Minutes() < 20.0 {
+		return fmt.Errorf(
+			"jobs %s - kubetest timeout(%v), bootstrap timeout(%v): bootstrap timeout need to be 20min more than kubetest timeout!", jobName, kubetest_timeout, bootstrap_timeout)
 	}
 
 	return nil
