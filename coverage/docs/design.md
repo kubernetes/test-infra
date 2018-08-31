@@ -1,7 +1,10 @@
 #Overview
 This code coverage tool has two major features.
-1. As a pre-submit tool, it runs code coverage on every single commit to Github and reports coverage change back to the PR as a comment by a robot account. It also has the ability to block a PR from merging if coverage falls below threshold
-2. As a post-submit / periodical running job, it reports on TestGrid to show users how coverage changes over time.
+1. In pre-submit workflow, it runs code coverage on every single commit to Github and reports 
+coverage changes back to the PR as a comment by a robot github account. In addition, it can 
+report a failure status if coverage falls below threshold - this allows repo owner to make the 
+check required and block PR if coverage threshold not met
+2. In post-submit workflow, it reports on TestGrid to show users how coverage changes over time.
 
 ##Users
 The presubmit tool is intended for a developer to see the impact on code coverage of his/her commit. It can also be used by repo managers to block any PR from merging if the coverage falls under customized threshold.
@@ -21,9 +24,10 @@ Prow is a system that handles github events and commands and allow you to perfor
 #Design of Test Coverage Tool
 We pack the test coverage feature in a container, that is triggered by prow as a prow job. There is a separate prow job configured for each of the following workflows (which is discussed in later sections): pre-submit, post-submit and periodic. 
 
-The feature takes input from three sources
+The tool takes input from three sources
 1. It runs test coverage profiling on target repository. Prow clones the target repository as the current working directory for the container.
-2. It receives github related variables, such as pull request number & commit number, from Prow. Those variables are used as meta-data for the profiles. Metadata allows us to do presumbit coverage comparisons.
+2. It reads previously stored post-submit code coverage profile from gcs bucket. The profile
+serves as a base of comparison for presubmit delta coverage.
 3. It allows user to supply variables in prowjob configs. Those variables include directory to run test coverage, file filters and threshold for desired coverage level.  
 
 Prow has handlers for different github events. We add a pre-submit prow job that is triggered by any new commit to a PR to run test coverage on the new build to compare it with the master branch and previous commit for pre-submit coverage. We add a post-submit prow job that is triggered by merge events, to run test coverage on the nodes of master branch. Test coverage data on the master branch is supplied to TestGrid for displaying the coverage change over time, as well as serve as the basis of comparison for pre-submit coverage mentioned in the pre-submit senario.
@@ -31,7 +35,7 @@ Prow has handlers for different github events. We add a pre-submit prow job that
 Here is the step-by-step description of the pre-submit and post-submit workflows
 
 ##Pre-submit workflow
-Runs code coverage tool to report coverage change in a new commit or new PR
+Runs code coverage tool to report coverage change in a new PR or updated PR
 1. Developer submit new commit to an open PR on github
 2. Matching pre-submit prow job is started 
 3. Test coverage profile generated
@@ -56,15 +60,11 @@ Produces periodical coverage result as input for TestGrid
   
 ##Prow Configuration File
 As mentioned earlier, we use configuration file to store repository specific information. Below is an example that contains the args that will be supplied to the coverage container
-```$xslt
+```
   - name: pull-knative-serving-go-coverage
     labels:
       preset-service-account: "true"
-    agent: kubernetes
-    context: pull-knative-serving-go-coverage
     always_run: true
-    rerun_command: "/test pull-knative-serving-go-coverage"
-    trigger: "(?m)^/test (all|pull-knative-serving-go-coverage),?(\\s+|$)"
     optional: true
     decorate: true
     clone_uri: "git@github.com:knative/serving.git"
