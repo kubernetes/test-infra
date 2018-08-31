@@ -370,6 +370,7 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 		"bazelbuild/rules_k8s",
 		"google/cadvisor",
 		"helm/charts",
+		"kubeflow/arena",
 		"kubeflow/caffe2-operator",
 		"kubeflow/examples",
 		"kubeflow/experimental-beagle",
