@@ -52,6 +52,7 @@ import (
 	_ "k8s.io/test-infra/prow/plugins/trigger"
 	_ "k8s.io/test-infra/prow/plugins/updateconfig"
 	_ "k8s.io/test-infra/prow/plugins/verify-owners"
+	_ "k8s.io/test-infra/prow/plugins/welcome"
 	_ "k8s.io/test-infra/prow/plugins/wip"
 	_ "k8s.io/test-infra/prow/plugins/yuks"
 )
