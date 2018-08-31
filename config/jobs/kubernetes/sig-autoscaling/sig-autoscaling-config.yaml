@@ -1,0 +1,313 @@
+periodics:
+- name: ci-kubernetes-e2e-autoscaling-vpa-actuation
+  interval: 2h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+      args:
+      - --repo=k8s.io/autoscaler=master
+      - --root=/go/src
+      - --timeout=80
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test=false
+      - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
+      - --test-cmd-args=actuation
+      - --timeout=60m
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+
+- name: ci-kubernetes-e2e-autoscaling-vpa-admission-controller
+  interval: 2h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+      args:
+      - --repo=k8s.io/autoscaler=master
+      - --root=/go/src
+      - --timeout=80
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test=false
+      - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
+      - --test-cmd-args=admission-controller
+      - --timeout=60m
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+
+- name: ci-kubernetes-e2e-autoscaling-vpa-full
+  interval: 2h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+      args:
+      - --repo=k8s.io/autoscaler=master
+      - --root=/go/src
+      - --timeout=80
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test=false
+      - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
+      - --test-cmd-args=full-vpa
+      - --timeout=60m
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+
+- name: ci-kubernetes-e2e-autoscaling-vpa-recommender
+  interval: 2h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+      args:
+      - --repo=k8s.io/autoscaler=master
+      - --root=/go/src
+      - --timeout=80
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test=false
+      - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
+      - --test-cmd-args=recommender
+      - --timeout=60m
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+
+- name: ci-kubernetes-e2e-autoscaling-vpa-updater
+  interval: 2h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+      args:
+      - --repo=k8s.io/autoscaler=master
+      - --root=/go/src
+      - --timeout=80
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test=false
+      - --test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh
+      - --test-cmd-args=updater
+      - --timeout=60m
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gci-gce-autoscaling
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=350
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=ca
+      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-autoscaling.env
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-nodes=3
+      - --gcp-project=k8s-jkns-gci-autoscaling
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --runtime-config=scheduling.k8s.io/v1alpha1=true
+      - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]|\[Feature:InitialResources\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
+      - --timeout=300m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gci-gce-autoscaling-hpa
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=350
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=hpa
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-project=k8s-jkns-gci-autoscaling
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:CustomMetricsAutoscaling\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
+      - --timeout=300m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gci-gce-autoscaling-migs
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=350
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=ca
+      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-autoscaling-migs.env
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-nodes=3
+      - --gcp-project=k8s-jkns-gci-autoscaling-migs
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --runtime-config=scheduling.k8s.io/v1alpha1=true
+      - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
+      - --timeout=300m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gci-gce-autoscaling-migs-hpa
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=350
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=hpa
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-project=k8s-jkns-gci-autoscaling-migs
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:CustomMetricsAutoscaling\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
+      - --timeout=300m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gci-gke-autoscaling
+  labels:
+    preset-gke-alpha-service: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=620
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=ca
+      - --deployment=gke
+      - --extract=ci/latest
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=gci
+      - --gcp-project=k8s-e2e-gci-gke-autoscaling
+      - --gcp-zone=us-central1-f
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\]|\[Feature:ClusterSizeAutoscalingScaleWithNAP\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
+      - --timeout=600m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gci-gke-autoscaling-hpa
+  labels:
+    preset-gke-alpha-service: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=440
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=hpa
+      - --deployment=gke
+      - --extract=ci/latest
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=gci
+      - --gcp-project=k8s-e2e-gci-gke-autoscaling
+      - --gcp-zone=us-central1-f
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.focus=\[Feature:CustomMetricsAutoscaling\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
+      - --timeout=420m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gci-gke-autoscaling-regional
+  labels:
+    preset-gke-alpha-service: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=440
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --deployment=gke
+      - --extract=ci/latest
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=gci
+      - --gcp-project=k8s-jkns-gci-autoscaling-regio
+      - --gcp-region=us-central1
+      - --gke-command-group=beta
+      - --gke-environment=test
+      - --gke-single-zone-node-instance-group=false
+      - --provider=gke
+      - --test_args=--gce-multizone=true --ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
+      - --timeout=400m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master

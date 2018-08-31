@@ -1,0 +1,77 @@
+periodics:
+- interval: 2h
+  name: application-periodic-default-gke
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+      args:
+      - --repo=github.com/kubernetes-sigs/application=master
+      - --upload=gs://kubernetes-jenkins/logs/
+      - --timeout=150
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=
+      - --deployment=gke
+      - --extract=gke
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --gke-environment=prod
+      - --provider=gke
+      - --test=false
+      - --test-cmd=../e2e/e2e-prow.sh
+      - --test-cmd-name=application-e2e
+      - --timeout=120m
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 6
+          memory: "8Gi"
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gce-taint-evict
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=80
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --env-file=jobs/env/ci-kubernetes-e2e-gce-taint-evict.env
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:TaintEviction\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gci-gce-statefulset
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=110
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:StatefulSet\] --minStartupPods=8
+      - --timeout=90m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master

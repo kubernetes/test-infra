@@ -1,0 +1,70 @@
+periodics:
+- interval: 2h
+  name: ci-kubernetes-e2e-gce-gci-latest-rollback-etcd
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=110
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --check-version-skew=false
+      - --env-file=jobs/env/ci-kubernetes-e2e-gce-gci-latest-rollback-etcd.env
+      - --extract=ci/latest
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test=false
+      - --timeout=60m
+      - --upgrade_args=--ginkgo.focus=\[Feature:EtcdUpgrade\] --etcd-upgrade-storage=etcd2 --etcd-upgrade-version=2.2.1
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gce-ha-master
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=240
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --env=MULTIZONE=true
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-project=kubernetes-ha-master
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:HAMaster\] --minStartupPods=8
+      - --timeout=220m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 24h
+  name: ci-kubernetes-e2e-gce-min-node-permissions
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=520
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env-file=jobs/env/ci-kubernetes-e2e-gce-min-node-permissions.env
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-project=k8s-min-node-permissions
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test_args=--ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=500m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master

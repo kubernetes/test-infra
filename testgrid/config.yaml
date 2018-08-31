@@ -1460,9 +1460,6 @@ test_groups:
   gcs_prefix: kubernetes-multiarch-e2e-results/logs/kubeadm-luxas-scaleway-arm64
 - name: periodic-multi-platform-kubeadm-packet-arm64
   gcs_prefix: kubernetes-multiarch-e2e-results/logs/kubeadm-luxas-packet-arm64
-# garbage collector tests
-- name: ci-kubernetes-e2e-gci-gce-garbage
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-garbage
 # kubeadm tests
 - name: ci-kubernetes-e2e-kubeadm-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce
@@ -4179,8 +4176,6 @@ dashboards:
     test_group_name: ci-kops-build
   - name: debian-unstable
     test_group_name: ci-kubernetes-build-debian-unstable
-  - name: gci-garbage-collector
-    test_group_name: ci-kubernetes-e2e-gci-gce-garbage
 
 - name: sig-release-1.10-all
   dashboard_tab:
