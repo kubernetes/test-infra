@@ -96,8 +96,8 @@ func handlePR(c client, pre github.PullRequestEvent, welcomeTemplate string) err
 		return err
 	}
 
-	// if there is exactly one result, this is the first! post the welcome comment
-	if len(issues) == 1 {
+	// if there are no results, this is the first! post the welcome comment
+	if len(issues) == 0 || len(issues) == 1 && issues[0].Number == pre.Number {
 		// load the template, and run it over the PR info
 		parsedTemplate, err := template.New("welcome").Parse(welcomeTemplate)
 		if err != nil {
