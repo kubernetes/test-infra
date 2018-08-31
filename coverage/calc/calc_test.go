@@ -26,7 +26,7 @@ import (
 
 func TestReadLocalProfile(t *testing.T) {
 	arts := artsTest.LocalInputArtsForTest()
-	covList := CovList(arts.ProfileReader(), nil, nil, 50)
+	covList := CovList(arts.ProfileReader(), nil, false, &map[string]bool{}, 50)
 	covList.report(false)
 	expected := "56.5%"
 	actual := covList.percentage()
@@ -37,7 +37,7 @@ func TestReadLocalProfile(t *testing.T) {
 
 func covListForTest() *CoverageList {
 	arts := artsTest.LocalInputArtsForTest()
-	covList := CovList(arts.ProfileReader(), nil, nil, 50)
+	covList := CovList(arts.ProfileReader(), nil, false, &map[string] bool{}, 50)
 	covList.report(true)
 	return covList
 }

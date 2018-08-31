@@ -87,7 +87,7 @@ func main() {
 	localArtifacts.ProduceProfileFile(*coverageTargetDir)
 
 	switch jobType {
-	case "presubmit":
+	case "presubmit", "local-presubmit":
 		buildStr := os.Getenv("BUILD_NUMBER")
 		build, err := strconv.Atoi(buildStr)
 		if err != nil {

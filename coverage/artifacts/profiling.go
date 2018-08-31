@@ -42,8 +42,8 @@ func runProfiling(covTargets []string, localArts *LocalArtifacts) {
 	goTestCoverStdout, errCmdOutput := cmd.Output()
 
 	if errCmdOutput != nil {
-		logUtil.LogFatalf("Error running 'go test -coverprofile ': error='%v'; stdout='%s'; stderr='%v'",
-			errCmdOutput, goTestCoverStdout, cmd.Stderr)
+		logUtil.LogFatalf("Error running 'go test -coverprofile ': error='%v'; stdout='%s'",
+			errCmdOutput, goTestCoverStdout)
 	} else {
 		logrus.Infof("coverage profile created @ '%s'", localArts.ProfilePath())
 		covIo.CreateMarker(localArts.Directory(), CovProfileCompletionMarker)

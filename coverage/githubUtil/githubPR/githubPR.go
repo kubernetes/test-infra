@@ -131,7 +131,7 @@ func (data *GithubPr) CleanAndPostComment(content string) (err error) {
 func getGithubToken(githubTokenLocation string) (res string, err error) {
 	buf, err := ioutil.ReadFile(githubTokenLocation)
 	if err != nil {
-		fmt.Printf("github token file cannot be found: %v\n", err)
+		fmt.Printf("github token file cannot be found in location '%s': %v\n", githubTokenLocation, err)
 		return
 	}
 	res = string(buf)

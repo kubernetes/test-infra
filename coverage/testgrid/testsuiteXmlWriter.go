@@ -105,7 +105,8 @@ func ProfileToTestsuiteXML(arts *artifacts.LocalArtifacts, covThres int) {
 	groupCov := calc.CovList(
 		arts.ProfileReader(),
 		nil,
-		nil,
+		false,
+		&map[string] bool{},
 		covThres,
 	)
 	f, err := os.Create(arts.JunitXmlForTestgridPath())

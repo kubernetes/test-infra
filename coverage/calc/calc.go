@@ -31,7 +31,7 @@ import (
 // that only includes files in corresponding github commit,
 // less those files that are excluded from coverage calculation
 func CovList(f io.ReadCloser, keyProfileFile io.WriteCloser,
-	concernedFiles *map[string]bool, covThresInt int) (g *CoverageList) {
+	isPresubmit bool, concernedFiles *map[string]bool, covThresInt int) (g *CoverageList) {
 
 	defer f.Close()
 	if keyProfileFile != nil {
@@ -42,13 +42,8 @@ func CovList(f io.ReadCloser, keyProfileFile io.WriteCloser,
 	scanner.Scan() // discard first line
 	writeLine(keyProfileFile, scanner.Text())
 
-	isPresubmit := concernedFiles != nil
 	logrus.Infof("isPresubmit=%v", isPresubmit)
-	logrus.Infof("concerned Files=%v", concernedFiles)
-
-	if !isPresubmit {
-		concernedFiles = &map[string]bool{}
-	}
+	logrus.Infof("concerned files=%v", concernedFiles)
 
 	g = newCoverageList("localSummary", concernedFiles, covThresInt)
 	for scanner.Scan() {
@@ -59,9 +54,10 @@ func CovList(f io.ReadCloser, keyProfileFile io.WriteCloser,
 		if isConcerned {
 			blk.addToGroupCov(g)
 			writeLine(keyProfileFile, row)
-			logrus.Infof("concerned line: %s", row)
 		}
 	}
+
+	logrus.Infof("updated concerned files=%v", concernedFiles)
 
 	return
 }

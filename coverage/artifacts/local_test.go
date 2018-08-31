@@ -43,7 +43,7 @@ func TestProfiling(t *testing.T) {
 
 		t.Logf("Verifying profile file...\n")
 		expectedFirstLine := "mode: count"
-		expectedLine := "k8s.io/test-infra/coverage/testTarget/subPkg1/common.go:4.19,6.2 0 2"
+		expectedLine := "k8s.io/test-infra/coverage/testTarget/subPkg1/common.go:20.19,22.2 0 2"
 
 		scanner := bufio.NewScanner(arts.ProfileReader())
 		scanner.Scan()

@@ -17,6 +17,9 @@ limitations under the License.
 package workflows
 
 import (
+	"os"
+	"fmt"
+	
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/coverage/artifacts"
@@ -32,29 +35,38 @@ func RunPresubmit(p *gcs.PreSubmit, arts *artifacts.LocalArtifacts) (isCoverageL
 	logrus.Info("starting PreSubmit.RunPresubmit(...)")
 	coverageThresholdInt := p.CovThreshold
 
-	concernedFiles := githubUtil.GetConcernedFiles(&p.GithubPr, "")
+	isLocalRun := os.Getenv("JOB_TYPE")=="local-presubmit"
 
-	if len(*concernedFiles) == 0 {
-		logrus.Infof("List of concerned committed files is empty, " +
-			"don't need to run coverage profile in presubmit\n")
-		return false
+	var concernedFiles *map[string]bool
+	if isLocalRun {
+		concernedFiles = &map[string]bool{}
+	} else {
+		concernedFiles = githubUtil.GetConcernedFiles(&p.GithubPr, "")
+		if len(*concernedFiles) == 0 {
+			logrus.Infof("List of concerned committed files is empty, " +
+				"don't need to run coverage profile in presubmit\n")
+			return false
+		}
 	}
 
-	gNew := calc.CovList(arts.ProfileReader(), arts.KeyProfileCreator(),
+	gNew := calc.CovList(arts.ProfileReader(), arts.KeyProfileCreator(), !isLocalRun,
 		concernedFiles, coverageThresholdInt)
 	line.CreateLineCovFile(arts)
 	line.GenerateLineCovLinks(p, gNew)
 
 	base := gcs.NewPostSubmit(p.Ctx, p.StorageClient, p.Bucket,
 		p.PostSubmitJob, gcs.ArtifactsDirNameOnGcs, arts.ProfileName())
-	gBase := calc.CovList(base.ProfileReader(), nil, concernedFiles, p.CovThreshold)
+
+	gBase := calc.CovList(base.ProfileReader(), nil, false, concernedFiles, p.CovThreshold)
 	changes := calc.NewGroupChanges(gBase, gNew)
 
 	postContent, isEmpty, isCoverageLow := changes.ContentForGithubPost(concernedFiles)
 
 	io.Write(&postContent, arts.Directory(), "bot-post")
 
-	if !isEmpty {
+	if isLocalRun {
+		fmt.Printf("Content to post:\n%s\n", postContent)
+	} else if !isEmpty {
 		p.GithubPr.CleanAndPostComment(postContent)
 	}
 
