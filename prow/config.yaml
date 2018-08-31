@@ -252,6 +252,49 @@ tide:
     - needs-ok-to-test
     - needs-rebase
   - repos:
+    - client-go/unofficial-docs
+    - kubernetes-client/csharp
+    - kubernetes-client/gen
+    - kubernetes-client/go
+    - kubernetes-client/go-base
+    - kubernetes-client/haskell
+    - kubernetes-client/java
+    - kubernetes-client/javascript
+    - kubernetes-client/python
+    - kubernetes-client/python-base
+    - kubernetes-client/ruby
+    - kubernetes-csi/csi-test
+    - kubernetes-csi/docs
+    - kubernetes-csi/driver-registrar
+    - kubernetes-csi/drivers
+    - kubernetes-csi/external-attacher
+    - kubernetes-csi/external-provisioner
+    - kubernetes-csi/external-snapshotter
+    - kubernetes-csi/kubernetes-csi.github.io
+    - kubernetes-csi/livenessprobe
+    - kubernetes-incubator/ip-masq-agent
+    - kubernetes-incubator/kubespray
+    - kubernetes-incubator/service-catalog
+    - kubernetes-sigs/application
+    - kubernetes-sigs/architecture-tracking
+    - kubernetes-sigs/aws-encryption-provider
+    - kubernetes-sigs/cluster-api
+    - kubernetes-sigs/cluster-api-provider-aws
+    - kubernetes-sigs/cluster-api-provider-gcp
+    - kubernetes-sigs/cluster-api-provider-openstack
+    - kubernetes-sigs/cluster-api-provider-vsphere
+    - kubernetes-sigs/contributor-playground
+    - kubernetes-sigs/contributor-site
+    - kubernetes-sigs/controller-runtime
+    - kubernetes-sigs/controller-tools
+    - kubernetes-sigs/federation-v2
+    - kubernetes-sigs/gcp-compute-persistent-disk-csi-driver
+    - kubernetes-sigs/gcp-filestore-csi-driver
+    - kubernetes-sigs/kubeadm-dind-cluster
+    - kubernetes-sigs/kubebuilder
+    - kubernetes-sigs/kustomize
+    - kubernetes-sigs/poseidon
+    - kubernetes-sigs/testing_frameworks
     - kubernetes/client-go
     - kubernetes/cloud-provider-aws
     - kubernetes/cloud-provider-azure
@@ -292,49 +335,6 @@ tide:
     - kubernetes/test-infra
     - kubernetes/utils
     - kubernetes/website
-    - kubernetes-client/csharp
-    - kubernetes-client/gen
-    - kubernetes-client/go
-    - kubernetes-client/go-base
-    - kubernetes-client/haskell
-    - kubernetes-client/java
-    - kubernetes-client/javascript
-    - kubernetes-client/python
-    - kubernetes-client/python-base
-    - kubernetes-client/ruby
-    - kubernetes-csi/csi-test
-    - kubernetes-csi/docs
-    - kubernetes-csi/driver-registrar
-    - kubernetes-csi/drivers
-    - kubernetes-csi/external-attacher
-    - kubernetes-csi/external-provisioner
-    - kubernetes-csi/external-snapshotter
-    - kubernetes-csi/kubernetes-csi.github.io
-    - kubernetes-csi/livenessprobe
-    - kubernetes-sigs/application
-    - kubernetes-sigs/architecture-tracking
-    - kubernetes-sigs/aws-encryption-provider
-    - kubernetes-sigs/cluster-api
-    - kubernetes-sigs/cluster-api-provider-aws
-    - kubernetes-sigs/cluster-api-provider-gcp
-    - kubernetes-sigs/cluster-api-provider-openstack
-    - kubernetes-sigs/cluster-api-provider-vsphere
-    - kubernetes-sigs/contributor-playground
-    - kubernetes-sigs/contributor-site
-    - kubernetes-sigs/controller-runtime
-    - kubernetes-sigs/controller-tools
-    - kubernetes-sigs/gcp-compute-persistent-disk-csi-driver
-    - kubernetes-sigs/gcp-filestore-csi-driver
-    - kubernetes-sigs/kubebuilder
-    - kubernetes-sigs/kustomize
-    - kubernetes-incubator/ip-masq-agent
-    - kubernetes-incubator/kubespray
-    - kubernetes-incubator/service-catalog
-    - client-go/unofficial-docs
-    - kubernetes-sigs/federation-v2
-    - kubernetes-sigs/kubeadm-dind-cluster
-    - kubernetes-sigs/testing_frameworks
-    - kubernetes-sigs/poseidon
     labels:
     - lgtm
     - approved
@@ -352,19 +352,19 @@ tide:
   merge_method:
     helm/charts: squash
     kubeflow: squash
-    kubernetes/dashboard: squash
-    kubernetes/kube-deploy: squash
-    kubernetes/website: squash
-    kubernetes/kubernetes-docs-ja: squash
-    kubernetes/kubernetes-docs-ko: squash
     kubernetes-client/csharp: squash
     kubernetes-client/gen: squash
-    kubernetes-sigs/cluster-api: squash
+    kubernetes-incubator/service-catalog: squash
     kubernetes-sigs/cluster-api-provider-aws: squash
     kubernetes-sigs/cluster-api-provider-gcp: squash
     kubernetes-sigs/cluster-api-provider-openstack: squash
     kubernetes-sigs/cluster-api-provider-vsphere: squash
-    kubernetes-incubator/service-catalog: squash
+    kubernetes-sigs/cluster-api: squash
+    kubernetes/dashboard: squash
+    kubernetes/kube-deploy: squash
+    kubernetes/kubernetes-docs-ja: squash
+    kubernetes/kubernetes-docs-ko: squash
+    kubernetes/website: squash
   target_url: https://prow.k8s.io/tide.html
   blocker_label: merge-blocker
 
