@@ -1,0 +1,276 @@
+periodics:
+- interval: 30m
+  name: ci-kubernetes-e2e-gce-influxdb
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env-file=jobs/env/ci-kubernetes-e2e-gce-influxdb.env
+      - --extract=ci/latest
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:InfluxdbMonitoring\]
+      - --timeout=50m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gce-prometheus
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --env-file=jobs/env/ci-kubernetes-e2e-gce-prometheus.env
+      - --extract=ci/latest
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:PrometheusMonitoring\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gce-stackdriver
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env-file=jobs/env/ci-kubernetes-e2e-gce-stackdriver.env
+      - --extract=ci/latest
+      - --gcp-project=k8s-jkns-e2e-gce-stackdriver
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:StackdriverMonitoring\]|\[Feature:StackdriverCustomMetrics\]|\[Feature:StackdriverMetadataAgent\]|\[Feature:StackdriverExternalMetrics\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gci-gce-es-logging
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=110
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-es-logging.env
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:Elasticsearch\] --minStartupPods=8
+      - --timeout=90m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gci-gce-sd-logging
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=1340
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-sd-logging.env
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
+      - --timeout=1320m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gke-sd-logging-gci-beta
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=1400
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --deployment=gke
+      - --extract=ci/k8s-beta
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
+      - --timeout=1320m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gke-sd-logging-gci-latest
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=1400
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --deployment=gke
+      - --extract=ci/latest
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
+      - --timeout=1320m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gke-sd-logging-gci-stable1
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=1400
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --deployment=gke
+      - --extract=ci/k8s-stable1
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
+      - --timeout=1320m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-beta
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=1400
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --deployment=gke
+      - --extract=ci/k8s-beta
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=ubuntu
+      - --gcp-zone=us-central1-f
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
+      - --timeout=1320m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-latest
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=1400
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --deployment=gke
+      - --extract=ci/latest
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=ubuntu
+      - --gcp-zone=us-central1-f
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
+      - --timeout=1320m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-stable1
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=1400
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --deployment=gke
+      - --extract=ci/k8s-stable1
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=ubuntu
+      - --gcp-zone=us-central1-f
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.focus=\[Feature:StackdriverLogging\] --minStartupPods=8
+      - --timeout=1320m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+
+- interval: 30m
+  name: ci-kubernetes-e2e-gke-stackdriver
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --deployment=gke
+      - --extract=ci/latest
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-node-image=gci
+      - --gcp-project=k8s-jkns-e2e-gke-stackdriver
+      - --gcp-zone=us-central1-f
+      - --gke-environment=test
+      - --provider=gke
+      - --test_args=--ginkgo.focus=\[Feature:StackdriverMonitoring\]|\[Feature:StackdriverCustomMetrics\]|\[Feature:StackdriverMetadataAgent\]|\[Feature:StackdriverExternalMetrics\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master

@@ -1,0 +1,23 @@
+periodics:
+- interval: 30m
+  name: ci-kubernetes-e2e-gci-gce-proto
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=70
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --ginkgo-parallel=25
+      - --provider=gce
+      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master

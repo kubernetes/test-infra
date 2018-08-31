@@ -1,0 +1,22 @@
+periodics:
+- name: ci-kubernetes-e2e-gce-pod-preemption
+  interval: 2h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=300
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env=KUBE_FEATURE_GATES=PodPriority=true
+      - --extract=ci/latest
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:PodPreemption\] --minStartupPods=8
+      - --timeout=180m
+      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      imagePullPolicy: Always

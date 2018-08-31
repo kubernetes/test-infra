@@ -1,0 +1,29 @@
+periodics:
+- interval: 2h
+  name: ci-kustomize-periodic-default-gke
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+      args:
+      - "--job=$(JOB_NAME)"
+      - "--root=/go/src"
+      - "--repo=github.com/kubernetes-sigs/kustomize"
+      - "--upload=gs://kubernetes-jenkins/logs/"
+      - "--timeout=150"
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=
+      - --deployment=gke
+      - --extract=gke
+      - --gcp-node-image=gci
+      - --gcp-zone=us-central1-f
+      - --gke-environment=prod
+      - --provider=gke
+      - --test=false
+      - --test-cmd=../examples/integration_tests.sh
+      - --test-cmd-name=kustomize-integration
+      - --timeout=120m
