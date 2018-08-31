@@ -17,10 +17,8 @@ limitations under the License.
 package jobtests
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -30,36 +28,11 @@ import (
 	cfg "k8s.io/test-infra/prow/config"
 )
 
-// config.json is the worst but contains useful information :-(
-type configJSON map[string]map[string]interface{}
-
 var configPath = flag.String("config", "../../config.yaml", "Path to prow config")
 var jobConfigPath = flag.String("job-config", "../../../config/jobs", "Path to prow job config")
-var configJSONPath = flag.String("config-json", "../../../jobs/config.json", "Path to prow job config")
-
-func (c configJSON) ScenarioForJob(jobName string) string {
-	if scenario, ok := c[jobName]["scenario"]; ok {
-		return scenario.(string)
-	}
-	return ""
-}
-
-func readConfigJSON(path string) (config configJSON, err error) {
-	raw, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	config = configJSON{}
-	err = json.Unmarshal(raw, &config)
-	if err != nil {
-		return nil, err
-	}
-	return config, nil
-}
 
 // Loaded at TestMain.
 var c *cfg.Config
-var cj configJSON
 
 func TestMain(m *testing.M) {
 	flag.Parse()
@@ -74,14 +47,6 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 	c = conf
-
-	if *configJSONPath != "" {
-		cj, err = readConfigJSON(*configJSONPath)
-		if err != nil {
-			fmt.Printf("Could not load jobs config: %v", err)
-			os.Exit(1)
-		}
-	}
 
 	os.Exit(m.Run())
 }

@@ -195,7 +195,7 @@ upgrading from v1 to v2. The command does not run other e2e tests after completi
 the upgrade tests. If you want to run the e2e tests, specify also `--test` and 
 `--test_args` flags.
 
-Tips: CI upgrade tests listed at `jobs/config.json` show flags used in the real CI 
+Tips: CI upgrade tests listed at [sig-cluster-lifecycle config] show flags used in the real CI 
 test environment, which is a good source to learn more about how the flags are used.
 
 ### Staging
@@ -223,3 +223,4 @@ right path, the command below does the same as above:
 [kubekins-e2e]: /images/kubekins-e2e
 [kubekins-e2e-prow]: /images/e2e-prow
 [prow]: /prow
+[sig-cluster-lifecycle config]: /config/jobs/kubernetes/sig-cluster-lifecycle
