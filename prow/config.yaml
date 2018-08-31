@@ -275,6 +275,7 @@ tide:
     - kubernetes/kube-openapi
     - kubernetes/kube-state-metrics
     - kubernetes/kubeadm
+    - kubernetes/kubectl
     - kubernetes/kubernetes-docs-ja
     - kubernetes/kubernetes-docs-ko
     - kubernetes/kubernetes-docs-zh
@@ -344,15 +345,6 @@ tide:
     - do-not-merge/work-in-progress
     - needs-ok-to-test
     - needs-rebase
-  - repos:
-    - kubernetes/kubectl
-    labels:
-    - "cncf-cla: yes"
-    missingLabels:
-    - do-not-merge/hold
-    - do-not-merge/invalid-owners-file
-    - do-not-merge/work-in-progress
-    reviewApprovedRequired: true
   - repos:
     - kubernetes-sigs/federation-v2
     - kubernetes-sigs/kubeadm-dind-cluster
