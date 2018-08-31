@@ -17,6 +17,7 @@ limitations under the License.
 package cat
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -35,21 +36,25 @@ import (
 type fakeClowder string
 
 var human = flag.Bool("human", false, "Enable to run additional manual tests")
+var category = flag.String("category", "", "Request a particular category if set")
 var path = flag.String("key-path", "", "Path to api key if set")
 
-func (c fakeClowder) readCat() (string, error) {
+func (c fakeClowder) readCat(category string) (string, error) {
+	if category == "error" {
+		return "", errors.New(string(c))
+	}
 	return fmt.Sprintf("![fake cat image](%s)", c), nil
 }
 
 func TestRealCat(t *testing.T) {
 	if !*human {
-		t.Skip("Real cats disabled for automation. Manual users can add --human")
+		t.Skip("Real cats disabled for automation. Manual users can add --human [--category=foo]")
 	}
 	if *path != "" {
 		meow.setKey(*path, logrus.WithField("plugin", pluginName))
 	}
 
-	if cat, err := meow.readCat(); err != nil {
+	if cat, err := meow.readCat(*category); err != nil {
 		t.Errorf("Could not read cats from %#v: %v", meow, err)
 	} else {
 		fmt.Println(cat)
@@ -58,10 +63,12 @@ func TestRealCat(t *testing.T) {
 
 func TestUrl(t *testing.T) {
 	cases := []struct {
-		name    string
-		url     string
-		key     string
-		require []string
+		name     string
+		url      string
+		category string
+		key      string
+		require  []string
+		deny     []string
 	}{
 		{
 			name: "only url",
@@ -72,6 +79,21 @@ func TestUrl(t *testing.T) {
 			url:     "http://foo",
 			key:     "blah",
 			require: []string{"api_key=blah"},
+			deny:    []string{"category="},
+		},
+		{
+			name:     "category",
+			url:      "http://foo",
+			category: "bar",
+			require:  []string{"category=bar"},
+			deny:     []string{"api_key="},
+		},
+		{
+			name:     "category and key",
+			url:      "http://foo",
+			category: "this",
+			key:      "that",
+			require:  []string{"category=this", "api_key=that", "&"},
 		},
 	}
 
@@ -80,10 +102,15 @@ func TestUrl(t *testing.T) {
 			url: tc.url,
 			key: tc.key,
 		}
-		url := rc.Url()
+		url := rc.Url(tc.category)
 		for _, r := range tc.require {
 			if !strings.Contains(url, r) {
 				t.Errorf("%s: %s does not contain %s", tc.name, url, r)
+			}
+		}
+		for _, d := range tc.deny {
+			if strings.Contains(url, d) {
+				t.Errorf("%s: %s contained unexpected %s", tc.name, url, d)
 			}
 		}
 	}
@@ -94,29 +121,45 @@ func TestFormat(t *testing.T) {
 	basicURL := "http://example.com"
 	testcases := []struct {
 		name string
-		url  string
+		src  string
+		img  string
 		err  bool
 	}{
 		{
 			name: "basically works",
-			url:  basicURL,
+			src:  basicURL,
+			img:  basicURL,
 			err:  false,
 		},
 		{
+			name: "empty source",
+			src:  "",
+			img:  basicURL,
+			err:  true,
+		},
+		{
 			name: "empty image",
-			url:  "",
+			src:  basicURL,
+			img:  "",
+			err:  true,
+		},
+		{
+			name: "bad source",
+			src:  "http://this is not a url",
+			img:  basicURL,
 			err:  true,
 		},
 		{
 			name: "bad image",
-			url:  "http://still a bad url",
+			src:  basicURL,
+			img:  "http://still a bad url",
 			err:  true,
 		},
 	}
 	for _, tc := range testcases {
 		ret, err := catResult{
-			Id:  tc.name,
-			URL: tc.url,
+			Source: tc.src,
+			Image:  tc.img,
 		}.Format()
 		switch {
 		case tc.err:
@@ -153,7 +196,8 @@ func TestHttpResponse(t *testing.T) {
 	// create test cases for handling http responses
 	img := ts2.URL + "/cat.jpg"
 	bigimg := ts2.URL + "/bigcat.jpg"
-	validResponse := fmt.Sprintf(`[{"id":"valid","url":"%s"}]`, img)
+	src := "http://localhost?kind=source_url"
+	validResponse := fmt.Sprintf(`[{"id":"valid","url":"%s","source_url":"%s"}]`, img, src)
 	var testcases = []struct {
 		name     string
 		path     string
@@ -170,7 +214,7 @@ func TestHttpResponse(t *testing.T) {
 		{
 			name:     "image too big",
 			path:     "/too-big",
-			response: fmt.Sprintf(`[{"id":"toobig","url":"%s"}]`, bigimg),
+			response: fmt.Sprintf(`[{"id":"toobig","url":"%s","source_url":"%s"}]`, bigimg, src),
 		},
 		{
 			name: "return-406",
@@ -193,6 +237,11 @@ Available variants:
 			name:     "no-cats-in-json",
 			path:     "/no-cats-in-json",
 			response: "[]",
+		},
+		{
+			name:     "no-image-in-json",
+			path:     "/no-image-in-json",
+			response: "[{}]",
 		},
 	}
 
@@ -226,7 +275,7 @@ Available variants:
 	// run test for each case
 	for _, testcase := range testcases {
 		fakemeow := &realClowder{url: ts.URL + testcase.path}
-		cat, err := fakemeow.readCat()
+		cat, err := fakemeow.readCat(*category)
 		if testcase.valid && err != nil {
 			t.Errorf("For case %s, didn't expect error: %v", testcase.name, err)
 		} else if !testcase.valid && err == nil {
@@ -255,7 +304,10 @@ Available variants:
 	}
 	if c := fc.IssueComments[5][0]; !strings.Contains(c.Body, img) {
 		t.Errorf("missing image url: %s from comment: %v", img, c)
+	} else if !strings.Contains(c.Body, src) {
+		t.Errorf("missing source url: %s from comment: %v", src, c)
 	}
+
 }
 
 // Small, unit tests
@@ -267,7 +319,7 @@ func TestCats(t *testing.T) {
 		state         string
 		pr            bool
 		shouldComment bool
-		shouldImage   bool
+		shouldError   bool
 	}{
 		{
 			name:          "ignore edited comment",
@@ -275,7 +327,7 @@ func TestCats(t *testing.T) {
 			action:        github.GenericCommentActionEdited,
 			body:          "/meow",
 			shouldComment: false,
-			shouldImage:   true,
+			shouldError:   false,
 		},
 		{
 			name:          "leave cat on pr",
@@ -284,7 +336,7 @@ func TestCats(t *testing.T) {
 			body:          "/meow",
 			pr:            true,
 			shouldComment: true,
-			shouldImage:   true,
+			shouldError:   false,
 		},
 		{
 			name:          "leave cat on issue",
@@ -292,7 +344,7 @@ func TestCats(t *testing.T) {
 			action:        github.GenericCommentActionCreated,
 			body:          "/meow",
 			shouldComment: true,
-			shouldImage:   true,
+			shouldError:   false,
 		},
 		{
 			name:          "leave cat on issue, trailing space",
@@ -300,7 +352,7 @@ func TestCats(t *testing.T) {
 			action:        github.GenericCommentActionCreated,
 			body:          "/meow \r",
 			shouldComment: true,
-			shouldImage:   true,
+			shouldError:   false,
 		},
 		{
 			name:          "categorical cat",
@@ -308,7 +360,15 @@ func TestCats(t *testing.T) {
 			action:        github.GenericCommentActionCreated,
 			body:          "/meow clothes",
 			shouldComment: true,
-			shouldImage:   false,
+			shouldError:   false,
+		},
+		{
+			name:          "bad cat",
+			state:         "open",
+			action:        github.GenericCommentActionCreated,
+			body:          "/meow error",
+			shouldComment: true,
+			shouldError:   true,
 		},
 	}
 	for _, tc := range testcases {
@@ -323,18 +383,22 @@ func TestCats(t *testing.T) {
 			IsPR:       tc.pr,
 		}
 		err := handle(fc, logrus.WithField("plugin", pluginName), e, fakeClowder("tubbs"), func() {})
-		if err != nil {
+		if !tc.shouldError && err != nil {
 			t.Errorf("%s: didn't expect error: %v", tc.name, err)
+			continue
+		} else if tc.shouldError && err == nil {
+			t.Errorf("%s: expected an error to occur", tc.name)
 			continue
 		}
 		if tc.shouldComment && len(fc.IssueComments[5]) != 1 {
 			t.Errorf("%s: should have commented.", tc.name)
 		} else if tc.shouldComment {
+			shouldImage := !tc.shouldError
 			body := fc.IssueComments[5][0].Body
 			hasImage := strings.Contains(body, "![")
-			if hasImage && !tc.shouldImage {
+			if hasImage && !shouldImage {
 				t.Errorf("%s: unexpected image in %s", tc.name, body)
-			} else if !hasImage && tc.shouldImage {
+			} else if !hasImage && shouldImage {
 				t.Errorf("%s: no image in %s", tc.name, body)
 			}
 		} else if !tc.shouldComment && len(fc.IssueComments[5]) != 0 {
