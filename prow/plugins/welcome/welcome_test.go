@@ -139,6 +139,7 @@ func TestHandlePR(t *testing.T) {
 		author        string
 		prNumber      int
 		prAction      github.PullRequestEventAction
+		addPR         bool
 		expectComment bool
 	}{
 		{
@@ -169,6 +170,16 @@ func TestHandlePR(t *testing.T) {
 			expectComment: true,
 		},
 		{
+			name:          "new contributor and API recorded PR already",
+			repoOwner:     "kubernetes",
+			repoName:      "test-infra",
+			author:        "newContributor",
+			prAction:      github.PullRequestActionOpened,
+			prNumber:      50,
+			expectComment: true,
+			addPR:         true,
+		},
+		{
 			name:          "new contributor, not PR open event",
 			repoOwner:     "kubernetes",
 			repoName:      "test-infra",
@@ -188,8 +199,10 @@ func TestHandlePR(t *testing.T) {
 		fc.ClearComments()
 
 		event := makeFakePullRequestEvent(tc.repoOwner, tc.repoName, tc.author, tc.prNumber, tc.prAction)
-		// make sure the PR in the event is recorded
-		fc.AddPR(tc.repoOwner, tc.repoName, tc.author, tc.prNumber)
+		if tc.addPR {
+			// make sure the PR in the event is recorded
+			fc.AddPR(tc.repoOwner, tc.repoName, tc.author, tc.prNumber)
+		}
 
 		// try handling it
 		if err := handlePR(c, event, testWelcomeTemplate); err != nil {
