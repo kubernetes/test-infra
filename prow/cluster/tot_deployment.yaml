@@ -57,7 +57,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: tot
-        image: gcr.io/k8s-prow/tot:v20180831-52e265274
+        image: gcr.io/k8s-prow/tot:v20180831-d506e8661
         imagePullPolicy: Always
         args:
         - -storage=/store/tot.json
