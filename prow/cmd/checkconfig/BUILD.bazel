@@ -7,8 +7,10 @@ go_library(
     importpath = "k8s.io/test-infra/prow/cmd/checkconfig",
     visibility = ["//visibility:private"],
     deps = [
+        "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
         "//prow/errorutil:go_default_library",
+        "//prow/flagutil:go_default_library",
         "//prow/hook:go_default_library",
         "//prow/logrusutil:go_default_library",
         "//prow/plugins:go_default_library",
