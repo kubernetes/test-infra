@@ -199,6 +199,9 @@ config_updater:
     config/jobs/**/*.yaml:
       name: job-config
 
+welcome:
+  message_template: "Welcome @{{.AuthorLogin}}! It looks like this is your first PR to {{.Org}}/{{.Repo}} 🎉"
+
 plugins:
   bazelbuild/rules_k8s:
   - approve  # Allow OWNERS to /approve
@@ -440,6 +443,7 @@ plugins:
   - override
   - trigger
   - verify-owners
+  - welcome
 
   kubernetes/utils:
   - approve
