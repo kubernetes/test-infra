@@ -331,6 +331,10 @@ tide:
     - kubernetes-incubator/kubespray
     - kubernetes-incubator/service-catalog
     - client-go/unofficial-docs
+    - kubernetes-sigs/federation-v2
+    - kubernetes-sigs/kubeadm-dind-cluster
+    - kubernetes-sigs/testing_frameworks
+    - kubernetes-sigs/poseidon
     labels:
     - lgtm
     - approved
@@ -345,20 +349,6 @@ tide:
     - do-not-merge/work-in-progress
     - needs-ok-to-test
     - needs-rebase
-  - repos:
-    - kubernetes-sigs/federation-v2
-    - kubernetes-sigs/kubeadm-dind-cluster
-    - kubernetes-sigs/testing_frameworks
-    - kubernetes-sigs/poseidon
-    labels:
-    - lgtm
-    - approved
-    - "cncf-cla: yes"
-    missingLabels:
-    - do-not-merge/hold
-    - do-not-merge/invalid-owners-file
-    - do-not-merge/work-in-progress
-    - needs-ok-to-test
   merge_method:
     helm/charts: squash
     kubeflow: squash
