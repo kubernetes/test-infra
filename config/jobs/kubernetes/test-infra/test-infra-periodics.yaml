@@ -233,6 +233,27 @@ periodics:
       secret:
         secretName: fejta-bot-token
 
+# periodically file / close bugs for repos based on presence of SECURITY_CONTACTS
+- name: periodic-secping
+  interval: 24h
+  decorate: true
+  spec:
+    containers:
+    # image contains tools versioned with k/k master
+    # secping needs go and make in particular
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+      command: 
+      - ./experiment/secping.sh
+      args:
+      - --token=/etc/token
+      volumeMounts:
+      - name: token
+        mountPath: /etc/token
+    volumes:
+    - name: token
+      secret:
+        secretName: fejta-bot-token
+
 - name: metrics-bigquery
   interval: 24h
   spec:

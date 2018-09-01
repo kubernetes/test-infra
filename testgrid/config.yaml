@@ -2223,6 +2223,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/periodic-test-infra-close
 - name: periodic-test-infra-retester
   gcs_prefix: kubernetes-jenkins/logs/periodic-test-infra-retester
+- name: periodic-secping
+  gcs_prefix: kubernetes-jenkins/logs/periodic-secping
 # perf tests
 - name: ci-perf-tests-e2e-gce-clusterloader
   gcs_prefix: kubernetes-jenkins/logs/ci-perf-tests-e2e-gce-clusterloader
@@ -6295,6 +6297,9 @@ dashboards:
   - name: close
     description: Closes rotten issues after 30d of inactivity
     test_group_name: periodic-test-infra-close
+  - name: secping
+    description: files bugs for SECURITY_CONTACTS
+    test_group_name: periodic-secping
   - name: features-unfreeze
     description: Prevents issues in `k/features` from being marked as `lifecycle/frozen`
     test_group_name: periodic-features-unfreeze
