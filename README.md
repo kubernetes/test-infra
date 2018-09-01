@@ -28,24 +28,70 @@ the different services interact.
 
 ## Automated testing
 
-Test anything with the following pattern:
+### If you are using kubekins | bootstrap
 
+Assume your job looks something like
+
+```yaml
+  - name: foo-bar-test
+    interval: 1h
+    agent: kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        args:
+        - --repo=github.com/foo/bar
+        - --timeout=90
+        - --scenario=execute
+        - --
+        - make
+        - test
 ```
+
+You can see both images use the [same entrypoint script](/images/bootstrap/entrypoint.sh):
+
+```sh
+/usr/local/bin/runner.sh \
+    ./test-infra/jenkins/bootstrap.py \
+        --job="${JOB_NAME}" \
+        --service-account="${GOOGLE_APPLICATION_CREDENTIALS}" \
+        --upload='gs://kubernetes-jenkins/logs' \
+        "$@"
+```
+
+So to mimic the run locally, you can dump all the args to the entrypoint script, like:
+
+```sh
 git clone https://github.com/kubernetes/test-infra
-test-infra/jenkins/bootstrap.py --job=J --repo=R --service-account=S.json --upload=gs://B
+test-infra/jenkins/bootstrap.py --job=foo-bar-test \
+                                --repo=github.com/foo/bar \
+                                --service-account=S.json \
+                                --upload=gs://B \
+                                --timeout=90 \
+                                --scenario=execute \
+                                -- \
+                                make \
+                                test
 ```
 
-The `--job=J` flag specifies what test job to run.
-The `--repo=R` (or `--bare`) flag controls what we check out from git.
+where `--service-account` is the service account you want to activate for your job, and
+`--upload` is the gcs bucket where you want to upload your job results to.
 
-Anyone can reconfigure our CI system with a test-infra PR that updates the
-appropriate files. Detailed instructions follow:
+### If you are using podutils:
+
+Unfortunately there's no easy way to test it locally - you can follow [getting started](/prow/getting_started.md)
+to schedule a job against your own prow cluster.
+
+We are working on have a utility to run the job locally - https://github.com/kubernetes/test-infra/issues/6590
 
 ### E2E Testing
 
 Our e2e testing uses [kubetest](/kubetest) to build/deploy/test kubernetes
 clusters on various providers. Please see those documents for additional details
 about this tool as well as e2e testing generally.
+
+Anyone can reconfigure our CI system with a test-infra PR that updates the
+appropriate files. Detailed instructions follow:
 
 ### Create a new job
 

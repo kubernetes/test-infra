@@ -21,6 +21,5 @@ TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
 
 bazel run //config/jobs/kubernetes-security:genjobs -- \
 "--config=${TESTINFRA_ROOT}/prow/config.yaml" \
-"--config-json=${TESTINFRA_ROOT}/jobs/config.json" \
 "--jobs=${TESTINFRA_ROOT}/config/jobs" \
 "--output=${TESTINFRA_ROOT}/config/jobs/kubernetes-security/generated-security-jobs.yaml"

@@ -22,11 +22,9 @@ package tests
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"regexp"
 	"strings"
@@ -40,39 +38,14 @@ import (
 	"k8s.io/test-infra/prow/kube"
 )
 
-// config.json is the worst but contains useful information :-(
-type configJSON map[string]map[string]interface{}
-
 var configPath = flag.String("config", "../../../prow/config.yaml", "Path to prow config")
 var jobConfigPath = flag.String("job-config", "../../jobs", "Path to prow job config")
-var configJSONPath = flag.String("config-json", "../../../jobs/config.json", "Path to prow job config")
 var gubernatorPath = flag.String("gubernator-path", "https://k8s-gubernator.appspot.com", "Path to linked gubernator")
 var bucket = flag.String("bucket", "kubernetes-jenkins", "Gcs bucket for log upload")
 var k8sProw = flag.Bool("k8s-prow", true, "If the config is for k8s prow cluster")
 
-func (c configJSON) ScenarioForJob(jobName string) string {
-	if scenario, ok := c[jobName]["scenario"]; ok {
-		return scenario.(string)
-	}
-	return ""
-}
-
-func readConfigJSON(path string) (config configJSON, err error) {
-	raw, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	config = configJSON{}
-	err = json.Unmarshal(raw, &config)
-	if err != nil {
-		return nil, err
-	}
-	return config, nil
-}
-
 // Loaded at TestMain.
 var c *cfg.Config
-var cj configJSON
 
 func TestMain(m *testing.M) {
 	flag.Parse()
@@ -87,14 +60,6 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 	c = conf
-
-	if *configJSONPath != "" {
-		cj, err = readConfigJSON(*configJSONPath)
-		if err != nil {
-			fmt.Printf("Could not load jobs config: %v", err)
-			os.Exit(1)
-		}
-	}
 
 	os.Exit(m.Run())
 }
@@ -659,8 +624,14 @@ func checkKubekinsPresets(jobName string, spec *v1.PodSpec, labels, validLabels 
 			}
 		}
 
-		configJSONJobName := strings.Replace(jobName, "pull-kubernetes", "pull-security-kubernetes", -1)
-		if cj.ScenarioForJob(configJSONJobName) == "kubenetes_e2e" {
+		scenario := ""
+		for _, arg := range container.Args {
+			if strings.HasPrefix(arg, "--scenario=") {
+				scenario = strings.TrimPrefix(arg, "--scenario=")
+			}
+		}
+
+		if scenario == "kubenetes_e2e" {
 			ssh = false
 			for key, val := range labels {
 				if (key == "preset-k8s-ssh" || key == "preset-aws-ssh") && val == "true" {
@@ -768,11 +739,6 @@ func checkScenarioArgs(jobName, imageName string, args []string) error {
 		entry := jobName
 		if strings.HasPrefix(jobName, "pull-security-kubernetes") {
 			entry = strings.Replace(entry, "pull-security-kubernetes", "pull-kubernetes", -1)
-		}
-
-		if _, ok := cj[entry]; ok {
-			// the unit test is handled in jobs/config_test.py
-			return nil
 		}
 
 		if !scenarioArgs {
