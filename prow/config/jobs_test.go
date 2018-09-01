@@ -551,49 +551,75 @@ func TestListPeriodic(t *testing.T) {
 }
 
 func TestRunAgainstBranch(t *testing.T) {
-	jobs := []Presubmit{
+	testcases := []struct {
+		name            string
+		brancher        Brancher
+		runningBranches []string
+		skipBranches    []string
+	}{
 		{
-			Name:     "a",
-			Brancher: Brancher{SkipBranches: []string{"s"}},
+			name:            "run_everywhere_but_r",
+			brancher:        Brancher{SkipBranches: []string{"s"}},
+			runningBranches: []string{"master", "test"},
+			skipBranches:    []string{"s"},
 		},
 		{
-			Name:     "b",
-			Brancher: Brancher{Branches: []string{"r"}},
+			name:            "run_only_on_r",
+			brancher:        Brancher{Branches: []string{"r"}},
+			runningBranches: []string{"r"},
+			skipBranches:    []string{"s", "t"},
 		},
 		{
-			Name: "c",
-			Brancher: Brancher{
+			name: "run_only_on_r_skip_branch_no_effect",
+			brancher: Brancher{
 				SkipBranches: []string{"s"},
 				Branches:     []string{"r"},
 			},
+			runningBranches: []string{"r"},
+			skipBranches:    []string{"s", "t"},
 		},
 		{
-			Name: "d",
-			Brancher: Brancher{
+			name: "skip_branch_overwrites",
+			brancher: Brancher{
 				SkipBranches: []string{"s"},
 				Branches:     []string{"s", "r"},
 			},
+			runningBranches: []string{"r"},
+			skipBranches:    []string{"s", "t"},
 		},
 		{
-			Name: "default",
+			name: "regex_matching",
+			brancher: Brancher{
+				SkipBranches: []string{"collab", "feature"},
+				Branches:     []string{"master", "^release.*$"},
+			},
+			runningBranches: []string{"master", "release-1.0", "release-2.0"},
+			skipBranches:    []string{"pr_master_test", "no_release_branch"},
+		},
+		{
+			name:            "default",
+			runningBranches: []string{"a", "b", "c"},
 		},
 	}
 
-	if err := SetPresubmitRegexes(jobs); err != nil {
-		t.Fatalf("could not set regexes: %v", err)
-	}
+	for _, tc := range testcases {
+		jobs := []Presubmit{{Name: "job", Brancher: tc.brancher}}
 
-	for _, job := range jobs {
-		if job.Name == "default" {
-			if !job.RunsAgainstBranch("s") {
-				t.Errorf("Job %s should run branch s", job.Name)
-			}
-		} else if job.RunsAgainstBranch("s") {
-			t.Errorf("Job %s should not run branch s", job.Name)
+		if err := SetPresubmitRegexes(jobs); err != nil {
+			t.Fatalf("could not set regexes: %v", err)
 		}
 
-		if !job.RunsAgainstBranch("r") {
-			t.Errorf("Job %s should run branch r", job.Name)
+		for _, job := range jobs {
+			for _, b := range tc.runningBranches {
+				if !job.RunsAgainstBranch(b) {
+					t.Errorf("Job %s should run branch %s", job.Name, b)
+				}
+			}
+			for _, b := range tc.skipBranches {
+				if job.RunsAgainstBranch(b) {
+					t.Errorf("Job %s should not run branch %s", job.Name, b)
+				}
+			}
 		}
 	}
 }
