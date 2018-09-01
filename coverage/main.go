@@ -38,6 +38,8 @@ const (
 	defaultGcsBucket         = "knative-prow"
 	defaultPostSubmitJobName = "post-knative-serving-go-coverage"
 	defaultCovThreshold      = 80
+	defaultLocalPr = "0"
+	defaultLocalBuildStr = "0"
 )
 
 var (
@@ -65,6 +67,7 @@ func main() {
 		*githubTokenPath, *covThresholdFlag, *covbotUserName)
 
 	logrus.Info("Getting env values")
+	buildStr := os.Getenv("BUILD_NUMBER")
 	pr := os.Getenv("PULL_NUMBER")
 	pullSha := os.Getenv("PULL_PULL_SHA")
 	baseSha := os.Getenv("PULL_BASE_SHA")
@@ -88,7 +91,15 @@ func main() {
 
 	switch jobType {
 	case "presubmit", "local-presubmit":
-		buildStr := os.Getenv("BUILD_NUMBER")
+		if jobType == "local-presubmit" {
+			if buildStr == "" {
+				buildStr = defaultLocalBuildStr
+			}
+			if pr == "" {
+				pr = defaultLocalPr
+			}
+		}
+
 		build, err := strconv.Atoi(buildStr)
 		if err != nil {
 			logUtil.LogFatalf("BUILD_NUMBER(%s) cannot be converted to int, err=%v",
