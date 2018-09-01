@@ -1,4 +1,5 @@
 load("@io_bazel_rules_docker//container:image.bzl", "container_image")
+load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_library(
@@ -14,11 +15,22 @@ go_library(
     ],
 )
 
+go_image(
+    name = "clonerefs-go_image",
+    base = "@git-base//image",
+    embed = [":go_default_library"],
+    goarch = "amd64",
+    goos = "linux",
+    pure = "on",
+    visibility = ["//visibility:public"],
+)
+
 container_image(
     name = "image",
-    base = "@git-base//image",
-    directory = "/",
-    files = [":clonerefs"],
+    base = ":clonerefs-go_image",
+    symlinks = {
+        "/clonerefs": "/app/prow/cmd/clonerefs",
+    },
     visibility = ["//visibility:public"],
 )
 
