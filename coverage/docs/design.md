@@ -38,25 +38,39 @@ Here is the step-by-step description of the pre-submit and post-submit workflows
 Runs code coverage tool to report coverage change in a new PR or updated PR
 1. Developer submit new commit to an open PR on github
 2. Matching pre-submit prow job is started 
-3. Test coverage profile generated
-4. Calculate coverage changes. Compare the coverage file generated in this cycle against the most recent successful post-submit build. Coverage file for post-submit commits were generated in post-submit workflow
-5. Use PR data from github, git-attributes, as well as coverage change data calculated above, to produce a list of files that we care about in the line-by-line coverage report. produce line by line coverage html and add link to covbot report. Note that covbot is the robot github account used to report code coverage change results.
+3. Generate coverage profile in artifacts directory
+4. Calculate coverage changes. Compare the coverage file generated in this cycle against the most
+ recent successful post-submit build. Coverage file for post-submit commits were generated in 
+ post-submit workflow and stored in gcs bucket
+5. Use PR data from github, git-attributes, as well as coverage change data calculated above, to 
+produce a list of files that we care about in the line-by-line coverage report. produce line by 
+line coverage html and add link to covbot report. Note that covbot is the robot github account 
+used to report code coverage change results. See Covbot section for more details.
 6. Let covbot post presubmit coverage on github, under that conversation of the PR. 
 7. When coverage threshold is enforced, block PR from merging by making this prow job 'required' and return with a code other than 0
+8. The artifacts directory will be copied to gcs bucket by prow after the binary 
+finished running.
 
 ##Post-submit workflow
-Produces & stores coverage profile for later presubmit jobs to compare against
+Produces & stores coverage profile for later presubmit jobs to compare against; 
+Produces periodical coverage result as input for TestGrid 
 1. A PR is merged
 2. Post-submit prow job started
-3. Test coverage profile generated. Completion marker generated upon successful run. Both stored as prow artifacts.
-    - Completion marker is used by later pre-submit job when searching for a healthy and complete code coverage profile in the post-submit jobs
+3. Generate coverage profile. Completion marker generated upon successful run. Both stored
+ in artifacts directory.
+    - Completion marker is used by later pre-submit job when searching for a healthy and complete 
+    code coverage profile in the post-submit jobs
+4. Generate / store per-file coverage data
+    - Stores in the XML format, that is used by TestGrid, and dump it in prow artifacts directory
+5. The artifacts directory will be copied to gcs bucket by prow after the binary 
+finished running. 
 
-##Periodical workflow
-Produces periodical coverage result as input for TestGrid
-1. Periodical prow job starts periodically based on the specification in prow job config
-2. Generate coverage profile
-3. Generate / store per-file coverage data
-  - Stores in the XML format, that is used by TestGrid, and dump it in prow artifacts directory 
+##Locally running presubmit and post-submit workflows
+Both workflows may be triggered locally in command line, as long as all the required flags are 
+supplied correctly. In addition, the following env var needs to be set:
+- JOB_TYPE (one of 'presubmit', 'postsubmit', 'periodic', 'local-presubmit')
+
+use 'local-presubmit' will run the presubmit workflow without posting result on github PR
   
 ##Prow Configuration File
 As mentioned earlier, we use configuration file to store repository specific information. Below is an example that contains the args that will be supplied to the coverage container
@@ -93,6 +107,15 @@ As mentioned earlier, we use configuration file to store repository specific inf
         secret:
           secretName: covbot-token
 ```
+##Covbot
+As mentioned in the presubmit workflow section,  covbot is the short name for the robot github 
+account used to report code coverage change results. It can be created as a regular github 
+account. It only need a comment access to the repo it need to be run on. If the repo is private,
+ it also need read access. 
+  
+After the robot account is created, download the github token and supply the path to the token 
+file to code coverage binary, as the value for parameter "github-token"
+
 
 #Acceptance Criteria
 ##Presubmit Workflow
