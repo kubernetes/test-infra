@@ -1,20 +1,20 @@
 <!--TODO(bentheelder): fill this in much more thoroughly-->
 # `kind` - **K**ubernetes **IN** **D**ocker
 
-## WARNING: `kind` is still a work in progress! See [docs/todo.md](./docs/todo.md)
+## WARNING: `kind` is still a work in progress! See [docs/todo.md][todo]
 
 `kind` is a toolset for running local Kubernetes clusters using Docker container "nodes".
 `kind` is designed to be suitable for testing Kubernetes, initially targeting the conformance suite.
 
 It consists of:
- - Go [packages](./pkg) implementing [cluster creation](./pkg/cluster), [image build](./pkg/build), etc.
- - A command line interface ([`kind`](./cmd/kind)) built on these packages.
- - Docker [image(s)](./images) written to run systemd, Kubernetes, etc.
- - [`kubetest`](https://github.com/kubernetes/test-infra/tree/master/kubetest) integration also built on these packages (WIP)
+ - Go [packages][packages] implementing [cluster creation][cluster package], [image build][build package], etc.
+ - A command line interface ([`kind`][kind cli]) built on these packages.
+ - Docker [image(s)][images] written to run systemd, Kubernetes, etc.
+ - [`kubetest`][kubetest] integration also built on these packages (WIP)
 
-Kind bootstraps each "node" with [kubeadm](https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm/).
+Kind bootstraps each "node" with [kubeadm][kubeadm].
 
-For more details see [the design documentation](./docs/design.md).
+For more details see [the design documentation][design doc].
 
 ## Building
 
@@ -33,3 +33,13 @@ For more usage, run `kind --help` or `kind [command] --help`.
 `kind build base` will build the base image.
 
 `kind build node` will build the node image.
+
+[todo]: ./docs/todo.md
+[packages]: ./pkg
+[cluster package]: ./pkg/cluster
+[build package]: ./pkg/build
+[kind cli]: ./main.go
+[images]: ./images
+[kubetest]: https://github.com/kubernetes/test-infra/tree/master/kubetest
+[kubeadm]: https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm/
+[design doc]: ./docs/design.md
