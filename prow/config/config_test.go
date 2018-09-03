@@ -1026,7 +1026,7 @@ func TestSecretAgentLoading(t *testing.T) {
 						tempSecret, changedTokenValue, tempSecretValue))
 				} else {
 					// Secret agent needs some time to update the values. So wait and retry.
-					time.Sleep(100 * time.Millisecond)
+					time.Sleep(400 * time.Millisecond)
 				}
 			} else {
 				break
