@@ -310,6 +310,10 @@ func shouldPrune(log *logrus.Entry, botName string) func(github.IssueComment) bo
 }
 
 func handlePullRequestEvent(pc plugins.PluginClient, pe github.PullRequestEvent) error {
+	return handlePullRequest(pc.GitHubClient, pc.CommentPruner, pc.Logger, pe)
+}
+
+func handlePullRequest(gc gitHubClient, cp commentPruner, log *logrus.Entry, pe github.PullRequestEvent) error {
 	org := pe.Repo.Owner.Login
 	repo := pe.Repo.Name
 
@@ -327,10 +331,14 @@ func handlePullRequestEvent(pc plugins.PluginClient, pe github.PullRequestEvent)
 
 	shouldComment := pe.Action == github.PullRequestActionSynchronize || pe.Action == github.PullRequestActionOpened
 
-	return handle(pc.GitHubClient, pc.CommentPruner, pc.Logger, org, repo, pe.PullRequest, shouldComment)
+	return handle(gc, cp, log, org, repo, pe.PullRequest, shouldComment)
 }
 
 func handleCommentEvent(pc plugins.PluginClient, ce github.GenericCommentEvent) error {
+	return handleComment(pc.GitHubClient, pc.CommentPruner, pc.Logger, ce)
+}
+
+func handleComment(gc gitHubClient, cp commentPruner, log *logrus.Entry, ce github.GenericCommentEvent) error {
 	// Only consider open PRs and new comments.
 	if ce.IssueState != "open" || ce.Action != github.GenericCommentActionCreated || !ce.IsPR {
 		return nil
@@ -340,7 +348,6 @@ func handleCommentEvent(pc plugins.PluginClient, ce github.GenericCommentEvent) 
 		return nil
 	}
 
-	gc := pc.GitHubClient
 	org := ce.Repo.Owner.Login
 	repo := ce.Repo.Name
 
@@ -349,5 +356,5 @@ func handleCommentEvent(pc plugins.PluginClient, ce github.GenericCommentEvent) 
 		return fmt.Errorf("error getting pull request for comment: %v", err)
 	}
 
-	return handle(gc, pc.CommentPruner, pc.Logger, org, repo, *pr, true)
+	return handle(gc, cp, log, org, repo, *pr, true)
 }
