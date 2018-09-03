@@ -125,7 +125,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
-	// TODO(kargakis): dry this out
+	// TODO: dry this out
 	ac := jenkins.AuthConfig{}
 	if o.jenkinsTokenFile != "" {
 		ac.Basic = &jenkins.BasicAuthConfig{
