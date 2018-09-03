@@ -129,6 +129,11 @@ blockades:
   - ^events/2016
   - ^events/elections/2017
   explanation: "These files are historical, and from events that have already occurred."
+- repos:
+  - kubernetes/sig-release
+  blockregexps:
+  - ^releases/release-1\.[0-9]
+  explanation: "These files represent previous release collateral and have been protected for historical purposes."
 
 blunderbuss:
   max_request_count: 2
