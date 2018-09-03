@@ -204,8 +204,8 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, pre *github.Pul
 			Action:   github.Comment,
 			Comments: comments,
 		}
-		if pre.PullRequest.MergeSHA != nil {
-			draftReview.CommitSHA = *pre.PullRequest.MergeSHA
+		if pre.PullRequest.Head.SHA != "" {
+			draftReview.CommitSHA = pre.PullRequest.Head.SHA
 		}
 		err := ghc.CreateReview(org, repo, pre.Number, draftReview)
 		if err != nil {
