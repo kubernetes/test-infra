@@ -711,7 +711,6 @@ periodics:
       - --cluster=clusterloader
       - --extract=ci/latest
       - --gcp-node-image=gci
-      - --gcp-project=k8s-jkns-clusterloader
       - --gcp-zone=us-central1-f
       - --provider=gce
       - --test=false
@@ -739,7 +738,6 @@ periodics:
       - --cluster=clusterloader2
       - --extract=ci/latest
       - --gcp-nodes=3
-      - --gcp-project=k8s-jkns-clusterloader
       - --gcp-zone=us-central1-f
       - --provider=gce
       - --test=false
@@ -747,6 +745,7 @@ periodics:
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--testconfig=testing/density/config.yaml
       - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--nodes=3
       - --test-cmd-args=--report-dir=/workspace/_artifacts
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=60m

@@ -353,6 +353,7 @@ resources:
   - k8s-jenkins-cvm
   - k8s-jenkins-garbagecollector
   - k8s-jenkins-gci-kubemark
+  - k8s-jkns-clusterloader
   - k8s-jkns-e2e-bazel
   - k8s-jkns-e2e-etcd3
   - k8s-jkns-e2e-gce
