@@ -433,6 +433,7 @@ plugins:
 
   kubernetes/sig-release:
   - approve
+  - blockade
   - blunderbuss
   - stage
 
