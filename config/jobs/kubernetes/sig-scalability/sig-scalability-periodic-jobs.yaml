@@ -267,7 +267,7 @@ periodics:
       - --gcp-zone=us-east1-b
       - --ginkgo-parallel=40
       - --provider=gce
-      - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --node-schedulable-timeout=90m --minStartupPods=8
+      - --test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8
       - --timeout=570m
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
@@ -302,7 +302,7 @@ periodics:
       - --gcp-project=kubernetes-scale
       - --gcp-zone=us-east1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:Performance\] --node-schedulable-timeout=90m --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master
+      - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master
       - --timeout=1290m
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
