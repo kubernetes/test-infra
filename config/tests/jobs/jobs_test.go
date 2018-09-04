@@ -679,6 +679,10 @@ func TestValidPresets(t *testing.T) {
 		}
 	}
 
+	if !*k8sProw {
+		return
+	}
+
 	for _, presubmit := range c.AllPresubmits(nil) {
 		if presubmit.Spec != nil && !presubmit.Decorate {
 			if err := checkKubekinsPresets(presubmit.Name, presubmit.Spec, presubmit.Labels, validLabels); err != nil {
