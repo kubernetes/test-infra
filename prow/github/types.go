@@ -37,6 +37,16 @@ const (
 	// RepoLogField is the repository of a PR.
 	// Used as a log field across prow.
 	RepoLogField = "repo"
+
+	// SearchTimeFormat is a time.Time format string for ISO8601 which is the
+	// format that GitHub requires for times specified as part of a search query.
+	SearchTimeFormat = "2006-01-02T15:04:05Z"
+)
+
+var (
+	// FoundingYear is the year GitHub was founded. This is just used so that
+	// we can lower bound dates related to PRs and issues.
+	FoundingYear, _ = time.Parse(SearchTimeFormat, "2007-01-01T00:00:00Z")
 )
 
 // These are possible State entries for a Status.

@@ -14,9 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package tide contains a controller for managing a tide pool of PRs. The
-// controller will automatically retest PRs in the pool and merge them if they
-// pass tests.
 package tide
 
 import (
@@ -359,9 +356,10 @@ func (sc *statusController) sync(pool map[string]PullRequest) {
 	// We offset for 30 seconds of overlap because GitHub sometimes doesn't
 	// include recently changed/new PRs in the query results.
 	sinceTime := sc.lastSuccessfulQueryStart.Add(-30 * time.Second)
-	query := sc.ca.Config().Tide.Queries.AllPRsSince(sinceTime)
+	query := sc.ca.Config().Tide.Queries.AllOpenPRs()
 	queryStartTime := time.Now()
-	allPRs, err := search(context.Background(), sc.ghc, sc.logger, query)
+	searcher := newSearchExecutor(context.Background(), sc.ghc, sc.logger, query)
+	allPRs, err := searcher.searchSince(sinceTime)
 	if err != nil {
 		sc.logger.WithError(err).Errorf("Searching for open PRs.")
 		return
