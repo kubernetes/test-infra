@@ -2745,6 +2745,9 @@ test_groups:
 - name: ci-kubernetes-dind-conformance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-dind-conformance
   num_columns_recent: 3
+- name: ci-kubernetes-kind-conformance-parallel
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kind-conformance-parallel
+  num_columns_recent: 3
 
 # cloud-provider-openstack e2e conformance tests
 # name format: PR trigger ci-presubmit-${zuul-job-name}
@@ -5775,6 +5778,9 @@ dashboards:
   - name: dind
     description: Runs e2e tests against a dind cluster.
     test_group_name: pull-kubernetes-dind-e2e
+  - name: ci-kind-conformance-parallel
+    description: Runs parallel conformance e2e tests against a dind cluster.
+    test_group_name: ci-kubernetes-kind-conformance-parallel
   - name: bazel
     description: Runs bazel test //... on the test-infra repo.
     test_group_name: ci-test-infra-bazel
