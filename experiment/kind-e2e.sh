@@ -20,11 +20,12 @@
 set -o errexit
 set -o nounset
 set -o pipefail
+set -x
 
 # get and isntall `kind` to tempdir
 TMP_GOPATH=$(mktemp -d)
-trap "rm -rf ${TMP_GOPATH}" EXIT
-go get k8s.io/test-infra/kind
+trap 'rm -rf ${TMP_GOPATH}' EXIT
+env "GOPATH=${TMP_GOPATH}" go get k8s.io/test-infra/kind
 PATH="${TMP_GOPATH}/bin:${PATH}"
 
 # build the base image
@@ -34,7 +35,7 @@ kind build base
 kind build node
 
 # make sure we have e2e requirements
-make -C "${GOPATH}/src/k8s.io/kubernetes" all WHAT="cmd/kubectl test/e2e/e2e.test vendor/github.com/onsi/ginkgo"
+make -C "$(go env GOPATH)/src/k8s.io/kubernetes" all WHAT="cmd/kubectl test/e2e/e2e.test vendor/github.com/onsi/ginkgo"
 
 # ginkgo regexes
 FOCUS="${FOCUS:-"\\[Conformance\\]"}"
