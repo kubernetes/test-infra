@@ -326,6 +326,7 @@ plugins:
 
   kubernetes/features:
   - approve
+  - milestone
   - stage
 
   kubernetes/ingress-gce:
