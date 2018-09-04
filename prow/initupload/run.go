@@ -29,6 +29,7 @@ import (
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 )
 
+//Run : TODO (alisondy) document this
 func (o Options) Run() error {
 	spec, err := downwardapi.ResolveSpecFromEnv()
 	if err != nil {

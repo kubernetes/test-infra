@@ -34,6 +34,7 @@ const (
 	commentTag = "<!-- test report -->"
 )
 
+//GithubClient : TODO (alisondy) Write documentation
 type GithubClient interface {
 	BotName() (string, error)
 	CreateStatus(org, repo, ref string, s github.Status) error

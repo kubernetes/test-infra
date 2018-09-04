@@ -52,6 +52,7 @@ type GithubClientGetter interface {
 	GetGithubClient(accessToken string, dryRun bool) GithubClientWrapper
 }
 
+//OAuthClient : TODO (alisondy) documentation
 type OAuthClient interface {
 	// Exchanges code from github oauth redirect for user access token.
 	Exchange(ctx context.Context, code string) (*oauth2.Token, error)
@@ -66,18 +67,19 @@ func (gci *githubClientGetterImpl) GetGithubClient(accessToken string, dryRun bo
 	return ghclient.NewClient(accessToken, dryRun)
 }
 
+//NewGithubClientGetter : TODO (alisondy) documentation
 func NewGithubClientGetter() GithubClientGetter {
 	return &githubClientGetterImpl{}
 }
 
-// GithubOAuth Agent represents an agent that takes care Github authentication process such as handles
+// GithubOAuthAgent : represents an agent that takes care Github authentication process such as handles
 // login request from users or handles redirection from Github OAuth server.
 type GithubOAuthAgent struct {
 	gc     *config.GithubOAuthConfig
 	logger *logrus.Entry
 }
 
-// Returns new GithubOAUth Agent.
+// NewGithubOAuthAgent : Returns new GithubOAUth Agent.
 func NewGithubOAuthAgent(config *config.GithubOAuthConfig, logger *logrus.Entry) *GithubOAuthAgent {
 	return &GithubOAuthAgent{
 		gc:     config,

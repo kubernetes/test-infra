@@ -37,7 +37,7 @@ import (
 const (
 	period = 30 * time.Second
 )
-
+// ErrProwjobNotFound : TODO: Find a meaningful descriptions
 var (
 	ErrProwjobNotFound = errors.New("Prowjob not found")
 )
@@ -75,19 +75,19 @@ type serviceClusterClient interface {
 	ListPods(selector string) ([]kube.Pod, error)
 	ListProwJobs(selector string) ([]kube.ProwJob, error)
 }
-
+// PodLogClient : TODO: What is eht englishes
 type PodLogClient interface {
 	// GetContainerLog returns the pod log of the specified container
 	GetContainerLog(pod, container string) ([]byte, error)
 	// GetLogTail returns the last n bytes of the pod log of the specified container
 	GetLogTail(pod, container string, n int64) ([]byte, error)
 }
-
+// ConfigAgent : TODO : Write that documentation in the code
 type ConfigAgent interface {
 	Config() *config.Config
 }
 
-// NewJobAgent is a JobAgent constructor
+// NewJobAgent : Constructor for creating a new JobAgent
 func NewJobAgent(kc serviceClusterClient, plClients map[string]PodLogClient, ca ConfigAgent) *JobAgent {
 	return &JobAgent{
 		kc:   kc,
@@ -96,7 +96,7 @@ func NewJobAgent(kc serviceClusterClient, plClients map[string]PodLogClient, ca 
 	}
 }
 
-// JobAgent creates lists of jobs, updates their status and returns their run logs.
+// JobAgent : creates lists of jobs, updates their status and returns their run logs.
 type JobAgent struct {
 	kc        serviceClusterClient
 	pkcs      map[string]PodLogClient

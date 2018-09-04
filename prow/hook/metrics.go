@@ -37,11 +37,13 @@ func init() {
 	prometheus.MustRegister(responseCounter)
 }
 
+//Metrics : TODO (alisondy) Document this
 type Metrics struct {
 	WebhookCounter  *prometheus.CounterVec
 	ResponseCounter *prometheus.CounterVec
 }
 
+//NewMetrics : TODO (alisondy) Document this
 func NewMetrics() *Metrics {
 	return &Metrics{
 		WebhookCounter:  webhookCounter,

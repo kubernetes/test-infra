@@ -58,12 +58,14 @@ type githubClient interface {
 	GetRepos(org string, isUser bool) ([]github.Repo, error)
 }
 
+//HelpAgent : TODO (alisondy) document
 type HelpAgent struct {
 	log *logrus.Entry
 	pa  pluginAgent
 	oa  *orgAgent
 }
 
+//NewHelpAgent : TODO (alisondy) document
 func NewHelpAgent(pa pluginAgent, ghc githubClient) *HelpAgent {
 	l := logrus.WithField("client", "plugin-help")
 	return &HelpAgent{

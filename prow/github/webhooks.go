@@ -38,44 +38,44 @@ func ValidateWebhook(w http.ResponseWriter, r *http.Request, hmacSecret []byte) 
 
 	// Header checks: It must be a POST with an event type and a signature.
 	if r.Method != http.MethodPost {
-		responseHttpError(w, http.StatusMethodNotAllowed, "405 Method not allowed")
+		responseHTTPError(w, http.StatusMethodNotAllowed, "405 Method not allowed")
 		return "", "", nil, false, http.StatusMethodNotAllowed
 	}
 	eventType := r.Header.Get("X-GitHub-Event")
 	if eventType == "" {
-		responseHttpError(w, http.StatusBadRequest, "400 Bad Request: Missing X-GitHub-Event Header")
+		responseHTTPError(w, http.StatusBadRequest, "400 Bad Request: Missing X-GitHub-Event Header")
 		return "", "", nil, false, http.StatusBadRequest
 	}
 	eventGUID := r.Header.Get("X-GitHub-Delivery")
 	if eventGUID == "" {
-		responseHttpError(w, http.StatusBadRequest, "400 Bad Request: Missing X-GitHub-Delivery Header")
+		responseHTTPError(w, http.StatusBadRequest, "400 Bad Request: Missing X-GitHub-Delivery Header")
 		return "", "", nil, false, http.StatusBadRequest
 	}
 	sig := r.Header.Get("X-Hub-Signature")
 	if sig == "" {
-		responseHttpError(w, http.StatusForbidden, "403 Forbidden: Missing X-Hub-Signature")
+		responseHTTPError(w, http.StatusForbidden, "403 Forbidden: Missing X-Hub-Signature")
 		return "", "", nil, false, http.StatusForbidden
 	}
 	contentType := r.Header.Get("content-type")
 	if contentType != "application/json" {
-		responseHttpError(w, http.StatusBadRequest, "400 Bad Request: Hook only accepts content-type: application/json - please reconfigure this hook on GitHub")
+		responseHTTPError(w, http.StatusBadRequest, "400 Bad Request: Hook only accepts content-type: application/json - please reconfigure this hook on GitHub")
 		return "", "", nil, false, http.StatusBadRequest
 	}
 	payload, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		responseHttpError(w, http.StatusInternalServerError, "500 Internal Server Error: Failed to read request body")
+		responseHTTPError(w, http.StatusInternalServerError, "500 Internal Server Error: Failed to read request body")
 		return "", "", nil, false, http.StatusInternalServerError
 	}
 	// Validate the payload with our HMAC secret.
 	if !ValidatePayload(payload, sig, hmacSecret) {
-		responseHttpError(w, http.StatusForbidden, "403 Forbidden: Invalid X-Hub-Signature")
+		responseHTTPError(w, http.StatusForbidden, "403 Forbidden: Invalid X-Hub-Signature")
 		return "", "", nil, false, http.StatusForbidden
 	}
 
 	return eventType, eventGUID, payload, true, http.StatusOK
 }
 
-func responseHttpError(w http.ResponseWriter, statusCode int, response string) {
+func responseHTTPError(w http.ResponseWriter, statusCode int, response string) {
 	logrus.WithFields(logrus.Fields{
 		"response":    response,
 		"status-code": statusCode,

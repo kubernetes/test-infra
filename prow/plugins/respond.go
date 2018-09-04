@@ -23,11 +23,16 @@ import (
 	"k8s.io/test-infra/prow/github"
 )
 
+//AboutThisBotWithoutCommands : TODO (alisondy) document
 const AboutThisBotWithoutCommands = "Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository."
+
+//AboutThisBotCommands : TODO (alisondy) document
 const AboutThisBotCommands = "I understand the commands that are listed [here](https://go.k8s.io/bot-commands)."
+
+//AboutThisBot : TODO (alisondy) document
 const AboutThisBot = AboutThisBotWithoutCommands + " " + AboutThisBotCommands
 
-// FormatResponse nicely formats a response to a generic reason.
+// FormatResponse : nicely formats a response to a generic reason.
 func FormatResponse(to, message, reason string) string {
 	format := `@%s: %s
 

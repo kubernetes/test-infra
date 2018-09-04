@@ -56,69 +56,87 @@ var (
 	statusEventHandlers        = map[string]StatusEventHandler{}
 )
 
+//HelpProvider : TODO (alisondy) document
 type HelpProvider func(config *Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error)
 
+//HelpProviders : TODO (alisondy) document
 func HelpProviders() map[string]HelpProvider {
 	return pluginHelp
 }
 
+//IssueHandler : TODO (alisondy) document
 type IssueHandler func(PluginClient, github.IssueEvent) error
 
+//RegisterIssueHandler : TODO (alisondy) document
 func RegisterIssueHandler(name string, fn IssueHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	issueHandlers[name] = fn
 }
 
+//IssueCommentHandler : TODO (alisondy) document
 type IssueCommentHandler func(PluginClient, github.IssueCommentEvent) error
 
+//RegisterIssueCommentHandler : TODO (alisondy) document
 func RegisterIssueCommentHandler(name string, fn IssueCommentHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	issueCommentHandlers[name] = fn
 }
 
+//PullRequestHandler : TODO (alisondy) document
 type PullRequestHandler func(PluginClient, github.PullRequestEvent) error
 
+//RegisterPullRequestHandler : TODO (alisondy) document
 func RegisterPullRequestHandler(name string, fn PullRequestHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	pullRequestHandlers[name] = fn
 }
 
+//StatusEventHandler : TODO (alisondy) document
 type StatusEventHandler func(PluginClient, github.StatusEvent) error
 
+//RegisterStatusEventHandler : TODO (alisondy) document
 func RegisterStatusEventHandler(name string, fn StatusEventHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	statusEventHandlers[name] = fn
 }
 
+//PushEventHandler : TODO (alisondy) document
 type PushEventHandler func(PluginClient, github.PushEvent) error
 
+//RegisterPushEventHandler : TODO (alisondy) document
 func RegisterPushEventHandler(name string, fn PushEventHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	pushEventHandlers[name] = fn
 }
 
+//ReviewEventHandler : TODO (alisondy) document
 type ReviewEventHandler func(PluginClient, github.ReviewEvent) error
 
+//RegisterReviewEventHandler : TODO (alisondy) document
 func RegisterReviewEventHandler(name string, fn ReviewEventHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	reviewEventHandlers[name] = fn
 }
 
+//ReviewCommentEventHandler : TODO (alisondy) document
 type ReviewCommentEventHandler func(PluginClient, github.ReviewCommentEvent) error
 
+//RegisterReviewCommentEventHandler : TODO (alisondy) document
 func RegisterReviewCommentEventHandler(name string, fn ReviewCommentEventHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	reviewCommentEventHandlers[name] = fn
 }
 
+//GenericCommentHandler : TODO (alisondy) document
 type GenericCommentHandler func(PluginClient, github.GenericCommentEvent) error
 
+//RegisterGenericCommentHandler : TODO (alisondy) document
 func RegisterGenericCommentHandler(name string, fn GenericCommentHandler, help HelpProvider) {
 	pluginHelp[name] = help
 	genericCommentHandlers[name] = fn
 }
 
-// PluginClient may be used concurrently, so each entry must be thread-safe.
+// PluginClient : may be used concurrently, so each entry must be thread-safe.
 type PluginClient struct {
 	GitHubClient *github.Client
 	KubeClient   *kube.Client
@@ -137,6 +155,7 @@ type PluginClient struct {
 	Logger *logrus.Entry
 }
 
+//PluginAgent : TODO (alisondy) document
 type PluginAgent struct {
 	PluginClient
 
@@ -203,6 +222,7 @@ type ExternalPlugin struct {
 	Events []string `json:"events,omitempty"`
 }
 
+//Blunderbuss : TODO (alisondy) document
 type Blunderbuss struct {
 	// ReviewerCount is the minimum number of reviewers to request
 	// reviews from. Defaults to requesting reviews from 2 reviewers
@@ -250,6 +270,7 @@ type Owners struct {
 	LabelsBlackList []string `json:"labels_blacklist,omitempty"`
 }
 
+//MDYAMLEnabled : TODO (alisondy) document
 func (pa *PluginAgent) MDYAMLEnabled(org, repo string) bool {
 	full := fmt.Sprintf("%s/%s", org, repo)
 	for _, elem := range pa.Config().Owners.MDYAMLRepos {
@@ -260,6 +281,7 @@ func (pa *PluginAgent) MDYAMLEnabled(org, repo string) bool {
 	return false
 }
 
+//SkipCollaborators : TODO (alisondy) document
 func (pa *PluginAgent) SkipCollaborators(org, repo string) bool {
 	full := fmt.Sprintf("%s/%s", org, repo)
 	for _, elem := range pa.Config().Owners.SkipCollaborators {
@@ -331,6 +353,8 @@ type Size struct {
 	  - 'mungegithub/DeprecationWarning.md'
 	  explanation: "Don't work on mungegithub! Work on Prow!"
 */
+
+//Blockade : TODO (alisondy) document
 type Blockade struct {
 	// Repos are either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
@@ -343,6 +367,7 @@ type Blockade struct {
 	Explanation string `json:"explanation,omitempty"`
 }
 
+//Approve : TODO (alisondy) document
 type Approve struct {
 	// Repos is either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
@@ -360,6 +385,7 @@ type Approve struct {
 	ReviewActsAsApprove bool `json:"review_acts_as_approve,omitempty"`
 }
 
+//Lgtm : TODO (alisondy) document
 type Lgtm struct {
 	// Repos is either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
@@ -368,17 +394,20 @@ type Lgtm struct {
 	ReviewActsAsLgtm bool `json:"review_acts_as_lgtm,omitempty"`
 }
 
+//Cat : TODO (alisondy) document
 type Cat struct {
 	// Path to file containing an api key for thecatapi.com
 	KeyPath string `json:"key_path,omitempty"`
 }
 
+//Label : TODO (alisondy) document
 type Label struct {
 	// AdditionalLabels is a set of additional labels enabled for use
 	// on top of the existing "kind/*", "priority/*", and "area/*" labels.
 	AdditionalLabels []string `json:"additional_labels"`
 }
 
+//Trigger : TODO (alisondy) document
 type Trigger struct {
 	// Repos is either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
@@ -394,6 +423,7 @@ type Trigger struct {
 	OnlyOrgMembers bool `json:"only_org_members,omitempty"`
 }
 
+//Heart : TODO (alisondy) document
 type Heart struct {
 	// Adorees is a list of GitHub logins for members
 	// for whom we will add emojis to comments
@@ -411,6 +441,7 @@ type Milestone struct {
 	MaintainersTeam string `json:"maintainers_team,omitempty"`
 }
 
+//Slack : TODO (alisondy) document
 type Slack struct {
 	MentionChannels []string       `json:"mentionchannels,omitempty"`
 	MergeWarnings   []MergeWarning `json:"mergewarnings,omitempty"`
@@ -428,6 +459,7 @@ type ConfigMapSpec struct {
 	Namespace string `json:"namespace,omitempty"`
 }
 
+//ConfigUpdater : TODO (alisondy) document
 type ConfigUpdater struct {
 	// A map of filename => ConfigMapSpec.
 	// Whenever a commit changes filename, prow will update the corresponding configmap.
@@ -712,6 +744,7 @@ func (pa *PluginAgent) Load(path string) error {
 	return nil
 }
 
+//Config : TODO (alisondy) document
 func (pa *PluginAgent) Config() *Configuration {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
@@ -1034,6 +1067,7 @@ func (pa *PluginAgent) getPlugins(owner, repo string) []string {
 	return plugins
 }
 
+//EventsForPlugin : TODO (alisondy) document
 func EventsForPlugin(name string) []string {
 	var events []string
 	if _, ok := issueHandlers[name]; ok {
@@ -1063,6 +1097,7 @@ func EventsForPlugin(name string) []string {
 	return events
 }
 
+//EnabledReposForPlugin : TODO (alisondy) document
 func (c *Configuration) EnabledReposForPlugin(plugin string) (orgs, repos []string) {
 	for repo, plugins := range c.Plugins {
 		found := false
@@ -1083,6 +1118,7 @@ func (c *Configuration) EnabledReposForPlugin(plugin string) (orgs, repos []stri
 	return
 }
 
+//EnabledReposForExternalPlugin : TODO (alisondy) document
 func (c *Configuration) EnabledReposForExternalPlugin(plugin string) (orgs, repos []string) {
 	for repo, plugins := range c.ExternalPlugins {
 		found := false

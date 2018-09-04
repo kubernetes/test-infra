@@ -110,6 +110,7 @@ func newProwJob(spec kube.ProwJobSpec, labels, annotations map[string]string) ku
 	}
 }
 
+//NewPresubmit : TODO (alisondy) Write docuemntation
 func NewPresubmit(pr github.PullRequest, baseSHA string, job config.Presubmit, eventGUID string) kube.ProwJob {
 	org := pr.Base.Repo.Owner.Login
 	repo := pr.Base.Repo.Name

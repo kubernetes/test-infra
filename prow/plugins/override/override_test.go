@@ -145,11 +145,10 @@ func (c *fakeClient) CreateProwJob(pj kube.ProwJob) (kube.ProwJob, error) {
 }
 
 func (c *fakeClient) presubmitForContext(org, repo, context string) *config.Presubmit {
-	if p, ok := c.presubmits[context]; !ok {
-		return nil
-	} else {
+	if p, ok := c.presubmits[context]; ok {
 		return &p
 	}
+	return nil;
 }
 
 func TestAuthorized(t *testing.T) {

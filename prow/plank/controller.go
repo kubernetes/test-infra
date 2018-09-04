@@ -356,7 +356,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 			c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Pod is in unknown state, deleting & restarting pod")
 			client, ok := c.pkcs[pj.ClusterAlias()]
 			if !ok {
-				return fmt.Errorf("Unknown cluster alias %q.", pj.ClusterAlias())
+				return fmt.Errorf("unknown cluster alias: %q", pj.ClusterAlias())
 			}
 			return client.DeletePod(pj.ObjectMeta.Name)
 
@@ -381,7 +381,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 				// Pod was evicted. We will recreate it in the next resync.
 				client, ok := c.pkcs[pj.ClusterAlias()]
 				if !ok {
-					return fmt.Errorf("Unknown cluster alias %q.", pj.ClusterAlias())
+					return fmt.Errorf("unknown cluster alias: %q", pj.ClusterAlias())
 				}
 				return client.DeletePod(pj.ObjectMeta.Name)
 			}
@@ -490,7 +490,7 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 
 	client, ok := c.pkcs[pj.ClusterAlias()]
 	if !ok {
-		return "", "", fmt.Errorf("Unknown cluster alias %q.", pj.ClusterAlias())
+		return "", "", fmt.Errorf("unknown cluster alias: %q", pj.ClusterAlias())
 	}
 	actual, err := client.CreatePod(*pod)
 	if err != nil {

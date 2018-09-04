@@ -37,6 +37,7 @@ func NewOptions() *Options {
 	}
 }
 
+//Options : TODO (alisondy) Document this
 type Options struct {
 	*gcsupload.Options
 

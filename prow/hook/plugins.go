@@ -19,6 +19,7 @@ package hook
 // All enabled plugins. We need to empty import them like this so that they
 // will be linked into any hook binary.
 import (
+	// _ : Blank imports for all enabled plugins
 	_ "k8s.io/test-infra/prow/plugins/approve"
 	_ "k8s.io/test-infra/prow/plugins/assign"
 	_ "k8s.io/test-infra/prow/plugins/blockade"

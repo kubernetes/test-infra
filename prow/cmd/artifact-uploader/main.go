@@ -140,7 +140,7 @@ func (o *Options) Run() error {
 		return err
 	}
 
-	controller := artifact_uploader.NewController(client.CoreV1(), prowJobClient, o.Options)
+	controller := artifactuploader.NewController(client.CoreV1(), prowJobClient, o.Options)
 
 	stop := make(chan struct{})
 	defer close(stop)

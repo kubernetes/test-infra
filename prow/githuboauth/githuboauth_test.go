@@ -49,13 +49,13 @@ func (c *MockOAuthClient) AuthCodeURL(state string, opts ...oauth2.AuthCodeOptio
 }
 
 func getMockConfig(cookie *sessions.CookieStore) *config.GithubOAuthConfig {
-	clientId := "mock-client-id"
+	clientID := "mock-client-id"
 	clientSecret := "mock-client-secret"
 	redirectURL := "/uni-test/redirect-url"
 	scopes := []string{}
 
 	return &config.GithubOAuthConfig{
-		ClientID:         clientId,
+		ClientID:         clientID,
 		ClientSecret:     clientSecret,
 		RedirectURL:      redirectURL,
 		Scopes:           scopes,

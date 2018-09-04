@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// package crier reports finished prowjob status to git providers
+// Package crier : reports finished prowjob status to git providers
 package crier
 
 import (
@@ -46,7 +46,7 @@ type Controller struct {
 	informer  pjinformers.ProwJobInformer
 	reporter  reportClient
 }
-
+// NewController : TODO: (alisondy) Write Documentation
 func NewController(
 	clientset kubernetes.Interface,
 	queue workqueue.RateLimitingInterface,

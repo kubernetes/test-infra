@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package setmilestone implements the `/milestone` command which allows members of the milestone
+// Package milestone implements the `/milestone` command which allows members of the milestone
 // maintainers team to specify a milestone to be applied to an Issue or PR.
 package milestone
 

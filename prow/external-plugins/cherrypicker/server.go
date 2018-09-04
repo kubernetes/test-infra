@@ -54,6 +54,7 @@ type githubClient interface {
 	ListOrgMembers(org, role string) ([]github.TeamMember, error)
 }
 
+//HelpProvider : TODO Write Documentation
 func HelpProvider(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: `The cherrypick plugin is used for cherrypicking PRs across branches. For every successful cherrypick invocation a new PR is opened against the target branch and assigned to the requester.`,
@@ -69,7 +70,7 @@ func HelpProvider(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	return pluginHelp, nil
 }
 
-// Server implements http.Handler. It validates incoming GitHub webhooks and
+// Server : implements http.Handler. It validates incoming GitHub webhooks and
 // then dispatches them to the appropriate plugins.
 type Server struct {
 	tokenGenerator func() []byte

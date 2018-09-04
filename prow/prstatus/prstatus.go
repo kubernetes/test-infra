@@ -69,7 +69,7 @@ type PullRequestWithContext struct {
 	PullRequest PullRequest
 }
 
-// Dashboard Agent is responsible for handling request to /pr-status endpoint. It will serve
+// DashboardAgent is responsible for handling request to /pr-status endpoint. It will serve
 // list of open pull requests owned by the user.
 type DashboardAgent struct {
 	repos []string
@@ -78,6 +78,7 @@ type DashboardAgent struct {
 	log *logrus.Entry
 }
 
+//Label : TODO (alisondy) write documentation
 type Label struct {
 	ID   githubql.ID
 	Name githubql.String
@@ -121,6 +122,7 @@ type PullRequest struct {
 	Mergeable githubql.MergeableState
 }
 
+//UserLoginQuery : TODO (alisondy) Write documentation
 type UserLoginQuery struct {
 	Viewer struct {
 		Login githubql.String
@@ -143,7 +145,7 @@ type searchQuery struct {
 	} `graphql:"search(type: ISSUE, first: 100, after: $searchCursor, query: $query)"`
 }
 
-// Returns new user dashboard agent.
+// NewDashboardAgent : Returns new user dashboard agent.
 func NewDashboardAgent(repos []string, config *config.GithubOAuthConfig, log *logrus.Entry) *DashboardAgent {
 	return &DashboardAgent{
 		repos: repos,
@@ -273,7 +275,7 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 	}
 }
 
-// Query function that returns a list of open pull requests owned by the user whose access token
+// QueryPullRequests : Query function that returns a list of open pull requests owned by the user whose access token
 // is consumed by the github client.
 func (da *DashboardAgent) QueryPullRequests(ctx context.Context, ghc githubClient, query string) ([]PullRequest, error) {
 	var prs []PullRequest
@@ -302,6 +304,7 @@ func (da *DashboardAgent) QueryPullRequests(ctx context.Context, ghc githubClien
 	return prs, nil
 }
 
+//HeadContexts : TODO (alisondy) Write Docuemtnation
 func (da *DashboardAgent) HeadContexts(ghc githubClient, pr PullRequest) ([]Context, error) {
 	org := string(pr.Repository.Owner.Login)
 	repo := string(pr.Repository.Name)
@@ -323,10 +326,12 @@ func (da *DashboardAgent) HeadContexts(ghc githubClient, pr PullRequest) ([]Cont
 	return contexts, nil
 }
 
+//GetUser : TODO (alisondy) Write Documentation
 func (da *DashboardAgent) GetUser(client *ghclient.Client) (*gogithub.User, error) {
 	return client.GetUser("")
 }
 
+//ConstructSearchQuery : TODO (alisondy) Write documentation
 func (da *DashboardAgent) ConstructSearchQuery(login string) string {
 	tokens := []string{"is:pr", "state:open", "author:" + login}
 	for i := range da.repos {

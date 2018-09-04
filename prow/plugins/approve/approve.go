@@ -34,9 +34,11 @@ import (
 )
 
 const (
+	//PluginName : TODO (alisondy) document
 	PluginName = "approve"
 
 	approveCommand  = "APPROVE"
+	//ApprovedLabel : TODO (alisondy) Document
 	ApprovedLabel   = "approved"
 	cancelArgument  = "cancel"
 	lgtmCommand     = "LGTM"

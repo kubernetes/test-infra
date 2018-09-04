@@ -62,6 +62,7 @@ type commentPruner interface {
 // 	return handleEvent(pc.Logger, pc.GitHubClient, pc.CommentPruner, &pre)
 // }
 
+// HelpProvider :
 func HelpProvider(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	return &pluginhelp.PluginHelp{
 			Description: `The needs-rebase plugin manages the '` + needsRebaseLabel + `' label by removing it from Pull Requests that are mergeable and adding it to those which are not.
@@ -70,6 +71,7 @@ The plugin reacts to commit changes on PRs in addition to periodically scanning 
 		nil
 }
 
+//HandleEvent : TODO Write Documentation
 func HandleEvent(log *logrus.Entry, ghc githubClient, pre *github.PullRequestEvent) error {
 	if pre.Action != github.PullRequestActionOpened && pre.Action != github.PullRequestActionSynchronize && pre.Action != github.PullRequestActionReopened {
 		return nil
@@ -97,6 +99,7 @@ func HandleEvent(log *logrus.Entry, ghc githubClient, pre *github.PullRequestEve
 	return takeAction(log, ghc, org, repo, number, pre.PullRequest.User.Login, hasLabel, mergeable)
 }
 
+//HandleAll TODO Write Documentation
 func HandleAll(log *logrus.Entry, ghc githubClient, config *plugins.Configuration) error {
 	log.Info("Checking all PRs.")
 	orgs, repos := config.EnabledReposForExternalPlugin(pluginName)
@@ -211,6 +214,7 @@ func search(ctx context.Context, log *logrus.Entry, ghc githubClient, q string) 
 }
 
 // TODO(spxtr): Add useful information for frontend stuff such as links.
+// pullRequest: TODO: documentaitonasint
 type pullRequest struct {
 	Number githubql.Int
 	Author struct {
