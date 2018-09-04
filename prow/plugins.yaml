@@ -202,6 +202,36 @@ config_updater:
 welcome:
   message_template: "Welcome @{{.AuthorLogin}}! It looks like this is your first PR to {{.Org}}/{{.Repo}} 🎉"
 
+require_matching_label:
+- missing_label: needs-kind
+  org: kubernetes
+  repo: kubernetes
+  prs: true
+  regexp: ^kind/
+- missing_label: needs-sig
+  org: kubernetes
+  repo: kubernetes
+  prs: true
+  regexp: ^(sig|wg|committee)/
+  # Define needs-sig separately for issues so that we only comment on issues.
+- missing_label: needs-sig
+  org: kubernetes
+  repo: kubernetes
+  issues: true
+  regexp: ^(sig|wg|committee)/
+  missing_comment: |
+    There are no sig labels on this issue. Please add a sig label by either:
+
+    1. mentioning a sig: `@kubernetes/sig-<group-name>-<group-suffix>`
+        e.g., `@kubernetes/sig-contributor-experience-<group-suffix>` to notify the contributor experience sig, OR
+
+    2. specifying the label manually: `/sig <group-name>`
+        e.g., `/sig scalability` to apply the `sig/scalability` label
+
+    Note: Method 1 will trigger an email to the group. See the [group list](https://git.k8s.io/community/sig-list.md).
+    The `<group-suffix>` in method 1 has to be replaced with one of these: _**bugs, feature-requests, pr-reviews, test-failures, proposals**_.
+
+
 plugins:
   bazelbuild/rules_k8s:
   - approve  # Allow OWNERS to /approve
@@ -371,7 +401,7 @@ plugins:
   - milestonestatus
   - owners-label
   - release-note
-  - require-sig
+  - require-matching-label
   - trigger
 
   kubernetes/kubernetes-docs-ja:
