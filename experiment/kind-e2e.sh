@@ -46,11 +46,20 @@ PATH="${TMP_GOPATH}/bin:${PATH}"
 # build the base image
 # TODO(bentheelder): eliminate this once we publish this image
 kind build base
+
+# possibly enable bazel build caching before building kubernetes
+BAZEL_REMOTE_CACHE_ENABLED=${BAZEL_REMOTE_CACHE_ENABLED:-false}
+if [[ "${BAZEL_REMOTE_CACHE_ENABLED}" == "true" ]]; then
+    # run the script in the kubekins image, do not fail if it fails
+    /usr/local/bin/create_bazel_cache_rcs.sh || true
+fi
+
 # build the node image w/ kubernetes
-kind build node
+kind build node --type=bazel
 
 # make sure we have e2e requirements
-make all WHAT="cmd/kubectl test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo"
+#make all WHAT="cmd/kubectl test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo"
+bazel build //cmd/kubectl //test/e2e:e2e.test //vendor/github.com/onsi/ginkgo/ginkgo
 
 # ginkgo regexes
 FOCUS="${FOCUS:-"\\[Conformance\\]"}"
