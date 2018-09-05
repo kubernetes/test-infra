@@ -374,7 +374,7 @@ tide:
     kubernetes/kubernetes-docs-ja: squash
     kubernetes/kubernetes-docs-ko: squash
     kubernetes/website: squash
-  target_url: https://prow.k8s.io/tide.html
+  pr_status_base_url: https://prow.k8s.io/pr
   blocker_label: merge-blocker
 
 push_gateway:
