@@ -111,13 +111,13 @@ periodics:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
     preset-dind-enabled: "true"
-  env:
-  # run tests in parallel
-  - name: "PARALLEL"
-    value: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+      env:
+      # run tests in parallel
+      - name: "PARALLEL"
+        value: "true"
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"

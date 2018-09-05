@@ -22,10 +22,25 @@ set -o nounset
 set -o pipefail
 set -x
 
-# get and isntall `kind` to tempdir
+# get relative path to test infra root based on script source
+TREE="$(dirname ${BASH_SOURCE[0]})/.."
+# cd to the path
+ORIG_PWD="${PWD}"
+cd "${TREE}"
+# save it as the test infra root
+TESTINFRA_ROOT="${PWD}"
+# cd back
+cd "${ORIG_PWD}"
+
+# isntall `kind` to tempdir
 TMP_GOPATH=$(mktemp -d)
 trap 'rm -rf ${TMP_GOPATH}' EXIT
-env "GOPATH=${TMP_GOPATH}" go get k8s.io/test-infra/kind
+
+# smylink test-infra into tmp gopath
+mkdir -p "${TMP_GOPATH}/src/k8s.io/"
+ln -s "${TESTINFRA_ROOT}" "${TMP_GOPATH}/src/k8s.io"
+
+env "GOPATH=${TMP_GOPATH}" go install k8s.io/test-infra/kind
 PATH="${TMP_GOPATH}/bin:${PATH}"
 
 # build the base image
@@ -35,7 +50,7 @@ kind build base
 kind build node
 
 # make sure we have e2e requirements
-make -C "$(go env GOPATH)/src/k8s.io/kubernetes" all WHAT="cmd/kubectl test/e2e/e2e.test vendor/github.com/onsi/ginkgo"
+make all WHAT="cmd/kubectl test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo"
 
 # ginkgo regexes
 FOCUS="${FOCUS:-"\\[Conformance\\]"}"
@@ -45,7 +60,7 @@ SKIP="${SKIP:-"Alpha|Kubectl|\\[(Disruptive|Feature:[^\\]]+|Flaky)\\]"}"
 KUBETEST_ARGS="--provider=skeleton --test --test_args=\"--ginkgo.focus=${FOCUS} --ginkgo.skip=${SKIP}\" --dump=$HOME/make-logs/ --check-version-skew=false"
 
 # if we set PARALLEL=true, then skip serial tests and add --ginkgo-parallel to the args
-PARALLEL="{PARALLEL:-false}"
+PARALLEL="${PARALLEL:-false}"
 if [[ "${PARALLEL}" == "true" ]]; then
     SKIP="${SKIP}|\\[Serial\\]"
     KUBETEST_ARGS="${KUBETEST_ARGS} --ginkgo-parallel"
@@ -63,10 +78,13 @@ fi
 
 # export the KUBECONFIG
 # TODO(bentheelder): provide a `kind` command that can be eval'ed instead
-export KUBECONFIG="${HOME}/.config/kind-config-1"
+export KUBECONFIG="${HOME}/.kube/kind-config-1"
+
+# setting this env prevents ginkg e2e from trying to run provider setup
+export KUBERNETES_CONFORMANCE_TEST="y"
 
 # run kubetest, if it fails clean up and exit failure
-if ! kubetest "${KUBETEST_ARGS}"
+if ! eval "kubetest ${KUBETEST_ARGS}"
 then
     kind delete
     exit 1
