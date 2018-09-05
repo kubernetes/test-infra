@@ -132,7 +132,7 @@ blockades:
 - repos:
   - kubernetes/sig-release
   blockregexps:
-  - ^releases/release-1\.[0-9]
+  - ^releases/release-1\.[0-9]/
   explanation: "These files represent previous release collateral and have been protected for historical purposes."
 
 blunderbuss:
