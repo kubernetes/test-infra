@@ -17,9 +17,9 @@ limitations under the License.
 package workflows
 
 import (
-	"os"
 	"fmt"
-	
+	"os"
+
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/coverage/artifacts"
@@ -35,7 +35,7 @@ func RunPresubmit(p *gcs.PreSubmit, arts *artifacts.LocalArtifacts) (isCoverageL
 	logrus.Info("starting PreSubmit.RunPresubmit(...)")
 	coverageThresholdInt := p.CovThreshold
 
-	isLocalRun := os.Getenv("JOB_TYPE")=="local-presubmit"
+	isLocalRun := os.Getenv("JOB_TYPE") == "local-presubmit"
 
 	var concernedFiles *map[string]bool
 	if isLocalRun {

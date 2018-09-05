@@ -106,7 +106,7 @@ func ProfileToTestsuiteXML(arts *artifacts.LocalArtifacts, covThres int) {
 		arts.ProfileReader(),
 		nil,
 		false,
-		&map[string] bool{},
+		&map[string]bool{},
 		covThres,
 	)
 	f, err := os.Create(arts.JunitXmlForTestgridPath())

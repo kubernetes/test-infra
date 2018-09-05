@@ -38,8 +38,8 @@ const (
 	defaultGcsBucket         = "knative-prow"
 	defaultPostSubmitJobName = "post-knative-serving-go-coverage"
 	defaultCovThreshold      = 80
-	defaultLocalPr = "0"
-	defaultLocalBuildStr = "0"
+	defaultLocalPr           = "0"
+	defaultLocalBuildStr     = "0"
 )
 
 var (

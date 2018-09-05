@@ -37,7 +37,7 @@ func TestReadLocalProfile(t *testing.T) {
 
 func covListForTest() *CoverageList {
 	arts := artsTest.LocalInputArtsForTest()
-	covList := CovList(arts.ProfileReader(), nil, false, &map[string] bool{}, 50)
+	covList := CovList(arts.ProfileReader(), nil, false, &map[string]bool{}, 50)
 	covList.report(true)
 	return covList
 }
