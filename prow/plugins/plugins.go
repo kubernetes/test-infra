@@ -644,9 +644,10 @@ func (c *Configuration) setDefaults() {
 		c.CherryPickUnapproved.BranchRegexp = `^release-.*$`
 	}
 	if c.CherryPickUnapproved.Comment == "" {
-		c.CherryPickUnapproved.Comment = `
-This PR is not for the master branch but does not have the ` + "`cherry-pick-approved`" + `  label. Adding the ` + "`do-not-merge/cherry-pick-not-approved`" + `  label.
+		c.CherryPickUnapproved.Comment = `This PR is not for the master branch but does not have the ` + "`cherry-pick-approved`" + `  label. Adding the ` + "`do-not-merge/cherry-pick-not-approved`" + `  label.
+
 To approve the cherry-pick, please assign the patch release manager for the release branch by writing ` + "`/assign @username`" + ` in a comment when ready.
+
 The list of patch release managers for each release can be found [here](https://git.k8s.io/sig-release/release-managers.md).`
 	}
 
