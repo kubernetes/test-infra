@@ -1,6 +1,6 @@
-# kubeadm release and master tests
+# kubeadm upgrade tests
 periodics:
-- name: ci-kubernetes-e2e-kubeadm-gce-1-10
+- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
   interval: 6h
   labels:
     preset-service-account: "true"
@@ -15,19 +15,24 @@ periodics:
       - --upload=gs://kubernetes-jenkins/logs
       - --scenario=kubernetes_e2e
       - --
+      - --check-version-skew=false
       - --cluster=
       - --deployment=kubernetes-anywhere
-      - --extract=ci/latest-bazel-1.10
+      - --extract=release/latest-1.10
+      - --extract=ci/latest-bazel-1.9
       - --gcp-zone=us-central1-f
-      - --kubeadm=ci
-      - --kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.10
-      - --kubernetes-anywhere-kubernetes-version=ci/latest-1.10
+      - --kubeadm=periodic
+      - --kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.9
+      - --kubernetes-anywhere-kubernetes-version=ci/latest-1.9
+      - --kubernetes-anywhere-upgrade-method=upgrade
       - --provider=kubernetes-anywhere
+      - --skew
       - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\]
       - --timeout=300m
+      - --upgrade_args=--ginkgo.focus=\[Feature:MasterUpgrade\] --ginkgo.skip=statefulset-upgrade|hpa-upgrade|service-upgrade --upgrade-target=release/latest-1.10
 
-- name: ci-kubernetes-e2e-kubeadm-gce-1-11
-  interval: 6h
+- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11
+  interval: 2h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -41,23 +46,27 @@ periodics:
       - --upload=gs://kubernetes-jenkins/logs
       - --scenario=kubernetes_e2e
       - --
+      - --check-version-skew=false
       - --cluster=
       - --deployment=kubernetes-anywhere
-      - --extract=ci/latest-bazel-1.11
+      - --extract=release/latest-1.11
+      - --extract=ci/latest-bazel-1.10
       - --gcp-zone=us-central1-f
-      - --kubeadm=ci
-      - --kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.11
-      - --kubernetes-anywhere-kubernetes-version=ci/latest-1.11
+      - --kubeadm=periodic
+      - --kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.10
+      - --kubernetes-anywhere-kubernetes-version=ci/latest-1.10
+      - --kubernetes-anywhere-upgrade-method=upgrade
       - --provider=kubernetes-anywhere
+      - --skew
       - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8
       - --timeout=300m
+      - --upgrade_args=--ginkgo.focus=\[Feature:MasterUpgrade\] --ginkgo.skip=statefulset-upgrade|hpa-upgrade|service-upgrade --upgrade-target=release/latest-1.11
 
-- name: ci-kubernetes-e2e-kubeadm-gce-1-12
-  interval: 12h
+- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-11-1-12
+  interval: 6h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
-    preset-bazel-scratch-dir: "true"
   spec:
     containers:
     - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180829-29d5569b7
@@ -68,19 +77,24 @@ periodics:
       - --upload=gs://kubernetes-jenkins/logs
       - --scenario=kubernetes_e2e
       - --
+      - --check-version-skew=false
       - --cluster=
       - --deployment=kubernetes-anywhere
-      - --extract=ci/latest-bazel-1.12
+      - --extract=release/latest-1.12
+      - --extract=ci/latest-bazel-1.11
       - --gcp-zone=us-central1-f
-      - --kubeadm=ci
-      - --kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.12
-      - --kubernetes-anywhere-kubernetes-version=ci/latest-1.12
+      - --kubeadm=periodic
+      - --kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.11
+      - --kubernetes-anywhere-kubernetes-version=ci/latest-1.11
+      - --kubernetes-anywhere-upgrade-method=upgrade
       - --provider=kubernetes-anywhere
+      - --skew
       - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8
       - --timeout=300m
+      - --upgrade_args=--ginkgo.focus=\[Feature:MasterUpgrade\] --ginkgo.skip=statefulset-upgrade|hpa-upgrade|service-upgrade --upgrade-target=release/latest-1.9
 
-- name: ci-kubernetes-e2e-kubeadm-gce-master
-  interval: 2h
+- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-stable-master
+  interval: 6h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -94,15 +108,18 @@ periodics:
       - --upload=gs://kubernetes-jenkins/logs
       - --scenario=kubernetes_e2e
       - --
-      # TODO(bentheelder): --kubernetes-anywhere-kubernetes-version should really be ci/latest-bazel but we need changes to kubeadm and possibly kubernetes-anywhere first
+      - --check-version-skew=false
       - --cluster=
       - --deployment=kubernetes-anywhere
-      - --extract=ci/latest-bazel
+      - --extract=ci/latest
+      - --extract=release/stable
       - --gcp-zone=us-central1-f
-      - --kubeadm=ci
-      - --kubernetes-anywhere-kubelet-ci-version=latest-bazel
-      - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
+      - --kubeadm=periodic
+      - --kubernetes-anywhere-kubelet-version=stable
+      - --kubernetes-anywhere-kubernetes-version=stable
+      - --kubernetes-anywhere-upgrade-method=upgrade
       - --provider=kubernetes-anywhere
+      - --skew
       - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8
       - --timeout=300m
-
+      - --upgrade_args=--ginkgo.focus=\[Feature:MasterUpgrade\] --ginkgo.skip=statefulset-upgrade|hpa-upgrade|service-upgrade --upgrade-target=ci-cross/latest

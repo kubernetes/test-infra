@@ -1461,47 +1461,48 @@ test_groups:
 - name: periodic-multi-platform-kubeadm-packet-arm64
   gcs_prefix: kubernetes-multiarch-e2e-results/logs/kubeadm-luxas-packet-arm64
 # kubeadm tests
-- name: ci-kubernetes-e2e-kubeadm-gce
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce
-- name: ci-kubernetes-e2e-kubeadm-gce-selfhosting
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-selfhosting
+- name: ci-kubernetes-e2e-kubeadm-gce-1-10
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-10
+- name: ci-kubernetes-e2e-kubeadm-gce-1-11
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-11
+- name: ci-kubernetes-e2e-kubeadm-gce-1-12
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-12
+- name: ci-kubernetes-e2e-kubeadm-gce-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-master
+# kubeadm x-on-y tests
+- name: ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
+- name: ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
+- name: ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
+- name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-stable-on-master
+# kubeadm upgrade tests
+- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
+- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11
+- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-11-1-12
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-upgrade-1-11-1-12
+- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-stable-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-upgrade-stable-master
+# kubeadm network tests
 - name: ci-kubernetes-e2e-kubeadm-gce-ipvs
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-ipvs
 - name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-cni-flannel
 - name: ci-kubernetes-e2e-kubeadm-gce-dns-coredns
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-dns-coredns
-- name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-stable-on-master
-- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-stable-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-upgrade-stable-master
-- name: ci-kubernetes-e2e-kubeadm-gce-1-8
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-8
-- name: ci-kubernetes-e2e-kubeadm-gce-1-9
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-9
-- name: ci-kubernetes-e2e-kubeadm-gce-1-10
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-10
-- name: ci-kubernetes-e2e-kubeadm-gce-1-11
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-11
-- name: ci-kubernetes-e2e-kubeadm-gce-1-8-on-1-9
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-8-on-1-9
-- name: ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
+# packages tests
 - name: periodic-kubernetes-e2e-packages-pushed
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-packages-pushed
-- name: ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
-# upgrade CI tests
+# etcd tests
 - name: ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
 - name: ci-kubernetes-e2e-gce-gci-latest-rollback-etcd
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-latest-rollback-etcd
-- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9
-- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
-- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11
+
 # charts tests
 - name: ci-kubernetes-charts-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-charts-gce
@@ -3806,10 +3807,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-reboot
   - name: gci-gke-reboot
     test_group_name: ci-kubernetes-e2e-gci-gke-reboot
-  - name: kubeadm-gce
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce
-  - name: kubeadm-gce-selfhosting
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-selfhosting
+  - name: kubeadm-gce-master
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-master
   - name: periodic-kubernetes-e2e-packages-pushed
     test_group_name: periodic-kubernetes-e2e-packages-pushed
 
@@ -4319,8 +4318,6 @@ dashboards:
     test_group_name: periodic-kubernetes-bazel-test-1-9
   - name: kops-aws-1.9
     test_group_name: ci-kubernetes-e2e-kops-aws-stable3
-  - name: kubeadm-gce-1-9
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-9
   - name: node-kubelet-1.9
     test_group_name: ci-kubernetes-node-kubelet-stable3
   - name: gce-cos-1.9-alphafeatures
@@ -4371,8 +4368,6 @@ dashboards:
   - name: gce-conformance-latest-1-9
     description: Runs conformance tests using kubetest against kubernetes release 1.9 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-9
-  - name: kubeadm-gce-1-9
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-9
   - name: node-kubelet-1.9
     test_group_name: ci-kubernetes-node-kubelet-stable3
   - name: gce-cos-1.9-ingress
@@ -4918,41 +4913,36 @@ dashboards:
 
 - name: sig-cluster-lifecycle-all
   dashboard_tab:
-  - name: kubeadm-gce-1.8
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8
-  - name: kubeadm-gce-1.8-on-1.9
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8-on-1-9
-  - name: kubeadm-gce-upgrade-1.8-1.9
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9
-  - name: kubeadm-gce-1.9
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-9
-  - name: kubeadm-gce-1.9-on-1.10
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
-  - name: kubeadm-gce-upgrade-1.9-1.10
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
+# kubeadm tests
   - name: kubeadm-gce-1.10
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-10
-  - name: periodic-kubernetes-e2e-packages-pushed
-    test_group_name: periodic-kubernetes-e2e-packages-pushed
+  - name: kubeadm-gce-1.11
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-11
+  - name: kubeadm-gce-1.12
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-12
+  - name: kubeadm-gce-master
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-master
+# kubeadm x-on-y tests
+  - name: kubeadm-gce-1.9-on-1.10
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
   - name: gce-kubeadm-1.10-on-1.11
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
-  - name: ci-gce-kubeadm-1.11
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-11
-  - name: gce-kubeadm-upgrade-1.10-1.11
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11
+  - name: kubeadm-gce-1.11-on-1.12
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
   - name: kubeadm-gce-stable-on-master
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
+# kubeadm upgrade tests
+  - name: kubeadm-gce-upgrade-1.9-1.10
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
+  - name: gce-kubeadm-upgrade-1.10-1.11
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11
+  - name: kubeadm-gce-upgrade-1.11-1.12
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-11-1-12
   - name: kubeadm-gce-upgrade-stable-master
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-stable-master
-  - name: kubeadm-gce
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce
-  - name: kubeadm-gce-selfhosting
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-selfhosting
-  - name: kubeadm-gce-cni-flannel
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
-  - name: kubeadm-gce-dns-coredns
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-dns-coredns
-
+# packages tests
+  - name: periodic-kubernetes-e2e-packages-pushed
+    test_group_name: periodic-kubernetes-e2e-packages-pushed
 
 - name: sig-cluster-lifecycle-multi-platform
   dashboard_tab:

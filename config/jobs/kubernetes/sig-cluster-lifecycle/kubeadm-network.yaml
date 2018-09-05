@@ -1,86 +1,7 @@
-# kubeadm release and master tests
+# kubeadm network tests
 periodics:
-- name: ci-kubernetes-e2e-kubeadm-gce-1-10
+- name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
   interval: 6h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180829-29d5569b7
-      args:
-      - --repo=k8s.io/kubernetes=release-1.10
-      - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
-      - --timeout=320
-      - --upload=gs://kubernetes-jenkins/logs
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=
-      - --deployment=kubernetes-anywhere
-      - --extract=ci/latest-bazel-1.10
-      - --gcp-zone=us-central1-f
-      - --kubeadm=ci
-      - --kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.10
-      - --kubernetes-anywhere-kubernetes-version=ci/latest-1.10
-      - --provider=kubernetes-anywhere
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\]
-      - --timeout=300m
-
-- name: ci-kubernetes-e2e-kubeadm-gce-1-11
-  interval: 6h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180829-29d5569b7
-      args:
-      - --repo=k8s.io/kubernetes=release-1.11
-      - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
-      - --timeout=320
-      - --upload=gs://kubernetes-jenkins/logs
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=
-      - --deployment=kubernetes-anywhere
-      - --extract=ci/latest-bazel-1.11
-      - --gcp-zone=us-central1-f
-      - --kubeadm=ci
-      - --kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.11
-      - --kubernetes-anywhere-kubernetes-version=ci/latest-1.11
-      - --provider=kubernetes-anywhere
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8
-      - --timeout=300m
-
-- name: ci-kubernetes-e2e-kubeadm-gce-1-12
-  interval: 12h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-bazel-scratch-dir: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180829-29d5569b7
-      args:
-      - --repo=k8s.io/kubernetes=release-1.12
-      - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
-      - --timeout=320
-      - --upload=gs://kubernetes-jenkins/logs
-      - --scenario=kubernetes_e2e
-      - --
-      - --cluster=
-      - --deployment=kubernetes-anywhere
-      - --extract=ci/latest-bazel-1.12
-      - --gcp-zone=us-central1-f
-      - --kubeadm=ci
-      - --kubernetes-anywhere-kubelet-ci-version=latest-bazel-1.12
-      - --kubernetes-anywhere-kubernetes-version=ci/latest-1.12
-      - --provider=kubernetes-anywhere
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8
-      - --timeout=300m
-
-- name: ci-kubernetes-e2e-kubeadm-gce-master
-  interval: 2h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -94,7 +15,60 @@ periodics:
       - --upload=gs://kubernetes-jenkins/logs
       - --scenario=kubernetes_e2e
       - --
-      # TODO(bentheelder): --kubernetes-anywhere-kubernetes-version should really be ci/latest-bazel but we need changes to kubeadm and possibly kubernetes-anywhere first
+      - --cluster=
+      - --deployment=kubernetes-anywhere
+      - --extract=ci/latest-bazel
+      - --gcp-zone=us-central1-f
+      - --kubeadm=ci
+      - --kubernetes-anywhere-cni=flannel
+      - --kubernetes-anywhere-kubelet-ci-version=latest-bazel
+      - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
+      - --provider=kubernetes-anywhere
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8
+      - --timeout=300m
+
+- name: ci-kubernetes-e2e-kubeadm-gce-dns-coredns
+  interval: 6h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180829-29d5569b7
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
+      - --timeout=320
+      - --upload=gs://kubernetes-jenkins/logs
+      - --scenario=kubernetes_e2e
+      - --
+      - --cluster=
+      - --deployment=kubernetes-anywhere
+      - --extract=ci/latest-bazel
+      - --gcp-zone=us-central1-f
+      - --kubeadm=ci
+      - --kubernetes-anywhere-kubeadm-feature-gates=CoreDNS=true
+      - --kubernetes-anywhere-kubelet-ci-version=latest-bazel
+      - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
+      - --provider=kubernetes-anywhere
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8
+      - --timeout=300m
+
+- name: ci-kubernetes-e2e-kubeadm-gce-ipvs
+  interval: 6h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180829-29d5569b7
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/kubernetes-anywhere=kubeadm-e2e
+      - --timeout=320
+      - --upload=gs://kubernetes-jenkins/logs
+      - --scenario=kubernetes_e2e
+      - --
       - --cluster=
       - --deployment=kubernetes-anywhere
       - --extract=ci/latest-bazel
@@ -102,7 +76,7 @@ periodics:
       - --kubeadm=ci
       - --kubernetes-anywhere-kubelet-ci-version=latest-bazel
       - --kubernetes-anywhere-kubernetes-version=ci-cross/latest
+      - --kubernetes-anywhere-proxy-mode=ipvs
       - --provider=kubernetes-anywhere
       - --test_args=--ginkgo.focus=\[Conformance\]|\[Feature:BootstrapTokens\]|\[Feature:NodeAuthorizer\] --minStartupPods=8
       - --timeout=300m
-
