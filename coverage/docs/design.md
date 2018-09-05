@@ -1,36 +1,39 @@
 #Overview
 This code coverage tool has two major features.
-1. In pre-submit workflow, it runs code coverage on every single commit to Github and reports 
-coverage changes back to the PR as a comment by a robot github account. In addition, it can 
-report a failure status if coverage falls below threshold - this allows repo owner to make the 
-check required and block PR if coverage threshold not met
-2. In post-submit workflow, it reports on TestGrid to show users how coverage changes over time.
+1. In post-submit workflow, it runs code coverage and generates the following artifacts in a GCS bucket
+  - xml file that stores file-level and package-level code coverage, formatted to be readable by TestGrid
+  - code coverage profile, which will be used later in presubmit workflow as a base for comparison
+2. In pre-submit workflow
+  - it runs code coverage on target directories and compares the new result with the one stored by 
+  the post-submit workflow and generate coverage difference. It reports coverage changes to the 
+  pull request as a comment by a robot github account. 
+  - it uses go tools to generate line by line coverage and serve the result in html, with a link as 
+  part of the robot comment mentioned above 
+  - it can report a failure status if coverage falls below threshold - this allows repo owner to make the 
+check required and block PR if coverage threshold not met. 
+
 
 ##Users
 The presubmit tool is intended for a developer to see the impact on code coverage of his/her commit. It can also be used by repo managers to block any PR from merging if the coverage falls under customized threshold.
 
 The periodical testgrid report is for repo managers and/or test infra team to monitor code coverage stats over time.
 
-##Limitation
-As of now, the code coverage tool only collect code coverage for Go files. The support for more programming languages may be added later
+##Programming Language Supported
+The code coverage tool only collect code coverage for Go files
 
-##Background - Prow
-Prow is a system that handles github events and commands and allow you to perform actions. It was originally built for kubernetes, but now is extended to other teams wanting to use it as well. cmd/hook is the main entry point for Prow and listens to the github events. Prow provides two ways to handle events:
-1. Prow Jobs: Jobs that perform simple actions when certain events occur. Can only report the result as PASS or FAIL. For eg. running tests
-2. Plugins: Some logic that perform more complicated actions like talking to external service. Can report any kind of status. For eg. Golint plugin that checks out code from github and performs linting. Plugins can be:
-  - Internal: Live within the cmd/hook binary.
-  - External: Live as a separate binary. Events are forwarded to these by cmd/hook.
 
 #Design of Test Coverage Tool
 We pack the test coverage feature in a container, that is triggered by prow as a prow job. There is a separate prow job configured for each of the following workflows (which is discussed in later sections): pre-submit, post-submit and periodic. 
 
 The tool takes input from three sources
-1. It runs test coverage profiling on target repository. Prow clones the target repository as the current working directory for the container.
+1. It runs test coverage profiling on target repository. 
 2. It reads previously stored post-submit code coverage profile from gcs bucket. The profile
 serves as a base of comparison for presubmit delta coverage.
-3. It allows user to supply variables in prowjob configs. Those variables include directory to run test coverage, file filters and threshold for desired coverage level.  
+3. Variables passed through flags. Those variables include directory to run test coverage, file filters and threshold for desired coverage level.  
 
-Prow has handlers for different github events. We add a pre-submit prow job that is triggered by any new commit to a PR to run test coverage on the new build to compare it with the master branch and previous commit for pre-submit coverage. We add a post-submit prow job that is triggered by merge events, to run test coverage on the nodes of master branch. Test coverage data on the master branch is supplied to TestGrid for displaying the coverage change over time, as well as serve as the basis of comparison for pre-submit coverage mentioned in the pre-submit senario.
+##Usage with prow
+ 
+Prow has handlers for different github events. We add a pre-submit prow job that is triggered by any new commit to a PR to run test coverage on the new build to compare it with the master branch and previous commit for pre-submit coverage. We add a post-submit prow job that is triggered by merge events, to run test coverage on the nodes of master branch. Test coverage data on the master branch is supplied to TestGrid for displaying the coverage change over time, as well as serve as the basis of comparison for pre-submit coverage mentioned in the pre-submit scenario.
 
 Here is the step-by-step description of the pre-submit and post-submit workflows
 
