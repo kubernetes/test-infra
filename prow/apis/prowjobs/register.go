@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 package prowjobs
-// GroupName : TODO: Read and learn this
+// GroupName : TODO: (alisondy) Investigate usage of GroupName
 const (
 	GroupName = "prow.k8s.io"
 )

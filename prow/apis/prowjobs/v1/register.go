@@ -36,13 +36,13 @@ func Kind(kind string) schema.GroupKind {
 func Resource(resource string) schema.GroupResource {
 	return SchemeGroupVersion.WithResource(resource).GroupResource()
 }
-// SchemeBuilder : TODO: Actually learn kubernetes
+// SchemeBuilder : TODO: (alisondy) Document what SchemeBuilder is used for
 var (
 	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
 	AddToScheme   = SchemeBuilder.AddToScheme
 )
 
-// Adds the list of known types to Scheme.
+// addKnownTypes Adds the list of known types to Scheme.
 func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
 		&ProwJob{},
