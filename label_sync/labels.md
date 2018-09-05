@@ -51,6 +51,7 @@ larger set of contributors to apply/remove them.
 | <a id="lifecycle/frozen" href="#lifecycle/frozen">`lifecycle/frozen`</a> | Indicates that an issue or PR should not be auto-closed due to staleness. <br><br> This was previously `keep-open`, | anyone |  [lifecycle](https://git.k8s.io/test-infra/prow/plugins/lifecycle) |
 | <a id="lifecycle/rotten" href="#lifecycle/rotten">`lifecycle/rotten`</a> | Denotes an issue or PR that has aged beyond stale and will be auto-closed.| anyone or [@fejta-bot](https://github.com/fejta-bot) via [periodic-test-infra-rotten prowjob](https://prow.k8s.io/?job=periodic-test-infra-rotten) |  [lifecycle](https://git.k8s.io/test-infra/prow/plugins/lifecycle) |
 | <a id="lifecycle/stale" href="#lifecycle/stale">`lifecycle/stale`</a> | Denotes an issue or PR has remained open with no activity and has become stale. <br><br> This was previously `stale`, | anyone or [@fejta-bot](https://github.com/fejta-bot) via [periodic-test-infra-stale prowjob](https://prow.k8s.io/?job=periodic-test-infra-stale) |  [lifecycle](https://git.k8s.io/test-infra/prow/plugins/lifecycle) |
+| <a id="needs-sig" href="#needs-sig">`needs-sig`</a> | Indicates an issue or PR lacks a `sig/foo` label and requires one.| prow |  [require-matching-label](https://git.k8s.io/test-infra/prow/plugins/require-matching-label) |
 | <a id="priority/awaiting-more-evidence" href="#priority/awaiting-more-evidence">`priority/awaiting-more-evidence`</a> | Lowest priority. Possibly useful, but not yet enough support to actually get it done.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="priority/backlog" href="#priority/backlog">`priority/backlog`</a> | Higher priority than priority/awaiting-more-evidence.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="priority/critical-urgent" href="#priority/critical-urgent">`priority/critical-urgent`</a> | Highest priority. Must be actively worked on as someone's top priority right now.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
@@ -114,7 +115,6 @@ larger set of contributors to apply/remove them.
 | ---- | ----------- | -------- | --- |
 | <a id="good first issue" href="#good first issue">`good first issue`</a> | Denotes an issue ready for a new contributor, according to the "help wanted" guidelines. <br><br> This was previously `for-new-contributors`, | anyone |  [help](https://git.k8s.io/test-infra/prow/plugins/help) |
 | <a id="help wanted" href="#help wanted">`help wanted`</a> | Denotes an issue that needs help from a contributor. Must meet "help wanted" guidelines. <br><br> This was previously `help-wanted`, | anyone |  [help](https://git.k8s.io/test-infra/prow/plugins/help) |
-| <a id="needs-sig" href="#needs-sig">`needs-sig`</a> | Indicates an issue lacks a `sig/foo` label and requires one.| prow |  [requiresig](https://git.k8s.io/test-infra/prow/plugins/requiresig) |
 
 ## Labels that apply to all repos, only for PRs
 
@@ -133,6 +133,7 @@ larger set of contributors to apply/remove them.
 | <a id="do-not-merge/release-note-label-needed" href="#do-not-merge/release-note-label-needed">`do-not-merge/release-note-label-needed`</a> | Indicates that a PR should not merge because it's missing one of the release note labels. <br><br> This was previously `release-note-label-needed`, | prow |  [releasenote](https://git.k8s.io/test-infra/prow/plugins/releasenote) |
 | <a id="do-not-merge/work-in-progress" href="#do-not-merge/work-in-progress">`do-not-merge/work-in-progress`</a> | Indicates that a PR should not merge because it is a work in progress.| prow |  [wip](https://git.k8s.io/test-infra/prow/plugins/wip) |
 | <a id="lgtm" href="#lgtm">`lgtm`</a> | Indicates that a PR is ready to be merged.| reviewers or members |  [lgtm](https://git.k8s.io/test-infra/prow/plugins/lgtm) |
+| <a id="needs-kind" href="#needs-kind">`needs-kind`</a> | Indicates a PR lacks a `kind/foo` label and requires one.| prow |  [require-matching-label](https://git.k8s.io/test-infra/prow/plugins/require-matching-label) |
 | <a id="needs-ok-to-test" href="#needs-ok-to-test">`needs-ok-to-test`</a> | Indicates a PR that requires an org member to verify it is safe to test.| prow |  [trigger](https://git.k8s.io/test-infra/prow/plugins/trigger) |
 | <a id="needs-rebase" href="#needs-rebase">`needs-rebase`</a> | Indicates a PR cannot be merged because it has merge conflicts with HEAD.| prow |  [needs-rebase](https://git.k8s.io/test-infra/prow/plugins/needs-rebase) |
 | <a id="queue/blocks-others" href="#queue/blocks-others">`queue/blocks-others`</a> | DEPRECATED.| humans | |

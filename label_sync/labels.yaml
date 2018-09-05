@@ -249,6 +249,12 @@ default:
       target: both
       prowPlugin: lifecycle
       addedBy: anyone or [@fejta-bot](https://github.com/fejta-bot) via [periodic-test-infra-stale prowjob](https://prow.k8s.io/?job=periodic-test-infra-stale)
+    - color: ededed
+      description: Indicates a PR lacks a `kind/foo` label and requires one.
+      name: needs-kind
+      target: prs
+      prowPlugin: require-matching-label
+      addedBy: prow
     - color: b60205
       description: Indicates a PR that requires an org member to verify it is safe to test. # This is to prevent spam/abuse of our CI system, and can be circumvented by becoming an org member. Org members can remove this label with the `/ok-to-test` command.
       name: needs-ok-to-test
@@ -262,10 +268,10 @@ default:
       prowPlugin: needs-rebase
       addedBy: prow
     - color: ededed
-      description: Indicates an issue lacks a `sig/foo` label and requires one.
+      description: Indicates an issue or PR lacks a `sig/foo` label and requires one.
       name: needs-sig
-      target: issues
-      prowPlugin: requiresig
+      target: both
+      prowPlugin: require-matching-label
       addedBy: prow
     - color: fef2c0
       description: Lowest priority. Possibly useful, but not yet enough support to actually get it done. # These are mostly place-holders for potentially good ideas, so that they don't get completely forgotten, and can be referenced /deduped every time they come up.
