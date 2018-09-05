@@ -57,7 +57,7 @@ FOCUS="${FOCUS:-"\\[Conformance\\]"}"
 SKIP="${SKIP:-"Alpha|Kubectl|\\[(Disruptive|Feature:[^\\]]+|Flaky)\\]"}"
 
 # arguments to kubetest for the e2e
-KUBETEST_ARGS="--provider=skeleton --test --test_args=\"--ginkgo.focus=${FOCUS} --ginkgo.skip=${SKIP}\" --dump=$HOME/make-logs/ --check-version-skew=false"
+KUBETEST_ARGS="--provider=skeleton --test --test_args=\"--ginkgo.focus=${FOCUS} --ginkgo.skip=${SKIP}\" --check-version-skew=false"
 
 # if we set PARALLEL=true, then skip serial tests and add --ginkgo-parallel to the args
 PARALLEL="${PARALLEL:-false}"

@@ -2745,8 +2745,8 @@ test_groups:
 - name: ci-kubernetes-dind-conformance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-dind-conformance
   num_columns_recent: 3
-- name: ci-kubernetes-kind-conformance-parallel
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kind-conformance-parallel
+- name: ci-kubernetes-kind-conformance
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kind-conformance
   num_columns_recent: 3
 
 # cloud-provider-openstack e2e conformance tests
@@ -2889,6 +2889,9 @@ dashboards:
     # TODO(bentheelder): there's probably a more appropriate alias to alert this to
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
+  - name: kind, master (dev)
+    description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster
+    test_group_name: ci-kubernetes-kind-conformance
   - name: dind, master (dev)
     description: Runs conformance tests using kubetest against latest kubernetes master with a docker-in-docker cluster
     test_group_name: ci-kubernetes-dind-conformance
@@ -2970,6 +2973,9 @@ dashboards:
 
 - name: conformance-providerless
   dashboard_tab:
+  - name: kind, master (dev)
+    description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster
+    test_group_name: ci-kubernetes-kind-conformance
   - name: dind, master (dev)
     description: Runs conformance tests using kubetest against latest kubernetes master with a docker-in-docker cluster
     test_group_name: ci-kubernetes-dind-conformance
@@ -5778,9 +5784,6 @@ dashboards:
   - name: dind
     description: Runs e2e tests against a dind cluster.
     test_group_name: pull-kubernetes-dind-e2e
-  - name: ci-kind-conformance-parallel
-    description: Runs parallel conformance e2e tests against a dind cluster.
-    test_group_name: ci-kubernetes-kind-conformance-parallel
   - name: bazel
     description: Runs bazel test //... on the test-infra repo.
     test_group_name: ci-test-infra-bazel
