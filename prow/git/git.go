@@ -244,11 +244,12 @@ func (r *Repo) CheckoutNewBranch(branch string) error {
 func (r *Repo) Merge(commitlike string) (bool, error) {
 	r.logger.Infof("Merging %s.", commitlike)
 	co := r.gitCommand("merge", "--no-ff", "--no-stat", "-m merge", commitlike)
-	if b, err := co.CombinedOutput(); err == nil {
-		return true, nil
-	} else {
+	if b, err := co.CombinedOutput(); err != nil {
 		r.logger.WithError(err).Warningf("Merge failed with output: %s", string(b))
+	} else {
+		return true, nil
 	}
+
 	if b, err := r.gitCommand("merge", "--abort").CombinedOutput(); err != nil {
 		return false, fmt.Errorf("error aborting merge for commitlike %s: %v. output: %s", commitlike, err, string(b))
 	}
