@@ -5,6 +5,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
   spec:
     containers:
