@@ -60,6 +60,11 @@ kind build node --type=bazel
 # make sure we have e2e requirements
 #make all WHAT="cmd/kubectl test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo"
 bazel build //cmd/kubectl //test/e2e:e2e.test //vendor/github.com/onsi/ginkgo/ginkgo
+# e2e.test does not show up in a path with platform in it and will not be found
+# by kube::util::find-binary, so we will add it to the PATH until this is
+# fixed upstream
+# https://github.com/kubernetes/kubernetes/issues/68306
+export PATH="${PWD}/bazel-bin/test/e2e/:${PATH}"
 
 # ginkgo regexes
 FOCUS="${FOCUS:-"\\[Conformance\\]"}"
