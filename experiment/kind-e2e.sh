@@ -23,7 +23,7 @@ set -o pipefail
 set -x
 
 # get relative path to test infra root based on script source
-TREE="$(dirname ${BASH_SOURCE[0]})/.."
+TREE="$(dirname "${BASH_SOURCE[0]}")/.."
 # cd to the path
 ORIG_PWD="${PWD}"
 cd "${TREE}"
@@ -64,6 +64,8 @@ bazel build //cmd/kubectl //test/e2e:e2e.test //vendor/github.com/onsi/ginkgo/gi
 # ginkgo regexes
 FOCUS="${FOCUS:-"\\[Conformance\\]"}"
 SKIP="${SKIP:-"Alpha|Kubectl|\\[(Disruptive|Feature:[^\\]]+|Flaky)\\]"}"
+# default WORKSPACE if not in CI
+WORKSPACE="${WORKSPACE:-${PWD}}"
 
 # arguments to kubetest for the e2e
 KUBETEST_ARGS="--provider=skeleton --test --test_args=\"--ginkgo.focus=${FOCUS} --ginkgo.skip=${SKIP} --report-dir=${WORKSPACE}/_artifacts --disable-log-dump=true\" --check-version-skew=false"
