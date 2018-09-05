@@ -28,7 +28,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/test-infra/prow/kube"
 
-	"k8s.io/test-infra/prow/artifact-uploader"
+	"k8s.io/test-infra/prow/artifactuploader"
 	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pod-utils/options"
@@ -161,7 +161,7 @@ func main() {
 	}
 
 	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "artifact-uploader"}),
+		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "artifactuploader"}),
 	)
 
 	if err := o.Run(); err != nil {

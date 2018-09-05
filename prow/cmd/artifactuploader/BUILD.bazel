@@ -3,10 +3,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
-    importpath = "k8s.io/test-infra/prow/cmd/artifact-uploader",
+    importpath = "k8s.io/test-infra/prow/cmd/artifactuploader",
     visibility = ["//visibility:private"],
     deps = [
-        "//prow/artifact-uploader:go_default_library",
+        "//prow/artifactuploader:go_default_library",
         "//prow/gcsupload:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/logrusutil:go_default_library",
