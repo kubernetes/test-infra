@@ -19,6 +19,7 @@ package plank
 import (
 	"bytes"
 	"fmt"
+	"net/url"
 	"path"
 	"strings"
 	"sync"
@@ -557,7 +558,10 @@ func jobURL(plank config.Plank, pj kube.ProwJob, log *logrus.Entry) string {
 		spec := downwardapi.NewJobSpec(pj.Spec, pj.Status.BuildID, pj.Name)
 		gcsConfig := pj.Spec.DecorationConfig.GCSConfiguration
 		_, gcsPath, _ := gcsupload.PathsForJob(gcsConfig, &spec, "")
-		return path.Join(plank.JobURLPrefix, gcsConfig.Bucket, gcsPath)
+
+		prefix, _ := url.Parse(plank.JobURLPrefix)
+		prefix.Path = path.Join(prefix.Path, gcsConfig.Bucket, gcsPath)
+		return prefix.String()
 	}
 	var b bytes.Buffer
 	if err := plank.JobURLTemplate.Execute(&b, &pj); err != nil {
