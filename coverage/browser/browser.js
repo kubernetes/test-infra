@@ -14,6 +14,7 @@ async function init() {
   if (location.hash.length > 1) {
     prefix = location.hash.substring(1);
   }
+  // TODO: this path shouldn't be hardcoded.
   coverage = await loadProfile("profiles/everything-diff.cov");
   google.charts.load('current', {'packages': ['table']});
   google.charts.setOnLoadCallback(drawTable);
@@ -62,6 +63,9 @@ function drawTable() {
     const child = rows[table.getSelection()[0].row].c[0].v;
     if (child.endsWith('/')) {
       location.hash = prefix + child;
+    } else {
+      // TODO: this shouldn't be hardcoded.
+      location.href = 'profiles/everything-diff.html#file' + coverage.getFile(prefix + child).fileNumber;
     }
   });
   updateBreadcrumb();

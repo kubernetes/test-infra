@@ -22,8 +22,9 @@ function parseLine(line) {
 }
 
 export class FileCoverage {
-  constructor(filename) {
+  constructor(filename, fileNumber) {
     this.filename = filename;
+    this.fileNumber = fileNumber;
     this.blocks = [];
   }
 
@@ -116,6 +117,7 @@ export function parseCoverage(content) {
   }
 
   const coverage = new Coverage(mode);
+  let fileCounter = 0;
   for (const line of lines) {
     if (line === "") {
       continue;
@@ -123,7 +125,7 @@ export function parseCoverage(content) {
     const {filename, ...block} = parseLine(line);
     let file = coverage.getFile(filename);
     if (!file) {
-      file = new FileCoverage(filename);
+      file = new FileCoverage(filename, fileCounter++);
       coverage.addFile(file);
     }
     file.addBlock(block);
