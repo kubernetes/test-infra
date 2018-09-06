@@ -121,6 +121,7 @@ func handlePullRequest(pc plugins.PluginClient, pre github.PullRequestEvent) err
 		org:    pre.Repo.Owner.Login,
 		repo:   pre.Repo.Name,
 		number: pre.PullRequest.Number,
+		branch: pre.PullRequest.Base.Ref,
 		author: pre.PullRequest.User.Login,
 		label:  pre.Label.Name, // This will be empty for non-label events.
 	}
