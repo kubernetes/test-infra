@@ -2252,11 +2252,6 @@ test_groups:
   num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
-- name: pull-kubernetes-dind-e2e
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-dind-e2e
-  num_columns_recent: 20
-  alert_stale_results_hours: 2400
-  num_failures_to_alert: 1000
 - name: pull-kubernetes-verify
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-verify
   num_columns_recent: 20
@@ -2743,9 +2738,6 @@ test_groups:
   num_columns_recent: 3
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
-- name: ci-kubernetes-dind-conformance
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-dind-conformance
-  num_columns_recent: 3
 - name: ci-kubernetes-kind-conformance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kind-conformance
   num_columns_recent: 3
@@ -2893,9 +2885,6 @@ dashboards:
   - name: kind, master (dev)
     description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster
     test_group_name: ci-kubernetes-kind-conformance
-  - name: dind, master (dev)
-    description: Runs conformance tests using kubetest against latest kubernetes master with a docker-in-docker cluster
-    test_group_name: ci-kubernetes-dind-conformance
   - name: local-up-cluster, master (dev)
     description: Runs conformance tests using kubetest with hack/local-up-cluster.sh
     test_group_name: ci-kubernetes-local-e2e
@@ -2977,9 +2966,6 @@ dashboards:
   - name: kind, master (dev)
     description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster
     test_group_name: ci-kubernetes-kind-conformance
-  - name: dind, master (dev)
-    description: Runs conformance tests using kubetest against latest kubernetes master with a docker-in-docker cluster
-    test_group_name: ci-kubernetes-dind-conformance
   - name: local-up-cluster, master (dev)
     description: Runs conformance tests using kubetest with local-up-cluster
     test_group_name: ci-kubernetes-local-e2e
@@ -5771,9 +5757,6 @@ dashboards:
 
 - name: sig-testing-misc
   dashboard_tab:
-  - name: dind
-    description: Runs e2e tests against a dind cluster.
-    test_group_name: pull-kubernetes-dind-e2e
   - name: bazel
     description: Runs bazel test //... on the test-infra repo.
     test_group_name: ci-test-infra-bazel
