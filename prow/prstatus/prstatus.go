@@ -145,7 +145,7 @@ type searchQuery struct {
 	} `graphql:"search(type: ISSUE, first: 100, after: $searchCursor, query: $query)"`
 }
 
-// NewDashboardAgent : Returns new user dashboard agent.
+// NewDashboardAgent returns new user dashboard agent.
 func NewDashboardAgent(repos []string, config *config.GithubOAuthConfig, log *logrus.Entry) *DashboardAgent {
 	return &DashboardAgent{
 		repos: repos,
@@ -275,7 +275,7 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler PullRequestQueryHandler) h
 	}
 }
 
-// QueryPullRequests : Query function that returns a list of open pull requests owned by the user whose access token
+// QueryPullRequests is a query function that returns a list of open pull requests owned by the user whose access token
 // is consumed by the github client.
 func (da *DashboardAgent) QueryPullRequests(ctx context.Context, ghc githubClient, query string) ([]PullRequest, error) {
 	var prs []PullRequest

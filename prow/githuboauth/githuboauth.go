@@ -67,19 +67,19 @@ func (gci *githubClientGetterImpl) GetGithubClient(accessToken string, dryRun bo
 	return ghclient.NewClient(accessToken, dryRun)
 }
 
-//NewGithubClientGetter : TODO (alisondy) documentation
+//NewGithubClientGetter : TODO (alisondy) Document Usage
 func NewGithubClientGetter() GithubClientGetter {
 	return &githubClientGetterImpl{}
 }
 
-// Agent : represents an agent that takes care Github authentication process such as handles
+// Agent represents an agent that takes care Github authentication process such as handles
 // login request from users or handles redirection from Github OAuth server.
 type Agent struct {
 	gc     *config.GithubOAuthConfig
 	logger *logrus.Entry
 }
 
-// NewGithubOAuthAgent : Returns new GithubOAUth Agent.
+// NewGithubOAuthAgent returns new GithubOAUth Agent.
 func NewGithubOAuthAgent(config *config.GithubOAuthConfig, logger *logrus.Entry) *Agent {
 	return &Agent{
 		gc:     config,

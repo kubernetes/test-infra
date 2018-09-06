@@ -25,7 +25,7 @@ import (
 
 const botName = "k8s-ci-robot"
 
-//Bot : TODO (alisondy) documento
+//Bot : (alisondy) Document Usage
 const Bot = botName
 
 // FakeClient is like client, but fake.
