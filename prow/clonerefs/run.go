@@ -62,7 +62,7 @@ func (o Options) Run() error {
 		go func() {
 			defer wg.Done()
 			for ref := range input {
-				output <- clone.Run(ref, o.SrcRoot, o.GitUserName, o.GitUserEmail, env)
+				output <- clone.Run(ref, o.SrcRoot, o.GitUserName, o.GitUserEmail, o.cookiePath, env)
 			}
 		}()
 	}

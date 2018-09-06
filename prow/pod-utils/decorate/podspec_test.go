@@ -132,6 +132,234 @@ func TestProwJobToPod(t *testing.T) {
 						DefaultRepo:  "kubernetes",
 					},
 					GCSCredentialsSecret: "secret-name",
+					CookiefileSecret:     "yummy",
+				},
+				Agent: kube.KubernetesAgent,
+				Refs: &kube.Refs{
+					Org:     "org-name",
+					Repo:    "repo-name",
+					BaseRef: "base-ref",
+					BaseSHA: "base-sha",
+					Pulls: []kube.Pull{{
+						Number: 1,
+						Author: "author-name",
+						SHA:    "pull-sha",
+					}},
+					PathAlias: "somewhere/else",
+				},
+				ExtraRefs: []*kube.Refs{},
+				PodSpec: &v1.PodSpec{
+					Containers: []v1.Container{
+						{
+							Image:   "tester",
+							Command: []string{"/bin/thing"},
+							Args:    []string{"some", "args"},
+							Env: []v1.EnvVar{
+								{Name: "MY_ENV", Value: "rocks"},
+							},
+						},
+					},
+				},
+			},
+			expected: &v1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "pod",
+					Labels: map[string]string{
+						kube.CreatedByProw:    "true",
+						kube.ProwJobTypeLabel: "presubmit",
+						kube.ProwJobIDLabel:   "pod",
+						"needstobe":           "inherited",
+					},
+					Annotations: map[string]string{
+						kube.ProwJobAnnotation: "job-name",
+					},
+				},
+				Spec: v1.PodSpec{
+					RestartPolicy: "Never",
+					InitContainers: []v1.Container{
+						{
+							Name:    "clonerefs",
+							Image:   "clonerefs:tag",
+							Command: []string{"/clonerefs"},
+							Args:    []string{"--cookiefile=" + cookiefileMountPathPrefix + "/yummy"},
+							Env: []v1.EnvVar{
+								{Name: "CLONEREFS_OPTIONS", Value: `{"src_root":"/home/prow/go","log":"/logs/clone.json","git_user_name":"ci-robot","git_user_email":"ci-robot@k8s.io","refs":[{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}]}`},
+							},
+							VolumeMounts: []v1.VolumeMount{
+								{
+									Name:      "logs",
+									MountPath: "/logs",
+								},
+								{
+									Name:      "code",
+									MountPath: "/home/prow/go",
+								},
+								{
+									Name:      cookiefileMountNamePrefix + "-yummy",
+									MountPath: cookiefileMountPathPrefix + "/yummy",
+									ReadOnly:  true,
+								},
+							},
+						},
+						{
+							Name:    "initupload",
+							Image:   "initupload:tag",
+							Command: []string{"/initupload"},
+							Env: []v1.EnvVar{
+								{Name: "INITUPLOAD_OPTIONS", Value: `{"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false,"log":"/logs/clone.json"}`},
+								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
+							},
+							VolumeMounts: []kube.VolumeMount{
+								{
+									Name:      "logs",
+									MountPath: "/logs",
+								},
+								{
+									Name:      "gcs-credentials",
+									MountPath: "/secrets/gcs",
+								},
+							},
+						},
+						{
+							Name:    "place-tools",
+							Image:   "entrypoint:tag",
+							Command: []string{"/bin/cp"},
+							Args: []string{
+								"/entrypoint",
+								"/tools/entrypoint",
+							},
+							VolumeMounts: []kube.VolumeMount{
+								{
+									Name:      "tools",
+									MountPath: "/tools",
+								},
+							},
+						},
+					},
+					Containers: []v1.Container{
+						{
+							Name:       "test",
+							Image:      "tester",
+							Command:    []string{"/tools/entrypoint"},
+							Args:       []string{},
+							WorkingDir: "/home/prow/go/src/somewhere/else",
+							Env: []v1.EnvVar{
+								{Name: "MY_ENV", Value: "rocks"},
+								{Name: "ARTIFACTS", Value: "/logs/artifacts"},
+								{Name: "BUILD_ID", Value: "blabla"},
+								{Name: "BUILD_NUMBER", Value: "blabla"},
+								{Name: "ENTRYPOINT_OPTIONS", Value: `{"args":["/bin/thing","some","args"],"timeout":7200000000000,"grace_period":10000000000,"artifact_dir":"/logs/artifacts","process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt"}`},
+								{Name: "GOPATH", Value: "/home/prow/go"},
+								{Name: "JOB_NAME", Value: "job-name"},
+								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
+								{Name: "JOB_TYPE", Value: "presubmit"},
+								{Name: "PROW_JOB_ID", Value: "pod"},
+								{Name: "PULL_BASE_REF", Value: "base-ref"},
+								{Name: "PULL_BASE_SHA", Value: "base-sha"},
+								{Name: "PULL_NUMBER", Value: "1"},
+								{Name: "PULL_PULL_SHA", Value: "pull-sha"},
+								{Name: "PULL_REFS", Value: "base-ref:base-sha,1:pull-sha"},
+								{Name: "REPO_NAME", Value: "repo-name"},
+								{Name: "REPO_OWNER", Value: "org-name"},
+							},
+							VolumeMounts: []v1.VolumeMount{
+								{
+									Name:      "logs",
+									MountPath: "/logs",
+								},
+								{
+									Name:      "tools",
+									MountPath: "/tools",
+								},
+								{
+									Name:      "code",
+									MountPath: "/home/prow/go",
+								},
+							},
+						},
+						{
+							Name:    "sidecar",
+							Image:   "sidecar:tag",
+							Command: []string{"/sidecar"},
+							Env: []v1.EnvVar{
+								{Name: "JOB_SPEC", Value: `{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}}`},
+								{Name: "SIDECAR_OPTIONS", Value: `{"gcs_options":{"items":["/logs/artifacts"],"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false},"wrapper_options":{"process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt"}}`},
+							},
+							VolumeMounts: []v1.VolumeMount{
+								{
+									Name:      "logs",
+									MountPath: "/logs",
+								},
+								{
+									Name:      "gcs-credentials",
+									MountPath: "/secrets/gcs",
+								},
+							},
+						},
+					},
+					Volumes: []v1.Volume{
+						{
+							Name: "logs",
+							VolumeSource: v1.VolumeSource{
+								EmptyDir: &v1.EmptyDirVolumeSource{},
+							},
+						},
+						{
+							Name: "tools",
+							VolumeSource: v1.VolumeSource{
+								EmptyDir: &v1.EmptyDirVolumeSource{},
+							},
+						},
+						{
+							Name: "gcs-credentials",
+							VolumeSource: v1.VolumeSource{
+								Secret: &v1.SecretVolumeSource{
+									SecretName: "secret-name",
+								},
+							},
+						},
+						{
+							Name: cookiefileMountNamePrefix + "-yummy",
+							VolumeSource: v1.VolumeSource{
+								Secret: &v1.SecretVolumeSource{
+									SecretName:  "yummy",
+									DefaultMode: &sshKeyMode,
+								},
+							},
+						},
+						{
+							Name: "code",
+							VolumeSource: v1.VolumeSource{
+								EmptyDir: &v1.EmptyDirVolumeSource{},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			podName: "pod",
+			buildID: "blabla",
+			labels:  map[string]string{"needstobe": "inherited"},
+			pjSpec: kube.ProwJobSpec{
+				Type: kube.PresubmitJob,
+				Job:  "job-name",
+				DecorationConfig: &kube.DecorationConfig{
+					Timeout:     120 * time.Minute,
+					GracePeriod: 10 * time.Second,
+					UtilityImages: &kube.UtilityImages{
+						CloneRefs:  "clonerefs:tag",
+						InitUpload: "initupload:tag",
+						Entrypoint: "entrypoint:tag",
+						Sidecar:    "sidecar:tag",
+					},
+					GCSConfiguration: &kube.GCSConfiguration{
+						Bucket:       "my-bucket",
+						PathStrategy: "legacy",
+						DefaultOrg:   "kubernetes",
+						DefaultRepo:  "kubernetes",
+					},
+					GCSCredentialsSecret: "secret-name",
 					SSHKeySecrets:        []string{"ssh-1", "ssh-2"},
 				},
 				Agent: kube.KubernetesAgent,

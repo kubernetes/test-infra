@@ -29,7 +29,7 @@ import (
 
 // Run clones the refs under the prescribed directory and optionally
 // configures the git username and email in the repository as well.
-func Run(refs *kube.Refs, dir, gitUserName, gitUserEmail string, env []string) Record {
+func Run(refs *kube.Refs, dir, gitUserName, gitUserEmail, cookiePath string, env []string) Record {
 	logrus.WithFields(logrus.Fields{"refs": refs}).Info("Cloning refs")
 	record := Record{Refs: refs}
 	repositoryURI := fmt.Sprintf("https://github.com/%s/%s.git", refs.Org, refs.Repo)
@@ -50,6 +50,9 @@ func Run(refs *kube.Refs, dir, gitUserName, gitUserEmail string, env []string) R
 	}
 	if gitUserEmail != "" {
 		commands = append(commands, shellCloneCommand(cloneDir, env, "git", "config", "user.email", gitUserEmail))
+	}
+	if cookiePath != "" {
+		commands = append(commands, shellCloneCommand(cloneDir, env, "git", "config", "http.cookiefile", cookiePath))
 	}
 	commands = append(commands, shellCloneCommand(cloneDir, env, "git", "fetch", repositoryURI, "--tags", "--prune"))
 	commands = append(commands, shellCloneCommand(cloneDir, env, "git", "fetch", repositoryURI, refs.BaseRef))

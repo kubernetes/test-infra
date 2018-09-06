@@ -58,10 +58,11 @@ type Options struct {
 	MaxParallelWorkers int `json:"max_parallel_workers,omitempty"`
 
 	// used to hold flag values
-	refs      gitRefs
-	clonePath orgRepoFormat
-	cloneURI  orgRepoFormat
-	keys      stringSlice
+	refs       gitRefs
+	clonePath  orgRepoFormat
+	cloneURI   orgRepoFormat
+	keys       stringSlice
+	cookiePath string
 }
 
 // Validate ensures that the configuration options are valid
@@ -152,6 +153,7 @@ func BindOptions(options *Options, fs *flag.FlagSet) {
 	fs.Var(&options.clonePath, "clone-alias", "Format string for the path to clone to")
 	fs.Var(&options.cloneURI, "uri-prefix", "Format string for the URI prefix to clone from")
 	fs.IntVar(&options.MaxParallelWorkers, "max-workers", 0, "Maximum number of parallel workers, unset for unlimited.")
+	fs.StringVar(&options.cookiePath, "cookiefile", "", "Path to git http.coookiefile")
 }
 
 type gitRefs struct {

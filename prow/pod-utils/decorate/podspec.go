@@ -36,19 +36,21 @@ import (
 )
 
 const (
-	logMountName            = "logs"
-	logMountPath            = "/logs"
-	artifactsEnv            = "ARTIFACTS"
-	artifactsPath           = logMountPath + "/artifacts"
-	codeMountName           = "code"
-	codeMountPath           = "/home/prow/go"
-	gopathEnv               = "GOPATH"
-	toolsMountName          = "tools"
-	toolsMountPath          = "/tools"
-	gcsCredentialsMountName = "gcs-credentials"
-	gcsCredentialsMountPath = "/secrets/gcs"
-	sshKeysMountNamePrefix  = "ssh-keys"
-	sshKeysMountPathPrefix  = "/secrets/ssh"
+	logMountName              = "logs"
+	logMountPath              = "/logs"
+	artifactsEnv              = "ARTIFACTS"
+	artifactsPath             = logMountPath + "/artifacts"
+	codeMountName             = "code"
+	codeMountPath             = "/home/prow/go"
+	gopathEnv                 = "GOPATH"
+	toolsMountName            = "tools"
+	toolsMountPath            = "/tools"
+	gcsCredentialsMountName   = "gcs-credentials"
+	gcsCredentialsMountPath   = "/secrets/gcs"
+	sshKeysMountNamePrefix    = "ssh-keys"
+	sshKeysMountPathPrefix    = "/secrets/ssh"
+	cookiefileMountNamePrefix = "cookiefile"
+	cookiefileMountPathPrefix = "/secrets/cookiefile"
 )
 
 // Labels returns a string slice with label consts from kube.
@@ -157,7 +159,7 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 		},
 	}
 
-	var sshKeysVolumes []kube.Volume
+	var cloneVolumes []kube.Volume
 	var cloneLog string
 	var refs []*kube.Refs
 	if pj.Spec.Refs != nil {
@@ -167,18 +169,18 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 	willCloneRefs := len(refs) > 0 && !pj.Spec.DecorationConfig.SkipCloning
 	if willCloneRefs {
 		var sshKeyMode int32 = 0400 // this is octal, so symbolic ref is `u+r`
-		var sshKeysMounts []kube.VolumeMount
+		var cloneMounts []kube.VolumeMount
 		var sshKeyPaths []string
 		for _, secret := range pj.Spec.DecorationConfig.SSHKeySecrets {
 			name := fmt.Sprintf("%s-%s", sshKeysMountNamePrefix, secret)
 			keyPath := path.Join(sshKeysMountPathPrefix, secret)
 			sshKeyPaths = append(sshKeyPaths, keyPath)
-			sshKeysMounts = append(sshKeysMounts, kube.VolumeMount{
+			cloneMounts = append(cloneMounts, kube.VolumeMount{
 				Name:      name,
 				MountPath: keyPath,
 				ReadOnly:  true,
 			})
-			sshKeysVolumes = append(sshKeysVolumes, kube.Volume{
+			cloneVolumes = append(cloneVolumes, kube.Volume{
 				Name: name,
 				VolumeSource: kube.VolumeSource{
 					Secret: &kube.SecretSource{
@@ -187,6 +189,29 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 					},
 				},
 			})
+		}
+
+		var cloneArgs []string
+
+		if cp := pj.Spec.DecorationConfig.CookiefileSecret; cp != "" {
+			var cookiefileMode int32 = 0400 // u+r
+			name := fmt.Sprintf("%s-%s", cookiefileMountNamePrefix, cp)
+			keyPath := path.Join(cookiefileMountPathPrefix, cp)
+			cloneMounts = append(cloneMounts, kube.VolumeMount{
+				Name:      name,
+				MountPath: keyPath,
+				ReadOnly:  true,
+			})
+			cloneVolumes = append(cloneVolumes, kube.Volume{
+				Name: name,
+				VolumeSource: kube.VolumeSource{
+					Secret: &kube.SecretSource{
+						SecretName:  cp,
+						DefaultMode: &cookiefileMode,
+					},
+				},
+			})
+			cloneArgs = append(cloneArgs, "--cookiefile="+keyPath)
 		}
 
 		cloneLog = fmt.Sprintf("%s/clone.json", logMountPath)
@@ -206,8 +231,9 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 			Name:         "clonerefs",
 			Image:        pj.Spec.DecorationConfig.UtilityImages.CloneRefs,
 			Command:      []string{"/clonerefs"},
+			Args:         cloneArgs,
 			Env:          kubeEnv(map[string]string{clonerefs.JSONConfigEnvVar: cloneConfigEnv}),
-			VolumeMounts: append([]kube.VolumeMount{logMount, codeMount}, sshKeysMounts...),
+			VolumeMounts: append([]kube.VolumeMount{logMount, codeMount}, cloneMounts...),
 		})
 	}
 	gcsOptions := gcsupload.Options{
@@ -296,7 +322,7 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 	if willCloneRefs {
 		spec.Containers[0].WorkingDir = clone.PathForRefs(codeMountPath, refs[0])
 		spec.Containers[0].VolumeMounts = append(spec.Containers[0].VolumeMounts, codeMount)
-		spec.Volumes = append(spec.Volumes, append(sshKeysVolumes, codeVolume)...)
+		spec.Volumes = append(spec.Volumes, append(cloneVolumes, codeVolume)...)
 	}
 
 	return nil
