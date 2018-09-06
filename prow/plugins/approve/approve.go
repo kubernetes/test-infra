@@ -37,7 +37,7 @@ const (
 	//PluginName : TODO (alisondy) document
 	PluginName = "approve"
 
-	approveCommand  = "APPROVE"
+	approveCommand = "APPROVE"
 	//ApprovedLabel : TODO (alisondy) Document
 	ApprovedLabel   = "approved"
 	cancelArgument  = "cancel"

@@ -148,7 +148,7 @@ func (c *fakeClient) presubmitForContext(org, repo, context string) *config.Pres
 	if p, ok := c.presubmits[context]; ok {
 		return &p
 	}
-	return nil;
+	return nil
 }
 
 func TestAuthorized(t *testing.T) {

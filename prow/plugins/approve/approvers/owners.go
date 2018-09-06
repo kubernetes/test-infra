@@ -32,7 +32,7 @@ import (
 )
 
 const (
-	ownersFileName           = "OWNERS"
+	ownersFileName = "OWNERS"
 	//ApprovalNotificationName : TODO (alisondy) document
 	ApprovalNotificationName = "ApprovalNotifier"
 )

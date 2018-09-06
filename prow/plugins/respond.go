@@ -32,7 +32,7 @@ const AboutThisBotCommands = "I understand the commands that are listed [here](h
 //AboutThisBot : TODO (alisondy) document
 const AboutThisBot = AboutThisBotWithoutCommands + " " + AboutThisBotCommands
 
-// FormatResponse : nicely formats a response to a generic reason.
+// FormatResponse nicely formats a response to a generic reason.
 func FormatResponse(to, message, reason string) string {
 	format := `@%s: %s
 

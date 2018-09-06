@@ -15,5 +15,5 @@
 FROM gcr.io/k8s-prow/alpine:0.1
 LABEL maintainer="skuznets@redhat.com"
 
-COPY artifact-uploader /artifact-uploader
+COPY artifactuploader /artifact-uploader
 ENTRYPOINT ["/artifactuploader"]

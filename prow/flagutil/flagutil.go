@@ -17,6 +17,7 @@ limitations under the License.
 package flagutil
 
 import "strings"
+
 // Strings : TODO (alisondy) Document Usage
 type Strings struct {
 	vals    []string
@@ -31,6 +32,7 @@ func NewStrings(def ...string) Strings {
 		beenSet: false,
 	}
 }
+
 // Strings : TODO : (alisondy) Document Usage
 func (s *Strings) Strings() []string {
 	return s.vals

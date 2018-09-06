@@ -161,7 +161,7 @@ func (s *Spyglass) ListArtifacts(src string) ([]string, error) {
 		}
 	}
 	if !parsed {
-		return nil, fmt.Errorf("unable to parse source: %s, your source string may be incorrectly formatted or Spyglass does not have a compatible eyepiece for that source.", src)
+		return nil, fmt.Errorf("unable to parse source: %s, your source string may be incorrectly formatted or Spyglass does not have a compatible eyepiece for that source", src)
 	}
 	foundArtifacts = append(foundArtifacts, missingArtifacts(foundArtifacts)...)
 	return foundArtifacts, nil

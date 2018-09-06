@@ -59,6 +59,7 @@ func runServer(cert, privateKey string) {
 	}
 	logrus.Error(s.ListenAndServeTLS(cert, privateKey))
 }
+
 // contentTypeJSON : Stores the json content type
 const contentTypeJSON = "application/json"
 

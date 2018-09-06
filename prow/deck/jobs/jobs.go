@@ -37,7 +37,8 @@ import (
 const (
 	period = 30 * time.Second
 )
-// ErrProwjobNotFound returns an error when a prowjob cannot be retrived
+
+// ErrProwjobNotFound returns an error when a prowjob cannot be retrieved
 var (
 	ErrProwjobNotFound = errors.New("Prowjob not found")
 )
@@ -75,6 +76,7 @@ type serviceClusterClient interface {
 	ListPods(selector string) ([]kube.Pod, error)
 	ListProwJobs(selector string) ([]kube.ProwJob, error)
 }
+
 // PodLogClient is an interface for accessing logs
 type PodLogClient interface {
 	// GetContainerLog returns the pod log of the specified container
@@ -82,6 +84,7 @@ type PodLogClient interface {
 	// GetLogTail returns the last n bytes of the pod log of the specified container
 	GetLogTail(pod, container string, n int64) ([]byte, error)
 }
+
 // ConfigAgent : TODO (alisondy) Investigate what this is used for
 type ConfigAgent interface {
 	Config() *config.Config

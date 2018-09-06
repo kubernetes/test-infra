@@ -46,8 +46,13 @@ type Controller struct {
 	informer  pjinformers.ProwJobInformer
 	reporter  reportClient
 }
+
 // NewController : TODO: (alisondy) Investigate what NewController is usedfor
-func NewController(clientset kubernetes.Interface, queue workqueue.RateLimitingInterface, informer pjinformers.ProwJobInformer) *Controller {
+func NewController(
+	clientset kubernetes.Interface,
+	queue workqueue.RateLimitingInterface,
+	informer pjinformers.ProwJobInformer,
+	reporter reportClient) *Controller {
 	return &Controller{
 		clientset: clientset,
 		queue:     queue,
