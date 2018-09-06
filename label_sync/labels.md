@@ -151,6 +151,7 @@ larger set of contributors to apply/remove them.
 | <a id="size/XL" href="#size/XL">`size/XL`</a> | Denotes a PR that changes 500-999 lines, ignoring generated files.| prow |  [size](https://git.k8s.io/test-infra/prow/plugins/size) |
 | <a id="size/XS" href="#size/XS">`size/XS`</a> | Denotes a PR that changes 0-9 lines, ignoring generated files.| prow |  [size](https://git.k8s.io/test-infra/prow/plugins/size) |
 | <a id="size/XXL" href="#size/XXL">`size/XXL`</a> | Denotes a PR that changes 1000+ lines, ignoring generated files.| prow |  [size](https://git.k8s.io/test-infra/prow/plugins/size) |
+| <a id="tide/squash" href="#tide/squash">`tide/squash`</a> | Denotes a PR that should be squashed by tide when it merges.| humans | |
 
 ## Labels that apply to kubernetes/kubernetes, only for issues
 

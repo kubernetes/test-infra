@@ -376,6 +376,7 @@ tide:
     kubernetes/website: squash
   pr_status_base_url: https://prow.k8s.io/pr
   blocker_label: merge-blocker
+  squash_label: tide/squash
 
 push_gateway:
   endpoint: pushgateway
