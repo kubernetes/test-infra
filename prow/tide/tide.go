@@ -739,10 +739,19 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 	for i, pr := range prs {
 		backoff := time.Second * 4
 		log := sp.log.WithFields(pr.logFields())
+		mergeMethod := c.ca.Config().Tide.MergeMethod(sp.org, sp.repo)
+		if squashLabel := c.ca.Config().Tide.SquashLabel; squashLabel != "" {
+			for _, prlabel := range pr.Labels.Nodes {
+				if string(prlabel.Name) == squashLabel {
+					mergeMethod = github.MergeSquash
+					break
+				}
+			}
+		}
 		for retry := 0; retry < maxRetries; retry++ {
 			if err := c.ghc.Merge(sp.org, sp.repo, int(pr.Number), github.MergeDetails{
 				SHA:         string(pr.HeadRefOID),
-				MergeMethod: string(c.ca.Config().Tide.MergeMethod(sp.org, sp.repo)),
+				MergeMethod: string(mergeMethod),
 			}); err != nil {
 				if _, ok := err.(github.ModifiedHeadError); ok {
 					// This is a possible source of incorrect behavior. If someone
