@@ -29,31 +29,58 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/gerrit"
+	"k8s.io/test-infra/prow/gerrit/adapter"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 )
 
+type projectsFlag []string
+
+func (p *projectsFlag) String() string {
+	return fmt.Sprintf("%v", *p)
+}
+
+func (p *projectsFlag) Set(value string) error {
+	*p = append(*p, value)
+	return nil
+}
+
 type options struct {
 	configPath string
-	instance   string
-	projects   string
-	storage    string
+	// instance : projects map
+	projectsVar      projectsFlag
+	projects         map[string][]string
+	lastSyncFallback string
 }
 
 func (o *options) Validate() error {
-	if o.instance == "" {
-		return errors.New("--gerrit-instance must set")
+	if len(o.projectsVar) == 0 {
+		return errors.New("--gerrit-projects must set")
 	}
+
+	o.projects = make(map[string][]string)
+
+	for _, projects := range o.projectsVar {
+		split := strings.Split(projects, "=")
+		if len(split) != 2 {
+			return errors.New("--gerrit-projects must be in a form of --gerrit-projects=instance-foo=proj1,proj2")
+		}
+
+		instance := split[0]
+		projects := strings.Split(split[1], ",")
+
+		logrus.Infof("Added projects %v from instance %s", projects, instance)
+		o.projects[instance] = projects
+	}
+
 	return nil
 }
 
 func gatherOptions() options {
 	o := options{}
 	flag.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
-	flag.StringVar(&o.instance, "gerrit-instance", "", "URL to gerrit instance")
-	flag.StringVar(&o.projects, "gerrit-projects", "", "comma separated gerrit projects to fetch from the gerrit instance")
-	flag.StringVar(&o.storage, "storage", "", "Path to persistent volume to load the last sync time")
+	flag.Var(&o.projectsVar, "gerrit-projects", "repeatable gerrit instance/projects list, example: --gerrit-projects=instance-foo=proj1,proj2")
+	flag.StringVar(&o.lastSyncFallback, "last-sync-fallback", "", "Path to persistent volume to load the last sync time")
 	flag.Parse()
 	return o
 }
@@ -68,11 +95,6 @@ func main() {
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "gerrit"}),
 	)
 
-	projs := strings.Split(o.projects, ",")
-	if len(projs) == 0 {
-		logrus.Fatal("must have one or more target gerrit project")
-	}
-
 	ca := &config.Agent{}
 	if err := ca.Start(o.configPath, ""); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
@@ -83,19 +105,14 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting kube client.")
 	}
 
-	c, err := gerrit.NewController(o.instance, o.storage, projs, kc, ca)
+	c, err := adapter.NewController(o.lastSyncFallback, o.projects, kc, ca)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating gerrit client.")
-	}
-
-	if err := c.Auth(); err != nil {
-		logrus.WithError(err).Fatal("Error auth gerrit client.")
 	}
 
 	logrus.Infof("Starting gerrit fetcher")
 
 	tick := time.Tick(ca.Config().Gerrit.TickInterval)
-	auth := time.Tick(time.Minute * 10)
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 
@@ -107,10 +124,6 @@ func main() {
 				logrus.WithError(err).Error("Error syncing.")
 			}
 			logrus.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Synced")
-		case <-auth:
-			if err := c.Auth(); err != nil {
-				logrus.WithError(err).Error("Error auth to gerrit... (continue)")
-			}
 		case <-sig:
 			logrus.Info("gerrit fetcher is shutting down...")
 			return
