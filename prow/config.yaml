@@ -303,6 +303,7 @@ tide:
     - kubernetes-sigs/kubebuilder
     - kubernetes-sigs/kustomize
     - kubernetes-sigs/poseidon
+    - kubernetes-sigs/structured-merge-diff
     - kubernetes-sigs/testing_frameworks
     - kubernetes/client-go
     - kubernetes/cloud-provider-aws
