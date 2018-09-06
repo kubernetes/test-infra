@@ -296,6 +296,8 @@ tide:
     - kubernetes-sigs/contributor-site
     - kubernetes-sigs/controller-runtime
     - kubernetes-sigs/controller-tools
+    - kubernetes-sigs/cri-o
+    - kubernetes-sigs/cri-tools
     - kubernetes-sigs/federation-v2
     - kubernetes-sigs/gcp-compute-persistent-disk-csi-driver
     - kubernetes-sigs/gcp-filestore-csi-driver
