@@ -52,7 +52,7 @@ type item struct {
 	containerName string
 	prowJobID     string
 }
-// NewController : TODO: Actually learn prow
+// NewController : TODO: (alisondy) Investigate usage of NewController Function
 func NewController(client core.CoreV1Interface, prowJobClient *kube.Client, gcsConfig *gcsupload.Options) Controller {
 	queue := workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
 	optionsModifier := func(options *metav1.ListOptions) {
@@ -109,7 +109,7 @@ func findFinishedContainers(old, new []api.ContainerStatus) []string {
 	}
 	return containerNames
 }
-// Controller : TODO Actually learn prow
+// Controller : TODO (alisondy) Investigate what Controller Struct is used for
 type Controller struct {
 	queue    workqueue.RateLimitingInterface
 	indexer  cache.Indexer
@@ -120,7 +120,7 @@ type Controller struct {
 
 	gcsConfig *gcsupload.Options
 }
-// Run : TODO: Actually learn prow
+// Run : TODO: (alisondy) Investigate what Run function is used for
 func (c *Controller) Run(numWorkers int, stopCh chan struct{}) {
 	defer runtime.HandleCrash()
 	defer c.queue.ShutDown()
