@@ -212,5 +212,5 @@ periodics:
       - --provider=gke
       - --test_args=--gce-multizone=true --gce-multimaster=true --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|Initializers|Dashboard --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=900m
-      - --upgrade_args=--gce-multizone=true --gce-multimaster=true --ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=gke-latest-1.11 --upgrade-image=gci
+      - --upgrade_args=--gce-multizone=true --gce-multimaster=true --ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=gke-latest-1.11 --upgrade-image=gci --timeout=2700
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
