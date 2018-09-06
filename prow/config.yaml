@@ -74,6 +74,11 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        cloud-controller-manager:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         code-generator:
           restrictions:
             users: []
@@ -106,11 +111,31 @@ branch-protection:
           required_status_checks:
             contexts:
             - continuous-integration/travis-ci
+        kubelet:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         kubernetes:
           restrictions: # only allow admins
             users: []
             teams: []
         kube-aggregator:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        kube-controller-manager:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        kube-proxy:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        kube-scheduler:
           restrictions:
             users: []
             teams:
