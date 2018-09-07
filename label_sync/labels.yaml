@@ -663,6 +663,11 @@ default:
       target: both
       prowPlugin: milestonestatus
       addedBy: "members of a configurable github team. default: [@kubernetes/kubernetes-milestone-maintainers](https://github.com/orgs/kubernetes/teams/kubernetes-milestone-maintainers/members)"
+    - color: ffaa00
+      description: Denotes a PR that should be squashed by tide when it merges.
+      name: tide/squash
+      target: prs
+      addedBy: humans
     - color: f9d0c4
       description: "¯\\_(ツ)_/¯"
       name: "¯\\_(ツ)_/¯"
