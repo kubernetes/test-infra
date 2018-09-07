@@ -1,0 +1,1 @@
+ok  	k8s.io/test-infra/coverage/testTarget/presubmit	0.012s	coverage: 56.5% of statements

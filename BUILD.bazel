@@ -34,6 +34,7 @@ filegroup(
         "//autogo:all-srcs",
         "//boskos:all-srcs",
         "//config:all-srcs",
+        "//coverage:all-srcs",
         "//def:all-srcs",
         "//dind/cmd/cluster-up:all-srcs",
         "//dind/pkg/cluster-up/cluster:all-srcs",
