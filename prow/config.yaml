@@ -295,53 +295,15 @@ tide:
     - do-not-merge/work-in-progress
     - needs-ok-to-test
     - needs-rebase
-  - repos:
+  - orgs:
+    - kubernetes-client
+    - kubernetes-csi
+    - kubernetes-sigs
+    repos:
     - client-go/unofficial-docs
-    - kubernetes-client/csharp
-    - kubernetes-client/gen
-    - kubernetes-client/go
-    - kubernetes-client/go-base
-    - kubernetes-client/haskell
-    - kubernetes-client/java
-    - kubernetes-client/javascript
-    - kubernetes-client/python
-    - kubernetes-client/python-base
-    - kubernetes-client/ruby
-    - kubernetes-csi/csi-test
-    - kubernetes-csi/docs
-    - kubernetes-csi/driver-registrar
-    - kubernetes-csi/drivers
-    - kubernetes-csi/external-attacher
-    - kubernetes-csi/external-provisioner
-    - kubernetes-csi/external-snapshotter
-    - kubernetes-csi/kubernetes-csi.github.io
-    - kubernetes-csi/livenessprobe
     - kubernetes-incubator/ip-masq-agent
     - kubernetes-incubator/kubespray
     - kubernetes-incubator/service-catalog
-    - kubernetes-sigs/application
-    - kubernetes-sigs/architecture-tracking
-    - kubernetes-sigs/aws-encryption-provider
-    - kubernetes-sigs/cluster-api
-    - kubernetes-sigs/cluster-api-provider-aws
-    - kubernetes-sigs/cluster-api-provider-gcp
-    - kubernetes-sigs/cluster-api-provider-openstack
-    - kubernetes-sigs/cluster-api-provider-vsphere
-    - kubernetes-sigs/contributor-playground
-    - kubernetes-sigs/contributor-site
-    - kubernetes-sigs/controller-runtime
-    - kubernetes-sigs/controller-tools
-    - kubernetes-sigs/cri-o
-    - kubernetes-sigs/cri-tools
-    - kubernetes-sigs/federation-v2
-    - kubernetes-sigs/gcp-compute-persistent-disk-csi-driver
-    - kubernetes-sigs/gcp-filestore-csi-driver
-    - kubernetes-sigs/kubeadm-dind-cluster
-    - kubernetes-sigs/kubebuilder
-    - kubernetes-sigs/kustomize
-    - kubernetes-sigs/poseidon
-    - kubernetes-sigs/structured-merge-diff
-    - kubernetes-sigs/testing_frameworks
     - kubernetes/client-go
     - kubernetes/cloud-provider-aws
     - kubernetes/cloud-provider-azure
