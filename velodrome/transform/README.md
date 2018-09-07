@@ -25,7 +25,7 @@ Walk-through: Creating a new plugin
 ===================================
 
 To create a plugin, you need to implement the interface defined in
-[plugins.go](plugins.go), and also register its creation there.
+[plugin.go](plugins/plugin.go), and also register its creation there.
 
 Let's review an example plugin, [merged.go](merged.go):
 
@@ -44,8 +44,8 @@ Let's review an example plugin, [merged.go](merged.go):
   type and we have not already processed it, we insert the value in the database
   through the InfluxDB interface.
 
-- We make sure the plugin is registered in [plugins.go](plugins.go) or it's
-  never going to receive any event.
+- We make sure the plugin is registered in `NewCountPlugin` in [count.go](plugins/count.go) or it's
+  never going to receive any events.
 
 Testing locally
 ===============
