@@ -20,7 +20,6 @@ import (
 	"reflect"
 	"strings"
 	"testing"
-	"time"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/github"
@@ -55,15 +54,7 @@ func TestTideQuery(t *testing.T) {
 	checkTok("review:approved")
 }
 
-func TestAllPRsSince(t *testing.T) {
-	testTime, err := time.Parse(time.UnixDate, "Sat Mar  7 11:06:39 PST 2015")
-	if err != nil {
-		t.Fatalf("Error parsing test time string: %v.", err)
-	}
-	testTimeOld, err := time.Parse(time.UnixDate, "Sat Mar  7 11:06:39 PST 1915")
-	if err != nil {
-		t.Fatalf("Error parsing test time string: %v.", err)
-	}
+func TestAllOpenPRs(t *testing.T) {
 	var q string
 	checkTok := func(tok string, shouldExist bool) {
 		if shouldExist == strings.Contains(q, " "+tok+" ") {
@@ -84,7 +75,7 @@ func TestAllPRsSince(t *testing.T) {
 			Labels: []string{"lgtm", "mergeable"},
 		},
 	})
-	q = " " + queries.AllPRsSince(testTime) + " "
+	q = " " + queries.AllOpenPRs() + " "
 	checkTok("is:pr", true)
 	checkTok("state:open", true)
 	checkTok("org:\"org\"", true)
@@ -98,14 +89,6 @@ func TestAllPRsSince(t *testing.T) {
 	checkTok("-label:\"foo\"", false)
 	checkTok("milestone:\"milestone\"", false)
 	checkTok("review:approved", false)
-	checkTok("updated:>=2015-03-07T11:06:39Z", true)
-
-	// Test that if time is the zero time value, the token is not included.
-	q = " " + queries.AllPRsSince(time.Time{}) + " "
-	checkTok("updated:>=0001-01-01T00:00:00Z", false)
-	// Test that if time is before 1970, the token is not included.
-	q = " " + queries.AllPRsSince(testTimeOld) + " "
-	checkTok("updated:>=1915-03-07T11:06:39Z", false)
 }
 
 func TestMergeMethod(t *testing.T) {
