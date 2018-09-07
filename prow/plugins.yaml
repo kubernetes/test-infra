@@ -606,6 +606,9 @@ plugins:
   kubernetes-sigs/gcp-filestore-csi-driver:
   - trigger
 
+  kubernetes-sigs/cri-o:
+  - trigger
+
   containerd/cri:
   - assign
   - cla
