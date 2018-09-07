@@ -212,6 +212,62 @@ var (
 	}
 )
 
+func TestShouldAssignReviewersWorksAsExpected(t *testing.T) {
+	for _, test := range []struct{
+		shouldAssign bool
+		initial bool
+		title string
+		body string
+	}{
+		{
+			shouldAssign: false,
+			initial:      true,
+			title:        "WIP PR",
+			body:         "",
+		},
+		{
+			shouldAssign: false,
+			initial:      false,
+			title:        "Test",
+			body:         "",
+		},
+		{
+			shouldAssign: true,
+			initial:      false,
+			title:        "WIP PR",
+			body:         "/assign-reviewers\ntest",
+		},
+		{
+			shouldAssign: false,
+			initial:      true,
+			title:        "Normal PR with cc",
+			body:         "/cc @ausername",
+		},
+		{
+			shouldAssign: false,
+			initial:      true,
+			title:        "Normal PR with no-assign",
+			body:         "/no-assign-reviewers",
+		},
+		{
+			shouldAssign: true,
+			initial:      true,
+			title:        "WIP test",
+			body:         "/cc @test\n/assign-reviewers",
+		},
+		{
+			shouldAssign: false,
+			initial:      false,
+			title:        "Testing PR",
+			body:         "Normal followup message",
+		},
+	}{
+		if shouldAssignReviewers(test.initial, test.title, test.body) != test.shouldAssign {
+			t.Errorf("")
+		}
+	}
+}
+
 // TestHandleWithExcludeApprovers tests that the handle function requests
 // reviews from the correct number of unique users when ExcludeApprovers is
 // true.
@@ -227,10 +283,10 @@ func TestHandleWithExcludeApproversOnlyReviewers(t *testing.T) {
 		fghc := newFakeGithubClient(tc.filesChanged)
 		pre := &github.PullRequestEvent{
 			Number:      5,
-			PullRequest: github.PullRequest{User: github.User{Login: "author"}},
+			PullRequest: github.PullRequest{Number: 5, User: github.User{Login: "author"}},
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 		}
-		if err := handle(fghc, foc, logrus.WithField("plugin", pluginName), &tc.reviewerCount, nil, tc.maxReviewerCount, true, pre); err != nil {
+		if err := handle(fghc, foc, logrus.WithField("plugin", pluginName), &tc.reviewerCount, nil, tc.maxReviewerCount, true, &pre.Repo, &pre.PullRequest); err != nil {
 			t.Errorf("[%s] unexpected error from handle: %v", tc.name, err)
 			continue
 		}
@@ -266,10 +322,10 @@ func TestHandleWithoutExcludeApproversNoReviewers(t *testing.T) {
 		fghc := newFakeGithubClient(tc.filesChanged)
 		pre := &github.PullRequestEvent{
 			Number:      5,
-			PullRequest: github.PullRequest{User: github.User{Login: "author"}},
+			PullRequest: github.PullRequest{Number: 5, User: github.User{Login: "author"}},
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 		}
-		if err := handle(fghc, foc, logrus.WithField("plugin", pluginName), &tc.reviewerCount, nil, tc.maxReviewerCount, false, pre); err != nil {
+		if err := handle(fghc, foc, logrus.WithField("plugin", pluginName), &tc.reviewerCount, nil, tc.maxReviewerCount, false, &pre.Repo, &pre.PullRequest); err != nil {
 			t.Errorf("[%s] unexpected error from handle: %v", tc.name, err)
 			continue
 		}
@@ -384,10 +440,10 @@ func TestHandleWithoutExcludeApproversMixed(t *testing.T) {
 		fghc := newFakeGithubClient(tc.filesChanged)
 		pre := &github.PullRequestEvent{
 			Number:      5,
-			PullRequest: github.PullRequest{User: github.User{Login: "author"}},
+			PullRequest: github.PullRequest{Number: 5, User: github.User{Login: "author"}},
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 		}
-		if err := handle(fghc, foc, logrus.WithField("plugin", pluginName), &tc.reviewerCount, nil, tc.maxReviewerCount, false, pre); err != nil {
+		if err := handle(fghc, foc, logrus.WithField("plugin", pluginName), &tc.reviewerCount, nil, tc.maxReviewerCount, false, &pre.Repo, &pre.PullRequest); err != nil {
 			t.Errorf("[%s] unexpected error from handle: %v", tc.name, err)
 			continue
 		}
@@ -475,10 +531,10 @@ func TestHandleOld(t *testing.T) {
 		fghc := newFakeGithubClient(tc.filesChanged)
 		pre := &github.PullRequestEvent{
 			Number:      5,
-			PullRequest: github.PullRequest{User: github.User{Login: "author"}},
+			PullRequest: github.PullRequest{Number: 5, User: github.User{Login: "author"}},
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 		}
-		if err := handle(fghc, foc, logrus.WithField("plugin", pluginName), nil, &tc.reviewerCount, 0, false, pre); err != nil {
+		if err := handle(fghc, foc, logrus.WithField("plugin", pluginName), nil, &tc.reviewerCount, 0, false, &pre.Repo, &pre.PullRequest); err != nil {
 			t.Errorf("[%s] unexpected error from handle: %v", tc.name, err)
 			continue
 		}
