@@ -1,0 +1,43 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["line.go"],
+    importpath = "k8s.io/test-infra/coverage/line",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//coverage/artifacts:go_default_library",
+        "//coverage/calc:go_default_library",
+        "//coverage/gcs:go_default_library",
+        "//coverage/io:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["line_test.go"],
+    data = [
+        "//coverage:test-input",
+    ],
+    embed = [":go_default_library"],
+    deps = [
+        "//coverage/artifacts:go_default_library",
+        "//coverage/artifacts/artsTest:go_default_library",
+        "//coverage/test:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
