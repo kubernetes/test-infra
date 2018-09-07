@@ -74,6 +74,11 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        cli-runtime:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         cloud-controller-manager:
           restrictions:
             users: []
@@ -154,6 +159,11 @@ branch-protection:
             contexts:
             - continuous-integration/travis-ci
         sample-apiserver:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
+        sample-cli-plugin:
           restrictions:
             users: []
             teams:
