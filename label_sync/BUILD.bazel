@@ -37,8 +37,9 @@ go_image(
     name = "label_sync-image",
     base = "@distroless-base//image",
     embed = [":go_default_library"],
+    goarch = "amd64",
+    goos = "linux",
     pure = "on",
-    tags = ["automanaged"],
 )
 
 go_test(
