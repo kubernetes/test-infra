@@ -15,5 +15,5 @@
 FROM gcr.io/k8s-prow/git:0.1
 LABEL maintainer="senlu@google.com"
 
-COPY crier /crier
-ENTRYPOINT ["/crier"]
+COPY gerrit-crier /gerrit-crier
+ENTRYPOINT ["/gerrit-crier"]

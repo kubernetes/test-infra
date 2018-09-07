@@ -56,8 +56,8 @@ ARTIFACT_UPLOADER_VERSION ?= $(TAG)
 NEEDS_REBASE_VERSION      ?= $(TAG)
 # CHECKCONFIG_VERSION is the version of the checkconfig image
 CHECKCONFIG_VERSION       ?= $(TAG)
-# CRIER_VERSION is the version of the crier image
-CRIER_VERSION             ?= $(TAG)
+# GERRIT_CRIER_VERSION is the version of the gerrit-crier image
+GERRIT_CRIER_VERSION      ?= $(TAG)
 
 # These are the usual GKE variables.
 PROJECT       ?= k8s-prow
@@ -119,6 +119,7 @@ hook-image: git-image
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/hook/hook k8s.io/test-infra/prow/cmd/hook
 	docker build -t "$(REGISTRY)/$(PROJECT)/hook:$(HOOK_VERSION)" $(DOCKER_LABELS) cmd/hook
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/hook:$(HOOK_VERSION)"
+	rm cmd/hook/hook
 
 hook-deployment: get-cluster-credentials
 	kubectl apply -f cluster/hook_deployment.yaml
@@ -132,6 +133,7 @@ sinker-image: alpine-image
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/sinker/sinker k8s.io/test-infra/prow/cmd/sinker
 	docker build -t "$(REGISTRY)/$(PROJECT)/sinker:$(SINKER_VERSION)" $(DOCKER_LABELS) cmd/sinker
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/sinker:$(SINKER_VERSION)"
+	rm cmd/sinker/sinker
 
 sinker-deployment: get-cluster-credentials
 	kubectl apply -f cluster/sinker_deployment.yaml
@@ -142,6 +144,7 @@ deck-image: alpine-image
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/deck/deck k8s.io/test-infra/prow/cmd/deck
 	docker build -t "$(REGISTRY)/$(PROJECT)/deck:$(DECK_VERSION)" $(DOCKER_LABELS) cmd/deck
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/deck:$(DECK_VERSION)"
+	rm cmd/deck/deck
 
 deck-deployment: get-cluster-credentials
 	kubectl apply -f cluster/deck_deployment.yaml
@@ -155,6 +158,7 @@ splice-image: git-image
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/splice/splice k8s.io/test-infra/prow/cmd/splice
 	docker build -t "$(REGISTRY)/$(PROJECT)/splice:$(SPLICE_VERSION)" $(DOCKER_LABELS) cmd/splice
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/splice:$(SPLICE_VERSION)"
+	rm cmd/splice/splice
 
 splice-deployment: get-cluster-credentials
 	kubectl apply -f cluster/splice_deployment.yaml
@@ -165,6 +169,7 @@ tot-image: alpine-image
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/tot/tot k8s.io/test-infra/prow/cmd/tot
 	docker build -t "$(REGISTRY)/$(PROJECT)/tot:$(TOT_VERSION)" $(DOCKER_LABELS) cmd/tot
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/tot:$(TOT_VERSION)"
+	rm cmd/tot/tot
 
 tot-deployment: get-cluster-credentials
 	kubectl apply -f cluster/tot_deployment.yaml
@@ -178,6 +183,7 @@ horologium-image: alpine-image
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/horologium/horologium k8s.io/test-infra/prow/cmd/horologium
 	docker build -t "$(REGISTRY)/$(PROJECT)/horologium:$(HOROLOGIUM_VERSION)" $(DOCKER_LABELS) cmd/horologium
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/horologium:$(HOROLOGIUM_VERSION)"
+	rm cmd/horologium/horologium
 
 horologium-deployment: get-cluster-credentials
 	kubectl apply -f cluster/horologium_deployment.yaml
@@ -188,6 +194,7 @@ plank-image: alpine-image
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/plank/plank k8s.io/test-infra/prow/cmd/plank
 	docker build -t "$(REGISTRY)/$(PROJECT)/plank:$(PLANK_VERSION)" $(DOCKER_LABELS) cmd/plank
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/plank:$(PLANK_VERSION)"
+	rm cmd/plank/plank
 
 plank-deployment: get-cluster-credentials
 	kubectl apply -f cluster/plank_deployment.yaml
@@ -198,6 +205,7 @@ jenkins-operator-image: alpine-image
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/jenkins-operator/jenkins-operator k8s.io/test-infra/prow/cmd/jenkins-operator
 	docker build -t "$(REGISTRY)/$(PROJECT)/jenkins-operator:$(JENKINS-OPERATOR_VERSION)" $(DOCKER_LABELS) cmd/jenkins-operator
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/jenkins-operator:$(JENKINS-OPERATOR_VERSION)"
+	rm cmd/jenkins-operator/jenkins-operator
 
 jenkins-operator-deployment: get-cluster-credentials
 	kubectl apply -f cluster/jenkins_deployment.yaml
@@ -211,6 +219,7 @@ tide-image: git-image
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/tide/tide k8s.io/test-infra/prow/cmd/tide
 	docker build -t "$(REGISTRY)/$(PROJECT)/tide:$(TIDE_VERSION)" $(DOCKER_LABELS) cmd/tide
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/tide:$(TIDE_VERSION)"
+	rm cmd/tide/tide
 
 tide-deployment: get-cluster-credentials
 	kubectl apply -f cluster/tide_deployment.yaml
@@ -224,31 +233,37 @@ clonerefs-image: git-image
 	CGO_ENABLED=0 go build -o cmd/clonerefs/clonerefs k8s.io/test-infra/prow/cmd/clonerefs
 	docker build -t "$(REGISTRY)/$(PROJECT)/clonerefs:$(CLONEREFS_VERSION)" $(DOCKER_LABELS) cmd/clonerefs
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/clonerefs:$(CLONEREFS_VERSION)"
+	rm cmd/clonerefs/clonerefs
 
 initupload-image: alpine-image
 	CGO_ENABLED=0 go build -o cmd/initupload/initupload k8s.io/test-infra/prow/cmd/initupload
 	docker build -t "$(REGISTRY)/$(PROJECT)/initupload:$(INITUPLOAD_VERSION)" $(DOCKER_LABELS) cmd/initupload
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/initupload:$(INITUPLOAD_VERSION)"
+	rm cmd/initupload/initupload
 
 gcsupload-image: alpine-image
 	CGO_ENABLED=0 go build -o cmd/gcsupload/gcsupload k8s.io/test-infra/prow/cmd/gcsupload
 	docker build -t "$(REGISTRY)/$(PROJECT)/gcsupload:$(GCSUPLOAD_VERSION)" $(DOCKER_LABELS) cmd/gcsupload
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/gcsupload:$(GCSUPLOAD_VERSION)"
+	rm cmd/gcsupload/gcsupload
 
 entrypoint-image: alpine-image
 	CGO_ENABLED=0 go build -o cmd/entrypoint/entrypoint k8s.io/test-infra/prow/cmd/entrypoint
 	docker build -t "$(REGISTRY)/$(PROJECT)/entrypoint:$(ENTRYPOINT_VERSION)" $(DOCKER_LABELS) cmd/entrypoint
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/entrypoint:$(ENTRYPOINT_VERSION)"
+	rm cmd/entrypoint/entrypoint
 
 sidecar-image: alpine-image
 	CGO_ENABLED=0 go build -o cmd/sidecar/sidecar k8s.io/test-infra/prow/cmd/sidecar
 	docker build -t "$(REGISTRY)/$(PROJECT)/sidecar:$(SIDECAR_VERSION)" $(DOCKER_LABELS) cmd/sidecar
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/sidecar:$(SIDECAR_VERSION)"
+	rm cmd/sidecar/sidecar
 
 artifact-uploader-image: alpine-image
 	CGO_ENABLED=0 go build -o cmd/artifact-uploader/artifact-uploader k8s.io/test-infra/prow/cmd/artifact-uploader
 	docker build -t "$(REGISTRY)/$(PROJECT)/artifact-uploader:$(ARTIFACT_UPLOADER_VERSION)" $(DOCKER_LABELS) cmd/artifact-uploader
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/artifact-uploader:$(ARTIFACT_UPLOADER_VERSION)"
+	rm cmd/artifact-uploader/artifact-uploader
 
 .PHONY: clonerefs-image initupload-image gcsupload-image entrypoint-image sidecar-image artifact-uploader-image
 
@@ -256,6 +271,7 @@ needs-rebase-image: git-image
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o external-plugins/needs-rebase/needs_rebase k8s.io/test-infra/prow/external-plugins/needs-rebase
 	docker build -t "$(REGISTRY)/$(PROJECT)/needs-rebase:$(NEEDS_REBASE_VERSION)" $(DOCKER_LABELS) external-plugins/needs-rebase
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/needs-rebase:$(NEEDS_REBASE_VERSION)"
+	rm external-plugins/needs-rebase/needs
 
 needs-rebase-deployment: get-cluster-credentials
 	kubectl apply -f cluster/needs-rebase_deployment.yaml
@@ -269,12 +285,14 @@ checkconfig-image: alpine-image
 	CGO_ENABLED=0 go build -o cmd/checkconfig/checkconfig k8s.io/test-infra/prow/cmd/checkconfig
 	docker build -t "$(REGISTRY)/$(PROJECT)/checkconfig:$(CHECKCONFIG_VERSION)" $(DOCKER_LABELS) cmd/checkconfig
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/checkconfig:$(CHECKCONFIG_VERSION)"
+	rm cmd/checkconfig/checkconfig
 
 .PHONY: checkconfig-image
 
-crier-image: alpine-image
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/crier/crier k8s.io/test-infra/prow/cmd/crier
-	docker build -t "$(REGISTRY)/$(PROJECT)/crier:$(CRIER_VERSION)" $(DOCKER_LABELS) cmd/crier
-	$(PUSH) "$(REGISTRY)/$(PROJECT)/crier:$(CRIER_VERSION)"
+gerrit-crier-image: alpine-image
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/gerrit-crier/gerrit-crier k8s.io/test-infra/prow/cmd/gerrit-crier
+	docker build -t "$(REGISTRY)/$(PROJECT)/gerrit-crier:$(GERRIT_CRIER_VERSION)" $(DOCKER_LABELS) cmd/gerrit-crier
+	$(PUSH) "$(REGISTRY)/$(PROJECT)/gerrit-crier:$(GERRIT_CRIER_VERSION)"
+	rm cmd/gerrit-crier/gerrit-crier
 
-.PHONY: crier-image
+.PHONY: gerrit-crier-image
