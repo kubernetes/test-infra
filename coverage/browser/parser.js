@@ -1,26 +1,5 @@
 import {reduce, filter} from './utils.js';
 
-function parseLine(line) {
-  const [filename, block] = line.split(':');
-  const [positions, statements, hits] = block.split(' ');
-  const [start, end] = positions.split(',');
-  const [startLine, startCol] = start.split('.').map(parseInt);
-  const [endLine, endCol] = end.split('.').map(parseInt);
-  return {
-    filename,
-    statements: parseInt(statements),
-    hits: parseInt(hits),
-    start: {
-      line: startLine,
-      col: startCol,
-    },
-    end: {
-      line: endLine,
-      col: endCol,
-    },
-  };
-}
-
 export class FileCoverage {
   constructor(filename, fileNumber) {
     this.filename = filename;
@@ -132,4 +111,25 @@ export function parseCoverage(content) {
   }
 
   return coverage;
+}
+
+function parseLine(line) {
+  const [filename, block] = line.split(':');
+  const [positions, statements, hits] = block.split(' ');
+  const [start, end] = positions.split(',');
+  const [startLine, startCol] = start.split('.').map(parseInt);
+  const [endLine, endCol] = end.split('.').map(parseInt);
+  return {
+    filename,
+    statements: parseInt(statements),
+    hits: parseInt(hits),
+    start: {
+      line: startLine,
+      col: startCol,
+    },
+    end: {
+      line: endLine,
+      col: endCol,
+    },
+  };
 }
