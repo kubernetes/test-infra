@@ -31,9 +31,9 @@ type searchExecutor func(start, end time.Time) ([]PullRequest, int /*true match 
 
 func newSearchExecutor(ctx context.Context, ghc githubClient, log *logrus.Entry, q string) searchExecutor {
 	return func(start, end time.Time) ([]PullRequest, int, error) {
-		q = fmt.Sprintf("%s %s", q, dateToken(start, end))
+		datedQuery := fmt.Sprintf("%s %s", q, dateToken(start, end))
 		vars := map[string]interface{}{
-			"query":        githubql.String(q),
+			"query":        githubql.String(datedQuery),
 			"searchCursor": (*githubql.String)(nil),
 		}
 		var totalCost, remaining int
@@ -42,7 +42,7 @@ func newSearchExecutor(ctx context.Context, ghc githubClient, log *logrus.Entry,
 		for {
 			sq := searchQuery{}
 			if err := ghc.Query(ctx, &sq, vars); err != nil {
-				return nil, 0, err
+				return nil, 0, fmt.Errorf("error handling query: %q, err: %v", datedQuery, err)
 			}
 			totalCost += int(sq.RateLimit.Cost)
 			remaining = int(sq.RateLimit.Remaining)
@@ -60,7 +60,7 @@ func newSearchExecutor(ctx context.Context, ghc githubClient, log *logrus.Entry,
 			vars["searchCursor"] = githubql.NewString(sq.Search.PageInfo.EndCursor)
 		}
 		log.WithFields(logrus.Fields{
-			"query": q,
+			"query": datedQuery,
 			"start": start.String(),
 			"end":   start.String(),
 		}).Debugf("Query returned %d PRs and cost %d point(s). %d remaining.", len(ret), totalCost, remaining)

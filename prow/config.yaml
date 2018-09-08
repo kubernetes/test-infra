@@ -38,7 +38,7 @@ deck:
 
 prowjob_namespace: default
 pod_namespace: test-pods
-log_level: info
+log_level: debug
 
 branch-protection:
   allow_disabled_policies: true  # TODO(fejta): remove, needed by k/website
