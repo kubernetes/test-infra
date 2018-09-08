@@ -67,6 +67,9 @@ bazel build //cmd/kubectl //test/e2e:e2e.test //vendor/github.com/onsi/ginkgo/gi
 mkdir -p "_output/bin/"
 cp bazel-bin/test/e2e/e2e.test "_output/bin/"
 
+# release some memory after building
+sync || true
+echo 1 > /proc/sys/vm/drop_caches || true
 
 # ginkgo regexes
 FOCUS="${FOCUS:-"\\[Conformance\\]"}"

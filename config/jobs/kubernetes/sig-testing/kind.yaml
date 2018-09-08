@@ -6,10 +6,10 @@ periodics:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
     preset-bazel-remote-cache-enabled: "true"
-    preset-dind-enabled: "true"
+    preset-dind-memory-backed: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180907-890a61046-experimental
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -33,8 +33,11 @@ periodics:
         name: cgroup
       resources:
         requests:
-          # We can adjust this after we know the requirements.
-          memory: "6Gi"
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "9000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m
     volumes:
     - name: modules
       hostPath:
