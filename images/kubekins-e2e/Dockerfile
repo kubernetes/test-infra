@@ -65,6 +65,15 @@ RUN INSTALLER="bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh"; \
     wget -q "https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/${INSTALLER}" && \
     chmod +x "${INSTALLER}" && "./${INSTALLER}" && rm "${INSTALLER}"
 
+# if UPGRADE_DOCKER_ARG, then install the latest docker over whatever we have
+# in the base image.
+# TODO(bentheelder): after code freeze, roll out newer docker in the
+# base image and possibly remove this ...
+ARG UPGRADE_DOCKER_ARG=false
+RUN [ "${UPGRADE_DOCKER_ARG}" = "true" ] && \
+    apt-get install -y --no-install-recommends docker-ce && \
+    sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker || true
+
 # add env we can debug with the image name:tag
 ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}
