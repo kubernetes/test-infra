@@ -22,6 +22,7 @@ import (
 	"os"
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/coverage/artifacts"
+	"k8s.io/test-infra/coverage/testgrid"
 )
 
 const (
@@ -63,6 +64,7 @@ func main() {
 	pr := os.Getenv("PULL_NUMBER")
 	pullSha := os.Getenv("PULL_PULL_SHA")
 	baseSha := os.Getenv("PULL_BASE_SHA")
+	jobType := os.Getenv("JOB_TYPE")
 
 	fmt.Printf("Running coverage for PR %s with PR commit SHA %s and base SHA %s", pr, pullSha, baseSha)
 
@@ -77,6 +79,13 @@ func main() {
 
 	localArtifacts.ProduceProfileFile(*coverageTargetDir)
 
+	switch jobType {
+	case "presubmit", "local-presubmit":
+		logrus.Infof("job type is %v, unimplemented\n", jobType)
+	case "periodic", "postsubmit":
+		logrus.Infof("job type is %v, producing testsuite xml...\n", jobType)
+		testgrid.ProfileToTestsuiteXML(localArtifacts, *covThresholdFlag)
+	}
 
 	fmt.Println("end of code coverage main")
 }
