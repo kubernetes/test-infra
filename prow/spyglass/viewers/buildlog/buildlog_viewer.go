@@ -179,7 +179,7 @@ func nextViewData(artifact viewers.Artifact, currentViewData LogViewData) (LogAr
 			nBytes := int64(currentViewData.HeadBytes + byteChunkSize)
 			artifactSize, err := artifact.Size()
 			if err != nil {
-				logrus.WithFields(logrus.Fields{"artifact": artifact.JobPath()}).WithError(err).Error("Reading log lines failed.")
+				logrus.WithFields(logrus.Fields{"artifact": artifact.JobPath()}).WithError(err).Error("Error getting artifact size.")
 			}
 			if nBytes >= artifactSize {
 				logLines = logLinesAll(artifact)
@@ -206,7 +206,7 @@ func nextViewData(artifact viewers.Artifact, currentViewData LogViewData) (LogAr
 				newArtifactView.ViewMethodDescription = fmt.Sprintf("viewing first %d bytes", nBytes)
 				logLines, err = logLinesHead(artifact, nBytes)
 				if err != nil {
-					logrus.WithError(err).Error("Reading log lines failed.")
+					logrus.WithError(err).Error("Reading head of log lines failed.")
 					newArtifactView.ViewMethodDescription = fmt.Sprintf("failed to read log file - is it compressed?")
 					logLines = []string{}
 				}

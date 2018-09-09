@@ -148,15 +148,20 @@ func (s *Spyglass) Refresh(src string, podName string, sizeLimit int64, viewReq 
 // if any eyepiece in the Spyglass can receive artifacts from that source.
 func (s *Spyglass) ListArtifacts(src string) ([]string, error) {
 	foundArtifacts := []string{}
+	var parsed bool
 	for _, ep := range s.Eyepieces {
 		jobSource, err := ep.createJobSource(src)
 		if err == ErrCannotParseSource {
 			continue
 		} else if err != nil {
-			logrus.WithField("src", src).WithError(err).Error("Error creating job source.")
-			continue
+			return nil, err
+		} else {
+			parsed = true
+			foundArtifacts = append(foundArtifacts, ep.artifacts(jobSource)...)
 		}
-		foundArtifacts = append(foundArtifacts, ep.artifacts(jobSource)...)
+	}
+	if !parsed {
+		return nil, fmt.Errorf("unable to parse source: %s, your source string may be incorrectly formatted or Spyglass does not have a compatible eyepiece for that source.", src)
 	}
 	foundArtifacts = append(foundArtifacts, missingArtifacts(foundArtifacts)...)
 	return foundArtifacts, nil

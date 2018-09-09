@@ -90,7 +90,7 @@ func newGCSJobSource(src string) (*gcsJobSource, error) {
 		source:     src,
 		linkPrefix: "gs://",
 		bucket:     gcsPath.Bucket(),
-		jobPrefix:  gcsPath.Object() + "/",
+		jobPrefix:  path.Clean(gcsPath.Object()) + "/",
 		jobName:    name,
 		buildID:    buildID,
 	}, nil
