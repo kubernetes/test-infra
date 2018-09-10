@@ -42,8 +42,9 @@ func timePtr(val time.Time) *time.Time { return &val }
 
 // Comment is a helper to create a valid-ish comment for testing
 func Comment(id int, login string, createdAt time.Time, body string) *github.IssueComment {
+	id64 := int64(id)
 	return &github.IssueComment{
-		ID:        &id,
+		ID:        &id64,
 		Body:      &body,
 		CreatedAt: &createdAt,
 		User: &github.User{
@@ -179,8 +180,9 @@ func Commit(sha string, t int64) *github.Commit {
 
 // IssueComment returns a filled out github.IssueComment which happened at time.Unix(t, 0).
 func IssueComment(id int, body string, user string, createAt int64) *github.IssueComment {
+	id64 := int64(id)
 	return &github.IssueComment{
-		ID:   intPtr(id),
+		ID:   &id64,
 		Body: stringPtr(body),
 		User: &github.User{
 			Login: stringPtr(user),
