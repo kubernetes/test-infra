@@ -20,9 +20,15 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
+
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/coverage/artifacts"
+	"k8s.io/test-infra/coverage/gcs"
+	"k8s.io/test-infra/coverage/githubUtil/githubPR"
+	"k8s.io/test-infra/coverage/logUtil"
 	"k8s.io/test-infra/coverage/testgrid"
+	"k8s.io/test-infra/coverage/workflows"
 )
 
 const (
@@ -61,10 +67,14 @@ func main() {
 		*githubTokenPath, *covThresholdFlag, *covbotUserName)
 
 	logrus.Info("Getting env values")
+	buildStr := os.Getenv("BUILD_NUMBER")
 	pr := os.Getenv("PULL_NUMBER")
 	pullSha := os.Getenv("PULL_PULL_SHA")
 	baseSha := os.Getenv("PULL_BASE_SHA")
+	repoOwner := os.Getenv("REPO_OWNER")
+	repoName := os.Getenv("REPO_NAME")
 	jobType := os.Getenv("JOB_TYPE")
+	jobName := os.Getenv("JOB_NAME")
 
 	fmt.Printf("Running coverage for PR %s with PR commit SHA %s and base SHA %s", pr, pullSha, baseSha)
 
@@ -81,8 +91,45 @@ func main() {
 
 	switch jobType {
 	case "presubmit", "local-presubmit":
-		logrus.Infof("job type is %v, unimplemented\n", jobType)
-	case "periodic", "postsubmit":
+		if jobType == "local-presubmit" {
+			if buildStr == "" {
+				buildStr = defaultLocalBuildStr
+			}
+			if pr == "" {
+				pr = defaultLocalPr
+			}
+		}
+
+		build, err := strconv.Atoi(buildStr)
+		if err != nil {
+			logUtil.LogFatalf("BUILD_NUMBER(%s) cannot be converted to int, err=%v",
+				buildStr, err)
+		}
+
+		prData := githubPR.New(*githubTokenPath, repoOwner, repoName, pr, *covbotUserName)
+		gcsData := &gcs.PresubmitBuild{GcsBuild: gcs.GcsBuild{
+			StorageClient: gcs.NewStorageClient(prData.Ctx),
+			Bucket:        *gcsBucketName,
+			Job:           jobName,
+			Build:         build,
+			CovThreshold:  *covThresholdFlag,
+		},
+			PostSubmitJob: *postSubmitJobName,
+		}
+		presubmit := &gcs.PreSubmit{
+			GithubPr:       *prData,
+			PresubmitBuild: *gcsData,
+		}
+
+		presubmit.Artifacts = *presubmit.MakeGcsArtifacts(*localArtifacts)
+
+		isCoverageLow := workflows.RunPresubmit(presubmit, localArtifacts)
+
+		if isCoverageLow {
+			logUtil.LogFatalf("Code coverage is below threshold (%d%%), "+
+				"fail presubmit workflow intentionally", *covThresholdFlag)
+		}
+	case "periodic":
 		logrus.Infof("job type is %v, producing testsuite xml...\n", jobType)
 		testgrid.ProfileToTestsuiteXML(localArtifacts, *covThresholdFlag)
 	}
