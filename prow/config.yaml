@@ -468,6 +468,10 @@ presets:
   env:
   - name: GOOGLE_APPLICATION_CREDENTIALS
     value: /etc/service-account/service-account.json
+  # storage e2e tests borrow this as a preconfigured key instead of creating and
+  # injecting a new key. this allows us to avoid mass key download warnings
+  - name: E2E_GOOGLE_APPLICATION_CREDENTIALS
+    value: /etc/service-account/service-account.json
   volumes:
   - name: service
     secret:
@@ -480,6 +484,10 @@ presets:
     preset-gke-alpha-service: "true"
   env:
   - name: GOOGLE_APPLICATION_CREDENTIALS
+    value: /etc/service-account/service-account.json
+  # storage e2e tests borrow this as a preconfigured key instead of creating and
+  # injecting a new key. this allows us to avoid mass key download warnings
+  - name: E2E_GOOGLE_APPLICATION_CREDENTIALS
     value: /etc/service-account/service-account.json
   volumes:
   - name: service
@@ -494,6 +502,10 @@ presets:
   env:
   - name: GOOGLE_APPLICATION_CREDENTIALS
     value: /etc/service-account/istio-service-account.json
+  # storage e2e tests borrow this as a preconfigured key instead of creating and
+  # injecting a new key. this allows us to avoid mass key download warnings
+  - name: E2E_GOOGLE_APPLICATION_CREDENTIALS
+    value: /etc/service-account/service-account.json
   volumes:
   - name: service
     secret:
