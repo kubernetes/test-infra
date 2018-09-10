@@ -202,6 +202,7 @@ filegroup(
         "//vendor/golang.org/x/text/unicode/rangetable:all-srcs",
         "//vendor/golang.org/x/text/width:all-srcs",
         "//vendor/golang.org/x/time/rate:all-srcs",
+        "//vendor/golang.org/x/tools/cover:all-srcs",
         "//vendor/golang.org/x/tools/go/ast/astutil:all-srcs",
         "//vendor/golang.org/x/tools/go/gcexportdata:all-srcs",
         "//vendor/golang.org/x/tools/go/gcimporter15:all-srcs",
