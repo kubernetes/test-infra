@@ -599,3 +599,16 @@ presets:
   volumeMounts:
   - name: docker-graph
     mountPath: /docker-graph
+# experimental preset for dind, prefer the one above
+- labels:
+    preset-dind-memory-backed: "true"
+  env:
+  - name: DOCKER_IN_DOCKER_ENABLED
+    value: "true"
+  volumes:
+  - name: docker-graph
+    emptyDir:
+      medium: "Memory"
+  volumeMounts:
+  - name: docker-graph
+    mountPath: /docker-graph
