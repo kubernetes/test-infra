@@ -269,6 +269,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-gce-ha
 - name: ci-kubernetes-e2e-gce-canary
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-canary
+- name: ci-kubernetes-e2e-gce-podutil-canary
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-podutil-canary
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-device-plugin-gpu
   alert_stale_results_hours: 24
@@ -5867,6 +5869,10 @@ dashboards:
   dashboard_tab:
   - name: gce-canary
     test_group_name: ci-kubernetes-e2e-gce-canary
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: gce-podutil-canary
+    test_group_name: ci-kubernetes-e2e-gce-podutil-canary
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: gke-canary
