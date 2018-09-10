@@ -141,10 +141,16 @@ plugins:
 Replace `YOUR_ORG/YOUR_REPO:` with the appropriate values. If you want, you can
 instead just say `YOUR_ORG:` and the plugin will run for every repo in the org.
 
-Run the following to test the file, replacing the path as necessary:
+Next, create an empty file called `config.yaml`:
 
 ```sh
-bazel run //prow/cmd/config -- --plugin-config=path/to/plugins.yaml
+touch config.yaml
+```
+
+Run the following to test the files, replacing the paths as necessary:
+
+```sh
+bazel run //prow/cmd/checkconfig -- --plugin-config=path/to/plugins.yaml --config-path=path/to/config.yaml
 ```
 
 There should be no errors. You can run this as a part of your presubmit testing
@@ -175,7 +181,7 @@ They will pick up the change within a few minutes.
 
 ## Add more jobs by modifying `config.yaml`
 
-Create a file called `config.yaml`, and add the following to it:
+Add the following to `config.yaml`:
 
 ```yaml
 periodics:
@@ -209,10 +215,10 @@ presubmits:
         command: ["/bin/printenv"]
 ```
 
-Run the following to test the file, replacing the path as necessary:
+Again, run the following to test the files, replacing the paths as necessary:
 
 ```sh
-bazel run //prow/cmd/config -- --config-path=path/to/config.yaml
+bazel run //prow/cmd/checkconfig -- --plugin-config=path/to/plugins.yaml --config-path=path/to/config.yaml
 ```
 
 Now run the following to update the configmap.
