@@ -2808,6 +2808,12 @@ test_groups:
   gcs_prefix: k8s-conformance-alibaba/cloud-provider-alibaba-cloud/e2e-conformance-release-v1.8
 
 
+# DigitalOcean Test Groups
+- name: digitalocean-e2e-conformance
+  gcs_prefix: k8s-conformance-digitalocean/e2e-conformance
+- name: digitalocean-e2e-conformance-v1.11
+  gcs_prefix: k8s-conformance-digitalocean/e2e-conformance-v1.11
+
 #
 # Start dashboards
 #
@@ -2879,6 +2885,12 @@ dashboards:
   - name: OpenStack, v1.11 (dev)
     description: Runs conformance tests using kubetest against kubernetes from the release-1.11 branch with cloud-provider-openstack
     test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.11
+  - name: DigitalOcean Master
+    description: Runs conformance test using kubetest against latest kubernetes master on DigitalOcean
+    test_group_name: digitalocean-e2e-conformance
+  - name: DigitalOcean v1.11
+    description: Runs conformance test using kubetest against kubernetes v1.11 on DigitalOcean
+    test_group_name: digitalocean-e2e-conformance-v1.11
 
 - name: conformance-gce
   dashboard_tab:
@@ -2986,6 +2998,15 @@ dashboards:
     description: Runs conformance tests for cloud provier alibaba cloud on release v1.8
     test_group_name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.8
 
+# DigitalOcean Dashboard
+- name: conformance-cloud-provider-digitalocean
+  dashboard_tab:
+  - name: DigitalOcean Master
+    description: Runs conformance test using kubetest against latest kubernetes master on DigitalOcean
+    test_group_name: digitalocean-e2e-conformance
+  - name: DigitalOcean v1.11
+    description: Runs conformance test using kubetest against kubernetes v1.11 on DigitalOcean
+    test_group_name: digitalocean-e2e-conformance-v1.11
 
 - name: canonical-ubuntu1-k8sbeta
   dashboard_tab:
@@ -6639,6 +6660,7 @@ dashboard_groups:
   - conformance-providerless
   - conformance-cloud-provider-openstack
   - conformance-alibaba-cloud-provider
+  - conformance-cloud-provider-digitalocean
   - conformance-gardener
 
 - name: vmware
