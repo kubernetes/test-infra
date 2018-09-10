@@ -23,6 +23,7 @@ default_test_group:
   alert_stale_results_hours: 0 # Don't alert for staleness by default.
   num_failures_to_alert: 3 # Consider a test failed if it has 3 or more consecutive failures.
   num_passes_to_disable_alert: 1 # Consider a failing test passing if it has 1 or more consecutive passes.
+  code_search_path: github.com/kubernetes/kubernetes/search # URL for regression search links.
 
 default_dashboard_tab:
   open_test_template: # The URL template to visit after clicking on a cell
