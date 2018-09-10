@@ -394,7 +394,8 @@
 [[projects]]
   name = "github.com/google/go-github"
   packages = ["github"]
-  revision = "7a51fb928f52a196d5f31daefb8a489453ef54ff"
+  revision = "08dbadce1a0514f79ea9a9aa91b2f12ba656d5a7"
+  version = "v18.0.0"
 
 [[projects]]
   name = "github.com/google/go-querystring"
@@ -1178,6 +1179,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b5213975990940df4092d5a812e8d180dd9edc64a5f4f7c846fd114182e743f7"
+  inputs-digest = "d73c059eb1e7abc598c5b4fce9a619a5eb0f30f1c045e21247ff23aadc7aa7fb"
   solver-name = "gps-cdcl"
   solver-version = 1
