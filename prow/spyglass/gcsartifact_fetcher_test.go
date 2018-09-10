@@ -16,9 +16,7 @@ limitations under the License.
 
 package spyglass
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestNewGCSJobSource(t *testing.T) {
 	testCases := []struct {
@@ -34,7 +32,7 @@ func TestNewGCSJobSource(t *testing.T) {
 			name:        "Test standard GCS link",
 			src:         "gs://test-bucket/logs/example-ci-run/403",
 			exBucket:    "test-bucket",
-			exJobPrefix: "logs/example-ci-rin/403",
+			exJobPrefix: "logs/example-ci-run/403/",
 			exName:      "example-ci-run",
 			exBuildID:   "403",
 			expectedErr: nil,
@@ -43,7 +41,7 @@ func TestNewGCSJobSource(t *testing.T) {
 			name:        "Test GCS link with trailing /",
 			src:         "gs://test-bucket/logs/example-ci-run/403/",
 			exBucket:    "test-bucket",
-			exJobPrefix: "logs/example-ci-rin/403",
+			exJobPrefix: "logs/example-ci-run/403/",
 			exName:      "example-ci-run",
 			exBuildID:   "403",
 			expectedErr: nil,
@@ -52,7 +50,7 @@ func TestNewGCSJobSource(t *testing.T) {
 			name:        "Test GCS link with org name",
 			src:         "gs://test-bucket/logs/sig-flexing/example-ci-run/403",
 			exBucket:    "test-bucket",
-			exJobPrefix: "logs/example-ci-rin/403",
+			exJobPrefix: "logs/sig-flexing/example-ci-run/403/",
 			exName:      "example-ci-run",
 			exBuildID:   "403",
 			expectedErr: nil,
@@ -75,8 +73,8 @@ func TestNewGCSJobSource(t *testing.T) {
 			if tc.exName != jobSource.jobName {
 				t.Errorf("Expected name %s, got %s", tc.exName, jobSource.jobName)
 			}
-			if tc.exName != jobSource.jobName {
-				t.Errorf("Expected name %s, got %s", tc.exName, jobSource.jobName)
+			if tc.exJobPrefix != jobSource.jobPrefix {
+				t.Errorf("Expected name %s, got %s", tc.exJobPrefix, jobSource.jobPrefix)
 			}
 		})
 	}
