@@ -188,6 +188,9 @@ func NewController(ghcSync, ghcStatus *github.Client, kc *kube.Client, ca *confi
 		ca:             ca,
 		newPoolPending: make(chan bool, 1),
 		shutDown:       make(chan bool),
+
+		trackedOrgs:  sets.NewString(),
+		trackedRepos: sets.NewString(),
 	}
 	go sc.run()
 	return &Controller{

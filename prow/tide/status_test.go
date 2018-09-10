@@ -18,6 +18,7 @@ package tide
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	githubql "github.com/shurcooL/githubv4"
@@ -437,4 +438,21 @@ func TestTargetUrl(t *testing.T) {
 			t.Errorf("%s: expected target URL %s but got %s", tc.name, expected, actual)
 		}
 	}
+}
+
+func TestAllOpenPRs(t *testing.T) {
+	var q string
+	checkTok := func(tok string) {
+		if !strings.Contains(q, " "+tok+" ") {
+			t.Errorf("Expected query to contain \"%s\", got \"%s\"", tok, q)
+		}
+	}
+
+	q = " " + openPRsQuery([]string{"k8s", "kuber"}, []string{"k8s/k8s", "k8s/t-i"}) + " "
+	checkTok("is:pr")
+	checkTok("state:open")
+	checkTok("org:\"k8s\"")
+	checkTok("org:\"kuber\"")
+	checkTok("repo:\"k8s/k8s\"")
+	checkTok("repo:\"k8s/t-i\"")
 }
