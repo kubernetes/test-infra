@@ -1,11 +1,23 @@
 load("@io_bazel_rules_docker//container:image.bzl", "container_image")
+load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_image(
+    name = "initupload-go_image",
+    base = "@alpine-base//image",
+    embed = [":go_default_library"],
+    goarch = "amd64",
+    goos = "linux",
+    pure = "on",
+    visibility = ["//visibility:public"],
+)
 
 container_image(
     name = "image",
-    base = "@alpine-base//image",
-    directory = "/",
-    files = [":initupload"],
+    base = ":initupload-go_image",
+    symlinks = {
+        "/initupload": "/app/prow/cmd/initupload",
+    },
     visibility = ["//visibility:public"],
 )
 
