@@ -4,7 +4,6 @@ filters:
   ".*":
     approvers:
       - cjwagner
-      - kargakis
       - spxtr
       - stevekuznetsov
     labels:
