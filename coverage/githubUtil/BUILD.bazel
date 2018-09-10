@@ -1,0 +1,52 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "github.go",
+        "githubFiles.go",
+    ],
+    importpath = "k8s.io/test-infra/coverage/githubUtil",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//coverage/git:go_default_library",
+        "//coverage/githubUtil/githubPR:go_default_library",
+        "//coverage/logUtil:go_default_library",
+        "//vendor/github.com/google/go-github/github:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "githubFiles_test.go",
+        "github_test.go",
+    ],
+    embed = [":go_default_library"],
+    deps = [
+        "//coverage/githubUtil/githubFakes:go_default_library",
+        "//coverage/githubUtil/githubPR:go_default_library",
+        "//coverage/test:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//coverage/githubUtil/githubClient:all-srcs",
+        "//coverage/githubUtil/githubFakes:all-srcs",
+        "//coverage/githubUtil/githubPR:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

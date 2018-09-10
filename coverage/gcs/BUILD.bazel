@@ -1,0 +1,54 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "gcs.go",
+        "gcsPostsubmit.go",
+        "gcsPresubmit.go",
+    ],
+    importpath = "k8s.io/test-infra/coverage/gcs",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//coverage/artifacts:go_default_library",
+        "//coverage/githubUtil/githubPR:go_default_library",
+        "//coverage/logUtil:go_default_library",
+        "//vendor/cloud.google.com/go/storage:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/google.golang.org/api/iterator:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "gcsPostsubmit_test.go",
+        "gcsPresubmit_test.go",
+        "gcs_test.go",
+    ],
+    embed = [":go_default_library"],
+    deps = [
+        "//coverage/artifacts/artsTest:go_default_library",
+        "//coverage/gcs/gcsFakes:go_default_library",
+        "//coverage/logUtil:go_default_library",
+        "//coverage/test:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//coverage/gcs/gcsFakes:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

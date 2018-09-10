@@ -1,0 +1,12 @@
+mode: count
+k8s.io/test-infra/coverage/testTarget/presubmit/newlyAddedFile.go:3.20,24.2 20 1
+k8s.io/test-infra/coverage/testTarget/presubmit/newlyAddedFile.go:26.20,35.2 7 0
+k8s.io/test-infra/coverage/testTarget/presubmit/onlySrcChange.go:5.20,8.2 2 1
+k8s.io/test-infra/coverage/testTarget/presubmit/onlySrcChange.go:10.20,12.2 1 0
+k8s.io/test-infra/coverage/testTarget/presubmit/onlyTestChange.go:5.18,8.2 2 1
+k8s.io/test-infra/coverage/testTarget/presubmit/onlyTestChange.go:10.18,12.2 1 0
+k8s.io/test-infra/coverage/testTarget/presubmit/common.go:3.19,5.2 0 35
+k8s.io/test-infra/coverage/testTarget/presubmit/cov-excl.go:3.26,14.2 10 0
+k8s.io/test-infra/coverage/testTarget/presubmit/cov-excl.go:16.26,21.2 4 1
+k8s.io/test-infra/coverage/testTarget/presubmit/ling-gen.go:3.26,11.2 7 1
+k8s.io/test-infra/coverage/testTarget/presubmit/ling-gen.go:13.26,22.2 8 0
