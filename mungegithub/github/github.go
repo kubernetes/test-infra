@@ -720,7 +720,7 @@ func (config *Config) SetBranchProtection(name string, contexts []string) error 
 			Strict:   false,
 			Contexts: contexts,
 		},
-		RequiredPullRequestReviews: prot.RequiredPullRequestReviews,
+		RequiredPullRequestReviews: unchangedReviewsRequest(prot.RequiredPullRequestReviews),
 		Restrictions:               unchangedRestrictionRequest(prot.Restrictions),
 		EnforceAdmins:              false,
 	}
@@ -750,6 +750,41 @@ func unchangedRestrictionRequest(restrictions *github.BranchRestrictions) *githu
 			request.Teams = append(request.Teams, *team.Name)
 		}
 	}
+	return request
+}
+
+// unchangedRestrictionRequest generates a request that will
+// not make any changes to the teams and users that can merge
+// into a branch
+func unchangedReviewsRequest(prr *github.PullRequestReviewsEnforcement) *github.PullRequestReviewsEnforcementRequest {
+	if prr == nil {
+		return nil
+	}
+
+	drUsers := []string{}
+	drTeams := []string{}
+
+	if prr.DismissalRestrictions.Users != nil {
+		for _, user := range prr.DismissalRestrictions.Users {
+			drUsers = append(drUsers, *user.Login)
+		}
+	}
+	if prr.DismissalRestrictions.Teams != nil {
+		for _, team := range prr.DismissalRestrictions.Teams {
+			drTeams = append(drTeams, *team.Name)
+		}
+	}
+
+	request := &github.PullRequestReviewsEnforcementRequest{
+		DismissalRestrictionsRequest: &github.DismissalRestrictionsRequest {
+			Users: &drUsers,
+			Teams: &drTeams,
+		},
+		DismissStaleReviews: prr.DismissStaleReviews,
+		RequireCodeOwnerReviews: prr.RequireCodeOwnerReviews,
+		RequiredApprovingReviewCount: prr.RequiredApprovingReviewCount,
+	}
+
 	return request
 }
 
@@ -1353,12 +1388,15 @@ func (config *Config) fetchAllCollaborators() ([]*github.User, error) {
 	var result []*github.User
 	for {
 		glog.V(4).Infof("Fetching page %d of all users", page)
-		listOpts := &github.ListOptions{PerPage: 100, Page: page}
+		listOpts := github.ListOptions{PerPage: 100, Page: page}
+		collabOpts := &github.ListCollaboratorsOptions{
+			ListOptions: listOpts,
+		}
 		users, response, err := config.client.Repositories.ListCollaborators(
 			context.Background(),
 			config.Org,
 			config.Project,
-			listOpts,
+			collabOpts,
 		)
 		if err != nil {
 			return nil, suggestOauthScopes(response, err)
