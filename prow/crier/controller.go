@@ -29,8 +29,13 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
 
+	"k8s.io/test-infra/prow/apis/prowjobs/v1"
 	pjinformers "k8s.io/test-infra/prow/client/informers/externalversions/prowjobs/v1"
 )
+
+type reportClient interface {
+	Report(pj *v1.ProwJob) error
+}
 
 // Controller struct defines how a controller should encapsulate
 // logging, client connectivity, informing (list and watching)
@@ -39,13 +44,19 @@ type Controller struct {
 	clientset kubernetes.Interface
 	queue     workqueue.RateLimitingInterface
 	informer  pjinformers.ProwJobInformer
+	reporter  reportClient
 }
 
-func NewController(clientset kubernetes.Interface, queue workqueue.RateLimitingInterface, informer pjinformers.ProwJobInformer) *Controller {
+func NewController(
+	clientset kubernetes.Interface,
+	queue workqueue.RateLimitingInterface,
+	informer pjinformers.ProwJobInformer,
+	reporter reportClient) *Controller {
 	return &Controller{
 		clientset: clientset,
 		queue:     queue,
 		informer:  informer,
+		reporter:  reporter,
 	}
 }
 
@@ -160,10 +171,14 @@ func (c *Controller) processNextItem() bool {
 		return true
 	}
 
-	// TODO(krzyzacy): call report lib here
 	if pj.Spec.Report && pj.Status.PrevReportState != pj.Status.State {
 		logrus.Infof("Will report here, pj : %v, state : %s", pj.Spec.Job, pj.Status.State)
-		pj.Status.PrevReportState = pj.Status.State
+
+		// TODO(krzyzacy): we probably should make report async as well
+		// we can also leverage this by increase number of workers.
+		if err := c.reporter.Report(pj); err == nil {
+			pj.Status.PrevReportState = pj.Status.State
+		}
 	}
 
 	c.queue.Forget(key)

@@ -36,6 +36,7 @@ import (
 	prowjobinformer "k8s.io/test-infra/prow/client/informers/externalversions"
 
 	"k8s.io/test-infra/prow/crier"
+	"k8s.io/test-infra/prow/gerrit/reporter"
 	"k8s.io/test-infra/prow/logrusutil"
 )
 
@@ -133,7 +134,9 @@ func main() {
 			&workqueue.BucketRateLimiter{Limiter: rate.NewLimiter(rate.Limit(10), 100)},
 		))
 
-	controller := crier.NewController(client, queue, prowjobInformerFactory.Prow().V1().ProwJobs())
+	gerritReporter := reporter.NewReporter()
+
+	controller := crier.NewController(client, queue, prowjobInformerFactory.Prow().V1().ProwJobs(), gerritReporter)
 
 	stopCh := make(chan struct{})
 	defer close(stopCh)
