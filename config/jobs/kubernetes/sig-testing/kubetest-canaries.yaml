@@ -104,6 +104,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=65m
+
 - interval: 30m
   name: ci-kubernetes-e2e-gce-canary
   labels:
@@ -127,6 +128,34 @@ periodics:
       - --gcp-zone=us-central1-f
       - --provider=gce
       - --test_args=--ginkgo.focus=Variable.Expansion --ginkgo.skip=\[Feature:.+\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
+      - --timeout=40m
+      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      imagePullPolicy: Always
+
+# TODO(krzyzacy): get rid once this is working
+- interval: 30m
+  name: ci-kubernetes-e2e-gce-podutil-canary
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  spec:
+    containers:
+    - command:
+      - ./scenario/kubernetes_e2e.py
+      args:
+      - --check-leaked-resources
+      - --cluster=podutil-canary-e2e
+      - --extract=ci/latest
+      - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+      - --gcp-nodes=2
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test_args=--ginkgo.focus=Variable.Expansion --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
       - --timeout=40m
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
