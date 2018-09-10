@@ -396,6 +396,44 @@ tide:
     - do-not-merge/work-in-progress
     - needs-ok-to-test
     - needs-rebase
+  - repos:
+    - kubernetes/kubernetes
+    milestone: v1.12
+    includedBranches:
+    - master
+    - release-1.12
+    labels:
+    - lgtm
+    - approved
+    - priority/critical-urgent
+    - "cncf-cla: yes"
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/blocked-paths
+    - do-not-merge/cherry-pick-not-approved
+    - do-not-merge/hold
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/release-note-label-needed
+    - do-not-merge/work-in-progress
+    - needs-rebase
+  - repos:
+    - kubernetes/kubernetes
+    excludedBranches:
+    - master
+    - release-1.12
+    labels:
+    - lgtm
+    - approved
+    - "cncf-cla: yes"
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/blocked-paths
+    - do-not-merge/cherry-pick-not-approved
+    - do-not-merge/hold
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/release-note-label-needed
+    - do-not-merge/work-in-progress
+    - needs-rebase
   merge_method:
     helm/charts: squash
     kubeflow: squash
@@ -415,9 +453,13 @@ tide:
   pr_status_base_url: https://prow.k8s.io/pr
   blocker_label: merge-blocker
   squash_label: tide/squash
+  context_options:
+    optional-contexts:
+    - "Submit Queue"
 
 push_gateway:
   endpoint: pushgateway
+
 
 presets:
 # credential presets

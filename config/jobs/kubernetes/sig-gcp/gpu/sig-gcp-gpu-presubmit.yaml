@@ -5,7 +5,7 @@ presubmits:
     - release-1.10  # per-release image
     - release-1.9  # per-release image
     always_run: true
-    skip_report: false
+    optional: true
     max_concurrency: 12
     labels:
       preset-service-account: "true"
@@ -49,7 +49,7 @@ presubmits:
     branches:
     - release-1.10  # per-release image
     always_run: true
-    skip_report: false
+    optional: true
     max_concurrency: 12
     labels:
       preset-service-account: "true"
@@ -93,7 +93,7 @@ presubmits:
     branches:
     - release-1.9 # per-release image
     always_run: true
-    skip_report: false
+    optional: true
     max_concurrency: 12
     labels:
       preset-service-account: "true"

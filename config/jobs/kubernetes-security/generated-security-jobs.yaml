@@ -184,6 +184,7 @@ presubmits:
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-gce-device-plugin-gpu
+    optional: true
     rerun_command: /test pull-security-kubernetes-e2e-gce-device-plugin-gpu
     skip_branches:
     - release-1.10
@@ -244,6 +245,7 @@ presubmits:
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-gce-device-plugin-gpu
+    optional: true
     rerun_command: /test pull-security-kubernetes-e2e-gce-device-plugin-gpu
     spec:
       containers:
@@ -301,6 +303,7 @@ presubmits:
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-gce-device-plugin-gpu
+    optional: true
     rerun_command: /test pull-security-kubernetes-e2e-gce-device-plugin-gpu
     spec:
       containers:
