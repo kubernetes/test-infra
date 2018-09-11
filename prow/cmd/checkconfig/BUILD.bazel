@@ -18,6 +18,7 @@ go_library(
         "//prow/plugins/lgtm:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/validation:go_default_library",
     ],
 )
 
