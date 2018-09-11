@@ -119,7 +119,7 @@ periodics:
       - --use-logexporter
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
 
-- cron: '1 6 * * 2,4,6' # Run at 22:01PST on Mon,Wed,Fri (06:01 UTC Tue,Thur,Sat)
+- cron: '1 6 * * 6' # Run at 22:01PST on Fri (06:01 UTC on Sat)
   name: ci-kubernetes-e2e-gce-large-correctness
   labels:
     preset-service-account: "true"
@@ -206,7 +206,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
 
-- cron: '1 13 * * 2,4,6' # Run at 5:01PST (13:01 UTC) on even days
+- cron: '1 13 * * 6' # Run at 5:01PST on Sat (13:01 UTC on Sat)
   name: ci-kubernetes-e2e-gce-large-performance
   tags:
   - "perfDashPrefix: gce-2000Nodes"
@@ -241,7 +241,7 @@ periodics:
           cpu: 6
           memory: "16Gi"
 
-- cron: '1 22 * * 2,4,6' # Run at 14:01PST (22:01 UTC) on even days
+- cron: '1 22 * * 6' # Run at 14:01PST on Sat (22:01 UTC on Sat)
   name: ci-kubernetes-e2e-gce-scale-correctness
   labels:
     preset-service-account: "true"
@@ -276,7 +276,7 @@ periodics:
           cpu: 6
           memory: "16Gi"
 
-- cron: '1 8 * * 1,3,5' # Run at 00:01PST (8:01 UTC) on odd days (except sunday)
+- cron: '1 8 * * 1,2,3,4,5' # Run at 00:01PST (8:01 UTC) from Mon to Fri
   name: ci-kubernetes-e2e-gce-scale-performance
   tags:
   - "perfDashPrefix: gce-5000Nodes"
