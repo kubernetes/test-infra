@@ -22,6 +22,7 @@ set -o nounset
 set -o pipefail
 set -x
 
+# set up initial path variables
 # get relative path to test infra root based on script source
 TREE="$(dirname "${BASH_SOURCE[0]}")/.."
 # cd to the path
@@ -32,87 +33,121 @@ TESTINFRA_ROOT="${PWD}"
 # cd back
 cd "${ORIG_PWD}"
 
-# isntall `kind` to tempdir
-TMP_GOPATH=$(mktemp -d)
-trap 'rm -rf ${TMP_GOPATH}' EXIT
+# our exit handler (trap)
+cleanup() {
+    # KIND_IS_UP is true once we: kind create
+    if [[ "${KIND_IS_UP:-}" = true ]]; then
+        kind delete || true
+    fi
+    # clean up e2e.test symlink
+    rm -f _output/bin/e2e.test
+    # remove our tempdir GOPATH
+    # NOTE: this needs to be last, or it will prevent kind delete
+    if [[ -n "${TMP_GOPATH:-}" ]]; then
+        rm -rf "${TMP_GOPATH}"
+    fi
+}
 
-# smylink test-infra into tmp gopath
-mkdir -p "${TMP_GOPATH}/src/k8s.io/"
-ln -s "${TESTINFRA_ROOT}" "${TMP_GOPATH}/src/k8s.io"
+# install kind to a tempdir GOPATH from this script's test-infra checkout
+install_kind() {
+    # isntall `kind` to tempdir
+    TMP_GOPATH=$(mktemp -d)
 
-env "GOPATH=${TMP_GOPATH}" go install k8s.io/test-infra/kind
-PATH="${TMP_GOPATH}/bin:${PATH}"
+    # smylink test-infra into tmp gopath
+    mkdir -p "${TMP_GOPATH}/src/k8s.io/"
+    ln -s "${TESTINFRA_ROOT}" "${TMP_GOPATH}/src/k8s.io"
 
-# build the base image
-# TODO(bentheelder): eliminate this once we publish this image
-kind build base
+    env "GOPATH=${TMP_GOPATH}" go install k8s.io/test-infra/kind
+    PATH="${TMP_GOPATH}/bin:${PATH}"
+}
 
-# possibly enable bazel build caching before building kubernetes
-BAZEL_REMOTE_CACHE_ENABLED=${BAZEL_REMOTE_CACHE_ENABLED:-false}
-if [[ "${BAZEL_REMOTE_CACHE_ENABLED}" == "true" ]]; then
-    # run the script in the kubekins image, do not fail if it fails
-    /usr/local/bin/create_bazel_cache_rcs.sh || true
-fi
+# build kubernetes / node image, e2e binaries
+build() {
+    # build the base image
+    # TODO(bentheelder): eliminate this once we publish this image
+    kind build base
 
-# build the node image w/ kubernetes
-kind build node --type=bazel
+    # possibly enable bazel build caching before building kubernetes
+    BAZEL_REMOTE_CACHE_ENABLED=${BAZEL_REMOTE_CACHE_ENABLED:-false}
+    if [[ "${BAZEL_REMOTE_CACHE_ENABLED}" == "true" ]]; then
+        # run the script in the kubekins image, do not fail if it fails
+        /usr/local/bin/create_bazel_cache_rcs.sh || true
+    fi
 
-# make sure we have e2e requirements
-#make all WHAT="cmd/kubectl test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo"
-bazel build //cmd/kubectl //test/e2e:e2e.test //vendor/github.com/onsi/ginkgo/ginkgo
-# e2e.test does not show up in a path with platform in it and will not be found
-# by kube::util::find-binary, so we will copy it to an acceptable location
-# until this is fixed upstream
-# https://github.com/kubernetes/kubernetes/issues/68306
-mkdir -p "_output/bin/"
-cp bazel-bin/test/e2e/e2e.test "_output/bin/"
+    # build the node image w/ kubernetes
+    kind build node --type=bazel
 
-# release some memory after building
-sync || true
-echo 1 > /proc/sys/vm/drop_caches || true
+    # make sure we have e2e requirements
+    #make all WHAT="cmd/kubectl test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo"
+    bazel build //cmd/kubectl //test/e2e:e2e.test //vendor/github.com/onsi/ginkgo/ginkgo
 
-# ginkgo regexes
-FOCUS="${FOCUS:-"\\[Conformance\\]"}"
-SKIP="${SKIP:-"Alpha|Kubectl|\\[(Disruptive|Feature:[^\\]]+|Flaky)\\]"}"
-# default WORKSPACE if not in CI
-WORKSPACE="${WORKSPACE:-${PWD}}"
+    # e2e.test does not show up in a path with platform in it and will not be found
+    # by kube::util::find-binary, so we will copy it to an acceptable location
+    # until this is fixed upstream
+    # https://github.com/kubernetes/kubernetes/issues/68306
+    mkdir -p "_output/bin/"
+    cp "bazel-bin/test/e2e/e2e.test" "_output/bin/"
 
-# arguments to kubetest for the e2e
-KUBETEST_ARGS="--provider=skeleton --test --test_args=\"--ginkgo.focus=${FOCUS} --ginkgo.skip=${SKIP} --report-dir=${WORKSPACE}/_artifacts --disable-log-dump=true\" --check-version-skew=false"
+    # try to make sure the kubectl we built is in PATH
+    local maybe_kubectl
+    maybe_kubectl="$(find "${PWD}/bazel-bin/" -name "kubectl" -type f)"
+    if [[ -n "${maybe_kubectl}" ]]; then
+        PATH="$(dirname "${maybe_kubectl}"):${PATH}"
+        export PATH
+    fi
 
-# if we set PARALLEL=true, then skip serial tests and add --ginkgo-parallel to the args
-PARALLEL="${PARALLEL:-false}"
-if [[ "${PARALLEL}" == "true" ]]; then
-    SKIP="${SKIP}|\\[Serial\\]"
-    KUBETEST_ARGS="${KUBETEST_ARGS} --ginkgo-parallel"
-fi
+    # release some memory after building
+    sync || true
+    echo 1 > /proc/sys/vm/drop_caches || true
+}
 
-# disable errexit so we can manually cleanup
-set +o errexit
+# up a cluster with kind
+create_cluster() {
+    # mark the cluster as up for cleanup
+    # even if kind create fails, kind delete can clean up after it
+    KIND_IS_UP=true
+    kind create
+}
 
-# run kind create, if it fails clean up and exit failure
-if ! kind create
-then
-    kind delete
-    exit 1
-fi
+# run e2es with kubetest
+run_tests() {
+    # default WORKSPACE if not in CI
+    WORKSPACE="${WORKSPACE:-${PWD}}"
 
-# export the KUBECONFIG
-# TODO(bentheelder): provide a `kind` command that can be eval'ed instead
-export KUBECONFIG="${HOME}/.kube/kind-config-1"
+    # base kubetest args
+    KUBETEST_ARGS="--provider=skeleton --test --check-version-skew=false"
 
-# setting this env prevents ginkg e2e from trying to run provider setup
-export KUBERNETES_CONFORMANCE_TEST="y"
+    # ginkgo regexes
+    SKIP="${SKIP:-"Alpha|Kubectl|\\[(Disruptive|Feature:[^\\]]+|Flaky)\\]"}"
+    FOCUS="${FOCUS:-"\\[Conformance\\]"}"
+    # if we set PARALLEL=true, skip serial tests set --ginkgo-parallel
+    PARALLEL="${PARALLEL:-false}"
+    if [[ "${PARALLEL}" == "true" ]]; then
+        SKIP="\\[Serial\\]|${SKIP}"
+        KUBETEST_ARGS="${KUBETEST_ARGS} --ginkgo-parallel"
+    fi
 
-# run kubetest, if it fails clean up and exit failure
-if ! eval "kubetest ${KUBETEST_ARGS}"
-then
-    kind delete
-    exit 1
-fi
+    # add ginkgo args
+    KUBETEST_ARGS="${KUBETEST_ARGS} --test_args=\"--ginkgo.focus=${FOCUS} --ginkgo.skip=${SKIP} --report-dir=${WORKSPACE}/_artifacts --disable-log-dump=true\""
 
-# re-enable errexit now that we aren't trying to do any catch and cleanup
-set -o errexit
+    # export the KUBECONFIG
+    # TODO(bentheelder): provide a `kind` command that can be eval'ed instead
+    export KUBECONFIG="${HOME}/.kube/kind-config-1"
 
-# delete the cluster
-kind delete
+    # setting this env prevents ginkg e2e from trying to run provider setup
+    export KUBERNETES_CONFORMANCE_TEST="y"
+
+    # run kubetest, if it fails clean up and exit failure
+    eval "kubetest ${KUBETEST_ARGS}"
+}
+
+# setup kind, build kubernetes, create a cluster, run the e2es
+main() {
+    trap cleanup EXIT
+    install_kind
+    build
+    create_cluster
+    run_tests
+}
+
+main
