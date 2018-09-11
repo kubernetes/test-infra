@@ -443,7 +443,7 @@ def main(args):
 
     # Set up workspace/artifacts dir
     workspace = os.environ.get('WORKSPACE', os.getcwd())
-    artifacts = os.path.join(workspace, '_artifacts')
+    artifacts = os.environ.get('ARTIFACTS', os.path.join(workspace, '_artifacts'))
     if not os.path.isdir(artifacts):
         os.makedirs(artifacts)
 
