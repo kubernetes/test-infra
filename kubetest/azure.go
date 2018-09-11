@@ -432,9 +432,14 @@ func (c *Cluster) buildHyperKube() error {
 
 	cwd, _ := os.Getwd()
 	log.Printf("CWD %v", cwd)
-	pushHyperkube := util.K8s("kubernetes", "hack", "dev-push-hyperkube.sh")
-	if err := control.FinishRunning(exec.Command(pushHyperkube)); err != nil {
+	log.Printf("Attempt docker gcloud login")
+	prepareDocker := util.K8s("gcloud", "auth", "configure-docker")
+	if err := control.FinishRunning(exec.Command(prepareDocker)); err != nil {
 		return err
+	}
+	pushHyperkube := util.K8s("kubernetes", "hack", "dev-push-hyperkube.sh")
+	if err1 := control.FinishRunning(exec.Command(pushHyperkube)); err1 != nil {
+		return err1
 	}
 	c.acsCustomHyperKubeURL = fmt.Sprintf("%s/hyperkube-amd64:%s", os.Getenv("REGISTRY"), os.Getenv("VERSION"))
 
