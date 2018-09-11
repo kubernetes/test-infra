@@ -146,7 +146,7 @@ periodics:
   spec:
     containers:
     - command:
-      - ./scenario/kubernetes_e2e.py
+      - ./scenarios/kubernetes_e2e.py
       args:
       - --check-leaked-resources
       - --cluster=podutil-canary-e2e
