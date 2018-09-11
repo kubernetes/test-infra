@@ -171,6 +171,9 @@ type DecorationConfig struct {
 	// SkipCloning determines if we should clone source code in the
 	// initcontainers for jobs that specify refs
 	SkipCloning bool `json:"skip_cloning,omitempty"`
+	// CookieFileSecret is the name of a kubernetes secret that contains
+	// a git http.cookiefile, which should be used during the cloning process.
+	CookiefileSecret string `json:"cookiefile_secret,omitempty"`
 }
 
 // UtilityImages holds pull specs for the utility images
@@ -319,7 +322,7 @@ func (r Refs) String() string {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// VirtualMachineList is a list of VirtualMachine resources
+// ProwJobList is a list of ProwJob resources
 type ProwJobList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata"`
