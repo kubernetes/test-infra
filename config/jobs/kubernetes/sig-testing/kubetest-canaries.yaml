@@ -201,7 +201,7 @@ periodics:
       - --check-leaked-resources
       - --cluster=
       - --deployment=gke
-      - --extract=gke-latest-1.8
+      - --extract=gke-latest
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-b
       - --ginkgo-parallel
