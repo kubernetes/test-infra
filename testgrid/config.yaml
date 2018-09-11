@@ -2735,6 +2735,9 @@ test_groups:
 - name: ci-kubernetes-kind-conformance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kind-conformance
   num_columns_recent: 3
+- name: ci-kubernetes-kind-conformance-parallel
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kind-conformance-parallel
+  num_columns_recent: 3
 
 # cloud-provider-openstack e2e conformance tests
 # name format: PR trigger ci-presubmit-${zuul-job-name}
@@ -2873,6 +2876,9 @@ dashboards:
   - name: kind, master (dev)
     description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster
     test_group_name: ci-kubernetes-kind-conformance
+  - name: kind, master (dev) [non-serial]
+    description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster, skipping [Serial] tests
+    test_group_name: ci-kubernetes-kind-conformance-parallel
   - name: local-up-cluster, master (dev)
     description: Runs conformance tests using kubetest with hack/local-up-cluster.sh
     test_group_name: ci-kubernetes-local-e2e
@@ -2948,6 +2954,9 @@ dashboards:
   - name: kind, master (dev)
     description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster
     test_group_name: ci-kubernetes-kind-conformance
+  - name: kind, master (dev) [non-serial]
+    description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster, skipping [Serial] tests
+    test_group_name: ci-kubernetes-kind-conformance-parallel
   - name: local-up-cluster, master (dev)
     description: Runs conformance tests using kubetest with local-up-cluster
     test_group_name: ci-kubernetes-local-e2e
