@@ -20,11 +20,10 @@ periodics:
       - "--scenario=execute"
       - "--"
       - "./../test-infra/experiment/kind-e2e.sh"
-      # Bazel needs privileged mode in order to sandbox builds.
+      # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
-        capabilities:
-          add: ["SYS_ADMIN"]
+      # kind needs /lib/modules and cgroups from the host
       volumeMounts:
       - mountPath: /lib/modules
         name: modules
