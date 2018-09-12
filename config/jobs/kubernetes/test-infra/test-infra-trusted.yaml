@@ -1,0 +1,51 @@
+postsubmits:
+  kubernetes/org:
+  - name: post-org-peribolos
+    cluster: test-infra-trusted
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/cloud-builders/bazel
+        command:
+        - bazel
+        args:
+        - run
+        - //admin:update
+        - --
+        - --github-token-path=/etc/github-token/oauth
+        # TODO(fejta): --confirm
+        volumeMounts:
+        - name: github
+          mountPath: /etc/github-token
+      volumes:
+      - name: github
+        secret:
+          secretName: oauth-token
+
+periodics:
+- interval: 24h
+  name: ci-org-peribolos
+  cluster: test-infra-trusted
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: org
+    base_ref: master
+  spec:
+    containers:
+    - image: gcr.io/cloud-builders/bazel
+      command:
+      - bazel
+      args:
+      - run
+      - //admin:update
+      - --
+      - --github-token-path=/etc/github-token/oauth
+      # TODO(fejta): --confirm
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github-token
+    volumes:
+    - name: github
+      secret:
+        secretName: oauth-token
