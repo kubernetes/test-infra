@@ -938,6 +938,7 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     name: pull-security-kubernetes-local-e2e-containerized
+    optional: true
     rerun_command: /test pull-security-kubernetes-local-e2e-containerized
     run_if_changed: ^(pkg|cmd)/kubelet.*$
     spec:
@@ -2302,6 +2303,7 @@ presubmits:
       preset-service-account: "true"
     max_concurrency: 8
     name: pull-security-kubernetes-local-e2e
+    optional: true
     rerun_command: /test pull-security-kubernetes-local-e2e
     run_if_changed: (hyperkube|local-up-cluster)
     spec:

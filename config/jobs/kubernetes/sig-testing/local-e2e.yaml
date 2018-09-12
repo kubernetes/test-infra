@@ -6,6 +6,7 @@ presubmits:
     always_run: false
     skip_report: false
     max_concurrency: 8
+    optional: true
     run_if_changed: '(hyperkube|local-up-cluster)'
     labels:
       preset-service-account: "true"

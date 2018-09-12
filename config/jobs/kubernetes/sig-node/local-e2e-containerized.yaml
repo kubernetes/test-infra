@@ -5,6 +5,7 @@ presubmits:
     - master
     always_run: false
     skip_report: false
+    optional: true
     run_if_changed: '^(pkg|cmd)/kubelet.*$'
     labels:
       preset-service-account: "true"
