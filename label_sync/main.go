@@ -18,10 +18,12 @@ limitations under the License.
 package main
 
 import (
+	"encoding/hex"
 	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -30,6 +32,7 @@ import (
 	"sync"
 	"text/template"
 	"time"
+	"unicode"
 
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
@@ -121,6 +124,8 @@ var (
 	skipRepos    = flag.String("skip", "", "Comma separated list of org/repos to skip syncing")
 	token        = flag.String("token", "", "Path to github oauth secret")
 	action       = flag.String("action", "sync", "One of: sync, docs")
+	cssTemplate  = flag.String("css-template", "", "Path to template file for label css")
+	cssOutput    = flag.String("css-output", "", "Path to output file for css")
 	docsTemplate = flag.String("docs-template", "", "Path to template file for label docs")
 	docsOutput   = flag.String("docs-output", "", "Path to output file for docs")
 	tokens       = flag.Int("tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
@@ -649,9 +654,7 @@ func main() {
 
 	switch {
 	case *action == "docs":
-		if err := writeDocs(*docsTemplate, *docsOutput, *config); err != nil {
-			logrus.WithError(err).Fatalf("failed to write docs using docs-template %s to docs-output %s", *docsTemplate, *docsOutput)
-		}
+		writeDocsAndCSS(*docsTemplate, *docsOutput, *cssTemplate, *cssOutput, *config)
 	case *action == "sync":
 		githubClient, err := newClient(*token, *tokens, *tokenBurst, !*confirm, endpoint.Strings()...)
 		if err != nil {
@@ -703,6 +706,15 @@ type filter func(string, string) bool
 
 type labelData struct {
 	Description, Link, Labels interface{}
+}
+
+func writeDocsAndCSS(docTmpl, docOut, cssTmpl, cssOut string, config Configuration) {
+	if err := writeDocs(docTmpl, docOut, config); err != nil {
+		logrus.WithError(err).Fatalf("failed to write docs using docs-template %s to docs-output %s", docTmpl, docOut)
+	}
+	if err := writeCSS(cssTmpl, cssOut, config); err != nil {
+		logrus.WithError(err).Fatalf("failed to write css file using css-template %s to css-output %s", cssTmpl, cssOut)
+	}
 }
 
 func writeDocs(template string, output string, config Configuration) error {
@@ -784,4 +796,77 @@ func syncOrg(org string, githubClient client, config Configuration, filt filter)
 		return err
 	}
 	return nil
+}
+
+type labelCSSData struct {
+	BackgroundColor, Color, Name string
+}
+
+// Returns the CSS escaped label name. Escaped method based on
+// https://www.w3.org/International/questions/qa-escapes#cssescapes
+func cssEscape(s string) (escaped string) {
+	var IsAlpha = regexp.MustCompile(`^[a-zA-Z]+$`).MatchString
+	for i, c := range s {
+		if (i == 0 && unicode.IsDigit(c)) || !(unicode.IsDigit(c) || IsAlpha(string(c))) {
+			escaped += fmt.Sprintf("x%0.6x", c)
+			continue
+		}
+		escaped += string(c)
+	}
+	return
+}
+
+// Returns the text color (whether black or white) given the background color.
+// Details: https://www.w3.org/TR/WCAG20/#contrastratio
+func getTextColor(backgroundColor string) (string, error) {
+	d, err := hex.DecodeString(backgroundColor)
+	if err != nil || len(d) != 3 {
+		return "", errors.New("expect 6-digit color hex of label")
+	}
+
+	// Calculate the relative luminance (L) of a color
+	// L = 0.2126 * R + 0.7152 * G + 0.0722 * B
+	// Formula details at: https://www.w3.org/TR/WCAG20/#relativeluminancedef
+	color := [3]float64{}
+	for i, v := range d {
+		color[i] = float64(v) / 255.0
+		if color[i] <= 0.03928 {
+			color[i] = color[i] / 12.92
+		} else {
+			color[i] = math.Pow((color[i]+0.055)/1.055, 2.4)
+		}
+	}
+	L := 0.2126*color[0] + 0.7152*color[1] + 0.0722*color[2]
+
+	if (L+0.05)/(0.0+0.05) > (1.0+0.05)/(L+0.05) {
+		return "000000", nil
+	} else {
+		return "ffffff", nil
+	}
+}
+
+func writeCSS(tmplPath string, outPath string, config Configuration) error {
+	var prLabels []Label
+	prLabels = append(prLabels, LabelsForTarget(config.Default.Labels, bothTarget)...)
+	prLabels = append(prLabels, LabelsForTarget(config.Default.Labels, prTarget)...)
+
+	for repo := range config.Repos {
+		prLabels = append(prLabels, LabelsForTarget(config.Repos[repo].Labels, bothTarget)...)
+		prLabels = append(prLabels, LabelsForTarget(config.Repos[repo].Labels, prTarget)...)
+	}
+
+	var labelCSS []labelCSSData
+	for _, l := range prLabels {
+		textColor, err := getTextColor(l.Color)
+		if err != nil {
+			return err
+		}
+
+		labelCSS = append(labelCSS, labelCSSData{
+			BackgroundColor: l.Color,
+			Color:           textColor,
+			Name:            cssEscape(l.Name),
+		})
+	}
+	return writeTemplate(tmplPath, outPath, labelCSS)
 }

@@ -21,10 +21,13 @@ TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
 LABELS_CONFIG=${LABELS_CONFIG:-"${TESTINFRA_ROOT}/label_sync/labels.yaml"}
 LABELS_DOCS_TEMPLATE=${LABELS_DOCS_TEMPLATE:-"${TESTINFRA_ROOT}/label_sync/labels.md.tmpl"}
 LABELS_DOCS_OUTPUT=${LABELS_DOCS_OUTPUT:-"${TESTINFRA_ROOT}/label_sync/labels.md"}
+LABELS_CSS_TEMPLATE=${LABELS_CSS_TEMPLATE:-"${TESTINFRA_ROOT}/label_sync/labels.css.tmpl"}
+LABELS_CSS_OUTPUT=${LABELS_CSS_OUTPUT:-"${TESTINFRA_ROOT}/prow/cmd/deck/static/labels.css"}
 
 bazel run //label_sync -- \
 --config=${LABELS_CONFIG} \
 --action=docs \
 --docs-template=${LABELS_DOCS_TEMPLATE} \
---docs-output=${LABELS_DOCS_OUTPUT}
-
+--docs-output=${LABELS_DOCS_OUTPUT} \
+--css-template=${LABELS_CSS_TEMPLATE} \
+--css-output=${LABELS_CSS_OUTPUT}
