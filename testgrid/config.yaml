@@ -502,11 +502,6 @@ test_groups:
 - name: ci-kubernetes-e2e-gci-gke-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-ingress
   alert_stale_results_hours: 24
-- name: ci-kubernetes-e2e-gke-large-correctness
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-correctness
-  days_of_results: 60
-  num_columns_recent: 3
-  num_failures_to_alert: 1
 - name: ci-kubernetes-e2e-gke-large-performance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-performance
   days_of_results: 60
@@ -678,10 +673,6 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
-- name: ci-kubernetes-e2e-gce-large-manual-down
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-large-manual-down
-- name: ci-kubernetes-e2e-gke-large-deploy
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-deploy
 - name: ci-kubernetes-cross-build
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-cross-build
 - name: ci-kubernetes-node-kubelet-alpha
@@ -728,8 +719,6 @@ test_groups:
     name_format: '%s [%s]'
 - name: ci-kops-build
   gcs_prefix: kubernetes-jenkins/logs/ci-kops-build
-- name: ci-kubernetes-e2e-gce-large-manual-up
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-large-manual-up
 - name: maintenance-boskos-config-upload
   gcs_prefix: kubernetes-jenkins/logs/maintenance-boskos-config-upload
 - name: maintenance-ci-testgrid-config-upload
@@ -745,8 +734,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/maintenance-pull-scale-janitor
 - name: ci-kubernetes-build-debian-unstable
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-debian-unstable
-- name: ci-kubernetes-e2e-gke-large-teardown
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-teardown
 - name: ci-kubernetes-e2e-gce-taint-evict
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-taint-evict
 # stable3 (1.8) e2e
@@ -5632,8 +5619,6 @@ dashboards:
 
 - name: sig-scalability-gke
   dashboard_tab:
-  - name: gke-large-correctness
-    test_group_name: ci-kubernetes-e2e-gke-large-correctness
   - name: gke-large-performance
     test_group_name: ci-kubernetes-e2e-gke-large-performance
   - name: gke-large-performance-regional
@@ -5667,17 +5652,6 @@ dashboards:
   dashboard_tab:
   - name: scheduler
     test_group_name: ci-benchmark-scheduler-master
-
-- name: sig-scalability-manual
-  dashboard_tab:
-  - name: gce-large-manual-up
-    test_group_name: ci-kubernetes-e2e-gce-large-manual-up
-  - name: gce-large-manual-down
-    test_group_name: ci-kubernetes-e2e-gce-large-manual-down
-  - name: gke-large-deploy
-    test_group_name: ci-kubernetes-e2e-gke-large-deploy
-  - name: gke-large-teardown
-    test_group_name: ci-kubernetes-e2e-gke-large-teardown
 
 - name: sig-scheduling
   dashboard_tab:
@@ -6694,7 +6668,6 @@ dashboard_groups:
   - sig-scalability-kubemark
   - sig-scalability-perf-tests
   - sig-scalability-benchmarks
-  - sig-scalability-manual
 
 - name: sig-testing
   dashboard_names:
