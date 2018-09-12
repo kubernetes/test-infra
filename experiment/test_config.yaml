@@ -531,6 +531,11 @@ jobs:
   ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-updown:
     interval: 2h
     sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sbeta-gpu:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+    args:
+    - --gcp-zone=us-west1-b
 
   # ci-kubernetes-gke-ubuntu1-k8sstable1-*
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-alphafeatures:
@@ -559,6 +564,11 @@ jobs:
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-updown:
     interval: 4h
     sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sstable1-gpu:
+    interval: 4h
+    sigOwners: ['sig-gcp']
+    args:
+    - --gcp-zone=us-west1-b
 
   # ci-kubernetes-gke-ubuntu1-k8sstable2-*
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-alphafeatures:
@@ -587,6 +597,11 @@ jobs:
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-updown:
     interval: 6h
     sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sstable2-gpu:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+    args:
+    - --gcp-zone=us-west1-b
 
   # ci-kubernetes-gke-ubuntu1-k8sstable3-*
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-alphafeatures:
@@ -615,6 +630,11 @@ jobs:
   ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-updown:
     interval: 6h
     sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntu1-k8sstable3-gpu:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+    args:
+    - --gcp-zone=us-west1-b
 
   # ci-kubernetes-gke-ubuntu2-k8sbeta-*
   ci-kubernetes-e2e-gke-ubuntu2-k8sbeta-alphafeatures:
