@@ -2144,6 +2144,17 @@ test_groups:
   gcs_prefix: ppc64le-kubernetes/logs/ci-conformance-kubernetes
 - name: ppc64le-unit
   gcs_prefix: ppc64le-kubernetes/logs/ci-unit-kubernetes
+# kubernetes org jobs
+- name: ci-org-peribolos
+  gcs_prefix: kubernetes-jenkins/logs/ci-org-peribolos
+- name: post-org-peribolos
+  gcs_prefix: kubernetes-jenkins/logs/post-org-peribolos
+- name: pull-org-test-all
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-org-test-all
+  num_columns_recent: 30
+- name: pull-org-verify-all
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-org-verify-all
+  num_columns_recent: 30
 #presubmits
 - name: pull-cluster-api-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-api-build
@@ -5951,6 +5962,23 @@ dashboards:
   - name: pull-kubernetes-integration-prow
     test_group_name: pull-kubernetes-integration-prow
 
+- name: sig-testing-org
+  dashboard_tab:
+  - name: ci-peribolos
+    test_group_name: ci-org-peribolos
+  - name: post-peribolos
+    test_group_name: post-org-peribolos
+    code_search_url_template:
+      url: https://github.com/kubernetes/org/compare/<start-custom-0>...<end-custom-0>
+  - name: test-all
+    test_group_name: pull-org-test-all
+    code_search_url_template:
+      url: https://github.com/kubernetes/org/compare/<start-custom-0>...<end-custom-0>
+  - name: verify-all
+    test_group_name: pull-org-verify-all
+    code_search_url_template:
+      url: https://github.com/kubernetes/org/compare/<start-custom-0>...<end-custom-0>
+
 - name: sig-ui
   dashboard_tab:
   - name: TODO
@@ -6705,6 +6733,7 @@ dashboard_groups:
   dashboard_names:
   - sig-testing-misc
   - sig-testing-canaries
+  - sig-testing-org
 
 - name: sig-gcp
   dashboard_names:
