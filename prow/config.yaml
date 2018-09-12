@@ -377,7 +377,9 @@ tide:
     - do-not-merge/invalid-owners-file
     - do-not-merge/release-note-label-needed
     - do-not-merge/work-in-progress
+    - needs-kind
     - needs-rebase
+    - needs-sig
   - repos:
     - kubernetes/kubernetes
     excludedBranches:
