@@ -58,12 +58,19 @@ func run(deploy deployer, o options) error {
 
 	dump := o.dump
 	if dump != "" {
-		if !filepath.IsAbs(dump) { // Directory may change
-			wd, err := os.Getwd()
-			if err != nil {
-				return fmt.Errorf("failed to os.Getwd(): %v", err)
-			}
-			dump = filepath.Join(wd, dump)
+		if absDump, err := filepath.Abs(dump); err != nil {
+			return fmt.Errorf("failed to make %s an absolute directory: %v", absDump, err)
+		} else {
+			dump = absDump
+		}
+	}
+
+	dumpPreTestLogs := o.dumpPreTestLogs
+	if dumpPreTestLogs != "" {
+		if absPath, err := filepath.Abs(dumpPreTestLogs); err != nil {
+			return fmt.Errorf("failed to make %s an absolute directory: %v", absPath, err)
+		} else {
+			dumpPreTestLogs = absPath
 		}
 	}
 
@@ -178,6 +185,17 @@ func run(deploy deployer, o options) error {
 					}
 				}
 				return skewTestEnv(env, argFields(o.upgradeArgs, dump, o.clusterIPRange), "upgrade", o.checkSkew)
+			}))
+		}
+	}
+
+	if dumpPreTestLogs != "" {
+		errs = util.AppendError(errs, control.XMLWrap(&suite, "pre-test DumpClusterLogs", func() error {
+			return deploy.DumpClusterLogs(dumpPreTestLogs, o.logexporterGCSPath)
+		}))
+		if o.federation {
+			errs = util.AppendError(errs, control.XMLWrap(&suite, "pre-test dumpFederationLogs", func() error {
+				return dumpFederationLogs(dumpPreTestLogs)
 			}))
 		}
 	}
