@@ -46,6 +46,7 @@ DASHBOARD_PREFIX = [
     "sig-cluster-lifecycle-upgrade-skew",
     "sig-release-1.",
     "sig-release-master-upgrade",
+    "gke-cos-containerd",
 ]
 
 

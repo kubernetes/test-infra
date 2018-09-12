@@ -573,6 +573,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-canary
 - name: ci-kubernetes-e2e-cos-containerd-gke-alpha-cluster
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-containerd-gke-alpha-cluster
+- name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-containerd-gke-k8sstable1
 - name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-cluster
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-cluster
 - name: ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-cluster
@@ -3507,23 +3509,25 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-serial
   - name: gci-gke-slow-1.10
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-slow
-  - name: gke-cos-containerd-alpha-cluster-1.10
+  - name: gke-cos-containerd-alpha-cluster-1.11
     test_group_name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-cluster
   - name: gke-cos-alpha-cluster-1.10
     test_group_name: ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-cluster
-  - name: gke-cos-containerd-alpha-cluster-features-1.10
+  - name: gke-cos-containerd-alpha-cluster-features-1.11
     test_group_name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-cluster-features
-  - name: gke-cos-alpha-cluster-features-1.10
+  - name: gke-cos-alpha-cluster-features-1.11
     test_group_name: ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-cluster-features
   - name: gke-cos-containerd-1.11
+    test_group_name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1
+  - name: gke-cos-containerd-1.12
     test_group_name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta
-  - name: gke-cos-containerd-alpha-cluster-1.11
+  - name: gke-cos-containerd-alpha-cluster-1.12
     test_group_name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta-alpha-cluster
-  - name: gke-cos-alpha-cluster-1.11
+  - name: gke-cos-alpha-cluster-1.12
     test_group_name: ci-kubernetes-e2e-cos-gke-k8sbeta-alpha-cluster
-  - name: gke-cos-containerd-alpha-cluster-features-1.11
+  - name: gke-cos-containerd-alpha-cluster-features-1.12
     test_group_name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta-alpha-cluster-features
-  - name: gke-cos-alpha-cluster-features-1.11
+  - name: gke-cos-alpha-cluster-features-1.12
     test_group_name: ci-kubernetes-e2e-cos-gke-k8sbeta-alpha-cluster-features
 
 - name: google-gke-stackdriver
