@@ -4317,8 +4317,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-reboot
   - name: gke-cos-1.10-reboot
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-reboot
-  - name: soak-gci-gce-1.10
-    test_group_name: ci-kubernetes-soak-gci-gce-stable2
   - name: gci-gce-scalability-1.10
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable2
   - name: gce-device-plugin-gpu-1.10
