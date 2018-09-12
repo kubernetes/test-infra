@@ -1,6 +1,8 @@
 apiVersion: prow.k8s.io/v1
 kind: ProwJob
 metadata:
+  annotations:
+    prow.k8s.io/job: kubernetes-defaulted-decoration
   creationTimestamp: null
   labels:
     prow.k8s.io/job: kubernetes-defaulted-decoration
