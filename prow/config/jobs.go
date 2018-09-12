@@ -127,6 +127,9 @@ type Presubmit struct {
 	// We'll set these when we load it.
 	re        *regexp.Regexp // from Trigger.
 	reChanges *regexp.Regexp // from RunIfChanged
+
+	// SourcePath contains the path where this job is defined
+	SourcePath string `json:"-"`
 }
 
 // Postsubmit runs on push events.
@@ -149,6 +152,9 @@ type Postsubmit struct {
 
 	// Run these jobs after successfully running this one.
 	RunAfterSuccess []Postsubmit `json:"run_after_success,omitempty"`
+
+	// SourcePath contains the path where this job is defined
+	SourcePath string `json:"-"`
 }
 
 // Periodic runs on a timer.
@@ -174,6 +180,9 @@ type Periodic struct {
 	UtilityConfig
 
 	interval time.Duration
+
+	// SourcePath contains the path where this job is defined
+	SourcePath string `json:"-"`
 }
 
 // SetInterval updates interval, the frequency duration it runs.
