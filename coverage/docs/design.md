@@ -1,29 +1,32 @@
-#Overview
-This code coverage tool has two major features.
-1. In post-submit workflow (when a pull request is merged), it runs code coverage and generates the 
-  following artifacts in a GCS bucket
+# Overview
+This code coverage tool has two major modes of operation.
+## In post-submit workflow 
+Post-submit workflow starts when a commit to the base branch happens, e.g. when a pull request is merged
+
+Tt runs code coverage and generates the following artifacts in a GCS bucket
   - xml file that stores file-level and package-level code coverage, formatted to be readable by TestGrid
-  - code coverage profile, which will be used later in presubmit workflow as a base for comparison
-2. In pre-submit workflow (when a pull requested is created or updated with new commit)
+  - code coverage profile, which is produced by "go test -coverprofile" and contains all block level
+   code coverage data. The profile will be used later in presubmit workflow as a base for comparison
+
+## In pre-submit workflow
+Pre-submit workflow starts when a pull requested is created or updated with new commit
   - it runs code coverage on target directories and compares the new result with the one stored by 
   the post-submit workflow and generate coverage difference. It reports coverage changes to the 
   pull request as a comment by a robot github account. 
-  - it uses go tools to generate line by line coverage and serve the result in html, with a link as 
-  part of the robot comment mentioned above 
-  - it can report a failure status if coverage falls below threshold - this allows repo owner to make the 
-check required and block PR if coverage threshold not met. 
+  - it uses go tools to generate line by line coverage and stores the result in html, 
+  with a link as part of the robot comment mentioned above.
+  - it can be configured to return with a non-zero status if coverage falls below threshold.
 
+## Users
+The pre-submit tool is intended for a developer to see the impact on code coverage of his/her commit. It can also be used by repo managers to block any PR from merging if the coverage falls under customized threshold.
 
-##Users
-The presubmit tool is intended for a developer to see the impact on code coverage of his/her commit. It can also be used by repo managers to block any PR from merging if the coverage falls under customized threshold.
+The post-submit testgrid report is for repo managers and/or test infra team to monitor code coverage stats over time.
 
-The periodical testgrid report is for repo managers and/or test infra team to monitor code coverage stats over time.
-
-##Programming Language Supported
+## Programming Language Supported
 The code coverage tool only collect code coverage for Go files
 
 
-#Design of Test Coverage Tool
+# Design of Test Coverage Tool
 We pack the test coverage feature in a container, that is triggered to run by a CI/CD system such as prow, in response to Github events such as pulls and merges.The behavior varies in presubmit and postsubmit workflows, which is discussed in latter sections. 
 
 The tool takes input from three sources
@@ -32,8 +35,10 @@ The tool takes input from three sources
 serves as a base of comparison for presubmit delta coverage.
 3. Variables passed through flags. Those variables include directory to run test coverage, file filters and threshold for desired coverage level.  
 
+
 Here is the step-by-step description of the pre-submit and post-submit workflows
-##Pre-submit workflow
+
+## Pre-submit workflow
 Runs code coverage tool to report coverage change in a new PR or updated PR
 1. Developer submit new commit to an open PR on github
 2. Matching pre-submit job is started 
@@ -45,11 +50,17 @@ Runs code coverage tool to report coverage change in a new PR or updated PR
 produce a list of files that we care about in the line-by-line coverage report. produce line by 
 line coverage html and add link to covbot report. Note that covbot is the robot github account 
 used to report code coverage change results. See Covbot section for more details.
-6. Let covbot post presubmit coverage on github, under that conversation of the PR. 
+6. If any file in this commit has a coverage change, let covbot post presubmit coverage on github, under that conversation of the PR. 
+  - The covbot comment should have the following information on each file with a coverage change
+    - file name
+    - old coverage (coverage before any change in the PR)
+    - new coverage (coverage after applied all changes in the PR)
+    - change the coverage
+  - After each new posting, any previous posting by covbot should be removed
 
-##Post-submit workflow
+## Post-submit workflow
 Produces & stores coverage profile for later presubmit jobs to compare against; 
-Produces periodical coverage result as input for TestGrid. Testgrid can use the data produced here to display coverage trend in a tabular or graphical way. 
+Produces per-file and per-package coverage result as input for TestGrid. Testgrid can use the data produced here to display coverage trend in a tabular or graphical way. 
 1. A PR is merged
 2. Post-submit job started
 3. Generate coverage profile. Completion marker generated upon successful run. Both stored
@@ -60,15 +71,18 @@ Produces periodical coverage result as input for TestGrid. Testgrid can use the 
     as mentioned in pre-submit workflow
 4. Generate / store per-file coverage data
     - Stores in the XML format, that is used by TestGrid, and dump it in artifacts directory
+    - The junit_bazel.xml should be a valid junit xml file. See 
+[JUnit XML format](https://www.ibm.com/support/knowledgecenter/en/SSQ2R2_14.1.0/com.ibm.rsar.analysis.codereview.cobol.doc/topics/cac_useresults_junit.html)
+    - For each file that has a coverage level lower than the threshold, the corresponding entry in the xml should have a \<failure\> tag
 
-##Locally running presubmit and post-submit workflows
+## Locally running presubmit and post-submit workflows
 Both workflows may be triggered locally in command line, as long as all the required flags are 
 supplied correctly. In addition, the following env var needs to be set:
-- JOB_TYPE (one of 'presubmit', 'postsubmit', 'periodic', 'local-presubmit')
+- JOB_TYPE (one of 'presubmit', 'postsubmit', 'local-presubmit')
 
 use 'local-presubmit' will run the presubmit workflow without posting result on github PR
   
-##Covbot
+## Covbot
 As mentioned in the presubmit workflow section, covbot is the short name for the robot github 
 account used to report code coverage change results. It can be created as a regular github 
 account - it does not need to be named covbot as that name is already taken on Github. It only need a 
@@ -77,14 +91,17 @@ comment access to the repo it need to be run on. If the repo is private, it also
 After the robot account is created, download the github token and supply the path to the token 
 file to code coverage binary, as the value for parameter "github-token"
 
-#Usage with prow
 
-Prow can be used as the system to handle Github events mentioned in the two workflows. We can add a pre-submit prow job that is triggered by any new commit to a PR to run test coverage on the new build to compare it with the master branch and previous commit for pre-submit coverage. We can add a post-submit prow job that is triggered by merge events, to run test coverage when ever there is a merge on the target branch. 
+# Usage with prow
+Prow can be used as the system to handle Github events mentioned in the two workflows. 
+ Namely checking out the appropriate code, uploading logs, and reporting a pass or fail status context to GitHub.
+Prow, in both workflows, supplies the flags & secrets for the binary, clones the repository and uploads logs & artifacts to GCS bucket.
 
-In addition, at the end of each workflow, prow copies the artifacts directory to gcs bucket
+The pre-submit prow job is triggered by any new commit to a PR. At the end of the binary run, it can return a pass or fail status context to Github.
 
+The post-submit prow job is triggered by merge events to the base branch.
 
-##Prow Configuration File
+## Prow Configuration File
 As mentioned earlier, we use configuration file to store repository specific information. Below is an example that contains the args that will be supplied to the coverage container
 ```
   - name: pull-knative-serving-go-coverage
@@ -119,21 +136,3 @@ As mentioned earlier, we use configuration file to store repository specific inf
         secret:
           secretName: covbot-token
 ```
-
-#Acceptance Criteria
-##Presubmit Workflow
-- When user made a new commit, if any file in the commit has a coverage change, post a covbot comment concluding the coverage change
-- When user made a new commit, if non of the files in the commit has a coverage change, do not post any comment
-- The covbot comment should have the following information on each file with a coverage change:
-  - file name
-  - old coverage (coverage before any change in the PR)
-  - new coverage (coverage after applied all changes in the PR)
-  - change the coverage
-- After each new posting, any previous posting by covbot should be removed
-- When coverage threshold is enforced, block PR from merging
-
-##Periodical Workflow
-- During each run of the periodical job, a junit_bazel.xml is dumped in the artifacts folder
-- The junit_bazel.xml should be a valid junit xml file. See 
-[JUnit XML format](https://www.ibm.com/support/knowledgecenter/en/SSQ2R2_14.1.0/com.ibm.rsar.analysis.codereview.cobol.doc/topics/cac_useresults_junit.html)
-- For each file that has a coverage level lower than the threshold, the corresponding entry on testgrid should be red; otherwise, the entry should be green
