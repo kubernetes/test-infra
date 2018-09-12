@@ -94,10 +94,10 @@ file to code coverage binary, as the value for parameter "github-token"
 
 # Usage with prow
 Prow can be used as the system to handle Github events mentioned in the two workflows. 
- Namely checking out the appropriate code, uploading logs, and reporting a pass or fail status context to GitHub.
+
 Prow, in both workflows, supplies the flags & secrets for the binary, clones the repository and uploads logs & artifacts to GCS bucket.
 
-The pre-submit prow job is triggered by any new commit to a PR. At the end of the binary run, it can return a pass or fail status context to Github.
+The pre-submit prow job is triggered by any new commit to a PR. At the end of the binary run, it can return a pass or fail status context to Github. Tide can use that status to block PR with low coverage.
 
 The post-submit prow job is triggered by merge events to the base branch.
 
