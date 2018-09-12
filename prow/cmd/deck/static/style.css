@@ -269,10 +269,7 @@ span.label {
     font-weight: bold;
     margin: 0 .1em;
     text-align: center;
-    color: white;
     box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 3px 1px -2px rgba(0,0,0,.2), 0 1px 5px 0 rgba(0,0,0,.12);
-    background-color: #ededed;
-    color: #333333;
     white-space: nowrap;
 }
 
@@ -403,68 +400,6 @@ span.label:not(.merge-table-label):hover {
 
 .icon-button {
     color: #757575;
-}
-
-/* Known GitHub Labels, can be overridden in extensions/style.css */
-/* NOTE: spaces must be stripped from the label name */
-.label.area {
-    background-color: #1a53c5;
-    color: #fff;
-}
-.label.XS {
-    background-color: #5da447;
-    color: #000;
-}
-.label.S {
-    background-color: #99c356;
-    color: #000;
-}
-.label.M {
-    background-color: #ebc65d;
-    color: #000;
-}
-.label.L {
-    background-color: #e7ab56;
-    color: #000;
-}
-.label.XL {
-    background-color: #e27749;
-    color: #000;
-}
-.label.XXL {
-    background-color: #e14f43;
-    color: #fff;
-}
-.label.lgtm {
-    background-color: #15dd18;
-    color: #000000;
-}
-.label.approved {
-    background-color: #0ffa16;
-    color: #000000;
-}
-.label.cncf-cla\:yes {
-    background-color: #bfe5bf;
-    color: #000000;
-}
-
-.label.needs-ok-to-test {
-    background-color: #b60205;
-    color: #ffffff;
-}
-.label.do-not-merge,
-.label.do-not-merge\/hold,
-.label.do-not-merge\/work-in-progress,
-.label.do-not-merge\/release-note-label-needed,
-.label.do-not-merge\/cherry-pick-not-approved,
-.label.do-not-merge\/blocked-paths,
-.label.do-not-merge\/invalid-owners-file {
-    background-color: #e11d21;
-    color: #ffffff;
-}
-.label.needs-rebase {
-    background-color: #BDBDBD;
-    color: #000000;
 }
 
 /*
