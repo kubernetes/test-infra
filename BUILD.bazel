@@ -56,7 +56,6 @@ filegroup(
         "//maintenance/aws-janitor:all-srcs",
         "//maintenance/migratestatus:all-srcs",
         "//metrics:all-srcs",
-        "//mungegithub:all-srcs",
         "//prow:all-srcs",
         "//queue_health/graph:all-srcs",
         "//robots/commenter:all-srcs",

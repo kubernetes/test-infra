@@ -25,7 +25,6 @@ import (
 
 	"path/filepath"
 
-	"github.com/ghodss/yaml"
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	prow_config "k8s.io/test-infra/prow/config"
@@ -298,58 +297,6 @@ func TestConfig(t *testing.T) {
 	for testgroupname, occurrence := range testgroupMap {
 		if occurrence == 1 {
 			t.Errorf("Testgroup %v - defined but not used in any dashboards", testgroupname)
-		}
-	}
-
-	// make sure items in sq-blocking dashboard matches sq configmap
-	sqJobPool := []string{}
-	for _, d := range cfg.Dashboards {
-		if d.Name != "sq-blocking" {
-			continue
-		}
-
-		for _, tab := range d.DashboardTab {
-			for _, t := range cfg.TestGroups {
-				if t.Name == tab.TestGroupName {
-					job := strings.TrimPrefix(t.GcsPrefix, "kubernetes-jenkins/logs/")
-					sqJobPool = append(sqJobPool, job)
-					break
-				}
-			}
-		}
-	}
-
-	sqConfigPath := "../../../mungegithub/submit-queue/deployment/kubernetes/configmap.yaml"
-	configData, err := ioutil.ReadFile(sqConfigPath)
-	if err != nil {
-		t.Errorf("Read Buffer Error for SQ Data : %v", err)
-	}
-
-	sqData := &SQConfig{}
-	err = yaml.Unmarshal([]byte(configData), &sqData)
-	if err != nil {
-		t.Errorf("Unmarshal Error for SQ Data : %v", err)
-	}
-
-	for _, testgridJob := range sqJobPool {
-		t.Errorf("Err : testgrid job %v not found in SQ config", testgridJob)
-	}
-
-	sqNonBlockingJobs := strings.Split(sqData.Data["nonblocking-jobs"], ",")
-	for _, sqJob := range sqNonBlockingJobs {
-		if sqJob == "" { // ignore empty list of jobs
-			continue
-		}
-		found := false
-		for _, testgroup := range cfg.TestGroups {
-			if testgroup.Name == sqJob {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			t.Errorf("Err : %v not found in testgrid config", sqJob)
 		}
 	}
 }

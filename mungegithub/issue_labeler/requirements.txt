@@ -1,8 +1,0 @@
-Flask==0.10.1
-Jinja2==2.7.2
-joblib==0.7.1
-nltk==3.2.1
-numpy==1.8.2
-scipy==0.13.3
-scikit-learn==0.17.1
-simplejson
