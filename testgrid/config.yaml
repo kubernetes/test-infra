@@ -2820,6 +2820,12 @@ test_groups:
 - name: digitalocean-e2e-conformance-v1.11
   gcs_prefix: k8s-conformance-digitalocean/e2e-conformance-v1.11
 
+# BaiduCloud Test Groups
+- name: baiducloud-e2e-conformance-v1.8
+  gcs_prefix: k8s-conformance-baiducloud/baiducloud-e2e-conformance-v1.8
+- name: baiducloud-e2e-conformance-v1.11
+  gcs_prefix: k8s-conformance-baiducloud/baiducloud-e2e-conformance-v1.11
+
 #
 # Start dashboards
 #
@@ -2900,6 +2906,12 @@ dashboards:
   - name: DigitalOcean v1.11
     description: Runs conformance test using kubetest against kubernetes v1.11 on DigitalOcean
     test_group_name: digitalocean-e2e-conformance-v1.11
+  - name: BaiduCloud v1.8
+    description: Runs conformance test using kubetest against kubernetes v1.8 on BaiduCloud
+    test_group_name: baiducloud-e2e-conformance-v1.8
+  - name: BaiduCloud v1.11
+    description: Runs conformance test using kubetest against kubernetes v1.11 on BaiduCloud
+    test_group_name: baiducloud-e2e-conformance-v1.11
 
 - name: conformance-gce
   dashboard_tab:
@@ -3019,6 +3031,16 @@ dashboards:
   - name: DigitalOcean v1.11
     description: Runs conformance test using kubetest against kubernetes v1.11 on DigitalOcean
     test_group_name: digitalocean-e2e-conformance-v1.11
+
+# BaiduCloud Dashboard
+- name: conformance-cloud-provider-baiducloud
+  dashboard_tab:
+  - name: BaiduCloud v1.8
+    description: Runs conformance test using kubetest against kubernetes v1.8 on BaiduCloud
+    test_group_name: baiducloud-e2e-conformance-v1.8
+  - name: BaiduCloud v1.11
+    description: Runs conformance test using kubetest against kubernetes v1.11 on BaiduCloud
+    test_group_name: baiducloud-e2e-conformance-v1.11
 
 - name: canonical-ubuntu1-k8sbeta
   dashboard_tab:
@@ -6699,6 +6721,7 @@ dashboard_groups:
   - conformance-cloud-provider-openstack
   - conformance-alibaba-cloud-provider
   - conformance-cloud-provider-digitalocean
+  - conformance-cloud-provider-baiducloud
   - conformance-gardener
 
 - name: vmware
