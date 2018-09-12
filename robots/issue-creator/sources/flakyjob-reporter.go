@@ -21,13 +21,14 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"sort"
 	"time"
 
 	"github.com/golang/glog"
 
 	githubapi "github.com/google/go-github/github"
-	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
 	"k8s.io/test-infra/robots/issue-creator/creator"
 )
 
@@ -74,7 +75,7 @@ func (fjr *FlakyJobReporter) RegisterFlags() {
 // then syncs the top issues to github with the IssueCreator.
 func (fjr *FlakyJobReporter) Issues(c *creator.IssueCreator) ([]creator.Issue, error) {
 	fjr.creator = c
-	json, err := mungerutil.ReadHTTP(fjr.flakyJobDataURL)
+	json, err := ReadHTTP(fjr.flakyJobDataURL)
 	if err != nil {
 		return nil, err
 	}
@@ -246,4 +247,33 @@ func (fj *FlakyJob) Owners() []string {
 func (fj *FlakyJob) Priority() (string, bool) {
 	// TODO: implement priority calculations later
 	return "", false
+}
+
+// ReadHTTP fetches file contents from a URL with retries.
+func ReadHTTP(url string) ([]byte, error) {
+	var err error
+	retryDelay := time.Duration(2) * time.Second
+	for retryCount := 0; retryCount < 5; retryCount++ {
+		if retryCount > 0 {
+			time.Sleep(retryDelay)
+			retryDelay *= time.Duration(2)
+		}
+
+		resp, err := http.Get(url)
+		if resp != nil && resp.StatusCode >= 500 {
+			// Retry on this type of error.
+			continue
+		}
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			continue
+		}
+		return body, nil
+	}
+	return nil, fmt.Errorf("ran out of retries reading from '%s'. Last error was %v", url, err)
 }

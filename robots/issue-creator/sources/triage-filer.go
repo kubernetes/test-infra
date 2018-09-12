@@ -28,7 +28,6 @@ import (
 	"time"
 
 	githubapi "github.com/google/go-github/github"
-	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
 	"k8s.io/test-infra/robots/issue-creator/creator"
 )
 
@@ -62,7 +61,7 @@ func init() {
 // then syncs the top issues to github with the IssueCreator.
 func (f *TriageFiler) Issues(c *creator.IssueCreator) ([]creator.Issue, error) {
 	f.creator = c
-	rawjson, err := mungerutil.ReadHTTP(clusterDataURL)
+	rawjson, err := ReadHTTP(clusterDataURL)
 	if err != nil {
 		return nil, err
 	}

@@ -1,5 +1,0 @@
-This is for munger services that do *not* expose web endpoints.
-
-It is currently used for the main kubernetes/kubernetes mungers, where the submit-queue
-(frontend) has been split from the large variety of mungers that operate on issues and PRs,
-which was causing unacceptable downtime when restarted.
