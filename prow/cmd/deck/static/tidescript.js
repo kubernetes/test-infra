@@ -54,17 +54,55 @@ function createLink(href, text) {
     return a;
 }
 
+/**
+ * escapeLabel escaped label name that returns a valid name used for css
+ * selector.
+ * @param {string} label
+ * @returns {string}
+ */
+function escapeLabel(label) {
+  if (label === "") return "";
+  const toUnicode = function(index) {
+    const h = label.charCodeAt(index).toString(16).split('');
+    while (h.length < 6) h.splice(0, 0, '0');
+
+    return 'x' + h.join('');
+  };
+  let result = "";
+  const alphaNum = /^[0-9a-zA-Z]+$/;
+
+  for (let i = 0; i < label.length; i++) {
+    const c = label.charCodeAt(i);
+    if ((i === 0 && c > 47 && c < 58) || !label[i].match(alphaNum)) {
+      result += toUnicode(i);
+      continue;
+    }
+    result += label[i];
+  }
+
+  return result
+}
+
+/**
+ * Creates a HTML element for the label given its name
+ * @param label
+ * @returns {HTMLElement}
+ */
+function createLabelEl(label) {
+  const el = document.createElement("SPAN");
+  const escapedName = escapeLabel(label);
+  el.classList.add("mdl-shadow--2dp", "label", escapedName);
+  el.textContent = label;
+
+  return el;
+}
+
 function createSpan(classList, style, text) {
     var s = document.createElement("span");
     s.classList.add(...classList);
     s.style = style;
     s.appendChild(document.createTextNode(text));
     return s;
-}
-
-function normalizeLabelToClass(label) {
-    // css class names cannot contain whitespace
-    return label.replace(" ", "");
 }
 
 function redrawQueries() {
@@ -118,7 +156,7 @@ function redrawQueries() {
             li.appendChild(ul);
             for (var j = 0; j < labels.length; j++) {
                 var label = labels[j];
-                innerLi.appendChild(createSpan(["label", normalizeLabelToClass(label)], "", label));
+                innerLi.appendChild(createLabelEl(label));
                 if (j+1 < labels.length) {
                     innerLi.appendChild(document.createTextNode(" "));
                 }
@@ -141,7 +179,7 @@ function redrawQueries() {
             li.appendChild(ul);
             for (var j = 0; j < missingLabels.length; j++) {
                 var label = missingLabels[j];
-                innerLi.appendChild(createSpan(["label", normalizeLabelToClass(label)], "", label));
+                innerLi.appendChild(createLabelEl(label));
                 if (j+1 < missingLabels.length) {
                     innerLi.appendChild(document.createTextNode(" "));
                 }
