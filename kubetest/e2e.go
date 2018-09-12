@@ -56,22 +56,17 @@ func run(deploy deployer, o options) error {
 	os.Setenv("KUBE_CONFIG_FILE", "config-test.sh")
 	os.Setenv("KUBE_RUNTIME_CONFIG", o.runtimeConfig)
 
-	dump := o.dump
-	if dump != "" {
-		if absDump, err := filepath.Abs(dump); err != nil {
-			return fmt.Errorf("failed to make %s an absolute directory: %v", absDump, err)
-		} else {
-			dump = absDump
-		}
+	var err error
+	var errs []error
+
+	dump, err := util.OptionalAbsPath(o.dump)
+	if err != nil {
+		return fmt.Errorf("failed handling --dump path: %v", err)
 	}
 
-	dumpPreTestLogs := o.dumpPreTestLogs
-	if dumpPreTestLogs != "" {
-		if absPath, err := filepath.Abs(dumpPreTestLogs); err != nil {
-			return fmt.Errorf("failed to make %s an absolute directory: %v", absPath, err)
-		} else {
-			dumpPreTestLogs = absPath
-		}
+	dumpPreTestLogs, err := util.OptionalAbsPath(o.dumpPreTestLogs)
+	if err != nil {
+		return fmt.Errorf("failed handling --dump-pre-test-logs path: %v", err)
 	}
 
 	if o.up {
@@ -84,9 +79,6 @@ func run(deploy deployer, o options) error {
 			return fmt.Errorf("error tearing down previous cluster: %s", err)
 		}
 	}
-
-	var err error
-	var errs []error
 
 	// Ensures that the cleanup/down action is performed exactly once.
 	var (
@@ -190,14 +182,7 @@ func run(deploy deployer, o options) error {
 	}
 
 	if dumpPreTestLogs != "" {
-		errs = util.AppendError(errs, control.XMLWrap(&suite, "pre-test DumpClusterLogs", func() error {
-			return deploy.DumpClusterLogs(dumpPreTestLogs, o.logexporterGCSPath)
-		}))
-		if o.federation {
-			errs = util.AppendError(errs, control.XMLWrap(&suite, "pre-test dumpFederationLogs", func() error {
-				return dumpFederationLogs(dumpPreTestLogs)
-			}))
-		}
+		errs = append(errs, dumpRemoteLogs(deploy, o, dumpPreTestLogs, "pre-test")...)
 	}
 
 	testArgs := argFields(o.testArgs, dump, o.clusterIPRange)
@@ -268,14 +253,7 @@ func run(deploy deployer, o options) error {
 	}
 
 	if dump != "" {
-		errs = util.AppendError(errs, control.XMLWrap(&suite, "DumpClusterLogs", func() error {
-			return deploy.DumpClusterLogs(dump, o.logexporterGCSPath)
-		}))
-		if o.federation {
-			errs = util.AppendError(errs, control.XMLWrap(&suite, "dumpFederationLogs", func() error {
-				return dumpFederationLogs(dump)
-			}))
-		}
+		errs = append(errs, dumpRemoteLogs(deploy, o, dump, "")...)
 	}
 
 	if o.checkLeaks {
@@ -374,6 +352,25 @@ func getKubectlVersion() error {
 		log.Print("Failed to reach api. Sleeping for 10 seconds before retrying...")
 		time.Sleep(10 * time.Second)
 	}
+}
+
+func dumpRemoteLogs(deploy deployer, o options, path, reason string) []error {
+	if reason != "" {
+		reason += " "
+	}
+
+	var errs []error
+
+	errs = util.AppendError(errs, control.XMLWrap(&suite, reason+"DumpClusterLogs", func() error {
+		return deploy.DumpClusterLogs(path, o.logexporterGCSPath)
+	}))
+	if o.federation {
+		errs = util.AppendError(errs, control.XMLWrap(&suite, reason+"dumpFederationLogs", func() error {
+			return dumpFederationLogs(path)
+		}))
+	}
+
+	return errs
 }
 
 func listNodes(dump string) error {
