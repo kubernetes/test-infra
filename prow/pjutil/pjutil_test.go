@@ -279,6 +279,27 @@ func TestNewProwJob(t *testing.T) {
 				"prow.k8s.io/refs.repo": "repo",
 				"prow.k8s.io/refs.pull": "1",
 			},
+		}, {
+			name: "job with name too long to fit in a label",
+			spec: kube.ProwJobSpec{
+				Job:  "job-created-by-someone-who-loves-very-very-very-long-names-so-long-that-it-does-not-fit-into-the-Kubernetes-label-so-it-needs-to-be-truncated-to-63-characters",
+				Type: kube.PresubmitJob,
+				Refs: &kube.Refs{
+					Org:  "org",
+					Repo: "repo",
+					Pulls: []kube.Pull{
+						{Number: 1},
+					},
+				},
+			},
+			labels: map[string]string{},
+			expectedLabels: map[string]string{
+				"prow.k8s.io/job":       "job-created-by-someone-who-loves-very-very-very-long-names-so-l",
+				"prow.k8s.io/type":      "presubmit",
+				"prow.k8s.io/refs.org":  "org",
+				"prow.k8s.io/refs.repo": "repo",
+				"prow.k8s.io/refs.pull": "1",
+			},
 		},
 	}
 
@@ -306,11 +327,13 @@ func TestNewProwJobWithAnnotations(t *testing.T) {
 				Job:  "job",
 				Type: kube.PeriodicJob,
 			},
-			annotations:         nil,
-			expectedAnnotations: nil,
+			annotations: nil,
+			expectedAnnotations: map[string]string{
+				"prow.k8s.io/job": "job",
+			},
 		},
 		{
-			name: "job with empty annotation",
+			name: "job with annotation",
 			spec: kube.ProwJobSpec{
 				Job:  "job",
 				Type: kube.PeriodicJob,
@@ -319,7 +342,8 @@ func TestNewProwJobWithAnnotations(t *testing.T) {
 				"annotation": "foo",
 			},
 			expectedAnnotations: map[string]string{
-				"annotation": "foo",
+				"annotation":      "foo",
+				"prow.k8s.io/job": "job",
 			},
 		},
 	}
