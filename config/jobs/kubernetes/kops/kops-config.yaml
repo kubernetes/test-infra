@@ -11,7 +11,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180907-890a61046-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180912-7a027de0c-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -39,7 +39,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180907-890a61046-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180912-7a027de0c-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -65,7 +65,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180912-7a027de0c-master
         args:
         - --root=/go/src
         - --job=$(JOB_NAME)
@@ -187,7 +187,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180912-7a027de0c-master
       args:
       - --repo=k8s.io/kops
       - --repo=k8s.io/release
