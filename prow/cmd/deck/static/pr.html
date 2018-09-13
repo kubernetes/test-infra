@@ -76,9 +76,21 @@
 <dialog id="query-dialog" class="pr-status-dialog mdl-dialog">
     <h4 class="mdl-dialog__title">Query Details</h4>
     <div class="mdl-dialog__content">
-        <p class="query-details-section">All required labels</p>
+        <div id="query-detail-milestone" class="hidden">
+            <p class="detail-title">Milestone</p>
+            <p class="detail-data"></p>
+        </div>
+        <div id="query-detail-exclude" class="hidden">
+            <p class="detail-title">Exclude branches</p>
+            <p class="detail-data"></p>
+        </div>
+        <div id="query-detail-include" class="hidden">
+            <p class="detail-title">Include branches</p>
+            <p class="detail-data"></p>
+        </div>
+        <p class="detail-title">All required labels</p>
         <p id="query-all-required"></p>
-        <p class="query-details-section">All forbidden labels</p>
+        <p class="detail-title">All forbidden labels</p>
         <p id="query-all-forbidden"></p>
     </div>
     <div class="mdl-dialog__actions">
