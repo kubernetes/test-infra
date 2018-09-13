@@ -81,11 +81,7 @@ func OptionalAbsPath(path string) (string, error) {
 		return "", nil
 	}
 
-	if absPath, err := filepath.Abs(path); err != nil {
-		return "", fmt.Errorf("failed to make %s an absolute directory: %v", absPath, err)
-	} else {
-		return absPath, nil
-	}
+	return filepath.Abs(path)
 }
 
 // JoinURL converts input (gs://foo, "bar") to gs://foo/bar
