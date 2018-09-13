@@ -1,7 +1,8 @@
 # **dind/ is deprecated**
 
-A major refactor is under way in [`kind/`](./../kind), please look there going 
-forward.
+A major refactor is under way at [sigs.k8s.io/kind](https://github.com/kubernetes-sigs/kind)
+
+TODO(bentheelder): remove this directory soon.
 
 ----------------------------------------------
 ----------------------------------------------

@@ -46,6 +46,3 @@ else
   echo "${DIFFROOT} is out of date. Please run hack/update-codegen.sh"
   exit 1
 fi
-
-# verify generated code in kind/...
-"${SCRIPT_ROOT}/kind/hack/verify-generated.sh"
