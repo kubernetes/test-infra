@@ -120,6 +120,7 @@ filegroup(
         "//prow/pod-utils/options:all-srcs",
         "//prow/pod-utils/wrapper:all-srcs",
         "//prow/prstatus:all-srcs",
+        "//prow/pubsub/reporter:all-srcs",
         "//prow/repoowners:all-srcs",
         "//prow/report:all-srcs",
         "//prow/sidecar:all-srcs",
