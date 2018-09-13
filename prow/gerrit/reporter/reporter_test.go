@@ -182,7 +182,7 @@ func TestReport(t *testing.T) {
 				},
 			},
 			expectReport:  true,
-			reportMessage: "Job ci-foo-bar finished with success\n Gubernator URL: guber/foo_bar",
+			reportMessage: "Job ci-foo-bar finished with success\n Gubernator URL: guber/foo/bar",
 		},
 	}
 

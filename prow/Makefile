@@ -56,8 +56,8 @@ ARTIFACT_UPLOADER_VERSION ?= $(TAG)
 NEEDS_REBASE_VERSION      ?= $(TAG)
 # CHECKCONFIG_VERSION is the version of the checkconfig image
 CHECKCONFIG_VERSION       ?= $(TAG)
-# GERRIT_CRIER_VERSION is the version of the gerrit-crier image
-GERRIT_CRIER_VERSION      ?= $(TAG)
+# CRIER_VERSION is the version of the crier image
+CRIER_VERSION      ?= $(TAG)
 
 # These are the usual GKE variables.
 PROJECT       ?= k8s-prow
@@ -289,10 +289,10 @@ checkconfig-image: alpine-image
 
 .PHONY: checkconfig-image
 
-gerrit-crier-image: alpine-image
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/gerrit-crier/gerrit-crier k8s.io/test-infra/prow/cmd/gerrit-crier
-	docker build -t "$(REGISTRY)/$(PROJECT)/gerrit-crier:$(GERRIT_CRIER_VERSION)" $(DOCKER_LABELS) cmd/gerrit-crier
-	$(PUSH) "$(REGISTRY)/$(PROJECT)/gerrit-crier:$(GERRIT_CRIER_VERSION)"
-	rm cmd/gerrit-crier/gerrit-crier
+crier-image: alpine-image
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/crier/crier k8s.io/test-infra/prow/cmd/crier
+	docker build -t "$(REGISTRY)/$(PROJECT)/crier:$(CRIER_VERSION)" $(DOCKER_LABELS) cmd/crier
+	$(PUSH) "$(REGISTRY)/$(PROJECT)/crier:$(CRIER_VERSION)"
+	rm cmd/crier/crier
 
-.PHONY: gerrit-crier-image
+.PHONY: crier-image
