@@ -148,7 +148,7 @@ func TestCalculateBlocks(t *testing.T) {
 	}
 
 	for _, tc := range tcs {
-		blockades := compileApplicableBlockades("org", "repo", logrus.WithField("plugin", pluginName), tc.config)
+		blockades := compileApplicableBlockades("org", "repo", logrus.WithField("plugin", PluginName), tc.config)
 		sum := calculateBlocks(tc.changes, blockades)
 		if !reflect.DeepEqual(sum, tc.expectedSummary) {
 			t.Errorf("[%s] Expected summary: %#v, actual summary: %#v.", tc.name, tc.expectedSummary, sum)
@@ -231,7 +231,7 @@ func TestHandle(t *testing.T) {
 			hasLabel:   false,
 			filesBlock: true,
 
-			labelAdded:     blockedPathsLabel,
+			labelAdded:     BlockedPathsLabel,
 			commentCreated: true,
 		},
 		{
@@ -255,7 +255,7 @@ func TestHandle(t *testing.T) {
 			hasLabel:   true,
 			filesBlock: false,
 
-			labelRemoved: blockedPathsLabel,
+			labelRemoved: BlockedPathsLabel,
 		},
 		{
 			name:       "No blockade, not labeled",
@@ -271,7 +271,7 @@ func TestHandle(t *testing.T) {
 			hasLabel:   true,
 			filesBlock: true,
 
-			labelRemoved: blockedPathsLabel,
+			labelRemoved: BlockedPathsLabel,
 		},
 		{
 			name:       "Basic block (org scoped blockade)",
@@ -280,7 +280,7 @@ func TestHandle(t *testing.T) {
 			hasLabel:   false,
 			filesBlock: true,
 
-			labelAdded:     blockedPathsLabel,
+			labelAdded:     BlockedPathsLabel,
 			commentCreated: true,
 		},
 		{
@@ -295,14 +295,14 @@ func TestHandle(t *testing.T) {
 	for _, tc := range tcs {
 		expectAdded := []string{}
 		fakeClient := &fakegithub.FakeClient{
-			ExistingLabels:     []string{blockedPathsLabel, otherLabel},
+			ExistingLabels:     []string{BlockedPathsLabel, otherLabel},
 			IssueComments:      make(map[int][]github.IssueComment),
 			PullRequestChanges: make(map[int][]github.PullRequestChange),
 			LabelsAdded:        []string{},
 			LabelsRemoved:      []string{},
 		}
 		if tc.hasLabel {
-			label := formatLabel(blockedPathsLabel)
+			label := formatLabel(BlockedPathsLabel)
 			fakeClient.LabelsAdded = append(fakeClient.LabelsAdded, label)
 			expectAdded = append(expectAdded, label)
 		}
@@ -324,7 +324,7 @@ func TestHandle(t *testing.T) {
 		}
 		c := &client{
 			ghc:       fakeClient,
-			log:       logrus.WithField("plugin", pluginName),
+			log:       logrus.WithField("plugin", PluginName),
 			pruner:    &fakePruner{},
 			blockCalc: calcF,
 		}
