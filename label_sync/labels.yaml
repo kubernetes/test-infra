@@ -830,6 +830,11 @@ repos:
         target: both
         addedBy: label
       - color: 0052cc
+        description: Issues or PRs related to prow's pubsub reporter component
+        name: area/prow/pubsub
+        target: both
+        addedBy: label
+      - color: 0052cc
         description: Issues or PRs related to prow's sidecar component
         name: area/prow/sidecar
         target: both
