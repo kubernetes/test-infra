@@ -176,20 +176,6 @@ func (tq *TideQuery) Query() string {
 	return strings.Join(toks, " ")
 }
 
-// AllOpenPRs returns all open PRs in the repos covered by the query.
-func (tqs TideQueries) AllOpenPRs() string {
-	toks := []string{"is:pr", "state:open"}
-
-	orgs, repos := tqs.OrgsAndRepos()
-	for _, o := range orgs.List() {
-		toks = append(toks, fmt.Sprintf("org:\"%s\"", o))
-	}
-	for _, r := range repos.List() {
-		toks = append(toks, fmt.Sprintf("repo:\"%s\"", r))
-	}
-	return strings.Join(toks, " ")
-}
-
 // OrgsAndRepos returns the set of orgs and repos present in any query.
 func (tqs TideQueries) OrgsAndRepos() (sets.String, sets.String) {
 	orgs := sets.NewString()

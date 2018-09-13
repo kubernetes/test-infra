@@ -54,43 +54,6 @@ func TestTideQuery(t *testing.T) {
 	checkTok("review:approved")
 }
 
-func TestAllOpenPRs(t *testing.T) {
-	var q string
-	checkTok := func(tok string, shouldExist bool) {
-		if shouldExist == strings.Contains(q, " "+tok+" ") {
-			return
-		} else if shouldExist {
-			t.Errorf("Expected query to contain \"%s\", got \"%s\"", tok, q)
-		} else {
-			t.Errorf("Expected query to not contain \"%s\", got \"%s\"", tok, q)
-
-		}
-	}
-
-	queries := TideQueries([]TideQuery{
-		testQuery,
-		{
-			Orgs:   []string{"foo"},
-			Repos:  []string{"k/foo"},
-			Labels: []string{"lgtm", "mergeable"},
-		},
-	})
-	q = " " + queries.AllOpenPRs() + " "
-	checkTok("is:pr", true)
-	checkTok("state:open", true)
-	checkTok("org:\"org\"", true)
-	checkTok("org:\"foo\"", true)
-	checkTok("repo:\"k/k\"", true)
-	checkTok("repo:\"k/t-i\"", true)
-	checkTok("repo:\"k/foo\"", true)
-	checkTok("label:\"lgtm\"", false)
-	checkTok("label:\"approved\"", false)
-	checkTok("label:\"mergeable\"", false)
-	checkTok("-label:\"foo\"", false)
-	checkTok("milestone:\"milestone\"", false)
-	checkTok("review:approved", false)
-}
-
 func TestMergeMethod(t *testing.T) {
 	ti := &Tide{
 		MergeType: map[string]github.PullRequestMergeType{
