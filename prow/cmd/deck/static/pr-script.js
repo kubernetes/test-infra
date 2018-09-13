@@ -672,6 +672,49 @@ function createJobStatus(builds) {
 }
 
 /**
+ * escapeLabel escaped label name that returns a valid name used for css
+ * selector.
+ * @param {string} label
+ * @returns {string}
+ */
+function escapeLabel(label) {
+    if (label === "") return "";
+    const toUnicode = function(index) {
+      const h = label.charCodeAt(index).toString(16).split('');
+      while (h.length < 6) h.splice(0, 0, '0');
+
+      return 'x' + h.join('');
+    };
+    let result = "";
+    const alphaNum = /^[0-9a-zA-Z]+$/;
+
+    for (let i = 0; i < label.length; i++) {
+      const c = label.charCodeAt(i);
+      if ((i === 0 && c > 47 && c < 58) || !label[i].match(alphaNum)) {
+        result += toUnicode(i);
+        continue;
+      }
+      result += label[i];
+    }
+
+    return result
+}
+
+/**
+ * Creates a HTML element for the label given its name
+ * @param label
+ * @returns {HTMLElement}
+ */
+function createLabelEl(label) {
+    const el = document.createElement("SPAN");
+    const escapedName = escapeLabel(label);
+    el.classList.add("merge-table-label", "mdl-shadow--2dp", "label", escapedName);
+    el.textContent = label;
+
+    return el;
+}
+
+/**
  * Creates a merge requirement cell.
  * @param labels
  * @param notMissingLabel
@@ -680,11 +723,7 @@ function createJobStatus(builds) {
 function createMergeLabelCell(labels, notMissingLabel = false) {
     const cell = document.createElement("TD");
     labels.forEach(label => {
-        const labelEl = document.createElement("SPAN");
-        const name = label.name.split(" ").join("");
-        labelEl.classList.add("merge-table-label", "mdl-shadow--2dp", "label",
-            name);
-        labelEl.textContent = label.name;
+        const labelEl = createLabelEl(label.name);
         const toDisplay = label.own ^ notMissingLabel;
         if (toDisplay) {
             cell.appendChild(labelEl);
@@ -692,17 +731,6 @@ function createMergeLabelCell(labels, notMissingLabel = false) {
     });
 
     return cell;
-}
-
-function processLabelName(label) {
-    label = label.split(" ").join("");
-    if (label.startsWith("area/")) {
-        return "area";
-    } else if (label.startsWith("size/")) {
-        return label.slice(5);
-    } else {
-        return label;
-    }
 }
 
 /**
@@ -715,11 +743,7 @@ function appendLabelsToContainer(container, labels) {
         container.removeChild(container.firstChild);
     }
     labels.forEach(label => {
-        const labelEl = document.createElement("SPAN");
-
-        let labelName = processLabelName(label);
-        labelEl.classList.add("merge-table-label", "mdl-shadow--2dp", "label", labelName);
-        labelEl.textContent = label;
+        const labelEl = createLabelEl(label);
         container.appendChild(labelEl);
     });
 }
