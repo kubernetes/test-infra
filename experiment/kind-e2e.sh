@@ -14,24 +14,14 @@
 # limitations under the License.
 
 # hack script for running a kind e2e
+# must be run with a kubernetes checkout in $PWD (IE from the checkout)
 # TODO(bentheelder): replace this with kubetest integration
-# Usage: SKIP="ginkgo skip regex" FOCUS="ginkgo focus regex" kind-e2e.sh 
+# Usage: SKIP="ginkgo skip regex" FOCUS="ginkgo focus regex" kind-e2e.sh
 
 set -o errexit
 set -o nounset
 set -o pipefail
 set -x
-
-# set up initial path variables
-# get relative path to test infra root based on script source
-TREE="$(dirname "${BASH_SOURCE[0]}")/.."
-# cd to the path
-ORIG_PWD="${PWD}"
-cd "${TREE}"
-# save it as the test infra root
-TESTINFRA_ROOT="${PWD}"
-# cd back
-cd "${ORIG_PWD}"
 
 # our exit handler (trap)
 cleanup() {
@@ -41,24 +31,27 @@ cleanup() {
     fi
     # clean up e2e.test symlink
     rm -f _output/bin/e2e.test
-    # remove our tempdir GOPATH
+    # remove our tempdir
     # NOTE: this needs to be last, or it will prevent kind delete
-    if [[ -n "${TMP_GOPATH:-}" ]]; then
-        rm -rf "${TMP_GOPATH}"
+    if [[ -n "${TMP_DIR:-}" ]]; then
+        rm -rf "${TMP_DIR}"
     fi
 }
 
 # install kind to a tempdir GOPATH from this script's test-infra checkout
 install_kind() {
-    # isntall `kind` to tempdir
-    TMP_GOPATH=$(mktemp -d)
-
-    # smylink test-infra into tmp gopath
-    mkdir -p "${TMP_GOPATH}/src/k8s.io/"
-    ln -s "${TESTINFRA_ROOT}" "${TMP_GOPATH}/src/k8s.io"
-
-    env "GOPATH=${TMP_GOPATH}" go install k8s.io/test-infra/kind
-    PATH="${TMP_GOPATH}/bin:${PATH}"
+    # install `kind` to tempdir
+    TMP_DIR=$(mktemp -d)
+    # ensure bin dir
+    mkdir -p "${TMP_DIR}/bin"
+    # if we have a kind checkout, install that to the tmpdir, otherwise go get it
+    if [[ $(go list sigs.k8s.io/kind) = "sigs.k8s.io/kind" ]]; then
+        env "GOBIN=${TMP_DIR}/bin" go install sigs.k8s.io/kind
+    else
+        env "GOPATH=${TMP_DIR}" go get sigs.k8s.io/kind
+    fi
+    PATH="${TMP_DIR}/bin:${PATH}"
+    export PATH
 }
 
 # build kubernetes / node image, e2e binaries
