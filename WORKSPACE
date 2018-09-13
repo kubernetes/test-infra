@@ -69,6 +69,12 @@ docker_pull(
 )
 
 docker_pull(
+    name = "gcloud-base",
+    registry = "gcr.io",
+    repository = "cloud-builders/gcloud",
+)
+
+docker_pull(
     name = "git-base",
     # 0.2 as of 2018/05/10
     digest = "sha256:3eaeff9a2c35a50c3a0af7ef7cf26ea73e6fd966f54ef3dfe79d4ffb45805112",

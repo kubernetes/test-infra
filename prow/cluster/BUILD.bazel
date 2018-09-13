@@ -11,6 +11,11 @@ release(
     component("deck", "service", "deployment"),
     component("gce-ssd-retain", "storageclass"),
     component("ghproxy", "service", "deployment"),
+    component(
+        "grandmatriarch",
+        MULTI_KIND,
+        cluster = BUILD_CLUSTER,
+    ),
     component("hook", "service", "deployment"),
     component("horologium", "deployment"),
     component("lego", "deployment"),
