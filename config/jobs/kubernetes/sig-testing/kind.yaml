@@ -9,7 +9,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180907-890a61046-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180912-7a027de0c-experimental
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -57,7 +57,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180907-890a61046-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180912-7a027de0c-experimental
       env:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
