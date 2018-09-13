@@ -232,7 +232,7 @@ func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo st
 		// failing commits
 		cp.PruneComments(shouldPrune(l))
 		l.Debugf("Commenting on PR to advise users of DCO check")
-		if err := gc.CreateComment(org, repo, pr.Number, fmt.Sprintf(dcoNotFoundMessage, targetURL, markdownSHAList(org, repo, commitsMissingDCO), plugins.AboutThisBot)); err != nil {
+		if err := gc.CreateComment(org, repo, pr.Number, fmt.Sprintf(dcoNotFoundMessage, targetURL, MarkdownSHAList(org, repo, commitsMissingDCO), plugins.AboutThisBot)); err != nil {
 			l.WithError(err).Warning("Could not create DCO not found comment.")
 		}
 	}
@@ -269,7 +269,8 @@ func handle(gc gitHubClient, cp commentPruner, log *logrus.Entry, org, repo stri
 	return takeAction(gc, cp, l, org, repo, pr, commitsMissingDCO, existingStatus, hasYesLabel, hasNoLabel, addComment)
 }
 
-func markdownSHAList(org, repo string, list []github.GitCommit) string {
+// MardkownSHAList prints the list of commits in a markdown-friendly way.
+func MarkdownSHAList(org, repo string, list []github.GitCommit) string {
 	lines := make([]string, len(list))
 	lineFmt := "- [%s](https://github.com/%s/%s/commits/%s) %s"
 	for i, commit := range list {
