@@ -33,8 +33,8 @@ import (
 )
 
 const (
-	label      = "do-not-merge/work-in-progress"
-	pluginName = "wip"
+	Label      = "do-not-merge/work-in-progress"
+	PluginName = "wip"
 )
 
 var (
@@ -50,13 +50,13 @@ type event struct {
 }
 
 func init() {
-	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
+	plugins.RegisterPullRequestHandler(PluginName, handlePullRequest, helpProvider)
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// Only the Description field is specified because this plugin is not triggered with commands and is not configurable.
 	return &pluginhelp.PluginHelp{
-			Description: "The wip (Work In Progress) plugin applies the '" + label + "' label to pull requests whose title starts with 'WIP' and removes it from pull requests when they remove the title prefix. The '" + label + "' label is typically used to block a pull request from merging while it is still in progress.",
+			Description: "The wip (Work In Progress) plugin applies the '" + Label + "' Label to pull requests whose title starts with 'WIP' and removes it from pull requests when they remove the title prefix. The '" + Label + "' Label is typically used to block a pull request from merging while it is still in progress.",
 		},
 		nil
 }
@@ -89,7 +89,7 @@ func handlePullRequest(pc plugins.PluginClient, pe github.PullRequestEvent) erro
 	}
 	hasLabel := false
 	for _, l := range currentLabels {
-		if l.Name == label {
+		if l.Name == Label {
 			hasLabel = true
 		}
 	}
@@ -112,13 +112,13 @@ func handlePullRequest(pc plugins.PluginClient, pe github.PullRequestEvent) erro
 // Otherwise, neither should be present.
 func handle(gc githubClient, le *logrus.Entry, e *event) error {
 	if e.needsLabel && !e.hasLabel {
-		if err := gc.AddLabel(e.org, e.repo, e.number, label); err != nil {
-			le.Warnf("error while adding label %q: %v", label, err)
+		if err := gc.AddLabel(e.org, e.repo, e.number, Label); err != nil {
+			le.Warnf("error while adding Label %q: %v", Label, err)
 			return err
 		}
 	} else if !e.needsLabel && e.hasLabel {
-		if err := gc.RemoveLabel(e.org, e.repo, e.number, label); err != nil {
-			le.Warnf("error while removing label %q: %v", label, err)
+		if err := gc.RemoveLabel(e.org, e.repo, e.number, Label); err != nil {
+			le.Warnf("error while removing Label %q: %v", Label, err)
 			return err
 		}
 	}

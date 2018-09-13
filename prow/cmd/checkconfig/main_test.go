@@ -119,7 +119,7 @@ func TestEnsureValidConfiguration(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			err := ensureValidConfiguration("plugin", "label", testCase.tideSubSet, testCase.tideSuperSet, testCase.pluginsSubSet)
+			err := ensureValidConfiguration("plugin", "label", "verb", testCase.tideSubSet, testCase.tideSuperSet, testCase.pluginsSubSet)
 			if testCase.expectedErr && err == nil {
 				t.Errorf("%s: expected an error but got none", testCase.name)
 			}

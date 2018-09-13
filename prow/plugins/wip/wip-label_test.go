@@ -42,14 +42,14 @@ func TestWipLabel(t *testing.T) {
 			shouldUnlabel: false,
 		},
 		{
-			name:          "needs label and comment",
+			name:          "needs Label and comment",
 			hasLabel:      false,
 			needsLabel:    true,
 			shouldLabel:   true,
 			shouldUnlabel: false,
 		},
 		{
-			name:          "unnecessary label should be removed",
+			name:          "unnecessary Label should be removed",
 			hasLabel:      true,
 			needsLabel:    false,
 			shouldLabel:   false,
@@ -77,25 +77,25 @@ func TestWipLabel(t *testing.T) {
 			needsLabel: tc.needsLabel,
 		}
 
-		if err := handle(fc, logrus.WithField("plugin", pluginName), e); err != nil {
+		if err := handle(fc, logrus.WithField("plugin", PluginName), e); err != nil {
 			t.Errorf("For case %s, didn't expect error from wip: %v", tc.name, err)
 			continue
 		}
 
-		fakeLabel := fmt.Sprintf("%s/%s#%d:%s", org, repo, number, label)
+		fakeLabel := fmt.Sprintf("%s/%s#%d:%s", org, repo, number, Label)
 		if tc.shouldLabel {
 			if len(fc.LabelsAdded) != 1 || fc.LabelsAdded[0] != fakeLabel {
-				t.Errorf("For case %s: expected to add %q label but instead added: %v", tc.name, label, fc.LabelsAdded)
+				t.Errorf("For case %s: expected to add %q Label but instead added: %v", tc.name, Label, fc.LabelsAdded)
 			}
 		} else if len(fc.LabelsAdded) > 0 {
-			t.Errorf("For case %s, expected to not add %q label but added: %v", tc.name, label, fc.LabelsAdded)
+			t.Errorf("For case %s, expected to not add %q Label but added: %v", tc.name, Label, fc.LabelsAdded)
 		}
 		if tc.shouldUnlabel {
 			if len(fc.LabelsRemoved) != 1 || fc.LabelsRemoved[0] != fakeLabel {
-				t.Errorf("For case %s: expected to remove %q label but instead removed: %v", tc.name, label, fc.LabelsRemoved)
+				t.Errorf("For case %s: expected to remove %q Label but instead removed: %v", tc.name, Label, fc.LabelsRemoved)
 			}
 		} else if len(fc.LabelsRemoved) > 0 {
-			t.Errorf("For case %s, expected to not remove %q label but removed: %v", tc.name, label, fc.LabelsRemoved)
+			t.Errorf("For case %s, expected to not remove %q Label but removed: %v", tc.name, Label, fc.LabelsRemoved)
 		}
 	}
 }

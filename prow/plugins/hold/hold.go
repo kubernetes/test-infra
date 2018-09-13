@@ -31,10 +31,10 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-const pluginName = "hold"
+const PluginName = "hold"
 
 var (
-	label         = "do-not-merge/hold"
+	Label         = "do-not-merge/hold"
 	labelRe       = regexp.MustCompile(`(?mi)^/hold\s*$`)
 	labelCancelRe = regexp.MustCompile(`(?mi)^/hold cancel\s*$`)
 )
@@ -42,19 +42,19 @@ var (
 type hasLabelFunc func(label string, issueLabels []github.Label) bool
 
 func init() {
-	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
+	plugins.RegisterGenericCommentHandler(PluginName, handleGenericComment, helpProvider)
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// The Config field is omitted because this plugin is not configurable.
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: "The hold plugin allows anyone to add or remove the '" + label + "' label from a pull request in order to temporarily prevent the PR from merging without withholding approval.",
+		Description: "The hold plugin allows anyone to add or remove the '" + Label + "' Label from a pull request in order to temporarily prevent the PR from merging without withholding approval.",
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/hold [cancel]",
-		Description: "Adds or removes the `" + label + "` label which is used to indicate that the PR should not be automatically merged.",
+		Description: "Adds or removes the `" + Label + "` Label which is used to indicate that the PR should not be automatically merged.",
 		Featured:    false,
-		WhoCanUse:   "Anyone can use the /hold command to add or remove the '" + label + "' label.",
+		WhoCanUse:   "Anyone can use the /hold command to add or remove the '" + Label + "' Label.",
 		Examples:    []string{"/hold", "/hold cancel"},
 	})
 	return pluginHelp, nil
@@ -96,13 +96,13 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, f
 		return fmt.Errorf("failed to get the labels on %s/%s#%d: %v", org, repo, e.Number, err)
 	}
 
-	hasLabel := f(label, labels)
+	hasLabel := f(Label, labels)
 	if hasLabel && !needsLabel {
-		log.Info("Removing %q label for %s/%s#%d", label, org, repo, e.Number)
-		return gc.RemoveLabel(org, repo, e.Number, label)
+		log.Info("Removing %q Label for %s/%s#%d", Label, org, repo, e.Number)
+		return gc.RemoveLabel(org, repo, e.Number, Label)
 	} else if !hasLabel && needsLabel {
-		log.Info("Adding %q label for %s/%s#%d", label, org, repo, e.Number)
-		return gc.AddLabel(org, repo, e.Number, label)
+		log.Info("Adding %q Label for %s/%s#%d", Label, org, repo, e.Number)
+		return gc.AddLabel(org, repo, e.Number, Label)
 	}
 	return nil
 }
