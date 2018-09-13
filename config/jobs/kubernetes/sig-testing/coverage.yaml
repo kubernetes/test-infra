@@ -1,0 +1,30 @@
+periodics:
+- interval: 1h
+  name: ci-kubernetes-coverage-conformance
+  decorate: true
+  extra_refs:
+  # TODO: this should point at k/k once it's merged.
+  - org: Katharine
+    repo: kubernetes
+    base_ref: logdump-with-coverage
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
+      command:
+      - ../test-infra/scenarios/kubernetes_e2e.py
+      args:
+      - --build=quick
+      - --dump-before-and-after
+      - --extract=local
+      - --gcp-zone=us-central1-f
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Conformance\]
+      - --timeout=120m
+      env:
+      - name: KUBE_BUILD_WITH_COVERAGE
+        value: "true"

@@ -456,9 +456,15 @@ def main(args):
 
     # TODO(fejta): remove after next image push
     mode.add_environment('KUBETEST_MANUAL_DUMP=y')
-    runner_args = [
-        '--dump=%s' % mode.artifacts,
-    ]
+    if args.dump_before_and_after:
+        runner_args = [
+            '--dump-pre-test-logs=%s' % os.path.join(mode.artifacts, 'before'),
+            '--dump=%s' % os.path.join(mode.artifacts, 'after'),
+        ]
+    else:
+        runner_args = [
+            '--dump=%s' % mode.artifacts,
+        ]
 
     if args.service_account:
         runner_args.append(
@@ -654,6 +660,9 @@ def create_parser():
         action='append',
         default=[],
         help='Send unrecognized args directly to kubetest')
+    parser.add_argument(
+        '--dump-before-and-after', action='store_true',
+        help='Dump artifacts from both before and after the test run')
 
 
     # kops & aws
