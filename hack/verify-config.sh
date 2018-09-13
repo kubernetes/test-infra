@@ -20,6 +20,7 @@ set -o pipefail
 TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
 
 PROW_CONFIG="${TESTINFRA_ROOT}/prow/config.yaml"
+PLUGIN_CONFIG="${TESTINFRA_ROOT}/prow/plugins.yaml"
 JOBS_DIR="${TESTINFRA_ROOT}/config/jobs"
 TMP_CONFIG=$(mktemp)
 TMP_GENERATED_JOBS=$(mktemp)
@@ -39,3 +40,6 @@ if [ ! -z "$DIFF" ]; then
     echo "FAILED: config is not correct, please run 'hack/update-config.sh'"
     exit 1
 fi
+
+# Run checkconfig with strict warnings.
+bazel run //prow/cmd/checkconfig -- --config-path="${PROW_CONFIG}" --job-config-path="${JOBS_DIR}" --plugin-config="${PLUGIN_CONFIG}" --strict --warnings=tide-strict-branch --warnings=needs-ok-to-test --warnings=validate-owners --warnings=missing-trigger --warnings=validate-urls --warnings=unknown-fields
