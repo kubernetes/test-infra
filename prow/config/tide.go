@@ -80,6 +80,15 @@ type Tide struct {
 	// the default method of merge. Valid options are squash, rebase, and merge.
 	MergeType map[string]github.PullRequestMergeType `json:"merge_method,omitempty"`
 
+	// MergeGitHubApproveTag is the tag appended to the automatic commit
+	// message for each approver.  A recommended value (if you want this
+	// feature at all) is GitHub-approved-by to make it clear that entries
+	// correspond to GitHub review approval, which is distinct from
+	// approval via the 'lgtm' and 'approve' plugins.  Leaving the
+	// property unset or setting it to an empty string will disable
+	// commit tagging.
+	MergeGitHubApproveTag string `json:"merge_github_approve_tag,omitempty"`
+
 	// URL for tide status contexts.
 	// We can consider allowing this to be set separately for separate repos, or
 	// allowing it to be a template.

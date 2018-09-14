@@ -751,11 +751,15 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 				}
 			}
 		}
+		details := github.MergeDetails{
+			SHA:         string(pr.HeadRefOID),
+			MergeMethod: string(mergeMethod),
+		}
+		if c.ca.Config().Tide.MergeGitHubApproveTag != "" {
+			details.CommitMessage = approverTags(&pr, c.ca.Config().Tide.MergeGitHubApproveTag)
+		}
 		for retry := 0; retry < maxRetries; retry++ {
-			if err := c.ghc.Merge(sp.org, sp.repo, int(pr.Number), github.MergeDetails{
-				SHA:         string(pr.HeadRefOID),
-				MergeMethod: string(mergeMethod),
-			}); err != nil {
+			if err := c.ghc.Merge(sp.org, sp.repo, int(pr.Number), details); err != nil {
 				if _, ok := err.(github.ModifiedHeadError); ok {
 					// This is a possible source of incorrect behavior. If someone
 					// modifies their PR as we try to merge it in a batch then we
@@ -1151,6 +1155,15 @@ type PullRequest struct {
 	Milestone *struct {
 		Title githubql.String
 	}
+	Reviews struct {
+		Nodes []Review
+	} `graphql:"reviews(states: APPROVED, last: 100)"`
+}
+
+// Author hold GraphQL response data for a GitHub author.
+type Author struct {
+	Login githubql.String
+	User  User `graphql:"... on User"`
 }
 
 // Commit holds graphql data about commits and which contexts they have
@@ -1166,6 +1179,17 @@ type Context struct {
 	Context     githubql.String
 	Description githubql.String
 	State       githubql.StatusState
+}
+
+// Review holds GraphQL response data for a GitHub pull-request review.
+type Review struct {
+	Author Author
+}
+
+// User hold GraphQL response data for a GitHub user.
+type User struct {
+	Name  githubql.String
+	Email githubql.String
 }
 
 type searchQuery struct {
@@ -1192,6 +1216,44 @@ func (pr *PullRequest) logFields() logrus.Fields {
 		"pr":   int(pr.Number),
 		"sha":  string(pr.HeadRefOID),
 	}
+}
+
+func approverTags(pr *PullRequest, GitHubApproverTag string) string {
+	if len(pr.Reviews.Nodes) == 0 {
+		return ""
+	}
+
+	approverSet := map[string]bool{}
+	for _, review := range pr.Reviews.Nodes {
+		approverSet[authorString(&review.Author)] = true
+	}
+
+	approvers := make([]string, 0, len(approverSet))
+	for approver := range approverSet {
+		approvers = append(approvers, approver)
+	}
+	sort.Strings(approvers)
+
+	lines := make([]string, len(approvers)+1)
+	for i, approver := range approvers {
+		lines[i] = fmt.Sprintf("%s: %s", GitHubApproverTag, approver)
+	}
+	lines[len(approvers)] = ""
+	return strings.Join(lines, "\n")
+}
+
+func authorString(author *Author) string {
+	name := string(author.User.Name)
+	if name == "" {
+		name = string(author.Login)
+	}
+
+	email := string(author.User.Email)
+	if email == "" {
+		email = fmt.Sprintf("%s@users.noreply.github.com", author.Login)
+	}
+
+	return fmt.Sprintf("%s <%s>", name, email)
 }
 
 // headContexts gets the status contexts for the commit with OID == pr.HeadRefOID

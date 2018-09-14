@@ -15,6 +15,17 @@ The following configuration fields are available:
 * `merge_method`: A key/value pair of an `org/repo` as the key and merge method to override
    the default method of merge as value. Valid options are `squash`, `rebase`, and `merge`.
    Defaults to `merge`.
+* `merge_github_approve_tag`: The tag appended to the automatic commit
+   message for each approver.  A recommended value (if you want this
+   feature at all) is `GitHub-approved-by` to make it clear that
+   entries correspond to GitHub review approval, which is distinct
+   from approval via the [`lgtm`](/prow/plugins/lgtm) and
+   [`approve`](/prow/plugins/approve) plugins.  If you set this
+   property, you probably want to [enable *Dismiss stale pull request
+   approvals when new commits are
+   pushed*][pull-request-required-reviews] for your repository to
+   avoid having tags entered for stale reviews.  Leaving the property
+   unset or setting it to an empty string will disable commit tagging.
 * `target_url`: URL for tide status contexts.
 * `pr_status_base_url`: The base URL for the PR status page. If specified, this URL is used to construct
    a link that will be used for the tide status context. It is mutually exclusive with the `target_url` field.
@@ -136,3 +147,5 @@ All commits in PRs from `github.com/kubeflow/community` repository are squashed 
 Before a PR is merged, Tide ensures that all jobs configured as required in the `presubmits` part of the `config.yaml` file are passing against the latest base branch commit, rerunning the jobs if necessary. **No job is required to be configured** in which case it's enough if a PR meets all GitHub search criteria.
 
 Semantic of individual fields of the `presubmits` is described in [prow/README.md#how-to-add-new-jobs](/prow/README.md#how-to-add-new-jobs).
+
+[pull-request-required-reviews]: https://help.github.com/articles/enabling-required-reviews-for-pull-requests/

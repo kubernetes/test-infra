@@ -1964,3 +1964,28 @@ func TestPresubmitsByPull(t *testing.T) {
 		}
 	}
 }
+
+func TestApproverTags(t *testing.T) {
+	pr := &PullRequest{
+		Reviews: struct {
+			Nodes []Review
+		}{
+			Nodes: []Review{
+				{Author: Author{Login: "alice"}},
+				{Author: Author{Login: "bob", User: User{Name: "Bob"}}},
+				{Author: Author{Login: "carol", User: User{Name: "Carol", Email: "c@example.com"}}},
+				{Author: Author{Login: "dan", User: User{Email: "d@example.com"}}},
+			},
+		},
+	}
+	fmt.Printf("%v\n", pr)
+	actual := approverTags(pr, "Reviewed-by")
+	expected := `Reviewed-by: Bob <bob@users.noreply.github.com>
+Reviewed-by: Carol <c@example.com>
+Reviewed-by: alice <alice@users.noreply.github.com>
+Reviewed-by: dan <d@example.com>
+`
+	if actual != expected {
+		t.Fatalf("%s!=\n%s", actual, expected)
+	}
+}

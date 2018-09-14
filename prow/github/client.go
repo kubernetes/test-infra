@@ -1909,7 +1909,7 @@ func (c *Client) ListTeamMembers(id int, role string) ([]TeamMember, error) {
 type MergeDetails struct {
 	// CommitTitle defaults to the automatic message.
 	CommitTitle string `json:"commit_title,omitempty"`
-	// CommitMessage defaults to the automatic message.
+	// Extra detail to append to automatic commit message.
 	CommitMessage string `json:"commit_message,omitempty"`
 	// The PR HEAD must match this to prevent races.
 	SHA string `json:"sha,omitempty"`
