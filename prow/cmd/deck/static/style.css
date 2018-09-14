@@ -560,7 +560,6 @@ Plugin Help style
 }
 
 .job-list-item.mdl-list__item {
-    height: 32px;
     min-height: 32px;
     padding: 4px;
 }
