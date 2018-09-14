@@ -78,6 +78,7 @@ Additional fields may be required for some use cases:
 to clone the repo to a path different than the default of `/go/src/github.com/org/repo/` (e.g. `/go/src/k8s.io/kubernetes/kubernetes`).
 - Jobs that require additional repos to be checked out can arrange for that with
 the `exta_refs` field.
+- Jobs that do not want submodules to be cloned should set `skip_submodules` to `true`
 
 ```yaml
 - name: post-job
@@ -90,6 +91,7 @@ the `exta_refs` field.
   - org: kubernetes
     repo: other-repo
     base_ref: master
+  skip_submodules: true
   spec:
     containers:
     - image: alpine

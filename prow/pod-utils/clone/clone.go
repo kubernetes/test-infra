@@ -57,6 +57,11 @@ func Run(refs *kube.Refs, dir, gitUserName, gitUserEmail, cookiePath string, env
 	commands = append(commands, shellCloneCommand(cloneDir, env, "git", "fetch", repositoryURI, "--tags", "--prune"))
 	commands = append(commands, shellCloneCommand(cloneDir, env, "git", "fetch", repositoryURI, refs.BaseRef))
 
+	// unless the user specifically asks us not to, init submodules
+	if !refs.SkipSubmodules {
+		commands = append(commands, shellCloneCommand(cloneDir, env, "git", "submodule", "update", "--init", "--recursive"))
+	}
+
 	var target string
 	if refs.BaseSHA != "" {
 		target = refs.BaseSHA

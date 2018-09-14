@@ -144,6 +144,7 @@ func PresubmitSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 	if p.CloneURI != "" {
 		refs.CloneURI = p.CloneURI
 	}
+	refs.SkipSubmodules = p.SkipSubmodules
 	pjs := kube.ProwJobSpec{
 		Type:      kube.PresubmitJob,
 		Job:       p.Name,
@@ -179,6 +180,7 @@ func PostsubmitSpec(p config.Postsubmit, refs kube.Refs) kube.ProwJobSpec {
 	if p.CloneURI != "" {
 		refs.CloneURI = p.CloneURI
 	}
+	refs.SkipSubmodules = p.SkipSubmodules
 	pjs := kube.ProwJobSpec{
 		Type:      kube.PostsubmitJob,
 		Job:       p.Name,
@@ -234,6 +236,7 @@ func BatchSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 	if p.CloneURI != "" {
 		refs.CloneURI = p.CloneURI
 	}
+	refs.SkipSubmodules = p.SkipSubmodules
 	pjs := kube.ProwJobSpec{
 		Type:      kube.BatchJob,
 		Job:       p.Name,

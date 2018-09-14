@@ -308,6 +308,9 @@ type Refs struct {
 	// repository. If unset, will default to
 	// `https://github.com/org/repo.git`.
 	CloneURI string `json:"clone_uri,omitempty"`
+	// SkipSubmodules determines if submodules should be
+	// cloned when the job is run. Defaults to true.
+	SkipSubmodules bool `json:"skip_submodules,omitempty"`
 }
 
 func (r Refs) String() string {
