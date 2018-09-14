@@ -18,8 +18,9 @@ const (
 )
 
 var (
-	jiraRegex     = regexp.MustCompile("([A-Z]+)-\\d+")
-	enabledEvents = []github.PullRequestEventAction{
+	jiraTitleRegex  = regexp.MustCompile("([A-Z]+)-\\d+")
+	jiraBranchRegex = regexp.MustCompile("^\\w+/(([A-Za-z]+)-\\d+)(-|$|_)")
+	enabledEvents   = []github.PullRequestEventAction{
 		github.PullRequestActionOpened,
 		github.PullRequestActionEdited,
 		github.PullRequestActionReopened,
@@ -71,11 +72,9 @@ func handle(gc githubClient, log *logrus.Entry, config plugins.JiraLinker, event
 		log.WithError(err).Errorf("Failed to get the labels on %s/%s#%d.", org, repo, event.Number)
 	}
 
-	matches := jiraRegex.FindStringSubmatch(event.PullRequest.Title)
-	if len(matches) > 1 {
-		ticketName := matches[0]
-		jiraTeamName := matches[1]
 
+	found, jiraTeamName, ticketName := extractJiraTicketDetails(event.PullRequest.Title, event.PullRequest.Head.Ref)
+	if found {
 		hasLabel := false
 		for _, candidate := range labels {
 			if candidate.Name == noJiraLabel {
@@ -109,6 +108,20 @@ func handle(gc githubClient, log *logrus.Entry, config plugins.JiraLinker, event
 	}
 
 	return nil
+}
+
+// Returns if found, and if so respectively the ticket type (e.g. ENG) and the ticket ref (e.g. ENG-23)
+func extractJiraTicketDetails(title string, ref string) (bool, string, string) {
+	matches := jiraTitleRegex.FindStringSubmatch(title)
+	if len(matches) > 0 {
+		return true, matches[1], matches[0]
+	}
+	matches = jiraBranchRegex.FindStringSubmatch(ref)
+	if len(matches) > 0 {
+		return true, strings.ToUpper(matches[2]), strings.ToUpper(matches[1])
+	}
+
+	return false, "", ""
 }
 
 func jiraLabel(team string) string {

@@ -138,3 +138,52 @@ func TestJiraLink(t *testing.T) {
 		}
 	}
 }
+
+func TestJiraTicketRef(t *testing.T) {
+	for _, test := range []struct{
+		prTitle string
+		prBranch string
+		shouldFind bool
+		ticketTitle string
+		ticketTeam string
+	}{
+		{
+			prTitle:     "ENG-32: Swap colour to color",
+			prBranch:    "random branch name",
+			shouldFind:  true,
+			ticketTitle: "ENG-32",
+			ticketTeam:  "ENG",
+		},
+		{
+			prTitle:     "random ticket title",
+			prBranch:    "feature/ENG-32-stand-on-the-left",
+			shouldFind:  true,
+			ticketTitle: "ENG-32",
+			ticketTeam:  "ENG",
+		},
+		{
+			// Title tickets should be higher priority than branches
+			prTitle:     "WIP JIRA-43 charge extra for condiments",
+			prBranch:    "feature/eng-32-delete-everything",
+			shouldFind:  true,
+			ticketTitle: "JIRA-43",
+			ticketTeam:  "JIRA",
+		},
+		{
+			prTitle:     "test",
+			prBranch:    "TEST-23-test",
+			shouldFind:  false,
+		},
+	}{
+		found, team, ticket := extractJiraTicketDetails(test.prTitle, test.prBranch)
+		if found != test.shouldFind {
+			t.Errorf("Unexpected result for test %+v", test)
+		}
+		if team != test.ticketTeam {
+			t.Errorf("Unexpected result for test %+v (got %s, expected %s)", test, team, test.ticketTeam)
+		}
+		if ticket != test.ticketTitle {
+			t.Errorf("Unexpected result for test %+v (got %s, expected %s)", test, ticket, test.ticketTitle)
+		}
+	}
+}
