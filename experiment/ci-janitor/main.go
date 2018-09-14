@@ -39,6 +39,24 @@ type options struct {
 var (
 	defaultTTL = 24
 	soakTTL    = 24 * 10
+	blocked    = []string{
+		"kubernetes-scale",  // Let it's up/down job handle the resources
+		"k8s-scale-testing", // As it can be running some manual experiments
+		// PR projects, migrate to boskos!
+		"k8s-jkns-pr-gce",
+		"k8s-jkns-pr-gce-bazel",
+		"k8s-jkns-pr-gce-etcd3",
+		"k8s-jkns-pr-gci-gce",
+		"k8s-jkns-pr-gci-gke",
+		"k8s-jkns-pr-gci-kubemark",
+		"k8s-jkns-pr-gke",
+		"k8s-jkns-pr-kubeadm",
+		"k8s-jkns-pr-kubemark",
+		"k8s-jkns-pr-node-e2e",
+		"k8s-jkns-pr-gce-gpus",
+		"k8s-gke-gpu-pr",
+		"k8s-presubmit-scale",
+	}
 )
 
 func (o *options) Validate() error {
@@ -85,6 +103,13 @@ func findProject(spec *v1.PodSpec) (string, int) {
 }
 
 func clean(proj, janitorPath string, ttl int) error {
+	for _, bad := range blocked {
+		if bad == proj {
+			logrus.Infof("Will skip project %s", proj)
+			return nil
+		}
+	}
+
 	logrus.Infof("Will clean up %s with ttl %d h", proj, ttl)
 
 	cmd := exec.Command(janitorPath, fmt.Sprintf("--project=%s", proj), fmt.Sprintf("--hour=%d", ttl))

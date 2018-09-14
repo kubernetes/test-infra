@@ -34,17 +34,17 @@ periodics:
   name: maintenance-ci-janitor
   labels:
     preset-service-account: "true"
+  decorate: true
+  path_alias: "k8s.io/test-infra"
   spec:
     containers:
-    - args:
-      - --bare
-      - --timeout=600
-      - --service-account=/etc/service-account/service-account.json
-      - --upload=gs://kubernetes-jenkins/logs
-      - --scenario=kubernetes_janitor
-      - --
-      - --mode=ci
-      env:
+    - command:
+      - go
+      - run
+      - experiment/ci-janitor/main.go
+      - --config-path=prow/config.yaml
+      - --job-config-path=config/jobs
+      - --janitor-path=boskos/janitor/janitor.py
       image: gcr.io/k8s-testimages/gcloud-in-go:v20180725-a495f0247
       resources:
         requests:
