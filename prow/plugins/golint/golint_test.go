@@ -136,7 +136,7 @@ func TestLint(t *testing.T) {
 			},
 		},
 	}
-	if err := handle(gh, c, logrus.NewEntry(logrus.New()), e); err != nil {
+	if err := handle(0, gh, c, logrus.NewEntry(logrus.New()), e); err != nil {
 		t.Fatalf("Got error from handle: %v", err)
 	}
 	if len(gh.comment.Comments) != 2 {
@@ -150,7 +150,7 @@ func TestLint(t *testing.T) {
 			Body:     c.Body,
 		})
 	}
-	if err := handle(gh, c, logrus.NewEntry(logrus.New()), e); err != nil {
+	if err := handle(0, gh, c, logrus.NewEntry(logrus.New()), e); err != nil {
 		t.Fatalf("Got error from handle on second try: %v", err)
 	}
 	if len(gh.comment.Comments) != 0 {
@@ -170,7 +170,7 @@ func TestLint(t *testing.T) {
 		t.Fatalf("Adding PR commit: %v", err)
 	}
 	gh.oldComments = nil
-	if err := handle(gh, c, logrus.NewEntry(logrus.New()), e); err != nil {
+	if err := handle(0, gh, c, logrus.NewEntry(logrus.New()), e); err != nil {
 		t.Fatalf("Got error from handle on third try: %v", err)
 	}
 	if len(gh.comment.Comments) != maxComments {

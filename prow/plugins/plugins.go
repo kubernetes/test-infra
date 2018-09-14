@@ -167,6 +167,7 @@ type Configuration struct {
 	Cat                  Cat                    `json:"cat,omitempty"`
 	CherryPickUnapproved CherryPickUnapproved   `json:"cherry_pick_unapproved,omitempty"`
 	ConfigUpdater        ConfigUpdater          `json:"config_updater,omitempty"`
+	Golint               *Golint                `json:"golint,omitempty"`
 	Heart                Heart                  `json:"heart,omitempty"`
 	Label                *Label                 `json:"label,omitempty"`
 	Lgtm                 []Lgtm                 `json:"lgtm,omitempty"`
@@ -178,6 +179,14 @@ type Configuration struct {
 	Size                 *Size                  `json:"size,omitempty"`
 	Triggers             []Trigger              `json:"triggers,omitempty"`
 	Welcome              Welcome                `json:"welcome,omitempty"`
+}
+
+// Golint holds configuration for the golint plugin
+type Golint struct {
+	// MinimumConfidence is the smallest permissible confidence
+	// in (0,1] over which problems will be printed. Defaults to
+	// 0.8, as does the `go lint` tool.
+	MinimumConfidence *float64 `json:"minimum_confidence,omitempty"`
 }
 
 // ExternalPlugin holds configuration for registering an external
@@ -655,6 +664,11 @@ The list of patch release managers for each release can be found [here](https://
 		if rml.GracePeriod == "" {
 			c.RequireMatchingLabel[i].GracePeriod = "5s"
 		}
+	}
+
+	if c.Golint != nil && c.Golint.MinimumConfidence == nil {
+		defaultConfidence := 0.8
+		c.Golint.MinimumConfidence = &defaultConfidence
 	}
 }
 
