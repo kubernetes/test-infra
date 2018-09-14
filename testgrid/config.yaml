@@ -2144,6 +2144,9 @@ test_groups:
   gcs_prefix: ppc64le-kubernetes/logs/ci-conformance-kubernetes
 - name: ppc64le-unit
   gcs_prefix: ppc64le-kubernetes/logs/ci-unit-kubernetes
+#Arm arm64 test results
+- name: arm64-conformance
+  gcs_prefix: k8s-conformance-arm/logs/ci-k8s-conformance-arm64
 # kubernetes org jobs
 - name: ci-org-peribolos
   gcs_prefix: kubernetes-jenkins/logs/ci-org-peribolos
@@ -5628,6 +5631,12 @@ dashboards:
   - name: unit-tests
     test_group_name: ppc64le-unit
     description: unit test results for ppc64le
+
+- name: sig-node-arm64
+  dashboard_tab:
+  - name: conformance
+    test_group_name: arm64-conformance
+    description: Runs conformance test by using kubetest against latest version of kubernetes on arm64
 
 # Move sig-release here
 
