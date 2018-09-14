@@ -138,6 +138,7 @@ func main() {
 	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(configAgent)))
 	mux.Handle("/branding.js", gziphandler.GzipHandler(handleBranding(configAgent)))
 	mux.Handle("/favicon.ico", gziphandler.GzipHandler(handleFavicon(o.staticFilesLocation, configAgent)))
+	mux.Handle("/spyglass.js", gziphandler.GzipHandler(handleSpyglass(o.spyglass)))
 
 	// when deployed, do the full main
 	if !o.runLocal {
@@ -811,6 +812,23 @@ func handleFavicon(staticFilesLocation string, ca jobs.ConfigAgent) http.Handler
 			http.ServeFile(w, r, staticFilesLocation+"/"+config.Deck.Branding.Favicon)
 		} else {
 			http.ServeFile(w, r, staticFilesLocation+"/favicon.ico")
+		}
+	}
+}
+
+func handleSpyglass(spyglass bool) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		setHeadersNoCaching(w)
+		b, err := json.Marshal(spyglass)
+		if err != nil {
+			logrus.WithError(err).Error("Error marshalling spyglass config.")
+			http.Error(w, "Failed to marshal spyglass config.", http.StatusInternalServerError)
+			return
+		}
+		if v := r.URL.Query().Get("var"); v != "" {
+			fmt.Fprintf(w, "var %s = %s;", v, string(b))
+		} else {
+			fmt.Fprint(w, string(b))
 		}
 	}
 }
