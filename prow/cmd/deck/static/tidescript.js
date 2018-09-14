@@ -97,12 +97,36 @@ function createLabelEl(label) {
   return el;
 }
 
-function createSpan(classList, style, text) {
-    var s = document.createElement("span");
-    s.classList.add(...classList);
-    s.style = style;
+function createStrong(text) {
+    const s = document.createElement("STRONG");
     s.appendChild(document.createTextNode(text));
     return s;
+}
+
+function fillDetail(data, type, connector, container, styleData) {
+    if (!data || (Array.isArray(data) && data.length === 0)) {
+        return;
+    }
+    container.appendChild(createStrong(connector));
+    container.appendChild(document.createTextNode(`the following ${type}: `));
+    container.appendChild(document.createElement("br"));
+
+    const ul = document.createElement("ul");
+    const li = document.createElement("li");
+    ul.appendChild(li);
+    container.appendChild(ul);
+
+    if (typeof data === 'string') {
+        li.appendChild(document.createTextNode(data));
+    } else  if (Array.isArray(data)) {
+        for (let i = 0; i < data.length; i++) {
+            const v = data[i];
+            li.appendChild(styleData(v));
+            if (i + 1 < data.length) {
+                li.appendChild(document.createTextNode(" "));
+            }
+        }
+    }
 }
 
 function redrawQueries() {
@@ -129,63 +153,54 @@ function redrawQueries() {
 
         // build the description
         // all queries should implicitly mean this
-        var explanationPrefix = " - Meaning: Is an open Pull Request in one of the following repos: ";
-        li.appendChild(document.createTextNode(explanationPrefix));
-        var ul = document.createElement("ul");
-        var innerLi = document.createElement("li");
+        const ul = document.createElement("ul");
+        const innerLi = document.createElement("li");
+        // add the list of repos, defaulting to an empty array if no repos have been provided.
+        const repos = tideQuery["repos"] || [];
+        if (repos.length > 0) {
+            const explanationPrefix = " - Meaning: Is an open Pull Request " +
+                "in one of the following repos: ";
+            li.appendChild(document.createTextNode(explanationPrefix));
+            for (let j = 0; j < repos.length; j++) {
+                innerLi.appendChild(createLink("https://github.com/" + repos[j], repos[j]));
+                if (j + 1 < repos.length) {
+                    innerLi.appendChild(document.createTextNode(", "));
+                }
+            }
+        } else if (tideQuery.orgs && tideQuery.orgs.length > 0) {
+            const explanationPrefix = " - Meaning: Is an open Pull Request " +
+                "in one of the following orgs: ";
+            li.appendChild(document.createTextNode(explanationPrefix));
+            for (let i = 0; i < tideQuery.orgs.length; i++) {
+                const org = tideQuery.orgs[i];
+                innerLi.appendChild(createLink("https://github.com/" + org, org));
+                if (i + 1 < repos.length) {
+                    innerLi.appendChild(document.createTextNode(", "));
+                }
+            }
+        }
         ul.appendChild(innerLi);
         li.appendChild(ul);
-        // add the list of repos, defaulting to an empty array if no repos have been provided.
-        var repos = tideQuery["repos"] || [];
-        for (var j = 0; j < repos.length; j++) {
-            innerLi.appendChild(createLink("https://github.com/" + repos[j], repos[j]));
-            if (j+1 < repos.length) {
-                innerLi.appendChild(document.createTextNode(", "));
-            }
-        }
         // required labels
-        var hasLabels = tideQuery.hasOwnProperty("labels") && tideQuery["labels"].length > 0;
-        if (hasLabels) {
-            var labels = tideQuery["labels"];
-            li.appendChild(createSpan(["emphasis"], "", "with"));
-            li.appendChild(document.createTextNode(" the following labels: "));
-            li.appendChild(document.createElement("br"));
-            var ul = document.createElement("ul");
-            var innerLi = document.createElement("li");
-            ul.appendChild(innerLi);
-            li.appendChild(ul);
-            for (var j = 0; j < labels.length; j++) {
-                var label = labels[j];
-                innerLi.appendChild(createLabelEl(label));
-                if (j+1 < labels.length) {
-                    innerLi.appendChild(document.createTextNode(" "));
-                }
-            }
-        }
+        fillDetail(tideQuery.labels, "labels", "with ", li, function(data) {
+          return createLabelEl(data);
+        });
         // required to be not present labels
-        var hasMissingLabels = tideQuery.hasOwnProperty("missingLabels") && tideQuery["missingLabels"].length > 0;
-        if (hasMissingLabels) {
-            var missingLabels = tideQuery["missingLabels"];
-            if (hasLabels) {
-                li.appendChild(createSpan(["emphasis"], "", "and without"));
-            } else {
-                li.appendChild(createSpan(["emphasis"], "", "without"));
-            }
-            li.appendChild(document.createTextNode(" the following labels: "));
-            li.appendChild(document.createElement("br"));
-            var ul = document.createElement("ul");
-            var innerLi = document.createElement("li");
-            ul.appendChild(innerLi);
-            li.appendChild(ul);
-            for (var j = 0; j < missingLabels.length; j++) {
-                var label = missingLabels[j];
-                innerLi.appendChild(createLabelEl(label));
-                if (j+1 < missingLabels.length) {
-                    innerLi.appendChild(document.createTextNode(" "));
-                }
-            }
-        }
-
+        fillDetail(tideQuery.missingLabels, "labels", "without ", li, function(data) {
+            return createLabelEl(data);
+        });
+        // list milestone if existed
+        fillDetail(tideQuery.milestone, "milestone", "with ", li, function(data) {
+            return document.createTextNode(data);
+        });
+        // list all excluded branches
+        fillDetail(tideQuery.excludedBranches, "branches", "exclude ", li, function(data) {
+            return document.createTextNode(data);
+        });
+        // list all included branches
+        fillDetail(tideQuery.includedBranches, "branches", "targeting ", li, function(data) {
+            return document.createTextNode(data);
+        });
         // GitHub native review required
         var reviewApprovedRequired = tideQuery.hasOwnProperty("reviewApprovedRequired") && tideQuery["reviewApprovedRequired"];
         if (reviewApprovedRequired) {
@@ -231,18 +246,6 @@ function redrawPools() {
     }
 }
 
-function createLinkCell(text, url, title) {
-    var c = document.createElement("td");
-    var a = document.createElement("a");
-    a.href = url;
-    if (title !== "") {
-        a.title = title;
-    }
-    a.appendChild(document.createTextNode(text));
-    c.appendChild(a);
-    return c;
-}
-
 function createActionCell(pool) {
     var targeted = pool.Target && pool.Target.length;
     var blocked = pool.Blockers && pool.Blockers.length;
@@ -264,7 +267,7 @@ function createActionCell(pool) {
 
 function createPRCell(pool, prs) {
     var c = document.createElement("td");
-    addPRsToElem(c, pool, prs)
+    addPRsToElem(c, pool, prs);
     return c;
 }
 
@@ -302,7 +305,9 @@ function addPRsToElem(elem, pool, prs) {
 // addBlockersToElem adds a space separated list of Issue numbers that link to the
 // corresponding Issues on github that are blocking merge.
 function addBlockersToElem(elem, pool) {
-    var bs = pool.Blockers
+    if (!pool.Blockers) {
+        return;
+    }
     for (var i = 0; i < pool.Blockers.length; i++) {
         var b = pool.Blockers[i];
         var id = "blocker-" + pool.Org + "-" + pool.Repo + "-" + b.Number;
