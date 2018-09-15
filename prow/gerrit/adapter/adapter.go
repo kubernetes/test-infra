@@ -184,10 +184,11 @@ func (c *Controller) ProcessChange(instance string, change gerrit.ChangeInfo) er
 
 	for _, spec := range c.ca.Config().Presubmits[instance+"/"+change.Project] {
 		kr := kube.Refs{
-			Org:     instance,
-			Repo:    change.Project,
-			BaseRef: change.Branch,
-			BaseSHA: parentSHA,
+			Org:      instance,
+			Repo:     change.Project, // Something like https;//android.googlesource.com
+			BaseRef:  change.Branch,  // Something like platform/build
+			BaseSHA:  parentSHA,
+			CloneURI: filepath.Join(change.Project, change.Branch), // Something like https://android.googlesource.com/platform/build
 			Pulls: []kube.Pull{
 				{
 					Number: change.Number,
