@@ -1458,6 +1458,666 @@ test_groups:
 # Canonical Distribution of Kubernetes (contact: @chuckbutler on github)
 - name: canonical-kubernetes-e2e-gce
   gcs_prefix: canonical-kubernetes-tests/logs/kubernetes-gce-e2e-node
+
+# COS image validation
+- name: ci-kubernetes-e2enode-cos1-k8sbeta-gkespec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos1-k8sbeta-gkespec
+- name: ci-kubernetes-e2enode-cos1-k8sbeta-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos1-k8sbeta-serial
+- name: ci-kubernetes-e2enode-cos1-k8sstable1-gkespec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos1-k8sstable1-gkespec
+- name: ci-kubernetes-e2enode-cos1-k8sstable1-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos1-k8sstable1-serial
+- name: ci-kubernetes-e2enode-cos1-k8sstable2-gkespec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos1-k8sstable2-gkespec
+- name: ci-kubernetes-e2enode-cos1-k8sstable2-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos1-k8sstable2-serial
+- name: ci-kubernetes-e2enode-cos1-k8sstable3-gkespec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos1-k8sstable3-gkespec
+- name: ci-kubernetes-e2enode-cos1-k8sstable3-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos1-k8sstable3-serial
+- name: ci-kubernetes-e2enode-cos2-k8sbeta-gkespec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos2-k8sbeta-gkespec
+- name: ci-kubernetes-e2enode-cos2-k8sbeta-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos2-k8sbeta-serial
+- name: ci-kubernetes-e2enode-cos2-k8sstable1-gkespec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos2-k8sstable1-gkespec
+- name: ci-kubernetes-e2enode-cos2-k8sstable1-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos2-k8sstable1-serial
+- name: ci-kubernetes-e2enode-cos2-k8sstable2-gkespec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos2-k8sstable2-gkespec
+- name: ci-kubernetes-e2enode-cos2-k8sstable2-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos2-k8sstable2-serial
+- name: ci-kubernetes-e2enode-cos2-k8sstable3-gkespec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos2-k8sstable3-gkespec
+- name: ci-kubernetes-e2enode-cos2-k8sstable3-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cos2-k8sstable3-serial
+
+# ci-kubernetes-e2e-gce-cos1-k8sbeta-*
+- name: ci-kubernetes-e2e-gce-cos1-k8sbeta-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos1-k8sbeta-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gce-cos1-k8sbeta-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos1-k8sbeta-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gce-cos1-k8sbeta-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos1-k8sbeta-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+# ci-kubernetes-e2e-gce-cos1-k8sstable1-*
+- name: ci-kubernetes-e2e-gce-cos1-k8sstable1-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos1-k8sstable1-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gce-cos1-k8sstable1-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos1-k8sstable1-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gce-cos1-k8sstable1-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos1-k8sstable1-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+# ci-kubernetes-e2e-gce-cos1-k8sstable2-*
+- name: ci-kubernetes-e2e-gce-cos1-k8sstable2-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos1-k8sstable2-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gce-cos1-k8sstable2-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos1-k8sstable2-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gce-cos1-k8sstable2-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos1-k8sstable2-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+# ci-kubernetes-e2e-gce-cos1-k8sstable3-*
+- name: ci-kubernetes-e2e-gce-cos1-k8sstable3-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos1-k8sstable3-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gce-cos1-k8sstable3-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos1-k8sstable3-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gce-cos1-k8sstable3-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos1-k8sstable3-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+# ci-kubernetes-e2e-gce-cos2-k8sbeta-*
+- name: ci-kubernetes-e2e-gce-cos2-k8sbeta-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos2-k8sbeta-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gce-cos2-k8sbeta-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos2-k8sbeta-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gce-cos2-k8sbeta-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos2-k8sbeta-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+# ci-kubernetes-e2e-gce-cos2-k8sstable1-*
+- name: ci-kubernetes-e2e-gce-cos2-k8sstable1-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos2-k8sstable1-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gce-cos2-k8sstable1-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos2-k8sstable1-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gce-cos2-k8sstable1-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos2-k8sstable1-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+# ci-kubernetes-e2e-gce-cos2-k8sstable2-*
+- name: ci-kubernetes-e2e-gce-cos2-k8sstable2-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos2-k8sstable2-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gce-cos2-k8sstable2-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos2-k8sstable2-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gce-cos2-k8sstable2-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos2-k8sstable2-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+# ci-kubernetes-e2e-gce-cos2-k8sstable3-*
+- name: ci-kubernetes-e2e-gce-cos2-k8sstable3-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos2-k8sstable3-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gce-cos2-k8sstable3-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos2-k8sstable3-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gce-cos2-k8sstable3-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos2-k8sstable3-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+
+# ci-kubernetes-e2e-gke-cos1-k8sbeta-*
+- name: ci-kubernetes-e2e-gke-cos1-k8sbeta-alphafeatures
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sbeta-alphafeatures
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sbeta-autoscaling
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sbeta-autoscaling
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sbeta-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sbeta-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sbeta-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sbeta-flaky
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sbeta-gpu
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sbeta-gpu
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sbeta-reboot
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sbeta-reboot
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sbeta-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sbeta-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sbeta-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sbeta-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sbeta-updown
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sbeta-updown
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+
+# ci-kubernetes-e2e-gke-cos1-k8sstable1-*
+- name: ci-kubernetes-e2e-gke-cos1-k8sstable1-alphafeatures
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sstable1-alphafeatures
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sstable1-autoscaling
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sstable1-autoscaling
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sstable1-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sstable1-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sstable1-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sstable1-flaky
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sstable1-gpu
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sstable1-gpu
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sstable1-reboot
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sstable1-reboot
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sstable1-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sstable1-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sstable1-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sstable1-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sstable1-updown
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sstable1-updown
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+
+# ci-kubernetes-e2e-gke-cos1-k8sstable2-*
+- name: ci-kubernetes-e2e-gke-cos1-k8sstable2-alphafeatures
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sstable2-alphafeatures
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sstable2-autoscaling
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sstable2-autoscaling
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sstable2-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sstable2-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sstable2-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sstable2-flaky
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sstable2-gpu
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sstable2-gpu
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sstable2-reboot
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sstable2-reboot
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sstable2-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sstable2-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sstable2-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sstable2-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sstable2-updown
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sstable2-updown
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+
+# ci-kubernetes-e2e-gke-cos1-k8sstable3-*
+- name: ci-kubernetes-e2e-gke-cos1-k8sstable3-alphafeatures
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sstable3-alphafeatures
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sstable3-autoscaling
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sstable3-autoscaling
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sstable3-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sstable3-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sstable3-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sstable3-flaky
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sstable3-gpu
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sstable3-gpu
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sstable3-reboot
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sstable3-reboot
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sstable3-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sstable3-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sstable3-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sstable3-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos1-k8sstable3-updown
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos1-k8sstable3-updown
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+
+# ci-kubernetes-e2e-gke-cos2-k8sbeta-*
+- name: ci-kubernetes-e2e-gke-cos2-k8sbeta-alphafeatures
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sbeta-alphafeatures
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sbeta-autoscaling
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sbeta-autoscaling
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sbeta-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sbeta-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sbeta-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sbeta-flaky
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sbeta-gpu
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sbeta-gpu
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sbeta-reboot
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sbeta-reboot
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sbeta-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sbeta-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sbeta-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sbeta-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sbeta-updown
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sbeta-updown
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+
+# ci-kubernetes-e2e-gke-cos2-k8sstable1-*
+- name: ci-kubernetes-e2e-gke-cos2-k8sstable1-alphafeatures
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sstable1-alphafeatures
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sstable1-autoscaling
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sstable1-autoscaling
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sstable1-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sstable1-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sstable1-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sstable1-flaky
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sstable1-gpu
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sstable1-gpu
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sstable1-reboot
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sstable1-reboot
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sstable1-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sstable1-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sstable1-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sstable1-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sstable1-updown
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sstable1-updown
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+
+# ci-kubernetes-e2e-gke-cos2-k8sstable2-*
+- name: ci-kubernetes-e2e-gke-cos2-k8sstable2-alphafeatures
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sstable2-alphafeatures
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sstable2-autoscaling
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sstable2-autoscaling
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sstable2-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sstable2-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sstable2-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sstable2-flaky
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sstable2-gpu
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sstable2-gpu
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sstable2-reboot
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sstable2-reboot
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sstable2-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sstable2-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sstable2-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sstable2-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sstable2-updown
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sstable2-updown
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+
+# ci-kubernetes-e2e-gke-cos2-k8sstable3-*
+- name: ci-kubernetes-e2e-gke-cos2-k8sstable3-alphafeatures
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sstable3-alphafeatures
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sstable3-autoscaling
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sstable3-autoscaling
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sstable3-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sstable3-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sstable3-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sstable3-flaky
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sstable3-gpu
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sstable3-gpu
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sstable3-reboot
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sstable3-reboot
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sstable3-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sstable3-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sstable3-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sstable3-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cos2-k8sstable3-updown
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos2-k8sstable3-updown
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+
 # kopeio (contact: @justinsb on github)
 - name: kopeio-kubernetes-e2e-aws
   gcs_prefix: kopeio-kubernetes-e2e/logs/kubernetes-e2e-aws
@@ -1622,388 +2282,7 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sstable2-reboot
 - name: ci-kubernetes-soak-gci-gce-stable2
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-stable2
-# cos image validation.
-- name: ci-kubernetes-e2enode-cosbeta-k8sdev-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosbeta-k8sdev-default
-- name: ci-kubernetes-e2enode-cosbeta-k8sdev-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosbeta-k8sdev-serial
-- name: ci-kubernetes-e2enode-cosbeta-k8sbeta-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosbeta-k8sbeta-default
-- name: ci-kubernetes-e2enode-cosbeta-k8sbeta-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosbeta-k8sbeta-serial
-- name: ci-kubernetes-e2enode-cosbeta-k8sstable1-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosbeta-k8sstable1-default
-- name: ci-kubernetes-e2enode-cosbeta-k8sstable1-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosbeta-k8sstable1-serial
-- name: ci-kubernetes-e2enode-cosbeta-k8sstable2-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosbeta-k8sstable2-default
-- name: ci-kubernetes-e2enode-cosbeta-k8sstable2-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosbeta-k8sstable2-serial
-- name: ci-kubernetes-e2enode-cosbeta-k8sstable3-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosbeta-k8sstable3-default
-- name: ci-kubernetes-e2enode-cosbeta-k8sstable3-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosbeta-k8sstable3-serial
 
-- name: ci-kubernetes-e2enode-cosstable1-k8sdev-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sdev-default
-- name: ci-kubernetes-e2enode-cosstable1-k8sdev-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sdev-serial
-- name: ci-kubernetes-e2enode-cosstable1-k8sbeta-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sbeta-default
-- name: ci-kubernetes-e2enode-cosstable1-k8sbeta-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sbeta-serial
-- name: ci-kubernetes-e2enode-cosstable1-k8sstable1-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sstable1-default
-- name: ci-kubernetes-e2enode-cosstable1-k8sstable1-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sstable1-serial
-- name: ci-kubernetes-e2enode-cosstable1-k8sstable2-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sstable2-default
-- name: ci-kubernetes-e2enode-cosstable1-k8sstable2-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sstable2-serial
-- name: ci-kubernetes-e2enode-cosstable1-k8sstable3-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sstable3-default
-- name: ci-kubernetes-e2enode-cosstable1-k8sstable3-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sstable3-serial
-- name: ci-kubernetes-e2e-gce-cosdev-k8sdev-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosdev-k8sdev-default
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosdev-k8sdev-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosdev-k8sdev-slow
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosdev-k8sdev-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosdev-k8sdev-serial
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosdev-k8sbeta-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosdev-k8sbeta-default
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosdev-k8sbeta-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosdev-k8sbeta-slow
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosdev-k8sbeta-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosdev-k8sbeta-serial
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosdev-k8sstable1-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosdev-k8sstable1-default
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosdev-k8sstable1-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosdev-k8sstable1-slow
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosdev-k8sstable1-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosdev-k8sstable1-serial
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sdev-default
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sdev-slow
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sdev-serial
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosbeta-k8sbeta-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sbeta-default
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosbeta-k8sbeta-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sbeta-serial
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosbeta-k8sbeta-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sbeta-slow
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosbeta-k8sstable1-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sstable1-default
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosbeta-k8sstable1-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sstable1-serial
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosbeta-k8sstable1-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sstable1-slow
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosbeta-k8sstable2-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sstable2-default
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosbeta-k8sstable2-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sstable2-serial
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosbeta-k8sstable2-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sstable2-slow
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosbeta-k8sstable3-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sstable3-default
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosbeta-k8sstable3-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sstable3-serial
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosbeta-k8sstable3-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sstable3-slow
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-nosnat
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sdev-nosnat
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosstable1-k8sdev-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosstable1-k8sdev-default
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosstable1-k8sdev-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosstable1-k8sdev-slow
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosstable1-k8sdev-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosstable1-k8sdev-serial
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosstable1-k8sbeta-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosstable1-k8sbeta-default
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosstable1-k8sbeta-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosstable1-k8sbeta-slow
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosstable1-k8sbeta-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosstable1-k8sbeta-serial
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosstable1-k8sstable1-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosstable1-k8sstable1-default
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosstable1-k8sstable1-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosstable1-k8sstable1-slow
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosstable1-k8sstable1-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosstable1-k8sstable1-serial
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosstable1-k8sstable2-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosstable1-k8sstable2-default
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosstable1-k8sstable2-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosstable1-k8sstable2-slow
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosstable1-k8sstable2-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosstable1-k8sstable2-serial
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosstable1-k8sstable3-default
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosstable1-k8sstable3-default
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosstable1-k8sstable3-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosstable1-k8sstable3-slow
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cosstable1-k8sstable3-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosstable1-k8sstable3-serial
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-cosbeta-k8sdev-soak
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cosbeta-k8sdev-soak
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-cosbeta-k8sdev-stackdriver
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cosbeta-k8sdev-stackdriver
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-cosbeta-k8sbeta-soak
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cosbeta-k8sbeta-soak
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-cosbeta-k8sbeta-stackdriver
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cosbeta-k8sbeta-stackdriver
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-cosbeta-k8sstable1-soak
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cosbeta-k8sstable1-soak
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-cosbeta-k8sstable1-stackdriver
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cosbeta-k8sstable1-stackdriver
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-cosbeta-k8sstable2-soak
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cosbeta-k8sstable2-soak
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-cosbeta-k8sstable2-stackdriver
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cosbeta-k8sstable2-stackdriver
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-cosbeta-k8sstable3-soak
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cosbeta-k8sstable3-soak
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gke-cosbeta-k8sstable3-stackdriver
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cosbeta-k8sstable3-stackdriver
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
 # master-2 to master
 - name: ci-kubernetes-e2e-gke-gci-stable-gci-master-upgrade-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable-gci-master-upgrade-master
@@ -3322,6 +3601,254 @@ dashboards:
   dashboard_tab:
   - name: cdk-gce-node
     test_group_name: canonical-kubernetes-e2e-gce
+
+- name: cos-cos1-k8sbeta
+  dashboard_tab:
+  - name: e2enode-cos1-k8sbeta-gkespec
+    test_group_name: ci-kubernetes-e2enode-cos1-k8sbeta-gkespec
+  - name: e2enode-cos1-k8sbeta-serial
+    test_group_name: ci-kubernetes-e2enode-cos1-k8sbeta-serial
+  - name: gce-cos1-k8sbeta-default
+    test_group_name: ci-kubernetes-e2e-gce-cos1-k8sbeta-default
+  - name: gce-cos1-k8sbeta-serial
+    test_group_name: ci-kubernetes-e2e-gce-cos1-k8sbeta-serial
+  - name: gce-cos1-k8sbeta-slow
+    test_group_name: ci-kubernetes-e2e-gce-cos1-k8sbeta-slow
+  - name: gke-cos1-k8sbeta-alphafeatures
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sbeta-alphafeatures
+  - name: gke-cos1-k8sbeta-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sbeta-autoscaling
+  - name: gke-cos1-k8sbeta-default
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sbeta-default
+  - name: gke-cos1-k8sbeta-flaky
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sbeta-flaky
+  - name: gke-cos1-k8sbeta-gpu
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sbeta-gpu
+  - name: gke-cos1-k8sbeta-reboot
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sbeta-reboot
+  - name: gke-cos1-k8sbeta-serial
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sbeta-serial
+  - name: gke-cos1-k8sbeta-slow
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sbeta-slow
+  - name: gke-cos1-k8sbeta-updown
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sbeta-updown
+
+- name: cos-cos1-k8sstable1
+  dashboard_tab:
+  - name: e2enode-cos1-k8sstable1-gkespec
+    test_group_name: ci-kubernetes-e2enode-cos1-k8sstable1-gkespec
+  - name: e2enode-cos1-k8sstable1-serial
+    test_group_name: ci-kubernetes-e2enode-cos1-k8sstable1-serial
+  - name: gce-cos1-k8sstable1-default
+    test_group_name: ci-kubernetes-e2e-gce-cos1-k8sstable1-default
+  - name: gce-cos1-k8sstable1-serial
+    test_group_name: ci-kubernetes-e2e-gce-cos1-k8sstable1-serial
+  - name: gce-cos1-k8sstable1-slow
+    test_group_name: ci-kubernetes-e2e-gce-cos1-k8sstable1-slow
+  - name: gke-cos1-k8sstable1-alphafeatures
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sstable1-alphafeatures
+  - name: gke-cos1-k8sstable1-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sstable1-autoscaling
+  - name: gke-cos1-k8sstable1-default
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sstable1-default
+  - name: gke-cos1-k8sstable1-flaky
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sstable1-flaky
+  - name: gke-cos1-k8sstable1-gpu
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sstable1-gpu
+  - name: gke-cos1-k8sstable1-reboot
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sstable1-reboot
+  - name: gke-cos1-k8sstable1-serial
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sstable1-serial
+  - name: gke-cos1-k8sstable1-slow
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sstable1-slow
+  - name: gke-cos1-k8sstable1-updown
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sstable1-updown
+
+- name: cos-cos1-k8sstable2
+  dashboard_tab:
+  - name: e2enode-cos1-k8sstable2-gkespec
+    test_group_name: ci-kubernetes-e2enode-cos1-k8sstable2-gkespec
+  - name: e2enode-cos1-k8sstable2-serial
+    test_group_name: ci-kubernetes-e2enode-cos1-k8sstable2-serial
+  - name: gce-cos1-k8sstable2-default
+    test_group_name: ci-kubernetes-e2e-gce-cos1-k8sstable2-default
+  - name: gce-cos1-k8sstable2-serial
+    test_group_name: ci-kubernetes-e2e-gce-cos1-k8sstable2-serial
+  - name: gce-cos1-k8sstable2-slow
+    test_group_name: ci-kubernetes-e2e-gce-cos1-k8sstable2-slow
+  - name: gke-cos1-k8sstable2-alphafeatures
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sstable2-alphafeatures
+  - name: gke-cos1-k8sstable2-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sstable2-autoscaling
+  - name: gke-cos1-k8sstable2-default
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sstable2-default
+  - name: gke-cos1-k8sstable2-flaky
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sstable2-flaky
+  - name: gke-cos1-k8sstable2-gpu
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sstable2-gpu
+  - name: gke-cos1-k8sstable2-reboot
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sstable2-reboot
+  - name: gke-cos1-k8sstable2-serial
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sstable2-serial
+  - name: gke-cos1-k8sstable2-slow
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sstable2-slow
+  - name: gke-cos1-k8sstable2-updown
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sstable2-updown
+
+- name: cos-cos1-k8sstable3
+  dashboard_tab:
+  - name: e2enode-cos1-k8sstable3-gkespec
+    test_group_name: ci-kubernetes-e2enode-cos1-k8sstable3-gkespec
+  - name: e2enode-cos1-k8sstable3-serial
+    test_group_name: ci-kubernetes-e2enode-cos1-k8sstable3-serial
+  - name: gce-cos1-k8sstable3-default
+    test_group_name: ci-kubernetes-e2e-gce-cos1-k8sstable3-default
+  - name: gce-cos1-k8sstable3-serial
+    test_group_name: ci-kubernetes-e2e-gce-cos1-k8sstable3-serial
+  - name: gce-cos1-k8sstable3-slow
+    test_group_name: ci-kubernetes-e2e-gce-cos1-k8sstable3-slow
+  - name: gke-cos1-k8sstable3-alphafeatures
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sstable3-alphafeatures
+  - name: gke-cos1-k8sstable3-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sstable3-autoscaling
+  - name: gke-cos1-k8sstable3-default
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sstable3-default
+  - name: gke-cos1-k8sstable3-flaky
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sstable3-flaky
+  - name: gke-cos1-k8sstable3-gpu
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sstable3-gpu
+  - name: gke-cos1-k8sstable3-reboot
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sstable3-reboot
+  - name: gke-cos1-k8sstable3-serial
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sstable3-serial
+  - name: gke-cos1-k8sstable3-slow
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sstable3-slow
+  - name: gke-cos1-k8sstable3-updown
+    test_group_name: ci-kubernetes-e2e-gke-cos1-k8sstable3-updown
+
+- name: cos-cos2-k8sbeta
+  dashboard_tab:
+  - name: e2enode-cos2-k8sbeta-gkespec
+    test_group_name: ci-kubernetes-e2enode-cos2-k8sbeta-gkespec
+  - name: e2enode-cos2-k8sbeta-serial
+    test_group_name: ci-kubernetes-e2enode-cos2-k8sbeta-serial
+  - name: gce-cos2-k8sbeta-default
+    test_group_name: ci-kubernetes-e2e-gce-cos2-k8sbeta-default
+  - name: gce-cos2-k8sbeta-serial
+    test_group_name: ci-kubernetes-e2e-gce-cos2-k8sbeta-serial
+  - name: gce-cos2-k8sbeta-slow
+    test_group_name: ci-kubernetes-e2e-gce-cos2-k8sbeta-slow
+  - name: gke-cos2-k8sbeta-alphafeatures
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sbeta-alphafeatures
+  - name: gke-cos2-k8sbeta-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sbeta-autoscaling
+  - name: gke-cos2-k8sbeta-default
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sbeta-default
+  - name: gke-cos2-k8sbeta-flaky
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sbeta-flaky
+  - name: gke-cos2-k8sbeta-gpu
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sbeta-gpu
+  - name: gke-cos2-k8sbeta-reboot
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sbeta-reboot
+  - name: gke-cos2-k8sbeta-serial
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sbeta-serial
+  - name: gke-cos2-k8sbeta-slow
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sbeta-slow
+  - name: gke-cos2-k8sbeta-updown
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sbeta-updown
+
+- name: cos-cos2-k8sstable1
+  dashboard_tab:
+  - name: e2enode-cos2-k8sstable1-gkespec
+    test_group_name: ci-kubernetes-e2enode-cos2-k8sstable1-gkespec
+  - name: e2enode-cos2-k8sstable1-serial
+    test_group_name: ci-kubernetes-e2enode-cos2-k8sstable1-serial
+  - name: gce-cos2-k8sstable1-default
+    test_group_name: ci-kubernetes-e2e-gce-cos2-k8sstable1-default
+  - name: gce-cos2-k8sstable1-serial
+    test_group_name: ci-kubernetes-e2e-gce-cos2-k8sstable1-serial
+  - name: gce-cos2-k8sstable1-slow
+    test_group_name: ci-kubernetes-e2e-gce-cos2-k8sstable1-slow
+  - name: gke-cos2-k8sstable1-alphafeatures
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sstable1-alphafeatures
+  - name: gke-cos2-k8sstable1-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sstable1-autoscaling
+  - name: gke-cos2-k8sstable1-default
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sstable1-default
+  - name: gke-cos2-k8sstable1-flaky
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sstable1-flaky
+  - name: gke-cos2-k8sstable1-gpu
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sstable1-gpu
+  - name: gke-cos2-k8sstable1-reboot
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sstable1-reboot
+  - name: gke-cos2-k8sstable1-serial
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sstable1-serial
+  - name: gke-cos2-k8sstable1-slow
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sstable1-slow
+  - name: gke-cos2-k8sstable1-updown
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sstable1-updown
+
+- name: cos-cos2-k8sstable2
+  dashboard_tab:
+  - name: e2enode-cos2-k8sstable2-gkespec
+    test_group_name: ci-kubernetes-e2enode-cos2-k8sstable2-gkespec
+  - name: e2enode-cos2-k8sstable2-serial
+    test_group_name: ci-kubernetes-e2enode-cos2-k8sstable2-serial
+  - name: gce-cos2-k8sstable2-default
+    test_group_name: ci-kubernetes-e2e-gce-cos2-k8sstable2-default
+  - name: gce-cos2-k8sstable2-serial
+    test_group_name: ci-kubernetes-e2e-gce-cos2-k8sstable2-serial
+  - name: gce-cos2-k8sstable2-slow
+    test_group_name: ci-kubernetes-e2e-gce-cos2-k8sstable2-slow
+  - name: gke-cos2-k8sstable2-alphafeatures
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sstable2-alphafeatures
+  - name: gke-cos2-k8sstable2-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sstable2-autoscaling
+  - name: gke-cos2-k8sstable2-default
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sstable2-default
+  - name: gke-cos2-k8sstable2-flaky
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sstable2-flaky
+  - name: gke-cos2-k8sstable2-gpu
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sstable2-gpu
+  - name: gke-cos2-k8sstable2-reboot
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sstable2-reboot
+  - name: gke-cos2-k8sstable2-serial
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sstable2-serial
+  - name: gke-cos2-k8sstable2-slow
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sstable2-slow
+  - name: gke-cos2-k8sstable2-updown
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sstable2-updown
+
+- name: cos-cos2-k8sstable3
+  dashboard_tab:
+  - name: e2enode-cos2-k8sstable3-gkespec
+    test_group_name: ci-kubernetes-e2enode-cos2-k8sstable3-gkespec
+  - name: e2enode-cos2-k8sstable3-serial
+    test_group_name: ci-kubernetes-e2enode-cos2-k8sstable3-serial
+  - name: gce-cos2-k8sstable3-default
+    test_group_name: ci-kubernetes-e2e-gce-cos2-k8sstable3-default
+  - name: gce-cos2-k8sstable3-serial
+    test_group_name: ci-kubernetes-e2e-gce-cos2-k8sstable3-serial
+  - name: gce-cos2-k8sstable3-slow
+    test_group_name: ci-kubernetes-e2e-gce-cos2-k8sstable3-slow
+  - name: gke-cos2-k8sstable3-alphafeatures
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sstable3-alphafeatures
+  - name: gke-cos2-k8sstable3-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sstable3-autoscaling
+  - name: gke-cos2-k8sstable3-default
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sstable3-default
+  - name: gke-cos2-k8sstable3-flaky
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sstable3-flaky
+  - name: gke-cos2-k8sstable3-gpu
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sstable3-gpu
+  - name: gke-cos2-k8sstable3-reboot
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sstable3-reboot
+  - name: gke-cos2-k8sstable3-serial
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sstable3-serial
+  - name: gke-cos2-k8sstable3-slow
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sstable3-slow
+  - name: gke-cos2-k8sstable3-updown
+    test_group_name: ci-kubernetes-e2e-gke-cos2-k8sstable3-updown
 
 - name: kopeio
   dashboard_tab:
@@ -5131,11 +5658,6 @@ dashboards:
 
 - name: sig-network-gce
   dashboard_tab:
-  - name: cosbeta-no-snat
-    test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-nosnat
-    base_options: include-filter-by-regex=\[sig-network\]
-    alert_options:
-      alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
   - name: gci-gce-ingress
     test_group_name: ci-kubernetes-e2e-gci-gce-ingress
     alert_options:
@@ -5463,147 +5985,6 @@ dashboards:
     test_group_name: ci-cadvisor-canarypush
   - name: cadvisor-e2e
     test_group_name: ci-cadvisor-e2e
-
-- name: sig-node-cos-image
-  dashboard_tab:
-  - name: e2enode-cosbeta-k8sdev-default
-    test_group_name: ci-kubernetes-e2enode-cosbeta-k8sdev-default
-  - name: e2enode-cosbeta-k8sdev-serial
-    test_group_name: ci-kubernetes-e2enode-cosbeta-k8sdev-serial
-  - name: e2enode-cosbeta-k8sbeta-default
-    test_group_name: ci-kubernetes-e2enode-cosbeta-k8sbeta-default
-  - name: e2enode-cosbeta-k8sbeta-serial
-    test_group_name: ci-kubernetes-e2enode-cosbeta-k8sbeta-serial
-  - name: e2enode-cosbeta-k8sstable1-default
-    test_group_name: ci-kubernetes-e2enode-cosbeta-k8sstable1-default
-  - name: e2enode-cosbeta-k8sstable1-serial
-    test_group_name: ci-kubernetes-e2enode-cosbeta-k8sstable1-serial
-  - name: e2enode-cosbeta-k8sstable2-default
-    test_group_name: ci-kubernetes-e2enode-cosbeta-k8sstable2-default
-  - name: e2enode-cosbeta-k8sstable2-serial
-    test_group_name: ci-kubernetes-e2enode-cosbeta-k8sstable2-serial
-  - name: e2enode-cosbeta-k8sstable3-default
-    test_group_name: ci-kubernetes-e2enode-cosbeta-k8sstable3-default
-  - name: e2enode-cosbeta-k8sstable3-serial
-    test_group_name: ci-kubernetes-e2enode-cosbeta-k8sstable3-serial
-  - name: e2enode-cosstable1-k8sdev-default
-    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sdev-default
-  - name: e2enode-cosstable1-k8sdev-serial
-    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sdev-serial
-  - name: e2enode-cosstable1-k8sbeta-default
-    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sbeta-default
-  - name: e2enode-cosstable1-k8sbeta-serial
-    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sbeta-serial
-  - name: e2enode-cosstable1-k8sstable1-default
-    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sstable1-default
-  - name: e2enode-cosstable1-k8sstable1-serial
-    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sstable1-serial
-  - name: e2enode-cosstable1-k8sstable2-default
-    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sstable2-default
-  - name: e2enode-cosstable1-k8sstable2-serial
-    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sstable2-serial
-  - name: e2enode-cosstable1-k8sstable3-default
-    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sstable3-default
-  - name: e2enode-cosstable1-k8sstable3-serial
-    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sstable3-serial
-  - name: e2e-gce-cosdev-k8sdev-default
-    test_group_name: ci-kubernetes-e2e-gce-cosdev-k8sdev-default
-  - name: e2e-gce-cosdev-k8sdev-slow
-    test_group_name: ci-kubernetes-e2e-gce-cosdev-k8sdev-slow
-  - name: e2e-gce-cosdev-k8sdev-serial
-    test_group_name: ci-kubernetes-e2e-gce-cosdev-k8sdev-serial
-  - name: e2e-gce-cosdev-k8sbeta-default
-    test_group_name: ci-kubernetes-e2e-gce-cosdev-k8sbeta-default
-  - name: e2e-gce-cosdev-k8sbeta-slow
-    test_group_name: ci-kubernetes-e2e-gce-cosdev-k8sbeta-slow
-  - name: e2e-gce-cosdev-k8sbeta-serial
-    test_group_name: ci-kubernetes-e2e-gce-cosdev-k8sbeta-serial
-  - name: e2e-gce-cosdev-k8sstable1-default
-    test_group_name: ci-kubernetes-e2e-gce-cosdev-k8sstable1-default
-  - name: e2e-gce-cosdev-k8sstable1-slow
-    test_group_name: ci-kubernetes-e2e-gce-cosdev-k8sstable1-slow
-  - name: e2e-gce-cosdev-k8sstable1-serial
-    test_group_name: ci-kubernetes-e2e-gce-cosdev-k8sstable1-serial
-  - name: e2e-gce-cosbeta-k8sdev-default
-    test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-default
-  - name: e2e-gce-cosbeta-k8sdev-serial
-    test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-serial
-  - name: e2e-gce-cosbeta-k8sdev-slow
-    test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-slow
-  - name: e2e-gce-cosbeta-k8sbeta-default
-    test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sbeta-default
-  - name: e2e-gce-cosbeta-k8sbeta-serial
-    test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sbeta-serial
-  - name: e2e-gce-cosbeta-k8sbeta-slow
-    test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sbeta-slow
-  - name: e2e-gce-cosbeta-k8sstable1-default
-    test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable1-default
-  - name: e2e-gce-cosbeta-k8sstable1-serial
-    test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable1-serial
-  - name: e2e-gce-cosbeta-k8sstable1-slow
-    test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable1-slow
-  - name: e2e-gce-cosbeta-k8sstable2-default
-    test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable2-default
-  - name: e2e-gce-cosbeta-k8sstable2-serial
-    test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable2-serial
-  - name: e2e-gce-cosbeta-k8sstable2-slow
-    test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable2-slow
-  - name: e2e-gce-cosbeta-k8sstable3-default
-    test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable3-default
-  - name: e2e-gce-cosbeta-k8sstable3-serial
-    test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable3-serial
-  - name: e2e-gce-cosbeta-k8sstable3-slow
-    test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable3-slow
-  - name: e2e-gce-cosstable1-k8sdev-default
-    test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sdev-default
-  - name: e2e-gce-cosstable1-k8sdev-slow
-    test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sdev-slow
-  - name: e2e-gce-cosstable1-k8sdev-serial
-    test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sdev-serial
-  - name: e2e-gce-cosstable1-k8sbeta-default
-    test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sbeta-default
-  - name: e2e-gce-cosstable1-k8sbeta-slow
-    test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sbeta-slow
-  - name: e2e-gce-cosstable1-k8sbeta-serial
-    test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sbeta-serial
-  - name: e2e-gce-cosstable1-k8sstable1-default
-    test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable1-default
-  - name: e2e-gce-cosstable1-k8sstable1-slow
-    test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable1-slow
-  - name: e2e-gce-cosstable1-k8sstable1-serial
-    test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable1-serial
-  - name: e2e-gce-cosstable1-k8sstable2-default
-    test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable2-default
-  - name: e2e-gce-cosstable1-k8sstable2-slow
-    test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable2-slow
-  - name: e2e-gce-cosstable1-k8sstable2-serial
-    test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable2-serial
-  - name: e2e-gce-cosstable1-k8sstable3-default
-    test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable3-default
-  - name: e2e-gce-cosstable1-k8sstable3-slow
-    test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable3-slow
-  - name: e2e-gce-cosstable1-k8sstable3-serial
-    test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable3-serial
-  - name: e2e-gke-cosbeta-k8sdev-soak
-    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sdev-soak
-  - name: e2e-gke-cosbeta-k8sdev-stackdriver
-    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sdev-stackdriver
-  - name: e2e-gke-cosbeta-k8sbeta-soak
-    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sbeta-soak
-  - name: e2e-gke-cosbeta-k8sbeta-stackdriver
-    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sbeta-stackdriver
-  - name: e2e-gke-cosbeta-k8sstable1-soak
-    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sstable1-soak
-  - name: e2e-gke-cosbeta-k8sstable1-stackdriver
-    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sstable1-stackdriver
-  - name: e2e-gke-cosbeta-k8sstable2-soak
-    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sstable2-soak
-  - name: e2e-gke-cosbeta-k8sstable2-stackdriver
-    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sstable2-stackdriver
-  - name: e2e-gke-cosbeta-k8sstable3-soak
-    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sstable3-soak
-  - name: e2e-gke-cosbeta-k8sstable3-stackdriver
-    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sstable3-stackdriver
 
 - name: sig-node-kubelet
   dashboard_tab:
@@ -6089,30 +6470,6 @@ dashboards:
     - configuration_value: node_os_image
     - configuration_value: Commit
     - configuration_value: infra-commit
-  - name: e2e-gke-cosbeta-k8sdev-soak
-    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sdev-soak
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: e2e-gke-cosbeta-k8sdev-stackdriver
-    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sdev-stackdriver
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: e2e-gke-cosbeta-k8sbeta-soak
-    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sbeta-soak
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: e2e-gke-cosbeta-k8sbeta-stackdriver
-    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sbeta-stackdriver
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
 
 - name: sig-gcp-release-1.10
   dashboard_tab:
@@ -6142,18 +6499,6 @@ dashboards:
     - configuration_value: infra-commit
   - name: gci-gke-reboot-1.10
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-reboot
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: e2e-gke-cosbeta-k8sstable1-soak
-    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sstable1-soak
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: e2e-gke-cosbeta-k8sstable1-stackdriver
-    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sstable1-stackdriver
     column_header:
     - configuration_value: node_os_image
     - configuration_value: Commit
@@ -6213,19 +6558,6 @@ dashboards:
     - configuration_value: node_os_image
     - configuration_value: Commit
     - configuration_value: infra-commit
-  - name: e2e-gke-cosbeta-k8sstable2-soak
-    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sstable2-soak
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: e2e-gke-cosbeta-k8sstable2-stackdriver
-    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sstable2-stackdriver
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-
 
 - name: presubmits-kubernetes-blocking
   dashboard_tab:
@@ -6657,6 +6989,18 @@ dashboard_groups:
   - canonical-ubuntu2-k8sstable3
   - canonical-cdk
 
+dashboard_groups:
+- name: cos
+  dashboard_names:
+  - cos-cos1-k8sbeta
+  - cos-cos1-k8sstable1
+  - cos-cos1-k8sstable2
+  - cos-cos1-k8sstable3
+  - cos-cos2-k8sbeta
+  - cos-cos2-k8sstable1
+  - cos-cos2-k8sstable2
+  - cos-cos2-k8sstable3
+
 - name: google
   dashboard_names:
   - google-aws
@@ -6718,7 +7062,6 @@ dashboard_groups:
 - name: sig-node
   dashboard_names:
   - sig-node-cadvisor
-  - sig-node-cos-image
   - sig-node-kubelet
   - sig-node-containerd
   - sig-node-ppc64le
