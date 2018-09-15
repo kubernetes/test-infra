@@ -529,10 +529,11 @@ function redraw(fz) {
             r.appendChild(createTextCell(""));
         }
         if (spyglass) {
-            if (build.url.startsWith("https://k8s-gubernator.appspot.com/build/")) {
+            var buildIndex = build.url.indexOf("/build/");
+            if (buildIndex !== -1) {
                 const icon = createIcon("visibility", "View in Spyglass");
-                icon.href = build.url.replace("https://k8s-gubernator.appspot.com/build/",
-                    "https://prow.k8s.io/view/gcs/");
+                icon.href = window.location.origin + "/view/gcs/" +
+                    build.url.substring(buildIndex + "/build/".length);
                 const cell = document.createElement("TD");
                 cell.classList.add("icon-cell");
                 cell.appendChild(icon);
