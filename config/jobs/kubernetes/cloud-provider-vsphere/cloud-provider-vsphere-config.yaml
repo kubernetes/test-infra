@@ -101,7 +101,7 @@ presubmits:
           privileged: true
 
 postsubmits:
-  kubernetes/cloud-provider-vpshere:
+  kubernetes/cloud-provider-vsphere:
 
   # Deploys the CCM and CSI images if both the unit and integration tests succeed.
   - name: post-cloud-provider-vsphere-deploy

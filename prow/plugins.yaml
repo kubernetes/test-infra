@@ -244,8 +244,7 @@ repo_milestone:
 project_config:
   project_org_configs:
     kubernetes:
-      org_maintainers_team_id: 3162587
-      org_maintainers_team_name: sig-testing-dummy-project-team
+      org_maintainers_team_id: 3162587 # sig-testing-dummy-project-team
       org_default_column_map:
         test-infra-dummy-testing-project-plugin:
           To do
@@ -253,17 +252,14 @@ project_config:
           To do
       project_repo_configs:
         kubernetes:
-          repo_maintainers_team_id: 2460384
-          repo_maintainers_team_name: kubernetes-milestone-maintainers
+          repo_maintainers_team_id: 2460384 # kubernetes-milestone-maintainers
           repo_default_column_map:
             component-base:
               To do
             Workloads:
               Backlog
     kubeflow:
-      org_maintainers_team_id: 2460384
-      org_maintainers_team_name: kubernetes-milestone-maintainers
-
+      org_maintainers_team_id: 2460384 # kubernetes-milestone-maintainers
 config_updater:
   maps:
     label_sync/labels.yaml:
@@ -376,6 +372,7 @@ plugins:
   - lgtm
   - trigger
   - verify-owners
+  - wip
 
   kubernetes:
   - approve
@@ -471,6 +468,9 @@ plugins:
   - override
   - release-note
   - require-matching-label
+  - trigger
+
+  kubernetes/minikube:
   - trigger
 
   kubernetes/node-problem-detector:

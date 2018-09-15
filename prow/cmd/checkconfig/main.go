@@ -96,6 +96,7 @@ const (
 
 var allWarnings = []string{
 	mismatchedTideWarning,
+	tideStrictBranchWarning,
 	nonDecoratedJobsWarning,
 	jobNameLengthWarning,
 	needsOkToTestWarning,
