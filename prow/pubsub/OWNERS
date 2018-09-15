@@ -1,0 +1,6 @@
+approvers:
+  - yutongz
+reviewers:
+  - yutongz
+labels:
+ - area/prow/pubsub
