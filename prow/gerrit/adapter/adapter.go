@@ -62,19 +62,22 @@ type Controller struct {
 
 // NewController returns a new gerrit controller client
 func NewController(lastSyncFallback string, projects map[string][]string, kc *kube.Client, ca *config.Agent) (*Controller, error) {
-	lastUpdate := time.Now()
+	var lastUpdate time.Time
 	if lastSyncFallback != "" {
-		buf, err := ioutil.ReadFile(lastSyncFallback)
-		if err == nil {
+		if buf, err := ioutil.ReadFile(lastSyncFallback); err == nil {
 			unix, err := strconv.ParseInt(string(buf), 10, 64)
 			if err != nil {
 				return nil, err
 			}
 			lastUpdate = time.Unix(unix, 0)
-		} else if !os.IsNotExist(err) {
-			return nil, err
+		} else if err != nil && !os.IsNotExist(err) {
+			return nil, fmt.Errorf("failed to read lastSyncFallback: %v", err)
+		} else {
+			logrus.Warnf("lastSyncFallback not found: %s", lastSyncFallback)
+			lastUpdate = time.Now()
 		}
-		// fallback to time.Now() if file does not exist yet
+	} else {
+		lastUpdate = time.Now()
 	}
 
 	c, err := gerrit.NewClient(projects)

@@ -90,9 +90,9 @@ func NewClient(instances map[string][]string) (*Client, error) {
 }
 
 func auth(c *Client) {
+	logrus.Info("Starting auth loop...")
 	for {
-		time.Sleep(10 * time.Minute)
-
+		// TODO(fejta): migrate this to the grandmatriarch
 		cmd := exec.Command("python", "./git-cookie-authdaemon")
 		if err := cmd.Run(); err != nil {
 			logrus.WithError(err).Error("Fail to authenticate to gerrit using git-cookie-authdaemon")
@@ -116,6 +116,8 @@ func auth(c *Client) {
 
 			logrus.Infof("Authentication to %s successful, Username: %s", handler.instance, self.Name)
 		}
+
+		time.Sleep(10 * time.Minute)
 	}
 }
 
