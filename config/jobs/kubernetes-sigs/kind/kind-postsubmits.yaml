@@ -1,0 +1,12 @@
+# sigs.k8s.io/kind postsubmits
+postsubmits:
+  kubernetes-sigs/kind:
+  - name: ci-kind-build
+    decorate: true
+    path_alias: sigs.k8s.io/kind
+    always_run: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180912-7a027de0c-experimental
+        command:
+        - "./hack/ci/build-all.sh"
