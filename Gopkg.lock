@@ -1029,12 +1029,6 @@
   revision = "01bc873149a1802eb74df583613872d126449ed5"
 
 [[projects]]
-  branch = "release-1.10"
-  name = "k8s.io/apiserver"
-  packages = ["pkg/util/flag"]
-  revision = "0841753fc26e934b715ca7a83dced5bcb721245a"
-
-[[projects]]
   name = "k8s.io/client-go"
   packages = [
     "discovery",
@@ -1135,11 +1129,6 @@
   revision = "9de8e796a74d16d2a285165727d04c185ebca6dc"
 
 [[projects]]
-  name = "k8s.io/contrib"
-  packages = ["test-utils/utils"]
-  revision = "8f0f928c68f2c76ade9c1ee0249ae5cea5673cac"
-
-[[projects]]
   branch = "master"
   name = "k8s.io/gengo"
   packages = [
@@ -1178,6 +1167,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b5213975990940df4092d5a812e8d180dd9edc64a5f4f7c846fd114182e743f7"
+  inputs-digest = "c76e54b61b8d19cc821d1ff0662a4d10fa4e0267d8b4e459fd3b643470d6c46f"
   solver-name = "gps-cdcl"
   solver-version = 1
