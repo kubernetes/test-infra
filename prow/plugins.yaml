@@ -573,6 +573,9 @@ plugins:
   - wip
   - yuks
 
+  kubernetes-sigs/kind:
+  - trigger
+
   kubernetes-sigs/federation-v2:
   - trigger
 
