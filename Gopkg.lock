@@ -233,6 +233,12 @@
   version = "v2.8.0"
 
 [[projects]]
+  name = "github.com/evanphx/json-patch"
+  packages = ["."]
+  revision = "72bf35d0ff611848c1dc9df0f976c81192392fa5"
+  version = "v4.1.0"
+
+[[projects]]
   name = "github.com/fsnotify/fsnotify"
   packages = ["."]
   revision = "c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9"
@@ -1194,6 +1200,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "5633fc6ce037894307f2bcbe0ec1bfc2417e79846713476f1867c91b0bf7b6dd"
+  inputs-digest = "e59fc6498d7c060889e595d6514a5ca85d1ba98b50609e734d10f872de32e97a"
   solver-name = "gps-cdcl"
   solver-version = 1
