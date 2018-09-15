@@ -71,7 +71,7 @@ type githubClient interface {
 }
 
 func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
-	return handle(pc.GitHubClient, pc.GitClient, pc.Logger, &e)
+	return handle(*pc.PluginConfig.Golint.MinimumConfidence, pc.GitHubClient, pc.GitClient, pc.Logger, &e)
 }
 
 // modifiedGoFiles returns a map from filename to patch string for all go files
@@ -155,7 +155,7 @@ func problemsInFiles(r *git.Repo, files map[string]string) (map[string]map[int]l
 	return problems, nil
 }
 
-func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handle(minimumConfidence float64, ghc githubClient, gc *git.Client, log *logrus.Entry, e *github.GenericCommentEvent) error {
 	// Only handle open PRs and new requests.
 	if e.IssueState != "open" || !e.IsPR || e.Action != github.GenericCommentActionCreated {
 		return nil
@@ -203,6 +203,14 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, e *github.Gener
 	problems, err := problemsInFiles(r, modifiedFiles)
 	if err != nil {
 		return err
+	}
+	// Filter out problems that are below our threshold
+	for file := range problems {
+		for line, problem := range problems[file] {
+			if problem.Confidence < minimumConfidence {
+				delete(problems[file], line)
+			}
+		}
 	}
 	log.WithField("duration", time.Since(finishClone)).Info("Linted.")
 
