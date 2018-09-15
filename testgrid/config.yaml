@@ -2757,12 +2757,15 @@ test_groups:
   num_columns_recent: 3
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
+# sigs.k8s.io/kind jobs
 - name: ci-kubernetes-kind-conformance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kind-conformance
   num_columns_recent: 3
 - name: ci-kubernetes-kind-conformance-parallel
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kind-conformance-parallel
   num_columns_recent: 3
+- name: ci-kind-build
+  gcs_prefix: kubernetes-jenkins/logs/ci-kind-build
 
 # cloud-provider-openstack e2e conformance tests
 # name format: PR trigger ci-presubmit-${zuul-job-name}
@@ -5986,6 +5989,18 @@ dashboards:
     code_search_url_template:
       url: https://github.com/kubernetes/org/compare/<start-custom-0>...<end-custom-0>
 
+- name: sig-testing-kind
+  dashboard_tab:
+  - name: ci build
+    description: kind CI build
+    test_group_name: ci-kind-build
+  - name: conformance, master (dev)
+    description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster
+    test_group_name: ci-kubernetes-kind-conformance
+  - name: conformance, master (dev) [non-serial]
+    description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster, skipping [Serial] tests
+    test_group_name: ci-kubernetes-kind-conformance-parallel
+
 - name: sig-ui
   dashboard_tab:
   - name: TODO
@@ -6741,6 +6756,7 @@ dashboard_groups:
   - sig-testing-misc
   - sig-testing-canaries
   - sig-testing-org
+  - sig-testing-kind
 
 - name: sig-gcp
   dashboard_names:
