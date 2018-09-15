@@ -36,6 +36,10 @@ periodics:
     preset-service-account: "true"
   decorate: true
   path_alias: "k8s.io/test-infra"
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
   spec:
     containers:
     - command:
