@@ -14,8 +14,10 @@ docker_bundle(
     images = prow_tags(
         "branchprotector",
         "clonerefs",
-        "entrypoint",
         "deck",
+        "entrypoint",
+        "gerrit",
+        "gerrit-crier",
         "grandmatriarch",
         "hook",
         "horologium",
