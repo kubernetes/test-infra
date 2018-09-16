@@ -261,7 +261,7 @@ func TestLGTMComment(t *testing.T) {
 			HTMLURL:     "<url>",
 		}
 		if tc.hasLGTM {
-			fc.LabelsAdded = []string{"org/repo#5:" + LgtmLabel}
+			fc.LabelsAdded = []string{"org/repo#5:" + LGTMLabel}
 		}
 		oc := &fakeOwnersClient{approvers: approvers, reviewers: reviewers}
 		pc := &plugins.Configuration{}
@@ -543,7 +543,7 @@ func TestLGTMFromApproveReview(t *testing.T) {
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 		}
 		if tc.hasLGTM {
-			fc.LabelsAdded = []string{"org/repo#5:" + LgtmLabel}
+			fc.LabelsAdded = []string{"org/repo#5:" + LGTMLabel}
 		}
 		oc := &fakeOwnersClient{approvers: approvers, reviewers: reviewers}
 		pc := &plugins.Configuration{}
@@ -651,7 +651,7 @@ func TestHandlePullRequest(t *testing.T) {
 					},
 				},
 			},
-			labelsRemoved: []string{LgtmLabel},
+			labelsRemoved: []string{LGTMLabel},
 			issueComments: []fakeIssueComment{
 				{
 					Owner:   "kubernetes",
@@ -689,9 +689,9 @@ func TestHandlePullRequest(t *testing.T) {
 				Owner:  "kubernetes",
 				Repo:   "kubernetes",
 				Number: 101,
-				Label:  LgtmLabel,
+				Label:  LGTMLabel,
 			},
-			labelsRemoved:    []string{LgtmLabel},
+			labelsRemoved:    []string{LGTMLabel},
 			expectNoComments: true,
 		},
 	}

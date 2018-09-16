@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// Package lgtm implements the lgtm plugin
 package lgtm
 
 import (
@@ -30,10 +31,12 @@ import (
 	"k8s.io/test-infra/prow/repoowners"
 )
 
+// PluginName is the registered plugin name
 const PluginName = "lgtm"
 
 var (
-	LgtmLabel           = "lgtm"
+	// LGTMLabel is the name of the lgtm label applied by the lgtm plugin
+	LGTMLabel           = "lgtm"
 	lgtmRe              = regexp.MustCompile(`(?mi)^/lgtm(?: no-issue)?\s*$`)
 	lgtmCancelRe        = regexp.MustCompile(`(?mi)^/lgtm cancel\s*$`)
 	removeLGTMLabelNoti = "New changes are detected. LGTM label has been removed."
@@ -73,6 +76,8 @@ func optionsForRepo(config *plugins.Configuration, org, repo string) *plugins.Lg
 	}
 	return &plugins.Lgtm{}
 }
+
+// strInSlice returns true if any string in slice matches str exactly
 func strInSlice(str string, slice []string) bool {
 	for _, elem := range slice {
 		if elem == str {
@@ -144,14 +149,7 @@ func handleGenericComment(gc githubClient, config *plugins.Configuration, owners
 		return nil
 	}
 
-	// Author cannot LGTM own PR
-	isAuthor := rc.author == rc.issueAuthor
-	if isAuthor && wantLGTM {
-		resp := "you cannot LGTM your own PR."
-		log.Infof("Commenting with \"%s\".", resp)
-		return gc.CreateComment(rc.repo.Owner.Login, rc.repo.Name, rc.number, plugins.FormatResponseRaw(rc.body, rc.htmlURL, rc.author, resp))
-	}
-
+	// use common handler to do the rest
 	return handle(wantLGTM, config, ownersClient, rc, gc, log)
 }
 
@@ -187,6 +185,8 @@ func handlePullRequestReview(gc githubClient, config *plugins.Configuration, own
 	} else {
 		return nil
 	}
+
+	// use common handler to do the rest
 	return handle(wantLGTM, config, ownersClient, rc, gc, log)
 }
 
@@ -200,6 +200,14 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 	org := rc.repo.Owner.Login
 	repoName := rc.repo.Name
 
+	// Author cannot LGTM own PR, comment and abort
+	isAuthor := author == issueAuthor
+	if isAuthor && wantLGTM {
+		resp := "you cannot LGTM your own PR."
+		log.Infof("Commenting with \"%s\".", resp)
+		return gc.CreateComment(rc.repo.Owner.Login, rc.repo.Name, rc.number, plugins.FormatResponseRaw(rc.body, rc.htmlURL, rc.author, resp))
+	}
+
 	// Determine if reviewer is already assigned
 	isAssignee := false
 	for _, assignee := range assignees {
@@ -208,16 +216,14 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 			break
 		}
 	}
-	// If we need to skip collaborator checks for this repo, what we actually need
-	// to do is skip assignment checks and use OWNERS files to determine whether the
-	// commenter can lgtm the PR.
+
+	// check if skip collaborators is enabled for this org/repo
 	skipCollaborators := skipCollaborators(config, org, repoName)
-	isAuthor := author == issueAuthor
-	if isAuthor && wantLGTM {
-		resp := "you cannot LGTM your own PR."
-		log.Infof("Commenting with \"%s\".", resp)
-		return gc.CreateComment(org, repoName, number, plugins.FormatResponseRaw(body, htmlURL, author, resp))
-	} else if !isAuthor && !isAssignee && !skipCollaborators {
+
+	// either ensure that the commentor is a collaborator or an approver/reviwer
+	if !isAuthor && !isAssignee && !skipCollaborators {
+		// in this case we need to ensure the commentor is assignable to the PR
+		// by assigning them
 		log.Infof("Assigning %s/%s#%d to %s", org, repoName, number, author)
 		if err := gc.AssignIssue(org, repoName, number, []string{author}); err != nil {
 			msg := "assigning you to the PR failed"
@@ -233,6 +239,8 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 			return gc.CreateComment(org, repoName, number, plugins.FormatResponseRaw(body, htmlURL, author, resp))
 		}
 	} else if !isAuthor && skipCollaborators {
+		// in this case we depend on OWNERS files instead to check if the author
+		// is an approver or reviwer of the changed files
 		log.Debugf("Skipping collaborator checks and loading OWNERS for %s/%s#%d", org, repoName, number)
 		ro, err := loadRepoOwners(gc, ownersClient, org, repoName, number)
 		if err != nil {
@@ -249,24 +257,29 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 		}
 	}
 
+	// now we update the LGTM labels, having checked all cases where changing
+	// LGTM was not allowed for the commentor
+
 	// Only add the label if it doesn't have it, and vice versa.
-	hasLGTM := false
 	labels, err := gc.GetIssueLabels(org, repoName, number)
 	if err != nil {
 		log.WithError(err).Errorf("Failed to get the labels on %s/%s#%d.", org, repoName, number)
 	}
+	hasLGTM := github.HasLabel(LGTMLabel, labels)
 
-	hasLGTM = github.HasLabel(LgtmLabel, labels)
-
+	// remove the label if necessary, we're done after this
 	if hasLGTM && !wantLGTM {
 		log.Info("Removing LGTM label.")
-		return gc.RemoveLabel(org, repoName, number, LgtmLabel)
-	} else if !hasLGTM && wantLGTM {
+		return gc.RemoveLabel(org, repoName, number, LGTMLabel)
+	}
+
+	// add the label if necessary, we're done after this
+	if !hasLGTM && wantLGTM {
 		log.Info("Adding LGTM label.")
-		if err := gc.AddLabel(org, repoName, number, LgtmLabel); err != nil {
+		if err := gc.AddLabel(org, repoName, number, LGTMLabel); err != nil {
 			return err
 		}
-		// Delete the LGTM removed noti after the LGTM label is added.
+		// Delete the LGTM removed notification after the LGTM label is added.
 		botname, err := gc.BotName()
 		if err != nil {
 			log.WithError(err).Errorf("Failed to get bot name.")
@@ -283,6 +296,7 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 			}
 		}
 	}
+
 	return nil
 }
 
@@ -300,26 +314,27 @@ func handlePullRequest(gc ghLabelClient, pe github.PullRequestEvent, log *logrus
 		return nil
 	}
 
-	// Don't bother checking if it has the label...it's a race, and we'll have
+	// Don't bother checking if it has the label... it's a race, and we'll have
 	// to handle failure due to not being labeled anyway.
 	org := pe.PullRequest.Base.Repo.Owner.Login
 	repo := pe.PullRequest.Base.Repo.Name
 	number := pe.PullRequest.Number
 
 	var labelNotFound bool
-	if err := gc.RemoveLabel(org, repo, number, LgtmLabel); err != nil {
+	if err := gc.RemoveLabel(org, repo, number, LGTMLabel); err != nil {
 		if _, labelNotFound = err.(*github.LabelNotFound); !labelNotFound {
 			return fmt.Errorf("failed removing lgtm label: %v", err)
 		}
-
 		// If the error is indeed *github.LabelNotFound, consider it a success.
 	}
-	// Creates a comment to inform participants that LGTM label is removed due to new
+
+	// Create a comment to inform participants that LGTM label is removed due to new
 	// pull request changes.
 	if !labelNotFound {
-		log.Infof("Create a LGTM removed notification to %s/%s#%d  with a message: %s", org, repo, number, removeLGTMLabelNoti)
+		log.Infof("Commenting with an LGTM removed notification to %s/%s#%d with a message: %s", org, repo, number, removeLGTMLabelNoti)
 		return gc.CreateComment(org, repo, number, removeLGTMLabelNoti)
 	}
+
 	return nil
 }
 
