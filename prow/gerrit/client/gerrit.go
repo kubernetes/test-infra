@@ -21,9 +21,6 @@ package gerrit
 import (
 	"fmt"
 	"io/ioutil"
-	"os"
-	"os/exec"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -89,27 +86,24 @@ func NewClient(instances map[string][]string) (*Client, error) {
 	return c, nil
 }
 
-func auth(c *Client) {
+func auth(c *Client, cookiefilePath string) {
 	logrus.Info("Starting auth loop...")
+	var previousToken string
+	wait := 10 * time.Minute
 	for {
-		// TODO(fejta): migrate this to the grandmatriarch
-
-		// look for authdaemon under root dir
-		if _, err := os.Stat("/git-cookie-authdaemon"); os.IsNotExist(err) {
-			panic("cannot find /git-cookie-authdaemon")
-		}
-
-		cmd := exec.Command("/git-cookie-authdaemon")
-		if err := cmd.Run(); err != nil {
-			logrus.WithError(err).Error("Fail to authenticate to gerrit using git-cookie-authdaemon")
-		}
-
-		raw, err := ioutil.ReadFile(filepath.Join(os.Getenv("HOME"), ".git-credential-cache/cookie"))
+		raw, err := ioutil.ReadFile(cookiefilePath)
 		if err != nil {
-			logrus.WithError(err).Error("Fail to read auth cookie")
+			logrus.WithError(err).Error("Failed to read auth cookie")
 		}
 		fields := strings.Fields(string(raw))
 		token := fields[len(fields)-1]
+
+		if token == previousToken {
+			time.Sleep(wait)
+			continue
+		}
+
+		logrus.Info("New token, updating handlers...")
 
 		// update auth token for each instance
 		for _, handler := range c.handlers {
@@ -117,20 +111,20 @@ func auth(c *Client) {
 
 			self, _, err := handler.account.GetAccount("self")
 			if err != nil {
-				logrus.WithError(err).Error("Fail to auth with token")
+				logrus.WithError(err).Error("Failed to auth with token")
 			}
 
 			logrus.Infof("Authentication to %s successful, Username: %s", handler.instance, self.Name)
 		}
-
-		time.Sleep(10 * time.Minute)
+		previousToken = token
+		time.Sleep(wait)
 	}
 }
 
 // Start will authenticate the client with gerrit periodically
 // Start must be called before user calls any client functions.
-func (c *Client) Start() {
-	go auth(c)
+func (c *Client) Start(cookiefilePath string) {
+	go auth(c, cookiefilePath)
 }
 
 // QueryChanges queries for all changes from all projects after lastUpdate time
