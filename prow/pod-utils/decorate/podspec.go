@@ -193,6 +193,7 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 		}
 
 		var cloneArgs []string
+		var cookiefilePath string
 
 		if cp := pj.Spec.DecorationConfig.CookiefileSecret; cp != "" {
 			// my-cookie/.gitcookies => find my-cookie secret at /secrets/cookiefile/.gitcookies
@@ -220,10 +221,13 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 					},
 				},
 			})
-			cloneArgs = append(cloneArgs, "--cookiefile="+path.Join(cookiefileMountPath, base))
+			cookiefilePath = path.Join(cookiefileMountPath, base)
+			// TODO(fejta): the flags are ignored so long as the magic env is set
+			cloneArgs = append(cloneArgs, "--cookiefile="+cookiefilePath)
 		}
 
 		cloneLog = fmt.Sprintf("%s/clone.json", logMountPath)
+		// TODO(fejta): use flags
 		cloneConfigEnv, err := clonerefs.Encode(clonerefs.Options{
 			SrcRoot:      codeMountPath,
 			Log:          cloneLog,
@@ -231,6 +235,7 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 			GitUserEmail: clonerefs.DefaultGitUserEmail,
 			GitRefs:      refs,
 			KeyFiles:     sshKeyPaths,
+			CookiePath:   cookiefilePath,
 		})
 		if err != nil {
 			return fmt.Errorf("could not encode clone configuration as JSON: %v", err)
@@ -258,6 +263,7 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 	if willCloneRefs {
 		initUploadOptions.Log = cloneLog
 	}
+	// TODO(fejta): use flags
 	initUploadConfigEnv, err := initupload.Encode(initUploadOptions)
 	if err != nil {
 		return fmt.Errorf("could not encode initupload configuration as JSON: %v", err)
@@ -289,6 +295,7 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 		ProcessLog: fmt.Sprintf("%s/process-log.txt", logMountPath),
 		MarkerFile: fmt.Sprintf("%s/marker-file.txt", logMountPath),
 	}
+	// TODO(fejta): use flags
 	entrypointConfigEnv, err := entrypoint.Encode(entrypoint.Options{
 		Args:        append(spec.Containers[0].Command, spec.Containers[0].Args...),
 		Options:     &wrapperOptions,
@@ -308,6 +315,7 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 	spec.Containers[0].VolumeMounts = append(spec.Containers[0].VolumeMounts, logMount, toolsMount)
 
 	gcsOptions.Items = append(gcsOptions.Items, artifactsPath)
+	// TODO(fejta): use flags
 	sidecarConfigEnv, err := sidecar.Encode(sidecar.Options{
 		GcsOptions:     &gcsOptions,
 		WrapperOptions: &wrapperOptions,
