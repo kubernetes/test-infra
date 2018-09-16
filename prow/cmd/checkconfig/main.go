@@ -186,7 +186,7 @@ func validateTideRequirements(configAgent config.Agent, pluginAgent plugins.Plug
 		// using the matcher
 		config orgRepoConfig
 	}{
-		{plugin: lgtm.PluginName, label: lgtm.LgtmLabel, matcher: requires},
+		{plugin: lgtm.PluginName, label: lgtm.LGTMLabel, matcher: requires},
 		{plugin: approve.PluginName, label: approve.ApprovedLabel, matcher: requires},
 		{plugin: hold.PluginName, label: hold.Label, matcher: forbids},
 		{plugin: wip.PluginName, label: wip.Label, matcher: forbids},

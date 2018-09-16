@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// Package lgtm implements the lgtm plugin
 package lgtm
 
 import (
@@ -30,10 +31,12 @@ import (
 	"k8s.io/test-infra/prow/repoowners"
 )
 
+// PluginName is the registered plugin name
 const PluginName = "lgtm"
 
 var (
-	LgtmLabel           = "lgtm"
+	// LGTMLabel is the name of the lgtm label applied by the lgtm plugin
+	LGTMLabel           = "lgtm"
 	lgtmRe              = regexp.MustCompile(`(?mi)^/lgtm(?: no-issue)?\s*$`)
 	lgtmCancelRe        = regexp.MustCompile(`(?mi)^/lgtm cancel\s*$`)
 	removeLGTMLabelNoti = "New changes are detected. LGTM label has been removed."
@@ -256,14 +259,14 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 		log.WithError(err).Errorf("Failed to get the labels on %s/%s#%d.", org, repoName, number)
 	}
 
-	hasLGTM = github.HasLabel(LgtmLabel, labels)
+	hasLGTM = github.HasLabel(LGTMLabel, labels)
 
 	if hasLGTM && !wantLGTM {
 		log.Info("Removing LGTM label.")
-		return gc.RemoveLabel(org, repoName, number, LgtmLabel)
+		return gc.RemoveLabel(org, repoName, number, LGTMLabel)
 	} else if !hasLGTM && wantLGTM {
 		log.Info("Adding LGTM label.")
-		if err := gc.AddLabel(org, repoName, number, LgtmLabel); err != nil {
+		if err := gc.AddLabel(org, repoName, number, LGTMLabel); err != nil {
 			return err
 		}
 		// Delete the LGTM removed noti after the LGTM label is added.
@@ -307,7 +310,7 @@ func handlePullRequest(gc ghLabelClient, pe github.PullRequestEvent, log *logrus
 	number := pe.PullRequest.Number
 
 	var labelNotFound bool
-	if err := gc.RemoveLabel(org, repo, number, LgtmLabel); err != nil {
+	if err := gc.RemoveLabel(org, repo, number, LGTMLabel); err != nil {
 		if _, labelNotFound = err.(*github.LabelNotFound); !labelNotFound {
 			return fmt.Errorf("failed removing lgtm label: %v", err)
 		}
