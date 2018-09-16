@@ -269,7 +269,7 @@ func TestLGTMComment(t *testing.T) {
 			pc.Owners.SkipCollaborators = []string{"org/repo"}
 		}
 		if err := handleGenericComment(fc, pc, oc, logrus.WithField("plugin", PluginName), *e); err != nil {
-			t.Errorf("didn't expect error from lgtmComment: %v", err)
+			t.Errorf("For case %s, didn't expect error from lgtmComment: %v", tc.name, err)
 			continue
 		}
 		if tc.shouldAssign {
@@ -281,34 +281,34 @@ func TestLGTMComment(t *testing.T) {
 				}
 			}
 			if !found || len(fc.AssigneesAdded) != 1 {
-				t.Errorf("should have assigned %s but added assignees are %s", tc.commenter, fc.AssigneesAdded)
+				t.Errorf("For case %s, should have assigned %s but added assignees are %s", tc.name, tc.commenter, fc.AssigneesAdded)
 			}
 		} else if len(fc.AssigneesAdded) != 0 {
-			t.Errorf("should not have assigned anyone but assigned %s", fc.AssigneesAdded)
+			t.Errorf("For case %s, should not have assigned anyone but assigned %s", tc.name, fc.AssigneesAdded)
 		}
 		if tc.shouldToggle {
 			if tc.hasLGTM {
 				if len(fc.LabelsRemoved) == 0 {
-					t.Errorf("should have removed LGTM.")
+					t.Errorf("For case %s, should have removed LGTM.", tc.name)
 				} else if len(fc.LabelsAdded) > 1 {
-					t.Errorf("should not have added LGTM.")
+					t.Errorf("For case %s, should not have added LGTM.", tc.name)
 				}
 			} else {
 				if len(fc.LabelsAdded) == 0 {
-					t.Errorf("should have added LGTM.")
+					t.Errorf("For case %s, should have added LGTM.", tc.name)
 				} else if len(fc.LabelsRemoved) > 0 {
-					t.Errorf("should not have removed LGTM.")
+					t.Errorf("For case %s, should not have removed LGTM.", tc.name)
 				}
 			}
 		} else if len(fc.LabelsRemoved) > 0 {
-			t.Errorf("should not have removed LGTM.")
+			t.Errorf("For case %s, should not have removed LGTM.", tc.name)
 		} else if (tc.hasLGTM && len(fc.LabelsAdded) > 1) || (!tc.hasLGTM && len(fc.LabelsAdded) > 0) {
-			t.Errorf("should not have added LGTM.")
+			t.Errorf("For case %s, should not have added LGTM.", tc.name)
 		}
 		if tc.shouldComment && len(fc.IssueComments[5]) != 1 {
-			t.Errorf("should have commented.")
+			t.Errorf("For case %s, should have commented.", tc.name)
 		} else if !tc.shouldComment && len(fc.IssueComments[5]) != 0 {
-			t.Errorf("should not have commented.")
+			t.Errorf("For case %s, should not have commented.", tc.name)
 		}
 	}
 }
@@ -705,30 +705,30 @@ func TestHandlePullRequest(t *testing.T) {
 			err := handlePullRequest(fakeGitHub, c.event, logrus.WithField("plugin", PluginName))
 
 			if err != nil && c.err == nil {
-				t.Fatalf("handlePullRequest error: %v", err)
+				t.Fatalf("For case %s, handlePullRequest error: %v", c.name, err)
 			}
 
 			if err == nil && c.err != nil {
-				t.Fatalf("handlePullRequest wanted error: %v, got nil", c.err)
+				t.Fatalf("For case %s, handlePullRequest wanted error: %v, got nil", c.name, c.err)
 			}
 
 			if got, want := err, c.err; !equality.Semantic.DeepEqual(got, want) {
-				t.Fatalf("handlePullRequest error mismatch: got %v, want %v", got, want)
+				t.Fatalf("For case %s, handlePullRequest error mismatch: got %v, want %v", c.name, got, want)
 			}
 
 			if got, want := len(fakeGitHub.labelsRemoved), len(c.labelsRemoved); got != want {
 				t.Logf("labelsRemoved: got %v, want: %v", fakeGitHub.labelsRemoved, c.labelsRemoved)
-				t.Fatalf("labelsRemoved length mismatch: got %d, want %d", got, want)
+				t.Fatalf("For case %s, labelsRemoved length mismatch: got %d, want %d", c.name, got, want)
 			}
 
 			if got, want := fakeGitHub.issueComments, c.issueComments; !equality.Semantic.DeepEqual(got, want) {
-				t.Fatalf("LGTM revmoved notifications mismatch: got %v, want %v", got, want)
+				t.Fatalf("For case %s, LGTM revmoved notifications mismatch: got %v, want %v", c.name, got, want)
 			}
 			if c.expectNoComments && len(fakeGitHub.issueComments) > 0 {
-				t.Fatalf("expected no comments but got %v", fakeGitHub.issueComments)
+				t.Fatalf("For case %s, expected no comments but got %v", c.name, fakeGitHub.issueComments)
 			}
 			if !c.expectNoComments && len(fakeGitHub.issueComments) == 0 {
-				t.Fatalf("expected comments but got none")
+				t.Fatalf("For case %s, expected comments but got none", c.name)
 			}
 		})
 	}
