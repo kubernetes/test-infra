@@ -15,9 +15,16 @@ go_library(
     ],
 )
 
-go_image(
-    name = "clonerefs-go_image",
-    base = "@git-base//image",
+go_binary(
+    name = "clonerefs",
+    embed = [":go_default_library"],
+    pure = "on",
+    visibility = ["//visibility:public"],
+)
+
+# same as binary above, but with goarch and goos for placing in the docker image
+go_binary(
+    name = "clonerefs-linux-amd64",
     embed = [":go_default_library"],
     goarch = "amd64",
     goos = "linux",
@@ -25,19 +32,19 @@ go_image(
     visibility = ["//visibility:public"],
 )
 
+go_image(
+    name = "clonerefs-go_image",
+    base = "@git-base//image",
+    binary = ":clonerefs-linux-amd64",
+    visibility = ["//visibility:public"],
+)
+
 container_image(
     name = "image",
     base = ":clonerefs-go_image",
     symlinks = {
-        "/clonerefs": "/app/prow/cmd/clonerefs",
+        "/clonerefs": "/app/prow/cmd/clonerefs/clonerefs-linux-amd64",
     },
-    visibility = ["//visibility:public"],
-)
-
-go_binary(
-    name = "clonerefs",
-    embed = [":go_default_library"],
-    pure = "on",
     visibility = ["//visibility:public"],
 )
 

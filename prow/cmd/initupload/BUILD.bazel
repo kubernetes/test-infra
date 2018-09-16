@@ -2,25 +2,6 @@ load("@io_bazel_rules_docker//container:image.bzl", "container_image")
 load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
-go_image(
-    name = "initupload-go_image",
-    base = "@alpine-base//image",
-    embed = [":go_default_library"],
-    goarch = "amd64",
-    goos = "linux",
-    pure = "on",
-    visibility = ["//visibility:public"],
-)
-
-container_image(
-    name = "image",
-    base = ":initupload-go_image",
-    symlinks = {
-        "/initupload": "/app/prow/cmd/initupload",
-    },
-    visibility = ["//visibility:public"],
-)
-
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
@@ -38,6 +19,32 @@ go_binary(
     name = "initupload",
     embed = [":go_default_library"],
     pure = "on",
+    visibility = ["//visibility:public"],
+)
+
+# same as binary above, but with goarch and goos for placing in the docker image
+go_binary(
+    name = "initupload-linux-amd64",
+    embed = [":go_default_library"],
+    goarch = "amd64",
+    goos = "linux",
+    pure = "on",
+    visibility = ["//visibility:public"],
+)
+
+go_image(
+    name = "initupload-go_image",
+    base = "@alpine-base//image",
+    binary = ":initupload-linux-amd64",
+    visibility = ["//visibility:public"],
+)
+
+container_image(
+    name = "image",
+    base = ":initupload-go_image",
+    symlinks = {
+        "/initupload": "/app/prow/cmd/initupload/initupload-linux-amd64",
+    },
     visibility = ["//visibility:public"],
 )
 
