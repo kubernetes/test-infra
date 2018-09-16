@@ -19,6 +19,7 @@ package adapter
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -61,22 +62,22 @@ type Controller struct {
 }
 
 // NewController returns a new gerrit controller client
-func NewController(lastSyncFallback string, projects map[string][]string, kc *kube.Client, ca *config.Agent) (*Controller, error) {
+func NewController(lastSyncFallback, cookiefilePath string, projects map[string][]string, kc *kube.Client, ca *config.Agent) (*Controller, error) {
+	if lastSyncFallback == "" {
+		return nil, errors.New("empty lastSyncFallback")
+	}
+
 	var lastUpdate time.Time
-	if lastSyncFallback != "" {
-		if buf, err := ioutil.ReadFile(lastSyncFallback); err == nil {
-			unix, err := strconv.ParseInt(string(buf), 10, 64)
-			if err != nil {
-				return nil, err
-			}
-			lastUpdate = time.Unix(unix, 0)
-		} else if err != nil && !os.IsNotExist(err) {
-			return nil, fmt.Errorf("failed to read lastSyncFallback: %v", err)
-		} else {
-			logrus.Warnf("lastSyncFallback not found: %s", lastSyncFallback)
-			lastUpdate = time.Now()
+	if buf, err := ioutil.ReadFile(lastSyncFallback); err == nil {
+		unix, err := strconv.ParseInt(string(buf), 10, 64)
+		if err != nil {
+			return nil, err
 		}
+		lastUpdate = time.Unix(unix, 0)
+	} else if err != nil && !os.IsNotExist(err) {
+		return nil, fmt.Errorf("failed to read lastSyncFallback: %v", err)
 	} else {
+		logrus.Warnf("lastSyncFallback not found: %s", lastSyncFallback)
 		lastUpdate = time.Now()
 	}
 
@@ -84,7 +85,7 @@ func NewController(lastSyncFallback string, projects map[string][]string, kc *ku
 	if err != nil {
 		return nil, err
 	}
-	c.Start()
+	c.Start(cookiefilePath)
 
 	return &Controller{
 		kc:               kc,
