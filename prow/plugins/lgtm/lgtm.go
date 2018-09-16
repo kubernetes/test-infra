@@ -34,7 +34,9 @@ const PluginName = "lgtm"
 
 var (
 	LgtmLabel           = "lgtm"
+	TBRLabel            = "to-be-reviewed"
 	lgtmRe              = regexp.MustCompile(`(?mi)^/lgtm(?: no-issue)?\s*$`)
+	tbrRE               = regexp.MustCompile(`(?mi)^/tbr\s*$`)
 	lgtmCancelRe        = regexp.MustCompile(`(?mi)^/lgtm cancel\s*$`)
 	removeLGTMLabelNoti = "New changes are detected. LGTM label has been removed."
 )
@@ -53,11 +55,11 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		Description: "The lgtm plugin manages the application and removal of the 'lgtm' (Looks Good To Me) label which is typically used to gate merging.",
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
-		Usage:       "/lgtm [cancel] or Github Review action",
-		Description: "Adds or removes the 'lgtm' label which is typically used to gate merging.",
+		Usage:       "/lgtm [cancel] or /tbr or Github Review action",
+		Description: "Adds or removes the 'lgtm' label which is typically used to gate merging. If enabled, /tbr also adds 'to-be-reviewed' label",
 		Featured:    true,
-		WhoCanUse:   "Collaborators on the repository. '/lgtm cancel' can be used additionally by the PR author.",
-		Examples:    []string{"/lgtm", "/lgtm cancel", "<a href=\"https://help.github.com/articles/about-pull-request-reviews/\">'Approve' or 'Request Changes'</a>"},
+		WhoCanUse:   "Collaborators on the repository. '/lgtm cancel' can be used additionally by the PR author. PR authors can /tbr if enabled in config.",
+		Examples:    []string{"/lgtm", "/lgtm cancel", "/tbr", "<a href=\"https://help.github.com/articles/about-pull-request-reviews/\">'Approve' or 'Request Changes'</a>"},
 	})
 	return pluginHelp, nil
 }
@@ -135,11 +137,14 @@ func handleGenericComment(gc githubClient, config *plugins.Configuration, owners
 
 	// If we create an "/lgtm" comment, add lgtm if necessary.
 	// If we create a "/lgtm cancel" comment, remove lgtm if necessary.
-	wantLGTM := false
+	// If we create a "/tbr" comment, add lgtm and to-be-reviewed if necessary.
+	wantLGTM, wantTBR := false, false
 	if lgtmRe.MatchString(rc.body) {
 		wantLGTM = true
 	} else if lgtmCancelRe.MatchString(rc.body) {
 		wantLGTM = false
+	} else if tbrRE.MatchString(rc.body) {
+		wantTBR = true
 	} else {
 		return nil
 	}
@@ -151,8 +156,14 @@ func handleGenericComment(gc githubClient, config *plugins.Configuration, owners
 		log.Infof("Commenting with \"%s\".", resp)
 		return gc.CreateComment(rc.repo.Owner.Login, rc.repo.Name, rc.number, plugins.FormatResponseRaw(rc.body, rc.htmlURL, rc.author, resp))
 	}
+	// can only TBR your own PR
+	if !isAuthor && wantTBR {
+		resp := "you cannot TBR someone else's PR."
+		log.Infof("Commenting with \"%s\".", resp)
+		return gc.CreateComment(rc.repo.Owner.Login, rc.repo.Name, rc.number, plugins.FormatResponseRaw(rc.body, rc.htmlURL, rc.author, resp))
+	}
 
-	return handle(wantLGTM, config, ownersClient, rc, gc, log)
+	return handle(wantLGTM, wantTBR, config, ownersClient, rc, gc, log)
 }
 
 func handlePullRequestReview(gc githubClient, config *plugins.Configuration, ownersClient repoowners.Interface, log *logrus.Entry, e github.ReviewEvent) error {
@@ -164,6 +175,12 @@ func handlePullRequestReview(gc githubClient, config *plugins.Configuration, own
 		number:      e.PullRequest.Number,
 		body:        e.Review.Body,
 		htmlURL:     e.Review.HTMLURL,
+	}
+
+	// TODO(bentheelder): do we ever want to support /tbr in review comment?
+	// Answer: no :P
+	if tbrRE.MatchString(rc.body) {
+		return nil
 	}
 
 	// If the review event body contains an '/lgtm' or '/lgtm cancel' comment,
@@ -187,10 +204,10 @@ func handlePullRequestReview(gc githubClient, config *plugins.Configuration, own
 	} else {
 		return nil
 	}
-	return handle(wantLGTM, config, ownersClient, rc, gc, log)
+	return handle(wantLGTM, false, config, ownersClient, rc, gc, log)
 }
 
-func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowners.Interface, rc reviewCtx, gc githubClient, log *logrus.Entry) error {
+func handle(wantLGTM bool, wantTBR bool, config *plugins.Configuration, ownersClient repoowners.Interface, rc reviewCtx, gc githubClient, log *logrus.Entry) error {
 	author := rc.author
 	issueAuthor := rc.issueAuthor
 	assignees := rc.assignees
@@ -212,8 +229,17 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 	// to do is skip assignment checks and use OWNERS files to determine whether the
 	// commenter can lgtm the PR.
 	skipCollaborators := skipCollaborators(config, org, repoName)
+	tbrEnabled := tbrIsEnabled(config, org, repoName)
 	isAuthor := author == issueAuthor
-	if isAuthor && wantLGTM {
+	if !tbrEnabled && wantTBR {
+		resp := "`/tbr` is not enabeld for this repo."
+		log.Infof("Commenting with \"%s\".", resp)
+		return gc.CreateComment(org, repoName, number, plugins.FormatResponseRaw(body, htmlURL, author, resp))
+	} else if !isAuthor && wantTBR {
+		resp := "you cannot TBR someone else's PR."
+		log.Infof("Commenting with \"%s\".", resp)
+		return gc.CreateComment(org, repoName, number, plugins.FormatResponseRaw(body, htmlURL, author, resp))
+	} else if isAuthor && wantLGTM {
 		resp := "you cannot LGTM your own PR."
 		log.Infof("Commenting with \"%s\".", resp)
 		return gc.CreateComment(org, repoName, number, plugins.FormatResponseRaw(body, htmlURL, author, resp))
@@ -229,7 +255,7 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 				log.WithError(err).Errorf("Failed AssignIssue(%s, %s, %d, %s)", org, repoName, number, author)
 			}
 			resp := "changing LGTM is restricted to assignees, and " + msg + "."
-			log.Infof("Reply to assign via /lgtm request with comment: \"%s\"", resp)
+			log.Infof("Reply to assign via lgtm request with comment: \"%s\"", resp)
 			return gc.CreateComment(org, repoName, number, plugins.FormatResponseRaw(body, htmlURL, author, resp))
 		}
 	} else if !isAuthor && skipCollaborators {
@@ -244,21 +270,27 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 		}
 		if !loadReviewers(ro, filenames).Has(github.NormLogin(author)) {
 			resp := "adding LGTM is restricted to approvers and reviewers in OWNERS files."
-			log.Infof("Reply to /lgtm request with comment: \"%s\"", resp)
+			log.Infof("Reply to lgtm request with comment: \"%s\"", resp)
 			return gc.CreateComment(org, repoName, number, plugins.FormatResponseRaw(body, htmlURL, author, resp))
 		}
 	}
 
 	// Only add the label if it doesn't have it, and vice versa.
-	hasLGTM := false
 	labels, err := gc.GetIssueLabels(org, repoName, number)
 	if err != nil {
 		log.WithError(err).Errorf("Failed to get the labels on %s/%s#%d.", org, repoName, number)
 	}
 
-	hasLGTM = github.HasLabel(LgtmLabel, labels)
+	hasLGTM := github.HasLabel(LgtmLabel, labels)
+	hasTBR := github.HasLabel(TBRLabel, labels)
 
-	if hasLGTM && !wantLGTM {
+	if !hasTBR && wantTBR {
+		log.Info("Adding TBR label.")
+		if err := gc.AddLabel(org, repoName, number, TBRLabel); err != nil {
+			return err
+		}
+	}
+	if hasLGTM && !wantLGTM && !wantTBR {
 		log.Info("Removing LGTM label.")
 		return gc.RemoveLabel(org, repoName, number, LgtmLabel)
 	} else if !hasLGTM && wantLGTM {
@@ -327,6 +359,16 @@ func skipCollaborators(config *plugins.Configuration, org, repo string) bool {
 	full := fmt.Sprintf("%s/%s", org, repo)
 	for _, elem := range config.Owners.SkipCollaborators {
 		if elem == org || elem == full {
+			return true
+		}
+	}
+	return false
+}
+
+func tbrIsEnabled(config *plugins.Configuration, org, repo string) bool {
+	full := fmt.Sprintf("%s/%s", org, repo)
+	for _, elem := range config.Lgtm {
+		if strInSlice(full, elem.Repos) && elem.ToBeReviewedEnabled {
 			return true
 		}
 	}
