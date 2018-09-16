@@ -93,7 +93,13 @@ func auth(c *Client) {
 	logrus.Info("Starting auth loop...")
 	for {
 		// TODO(fejta): migrate this to the grandmatriarch
-		cmd := exec.Command("python", "./git-cookie-authdaemon")
+
+		// look for authdaemon under root dir
+		if _, err := os.Stat("/git-cookie-authdaemon"); os.IsNotExist(err) {
+			panic("cannot find /git-cookie-authdaemon")
+		}
+
+		cmd := exec.Command("/git-cookie-authdaemon")
 		if err := cmd.Run(); err != nil {
 			logrus.WithError(err).Error("Fail to authenticate to gerrit using git-cookie-authdaemon")
 		}
