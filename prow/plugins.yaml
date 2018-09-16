@@ -129,6 +129,11 @@ blockades:
   - ^events/2016
   - ^events/elections/2017
   explanation: "These files are historical, and from events that have already occurred."
+- repos:
+  - kubernetes/community
+  blockregexps:
+  - ^contributors/design-proposals/
+  explanation: "Design proposals are being phased out. New enhancements should instead be submitted as [KEPs](https://git.k8s.io/community/keps/README.md)."
 
 blunderbuss:
   max_request_count: 2
