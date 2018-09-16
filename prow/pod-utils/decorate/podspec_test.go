@@ -183,7 +183,7 @@ func TestProwJobToPod(t *testing.T) {
 							Command: []string{"/clonerefs"},
 							Args:    []string{"--cookiefile=" + cookiefileMountPath + "/.gitcookies"},
 							Env: []v1.EnvVar{
-								{Name: "CLONEREFS_OPTIONS", Value: `{"src_root":"/home/prow/go","log":"/logs/clone.json","git_user_name":"ci-robot","git_user_email":"ci-robot@k8s.io","refs":[{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}]}`},
+								{Name: "CLONEREFS_OPTIONS", Value: `{"src_root":"/home/prow/go","log":"/logs/clone.json","git_user_name":"ci-robot","git_user_email":"ci-robot@k8s.io","refs":[{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}],"cookie_path":"` + cookiefileMountPath + `/.gitcookies"}`},
 							},
 							VolumeMounts: []v1.VolumeMount{
 								{
@@ -411,7 +411,7 @@ func TestProwJobToPod(t *testing.T) {
 							Command: []string{"/clonerefs"},
 							Args:    []string{"--cookiefile=" + cookiefileMountPath + "/yummy"},
 							Env: []v1.EnvVar{
-								{Name: "CLONEREFS_OPTIONS", Value: `{"src_root":"/home/prow/go","log":"/logs/clone.json","git_user_name":"ci-robot","git_user_email":"ci-robot@k8s.io","refs":[{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}]}`},
+								{Name: "CLONEREFS_OPTIONS", Value: `{"src_root":"/home/prow/go","log":"/logs/clone.json","git_user_name":"ci-robot","git_user_email":"ci-robot@k8s.io","refs":[{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}],"cookie_path":"` + cookiefileMountPath + `/yummy"}`},
 							},
 							VolumeMounts: []v1.VolumeMount{
 								{
