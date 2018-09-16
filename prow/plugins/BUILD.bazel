@@ -79,6 +79,7 @@ filegroup(
         "//prow/plugins/skip:all-srcs",
         "//prow/plugins/slackevents:all-srcs",
         "//prow/plugins/stage:all-srcs",
+        "//prow/plugins/tbr:all-srcs",
         "//prow/plugins/trigger:all-srcs",
         "//prow/plugins/updateconfig:all-srcs",
         "//prow/plugins/verify-owners:all-srcs",
