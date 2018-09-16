@@ -15,6 +15,39 @@ go_library(
     ],
 )
 
+go_binary(
+    name = "entrypoint",
+    embed = [":go_default_library"],
+    pure = "on",
+    visibility = ["//visibility:public"],
+)
+
+# same as binary above, but with goarch and goos for placing in the docker image
+go_binary(
+    name = "entrypoint-linux-amd64",
+    embed = [":go_default_library"],
+    goarch = "amd64",
+    goos = "linux",
+    pure = "on",
+    visibility = ["//visibility:public"],
+)
+
+go_image(
+    name = "entrypoint-go_image",
+    base = "@git-base//image",
+    binary = ":entrypoint-linux-amd64",
+    visibility = ["//visibility:public"],
+)
+
+container_image(
+    name = "image",
+    base = ":entrypoint-go_image",
+    symlinks = {
+        "/entrypoint": "/app/prow/cmd/entrypoint/entrypoint-linux-amd64",
+    },
+    visibility = ["//visibility:public"],
+)
+
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
@@ -26,31 +59,5 @@ filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
     tags = ["automanaged"],
-    visibility = ["//visibility:public"],
-)
-
-go_image(
-    name = "entrypoint-go_image",
-    base = "@git-base//image",
-    embed = [":go_default_library"],
-    goarch = "amd64",
-    goos = "linux",
-    pure = "on",
-    visibility = ["//visibility:public"],
-)
-
-container_image(
-    name = "image",
-    base = ":entrypoint-go_image",
-    symlinks = {
-        "/entrypoint": "/app/prow/cmd/entrypoint",
-    },
-    visibility = ["//visibility:public"],
-)
-
-go_binary(
-    name = "entrypoint",
-    embed = [":go_default_library"],
-    pure = "on",
     visibility = ["//visibility:public"],
 )
