@@ -60,6 +60,57 @@ func (f *fgc) SetReview(instance, id, revision, message string) error {
 	return nil
 }
 
+func TestMakeCloneURI(t *testing.T) {
+	cases := []struct {
+		name     string
+		instance string
+		project  string
+		expected string
+		err      bool
+	}{
+		{
+			name:     "happy case",
+			instance: "https://android.googlesource.com",
+			project:  "platform/build",
+			expected: "https://android.googlesource.com/platform/build",
+		},
+		{
+			name:     "reject non urls",
+			instance: "!!!://",
+			project:  "platform/build",
+			err:      true,
+		},
+		{
+			name:     "require instance to specify host",
+			instance: "android.googlesource.com",
+			project:  "platform/build",
+			err:      true,
+		},
+		{
+			name:     "reject instances with paths",
+			instance: "https://android.googlesource.com/platform",
+			project:  "build",
+			err:      true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual, err := makeCloneURI(tc.instance, tc.project)
+			switch {
+			case err != nil:
+				if !tc.err {
+					t.Errorf("unexpected error: %v", err)
+				}
+			case tc.err:
+				t.Error("failed to receive expected exception")
+			case actual != tc.expected:
+				t.Errorf("actual %q != expected %q", actual, tc.expected)
+			}
+		})
+	}
+}
+
 func TestProcessChange(t *testing.T) {
 	var testcases = []struct {
 		name        string
@@ -124,7 +175,7 @@ func TestProcessChange(t *testing.T) {
 			c: &config.Config{
 				JobConfig: config.JobConfig{
 					Presubmits: map[string][]config.Presubmit{
-						"gerrit/test-infra": {
+						"https://gerrit/test-infra": {
 							{
 								Name: "test-foo",
 							},
@@ -142,7 +193,7 @@ func TestProcessChange(t *testing.T) {
 			gc: &fgc{},
 		}
 
-		err := c.ProcessChange("gerrit", tc.change)
+		err := c.ProcessChange("https://gerrit", tc.change)
 		if err != nil && !tc.shouldError {
 			t.Errorf("tc %s, expect no error, but got %v", tc.name, err)
 			continue

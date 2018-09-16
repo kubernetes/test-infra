@@ -137,8 +137,12 @@ func NewPresubmit(pr github.PullRequest, baseSHA string, job config.Presubmit, e
 
 // PresubmitSpec initializes a ProwJobSpec for a given presubmit job.
 func PresubmitSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
-	refs.PathAlias = p.PathAlias
-	refs.CloneURI = p.CloneURI
+	if p.PathAlias != "" {
+		refs.PathAlias = p.PathAlias
+	}
+	if p.CloneURI != "" {
+		refs.CloneURI = p.CloneURI
+	}
 	pjs := kube.ProwJobSpec{
 		Type:      kube.PresubmitJob,
 		Job:       p.Name,
@@ -168,8 +172,12 @@ func PresubmitSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 
 // PostsubmitSpec initializes a ProwJobSpec for a given postsubmit job.
 func PostsubmitSpec(p config.Postsubmit, refs kube.Refs) kube.ProwJobSpec {
-	refs.PathAlias = p.PathAlias
-	refs.CloneURI = p.CloneURI
+	if p.PathAlias != "" {
+		refs.PathAlias = p.PathAlias
+	}
+	if p.CloneURI != "" {
+		refs.CloneURI = p.CloneURI
+	}
 	pjs := kube.ProwJobSpec{
 		Type:      kube.PostsubmitJob,
 		Job:       p.Name,
@@ -219,8 +227,12 @@ func PeriodicSpec(p config.Periodic) kube.ProwJobSpec {
 
 // BatchSpec initializes a ProwJobSpec for a given batch job and ref spec.
 func BatchSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
-	refs.PathAlias = p.PathAlias
-	refs.CloneURI = p.CloneURI
+	if p.PathAlias != "" {
+		refs.PathAlias = p.PathAlias
+	}
+	if p.CloneURI != "" {
+		refs.CloneURI = p.CloneURI
+	}
 	pjs := kube.ProwJobSpec{
 		Type:      kube.BatchJob,
 		Job:       p.Name,

@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -167,6 +168,22 @@ func (c *Controller) Sync() error {
 	return nil
 }
 
+func makeCloneURI(instance, project string) (string, error) {
+	// TODO(fejta): drop the https:// part
+	u, err := url.Parse(instance)
+	if err != nil {
+		return "", fmt.Errorf("instance %s is not a url: %v", instance, err)
+	}
+	if u.Host == "" {
+		return "", errors.New("instance does not set host")
+	}
+	if u.Path != "" {
+		return "", errors.New("instance cannot set path (this is set by project)")
+	}
+	u.Path = project
+	return u.String(), nil
+}
+
 // ProcessChange creates new presubmit prowjobs base off the gerrit changes
 func (c *Controller) ProcessChange(instance string, change gerrit.ChangeInfo) error {
 	rev, ok := change.Revisions[change.CurrentRevision]
@@ -186,13 +203,18 @@ func (c *Controller) ProcessChange(instance string, change gerrit.ChangeInfo) er
 	}
 	triggeredJobs := []triggeredJob{}
 
-	for _, spec := range c.ca.Config().Presubmits[instance+"/"+change.Project] {
+	cloneURI, err := makeCloneURI(instance, change.Project)
+	if err != nil {
+		return fmt.Errorf("failed to create clone uri: %v", err)
+	}
+
+	for _, spec := range c.ca.Config().Presubmits[cloneURI] {
 		kr := kube.Refs{
-			Org:      instance,
-			Repo:     change.Project, // Something like https;//android.googlesource.com
-			BaseRef:  change.Branch,  // Something like platform/build
+			Org:      instance,       // Something like https;//android.googlesource.com
+			Repo:     change.Project, // Something like platform/build
+			BaseRef:  change.Branch,
 			BaseSHA:  parentSHA,
-			CloneURI: filepath.Join(change.Project, change.Branch), // Something like https://android.googlesource.com/platform/build
+			CloneURI: cloneURI, // Something like https://android.googlesource.com/platform/build
 			Pulls: []kube.Pull{
 				{
 					Number: change.Number,

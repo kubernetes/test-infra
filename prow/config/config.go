@@ -977,6 +977,9 @@ func setDecorationDefaults(provided, defaults *kube.DecorationConfig) *kube.Deco
 	if len(merged.SSHKeySecrets) == 0 {
 		merged.SSHKeySecrets = defaults.SSHKeySecrets
 	}
+	if merged.CookiefileSecret == "" {
+		merged.CookiefileSecret = defaults.CookiefileSecret
+	}
 
 	return merged
 }
