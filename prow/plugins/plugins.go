@@ -366,6 +366,9 @@ type Lgtm struct {
 	// ReviewActsAsLgtm indicates that a Github review of "approve" or "request changes"
 	// acts as adding or removing the lgtm label
 	ReviewActsAsLgtm bool `json:"review_acts_as_lgtm,omitempty"`
+	// ToBeReviewedEnabled enables the `/tbr` command if true, which allows
+	// authors to self-lgtm PRs to code they can approve
+	ToBeReviewedEnabled bool `json:"to_be_reviewed_enabled,omitempty"`
 }
 
 type Cat struct {
