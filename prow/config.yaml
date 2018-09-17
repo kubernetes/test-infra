@@ -305,6 +305,7 @@ tide:
     - kubernetes-incubator/ip-masq-agent
     - kubernetes-incubator/kubespray
     - kubernetes-incubator/service-catalog
+    - kubernetes/autoscaler
     - kubernetes/client-go
     - kubernetes/cloud-provider-aws
     - kubernetes/cloud-provider-azure
@@ -319,16 +320,21 @@ tide:
     - kubernetes/examples
     - kubernetes/features
     - kubernetes/federation
+    - kubernetes/frakti
     - kubernetes/gengo
+    - kubernetes/git-sync
     - kubernetes/heapster
     - kubernetes/ingress-gce
     - kubernetes/ingress-nginx
+    - kubernetes/k8s.io
+    - kubernetes/komposer
     - kubernetes/kops
     - kubernetes/kube-deploy
     - kubernetes/kube-openapi
     - kubernetes/kube-state-metrics
     - kubernetes/kubeadm
     - kubernetes/kubectl
+    - kubernetes/kubernetes-anywhere
     - kubernetes/kubernetes-docs-ja
     - kubernetes/kubernetes-docs-ko
     - kubernetes/kubernetes-docs-zh
