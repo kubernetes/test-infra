@@ -193,10 +193,7 @@ func handlePullRequestReview(gc githubClient, config *plugins.Configuration, own
 func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowners.Interface, rc reviewCtx, gc githubClient, log *logrus.Entry) error {
 	author := rc.author
 	issueAuthor := rc.issueAuthor
-	assignees := rc.assignees
 	number := rc.number
-	body := rc.body
-	htmlURL := rc.htmlURL
 	org := rc.repo.Owner.Login
 	repoName := rc.repo.Name
 
@@ -208,55 +205,14 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 		return gc.CreateComment(rc.repo.Owner.Login, rc.repo.Name, rc.number, plugins.FormatResponseRaw(rc.body, rc.htmlURL, rc.author, resp))
 	}
 
-	// Determine if reviewer is already assigned
-	isAssignee := false
-	for _, assignee := range assignees {
-		if assignee.Login == author {
-			isAssignee = true
-			break
-		}
-	}
-
 	// check if skip collaborators is enabled for this org/repo
 	skipCollaborators := skipCollaborators(config, org, repoName)
 
-	// either ensure that the commentor is a collaborator or an approver/reviwer
-	if !isAuthor && !isAssignee && !skipCollaborators {
-		// in this case we need to ensure the commentor is assignable to the PR
-		// by assigning them
-		log.Infof("Assigning %s/%s#%d to %s", org, repoName, number, author)
-		if err := gc.AssignIssue(org, repoName, number, []string{author}); err != nil {
-			msg := "assigning you to the PR failed"
-			if ok, merr := gc.IsCollaborator(org, repoName, author); merr == nil && !ok {
-				msg = fmt.Sprintf("only %s/%s repo collaborators may be assigned issues", org, repoName)
-			} else if merr != nil {
-				log.WithError(merr).Errorf("Failed IsCollaborator(%s, %s, %s)", org, repoName, author)
-			} else {
-				log.WithError(err).Errorf("Failed AssignIssue(%s, %s, %d, %s)", org, repoName, number, author)
-			}
-			resp := "changing LGTM is restricted to assignees, and " + msg + "."
-			log.Infof("Reply to assign via /lgtm request with comment: \"%s\"", resp)
-			return gc.CreateComment(org, repoName, number, plugins.FormatResponseRaw(body, htmlURL, author, resp))
-		}
-	} else if !isAuthor && skipCollaborators {
-		// in this case we depend on OWNERS files instead to check if the author
-		// is an approver or reviwer of the changed files
-		log.Debugf("Skipping collaborator checks and loading OWNERS for %s/%s#%d", org, repoName, number)
-		ro, err := loadRepoOwners(gc, ownersClient, org, repoName, number)
-		if err != nil {
-			return err
-		}
-		filenames, err := getChangedFiles(gc, org, repoName, number)
-		if err != nil {
-			return err
-		}
-		if !loadReviewers(ro, filenames).Has(github.NormLogin(author)) {
-			resp := "adding LGTM is restricted to approvers and reviewers in OWNERS files."
-			log.Infof("Reply to /lgtm request with comment: \"%s\"", resp)
-			return gc.CreateComment(org, repoName, number, plugins.FormatResponseRaw(body, htmlURL, author, resp))
-		}
+	// check if the commentor is allowed to change LGTM
+	ok, err := checkAllowedToLGTM(wantLGTM, rc, skipCollaborators, gc, ownersClient, log)
+	if !ok || err != nil {
+		return err
 	}
-
 	// now we update the LGTM labels, having checked all cases where changing
 	// LGTM was not allowed for the commentor
 
@@ -298,6 +254,84 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 	}
 
 	return nil
+}
+
+// returns ok = false if changing LGTM is allowed in this case
+// also returns an errors encountered while handling
+// may comment on the PR
+func checkAllowedToLGTM(
+	wantLGTM bool,
+	rc reviewCtx,
+	skipCollaborators bool,
+	gc githubClient,
+	ownersClient repoowners.Interface,
+	log *logrus.Entry,
+) (ok bool, err error) {
+	// get fields from rc
+	commentAuthor := rc.author
+	prAuthor := rc.issueAuthor
+	assignees := rc.assignees
+	number := rc.number
+	body := rc.body
+	htmlURL := rc.htmlURL
+	org := rc.repo.Owner.Login
+	repoName := rc.repo.Name
+
+	// Determine if reviewer is already assigned
+	isAssignee := false
+	for _, assignee := range assignees {
+		if assignee.Login == commentAuthor {
+			isAssignee = true
+			break
+		}
+	}
+
+	// authors are allowed to remove LGTM from their PR, but not add it, see TBR instead
+	isPRAuthor := commentAuthor == prAuthor
+	if isPRAuthor && wantLGTM {
+		resp := "you cannot LGTM your own PR."
+		log.Infof("Commenting with \"%s\".", resp)
+		return false, gc.CreateComment(rc.repo.Owner.Login, rc.repo.Name, rc.number, plugins.FormatResponseRaw(rc.body, rc.htmlURL, rc.author, resp))
+	}
+
+	// either ensure that the commentor is a collaborator or an approver/reviwer
+	// NOTE: assigness are necessarily collaborators by github restriction
+	if !isPRAuthor && !isAssignee && !skipCollaborators {
+		// in this case we need to ensure the commentor is assignable to the PR
+		// by assigning them
+		log.Infof("Assigning %s/%s#%d to %s", org, repoName, number, commentAuthor)
+		if err := gc.AssignIssue(org, repoName, number, []string{commentAuthor}); err != nil {
+			msg := "assigning you to the PR failed"
+			if ok, merr := gc.IsCollaborator(org, repoName, commentAuthor); merr == nil && !ok {
+				msg = fmt.Sprintf("only %s/%s repo collaborators may be assigned issues", org, repoName)
+			} else if merr != nil {
+				log.WithError(merr).Errorf("Failed IsCollaborator(%s, %s, %s)", org, repoName, commentAuthor)
+			} else {
+				log.WithError(err).Errorf("Failed AssignIssue(%s, %s, %d, %s)", org, repoName, number, commentAuthor)
+			}
+			resp := "changing LGTM is restricted to assignees, and " + msg + "."
+			log.Infof("Reply to assign via /lgtm request with comment: \"%s\"", resp)
+			return false, gc.CreateComment(org, repoName, number, plugins.FormatResponseRaw(body, htmlURL, commentAuthor, resp))
+		}
+	} else if !isPRAuthor && skipCollaborators {
+		// in this case we depend on OWNERS files instead to check if the author
+		// is an approver or reviwer of the changed files
+		log.Debugf("Skipping collaborator checks and loading OWNERS for %s/%s#%d", org, repoName, number)
+		ro, err := loadRepoOwners(gc, ownersClient, org, repoName, number)
+		if err != nil {
+			return false, err
+		}
+		filenames, err := getChangedFiles(gc, org, repoName, number)
+		if err != nil {
+			return false, err
+		}
+		if !loadReviewers(ro, filenames).Has(github.NormLogin(commentAuthor)) {
+			resp := "adding LGTM is restricted to approvers and reviewers in OWNERS files."
+			log.Infof("Reply to /lgtm request with comment: \"%s\"", resp)
+			return false, gc.CreateComment(org, repoName, number, plugins.FormatResponseRaw(body, htmlURL, commentAuthor, resp))
+		}
+	}
+	return true, nil
 }
 
 type ghLabelClient interface {
