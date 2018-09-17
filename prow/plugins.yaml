@@ -366,7 +366,6 @@ plugins:
   - trigger
 
   kubernetes/sig-release:
-  - blockade
   - stage
 
   kubernetes/test-infra:
