@@ -26,7 +26,6 @@ import (
 
 	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/plugins"
 )
 
 var initialFiles = map[string][]byte{
@@ -96,44 +95,6 @@ var e = &github.GenericCommentEvent{
 		Name:     "bar",
 		FullName: "foo/bar",
 	},
-}
-
-func TestMinConfidence(t *testing.T) {
-	zero := float64(0)
-	half := 0.5
-	cases := []struct {
-		name     string
-		golint   *plugins.Golint
-		expected float64
-	}{
-		{
-			name:     "nothing set",
-			expected: defaultConfidence,
-		},
-		{
-			name:     "no confidence set",
-			golint:   &plugins.Golint{},
-			expected: defaultConfidence,
-		},
-		{
-			name:     "confidence set to zero",
-			golint:   &plugins.Golint{MinimumConfidence: &zero},
-			expected: zero,
-		},
-		{
-			name:     "confidence set positive",
-			golint:   &plugins.Golint{MinimumConfidence: &half},
-			expected: half,
-		},
-	}
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			actual := minConfidence(tc.golint)
-			if actual != tc.expected {
-				t.Errorf("minimum confidence %f != expected %f", actual, tc.expected)
-			}
-		})
-	}
 }
 
 func TestLint(t *testing.T) {
