@@ -168,6 +168,10 @@ type DecorationConfig struct {
 	// SSHKeySecrets are the names of Kubernetes secrets that contain
 	// SSK keys which should be used during the cloning process
 	SSHKeySecrets []string `json:"ssh_key_secrets,omitempty"`
+	// SSHHostFingerprints are the fingerprints of known ssh hosts
+	// that the cloning process can trust.
+	// Create with ssh-keyscan [-t rsa] host
+	SSHHostFingerprints []string `json:"ssh_host_fingerprints,omitempty"`
 	// SkipCloning determines if we should clone source code in the
 	// initcontainers for jobs that specify refs
 	SkipCloning bool `json:"skip_cloning,omitempty"`

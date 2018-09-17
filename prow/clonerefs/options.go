@@ -52,6 +52,10 @@ type Options struct {
 	// when cloning. Will be added to `ssh-agent`.
 	KeyFiles []string `json:"key_files,omitempty"`
 
+	// HostFingerPrints are ssh-keyscan host fingerprint lines to use
+	// when cloning. Will be added to ~/.ssh/known_hosts
+	HostFingerprints []string `json:"host_fingerprints,omitempty"`
+
 	// MaxParallelWorkers determines how many repositories
 	// can be cloned in parallel. If 0, interpreted as no
 	// limit to parallelism
