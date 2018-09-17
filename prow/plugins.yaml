@@ -350,7 +350,6 @@ plugins:
   kubernetes/kubernetes:
   - blockade
   - cherry-pick-unapproved
-  - docs-no-retest
   - milestone
   - milestonestatus
   - owners-label
