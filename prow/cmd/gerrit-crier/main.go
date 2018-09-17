@@ -36,6 +36,7 @@ import (
 	prowjobinformer "k8s.io/test-infra/prow/client/informers/externalversions"
 
 	"k8s.io/test-infra/prow/crier"
+	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/gerrit/reporter"
 	"k8s.io/test-infra/prow/logrusutil"
 )
@@ -45,14 +46,24 @@ const (
 )
 
 type options struct {
-	numWorkers int
-	masterURL  string
-	kubeConfig string
+	numWorkers     int
+	masterURL      string
+	kubeConfig     string
+	cookiefilePath string
+	projects       gerrit.ProjectsFlag
 }
 
 func (o *options) Validate() error {
 	if o.numWorkers == 0 {
 		return errors.New("--num-workers must be greater than 0")
+	}
+
+	if len(o.projects) == 0 {
+		return errors.New("--gerrit-projects must be set")
+	}
+
+	if o.cookiefilePath == "" {
+		logrus.Info("--cookiefile is not set, using anonymous authentication")
 	}
 	return nil
 }
@@ -62,6 +73,8 @@ func gatherOptions() options {
 	flag.IntVar(&o.numWorkers, "num-workers", 1, "Number of prowjob processers")
 	flag.StringVar(&o.masterURL, "masterurl", "", "URL to k8s master")
 	flag.StringVar(&o.kubeConfig, "kubeconfig", "", "Cluster config for the cluster you want to connect to")
+	flag.StringVar(&o.cookiefilePath, "cookiefile", "", "Path to git http.cookiefile, leave empty for anonymous")
+	flag.Var(&o.projects, "gerrit-projects", "Set of gerrit repos to monitor on a host example: --gerrit-host=https://android.googlesource.com=platform/build,toolchain/llvm, repeat flag for each host")
 	flag.Parse()
 	return o
 }
@@ -134,7 +147,10 @@ func main() {
 			&workqueue.BucketRateLimiter{Limiter: rate.NewLimiter(rate.Limit(10), 100)},
 		))
 
-	gerritReporter := reporter.NewReporter()
+	gerritReporter, err := reporter.NewReporter(o.cookiefilePath, o.projects)
+	if err != nil {
+		logrus.Fatalf("Fail to start gerrit reporter: %v", err)
+	}
 
 	controller := crier.NewController(client, queue, prowjobInformerFactory.Prow().V1().ProwJobs(), gerritReporter)
 

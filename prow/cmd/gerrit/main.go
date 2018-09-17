@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
@@ -30,56 +29,33 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gerrit/adapter"
+	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 )
 
-type projectsFlag map[string][]string
-
-func (p projectsFlag) String() string {
-	var hosts []string
-	for host, repos := range p {
-		hosts = append(hosts, host+"="+strings.Join(repos, ","))
-	}
-	return strings.Join(hosts, " ")
-}
-
-func (p projectsFlag) Set(value string) error {
-	parts := strings.SplitN(value, "=", 2)
-	if len(parts) != 2 {
-		return fmt.Errorf("%s not in the form of host=repo-a,repo-b,etc", value)
-	}
-	host := parts[0]
-	if _, ok := p[host]; ok {
-		return fmt.Errorf("duplicate host: %s", host)
-	}
-	repos := strings.Split(parts[1], ",")
-	p[host] = repos
-	return nil
-}
-
 type options struct {
 	cookiefilePath   string
 	configPath       string
-	projects         projectsFlag
+	projects         gerrit.ProjectsFlag
 	lastSyncFallback string
 }
 
 func (o *options) Validate() error {
 	if len(o.projects) == 0 {
-		return errors.New("--gerrit-projects unset")
+		return errors.New("--gerrit-projects must be set")
 	}
 
 	if o.cookiefilePath == "" {
-		logrus.Info("--cookiefile unset, using anonymous authentication")
+		logrus.Info("--cookiefile is not set, using anonymous authentication")
 	}
 
 	if o.configPath == "" {
-		return errors.New("--config-path unset")
+		return errors.New("--config-path must be set")
 	}
 
 	if o.lastSyncFallback == "" {
-		return errors.New("--last-sync-fallback unset")
+		return errors.New("--last-sync-fallback must be set")
 	}
 
 	return nil
@@ -87,7 +63,7 @@ func (o *options) Validate() error {
 
 func gatherOptions() options {
 	o := options{
-		projects: projectsFlag{},
+		projects: gerrit.ProjectsFlag{},
 	}
 	flag.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	flag.StringVar(&o.cookiefilePath, "cookiefile", "", "Path to git http.cookiefile, leave empty for anonymous")
