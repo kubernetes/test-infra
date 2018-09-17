@@ -104,8 +104,8 @@ func TestMakeCloneURI(t *testing.T) {
 				}
 			case tc.err:
 				t.Error("failed to receive expected exception")
-			case actual != tc.expected:
-				t.Errorf("actual %q != expected %q", actual, tc.expected)
+			case actual.String() != tc.expected:
+				t.Errorf("actual %q != expected %q", actual.String(), tc.expected)
 			}
 		})
 	}
@@ -168,6 +168,20 @@ func TestProcessChange(t *testing.T) {
 			numPJ: 1,
 			pjRef: "refs/changes/00/2/2",
 		},
+		{
+			name: "other-test-with-https",
+			change: gerrit.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "other-repo",
+				Revisions: map[string]gerrit.RevisionInfo{
+					"1": {
+						Ref: "refs/changes/00/1/1",
+					},
+				},
+			},
+			numPJ: 1,
+			pjRef: "refs/changes/00/1/1",
+		},
 	}
 
 	for _, tc := range testcases {
@@ -175,9 +189,14 @@ func TestProcessChange(t *testing.T) {
 			c: &config.Config{
 				JobConfig: config.JobConfig{
 					Presubmits: map[string][]config.Presubmit{
-						"https://gerrit/test-infra": {
+						"gerrit/test-infra": {
 							{
 								Name: "test-foo",
+							},
+						},
+						"https://gerrit/other-repo": {
+							{
+								Name: "other-test",
 							},
 						},
 					},
@@ -207,6 +226,13 @@ func TestProcessChange(t *testing.T) {
 		}
 
 		if len(fkc.prowjobs) > 0 {
+			refs := fkc.prowjobs[0].Spec.Refs
+			if refs.Org != "gerrit" {
+				t.Errorf("%s: org %s != gerrit", tc.name, refs.Org)
+			}
+			if refs.Repo != tc.change.Project {
+				t.Errorf("%s: repo %s != expected %s", tc.name, refs.Repo, tc.change.Project)
+			}
 			if fkc.prowjobs[0].Spec.Refs.Pulls[0].Ref != tc.pjRef {
 				t.Errorf("tc %s - ref should be %s, got %s", tc.name, tc.pjRef, fkc.prowjobs[0].Spec.Refs.Pulls[0].Ref)
 			}
