@@ -316,6 +316,45 @@ func TestSetTriggerDefaults(t *testing.T) {
 	}
 }
 
+func TestSetGolintDefaults(t *testing.T) {
+	defaultValue := 0.8
+	customValue := 0.5
+	tests := []struct {
+		name string
+
+		config   *Golint
+		expected *Golint
+	}{
+		{
+			name:     "no config defaults to 0.8",
+			config:   nil,
+			expected: &Golint{MinimumConfidence: &defaultValue},
+		},
+		{
+			name:     "no value defaults to 0.8",
+			config:   &Golint{MinimumConfidence: nil},
+			expected: &Golint{MinimumConfidence: &defaultValue},
+		},
+		{
+			name:     "user preference is honored",
+			config:   &Golint{MinimumConfidence: &customValue},
+			expected: &Golint{MinimumConfidence: &customValue},
+		},
+	}
+
+	for _, test := range tests {
+		c := &Configuration{
+			Golint: test.config,
+		}
+
+		c.setDefaults()
+
+		if !reflect.DeepEqual(c.Golint, test.expected) {
+			t.Errorf("%s: expected config to be %v after defaulting, got %v", test.name, test.expected, c.Golint)
+		}
+	}
+}
+
 func TestSetCherryPickUnapprovedDefaults(t *testing.T) {
 	defaultBranchRegexp := `^release-.*$`
 	defaultComment := `This PR is not for the master branch but does not have the ` + "`cherry-pick-approved`" + `  label. Adding the ` + "`do-not-merge/cherry-pick-not-approved`" + `  label.
@@ -379,5 +418,46 @@ The list of patch release managers for each release can be found [here](https://
 		if c.CherryPickUnapproved.Comment != tc.expectedComment {
 			t.Errorf("unexpected comment: %s, expected: %s", c.CherryPickUnapproved.Comment, tc.expectedComment)
 		}
+	}
+}
+
+func TestValidateGolint(t *testing.T) {
+	testCases := []struct {
+		name              string
+		minimumConfidence float64
+		expectedError     bool
+	}{
+		{
+			name:              "value in (0,1] is valid",
+			minimumConfidence: 0.1,
+			expectedError:     false,
+		},
+		{
+			name:              "1 is valid",
+			minimumConfidence: 1,
+			expectedError:     false,
+		},
+		{
+			name:              "0 is invalid",
+			minimumConfidence: 0,
+			expectedError:     true,
+		},
+		{
+			name:              "negative numbers are valid",
+			minimumConfidence: -12,
+			expectedError:     true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			err := validateGolint(&Golint{MinimumConfidence: &testCase.minimumConfidence})
+			if err != nil && !testCase.expectedError {
+				t.Errorf("%s: expected no error but got %v", testCase.name, err)
+			}
+			if err == nil && testCase.expectedError {
+				t.Errorf("%s: expected an error but got none", testCase.name)
+			}
+		})
 	}
 }

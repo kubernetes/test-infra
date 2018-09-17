@@ -666,7 +666,10 @@ The list of patch release managers for each release can be found [here](https://
 		}
 	}
 
-	if c.Golint != nil && c.Golint.MinimumConfidence == nil {
+	if c.Golint == nil {
+		c.Golint = &Golint{}
+	}
+	if c.Golint.MinimumConfidence == nil {
 		defaultConfidence := 0.8
 		c.Golint.MinimumConfidence = &defaultConfidence
 	}
@@ -713,6 +716,9 @@ func (pa *PluginAgent) Load(path string) error {
 	if err := validateRequireMatchingLabel(np.RequireMatchingLabel); err != nil {
 		return err
 	}
+	if err := validateGolint(np.Golint); err != nil {
+		return err
+	}
 	pa.Set(np)
 	return nil
 }
@@ -721,6 +727,14 @@ func (pa *PluginAgent) Config() *Configuration {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 	return pa.configuration
+}
+
+// validateGolint will ensure the provided minimum confidence is valid
+func validateGolint(config *Golint) error {
+	if *config.MinimumConfidence <= 0 || *config.MinimumConfidence > 1 {
+		return fmt.Errorf("golint minimum confidence must be in (0,1], not %f", *config.MinimumConfidence)
+	}
+	return nil
 }
 
 // validatePlugins will return error if
