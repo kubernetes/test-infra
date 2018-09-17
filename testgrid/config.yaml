@@ -6989,7 +6989,6 @@ dashboard_groups:
   - canonical-ubuntu2-k8sstable3
   - canonical-cdk
 
-dashboard_groups:
 - name: cos
   dashboard_names:
   - cos-cos1-k8sbeta
