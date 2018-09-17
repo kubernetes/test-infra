@@ -28,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/errorutil"
+	"k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/plugins/approve"
 	"k8s.io/test-infra/prow/plugins/blockade"
@@ -256,6 +257,7 @@ func validateTideRequirements(configAgent config.Agent, pluginAgent plugins.Plug
 		{plugin: releasenote.PluginName, label: releasenote.ReleaseNoteLabelNeeded, matcher: forbids},
 		{plugin: cherrypickunapproved.PluginName, label: cherrypickunapproved.CpUnapprovedLabel, matcher: forbids},
 		{plugin: blockade.PluginName, label: blockade.BlockedPathsLabel, matcher: forbids},
+		{plugin: plugin.PluginName, label: plugin.NeedsRebaseLabel, matcher: forbids},
 	}
 
 	for i := range configs {
