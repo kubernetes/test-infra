@@ -70,8 +70,17 @@ type githubClient interface {
 	ListPullRequestComments(org, repo string, number int) ([]github.ReviewComment, error)
 }
 
+const defaultConfidence = 0.8
+
+func minConfidence(g *plugins.Golint) float64 {
+	if g == nil || g.MinimumConfidence == nil {
+		return defaultConfidence
+	}
+	return *g.MinimumConfidence
+}
+
 func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
-	return handle(*pc.PluginConfig.Golint.MinimumConfidence, pc.GitHubClient, pc.GitClient, pc.Logger, &e)
+	return handle(minConfidence(pc.PluginConfig.Golint), pc.GitHubClient, pc.GitClient, pc.Logger, &e)
 }
 
 // modifiedGoFiles returns a map from filename to patch string for all go files
