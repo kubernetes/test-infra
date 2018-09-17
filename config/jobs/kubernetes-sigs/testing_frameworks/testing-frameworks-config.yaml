@@ -5,18 +5,13 @@ presubmits:
     - master
     always_run: true
     skip_report: false
+    decorate: true
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:latest
-        args:
-        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--root=/go/src"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - --scenario=execute
-        - --
+      - command:
         - ./bin/test-on-prow.sh
         # docker-in-docker needs privileged mode
         securityContext:
