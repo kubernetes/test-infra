@@ -229,13 +229,14 @@ func decorate(spec *kube.PodSpec, pj *kube.ProwJob, rawEnv map[string]string) er
 		cloneLog = fmt.Sprintf("%s/clone.json", logMountPath)
 		// TODO(fejta): use flags
 		cloneConfigEnv, err := clonerefs.Encode(clonerefs.Options{
-			SrcRoot:      codeMountPath,
-			Log:          cloneLog,
-			GitUserName:  clonerefs.DefaultGitUserName,
-			GitUserEmail: clonerefs.DefaultGitUserEmail,
-			GitRefs:      refs,
-			KeyFiles:     sshKeyPaths,
-			CookiePath:   cookiefilePath,
+			CookiePath:       cookiefilePath,
+			GitRefs:          refs,
+			GitUserEmail:     clonerefs.DefaultGitUserEmail,
+			GitUserName:      clonerefs.DefaultGitUserName,
+			HostFingerprints: pj.Spec.DecorationConfig.SSHHostFingerprints,
+			KeyFiles:         sshKeyPaths,
+			Log:              cloneLog,
+			SrcRoot:          codeMountPath,
 		})
 		if err != nil {
 			return fmt.Errorf("could not encode clone configuration as JSON: %v", err)

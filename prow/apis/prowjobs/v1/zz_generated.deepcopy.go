@@ -44,6 +44,11 @@ func (in *DecorationConfig) DeepCopyInto(out *DecorationConfig) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.SSHHostFingerprints != nil {
+		in, out := &in.SSHHostFingerprints, &out.SSHHostFingerprints
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 
