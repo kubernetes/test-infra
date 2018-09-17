@@ -300,12 +300,51 @@ tide:
     - kubernetes-client
     - kubernetes-csi
     - kubernetes-sigs
-    - kubernetes
     repos:
     - client-go/unofficial-docs
     - kubernetes-incubator/ip-masq-agent
     - kubernetes-incubator/kubespray
     - kubernetes-incubator/service-catalog
+    - kubernetes/client-go
+    - kubernetes/cloud-provider-aws
+    - kubernetes/cloud-provider-azure
+    - kubernetes/cloud-provider-gcp
+    - kubernetes/cloud-provider-openstack
+    - kubernetes/cloud-provider-vsphere
+    - kubernetes/cluster-registry
+    - kubernetes/community
+    - kubernetes/contrib
+    - kubernetes/dashboard
+    - kubernetes/dns
+    - kubernetes/examples
+    - kubernetes/features
+    - kubernetes/federation
+    - kubernetes/gengo
+    - kubernetes/heapster
+    - kubernetes/ingress-gce
+    - kubernetes/ingress-nginx
+    - kubernetes/kops
+    - kubernetes/kube-deploy
+    - kubernetes/kube-openapi
+    - kubernetes/kube-state-metrics
+    - kubernetes/kubeadm
+    - kubernetes/kubectl
+    - kubernetes/kubernetes-docs-ja
+    - kubernetes/kubernetes-docs-ko
+    - kubernetes/kubernetes-docs-zh
+    - kubernetes/kubernetes-template-project
+    - kubernetes/minikube
+    - kubernetes/node-problem-detector
+    - kubernetes/org
+    - kubernetes/perf-tests
+    - kubernetes/publishing-bot
+    - kubernetes/release
+    - kubernetes/repo-infra
+    - kubernetes/sig-release
+    - kubernetes/steering
+    - kubernetes/test-infra
+    - kubernetes/utils
+    - kubernetes/website
     labels:
     - lgtm
     - approved
