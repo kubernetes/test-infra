@@ -25,7 +25,9 @@ larger set of contributors to apply/remove them.
 ### How do I add a new label?
 
 - Add automation that consumes/produces the label
-- Open a PR against [labels.yaml](https://git.k8s.io/test-infra/label_sync/labels.yaml)
+- Open a PR, _with a single commit_, that:
+  - updates [labels.yaml](https://git.k8s.io/test-infra/label_sync/labels.yaml) with the new label(s)
+  - runs `hack/update-labels.sh` (to regenerate the label descriptions and associated CSS)
 - Involve [sig-contributor-experience](https://git.k8s.io/community/sig-contributor-experience) in the change, eg: chat about it in slack, mention @kubernetes/sig-contributor-experience-pr-reviews in the PR, etc.
 - After the PR is merged, a kubernetes CronJob is responsible for syncing labels daily
 
