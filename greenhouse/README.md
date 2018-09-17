@@ -3,7 +3,7 @@
 Greenhouse is our [bazel remote caching](https://docs.bazel.build/versions/master/remote-caching.html) setup.
 We use this to provide faster build & test presubmits with a Globally shared cache (per repo).
 
-We have a dashboard with metrics at: [velodrome.k8s.io/dashboard/db/cache-monitoring](http://velodrome.k8s.io/dashboard/db/cache-monitoring?orgId=1)
+We have a dashboard with metrics at: [velodrome.k8s.io/dashboard/db/bazel-cache](http://velodrome.k8s.io/dashboard/db/bazel-cache?orgId=1)
 
 Most Bazel users should probably visit [the official docs](https://docs.bazel.build/versions/master/remote-caching.html) and select one of the options outlined there, with Prow/Kubernetes we are using a custom setup to explore:
 
