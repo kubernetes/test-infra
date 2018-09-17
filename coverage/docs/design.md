@@ -108,7 +108,7 @@ Prow is a CI/CD system that is tested working well with this Code Coverage tool.
 
   - The post-submit prow job is triggered by merge events to the base branch.
 
-## Prow Configuration File
+## Prow Job Specification
 Here is an example of a pre-submit prow job spec that runs uses the coverage tool in a container (the container build file can be found [here](https://github.com/kubernetes/test-infra/blob/a1e910ae6811a1821ad98fa28e6fad03972a8c20/coverage/Makefile)). The args section includes all the arguments for the binary of the tool. 
 ```
   - name: pull-knative-serving-go-coverage
