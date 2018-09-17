@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -30,12 +31,17 @@ import (
 )
 
 const (
-	name          = "build-log-viewer"
-	title         = "Build Log"
-	priority      = 10
-	byteChunkSize = 1e3 // 1KB
-	lineChunkSize = 100
+	name            = "build-log-viewer"
+	title           = "Build Log"
+	priority        = 10
+	byteChunkSize   = 1e3 // 1KB
+	lineChunkSize   = 100
+	neighborLines   = 5 // number of "important" lines to be displayed in either direction
+	minLinesSkipped = 5
 )
+
+// errRE matches keywords and glog error messages
+var errRE = regexp.MustCompile(`(?i)timed out|error|fail|fatal|panic|^E\d{4} \d\d:\d\d:\d\d\.\d\d\d]`)
 
 func init() {
 	viewers.RegisterViewer(name, viewers.ViewMetadata{
@@ -61,14 +67,47 @@ type LogViewData struct {
 	Operation string `json:"operation,omitempty"`
 }
 
+// LogLine represents a line displayed in the LogArtifactView.
+type LogLine struct {
+	Number      int
+	Highlighted bool
+	Skip        bool
+	Text        string
+}
+
+// LineGroup holds multiple lines that can be collapsed/expanded as a block
+type LineGroup struct {
+	Skip       bool
+	Start, End int // closed, open
+	LogIndex   int
+	LogLines   []LogLine
+}
+
+func linesSkipped(g LineGroup) int {
+	return g.End - g.Start
+}
+
+func linesID(g LineGroup) string {
+	return fmt.Sprintf("lines-%d-%d-%d", g.LogIndex, g.Start, g.End)
+}
+
+func skipID(g LineGroup) string {
+	return fmt.Sprintf("skip-%d-%d-%d", g.LogIndex, g.Start, g.End)
+}
+
 //LogArtifactView holds a single log file's view
 type LogArtifactView struct {
 	ArtifactName          string
 	ArtifactLink          string
 	ViewName              string
 	ViewMethodDescription string
-	LogLines              []string
+	LineGroups            []LineGroup
 	ViewAll               bool
+	Index                 int
+}
+
+func logID(lav LogArtifactView) string {
+	return fmt.Sprintf("log-%d", lav.Index)
 }
 
 // BuildLogsView holds each log file view
@@ -105,7 +144,7 @@ func ViewHandler(artifacts []viewers.Artifact, raw string) string {
 	}
 
 	// Read log artifacts and construct template structs
-	for _, a := range artifacts {
+	for i, a := range artifacts {
 		viewData, ok := viewReq.Requests[a.JobPath()]
 		if !ok {
 			viewData = LogViewData{
@@ -116,7 +155,7 @@ func ViewHandler(artifacts []viewers.Artifact, raw string) string {
 			}
 		}
 
-		logView, logViewData := nextViewData(a, viewData)
+		logView, logViewData := nextViewData(i, a, viewData)
 
 		buildLogsView.LogViews = append(buildLogsView.LogViews, logView)
 		getAllReq.Requests[a.JobPath()] = logViewData
@@ -158,9 +197,7 @@ func ViewHandler(artifacts []viewers.Artifact, raw string) string {
 
 // nextViewData constructs the new log artifact view and needed requests from the current
 // view data and artifact
-func nextViewData(artifact viewers.Artifact, currentViewData LogViewData) (LogArtifactView, LogViewData) {
-	var logLines []string
-	var err error
+func nextViewData(logIndex int, artifact viewers.Artifact, currentViewData LogViewData) (LogArtifactView, LogViewData) {
 	newLogViewData := LogViewData{
 		Operation: "",
 	}
@@ -168,58 +205,56 @@ func nextViewData(artifact viewers.Artifact, currentViewData LogViewData) (LogAr
 		ArtifactName: artifact.JobPath(),
 		ArtifactLink: artifact.CanonicalLink(),
 		ViewName:     name,
+		Index:        logIndex,
 	}
-	switch currentViewData.Operation {
-	case "all":
-		logLines = logLinesAll(artifact)
-		newArtifactView.ViewMethodDescription = fmt.Sprintf("viewing all lines")
-		newArtifactView.ViewAll = true
-	case "more":
-		if currentViewData.UseBytes {
-			nBytes := int64(currentViewData.HeadBytes + byteChunkSize)
-			artifactSize, err := artifact.Size()
-			if err != nil {
-				logrus.WithFields(logrus.Fields{"artifact": artifact.JobPath()}).WithError(err).Error("Error getting artifact size.")
-			}
-			if nBytes >= artifactSize {
-				logLines = logLinesAll(artifact)
-				newArtifactView.ViewMethodDescription = fmt.Sprintf("viewing all lines")
-				newArtifactView.ViewAll = true
-			} else {
-				newArtifactView.ViewMethodDescription = fmt.Sprintf("viewing first %d bytes", nBytes)
-				newLogViewData.HeadBytes = nBytes
-				newLogViewData.UseBytes = true
-				logLines, err = logLinesHead(artifact, nBytes)
-				if err != nil {
-					logrus.WithError(err).Error("Reading log lines failed.")
-					newArtifactView.ViewMethodDescription = fmt.Sprintf("failed to read log file - is it compressed?")
-					logLines = []string{}
+	logLines := logLinesAll(artifact)
+	newArtifactView.ViewMethodDescription = "viewing error lines"
+	newArtifactView.ViewAll = true
+
+	// show highlighted lines and their neighboring lines
+	for i, line := range logLines {
+		if line.Highlighted {
+			for d := -neighborLines; d <= neighborLines; d++ {
+				if i+d < 0 {
+					continue
 				}
-			}
-		} else {
-			nLines := currentViewData.TailLines + lineChunkSize
-			logLines, err = viewers.LastNLines(artifact, nLines)
-			if err != nil {
-				nBytes := int64(byteChunkSize)
-				newLogViewData.UseBytes = true
-				newLogViewData.HeadBytes = nBytes
-				newArtifactView.ViewMethodDescription = fmt.Sprintf("viewing first %d bytes", nBytes)
-				logLines, err = logLinesHead(artifact, nBytes)
-				if err != nil {
-					logrus.WithError(err).Error("Reading head of log lines failed.")
-					newArtifactView.ViewMethodDescription = fmt.Sprintf("failed to read log file - is it compressed?")
-					logLines = []string{}
+				if i+d >= len(logLines) {
+					break
 				}
-			} else {
-				newLogViewData.TailLines = nLines
-				newArtifactView.ViewMethodDescription = fmt.Sprintf("viewing last %d lines", nLines)
+				logLines[i+d].Skip = false
 			}
 		}
-	case "":
-	default:
 	}
 
-	newArtifactView.LogLines = logLines
+	// break continuous blocks of skipped/unskipped lines into groups
+	curGroup := LineGroup{LogIndex: logIndex}
+	for i, line := range logLines {
+		if line.Skip == curGroup.Skip {
+			curGroup.LogLines = append(curGroup.LogLines, line)
+		} else {
+			curGroup.End = i
+			if curGroup.Skip {
+				if linesSkipped(curGroup) < minLinesSkipped {
+					curGroup.Skip = false
+				}
+			}
+			newArtifactView.LineGroups = append(newArtifactView.LineGroups, curGroup)
+			curGroup = LineGroup{
+				LogIndex: logIndex,
+				Skip:     line.Skip,
+				Start:    i,
+				LogLines: []LogLine{line},
+			}
+		}
+	}
+	curGroup.End = len(logLines)
+	if curGroup.Skip {
+		if linesSkipped(curGroup) < minLinesSkipped {
+			curGroup.Skip = false
+		}
+	}
+	newArtifactView.LineGroups = append(newArtifactView.LineGroups, curGroup)
+
 	return newArtifactView, newLogViewData
 
 }
@@ -246,25 +281,31 @@ func logLinesHead(artifact viewers.Artifact, n int64) ([]string, error) {
 		}
 	}
 	logLines := strings.Split(string(read), "\n")
-	for ix, line := range logLines {
-		logLines[ix] = fmt.Sprintf("%d.\t%s", ix+1, line)
-	}
 	return logLines, nil
 }
 
 // logLinesAll reads all of an artifact and splits it into lines.
-func logLinesAll(artifact viewers.Artifact) []string {
+func logLinesAll(artifact viewers.Artifact) []LogLine {
 	read, err := artifact.ReadAll()
 	if err != nil {
 		if err == viewers.ErrFileTooLarge {
 			logrus.WithError(err).Error("Artifact too large to read all.")
-			return []string{}
+			return []LogLine{}
 		}
+		logrus.WithError(err).Error("Failed to read log.")
+		return []LogLine{}
 	}
-	logLines := strings.Split(string(read), "\n")
-	for ix, line := range logLines {
-		logLines[ix] = fmt.Sprintf("%d.\t%s", ix+1, line)
+	logText := strings.Split(string(read), "\n")
+	logLines := make([]LogLine, 0, len(logText))
+	for i, text := range logText {
+		logLines = append(logLines, LogLine{
+			Text:        text,
+			Number:      i + 1,
+			Highlighted: errRE.MatchString(text),
+			Skip:        true,
+		})
 	}
+
 	return logLines
 }
 

@@ -25,21 +25,62 @@ var buildLogTemplateText = `<style>
 	list-style-type: none;
 	padding: 0;
 	margin:0;
-	line-height:1.4;
+	line-height:1.2;
 	color:black;
+}
+.highlighted {
+  background-color: rgba(255, 224, 0, .5);
+}
+.skipped {
+  display: none;
+}
+td {
+  padding: 2px;
+}
+tr {
+  border: none;
+}
+.linenum {
+  user-select: none;
+  color: gray;
+  text-align: right;
+  vertical-align: top;
 }
 </style>
 <div style="font-family:monospace;">
-{{range .LogViews}}<h4 style="margin-top:0;"><a href="{{.ArtifactLink}}">{{.ArtifactName}}</a> - {{.ViewMethodDescription}}</h4>
-  <ul class="loglines">
-    {{range $ix, $e := .LogLines}}
-    <li >{{$e}}</li>
+  {{range $log := .LogViews}}
+  <div id="{{$log | logID}}">
+    <h4 style="margin-top:0;">
+      <a href="{{$log.ArtifactLink}}">{{$log.ArtifactName}}</a>
+      <button id="{{$log | logID}}-show-all" onclick="showAllLines({{$log | logID}})">Show all hidden lines</button>
+    </h4>
+    <table class="loglines">
+    {{range $g := $log.LineGroups}}
+      {{if $g.Skip}}
+      <tbody class="show-skipped" id="{{$g | skipID}}">
+        <tr>
+          <td></td>
+          <td><button onclick="showLines({{$g | linesID}}, {{$g | skipID}})">Show {{$g | linesSkipped}} hidden lines</button></td>
+        </tr>
+      </tbody>
+      {{end}}
+      <tbody {{if $g.Skip}}class="skipped"{{end}} id="{{$g | linesID}}">
+        {{range $line := $g.LogLines}}
+        <tr>
+          <td class="linenum">{{$line.Number}}</td>
+          <td><span {{if $line.Highlighted}}class="highlighted"{{end}}>{{$line.Text}}</span></td>
+        </tr>
+        {{end}}
+      </tbody>
     {{end}}
-  </ul>
-  {{if not .ViewAll}}
-  <button onclick="refreshView({{.ViewName}}, '{{index $.RawGetMoreRequests .ArtifactName}}')" class="mdl-button mdl-js-button mdl-button--primary">More Lines Please</button>
-  <button onclick="refreshView({{.ViewName}}, '{{index $.RawGetAllRequests .ArtifactName}}')" class="mdl-button mdl-js-button mdl-button--primary">More Lines Please<span style="font-family:monospace;"> -A --force</span></button>
-  {{end}}
+    </table>
+  </div>
   {{end}}
 </div>`
-var buildLogTemplate = template.Must(template.New("build-log").Parse(buildLogTemplateText))
+var buildLogTemplate = template.Must(template.New("build-log").
+	Funcs(template.FuncMap{
+		"linesSkipped": linesSkipped,
+		"linesID":      linesID,
+		"skipID":       skipID,
+		"logID":        logID}).
+	Parse(buildLogTemplateText))

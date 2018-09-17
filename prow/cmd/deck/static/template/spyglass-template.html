@@ -104,6 +104,28 @@
         document.getElementById(name + "-loading").style.display = "block";
       }
 
+      // Show all lines in specified log
+      function showAllLines(logId) {
+        document.getElementById(logId + "-show-all").style.display = "none";
+        var log = document.getElementById(logId);
+        var skipped = log.querySelectorAll(".skipped");
+        for (var i = 0; i < skipped.length; i++) {
+          skipped[i].style.display = "table-row-group";
+        }
+        // hide any remaining "show hidden lines" buttons
+        var showSkipped = log.querySelectorAll(".show-skipped");
+        for (var i = 0; i < showSkipped.length; i++) {
+          showSkipped[i].style.display = "none";
+        }
+      }
+
+      function showLines(linesId, skipId) {
+        // show a single group of hidden lines
+        document.getElementById(linesId).style.display = "table-row-group";
+        // hide the corresponding button
+        document.getElementById(skipId).style.display = "none";
+      }
+
     </script>
   </body>
 </html>
