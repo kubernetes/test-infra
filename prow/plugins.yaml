@@ -138,6 +138,11 @@ blockades:
   - ^events/elections/2017
   - ^events/elections/2018
   explanation: "These files are historical, and from events that have already occurred."
+- repos:
+  - kubernetes/community
+  blockregexps:
+  - ^keps/
+  explanation: "KEPs have been relocated to [kubernetes/enhancements](https://git.k8s.io/enhancements/)! Please submit any updates there."
 
 blunderbuss:
   max_request_count: 2
