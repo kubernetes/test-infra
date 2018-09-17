@@ -47,17 +47,16 @@ Here is the step-by-step description of the pre-submit and post-submit workflows
 
 ## Pre-submit workflow
 Runs code coverage tool to report coverage change in a new PR or updated PR
-1. Developer submit new commit to an open PR on github
-2. Matching pre-submit job is started 
-3. Generate coverage profile in artifacts directory
-4. Calculate coverage changes. Compare the coverage file generated in this cycle against the most
+
+1. Generate coverage profile in artifacts directory
+2. Calculate coverage changes. Compare the coverage file generated in this cycle against the most
  recent successful post-submit build. Coverage file for post-submit commits were generated in 
  post-submit workflow and stored in gcs bucket
-5. Use PR data from github, git-attributes, as well as coverage change data calculated above, to 
+3. Use PR data from github, git-attributes, as well as coverage change data calculated above, to 
 produce a list of files that we care about in the line-by-line coverage report. produce line by 
 line coverage html and add link to covbot report. Note that covbot is the robot github account 
 used to report code coverage change results. See Covbot section for more details.
-6. If any file in this commit has a coverage change, let covbot post presubmit coverage on github, under that conversation of the PR. 
+4. If any file in this commit has a coverage change, let covbot post presubmit coverage on github, under that conversation of the PR. 
   - The covbot comment should have the following information on each file with a coverage change
     - file name
     - old coverage (coverage before any change in the PR)
@@ -68,15 +67,14 @@ used to report code coverage change results. See Covbot section for more details
 ## Post-submit workflow
 Produces & stores coverage profile for later presubmit jobs to compare against; 
 Produces per-file and per-package coverage result as input for TestGrid. Testgrid can use the data produced here to display coverage trend in a tabular or graphical way. 
-1. A PR is merged
-2. Post-submit job started
-3. Generate coverage profile. Completion marker generated upon successful run. Both stored
+
+1. Generate coverage profile. Completion marker generated upon successful run. Both stored
  in artifacts directory.
     - Completion marker is used by later pre-submit job when searching for a healthy and complete 
     code coverage profile in the post-submit jobs
     - Successfully generated coverage profile may be used as the basis of comparison for coverage change, 
     as mentioned in pre-submit workflow
-4. Generate / store per-file coverage data
+2. Generate / store per-file coverage data
     - Stores in the XML format, that is used by TestGrid, and dump it in artifacts directory
     - The junit_bazel.xml should be a valid junit xml file. See 
 [JUnit XML format](https://www.ibm.com/support/knowledgecenter/en/SSQ2R2_14.1.0/com.ibm.rsar.analysis.codereview.cobol.doc/topics/cac_useresults_junit.html)
