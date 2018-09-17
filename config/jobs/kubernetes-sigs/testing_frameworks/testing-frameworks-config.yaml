@@ -7,9 +7,10 @@ presubmits:
     skip_report: false
     labels:
       preset-service-account: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      - image: gcr.io/k8s-testimages/bootstrap:latest
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -17,3 +18,24 @@ presubmits:
         - --scenario=execute
         - --
         - ./bin/test-on-prow.sh
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+      volumeMounts:
+      - mountPath: /lib/modules
+        name: modules
+        readOnly: true
+      - mountPath: /sys/fs/cgroup
+        name: cgroup
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: "true"
+    volumes:
+    - name: modules
+      hostPath:
+        path: /lib/modules
+        type: Directory
+    - name: cgroup
+      hostPath:
+        path: /sys/fs/cgroup
+        type: Directory
