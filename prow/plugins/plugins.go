@@ -665,11 +665,6 @@ The list of patch release managers for each release can be found [here](https://
 			c.RequireMatchingLabel[i].GracePeriod = "5s"
 		}
 	}
-
-	if c.Golint != nil && c.Golint.MinimumConfidence == nil {
-		defaultConfidence := 0.8
-		c.Golint.MinimumConfidence = &defaultConfidence
-	}
 }
 
 // Load attempts to load config from the path. It returns an error if either
