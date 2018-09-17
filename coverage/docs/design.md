@@ -3,7 +3,7 @@ This code coverage tool has two major modes of operation.
 ## In post-submit workflow 
 Post-submit workflow starts when a commit to the base branch happens, e.g. when a pull request is merged
 
-Tt runs code coverage and generates the following artifacts in a GCS bucket
+It runs code coverage and generates the following artifacts
   - xml file that stores file-level and package-level code coverage, formatted to be readable by TestGrid
   - code coverage profile, which is produced by "go test -coverprofile" and contains all block level
    code coverage data. The profile will be used later in presubmit workflow as a base for comparison
@@ -18,22 +18,29 @@ Pre-submit workflow starts when a pull requested is created or updated with new 
   - it can be configured to return with a non-zero status if coverage falls below threshold.
 
 ## Users
-The pre-submit tool is intended for a developer to see the impact on code coverage of his/her commit. It can also be used by repo managers to block any PR from merging if the coverage falls under customized threshold.
+The pre-submit mode is intended for a developer to see the impact on code coverage of his/her commit. 
 
-The post-submit testgrid report is for repo managers and/or test infra team to monitor code coverage stats over time.
+The post-submit mode, provides input for TestGrid - TestGrid is for repo managers and/or test infra team to monitor code coverage stats over time.
 
 ## Programming Language Supported
 The code coverage tool only collect code coverage for Go files
 
 
 # Design of Test Coverage Tool
-We pack the test coverage feature in a container, that is triggered to run by a CI/CD system such as prow, in response to Github events such as pulls and merges.The behavior varies in presubmit and postsubmit workflows, which is discussed in latter sections. 
-
 The tool takes input from three sources
 1. It runs test coverage profiling on target repository. 
-2. It reads previously stored post-submit code coverage profile from gcs bucket. The profile
+  - target directory can be passed as flags when running the binary. E.g "--cov-target=./pkg/"
+2. (In pre-submit workflow only) It reads previously stored post-submit code coverage profile from gcs bucket. The profile
 serves as a base of comparison for presubmit delta coverage.
-3. Variables passed through flags. Those variables include directory to run test coverage, file filters and threshold for desired coverage level.  
+  - The value of following three flags will be used to locate the code coverage profile in GCS bucket,
+  note that the values are examples and the first two values should be different for your own project
+    - "--postsubmit-gcs-bucket=knative-prow"
+    - "--postsubmit-job-name=post-knative-serving-go-coverage"
+    - "--profile-name=coverage_profile.txt"
+3. Variables passed through flags. Those variables include directory to run test coverage, file filters and threshold for desired coverage level. Here is a list of these variables. Again, the values to the right of the equality sign are just examples.
+    - "--artifacts=$(ARTIFACTS)"
+    - "--cov-target=./pkg/"
+    - "--cov-threshold-percentage=81"
 
 
 Here is the step-by-step description of the pre-submit and post-submit workflows
@@ -93,16 +100,18 @@ file to code coverage binary, as the value for parameter "github-token"
 
 
 # Usage with prow
-Prow can be used as the system to handle Github events mentioned in the two workflows. 
+We pack the test coverage feature in a container, that is triggered to run by a CI/CD system such as prow, in response to Github events such as pulls and merges. The behavior varies in presubmit and postsubmit workflows, which is discussed in latter sections.
 
-Prow, in both workflows, supplies the flags & secrets for the binary, clones the repository and uploads logs & artifacts to GCS bucket.
+Prow is a CI/CD system that is tested working well with this Code Coverage tool.   
+- Prow can be used as the system to handle Github events mentioned in the two workflows. 
+- Prow, in both workflows, supplies the flags & secrets for the binary, clones the repository and uploads logs & artifacts to GCS bucket.
 
-The pre-submit prow job is triggered by any new commit to a PR. At the end of the binary run, it can return a pass or fail status context to Github. Tide can use that status to block PR with low coverage.
+  - The pre-submit prow job is triggered by any new commit to a PR. At the end of the binary run, it can return a pass or fail status context to Github. Tide can use that status to block PR with low coverage.
 
-The post-submit prow job is triggered by merge events to the base branch.
+  - The post-submit prow job is triggered by merge events to the base branch.
 
 ## Prow Configuration File
-As mentioned earlier, we use configuration file to store repository specific information. Below is an example that contains the args that will be supplied to the coverage container
+Here is an example of a pre-submit prow job spec that runs uses the coverage tool in a container (the container build file can be found [here](https://github.com/kubernetes/test-infra/blob/a1e910ae6811a1821ad98fa28e6fad03972a8c20/coverage/Makefile)). The args section includes all the arguments for the binary of the tool. 
 ```
   - name: pull-knative-serving-go-coverage
     labels:
@@ -111,8 +120,6 @@ As mentioned earlier, we use configuration file to store repository specific inf
     optional: true
     decorate: true
     clone_uri: "git@github.com:knative/serving.git"
-    ssh_key_secrets:
-    - ssh-knative
     spec:
       containers:
       - image: gcr.io/knative-tests/test-infra/coverage:latest
@@ -122,17 +129,26 @@ As mentioned earlier, we use configuration file to store repository specific inf
         args:
         - "--postsubmit-gcs-bucket=knative-prow"
         - "--postsubmit-job-name=post-knative-serving-go-coverage"
-        - "--artifacts=$(ARTIFACTS)" # folder to store artifacts, such as the coverage profile
         - "--profile-name=coverage_profile.txt"
+        - "--artifacts=$(ARTIFACTS)" # folder to store artifacts, such as the coverage profile
         - "--cov-target=./pkg/" # target directory of test coverage
         - "--cov-threshold-percentage=50" # minimum level of acceptable presubmit coverage on a per-file level
         - "--github-token=/etc/github-token/token"
-        volumeMounts:
-        - name: github-token
-          mountPath: /etc/github-token
-          readOnly: true
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
       volumes:
       - name: github-token
         secret:
           secretName: covbot-token
+      - name: service
+        secret:
+          secretName: service-account
+      volumeMounts:
+      - name: github-token
+        mountPath: /etc/github-token
+        readOnly: true
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
 ```
