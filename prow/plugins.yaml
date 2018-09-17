@@ -280,7 +280,9 @@ plugins:
   - trigger
 
   kubernetes:
+  - approve
   - assign
+  - blunderbuss
   - cat
   - cla
   - dog
@@ -299,103 +301,54 @@ plugins:
   - wip
   - yuks
 
-  kubernetes/client-go:
-  - approve
-
   kubernetes/cloud-provider-aws:
-  - approve
-  - blunderbuss
   - trigger
 
   kubernetes/cloud-provider-azure:
-  - approve
-  - blunderbuss
   - trigger
 
   kubernetes/cloud-provider-gcp:
-  - approve
-  - blunderbuss
   - trigger
 
   kubernetes/cloud-provider-openstack:
-  - approve
-  - blunderbuss
   - trigger
 
   kubernetes/cloud-provider-vsphere:
-  - approve
-  - blunderbuss
   - trigger
 
   kubernetes/cluster-registry:
-  - approve
   - trigger
 
   kubernetes/community:
-  - approve
-  - blunderbuss
   - blockade
   - owners-label
   - require-sig
   - trigger
 
-  kubernetes/contrib:
-  - approve
-  - blunderbuss
-
-  kubernetes/dashboard:
-  - approve
-
   kubernetes/dns:
-  - approve
   - trigger
 
   kubernetes/examples:
   - trigger
-  - approve
 
   kubernetes/features:
-  - approve
   - milestone
   - stage
 
   kubernetes/ingress-gce:
-  - approve
   - trigger
-
-  kubernetes/ingress-nginx:
-  - approve
 
   kubernetes/federation:
   - trigger
-  - approve
-
-  kubernetes/gengo:
-  - approve
 
   kubernetes/heapster:
-  - approve
-  - blunderbuss
   - trigger
 
   kubernetes/kops:
   - trigger
-  - approve
-
-  kubernetes/kube-deploy:
-  - approve
-  - blunderbuss
-
-  kubernetes/kubeadm:
-  - approve
-
-  kubernetes/kubectl:
-  - approve
 
   kubernetes/kubernetes:
-  - approve
   - blockade
-  - blunderbuss
   - cherry-pick-unapproved
   - docs-no-retest
   - milestone
@@ -405,70 +358,18 @@ plugins:
   - require-matching-label
   - trigger
 
-  kubernetes/kubernetes-docs-ja:
-  - approve
-  - blunderbuss
-
-  kubernetes/kubernetes-docs-ko:
-  - approve
-  - blunderbuss
-
-  kubernetes/kubernetes-docs-zh:
-  - approve
-  - blunderbuss
-
-  kubernetes/kubernetes-template-project:
-  - approve
-
-  kubernetes/kube-openapi:
-  - approve
-  - blunderbuss
-
-  kubernetes/kube-state-metrics:
-  - approve
-  - blunderbuss
-
-  kubernetes/minikube:
-  - approve
-
-  kubernetes/node-problem-detector:
-  - approve
-  - blunderbuss
-
   kubernetes/org:
-  - approve
-  - blunderbuss
   - owners-label
   - trigger
 
   kubernetes/perf-tests:
-  - approve
-  - blunderbuss
   - trigger
-
-  kubernetes/publishing-bot:
-  - approve
-  - blunderbuss
-
-  kubernetes/release:
-  - approve
-  - trigger
-
-  kubernetes/repo-infra:
-  - approve
 
   kubernetes/sig-release:
-  - approve
   - blockade
-  - blunderbuss
   - stage
 
-  kubernetes/steering:
-  - approve
-
   kubernetes/test-infra:
-  - approve
-  - blunderbuss
   - config-updater
   - milestone
   - owners-label
@@ -476,14 +377,6 @@ plugins:
   - trigger
   - verify-owners
   - welcome
-
-  kubernetes/utils:
-  - approve
-  - blunderbuss
-
-  kubernetes/website:
-  - approve
-  - blunderbuss
 
   kubernetes-client:
   - approve
