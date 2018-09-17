@@ -350,7 +350,6 @@ plugins:
   kubernetes/kubernetes:
   - blockade
   - cherry-pick-unapproved
-  - docs-no-retest
   - milestone
   - milestonestatus
   - owners-label
@@ -366,7 +365,6 @@ plugins:
   - trigger
 
   kubernetes/sig-release:
-  - blockade
   - stage
 
   kubernetes/test-infra:
