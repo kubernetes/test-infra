@@ -1,42 +1,14 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <title>Prow Status</title>
-        <link id="favicon" rel="icon" type="image/png" href="favicon.ico">
-        <link rel="stylesheet" type="text/css" href="style.css">
-        <link rel="stylesheet" type="text/css" href="extensions/style.css">
-        <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
-        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-        <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
-        <script type="text/javascript" src="fuzzy-search.js"></script>
-        <script type="text/javascript" src="moment.min.js"></script>
-        <script type="text/javascript" src="script.js"></script>
-        <script type="text/javascript" src="data.js?var=allBuilds"></script>
-        <script type="text/javascript" src="extensions/script.js"></script>
-        <script type="text/javascript" src="branding.js?var=branding"></script>
-        <script type="text/javascript" src="spyglass.js?var=spyglass"></script>
-        <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
-    </head>
-    <body>
-        <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
-            <header class="mdl-layout__header">
-                <div class="mdl-layout__header-row">
-                    <a href="https://github.com/kubernetes/test-infra/tree/master/prow#prow" class="logo"><img id="img" src="/logo.svg" alt="kubernetes logo" class="logo"/></a>
-                    <span class="mdl-layout-title header-title">Prow Status</span>
-                </div>
-            </header>
-            <div class="mdl-layout__drawer">
-                <span class="mdl-layout-title">Prow Dashboard</span>
-                <nav class="mdl-navigation">
-                    <a class="mdl-navigation__link mdl-navigation__link--current" href="/">Prow Status</a>
-                    <a class="mdl-navigation__link" href="/pr">PR Status</a>
-                    <a class="mdl-navigation__link" href="/command-help">Command Help</a>
-                    <a class="mdl-navigation__link" href="/tide">Tide Status</a>
-                    <a class="mdl-navigation__link" href="/plugins">Plugins</a>
-                </nav>
-            </div>
-            <main class="mdl-layout__content">
+{{define "title"}}Prow Status{{end}}
+
+{{define "scripts"}}
+<script type="text/javascript" src="/static/fuzzy-search.js"></script>
+<script type="text/javascript" src="/static/moment.min.js"></script>
+<script type="text/javascript" src="/static/script.js"></script>
+<script type="text/javascript" src="data.js?var=allBuilds"></script>
+<script type="text/javascript" src="spyglass.js?var=spyglass"></script>
+{{end}}
+
+{{define "content"}}
                 <button id="top-navigator" class="mdl-button mdl-js-button mdl-button--fab hidden">
                   <i class="material-icons">arrow_upward</i>
                 </button>
@@ -68,7 +40,7 @@
                           <div id="job-bar-triggered" class="job-bar-state"></div>
                           <div id="triggered-tooltip" class="mdl-tooltip" for="job-bar-triggered"></div>
                           <div id="job-bar-error" class="job-bar-state"></div>
-      
+
                           <div id="error-tooltip" class="mdl-tooltip" for="job-bar-error"></div>
                           <div id="job-bar-failure" class="job-bar-state"></div>
                           <div id="failure-tooltip" class="mdl-tooltip" for="job-bar-failure"></div>
@@ -103,11 +75,6 @@
                         <div id="rerun-content"></div>
                     </div>
                 </div>
-            </main>
-        </div>
-        <div id="toast" class="mdl-js-snackbar mdl-snackbar">
-            <div class="mdl-snackbar__text"></div>
-            <button class="mdl-snackbar__action" type="button"></button>
-        </div>
-    </body>
-</html>
+{{end}}
+
+{{template "page" (settings mobileUnfriendly "index" .)}}

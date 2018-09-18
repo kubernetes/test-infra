@@ -1,53 +1,8 @@
-<!DOCTYPE html>
-<html>
-  <head>
-      <meta charset="UTF-8">
-      <title>Job View</title>
-      <link id="favicon" rel="icon" type="image/png" href="/favicon.ico">
-      <link rel="stylesheet" type="text/css" href="/style.css">
-      <link rel="stylesheet" type="text/css" href="/extensions/style.css">
-      <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
-      <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-      <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
-      <script type="text/javascript" src="/script.js"></script>
-      <script type="text/javascript" src="/extensions/script.js"></script>
-      <script type="text/javascript" src="/branding.js?var=branding"></script>
-      <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
-  </head>
-  <body onload="loadViews()">
-    <div class="mdl-layout__container">
-      <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
-        <header class="mdl-layout__header">
-          <div class="mdl-layout__header-row">
-            <a href="https://github.com/kubernetes/test-infra/tree/master/prow#prow" class="logo"><img id="img" src="/logo.svg" alt="kubernetes logo" class="logo"/></a>
-            <span class="mdl-layout-title header-title">Job View</span>
-            <span class="mdl-layout-title header-title">{{.Source}}</span>
-          </div>
-        </header>
-        <div class="mdl-layout__drawer">
-          <span class="mdl-layout-title">Prow Dashboard</span>
-          <nav class="mdl-navigation">
-            <a class="mdl-navigation__link mdl-navigation__link--current" href="/">Prow Status</a>
-            <a class="mdl-navigation__link" href="/pr">PR Status</a>
-            <a class="mdl-navigation__link" href="/command-help">Command Help</a>
-            <a class="mdl-navigation__link" href="/tide">Tide Status</a>
-            <a class="mdl-navigation__link" href="/plugins">Plugins</a>
-          </nav>
-        </div>
-        <main class="mdl-layout__content" id="lens-container">
-          {{range .Views}}
-          <div class="mdl-card mdl-shadow--2dp lens-card">
-          <div class="mdl-card__title lens-title"><h3 class="mdl-card__title-text">{{.Title}}</h3></div>
-          <div id="{{.Name}}-view-container" class="lens-view-content mdl-card__supporting-text">
-            <div class="mdl-spinner mdl-js-spinner is-active lens-card-loading" id="{{.Name}}-loading"></div>
-              <div id="{{.Name}}-view"></div>
-            </div>
-          </div>
-          {{end}}
-        </main>
-      </div>
-    </div>
-    <script>
+{{define "title"}}Job View {{.Source}}{{end}}
+
+{{define "scripts"}}
+<script type="text/javascript" src="/static/script.js"></script>
+    <script type="text/javascript">
       var pageUrl = window.location.href;
       var urlObj = new URL(pageUrl);
       var src = {{.Source}}
@@ -86,7 +41,7 @@
             var lensJson = JSON.parse(req.responseText);
             insertView(name, lensJson.HTMLView);
           } else if (req.readyState === 4 && !(req.status === 200)) {
-            insertView(name, "<div>Error: " + req.status +"</div>");
+           insertView(name, "<div>Error: " + req.status +"</div>");
           }
 
         }
@@ -126,7 +81,20 @@
         document.getElementById(skipID).style.display = "none";
       }
 
+      window.onload = loadViews;
     </script>
-  </body>
-</html>
+{{end}}
 
+{{define "content"}}
+          {{range .Views}}
+          <div class="mdl-card mdl-shadow--2dp lens-card">
+          <div class="mdl-card__title lens-title"><h3 class="mdl-card__title-text">{{.Title}}</h3></div>
+          <div id="{{.Name}}-view-container" class="lens-view-content mdl-card__supporting-text">
+            <div class="mdl-spinner mdl-js-spinner is-active lens-card-loading" id="{{.Name}}-loading"></div>
+              <div id="{{.Name}}-view"></div>
+            </div>
+          </div>
+          {{end}}
+{{end}}
+
+{{template "page" (settings mobileUnfriendly "spyglass" .)}}

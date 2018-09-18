@@ -123,8 +123,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	staticHandlerFromDir := func(dir string) http.Handler {
-		return defaultExtension(".html",
-			gziphandler.GzipHandler(handleCached(http.FileServer(http.Dir(dir)))))
+		return gziphandler.GzipHandler(handleCached(http.FileServer(http.Dir(dir))))
 	}
 
 	// setup config agent, pod log clients etc.
@@ -134,23 +133,54 @@ func main() {
 	}
 
 	// setup common handlers for local and deployed runs
-	mux.Handle("/", staticHandlerFromDir(o.staticFilesLocation))
+	mux.Handle("/static/", http.StripPrefix("/static", staticHandlerFromDir(o.staticFilesLocation)))
 	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(configAgent)))
-	mux.Handle("/branding.js", gziphandler.GzipHandler(handleBranding(configAgent)))
 	mux.Handle("/favicon.ico", gziphandler.GzipHandler(handleFavicon(o.staticFilesLocation, configAgent)))
 	mux.Handle("/spyglass.js", gziphandler.GzipHandler(handleSpyglass(o.spyglass)))
 
-	if o.runLocal {
-		if o.spyglass {
-			initSpyglass(configAgent, o, mux, nil)
+	// Set up handlers for template pages.
+	mux.Handle("/pr", gziphandler.GzipHandler(handleSimpleTemplate(configAgent, "pr.html")))
+	mux.Handle("/command-help", gziphandler.GzipHandler(handleSimpleTemplate(configAgent, "command-help.html")))
+	mux.Handle("/plugin-help", http.RedirectHandler("/command-help", http.StatusMovedPermanently))
+	mux.Handle("/tide", gziphandler.GzipHandler(handleSimpleTemplate(configAgent, "tide.html")))
+	mux.Handle("/plugins", gziphandler.GzipHandler(handleSimpleTemplate(configAgent, "plugins.html")))
+
+	indexHandler := handleSimpleTemplate(configAgent, "index.html")
+	localDataHandler := staticHandlerFromDir("./localdata")
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		// This is necessary because a) it's impossible to set a handler for "/" that isn't a wildcard,
+		// and b) you cannot have multiple
+		if r.URL.Path != "/" {
+			if o.runLocal {
+				localDataHandler.ServeHTTP(w, r)
+			} else {
+				http.NotFound(w, r)
+			}
+			return
 		}
+		indexHandler(w, r)
+	})
+
+	if o.runLocal {
+		mux = prodOnlyLocal(configAgent, o, mux)
 	} else {
-		// when deployed, do the full main
 		mux = prodOnlyMain(configAgent, o, mux)
 	}
 
 	// setup done, actually start the server
 	logrus.WithError(http.ListenAndServe(":8080", mux)).Fatal("ListenAndServe returned.")
+}
+
+// prodOnlyLocal contains logic used only when running locally, and is mutually exclusive with
+// prodOnlyMain.
+func prodOnlyLocal(configAgent *config.Agent, o options, mux *http.ServeMux) *http.ServeMux {
+	mux.Handle("/github-login", gziphandler.GzipHandler(handleSimpleTemplate(configAgent, "github-login.html")))
+
+	if o.spyglass {
+		initSpyglass(configAgent, o, mux, nil)
+	}
+
+	return mux
 }
 
 // prodOnlyMain contains logic only used when running deployed, not locally
@@ -333,20 +363,6 @@ func dupeRequest(original *http.Request) *http.Request {
 	r2.URL = new(url.URL)
 	*r2.URL = *original.URL
 	return r2
-}
-
-// serve with handler but map extensionless URLs to the default
-func defaultExtension(extension string, h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if len(r.URL.Path) > 0 &&
-			r.URL.Path[len(r.URL.Path)-1] != '/' && path.Ext(r.URL.Path) == "" {
-			r2 := dupeRequest(r)
-			r2.URL.Path = r.URL.Path + extension
-			h.ServeHTTP(w, r2)
-		} else {
-			h.ServeHTTP(w, r)
-		}
-	})
 }
 
 func handleCached(next http.Handler) http.Handler {
@@ -574,7 +590,9 @@ func renderSpyglass(sg *spyglass.Spyglass, ca *config.Agent, src string, staticF
 		Source:      src,
 		ViewerCache: viewerCache,
 	}
-	t, err := template.ParseFiles(path.Join(staticFilesLocation, "template/spyglass-template.html"))
+	t := template.New("spyglass.html")
+	prepareBaseTemplate(ca, t)
+	t, err = t.ParseFiles(path.Join(staticFilesLocation, "template/spyglass.html"))
 	if err != nil {
 		return "", fmt.Errorf("error parsing template: %v", err)
 	}
@@ -792,26 +810,6 @@ func handleConfig(ca jobs.ConfigAgent) http.HandlerFunc {
 		if err != nil {
 			logrus.WithError(err).Error("Error writing config.")
 			http.Error(w, "Failed to write config.", http.StatusInternalServerError)
-		}
-	}
-}
-
-func handleBranding(ca jobs.ConfigAgent) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		setHeadersNoCaching(w)
-		config := ca.Config()
-		b, err := json.Marshal(config.Deck.Branding)
-		if err != nil {
-			logrus.WithError(err).Error("Error marshaling branding config.")
-			http.Error(w, "Failed to marshal branding config.", http.StatusInternalServerError)
-			return
-		}
-		// If we have a "var" query, then write out "var value = [...];".
-		// Otherwise, just write out the JSON.
-		if v := r.URL.Query().Get("var"); v != "" {
-			fmt.Fprintf(w, "var %s = %s;", v, string(b))
-		} else {
-			fmt.Fprint(w, string(b))
 		}
 	}
 }
