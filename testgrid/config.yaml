@@ -4089,7 +4089,7 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-slow
   - name: gke-cos-containerd-alpha-cluster-1.11
     test_group_name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-cluster
-  - name: gke-cos-alpha-cluster-1.10
+  - name: gke-cos-alpha-cluster-1.11
     test_group_name: ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-cluster
   - name: gke-cos-containerd-alpha-cluster-features-1.11
     test_group_name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-cluster-features
