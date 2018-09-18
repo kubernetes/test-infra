@@ -1,16 +1,14 @@
 # Overview
-This code coverage tool has two major modes of operation.
-## In post-submit workflow 
-Post-submit workflow starts when a commit to the base branch happens, e.g. when a pull request is merged
-
-It runs code coverage and generates the following artifacts
+This code coverage tool calculate per file, per package and overall coverage based on the the code coverage profile produced by "go test". In addition, it generates the following artifacts
   - xml file that stores file-level and package-level code coverage, formatted to be readable by TestGrid
   - code coverage profile, which is produced by "go test -coverprofile" and contains all block level
-   code coverage data. The profile will be used later in presubmit workflow as a base for comparison
+   code coverage data
 
-## In pre-submit workflow
-Pre-submit workflow starts when a pull requested is created or updated with new commit
-  - it runs code coverage on target directories and compares the new result with the one stored by 
+This code coverage tool has two major modes of operation, based on whether it is running in post-submit or pre-submit workflow. Post-submit workflow starts when a commit to the base branch happens, e.g. when a pull request is merged. 
+Pre-submit workflow starts when a pull requested is created or updated with new commit.
+
+The tool performs the following additional operations when running in pre-submit workflow 
+  - after running code coverage on target directories,  it compares the new result with the one stored by 
   the post-submit workflow and generate coverage difference. It reports coverage changes to the 
   pull request as a comment by a robot github account. 
   - it uses go tools to generate line by line coverage and stores the result in html, 
@@ -45,25 +43,6 @@ serves as a base of comparison for presubmit delta coverage.
 
 Here is the step-by-step description of the pre-submit and post-submit workflows
 
-## Pre-submit workflow
-Runs code coverage tool to report coverage change in a new PR or updated PR
-
-1. Generate coverage profile in artifacts directory
-2. Calculate coverage changes. Compare the coverage file generated in this cycle against the most
- recent successful post-submit build. Coverage file for post-submit commits were generated in 
- post-submit workflow and stored in gcs bucket
-3. Use PR data from github, git-attributes, as well as coverage change data calculated above, to 
-produce a list of files that we care about in the line-by-line coverage report. produce line by 
-line coverage html and add link to covbot report. Note that covbot is the robot github account 
-used to report code coverage change results. See Covbot section for more details.
-4. If any file in this commit has a coverage change, let covbot post presubmit coverage on github, under that conversation of the PR. 
-  - The covbot comment should have the following information on each file with a coverage change
-    - file name
-    - old coverage (coverage before any change in the PR)
-    - new coverage (coverage after applied all changes in the PR)
-    - change the coverage
-  - After each new posting, any previous posting by covbot should be removed
-
 ## Post-submit workflow
 Produces & stores coverage profile for later presubmit jobs to compare against; 
 Produces per-file and per-package coverage result as input for TestGrid. Testgrid can use the data produced here to display coverage trend in a tabular or graphical way. 
@@ -79,6 +58,26 @@ Produces per-file and per-package coverage result as input for TestGrid. Testgri
     - The junit_bazel.xml should be a valid junit xml file. See 
 [JUnit XML format](https://www.ibm.com/support/knowledgecenter/en/SSQ2R2_14.1.0/com.ibm.rsar.analysis.codereview.cobol.doc/topics/cac_useresults_junit.html)
     - For each file that has a coverage level lower than the threshold, the corresponding entry in the xml should have a \<failure\> tag
+
+## Pre-submit workflow
+Runs code coverage tool to report coverage change in a new PR or updated PR
+
+1. Generate coverage profile in artifacts directory
+2. Generate / store per-file coverage data (Same as the corresponding step in post-submit)
+3. Calculate coverage changes. Compare the coverage file generated in this cycle against the most
+ recent successful post-submit build. Coverage file for post-submit commits were generated in 
+ post-submit workflow and stored in gcs bucket
+4. Use PR data from github, git-attributes, as well as coverage change data calculated above, to 
+produce a list of files that we care about in the line-by-line coverage report. produce line by 
+line coverage html and add link to covbot report. Note that covbot is the robot github account 
+used to report code coverage change results. See Covbot section for more details.
+5. If any file in this commit has a coverage change, let covbot post presubmit coverage on github, under that conversation of the PR. 
+  - The covbot comment should have the following information on each file with a coverage change
+    - file name
+    - old coverage (coverage before any change in the PR)
+    - new coverage (coverage after applied all changes in the PR)
+    - change the coverage
+  - After each new posting, any previous posting by covbot should be removed
 
 ## Locally running presubmit and post-submit workflows
 Both workflows may be triggered locally in command line, as long as all the required flags are 
