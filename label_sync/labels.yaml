@@ -675,6 +675,13 @@ default:
       prowPlugin: shrug
       addedBy: humans
 repos:
+  kubernetes/community:
+    labels:
+      - color: 0052cc
+        description: Issues or PRs related to kubernetes conformance tests
+        name: area/conformance
+        target: both
+        addedBy: label
   kubernetes/kubernetes:
     labels:
       - color: 0052cc
@@ -687,6 +694,11 @@ repos:
         name: area/api
         target: issues
         addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to kubernetes conformance tests
+        name: area/conformance
+        target: both
+        addedBy: label
   kubernetes/test-infra:
     labels:
       - color: 0052cc
@@ -697,6 +709,11 @@ repos:
       - color: 0052cc
         description: Issues or PRs related to code in /config
         name: area/config
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to kubernetes conformance tests
+        name: area/conformance
         target: both
         addedBy: label
       - color: 0052cc
