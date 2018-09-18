@@ -332,7 +332,10 @@ plugins:
   - trigger
 
   kubernetes/features:
+  - blockade
   - milestone
+  - owners-label
+  - require-sig
   - stage
 
   kubernetes/ingress-gce:
@@ -365,6 +368,8 @@ plugins:
   - trigger
 
   kubernetes/sig-release:
+  - blockade
+  - owners-label
   - stage
 
   kubernetes/test-infra:
