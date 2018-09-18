@@ -466,7 +466,8 @@ Plugin Help style
 }
 
 #lens-container .lens-view-content {
-  width: calc(100% - 32px);
+  width: calc(100% - 16px);
+  padding: 8px;
 }
 
 .lens-card-loading {

@@ -105,12 +105,12 @@
       }
 
       // Show all lines in specified log
-      function showAllLines(logId) {
-        document.getElementById(logId + "-show-all").style.display = "none";
-        var log = document.getElementById(logId);
+      function showAllLines(logID) {
+        document.getElementById(logID + "-show-all").style.display = "none";
+        var log = document.getElementById(logID);
         var skipped = log.querySelectorAll(".skipped");
         for (var i = 0; i < skipped.length; i++) {
-          skipped[i].style.display = "table-row-group";
+          skipped[i].classList.remove("skipped");
         }
         // hide any remaining "show hidden lines" buttons
         var showSkipped = log.querySelectorAll(".show-skipped");
@@ -119,11 +119,11 @@
         }
       }
 
-      function showLines(linesId, skipId) {
+      function showLines(linesID, skipID) {
         // show a single group of hidden lines
-        document.getElementById(linesId).style.display = "table-row-group";
+        document.getElementById(linesID).classList.remove("skipped");
         // hide the corresponding button
-        document.getElementById(skipId).style.display = "none";
+        document.getElementById(skipID).style.display = "none";
       }
 
     </script>

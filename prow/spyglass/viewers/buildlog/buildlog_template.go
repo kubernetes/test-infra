@@ -24,7 +24,7 @@ var buildLogTemplateText = `<style>
 .loglines {
 	list-style-type: none;
 	padding: 0;
-	margin:0;
+	margin: 0;
 	line-height:1.2;
 	color:black;
 }
