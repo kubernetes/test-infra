@@ -13,7 +13,7 @@ postsubmits:
         - //admin:update
         - --
         - --github-token-path=/etc/github-token/oauth
-        # TODO(fejta): --confirm
+        - --confirm
         volumeMounts:
         - name: github
           mountPath: /etc/github-token
@@ -41,7 +41,7 @@ periodics:
       - //admin:update
       - --
       - --github-token-path=/etc/github-token/oauth
-      # TODO(fejta): --confirm
+      - --confirm
       volumeMounts:
       - name: github
         mountPath: /etc/github-token
