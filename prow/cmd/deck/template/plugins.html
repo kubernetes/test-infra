@@ -8,19 +8,20 @@
 {{end}}
 
 {{define "content"}}
-        <aside>
-            <div class="card-box">
-                <ul class="noBullets">
-                    <li>Plugin help for</li>
-                    <li><select id="repo" onchange="redraw();">
-                        <option>All plugins</option>
-                    </select></li>
-                </ul>
-            </div>
-        </aside>
-        <div id="plugin-container">
-        </div>
+<aside>
+    <div class="card-box">
+        <ul class="noBullets">
+            <li>Plugin help for</li>
+            <li><select id="repo" onchange="redraw();">
+                <option>All plugins</option>
+            </select></li>
+        </ul>
+    </div>
+</aside>
+<div id="plugin-container">
+</div>
 {{end}}
+
 {{define "extra content"}}
 <dialog id="dialog" class="mdl-dialog">
     <h4 class="mdl-dialog__title"></h4>
