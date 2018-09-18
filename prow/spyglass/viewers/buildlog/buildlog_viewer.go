@@ -207,53 +207,10 @@ func nextViewData(logIndex int, artifact viewers.Artifact, currentViewData LogVi
 		ViewName:     name,
 		Index:        logIndex,
 	}
-	logLines := logLinesAll(artifact)
+	lines := logLinesAll(artifact)
+	newArtifactView.LineGroups = groupLines(lines, logIndex)
 	newArtifactView.ViewMethodDescription = "viewing error lines"
 	newArtifactView.ViewAll = true
-
-	// show highlighted lines and their neighboring lines
-	for i, line := range logLines {
-		if line.Highlighted {
-			for d := -neighborLines; d <= neighborLines; d++ {
-				if i+d < 0 {
-					continue
-				}
-				if i+d >= len(logLines) {
-					break
-				}
-				logLines[i+d].Skip = false
-			}
-		}
-	}
-
-	// break continuous blocks of skipped/unskipped lines into groups
-	curGroup := LineGroup{LogIndex: logIndex}
-	for i, line := range logLines {
-		if line.Skip == curGroup.Skip {
-			curGroup.LogLines = append(curGroup.LogLines, line)
-		} else {
-			curGroup.End = i
-			if curGroup.Skip {
-				if linesSkipped(curGroup) < minLinesSkipped {
-					curGroup.Skip = false
-				}
-			}
-			newArtifactView.LineGroups = append(newArtifactView.LineGroups, curGroup)
-			curGroup = LineGroup{
-				LogIndex: logIndex,
-				Skip:     line.Skip,
-				Start:    i,
-				LogLines: []LogLine{line},
-			}
-		}
-	}
-	curGroup.End = len(logLines)
-	if curGroup.Skip {
-		if linesSkipped(curGroup) < minLinesSkipped {
-			curGroup.Skip = false
-		}
-	}
-	newArtifactView.LineGroups = append(newArtifactView.LineGroups, curGroup)
 
 	return newArtifactView, newLogViewData
 
@@ -285,19 +242,26 @@ func logLinesHead(artifact viewers.Artifact, n int64) ([]string, error) {
 }
 
 // logLinesAll reads all of an artifact and splits it into lines.
-func logLinesAll(artifact viewers.Artifact) []LogLine {
+func logLinesAll(artifact viewers.Artifact) []string {
 	read, err := artifact.ReadAll()
 	if err != nil {
 		if err == viewers.ErrFileTooLarge {
 			logrus.WithError(err).Error("Artifact too large to read all.")
-			return []LogLine{}
+		} else {
+			logrus.WithError(err).Error("Failed to read log.")
 		}
-		logrus.WithError(err).Error("Failed to read log.")
-		return []LogLine{}
+		return []string{}
 	}
-	logText := strings.Split(string(read), "\n")
-	logLines := make([]LogLine, 0, len(logText))
-	for i, text := range logText {
+	logLines := strings.Split(string(read), "\n")
+
+	return logLines
+}
+
+// breaks lines into important/unimportant groups
+func groupLines(lines []string, logIndex int) []LineGroup {
+	// mark highlighted lines
+	logLines := make([]LogLine, 0, len(lines))
+	for i, text := range lines {
 		logLines = append(logLines, LogLine{
 			Text:        text,
 			Number:      i + 1,
@@ -305,8 +269,54 @@ func logLinesAll(artifact viewers.Artifact) []LogLine {
 			Skip:        true,
 		})
 	}
-
-	return logLines
+	// show highlighted lines and their neighboring lines
+	for i, line := range logLines {
+		if line.Highlighted {
+			for d := -neighborLines; d <= neighborLines; d++ {
+				if i+d < 0 {
+					continue
+				}
+				if i+d >= len(logLines) {
+					break
+				}
+				logLines[i+d].Skip = false
+			}
+		}
+	}
+	// break into groups
+	var lineGroups []LineGroup
+	curGroup := LineGroup{LogIndex: logIndex}
+	for i, line := range logLines {
+		if line.Skip == curGroup.Skip {
+			curGroup.LogLines = append(curGroup.LogLines, line)
+		} else {
+			curGroup.End = i
+			if curGroup.Skip {
+				if linesSkipped(curGroup) < minLinesSkipped {
+					curGroup.Skip = false
+				}
+			}
+			if len(curGroup.LogLines) > 0 {
+				lineGroups = append(lineGroups, curGroup)
+			}
+			curGroup = LineGroup{
+				LogIndex: logIndex,
+				Skip:     line.Skip,
+				Start:    i,
+				LogLines: []LogLine{line},
+			}
+		}
+	}
+	curGroup.End = len(logLines)
+	if curGroup.Skip {
+		if linesSkipped(curGroup) < minLinesSkipped {
+			curGroup.Skip = false
+		}
+	}
+	if len(curGroup.LogLines) > 0 {
+		lineGroups = append(lineGroups, curGroup)
+	}
+	return lineGroups
 }
 
 // LogViewTemplate executes the log viewer template ready for rendering
