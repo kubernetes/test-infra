@@ -1,4 +1,20 @@
 periodics:
+# build a couple times a day so our status stays green :-)
+# this is extremely cheap to run currently
+- interval: 6h
+  name: ci-kind-build
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: kind
+    base_ref: master
+    path_alias: sigs.k8s.io/kind
+  always_run: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180912-7a027de0c-experimental
+      command:
+      - "./hack/ci/build-all.sh"
 # conformance test against kubernetes master branch with `kind`
 - interval: 1h
   name: ci-kubernetes-kind-conformance
