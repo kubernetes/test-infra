@@ -3122,6 +3122,9 @@ test_groups:
 - name: cloud-provider-aibaba-cloud-e2e-conformance-release-v1.8
   gcs_prefix: k8s-conformance-alibaba/cloud-provider-alibaba-cloud/e2e-conformance-release-v1.8
 
+# kube-storage-version-migrator
+- name: pull-kube-storage-version-migrator-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/pull-kube-storage-version-migrator-test
 
 # DigitalOcean Test Groups
 - name: digitalocean-e2e-conformance
@@ -6975,6 +6978,13 @@ dashboards:
     test_group_name: ci-gardener-e2e-conformance-az-v1.11
     alert_options:
       alert_mail_to_addresses: roland.wilfer@sap.com
+
+- name: sig-apimachinery-kube-storage-version-migrator
+  dashboard_tab:
+  - name: pr-test
+    test_group_name: pull-kube-storage-version-migrator-test
+
+
 
 
 #
