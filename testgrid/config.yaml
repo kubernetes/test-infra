@@ -4054,38 +4054,38 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-canary
   - name: gke-cos-containerd-alpha-cluster
     test_group_name: ci-kubernetes-e2e-cos-containerd-gke-alpha-cluster
-  # K8S 1.8 branch on GKE
-  - name: gci-gke-ingress-1.8
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-ingress
-  - name: gci-gke-reboot-1.8
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-reboot
-  - name: gci-gke-1.8
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-default
-  - name: gci-gke-serial-1.8
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-serial
-  - name: gci-gke-slow-1.8
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-slow
-  # K8S 1.9 branch on GKE
+  # K8S stable3 branch on GKE
   - name: gci-gke-ingress-1.9
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-ingress
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-ingress
   - name: gci-gke-reboot-1.9
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-reboot
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-reboot
   - name: gci-gke-1.9
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-default
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-default
   - name: gci-gke-serial-1.9
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-serial
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-serial
   - name: gci-gke-slow-1.9
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-slow
-  # K8S 1.10 branch on GKE
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-slow
+  # K8S stable2 branch on GKE
   - name: gci-gke-ingress-1.10
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-ingress
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-ingress
   - name: gci-gke-reboot-1.10
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-reboot
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-reboot
   - name: gci-gke-1.10
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-default
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-default
   - name: gci-gke-serial-1.10
-    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-serial
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-serial
   - name: gci-gke-slow-1.10
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-slow
+  # K8S stable1 branch on GKE
+  - name: gci-gke-ingress-1.11
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-ingress
+  - name: gci-gke-reboot-1.11
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-reboot
+  - name: gci-gke-1.11
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-default
+  - name: gci-gke-serial-1.11
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-serial
+  - name: gci-gke-slow-1.11
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-slow
   - name: gke-cos-containerd-alpha-cluster-1.11
     test_group_name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-cluster
