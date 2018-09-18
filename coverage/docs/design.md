@@ -1,5 +1,5 @@
 # Overview
-This code coverage tool calculate per file, per package and overall coverage based on the the code coverage profile produced by "go test". In addition, it generates the following artifacts
+This code coverage tool calculate per file, per package and overall coverage based on the the (code coverage profile)[https://blog.golang.org/cover] produced by "go test". In addition, it generates the following artifacts
   - xml file that stores file-level and package-level code coverage, formatted to be readable by TestGrid
   - code coverage profile, which is produced by "go test -coverprofile" and contains all block level
    code coverage data
