@@ -253,11 +253,31 @@ branch-protection:
         contexts:
         - cla/linuxfoundation
       repos:
+        apiserver-builder:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+        bootkube:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+        cluster-proportional-autoscaler:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+        external-storage:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
+        kube-aws:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
         kubespray:
           required_status_checks:
             contexts:
             - Kubespray CI Pipeline
-        bootkube:
+        metrics-server:
           required_status_checks:
             contexts:
             - continuous-integration/travis-ci
@@ -309,13 +329,10 @@ tide:
   - orgs:
     - kubernetes-client
     - kubernetes-csi
+    - kubernetes-incubator
     - kubernetes-sigs
     repos:
     - client-go/unofficial-docs
-    - kubernetes-incubator/bootkube
-    - kubernetes-incubator/ip-masq-agent
-    - kubernetes-incubator/kubespray
-    - kubernetes-incubator/service-catalog
     - kubernetes/autoscaler
     - kubernetes/client-go
     - kubernetes/cloud-provider-aws
