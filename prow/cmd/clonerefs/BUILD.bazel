@@ -42,8 +42,10 @@ go_image(
 container_image(
     name = "image",
     base = ":clonerefs-go_image",
+    files = ["ssh_config"],
     symlinks = {
         "/clonerefs": "/app/prow/cmd/clonerefs/clonerefs-linux-amd64",
+        "/etc/ssh/ssh_config": "/ssh_config",
     },
     visibility = ["//visibility:public"],
 )
