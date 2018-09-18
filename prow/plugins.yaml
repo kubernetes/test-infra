@@ -471,6 +471,7 @@ plugins:
 
   kubernetes-sigs/kind:
   - trigger
+  - welcome
 
   kubernetes-sigs/federation-v2:
   - trigger
