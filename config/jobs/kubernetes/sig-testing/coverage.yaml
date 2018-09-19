@@ -3,10 +3,9 @@ periodics:
   name: ci-kubernetes-coverage-conformance
   decorate: true
   extra_refs:
-  # TODO: this should point at k/k once it's merged.
-  - org: Katharine
+  - org: kubernetes
     repo: kubernetes
-    base_ref: logdump-with-coverage
+    base_ref: master
     path_alias: k8s.io/kubernetes
   - org: kubernetes
     repo: test-infra
