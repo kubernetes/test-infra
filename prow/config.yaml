@@ -306,6 +306,7 @@ tide:
     - kubernetes-incubator/service-catalog
     - kubernetes/client-go
     - kubernetes/cloud-provider-aws
+    - kubernetes/cloud-provider-alibaba-cloud
     - kubernetes/cloud-provider-azure
     - kubernetes/cloud-provider-gcp
     - kubernetes/cloud-provider-openstack
