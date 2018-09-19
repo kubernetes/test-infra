@@ -642,6 +642,7 @@ func TestConfigureOrgMembers(t *testing.T) {
 				newAdmins:  sets.String{},
 				newMembers: sets.String{},
 			}
+
 			err := configureOrgMembers(tc.opt, fc, fakeOrg, tc.config, sets.NewString(tc.invitations...))
 			switch {
 			case err != nil:
@@ -1913,6 +1914,15 @@ func TestOrgInvitations(t *testing.T) {
 			},
 			invitees: sets.NewString("him", "her", "them"),
 			expected: sets.NewString("him", "her", "them"),
+		},
+		{
+			name: "ensure case normalization",
+			opt: options{
+				fixOrgMembers:  true,
+				fixTeamMembers: true,
+			},
+			invitees: sets.NewString("MiXeD", "lower", "UPPER"),
+			expected: sets.NewString("mixed", "lower", "upper"),
 		},
 		{
 			name: "error if list fails",
