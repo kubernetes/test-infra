@@ -140,8 +140,12 @@ func main() {
 	mux.Handle("/favicon.ico", gziphandler.GzipHandler(handleFavicon(o.staticFilesLocation, configAgent)))
 	mux.Handle("/spyglass.js", gziphandler.GzipHandler(handleSpyglass(o.spyglass)))
 
-	// when deployed, do the full main
-	if !o.runLocal {
+	if o.runLocal {
+		if o.spyglass {
+			initSpyglass(configAgent, o, mux, nil)
+		}
+	} else {
+		// when deployed, do the full main
 		mux = prodOnlyMain(configAgent, o, mux)
 	}
 
@@ -182,18 +186,9 @@ func prodOnlyMain(configAgent *config.Agent, o options, mux *http.ServeMux) *htt
 	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(kc)))
 
 	if o.spyglass {
-		//TODO: Need to support authenticated buckets, #8910
-		c, err := storage.NewClient(context.Background(), option.WithoutAuthentication())
-		if err != nil {
-			logrus.WithError(err).Fatal("Error getting GCS client")
-		}
-		sg := spyglass.New(ja, []spyglass.ArtifactFetcher{spyglass.NewGCSArtifactFetcher(c)})
-
-		mux.Handle("/view/render", gziphandler.GzipHandler(handleArtifactView(sg, configAgent)))
-		mux.Handle("/view/prowjob/", gziphandler.GzipHandler(handleRequestProwJobViews(sg, configAgent, o.staticFilesLocation)))
-		mux.Handle("/view/gcs/", gziphandler.GzipHandler(handleRequestGCSJobViews(sg, configAgent, o.staticFilesLocation)))
-		mux.Handle("/view/", gziphandler.GzipHandler(handleRequestJobViews(sg, configAgent, o.staticFilesLocation)))
+		initSpyglass(configAgent, o, mux, ja)
 	}
+
 	if o.hookURL != "" {
 		mux.Handle("/plugin-help.js",
 			gziphandler.GzipHandler(handlePluginHelp(newHelpAgent(o.hookURL))))
@@ -304,6 +299,22 @@ func prodOnlyMain(configAgent *config.Agent, o options, mux *http.ServeMux) *htt
 		mux = redirectMux
 	}
 	return mux
+}
+
+func initSpyglass(configAgent *config.Agent, o options, mux *http.ServeMux, ja *jobs.JobAgent) {
+	//TODO: Need to support authenticated buckets, #8910
+	c, err := storage.NewClient(context.Background(), option.WithoutAuthentication())
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting GCS client")
+	}
+	sg := spyglass.New(ja, []spyglass.ArtifactFetcher{spyglass.NewGCSArtifactFetcher(c)})
+
+	mux.Handle("/view/render", gziphandler.GzipHandler(handleArtifactView(sg, configAgent)))
+	mux.Handle("/view/gcs/", gziphandler.GzipHandler(handleRequestGCSJobViews(sg, configAgent, o.staticFilesLocation)))
+	if ja != nil {
+		mux.Handle("/view/prowjob/", gziphandler.GzipHandler(handleRequestProwJobViews(sg, configAgent, o.staticFilesLocation)))
+		mux.Handle("/view/", gziphandler.GzipHandler(handleRequestJobViews(sg, configAgent, o.staticFilesLocation)))
+	}
 }
 
 func loadToken(file string) ([]byte, error) {
