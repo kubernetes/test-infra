@@ -1,7 +1,5 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_prefix")
+# gazelle:prefix k8s.io/test-infra
 load("@io_kubernetes_build//defs:run_in_workspace.bzl", "workspace_binary")
-
-go_prefix("k8s.io/test-infra")
 
 filegroup(
     name = "package-srcs",
