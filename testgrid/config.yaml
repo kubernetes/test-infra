@@ -3128,8 +3128,12 @@ test_groups:
 # DigitalOcean Test Groups
 - name: digitalocean-e2e-conformance
   gcs_prefix: k8s-conformance-digitalocean/e2e-conformance
+- name: digitalocean-e2e-conformance-v1.10
+  gcs_prefix: k8s-conformance-digitalocean/e2e-conformance-v1.10
 - name: digitalocean-e2e-conformance-v1.11
   gcs_prefix: k8s-conformance-digitalocean/e2e-conformance-v1.11
+- name: digitalocean-e2e-conformance-v1.12
+  gcs_prefix: k8s-conformance-digitalocean/e2e-conformance-v1.12
 
 # BaiduCloud Test Groups
 - name: baiducloud-e2e-conformance-v1.8
@@ -3214,9 +3218,15 @@ dashboards:
   - name: DigitalOcean Master
     description: Runs conformance test using kubetest against latest kubernetes master on DigitalOcean
     test_group_name: digitalocean-e2e-conformance
+  - name: DigitalOcean v1.10
+    description: Runs conformance test using kubetest against kubernetes v1.10 on DigitalOcean
+    test_group_name: digitalocean-e2e-conformance-v1.10
   - name: DigitalOcean v1.11
     description: Runs conformance test using kubetest against kubernetes v1.11 on DigitalOcean
     test_group_name: digitalocean-e2e-conformance-v1.11
+  - name: DigitalOcean v1.12
+    description: Runs conformance test using kubetest against kubernetes v1.12 on DigitalOcean
+    test_group_name: digitalocean-e2e-conformance-v1.12
   - name: BaiduCloud v1.8
     description: Runs conformance test using kubetest against kubernetes v1.8 on BaiduCloud
     test_group_name: baiducloud-e2e-conformance-v1.8
@@ -3339,9 +3349,15 @@ dashboards:
   - name: DigitalOcean Master
     description: Runs conformance test using kubetest against latest kubernetes master on DigitalOcean
     test_group_name: digitalocean-e2e-conformance
+  - name: DigitalOcean v1.10
+    description: Runs conformance test using kubetest against kubernetes v1.10 on DigitalOcean
+    test_group_name: digitalocean-e2e-conformance-v1.10
   - name: DigitalOcean v1.11
     description: Runs conformance test using kubetest against kubernetes v1.11 on DigitalOcean
     test_group_name: digitalocean-e2e-conformance-v1.11
+  - name: DigitalOcean v1.12
+    description: Runs conformance test using kubetest against kubernetes v1.12 on DigitalOcean
+    test_group_name: digitalocean-e2e-conformance-v1.12
 
 # BaiduCloud Dashboard
 - name: conformance-cloud-provider-baiducloud
