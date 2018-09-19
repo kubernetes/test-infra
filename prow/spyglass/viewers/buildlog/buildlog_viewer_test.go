@@ -109,7 +109,7 @@ func TestGroupLines(t *testing.T) {
 				"a", "b", "c",
 				"don't panic",
 				"a", "b", "c",
-				"I'm panicking!",
+				"don't panic",
 				"a", "b", "c",
 			},
 			groups: []LineGroup{
@@ -128,7 +128,7 @@ func TestGroupLines(t *testing.T) {
 				"a", "b", "c", "d", "e",
 				"a", "b", "c",
 				"a", "b", "c", "d", "e",
-				"I'm panicking!",
+				"don't panic",
 				"a", "b", "c",
 			},
 			groups: []LineGroup{
