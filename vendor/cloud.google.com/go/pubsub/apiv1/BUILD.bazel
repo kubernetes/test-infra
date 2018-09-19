@@ -19,10 +19,10 @@ go_library(
         "//vendor/google.golang.org/api/iterator:go_default_library",
         "//vendor/google.golang.org/api/option:go_default_library",
         "//vendor/google.golang.org/api/transport:go_default_library",
+        "//vendor/google.golang.org/genproto/googleapis/pubsub/v1:go_default_library",
         "//vendor/google.golang.org/grpc:go_default_library",
         "//vendor/google.golang.org/grpc/codes:go_default_library",
         "//vendor/google.golang.org/grpc/metadata:go_default_library",
-        "@go_googleapis//google/pubsub/v1:pubsub_go_proto",
     ],
 )
 
