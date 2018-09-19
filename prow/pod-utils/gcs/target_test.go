@@ -318,6 +318,14 @@ func TestNewLegacyRepoPathBuilder(t *testing.T) {
 			repo:        "wild",
 			expected:    "other_wild",
 		},
+		{
+			name:        "gerrit",
+			defaultOrg:  "org",
+			defaultRepo: "repo",
+			org:         "gerrit",
+			repo:        "foo/bar",
+			expected:    "gerrit_foo_bar",
+		},
 	}
 
 	for _, test := range testCases {
@@ -369,6 +377,14 @@ func TestNewSingleDefaultRepoPathBuilder(t *testing.T) {
 			repo:        "wild",
 			expected:    "other_wild",
 		},
+		{
+			name:        "gerrit",
+			defaultOrg:  "org",
+			defaultRepo: "repo",
+			org:         "gerrit",
+			repo:        "foo/bar",
+			expected:    "gerrit_foo_bar",
+		},
 	}
 
 	for _, test := range testCases {
@@ -380,7 +396,29 @@ func TestNewSingleDefaultRepoPathBuilder(t *testing.T) {
 }
 
 func TestNewExplicitRepoPathBuilder(t *testing.T) {
-	if expected, actual := "a_b", NewExplicitRepoPathBuilder()("a", "b"); expected != actual {
-		t.Errorf("expected explicit repo path builder to create path segment %q but got %q", expected, actual)
+	testCases := []struct {
+		name     string
+		org      string
+		repo     string
+		expected string
+	}{
+		{
+			name:     "default org and repo",
+			org:      "org",
+			repo:     "repo",
+			expected: "org_repo",
+		},
+		{
+			name:     "gerrit",
+			org:      "gerrit",
+			repo:     "foo/bar",
+			expected: "gerrit_foo_bar",
+		},
+	}
+
+	for _, tc := range testCases {
+		if expected, actual := tc.expected, NewExplicitRepoPathBuilder()(tc.org, tc.repo); expected != actual {
+			t.Errorf("tc %s: expected explicit repo path builder to create path segment %q but got %q", tc.name, expected, actual)
+		}
 	}
 }
