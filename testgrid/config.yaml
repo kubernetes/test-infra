@@ -360,6 +360,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ip-alias
 - name: ci-kubernetes-e2e-gci-gce-ipvs
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ipvs
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 6 # Runs every 1h. Alert when it's been failing for 6 hours.
 - name: ci-kubernetes-e2e-gci-gce-coredns
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-coredns
 - name: ci-kubernetes-e2e-gce-alpha-api
@@ -5714,7 +5716,7 @@ dashboards:
     base_options: include-filter-by-regex=\[sig-network\]
     description: network gci-gce e2e tests in ipvs proxier mode
     alert_options:
-      alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
+      alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com, lionwei1992+alerts@gmail.com
   - name: gci-gce-coredns
     test_group_name: ci-kubernetes-e2e-gci-gce-coredns
     base_options: include-filter-by-regex=\[sig-network\]
