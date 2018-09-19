@@ -7,7 +7,7 @@ go_library(
         "go17.go",
         "go18.go",
     ],
-    importmap = "vendor/google.golang.org/grpc/resolver/dns",
+    importmap = "k8s.io/test-infra/vendor/google.golang.org/grpc/resolver/dns",
     importpath = "google.golang.org/grpc/resolver/dns",
     visibility = ["//visibility:public"],
     deps = [

@@ -6,7 +6,7 @@ go_library(
         "go18.go",
         "not_go18.go",
     ],
-    importmap = "vendor/cloud.google.com/go/internal/trace",
+    importmap = "k8s.io/test-infra/vendor/cloud.google.com/go/internal/trace",
     importpath = "cloud.google.com/go/internal/trace",
     visibility = ["//vendor/cloud.google.com/go:__subpackages__"],
     deps = [

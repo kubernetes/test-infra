@@ -7,7 +7,7 @@ go_library(
         "go17.go",
         "status.go",
     ],
-    importmap = "vendor/google.golang.org/grpc/status",
+    importmap = "k8s.io/test-infra/vendor/google.golang.org/grpc/status",
     importpath = "google.golang.org/grpc/status",
     visibility = ["//visibility:public"],
     deps = [

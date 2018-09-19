@@ -6,7 +6,7 @@ go_library(
         "doc.go",
         "register.go",
     ],
-    importmap = "vendor/github.com/knative/build/pkg/client/clientset/versioned/scheme",
+    importmap = "k8s.io/test-infra/vendor/github.com/knative/build/pkg/client/clientset/versioned/scheme",
     importpath = "github.com/knative/build/pkg/client/clientset/versioned/scheme",
     visibility = ["//visibility:public"],
     deps = [

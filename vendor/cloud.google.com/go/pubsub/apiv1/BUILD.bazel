@@ -8,7 +8,7 @@ go_library(
         "publisher_client.go",
         "subscriber_client.go",
     ],
-    importmap = "vendor/cloud.google.com/go/pubsub/apiv1",
+    importmap = "k8s.io/test-infra/vendor/cloud.google.com/go/pubsub/apiv1",
     importpath = "cloud.google.com/go/pubsub/apiv1",
     visibility = ["//visibility:public"],
     deps = [

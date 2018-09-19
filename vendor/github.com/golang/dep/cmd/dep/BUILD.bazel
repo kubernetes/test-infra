@@ -16,7 +16,7 @@ go_library(
         "status.go",
         "version.go",
     ],
-    importmap = "vendor/github.com/golang/dep/cmd/dep",
+    importmap = "k8s.io/test-infra/vendor/github.com/golang/dep/cmd/dep",
     importpath = "github.com/golang/dep/cmd/dep",
     visibility = ["//visibility:private"],
     deps = [

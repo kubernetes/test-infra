@@ -42,7 +42,7 @@ go_library(
         "version_queue.go",
         "version_unifier.go",
     ],
-    importmap = "vendor/github.com/golang/dep/gps",
+    importmap = "k8s.io/test-infra/vendor/github.com/golang/dep/gps",
     importpath = "github.com/golang/dep/gps",
     visibility = ["//visibility:public"],
     deps = [

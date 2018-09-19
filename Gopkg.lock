@@ -113,18 +113,22 @@
   packages = [
     "cmd/gazelle",
     "internal/config",
+    "internal/flag",
     "internal/label",
+    "internal/language",
+    "internal/language/go",
+    "internal/language/proto",
     "internal/merger",
-    "internal/packages",
     "internal/pathtools",
     "internal/repos",
     "internal/resolve",
-    "internal/rules",
+    "internal/rule",
     "internal/version",
+    "internal/walk",
     "internal/wspace",
   ]
-  revision = "8bc6a862933eaa0d7431e15b308ceadc5729a6f9"
-  version = "0.11.0"
+  revision = "6a1b93cc9b1c7e55e7d05a6d324bcf9d87ea3ab1"
+  version = "0.14.0"
 
 [[projects]]
   name = "github.com/bazelbuild/buildtools"
@@ -1200,6 +1204,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e59fc6498d7c060889e595d6514a5ca85d1ba98b50609e734d10f872de32e97a"
+  inputs-digest = "577b074afd4e7d60a7ba39fee17c8a7fd299ed13f8cbfa0f086e82242f1c2b41"
   solver-name = "gps-cdcl"
   solver-version = 1

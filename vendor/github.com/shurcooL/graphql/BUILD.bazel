@@ -8,7 +8,7 @@ go_library(
         "query.go",
         "scalar.go",
     ],
-    importmap = "vendor/github.com/shurcooL/graphql",
+    importmap = "k8s.io/test-infra/vendor/github.com/shurcooL/graphql",
     importpath = "github.com/shurcooL/graphql",
     visibility = ["//visibility:public"],
     deps = [
