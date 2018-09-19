@@ -692,7 +692,7 @@ func orgInvitations(opt options, client inviteClient, orgName string) (sets.Stri
 		if i.Login == "" {
 			continue
 		}
-		invitees.Insert(i.Login)
+		invitees.Insert(github.NormLogin(i.Login))
 	}
 	return invitees, nil
 }
