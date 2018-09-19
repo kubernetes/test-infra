@@ -509,6 +509,9 @@ plugins:
   kubernetes-sigs/cri-o:
   - trigger
 
+  kubernetes-sigs/kube-storage-version-migrator:
+  - trigger
+
   containerd/cri:
   - assign
   - cla
