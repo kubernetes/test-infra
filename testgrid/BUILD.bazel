@@ -50,19 +50,3 @@ filegroup(
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )
-
-proto_library(
-    name = "testgrid_proto",
-    srcs = [
-        "config.proto",
-        "state.proto",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-go_proto_library(
-    name = "testgrid_go_proto",
-    importpath = "k8s.io/test-infra/testgrid",
-    proto = ":testgrid_proto",
-    visibility = ["//visibility:public"],
-)
