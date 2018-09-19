@@ -9,7 +9,7 @@ go_library(
         "fastwalk_portable.go",
         "fastwalk_unix.go",
     ],
-    importmap = "vendor/github.com/mattn/go-zglob/fastwalk",
+    importmap = "k8s.io/test-infra/vendor/github.com/mattn/go-zglob/fastwalk",
     importpath = "github.com/mattn/go-zglob/fastwalk",
     visibility = ["//visibility:public"],
 )

@@ -10,7 +10,7 @@ go_library(
         "util_linux_go19.go",
         "util_nonlinux_pre_go19.go",
     ],
-    importmap = "vendor/google.golang.org/grpc/internal/channelz",
+    importmap = "k8s.io/test-infra/vendor/google.golang.org/grpc/internal/channelz",
     importpath = "google.golang.org/grpc/internal/channelz",
     visibility = ["//vendor/google.golang.org/grpc:__subpackages__"],
     deps = [

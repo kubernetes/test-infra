@@ -17,7 +17,7 @@ go_library(
         "yamlh.go",
         "yamlprivateh.go",
     ],
-    importmap = "vendor/github.com/go-yaml/yaml",
+    importmap = "k8s.io/test-infra/vendor/github.com/go-yaml/yaml",
     importpath = "github.com/go-yaml/yaml",
     visibility = ["//visibility:public"],
 )

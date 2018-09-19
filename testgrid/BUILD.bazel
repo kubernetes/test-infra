@@ -1,3 +1,4 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
 
 proto_library(
@@ -48,5 +49,28 @@ filegroup(
         "//testgrid/util/gcs:all-srcs",
     ],
     tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
+
+proto_library(
+    name = "testgrid_proto",
+    srcs = [
+        "config.proto",
+        "state.proto",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+go_proto_library(
+    name = "testgrid_go_proto",
+    importpath = "k8s.io/test-infra/testgrid",
+    proto = ":testgrid_proto",
+    visibility = ["//visibility:public"],
+)
+
+go_library(
+    name = "go_default_library",
+    embed = [":testgrid_go_proto"],
+    importpath = "k8s.io/test-infra/testgrid",
     visibility = ["//visibility:public"],
 )

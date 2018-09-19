@@ -9,7 +9,7 @@ go_library(
         "command_notwin.go",
         "command_win.go",
     ],
-    importmap = "vendor/github.com/spf13/cobra",
+    importmap = "k8s.io/test-infra/vendor/github.com/spf13/cobra",
     importpath = "github.com/spf13/cobra",
     visibility = ["//visibility:public"],
     deps = [

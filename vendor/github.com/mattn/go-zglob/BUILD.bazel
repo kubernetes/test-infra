@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["zglob.go"],
-    importmap = "vendor/github.com/mattn/go-zglob",
+    importmap = "k8s.io/test-infra/vendor/github.com/mattn/go-zglob",
     importpath = "github.com/mattn/go-zglob",
     visibility = ["//visibility:public"],
     deps = ["//vendor/github.com/mattn/go-zglob/fastwalk:go_default_library"],
