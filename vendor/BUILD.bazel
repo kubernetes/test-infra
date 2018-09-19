@@ -61,6 +61,7 @@ filegroup(
         "//vendor/github.com/docker/go-connections/tlsconfig:all-srcs",
         "//vendor/github.com/docker/go-units:all-srcs",
         "//vendor/github.com/emicklei/go-restful:all-srcs",
+        "//vendor/github.com/evanphx/json-patch:all-srcs",
         "//vendor/github.com/fsnotify/fsnotify:all-srcs",
         "//vendor/github.com/fsouza/fake-gcs-server/fakestorage:all-srcs",
         "//vendor/github.com/fsouza/fake-gcs-server/internal/backend:all-srcs",

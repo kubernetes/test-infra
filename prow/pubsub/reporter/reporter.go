@@ -55,6 +55,11 @@ func NewReporter() *Client {
 	return &Client{}
 }
 
+// GetName returns the name of the reporter
+func (c *Client) GetName() string {
+	return "pubsub-reporter"
+}
+
 // ShouldReport tells if a prowjob should be reported by this reporter
 func (c *Client) ShouldReport(pj *kube.ProwJob) bool {
 	return pj.Labels[pubsubProjectLabel] != "" && pj.Labels[pubsubTopicLabel] != ""

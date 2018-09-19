@@ -104,8 +104,9 @@ func newProwJob(spec kube.ProwJobSpec, labels, annotations map[string]string) ku
 		},
 		Spec: spec,
 		Status: kube.ProwJobStatus{
-			StartTime: metav1.Now(),
-			State:     kube.TriggeredState,
+			PrevReportStates: map[string]kube.ProwJobState{},
+			StartTime:        metav1.Now(),
+			State:            kube.TriggeredState,
 		},
 	}
 }

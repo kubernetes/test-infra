@@ -4,7 +4,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
-    importpath = "k8s.io/test-infra/prow/cmd/gerrit-crier",
+    importpath = "k8s.io/test-infra/prow/cmd/crier",
     visibility = ["//visibility:private"],
     deps = [
         "//prow/client/clientset/versioned:go_default_library",
@@ -13,6 +13,7 @@ go_library(
         "//prow/gerrit/client:go_default_library",
         "//prow/gerrit/reporter:go_default_library",
         "//prow/logrusutil:go_default_library",
+        "//prow/pubsub/reporter:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/golang.org/x/time/rate:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes:go_default_library",

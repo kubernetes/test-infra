@@ -51,6 +51,6 @@ spec:
   rerun_command: /test kubernetes-defaulted-decoration
   type: presubmit
 status:
-  prev_report_state: ""
+  prev_report_states: {}
   startTime: 2018-07-06T22:59:02Z
   state: triggered

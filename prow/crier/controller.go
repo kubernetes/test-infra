@@ -18,45 +18,52 @@ limitations under the License.
 package crier
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
+	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/sirupsen/logrus"
+
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	types "k8s.io/apimachinery/pkg/types"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
 
 	"k8s.io/test-infra/prow/apis/prowjobs/v1"
+	clientset "k8s.io/test-infra/prow/client/clientset/versioned"
 	pjinformers "k8s.io/test-infra/prow/client/informers/externalversions/prowjobs/v1"
 )
 
 type reportClient interface {
 	Report(pj *v1.ProwJob) error
+	GetName() string
+	ShouldReport(pj *v1.ProwJob) bool
 }
 
 // Controller struct defines how a controller should encapsulate
 // logging, client connectivity, informing (list and watching)
 // queueing, and handling of resource changes
 type Controller struct {
-	clientset kubernetes.Interface
-	queue     workqueue.RateLimitingInterface
-	informer  pjinformers.ProwJobInformer
-	reporter  reportClient
+	pjclientset clientset.Interface
+	queue       workqueue.RateLimitingInterface
+	informer    pjinformers.ProwJobInformer
+	reporter    reportClient
 }
 
 func NewController(
-	clientset kubernetes.Interface,
+	pjclientset clientset.Interface,
 	queue workqueue.RateLimitingInterface,
 	informer pjinformers.ProwJobInformer,
 	reporter reportClient) *Controller {
 	return &Controller{
-		clientset: clientset,
-		queue:     queue,
-		informer:  informer,
-		reporter:  reporter,
+		pjclientset: pjclientset,
+		queue:       queue,
+		informer:    informer,
+		reporter:    reporter,
 	}
 }
 
@@ -122,6 +129,45 @@ func (c *Controller) runWorker() {
 	}
 }
 
+func (c *Controller) retry(key interface{}, err error) bool {
+	keyRaw := key.(string)
+	if c.queue.NumRequeues(key) < 5 {
+		logrus.WithError(err).WithField("prowjob", keyRaw).Error("Failed processing item, retrying")
+		c.queue.AddRateLimited(key)
+	} else {
+		logrus.WithError(err).WithField("prowjob", keyRaw).Error("Failed processing item, no more retries")
+		c.queue.Forget(key)
+	}
+
+	return true
+}
+
+func (c *Controller) updateReportState(pj *v1.ProwJob) error {
+	pjData, err := json.Marshal(pj)
+	if err != nil {
+		return fmt.Errorf("error marshal pj: %v", err)
+	}
+
+	// update pj report status
+	newpj := pj.DeepCopy()
+	newpj.Status.PrevReportStates[c.reporter.GetName()] = newpj.Status.State
+
+	newpjData, err := json.Marshal(newpj)
+	if err != nil {
+		return fmt.Errorf("error marshal new pj: %v", err)
+	}
+
+	patch, err := jsonpatch.CreateMergePatch(pjData, newpjData)
+	if err != nil {
+		return fmt.Errorf("error CreateMergePatch: %v", err)
+	}
+
+	logrus.Infof("Created merge patch: %v", string(patch))
+
+	_, err = c.pjclientset.Prow().ProwJobs(pj.Namespace).Patch(pj.Name, types.MergePatchType, patch)
+	return err
+}
+
 // processNextItem retrieves each queued item and takes the
 // necessary handler action based off of if the item was
 // created or deleted
@@ -139,7 +185,9 @@ func (c *Controller) processNextItem() bool {
 	keyRaw := key.(string)
 	namespace, name, err := cache.SplitMetaNamespaceKey(keyRaw)
 	if err != nil {
-		utilruntime.HandleError(fmt.Errorf("invalid resource key: %s", keyRaw))
+		logrus.WithError(err).WithField("prowjob", keyRaw).Error("invalid resource key")
+		c.queue.Forget(key)
+		return true
 	}
 
 	// take the string key and get the object out of the indexer
@@ -160,26 +208,77 @@ func (c *Controller) processNextItem() bool {
 			return true
 		}
 
-		if c.queue.NumRequeues(key) < 5 {
-			logrus.WithError(err).WithField("prowjob", keyRaw).Error("Failed processing item, retrying")
-			c.queue.AddRateLimited(key)
-		} else {
-			logrus.WithError(err).WithField("prowjob", keyRaw).Error("Failed processing item, no more retries")
-			c.queue.Forget(key)
-			utilruntime.HandleError(err)
-		}
+		return c.retry(key, err)
+	}
+
+	if !pj.Spec.Report {
+		c.queue.Forget(key)
 		return true
 	}
 
-	if pj.Spec.Report && pj.Status.PrevReportState != pj.Status.State {
-		logrus.Infof("Will report here, pj : %v, state : %s", pj.Spec.Job, pj.Status.State)
+	// not belong to the current reporter
+	if !c.reporter.ShouldReport(pj) {
+		c.queue.Forget(key)
+		return true
+	}
 
-		// TODO(krzyzacy): we probably should make report async as well
-		// we can also leverage this by increase number of workers.
-		if err := c.reporter.Report(pj); err == nil {
-			pj.Status.PrevReportState = pj.Status.State
+	if pj.Status.PrevReportStates == nil {
+		// old prowjobs doesn't have this field, let's update it with an empty map...
+
+		pjCopy := pj.DeepCopy()
+		pjCopy.Status.PrevReportStates = map[string]v1.ProwJobState{}
+		if _, err := c.pjclientset.Prow().ProwJobs(pjCopy.Namespace).Update(pjCopy); err != nil {
+			logrus.WithError(err).WithField("prowjob", keyRaw).Error("failed to update pj")
+			return c.retry(key, err)
+		}
+
+		//resync with apiserver
+		pj, err = c.pjclientset.Prow().ProwJobs(pj.Namespace).Get(pj.Name, metav1.GetOptions{})
+		if err != nil {
+			// hope next cycle will catch up
+			logrus.WithError(err).WithField("prowjob", keyRaw).Error("failed to resync pj")
+			c.queue.Forget(key)
+			return true
 		}
 	}
+
+	// already reported current state
+	if pj.Status.PrevReportStates[c.reporter.GetName()] == pj.Status.State {
+		c.queue.Forget(key)
+		return true
+	}
+
+	logrus.WithField("prowjob", keyRaw).Infof("Will report state : %s", pj.Status.State)
+
+	if err := c.reporter.Report(pj); err != nil {
+		logrus.WithError(err).WithField("prowjob", keyRaw).Error("failed to report job")
+		return c.retry(key, err)
+	}
+
+	logrus.WithField("prowjob", keyRaw).Info("Updated job, now will update pj")
+
+	if err := c.updateReportState(pj); err != nil {
+		logrus.WithError(err).WithField("prowjob", keyRaw).Error("failed to update report state")
+
+		// theoretically patch should not have this issue, but in case:
+		// it might be out-dated, try to re-fetch pj and try again
+
+		updatedPJ, err := c.pjclientset.Prow().ProwJobs(pj.Namespace).Get(pj.Name, metav1.GetOptions{})
+		if err != nil {
+			logrus.WithError(err).WithField("prowjob", keyRaw).Error("failed to get prowjob from apiserver")
+			c.queue.Forget(key)
+			return true
+		}
+
+		if err := c.updateReportState(updatedPJ); err != nil {
+			// shrug
+			logrus.WithError(err).WithField("prowjob", keyRaw).Error("failed to update report state again, give up")
+			c.queue.Forget(key)
+			return true
+		}
+	}
+
+	logrus.WithField("prowjob", keyRaw).Infof("Hunky Dory!, pj : %v, state : %s", pj.Spec.Job, pj.Status.State)
 
 	c.queue.Forget(key)
 	return true

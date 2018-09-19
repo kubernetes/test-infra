@@ -201,6 +201,13 @@ func (in *ProwJobStatus) DeepCopyInto(out *ProwJobStatus) {
 		in, out := &in.CompletionTime, &out.CompletionTime
 		*out = (*in).DeepCopy()
 	}
+	if in.PrevReportStates != nil {
+		in, out := &in.PrevReportStates, &out.PrevReportStates
+		*out = make(map[string]ProwJobState, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	return
 }
 
