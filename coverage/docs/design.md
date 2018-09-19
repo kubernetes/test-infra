@@ -1,10 +1,9 @@
 # Overview
-This code coverage tool calculates per file, per package and overall coverage based on the the [code coverage profile](https://blog.golang.org/cover) produced by "go test". In addition, it generates the following artifacts
+This code coverage tool calculates per file, per package and overall coverage on target directories. It generates the following artifacts
+  - code coverage profile, which is produced by "[go test -coverprofile](https://blog.golang.org/cover)" and contains all block level code coverage data
   - xml file that stores file-level and package-level code coverage, formatted to be readable by TestGrid
-  - code coverage profile, which is produced by "go test -coverprofile" and contains all block level
-   code coverage data
 
-This code coverage tool has two major modes of operation, based on whether it is running in post-submit or pre-submit workflow. Post-submit workflow starts when a commit to the base branch happens, e.g. when a pull request is merged. 
+The tool has two major modes of operation, based on whether it is running in post-submit or pre-submit workflow. Post-submit workflow starts when a commit to the base branch happens, e.g. when a pull request is merged. 
 Pre-submit workflow starts when a pull requested is created or updated with new commit.
 
 The tool performs the following additional operations when running in pre-submit workflow 
@@ -26,8 +25,11 @@ The code coverage tool only collect code coverage for Go files
 
 # Design of Test Coverage Tool
 The tool takes input from three sources
-1. It runs test coverage profiling on target repository. 
-  - target directory can be passed as flags when running the binary. E.g "--cov-target=./pkg/"
+1. Target directory
+  - It runs [test coverage profiling](https://blog.golang.org/cover) on target repository. 
+    - target directory can be passed as flags when running the binary. E.g "--cov-target=./pkg/"
+  - .gitattribute file
+    - it uses git attribute to filter files (see latter section on workflows for details)
 2. (In pre-submit workflow only) It reads previously stored post-submit code coverage profile from gcs bucket. The profile
 serves as a base of comparison for presubmit delta coverage.
   - The value of following three flags will be used to locate the code coverage profile in GCS bucket,
@@ -45,7 +47,7 @@ Here is the step-by-step description of the pre-submit and post-submit workflows
 
 ## Post-submit workflow
 Produces & stores coverage profile for later presubmit jobs to compare against; 
-Produces per-file and per-package coverage result as input for TestGrid. Testgrid can use the data produced here to display coverage trend in a tabular or graphical way. 
+Produces per-file and per-package coverage result as input for [TestGrid](https://github.com/kubernetes/test-infra/tree/master/testgrid). Testgrid can use the data produced here to display coverage trend in a tabular or graphical way. 
 
 1. Generate coverage profile. Completion marker generated upon successful run. Both stored
  in artifacts directory.
@@ -53,7 +55,10 @@ Produces per-file and per-package coverage result as input for TestGrid. Testgri
     code coverage profile in the post-submit jobs
     - Successfully generated coverage profile may be used as the basis of comparison for coverage change, 
     as mentioned in pre-submit workflow
-2. Generate / store per-file coverage data
+2. Read, filter, and summarizes data from coverage profile and store per-file coverage data
+    - filter based on git attribute to ignore files with the following git attributes
+      - linguist-generated
+      - coverage-excluded
     - Stores in the XML format, that is used by TestGrid, and dump it in artifacts directory
     - The junit_bazel.xml should be a valid junit xml file. See 
 [JUnit XML format](https://www.ibm.com/support/knowledgecenter/en/SSQ2R2_14.1.0/com.ibm.rsar.analysis.codereview.cobol.doc/topics/cac_useresults_junit.html)
@@ -63,7 +68,7 @@ Produces per-file and per-package coverage result as input for TestGrid. Testgri
 Runs code coverage tool to report coverage change in a new PR or updated PR
 
 1. Generate coverage profile in artifacts directory
-2. Generate / store per-file coverage data (Same as the corresponding step in post-submit)
+2. Read, filter, and summarizes data from coverage profile and store per-file coverage data (Same as the corresponding step in post-submit)
 3. Calculate coverage changes. Compare the coverage file generated in this cycle against the most
  recent successful post-submit build. Coverage file for post-submit commits were generated in 
  post-submit workflow and stored in gcs bucket
