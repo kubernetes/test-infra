@@ -24,6 +24,8 @@ import (
 	"os"
 )
 
+// DumpProfile dumps the profile to the given file destination.
+// If the destination is "-", it instead writes to stdout.
 func DumpProfile(destination string, profile []*cover.Profile) error {
 	var output io.Writer
 	if destination == "-" {

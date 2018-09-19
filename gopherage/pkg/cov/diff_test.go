@@ -65,3 +65,63 @@ func TestDiffProfilesBasicDiff(t *testing.T) {
 		t.Fatal("diffed profile incorrect")
 	}
 }
+
+func TestDiffProfilesWrongFileName(t *testing.T) {
+	a := []*cover.Profile{
+		{
+			FileName: "a.go",
+			Mode:     "count",
+			Blocks: []cover.ProfileBlock{
+				{StartLine: 1, StartCol: 14, EndLine: 5, EndCol: 13, NumStmt: 4, Count: 3},
+				{StartLine: 7, StartCol: 4, EndLine: 12, EndCol: 4, NumStmt: 3, Count: 2},
+			},
+		},
+	}
+	b := []*cover.Profile{
+		{
+			FileName: "b.go",
+			Mode:     "count",
+			Blocks: []cover.ProfileBlock{
+				{StartLine: 1, StartCol: 14, EndLine: 5, EndCol: 13, NumStmt: 4, Count: 7},
+				{StartLine: 7, StartCol: 4, EndLine: 12, EndCol: 4, NumStmt: 3, Count: 2},
+			},
+		},
+	}
+	if _, err := cov.DiffProfiles(a, b); err == nil {
+		t.Fatal("expected DiffProfiles to fail when diffing mismatched files")
+	}
+}
+
+func TestDiffProfilesWrongFileCount(t *testing.T) {
+	a := []*cover.Profile{
+		{
+			FileName: "a.go",
+			Mode:     "count",
+			Blocks: []cover.ProfileBlock{
+				{StartLine: 1, StartCol: 14, EndLine: 5, EndCol: 13, NumStmt: 4, Count: 3},
+				{StartLine: 7, StartCol: 4, EndLine: 12, EndCol: 4, NumStmt: 3, Count: 2},
+			},
+		},
+		{
+			FileName: "b.go",
+			Mode:     "count",
+			Blocks: []cover.ProfileBlock{
+				{StartLine: 1, StartCol: 14, EndLine: 5, EndCol: 13, NumStmt: 4, Count: 3},
+				{StartLine: 7, StartCol: 4, EndLine: 12, EndCol: 4, NumStmt: 3, Count: 2},
+			},
+		},
+	}
+	b := []*cover.Profile{
+		{
+			FileName: "a.go",
+			Mode:     "count",
+			Blocks: []cover.ProfileBlock{
+				{StartLine: 1, StartCol: 14, EndLine: 5, EndCol: 13, NumStmt: 4, Count: 7},
+				{StartLine: 7, StartCol: 4, EndLine: 12, EndCol: 4, NumStmt: 3, Count: 2},
+			},
+		},
+	}
+	if _, err := cov.DiffProfiles(a, b); err == nil {
+		t.Fatal("expected DiffProfiles to fail when diffing mismatched profiles")
+	}
+}

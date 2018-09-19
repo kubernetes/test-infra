@@ -28,12 +28,14 @@ import (
 // single binary, or multiple binaries using the same codebase.
 // In particular, any source files with the same path must have had identical content
 // when building the binaries.
+// MergeProfiles expects its arguments to be sorted: Profiles in alphabetical order,
+// and lines in files in the order those lines appear. These are standard constraints for
+// Go coverage profiles. The resulting profile will also obey these constraints.
 func MergeProfiles(a []*cover.Profile, b []*cover.Profile) ([]*cover.Profile, error) {
 	var result []*cover.Profile
 	files := make(map[string]*cover.Profile, len(a))
 	for _, profile := range a {
-		// deep copy, so we don't modify the original
-		np := copyProfile(*profile)
+		np := deepCopyProfile(*profile)
 		result = append(result, &np)
 		files[np.FileName] = &np
 	}
@@ -43,19 +45,17 @@ func MergeProfiles(a []*cover.Profile, b []*cover.Profile) ([]*cover.Profile, er
 	for _, profile := range b {
 		dest, ok := files[profile.FileName]
 		if ok {
-			// for a file that already exists, we assume it has the same blocks in the same order.
-			if len(profile.Blocks) != len(dest.Blocks) {
-				return nil, fmt.Errorf("numbers of blocks in %s mismatch", profile.FileName)
+			if err := ensureProfilesMatch(profile, dest); err != nil {
+				return nil, fmt.Errorf("error merging %s: %v", profile.FileName, err)
 			}
 			for i, block := range profile.Blocks {
 				db := &dest.Blocks[i]
-				if !blocksEqual(block, *db) {
-					return nil, errors.New("coverage block mismatch")
-				}
 				db.Count += block.Count
 			}
 		} else {
-			np := copyProfile(*profile)
+			// If we get some file we haven't seen before, we just append it.
+			// We need to sort this later to ensure the resulting profile is still correctly sorted.
+			np := deepCopyProfile(*profile)
 			files[np.FileName] = &np
 			result = append(result, &np)
 			needsSort = true

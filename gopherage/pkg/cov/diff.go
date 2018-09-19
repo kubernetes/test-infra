@@ -17,7 +17,6 @@ limitations under the License.
 package cov
 
 import (
-	"errors"
 	"fmt"
 	"golang.org/x/tools/cover"
 )
@@ -28,22 +27,16 @@ import (
 func DiffProfiles(before []*cover.Profile, after []*cover.Profile) ([]*cover.Profile, error) {
 	var diff []*cover.Profile
 	if len(before) != len(after) {
-		return nil, errors.New("before and after have different numbers of profiles")
+		return nil, fmt.Errorf("before and after have different numbers of profiles (%d vs. %d)", len(before), len(after))
 	}
 	for i, beforeProfile := range before {
 		afterProfile := after[i]
-		if beforeProfile.FileName != afterProfile.FileName {
-			return nil, errors.New("coverage filename mismatch")
-		}
-		if len(beforeProfile.Blocks) != len(afterProfile.Blocks) {
-			return nil, fmt.Errorf("coverage for %s has differing block count", beforeProfile.FileName)
+		if err := ensureProfilesMatch(beforeProfile, afterProfile); err != nil {
+			return nil, fmt.Errorf("error on profile #%d: %v", i, err)
 		}
 		diffProfile := cover.Profile{FileName: beforeProfile.FileName, Mode: beforeProfile.Mode}
 		for j, beforeBlock := range beforeProfile.Blocks {
 			afterBlock := afterProfile.Blocks[j]
-			if !blocksEqual(beforeBlock, afterBlock) {
-				return nil, errors.New("coverage block mismatch")
-			}
 			diffBlock := cover.ProfileBlock{
 				StartLine: beforeBlock.StartLine,
 				StartCol:  beforeBlock.StartCol,

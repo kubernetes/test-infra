@@ -28,6 +28,7 @@ type flags struct {
 	OutputFile string
 }
 
+// MakeCommand returns a `merge` command.
 func MakeCommand() *cobra.Command {
 	flags := &flags{}
 	cmd := &cobra.Command{

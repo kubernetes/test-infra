@@ -41,8 +41,7 @@ func DumpProfile(profiles []*cover.Profile, writer io.Writer) error {
 	return nil
 }
 
-// copyProfile returns a deep copy of profile.
-func copyProfile(profile cover.Profile) cover.Profile {
+func deepCopyProfile(profile cover.Profile) cover.Profile {
 	p := profile
 	p.Blocks = make([]cover.ProfileBlock, len(profile.Blocks))
 	copy(p.Blocks, profile.Blocks)
@@ -54,4 +53,23 @@ func copyProfile(profile cover.Profile) cover.Profile {
 func blocksEqual(a cover.ProfileBlock, b cover.ProfileBlock) bool {
 	return a.StartCol == b.StartCol && a.StartLine == b.StartLine &&
 		a.EndCol == b.EndCol && a.EndLine == b.EndLine && a.NumStmt == b.NumStmt
+}
+
+func ensureProfilesMatch(a *cover.Profile, b *cover.Profile) error {
+	if a.FileName != b.FileName {
+		return fmt.Errorf("coverage filename mismatch (%s vs %s)", a.FileName, b.FileName)
+	}
+	if len(a.Blocks) != len(b.Blocks) {
+		return fmt.Errorf("file block count for %s mismatches (%d vs %d)", a.FileName, len(a.Blocks), len(b.Blocks))
+	}
+	if a.Mode != b.Mode {
+		return fmt.Errorf("mode for %s mismatches (%s vs %s)", a.FileName, a.Mode, b.Mode)
+	}
+	for i, ba := range a.Blocks {
+		bb := b.Blocks[i]
+		if !blocksEqual(ba, bb) {
+			return fmt.Errorf("coverage block mismatch: block #%d for %s (%+v mismatches %+v)", i, a.FileName, ba, bb)
+		}
+	}
+	return nil
 }

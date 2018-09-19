@@ -83,3 +83,10 @@ foo.go:22.5,28.2 5 2
 		t.Errorf("bad result.\n\nexpected:\n%s\nactual:\n%s\n", expected, buffer.String())
 	}
 }
+
+func TestDumpProfileNoFiles(t *testing.T) {
+	var buffer bytes.Buffer
+	if err := cov.DumpProfile([]*cover.Profile{}, &buffer); err == nil {
+		t.Error("expected dumping no files to fail")
+	}
+}

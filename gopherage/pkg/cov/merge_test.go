@@ -231,3 +231,37 @@ func TestMergeMultipleProfiles(t *testing.T) {
 		t.Fatal("merged profile incorrect", result)
 	}
 }
+
+func TestMergeProfilesEmpty(t *testing.T) {
+	_, err := cov.MergeMultipleProfiles([][]*cover.Profile{})
+	if err == nil {
+		t.Fatal("expected merging zero profiles to fail")
+	}
+}
+
+func TestMergeProfilesConflictingFileContents(t *testing.T) {
+	a := []*cover.Profile{
+		{
+			FileName: "a.go",
+			Mode:     "count",
+			Blocks: []cover.ProfileBlock{
+				{StartLine: 1, StartCol: 14, EndLine: 5, EndCol: 13, NumStmt: 4, Count: 3},
+				{StartLine: 7, StartCol: 4, EndLine: 12, EndCol: 4, NumStmt: 3, Count: 2},
+			},
+		},
+	}
+	b := []*cover.Profile{
+		{
+			FileName: "a.go",
+			Mode:     "count",
+			Blocks: []cover.ProfileBlock{
+				{StartLine: 2, StartCol: 14, EndLine: 5, EndCol: 13, NumStmt: 4, Count: 7},
+				{StartLine: 7, StartCol: 4, EndLine: 12, EndCol: 4, NumStmt: 3, Count: 2},
+			},
+		},
+	}
+
+	if result, err := cov.MergeProfiles(a, b); err == nil {
+		t.Fatalf("expected merging conflicting profiles to fail: %+v", result[0])
+	}
+}
