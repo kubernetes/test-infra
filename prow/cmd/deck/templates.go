@@ -54,7 +54,7 @@ func prepareBaseTemplate(templateRoot string, ca jobs.ConfigAgent, t *template.T
 	}).ParseFiles(path.Join(templateRoot, "base.html"))
 }
 
-func handleSimpleTemplate(templateRoot string, ca jobs.ConfigAgent, templateName string) http.HandlerFunc {
+func handleSimpleTemplate(templateRoot string, ca jobs.ConfigAgent, templateName string, param interface{}) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		t := template.New(templateName) // the name matters, and must match the filename.
 		if _, err := prepareBaseTemplate(templateRoot, ca, t); err != nil {
@@ -68,7 +68,7 @@ func handleSimpleTemplate(templateRoot string, ca jobs.ConfigAgent, templateName
 			http.Error(w, "error parsing template", http.StatusInternalServerError)
 			return
 		}
-		if err := t.Execute(w, nil); err != nil {
+		if err := t.Execute(w, param); err != nil {
 			logrus.WithError(err).Error("error executing template " + templateName)
 			http.Error(w, "error executing template", http.StatusInternalServerError)
 			return
