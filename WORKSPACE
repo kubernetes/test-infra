@@ -19,7 +19,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_rules_dependencies", "go_register_too
 go_rules_dependencies()
 
 go_register_toolchains(
-    go_version = "1.10.2",
+    go_version = "1.11",
 )
 
 git_repository(
