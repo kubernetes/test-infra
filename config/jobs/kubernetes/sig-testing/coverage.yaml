@@ -15,15 +15,19 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180829-29e661965-master
       command:
-      - ../test-infra/scenarios/kubernetes_e2e.py
+      - bash
       args:
-      - --build=quick
-      - --dump-before-and-after
-      - --extract=local
-      - --gcp-zone=us-central1-f
-      - --provider=gce
-      - --test_args=--ginkgo.focus=\[Conformance\]
-      - --timeout=120m
+      - -e
+      - -c
+      - |
+        shopt -s globstar
+        ../test-infra/scenarios/kubernetes_e2e.py --build=quick --dump-before-and-after --extract=local \
+                                                  --gcp-zone=us-central1-f --provider=gce --timeout=120m \
+                                                  --test-args=--ginkgo.focus=\[Conformance\]
+        cd ../test-infra
+        bazel run //gopherage -- merge "${ARTIFACTS}"/before/**/*.cov > "${ARTIFACTS}/before/merged.cov"
+        bazel run //gopherage -- merge "${ARTIFACTS}"/after/**/*.cov > "${ARTIFACTS}/after/merged.cov"
+        bazel run //gopherage -- diff "${ARTIFACTS}/before/merged.cov" "${ARTIFACTS}/after/merged.cov" > "${ARTIFACTS}/conformance.cov"
       env:
       - name: KUBE_BUILD_WITH_COVERAGE
         value: "true"

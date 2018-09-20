@@ -457,10 +457,17 @@ def main(args):
     # TODO(fejta): remove after next image push
     mode.add_environment('KUBETEST_MANUAL_DUMP=y')
     if args.dump_before_and_after:
+        before_dir = os.path.join(mode.artifacts, 'before')
+        if not os.path.exists(before_dir):
+            os.makedirs(before_dir)
+        after_dir = os.path.join(mode.artifacts, 'after')
+        if not os.path.exists(after_dir):
+            os.makedirs(after_dir)
+
         runner_args = [
-            '--dump-pre-test-logs=%s' % os.path.join(mode.artifacts, 'before'),
-            '--dump=%s' % os.path.join(mode.artifacts, 'after'),
-        ]
+            '--dump-pre-test-logs=%s' % before_dir,
+            '--dump=%s' % after_dir,
+            ]
     else:
         runner_args = [
             '--dump=%s' % mode.artifacts,
