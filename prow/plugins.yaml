@@ -501,6 +501,7 @@ plugins:
 
   kubernetes-sigs/contributor-playground:
   - require-sig
+  - welcome
 
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
   - trigger
