@@ -9,8 +9,8 @@ Pre-submit workflow runs on the merge commit for a pull request and is typically
 
 The tool performs the following additional operations when running in pre-submit workflow 
   - after running code coverage on target directories,  it compares the new result with the one stored by 
-  the post-submit workflow and generate coverage difference. It reports coverage changes to the 
-  pull request as a comment by a robot github account. 
+  the post-submit workflow and generate coverage difference. 
+  - it reports coverage changes (calculated above) to the pull request as a comment by a robot github account. 
   - it uses go tools to generate line by line coverage and stores the result in html, 
   with a link as part of the robot comment mentioned above.
   - it can be configured to return with a non-zero status if coverage falls below threshold.
