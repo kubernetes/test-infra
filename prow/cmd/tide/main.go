@@ -20,7 +20,6 @@ import (
 	"context"
 	"flag"
 	"net/http"
-	"net/url"
 	"os"
 	"os/signal"
 	"strconv"
@@ -29,11 +28,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	flagutil "k8s.io/test-infra/flagutil"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/git"
-	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/kube"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/tide"
@@ -42,47 +39,51 @@ import (
 type options struct {
 	port int
 
-	dryRun  bool
-	runOnce bool
-	deckURL string
-
 	configPath    string
 	jobConfigPath string
-	cluster       string
 
 	syncThrottle   int
 	statusThrottle int
 
-	githubEndpoint  flagutil.Strings
-	githubTokenFile string
+	dryRun     bool
+	runOnce    bool
+	kubernetes prowflagutil.KubernetesOptions
+	github     prowflagutil.GitHubOptions
+}
+
+func (o *options) Validate() error {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
+		if err := group.Validate(o.dryRun); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func gatherOptions() options {
-	o := options{
-		githubEndpoint: flagutil.NewStrings("https://api.github.com"),
+	o := options{}
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	fs.IntVar(&o.port, "port", 8888, "Port to listen on.")
+	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
+	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
+	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether to mutate any real-world state.")
+	fs.BoolVar(&o.runOnce, "run-once", false, "If true, run only once then quit.")
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
+		group.AddFlags(fs)
 	}
-	flag.IntVar(&o.port, "port", 8888, "Port to listen on.")
+	fs.IntVar(&o.syncThrottle, "sync-hourly-tokens", 800, "The maximum number of tokens per hour to be used by the sync controller.")
+	fs.IntVar(&o.statusThrottle, "status-hourly-tokens", 400, "The maximum number of tokens per hour to be used by the status controller.")
 
-	flag.BoolVar(&o.dryRun, "dry-run", true, "Whether to mutate any real-world state.")
-	flag.BoolVar(&o.runOnce, "run-once", false, "If true, run only once then quit.")
-	flag.StringVar(&o.deckURL, "deck-url", "", "Deck URL for read-only access to the cluster.")
-
-	flag.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
-	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	flag.StringVar(&o.cluster, "cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
-
-	flag.IntVar(&o.syncThrottle, "sync-hourly-tokens", 800, "The maximum number of tokens per hour to be used by the sync controller.")
-	flag.IntVar(&o.statusThrottle, "status-hourly-tokens", 400, "The maximum number of tokens per hour to be used by the status controller.")
-
-	flag.Var(&o.githubEndpoint, "github-endpoint", "GitHub's API endpoint.")
-	flag.StringVar(&o.githubTokenFile, "github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
-
-	flag.Parse()
+	fs.Parse(os.Args[1:])
 	return o
 }
 
 func main() {
 	o := gatherOptions()
+	if err := o.Validate(); err != nil {
+		logrus.Fatalf("Invalid options: %v", err)
+	}
 
 	logrus.SetFormatter(
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "tide"}),
@@ -93,65 +94,42 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
-	var err error
-	for _, ep := range o.githubEndpoint.Strings() {
-		_, err = url.ParseRequestURI(ep)
-		if err != nil {
-			logrus.WithError(err).Fatalf("Invalid --endpoint URL %q.", ep)
-		}
-	}
-
 	secretAgent := &config.SecretAgent{}
-	if err := secretAgent.Start([]string{o.githubTokenFile}); err != nil {
+	if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
-	var ghcSync, ghcStatus *github.Client
-	var kc *kube.Client
-	if o.dryRun {
-		ghcSync = github.NewDryRunClient(secretAgent.GetTokenGenerator(o.githubTokenFile), o.githubEndpoint.Strings()...)
-		ghcStatus = github.NewDryRunClient(secretAgent.GetTokenGenerator(o.githubTokenFile), o.githubEndpoint.Strings()...)
-		if o.deckURL == "" {
-			logrus.Fatal("no deck URL was given for read-only ProwJob access")
-		}
-		kc = kube.NewFakeClient(o.deckURL)
-	} else {
-		ghcSync = github.NewClient(secretAgent.GetTokenGenerator(o.githubTokenFile), o.githubEndpoint.Strings()...)
-		ghcStatus = github.NewClient(secretAgent.GetTokenGenerator(o.githubTokenFile), o.githubEndpoint.Strings()...)
-		if o.cluster == "" {
-			kc, err = kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
-			if err != nil {
-				logrus.WithError(err).Fatal("Error getting kube client.")
-			}
-		} else {
-			kc, err = kube.NewClientFromFile(o.cluster, configAgent.Config().ProwJobNamespace)
-			if err != nil {
-				logrus.WithError(err).Fatal("Error getting kube client.")
-			}
-		}
+	githubSync, err := o.github.GitHubClient(secretAgent, o.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
+
+	githubStatus, err := o.github.GitHubClient(secretAgent, o.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting GitHub client.")
+	}
+
 	// The sync loop should be allowed more tokens than the status loop because
 	// it has to list all PRs in the pool every loop while the status loop only
 	// has to list changed PRs every loop.
 	// The sync loop should have a much lower burst allowance than the status
 	// loop which may need to update many statuses upon restarting Tide after
 	// changing the context format or starting Tide on a new repo.
-	ghcSync.Throttle(o.syncThrottle, 3*tokensPerIteration(o.syncThrottle, configAgent.Config().Tide.SyncPeriod))
-	ghcStatus.Throttle(o.statusThrottle, o.statusThrottle/2)
+	githubSync.Throttle(o.syncThrottle, 3*tokensPerIteration(o.syncThrottle, configAgent.Config().Tide.SyncPeriod))
+	githubStatus.Throttle(o.statusThrottle, o.statusThrottle/2)
 
-	gc, err := git.NewClient()
+	gitClient, err := o.github.GitClient(secretAgent, o.dryRun)
 	if err != nil {
-		logrus.WithError(err).Fatal("Error getting git client.")
+		logrus.WithError(err).Fatal("Error getting Git client.")
 	}
-	defer gc.Clean()
-	// Get the bot's name in order to set credentials for the git client.
-	botName, err := ghcSync.BotName()
-	if err != nil {
-		logrus.WithError(err).Fatal("Error getting bot name.")
-	}
-	gc.SetCredentials(botName, secretAgent.GetTokenGenerator(o.githubTokenFile))
+	defer gitClient.Clean()
 
-	c := tide.NewController(ghcSync, ghcStatus, kc, configAgent, gc, nil)
+	kubeClient, err := o.kubernetes.Client(configAgent.Config().ProwJobNamespace, o.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting Kubernetes client.")
+	}
+
+	c := tide.NewController(githubSync, githubStatus, kubeClient, configAgent, gitClient, nil)
 	defer c.Shutdown()
 	server := &http.Server{Addr: ":" + strconv.Itoa(o.port), Handler: c}
 

@@ -41,36 +41,23 @@ func TestOptions_Validate(t *testing.T) {
 		{
 			name: "all ok",
 			opt: options{
-				config:   "dummy",
-				token:    "fake",
-				endpoint: flagutil.NewStrings("https://api.github.com"),
+				config: "dummy",
+				github: flagutil.GitHubOptions{TokenPath: "fake"},
 			},
 			expectedErr: false,
 		},
 		{
 			name: "no config",
 			opt: options{
-				config:   "",
-				token:    "fake",
-				endpoint: flagutil.NewStrings("https://api.github.com"),
+				config: "",
+				github: flagutil.GitHubOptions{TokenPath: "fake"},
 			},
 			expectedErr: true,
 		},
 		{
 			name: "no token",
 			opt: options{
-				config:   "dummy",
-				token:    "",
-				endpoint: flagutil.NewStrings("https://api.github.com"),
-			},
-			expectedErr: true,
-		},
-		{
-			name: "invalid endpoint",
-			opt: options{
-				config:   "dummy",
-				token:    "fake",
-				endpoint: flagutil.NewStrings(":"),
+				config: "dummy",
 			},
 			expectedErr: true,
 		},

@@ -21,7 +21,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
-	"net/url"
+	"os"
 	"os/signal"
 	"strconv"
 	"syscall"
@@ -29,9 +29,10 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/flagutil"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin"
-	"k8s.io/test-infra/prow/flagutil"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	// TODO: Remove the need for this import; it's currently required to allow the plugin config loader to function correctly (it expects plugins to be initialised)
 	// See https://github.com/kubernetes/test-infra/pull/8933#issuecomment-411511180
@@ -40,22 +41,50 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-var (
-	port              = flag.Int("port", 8888, "Port to listen on.")
-	dryRun            = flag.Bool("dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
-	pluginConfig      = flag.String("plugin-config", "/etc/plugins/plugins.yaml", "Path to plugin config file.")
-	githubEndpoint    = flagutil.NewStrings("https://api.github.com")
-	githubTokenFile   = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
-	webhookSecretFile = flag.String("hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
-	updatePeriod      = flag.Duration("update-period", time.Hour*24, "Period duration for periodic scans of all PRs.")
-)
+type options struct {
+	port int
 
-func init() {
-	flag.Var(&githubEndpoint, "github-endpoint", "GitHub's API endpoint.")
+	pluginConfig string
+	dryRun       bool
+	github       prowflagutil.GitHubOptions
+
+	updatePeriod time.Duration
+
+	webhookSecretFile string
+}
+
+func (o *options) Validate() error {
+	for _, group := range []flagutil.OptionGroup{&o.github} {
+		if err := group.Validate(o.dryRun); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func gatherOptions() options {
+	o := options{}
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	fs.IntVar(&o.port, "port", 8888, "Port to listen on.")
+	fs.StringVar(&o.pluginConfig, "plugin-config", "/etc/plugins/plugins.yaml", "Path to plugin config file.")
+	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
+	fs.DurationVar(&o.updatePeriod, "update-period", time.Hour*24, "Period duration for periodic scans of all PRs.")
+	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
+
+	for _, group := range []flagutil.OptionGroup{&o.github} {
+		group.AddFlags(fs)
+	}
+	fs.Parse(os.Args[1:])
+	return o
 }
 
 func main() {
-	flag.Parse()
+	o := gatherOptions()
+	if err := o.Validate(); err != nil {
+		logrus.Fatalf("Invalid options: %v", err)
+	}
+
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	// TODO: Use global option from the prow config.
 	logrus.SetLevel(logrus.InfoLevel)
@@ -67,40 +96,32 @@ func main() {
 	signal.Ignore(syscall.SIGTERM)
 
 	secretAgent := &config.SecretAgent{}
-	if err := secretAgent.Start([]string{*githubTokenFile, *webhookSecretFile}); err != nil {
+	if err := secretAgent.Start([]string{o.github.TokenPath, o.webhookSecretFile}); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
-	var err error
-	for _, ep := range githubEndpoint.Strings() {
-		_, err = url.ParseRequestURI(ep)
-		if err != nil {
-			logrus.WithError(err).Fatalf("Invalid --endpoint URL %q.", ep)
-		}
-	}
-
 	pa := &plugins.PluginAgent{}
-	if err := pa.Start(*pluginConfig); err != nil {
-		log.WithError(err).Fatalf("Error loading plugin config from %q.", *pluginConfig)
+	if err := pa.Start(o.pluginConfig); err != nil {
+		log.WithError(err).Fatalf("Error loading plugin config from %q.", o.pluginConfig)
 	}
 
-	githubClient := github.NewClient(secretAgent.GetTokenGenerator(*githubTokenFile), githubEndpoint.Strings()...)
-	if *dryRun {
-		githubClient = github.NewDryRunClient(secretAgent.GetTokenGenerator(*githubTokenFile), githubEndpoint.Strings()...)
+	githubClient, err := o.github.GitHubClient(secretAgent, o.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
 	githubClient.Throttle(360, 360)
 
 	server := &Server{
-		tokenGenerator: secretAgent.GetTokenGenerator(*webhookSecretFile),
+		tokenGenerator: secretAgent.GetTokenGenerator(o.webhookSecretFile),
 		ghc:            githubClient,
 		log:            log,
 	}
 
-	go periodicUpdate(log, pa, githubClient, *updatePeriod)
+	go periodicUpdate(log, pa, githubClient, o.updatePeriod)
 
 	http.Handle("/", server)
 	externalplugins.ServeExternalPluginHelp(http.DefaultServeMux, log, plugin.HelpProvider)
-	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
+	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(o.port), nil))
 }
 
 // Server implements http.Handler. It validates incoming GitHub webhooks and

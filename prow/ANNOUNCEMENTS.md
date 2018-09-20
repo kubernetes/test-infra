@@ -25,6 +25,13 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *October 3, 2018* `-github-token-file` replaced with
+    `-github-token-path` for consistency with `branchprotector` and
+    `peribolos` which were already using `-github-token-path`.
+    `-github-token-file` will continue to work through the remainder
+    of 2018, but it will be removed in early 2019.  The following
+    commands are affected: `cherrypicker`, `hook`, `jenkins-operator`,
+    `needs-rebase`, `phony`, `plank`, `refresh`, and `tide`.
  - *October 1, 2018* bazel is the one official way to build container images.
     Please use prow/bump.sh and/or bazel run //prow:release-push
  - *Sep 27, 2018* If you are setting explicit decorate configs, the format has changed from
