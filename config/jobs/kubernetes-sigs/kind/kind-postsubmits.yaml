@@ -7,6 +7,6 @@ postsubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180912-7a027de0c-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180918-762ed5b64-experimental
         command:
         - "./hack/ci/build-all.sh"
