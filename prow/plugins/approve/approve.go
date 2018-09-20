@@ -85,8 +85,6 @@ type state struct {
 	author    string
 	assignees []github.User
 	htmlURL   string
-
-	repoOptions *plugins.Approve
 }
 
 func init() {
