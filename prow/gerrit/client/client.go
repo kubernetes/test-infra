@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package gerrit implements a client that can handle multiple gerrit instances
+// Package client implements a client that can handle multiple gerrit instances
 // derived from https://github.com/andygrunwald/go-gerrit
-package gerrit
+package client
 
 import (
 	"fmt"
@@ -26,6 +26,22 @@ import (
 
 	"github.com/andygrunwald/go-gerrit"
 	"github.com/sirupsen/logrus"
+)
+
+const (
+	// LGTM means all presubmits passed, but need someone else to approve before merge.
+	LGTM = "+1"
+	// LBTM means some presubmits failed, perfer not merge.
+	LBTM = "-1"
+	// CodeReview is the default gerrit code review label
+	CodeReview = "Code-Review"
+
+	// GerritID identifies a gerrit change
+	GerritID = "gerrit-id"
+	// GerritInstance is the gerrit host url
+	GerritInstance = "gerrit-instance"
+	// GerritRevision is the SHA of current patchset from a gerrit change
+	GerritRevision = "gerrit-revision"
 )
 
 // ProjectsFlag is the flag type for gerrit projects when initializing a gerrit client
@@ -176,7 +192,7 @@ func (c *Client) QueryChanges(lastUpdate time.Time, rateLimit int) map[string][]
 }
 
 // SetReview writes a review comment base on the change id + revision
-func (c *Client) SetReview(instance, id, revision, message string) error {
+func (c *Client) SetReview(instance, id, revision, message string, labels map[string]string) error {
 	h, ok := c.handlers[instance]
 	if !ok {
 		return fmt.Errorf("not activated gerrit instance: %s", instance)
@@ -184,6 +200,7 @@ func (c *Client) SetReview(instance, id, revision, message string) error {
 
 	if _, _, err := h.changeService.SetReview(id, revision, &gerrit.ReviewInput{
 		Message: message,
+		Labels:  labels,
 	}); err != nil {
 		return fmt.Errorf("cannot comment to gerrit: %v", err)
 	}

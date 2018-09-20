@@ -38,7 +38,7 @@ type options struct {
 	cookiefilePath   string
 	configPath       string
 	jobConfigPath    string
-	projects         gerrit.ProjectsFlag
+	projects         client.ProjectsFlag
 	lastSyncFallback string
 }
 
@@ -64,7 +64,7 @@ func (o *options) Validate() error {
 
 func gatherOptions() options {
 	o := options{
-		projects: gerrit.ProjectsFlag{},
+		projects: client.ProjectsFlag{},
 	}
 	flag.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
 	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs")
