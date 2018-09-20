@@ -303,7 +303,7 @@ func (ap *Approvers) AddApprover(login, reference string, noIssue bool) {
 	}
 }
 
-// AddSAuthorSelfApprover adds the author self approval
+// AddAuthorSelfApprover adds the author self approval
 func (ap *Approvers) AddAuthorSelfApprover(login, reference string, noIssue bool) {
 	if ap.shouldNotOverrideApproval(login, noIssue) {
 		return
