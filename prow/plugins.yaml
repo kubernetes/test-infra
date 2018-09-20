@@ -33,6 +33,8 @@ triggers:
 owners:
   mdyamlrepos:
   - kubernetes/website
+  skip_collaborators:
+  - kubernetes-sigs/contributor-playground
 
 approve:
 - repos:
