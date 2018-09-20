@@ -1,7 +1,7 @@
 # Overview
 This code coverage tool calculates per file, per package and overall coverage on target directories. It generates the following artifacts
   - code coverage profile, which is produced by "[go test -coverprofile](https://blog.golang.org/cover)" and contains all block level code coverage data
-  - xml file that stores file-level and package-level code coverage, formatted to be readable by TestGrid
+  - XML file that stores file-level and package-level code coverage, formatted to be readable by TestGrid
 
 The tool has two major modes of operation, based on whether it is running in post-submit or pre-submit workflow. 
 Post-submit workflow runs on a specific commit on a branch and is typically triggered when commits are pushed to a branch (e.g. when a PR merges). 
@@ -61,9 +61,9 @@ The tool produces & stores coverage profile for later presubmit jobs to compare 
       - linguist-generated
       - coverage-excluded
     - Stores in the XML format, that is used by TestGrid, and dump it in artifacts directory
-      - The XML should be a valid junit xml file. See 
+      - The XML should be a valid JUnit XML file. See 
   [JUnit XML format](https://www.ibm.com/support/knowledgecenter/en/SSQ2R2_14.1.0/com.ibm.rsar.analysis.codereview.cobol.doc/topics/cac_useresults_junit.html)
-    - For each file that has a coverage level lower than the threshold, the corresponding entry in the xml should have a \<failure\> tag
+      - For each file that has a coverage level lower than the threshold, the corresponding entry in the XML should have a \<failure\> tag
 
 ## Pre-submit workflow
 Runs code coverage tool to report coverage change from a PR
