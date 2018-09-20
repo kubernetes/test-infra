@@ -52,7 +52,7 @@ periodics:
     preset-service-account: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180919-d79396d82-experimental-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180919-d79396d82-experimental
       args:
       - --repo=github.com/containerd/containerd=master
       - --repo=github.com/containerd/cri=master
@@ -68,7 +68,7 @@ periodics:
     preset-service-account: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180919-d79396d82-experimental-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180919-d79396d82-experimental
       args:
       - --repo=github.com/containerd/containerd=release/1.1
       - --repo=github.com/containerd/cri=release/1.0
@@ -280,7 +280,7 @@ periodics:
     preset-service-account: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180919-d79396d82-experimental-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180919-d79396d82-experimental
       args:
       - --repo=github.com/containerd/cri=master
       - --root=/go/src
