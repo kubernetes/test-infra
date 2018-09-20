@@ -38,6 +38,7 @@ filegroup(
         "//dind/pkg/cluster-up/cluster:all-srcs",
         "//dind/pkg/cluster-up/options:all-srcs",
         "//experiment:all-srcs",
+        "//flagutil:all-srcs",
         "//gcsweb/cmd/gcsweb:all-srcs",
         "//gcsweb/pkg/version:all-srcs",
         "//ghclient:all-srcs",
