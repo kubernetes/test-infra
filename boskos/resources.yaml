@@ -507,6 +507,10 @@ resources:
   state: dirty
   type: ingress-project
 - names:
+  - k8s-ingress-e2e-scale-backup
+  state: dirty
+  type: ingress-scale-project
+- names:
   - istio-gke-addon-prow-e2e-test
   state: dirty
   type: istio-project

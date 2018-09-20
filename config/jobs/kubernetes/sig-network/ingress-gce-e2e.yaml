@@ -181,7 +181,7 @@ periodics:
       - --cluster=
       - --env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:master
       - --extract=ci/latest
-      - --gcp-project=k8s-ingress-e2e-scale-backup
+      - --gcp-project-type=ingress-scale-project
       - --gcp-zone=us-central1-f
       - --ginkgo-parallel=1
       - --provider=gce
