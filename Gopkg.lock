@@ -858,6 +858,7 @@
 [[projects]]
   name = "golang.org/x/tools"
   packages = [
+    "cover",
     "go/ast/astutil",
     "go/gcexportdata",
     "go/gcimporter15",
@@ -1204,6 +1205,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "577b074afd4e7d60a7ba39fee17c8a7fd299ed13f8cbfa0f086e82242f1c2b41"
+  inputs-digest = "b4c254b53e869b40eba05d71a2fd1a9936c0180a834db7959c997770cce0a785"
   solver-name = "gps-cdcl"
   solver-version = 1
