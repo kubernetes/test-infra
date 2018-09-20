@@ -219,7 +219,7 @@ presubmits:
   - name: pull-test-infra-verify-labels
     branches:
     - master
-    run_if_changed: '^label_sync'
+    run_if_changed: '^label_sync/labels.yaml'
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
