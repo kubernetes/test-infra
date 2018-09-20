@@ -202,7 +202,9 @@ config_updater:
       name: job-config
 
 welcome:
-  message_template: "Welcome @{{.AuthorLogin}}! It looks like this is your first PR to {{.Org}}/{{.Repo}} 🎉"
+- repos:
+  - kubernetes/test-infra
+  message_template: "Welcome @{{.AuthorLogin}}! It looks like this is your first PR to {{.Org}}/{{.Repo}} 🎉🎉"
 
 require_matching_label:
 - missing_label: needs-kind
