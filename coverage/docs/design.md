@@ -3,8 +3,9 @@ This code coverage tool calculates per file, per package and overall coverage on
   - code coverage profile, which is produced by "[go test -coverprofile](https://blog.golang.org/cover)" and contains all block level code coverage data
   - xml file that stores file-level and package-level code coverage, formatted to be readable by TestGrid
 
-The tool has two major modes of operation, based on whether it is running in post-submit or pre-submit workflow. Post-submit workflow starts when a commit to the base branch happens, e.g. when a pull request is merged. 
-Pre-submit workflow starts when a pull requested is created or updated with new commit.
+The tool has two major modes of operation, based on whether it is running in post-submit or pre-submit workflow. 
+Post-submit workflow runs on a specific commit on a branch and is typically triggered when commits are pushed to a branch (e.g. when a PR merges). 
+Pre-submit workflow runs on the merge commit for a pull request and is typically triggered by PR creation or update.
 
 The tool performs the following additional operations when running in pre-submit workflow 
   - after running code coverage on target directories,  it compares the new result with the one stored by 
@@ -31,41 +32,41 @@ The tool takes input from three sources
   - .gitattribute file
     - it uses git attribute to filter files (see latter section on workflows for details)
 2. (In pre-submit workflow only) It reads previously stored post-submit code coverage profile from gcs bucket. The profile
-serves as a base of comparison for presubmit delta coverage.
+serves as a base of comparison for determining the pull request's coverage delta.
   - The value of following three flags will be used to locate the code coverage profile in GCS bucket,
   note that the values are examples and the first two values should be different for your own project
     - "--postsubmit-gcs-bucket=knative-prow"
     - "--postsubmit-job-name=post-knative-serving-go-coverage"
     - "--profile-name=coverage_profile.txt"
-3. Variables passed through flags. Those variables include directory to run test coverage, file filters and threshold for desired coverage level. Here is a list of these variables. Again, the values to the right of the equality sign are just examples.
-    - "--artifacts=$(ARTIFACTS)"
-    - "--cov-target=./pkg/"
-    - "--cov-threshold-percentage=81"
+3. Variables passed through flags. Here is a list of these variables.
 
+    |flag       |meaning                            |sample value |
+    |-----------|:---------------------------------:|----------- :|
+    |artifacts  |local directory to dump artifacts  |./artifacts  |
+    |cov-target |target directories to run coverage |./pkg1 ./pkg2|
+    |cov-threshold-percentage|coverage threshold in percentage|85 | 
 
 Here is the step-by-step description of the pre-submit and post-submit workflows
 
 ## Post-submit workflow
-Produces & stores coverage profile for later presubmit jobs to compare against; 
-Produces per-file and per-package coverage result as input for [TestGrid](https://github.com/kubernetes/test-infra/tree/master/testgrid). Testgrid can use the data produced here to display coverage trend in a tabular or graphical way. 
+The tool produces & stores coverage profile for later presubmit jobs to compare against; in addition, it produces per-file and per-package coverage result as input for [TestGrid](https://github.com/kubernetes/test-infra/tree/master/testgrid). Testgrid can use the data produced here to display coverage trend in a tabular or graphical way. 
 
 1. Generate coverage profile. Completion marker generated upon successful run. Both stored
  in artifacts directory.
     - Completion marker is used by later pre-submit job when searching for a healthy and complete 
     code coverage profile in the post-submit jobs
-    - Successfully generated coverage profile may be used as the basis of comparison for coverage change, 
-    as mentioned in pre-submit workflow
+    - Successfully generated coverage profile may be used as the basis of comparison for coverage change, in pre-submit workflow
 2. Read, filter, and summarizes data from coverage profile and store per-file coverage data
     - filter based on git attribute to ignore files with the following git attributes
       - linguist-generated
       - coverage-excluded
     - Stores in the XML format, that is used by TestGrid, and dump it in artifacts directory
-    - The junit_bazel.xml should be a valid junit xml file. See 
-[JUnit XML format](https://www.ibm.com/support/knowledgecenter/en/SSQ2R2_14.1.0/com.ibm.rsar.analysis.codereview.cobol.doc/topics/cac_useresults_junit.html)
+      - The XML should be a valid junit xml file. See 
+  [JUnit XML format](https://www.ibm.com/support/knowledgecenter/en/SSQ2R2_14.1.0/com.ibm.rsar.analysis.codereview.cobol.doc/topics/cac_useresults_junit.html)
     - For each file that has a coverage level lower than the threshold, the corresponding entry in the xml should have a \<failure\> tag
 
 ## Pre-submit workflow
-Runs code coverage tool to report coverage change in a new PR or updated PR
+Runs code coverage tool to report coverage change from a PR
 
 1. Generate coverage profile in artifacts directory
 2. Read, filter, and summarizes data from coverage profile and store per-file coverage data (Same as the corresponding step in post-submit)
@@ -100,19 +101,23 @@ comment access to the repo it need to be run on. If the repo is private, it also
 After the robot account is created, download the github token and supply the path to the token 
 file to code coverage binary, as the value for parameter "github-token"
 
+# Usage with container based CI/CD system
+We pack the test coverage feature in a container, that is triggered to run by a CI/CD system such as [prow](https://github.com/kubernetes/test-infra/tree/master/prow), in response to Github events such as pulls and merges.
 
-# Usage with prow
-We pack the test coverage feature in a container, that is triggered to run by a CI/CD system such as prow, in response to Github events such as pulls and merges. The behavior varies in presubmit and postsubmit workflows, which is discussed in latter sections.
+Here is [an example of a dockerfile](https://github.com/kubernetes/test-infra/blob/a1e910ae6811a1821ad98fa28e6fad03972a8c20/coverage/Dockerfile) using [Docker](https://www.docker.com/). 
+Here is [an example of a Makefile](https://github.com/kubernetes/test-infra/blob/a1e910ae6811a1821ad98fa28e6fad03972a8c20/coverage/Makefile) that builds and pushes the docker image on [Google Container Registry](https://cloud.google.com/container-registry/).
 
-Prow is a CI/CD system that is tested working well with this Code Coverage tool.   
+## Usage with prow
+Prow is tested working well with this Code Coverage tool. It's usage is described below
+
 - Prow can be used as the system to handle Github events mentioned in the two workflows. 
 - Prow, in both workflows, supplies the flags & secrets for the binary, clones the repository and uploads logs & artifacts to GCS bucket.
 
-  - The pre-submit prow job is triggered by any new commit to a PR. At the end of the binary run, it can return a pass or fail status context to Github. Tide can use that status to block PR with low coverage.
+  - The pre-submit prow job is triggered by any new commit to a PR. At the end of the binary run, it can return a pass or fail status context to Github. [Tide](https://github.com/kubernetes/test-infra/tree/master/prow/cmd/tide) can use that status to block PR with low coverage.
 
   - The post-submit prow job is triggered by merge events to the base branch.
 
-## Prow Job Specification
+### Prow Job Specification
 Here is an example of a pre-submit prow job spec that runs the coverage tool in a container (the container build file can be found [here](https://github.com/kubernetes/test-infra/blob/a1e910ae6811a1821ad98fa28e6fad03972a8c20/coverage/Makefile)). The args section includes all the arguments for the binary of the tool. 
 ```
   - name: pull-knative-serving-go-coverage
