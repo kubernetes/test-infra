@@ -62,6 +62,8 @@ type Finished struct {
 // Derived contains metadata derived from provided metadata for insertion into the template
 type Derived struct {
 	Elapsed          time.Duration
+	Done             bool
+	Status           string
 	GCSArtifactsLink string
 }
 
@@ -89,6 +91,7 @@ func ViewHandler(artifacts []viewers.Artifact, raw string) string {
 			metadataViewData.Started = s
 
 		} else if a.JobPath() == "finished.json" {
+			metadataViewData.Derived.Done = true
 			f := Finished{}
 			if err = json.Unmarshal(read, &f); err != nil {
 				logrus.WithError(err).Error("Error unmarshaling finished.json")
@@ -98,10 +101,15 @@ func ViewHandler(artifacts []viewers.Artifact, raw string) string {
 		}
 
 	}
-	d := Derived{
-		Elapsed: metadataViewData.Finished.Timestamp.Sub(metadataViewData.Started.Timestamp),
+
+	if metadataViewData.Derived.Done {
+		metadataViewData.Derived.Status = metadataViewData.Finished.Result
+		metadataViewData.Derived.Elapsed =
+			metadataViewData.Finished.Timestamp.Sub(metadataViewData.Started.Timestamp)
+	} else {
+		metadataViewData.Derived.Status = "In Progress"
+		metadataViewData.Derived.Elapsed = time.Now().Sub(metadataViewData.Started.Timestamp)
 	}
-	metadataViewData.Derived = d
 	if err := metadataTemplate.Execute(&buf, metadataViewData); err != nil {
 		logrus.WithError(err).Error("Error executing template.")
 	}

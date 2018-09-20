@@ -61,12 +61,8 @@ var metadataTemplateText = `{{$passed := eq .Finished.Result "SUCCESS"}}
         {{else}}
         <tr class="test-row">
         {{end}}
-          <td class="mdl-data-table__cell--non-numeric">Result</td>
-          <td class="mdl-data-table__cell--non-numeric">{{.Finished.Result}}</td>
-        </tr>
-        <tr>
-          <td class="mdl-data-table__cell--non-numeric">Tests</td>
-          <td class="mdl-data-table__cell--non-numeric">TODO</td>
+          <td class="mdl-data-table__cell--non-numeric">Status</td>
+          <td class="mdl-data-table__cell--non-numeric">{{.Derived.Status}}</td>
         </tr>
         <tr>
           <td class="mdl-data-table__cell--non-numeric">Started</td>
@@ -77,20 +73,13 @@ var metadataTemplateText = `{{$passed := eq .Finished.Result "SUCCESS"}}
           <td class="mdl-data-table__cell--non-numeric">{{.Derived.Elapsed}}</td>
         </tr>
         <tr>
-          <td class="mdl-data-table__cell--non-numeric">Version</td>
-          <td class="mdl-data-table__cell--non-numeric">{{.Finished.Version}}</td>
-        </tr>
-        <tr>
           <td class="mdl-data-table__cell--non-numeric">Node</td>
           <td class="mdl-data-table__cell--non-numeric">{{.Started.Node}}</td>
-        </tr>
-        <tr>
-          <td class="mdl-data-table__cell--non-numeric">Job Version</td>
-          <td class="mdl-data-table__cell--non-numeric">{{.Finished.JobVersion}}</td>
         </tr>
       </tbody>
     </table>
   </div>
+  {{if .Derived.Done}}
   <div class="mdl-cell mdl-cell--6-col">
     <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" style="height:unset;">
       <thead class="metadata-header">
@@ -108,6 +97,7 @@ var metadataTemplateText = `{{$passed := eq .Finished.Result "SUCCESS"}}
       </tbody>
     </table>
   </div>
+  {{end}}
 </div>`
 
 var metadataTemplate = template.Must(template.New("metadata").Parse(metadataTemplateText))
