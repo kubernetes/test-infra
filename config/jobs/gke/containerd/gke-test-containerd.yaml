@@ -335,7 +335,7 @@ periodics:
       - --gke-create-command=container clusters create --quiet
       - --gke-environment=test
       - --provider=gke
-      - --soak,
+      - --soak
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=800m
       - --up=false
