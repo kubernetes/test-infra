@@ -146,23 +146,25 @@ func main() {
 	mux.Handle("/plugins", gziphandler.GzipHandler(handleSimpleTemplate(configAgent, "plugins.html")))
 
 	indexHandler := handleSimpleTemplate(configAgent, "index.html")
-	localDataHandler := staticHandlerFromDir("./localdata")
+
+	var fallbackHandler func(http.ResponseWriter, *http.Request)
+	if o.runLocal {
+		localDataHandler := staticHandlerFromDir("./localdata")
+		fallbackHandler = localDataHandler.ServeHTTP
+	} else {
+		fallbackHandler = http.NotFound
+	}
+
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		// This is necessary because a) it's impossible to set a handler for "/" that isn't a wildcard,
-		// and b) you cannot have multiple
 		if r.URL.Path != "/" {
-			if o.runLocal {
-				localDataHandler.ServeHTTP(w, r)
-			} else {
-				http.NotFound(w, r)
-			}
+			fallbackHandler(w, r)
 			return
 		}
 		indexHandler(w, r)
 	})
 
 	if o.runLocal {
-		mux = prodOnlyLocal(configAgent, o, mux)
+		mux = localOnlyMain(configAgent, o, mux)
 	} else {
 		mux = prodOnlyMain(configAgent, o, mux)
 	}
@@ -171,9 +173,9 @@ func main() {
 	logrus.WithError(http.ListenAndServe(":8080", mux)).Fatal("ListenAndServe returned.")
 }
 
-// prodOnlyLocal contains logic used only when running locally, and is mutually exclusive with
+// localOnlyMain contains logic used only when running locally, and is mutually exclusive with
 // prodOnlyMain.
-func prodOnlyLocal(configAgent *config.Agent, o options, mux *http.ServeMux) *http.ServeMux {
+func localOnlyMain(configAgent *config.Agent, o options, mux *http.ServeMux) *http.ServeMux {
 	mux.Handle("/github-login", gziphandler.GzipHandler(handleSimpleTemplate(configAgent, "github-login.html")))
 
 	if o.spyglass {
@@ -591,7 +593,9 @@ func renderSpyglass(sg *spyglass.Spyglass, ca *config.Agent, src string) (string
 		ViewerCache: viewerCache,
 	}
 	t := template.New("spyglass.html")
-	prepareBaseTemplate(ca, t)
+	if _, err := prepareBaseTemplate(ca, t); err != nil {
+		return "", fmt.Errorf("error preparing base template: %v", err)
+	}
 	t, err = t.ParseFiles(path.Join("template", "spyglass.html"))
 	if err != nil {
 		return "", fmt.Errorf("error parsing template: %v", err)
