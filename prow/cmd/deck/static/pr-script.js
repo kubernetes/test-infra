@@ -430,8 +430,8 @@ function createTidePoolLabel(pr, tidePool) {
     }
     const labelTitle = ["Merging", "In Batch & Test Pending",
         "Test Passing & Merge Pending", "Test Pending",
-        "Test failed/Missing Labels"];
-    const labelStyle = ["merging", "batching", "passing", "pending", "failed"];
+        "Queued for retest"];
+    const labelStyle = ["merging", "batching", "passing", "pending", "pending"];
     label.textContent = "In Pool - " + labelTitle[inPoolId];
     label.classList.add("title-label", "mdl-shadow--2dp", labelStyle[inPoolId]);
 
