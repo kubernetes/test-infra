@@ -28,6 +28,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/cmd/branchprotector",
     visibility = ["//visibility:public"],
     deps = [
+        "//flagutil:go_default_library",
         "//prow/config:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/github:go_default_library",
@@ -46,7 +47,6 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//prow/config:go_default_library",
-        "//prow/flagutil:go_default_library",
         "//prow/github:go_default_library",
         "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/diff:go_default_library",
