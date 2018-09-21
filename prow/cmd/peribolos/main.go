@@ -23,9 +23,10 @@ import (
 	"os"
 	"strings"
 
+	"k8s.io/test-infra/flagutil"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/org"
-	"k8s.io/test-infra/prow/flagutil"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/logrusutil"
 
@@ -42,19 +43,18 @@ const (
 )
 
 type options struct {
-	config         string
+	config         prowflagutil.ConfigOptions
 	confirm        bool
 	dump           string
-	jobConfig      string
 	maximumDelta   float64
 	minAdmins      int
 	requireSelf    bool
-	requiredAdmins flagutil.Strings
+	requiredAdmins prowflagutil.Strings
 	fixOrg         bool
 	fixOrgMembers  bool
 	fixTeamMembers bool
 	fixTeams       bool
-	github         flagutil.GitHubOptions
+	github         prowflagutil.GitHubOptions
 	tokenBurst     int
 	tokensPerHour  int
 }
@@ -68,13 +68,11 @@ func parseOptions() options {
 }
 
 func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
-	o.requiredAdmins = flagutil.NewStrings()
+	o.requiredAdmins = prowflagutil.NewStrings()
 	flags.Var(&o.requiredAdmins, "required-admins", "Ensure config specifies these users as admins")
 	flags.IntVar(&o.minAdmins, "min-admins", defaultMinAdmins, "Ensure config specifies at least this many admins")
 	flags.BoolVar(&o.requireSelf, "require-self", true, "Ensure --github-token-path user is an admin")
 	flags.Float64Var(&o.maximumDelta, "maximum-removal-delta", defaultDelta, "Fail if config removes more than this fraction of current members")
-	flags.StringVar(&o.config, "config-path", "", "Path to prow config.yaml")
-	flags.StringVar(&o.jobConfig, "job-config-path", "", "Path to prow job configs.")
 	flags.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
 	flags.IntVar(&o.tokensPerHour, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
 	flags.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst")
@@ -83,13 +81,18 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 	flags.BoolVar(&o.fixOrgMembers, "fix-org-members", false, "Add/remove org members if set")
 	flags.BoolVar(&o.fixTeams, "fix-teams", false, "Create/delete/update teams if set")
 	flags.BoolVar(&o.fixTeamMembers, "fix-team-members", false, "Add/remove team members if set")
+	o.config.AddFlags(flags)
 	o.github.AddFlags(flags)
+
 	if err := flags.Parse(args); err != nil {
 		return err
 	}
-	if err := o.github.Validate(!o.confirm); err != nil {
-		return err
+	for _, group := range []flagutil.OptionGroup{&o.config, &o.github} {
+		if err := group.Validate(!o.confirm); err != nil {
+			return err
+		}
 	}
+
 	if o.tokensPerHour > 0 && o.tokenBurst >= o.tokensPerHour {
 		return fmt.Errorf("--tokens=%d must exceed --token-burst=%d", o.tokensPerHour, o.tokenBurst)
 	}
@@ -104,11 +107,11 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 	if o.confirm && o.dump != "" {
 		return fmt.Errorf("--confirm cannot be used with --dump=%s", o.dump)
 	}
-	if o.config == "" && o.dump == "" {
-		return errors.New("--config-path or --dump required")
+	if o.config.ConfigPath == "" && o.dump == "" {
+		return errors.New("-config-path or -dump required")
 	}
-	if o.config != "" && o.dump != "" {
-		return fmt.Errorf("--config-path=%s and --dump=%s cannot both be set", o.config, o.dump)
+	if o.config.ConfigPath != "" && o.dump != "" {
+		return fmt.Errorf("-config-path=%s and -dump=%s cannot both be set", o.config.ConfigPath, o.dump)
 	}
 
 	if o.fixTeamMembers && !o.fixTeams {
@@ -151,12 +154,12 @@ func main() {
 		return
 	}
 
-	cfg, err := config.Load(o.config, o.jobConfig)
+	configAgent, err := o.config.Agent()
 	if err != nil {
-		logrus.Fatalf("Failed to load --config=%s: %v", o.config, err)
+		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
-	for name, orgcfg := range cfg.Orgs {
+	for name, orgcfg := range configAgent.Config().Orgs {
 		if err := configureOrg(o, githubClient, name, orgcfg); err != nil {
 			logrus.Fatalf("Configuration failed: %v", err)
 		}

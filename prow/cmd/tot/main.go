@@ -34,6 +34,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
@@ -47,37 +48,35 @@ type options struct {
 	useFallback bool
 	fallbackURI string
 
-	configPath     string
-	jobConfigPath  string
+	config         flagutil.ConfigOptions
 	fallbackBucket string
 }
 
 func gatherOptions() options {
 	o := options{}
-	flag.IntVar(&o.port, "port", 8888, "Port to listen on.")
-	flag.StringVar(&o.storagePath, "storage", "tot.json", "Where to store the results.")
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	fs.IntVar(&o.port, "port", 8888, "Port to listen on.")
+	fs.StringVar(&o.storagePath, "storage", "tot.json", "Where to store the results.")
 
-	flag.BoolVar(&o.useFallback, "fallback", false, "Fallback to GCS bucket for missing builds.")
-	flag.StringVar(&o.fallbackURI, "fallback-url-template",
+	fs.BoolVar(&o.useFallback, "fallback", false, "Fallback to GCS bucket for missing builds.")
+	fs.StringVar(&o.fallbackURI, "fallback-url-template",
 		"https://storage.googleapis.com/kubernetes-jenkins/logs/%s/latest-build.txt",
 		"URL template to fallback to for jobs that lack a last vended build number.",
 	)
 
-	flag.StringVar(&o.configPath, "config-path", "", "Path to prow config.")
-	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	flag.StringVar(&o.fallbackBucket, "fallback-bucket", "",
+	fs.StringVar(&o.fallbackBucket, "fallback-bucket", "",
 		"Fallback to top-level bucket for jobs that lack a last vended build number. The bucket layout is expected to follow https://github.com/kubernetes/test-infra/tree/master/gubernator#gcs-bucket-layout",
 	)
-
-	flag.Parse()
+	o.config.AddFlags(fs)
+	fs.Parse(os.Args[1:])
 	return o
 }
 
 func (o *options) Validate() error {
-	if o.configPath != "" && o.fallbackBucket == "" {
+	if o.config.ConfigPath != "" && o.fallbackBucket == "" {
 		return errors.New("you need to provide a bucket to fallback to when the prow config is specified")
 	}
-	if o.configPath == "" && o.fallbackBucket != "" {
+	if o.config.ConfigPath == "" && o.fallbackBucket != "" {
 		return errors.New("you need to provide the prow config when a fallback bucket is specified")
 	}
 	return nil
@@ -284,9 +283,9 @@ func main() {
 
 	if o.useFallback {
 		var configAgent *config.Agent
-		if o.configPath != "" {
-			configAgent = &config.Agent{}
-			if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
+		if o.config.ConfigPath != "" {
+			configAgent, err = o.config.Agent()
+			if err != nil {
 				logrus.WithError(err).Fatal("Error starting config agent.")
 			}
 		}

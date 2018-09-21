@@ -44,12 +44,11 @@ import (
 type options struct {
 	port int
 
-	configPath    string
-	jobConfigPath string
-	pluginConfig  string
+	pluginConfig string
 
 	dryRun      bool
 	gracePeriod time.Duration
+	config      prowflagutil.ConfigOptions
 	kubernetes  prowflagutil.KubernetesOptions
 	github      prowflagutil.GitHubOptions
 
@@ -58,7 +57,7 @@ type options struct {
 }
 
 func (o *options) Validate() error {
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
+	for _, group := range []flagutil.OptionGroup{&o.config, &o.kubernetes, &o.github} {
 		if err := group.Validate(o.dryRun); err != nil {
 			return err
 		}
@@ -71,14 +70,10 @@ func gatherOptions() options {
 	o := options{}
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	fs.IntVar(&o.port, "port", 8888, "Port to listen on.")
-
-	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
-	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	fs.StringVar(&o.pluginConfig, "plugin-config", "/etc/plugins/plugins.yaml", "Path to plugin config file.")
-
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	fs.DurationVar(&o.gracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration. ")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
+	for _, group := range []flagutil.OptionGroup{&o.config, &o.kubernetes, &o.github} {
 		group.AddFlags(fs)
 	}
 
@@ -95,8 +90,8 @@ func main() {
 	}
 	logrus.SetFormatter(logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "hook"}))
 
-	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
+	configAgent, err := o.config.Agent()
+	if err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 

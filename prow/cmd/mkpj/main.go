@@ -26,15 +26,14 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
 type options struct {
-	jobName       string
-	configPath    string
-	jobConfigPath string
+	jobName string
+	config  flagutil.ConfigOptions
 
 	baseRef    string
 	baseSha    string
@@ -44,12 +43,12 @@ type options struct {
 }
 
 func (o *options) Validate() error {
-	if o.jobName == "" {
-		return errors.New("required flag --job was unset")
+	if err := o.config.Validate(false); err != nil {
+		return err
 	}
 
-	if o.configPath == "" {
-		return errors.New("required flag --config-path was unset")
+	if o.jobName == "" {
+		return errors.New("required flag --job was unset")
 	}
 
 	return nil
@@ -57,15 +56,15 @@ func (o *options) Validate() error {
 
 func gatherOptions() options {
 	o := options{}
-	flag.StringVar(&o.jobName, "job", "", "Job to run.")
-	flag.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
-	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	flag.StringVar(&o.baseRef, "base-ref", "", "Git base ref under test")
-	flag.StringVar(&o.baseSha, "base-sha", "", "Git base SHA under test")
-	flag.IntVar(&o.pullNumber, "pull-number", 0, "Git pull number under test")
-	flag.StringVar(&o.pullSha, "pull-sha", "", "Git pull SHA under test")
-	flag.StringVar(&o.pullAuthor, "pull-author", "", "Git pull author under test")
-	flag.Parse()
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	fs.StringVar(&o.jobName, "job", "", "Job to run.")
+	fs.StringVar(&o.baseRef, "base-ref", "", "Git base ref under test")
+	fs.StringVar(&o.baseSha, "base-sha", "", "Git base SHA under test")
+	fs.IntVar(&o.pullNumber, "pull-number", 0, "Git pull number under test")
+	fs.StringVar(&o.pullSha, "pull-sha", "", "Git pull SHA under test")
+	fs.StringVar(&o.pullAuthor, "pull-author", "", "Git pull author under test")
+	o.config.AddFlags(fs)
+	fs.Parse(os.Args[1:])
 	return o
 }
 
@@ -75,10 +74,11 @@ func main() {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
 
-	conf, err := config.Load(o.configPath, o.jobConfigPath)
+	configAgent, err := o.config.Agent()
 	if err != nil {
-		logrus.WithError(err).Fatal("Error loading config.")
+		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
+	conf := configAgent.Config()
 
 	var pjs kube.ProwJobSpec
 	var labels map[string]string

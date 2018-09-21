@@ -17,15 +17,15 @@ limitations under the License.
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"os"
 	"strings"
 	"sync"
 
+	"k8s.io/test-infra/flagutil"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/flagutil"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/logrusutil"
 
@@ -33,19 +33,16 @@ import (
 )
 
 type options struct {
-	config    string
-	jobConfig string
-	confirm   bool
-	github    flagutil.GitHubOptions
+	confirm bool
+	config  prowflagutil.ConfigOptions
+	github  prowflagutil.GitHubOptions
 }
 
 func (o *options) Validate() error {
-	if err := o.github.Validate(!o.confirm); err != nil {
-		return err
-	}
-
-	if o.config == "" {
-		return errors.New("empty --config-path")
+	for _, group := range []flagutil.OptionGroup{&o.config, &o.github} {
+		if err := group.Validate(!o.confirm); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -54,9 +51,8 @@ func (o *options) Validate() error {
 func gatherOptions() options {
 	o := options{}
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-	fs.StringVar(&o.config, "config-path", "", "Path to prow config.yaml")
-	fs.StringVar(&o.jobConfig, "job-config-path", "", "Path to prow job configs.")
 	fs.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
+	o.config.AddFlags(fs)
 	o.github.AddFlags(fs)
 	fs.Parse(os.Args[1:])
 	return o
@@ -92,10 +88,11 @@ func main() {
 		logrus.Fatal(err)
 	}
 
-	cfg, err := config.Load(o.config, o.jobConfig)
+	configAgent, err := o.config.Agent()
 	if err != nil {
-		logrus.WithError(err).Fatalf("Failed to load --config-path=%s", o.config)
+		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
+	cfg := configAgent.Config()
 
 	secretAgent := &config.SecretAgent{}
 	if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {

@@ -28,51 +28,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/diff"
 
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 )
-
-func TestOptions_Validate(t *testing.T) {
-	var testCases = []struct {
-		name        string
-		opt         options
-		expectedErr bool
-	}{
-		{
-			name: "all ok",
-			opt: options{
-				config: "dummy",
-				github: flagutil.GitHubOptions{TokenPath: "fake"},
-			},
-			expectedErr: false,
-		},
-		{
-			name: "no config",
-			opt: options{
-				config: "",
-				github: flagutil.GitHubOptions{TokenPath: "fake"},
-			},
-			expectedErr: true,
-		},
-		{
-			name: "no token, allow",
-			opt: options{
-				config: "dummy",
-			},
-			expectedErr: false,
-		},
-	}
-
-	for _, testCase := range testCases {
-		err := testCase.opt.Validate()
-		if testCase.expectedErr && err == nil {
-			t.Errorf("%s: expected an error but got none", testCase.name)
-		}
-		if !testCase.expectedErr && err != nil {
-			t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
-		}
-	}
-}
 
 type fakeClient struct {
 	repos    map[string][]github.Repo

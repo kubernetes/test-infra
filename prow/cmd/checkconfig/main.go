@@ -21,6 +21,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -49,9 +50,8 @@ import (
 )
 
 type options struct {
-	configPath    string
-	jobConfigPath string
-	pluginConfig  string
+	config       flagutil.ConfigOptions
+	pluginConfig string
 
 	warnings flagutil.Strings
 	strict   bool
@@ -92,9 +92,10 @@ var allWarnings = []string{
 }
 
 func (o *options) Validate() error {
-	if o.configPath == "" {
-		return errors.New("required flag --config-path was unset")
+	if err := o.config.Validate(false); err != nil {
+		return err
 	}
+
 	if o.pluginConfig == "" {
 		return errors.New("required flag --plugin-config was unset")
 	}
@@ -115,12 +116,12 @@ func (o *options) Validate() error {
 
 func gatherOptions() options {
 	o := options{}
-	flag.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
-	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	flag.StringVar(&o.pluginConfig, "plugin-config", "", "Path to plugin config file.")
-	flag.Var(&o.warnings, "warnings", "Comma-delimited list of warnings to validate.")
-	flag.BoolVar(&o.strict, "strict", false, "If set, consider all warnings as errors.")
-	flag.Parse()
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	fs.StringVar(&o.pluginConfig, "plugin-config", "", "Path to plugin config file.")
+	fs.Var(&o.warnings, "warnings", "Comma-delimited list of warnings to validate.")
+	fs.BoolVar(&o.strict, "strict", false, "If set, consider all warnings as errors.")
+	o.config.AddFlags(fs)
+	fs.Parse(os.Args[1:])
 	return o
 }
 
@@ -139,9 +140,9 @@ func main() {
 		logrusutil.NewDefaultFieldsFormatter(&logrus.TextFormatter{}, logrus.Fields{"component": "checkconfig"}),
 	)
 
-	configAgent := config.Agent{}
-	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
-		logrus.WithError(err).Fatal("Error loading Prow config.")
+	configAgent, err := o.config.Agent()
+	if err != nil {
+		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	cfg := configAgent.Config()
 

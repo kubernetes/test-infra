@@ -40,7 +40,7 @@ func TestOptions(t *testing.T) {
 	}{
 		{
 			name: "missing --config",
-			args: []string{},
+			args: []string{"--config-path="},
 		},
 		{
 			name: "bad --github-endpoint",
@@ -62,7 +62,7 @@ func TestOptions(t *testing.T) {
 			name: "maximal delta",
 			args: []string{"--config-path=foo", "--maximum-removal-delta=1"},
 			expected: &options{
-				config:        "foo",
+				config:        flagutil.ConfigOptions{ConfigPath: "foo"},
 				minAdmins:     defaultMinAdmins,
 				requireSelf:   true,
 				maximumDelta:  1,
@@ -74,7 +74,7 @@ func TestOptions(t *testing.T) {
 			name: "minimal delta",
 			args: []string{"--config-path=foo", "--maximum-removal-delta=0"},
 			expected: &options{
-				config:        "foo",
+				config:        flagutil.ConfigOptions{ConfigPath: "foo"},
 				minAdmins:     defaultMinAdmins,
 				requireSelf:   true,
 				maximumDelta:  0,
@@ -86,7 +86,7 @@ func TestOptions(t *testing.T) {
 			name: "minimal admins",
 			args: []string{"--config-path=foo", "--min-admins=2"},
 			expected: &options{
-				config:        "foo",
+				config:        flagutil.ConfigOptions{ConfigPath: "foo"},
 				minAdmins:     2,
 				requireSelf:   true,
 				maximumDelta:  defaultDelta,
@@ -114,7 +114,7 @@ func TestOptions(t *testing.T) {
 			name: "allow disabled throttle",
 			args: []string{"--config-path=foo", "--tokens=0"},
 			expected: &options{
-				config:        "foo",
+				config:        flagutil.ConfigOptions{ConfigPath: "foo"},
 				minAdmins:     defaultMinAdmins,
 				requireSelf:   true,
 				maximumDelta:  defaultDelta,
@@ -124,7 +124,7 @@ func TestOptions(t *testing.T) {
 		},
 		{
 			name: "allow dump without config",
-			args: []string{"--dump=frogger"},
+			args: []string{"--config-path=", "--dump=frogger"},
 			expected: &options{
 				minAdmins:     defaultMinAdmins,
 				requireSelf:   true,
@@ -138,7 +138,7 @@ func TestOptions(t *testing.T) {
 			name: "minimal",
 			args: []string{"--config-path=foo"},
 			expected: &options{
-				config:        "foo",
+				config:        flagutil.ConfigOptions{ConfigPath: "foo"},
 				minAdmins:     defaultMinAdmins,
 				requireSelf:   true,
 				maximumDelta:  defaultDelta,
@@ -150,7 +150,7 @@ func TestOptions(t *testing.T) {
 			name: "full",
 			args: []string{"--config-path=foo", "--github-token-path=bar", "--github-endpoint=weird://url", "--confirm=true", "--require-self=false", "--tokens=5", "--token-burst=2", "--dump=", "--fix-org", "--fix-org-members", "--fix-teams", "--fix-team-members"},
 			expected: &options{
-				config:         "foo",
+				config:         flagutil.ConfigOptions{ConfigPath: "foo"},
 				confirm:        true,
 				requireSelf:    false,
 				minAdmins:      defaultMinAdmins,

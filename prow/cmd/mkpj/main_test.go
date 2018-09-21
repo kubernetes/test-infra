@@ -16,7 +16,11 @@ limitations under the License.
 
 package main
 
-import "testing"
+import (
+	"testing"
+
+	"k8s.io/test-infra/prow/flagutil"
+)
 
 func TestOptions_Validate(t *testing.T) {
 	var testCases = []struct {
@@ -27,22 +31,15 @@ func TestOptions_Validate(t *testing.T) {
 		{
 			name: "all ok",
 			input: options{
-				jobName:    "job",
-				configPath: "somewhere",
+				jobName: "job",
+				config:  flagutil.ConfigOptions{ConfigPath: "somewhere"},
 			},
 			expectedErr: false,
 		},
 		{
-			name: "missing config",
-			input: options{
-				jobName: "job",
-			},
-			expectedErr: true,
-		},
-		{
 			name: "missing job",
 			input: options{
-				configPath: "somewhere",
+				config: flagutil.ConfigOptions{ConfigPath: "somewhere"},
 			},
 			expectedErr: true,
 		},

@@ -19,38 +19,38 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/cron"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
-type options struct {
-	configPath    string
-	jobConfigPath string
-}
-
-func gatherOptions() options {
-	o := options{}
-	flag.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
-	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	flag.Parse()
+func gatherOptions() *flagutil.ConfigOptions {
+	o := &flagutil.ConfigOptions{}
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	o.AddFlags(fs)
+	fs.Parse(os.Args[1:])
 	return o
 }
 
 func main() {
 	o := gatherOptions()
+	if err := o.Validate(false); err != nil {
+		logrus.Fatalf("Invalid options: %v", err)
+	}
 	logrus.SetFormatter(
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "horologium"}),
 	)
 
-	configAgent := config.Agent{}
-	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
+	configAgent, err := o.Agent()
+	if err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 

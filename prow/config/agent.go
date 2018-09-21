@@ -35,11 +35,6 @@ type Agent struct {
 // fails, Start with return the error and abort. Future load failures will log
 // the failure message but continue attempting to load.
 func (ca *Agent) Start(prowConfig, jobConfig string) error {
-	c, err := Load(prowConfig, jobConfig)
-	if err != nil {
-		return err
-	}
-	ca.c = c
 	go func() {
 		var lastModTime time.Time
 		// Rarely, if two changes happen in the same second, mtime will

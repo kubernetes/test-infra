@@ -35,6 +35,7 @@ import (
 	"github.com/ghodss/yaml"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/tide"
@@ -49,7 +50,7 @@ func TestOptions_Validate(t *testing.T) {
 		{
 			name: "minimal set ok",
 			input: options{
-				configPath: "test",
+				config: flagutil.ConfigOptions{ConfigPath: "test"},
 			},
 			expectedErr: false,
 		},
@@ -61,7 +62,7 @@ func TestOptions_Validate(t *testing.T) {
 		{
 			name: "ok with oauth",
 			input: options{
-				configPath:            "test",
+				config:                flagutil.ConfigOptions{ConfigPath: "test"},
 				oauthURL:              "website",
 				githubOAuthConfigFile: "something",
 				cookieSecretFile:      "yum",
@@ -71,7 +72,7 @@ func TestOptions_Validate(t *testing.T) {
 		{
 			name: "missing github config with oauth",
 			input: options{
-				configPath:       "test",
+				config:           flagutil.ConfigOptions{ConfigPath: "test"},
 				oauthURL:         "website",
 				cookieSecretFile: "yum",
 			},
@@ -80,7 +81,7 @@ func TestOptions_Validate(t *testing.T) {
 		{
 			name: "missing cookie with oauth",
 			input: options{
-				configPath:            "test",
+				config:                flagutil.ConfigOptions{ConfigPath: "test"},
 				oauthURL:              "website",
 				githubOAuthConfigFile: "something",
 			},

@@ -39,20 +39,18 @@ import (
 type options struct {
 	port int
 
-	configPath    string
-	jobConfigPath string
-
 	syncThrottle   int
 	statusThrottle int
 
 	dryRun     bool
 	runOnce    bool
+	config     prowflagutil.ConfigOptions
 	kubernetes prowflagutil.KubernetesOptions
 	github     prowflagutil.GitHubOptions
 }
 
 func (o *options) Validate() error {
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
+	for _, group := range []flagutil.OptionGroup{&o.config, &o.kubernetes, &o.github} {
 		if err := group.Validate(o.dryRun); err != nil {
 			return err
 		}
@@ -60,16 +58,13 @@ func (o *options) Validate() error {
 
 	return nil
 }
-
 func gatherOptions() options {
 	o := options{}
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	fs.IntVar(&o.port, "port", 8888, "Port to listen on.")
-	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
-	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether to mutate any real-world state.")
 	fs.BoolVar(&o.runOnce, "run-once", false, "If true, run only once then quit.")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
+	for _, group := range []flagutil.OptionGroup{&o.config, &o.kubernetes, &o.github} {
 		group.AddFlags(fs)
 	}
 	fs.IntVar(&o.syncThrottle, "sync-hourly-tokens", 800, "The maximum number of tokens per hour to be used by the sync controller.")
@@ -89,8 +84,8 @@ func main() {
 		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "tide"}),
 	)
 
-	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
+	configAgent, err := o.config.Agent()
+	if err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
