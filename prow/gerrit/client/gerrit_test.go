@@ -315,7 +315,7 @@ func TestQueryChange(t *testing.T) {
 				"foo": {
 					instance: "foo",
 					projects: []string{"bar"},
-					change: &fgc{
+					changeService: &fgc{
 						changes:  tc.changes,
 						instance: "foo",
 					},
@@ -323,7 +323,7 @@ func TestQueryChange(t *testing.T) {
 				"baz": {
 					instance: "baz",
 					projects: []string{"boo"},
-					change: &fgc{
+					changeService: &fgc{
 						changes:  tc.changes,
 						instance: "baz",
 					},
