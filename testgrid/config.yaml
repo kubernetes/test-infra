@@ -2870,7 +2870,7 @@ test_groups:
 - name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2-presubmit
   gcs_prefix: istio-circleci/presubmit/e2e-mixer-noauth-v1alpha3-v2
 - name: istio-circleci-e2e-galley-presubmit
-  gcs_prefix: istio-circleci/presubmit/e2e-galley
+  gcs_prefix: istio-circleci/e2e-galley
 - name: istio-circleci-e2e-pilot-cloudfoundry-v1alpha3-v2-presubmit
   gcs_prefix: istio-circleci/presubmit/e2e-pilot-cloudfoundry-v1alpha3-v2
 - name: istio-circleci-e2e-pilot-auth-v1alpha3-v2-presubmit
@@ -2883,9 +2883,9 @@ test_groups:
 - name: istio-circleci-racetest-presubmit
   gcs_prefix: istio-circleci/presubmit/racetest
 - name: istio-circleci-test-integration-local-presubmit
-  gcs_prefix: istio-circleci/presubmit/test-integration-local
+  gcs_prefix: istio-circleci/test-integration-local
 - name: istio-circleci-test-integration-kubernetes-presubmit
-  gcs_prefix: istio-circleci/presubmit/test-integration-kubernetes
+  gcs_prefix: istio-circleci/test-integration-kubernetes
 # Istio CircleCI Postsubmits
 - name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2
   gcs_prefix: istio-circleci/e2e-mixer-noauth-v1alpha3-v2
