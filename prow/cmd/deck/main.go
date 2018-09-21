@@ -138,16 +138,15 @@ func main() {
 	mux.Handle("/static/", http.StripPrefix("/static", staticHandlerFromDir(o.staticFilesLocation)))
 	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(configAgent)))
 	mux.Handle("/favicon.ico", gziphandler.GzipHandler(handleFavicon(o.staticFilesLocation, configAgent)))
-	mux.Handle("/spyglass.js", gziphandler.GzipHandler(handleSpyglass(o.spyglass)))
 
 	// Set up handlers for template pages.
-	mux.Handle("/pr", gziphandler.GzipHandler(handleSimpleTemplate(o.templateFilesLocation, configAgent, "pr.html")))
-	mux.Handle("/command-help", gziphandler.GzipHandler(handleSimpleTemplate(o.templateFilesLocation, configAgent, "command-help.html")))
+	mux.Handle("/pr", gziphandler.GzipHandler(handleSimpleTemplate(o.templateFilesLocation, configAgent, "pr.html", nil)))
+	mux.Handle("/command-help", gziphandler.GzipHandler(handleSimpleTemplate(o.templateFilesLocation, configAgent, "command-help.html", nil)))
 	mux.Handle("/plugin-help", http.RedirectHandler("/command-help", http.StatusMovedPermanently))
-	mux.Handle("/tide", gziphandler.GzipHandler(handleSimpleTemplate(o.templateFilesLocation, configAgent, "tide.html")))
-	mux.Handle("/plugins", gziphandler.GzipHandler(handleSimpleTemplate(o.templateFilesLocation, configAgent, "plugins.html")))
+	mux.Handle("/tide", gziphandler.GzipHandler(handleSimpleTemplate(o.templateFilesLocation, configAgent, "tide.html", nil)))
+	mux.Handle("/plugins", gziphandler.GzipHandler(handleSimpleTemplate(o.templateFilesLocation, configAgent, "plugins.html", nil)))
 
-	indexHandler := handleSimpleTemplate(o.templateFilesLocation, configAgent, "index.html")
+	indexHandler := handleSimpleTemplate(o.templateFilesLocation, configAgent, "index.html", struct{ SpyglassEnabled bool }{o.spyglass})
 
 	var fallbackHandler func(http.ResponseWriter, *http.Request)
 	if o.runLocal {
@@ -178,7 +177,7 @@ func main() {
 // localOnlyMain contains logic used only when running locally, and is mutually exclusive with
 // prodOnlyMain.
 func localOnlyMain(configAgent *config.Agent, o options, mux *http.ServeMux) *http.ServeMux {
-	mux.Handle("/github-login", gziphandler.GzipHandler(handleSimpleTemplate(o.templateFilesLocation, configAgent, "github-login.html")))
+	mux.Handle("/github-login", gziphandler.GzipHandler(handleSimpleTemplate(o.templateFilesLocation, configAgent, "github-login.html", nil)))
 
 	if o.spyglass {
 		initSpyglass(configAgent, o, mux, nil)
@@ -827,23 +826,6 @@ func handleFavicon(staticFilesLocation string, ca jobs.ConfigAgent) http.Handler
 			http.ServeFile(w, r, staticFilesLocation+"/"+config.Deck.Branding.Favicon)
 		} else {
 			http.ServeFile(w, r, staticFilesLocation+"/favicon.ico")
-		}
-	}
-}
-
-func handleSpyglass(spyglass bool) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		setHeadersNoCaching(w)
-		b, err := json.Marshal(spyglass)
-		if err != nil {
-			logrus.WithError(err).Error("Error marshalling spyglass config.")
-			http.Error(w, "Failed to marshal spyglass config.", http.StatusInternalServerError)
-			return
-		}
-		if v := r.URL.Query().Get("var"); v != "" {
-			fmt.Fprintf(w, "var %s = %s;", v, string(b))
-		} else {
-			fmt.Fprint(w, string(b))
 		}
 	}
 }
