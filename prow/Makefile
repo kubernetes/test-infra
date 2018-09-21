@@ -28,8 +28,6 @@ HOOK_VERSION              ?= $(TAG)
 SINKER_VERSION            ?= $(TAG)
 # DECK_VERSION is the version of the deck image
 DECK_VERSION              ?= $(TAG)
-# SPLICE_VERSION is the version of the splice image
-SPLICE_VERSION            ?= $(TAG)
 # TOT_VERSION is the version of the tot image
 TOT_VERSION               ?= $(TAG)
 # HOROLOGIUM_VERSION is the version of the horologium image
@@ -153,17 +151,6 @@ deck-service: get-cluster-credentials
 	kubectl apply -f cluster/deck_service.yaml
 
 .PHONY: deck-image deck-deployment deck-service
-
-splice-image: git-image
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/splice/splice k8s.io/test-infra/prow/cmd/splice
-	docker build -t "$(REGISTRY)/$(PROJECT)/splice:$(SPLICE_VERSION)" $(DOCKER_LABELS) cmd/splice
-	$(PUSH) "$(REGISTRY)/$(PROJECT)/splice:$(SPLICE_VERSION)"
-	rm cmd/splice/splice
-
-splice-deployment: get-cluster-credentials
-	kubectl apply -f cluster/splice_deployment.yaml
-
-.PHONY: splice-image splice-deployment
 
 tot-image: alpine-image
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/tot/tot k8s.io/test-infra/prow/cmd/tot

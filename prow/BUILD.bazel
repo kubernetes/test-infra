@@ -26,7 +26,6 @@ docker_bundle(
         "plank",
         "sidecar",
         "sinker",
-        "splice",
         "tide",
         "tot",
     ) + prow_docker_tags(**{
@@ -86,7 +85,6 @@ filegroup(
         "//prow/cmd/plank:all-srcs",
         "//prow/cmd/sidecar:all-srcs",
         "//prow/cmd/sinker:all-srcs",
-        "//prow/cmd/splice:all-srcs",
         "//prow/cmd/tide:all-srcs",
         "//prow/cmd/tot:all-srcs",
         "//prow/commentpruner:all-srcs",

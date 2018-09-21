@@ -25,6 +25,9 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *September 24, 2018* the `splice` component has been deleted following the 
+   deletion of mungegithub.
+
  - *July 9, 2018* `milestone` format has changed from
     ```yaml
     milestone:
