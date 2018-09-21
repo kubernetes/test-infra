@@ -71,6 +71,7 @@ type options struct {
 	hiddenOnly            bool
 	runLocal              bool
 	staticFilesLocation   string
+	templateFilesLocation string
 	spyglass              bool
 }
 
@@ -106,6 +107,7 @@ func gatherOptions() options {
 	flag.BoolVar(&o.runLocal, "run-local", false, "Serve a local copy of the UI, used by the prow/cmd/deck/runlocal script")
 	flag.BoolVar(&o.spyglass, "spyglass", false, "Use Prow built-in job viewing instead of Gubernator")
 	flag.StringVar(&o.staticFilesLocation, "static-files-location", "/static", "Path to the static files")
+	flag.StringVar(&o.templateFilesLocation, "template-files-location", "/template", "Path to the template files")
 	flag.Parse()
 	return o
 }
@@ -139,13 +141,13 @@ func main() {
 	mux.Handle("/spyglass.js", gziphandler.GzipHandler(handleSpyglass(o.spyglass)))
 
 	// Set up handlers for template pages.
-	mux.Handle("/pr", gziphandler.GzipHandler(handleSimpleTemplate(configAgent, "pr.html")))
-	mux.Handle("/command-help", gziphandler.GzipHandler(handleSimpleTemplate(configAgent, "command-help.html")))
+	mux.Handle("/pr", gziphandler.GzipHandler(handleSimpleTemplate(o.templateFilesLocation, configAgent, "pr.html")))
+	mux.Handle("/command-help", gziphandler.GzipHandler(handleSimpleTemplate(o.templateFilesLocation, configAgent, "command-help.html")))
 	mux.Handle("/plugin-help", http.RedirectHandler("/command-help", http.StatusMovedPermanently))
-	mux.Handle("/tide", gziphandler.GzipHandler(handleSimpleTemplate(configAgent, "tide.html")))
-	mux.Handle("/plugins", gziphandler.GzipHandler(handleSimpleTemplate(configAgent, "plugins.html")))
+	mux.Handle("/tide", gziphandler.GzipHandler(handleSimpleTemplate(o.templateFilesLocation, configAgent, "tide.html")))
+	mux.Handle("/plugins", gziphandler.GzipHandler(handleSimpleTemplate(o.templateFilesLocation, configAgent, "plugins.html")))
 
-	indexHandler := handleSimpleTemplate(configAgent, "index.html")
+	indexHandler := handleSimpleTemplate(o.templateFilesLocation, configAgent, "index.html")
 
 	var fallbackHandler func(http.ResponseWriter, *http.Request)
 	if o.runLocal {
@@ -176,7 +178,7 @@ func main() {
 // localOnlyMain contains logic used only when running locally, and is mutually exclusive with
 // prodOnlyMain.
 func localOnlyMain(configAgent *config.Agent, o options, mux *http.ServeMux) *http.ServeMux {
-	mux.Handle("/github-login", gziphandler.GzipHandler(handleSimpleTemplate(configAgent, "github-login.html")))
+	mux.Handle("/github-login", gziphandler.GzipHandler(handleSimpleTemplate(o.templateFilesLocation, configAgent, "github-login.html")))
 
 	if o.spyglass {
 		initSpyglass(configAgent, o, mux, nil)
@@ -342,10 +344,10 @@ func initSpyglass(configAgent *config.Agent, o options, mux *http.ServeMux, ja *
 	sg := spyglass.New(ja, []spyglass.ArtifactFetcher{spyglass.NewGCSArtifactFetcher(c)})
 
 	mux.Handle("/view/render", gziphandler.GzipHandler(handleArtifactView(sg, configAgent)))
-	mux.Handle("/view/gcs/", gziphandler.GzipHandler(handleRequestGCSJobViews(sg, configAgent)))
+	mux.Handle("/view/gcs/", gziphandler.GzipHandler(handleRequestGCSJobViews(sg, configAgent, o.templateFilesLocation)))
 	if ja != nil {
-		mux.Handle("/view/prowjob/", gziphandler.GzipHandler(handleRequestProwJobViews(sg, configAgent)))
-		mux.Handle("/view/", gziphandler.GzipHandler(handleRequestJobViews(sg, configAgent)))
+		mux.Handle("/view/prowjob/", gziphandler.GzipHandler(handleRequestProwJobViews(sg, configAgent, o.templateFilesLocation)))
+		mux.Handle("/view/", gziphandler.GzipHandler(handleRequestJobViews(sg, configAgent, o.templateFilesLocation)))
 	}
 }
 
@@ -466,13 +468,13 @@ func handleBadge(ja *jobs.JobAgent) http.HandlerFunc {
 //
 // Example:
 // - /view/prowjob/echo-test/1021530234601607168
-func handleRequestProwJobViews(sg *spyglass.Spyglass, ca *config.Agent) http.HandlerFunc {
+func handleRequestProwJobViews(sg *spyglass.Spyglass, ca *config.Agent, templateRoot string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		setHeadersNoCaching(w)
 		src := strings.TrimPrefix(r.URL.Path, "/view/")
 
-		page, err := renderSpyglass(sg, ca, src)
+		page, err := renderSpyglass(sg, ca, src, templateRoot)
 		if err != nil {
 			logrus.WithError(err).Error("error rendering spyglass page")
 			http.Error(w, "error getting views for job", http.StatusInternalServerError)
@@ -495,14 +497,14 @@ func handleRequestProwJobViews(sg *spyglass.Spyglass, ca *config.Agent) http.Han
 //
 // Example:
 // - /view/gcs/kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-large-performance/121
-func handleRequestGCSJobViews(sg *spyglass.Spyglass, ca *config.Agent) http.HandlerFunc {
+func handleRequestGCSJobViews(sg *spyglass.Spyglass, ca *config.Agent, templateRoot string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		setHeadersNoCaching(w)
 		srcData := strings.TrimPrefix(r.URL.Path, "/view/gcs/")
 		src := fmt.Sprintf("gs://%s", srcData)
 
-		page, err := renderSpyglass(sg, ca, src)
+		page, err := renderSpyglass(sg, ca, src, templateRoot)
 		if err != nil {
 			logrus.WithError(err).Error("error rendering spyglass page")
 			http.Error(w, "error getting views for job", http.StatusInternalServerError)
@@ -526,7 +528,7 @@ func handleRequestGCSJobViews(sg *spyglass.Spyglass, ca *config.Agent) http.Hand
 //
 // Example:
 // - /view/?src=gs:%2F%2Fkubernetes-jenkins%2Fpr-logs%2Fpull%2Fkubeflow_kubeflow%2F1195%2Fkubeflow-presubmit%2F2558
-func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent) http.HandlerFunc {
+func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent, templateRoot string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		setHeadersNoCaching(w)
@@ -536,7 +538,7 @@ func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent) http.Handler
 			return
 		}
 
-		page, err := renderSpyglass(sg, ca, src)
+		page, err := renderSpyglass(sg, ca, src, templateRoot)
 		if err != nil {
 			logrus.WithError(err).Error("error rendering spyglass page")
 			http.Error(w, "error getting views for job", http.StatusInternalServerError)
@@ -554,7 +556,7 @@ func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent) http.Handler
 }
 
 // renderSpyglass returns a pre-rendered Spyglass page from the given source string
-func renderSpyglass(sg *spyglass.Spyglass, ca *config.Agent, src string) (string, error) {
+func renderSpyglass(sg *spyglass.Spyglass, ca *config.Agent, src string, templateRoot string) (string, error) {
 	renderStart := time.Now()
 	artifactNames, err := sg.ListArtifacts(src)
 	if err != nil {
@@ -593,10 +595,10 @@ func renderSpyglass(sg *spyglass.Spyglass, ca *config.Agent, src string) (string
 		ViewerCache: viewerCache,
 	}
 	t := template.New("spyglass.html")
-	if _, err := prepareBaseTemplate(ca, t); err != nil {
+	if _, err := prepareBaseTemplate(templateRoot, ca, t); err != nil {
 		return "", fmt.Errorf("error preparing base template: %v", err)
 	}
-	t, err = t.ParseFiles(path.Join("template", "spyglass.html"))
+	t, err = t.ParseFiles(path.Join(templateRoot, "spyglass.html"))
 	if err != nil {
 		return "", fmt.Errorf("error parsing template: %v", err)
 	}

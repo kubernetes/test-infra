@@ -17,4 +17,5 @@ LABEL maintainer="spxtr@google.com"
 
 COPY deck /deck
 COPY static /static
+COPY template /template
 ENTRYPOINT ["/deck"]

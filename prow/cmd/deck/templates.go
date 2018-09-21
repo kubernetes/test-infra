@@ -45,25 +45,25 @@ func getConcreteBrandingFunction(ca jobs.ConfigAgent) func() config.Branding {
 	}
 }
 
-func prepareBaseTemplate(ca jobs.ConfigAgent, t *template.Template) (*template.Template, error) {
+func prepareBaseTemplate(templateRoot string, ca jobs.ConfigAgent, t *template.Template) (*template.Template, error) {
 	return t.Funcs(map[string]interface{}{
 		"settings":         makeBaseTemplateSettings,
 		"branding":         getConcreteBrandingFunction(ca),
 		"mobileFriendly":   func() bool { return true },
 		"mobileUnfriendly": func() bool { return false },
-	}).ParseFiles(path.Join("template", "base.html"))
+	}).ParseFiles(path.Join(templateRoot, "base.html"))
 }
 
-func handleSimpleTemplate(ca jobs.ConfigAgent, templateName string) http.HandlerFunc {
+func handleSimpleTemplate(templateRoot string, ca jobs.ConfigAgent, templateName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		t := template.New(templateName) // the name matters, and must match the filename.
-		if _, err := prepareBaseTemplate(ca, t); err != nil {
+		if _, err := prepareBaseTemplate(templateRoot, ca, t); err != nil {
 			logrus.WithError(err).Error("error preparing base template")
 			http.Error(w, "error preparing base template", http.StatusInternalServerError)
 			return
 		}
 		w.Header().Add("Content-Type", "text/html; charset=utf-8")
-		if _, err := t.ParseFiles(path.Join("template", templateName)); err != nil {
+		if _, err := t.ParseFiles(path.Join(templateRoot, templateName)); err != nil {
 			logrus.WithError(err).Error("error parsing template " + templateName)
 			http.Error(w, "error parsing template", http.StatusInternalServerError)
 			return
