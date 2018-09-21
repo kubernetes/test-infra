@@ -1,11 +1,7 @@
-agent_queue_id: v-81e791d9b1a186e5-------1531323149
+agent_queue_id: v-c3aa0727f94b044d-------1537468604
 description: Premerge testing for Prow
 github:
-  branch_configuration:
-  - "*"
   default_branch: master
-  pull_request_branch_filter_configuration:
-  - "*"
 teams:
 - name: infra/ev
   permission: MANAGE_BUILD_AND_READ

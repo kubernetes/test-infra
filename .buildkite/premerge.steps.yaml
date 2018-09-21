@@ -7,7 +7,7 @@
 # You may find the example pipeline steps listed here helpful: https://buildkite.com/docs/pipelines/defining-steps#example-pipeline but please
 #  note that the setup is already done, so you should not manually adjust anything through the BuildKite interface.
 #
-agent_queue: &agent_queue "queue=v-1d8f8fb001930488-------1536585179"
+agent_queue: &agent_queue "queue=v-c3aa0727f94b044d-------1537468604"
 steps:
   - label: "Prow Unit Tests"
     command: ".buildkite/run_prow_tests.sh"
