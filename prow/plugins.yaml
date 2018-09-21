@@ -369,6 +369,9 @@ plugins:
   kubernetes/perf-tests:
   - trigger
 
+  kubernetes/release:
+  - trigger
+
   kubernetes/sig-release:
   - blockade
   - owners-label
