@@ -53,11 +53,7 @@ Example ProwJob configuration:
 ```yaml
 
   - name: pull-job
-    agent: kubernetes
-    context: pull-job
     always_run: true
-    rerun_command: "/test pull-job"
-    trigger: "(?m)^/test (all|pull-job)\\s*"
     decorate: true
     spec:
       containers:
