@@ -56,10 +56,10 @@ func (o *Options) LoadConfig(config string) error {
 	return json.Unmarshal([]byte(config), o)
 }
 
-// BindOptions binds flags to options
-func (o *Options) BindOptions(flags *flag.FlagSet) {
+// AddFlags binds flags to options
+func (o *Options) AddFlags(flags *flag.FlagSet) {
 	flags.StringVar(&o.Log, "clone-log", "", "Path to the clone records log")
-	gcsupload.BindOptions(o.Options, flags)
+	o.Options.AddFlags(flags)
 }
 
 // Complete internalizes command line arguments

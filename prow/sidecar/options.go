@@ -68,10 +68,10 @@ func (o *Options) LoadConfig(config string) error {
 	return json.Unmarshal([]byte(config), o)
 }
 
-// BindOptions binds flags to options
-func (o *Options) BindOptions(flags *flag.FlagSet) {
-	gcsupload.BindOptions(o.GcsOptions, flags)
-	wrapper.BindOptions(o.WrapperOptions, flags)
+// AddFlags binds flags to options
+func (o *Options) AddFlags(flags *flag.FlagSet) {
+	o.GcsOptions.AddFlags(flags)
+	o.WrapperOptions.AddFlags(flags)
 }
 
 // Complete internalizes command line arguments

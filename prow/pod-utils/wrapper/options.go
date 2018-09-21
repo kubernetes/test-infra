@@ -21,13 +21,6 @@ import (
 	"flag"
 )
 
-// BindOptions adds flags to the FlagSet that populate
-// the wrapper options struct provided.
-func BindOptions(options *Options, fs *flag.FlagSet) {
-	fs.StringVar(&options.ProcessLog, "process-log", "", "path to the log where stdout and stderr are streamed for the process we execute")
-	fs.StringVar(&options.MarkerFile, "marker-file", "", "file we write the return code of the process we execute once it has finished running")
-}
-
 // Options exposes the configuration options
 // used when wrapping test execution
 type Options struct {
@@ -39,6 +32,13 @@ type Options struct {
 	// of the test process or an internal error code
 	// if the entrypoint fails.
 	MarkerFile string `json:"marker_file"`
+}
+
+// AddFlags adds flags to the FlagSet that populate
+// the wrapper options struct provided.
+func (o *Options) AddFlags(fs *flag.FlagSet) {
+	fs.StringVar(&o.ProcessLog, "process-log", "", "path to the log where stdout and stderr are streamed for the process we execute")
+	fs.StringVar(&o.MarkerFile, "marker-file", "", "file we write the return code of the process we execute once it has finished running")
 }
 
 // Validate ensures that the set of options are

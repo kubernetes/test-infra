@@ -82,12 +82,12 @@ func (o *Options) LoadConfig(config string) error {
 	return json.Unmarshal([]byte(config), o)
 }
 
-// BindOptions binds flags to options
-func (o *Options) BindOptions(flags *flag.FlagSet) {
+// AddFlags binds flags to options
+func (o *Options) AddFlags(flags *flag.FlagSet) {
 	flags.DurationVar(&o.Timeout, "timeout", DefaultTimeout, "Timeout for the test command.")
 	flags.DurationVar(&o.GracePeriod, "grace-period", DefaultGracePeriod, "Grace period after timeout for the test command.")
 	flags.StringVar(&o.ArtifactDir, "artifact-dir", "", "directory where test artifacts should be placed for upload to persistent storage")
-	wrapper.BindOptions(o.Options, flags)
+	o.Options.AddFlags(flags)
 }
 
 // Complete internalizes command line arguments
