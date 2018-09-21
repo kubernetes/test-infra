@@ -157,7 +157,7 @@ func TestChoose(t *testing.T) {
 			case act != nil && !tc.action:
 				t.Errorf("unexpected action: %v", act)
 			case dest != tc.destpath:
-				t.Errorf("wrong destionation %s != expected %s", dest, tc.dest)
+				t.Errorf("wrong destination %s != expected %s", dest, tc.dest)
 			}
 		})
 	}
