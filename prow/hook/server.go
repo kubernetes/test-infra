@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -31,7 +32,6 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
-	"strconv"
 )
 
 // Server implements http.Handler. It validates incoming GitHub webhooks and
@@ -55,7 +55,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if counter, err := s.Metrics.WebhookCounter.GetMetricWithLabelValues(strconv.Itoa(resp)); err != nil {
 		logrus.WithFields(logrus.Fields{
 			"status-code": resp,
-		}).WithError(err).Warn("Failed to get metric for reporting webhook status code")
+		}).WithError(err).Error("Failed to get metric for reporting webhook status code")
 	} else {
 		counter.Inc()
 	}
