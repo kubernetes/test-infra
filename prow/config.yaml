@@ -248,6 +248,10 @@ branch-protection:
         contexts:
         - cla/linuxfoundation
       repos:
+        kubespray:
+          required_status_checks:
+            contexts:
+            - Kubespray CI Pipeline
         bootkube:
           required_status_checks:
             contexts:
@@ -412,6 +416,7 @@ tide:
     kubernetes-client/csharp: squash
     kubernetes-client/gen: squash
     kubernetes-incubator/service-catalog: squash
+    kubernetes-incubator/kubespray: squash
     kubernetes-sigs/cluster-api-provider-aws: squash
     kubernetes-sigs/cluster-api-provider-gcp: squash
     kubernetes-sigs/cluster-api-provider-openstack: squash
