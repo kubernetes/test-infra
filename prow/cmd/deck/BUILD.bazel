@@ -19,11 +19,6 @@ container_image(
     # Everything under static/
     files = glob(
         ["static/**/*"],
-        exclude = [
-            "static/tide.js",
-            "static/data.js",
-            "static/plugin-help.js",
-        ],
     ),
 )
 
@@ -68,6 +63,7 @@ go_library(
         "badge.go",
         "main.go",
         "pluginhelp.go",
+        "templates.go",
         "tide.go",
     ],
     importpath = "k8s.io/test-infra/prow/cmd/deck",

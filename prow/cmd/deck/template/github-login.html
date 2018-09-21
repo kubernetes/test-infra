@@ -1,0 +1,19 @@
+{{define "title"}}GitHub Login{{end}}
+
+{{define "content"}}
+<div class="mdl-card mdl-shadow--2dp">
+  <div class="mdl-card__title">
+    <h2 class="mdl-card__title-text">Error</h2>
+  </div>
+  <div class="mdl-card__supporting-text">
+    This Prow instance is not configured to allow logging in with GitHub.
+  </div>
+  <div class="mdl-card__actions mdl-card--border">
+    <a href="/" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
+      Return to main page
+    </a>
+  </div>
+</div>
+{{end}}
+
+{{template "page" (settings mobileFriendly "pr" .)}}

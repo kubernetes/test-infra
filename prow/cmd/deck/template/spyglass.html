@@ -1,0 +1,102 @@
+{{define "title"}}Job View {{.Source}}{{end}}
+
+{{define "scripts"}}
+<script type="text/javascript" src="/static/script.js"></script>
+<script type="text/javascript">
+  var pageUrl = window.location.href;
+  var urlObj = new URL(pageUrl);
+  var src = {{.Source}}
+  var viewerCache = {{ .ViewerCache}};
+
+  // Loads views for this job
+  function loadViews() {
+    {{.Views}}.map(view => {
+      refreshView(view.Name, '{}')
+    });
+  }
+
+  // refreshView refreshes a single view. Use this function to to communicate with your viewer backend.
+  function refreshView(viewName, viewData) {
+    requestReload(viewName, createBody(viewName, viewData))
+  }
+
+  // Add a function here with a standard body response (list of matching artifacts, etc)
+  function createBody(viewName, viewData) {
+    var body = new Object();
+    body.name = viewName;
+    body.viewMatches = viewerCache[viewName];
+    body.viewData = viewData;
+    return JSON.stringify(body);
+  }
+
+  // asynchronously requests a reloaded view of the provided viewer given a body request
+  function requestReload(name, body) {
+    insertLoading(name);
+    const url = "/view/render?src="+encodeURIComponent(src)+"&name="+encodeURIComponent(name);
+    var req = new XMLHttpRequest();
+    req.open('POST', url, true);
+    req.setRequestHeader('Content-Type', 'application/json')
+    req.onreadystatechange = function() {
+      if (req.readyState === 4 && req.status === 200) {
+        var lensJson = JSON.parse(req.responseText);
+        insertView(name, lensJson.HTMLView);
+      } else if (req.readyState === 4 && !(req.status === 200)) {
+       insertView(name, "<div>Error: " + req.status +"</div>");
+      }
+
+    }
+    req.send(body);
+  }
+
+  // Insert rendered view into page and remove loading wheel
+  function insertView(name, content) {
+    document.getElementById(name + "-loading").style.display = "none";
+    document.getElementById(name + "-view").innerHTML = content;
+  }
+
+  // Show loading wheel over view
+  function insertLoading(name) {
+    document.getElementById(name + "-loading").style.display = "block";
+  }
+
+  window.onload = loadViews;
+
+  // Show all lines in specified log
+  function showAllLines(logID) {
+    document.getElementById(logID + "-show-all").style.display = "none";
+    var log = document.getElementById(logID);
+    var skipped = log.querySelectorAll(".skipped");
+    for (var i = 0; i < skipped.length; i++) {
+      skipped[i].classList.remove("skipped");
+    }
+    // hide any remaining "show hidden lines" buttons
+    var showSkipped = log.querySelectorAll(".show-skipped");
+    for (var i = 0; i < showSkipped.length; i++) {
+      showSkipped[i].style.display = "none";
+    }
+  }
+
+  function showLines(linesID, skipID) {
+    // show a single group of hidden lines
+    document.getElementById(linesID).classList.remove("skipped");
+    // hide the corresponding button
+    document.getElementById(skipID).style.display = "none";
+  }
+
+  window.onload = loadViews;
+</script>
+{{end}}
+
+{{define "content"}}
+{{range .Views}}
+<div class="mdl-card mdl-shadow--2dp lens-card">
+<div class="mdl-card__title lens-title"><h3 class="mdl-card__title-text">{{.Title}}</h3></div>
+<div id="{{.Name}}-view-container" class="lens-view-content mdl-card__supporting-text">
+  <div class="mdl-spinner mdl-js-spinner is-active lens-card-loading" id="{{.Name}}-loading"></div>
+    <div id="{{.Name}}-view"></div>
+  </div>
+</div>
+{{end}}
+{{end}}
+
+{{template "page" (settings mobileUnfriendly "spyglass" .)}}

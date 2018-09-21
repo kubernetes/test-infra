@@ -15,7 +15,7 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DIR
-cd static
+cd localdata
 HOST="https://prow.k8s.io"
 if [[ $1 == "openshift" ]]; then
 	HOST="https://deck-ci.svc.ci.openshift.org"

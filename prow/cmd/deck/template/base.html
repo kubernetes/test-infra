@@ -1,0 +1,51 @@
+{{define "page"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  {{if .MobileFriendly}}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  {{end}}
+  <title>{{block "title" .Arguments}}Prow{{ end }}</title>
+  <link rel="stylesheet" type="text/css" href="/static/style.css">
+  <link rel="stylesheet" type="text/css" href="/static/extensions/style.css">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
+  <script type="text/javascript" src="/static/extensions/script.js"></script>
+  <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+  {{block "scripts" .Arguments}}{{end}}
+</head>
+<body{{if branding.BackgroundColor}} style="background-color: {{branding.BackgroundColor}};"{{end}}>
+<div id="alert-container"></div>
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+  <header class="mdl-layout__header"{{if branding.HeaderColor}} style="background-color: {{branding.HeaderColor}};"{{end}}>
+    <div class="mdl-layout__header-row">
+      <a href="https://github.com/kubernetes/test-infra/tree/master/prow#prow"
+         class="logo"><img src="/static/{{or branding.Logo "logo.svg"}}" alt="kubernetes logo" class="logo"/></a>
+      <span class="mdl-layout-title header-title">{{template "title"}}</span>
+    </div>
+  </header>
+  <div class="mdl-layout__drawer">
+    <span class="mdl-layout-title">Prow Dashboard</span>
+    <nav class="mdl-navigation">
+      <a class="mdl-navigation__link{{if eq .PageName "index"}} mdl-navigation__link--current{{end}}" href="/">Prow Status</a>
+      <a class="mdl-navigation__link{{if eq .PageName "pr"}} mdl-navigation__link--current{{end}}" href="/pr">PR Status</a>
+      <a class="mdl-navigation__link{{if eq .PageName "command-help"}} mdl-navigation__link--current{{end}}" href="/command-help">Command Help</a>
+      <a class="mdl-navigation__link{{if eq .PageName "tide"}} mdl-navigation__link--current{{end}}" href="/tide">Tide Status</a>
+      <a class="mdl-navigation__link{{if eq .PageName "plugins"}} mdl-navigation__link--current{{end}}" href="/plugins">Plugins</a>
+    </nav>
+  </div>
+  <div id="loading-progress" class="mdl-progress mdl-js-progress mdl-progress__indeterminate hidden"></div>
+  <main id="main-container" class="mdl-layout__content">
+    {{block "content" .Arguments}}{{end}}
+  </main>
+</div>
+{{block "extra content" .Arguments}}{{end}}
+<div id="toast" class="mdl-js-snackbar mdl-snackbar">
+  <div class="mdl-snackbar__text"></div>
+  <button class="mdl-snackbar__action" type="button"></button>
+</div>
+</body>
+</html>
+{{end}}
