@@ -16,9 +16,12 @@ container_image(
     data_path = ".",
     # Add files under into the root directory.
     directory = "/",
-    # Everything under static/
+    # Everything under static/ and template/
     files = glob(
-        ["static/**/*"],
+        [
+            "static/**/*",
+            "template/**/*",
+        ],
     ),
 )
 
