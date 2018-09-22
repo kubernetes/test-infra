@@ -1182,7 +1182,7 @@ presubmits:
       preset-service-account: "true"
     name: pull-security-kubernetes-cross
     rerun_command: /test pull-security-kubernetes-cross
-    run_if_changed: ^(build\/|hack\/lib\/)|(Makefile)$
+    run_if_changed: ^((build\/|hack\/lib\/).*)|(.*Makefile.*)$
     skip_branches:
     - release-1.9
     spec:
