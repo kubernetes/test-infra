@@ -1,4 +1,4 @@
-"use strict";
+import "dialog-polyfill";
 
 function getParameterByName(name) {  // http://stackoverflow.com/a/5158301/3694
     const match = new RegExp('[?&]' + name + '=([^&/]*)').exec(window.location.search);
@@ -351,7 +351,7 @@ function redrawHelpTable(repo, helpMap) {
     while (tableBody.childElementCount !== 0) {
         tableBody.removeChild(tableBody.firstChild);
     }
-    const names = helpMap.keys();
+    const names = Array.from(helpMap.keys());
     const commandsWithPluginName = [];
     for (let name of names) {
         helpMap.get(name).plugin.Commands.forEach((command) => {
@@ -436,3 +436,6 @@ function extractCommandName(commandExample) {
     }
     return command[0].slice(1).split("-").join("_");
 }
+
+// This is referenced by name in the HTML.
+window.redraw = redraw;

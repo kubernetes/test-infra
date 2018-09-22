@@ -1,4 +1,4 @@
-'use strict';
+import "dialog-polyfill";
 
 /**
  * A Tide Query helper class that checks whether a pr is covered by the query.
@@ -343,11 +343,7 @@ function getFullPRContext(builds, contexts) {
             });
         }
     }
-    const fullContexts = [];
-    for (let value of contextMap.values()) {
-        fullContexts.push(value);
-    }
-    return fullContexts;
+    return Array.from(contextMap.values());
 }
 
 /**
