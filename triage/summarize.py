@@ -26,6 +26,7 @@ import argparse
 import functools
 import hashlib
 import json
+import logging
 import os
 import re
 import sys
@@ -87,8 +88,8 @@ def normalize(s):
         # for long strings, remove repeated lines!
         s = re.sub(r'(?m)^(.*\n)\1+', r'\1', s)
 
-    if len(s) > 200000:  # ridiculously long test output
-        s = s[:100000] + '\n...[truncated]...\n' + s[-100000:]
+    if len(s) > 10000:  # ridiculously long test output
+        s = s[:5000] + '\n...[truncated]...\n' + s[-5000:]
 
     return s
 
@@ -164,18 +165,18 @@ def file_memoize(description, name):
         def wrapper(*args, **kwargs):
             if os.path.exists(name):
                 data = json.load(open(name))
-                print 'done (cached)', description
+                logging.info('done (cached) %s', description)
                 return data
             data = func(*args, **kwargs)
             json.dump(data, open(name, 'w'))
-            print 'done', description
+            logging.info('done %s', description)
             return data
         wrapper.__wrapped__ = func
         return wrapper
     return inner
 
 
-@file_memoize('loading failed tests', 'failed.json')
+@file_memoize('loading failed tests', 'memo_load_failures.json')
 def load_failures(builds_file, tests_files):
     builds = {}
     for build in json.load(open(builds_file)):
@@ -190,7 +191,8 @@ def load_failures(builds_file, tests_files):
 
     failed_tests = {}
     for tests_file in tests_files:
-        for test in json.load(open(tests_file)):
+        for line in open(tests_file, 'r'):
+            test = json.loads(line)
             failed_tests.setdefault(test['name'], []).append(test)
     for tests in failed_tests.itervalues():
         tests.sort(key=lambda t: t['build'])
@@ -239,24 +241,24 @@ def cluster_test(tests):
             else:
                 clusters[fnorm] = [test]
         if time.time() > start + 60:
-            print 'bailing early, taking too long!'
+            logging.info('bailing early, taking too long!')
             break
     return clusters
 
 
-@file_memoize('clustering inside each test', 'failed_clusters_local.json')
+@file_memoize('clustering inside each test', 'memo_cluster_local.json')
 def cluster_local(failed_tests):
     """Cluster together the failures for each test. """
     clustered = {}
+    logging.info("Clustering failures for each test...")
     for test_name, tests in sorted(failed_tests.iteritems(), key=lambda x: len(x[1]), reverse=True):
-        print len(tests), test_name,
+        logging.info("%d %s", len(tests), test_name)
         sys.stdout.flush()
         clustered[test_name] = cluster_test(tests)
-        print len(clustered[test_name])
     return clustered
 
 
-@file_memoize('clustering across tests', 'failed_clusters_global.json')
+@file_memoize('clustering across tests', 'memo_cluster_global.json')
 def cluster_global(clustered, previous_clustered):
     """Combine together clustered failures for each test.
 
@@ -269,29 +271,28 @@ def cluster_global(clustered, previous_clustered):
         {failure_text: [(test_name, [failure_1, failure_2, ...]), ...], ...}
     """
     clusters = {}
-
+    logging.info("Combining clustered failures for each test...")
     if previous_clustered:
         # seed clusters using output from the previous run
         n = 0
         for cluster in previous_clustered:
             key = cluster['key']
             if key != normalize(key):
-                print key
-                print normalize(key)
+                logging.info(key)
+                logging.info(normalize(key))
                 n += 1
                 continue
             clusters[cluster['key']] = {}
-        print 'Seeding with %d previous clusters' % len(clusters)
+        logging.info('Seeding with %d previous clusters', len(clusters))
         if n:
-            print '!!! %d clusters lost from different normalization! !!!' % n
-
+            logging.warn('!!! %d clusters lost from different normalization! !!!', n)
 
     for n, (test_name, cluster) in enumerate(
             sorted(clustered.iteritems(),
                    key=lambda (k, v): sum(len(x) for x in v.itervalues()),
                    reverse=True),
             1):
-        print '%d/%d %d %s' % (n, len(clustered), len(cluster), test_name)
+        logging.info('%d/%d %d %s', n, len(clustered), len(cluster), test_name)
         for key, tests in sorted(cluster.iteritems(), key=lambda x: len(x[1]), reverse=True):
             if key in clusters:
                 clusters[key].setdefault(test_name, []).extend(tests)
@@ -498,6 +499,17 @@ def render_slice(data, builds, prefix='', owner=''):
             builds_out[path] = build
     return {'clustered': clustered, 'builds': builds_to_columns(builds_out)}
 
+def setup_logging():
+    """Initialize logging to screen"""
+    # See https://docs.python.org/2/library/logging.html#logrecord-attributes
+    # [IWEF]mmdd HH:MM:SS.mmm] msg
+    fmt = '%(levelname).1s%(asctime)s.%(msecs)03d] %(message)s'  # pylint: disable=line-too-long
+    datefmt = '%m%d %H:%M:%S'
+    logging.basicConfig(
+        level=logging.INFO,
+        format=fmt,
+        datefmt=datefmt,
+    )
 
 def parse_args(args):
     parser = argparse.ArgumentParser()
@@ -512,18 +524,25 @@ def parse_args(args):
 
 
 def main(args):
+    setup_logging()
     builds, failed_tests = load_failures(args.builds, args.tests)
 
     previous_clustered = None
     if args.previous:
-        print 'loading previous'
+        logging.info('loading previous')
         previous_clustered = json.load(args.previous)['clustered']
 
+    start = time.time()
     clustered_local = cluster_local(failed_tests)
+    elapsed = time.time() - start
+    logging.info('%d local clusters in %dm%ds', len(clustered_local), elapsed / 60, elapsed % 60)
+
+    start = elapsed
     clustered = cluster_global(clustered_local, previous_clustered)
+    elapsed = time.time() - start
+    logging.info('%d clusters in %dm%ds', len(clustered_local), elapsed / 60, elapsed % 60)
 
-    print '%d clusters' % len(clustered)
-
+    start = elapsed
     data = render(builds, clustered)
 
     if args.owners:
@@ -546,7 +565,8 @@ def main(args):
                 json.dump(render_slice(data, builds, prefix='', owner=owner),
                           open(args.output_slices.replace('PREFIX', 'sig-' + owner), 'w'),
                           sort_keys=True)
-
+    elapsed = time.time() - start
+    logging.info('rendered results in %dm%ds', elapsed / 60, elapsed % 60)
 
 if __name__ == '__main__':
     main(parse_args(sys.argv[1:]))
