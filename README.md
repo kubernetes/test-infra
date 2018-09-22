@@ -107,6 +107,7 @@ you'll need to do the following:
     - Postsubmit jobs run after merging code
     - Periodic job run on a timed basis
     - You can find more prowjob definitions at [how-to-add-new-jobs](prow#how-to-add-new-jobs)
+  - Please utilize the [podutils](prow/pod-utilities.md#how-to-configure) to create modern prowjobs!
   - Scenario args: (if you are using [bootstrap.py](jenkins/bootstrap.py) instead of [podutils](prow/pod-utilities.md))
     - [Scenarios](scenarios) are python wrappers used by our entry point script [bootstrap.py](jenkins/bootstrap.py).
     - You can append scenario/kubetest args inline in your prowjob definition, example:
