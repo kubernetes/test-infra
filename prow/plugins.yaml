@@ -558,6 +558,10 @@ plugins:
   - wip
   - hold
 
+  cncf/apisnoop:
+  - cat # /meow replies with cat pictures
+  - dog # /bark replies with dog pictures
+
 external_plugins:
   kubernetes/community:
   - name: needs-rebase
