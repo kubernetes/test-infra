@@ -37,7 +37,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180918-762ed5b64-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180924-8e8468033-master
         resources:
           requests:
             memory: "6Gi"
@@ -79,7 +79,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180918-762ed5b64-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180924-8e8468033-master
         resources:
           requests:
             memory: "6Gi"
@@ -120,7 +120,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180918-762ed5b64-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180924-8e8468033-master
         resources:
           requests:
             memory: "6Gi"
@@ -139,7 +139,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180918-762ed5b64-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180924-8e8468033-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -192,7 +192,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180918-762ed5b64-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180924-8e8468033-1.10
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -245,7 +245,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180918-762ed5b64-1.9
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180924-8e8468033-1.9
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -297,7 +297,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180918-762ed5b64-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180924-8e8468033-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
