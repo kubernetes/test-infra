@@ -12,7 +12,7 @@ periodics:
   always_run: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180919-d79396d82-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180924-8e8468033-experimental
       command:
       - "./hack/ci/build-all.sh"
 # conformance test against kubernetes master branch with `kind`
@@ -25,7 +25,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180919-d79396d82-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180924-8e8468033-experimental
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
@@ -73,7 +73,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180919-d79396d82-experimental
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180924-8e8468033-experimental
       env:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"

@@ -22,7 +22,7 @@ periodics:
       - --test=false
       - --timeout=60m
       - --upgrade_args=--ginkgo.focus=\[Feature:EtcdUpgrade\] --etcd-upgrade-storage=etcd2 --etcd-upgrade-version=2.2.1
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180918-762ed5b64-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180924-8e8468033-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gce-ha-master
@@ -44,7 +44,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:HAMaster\] --minStartupPods=8
       - --timeout=220m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180918-762ed5b64-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180924-8e8468033-master
 
 - interval: 24h
   name: ci-kubernetes-e2e-gce-min-node-permissions
@@ -67,4 +67,4 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=500m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180918-762ed5b64-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180924-8e8468033-master
