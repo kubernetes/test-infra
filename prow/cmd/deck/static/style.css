@@ -482,12 +482,12 @@ Plugin Help style
     width: calc(100% - 16px);
 }
 
-#main-container {
+#pr-container {
     display: flex;
     flex-direction: column;
 }
 
-#main-container .message {
+#pr-container .message {
     padding-top: 72px;
     text-align: center;
 }
