@@ -99,9 +99,15 @@ git_repository(
     tag = "0.14.0",
 )
 
-load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "npm_install")
+load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "yarn_install")
 
-node_repositories(package_json = ["//triage:package.json"])
+node_repositories(package_json = ["//:package.json"])
+
+yarn_install(
+    name = "npm",
+    package_json = "//:package.json",
+    yarn_lock = "//:yarn.lock",
+)
 
 load(":test_infra.bzl", "http_archive_with_pkg_path")
 
