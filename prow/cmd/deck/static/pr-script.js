@@ -102,7 +102,7 @@ function getPRQuery(q) {
  * @param {Object} prData
  */
 function redraw(prData) {
-    const mainContainer = document.querySelector("#main-container");
+    const mainContainer = document.querySelector("#pr-container");
     while (mainContainer.firstChild) {
         mainContainer.removeChild(mainContainer.firstChild);
     }
@@ -225,7 +225,7 @@ window.onload = () => {
         loadProgress(false);
     }, () => {
         loadProgress(false);
-        const mainContainer = document.querySelector("#main-container");
+        const mainContainer = document.querySelector("#pr-container");
         mainContainer.appendChild(createMessage("Something wrongs! We could not fulfill your request"));
     });
     showAlerts();
@@ -359,7 +359,7 @@ function loadPrStatus(prData) {
         tideQueries.push(new TideQuery(query));
     }
 
-    const container = document.querySelector("#main-container");
+    const container = document.querySelector("#pr-container");
     container.appendChild(createSearchCard());
     if (!prData.PullRequestsWithContexts || prData.PullRequestsWithContexts.length === 0) {
         const msg = createMessage("No open PRs found", "");
