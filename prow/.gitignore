@@ -2,7 +2,6 @@ cmd/hook/hook
 cmd/line/line
 cmd/sinker/sinker
 cmd/deck/deck
-cmd/splice/splice
 cmd/marque/marque
 cmd/tot/tot
 cmd/tot/fallbackcheck/fallbackcheck
