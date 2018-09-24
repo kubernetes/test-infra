@@ -84,6 +84,10 @@ var (
 
 const (
 	acceptNone = ""
+	// Abort requests that don't return in 5 mins. Longest graphql calls can
+	// take up to 2 minutes. This limit should ensure all successful calls return
+	// but will prevent an indefinite stall if GitHub never responds.
+	maxRequestTime = 5 * time.Minute
 )
 
 // Force the compiler to check if the TokenSource is implementing correctly.
@@ -201,10 +205,13 @@ func (c *Client) Throttle(hourlyTokens, burst int) {
 //   this client to bypass the cache if it is temporarily unavailable.
 func NewClient(getToken func() []byte, bases ...string) *Client {
 	return &Client{
-		logger:   logrus.WithField("client", "github"),
-		time:     &standardTime{},
-		gqlc:     githubql.NewClient(&http.Client{Transport: &oauth2.Transport{Source: newReloadingTokenSource(getToken)}}),
-		client:   &http.Client{},
+		logger: logrus.WithField("client", "github"),
+		time:   &standardTime{},
+		gqlc: githubql.NewClient(&http.Client{
+			Timeout:   maxRequestTime,
+			Transport: &oauth2.Transport{Source: newReloadingTokenSource(getToken)},
+		}),
+		client:   &http.Client{Timeout: maxRequestTime},
 		bases:    bases,
 		getToken: getToken,
 		dry:      false,
@@ -221,10 +228,13 @@ func NewClient(getToken func() []byte, bases ...string) *Client {
 //   this client to bypass the cache if it is temporarily unavailable.
 func NewDryRunClient(getToken func() []byte, bases ...string) *Client {
 	return &Client{
-		logger:   logrus.WithField("client", "github"),
-		time:     &standardTime{},
-		gqlc:     githubql.NewClient(&http.Client{Transport: &oauth2.Transport{Source: newReloadingTokenSource(getToken)}}),
-		client:   &http.Client{},
+		logger: logrus.WithField("client", "github"),
+		time:   &standardTime{},
+		gqlc: githubql.NewClient(&http.Client{
+			Timeout:   maxRequestTime,
+			Transport: &oauth2.Transport{Source: newReloadingTokenSource(getToken)},
+		}),
+		client:   &http.Client{Timeout: maxRequestTime},
 		bases:    bases,
 		getToken: getToken,
 		dry:      true,
