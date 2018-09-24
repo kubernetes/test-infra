@@ -121,6 +121,28 @@ func TestQueryChange(t *testing.T) {
 			},
 		},
 		{
+			name:       "one up-to-date change, same timestamp",
+			lastUpdate: now.Truncate(time.Second),
+			changes: map[string][]gerrit.ChangeInfo{
+				"foo": {
+					{
+						Project:         "bar",
+						ID:              "1",
+						CurrentRevision: "1-1",
+						Updated:         now.Format(layout),
+						Revisions: map[string]gerrit.RevisionInfo{
+							"1-1": {
+								Created: now.Format(layout),
+							},
+						},
+					},
+				},
+			},
+			revisions: map[string][]string{
+				"foo": {"1-1"},
+			},
+		},
+		{
 			name:       "one up-to-date change but stale commit",
 			lastUpdate: now.Add(-time.Minute),
 			changes: map[string][]gerrit.ChangeInfo{
