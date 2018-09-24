@@ -41,7 +41,7 @@ serves as a base of comparison for determining the pull request's coverage delta
 3. Variables passed through flags. Here is a list of these variables.
 
     |flag       |meaning                            |sample value |
-    | --------- |:---------------------------------:| ---------- :|
+    | --------- | --------------------------------- | ----------- |
     |artifacts  |local directory to dump artifacts  |./artifacts  |
     |cov-target |target directories to run coverage |./pkg1 ./pkg2|
     |cov-threshold-percentage|coverage threshold in percentage|85 | 
