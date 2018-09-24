@@ -2167,13 +2167,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-upgrade-1-11-1-12
 - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-stable-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-upgrade-stable-master
-# kubeadm network tests
-- name: ci-kubernetes-e2e-kubeadm-gce-ipvs
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-ipvs
-- name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-cni-flannel
-- name: ci-kubernetes-e2e-kubeadm-gce-dns-coredns
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-dns-coredns
 # packages tests
 - name: periodic-kubernetes-e2e-packages-pushed
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-packages-pushed
@@ -5975,18 +5968,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
     base_options: include-filter-by-regex=\[sig-network\]
     description: network gci-gce alpha features e2e tests for master branch
-    alert_options:
-      alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-  - name: kubeadm-gce-ipvs
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-ipvs
-    alert_options:
-      alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-  - name: kubeadm-gce-cni-flannel
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
-    alert_options:
-      alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-  - name: kubeadm-gce-dns-coredns
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-dns-coredns
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
   - name: containerd-e2e-gci-gce-ingress
