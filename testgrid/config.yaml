@@ -4507,6 +4507,12 @@ dashboards:
     test_group_name: periodic-kubernetes-bazel-build-1-12
   - name: periodic-kubernetes-bazel-test-1-12
     test_group_name: periodic-kubernetes-bazel-test-1-12
+  - name: kubeadm-gce-1-11-on-1-12
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
+  - name: kubeadm-gce-1-12
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-12
+  - name: kubeadm-gce-upgrade-1-11-1-12
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-11-1-12
 
 - name: sig-release-1.12-blocking
   dashboard_tab:
@@ -4561,6 +4567,10 @@ dashboards:
     test_group_name: periodic-kubernetes-bazel-build-1-12
   - name: periodic-kubernetes-bazel-test-1-12
     test_group_name: periodic-kubernetes-bazel-test-1-12
+  - name: kubeadm-gce-1-11-on-1-12
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
+  - name: kubeadm-gce-1-12
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-12
 
 - name: sig-release-1.11-all
   dashboard_tab:
