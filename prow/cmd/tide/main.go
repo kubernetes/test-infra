@@ -50,6 +50,9 @@ type options struct {
 	jobConfigPath string
 	cluster       string
 
+	syncThrottle   int
+	statusThrottle int
+
 	githubEndpoint  flagutil.Strings
 	githubTokenFile string
 }
@@ -67,6 +70,9 @@ func gatherOptions() options {
 	flag.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
 	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	flag.StringVar(&o.cluster, "cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
+
+	flag.IntVar(&o.syncThrottle, "sync-hourly-tokens", 800, "The maximum number of tokens per hour to be used by the sync controller.")
+	flag.IntVar(&o.statusThrottle, "status-hourly-tokens", 400, "The maximum number of tokens per hour to be used by the status controller.")
 
 	flag.Var(&o.githubEndpoint, "github-endpoint", "GitHub's API endpoint.")
 	flag.StringVar(&o.githubTokenFile, "github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
@@ -130,8 +136,8 @@ func main() {
 	// The sync loop should have a much lower burst allowance than the status
 	// loop which may need to update many statuses upon restarting Tide after
 	// changing the context format or starting Tide on a new repo.
-	ghcSync.Throttle(800, 20)
-	ghcStatus.Throttle(400, 200)
+	ghcSync.Throttle(o.syncThrottle, 3*tokensPerIteration(o.syncThrottle, configAgent.Config().Tide.SyncPeriod))
+	ghcStatus.Throttle(o.statusThrottle, o.statusThrottle/2)
 
 	gc, err := git.NewClient()
 	if err != nil {
@@ -186,4 +192,9 @@ func sync(c *tide.Controller) {
 	if err := c.Sync(); err != nil {
 		logrus.WithError(err).Error("Error syncing.")
 	}
+}
+
+func tokensPerIteration(hourlyTokens int, iterPeriod time.Duration) int {
+	tokenRate := float64(hourlyTokens) / float64(time.Hour)
+	return int(tokenRate * float64(iterPeriod))
 }
