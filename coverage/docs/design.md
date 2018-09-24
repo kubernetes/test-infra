@@ -7,13 +7,15 @@ The tool has two major modes of operation, based on whether it is running in pos
 Post-submit workflow runs on a specific commit on a branch and is typically triggered when commits are pushed to a branch (e.g. when a PR merges). 
 Pre-submit workflow runs on the merge commit for a pull request and is typically triggered by PR creation or update.
 
-The tool performs the following additional operations when running in pre-submit workflow 
-  - after running code coverage on target directories,  it compares the new result with the one stored by 
+The tool performs the following additional operations when running in pre-submit mode 
+  - after running code coverage on target directories, it compares the new result with the one stored by 
   the post-submit workflow and generate coverage difference. 
   - it reports coverage changes (calculated above) to the pull request as a comment by a robot github account. 
   - it uses go tools to generate line by line coverage and stores the result in html, 
   with a link as part of the robot comment mentioned above.
   - it can be configured to return with a non-zero status if coverage falls below threshold.
+
+Note that pre-submit mode can not be used without the post-submit mode, because post-submit results are consumed as a baseline by the pre-submit mode.
 
 ## Users
 The pre-submit mode is intended for a developer to see the impact on code coverage of his/her commit. 
@@ -111,7 +113,7 @@ Here is [an example of a Makefile](https://github.com/kubernetes/test-infra/blob
 Prow is tested working well with this Code Coverage tool. It's usage is described below
 
 - Prow can be used as the system to handle Github events mentioned in the two workflows. 
-- Prow, in both workflows, supplies the flags & secrets for the binary, clones the repository and uploads logs & artifacts to GCS bucket.
+- Prow, in both workflows, supplies the flags and secrets for the binary, clones the repository, and uploads logs & artifacts to GCS bucket.
 
   - The pre-submit prow job is triggered by any new commit to a PR. At the end of the binary run, it can return a pass or fail status context to Github. [Tide](https://github.com/kubernetes/test-infra/tree/master/prow/cmd/tide) can use that status to block PR with low coverage.
 
