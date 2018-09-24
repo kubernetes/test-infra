@@ -245,7 +245,7 @@ func (h *gerritInstanceHandler) queryChangesForProject(project string, lastUpdat
 
 			// process if updated later than last updated
 			// stop if update was stale
-			if updated.After(lastUpdate) {
+			if !updated.Before(lastUpdate) {
 				// we need to make sure the change update is from a new commit change
 				rev, ok := change.Revisions[change.CurrentRevision]
 				if !ok {
@@ -259,7 +259,7 @@ func (h *gerritInstanceHandler) queryChangesForProject(project string, lastUpdat
 					continue
 				}
 
-				if !created.After(lastUpdate) {
+				if created.Before(lastUpdate) {
 					// stale commit
 					continue
 				}

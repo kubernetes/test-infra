@@ -148,7 +148,8 @@ func (c *Controller) SaveLastSync(lastSync time.Time) error {
 // Sync looks for newly made gerrit changes
 // and creates prowjobs according to presubmit specs
 func (c *Controller) Sync() error {
-	syncTime := time.Now()
+	// gerrit timestamp only has second precision
+	syncTime := time.Now().Truncate(time.Second)
 
 	for instance, changes := range c.gc.QueryChanges(c.lastUpdate, c.ca.Config().Gerrit.RateLimit) {
 		for _, change := range changes {
