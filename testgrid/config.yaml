@@ -6831,7 +6831,7 @@ dashboards:
 
 - name: istio-postsubmits
   dashboard_tab:
-  - name: postsubmit
+  - name: unit-tests
     test_group_name: istio-istio-postsubmit
     alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
