@@ -6820,7 +6820,7 @@ dashboards:
     test_group_name: istio-circleci-e2e-pilot-auth-v1alpha3-v2-presubmit
   - name: circleci-e2e-pilot-noauth-v1alpha3-v2
     test_group_name: istio-circleci-e2e-pilot-noauth-v1alpha3-v2-presubmit
-  - name: circleci-test
+  - name: circleci-unit-tests
     test_group_name: istio-circleci-test-presubmit
   - name: circleci-racetest
     test_group_name: istio-circleci-racetest-presubmit
