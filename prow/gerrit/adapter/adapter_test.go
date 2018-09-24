@@ -60,6 +60,10 @@ func (f *fgc) SetReview(instance, id, revision, message string) error {
 	return nil
 }
 
+func (f *fgc) GetBranchRevision(instance, project, branch string) (string, error) {
+	return "abc", nil
+}
+
 func TestMakeCloneURI(t *testing.T) {
 	cases := []struct {
 		name     string
@@ -235,6 +239,9 @@ func TestProcessChange(t *testing.T) {
 			}
 			if fkc.prowjobs[0].Spec.Refs.Pulls[0].Ref != tc.pjRef {
 				t.Errorf("tc %s - ref should be %s, got %s", tc.name, tc.pjRef, fkc.prowjobs[0].Spec.Refs.Pulls[0].Ref)
+			}
+			if fkc.prowjobs[0].Spec.Refs.BaseSHA != "abc" {
+				t.Errorf("tc %s - BaseSHA should be abc, got %s", tc.name, fkc.prowjobs[0].Spec.Refs.BaseSHA)
 			}
 		}
 	}
