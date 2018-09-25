@@ -22,8 +22,8 @@ periodics:
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-nodes=100
-      - --gcp-project-type=scalability-project
-      - --gcp-zone=us-east1-b
+      - --gcp-project=k8s-jenkins-gci-scalability
+      - --gcp-zone=us-central1-f
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --minStartupPods=8
       - --timeout=120m
@@ -51,7 +51,7 @@ periodics:
       - --extract=ci/k8s-beta
       - --gcp-node-image=gci
       - --gcp-nodes=100
-      - --gcp-project-type=scalability-project
+      - --gcp-project=k8s-e2e-gce-scalability-1-1
       - --gcp-zone=us-east1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --minStartupPods=8
@@ -81,7 +81,7 @@ periodics:
       - --extract=ci/k8s-stable1
       - --gcp-node-image=gci
       - --gcp-nodes=100
-      - --gcp-project-type=scalability-project
+      - --gcp-project=k8s-e2e-gci-gce-scale-1-4
       - --gcp-zone=us-east1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --minStartupPods=8
@@ -111,7 +111,7 @@ periodics:
       - --extract=ci/k8s-stable2
       - --gcp-node-image=gci
       - --gcp-nodes=100
-      - --gcp-project-type=scalability-project
+      - --gcp-project=k8s-e2e-gci-gce-scale-1-4
       - --gcp-zone=us-east1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --minStartupPods=8
@@ -391,8 +391,8 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-node-size=n1-standard-4
       - --gcp-nodes=3
-      - --gcp-project-type=scalability-project
-      - --gcp-zone=us-east1-b
+      - --gcp-project=k8s-jenkins-kubemark
+      - --gcp-zone=us-central1-f
       - --kubemark
       - --kubemark-nodes=100
       - --provider=gce
@@ -422,8 +422,8 @@ periodics:
       - --extract=ci/latest-1.9
       - --gcp-node-size=n1-standard-2
       - --gcp-nodes=1
-      - --gcp-project-type=scalability-project
-      - --gcp-zone=us-east1-b
+      - --gcp-project=k8s-jenkins-kubemark
+      - --gcp-zone=us-central1-f
       - --kubemark
       - --kubemark-nodes=5
       - --provider=gce
