@@ -35,18 +35,18 @@ The tool takes input from three sources
     - it uses git attribute to filter files (see latter section on workflows for details)
 2. (In pre-submit workflow only) It reads previously stored post-submit code coverage profile from gcs bucket. The profile
 serves as a base of comparison for determining the pull request's coverage delta.
-  - The value of following three flags will be used to locate the code coverage profile in GCS bucket,
-  note that the values are examples and the first two values should be different for your own project
-    - "--postsubmit-gcs-bucket=knative-prow"
-    - "--postsubmit-job-name=post-knative-serving-go-coverage"
-    - "--profile-name=coverage_profile.txt"
 3. Variables passed through flags. Here is a list of these variables.
 
     |flag       |meaning                            |sample value |
     | --------- | --------------------------------- | ----------- |
     |artifacts  |local directory to dump artifacts  |./artifacts  |
     |cov-target |target directories to run coverage |./pkg1 ./pkg2|
-    |cov-threshold-percentage|coverage threshold in percentage|85 | 
+    |cov-threshold-percentage|coverage threshold in percentage|85 |
+    |profile-name|file name for code coverage profile|coverage_profile.txt|
+    |postsubmit-gcs-bucket|gcs bucket that stores code coverage profile in post-submit run|knative-prow|
+    |postsubmit-job-name|job name in gcs bucket that stores code coverage profile in post-submit run|post-knative-serving-go-coverage|
+    
+Note that the last two flags are for pre-submit mode only. The last three flags are used to locate the code coverage profile in GCS bucket.
 
 Here is the step-by-step description of the pre-submit and post-submit workflows
 
@@ -62,6 +62,7 @@ The tool produces & stores coverage profile for later presubmit jobs to compare 
     - filter based on git attribute to ignore files with the following git attributes
       - linguist-generated
       - coverage-excluded
+      An example of how these git attribute is used can be found [here](https://github.com/knative/serving/blob/master/.gitattributes)
     - Stores in the XML format, that is used by TestGrid, and dump it in artifacts directory
       - The XML should be a valid JUnit XML file. See 
   [JUnit XML format](https://www.ibm.com/support/knowledgecenter/en/SSQ2R2_14.1.0/com.ibm.rsar.analysis.codereview.cobol.doc/topics/cac_useresults_junit.html)
