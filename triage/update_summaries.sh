@@ -15,7 +15,7 @@
 # limitations under the License.
 
 set -exu
-cd $(dirname $0)
+cd "$(dirname "$0")"
 
 if [[ -e ${GOOGLE_APPLICATION_CREDENTIALS-} ]]; then
   gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
@@ -29,10 +29,31 @@ table_mtime=$(bq --format=json show 'k8s-gubernator:build.week' | jq -r '(.lastM
 if [[ ! -e triage_builds.json ]] || [ $(stat -c%Y triage_builds.json) -lt $table_mtime ]; then
   echo "UPDATING" $table_mtime
   bq --headless --format=json query -n 1000000 "select path, timestamp_to_sec(started) started, elapsed, tests_run, tests_failed, result, executor, job, number from [k8s-gubernator:build.week]" > triage_builds.json
+
   # this query can be too large to stream, so split it up
-  four_days_ago=$(($table_mtime - 86400 * 4))
-  bq --headless --format=json query -n 10000000 "select path build, test.name name, test.failure_text failure_text from [k8s-gubernator:build.week] where test.failed and timestamp_to_sec(started) < $four_days_ago" > triage_tests_1.json
-  bq --headless --format=json query -n 10000000 "select path build, test.name name, test.failure_text failure_text from [k8s-gubernator:build.week] where test.failed and timestamp_to_sec(started) >= $four_days_ago" > triage_tests_2.json
+
+  echo "query older than six days"
+  six_days_ago=$(($table_mtime - 86400 * 6))
+  bq --headless --format=json --debug_mode query -n 10000000 "select path build, test.name name, test.failure_text failure_text from [k8s-gubernator:build.week] where test.failed and timestamp_to_sec(started) < $six_days_ago" > triage_tests_1.json
+  
+  # query one day at a time 6 to 5, etc.
+  for i in {1..5}; do
+    n_days_start=$((7-$i))
+    n_days_end=$(($n_days_start+1))
+    file_n=$(($i+1))
+    start=$(($table_mtime - 86400 * $n_days_start))
+    end=$(($table_mtime - 86400 * $n_days_end))
+    echo "query one day $n_days_start ago"
+    bq --headless --format=json query -n 10000000 \
+      "select path build, test.name name, test.failure_text failure_text from [k8s-gubernator:build.week] where test.failed and timestamp_to_sec(started) < ${end} and timestamp_to_sec(started) >= ${start}" \
+      > "triage_tests_${file_n}.json"
+  done
+
+  # query remaining day
+  echo "query 1 day ago to now"
+  one_day_ago=$(($table_mtime - 86400))
+  bq --headless --format=json --debug_mode query -n 10000000 "select path build, test.name name, test.failure_text failure_text from [k8s-gubernator:build.week] where test.failed and timestamp_to_sec(started) >= $one_day_ago" > triage_tests_7.json
+
   rm -f failed*.json
 fi
 #
@@ -42,7 +63,7 @@ curl -sO --retry 6 https://raw.githubusercontent.com/kubernetes/kubernetes/maste
 
 mkdir -p slices
 
-pypy summarize.py triage_builds.json triage_tests_{1,2}.json \
+pypy summarize.py triage_builds.json triage_tests_{1,2,3,4,5,6,7}.json \
   --previous failure_data_previous.json --owners test_owners.json \
   --output failure_data.json --output_slices slices/failure_data_PREFIX.json
 
