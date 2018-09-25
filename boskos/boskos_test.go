@@ -25,6 +25,8 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/apimachinery/pkg/util/validation"
+
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/crds"
 	"k8s.io/test-infra/boskos/ranch"
@@ -789,11 +791,20 @@ func TestConfig(t *testing.T) {
 
 	for _, p := range resources {
 		if p.Name == "" {
-			t.Errorf("empty resource name: %v", p.Name)
+			t.Errorf("empty resource name: %s", p.Name)
+		}
+
+		errs := validation.IsQualifiedName(p.Name)
+		if len(errs) != 0 {
+			t.Errorf("resource name %s is not a qualified k8s object name, errs: %v", p.Name, errs)
+		}
+
+		if p.Type == "" {
+			t.Errorf("empty resource type: %s", p.Name)
 		}
 
 		if _, ok := resourceNames[p.Name]; ok {
-			t.Errorf("duplicated resource name: %v", p.Name)
+			t.Errorf("duplicated resource name: %s", p.Name)
 		} else {
 			resourceNames[p.Name] = true
 		}
