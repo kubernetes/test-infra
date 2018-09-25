@@ -6854,9 +6854,9 @@ dashboards:
     test_group_name: istio-circleci-test-integration-local-presubmit
   - name: circleci-integration-kubernetes
     test_group_name: istio-circleci-test-integration-kubernetes-presubmit
-  - name: pilot-e2e-envoyv2-v1alpha3
+  - name: pilot-e2e-envoyv2-v1alpha3-mcp
     test_group_name: istio-pilot-e2e-envoyv2-v1alpha3-mcp-presubmit
-  - name: e2e-mixer-no_auth
+  - name: e2e-mixer-no_auth-mcp
     test_group_name: istio-e2e-mixer-no_auth-mcp-presubmit
   - name: circleci-e2e-mixer-noauth-v1alpha3-v2-mcp
     test_group_name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2-mcp-presubmit
