@@ -178,6 +178,17 @@ def file_memoize(description, name):
 
 @file_memoize('loading failed tests', 'memo_load_failures.json')
 def load_failures(builds_file, tests_files):
+    """
+    Load builds and failed tests files.
+
+    Group builds by path, group test failures by test name.
+
+    Args:
+        filenames
+    Returns:
+        { build_path: [{ path: build_path, started: 12345, ...} ...], ...},
+        { test_name: [{build: gs://foo/bar, name: test_name, failure_text: xxx}, ...], ...}
+    """
     builds = {}
     for build in json.load(open(builds_file)):
         if not build['started'] or not build['number']:
@@ -215,16 +226,19 @@ def find_match(fnorm, clusters):
 
         if dist < limit:
             return other
+    return None
 
 
 def cluster_test(tests):
     """
     Compute failure clusters given a list of failures for one test.
 
+    Normalize the failure text prior to clustering to avoid needless entropy.
+
     Args:
-        tests: list of failed test dictionaries, with 'failure_text' keys
+        [{name: test_name, build: gs://foo/bar, failure_text: xxx}, ...]
     Returns:
-        {failure_text: [failure_in_cluster_1, failure_in_cluster_2, ...]}
+        {cluster_text_1: [test1, test2, ...]}
     """
     clusters = {}
     start = time.time()
@@ -248,13 +262,32 @@ def cluster_test(tests):
 
 @file_memoize('clustering inside each test', 'memo_cluster_local.json')
 def cluster_local(failed_tests):
-    """Cluster together the failures for each test. """
+    """
+    Cluster together the failures for each test.
+
+    Args:
+        {test_1: [{name: test_1, build: gs://foo/bar, failure_text: xxx}, ...], ...}
+    Returns:
+        {test_1: {cluster_text_1: [test1, test2], ... }, test_2: ...}
+
+    """
     clustered = {}
-    logging.info("Clustering failures for each test...")
-    for test_name, tests in sorted(failed_tests.iteritems(), key=lambda x: len(x[1]), reverse=True):
-        logging.info("%d %s", len(tests), test_name)
+    num_failures = 0
+    start = time.time()
+    logging.info("Clustering failures for %d unique tests...", len(failed_tests))
+    # Look at tests with the most failures first
+    for n, (test_name, tests) in enumerate(
+            sorted(failed_tests.iteritems(),
+                   key=lambda x: len(x[1]),
+                   reverse=True),
+            1):
+        num_failures += len(tests)
+        logging.info('%4d/%4d, %d failures, %s', n, len(failed_tests), len(tests), test_name)
         sys.stdout.flush()
         clustered[test_name] = cluster_test(tests)
+    elapsed = time.time() - start
+    logging.info('Finished locally clustering %d unique tests (%d failures) in %dm%ds',
+                 len(clustered), num_failures, elapsed / 60, elapsed % 60)
     return clustered
 
 
@@ -266,12 +299,14 @@ def cluster_global(clustered, previous_clustered):
     reducing the number of clusters that need to be paired up at this stage.
 
     Args:
-        {test_name: {failure_text: [failure_1, failure_2, ...], ...}, ...}
+        {test_name: {cluster_text_1: [test1, test2, ...], ...}, ...}
     Returns:
-        {failure_text: [(test_name, [failure_1, failure_2, ...]), ...], ...}
+        {cluster_text_1: [{test_name: [test1, test2, ...]}, ...], ...}
     """
     clusters = {}
-    logging.info("Combining clustered failures for each test...")
+    num_failures = 0
+    logging.info("Combining clustered failures for %d unique tests...", len(clustered))
+    start = time.time()
     if previous_clustered:
         # seed clusters using output from the previous run
         n = 0
@@ -287,13 +322,16 @@ def cluster_global(clustered, previous_clustered):
         if n:
             logging.warn('!!! %d clusters lost from different normalization! !!!', n)
 
-    for n, (test_name, cluster) in enumerate(
+    # Look at tests with the most failures over all clusters first
+    for n, (test_name, test_clusters) in enumerate(
             sorted(clustered.iteritems(),
                    key=lambda (k, v): sum(len(x) for x in v.itervalues()),
                    reverse=True),
             1):
-        logging.info('%d/%d %d %s', n, len(clustered), len(cluster), test_name)
-        for key, tests in sorted(cluster.iteritems(), key=lambda x: len(x[1]), reverse=True):
+        logging.info('%4d/%4d, %d clusters, %s', n, len(clustered), len(test_clusters), test_name)
+        # Look at clusters with the most failures first
+        for key, tests in sorted(test_clusters.iteritems(), key=lambda x: len(x[1]), reverse=True):
+            num_failures += len(tests)
             if key in clusters:
                 clusters[key].setdefault(test_name, []).extend(tests)
             else:
@@ -307,6 +345,10 @@ def cluster_global(clustered, previous_clustered):
     # clusters may have disappeared. Remove the resulting empty entries.
     for k in {k for k, v in clusters.iteritems() if not v}:
         clusters.pop(k)
+
+    elapsed = time.time() - start
+    logging.info('Finished clustering %d unique tests (%d failures) into %d clusters in %dm%ds',
+                 len(clustered), num_failures, len(clusters), elapsed / 60, elapsed % 60)
 
     return clusters
 
@@ -532,17 +574,12 @@ def main(args):
         logging.info('loading previous')
         previous_clustered = json.load(args.previous)['clustered']
 
-    start = time.time()
     clustered_local = cluster_local(failed_tests)
-    elapsed = time.time() - start
-    logging.info('%d local clusters in %dm%ds', len(clustered_local), elapsed / 60, elapsed % 60)
 
-    start = elapsed
     clustered = cluster_global(clustered_local, previous_clustered)
-    elapsed = time.time() - start
-    logging.info('%d clusters in %dm%ds', len(clustered_local), elapsed / 60, elapsed % 60)
 
-    start = elapsed
+    logging.info("Rendering results...")
+    start = time.time()
     data = render(builds, clustered)
 
     if args.owners:
@@ -566,7 +603,7 @@ def main(args):
                           open(args.output_slices.replace('PREFIX', 'sig-' + owner), 'w'),
                           sort_keys=True)
     elapsed = time.time() - start
-    logging.info('rendered results in %dm%ds', elapsed / 60, elapsed % 60)
+    logging.info('Finished rendering results in %dm%ds', elapsed / 60, elapsed % 60)
 
 if __name__ == '__main__':
     main(parse_args(sys.argv[1:]))
