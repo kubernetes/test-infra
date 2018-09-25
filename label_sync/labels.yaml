@@ -26,6 +26,7 @@ default:
       name: cherrypick-candidate # TODO: rename as cherry-pick-candidate
       target: prs
       addedBy: humans
+      deleteAfter: 2018-09-19T00:00:00Z
     - color: d455d0
       description: Indicates an issue is a duplicate of other open issue.
       name: triage/duplicate
@@ -308,21 +309,25 @@ default:
       name: queue/blocks-others
       target: prs
       addedBy: humans
+      deleteAfter: 2018-09-19T00:00:00Z
     - color: ffaa00
       description: DEPRECATED. # Bumps a PR up in priority in the submit-queue for kubernetes/kubernetes because that PR that contains a critical fix, and will merge even if e2e tests are failing. This will stop having any effect once kubernetes/kubernetes migrates away from the submit queue.
       name: queue/critical-fix
       target: prs
       addedBy: humans
+      deleteAfter: 2018-09-19T00:00:00Z
     - color: ffaa00
       description: DEPRECATED. # Bumps a PR up in priority in the submit-queue for kubernetes/kubernetes because that PR that will fix or unblock the submit queue. This will stop having any effect once kubernetes/kubernetes migrates away from the submit queue.
       name: queue/fix
       target: prs
       addedBy: humans
+      deleteAfter: 2018-09-19T00:00:00Z
     - color: ffaa00
       description: DEPRECATED. # Bumps a PR up in priority in the submit-queue for kubernetes/kubernetes because that PR that has had difficulty getting merged because merges ahead of it have forced it to be rebased multiple times. This will stop having any effect once kubernetes/kubernetes migrates away from the submit queue.
       name: queue/multiple-rebases
       target: prs
       addedBy: humans
+      deleteAfter: 2018-09-19T00:00:00Z
     - color: c2e0c6
       description: Denotes a PR that will be considered when it comes time to generate release notes.
       name: release-note
@@ -346,12 +351,14 @@ default:
       name: retest-not-required
       target: prs
       addedBy: humans
+      deleteAfter: 2018-09-19T00:00:00Z      
     - color: fbca04
       description: Indicates that a PR doesn't need to be retested prior to merge because it only changes docs. # At present only submit-queue consumes this label. Unclear whether we're going to modify tide to respect this or not ([kubernetes/test-infra#7195](https://github.com/kubernetes/test-infra/issues/7195))
       name: retest-not-required-docs-only
       target: prs
       prowPlugin: docs-no-retest
       addedBy: prow
+      deleteAfter: 2018-09-19T00:00:00Z      
     - color: d2b48c
       description: Categorizes an issue or PR as relevant to sig-api-machinery.
       name: sig/api-machinery
@@ -651,18 +658,21 @@ default:
       target: both
       prowPlugin: milestonestatus
       addedBy: "members of a configurable github team. default: [@kubernetes/kubernetes-milestone-maintainers](https://github.com/orgs/kubernetes/teams/kubernetes-milestone-maintainers/members)"
+      deleteAfter: 2018-09-19T00:00:00Z
     - color: fef2c0
       description: Used during release burndown. Denotes that an issue is actively being worked.
       name: status/in-progress
       target: both
       prowPlugin: milestonestatus
       addedBy: "members of a configurable github team. default: [@kubernetes/kubernetes-milestone-maintainers](https://github.com/orgs/kubernetes/teams/kubernetes-milestone-maintainers/members)"
+      deleteAfter: 2018-09-19T00:00:00Z
     - color: fef2c0
       description: Used during release burndown. Denotes that a fix for an issue is actively being reviewed.
       name: status/in-review
       target: both
       prowPlugin: milestonestatus
       addedBy: "members of a configurable github team. default: [@kubernetes/kubernetes-milestone-maintainers](https://github.com/orgs/kubernetes/teams/kubernetes-milestone-maintainers/members)"
+      deleteAfter: 2018-09-19T00:00:00Z
     - color: ffaa00
       description: Denotes a PR that should be squashed by tide when it merges.
       name: tide/squash
@@ -675,6 +685,13 @@ default:
       prowPlugin: shrug
       addedBy: humans
 repos:
+  kubernetes/community:
+    labels:
+      - color: 0052cc
+        description: Issues or PRs related to kubernetes conformance tests
+        name: area/conformance
+        target: both
+        addedBy: label
   kubernetes/kubernetes:
     labels:
       - color: 0052cc
@@ -687,6 +704,11 @@ repos:
         name: area/api
         target: issues
         addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to kubernetes conformance tests
+        name: area/conformance
+        target: both
+        addedBy: label
   kubernetes/test-infra:
     labels:
       - color: 0052cc
@@ -697,6 +719,11 @@ repos:
       - color: 0052cc
         description: Issues or PRs related to code in /config
         name: area/config
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to kubernetes conformance tests
+        name: area/conformance
         target: both
         addedBy: label
       - color: 0052cc

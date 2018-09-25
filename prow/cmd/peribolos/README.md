@@ -1,10 +1,8 @@
-# Not implemented
-
-WARNING: none of this code works yet. Implementation will follow later
-
 # Peribolos Documentation
 
 Peribolos allows the org settings, teams and memberships to be declared in a yaml file. Github is then updated to match the declared configuration.
+
+See the [kubernetes/org] repo, in particular the [merge] and [`update.sh`] parts of that repo for this tool in action.
 
 ### Etymology
 
@@ -73,6 +71,26 @@ Note that any fields missing from the config will not be managed by peribolos. S
 
 For more details please see GitHub documentation around [edit org], [update org membership], [edit team], [update team membership].
 
+## Settings
+
+In order to mitigate the chance of applying erroneous configs, the peribolos binary includes a few safety checks:
+
+* `--required-admins=` - a list of people who must be configured as admins in order to accept the config (defaults to empty list)
+* `--min-admins=5` - the config must specify at least this many admins
+* `--require-self=true` - require the bot applying the config to be an admin.
+
+These flags are designed to ensure that any problems can be corrected by rerunning the tool with a fixed config and/or binary.
+
+* `--maximimum-removal-delta=0.25` - reject a config that deletes more than 25% of the current memberships.
+
+This flag is designed to protect against typos in the configuration which might cause massive, unwanted deletions. Raising this value to 1.0 will allow deleting everyone, and reducing it to 0.0 will prevent any deletions.
+
+* `--confirm=false` - no github mutations will be made until this flag is true. It is safe to run the binary without this flag. It will print what it would do, without actually making any changes.
+
+
+See `bazel run //prow/cmd/peribolos -- --help` for the full and current list of settings that can be configured with flags.
+
+
 
 [`config.yaml`]: /prow/config.yaml
 [edit team]: https://developer.github.com/v3/teams/#edit-team
@@ -80,3 +98,6 @@ For more details please see GitHub documentation around [edit org], [update org 
 [peribolos]: https://en.wikipedia.org/wiki/Peribolos
 [update org membership]: https://developer.github.com/v3/orgs/members/#add-or-update-organization-membership
 [update team membership]: https://developer.github.com/v3/teams/members/#add-or-update-team-membership
+[merge]: https://github.com/kubernetes/org/tree/master/cmd/merge
+[kubernetes/org]: https://github.com/kubernetes/org
+[`update.sh`]: https://github.com/kubernetes/org/blob/master/admin/update.sh

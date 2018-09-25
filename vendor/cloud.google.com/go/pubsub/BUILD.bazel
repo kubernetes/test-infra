@@ -16,7 +16,7 @@ go_library(
         "subscription.go",
         "topic.go",
     ],
-    importmap = "vendor/cloud.google.com/go/pubsub",
+    importmap = "k8s.io/test-infra/vendor/cloud.google.com/go/pubsub",
     importpath = "cloud.google.com/go/pubsub",
     visibility = ["//visibility:public"],
     deps = [
@@ -27,6 +27,7 @@ go_library(
         "//vendor/cloud.google.com/go/pubsub/internal/distribution:go_default_library",
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
         "//vendor/github.com/golang/protobuf/ptypes:go_default_library",
+        "//vendor/github.com/golang/protobuf/ptypes/duration:go_default_library",
         "//vendor/github.com/googleapis/gax-go:go_default_library",
         "//vendor/go.opencensus.io/plugin/ocgrpc:go_default_library",
         "//vendor/go.opencensus.io/stats:go_default_library",
@@ -43,7 +44,6 @@ go_library(
         "//vendor/google.golang.org/grpc/codes:go_default_library",
         "//vendor/google.golang.org/grpc/keepalive:go_default_library",
         "//vendor/google.golang.org/grpc/status:go_default_library",
-        "@io_bazel_rules_go//proto/wkt:duration_go_proto",
     ],
 )
 

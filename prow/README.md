@@ -11,7 +11,6 @@ not make any attempt to preserve backwards compatibility.
 * `cmd/plank` is the controller that manages jobs running in k8s pods.
 * `cmd/jenkins-operator` is the controller that manages jobs running in Jenkins.
 * `cmd/sinker` cleans up old jobs and pods.
-* `cmd/splice` regularly schedules batch jobs.
 * `cmd/deck` presents [a nice view](https://prow.k8s.io/) of recent jobs.
 * `cmd/phony` sends fake webhooks.
 * `cmd/tot` vends incrementing build numbers.

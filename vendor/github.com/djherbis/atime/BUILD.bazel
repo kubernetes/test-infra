@@ -15,7 +15,7 @@ go_library(
         "atime_windows.go",
         "stat.go",
     ],
-    importmap = "vendor/github.com/djherbis/atime",
+    importmap = "k8s.io/test-infra/vendor/github.com/djherbis/atime",
     importpath = "github.com/djherbis/atime",
     visibility = ["//visibility:public"],
 )

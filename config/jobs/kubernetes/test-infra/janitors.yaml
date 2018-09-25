@@ -43,13 +43,15 @@ periodics:
   spec:
     containers:
     - command:
+      - runner.sh
+      args:
       - go
       - run
       - experiment/ci-janitor/main.go
       - --config-path=prow/config.yaml
       - --job-config-path=config/jobs
       - --janitor-path=boskos/janitor/janitor.py
-      image: gcr.io/k8s-testimages/gcloud-in-go:v20180725-a495f0247
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180924-8e8468033-master
       resources:
         requests:
           cpu: 5

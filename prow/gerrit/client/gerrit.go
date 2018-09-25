@@ -68,14 +68,19 @@ type gerritChange interface {
 	SetReview(changeID, revisionID string, input *gerrit.ReviewInput) (*gerrit.ReviewResult, *gerrit.Response, error)
 }
 
+type gerritProjects interface {
+	GetBranch(projectName, branchID string) (*gerrit.BranchInfo, *gerrit.Response, error)
+}
+
 // gerritInstanceHandler holds all actual gerrit handlers
 type gerritInstanceHandler struct {
 	instance string
 	projects []string
 
-	auth    gerritAuthentication
-	account gerritAccount
-	change  gerritChange
+	authService    gerritAuthentication
+	accountService gerritAccount
+	changeService  gerritChange
+	projectService gerritProjects
 }
 
 // Client holds a instance:handler map
@@ -101,11 +106,12 @@ func NewClient(instances map[string][]string) (*Client, error) {
 		}
 
 		c.handlers[instance] = &gerritInstanceHandler{
-			instance: instance,
-			projects: instances[instance],
-			auth:     gc.Authentication,
-			account:  gc.Accounts,
-			change:   gc.Changes,
+			instance:       instance,
+			projects:       instances[instance],
+			authService:    gc.Authentication,
+			accountService: gc.Accounts,
+			changeService:  gc.Changes,
+			projectService: gc.Projects,
 		}
 	}
 
@@ -133,9 +139,9 @@ func auth(c *Client, cookiefilePath string) {
 
 		// update auth token for each instance
 		for _, handler := range c.handlers {
-			handler.auth.SetCookieAuth("o", token)
+			handler.authService.SetCookieAuth("o", token)
 
-			self, _, err := handler.account.GetAccount("self")
+			self, _, err := handler.accountService.GetAccount("self")
 			if err != nil {
 				logrus.WithError(err).Error("Failed to auth with token")
 			}
@@ -176,13 +182,28 @@ func (c *Client) SetReview(instance, id, revision, message string) error {
 		return fmt.Errorf("not activated gerrit instance: %s", instance)
 	}
 
-	if _, _, err := h.change.SetReview(id, revision, &gerrit.ReviewInput{
+	if _, _, err := h.changeService.SetReview(id, revision, &gerrit.ReviewInput{
 		Message: message,
 	}); err != nil {
 		return fmt.Errorf("cannot comment to gerrit: %v", err)
 	}
 
 	return nil
+}
+
+// GetBranchRevision returns SHA of HEAD of a branch
+func (c *Client) GetBranchRevision(instance, project, branch string) (string, error) {
+	h, ok := c.handlers[instance]
+	if !ok {
+		return "", fmt.Errorf("not activated gerrit instance: %s", instance)
+	}
+
+	res, _, err := h.projectService.GetBranch(project, branch)
+	if err != nil {
+		return "", err
+	}
+
+	return res.Revision, nil
 }
 
 // private handler implementation details
@@ -217,7 +238,7 @@ func (h *gerritInstanceHandler) queryChangesForProject(project string, lastUpdat
 
 		// The change output is sorted by the last update time, most recently updated to oldest updated.
 		// Gerrit API docs: https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
-		changes, _, err := h.change.QueryChanges(opt)
+		changes, _, err := h.changeService.QueryChanges(opt)
 		if err != nil {
 			// should not happen? Let next sync loop catch up
 			return nil, fmt.Errorf("failed to query gerrit changes: %v", err)
@@ -241,11 +262,11 @@ func (h *gerritInstanceHandler) queryChangesForProject(project string, lastUpdat
 				continue
 			}
 
-			logrus.Infof("Change %s, last updated %s", change.Number, change.Updated)
+			logrus.Infof("Change %d, last updated %s", change.Number, change.Updated)
 
 			// process if updated later than last updated
 			// stop if update was stale
-			if updated.After(lastUpdate) {
+			if !updated.Before(lastUpdate) {
 				// we need to make sure the change update is from a new commit change
 				rev, ok := change.Revisions[change.CurrentRevision]
 				if !ok {
@@ -259,13 +280,15 @@ func (h *gerritInstanceHandler) queryChangesForProject(project string, lastUpdat
 					continue
 				}
 
-				if !created.After(lastUpdate) {
+				if created.Before(lastUpdate) {
 					// stale commit
+					logrus.Infof("Change %d, latest revision updated %s before lastUpdate %s, skipping this patchset", change.Number, created, lastUpdate)
 					continue
 				}
 
 				pending = append(pending, change)
 			} else {
+				logrus.Infof("Change %d, updated %s before lastUpdate %s, return", change.Number, change.Updated, lastUpdate)
 				return pending, nil
 			}
 		}

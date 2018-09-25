@@ -20,7 +20,6 @@ package reporter
 import (
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/sirupsen/logrus"
 
@@ -79,9 +78,7 @@ func (c *Client) Report(pj *v1.ProwJob) error {
 		return errors.New("no pj.Spec.Refs, not a presubmit job (should not happen?!)")
 	}
 
-	// bootstrap crap, fix it
-	url := strings.Replace(pj.Status.URL, pj.Spec.Refs.Repo, strings.Replace(pj.Spec.Refs.Repo, "/", "_", -1), 1)
-	message := fmt.Sprintf("Job %s finished with %s\n Gubernator URL: %s", pj.Spec.Job, pj.Status.State, url)
+	message := fmt.Sprintf("Job %s finished with %s\n Gubernator URL: %s", pj.Spec.Job, pj.Status.State, pj.Status.URL)
 
 	// report back
 	gerritID := pj.ObjectMeta.Annotations["gerrit-id"]
@@ -90,8 +87,10 @@ func (c *Client) Report(pj *v1.ProwJob) error {
 
 	logrus.Infof("Reporting job %s to instance %s on id %s with message %s", pj.Spec.Job, gerritInstance, gerritID, message)
 	if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message); err != nil {
-		return errors.New("cannot comment to gerrit")
+		logrus.Warnf("fail to set review")
+		return err
 	}
+	logrus.Infof("Review Complete")
 
 	return nil
 }

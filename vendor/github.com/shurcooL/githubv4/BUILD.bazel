@@ -9,7 +9,7 @@ go_library(
         "input.go",
         "scalar.go",
     ],
-    importmap = "vendor/github.com/shurcooL/githubv4",
+    importmap = "k8s.io/test-infra/vendor/github.com/shurcooL/githubv4",
     importpath = "github.com/shurcooL/githubv4",
     visibility = ["//visibility:public"],
     deps = ["//vendor/github.com/shurcooL/graphql:go_default_library"],

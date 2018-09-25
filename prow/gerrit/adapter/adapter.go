@@ -45,6 +45,7 @@ type kubeClient interface {
 type gerritClient interface {
 	QueryChanges(lastUpdate time.Time, rateLimit int) map[string][]gerrit.ChangeInfo
 	SetReview(instance, id, revision, message string) error
+	GetBranchRevision(instance, project, branch string) (string, error)
 }
 
 type configAgent interface {
@@ -148,7 +149,8 @@ func (c *Controller) SaveLastSync(lastSync time.Time) error {
 // Sync looks for newly made gerrit changes
 // and creates prowjobs according to presubmit specs
 func (c *Controller) Sync() error {
-	syncTime := time.Now()
+	// gerrit timestamp only has second precision
+	syncTime := time.Now().Truncate(time.Second)
 
 	for instance, changes := range c.gc.QueryChanges(c.lastUpdate, c.ca.Config().Gerrit.RateLimit) {
 		for _, change := range changes {
@@ -190,11 +192,6 @@ func (c *Controller) ProcessChange(instance string, change gerrit.ChangeInfo) er
 		return fmt.Errorf("cannot find current revision for change %v", change.ID)
 	}
 
-	parentSHA := ""
-	if len(rev.Commit.Parents) > 0 {
-		parentSHA = rev.Commit.Parents[0].Commit
-	}
-
 	logger := logrus.WithField("gerrit change", change.Number)
 
 	type triggeredJob struct {
@@ -207,6 +204,11 @@ func (c *Controller) ProcessChange(instance string, change gerrit.ChangeInfo) er
 		return fmt.Errorf("failed to create clone uri: %v", err)
 	}
 
+	baseSHA, err := c.gc.GetBranchRevision(instance, change.Project, change.Branch)
+	if err != nil {
+		return fmt.Errorf("failed to get SHA from base branch: %v", err)
+	}
+
 	presubmits := c.ca.Config().Presubmits[cloneURI.String()]
 	presubmits = append(presubmits, c.ca.Config().Presubmits[cloneURI.Host+"/"+cloneURI.Path]...)
 	for _, spec := range presubmits {
@@ -214,7 +216,7 @@ func (c *Controller) ProcessChange(instance string, change gerrit.ChangeInfo) er
 			Org:      cloneURI.Host,  // Something like android.googlesource.com
 			Repo:     change.Project, // Something like platform/build
 			BaseRef:  change.Branch,
-			BaseSHA:  parentSHA,
+			BaseSHA:  baseSHA,
 			CloneURI: cloneURI.String(), // Something like https://android.googlesource.com/platform/build
 			Pulls: []kube.Pull{
 				{

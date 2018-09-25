@@ -2821,13 +2821,9 @@ test_groups:
 - name: test_pull_request_crio_e2e_rhel
   gcs_prefix: origin-federated-results/pr-logs/directory/test_pull_request_crio_e2e_rhel
 # Istio Prow Presubmits
-- name: istio-presubmit
-  gcs_prefix: istio-prow/directory/istio-presubmit
 - name: istio-unit-tests-presubmit
   gcs_prefix: istio-prow/directory/istio-unit-tests
   days_of_results: 7
-- name: istio-pilot-e2e-presubmit
-  gcs_prefix: istio-prow/directory/istio-pilot-e2e
 - name: istio-pilot-e2e-envoyv2-v1alpha3-presubmit
   gcs_prefix: istio-prow/directory/istio-pilot-e2e-envoyv2-v1alpha3
 - name: istio-e2e-mixer-no_auth-presubmit
@@ -2836,8 +2832,6 @@ test_groups:
   gcs_prefix: istio-prow/directory/e2e-dashboard
 - name: istio-e2e-simpleTests-presubmit
   gcs_prefix: istio-prow/directory/e2e-simpleTests
-- name: istio-e2e-bookInfoTests-presubmit
-  gcs_prefix: istio-prow/directory/e2e-bookInfoTests
 - name: istio-e2e-bookInfoTests-envoyv2-v1alpha3-presubmit
   gcs_prefix: istio-prow/directory/e2e-bookInfoTests-envoyv2-v1alpha3
 # Istio Prow Postsubmits
@@ -2882,6 +2876,10 @@ test_groups:
   days_of_results: 7
 - name: istio-circleci-racetest-presubmit
   gcs_prefix: istio-circleci/presubmit/racetest
+- name: istio-circleci-test-integration-local-presubmit
+  gcs_prefix: istio-circleci/presubmit/test-integration-local
+- name: istio-circleci-test-integration-kubernetes-presubmit
+  gcs_prefix: istio-circleci/presubmit/test-integration-kubernetes
 # Istio CircleCI Postsubmits
 - name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2
   gcs_prefix: istio-circleci/e2e-mixer-noauth-v1alpha3-v2
@@ -4503,6 +4501,12 @@ dashboards:
     test_group_name: periodic-kubernetes-bazel-build-1-12
   - name: periodic-kubernetes-bazel-test-1-12
     test_group_name: periodic-kubernetes-bazel-test-1-12
+  - name: kubeadm-gce-1-11-on-1-12
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
+  - name: kubeadm-gce-1-12
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-12
+  - name: kubeadm-gce-upgrade-1-11-1-12
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-11-1-12
 
 - name: sig-release-1.12-blocking
   dashboard_tab:
@@ -4557,6 +4561,10 @@ dashboards:
     test_group_name: periodic-kubernetes-bazel-build-1-12
   - name: periodic-kubernetes-bazel-test-1-12
     test_group_name: periodic-kubernetes-bazel-test-1-12
+  - name: kubeadm-gce-1-11-on-1-12
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
+  - name: kubeadm-gce-1-12
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-12
 
 - name: sig-release-1.11-all
   dashboard_tab:
@@ -6786,12 +6794,8 @@ dashboards:
 
 - name: istio-presubmits
   dashboard_tab:
-  - name: presubmit
-    test_group_name: istio-presubmit
   - name: unit-tests
     test_group_name: istio-unit-tests-presubmit
-  - name: pilot-e2e
-    test_group_name: istio-pilot-e2e-presubmit
   - name: pilot-e2e-envoyv2-v1alpha3
     test_group_name: istio-pilot-e2e-envoyv2-v1alpha3-presubmit
   - name: e2e-mixer-no_auth
@@ -6800,8 +6804,6 @@ dashboards:
     test_group_name: istio-e2e-dashboard-presubmit
   - name: e2e-simpleTests
     test_group_name: istio-e2e-simpleTests-presubmit
-  - name: e2e-bookInfoTests
-    test_group_name: istio-e2e-bookInfoTests-presubmit
   - name: e2e-bookInfoTests-envoyv2-v1alpha3
     test_group_name: istio-e2e-bookInfoTests-envoyv2-v1alpha3-presubmit
   - name: circleci-e2e-simple
@@ -6818,14 +6820,18 @@ dashboards:
     test_group_name: istio-circleci-e2e-pilot-auth-v1alpha3-v2-presubmit
   - name: circleci-e2e-pilot-noauth-v1alpha3-v2
     test_group_name: istio-circleci-e2e-pilot-noauth-v1alpha3-v2-presubmit
-  - name: circleci-test
+  - name: circleci-unit-tests
     test_group_name: istio-circleci-test-presubmit
   - name: circleci-racetest
     test_group_name: istio-circleci-racetest-presubmit
+  - name: circleci-integration-local
+    test_group_name: istio-circleci-test-integration-local-presubmit
+  - name: circleci-integration-kubernetes
+    test_group_name: istio-circleci-test-integration-kubernetes-presubmit
 
 - name: istio-postsubmits
   dashboard_tab:
-  - name: postsubmit
+  - name: unit-tests
     test_group_name: istio-istio-postsubmit
     alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com

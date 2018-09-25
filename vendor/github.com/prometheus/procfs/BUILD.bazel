@@ -13,7 +13,7 @@ go_library(
         "proc_stat.go",
         "stat.go",
     ],
-    importmap = "vendor/github.com/prometheus/procfs",
+    importmap = "k8s.io/test-infra/vendor/github.com/prometheus/procfs",
     importpath = "github.com/prometheus/procfs",
     visibility = ["//visibility:public"],
 )

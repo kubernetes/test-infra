@@ -13,7 +13,7 @@ go_library(
         "stats_common.go",
         "trace_common.go",
     ],
-    importmap = "vendor/go.opencensus.io/plugin/ocgrpc",
+    importmap = "k8s.io/test-infra/vendor/go.opencensus.io/plugin/ocgrpc",
     importpath = "go.opencensus.io/plugin/ocgrpc",
     visibility = ["//visibility:public"],
     deps = [

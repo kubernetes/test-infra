@@ -18,7 +18,7 @@ go_library(
         "transaction.go",
         "utils.go",
     ],
-    importmap = "vendor/github.com/go-sql-driver/mysql",
+    importmap = "k8s.io/test-infra/vendor/github.com/go-sql-driver/mysql",
     importpath = "github.com/go-sql-driver/mysql",
     visibility = ["//visibility:public"],
 )

@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["sqlite.go"],
-    importmap = "vendor/github.com/jinzhu/gorm/dialects/sqlite",
+    importmap = "k8s.io/test-infra/vendor/github.com/jinzhu/gorm/dialects/sqlite",
     importpath = "github.com/jinzhu/gorm/dialects/sqlite",
     visibility = ["//visibility:public"],
     deps = ["//vendor/github.com/mattn/go-sqlite3:go_default_library"],

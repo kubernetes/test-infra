@@ -17,4 +17,5 @@ spec:
       - name: boskos-reaper
         image: gcr.io/k8s-testimages/reaper:v20180402-43203f868
         args:
-        - --resource-type=gce-project,gke-project,gpu-project,ingress-project,istio-project
+        - --boskos-url=http://boskos.test-pods.svc.cluster.local.
+        - --resource-type=gce-project,gke-project,gpu-project,ingress-project,istio-project,scalability-project

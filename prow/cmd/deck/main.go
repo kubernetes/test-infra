@@ -71,6 +71,7 @@ type options struct {
 	hiddenOnly            bool
 	runLocal              bool
 	staticFilesLocation   string
+	templateFilesLocation string
 	spyglass              bool
 }
 
@@ -106,6 +107,7 @@ func gatherOptions() options {
 	flag.BoolVar(&o.runLocal, "run-local", false, "Serve a local copy of the UI, used by the prow/cmd/deck/runlocal script")
 	flag.BoolVar(&o.spyglass, "spyglass", false, "Use Prow built-in job viewing instead of Gubernator")
 	flag.StringVar(&o.staticFilesLocation, "static-files-location", "/static", "Path to the static files")
+	flag.StringVar(&o.templateFilesLocation, "template-files-location", "/template", "Path to the template files")
 	flag.Parse()
 	return o
 }
@@ -123,8 +125,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	staticHandlerFromDir := func(dir string) http.Handler {
-		return defaultExtension(".html",
-			gziphandler.GzipHandler(handleCached(http.FileServer(http.Dir(dir)))))
+		return gziphandler.GzipHandler(handleCached(http.FileServer(http.Dir(dir))))
 	}
 
 	// setup config agent, pod log clients etc.
@@ -134,23 +135,55 @@ func main() {
 	}
 
 	// setup common handlers for local and deployed runs
-	mux.Handle("/", staticHandlerFromDir(o.staticFilesLocation))
+	mux.Handle("/static/", http.StripPrefix("/static", staticHandlerFromDir(o.staticFilesLocation)))
 	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(configAgent)))
-	mux.Handle("/branding.js", gziphandler.GzipHandler(handleBranding(configAgent)))
 	mux.Handle("/favicon.ico", gziphandler.GzipHandler(handleFavicon(o.staticFilesLocation, configAgent)))
-	mux.Handle("/spyglass.js", gziphandler.GzipHandler(handleSpyglass(o.spyglass)))
+
+	// Set up handlers for template pages.
+	mux.Handle("/pr", gziphandler.GzipHandler(handleSimpleTemplate(o.templateFilesLocation, configAgent, "pr.html", nil)))
+	mux.Handle("/command-help", gziphandler.GzipHandler(handleSimpleTemplate(o.templateFilesLocation, configAgent, "command-help.html", nil)))
+	mux.Handle("/plugin-help", http.RedirectHandler("/command-help", http.StatusMovedPermanently))
+	mux.Handle("/tide", gziphandler.GzipHandler(handleSimpleTemplate(o.templateFilesLocation, configAgent, "tide.html", nil)))
+	mux.Handle("/plugins", gziphandler.GzipHandler(handleSimpleTemplate(o.templateFilesLocation, configAgent, "plugins.html", nil)))
+
+	indexHandler := handleSimpleTemplate(o.templateFilesLocation, configAgent, "index.html", struct{ SpyglassEnabled bool }{o.spyglass})
+
+	var fallbackHandler func(http.ResponseWriter, *http.Request)
+	if o.runLocal {
+		localDataHandler := staticHandlerFromDir("./localdata")
+		fallbackHandler = localDataHandler.ServeHTTP
+	} else {
+		fallbackHandler = http.NotFound
+	}
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			fallbackHandler(w, r)
+			return
+		}
+		indexHandler(w, r)
+	})
 
 	if o.runLocal {
-		if o.spyglass {
-			initSpyglass(configAgent, o, mux, nil)
-		}
+		mux = localOnlyMain(configAgent, o, mux)
 	} else {
-		// when deployed, do the full main
 		mux = prodOnlyMain(configAgent, o, mux)
 	}
 
 	// setup done, actually start the server
 	logrus.WithError(http.ListenAndServe(":8080", mux)).Fatal("ListenAndServe returned.")
+}
+
+// localOnlyMain contains logic used only when running locally, and is mutually exclusive with
+// prodOnlyMain.
+func localOnlyMain(configAgent *config.Agent, o options, mux *http.ServeMux) *http.ServeMux {
+	mux.Handle("/github-login", gziphandler.GzipHandler(handleSimpleTemplate(o.templateFilesLocation, configAgent, "github-login.html", nil)))
+
+	if o.spyglass {
+		initSpyglass(configAgent, o, mux, nil)
+	}
+
+	return mux
 }
 
 // prodOnlyMain contains logic only used when running deployed, not locally
@@ -310,10 +343,10 @@ func initSpyglass(configAgent *config.Agent, o options, mux *http.ServeMux, ja *
 	sg := spyglass.New(ja, []spyglass.ArtifactFetcher{spyglass.NewGCSArtifactFetcher(c)})
 
 	mux.Handle("/view/render", gziphandler.GzipHandler(handleArtifactView(sg, configAgent)))
-	mux.Handle("/view/gcs/", gziphandler.GzipHandler(handleRequestGCSJobViews(sg, configAgent, o.staticFilesLocation)))
+	mux.Handle("/view/gcs/", gziphandler.GzipHandler(handleRequestGCSJobViews(sg, configAgent, o.templateFilesLocation)))
 	if ja != nil {
-		mux.Handle("/view/prowjob/", gziphandler.GzipHandler(handleRequestProwJobViews(sg, configAgent, o.staticFilesLocation)))
-		mux.Handle("/view/", gziphandler.GzipHandler(handleRequestJobViews(sg, configAgent, o.staticFilesLocation)))
+		mux.Handle("/view/prowjob/", gziphandler.GzipHandler(handleRequestProwJobViews(sg, configAgent, o.templateFilesLocation)))
+		mux.Handle("/view/", gziphandler.GzipHandler(handleRequestJobViews(sg, configAgent, o.templateFilesLocation)))
 	}
 }
 
@@ -333,20 +366,6 @@ func dupeRequest(original *http.Request) *http.Request {
 	r2.URL = new(url.URL)
 	*r2.URL = *original.URL
 	return r2
-}
-
-// serve with handler but map extensionless URLs to the default
-func defaultExtension(extension string, h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if len(r.URL.Path) > 0 &&
-			r.URL.Path[len(r.URL.Path)-1] != '/' && path.Ext(r.URL.Path) == "" {
-			r2 := dupeRequest(r)
-			r2.URL.Path = r.URL.Path + extension
-			h.ServeHTTP(w, r2)
-		} else {
-			h.ServeHTTP(w, r)
-		}
-	})
 }
 
 func handleCached(next http.Handler) http.Handler {
@@ -448,13 +467,13 @@ func handleBadge(ja *jobs.JobAgent) http.HandlerFunc {
 //
 // Example:
 // - /view/prowjob/echo-test/1021530234601607168
-func handleRequestProwJobViews(sg *spyglass.Spyglass, ca *config.Agent, staticFilesLocation string) http.HandlerFunc {
+func handleRequestProwJobViews(sg *spyglass.Spyglass, ca *config.Agent, templateRoot string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		setHeadersNoCaching(w)
 		src := strings.TrimPrefix(r.URL.Path, "/view/")
 
-		page, err := renderSpyglass(sg, ca, src, staticFilesLocation)
+		page, err := renderSpyglass(sg, ca, src, templateRoot)
 		if err != nil {
 			logrus.WithError(err).Error("error rendering spyglass page")
 			http.Error(w, "error getting views for job", http.StatusInternalServerError)
@@ -477,14 +496,14 @@ func handleRequestProwJobViews(sg *spyglass.Spyglass, ca *config.Agent, staticFi
 //
 // Example:
 // - /view/gcs/kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-large-performance/121
-func handleRequestGCSJobViews(sg *spyglass.Spyglass, ca *config.Agent, staticFilesLocation string) http.HandlerFunc {
+func handleRequestGCSJobViews(sg *spyglass.Spyglass, ca *config.Agent, templateRoot string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		setHeadersNoCaching(w)
 		srcData := strings.TrimPrefix(r.URL.Path, "/view/gcs/")
 		src := fmt.Sprintf("gs://%s", srcData)
 
-		page, err := renderSpyglass(sg, ca, src, staticFilesLocation)
+		page, err := renderSpyglass(sg, ca, src, templateRoot)
 		if err != nil {
 			logrus.WithError(err).Error("error rendering spyglass page")
 			http.Error(w, "error getting views for job", http.StatusInternalServerError)
@@ -508,7 +527,7 @@ func handleRequestGCSJobViews(sg *spyglass.Spyglass, ca *config.Agent, staticFil
 //
 // Example:
 // - /view/?src=gs:%2F%2Fkubernetes-jenkins%2Fpr-logs%2Fpull%2Fkubeflow_kubeflow%2F1195%2Fkubeflow-presubmit%2F2558
-func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent, staticFilesLocation string) http.HandlerFunc {
+func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent, templateRoot string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		setHeadersNoCaching(w)
@@ -518,7 +537,7 @@ func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent, staticFilesL
 			return
 		}
 
-		page, err := renderSpyglass(sg, ca, src, staticFilesLocation)
+		page, err := renderSpyglass(sg, ca, src, templateRoot)
 		if err != nil {
 			logrus.WithError(err).Error("error rendering spyglass page")
 			http.Error(w, "error getting views for job", http.StatusInternalServerError)
@@ -536,7 +555,7 @@ func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent, staticFilesL
 }
 
 // renderSpyglass returns a pre-rendered Spyglass page from the given source string
-func renderSpyglass(sg *spyglass.Spyglass, ca *config.Agent, src string, staticFilesLocation string) (string, error) {
+func renderSpyglass(sg *spyglass.Spyglass, ca *config.Agent, src string, templateRoot string) (string, error) {
 	renderStart := time.Now()
 	artifactNames, err := sg.ListArtifacts(src)
 	if err != nil {
@@ -574,7 +593,11 @@ func renderSpyglass(sg *spyglass.Spyglass, ca *config.Agent, src string, staticF
 		Source:      src,
 		ViewerCache: viewerCache,
 	}
-	t, err := template.ParseFiles(path.Join(staticFilesLocation, "template/spyglass-template.html"))
+	t := template.New("spyglass.html")
+	if _, err := prepareBaseTemplate(templateRoot, ca, t); err != nil {
+		return "", fmt.Errorf("error preparing base template: %v", err)
+	}
+	t, err = t.ParseFiles(path.Join(templateRoot, "spyglass.html"))
 	if err != nil {
 		return "", fmt.Errorf("error parsing template: %v", err)
 	}
@@ -796,26 +819,6 @@ func handleConfig(ca jobs.ConfigAgent) http.HandlerFunc {
 	}
 }
 
-func handleBranding(ca jobs.ConfigAgent) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		setHeadersNoCaching(w)
-		config := ca.Config()
-		b, err := json.Marshal(config.Deck.Branding)
-		if err != nil {
-			logrus.WithError(err).Error("Error marshaling branding config.")
-			http.Error(w, "Failed to marshal branding config.", http.StatusInternalServerError)
-			return
-		}
-		// If we have a "var" query, then write out "var value = [...];".
-		// Otherwise, just write out the JSON.
-		if v := r.URL.Query().Get("var"); v != "" {
-			fmt.Fprintf(w, "var %s = %s;", v, string(b))
-		} else {
-			fmt.Fprint(w, string(b))
-		}
-	}
-}
-
 func handleFavicon(staticFilesLocation string, ca jobs.ConfigAgent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		config := ca.Config()
@@ -823,23 +826,6 @@ func handleFavicon(staticFilesLocation string, ca jobs.ConfigAgent) http.Handler
 			http.ServeFile(w, r, staticFilesLocation+"/"+config.Deck.Branding.Favicon)
 		} else {
 			http.ServeFile(w, r, staticFilesLocation+"/favicon.ico")
-		}
-	}
-}
-
-func handleSpyglass(spyglass bool) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		setHeadersNoCaching(w)
-		b, err := json.Marshal(spyglass)
-		if err != nil {
-			logrus.WithError(err).Error("Error marshalling spyglass config.")
-			http.Error(w, "Failed to marshal spyglass config.", http.StatusInternalServerError)
-			return
-		}
-		if v := r.URL.Query().Get("var"); v != "" {
-			fmt.Fprintf(w, "var %s = %s;", v, string(b))
-		} else {
-			fmt.Fprint(w, string(b))
 		}
 	}
 }

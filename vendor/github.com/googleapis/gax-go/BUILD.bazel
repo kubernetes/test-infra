@@ -8,7 +8,7 @@ go_library(
         "header.go",
         "invoke.go",
     ],
-    importmap = "vendor/github.com/googleapis/gax-go",
+    importmap = "k8s.io/test-infra/vendor/github.com/googleapis/gax-go",
     importpath = "github.com/googleapis/gax-go",
     visibility = ["//visibility:public"],
     deps = [

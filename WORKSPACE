@@ -8,10 +8,13 @@ load("@bazel_skylib//:lib.bzl", "versions")
 
 versions.check(minimum_bazel_version = "0.10.0")
 
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+
 http_archive(
     name = "io_bazel_rules_go",
-    sha256 = "1868ff68d6079e31b2f09b828b58d62e57ca8e9636edff699247c9108518570b",
-    url = "https://github.com/bazelbuild/rules_go/releases/download/0.11.1/rules_go-0.11.1.tar.gz",
+    sha256 = "97cf62bdef33519412167fd1e4b0810a318a7c234f5f8dc4f53e2da86241c492",
+    urls = ["https://github.com/bazelbuild/rules_go/releases/download/0.15.3/rules_go-0.15.3.tar.gz"],
 )
 
 load("@io_bazel_rules_go//go:def.bzl", "go_rules_dependencies", "go_register_toolchains")
@@ -19,7 +22,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_rules_dependencies", "go_register_too
 go_rules_dependencies()
 
 go_register_toolchains(
-    go_version = "1.10.2",
+    go_version = "1.11",
 )
 
 git_repository(
@@ -125,7 +128,7 @@ py_library(
 #       -once the package has been validated, determine the corresponding sha256 by running `sha256sum xxxx.tar.gz`.
 #   3) ensure that the strip_prefix still prefixes the package directory contents to the level of the src code.
 
-new_http_archive(
+http_archive(
     name = "requests",
     build_file_content = """
 py_library(
@@ -139,7 +142,7 @@ py_library(
     urls = ["https://files.pythonhosted.org/packages/16/09/37b69de7c924d318e51ece1c4ceb679bf93be9d05973bb30c35babd596e2/requests-2.13.0.tar.gz"],
 )
 
-new_http_archive(
+http_archive(
     name = "yaml",
     build_file_content = """
 py_library(
@@ -153,7 +156,7 @@ py_library(
     urls = ["https://files.pythonhosted.org/packages/4a/85/db5a2df477072b2902b0eb892feb37d88ac635d36245a72a6a69b23b383a/PyYAML-3.12.tar.gz"],
 )
 
-new_http_archive(
+http_archive(
     name = "markupsafe",
     build_file_content = """
 py_library(
@@ -167,7 +170,7 @@ py_library(
     urls = ["https://files.pythonhosted.org/packages/4d/de/32d741db316d8fdb7680822dd37001ef7a448255de9699ab4bfcbdf4172b/MarkupSafe-1.0.tar.gz"],
 )
 
-new_http_archive(
+http_archive(
     name = "jinja2",
     build_file_content = """
 py_library(
@@ -198,7 +201,7 @@ http_file(
     urls = ["https://github.com/stedolan/jq/releases/download/jq-1.5/jq-osx-amd64"],
 )
 
-new_http_archive(
+http_archive(
     name = "astroid_lib",
     build_file_content = """
 py_library(
@@ -221,7 +224,7 @@ py_library(
     urls = ["https://files.pythonhosted.org/packages/d7/b7/112288f75293d6f12b1e41bac1e822fd0f29b0f88e2c4378cdd295b9d838/astroid-1.5.3.tar.gz"],
 )
 
-new_http_archive(
+http_archive(
     name = "isort",
     build_file_content = """
 py_library(
@@ -235,7 +238,7 @@ py_library(
     urls = ["https://files.pythonhosted.org/packages/4d/d5/7c8657126a43bcd3b0173e880407f48be4ac91b4957b51303eab744824cf/isort-4.2.15.tar.gz"],
 )
 
-new_http_archive(
+http_archive(
     name = "lazy_object_proxy",
     build_file_content = """
 py_library(
@@ -249,7 +252,7 @@ py_library(
     urls = ["https://files.pythonhosted.org/packages/55/08/23c0753599bdec1aec273e322f277c4e875150325f565017f6280549f554/lazy-object-proxy-1.3.1.tar.gz"],
 )
 
-new_http_archive(
+http_archive(
     name = "mccabe",
     build_file_content = """
 py_library(
@@ -263,7 +266,7 @@ py_library(
     urls = ["https://files.pythonhosted.org/packages/06/18/fa675aa501e11d6d6ca0ae73a101b2f3571a565e0f7d38e062eec18a91ee/mccabe-0.6.1.tar.gz"],
 )
 
-new_http_archive(
+http_archive(
     name = "pylint",
     build_file_content = """
 py_library(
@@ -286,7 +289,7 @@ py_library(
     ],
 )
 
-new_http_archive(
+http_archive(
     name = "six_lib",
     build_file_content = """
 py_library(
@@ -300,7 +303,7 @@ py_library(
     urls = ["https://files.pythonhosted.org/packages/b3/b2/238e2590826bfdd113244a40d9d3eb26918bd798fc187e2360a8367068db/six-1.10.0.tar.gz"],
 )
 
-new_http_archive(
+http_archive(
     name = "wrapt",
     build_file_content = """
 py_library(
@@ -314,7 +317,7 @@ py_library(
     urls = ["https://files.pythonhosted.org/packages/a3/bb/525e9de0a220060394f4aa34fdf6200853581803d92714ae41fc3556e7d7/wrapt-1.10.10.tar.gz"],
 )
 
-new_http_archive(
+http_archive(
     name = "enum34",
     build_file_content = """
 py_library(
@@ -328,7 +331,7 @@ py_library(
     urls = ["https://files.pythonhosted.org/packages/bf/3e/31d502c25302814a7c2f1d3959d2a3b3f78e509002ba91aea64993936876/enum34-1.1.6.tar.gz"],
 )
 
-new_http_archive(
+http_archive(
     name = "singledispatch_lib",
     build_file_content = """
 py_library(
@@ -345,7 +348,7 @@ py_library(
     urls = ["https://files.pythonhosted.org/packages/d9/e9/513ad8dc17210db12cb14f2d4d190d618fb87dd38814203ea71c87ba5b68/singledispatch-3.4.0.3.tar.gz"],
 )
 
-new_http_archive(
+http_archive(
     name = "backports",
     build_file_content = """
 py_library(
@@ -359,7 +362,7 @@ py_library(
     urls = ["https://files.pythonhosted.org/packages/4e/91/0e93d9455254b7b630fb3ebe30cc57cab518660c5fad6a08aac7908a4431/backports.functools_lru_cache-1.4.tar.gz"],
 )
 
-new_http_archive(
+http_archive(
     name = "configparser_lib",
     build_file_content = """
 py_library(
@@ -375,7 +378,7 @@ py_library(
 )
 
 # find the most recent version of influxdb at https://pypi.python.org/pypi/influxdb/
-new_http_archive(
+http_archive(
     name = "influxdb",
     build_file_content = """
 py_library(
@@ -390,7 +393,7 @@ py_library(
 )
 
 # find the most recent version at https://pypi.python.org/pypi/pytz
-new_http_archive(
+http_archive(
     name = "pytz",
     build_file_content = """
 py_library(
@@ -405,7 +408,7 @@ py_library(
 )
 
 # find the most recent version at https://pypi.python.org/pypi/python-dateutil
-new_http_archive(
+http_archive(
     name = "dateutil",
     build_file_content = """
 py_library(
@@ -451,14 +454,3 @@ pip_import(
 load("@kettle_deps//:requirements.bzl", "pip_install")
 
 pip_install()
-
-load("//autogo:deps.bzl", "autogo_dependencies")
-
-autogo_dependencies()
-
-load("//autogo:def.bzl", "autogo_generate")
-
-autogo_generate(
-    name = "autogo",
-    prefix = "k8s.io/test-infra",
-)

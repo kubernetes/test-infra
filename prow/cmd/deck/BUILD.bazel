@@ -16,13 +16,11 @@ container_image(
     data_path = ".",
     # Add files under into the root directory.
     directory = "/",
-    # Everything under static/
+    # Everything under static/ and template/
     files = glob(
-        ["static/**/*"],
-        exclude = [
-            "static/tide.js",
-            "static/data.js",
-            "static/plugin-help.js",
+        [
+            "static/**/*",
+            "template/**/*",
         ],
     ),
 )
@@ -68,6 +66,7 @@ go_library(
         "badge.go",
         "main.go",
         "pluginhelp.go",
+        "templates.go",
         "tide.go",
     ],
     importpath = "k8s.io/test-infra/prow/cmd/deck",

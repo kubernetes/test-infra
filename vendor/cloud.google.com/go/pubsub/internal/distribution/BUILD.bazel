@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["distribution.go"],
-    importmap = "vendor/cloud.google.com/go/pubsub/internal/distribution",
+    importmap = "k8s.io/test-infra/vendor/cloud.google.com/go/pubsub/internal/distribution",
     importpath = "cloud.google.com/go/pubsub/internal/distribution",
     visibility = ["//vendor/cloud.google.com/go/pubsub:__subpackages__"],
 )

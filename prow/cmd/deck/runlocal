@@ -15,7 +15,7 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DIR
-cd static
+cd localdata
 HOST="https://prow.k8s.io"
 if [[ $1 == "openshift" ]]; then
 	HOST="https://deck-ci.svc.ci.openshift.org"
@@ -24,4 +24,4 @@ curl "$HOST/data.js?var=allBuilds" > data.js
 curl "$HOST/tide.js?var=tideData" > tide.js
 curl "$HOST/plugin-help.js?var=allHelp" > plugin-help.js
 curl "$HOST/pr-data.js" > pr-data.js
-bazel run --run_under="cd $DIR && " //prow/cmd/deck:deck -- --run-local --static-files-location=./static --config-path ../../config.yaml
+bazel run --run_under="cd $DIR && " //prow/cmd/deck:deck -- --run-local --static-files-location=./static --template-files-location=./template --config-path ../../config.yaml

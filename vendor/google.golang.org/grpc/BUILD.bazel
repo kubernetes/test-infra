@@ -26,7 +26,7 @@ go_library(
         "trace.go",
         "version.go",
     ],
-    importmap = "vendor/google.golang.org/grpc",
+    importmap = "k8s.io/test-infra/vendor/google.golang.org/grpc",
     importpath = "google.golang.org/grpc",
     visibility = ["//visibility:public"],
     deps = [

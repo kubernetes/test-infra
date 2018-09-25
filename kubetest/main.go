@@ -51,7 +51,7 @@ var (
 	terminate = time.NewTimer(time.Duration(0)) // terminate testing at this time.
 	verbose   = false
 	timeout   = time.Duration(0)
-	boskos    = client.NewClient(os.Getenv("JOB_NAME"), "http://boskos")
+	boskos    = client.NewClient(os.Getenv("JOB_NAME"), "http://boskos.test-pods.svc.cluster.local.")
 	control   = process.NewControl(timeout, interrupt, terminate, verbose)
 )
 

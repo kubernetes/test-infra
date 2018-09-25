@@ -10,7 +10,7 @@ go_library(
         "isAlias18.go",
         "isAlias19.go",
     ],
-    importmap = "vendor/golang.org/x/tools/go/gcimporter15",
+    importmap = "k8s.io/test-infra/vendor/golang.org/x/tools/go/gcimporter15",
     importpath = "golang.org/x/tools/go/gcimporter15",
     visibility = ["//visibility:public"],
 )

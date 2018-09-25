@@ -9,7 +9,7 @@ go_library(
         "parse.go",
         "types.go",
     ],
-    importmap = "vendor/github.com/joshdk/go-junit",
+    importmap = "k8s.io/test-infra/vendor/github.com/joshdk/go-junit",
     importpath = "github.com/joshdk/go-junit",
     visibility = ["//visibility:public"],
 )

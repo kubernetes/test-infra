@@ -28,8 +28,6 @@ HOOK_VERSION              ?= $(TAG)
 SINKER_VERSION            ?= $(TAG)
 # DECK_VERSION is the version of the deck image
 DECK_VERSION              ?= $(TAG)
-# SPLICE_VERSION is the version of the splice image
-SPLICE_VERSION            ?= $(TAG)
 # TOT_VERSION is the version of the tot image
 TOT_VERSION               ?= $(TAG)
 # HOROLOGIUM_VERSION is the version of the horologium image
@@ -56,8 +54,8 @@ ARTIFACT_UPLOADER_VERSION ?= $(TAG)
 NEEDS_REBASE_VERSION      ?= $(TAG)
 # CHECKCONFIG_VERSION is the version of the checkconfig image
 CHECKCONFIG_VERSION       ?= $(TAG)
-# GERRIT_CRIER_VERSION is the version of the gerrit-crier image
-GERRIT_CRIER_VERSION      ?= $(TAG)
+# CRIER_VERSION is the version of the crier image
+CRIER_VERSION      ?= $(TAG)
 
 # These are the usual GKE variables.
 PROJECT       ?= k8s-prow
@@ -153,17 +151,6 @@ deck-service: get-cluster-credentials
 	kubectl apply -f cluster/deck_service.yaml
 
 .PHONY: deck-image deck-deployment deck-service
-
-splice-image: git-image
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/splice/splice k8s.io/test-infra/prow/cmd/splice
-	docker build -t "$(REGISTRY)/$(PROJECT)/splice:$(SPLICE_VERSION)" $(DOCKER_LABELS) cmd/splice
-	$(PUSH) "$(REGISTRY)/$(PROJECT)/splice:$(SPLICE_VERSION)"
-	rm cmd/splice/splice
-
-splice-deployment: get-cluster-credentials
-	kubectl apply -f cluster/splice_deployment.yaml
-
-.PHONY: splice-image splice-deployment
 
 tot-image: alpine-image
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/tot/tot k8s.io/test-infra/prow/cmd/tot
@@ -289,10 +276,10 @@ checkconfig-image: alpine-image
 
 .PHONY: checkconfig-image
 
-gerrit-crier-image: alpine-image
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/gerrit-crier/gerrit-crier k8s.io/test-infra/prow/cmd/gerrit-crier
-	docker build -t "$(REGISTRY)/$(PROJECT)/gerrit-crier:$(GERRIT_CRIER_VERSION)" $(DOCKER_LABELS) cmd/gerrit-crier
-	$(PUSH) "$(REGISTRY)/$(PROJECT)/gerrit-crier:$(GERRIT_CRIER_VERSION)"
-	rm cmd/gerrit-crier/gerrit-crier
+crier-image: alpine-image
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/crier/crier k8s.io/test-infra/prow/cmd/crier
+	docker build -t "$(REGISTRY)/$(PROJECT)/crier:$(CRIER_VERSION)" $(DOCKER_LABELS) cmd/crier
+	$(PUSH) "$(REGISTRY)/$(PROJECT)/crier:$(CRIER_VERSION)"
+	rm cmd/crier/crier
 
-.PHONY: gerrit-crier-image
+.PHONY: crier-image

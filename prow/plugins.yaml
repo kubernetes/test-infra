@@ -33,6 +33,8 @@ triggers:
 owners:
   mdyamlrepos:
   - kubernetes/website
+  skip_collaborators:
+  - kubernetes-sigs/contributor-playground
 
 approve:
 - repos:
@@ -312,6 +314,7 @@ plugins:
 
   kubernetes/cloud-provider-openstack:
   - trigger
+  - override
 
   kubernetes/cloud-provider-vsphere:
   - trigger
@@ -365,6 +368,9 @@ plugins:
   - trigger
 
   kubernetes/perf-tests:
+  - trigger
+
+  kubernetes/release:
   - trigger
 
   kubernetes/sig-release:
@@ -499,6 +505,7 @@ plugins:
 
   kubernetes-sigs/contributor-playground:
   - require-sig
+  - welcome
 
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
   - trigger
@@ -551,6 +558,10 @@ plugins:
   - blunderbuss
   - wip
   - hold
+
+  cncf/apisnoop:
+  - cat # /meow replies with cat pictures
+  - dog # /bark replies with dog pictures
 
 external_plugins:
   kubernetes/community:

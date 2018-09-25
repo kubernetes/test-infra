@@ -8,28 +8,6 @@ window.onload = function() {
     redraw();
 };
 
-document.addEventListener("DOMContentLoaded", function(event) {
-   configure();
-});
-
-function configure() {
-    if(!branding){
-        return;
-    }
-    if (branding.logo) {
-        document.getElementById('img').src = branding.logo;
-    }
-    if (branding.favicon) {
-        document.getElementById('favicon').href = branding.favicon;
-    }
-    if (branding.background_color) {
-        document.body.style.background = branding.background_color;
-    }
-    if (branding.header_color) {
-        document.getElementsByTagName('header')[0].style.backgroundColor = branding.header_color;
-    }
-}
-
 function infoToggle(toToggle) {
     return function(event) {
         if (toToggle.className == "hidden") {

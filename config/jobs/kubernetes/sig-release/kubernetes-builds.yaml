@@ -1,7 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-cross
-    run_if_changed: '^(build\/|hack\/lib\/)|(Makefile)$'
+    run_if_changed: '^((build\/|hack\/lib\/).*)|(.*Makefile.*)$'
     skip_branches:
     - release-1.9
     labels:

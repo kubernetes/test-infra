@@ -10,7 +10,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180912-7a027de0c-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180924-8e8468033-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -53,7 +53,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180912-7a027de0c-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180924-8e8468033-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -99,7 +99,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180912-7a027de0c-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180924-8e8468033-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -126,7 +126,7 @@ presubmits:
       - name: test
         command:
         - ./hack/verify-config.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180912-7a027de0c-experimental
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180924-8e8468033-experimental
         env:
         - name: TEST_TMPDIR
           value: /bazel-scratch/.cache/bazel
@@ -151,7 +151,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180912-7a027de0c-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180924-8e8468033-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -175,7 +175,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180912-7a027de0c-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180924-8e8468033-experimental
         command:
         - ./hack/verify-codegen.sh
         resources:
@@ -219,13 +219,13 @@ presubmits:
   - name: pull-test-infra-verify-labels
     branches:
     - master
-    run_if_changed: '^label_sync'
+    run_if_changed: '^label_sync/labels.yaml'
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180912-7a027de0c-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180924-8e8468033-experimental
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - --root=/go/src

@@ -247,9 +247,9 @@ type ProwJobStatus struct {
 	// ProwJob.
 	JenkinsBuildID string `json:"jenkins_build_id,omitempty"`
 
-	// PrevReportState stores the previous reported prowjob state
+	// PrevReportStates stores the previous reported prowjob state per reporter
 	// So crier won't make duplicated report attempt
-	PrevReportState ProwJobState `json:"prev_report_state, omitempty"`
+	PrevReportStates map[string]ProwJobState `json:"prev_report_states, omitempty"`
 }
 
 // Complete returns true if the prow job has finished

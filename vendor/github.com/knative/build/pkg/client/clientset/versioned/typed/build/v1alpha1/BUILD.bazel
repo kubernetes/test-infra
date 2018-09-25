@@ -9,7 +9,7 @@ go_library(
         "doc.go",
         "generated_expansion.go",
     ],
-    importmap = "vendor/github.com/knative/build/pkg/client/clientset/versioned/typed/build/v1alpha1",
+    importmap = "k8s.io/test-infra/vendor/github.com/knative/build/pkg/client/clientset/versioned/typed/build/v1alpha1",
     importpath = "github.com/knative/build/pkg/client/clientset/versioned/typed/build/v1alpha1",
     visibility = ["//visibility:public"],
     deps = [

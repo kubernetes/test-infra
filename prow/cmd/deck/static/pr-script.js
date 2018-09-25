@@ -102,7 +102,7 @@ function getPRQuery(q) {
  * @param {Object} prData
  */
 function redraw(prData) {
-    const mainContainer = document.querySelector("#main-container");
+    const mainContainer = document.querySelector("#pr-container");
     while (mainContainer.firstChild) {
         mainContainer.removeChild(mainContainer.firstChild);
     }
@@ -225,7 +225,7 @@ window.onload = () => {
         loadProgress(false);
     }, () => {
         loadProgress(false);
-        const mainContainer = document.querySelector("#main-container");
+        const mainContainer = document.querySelector("#pr-container");
         mainContainer.appendChild(createMessage("Something wrongs! We could not fulfill your request"));
     });
     showAlerts();
@@ -359,7 +359,7 @@ function loadPrStatus(prData) {
         tideQueries.push(new TideQuery(query));
     }
 
-    const container = document.querySelector("#main-container");
+    const container = document.querySelector("#pr-container");
     container.appendChild(createSearchCard());
     if (!prData.PullRequestsWithContexts || prData.PullRequestsWithContexts.length === 0) {
         const msg = createMessage("No open PRs found", "");
@@ -430,8 +430,8 @@ function createTidePoolLabel(pr, tidePool) {
     }
     const labelTitle = ["Merging", "In Batch & Test Pending",
         "Test Passing & Merge Pending", "Test Pending",
-        "Test failed/Missing Labels"];
-    const labelStyle = ["merging", "batching", "passing", "pending", "failed"];
+        "Queued for retest"];
+    const labelStyle = ["merging", "batching", "passing", "pending", "pending"];
     label.textContent = "In Pool - " + labelTitle[inPoolId];
     label.classList.add("title-label", "mdl-shadow--2dp", labelStyle[inPoolId]);
 
@@ -1258,26 +1258,4 @@ function createMessage(msg, icStr) {
     msgContainer.classList.add("message");
 
     return msgContainer;
-}
-
-document.addEventListener("DOMContentLoaded", function (event) {
-    configure();
-});
-
-function configure() {
-    if (!branding) {
-        return;
-    }
-    if (branding.logo !== '') {
-        document.getElementById('img').src = branding.logo;
-    }
-    if (branding.favicon !== '') {
-        document.getElementById('favicon').href = branding.favicon;
-    }
-    if (branding.background_color !== '') {
-        document.body.style.background = branding.background_color;
-    }
-    if (branding.header_color !== '') {
-        document.getElementsByTagName('header')[0].style.backgroundColor = branding.header_color;
-    }
 }

@@ -194,7 +194,7 @@ func validate(labels []Label, parent string, seen map[string]string) (map[string
 		if newSeen, err := validate(l.Previously, path, newSeen); err != nil {
 			return newSeen, err
 		}
-		if len(l.Description) > 99 { // github limits the description field to 100 chars
+		if len(l.Description) > 100 { // github limits the description field to 100 chars
 			return newSeen, fmt.Errorf("description for %s is too long", name)
 		}
 	}

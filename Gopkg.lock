@@ -113,18 +113,22 @@
   packages = [
     "cmd/gazelle",
     "internal/config",
+    "internal/flag",
     "internal/label",
+    "internal/language",
+    "internal/language/go",
+    "internal/language/proto",
     "internal/merger",
-    "internal/packages",
     "internal/pathtools",
     "internal/repos",
     "internal/resolve",
-    "internal/rules",
+    "internal/rule",
     "internal/version",
+    "internal/walk",
     "internal/wspace",
   ]
-  revision = "8bc6a862933eaa0d7431e15b308ceadc5729a6f9"
-  version = "0.11.0"
+  revision = "6a1b93cc9b1c7e55e7d05a6d324bcf9d87ea3ab1"
+  version = "0.14.0"
 
 [[projects]]
   name = "github.com/bazelbuild/buildtools"
@@ -231,6 +235,12 @@
   ]
   revision = "3eb9738c1697594ea6e71a7156a9bb32ed216cf0"
   version = "v2.8.0"
+
+[[projects]]
+  name = "github.com/evanphx/json-patch"
+  packages = ["."]
+  revision = "72bf35d0ff611848c1dc9df0f976c81192392fa5"
+  version = "v4.1.0"
 
 [[projects]]
   name = "github.com/fsnotify/fsnotify"
@@ -848,6 +858,7 @@
 [[projects]]
   name = "golang.org/x/tools"
   packages = [
+    "cover",
     "go/ast/astutil",
     "go/gcexportdata",
     "go/gcimporter15",
@@ -1194,6 +1205,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "5633fc6ce037894307f2bcbe0ec1bfc2417e79846713476f1867c91b0bf7b6dd"
+  inputs-digest = "b4c254b53e869b40eba05d71a2fd1a9936c0180a834db7959c997770cce0a785"
   solver-name = "gps-cdcl"
   solver-version = 1
