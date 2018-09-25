@@ -51,7 +51,7 @@ spec:
         args:
         - --boskos-url=http://boskos.test-pods.svc.cluster.local.
         - --service-account=/etc/service-account/service-account.json
-        - --resource-type=gce-project,gpu-project,ingress-project,istio-project
+        - --resource-type=gce-project,gpu-project,ingress-project,istio-project,scalability-project
         - --pool-size=20
         volumeMounts:
         - mountPath: /etc/service-account

@@ -510,3 +510,14 @@ resources:
   - istio-gke-addon-prow-e2e-test
   state: dirty
   type: istio-project
+- names:
+  - k8s-e2e-gce-scalability-1-1
+  - k8s-e2e-gce-scalability-1-2
+  - k8s-e2e-gci-gce-scale-1-4
+  - k8s-e2e-gci-gce-scale-1-5
+  - k8s-jenkins-gci-scalability
+  - k8s-jenkins-gci-scalability-2
+  - k8s-jenkins-kubemark
+  - k8s-jenkins-scalability-2
+  state: dirty
+  type: scalability-project
