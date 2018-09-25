@@ -12,7 +12,7 @@ import (
 
 func constructQuery(v interface{}, variables map[string]interface{}) string {
 	query := query(v)
-	if variables != nil {
+	if len(variables) > 0 {
 		return "query(" + queryArguments(variables) + ")" + query
 	}
 	return query
@@ -20,7 +20,7 @@ func constructQuery(v interface{}, variables map[string]interface{}) string {
 
 func constructMutation(v interface{}, variables map[string]interface{}) string {
 	query := query(v)
-	if variables != nil {
+	if len(variables) > 0 {
 		return "mutation(" + queryArguments(variables) + ")" + query
 	}
 	return "mutation" + query
