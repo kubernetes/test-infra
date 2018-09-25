@@ -93,6 +93,11 @@ func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent)
 }
 
 func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.GenericCommentEvent) error {
+	// Only consider open issues and new comments.
+	if e.IsPR || e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
+		return nil
+	}
+
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
 	commentAuthor := e.User.Login

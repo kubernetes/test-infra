@@ -45,6 +45,9 @@ func formatLabels(labels ...string) []string {
 func TestLabel(t *testing.T) {
 	type testCase struct {
 		name                  string
+		isPR                  bool
+		issueState            string
+		action                github.GenericCommentEventAction
 		body                  string
 		expectedNewLabels     []string
 		expectedRemovedLabels []string
@@ -52,8 +55,32 @@ func TestLabel(t *testing.T) {
 	}
 	testcases := []testCase{
 		{
-			name:                  "Irrelevant comment",
+			name:                  "Ignore irrelevant comment",
 			body:                  "irrelelvant",
+			expectedNewLabels:     []string{},
+			expectedRemovedLabels: []string{},
+			issueLabels:           []string{},
+		},
+		{
+			name:                  "Ignore a PR",
+			isPR:                  true,
+			body:                  "/help",
+			expectedNewLabels:     []string{},
+			expectedRemovedLabels: []string{},
+			issueLabels:           []string{},
+		},
+		{
+			name:                  "Ignore a closed issue",
+			issueState:            "closed",
+			body:                  "/help",
+			expectedNewLabels:     []string{},
+			expectedRemovedLabels: []string{},
+			issueLabels:           []string{},
+		},
+		{
+			name:                  "Ignore a non-created comment",
+			action:                github.GenericCommentActionEdited,
+			body:                  "/help",
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: []string{},
 			issueLabels:           []string{},
@@ -157,12 +184,22 @@ func TestLabel(t *testing.T) {
 		for _, label := range tc.issueLabels {
 			fakeClient.AddLabel("org", "repo", 1, label)
 		}
+
+		if len(tc.issueState) == 0 {
+			tc.issueState = "open"
+		}
+		if len(tc.action) == 0 {
+			tc.action = github.GenericCommentActionCreated
+		}
+
 		e := &github.GenericCommentEvent{
-			Action: github.GenericCommentActionCreated,
-			Body:   tc.body,
-			Number: 1,
-			Repo:   github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
-			User:   github.User{Login: "Alice"},
+			IsPR:       tc.isPR,
+			IssueState: tc.issueState,
+			Action:     tc.action,
+			Body:       tc.body,
+			Number:     1,
+			Repo:       github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
+			User:       github.User{Login: "Alice"},
 		}
 		err := handle(fakeClient, logrus.WithField("plugin", pluginName), &fakePruner{}, e)
 		if err != nil {
