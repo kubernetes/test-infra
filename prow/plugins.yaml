@@ -314,6 +314,7 @@ plugins:
 
   kubernetes/cloud-provider-openstack:
   - trigger
+  - override
 
   kubernetes/cloud-provider-vsphere:
   - trigger
