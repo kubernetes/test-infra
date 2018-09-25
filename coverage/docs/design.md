@@ -62,6 +62,7 @@ The tool produces & stores coverage profile for later presubmit jobs to compare 
     - filter based on git attribute to ignore files with the following git attributes
       - linguist-generated
       - coverage-excluded
+      
       An example of how these git attribute is used can be found [here](https://github.com/knative/serving/blob/master/.gitattributes)
     - Stores in the XML format, that is used by TestGrid, and dump it in artifacts directory
       - The XML should be a valid JUnit XML file. See 
