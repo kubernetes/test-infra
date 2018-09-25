@@ -2,8 +2,8 @@
 
 Tide is a [Prow](https://github.com/kubernetes/test-infra/blob/master/prow/README.md)
 component for managing a pool of GitHub PRs that match a given set of criteria.
-It will automatically retest PRs that meet the criteria and automatically merge
-them when they have up-to-date passing test results.
+It will automatically retest PRs that meet the criteria ("tide comes in") and automatically merge
+them when they have up-to-date passing test results ("tide goes out").
 
 [Open Issues](https://github.com/kubernetes/test-infra/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+label%3Aarea%2Fprow%2Ftide)
 
