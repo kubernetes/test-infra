@@ -10,7 +10,7 @@ periodics:
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
-      - "--repo=github.com/kubernetes-sigs/kustomize"
+      - "--repo=sigs.k8s.io/kustomize"
       - "--upload=gs://kubernetes-jenkins/logs/"
       - "--timeout=150"
       - --scenario=kubernetes_e2e
