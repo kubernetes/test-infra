@@ -2863,12 +2863,16 @@ test_groups:
   gcs_prefix: istio-circleci/presubmit/e2e-dashboard
 - name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2-presubmit
   gcs_prefix: istio-circleci/presubmit/e2e-mixer-noauth-v1alpha3-v2
+- name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2-mcp-presubmit
+  gcs_prefix: istio-circleci/presubmit/e2e-mixer-noauth-v1alpha3-v2-mcp
 - name: istio-circleci-e2e-galley-presubmit
   gcs_prefix: istio-circleci/presubmit/e2e-galley
 - name: istio-circleci-e2e-pilot-cloudfoundry-v1alpha3-v2-presubmit
   gcs_prefix: istio-circleci/presubmit/e2e-pilot-cloudfoundry-v1alpha3-v2
 - name: istio-circleci-e2e-pilot-auth-v1alpha3-v2-presubmit
   gcs_prefix: istio-circleci/presubmit/e2e-pilot-auth-v1alpha3-v2
+- name: istio-circleci-e2e-pilot-auth-v1alpha3-v2-mcp-presubmit
+  gcs_prefix: istio-circleci/presubmit/e2e-pilot-auth-v1alpha3-v2-mcp
 - name: istio-circleci-e2e-pilot-noauth-v1alpha3-v2-presubmit
   gcs_prefix: istio-circleci/presubmit/e2e-pilot-noauth-v1alpha3-v2
 - name: istio-circleci-test-presubmit
@@ -2884,17 +2888,32 @@ test_groups:
 - name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2
   gcs_prefix: istio-circleci/e2e-mixer-noauth-v1alpha3-v2
   num_failures_to_alert: 5
+- name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2-mcp
+  gcs_prefix: istio-circleci/e2e-mixer-noauth-v1alpha3-v2-mcp
+  num_failures_to_alert: 5
 - name: istio-circleci-e2e-simple
   gcs_prefix: istio-circleci/e2e-simple
+  num_failures_to_alert: 5
+- name: istio-circleci-e2e-simple-mcp
+  gcs_prefix: istio-circleci/e2e-simple-mcp
   num_failures_to_alert: 5
 - name: istio-circleci-e2e-dashboard
   gcs_prefix: istio-circleci/e2e-dashboard
   num_failures_to_alert: 5
+- name: istio-circleci-e2e-dashboard-mcp
+  gcs_prefix: istio-circleci/e2e-dashboard-mcp
+  num_failures_to_alert: 5
 - name: istio-circleci-e2e-pilot-auth-v1alpha3-v2
   gcs_prefix: istio-circleci/e2e-pilot-auth-v1alpha3-v2
   num_failures_to_alert: 5
+- name: istio-circleci-e2e-pilot-auth-v1alpha3-v2-mcp
+  gcs_prefix: istio-circleci/e2e-pilot-auth-v1alpha3-v2-mcp
+  num_failures_to_alert: 5
 - name: istio-circleci-e2e-pilot-noauth-v1alpha3-v2
   gcs_prefix: istio-circleci/e2e-pilot-noauth-v1alpha3-v2
+  num_failures_to_alert: 5
+- name: istio-circleci-e2e-pilot-noauth-v1alpha3-v2-mcp
+  gcs_prefix: istio-circleci/e2e-pilot-noauth-v1alpha3-v2-mcp
   num_failures_to_alert: 5
 - name: istio-circleci-e2e-galley
   gcs_prefix: istio-circleci/e2e-galley
@@ -6812,12 +6831,16 @@ dashboards:
     test_group_name: istio-circleci-e2e-dashboard-presubmit
   - name: circleci-e2e-mixer-noauth-v1alpha3-v2
     test_group_name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2-presubmit
+  - name: circleci-e2e-mixer-noauth-v1alpha3-v2-mcp
+    test_group_name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2-mcp-presubmit
   - name: circleci-e2e-galley
     test_group_name: istio-circleci-e2e-galley-presubmit
   - name: circleci-e2e-pilot-cloudfoundry-v1alpha3-v2
     test_group_name: istio-circleci-e2e-pilot-cloudfoundry-v1alpha3-v2-presubmit
   - name: circleci-e2e-pilot-auth-v1alpha3-v2
     test_group_name: istio-circleci-e2e-pilot-auth-v1alpha3-v2-presubmit
+  - name: circleci-e2e-pilot-auth-v1alpha3-v2-mcp
+    test_group_name: istio-circleci-e2e-pilot-auth-v1alpha3-v2-mcp-presubmit
   - name: circleci-e2e-pilot-noauth-v1alpha3-v2
     test_group_name: istio-circleci-e2e-pilot-noauth-v1alpha3-v2-presubmit
   - name: circleci-unit-tests
@@ -6863,20 +6886,40 @@ dashboards:
     test_group_name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2
     alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: circleci-e2e-mixer-noauth-v1alpha3-v2-mcp
+    test_group_name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2-mcp
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
   - name: circleci-e2e-simple
     test_group_name: istio-circleci-e2e-simple
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: circleci-e2e-simple-mcp
+    test_group_name: istio-circleci-e2e-simple-mcp
     alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
   - name: circleci-e2e-dashboard
     test_group_name: istio-circleci-e2e-dashboard
     alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: circleci-e2e-dashboard-mcp
+    test_group_name: istio-circleci-e2e-dashboard-mcp
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
   - name: circleci-e2e-pilot-auth-v1alpha3-v2
     test_group_name: istio-circleci-e2e-pilot-auth-v1alpha3-v2
     alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: circleci-e2e-pilot-auth-v1alpha3-v2-mcp
+    test_group_name: istio-circleci-e2e-pilot-auth-v1alpha3-v2-mcp
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
   - name: circleci-e2e-pilot-noauth-v1alpha3-v2
     test_group_name: istio-circleci-e2e-pilot-noauth-v1alpha3-v2
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: circleci-e2e-pilot-noauth-v1alpha3-v2-mcp
+    test_group_name: istio-circleci-e2e-pilot-noauth-v1alpha3-v2-mcp
     alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
   - name: circleci-e2e-galley
