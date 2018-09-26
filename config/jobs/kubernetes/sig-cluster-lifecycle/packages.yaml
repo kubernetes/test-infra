@@ -12,6 +12,6 @@ periodics:
       - --repo=k8s.io/kubeadm=master
       - --scenario=execute
       - --
-      - ./tests/e2e/verify_packages_published.sh
+      - ./tests/e2e/packages/verify_packages_published.sh
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
