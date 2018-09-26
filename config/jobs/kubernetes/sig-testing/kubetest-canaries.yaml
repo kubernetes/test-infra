@@ -143,6 +143,8 @@ periodics:
   - org: kubernetes
     repo: test-infra
     base_ref: master
+  decoration_config:
+    timeout: 18500000000000 # 5h + 5m
   spec:
     containers:
     - command:
@@ -156,7 +158,7 @@ periodics:
       - --gcp-zone=us-central1-f
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --timeout=120m
+      - --timeout=300m
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
 
