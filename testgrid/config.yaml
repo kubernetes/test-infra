@@ -2870,6 +2870,7 @@ test_groups:
   gcs_prefix: istio-circleci/presubmit/e2e-dashboard
 - name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2-presubmit
   gcs_prefix: istio-circleci/presubmit/e2e-mixer-noauth-v1alpha3-v2
+  days_of_results: 15
 - name: istio-circleci-e2e-galley-presubmit
   gcs_prefix: istio-circleci/presubmit/e2e-galley
 - name: istio-circleci-e2e-pilot-cloudfoundry-v1alpha3-v2-presubmit
