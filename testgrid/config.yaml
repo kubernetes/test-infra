@@ -3125,6 +3125,27 @@ test_groups:
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
 
+# vsphere e2e conformance tests
+- name: ci-periodic-vsphere-test-e2e-conformance
+  gcs_prefix: k8s-conformance-vsphere/head/ci/latest
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1
+
+- name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.12
+  gcs_prefix: k8s-conformance-vsphere/head/release/v1.12
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1
+
+- name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.11
+  gcs_prefix: k8s-conformance-vsphere/head/release/v1.11
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1
+
+- name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.10
+  gcs_prefix: k8s-conformance-vsphere/head/release/v1.10
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1
+
 # Gardener Test Groups
 - name: ci-gardener-e2e-conformance-aws-v1.10
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-aws-v1.10
@@ -3265,6 +3286,7 @@ dashboards:
   - name: OpenStack, v1.11 (dev)
     description: Runs conformance tests using kubetest against kubernetes from the release-1.11 branch with cloud-provider-openstack
     test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.11
+
   - name: vSphere-cloud-provider, master (dev)
     description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-vsphere
     test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance
@@ -3285,6 +3307,28 @@ dashboards:
     test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.12
     alert_options:
       alert_mail_to_addresses: cnx+e2e@vmware.com
+
+  - name: vSphere, master (dev)
+    description: Runs conformance tests using kubetest against latest kubernetes master with the in-tree vSphere cloud provider
+    test_group_name: ci-periodic-vsphere-test-e2e-conformance
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: vSphere, v1.10 (dev)
+    description: Runs conformance tests using kubetest against kubernetes from the release-1.10 branch with the in-tree vSphere cloud provider
+    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.10
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: vSphere, v1.11 (dev)
+    description: Runs conformance tests using kubetest against kubernetes from the release-1.11 branch with the in-tree vSphere cloud provider
+    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.11
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: vSphere, v1.12 (dev)
+    description: Runs conformance tests using kubetest against kubernetes from the release-1.12 branch with the in-tree vSphere cloud provider
+    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.12
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+
   - name: DigitalOcean Master
     description: Runs conformance test using kubetest against latest kubernetes master on DigitalOcean
     test_group_name: digitalocean-e2e-conformance
@@ -3366,6 +3410,24 @@ dashboards:
   - name: local-up-cluster-containerized, master (dev)
     description: Runs conformance tests using kubetest with local-up-cluster (containerized kubelet)
     test_group_name: ci-kubernetes-local-e2e-containerized
+
+- name: conformance-vsphere
+  dashboard_tab:
+  - name: periodic-v1.10
+    description: Runs conformance tests using kubetest against kubernetes v1.10 with in-tree vSphere components
+    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.10
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: periodic-v1.11
+    description: Runs conformance tests using kubetest against kubernetes v1.11 with in-tree vSphere components
+    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.11
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: periodic-v1.12
+    description: Runs conformance tests using kubetest against kubernetes v1.12 with in-tree vSphere components
+    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.12
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
 
 - name: conformance-cloud-provider-openstack
   dashboard_tab:
@@ -4461,6 +4523,9 @@ dashboards:
   - name: Conformance - vSphere-cloud-provider
     description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-vsphere
     test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance
+  - name: Conformance - vSphere
+    description: Runs conformance tests using e2e.test against latest kubernetes master with in-tree vSphere
+    test_group_name: ci-periodic-vsphere-test-e2e-conformance
   - name: gce-device-plugin-gpu
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
   - name: gke-device-plugin-gpu
@@ -7282,6 +7347,7 @@ dashboard_groups:
   - conformance-providerless
   - conformance-cloud-provider-openstack
   - conformance-cloud-provider-vsphere
+  - conformance-vsphere
   - conformance-alibaba-cloud-provider
   - conformance-cloud-provider-digitalocean
   - conformance-cloud-provider-baiducloud
