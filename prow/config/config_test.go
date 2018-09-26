@@ -373,6 +373,170 @@ func TestDecorationDefaulting(t *testing.T) {
 	}
 }
 
+func TestDecorationRawYaml(t *testing.T) {
+	var testCases = []struct {
+		name        string
+		expectError bool
+		rawConfig   string
+		expected    *kube.DecorationConfig
+	}{
+		{
+			name:        "no default",
+			expectError: true,
+			rawConfig: `
+periodics:
+- name: kubernetes-defaulted-decoration
+  interval: 1h
+  always_run: true
+  decorate: true
+  spec:
+    containers:
+    - image: golang:latest
+      args:
+      - "test"
+      - "./..."`,
+		},
+		{
+			name: "with default, no explicit decorate",
+			rawConfig: `
+plank:
+  default_decoration_config:
+    timeout: 7200000000000 # 2h
+    grace_period: 15000000000 # 15s
+    utility_images:
+      clonerefs: "clonerefs:default"
+      initupload: "initupload:default"
+      entrypoint: "entrypoint:default"
+      sidecar: "sidecar:default"
+    gcs_configuration:
+      bucket: "default-bucket"
+      path_strategy: "legacy"
+      default_org: "kubernetes"
+      default_repo: "kubernetes"
+    gcs_credentials_secret: "default-service-account"
+
+periodics:
+- name: kubernetes-defaulted-decoration
+  interval: 1h
+  always_run: true
+  decorate: true
+  spec:
+    containers:
+    - image: golang:latest
+      args:
+      - "test"
+      - "./..."`,
+			expected: &kube.DecorationConfig{
+				Timeout:     2 * time.Hour,
+				GracePeriod: 15 * time.Second,
+				UtilityImages: &kube.UtilityImages{
+					CloneRefs:  "clonerefs:default",
+					InitUpload: "initupload:default",
+					Entrypoint: "entrypoint:default",
+					Sidecar:    "sidecar:default",
+				},
+				GCSConfiguration: &kube.GCSConfiguration{
+					Bucket:       "default-bucket",
+					PathStrategy: kube.PathStrategyLegacy,
+					DefaultOrg:   "kubernetes",
+					DefaultRepo:  "kubernetes",
+				},
+				GCSCredentialsSecret: "default-service-account",
+			},
+		},
+		{
+			name: "with default, has explicit decorate",
+			rawConfig: `
+plank:
+  default_decoration_config:
+    timeout: 7200000000000 # 2h
+    grace_period: 15000000000 # 15s
+    utility_images:
+      clonerefs: "clonerefs:default"
+      initupload: "initupload:default"
+      entrypoint: "entrypoint:default"
+      sidecar: "sidecar:default"
+    gcs_configuration:
+      bucket: "default-bucket"
+      path_strategy: "legacy"
+      default_org: "kubernetes"
+      default_repo: "kubernetes"
+    gcs_credentials_secret: "default-service-account"
+
+periodics:
+- name: kubernetes-defaulted-decoration
+  interval: 1h
+  always_run: true
+  decorate: true
+  decoration_config:
+    timeout: 1
+    grace_period: 1
+    utility_images:
+      clonerefs: "clonerefs:explicit"
+      initupload: "initupload:explicit"
+      entrypoint: "entrypoint:explicit"
+      sidecar: "sidecar:explicit"
+    gcs_configuration:
+      bucket: "explicit-bucket"
+      path_strategy: "explicit"
+    gcs_credentials_secret: "explicit-service-account"
+  spec:
+    containers:
+    - image: golang:latest
+      args:
+      - "test"
+      - "./..."`,
+			expected: &kube.DecorationConfig{
+				Timeout:     1 * time.Nanosecond,
+				GracePeriod: 1 * time.Nanosecond,
+				UtilityImages: &kube.UtilityImages{
+					CloneRefs:  "clonerefs:explicit",
+					InitUpload: "initupload:explicit",
+					Entrypoint: "entrypoint:explicit",
+					Sidecar:    "sidecar:explicit",
+				},
+				GCSConfiguration: &kube.GCSConfiguration{
+					Bucket:       "explicit-bucket",
+					PathStrategy: kube.PathStrategyExplicit,
+				},
+				GCSCredentialsSecret: "explicit-service-account",
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		// save the config
+		prowConfigDir, err := ioutil.TempDir("", "prowConfig")
+		if err != nil {
+			t.Fatalf("fail to make tempdir: %v", err)
+		}
+		defer os.RemoveAll(prowConfigDir)
+
+		prowConfig := filepath.Join(prowConfigDir, "config.yaml")
+		if err := ioutil.WriteFile(prowConfig, []byte(tc.rawConfig), 0666); err != nil {
+			t.Fatalf("fail to write prow config: %v", err)
+		}
+
+		cfg, err := Load(prowConfig, "")
+		if tc.expectError && err == nil {
+			t.Errorf("tc %s: Expect error, but got nil", tc.name)
+		} else if !tc.expectError && err != nil {
+			t.Errorf("tc %s: Expect no error, but got error %v", tc.name, err)
+		}
+
+		if tc.expected != nil {
+			if len(cfg.Periodics) != 1 {
+				t.Fatalf("tc %s: Expect to have one periodic job, got none", tc.name)
+			}
+
+			if !reflect.DeepEqual(cfg.Periodics[0].DecorationConfig, tc.expected) {
+				t.Errorf("%s: expected defaulted config:\n%#v\n but got:\n%#v\n", tc.name, tc.expected, cfg.Periodics[0].DecorationConfig)
+			}
+		}
+	}
+
+}
+
 // integration test for fake config loading
 func TestValidConfigLoading(t *testing.T) {
 	var testCases = []struct {
