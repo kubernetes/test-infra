@@ -727,7 +727,7 @@
     "ident",
     "internal/jsonutil",
   ]
-  revision = "62c9ce094e75302d560f7adcdf16c06d05aaa958"
+  revision = "e4a3a37e6d42afa87afee2edeeced52300b63893"
 
 [[projects]]
   name = "github.com/sirupsen/logrus"
