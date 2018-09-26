@@ -9,7 +9,9 @@ rollup_bundle(
         "script.js",
     ],
     entry_point = "prow/cmd/deck/static/script.js",
-    node_modules = "@npm//:node_modules",
+    deps = [
+        "@npm//:moment",
+    ],
 )
 
 rollup_bundle(
@@ -18,7 +20,9 @@ rollup_bundle(
         "plugins-script.js",
     ],
     entry_point = "prow/cmd/deck/static/plugins-script.js",
-    node_modules = "@npm//:node_modules",
+    deps = [
+        "@npm//:dialog-polyfill",
+    ],
 )
 
 rollup_bundle(
@@ -27,7 +31,9 @@ rollup_bundle(
         "pr-script.js",
     ],
     entry_point = "prow/cmd/deck/static/pr-script.js",
-    node_modules = "@npm//:node_modules",
+    deps = [
+        "@npm//:dialog-polyfill",
+    ],
 )
 
 rollup_bundle(
@@ -36,7 +42,6 @@ rollup_bundle(
         "tidescript.js",
     ],
     entry_point = "prow/cmd/deck/static/tidescript.js",
-    node_modules = "@npm//:node_modules",
 )
 
 rollup_bundle(
@@ -45,7 +50,9 @@ rollup_bundle(
         "command-help-script.js",
     ],
     entry_point = "prow/cmd/deck/static/command-help-script.js",
-    node_modules = "@npm//:node_modules",
+    deps = [
+        "@npm//:dialog-polyfill",
+    ],
 )
 
 filegroup(

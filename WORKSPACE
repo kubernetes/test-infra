@@ -96,7 +96,7 @@ docker_pull(
 git_repository(
     name = "build_bazel_rules_nodejs",
     remote = "https://github.com/bazelbuild/rules_nodejs.git",
-    tag = "0.12.4",  # the last version that supports bazel < 0.17
+    tag = "0.14.0",
 )
 
 load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "yarn_install")

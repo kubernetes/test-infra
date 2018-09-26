@@ -21,7 +21,9 @@ jasmine_node_test(
     name = "script_test",
     srcs = ["script_test.js"],
     data = ["js-srcs"],
-    node_modules = "@npm//:node_modules",
+    deps = [
+        "@npm//:jasmine",
+    ],
 )
 
 filegroup(
