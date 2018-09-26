@@ -332,7 +332,7 @@ periodics:
           cpu: 6
           memory: "16Gi"
 
-- cron: '1 18 * * 0' # Run at 10:01PST (18:01 UTC) on sunday
+- cron: '1 */6 * * 1,2,3,4,5' # Run every 6 hours from Mon to Fri
   name: ci-kubernetes-e2e-gke-scale-correctness
   labels:
     preset-service-account: "true"
@@ -349,7 +349,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=gci
-      - --gcp-project=kubernetes-scale
+      - --gcp-project=k8s-scale-testing
       - --gcp-zone=us-east1-a
       - --ginkgo-parallel=30
       - --gke-command-group=beta
