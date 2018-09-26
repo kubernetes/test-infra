@@ -33,10 +33,10 @@ var buildLogTemplateText = `<style>
   padding-left: 0;
 }
 .line-highlighted {
-  background-color: rgba(255, 224, 0, .5);
+ color: rgba(255, 224, 0, 1.0);
 }
 .match-highlighted {
-  background-color: rgba(199, 40, 8, 0.75);
+  color: rgba(255, 0, 0, 1.0);
 }
 .skipped {
   display: none;
