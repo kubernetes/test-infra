@@ -309,7 +309,7 @@ func validateDecoratedJobs(configAgent config.Agent) error {
 	}
 
 	if len(nonDecoratedJobs) > 0 {
-		return fmt.Errorf("the following jobs use the kubernetes provider but do not use the pod utilites: %v", nonDecoratedJobs)
+		return fmt.Errorf("the following jobs use the kubernetes provider but do not use the pod utilities: %v", nonDecoratedJobs)
 	}
 	return nil
 }
