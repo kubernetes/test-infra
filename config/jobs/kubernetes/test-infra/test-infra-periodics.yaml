@@ -27,7 +27,8 @@ periodics:
           memory: "2Gi"
 
 - name: ci-test-infra-triage
-  interval: 1h
+  decorate: true
+  interval: 20m
   spec:
     containers:
     - image: gcr.io/k8s-testimages/triage:latest
@@ -35,6 +36,12 @@ periodics:
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
+      command:
+        - "timeout"
+      args:
+        - "-t"
+        - "10800"
+        - "/update_summaries.sh"
       volumeMounts:
       - name: service
         mountPath: /etc/service-account

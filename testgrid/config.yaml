@@ -6262,7 +6262,7 @@ dashboards:
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: triage
-    description: College results for triage page
+    description: Runs BigQuery queries, summarizes results into clusters, and uploads to GCS for go.k8s.io/triage
     test_group_name: ci-test-infra-triage
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
