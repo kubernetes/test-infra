@@ -2148,8 +2148,6 @@ test_groups:
 - name: ci-kubernetes-e2e-kubeadm-gce-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-master
 # kubeadm x-on-y tests
-- name: ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
 - name: ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
 - name: ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
@@ -4967,8 +4965,6 @@ dashboards:
     test_group_name: periodic-kubernetes-bazel-test-1-10
   - name: kubeadm-gce-1-10
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-10
-  - name: kubeadm-gce-1-9-on-1-10
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
   - name: kubeadm-gce-upgrade-1-9-1-10
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
   - name: periodic-kubernetes-packages-pushed
@@ -5681,8 +5677,6 @@ dashboards:
   - name: kubeadm-gce-master
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-master
 # kubeadm x-on-y tests
-  - name: kubeadm-gce-1.9-on-1.10
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
   - name: gce-kubeadm-1.10-on-1.11
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
   - name: kubeadm-gce-1.11-on-1.12
