@@ -62,8 +62,9 @@ presubmits:
         - "--"
         # the script must run from kubernetes, but we're checking out kind
         - "bash"
+        - "--"
         - "-c"
-        - "cd ./../../k8s.io.kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
+        - "cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
