@@ -4,6 +4,8 @@
     "moment": "^2.22.2"
   },
   "devDependencies": {
-    "jasmine": "~2.8.0"
+    "@bazel/typescript": "^0.18.0",
+    "jasmine": "~2.8.0",
+    "typescript": ">=2.8 <2.9"
   }
 }

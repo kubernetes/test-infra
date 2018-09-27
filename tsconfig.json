@@ -1,0 +1,6 @@
+{
+  "compilerOptions": {
+    "lib": ["dom", "es6", "ScriptHost", "es2015.core", "dom.iterable"],
+    "strict": true
+  }
+}
