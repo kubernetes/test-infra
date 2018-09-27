@@ -506,18 +506,21 @@ function redraw(fz) {
             r.appendChild(createTextCell(""));
         }
         if (spyglass) {
-            var buildIndex = build.url.indexOf("/build/");
-            if (buildIndex !== -1) {
-                const icon = createIcon("visibility", "View in Spyglass");
-                icon.href = window.location.origin + "/view/gcs/" +
-                    build.url.substring(buildIndex + "/build/".length);
-                const cell = document.createElement("TD");
-                cell.classList.add("icon-cell");
-                cell.appendChild(icon);
-                r.appendChild(cell);
+            if (build.state == "pending") {
+                let url = window.location.origin + "/view/prowjob/" + build.prow_job;
+                r.appendChild(createSpyglassCell(url));
             } else {
-                r.appendChild(createTextCell(""));
+                const buildIndex = build.url.indexOf("/build/");
+                if (buildIndex !== -1) {
+                    let url = window.location.origin + "/view/gcs/" +
+                        build.url.substring(buildIndex + "/build/".length);
+                    r.appendChild(createSpyglassCell(url));
+                } else {
+                    r.appendChild(createTextCell(""));
+                }
             }
+        } else {
+            r.appendChild(createTextCell(""));
         }
         if (build.url === "") {
             r.appendChild(createTextCell(build.job));
@@ -532,6 +535,15 @@ function redraw(fz) {
     const jobCount = document.getElementById("job-count");
     jobCount.textContent = "Showing " + Math.min(totalJob, 500) + "/" + totalJob + " jobs";
     drawJobBar(totalJob, jobCountMap);
+}
+
+function createSpyglassCell(url) {
+    const icon = createIcon("visibility", "View in Spyglass");
+    icon.href = url;
+    const cell = document.createElement("TD");
+    cell.classList.add("icon-cell");
+    cell.appendChild(icon);
+    return cell;
 }
 
 function createTextCell(text) {

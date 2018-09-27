@@ -340,14 +340,10 @@ func initSpyglass(configAgent *config.Agent, o options, mux *http.ServeMux, ja *
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GCS client")
 	}
-	sg := spyglass.New(ja, []spyglass.ArtifactFetcher{spyglass.NewGCSArtifactFetcher(c)})
+	sg := spyglass.New(ja, c)
 
 	mux.Handle("/view/render", gziphandler.GzipHandler(handleArtifactView(sg, configAgent)))
-	mux.Handle("/view/gcs/", gziphandler.GzipHandler(handleRequestGCSJobViews(sg, configAgent, o.templateFilesLocation)))
-	if ja != nil {
-		mux.Handle("/view/prowjob/", gziphandler.GzipHandler(handleRequestProwJobViews(sg, configAgent, o.templateFilesLocation)))
-		mux.Handle("/view/", gziphandler.GzipHandler(handleRequestJobViews(sg, configAgent, o.templateFilesLocation)))
-	}
+	mux.Handle("/view/", gziphandler.GzipHandler(handleRequestJobViews(sg, configAgent, o.templateFilesLocation)))
 }
 
 func loadToken(file string) ([]byte, error) {
@@ -460,87 +456,29 @@ func handleBadge(ja *jobs.JobAgent) http.HandlerFunc {
 	}
 }
 
-// handleRequestProwJobViews pre-renders a Spyglass page for a Prowjob source
-// A valid Prow job view url takes the form:
+// handleRequestJobViews handles requests to get all available artifact views for a given job.
+// The url must specify a storage key type, such as "prowjob" or "gcs":
 //
-// /view/prowjob/<jobname>/<buildID>
+// /view/<key-type>/<key>
 //
-// Example:
-// - /view/prowjob/echo-test/1021530234601607168
-func handleRequestProwJobViews(sg *spyglass.Spyglass, ca *config.Agent, templateRoot string) http.HandlerFunc {
+// Examples:
+// - /view/gcs/kubernetes-jenkins/pr-logs/pull/test-infra/9557/pull-test-infra-verify-gofmt/15688/
+// - /view/prowjob/24fe4459-c435-11e8-bea3-0a580a2c009d
+func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent, templateRoot string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		setHeadersNoCaching(w)
 		src := strings.TrimPrefix(r.URL.Path, "/view/")
 
-		page, err := renderSpyglass(sg, ca, src, templateRoot)
+		viewsTemplate, err := sg.Render(ca, src)
 		if err != nil {
-			logrus.WithError(err).Error("error rendering spyglass page")
+			logrus.Errorf("error getting views for job: %v", err)
 			http.Error(w, "error getting views for job", http.StatusInternalServerError)
 			return
 		}
-
-		fmt.Fprint(w, page)
-		elapsed := time.Since(start)
-		logrus.WithFields(logrus.Fields{
-			"duration": elapsed.String(),
-			"endpoint": r.URL.Path,
-		}).Info("Loading view for Prowjob completed.")
-	}
-}
-
-// handleRequestGCSJobViews pre-renders a Spyglass page for a GCS source
-// A valid job GCS Job view url takes the form:
-//
-// /view/gcs/<bucketname>/<jobprefix>
-//
-// Example:
-// - /view/gcs/kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-large-performance/121
-func handleRequestGCSJobViews(sg *spyglass.Spyglass, ca *config.Agent, templateRoot string) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
-		setHeadersNoCaching(w)
-		srcData := strings.TrimPrefix(r.URL.Path, "/view/gcs/")
-		src := fmt.Sprintf("gs://%s", srcData)
-
-		page, err := renderSpyglass(sg, ca, src, templateRoot)
+		page, err := renderViews(viewsTemplate, ca, templateRoot)
 		if err != nil {
-			logrus.WithError(err).Error("error rendering spyglass page")
-			http.Error(w, "error getting views for job", http.StatusInternalServerError)
-			return
-		}
-
-		fmt.Fprint(w, page)
-		elapsed := time.Since(start)
-		logrus.WithFields(logrus.Fields{
-			"duration": elapsed.String(),
-			"endpoint": r.URL.Path,
-		}).Info("Loading view from GCS completed.")
-	}
-}
-
-// handleRequestJobViews handles requests to get all available artifact views for a given job via
-// a general src parameter, which can contain any string used to obtain job artifacts
-// A valid general job view url takes the form:
-//
-// /view/?src=<URI-encoded-source-string>
-//
-// Example:
-// - /view/?src=gs:%2F%2Fkubernetes-jenkins%2Fpr-logs%2Fpull%2Fkubeflow_kubeflow%2F1195%2Fkubeflow-presubmit%2F2558
-func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent, templateRoot string) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
-		setHeadersNoCaching(w)
-		src := r.URL.Query().Get("src")
-		if src == "" {
-			http.Error(w, "missing src query parameter", http.StatusBadRequest)
-			return
-		}
-
-		page, err := renderSpyglass(sg, ca, src, templateRoot)
-		if err != nil {
-			logrus.WithError(err).Error("error rendering spyglass page")
-			http.Error(w, "error getting views for job", http.StatusInternalServerError)
+			http.Error(w, "error rendering spyglass page", http.StatusInternalServerError)
 			return
 		}
 
@@ -550,51 +488,15 @@ func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent, templateRoot
 			"duration": elapsed.String(),
 			"endpoint": r.URL.Path,
 			"source":   src,
-		}).Info("Loading view from generic src completed.")
+		}).Info("Loading view completed.")
 	}
 }
 
-// renderSpyglass returns a pre-rendered Spyglass page from the given source string
-func renderSpyglass(sg *spyglass.Spyglass, ca *config.Agent, src string, templateRoot string) (string, error) {
-	renderStart := time.Now()
-	artifactNames, err := sg.ListArtifacts(src)
-	if err != nil {
-		return "", fmt.Errorf("error listing artifacts: %v", err)
-	}
-
-	viewerCache := map[string][]string{}
-	viewersRegistry := ca.Config().Deck.Spyglass.Viewers
-	regexCache := ca.Config().Deck.Spyglass.RegexCache
-
-	for re, viewerNames := range viewersRegistry {
-		matches := []string{}
-		for _, a := range artifactNames {
-			if regexCache[re].MatchString(a) {
-				matches = append(matches, a)
-			}
-		}
-		if len(matches) > 0 {
-			for _, vName := range viewerNames {
-				viewerCache[vName] = matches
-			}
-		}
-	}
-
-	lenses := sg.Views(viewerCache)
-
-	var viewBuf bytes.Buffer
-	type ViewsTemplate struct {
-		Views       []spyglass.Lens
-		Source      string
-		ViewerCache map[string][]string
-	}
-	vTmpl := ViewsTemplate{
-		Views:       lenses,
-		Source:      src,
-		ViewerCache: viewerCache,
-	}
+// renderViews finishes rendering the provided viewsTemplate
+func renderViews(viewsTemplate spyglass.ViewsTemplate, ca *config.Agent, templateRoot string) (string, error) {
 	t := template.New("spyglass.html")
-	if _, err := prepareBaseTemplate(templateRoot, ca, t); err != nil {
+	_, err := prepareBaseTemplate(templateRoot, ca, t)
+	if err != nil {
 		return "", fmt.Errorf("error preparing base template: %v", err)
 	}
 	t, err = t.ParseFiles(path.Join(templateRoot, "spyglass.html"))
@@ -602,14 +504,10 @@ func renderSpyglass(sg *spyglass.Spyglass, ca *config.Agent, src string, templat
 		return "", fmt.Errorf("error parsing template: %v", err)
 	}
 
-	if err = t.Execute(&viewBuf, vTmpl); err != nil {
+	var viewBuf bytes.Buffer
+	if err = t.Execute(&viewBuf, viewsTemplate); err != nil {
 		return "", fmt.Errorf("error rendering template: %v", err)
 	}
-	renderElapsed := time.Since(renderStart)
-	logrus.WithFields(logrus.Fields{
-		"duration": renderElapsed.String(),
-		"source":   src,
-	}).Info("Rendered spyglass views.")
 	return viewBuf.String(), nil
 }
 
