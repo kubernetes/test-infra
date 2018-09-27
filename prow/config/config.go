@@ -661,6 +661,9 @@ func (c *Config) validateJobConfig() error {
 		if err := validatePodSpec(v.Name, kube.PresubmitJob, v.Spec); err != nil {
 			return err
 		}
+		if err := validateDecoration(v.Name, v.Spec, v.DecorationConfig); err != nil {
+			return err
+		}
 		if err := validateLabels(v.Name, v.Labels); err != nil {
 			return err
 		}
@@ -1010,19 +1013,30 @@ func validateAgent(name, agent string, spec *v1.PodSpec, config *kube.Decoration
 	if agent != string(kube.KubernetesAgent) && config != nil {
 		return fmt.Errorf("job %s configured PodSpec decoration but is not a Kubernetes job", name)
 	}
-	// Jobs asking for decoration should provide config
-	if agent == string(kube.KubernetesAgent) && config != nil {
-		if config.UtilityImages == nil {
-			return fmt.Errorf("job %s does not configure pod utility images but asks for decoration", name)
-		}
-		if config.GCSConfiguration == nil || config.GCSCredentialsSecret == "" {
-			return fmt.Errorf("job %s does not configure GCS uploads but asks for decoration", name)
-		}
-	}
 	// Ensure agent is a known value.
 	if agent != string(kube.KubernetesAgent) && agent != string(kube.JenkinsAgent) {
 		return fmt.Errorf("job %s has invalid agent (%s), it needs to be one of the following: %s %s",
 			name, agent, kube.KubernetesAgent, kube.JenkinsAgent)
+	}
+	return nil
+}
+
+func validateDecoration(name string, spec *v1.PodSpec, config *kube.DecorationConfig) error {
+	if config == nil {
+		return nil
+	}
+
+	if config.UtilityImages == nil {
+		return fmt.Errorf("job %s does not configure pod utility images but asks for decoration", name)
+	}
+	if config.GCSConfiguration == nil || config.GCSCredentialsSecret == "" {
+		return fmt.Errorf("job %s does not configure GCS uploads but asks for decoration", name)
+	}
+
+	var args []string
+	args = append(append(args, spec.Containers[0].Command...), spec.Containers[0].Args...)
+	if len(args) == 0 || args[0] == "" {
+		return fmt.Errorf("job %s requested decoration, but does not specify `command` or `args` for the container", name)
 	}
 	return nil
 }
