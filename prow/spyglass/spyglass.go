@@ -18,23 +18,16 @@ limitations under the License.
 package spyglass
 
 import (
-	"errors"
 	"fmt"
+	"net/url"
 	"sort"
 	"strings"
 	"time"
 
+	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/deck/jobs"
 	"k8s.io/test-infra/prow/spyglass/viewers"
-)
-
-var (
-	// These are artifacts that we guarantee will be created with every job.
-	// If they are found in a storage location, the stored ones will be used,
-	// otherwise we will try to fetch them from the job runtime. In the future
-	// this might contain job metadata, podspec, etc.
-	guaranteedArtifacts = []string{"build-log.txt"}
 )
 
 // Spyglass records which sets of artifacts need views for a Prow job. The metaphor
@@ -48,13 +41,11 @@ type Spyglass struct {
 	// Lenses is a map of names of views to their corresponding lenses
 	Lenses map[string]Lens
 
-	// Eyepieces is a list of ArtifactFetchers used by Spyglass. Whenever spyglass
-	// receives a request to view artifacts from a source, it will check to see if it
-	// can handle that source with one of its registered eyepieces
-	Eyepieces []ArtifactFetcher
-
 	// JobAgent contains information about the current jobs in deck
 	JobAgent *jobs.JobAgent
+
+	*GCSArtifactFetcher
+	*PodLogArtifactFetcher
 }
 
 // Lens is a single view of a set of artifacts
@@ -77,11 +68,12 @@ type ViewRequest struct {
 }
 
 // New constructs a Spyglass object from a JobAgent and a list of ArtifactFetchers
-func New(ja *jobs.JobAgent, eyepieces []ArtifactFetcher) *Spyglass {
+func New(ja *jobs.JobAgent, c *storage.Client) *Spyglass {
 	return &Spyglass{
-		Lenses:    make(map[string]Lens),
-		JobAgent:  ja,
-		Eyepieces: eyepieces,
+		Lenses:                make(map[string]Lens),
+		JobAgent:              ja,
+		PodLogArtifactFetcher: NewPodLogArtifactFetcher(ja),
+		GCSArtifactFetcher:    NewGCSArtifactFetcher(c),
 	}
 }
 
@@ -126,7 +118,7 @@ func (s *Spyglass) Views(matchCache map[string][]string) []Lens {
 }
 
 // Refresh reloads the html view for a given view and a set of objects
-func (s *Spyglass) Refresh(src string, podName string, sizeLimit int64, viewReq *ViewRequest) (Lens, error) {
+func (s *Spyglass) Refresh(src url.URL, podName string, sizeLimit int64, viewReq *ViewRequest) (Lens, error) {
 	lens, ok := s.Lenses[viewReq.ViewName]
 	if !ok {
 		return Lens{}, fmt.Errorf("error finding view with provided name %s", viewReq.ViewName)
@@ -144,101 +136,49 @@ func (s *Spyglass) Refresh(src string, podName string, sizeLimit int64, viewReq 
 	return lens, nil
 }
 
-// ListArtifacts gets the names of all artifacts available from the given source by checking
-// if any eyepiece in the Spyglass can receive artifacts from that source.
-func (s *Spyglass) ListArtifacts(src string) ([]string, error) {
-	foundArtifacts := []string{}
-	var parsed bool
-	for _, ep := range s.Eyepieces {
-		jobSource, err := ep.createJobSource(src)
-		if err == ErrCannotParseSource {
-			continue
-		} else if err != nil {
-			return nil, err
-		} else {
-			parsed = true
-			foundArtifacts = append(foundArtifacts, ep.artifacts(jobSource)...)
-		}
+func (s *Spyglass) getArtifactFetcher(src url.URL) (ArtifactFetcher, error) {
+	split := strings.SplitN(src.Path, "/", 2)
+	storage := split[0]
+	var fetcher ArtifactFetcher
+	switch storage {
+	case "gcs":
+		fetcher = s.GCSArtifactFetcher
+	case "prowjob":
+		fetcher = s.PodLogArtifactFetcher
+	default:
+		return nil, fmt.Errorf("Invalid src: %v", src)
 	}
-	if !parsed {
-		return nil, fmt.Errorf("unable to parse source: %s, your source string may be incorrectly formatted or Spyglass does not have a compatible eyepiece for that source.", src)
-	}
-	foundArtifacts = append(foundArtifacts, missingArtifacts(foundArtifacts)...)
-	return foundArtifacts, nil
+	return fetcher, nil
 }
 
-func missingArtifacts(haveArtifacts []string) []string {
-	var res []string
-	for _, guaranteedArtifact := range guaranteedArtifacts {
-		var found bool
-		for _, haveArtifact := range haveArtifacts {
-			if haveArtifact == guaranteedArtifact {
-				found = true
-			}
-		}
-		if !found {
-			res = append(res, guaranteedArtifact)
-		}
+// ListArtifacts gets the names of all artifacts available from the given source by checking
+// if any eyepiece in the Spyglass can receive artifacts from that source.
+func (s *Spyglass) ListArtifacts(src url.URL) ([]string, error) {
+	fetcher, err := s.getArtifactFetcher(src)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get artifact fetcher: %v", err)
 	}
-	return res
+	return fetcher.artifactNames(src)
 }
 
 // FetchArtifacts constructs and returns Artifact objects for each artifact name in the list.
 // This includes getting any handles needed for read write operations, direct artifact links, etc.
-func (s *Spyglass) FetchArtifacts(src string, podName string, sizeLimit int64, artifactNames []string) ([]viewers.Artifact, error) {
+func (s *Spyglass) FetchArtifacts(src url.URL, podName string, sizeLimit int64, artifactNames []string) ([]viewers.Artifact, error) {
+	artStart := time.Now()
 	foundArtifacts := []viewers.Artifact{}
-	foundArtifactNames := []string{}
-	for _, ep := range s.Eyepieces {
-		jobSource, err := ep.createJobSource(src)
-		if err == ErrCannotParseSource {
-			continue
-		} else if err != nil {
-			logrus.WithField("src", src).WithError(err).Error("Error creating job source.")
-			continue
-		}
-		artStart := time.Now()
-		for _, name := range artifactNames {
-			artifact := ep.artifact(jobSource, name, sizeLimit)
-			foundArtifacts = append(foundArtifacts, artifact)
-			foundArtifactNames = append(foundArtifactNames, artifact.JobPath())
-		}
-		artElapsed := time.Since(artStart)
-		logrus.WithField("duration", artElapsed).Infof("Retrieved artifacts for %s", src)
-
+	fetcher, err := s.getArtifactFetcher(src)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get artifact fetcher: %v", err)
 	}
-
-	// Special-casing the fetching of in-cluster artifacts that havent been found yet
-	neededArtifactNames := missingArtifacts(foundArtifactNames)
-	for _, artifactName := range neededArtifactNames {
-		switch artifactName {
-		case "build-log.txt":
-			if isProwJobSource(src) {
-				parsed := strings.Split(strings.TrimPrefix(src, "prowjob/"), "/")
-				var jobName string
-				var buildID string
-				if len(parsed) == 2 {
-					jobName = parsed[0]
-					buildID = parsed[1]
-				} else if len(parsed) == 1 {
-					podName = parsed[0]
-				} else {
-					return foundArtifacts, errors.New("invalid Prowjob source provided")
-				}
-				_, err := s.JobAgent.GetProwJob(jobName, buildID)
-				if err != nil {
-					continue
-				}
-				podLog, err := NewPodLogArtifact(jobName, buildID, podName, sizeLimit, s.JobAgent)
-				if err != nil {
-					logrus.WithField("src", src).WithError(err).Error("Error accessing pod log from given source.")
-					continue
-				}
-				foundArtifacts = append(foundArtifacts, podLog)
-
-			}
-		default:
+	for _, name := range artifactNames {
+		artifact, err := fetcher.artifact(src, name, sizeLimit)
+		if err != nil {
+			logrus.Errorf("Failed to fetch artifact %s: %v", name, err)
+			continue
 		}
+		foundArtifacts = append(foundArtifacts, artifact)
 	}
+	artElapsed := time.Since(artStart)
+	logrus.WithField("duration", artElapsed).Infof("Retrieved artifacts for %s", src)
 	return foundArtifacts, nil
-
 }

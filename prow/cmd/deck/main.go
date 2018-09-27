@@ -340,14 +340,10 @@ func initSpyglass(configAgent *config.Agent, o options, mux *http.ServeMux, ja *
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GCS client")
 	}
-	sg := spyglass.New(ja, []spyglass.ArtifactFetcher{spyglass.NewGCSArtifactFetcher(c)})
+	sg := spyglass.New(ja, c)
 
 	mux.Handle("/view/render", gziphandler.GzipHandler(handleArtifactView(sg, configAgent)))
-	mux.Handle("/view/gcs/", gziphandler.GzipHandler(handleRequestGCSJobViews(sg, configAgent, o.templateFilesLocation)))
-	if ja != nil {
-		mux.Handle("/view/prowjob/", gziphandler.GzipHandler(handleRequestProwJobViews(sg, configAgent, o.templateFilesLocation)))
-		mux.Handle("/view/", gziphandler.GzipHandler(handleRequestJobViews(sg, configAgent, o.templateFilesLocation)))
-	}
+	mux.Handle("/view/", gziphandler.GzipHandler(handleRequestJobViews(sg, configAgent, o.templateFilesLocation)))
 }
 
 func loadToken(file string) ([]byte, error) {
@@ -460,82 +456,19 @@ func handleBadge(ja *jobs.JobAgent) http.HandlerFunc {
 	}
 }
 
-// handleRequestProwJobViews pre-renders a Spyglass page for a Prowjob source
-// A valid Prow job view url takes the form:
+// handleRequestJobViews handles requests to get all available artifact views for a given job.
+// The url must specify the type of storage:
 //
-// /view/prowjob/<jobname>/<buildID>
-//
-// Example:
-// - /view/prowjob/echo-test/1021530234601607168
-func handleRequestProwJobViews(sg *spyglass.Spyglass, ca *config.Agent, templateRoot string) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
-		setHeadersNoCaching(w)
-		src := strings.TrimPrefix(r.URL.Path, "/view/")
-
-		page, err := renderSpyglass(sg, ca, src, templateRoot)
-		if err != nil {
-			logrus.WithError(err).Error("error rendering spyglass page")
-			http.Error(w, "error getting views for job", http.StatusInternalServerError)
-			return
-		}
-
-		fmt.Fprint(w, page)
-		elapsed := time.Since(start)
-		logrus.WithFields(logrus.Fields{
-			"duration": elapsed.String(),
-			"endpoint": r.URL.Path,
-		}).Info("Loading view for Prowjob completed.")
-	}
-}
-
-// handleRequestGCSJobViews pre-renders a Spyglass page for a GCS source
-// A valid job GCS Job view url takes the form:
-//
-// /view/gcs/<bucketname>/<jobprefix>
+// /view/<storage>/<source-url>
 //
 // Example:
-// - /view/gcs/kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-large-performance/121
-func handleRequestGCSJobViews(sg *spyglass.Spyglass, ca *config.Agent, templateRoot string) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
-		setHeadersNoCaching(w)
-		srcData := strings.TrimPrefix(r.URL.Path, "/view/gcs/")
-		src := fmt.Sprintf("gs://%s", srcData)
-
-		page, err := renderSpyglass(sg, ca, src, templateRoot)
-		if err != nil {
-			logrus.WithError(err).Error("error rendering spyglass page")
-			http.Error(w, "error getting views for job", http.StatusInternalServerError)
-			return
-		}
-
-		fmt.Fprint(w, page)
-		elapsed := time.Since(start)
-		logrus.WithFields(logrus.Fields{
-			"duration": elapsed.String(),
-			"endpoint": r.URL.Path,
-		}).Info("Loading view from GCS completed.")
-	}
-}
-
-// handleRequestJobViews handles requests to get all available artifact views for a given job via
-// a general src parameter, which can contain any string used to obtain job artifacts
-// A valid general job view url takes the form:
-//
-// /view/?src=<URI-encoded-source-string>
-//
-// Example:
-// - /view/?src=gs:%2F%2Fkubernetes-jenkins%2Fpr-logs%2Fpull%2Fkubeflow_kubeflow%2F1195%2Fkubeflow-presubmit%2F2558
+// - /view/gcs/kubernetes-jenkins/pr-logs/pull/test-infra/9557/pull-test-infra-verify-gofmt/15688/
 func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent, templateRoot string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		setHeadersNoCaching(w)
-		src := r.URL.Query().Get("src")
-		if src == "" {
-			http.Error(w, "missing src query parameter", http.StatusBadRequest)
-			return
-		}
+		src := *r.URL
+		src.Path = strings.TrimPrefix(src.Path, "/view/")
 
 		page, err := renderSpyglass(sg, ca, src, templateRoot)
 		if err != nil {
@@ -550,17 +483,18 @@ func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent, templateRoot
 			"duration": elapsed.String(),
 			"endpoint": r.URL.Path,
 			"source":   src,
-		}).Info("Loading view from generic src completed.")
+		}).Info("Loading view completed.")
 	}
 }
 
 // renderSpyglass returns a pre-rendered Spyglass page from the given source string
-func renderSpyglass(sg *spyglass.Spyglass, ca *config.Agent, src string, templateRoot string) (string, error) {
+func renderSpyglass(sg *spyglass.Spyglass, ca *config.Agent, src url.URL, templateRoot string) (string, error) {
 	renderStart := time.Now()
 	artifactNames, err := sg.ListArtifacts(src)
 	if err != nil {
 		return "", fmt.Errorf("error listing artifacts: %v", err)
 	}
+	logrus.Infof("Listed %d artifacts for source %v: %v", len(artifactNames), src, artifactNames)
 
 	viewerCache := map[string][]string{}
 	viewersRegistry := ca.Config().Deck.Spyglass.Viewers
@@ -590,7 +524,7 @@ func renderSpyglass(sg *spyglass.Spyglass, ca *config.Agent, src string, templat
 	}
 	vTmpl := ViewsTemplate{
 		Views:       lenses,
-		Source:      src,
+		Source:      src.String(),
 		ViewerCache: viewerCache,
 	}
 	t := template.New("spyglass.html")
@@ -624,13 +558,18 @@ func handleArtifactView(sg *spyglass.Spyglass, ca *config.Agent) http.HandlerFun
 		setHeadersNoCaching(w)
 		w.Header().Set("Content-Type", "application/json")
 		name := r.URL.Query().Get("name")
-		src := r.URL.Query().Get("src")
+		srcParam := r.URL.Query().Get("src")
 		if name == "" {
 			http.Error(w, "missing name query parameter", http.StatusBadRequest)
 			return
 		}
-		if src == "" {
+		if srcParam == "" {
 			http.Error(w, "missing src query parameter", http.StatusBadRequest)
+			return
+		}
+		src, err := url.Parse(srcParam)
+		if err != nil {
+			http.Error(w, "unable to parse src", http.StatusBadRequest)
 			return
 		}
 
@@ -647,7 +586,7 @@ func handleArtifactView(sg *spyglass.Spyglass, ca *config.Agent) http.HandlerFun
 			return
 		}
 
-		lens, err := sg.Refresh(src, "", ca.Config().Deck.Spyglass.SizeLimit, viewReq)
+		lens, err := sg.Refresh(*src, "", ca.Config().Deck.Spyglass.SizeLimit, viewReq)
 		if err != nil {
 			logrus.WithError(err).Error("failed to refresh view")
 			http.Error(w, "failed to refresh view", http.StatusInternalServerError)

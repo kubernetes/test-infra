@@ -190,11 +190,9 @@ func dumpViewHandler(artifacts []viewers.Artifact, raw string) string {
 
 func TestViews(t *testing.T) {
 	fakeGCSClient := fakeGCSServer.Client()
-	testAf := NewGCSArtifactFetcher(fakeGCSClient)
 	testCases := []struct {
 		name               string
 		registeredViewers  map[string]viewers.ViewMetadata
-		fetchers           []ArtifactFetcher
 		matchCache         map[string][]string
 		expectedLensTitles []string
 	}{
@@ -206,15 +204,13 @@ func TestViews(t *testing.T) {
 					Priority: 0,
 				},
 			},
-			fetchers: []ArtifactFetcher{testAf},
 			matchCache: map[string][]string{
 				"metadata-viewer": {"started.json"},
 			},
 			expectedLensTitles: []string{"MetadataView"},
 		},
 		{
-			name:     "Spyglass no matches",
-			fetchers: []ArtifactFetcher{testAf},
+			name: "Spyglass no matches",
 			registeredViewers: map[string]viewers.ViewMetadata{
 				"metadata-viewer": {
 					Title:    "MetadataView",
@@ -231,7 +227,7 @@ func TestViews(t *testing.T) {
 			for k, v := range tc.registeredViewers {
 				viewers.RegisterViewer(k, v, dumpViewHandler)
 			}
-			sg := New(fakeJa, tc.fetchers)
+			sg := New(fakeJa, fakeGCSClient)
 			lenses := sg.Views(tc.matchCache)
 			for _, l := range lenses {
 				var found bool

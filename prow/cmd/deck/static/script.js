@@ -506,18 +506,27 @@ function redraw(fz) {
             r.appendChild(createTextCell(""));
         }
         if (spyglass) {
-            var buildIndex = build.url.indexOf("/build/");
-            if (buildIndex !== -1) {
-                const icon = createIcon("visibility", "View in Spyglass");
-                icon.href = window.location.origin + "/view/gcs/" +
-                    build.url.substring(buildIndex + "/build/".length);
-                const cell = document.createElement("TD");
-                cell.classList.add("icon-cell");
+            const icon = createIcon("visibility", "View in Spyglass");
+            const cell = document.createElement("TD");
+            cell.classList.add("icon-cell");
+            if (build.state == "pending") {
+                icon.href = window.location.origin + "/view/prowjob?job=" +
+                    build.job + "&id=" + build.build_id;
                 cell.appendChild(icon);
                 r.appendChild(cell);
             } else {
-                r.appendChild(createTextCell(""));
+                var buildIndex = build.url.indexOf("/build/");
+                if (buildIndex !== -1) {
+                    icon.href = window.location.origin + "/view/gcs/" +
+                        build.url.substring(buildIndex + "/build/".length);
+                    cell.appendChild(icon);
+                    r.appendChild(cell);
+                } else {
+                    r.appendChild(createTextCell(""));
+                }
             }
+        } else {
+            r.appendChild(createTextCell(""));
         }
         if (build.url === "") {
             r.appendChild(createTextCell(build.job));

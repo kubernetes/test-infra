@@ -5,6 +5,7 @@ go_test(
     srcs = [
         "gcsartifact_fetcher_test.go",
         "gcsartifact_test.go",
+        "podlogartifact_fetcher_test.go",
         "podlogartifact_test.go",
         "spyglass_test.go",
     ],
@@ -44,6 +45,7 @@ go_library(
         "gcsartifact.go",
         "gcsartifact_fetcher.go",
         "podlogartifact.go",
+        "podlogartifact_fetcher.go",
         "spyglass.go",
     ],
     importpath = "k8s.io/test-infra/prow/spyglass",
