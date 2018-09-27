@@ -83,6 +83,16 @@
     document.getElementById(skipID).style.display = "none";
   }
 
+  function toggleExpansion(bodyId, expanderId) {
+    var body = document.getElementById(bodyId);
+    body.classList.toggle('hidden-tests');
+    if (body.classList.contains('hidden-tests')) {
+      document.getElementById(expanderId).innerHTML = 'expand_more';
+    } else {
+      document.getElementById(expanderId).innerHTML = 'expand_less';
+    }
+  }
+
   window.onload = loadViews;
 </script>
 {{end}}
