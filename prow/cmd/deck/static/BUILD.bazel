@@ -8,14 +8,20 @@ ts_library(
     srcs = glob(["api/**/*.ts"]),
 )
 
-rollup_bundle(
-    name = "index",
-    srcs = [
-        "fuzzy-search.js",
-        "script.js",
-    ],
-    entry_point = "prow/cmd/deck/static/script.js",
+ts_library(
+    name = "prow",
+    srcs = glob(["prow/*.ts"]) + ["vendor.d.ts"],
     deps = [
+        ":api",
+        "@npm//:moment",
+    ],
+)
+
+rollup_bundle(
+    name = "prow_bundle",
+    entry_point = "prow/cmd/deck/static/prow/prow",
+    deps = [
+        ":prow",
         "@npm//:moment",
     ],
 )
@@ -93,9 +99,9 @@ filegroup(
     name = "all-scripts",
     srcs = [
         ":command_help_bundle",
-        ":index",
         ":plugin_help_bundle",
         ":pr",
+        ":prow_bundle",
         ":tide_bundle",
     ],
 )
