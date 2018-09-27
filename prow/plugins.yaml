@@ -70,6 +70,12 @@ approve:
   - kubernetes-incubator/ip-masq-agent
   implicit_self_approve: true
   lgtm_acts_as_approve: true
+# Disabling implicit self-approval for a given repo in the
+# kubernetes-sigs org requires that repo configuration appear before
+# the org configuration.
+- repos:
+  - kubernetes-sigs/federation-v2
+  implicit_self_approve: false
 - repos:
   - kubernetes-client
   - kubernetes-csi
