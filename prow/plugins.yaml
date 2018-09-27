@@ -300,6 +300,7 @@ plugins:
   - size
   - skip
   - slackevents
+  - verify-owners
   - wip
   - yuks
 
@@ -384,7 +385,6 @@ plugins:
   - owners-label
   - override
   - trigger
-  - verify-owners
   - welcome
 
   kubernetes-client:
