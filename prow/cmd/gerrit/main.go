@@ -37,6 +37,7 @@ import (
 type options struct {
 	cookiefilePath   string
 	configPath       string
+	jobConfigPath    string
 	projects         gerrit.ProjectsFlag
 	lastSyncFallback string
 }
@@ -66,6 +67,7 @@ func gatherOptions() options {
 		projects: gerrit.ProjectsFlag{},
 	}
 	flag.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
+	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs")
 	flag.StringVar(&o.cookiefilePath, "cookiefile", "", "Path to git http.cookiefile, leave empty for anonymous")
 	flag.Var(&o.projects, "gerrit-projects", "Set of gerrit repos to monitor on a host example: --gerrit-host=https://android.googlesource.com=platform/build,toolchain/llvm, repeat flag for each host")
 	flag.StringVar(&o.lastSyncFallback, "last-sync-fallback", "", "Path to persistent volume to load the last sync time")
@@ -81,7 +83,7 @@ func main() {
 	}
 
 	ca := &config.Agent{}
-	if err := ca.Start(o.configPath, ""); err != nil {
+	if err := ca.Start(o.configPath, o.jobConfigPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
