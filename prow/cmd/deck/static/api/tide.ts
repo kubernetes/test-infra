@@ -7,7 +7,7 @@ export interface TideQuery {
   includedBranches?: string[];
   labels?: string[];
   missingLabels?: string[];
-  milestone?: string[];
+  milestone?: string;
   reviewApprovedRequired?: boolean;
 }
 
