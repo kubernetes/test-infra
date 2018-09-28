@@ -50,13 +50,16 @@ rollup_bundle(
     entry_point = "prow/cmd/deck/static/tidescript.js",
 )
 
-rollup_bundle(
+ts_library(
     name = "command_help",
-    srcs = [
-        "command-help-script.js",
-    ],
-    entry_point = "prow/cmd/deck/static/command-help-script.js",
+    srcs = glob(["command-help/*.ts"]) + ["vendor.d.ts"],
+)
+
+rollup_bundle(
+    name = "command_help_bundle",
+    entry_point = "prow/cmd/deck/static/command-help/command-help",
     deps = [
+        ":command_help",
         "@npm//:dialog-polyfill",
     ],
 )
@@ -72,7 +75,7 @@ filegroup(
 filegroup(
     name = "all-scripts",
     srcs = [
-        ":command_help",
+        ":command_help_bundle",
         ":index",
         ":plugins",
         ":pr",
