@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # Includes go, gcloud, and etcd
-FROM gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+FROM gcr.io/k8s-testimages/gcloud-in-go:v20180927-6b4facbe6
 LABEL maintainer="krousey@google.com"
 
 # add env we can debug with the image name:tag
