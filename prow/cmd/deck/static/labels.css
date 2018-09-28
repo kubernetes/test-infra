@@ -3,22 +3,22 @@
     color: #000000;
 }
 
+.areax00002fadmin {
+    background-color: #0052cc;
+    color: #ffffff;
+}
+
+.areax00002fapi {
+    background-color: #0052cc;
+    color: #ffffff;
+}
+
 .areax00002fboskos {
     background-color: #0052cc;
     color: #ffffff;
 }
 
 .areax00002fconfig {
-    background-color: #0052cc;
-    color: #ffffff;
-}
-
-.areax00002fconformance {
-    background-color: #0052cc;
-    color: #ffffff;
-}
-
-.areax00002fconformance {
     background-color: #0052cc;
     color: #ffffff;
 }
@@ -258,6 +258,16 @@
     color: #ffffff;
 }
 
+.goodx000020firstx000020issue {
+    background-color: #7057ff;
+    color: #ffffff;
+}
+
+.helpx000020wanted {
+    background-color: #006b75;
+    color: #ffffff;
+}
+
 .kindx00002fapix00002dchange {
     background-color: #e11d21;
     color: #ffffff;
@@ -295,11 +305,6 @@
 
 .kindx00002fflake {
     background-color: #f7c6c7;
-    color: #000000;
-}
-
-.kindx00002fkep {
-    background-color: #cc99ff;
     color: #000000;
 }
 

@@ -217,7 +217,34 @@ func stringInSortedSlice(a string, list []string) bool {
 	return false
 }
 
-// Ensures the config does not duplicate label names
+// Returns a sorted list of labels unique by name
+func (c Configuration) Labels() []Label {
+	var labelarrays [][]Label
+	labelarrays = append(labelarrays, c.Default.Labels)
+	for _, repo := range c.Repos {
+		labelarrays = append(labelarrays, repo.Labels)
+	}
+
+	labelmap := make(map[string]Label)
+	for _, labels := range labelarrays {
+		for _, l := range labels {
+			name := strings.ToLower(l.Name)
+			if _, ok := labelmap[name]; !ok {
+				labelmap[name] = l
+			}
+		}
+	}
+
+	var labels []Label
+	for _, label := range labelmap {
+		labels = append(labels, label)
+	}
+	sort.Slice(labels, func(i, j int) bool { return labels[i].Name < labels[j].Name })
+	return labels
+}
+
+// TODO(spiffxp): needs to validate labels duped across repos are identical
+// Ensures the config does not duplicate label names between default and repo
 func (c Configuration) validate(orgs string) error {
 	// Generate list of orgs
 	sortedOrgs := strings.Split(orgs, ",")
@@ -846,17 +873,8 @@ func getTextColor(backgroundColor string) (string, error) {
 }
 
 func writeCSS(tmplPath string, outPath string, config Configuration) error {
-	var prLabels []Label
-	prLabels = append(prLabels, LabelsForTarget(config.Default.Labels, bothTarget)...)
-	prLabels = append(prLabels, LabelsForTarget(config.Default.Labels, prTarget)...)
-
-	for repo := range config.Repos {
-		prLabels = append(prLabels, LabelsForTarget(config.Repos[repo].Labels, bothTarget)...)
-		prLabels = append(prLabels, LabelsForTarget(config.Repos[repo].Labels, prTarget)...)
-	}
-
 	var labelCSS []labelCSSData
-	for _, l := range prLabels {
+	for _, l := range config.Labels() {
 		textColor, err := getTextColor(l.Color)
 		if err != nil {
 			return err
@@ -868,7 +886,6 @@ func writeCSS(tmplPath string, outPath string, config Configuration) error {
 			Name:            cssEscape(l.Name),
 		})
 	}
-	sort.Slice(labelCSS, func(i, j int) bool { return labelCSS[i].Name < labelCSS[j].Name })
 
 	return writeTemplate(tmplPath, outPath, labelCSS)
 }
