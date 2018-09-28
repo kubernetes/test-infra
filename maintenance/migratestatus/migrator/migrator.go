@@ -110,7 +110,7 @@ func copyAction(origContext, newContext string) func(statuses []github.RepoStatu
 		}
 		if oldStatus == nil {
 			// This means the conditions were not met! Should never have called this function, but it is a recoverable error.
-			glog.Errorf("failed to find original context in status list thus conditions for this duplicate action were not met. This should never happen!")
+			glog.Error("failed to find original context in status list thus conditions for this duplicate action were not met. This should never happen!")
 			return nil
 		}
 		return []*github.RepoStatus{
