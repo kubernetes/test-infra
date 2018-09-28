@@ -2185,6 +2185,8 @@ test_groups:
 # prow jobs
 - name: ci-test-infra-triage
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-triage
+  alert_stale_results_hours: 12
+  num_failures_to_alert: 18 # Runs every 20m. Alert when it's been failing for 6 hours
 - name: ci-kubernetes-e2e-prow-canary
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-prow-canary
 - name: ci-kubernetes-e2e-node-canary
@@ -2195,6 +2197,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/metrics-bigquery
 - name: metrics-kettle
   gcs_prefix: kubernetes-jenkins/logs/metrics-kettle
+  alert_stale_results_hours: 12
+  num_failures_to_alert: 6 # Runs every 1h. Alert when it's been failing for 6 hours
 - name: periodic-features-unfreeze
   gcs_prefix: kubernetes-jenkins/logs/periodic-features-unfreeze
 - name: periodic-kubernetes-bazel-test-master
@@ -6414,6 +6418,9 @@ dashboards:
     test_group_name: ci-test-infra-triage
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    # TODO(spiffxp): there's probably a more appropriate alias to alert this to
+    alert_options:
+      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: metrics-bigquery
     description: Runs BigQuery queries to generate data for metrics.
     test_group_name: metrics-bigquery
@@ -6424,6 +6431,9 @@ dashboards:
     test_group_name: metrics-kettle
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    # TODO(spiffxp): there's probably a more appropriate alias to alert this to
+    alert_options:
+      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: maintenance-aws-janitor
     description: Deletes old resources from AWS projects
     test_group_name: maintenance-ci-aws-janitor
