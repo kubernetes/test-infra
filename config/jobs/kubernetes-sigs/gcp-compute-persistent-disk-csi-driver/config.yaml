@@ -13,7 +13,7 @@ presubmits:
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
-        - "--timeout=900"
+        - "--timeout=20" # Minutes
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "test/run-e2e.sh"
@@ -32,7 +32,7 @@ presubmits:
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
-        - "--timeout=10"
+        - "--timeout=10" # Minutes
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "test/run-sanity.sh"
@@ -48,7 +48,7 @@ presubmits:
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
-        - "--timeout=10"
+        - "--timeout=10" # Minutes
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "test/run-unit.sh"
@@ -64,7 +64,23 @@ presubmits:
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
-        - "--timeout=10"
+        - "--timeout=10" # Minutes
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "hack/verify-all.sh"
+  - name: pull-gcp-compute-persistent-disk-csi-driver-kubernetes-integration
+    always_run: true
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+        args:
+        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+        - "--timeout=30" # Minutes
+        - "--scenario=execute"
+        - "--" # end bootstrap args, scenario args below
+        - "test/run-k8s-integration.sh"
