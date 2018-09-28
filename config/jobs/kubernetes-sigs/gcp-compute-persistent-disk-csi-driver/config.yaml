@@ -85,6 +85,6 @@ presubmits:
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "test/run-k8s-integration.sh"
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
