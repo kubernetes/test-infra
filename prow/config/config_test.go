@@ -1077,6 +1077,22 @@ periodics:
 				},
 			},
 		},
+		{
+			name:       "decorated periodic missing `command`",
+			prowConfig: ``,
+			jobConfigs: []string{
+				`
+periodics:
+- interval: 10m
+  agent: kubernetes
+  name: foo
+  decorate: true
+  spec:
+    containers:
+    - image: alpine`,
+			},
+			expectError: true,
+		},
 	}
 
 	for _, tc := range testCases {
