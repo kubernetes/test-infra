@@ -493,6 +493,7 @@ plugins:
 
   kubernetes-sigs/cluster-api-provider-aws:
   - trigger
+  - verify-owners
 
   kubernetes-sigs/cluster-api-provider-gcp:
   - trigger
