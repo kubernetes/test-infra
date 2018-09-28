@@ -72,6 +72,7 @@ presubmits:
     always_run: true
     labels:
       preset-service-account: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
@@ -84,3 +85,6 @@ presubmits:
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "test/run-k8s-integration.sh"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
