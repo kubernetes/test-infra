@@ -43,13 +43,19 @@ rollup_bundle(
     ],
 )
 
-rollup_bundle(
+ts_library(
     name = "pr",
-    srcs = [
-        "pr-script.js",
-    ],
-    entry_point = "prow/cmd/deck/static/pr-script.js",
+    srcs = glob(["pr/*.ts"]),
     deps = [
+        ":api",
+    ],
+)
+
+rollup_bundle(
+    name = "pr_bundle",
+    entry_point = "prow/cmd/deck/static/pr/pr",
+    deps = [
+        ":pr",
         "@npm//:dialog-polyfill",
     ],
 )
@@ -113,7 +119,7 @@ filegroup(
     srcs = [
         ":command_help_bundle",
         ":plugin_help_bundle",
-        ":pr",
+        ":pr_bundle",
         ":prow_bundle",
         ":spyglass_bundle",
         ":tide_bundle",
