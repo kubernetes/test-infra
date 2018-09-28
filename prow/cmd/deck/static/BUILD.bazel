@@ -25,7 +25,7 @@ ts_library(
     srcs = glob(["plugin-help/*.ts"]) + ["vendor.d.ts"],
     deps = [
         ":api",
-    ]
+    ],
 )
 
 rollup_bundle(
@@ -61,7 +61,7 @@ ts_library(
     srcs = glob(["command-help/*.ts"]) + ["vendor.d.ts"],
     deps = [
         ":api",
-    ]
+    ],
 )
 
 rollup_bundle(
