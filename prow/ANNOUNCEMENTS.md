@@ -25,9 +25,21 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *Sep 27, 2018* If you are setting explicit decorate configs, the format has changed from
+    ```yaml
+    - name: job-foo
+      decorate: true
+      timeout: 1
+    ```
+    to
+    ```yaml
+    - name: job-foo
+      decorate: true
+      decoration_config:
+        timeout: 1
+    ```
  - *September 24, 2018* the `splice` component has been deleted following the 
    deletion of mungegithub.
-
  - *July 9, 2018* `milestone` format has changed from
     ```yaml
     milestone:
