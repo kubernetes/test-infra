@@ -57,7 +57,7 @@ presubmits:
         - "--repo=sigs.k8s.io/kind=$(PULL_REFS)"
         - "--repo=k8s.io/kubernetes=master"
         - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/logs"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--scenario=execute"
         - "--"
         # the script must run from kubernetes, but we're checking out kind
