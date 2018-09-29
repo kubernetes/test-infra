@@ -3432,6 +3432,24 @@ dashboards:
     alert_options:
       alert_mail_to_addresses: cnx+e2e@vmware.com
 
+- name: vmware-conformance
+  dashboard_tab:
+  - name: periodic-v1.10
+    description: Runs conformance tests using kubetest against kubernetes v1.10 with in-tree vSphere components
+    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.10
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: periodic-v1.11
+    description: Runs conformance tests using kubetest against kubernetes v1.11 with in-tree vSphere components
+    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.11
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: periodic-v1.12
+    description: Runs conformance tests using kubetest against kubernetes v1.12 with in-tree vSphere components
+    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.12
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+
 - name: conformance-cloud-provider-openstack
   dashboard_tab:
   - name: presubmit-master
@@ -3466,6 +3484,24 @@ dashboards:
       alert_mail_to_addresses: davanum+testgrid@gmail.com
 
 - name: conformance-cloud-provider-vsphere
+  dashboard_tab:
+  - name: periodic-v1.10
+    description: Runs conformance tests using kubetest against kubernetes v1.10 with cloud-provider-vsphere
+    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.10
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: periodic-v1.11
+    description: Runs conformance tests using kubetest against kubernetes v1.11 with cloud-provider-vsphere
+    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.11
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: periodic-v1.12
+    description: Runs conformance tests using kubetest against kubernetes v1.12 with cloud-provider-vsphere
+    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.12
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+
+- name: vmware-conformance-cloud-provider
   dashboard_tab:
   - name: periodic-v1.10
     description: Runs conformance tests using kubetest against kubernetes v1.10 with cloud-provider-vsphere
@@ -7361,4 +7397,5 @@ dashboard_groups:
 - name: vmware
   dashboard_names:
   - vmware-presubmits-cloud-provider-vsphere
-
+  - vmware-conformance
+  - vmware-conformance-cloud-provider
