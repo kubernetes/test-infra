@@ -16,12 +16,15 @@ limitations under the License.
 
 package spyglass
 
-import "testing"
+import (
+	"net/url"
+	"testing"
+)
 
 func TestNewGCSJobSource(t *testing.T) {
 	testCases := []struct {
 		name        string
-		src         string
+		srcPath     string
 		exJobPrefix string
 		exBucket    string
 		exName      string
@@ -30,7 +33,7 @@ func TestNewGCSJobSource(t *testing.T) {
 	}{
 		{
 			name:        "Test standard GCS link",
-			src:         "gs://test-bucket/logs/example-ci-run/403",
+			srcPath:     "gcs/test-bucket/logs/example-ci-run/403",
 			exBucket:    "test-bucket",
 			exJobPrefix: "logs/example-ci-run/403/",
 			exName:      "example-ci-run",
@@ -39,7 +42,7 @@ func TestNewGCSJobSource(t *testing.T) {
 		},
 		{
 			name:        "Test GCS link with trailing /",
-			src:         "gs://test-bucket/logs/example-ci-run/403/",
+			srcPath:     "gcs/test-bucket/logs/example-ci-run/403/",
 			exBucket:    "test-bucket",
 			exJobPrefix: "logs/example-ci-run/403/",
 			exName:      "example-ci-run",
@@ -48,7 +51,7 @@ func TestNewGCSJobSource(t *testing.T) {
 		},
 		{
 			name:        "Test GCS link with org name",
-			src:         "gs://test-bucket/logs/sig-flexing/example-ci-run/403",
+			srcPath:     "gcs/test-bucket/logs/sig-flexing/example-ci-run/403",
 			exBucket:    "test-bucket",
 			exJobPrefix: "logs/sig-flexing/example-ci-run/403/",
 			exName:      "example-ci-run",
@@ -57,15 +60,21 @@ func TestNewGCSJobSource(t *testing.T) {
 		},
 		{
 			name:        "Test invalid GCS link",
-			src:         "garbage/test-bucket/logs/sig-flexing/example-ci-run/403",
+			srcPath:     "garbage/test-bucket/logs/sig-flexing/example-ci-run/403",
 			expectedErr: ErrCannotParseSource,
 		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			jobSource, err := newGCSJobSource(tc.src)
-			if err != nil && err != tc.expectedErr {
-				t.Errorf("Expected err: %v, got err: %v", err, tc.expectedErr)
+			jobSource, err := newGCSJobSource(tc.srcPath)
+			if tc.expectedErr != nil {
+				if err == tc.expectedErr {
+					return
+				}
+				t.Fatalf("Expected err: %v, got err: %v", tc.expectedErr, err)
+			}
+			if err != nil {
+				t.Fatalf("Expected err: %v, got err: %v", tc.expectedErr, err)
 			}
 			if tc.exBucket != jobSource.bucket {
 				t.Errorf("Expected bucket %s, got %s", tc.exBucket, jobSource.bucket)
@@ -81,18 +90,18 @@ func TestNewGCSJobSource(t *testing.T) {
 }
 
 // Tests listing objects associated with the current job in GCS
-func TestArtifacts_ListGCS(t *testing.T) {
+func TestArtifactNames_GCS(t *testing.T) {
 	fakeGCSClient := fakeGCSServer.Client()
 	testAf := NewGCSArtifactFetcher(fakeGCSClient)
 	testCases := []struct {
 		name              string
 		handle            artifactHandle
-		source            string
+		srcPath           string
 		expectedArtifacts []string
 	}{
 		{
-			name:   "Test ArtifactFetcher simple list artifacts",
-			source: "gs://test-bucket/logs/example-ci-run/403",
+			name:    "Test ArtifactFetcher simple list artifacts",
+			srcPath: "gcs/test-bucket/logs/example-ci-run/403",
 			expectedArtifacts: []string{
 				"build-log.txt",
 				"started.json",
@@ -103,17 +112,20 @@ func TestArtifacts_ListGCS(t *testing.T) {
 		},
 		{
 			name:              "Test ArtifactFetcher list artifacts on source with no artifacts",
-			source:            "gs://test-bucket/logs/example-ci/404",
+			srcPath:           "gcs/test-bucket/logs/example-ci/404",
 			expectedArtifacts: []string{},
 		},
 	}
 
 	for _, tc := range testCases {
-		jobSrc, err := testAf.createJobSource(tc.source)
+		src, err := url.Parse(tc.srcPath)
 		if err != nil {
-			t.Fatalf("%s failed to create job source for source: %s", tc.name, tc.source)
+			t.Fatalf("Unexpected error: invalid url %s in test %s", tc.srcPath, tc.name)
 		}
-		actualArtifacts := testAf.artifacts(jobSrc)
+		actualArtifacts, err := testAf.artifactNames(*src)
+		if err != nil {
+			t.Errorf("Failed to get artifact names: %v", err)
+		}
 		for _, ea := range tc.expectedArtifacts {
 			found := false
 			for _, aa := range actualArtifacts {
@@ -141,30 +153,33 @@ func TestFetchArtifacts_GCS(t *testing.T) {
 	testCases := []struct {
 		name         string
 		artifactName string
-		source       string
+		srcPath      string
 		expectedSize int64
 		expectErr    bool
 	}{
 		{
 			name:         "Fetch build-log.txt from valid source",
 			artifactName: "build-log.txt",
-			source:       "gs://test-bucket/logs/example-ci-run/403",
+			srcPath:      "gcs/test-bucket/logs/example-ci-run/403",
 			expectedSize: 25,
 		},
 		{
 			name:         "Fetch build-log.txt from invalid source",
 			artifactName: "build-log.txt",
-			source:       "gs://test-bucket/logs/example-ci-run/404",
+			srcPath:      "gcs/test-bucket/logs/example-ci-run/404",
 			expectErr:    true,
 		},
 	}
 
 	for _, tc := range testCases {
-		jobSrc, err := testAf.createJobSource(tc.source)
+		src, err := url.Parse(tc.srcPath)
 		if err != nil {
-			t.Fatalf("%s failed to create job source from source %s", tc.name, tc.source)
+			t.Fatalf("Unexpected error: invalid url %s in test %s", tc.srcPath, tc.name)
 		}
-		artifact := testAf.artifact(jobSrc, tc.artifactName, maxSize)
+		artifact, err := testAf.artifact(*src, tc.artifactName, maxSize)
+		if err != nil {
+			t.Errorf("Failed to get artifacts: %v", err)
+		}
 		size, err := artifact.Size()
 		if err != nil && !tc.expectErr {
 			t.Fatalf("%s failed getting size for artifact %s, err: %v", tc.name, artifact.JobPath(), err)

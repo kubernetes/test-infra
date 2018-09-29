@@ -103,7 +103,7 @@ type JobAgent struct {
 	c         ConfigAgent
 	prowJobs  []kube.ProwJob
 	jobs      []Job
-	jobsMap   map[string]Job                     // pod name -> Job
+	jobsMap   map[string]kube.ProwJob            // prow job UUID -> Job
 	jobsIDMap map[string]map[string]kube.ProwJob // job name -> id -> ProwJob
 	mut       sync.Mutex
 }
@@ -154,12 +154,71 @@ func (ja *JobAgent) GetProwJob(job, id string) (kube.ProwJob, error) {
 	return j, nil
 }
 
+// GetProwJob finds the corresponding Prowjob resource from the provided prow job UUID
+func (ja *JobAgent) GetProwJobByUUID(prowID string) (kube.ProwJob, error) {
+	if ja == nil {
+		return kube.ProwJob{}, fmt.Errorf("Prow job agent doesn't exist (are you running locally?)")
+	}
+	ja.mut.Lock()
+	job := ja.jobsMap[prowID]
+	ja.mut.Unlock()
+	if job.ObjectMeta.Name != prowID {
+		return kube.ProwJob{}, ErrProwjobNotFound
+	}
+	return job, nil
+}
+
 // GetJobLogTail returns the last n bytes of the job logs, works for both kubernetes and jenkins agent types.
 func (ja *JobAgent) GetJobLogTail(job, id string, n int64) ([]byte, error) {
 	j, err := ja.GetProwJob(job, id)
 	if err != nil {
 		return nil, fmt.Errorf("error getting prowjob: %v", err)
 	}
+	return ja.getLogTail(j, n)
+}
+
+// GetJobLogTail returns the last n bytes of the job log for the given prow UUID.
+func (ja *JobAgent) GetJobLogTailByUUID(prowID string, n int64) ([]byte, error) {
+	j, err := ja.GetProwJobByUUID(prowID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting prowjob: %v", err)
+	}
+	return ja.getLogTail(j, n)
+}
+
+// getLog is a helper function that returns the job logs for the given job
+func (ja *JobAgent) getLog(j kube.ProwJob) ([]byte, error) {
+	if j.Spec.Agent == kube.KubernetesAgent {
+		client, ok := ja.pkcs[j.ClusterAlias()]
+		if !ok {
+			return nil, fmt.Errorf("cannot get logs for prowjob %q with agent %q: unknown cluster alias %q", j.ObjectMeta.Name, j.Spec.Agent, j.ClusterAlias())
+		}
+		return client.GetContainerLog(j.Status.PodName, kube.TestContainerName)
+	}
+	for _, agentToTmpl := range ja.c.Config().Deck.ExternalAgentLogs {
+		if agentToTmpl.Agent != string(j.Spec.Agent) {
+			continue
+		}
+		if !agentToTmpl.Selector.Matches(labels.Set(j.ObjectMeta.Labels)) {
+			continue
+		}
+		var b bytes.Buffer
+		if err := agentToTmpl.URLTemplate.Execute(&b, &j); err != nil {
+			return nil, fmt.Errorf("cannot execute URL template for prowjob %q with agent %q: %v", j.ObjectMeta.Name, j.Spec.Agent, err)
+		}
+		resp, err := http.Get(b.String())
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+		return ioutil.ReadAll(resp.Body)
+
+	}
+	return nil, fmt.Errorf("cannot get logs for prowjob %q with agent %q: the agent is missing from the prow config file", j.ObjectMeta.Name, j.Spec.Agent)
+}
+
+// getLog is a helper function that returns the last n bytes of the job log for the given job
+func (ja *JobAgent) getLogTail(j kube.ProwJob, n int64) ([]byte, error) {
 	if j.Spec.Agent == kube.KubernetesAgent {
 		client, ok := ja.pkcs[j.ClusterAlias()]
 		if !ok {
@@ -210,33 +269,16 @@ func (ja *JobAgent) GetJobLog(job, id string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error getting prowjob: %v", err)
 	}
-	if j.Spec.Agent == kube.KubernetesAgent {
-		client, ok := ja.pkcs[j.ClusterAlias()]
-		if !ok {
-			return nil, fmt.Errorf("cannot get logs for prowjob %q with agent %q: unknown cluster alias %q", j.ObjectMeta.Name, j.Spec.Agent, j.ClusterAlias())
-		}
-		return client.GetContainerLog(j.Status.PodName, kube.TestContainerName)
-	}
-	for _, agentToTmpl := range ja.c.Config().Deck.ExternalAgentLogs {
-		if agentToTmpl.Agent != string(j.Spec.Agent) {
-			continue
-		}
-		if !agentToTmpl.Selector.Matches(labels.Set(j.ObjectMeta.Labels)) {
-			continue
-		}
-		var b bytes.Buffer
-		if err := agentToTmpl.URLTemplate.Execute(&b, &j); err != nil {
-			return nil, fmt.Errorf("cannot execute URL template for prowjob %q with agent %q: %v", j.ObjectMeta.Name, j.Spec.Agent, err)
-		}
-		resp, err := http.Get(b.String())
-		if err != nil {
-			return nil, err
-		}
-		defer resp.Body.Close()
-		return ioutil.ReadAll(resp.Body)
+	return ja.getLog(j)
+}
 
+// GetJobLogByUUID returns the job logs for the provided prow job UUID
+func (ja *JobAgent) GetJobLogByUUID(prowID string) ([]byte, error) {
+	j, err := ja.GetProwJobByUUID(prowID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting prowjob: %v", err)
 	}
-	return nil, fmt.Errorf("cannot get logs for prowjob %q with agent %q: the agent is missing from the prow config file", j.ObjectMeta.Name, j.Spec.Agent)
+	return ja.getLog(j)
 }
 
 func (ja *JobAgent) tryUpdate() {
@@ -257,7 +299,7 @@ func (ja *JobAgent) update() error {
 		return err
 	}
 	var njs []Job
-	njsMap := make(map[string]Job)
+	njsMap := make(map[string]kube.ProwJob)
 	njsIDMap := make(map[string]map[string]kube.ProwJob)
 	for _, j := range pjs {
 		ft := time.Time{}
@@ -300,8 +342,8 @@ func (ja *JobAgent) update() error {
 			}
 		}
 		njs = append(njs, nj)
-		if nj.PodName != "" {
-			njsMap[nj.PodName] = nj
+		if nj.ProwJob != "" {
+			njsMap[nj.ProwJob] = j
 		}
 		if _, ok := njsIDMap[j.Spec.Job]; !ok {
 			njsIDMap[j.Spec.Job] = make(map[string]kube.ProwJob)
