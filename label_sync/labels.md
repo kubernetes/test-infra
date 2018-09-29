@@ -9,6 +9,7 @@
 - [Labels that apply to all repos, only for issues](#labels-that-apply-to-all-repos-only-for-issues)
 - [Labels that apply to all repos, only for PRs](#labels-that-apply-to-all-repos-only-for-prs)
 - [Labels that apply to kubernetes/community, for both issues and PRs](#labels-that-apply-to-kubernetescommunity-for-both-issues-and-prs)
+- [Labels that apply to kubernetes/features, for both issues and PRs](#labels-that-apply-to-kubernetesfeatures-for-both-issues-and-prs)
 - [Labels that apply to kubernetes/kubernetes, for both issues and PRs](#labels-that-apply-to-kuberneteskubernetes-for-both-issues-and-prs)
 - [Labels that apply to kubernetes/kubernetes, only for issues](#labels-that-apply-to-kuberneteskubernetes-only-for-issues)
 - [Labels that apply to kubernetes/test-infra, for both issues and PRs](#labels-that-apply-to-kubernetestest-infra-for-both-issues-and-prs)
@@ -162,6 +163,13 @@ larger set of contributors to apply/remove them.
 | Name | Description | Added By | Prow Plugin |
 | ---- | ----------- | -------- | --- |
 | <a id="area/conformance" href="#area/conformance">`area/conformance`</a> | Issues or PRs related to kubernetes conformance tests| label | |
+| <a id="kind/kep" href="#kind/kep">`kind/kep`</a> | Categorizes issues related to KEPs and PRs modifying the KEP directory| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+
+## Labels that apply to kubernetes/features, for both issues and PRs
+
+| Name | Description | Added By | Prow Plugin |
+| ---- | ----------- | -------- | --- |
+| <a id="kind/kep" href="#kind/kep">`kind/kep`</a> | Categorizes KEP tracking issues and PRs modifying the KEP directory| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 
 ## Labels that apply to kubernetes/kubernetes, for both issues and PRs
 
