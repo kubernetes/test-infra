@@ -167,13 +167,13 @@ const (
 	PullRequestActionReviewRequested = "review_requested"
 	// PullRequestActionReviewRequestRemoved means review requests were removed.
 	PullRequestActionReviewRequestRemoved = "review_request_removed"
-	// PullRequestActionLabeled means means labels were added.
+	// PullRequestActionLabeled means labels were added.
 	PullRequestActionLabeled = "labeled"
 	// PullRequestActionUnlabeled means labels were removed
 	PullRequestActionUnlabeled = "unlabeled"
 	// PullRequestActionOpened means the PR was created
 	PullRequestActionOpened = "opened"
-	// PullRequestActionEdited means means the PR body changed.
+	// PullRequestActionEdited means the PR body changed.
 	PullRequestActionEdited = "edited"
 	// PullRequestActionClosed means the PR was closed (or was merged).
 	PullRequestActionClosed = "closed"
