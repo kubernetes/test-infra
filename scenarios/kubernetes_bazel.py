@@ -144,7 +144,6 @@ def main(args):
     bazel = Bazel(args.batch)
 
     bazel.check('version')
-    bazel.check('clean', '--expunge')
     res = 0
     try:
         affected = None
