@@ -19,13 +19,13 @@ package spyglass
 
 import (
 	"fmt"
-	"net/url"
 	"sort"
 	"strings"
 	"time"
 
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
 	"k8s.io/test-infra/prow/spyglass/viewers"
 )
@@ -67,6 +67,12 @@ type ViewRequest struct {
 	ViewData    string   `json:"viewData"`
 }
 
+type ViewsTemplate struct {
+	Views       []Lens
+	Source      string
+	ViewerCache map[string][]string
+}
+
 // New constructs a Spyglass object from a JobAgent and a list of ArtifactFetchers
 func New(ja *jobs.JobAgent, c *storage.Client) *Spyglass {
 	return &Spyglass{
@@ -75,6 +81,48 @@ func New(ja *jobs.JobAgent, c *storage.Client) *Spyglass {
 		PodLogArtifactFetcher: NewPodLogArtifactFetcher(ja),
 		GCSArtifactFetcher:    NewGCSArtifactFetcher(c),
 	}
+}
+
+// Render returns a pre-rendered Spyglass page from the given source string
+func (s *Spyglass) Render(ca *config.Agent, src string) (ViewsTemplate, error) {
+	renderStart := time.Now()
+	artifactNames, err := s.ListArtifacts(src)
+	if err != nil {
+		return ViewsTemplate{}, fmt.Errorf("error listing artifacts: %v", err)
+	}
+	logrus.Infof("Listed %d artifacts for source %s: %v", len(artifactNames), src, artifactNames)
+
+	viewerCache := map[string][]string{}
+	viewersRegistry := ca.Config().Deck.Spyglass.Viewers
+	regexCache := ca.Config().Deck.Spyglass.RegexCache
+
+	for re, viewerNames := range viewersRegistry {
+		matches := []string{}
+		for _, a := range artifactNames {
+			if regexCache[re].MatchString(a) {
+				matches = append(matches, a)
+			}
+		}
+		if len(matches) > 0 {
+			for _, vName := range viewerNames {
+				viewerCache[vName] = matches
+			}
+		}
+	}
+
+	lenses := s.Views(viewerCache)
+
+	vTmpl := ViewsTemplate{
+		Views:       lenses,
+		Source:      src,
+		ViewerCache: viewerCache,
+	}
+	renderElapsed := time.Since(renderStart)
+	logrus.WithFields(logrus.Fields{
+		"duration": renderElapsed.String(),
+		"source":   src,
+	}).Info("Rendered spyglass views.")
+	return vTmpl, nil
 }
 
 // Views gets all views of all artifact files matching each regexp with a registered viewer
@@ -118,7 +166,7 @@ func (s *Spyglass) Views(matchCache map[string][]string) []Lens {
 }
 
 // Refresh reloads the html view for a given view and a set of objects
-func (s *Spyglass) Refresh(src url.URL, podName string, sizeLimit int64, viewReq *ViewRequest) (Lens, error) {
+func (s *Spyglass) Refresh(src string, podName string, sizeLimit int64, viewReq *ViewRequest) (Lens, error) {
 	lens, ok := s.Lenses[viewReq.ViewName]
 	if !ok {
 		return Lens{}, fmt.Errorf("error finding view with provided name %s", viewReq.ViewName)
@@ -136,49 +184,95 @@ func (s *Spyglass) Refresh(src url.URL, podName string, sizeLimit int64, viewReq
 	return lens, nil
 }
 
-func (s *Spyglass) getArtifactFetcher(src url.URL) (ArtifactFetcher, error) {
-	split := strings.SplitN(src.Path, "/", 2)
+// ListArtifacts gets the names of all artifacts available from the given source
+func (s *Spyglass) ListArtifacts(src string) ([]string, error) {
+	split := strings.SplitN(src, "/", 2)
 	storage := split[0]
-	var fetcher ArtifactFetcher
 	switch storage {
 	case "gcs":
-		fetcher = s.GCSArtifactFetcher
+		return s.GCSArtifactFetcher.artifactNames(src)
 	case "prowjob":
-		fetcher = s.PodLogArtifactFetcher
+		gcsSrc, err := s.prowToGCS(src)
+		if err != nil {
+			logrus.Warningf("Failed to get gcs source for prow job: %v", err)
+			return []string{}, nil
+		}
+		artifactNames, err := s.GCSArtifactFetcher.artifactNames(gcsSrc)
+		logFound := false
+		for _, name := range artifactNames {
+			if name == "build-log.txt" {
+				logFound = true
+				break
+			}
+		}
+		if err != nil || !logFound {
+			artifactNames = append(artifactNames, "build-log.txt")
+		}
+		return artifactNames, nil
 	default:
 		return nil, fmt.Errorf("Invalid src: %v", src)
 	}
-	return fetcher, nil
 }
 
-// ListArtifacts gets the names of all artifacts available from the given source by checking
-// if any eyepiece in the Spyglass can receive artifacts from that source.
-func (s *Spyglass) ListArtifacts(src url.URL) ([]string, error) {
-	fetcher, err := s.getArtifactFetcher(src)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to get artifact fetcher: %v", err)
+// prowToGCS returns the GCS src corresponding to the given prow src
+func (s *Spyglass) prowToGCS(prowSrc string) (string, error) {
+	split := strings.SplitN(prowSrc, "/", 2)
+	if len(split) < 2 {
+		return "", fmt.Errorf("Invalid prow src: %s", prowSrc)
 	}
-	return fetcher.artifactNames(src)
+	id := split[1]
+	job, err := s.jobAgent.GetProwJobByUUID(id)
+	if err != nil {
+		return "", fmt.Errorf("Failed to get prow job %s: %v", id, err)
+	}
+	logrus.Infof("prow %s -> gcs %s", prowSrc, job.Status.URL)
+	return job.Status.URL, nil
 }
 
 // FetchArtifacts constructs and returns Artifact objects for each artifact name in the list.
 // This includes getting any handles needed for read write operations, direct artifact links, etc.
-func (s *Spyglass) FetchArtifacts(src url.URL, podName string, sizeLimit int64, artifactNames []string) ([]viewers.Artifact, error) {
+func (s *Spyglass) FetchArtifacts(src string, podName string, sizeLimit int64, artifactNames []string) ([]viewers.Artifact, error) {
 	artStart := time.Now()
-	foundArtifacts := []viewers.Artifact{}
-	fetcher, err := s.getArtifactFetcher(src)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to get artifact fetcher: %v", err)
-	}
-	for _, name := range artifactNames {
-		artifact, err := fetcher.artifact(src, name, sizeLimit)
-		if err != nil {
-			logrus.Errorf("Failed to fetch artifact %s: %v", name, err)
-			continue
+	arts := []viewers.Artifact{}
+	split := strings.SplitN(src, "/", 2)
+	storage := split[0]
+	switch storage {
+	case "gcs":
+		for _, name := range artifactNames {
+			art, err := s.GCSArtifactFetcher.artifact(src, name, sizeLimit)
+			if err != nil {
+				logrus.Errorf("Failed to fetch artifact %s: %v", name, err)
+				continue
+			}
+			arts = append(arts, art)
 		}
-		foundArtifacts = append(foundArtifacts, artifact)
+	case "prowjob":
+		logFound := false
+		if gcsSrc, err := s.prowToGCS(src); err != nil {
+			for _, name := range artifactNames {
+				if name == "build-log.txt" {
+					logFound = true
+				}
+				art, err := s.GCSArtifactFetcher.artifact(gcsSrc, name, sizeLimit)
+				if err != nil {
+					logrus.Errorf("Failed to fetch artifact %s: %v", name, err)
+					continue
+				}
+				arts = append(arts, art)
+			}
+		}
+		if !logFound {
+			art, err := s.PodLogArtifactFetcher.artifact(src, sizeLimit)
+			if err != nil {
+				logrus.Errorf("Failed to fetch pod log: %v", err)
+			} else {
+				arts = append(arts, art)
+			}
+		}
+	default:
+		return nil, fmt.Errorf("Invalid src: %v", src)
 	}
-	artElapsed := time.Since(artStart)
-	logrus.WithField("duration", artElapsed).Infof("Retrieved artifacts for %s", src)
-	return foundArtifacts, nil
+
+	logrus.WithField("duration", time.Since(artStart)).Infof("Retrieved artifacts for %v", src)
+	return arts, nil
 }

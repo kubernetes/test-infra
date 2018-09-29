@@ -41,7 +41,6 @@ filegroup(
 go_library(
     name = "go_default_library",
     srcs = [
-        "artifactfetchers.go",
         "gcsartifact.go",
         "gcsartifact_fetcher.go",
         "podlogartifact.go",
@@ -51,7 +50,9 @@ go_library(
     importpath = "k8s.io/test-infra/prow/spyglass",
     visibility = ["//visibility:public"],
     deps = [
+        "//prow/config:go_default_library",
         "//prow/deck/jobs:go_default_library",
+        "//prow/kube:go_default_library",
         "//prow/spyglass/viewers:go_default_library",
         "//testgrid/util/gcs:go_default_library",
         "//vendor/cloud.google.com/go/storage:go_default_library",

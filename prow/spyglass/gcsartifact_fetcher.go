@@ -18,6 +18,7 @@ package spyglass
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/url"
@@ -37,6 +38,10 @@ const (
 	httpScheme  = "http"
 	httpsScheme = "https"
 	maxTries    = 500
+)
+
+var (
+	ErrCannotParseSource = errors.New("could not create job source from provided source")
 )
 
 // GCSArtifactFetcher contains information used for fetching artifacts from GCS
@@ -70,12 +75,12 @@ func fieldsForJob(src *gcsJobSource) logrus.Fields {
 }
 
 // newGCSJobSource creates a new gcsJobSource from a given bucket and jobPrefix
-func newGCSJobSource(srcPath string) (*gcsJobSource, error) {
-	if !strings.HasPrefix(srcPath, "gcs/") {
+func newGCSJobSource(src string) (*gcsJobSource, error) {
+	split := strings.SplitN(src, "/", 2)
+	if len(split) <= 1 {
 		return &gcsJobSource{}, ErrCannotParseSource
 	}
-	srcSuffix := strings.TrimPrefix(srcPath, "gcs/")
-	gcsURL, err := url.Parse(fmt.Sprintf("gs://%s", srcSuffix))
+	gcsURL, err := url.Parse(fmt.Sprintf("gs://%s", split[1]))
 	if err != nil {
 		return &gcsJobSource{}, ErrCannotParseSource
 	}
@@ -92,7 +97,7 @@ func newGCSJobSource(srcPath string) (*gcsJobSource, error) {
 	buildID := tokens[len(tokens)-1]
 	name := tokens[len(tokens)-2]
 	return &gcsJobSource{
-		source:     srcPath,
+		source:     src,
 		linkPrefix: "gs://",
 		bucket:     gcsPath.Bucket(),
 		jobPrefix:  path.Clean(gcsPath.Object()) + "/",
@@ -102,10 +107,10 @@ func newGCSJobSource(srcPath string) (*gcsJobSource, error) {
 }
 
 // Artifacts lists all artifacts available for the given job source
-func (af *GCSArtifactFetcher) artifactNames(src url.URL) ([]string, error) {
-	gcsSrc, err := newGCSJobSource(src.Path)
+func (af *GCSArtifactFetcher) artifactNames(src string) ([]string, error) {
+	gcsSrc, err := newGCSJobSource(src)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get GCS job source: %v", err)
+		return nil, fmt.Errorf("Failed to get GCS job source from %s: %v", src, err)
 	}
 	listStart := time.Now()
 	bucketName, prefix := extractBucketPrefixPair(gcsSrc.jobPath())
@@ -135,7 +140,7 @@ func (af *GCSArtifactFetcher) artifactNames(src url.URL) ([]string, error) {
 	}
 
 	listElapsed := time.Since(listStart)
-	logrus.WithField("duration", listElapsed).Infof("Listed %d artifactNames.", len(artifactNames))
+	logrus.WithField("duration", listElapsed).Infof("GCS listed %d artifactNames.", len(artifactNames))
 	return artifactNames, nil
 }
 
@@ -154,10 +159,10 @@ func (h *gcsArtifactHandle) NewRangeReader(ctx context.Context, offset, length i
 // Artifact contructs a GCS artifact from the given GCS bucket and key. Uses the golang GCS library
 // to get read handles. If the artifactName is not a valid key in the bucket a handle will still be
 // constructed and returned, but all read operations will fail (dictated by behavior of golang GCS lib).
-func (af *GCSArtifactFetcher) artifact(src url.URL, artifactName string, sizeLimit int64) (viewers.Artifact, error) {
-	gcsSrc, err := newGCSJobSource(src.Path)
+func (af *GCSArtifactFetcher) artifact(src string, artifactName string, sizeLimit int64) (viewers.Artifact, error) {
+	gcsSrc, err := newGCSJobSource(src)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get GCS job source: %v", err)
+		return nil, fmt.Errorf("Failed to get GCS job source from %s: %v", src, err)
 	}
 	bucketName, prefix := extractBucketPrefixPair(gcsSrc.jobPath())
 	bkt := af.client.Bucket(bucketName)

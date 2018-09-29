@@ -18,7 +18,7 @@ package spyglass
 
 import (
 	"fmt"
-	"net/url"
+	"strings"
 
 	"k8s.io/test-infra/prow/deck/jobs"
 	"k8s.io/test-infra/prow/spyglass/viewers"
@@ -34,23 +34,17 @@ func NewPodLogArtifactFetcher(ja podLogJobAgent) *PodLogArtifactFetcher {
 	return &PodLogArtifactFetcher{jobAgent: ja}
 }
 
-func (af *PodLogArtifactFetcher) artifactNames(src url.URL) ([]string, error) {
-	return []string{"build-log.txt"}, nil
-}
+func (af *PodLogArtifactFetcher) artifact(src string, sizeLimit int64) (viewers.Artifact, error) {
+	split := strings.SplitN(src, "/", 2)
+	if len(split) < 2 {
+		return nil, fmt.Errorf("Invalid prow src: %s", src)
+	}
+	id := split[1]
 
-func (af *PodLogArtifactFetcher) artifact(src url.URL, artifactName string, sizeLimit int64) (viewers.Artifact, error) {
-	jobName := src.Query().Get("job")
-	if jobName == "" {
-		return nil, fmt.Errorf("Prowjob url missing \"job\" parameter: %v", src)
-	}
-	buildID := src.Query().Get("id")
-	if buildID == "" {
-		return nil, fmt.Errorf("Prowjob url missing \"id\" parameter: %v", src)
-	}
 	if af.jobAgent == nil || af.jobAgent == (*jobs.JobAgent)(nil) {
 		return nil, fmt.Errorf("Prow job agent doesn't exist (are you running locally?)")
 	}
-	podLog, err := NewPodLogArtifact(jobName, buildID, sizeLimit, af.jobAgent)
+	podLog, err := NewPodLogArtifact(id, sizeLimit, af.jobAgent)
 	if err != nil {
 		return nil, fmt.Errorf("Error accessing pod log from given source: %v", err)
 	}

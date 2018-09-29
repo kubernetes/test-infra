@@ -467,13 +467,17 @@ func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent, templateRoot
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		setHeadersNoCaching(w)
-		src := *r.URL
-		src.Path = strings.TrimPrefix(src.Path, "/view/")
+		src := strings.TrimPrefix(r.URL.Path, "/view/")
 
-		page, err := renderSpyglass(sg, ca, src, templateRoot)
+		viewsTemplate, err := sg.Render(ca, src)
 		if err != nil {
-			logrus.WithError(err).Error("error rendering spyglass page")
+			logrus.Errorf("error getting views for job: %v", err)
 			http.Error(w, "error getting views for job", http.StatusInternalServerError)
+			return
+		}
+		page, err := renderViews(viewsTemplate, ca, templateRoot)
+		if err != nil {
+			http.Error(w, "error rendering spyglass page", http.StatusInternalServerError)
 			return
 		}
 
@@ -487,48 +491,11 @@ func handleRequestJobViews(sg *spyglass.Spyglass, ca *config.Agent, templateRoot
 	}
 }
 
-// renderSpyglass returns a pre-rendered Spyglass page from the given source string
-func renderSpyglass(sg *spyglass.Spyglass, ca *config.Agent, src url.URL, templateRoot string) (string, error) {
-	renderStart := time.Now()
-	artifactNames, err := sg.ListArtifacts(src)
-	if err != nil {
-		return "", fmt.Errorf("error listing artifacts: %v", err)
-	}
-	logrus.Infof("Listed %d artifacts for source %v: %v", len(artifactNames), src, artifactNames)
-
-	viewerCache := map[string][]string{}
-	viewersRegistry := ca.Config().Deck.Spyglass.Viewers
-	regexCache := ca.Config().Deck.Spyglass.RegexCache
-
-	for re, viewerNames := range viewersRegistry {
-		matches := []string{}
-		for _, a := range artifactNames {
-			if regexCache[re].MatchString(a) {
-				matches = append(matches, a)
-			}
-		}
-		if len(matches) > 0 {
-			for _, vName := range viewerNames {
-				viewerCache[vName] = matches
-			}
-		}
-	}
-
-	lenses := sg.Views(viewerCache)
-
-	var viewBuf bytes.Buffer
-	type ViewsTemplate struct {
-		Views       []spyglass.Lens
-		Source      string
-		ViewerCache map[string][]string
-	}
-	vTmpl := ViewsTemplate{
-		Views:       lenses,
-		Source:      src.String(),
-		ViewerCache: viewerCache,
-	}
+// renderViews finishes rendering the provided viewsTemplate
+func renderViews(viewsTemplate spyglass.ViewsTemplate, ca *config.Agent, templateRoot string) (string, error) {
 	t := template.New("spyglass.html")
-	if _, err := prepareBaseTemplate(templateRoot, ca, t); err != nil {
+	_, err := prepareBaseTemplate(templateRoot, ca, t)
+	if err != nil {
 		return "", fmt.Errorf("error preparing base template: %v", err)
 	}
 	t, err = t.ParseFiles(path.Join(templateRoot, "spyglass.html"))
@@ -536,14 +503,10 @@ func renderSpyglass(sg *spyglass.Spyglass, ca *config.Agent, src url.URL, templa
 		return "", fmt.Errorf("error parsing template: %v", err)
 	}
 
-	if err = t.Execute(&viewBuf, vTmpl); err != nil {
+	var viewBuf bytes.Buffer
+	if err = t.Execute(&viewBuf, viewsTemplate); err != nil {
 		return "", fmt.Errorf("error rendering template: %v", err)
 	}
-	renderElapsed := time.Since(renderStart)
-	logrus.WithFields(logrus.Fields{
-		"duration": renderElapsed.String(),
-		"source":   src,
-	}).Info("Rendered spyglass views.")
 	return viewBuf.String(), nil
 }
 
@@ -558,18 +521,13 @@ func handleArtifactView(sg *spyglass.Spyglass, ca *config.Agent) http.HandlerFun
 		setHeadersNoCaching(w)
 		w.Header().Set("Content-Type", "application/json")
 		name := r.URL.Query().Get("name")
-		srcParam := r.URL.Query().Get("src")
+		src := r.URL.Query().Get("src")
 		if name == "" {
 			http.Error(w, "missing name query parameter", http.StatusBadRequest)
 			return
 		}
-		if srcParam == "" {
+		if src == "" {
 			http.Error(w, "missing src query parameter", http.StatusBadRequest)
-			return
-		}
-		src, err := url.Parse(srcParam)
-		if err != nil {
-			http.Error(w, "unable to parse src", http.StatusBadRequest)
 			return
 		}
 
@@ -586,7 +544,7 @@ func handleArtifactView(sg *spyglass.Spyglass, ca *config.Agent) http.HandlerFun
 			return
 		}
 
-		lens, err := sg.Refresh(*src, "", ca.Config().Deck.Spyglass.SizeLimit, viewReq)
+		lens, err := sg.Refresh(src, "", ca.Config().Deck.Spyglass.SizeLimit, viewReq)
 		if err != nil {
 			logrus.WithError(err).Error("failed to refresh view")
 			http.Error(w, "failed to refresh view", http.StatusInternalServerError)
