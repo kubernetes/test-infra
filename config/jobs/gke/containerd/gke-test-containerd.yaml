@@ -330,6 +330,7 @@ periodics:
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-node-image=cos_containerd
+      - --gcp-project=k8s-jkns-e2e-gci-gke-staging
       - --gcp-zone=us-central1-f
       - --ginkgo-parallel
       - --gke-create-command=container clusters create --quiet
