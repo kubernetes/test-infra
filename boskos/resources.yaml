@@ -147,7 +147,6 @@ resources:
   - k8s-jkns-e2e-gci-gke-multizone
   - k8s-jkns-e2e-gci-gke-prod
   - k8s-jkns-e2e-gci-gke-slow-1-2
-  - k8s-jkns-e2e-gci-gke-staging
   - k8s-jkns-e2e-gci-gke-subnet
   - k8s-jkns-e2e-gci-gke-test
   - k8s-jkns-e2e-gke-1-1-features
