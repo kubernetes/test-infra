@@ -868,5 +868,7 @@ func writeCSS(tmplPath string, outPath string, config Configuration) error {
 			Name:            cssEscape(l.Name),
 		})
 	}
+	sort.Slice(labelCSS, func(i, j int) bool { return labelCSS[i].Name < labelCSS[j].Name })
+
 	return writeTemplate(tmplPath, outPath, labelCSS)
 }
