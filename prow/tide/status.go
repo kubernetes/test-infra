@@ -83,7 +83,7 @@ func (sc *statusController) shutdown() {
 // For instance, we need to convey that a PR is open against a forbidden branch
 // more than we need to detail which status contexts are failed against the PR.
 // Note: an empty diff can be returned if the reason that the PR does not match
-// the TideQuery is unknown. This can happen happen if this function's logic
+// the TideQuery is unknown. This can happen if this function's logic
 // does not match GitHub's and does not indicate that the PR matches the query.
 func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (string, int) {
 	const maxLabelChars = 50
