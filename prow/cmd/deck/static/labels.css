@@ -1,526 +1,6 @@
-.committeex00002fconduct {
-    background-color: #c0ff4a;
-    color: #000000;
-}
-
-.committeex00002fsteering {
-    background-color: #c0ff4a;
-    color: #000000;
-}
-
-.kindx00002fapix00002dchange {
-    background-color: #e11d21;
-    color: #ffffff;
-}
-
-.kindx00002fbug {
-    background-color: #e11d21;
-    color: #ffffff;
-}
-
-.kindx00002fcleanup {
-    background-color: #c7def8;
-    color: #000000;
-}
-
-.kindx00002fdesign {
-    background-color: #c7def8;
-    color: #000000;
-}
-
-.kindx00002fdocumentation {
-    background-color: #c7def8;
-    color: #000000;
-}
-
-.kindx00002ffailingx00002dtest {
-    background-color: #e11d21;
-    color: #ffffff;
-}
-
-.kindx00002ffeature {
-    background-color: #c7def8;
-    color: #000000;
-}
-
-.kindx00002fflake {
-    background-color: #f7c6c7;
-    color: #000000;
-}
-
-.lifecyclex00002factive {
-    background-color: #8fc951;
-    color: #000000;
-}
-
-.lifecyclex00002ffrozen {
-    background-color: #d3e2f0;
-    color: #000000;
-}
-
-.lifecyclex00002frotten {
-    background-color: #604460;
-    color: #ffffff;
-}
-
-.lifecyclex00002fstale {
-    background-color: #795548;
-    color: #ffffff;
-}
-
-.needsx00002dsig {
-    background-color: #ededed;
-    color: #000000;
-}
-
-.priorityx00002fawaitingx00002dmorex00002devidence {
-    background-color: #fef2c0;
-    color: #000000;
-}
-
-.priorityx00002fbacklog {
-    background-color: #fbca04;
-    color: #000000;
-}
-
-.priorityx00002fcriticalx00002durgent {
-    background-color: #e11d21;
-    color: #ffffff;
-}
-
-.priorityx00002fimportantx00002dlongterm {
-    background-color: #eb6420;
-    color: #000000;
-}
-
-.priorityx00002fimportantx00002dsoon {
-    background-color: #eb6420;
-    color: #000000;
-}
-
-.sigx00002fapix00002dmachinery {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002fapps {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002farchitecture {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002fauth {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002fautoscaling {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002faws {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002fazure {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002fbigx00002ddata {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002fcli {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002fcloudx00002dprovider {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002fclusterx00002dlifecycle {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002fclusterx00002dops {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002fcontributorx00002dexperience {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002fdocs {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002fgcp {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002fibmcloud {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002finstrumentation {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002fmulticluster {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002fnetwork {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002fnode {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002fonprem {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002fopenstack {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002fpm {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002frelease {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002fscalability {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002fscheduling {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002fservicex00002dcatalog {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002fstorage {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002ftesting {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002fui {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002fvmware {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.sigx00002fwindows {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.statusx00002fapprovedx00002dforx00002dmilestone {
-    background-color: #fef2c0;
-    color: #000000;
-}
-
-.statusx00002finx00002dprogress {
-    background-color: #fef2c0;
-    color: #000000;
-}
-
-.statusx00002finx00002dreview {
-    background-color: #fef2c0;
-    color: #000000;
-}
-
-.triagex00002fduplicate {
-    background-color: #d455d0;
-    color: #000000;
-}
-
-.triagex00002fneedsx00002dinformation {
-    background-color: #d455d0;
-    color: #000000;
-}
-
-.triagex00002fnotx00002dreproducible {
-    background-color: #d455d0;
-    color: #000000;
-}
-
-.triagex00002fsupport {
-    background-color: #d455d0;
-    color: #000000;
-}
-
-.triagex00002funresolved {
-    background-color: #d455d0;
-    color: #000000;
-}
-
-.wgx00002fappx00002ddef {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.wgx00002fapply {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.wgx00002fclusterx00002dapi {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.wgx00002fcontainerx00002didentity {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.wgx00002fiotx00002dedge {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.wgx00002fkubeadmx00002dadoption {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.wgx00002fmachinex00002dlearning {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.wgx00002fmultitenancy {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.wgx00002fpolicy {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.wgx00002fresourcex00002dmanagement {
-    background-color: #d2b48c;
-    color: #000000;
-}
-
-.x0000afx00005cx00005fx000028x0030c4x000029x00005fx00002fx0000af {
-    background-color: #f9d0c4;
-    color: #000000;
-}
-
 .approved {
     background-color: #0ffa16;
     color: #000000;
-}
-
-.cherryx00002dpickx00002dapproved {
-    background-color: #fef2c0;
-    color: #000000;
-}
-
-.cherrypickx00002dcandidate {
-    background-color: #fef2c0;
-    color: #000000;
-}
-
-.cncfx00002dclax00003ax000020no {
-    background-color: #e11d21;
-    color: #ffffff;
-}
-
-.cncfx00002dclax00003ax000020yes {
-    background-color: #bfe5bf;
-    color: #000000;
-}
-
-.dox00002dnotx00002dmerge {
-    background-color: #e11d21;
-    color: #ffffff;
-}
-
-.dox00002dnotx00002dmergex00002fblockedx00002dpaths {
-    background-color: #e11d21;
-    color: #ffffff;
-}
-
-.dox00002dnotx00002dmergex00002fcherryx00002dpickx00002dnotx00002dapproved {
-    background-color: #e11d21;
-    color: #ffffff;
-}
-
-.dox00002dnotx00002dmergex00002fhold {
-    background-color: #e11d21;
-    color: #ffffff;
-}
-
-.dox00002dnotx00002dmergex00002finvalidx00002downersx00002dfile {
-    background-color: #e11d21;
-    color: #ffffff;
-}
-
-.dox00002dnotx00002dmergex00002freleasex00002dnotex00002dlabelx00002dneeded {
-    background-color: #e11d21;
-    color: #ffffff;
-}
-
-.dox00002dnotx00002dmergex00002fworkx00002dinx00002dprogress {
-    background-color: #e11d21;
-    color: #ffffff;
-}
-
-.lgtm {
-    background-color: #15dd18;
-    color: #000000;
-}
-
-.needsx00002dkind {
-    background-color: #ededed;
-    color: #000000;
-}
-
-.needsx00002dokx00002dtox00002dtest {
-    background-color: #b60205;
-    color: #ffffff;
-}
-
-.needsx00002drebase {
-    background-color: #BDBDBD;
-    color: #000000;
-}
-
-.queuex00002fblocksx00002dothers {
-    background-color: #ffaa00;
-    color: #000000;
-}
-
-.queuex00002fcriticalx00002dfix {
-    background-color: #ffaa00;
-    color: #000000;
-}
-
-.queuex00002ffix {
-    background-color: #ffaa00;
-    color: #000000;
-}
-
-.queuex00002fmultiplex00002drebases {
-    background-color: #ffaa00;
-    color: #000000;
-}
-
-.releasex00002dnote {
-    background-color: #c2e0c6;
-    color: #000000;
-}
-
-.releasex00002dnotex00002dactionx00002drequired {
-    background-color: #c2e0c6;
-    color: #000000;
-}
-
-.releasex00002dnotex00002dnone {
-    background-color: #c2e0c6;
-    color: #000000;
-}
-
-.retestx00002dnotx00002drequired {
-    background-color: #eb6420;
-    color: #000000;
-}
-
-.retestx00002dnotx00002drequiredx00002ddocsx00002donly {
-    background-color: #fbca04;
-    color: #000000;
-}
-
-.sizex00002fL {
-    background-color: #ee9900;
-    color: #000000;
-}
-
-.sizex00002fM {
-    background-color: #eebb00;
-    color: #000000;
-}
-
-.sizex00002fS {
-    background-color: #77bb00;
-    color: #000000;
-}
-
-.sizex00002fXL {
-    background-color: #ee5500;
-    color: #000000;
-}
-
-.sizex00002fXS {
-    background-color: #009900;
-    color: #000000;
-}
-
-.sizex00002fXXL {
-    background-color: #ee0000;
-    color: #000000;
-}
-
-.tidex00002fsquash {
-    background-color: #ffaa00;
-    color: #000000;
-}
-
-.areax00002fconformance {
-    background-color: #0052cc;
-    color: #ffffff;
-}
-
-.areax00002fconformance {
-    background-color: #0052cc;
-    color: #ffffff;
 }
 
 .areax00002fboskos {
@@ -529,6 +9,16 @@
 }
 
 .areax00002fconfig {
+    background-color: #0052cc;
+    color: #ffffff;
+}
+
+.areax00002fconformance {
+    background-color: #0052cc;
+    color: #ffffff;
+}
+
+.areax00002fconformance {
     background-color: #0052cc;
     color: #ffffff;
 }
@@ -701,6 +191,516 @@
 .areax00002fprowx00002ftot {
     background-color: #0052cc;
     color: #ffffff;
+}
+
+.cherrypickx00002dcandidate {
+    background-color: #fef2c0;
+    color: #000000;
+}
+
+.cherryx00002dpickx00002dapproved {
+    background-color: #fef2c0;
+    color: #000000;
+}
+
+.cncfx00002dclax00003ax000020no {
+    background-color: #e11d21;
+    color: #ffffff;
+}
+
+.cncfx00002dclax00003ax000020yes {
+    background-color: #bfe5bf;
+    color: #000000;
+}
+
+.committeex00002fconduct {
+    background-color: #c0ff4a;
+    color: #000000;
+}
+
+.committeex00002fsteering {
+    background-color: #c0ff4a;
+    color: #000000;
+}
+
+.dox00002dnotx00002dmerge {
+    background-color: #e11d21;
+    color: #ffffff;
+}
+
+.dox00002dnotx00002dmergex00002fblockedx00002dpaths {
+    background-color: #e11d21;
+    color: #ffffff;
+}
+
+.dox00002dnotx00002dmergex00002fcherryx00002dpickx00002dnotx00002dapproved {
+    background-color: #e11d21;
+    color: #ffffff;
+}
+
+.dox00002dnotx00002dmergex00002fhold {
+    background-color: #e11d21;
+    color: #ffffff;
+}
+
+.dox00002dnotx00002dmergex00002finvalidx00002downersx00002dfile {
+    background-color: #e11d21;
+    color: #ffffff;
+}
+
+.dox00002dnotx00002dmergex00002freleasex00002dnotex00002dlabelx00002dneeded {
+    background-color: #e11d21;
+    color: #ffffff;
+}
+
+.dox00002dnotx00002dmergex00002fworkx00002dinx00002dprogress {
+    background-color: #e11d21;
+    color: #ffffff;
+}
+
+.kindx00002fapix00002dchange {
+    background-color: #e11d21;
+    color: #ffffff;
+}
+
+.kindx00002fbug {
+    background-color: #e11d21;
+    color: #ffffff;
+}
+
+.kindx00002fcleanup {
+    background-color: #c7def8;
+    color: #000000;
+}
+
+.kindx00002fdesign {
+    background-color: #c7def8;
+    color: #000000;
+}
+
+.kindx00002fdocumentation {
+    background-color: #c7def8;
+    color: #000000;
+}
+
+.kindx00002ffailingx00002dtest {
+    background-color: #e11d21;
+    color: #ffffff;
+}
+
+.kindx00002ffeature {
+    background-color: #c7def8;
+    color: #000000;
+}
+
+.kindx00002fflake {
+    background-color: #f7c6c7;
+    color: #000000;
+}
+
+.lgtm {
+    background-color: #15dd18;
+    color: #000000;
+}
+
+.lifecyclex00002factive {
+    background-color: #8fc951;
+    color: #000000;
+}
+
+.lifecyclex00002ffrozen {
+    background-color: #d3e2f0;
+    color: #000000;
+}
+
+.lifecyclex00002frotten {
+    background-color: #604460;
+    color: #ffffff;
+}
+
+.lifecyclex00002fstale {
+    background-color: #795548;
+    color: #ffffff;
+}
+
+.needsx00002dkind {
+    background-color: #ededed;
+    color: #000000;
+}
+
+.needsx00002dokx00002dtox00002dtest {
+    background-color: #b60205;
+    color: #ffffff;
+}
+
+.needsx00002drebase {
+    background-color: #BDBDBD;
+    color: #000000;
+}
+
+.needsx00002dsig {
+    background-color: #ededed;
+    color: #000000;
+}
+
+.priorityx00002fawaitingx00002dmorex00002devidence {
+    background-color: #fef2c0;
+    color: #000000;
+}
+
+.priorityx00002fbacklog {
+    background-color: #fbca04;
+    color: #000000;
+}
+
+.priorityx00002fcriticalx00002durgent {
+    background-color: #e11d21;
+    color: #ffffff;
+}
+
+.priorityx00002fimportantx00002dlongterm {
+    background-color: #eb6420;
+    color: #000000;
+}
+
+.priorityx00002fimportantx00002dsoon {
+    background-color: #eb6420;
+    color: #000000;
+}
+
+.queuex00002fblocksx00002dothers {
+    background-color: #ffaa00;
+    color: #000000;
+}
+
+.queuex00002fcriticalx00002dfix {
+    background-color: #ffaa00;
+    color: #000000;
+}
+
+.queuex00002ffix {
+    background-color: #ffaa00;
+    color: #000000;
+}
+
+.queuex00002fmultiplex00002drebases {
+    background-color: #ffaa00;
+    color: #000000;
+}
+
+.releasex00002dnote {
+    background-color: #c2e0c6;
+    color: #000000;
+}
+
+.releasex00002dnotex00002dactionx00002drequired {
+    background-color: #c2e0c6;
+    color: #000000;
+}
+
+.releasex00002dnotex00002dnone {
+    background-color: #c2e0c6;
+    color: #000000;
+}
+
+.retestx00002dnotx00002drequired {
+    background-color: #eb6420;
+    color: #000000;
+}
+
+.retestx00002dnotx00002drequiredx00002ddocsx00002donly {
+    background-color: #fbca04;
+    color: #000000;
+}
+
+.sigx00002fapix00002dmachinery {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002fapps {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002farchitecture {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002fauth {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002fautoscaling {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002faws {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002fazure {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002fbigx00002ddata {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002fcli {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002fcloudx00002dprovider {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002fclusterx00002dlifecycle {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002fclusterx00002dops {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002fcontributorx00002dexperience {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002fdocs {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002fgcp {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002fibmcloud {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002finstrumentation {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002fmulticluster {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002fnetwork {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002fnode {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002fonprem {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002fopenstack {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002fpm {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002frelease {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002fscalability {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002fscheduling {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002fservicex00002dcatalog {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002fstorage {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002ftesting {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002fui {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002fvmware {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sigx00002fwindows {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.sizex00002fL {
+    background-color: #ee9900;
+    color: #000000;
+}
+
+.sizex00002fM {
+    background-color: #eebb00;
+    color: #000000;
+}
+
+.sizex00002fS {
+    background-color: #77bb00;
+    color: #000000;
+}
+
+.sizex00002fXL {
+    background-color: #ee5500;
+    color: #000000;
+}
+
+.sizex00002fXS {
+    background-color: #009900;
+    color: #000000;
+}
+
+.sizex00002fXXL {
+    background-color: #ee0000;
+    color: #000000;
+}
+
+.statusx00002fapprovedx00002dforx00002dmilestone {
+    background-color: #fef2c0;
+    color: #000000;
+}
+
+.statusx00002finx00002dprogress {
+    background-color: #fef2c0;
+    color: #000000;
+}
+
+.statusx00002finx00002dreview {
+    background-color: #fef2c0;
+    color: #000000;
+}
+
+.tidex00002fsquash {
+    background-color: #ffaa00;
+    color: #000000;
+}
+
+.triagex00002fduplicate {
+    background-color: #d455d0;
+    color: #000000;
+}
+
+.triagex00002fneedsx00002dinformation {
+    background-color: #d455d0;
+    color: #000000;
+}
+
+.triagex00002fnotx00002dreproducible {
+    background-color: #d455d0;
+    color: #000000;
+}
+
+.triagex00002fsupport {
+    background-color: #d455d0;
+    color: #000000;
+}
+
+.triagex00002funresolved {
+    background-color: #d455d0;
+    color: #000000;
+}
+
+.wgx00002fapply {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.wgx00002fappx00002ddef {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.wgx00002fclusterx00002dapi {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.wgx00002fcontainerx00002didentity {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.wgx00002fiotx00002dedge {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.wgx00002fkubeadmx00002dadoption {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.wgx00002fmachinex00002dlearning {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.wgx00002fmultitenancy {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.wgx00002fpolicy {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.wgx00002fresourcex00002dmanagement {
+    background-color: #d2b48c;
+    color: #000000;
+}
+
+.x0000afx00005cx00005fx000028x0030c4x000029x00005fx00002fx0000af {
+    background-color: #f9d0c4;
+    color: #000000;
 }
 
 
