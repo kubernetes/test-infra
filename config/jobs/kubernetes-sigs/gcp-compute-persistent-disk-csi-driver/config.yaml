@@ -81,7 +81,7 @@ presubmits:
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
-        - "--timeout=30" # Minutes
+        - "--timeout=60" # Minutes
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "test/run-k8s-integration.sh"
