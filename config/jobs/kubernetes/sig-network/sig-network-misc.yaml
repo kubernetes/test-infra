@@ -289,3 +289,42 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --ginkgo.skip=\[Unreleased\] --minStartupPods=8
       - --timeout=300m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-master
+
+- interval: 6h
+  name: ci-kubernetes-e2e-kubeadm-dind-ipv6
+  labels:
+    preset-dind-enabled: "true"
+    preset-service-account: "true"
+    # TODO(leblancd) SSH preset shouldn't be required for provider=local.
+    # This can be removed if PR #9915 is ever reverted.
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --tmpfs=/docker-graph:exec
+      - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
+      # TODO(leblancd) The following repo should be switched to
+      # github.com/kubernetes-sigs/kubeadm-dind-cluster=stable when K-D-C
+      # PR #247 is merged and stable branch is bumped to include this fix.
+      - --repo=github.com/leblancd/kubeadm-dind-cluster=k8s_bin_dir_stable
+      - --timeout=80
+      - --clean
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --cluster=
+      - --deployment=kubeadm-dind
+      - --extract=ci/latest
+      - --kubeadm-dind-ip-mode=ipv6
+      # TODO(leblancd) The following path should switch to use
+      # kubernetes-sigs/kubeadm-dind-cluster when K-D-C PR #247 is merged
+      # and K-D-C stable branch is bumped to include this fix.
+      - --kubeadm-dind-k8s-tar-file=/workspace/github.com/leblancd/kubeadm-dind-cluster/kubernetes/server/kubernetes-server-linux-amd64.tar.gz
+      - --provider=local
+      - --ginkgo-parallel=30
+      - --test_args=--ginkgo.focus=Networking|Services --ginkgo.skip=IPv4|DNS|Networking-Performance|Federation|functioning\sNodePort|preserve\ssource\spod|affinity\swork|affinity\sfor --minStartupPods=8
+      - --timeout=60m
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181105-66d3bcb98-master
+      # Privileged mode required to enable IPv6 and Docker-in-Docker mode
+      securityContext:
+        privileged: true

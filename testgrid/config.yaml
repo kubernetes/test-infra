@@ -380,6 +380,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-coredns
 - name: ci-kubernetes-e2e-gci-gce-kube-dns
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-kube-dns
+- name: ci-kubernetes-e2e-kubeadm-dind-ipv6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-dind-ipv6
 - name: ci-kubernetes-e2e-gce-alpha-api
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-alpha-api
 - name: ci-kubernetes-e2e-gci-gce-serial
@@ -6006,6 +6008,12 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-kube-dns
     base_options: include-filter-by-regex=\[sig-network\]
     description: network gci-gce tests with kube-dns
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
+  - name: kubeadm-dind-ipv6
+    test_group_name: ci-kubernetes-e2e-kubeadm-dind-ipv6
+    base_options: include-filter-by-regex=\[sig-network\]
+    description: network Kubeadm-DinD-Cluster based IPv6 tests
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
   - name: gce-alpha-api
