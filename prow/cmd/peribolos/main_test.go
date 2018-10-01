@@ -349,13 +349,14 @@ func (c *fakeClient) RemoveTeamMembership(id int, user string) error {
 
 func TestConfigureMembers(t *testing.T) {
 	cases := []struct {
-		name    string
-		want    memberships
-		have    memberships
-		remove  sets.String
-		members sets.String
-		supers  sets.String
-		err     bool
+		name     string
+		want     memberships
+		have     memberships
+		remove   sets.String
+		members  sets.String
+		supers   sets.String
+		invitees sets.String
+		err      bool
 	}{
 		{
 			name: "forgot to remove duplicate entry",
@@ -431,6 +432,17 @@ func TestConfigureMembers(t *testing.T) {
 				members: sets.NewString("UpPeR"),
 			},
 		},
+		{
+			name: "remove invites for those not in org config",
+			have: memberships{
+				members: sets.NewString("member-one", "member-two"),
+			},
+			want: memberships{
+				members: sets.NewString("member-one", "member-two"),
+			},
+			remove:   sets.NewString("member-three"),
+			invitees: sets.NewString("member-three"),
+		},
 	}
 
 	for _, tc := range cases {
@@ -458,7 +470,7 @@ func TestConfigureMembers(t *testing.T) {
 				return nil
 			}
 
-			err := configureMembers(tc.have, tc.want, adder, remover)
+			err := configureMembers(tc.have, tc.want, tc.invitees, adder, remover)
 			switch {
 			case err != nil:
 				if !tc.err {

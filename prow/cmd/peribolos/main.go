@@ -403,7 +403,7 @@ func configureOrgMembers(opt options, client orgClient, orgName string, orgConfi
 		return err
 	}
 
-	return configureMembers(have, want, adder, remover)
+	return configureMembers(have, want, invitees, adder, remover)
 }
 
 type memberships struct {
@@ -428,13 +428,14 @@ func (m *memberships) normalize() {
 	m.super = normalize(m.super)
 }
 
-func configureMembers(have, want memberships, adder func(user string, super bool) error, remover func(user string) error) error {
+func configureMembers(have, want memberships, invitees sets.String, adder func(user string, super bool) error, remover func(user string) error) error {
 	have.normalize()
 	want.normalize()
 	if both := want.super.Intersection(want.members); len(both) > 0 {
 		return fmt.Errorf("users in both roles: %s", strings.Join(both.List(), ", "))
 	}
-	remove := have.all().Difference(want.all())
+	havePlusInvites := have.all().Union(invitees)
+	remove := havePlusInvites.Difference(want.all())
 	members := want.members.Difference(have.members)
 	supers := want.super.Difference(have.super)
 
@@ -883,5 +884,5 @@ func configureTeamMembers(client teamMembersClient, id int, team org.Team, invit
 
 	want := memberships{members: wantMembers, super: wantMaintainers}
 	have := memberships{members: haveMembers, super: haveMaintainers}
-	return configureMembers(have, want, adder, remover)
+	return configureMembers(have, want, invitees, adder, remover)
 }
