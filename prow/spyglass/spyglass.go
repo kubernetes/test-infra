@@ -25,7 +25,6 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/deck/jobs"
 	"k8s.io/test-infra/prow/spyglass/viewers"
 )
@@ -67,12 +66,6 @@ type ViewRequest struct {
 	ViewData    string   `json:"viewData"`
 }
 
-type ViewsTemplate struct {
-	Views       []Lens
-	Source      string
-	ViewerCache map[string][]string
-}
-
 // New constructs a Spyglass object from a JobAgent and a list of ArtifactFetchers
 func New(ja *jobs.JobAgent, c *storage.Client) *Spyglass {
 	return &Spyglass{
@@ -81,48 +74,6 @@ func New(ja *jobs.JobAgent, c *storage.Client) *Spyglass {
 		PodLogArtifactFetcher: NewPodLogArtifactFetcher(ja),
 		GCSArtifactFetcher:    NewGCSArtifactFetcher(c),
 	}
-}
-
-// Render returns a pre-rendered Spyglass page from the given source string
-func (s *Spyglass) Render(ca *config.Agent, src string) (ViewsTemplate, error) {
-	renderStart := time.Now()
-	artifactNames, err := s.ListArtifacts(src)
-	if err != nil {
-		return ViewsTemplate{}, fmt.Errorf("error listing artifacts: %v", err)
-	}
-	logrus.Infof("Listed %d artifacts for source %s: %v", len(artifactNames), src, artifactNames)
-
-	viewerCache := map[string][]string{}
-	viewersRegistry := ca.Config().Deck.Spyglass.Viewers
-	regexCache := ca.Config().Deck.Spyglass.RegexCache
-
-	for re, viewerNames := range viewersRegistry {
-		matches := []string{}
-		for _, a := range artifactNames {
-			if regexCache[re].MatchString(a) {
-				matches = append(matches, a)
-			}
-		}
-		if len(matches) > 0 {
-			for _, vName := range viewerNames {
-				viewerCache[vName] = matches
-			}
-		}
-	}
-
-	lenses := s.Views(viewerCache)
-
-	vTmpl := ViewsTemplate{
-		Views:       lenses,
-		Source:      src,
-		ViewerCache: viewerCache,
-	}
-	renderElapsed := time.Since(renderStart)
-	logrus.WithFields(logrus.Fields{
-		"duration": renderElapsed.String(),
-		"source":   src,
-	}).Info("Rendered spyglass views.")
-	return vTmpl, nil
 }
 
 // Views gets all views of all artifact files matching each regexp with a registered viewer
@@ -187,17 +138,18 @@ func (s *Spyglass) Refresh(src string, podName string, sizeLimit int64, viewReq 
 // ListArtifacts gets the names of all artifacts available from the given source
 func (s *Spyglass) ListArtifacts(src string) ([]string, error) {
 	split := strings.SplitN(src, "/", 2)
-	storage := split[0]
-	switch storage {
+	keyType := split[0]
+	key := split[1]
+	switch keyType {
 	case "gcs":
-		return s.GCSArtifactFetcher.artifactNames(src)
+		return s.GCSArtifactFetcher.artifacts(key)
 	case "prowjob":
-		gcsSrc, err := s.prowToGCS(src)
+		gcsKey, err := s.prowToGCS(key)
 		if err != nil {
 			logrus.Warningf("Failed to get gcs source for prow job: %v", err)
 			return []string{}, nil
 		}
-		artifactNames, err := s.GCSArtifactFetcher.artifactNames(gcsSrc)
+		artifactNames, err := s.GCSArtifactFetcher.artifacts(gcsKey)
 		logFound := false
 		for _, name := range artifactNames {
 			if name == "build-log.txt" {
@@ -210,23 +162,30 @@ func (s *Spyglass) ListArtifacts(src string) ([]string, error) {
 		}
 		return artifactNames, nil
 	default:
-		return nil, fmt.Errorf("Invalid src: %v", src)
+		return nil, fmt.Errorf("Unrecognized key type for src: %v", src)
 	}
 }
 
-// prowToGCS returns the GCS src corresponding to the given prow src
-func (s *Spyglass) prowToGCS(prowSrc string) (string, error) {
-	split := strings.SplitN(prowSrc, "/", 2)
-	if len(split) < 2 {
-		return "", fmt.Errorf("Invalid prow src: %s", prowSrc)
+// prowToGCS returns the GCS key corresponding to the given prow key
+func (s *Spyglass) prowToGCS(prowKey string) (string, error) {
+	parsed := strings.Split(prowKey, "/")
+	if len(parsed) != 2 {
+		return "", fmt.Errorf("Could not get GCS src: prow src %q incorrectly formatted", prowKey)
 	}
-	id := split[1]
-	job, err := s.jobAgent.GetProwJobByUUID(id)
+	jobName := parsed[0]
+	buildID := parsed[1]
+
+	job, err := s.jobAgent.GetProwJob(jobName, buildID)
 	if err != nil {
-		return "", fmt.Errorf("Failed to get prow job %s: %v", id, err)
+		return "", fmt.Errorf("Failed to get prow job from src %q: %v", prowKey, err)
 	}
-	logrus.Infof("prow %s -> gcs %s", prowSrc, job.Status.URL)
-	return job.Status.URL, nil
+
+	url := job.Status.URL
+	buildIndex := strings.Index(url, "/build/")
+	if buildIndex == -1 {
+		return "", fmt.Errorf("Unrecognized GCS url: %q", url)
+	}
+	return url[buildIndex+len("/build/"):], nil
 }
 
 // FetchArtifacts constructs and returns Artifact objects for each artifact name in the list.
@@ -235,11 +194,12 @@ func (s *Spyglass) FetchArtifacts(src string, podName string, sizeLimit int64, a
 	artStart := time.Now()
 	arts := []viewers.Artifact{}
 	split := strings.SplitN(src, "/", 2)
-	storage := split[0]
-	switch storage {
+	keyType := split[0]
+	key := split[1]
+	switch keyType {
 	case "gcs":
 		for _, name := range artifactNames {
-			art, err := s.GCSArtifactFetcher.artifact(src, name, sizeLimit)
+			art, err := s.GCSArtifactFetcher.artifact(key, name, sizeLimit)
 			if err != nil {
 				logrus.Errorf("Failed to fetch artifact %s: %v", name, err)
 				continue
@@ -248,21 +208,23 @@ func (s *Spyglass) FetchArtifacts(src string, podName string, sizeLimit int64, a
 		}
 	case "prowjob":
 		logFound := false
-		if gcsSrc, err := s.prowToGCS(src); err != nil {
+		if gcsKey, err := s.prowToGCS(key); err == nil {
 			for _, name := range artifactNames {
 				if name == "build-log.txt" {
 					logFound = true
 				}
-				art, err := s.GCSArtifactFetcher.artifact(gcsSrc, name, sizeLimit)
+				art, err := s.GCSArtifactFetcher.artifact(gcsKey, name, sizeLimit)
 				if err != nil {
 					logrus.Errorf("Failed to fetch artifact %s: %v", name, err)
 					continue
 				}
 				arts = append(arts, art)
 			}
+		} else {
+			logrus.Warningln(err)
 		}
 		if !logFound {
-			art, err := s.PodLogArtifactFetcher.artifact(src, sizeLimit)
+			art, err := s.PodLogArtifactFetcher.artifact(key, sizeLimit)
 			if err != nil {
 				logrus.Errorf("Failed to fetch pod log: %v", err)
 			} else {

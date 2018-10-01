@@ -17,64 +17,36 @@ limitations under the License.
 package spyglass
 
 import (
-	"net/url"
 	"testing"
-
-	"k8s.io/test-infra/prow/deck/jobs"
 )
 
 // Tests getting handles to objects associated with the current Prow job
 func TestFetchArtifacts_Prow(t *testing.T) {
-	badFetcher := NewPodLogArtifactFetcher((*jobs.JobAgent)(nil))
 	goodFetcher := NewPodLogArtifactFetcher(&fakePodLogJAgent{})
 	maxSize := int64(500e6)
 	testCases := []struct {
-		name         string
-		artifactName string
-		rawSrc       string
-		expectErr    bool
+		name      string
+		src       string
+		expectErr bool
 	}{
 		{
-			name:         "Fetch build-log.txt from valid url",
-			artifactName: "build-log.txt",
-			rawSrc:       "https://prow.k8s.io/prowjob?job=example-ci-run&id=403",
+			name: "Fetch build-log.txt from valid src",
+			src:  "BFG/435",
 		},
 		{
-			name:         "Fetch log with missing job id",
-			artifactName: "build-log.txt",
-			rawSrc:       "https://prow.k8s.io/prowjob?job=example-ci-run",
-			expectErr:    true,
+			name:      "Fetch log from empty src",
+			src:       "",
+			expectErr: true,
 		},
 		{
-			name:         "Fetch log with empty job id",
-			artifactName: "build-log.txt",
-			rawSrc:       "https://prow.k8s.io/prowjob?job=example-ci-run&id=",
-			expectErr:    true,
-		},
-		{
-			name:         "Fetch log with missing build name",
-			artifactName: "build-log.txt",
-			rawSrc:       "https://prow.k8s.io/prowjob?id=403",
-			expectErr:    true,
-		},
-		{
-			name:         "Fetch log with empty build name",
-			artifactName: "build-log.txt",
-			rawSrc:       "https://prow.k8s.io/prowjob?job=&id=1234",
-			expectErr:    true,
+			name:      "Fetch log from incomplete src",
+			src:       "BFG",
+			expectErr: true,
 		},
 	}
 
 	for _, tc := range testCases {
-		src, err := url.Parse(tc.rawSrc)
-		if err != nil {
-			t.Fatalf("Unexpected error: invalid url %s in test %s", tc.rawSrc, tc.name)
-		}
-		_, err = badFetcher.artifact(*src, tc.artifactName, maxSize)
-		if err == nil {
-			t.Errorf("%s: expected nil job agent to produce error, got no error", tc.name)
-		}
-		artifact, err := goodFetcher.artifact(*src, tc.artifactName, maxSize)
+		artifact, err := goodFetcher.artifact(tc.src, maxSize)
 		if err != nil && !tc.expectErr {
 			t.Fatalf("%s: failed unexpectedly for artifact %s, err: %v", tc.name, artifact.JobPath(), err)
 		}

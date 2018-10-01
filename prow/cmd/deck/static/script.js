@@ -507,16 +507,17 @@ function redraw(fz) {
         }
         if (spyglass) {
             if (build.state == "pending") {
-                let url = window.location.origin + "/view/prowjob/" + build.prow_job;
+                let url = window.location.origin + "/view/prowjob/" +
+                    build.job + "/" + build.build_id;
                 r.appendChild(createSpyglassCell(url));
             } else {
                 const buildIndex = build.url.indexOf("/build/");
-                if (buildIndex !== -1) {
+                if (buildIndex === -1) {
+                    r.appendChild(createTextCell(""));
+                } else {
                     let url = window.location.origin + "/view/gcs/" +
                         build.url.substring(buildIndex + "/build/".length);
                     r.appendChild(createSpyglassCell(url));
-                } else {
-                    r.appendChild(createTextCell(""));
                 }
             }
         } else {

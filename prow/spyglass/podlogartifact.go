@@ -24,20 +24,21 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/spyglass/viewers"
 )
 
 type podLogJobAgent interface {
-	GetProwJobByUUID(prowID string) (kube.ProwJob, error)
-	GetJobLogByUUID(prowID string) ([]byte, error)
-	GetJobLogTailByUUID(prowID string, n int64) ([]byte, error)
+	GetProwJob(job string, id string) (kube.ProwJob, error)
+	GetJobLog(job string, id string) ([]byte, error)
+	GetJobLogTail(job string, id string, n int64) ([]byte, error)
 }
 
 // PodLogArtifact holds data for reading from a specific pod log
 type PodLogArtifact struct {
-	prowID    string
+	name      string
+	buildID   string
+	podName   string
 	sizeLimit int64
 	ja        podLogJobAgent
 }
@@ -48,15 +49,20 @@ var (
 )
 
 // NewPodLogArtifact creates a new PodLogArtifact
-func NewPodLogArtifact(prowID string, sizeLimit int64, ja podLogJobAgent) (*PodLogArtifact, error) {
-	if prowID == "" {
+func NewPodLogArtifact(jobName string, buildID string, podName string, sizeLimit int64, ja podLogJobAgent) (*PodLogArtifact, error) {
+	if jobName == "" {
+		return nil, errInsufficientJobInfo
+	}
+	if buildID == "" {
 		return nil, errInsufficientJobInfo
 	}
 	if sizeLimit < 0 {
 		return nil, errInvalidSizeLimit
 	}
 	return &PodLogArtifact{
-		prowID:    prowID,
+		name:      jobName,
+		buildID:   buildID,
+		podName:   podName,
 		sizeLimit: sizeLimit,
 		ja:        ja,
 	}, nil
@@ -64,14 +70,9 @@ func NewPodLogArtifact(prowID string, sizeLimit int64, ja podLogJobAgent) (*PodL
 
 // CanonicalLink returns a link to where pod logs are streamed
 func (a *PodLogArtifact) CanonicalLink() string {
-	j, err := a.ja.GetProwJobByUUID(a.prowID)
-	if err != nil {
-		logrus.Errorf("Failed to get job log for id %s: %v", a.prowID, err)
-		return ""
-	}
 	q := url.Values{
-		"job": []string{j.Spec.Job},
-		"id":  []string{j.Status.BuildID},
+		"job": []string{a.name},
+		"id":  []string{a.buildID},
 	}
 	u := url.URL{
 		Path:     "/log",
@@ -89,7 +90,7 @@ func (a *PodLogArtifact) JobPath() string {
 
 // ReadAt implements reading a range of bytes from the pod logs endpoint
 func (a *PodLogArtifact) ReadAt(p []byte, off int64) (n int, err error) {
-	logs, err := a.ja.GetJobLogByUUID(a.prowID)
+	logs, err := a.ja.GetJobLog(a.name, a.buildID)
 	if err != nil {
 		return 0, fmt.Errorf("error getting pod log: %v", err)
 	}
@@ -113,7 +114,7 @@ func (a *PodLogArtifact) ReadAll() ([]byte, error) {
 	if size > a.sizeLimit {
 		return nil, viewers.ErrFileTooLarge
 	}
-	logs, err := a.ja.GetJobLogByUUID(a.prowID)
+	logs, err := a.ja.GetJobLog(a.name, a.buildID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting pod log: %v", err)
 	}
@@ -122,7 +123,7 @@ func (a *PodLogArtifact) ReadAll() ([]byte, error) {
 
 // ReadAtMost reads at most n bytes
 func (a *PodLogArtifact) ReadAtMost(n int64) ([]byte, error) {
-	logs, err := a.ja.GetJobLogByUUID(a.prowID)
+	logs, err := a.ja.GetJobLog(a.name, a.buildID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting pod log: %v", err)
 	}
@@ -145,7 +146,7 @@ func (a *PodLogArtifact) ReadAtMost(n int64) ([]byte, error) {
 
 // ReadTail reads the last n bytes of the pod log
 func (a *PodLogArtifact) ReadTail(n int64) ([]byte, error) {
-	logs, err := a.ja.GetJobLogTailByUUID(a.prowID, n)
+	logs, err := a.ja.GetJobLogTail(a.name, a.buildID, n)
 	if err != nil {
 		return nil, fmt.Errorf("error getting pod log tail: %v", err)
 	}
@@ -166,7 +167,7 @@ func (a *PodLogArtifact) ReadTail(n int64) ([]byte, error) {
 
 // Size gets the size of the pod log. Note: this function makes the same network call as reading the entire file.
 func (a *PodLogArtifact) Size() (int64, error) {
-	logs, err := a.ja.GetJobLogByUUID(a.prowID)
+	logs, err := a.ja.GetJobLog(a.name, a.buildID)
 	if err != nil {
 		return 0, fmt.Errorf("error getting size of pod log: %v", err)
 	}

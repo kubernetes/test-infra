@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"strings"
 
-	"k8s.io/test-infra/prow/deck/jobs"
 	"k8s.io/test-infra/prow/spyglass/viewers"
 )
 
@@ -34,17 +33,16 @@ func NewPodLogArtifactFetcher(ja podLogJobAgent) *PodLogArtifactFetcher {
 	return &PodLogArtifactFetcher{jobAgent: ja}
 }
 
-func (af *PodLogArtifactFetcher) artifact(src string, sizeLimit int64) (viewers.Artifact, error) {
-	split := strings.SplitN(src, "/", 2)
-	if len(split) < 2 {
-		return nil, fmt.Errorf("Invalid prow src: %s", src)
+// artifact constructs an artifact handle from the given key
+func (af *PodLogArtifactFetcher) artifact(key string, sizeLimit int64) (viewers.Artifact, error) {
+	parsed := strings.Split(key, "/")
+	if len(parsed) != 2 {
+		return nil, fmt.Errorf("Could not fetch artifact: key %q incorrectly formatted", key)
 	}
-	id := split[1]
+	jobName := parsed[0]
+	buildID := parsed[1]
 
-	if af.jobAgent == nil || af.jobAgent == (*jobs.JobAgent)(nil) {
-		return nil, fmt.Errorf("Prow job agent doesn't exist (are you running locally?)")
-	}
-	podLog, err := NewPodLogArtifact(id, sizeLimit, af.jobAgent)
+	podLog, err := NewPodLogArtifact(jobName, buildID, "", sizeLimit, af.jobAgent)
 	if err != nil {
 		return nil, fmt.Errorf("Error accessing pod log from given source: %v", err)
 	}
