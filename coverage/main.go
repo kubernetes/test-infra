@@ -19,9 +19,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os"
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/coverage/artifacts"
+	"os"
 )
 
 const (
@@ -31,8 +31,6 @@ const (
 	defaultGcsBucket         = "knative-prow"
 	defaultPostSubmitJobName = "post-knative-serving-go-coverage"
 	defaultCovThreshold      = 80
-	defaultLocalPr           = "0"
-	defaultLocalBuildStr     = "0"
 )
 
 var (
@@ -76,7 +74,6 @@ func main() {
 	)
 
 	localArtifacts.ProduceProfileFile(*coverageTargetDir)
-
 
 	fmt.Println("end of code coverage main")
 }

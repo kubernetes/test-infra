@@ -17,19 +17,8 @@ limitations under the License.
 package test
 
 import (
-	"fmt"
 	"testing"
 )
-
-// StrFailure is used to display discrepancy between expected and actual result in test
-func StrFailure(input, expected, actual string) string {
-	return fmt.Sprintf("input=%s; expected=%s; actual=%s\n", input, expected, actual)
-}
-
-//Fail fails a test and prints out info about expected and actual value
-func Fail(t *testing.T, input, expected, actual interface{}) {
-	t.Fatalf("input=%s; expected=%v; actual=%v\n", input, expected, actual)
-}
 
 //AssertEqual checks equality of expected and actual results, fail the test if not equal
 func AssertEqual(t *testing.T, expected, actual interface{}) {
@@ -56,15 +45,6 @@ func newStringSet() *stringSet {
 	return &stringSet{
 		data: make(map[string]bool),
 	}
-}
-
-//MakeStringSet makes a set of string out of given strings
-func MakeStringSet(members ...string) (set *stringSet) {
-	set = newStringSet()
-	for _, member := range members {
-		set.Add(member)
-	}
-	return set
 }
 
 //AllMembers returns all member of the set in a list

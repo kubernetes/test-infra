@@ -16,17 +16,8 @@ limitations under the License.
 
 package test
 
-const (
-	covTargetRootRel = "testTarget"
-	//CovTargetRelPath points to the path to the target directory for test coverage,
-	// relative to project root directory
-	CovTargetRelPath = covTargetRootRel + "/presubmit"
-)
-
 var (
 	tmpArtsDir = absPath("test_output/tmp_artifacts")
 	//InputArtifactsDir is the absolute path to artifacts as test data
 	InputArtifactsDir = absPath("testdata/artifacts")
-	//CovTargetDir points to the absolute path to the target directory for test coverage
-	CovTargetDir = absPath(CovTargetRelPath) + "/"
 )

@@ -29,7 +29,6 @@ import (
 
 const (
 	covTargetRootRel = "testTarget"
-	CovTargetRelPath = covTargetRootRel + "/presubmit"
 )
 
 // generates coverage profile by running go test on target package

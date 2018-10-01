@@ -29,10 +29,7 @@ func TestLocalInputArts(t *testing.T) {
 		t.Fatalf("FileOrDirExists(arts.Directory()) == false\n")
 	}
 	if io.FileOrDirExists(arts.ProfilePath()) == false {
-		t.Fatalf("FileOrDirExists(%s) == false\n", arts.ProfilePath())
-	}
-	if io.FileOrDirExists(arts.ProfilePath()) == false {
-		t.Fatalf("Profile File not exist\n")
+		t.Fatalf("Profile File not exist on path %s\n", arts.ProfilePath())
 	}
 	if io.FileOrDirExists(arts.KeyProfilePath()) == false {
 		t.Fatalf("Key Profile File not exist\n")
