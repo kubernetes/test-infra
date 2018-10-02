@@ -15,6 +15,10 @@ periodics:
     repo: test-infra
     base_ref: master
     path_alias: k8s.io/test-infra
+  - org: kubernetes
+    repo: release
+    base_ref: master
+    path_alias: k8s.io/release
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20181001-df2f5324a-master
