@@ -421,7 +421,10 @@ func (k kops) Up() error {
 
 	// We require repeated successes, so we know that the cluster is stable
 	// (e.g. in HA scenarios, or where we're using multiple DNS servers)
-	requiredConsecutiveSuccesses := 4
+	// We use a relatively high number as DNS can take a while to
+	// propagate across multiple servers / caches
+	requiredConsecutiveSuccesses := 10
+
 	// TODO(zmerlynn): More cluster validation. This should perhaps be
 	// added to kops and not here, but this is a fine place to loop
 	// for now.
