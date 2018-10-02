@@ -7,7 +7,7 @@ postsubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181001-df2f5324a-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181001-df2f5324a-master
         command:
         - "./hack/ci/build-all.sh"
       # trialing this on kind jobs, we are using FQDN for in-cluster services, now
