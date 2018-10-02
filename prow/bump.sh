@@ -13,6 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# bump.sh will
+# * ensure there are no pending changes
+# * optionally activate GOOGLE_APPLICATION_CREDENTIALS and configure-docker if set
+# * run //prow:release-push to build and push prow images
+# * update all the cluster/*.yaml files to use the new image tags
+
 set -o errexit
 
 # See https://misc.flogisoft.com/bash/tip_colors_and_formatting
@@ -62,6 +68,12 @@ if [[ "${#images[@]}" == 0 ]]; then
   echo -n "images: " >&2
 fi
 echo -e "$(color-image ${images[@]})" >&2
+
+if [[ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
+  echo "Detected GOOGLE_APPLICATION_CREDENTIALS, activating..." >&2
+  gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS"
+  gcloud auth configure-docker
+fi
 
 echo -e "Pushing $(color-version ${new_version}) via $(color-target //prow:release-push --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64) ..." >&2
 bazel run //prow:release-push --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
