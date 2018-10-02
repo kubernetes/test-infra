@@ -2,6 +2,9 @@ periodics:
 - interval: 1h
   name: ci-kubernetes-coverage-conformance
   decorate: true
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
   extra_refs:
   - org: kubernetes
     repo: kubernetes
