@@ -254,6 +254,7 @@ plugins:
   - override
   - size  # Auto-label size of PR
   - trigger  # Allow people to configure CI jobs to /test
+  - verify-owners # Validates OWNERS file changes in PRs.
   - wip  # Auto-hold PRs with WIP in title
   - yuks # Let prow tell a /joke
 
@@ -261,22 +262,19 @@ plugins:
   - trigger
 
   kubeflow:
-    # Enable /approve and /assign commands.
-    - approve
-    - assign
-    - blunderbuss
-    - help
-    - hold
-    - label
-    - lgtm
-    # Lets PRs & issues be flagged as stale
-    - lifecycle
-    - size
-    # Allows cleaning up stale commit statuses
-    - skip
-    # Applies a label to PRs with wip in the title to block merge
-    - wip
-    - trigger
+  - approve   # Enable /approve and /assign commands.
+  - assign
+  - blunderbuss
+  - help
+  - hold
+  - label
+  - lgtm
+  - lifecycle   # Lets PRs & issues be flagged as stale
+  - size
+  - skip  # Allows cleaning up stale commit statuses
+  - verify-owners   # Validates OWNERS file changes in PRs.
+  - wip   # Applies a label to PRs with wip in the title to block merge
+  - trigger
 
   helm/charts:
   - approve
@@ -286,6 +284,7 @@ plugins:
   - hold
   - lgtm
   - trigger
+  - verify-owners
 
   kubernetes:
   - approve
@@ -409,6 +408,7 @@ plugins:
   - shrug
   - size
   - skip
+  - verify-owners
   - wip
   - yuks
 
@@ -428,6 +428,7 @@ plugins:
   - shrug
   - size
   - skip
+  - verify-owners
   - wip
   - yuks
 
@@ -443,11 +444,13 @@ plugins:
   - approve
   - blunderbuss
   - hold
+  - verify-owners
   - wip
 
   kubernetes-incubator/kubespray:
   - approve
   - blunderbuss
+  - verify-owners
 
   kubernetes-incubator/service-catalog:
   - approve
@@ -464,6 +467,7 @@ plugins:
   - approve
   - hold
   - trigger
+  - verify-owners
 
   kubernetes-security/kubernetes:
   - trigger
@@ -484,6 +488,7 @@ plugins:
   - shrug
   - size
   - skip
+  - verify-owners
   - wip
   - yuks
 
@@ -558,18 +563,18 @@ plugins:
   - trigger
 
   client-go/unofficial-docs:
+  - approve
   - assign
-  - approve
-  - lgtm
-  - approve
-  - label
-  - cla
+  - blunderbuss
   - cat
+  - cla
   - dog
   - help
-  - blunderbuss
-  - wip
   - hold
+  - label
+  - lgtm
+  - verify-owners
+  - wip
 
   cncf/apisnoop:
   - cat # /meow replies with cat pictures
