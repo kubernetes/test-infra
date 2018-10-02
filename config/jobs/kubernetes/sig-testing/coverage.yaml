@@ -23,7 +23,7 @@ periodics:
         shopt -s globstar
         ../test-infra/scenarios/kubernetes_e2e.py --build=quick --dump-before-and-after --extract=local \
                                                   --gcp-zone=us-central1-f --provider=gce --timeout=120m \
-                                                  --test-args=--ginkgo.focus=\[Conformance\]
+                                                  --test_args=--ginkgo.focus=\[Conformance\]
         cd ../test-infra
         bazel run //gopherage -- merge "${ARTIFACTS}"/before/**/*.cov > "${ARTIFACTS}/before/merged.cov"
         bazel run //gopherage -- merge "${ARTIFACTS}"/after/**/*.cov > "${ARTIFACTS}/after/merged.cov"
