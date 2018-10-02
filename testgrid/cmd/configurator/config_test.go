@@ -318,6 +318,7 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 		"bazelbuild/rules_k8s",
 		"google/cadvisor",
 		"helm/charts",
+		"GoogleCloudPlatform/k8s-cluster-bundle",
 		"kubeflow/arena",
 		"kubeflow/caffe2-operator",
 		"kubeflow/chainer-operator",

@@ -3175,7 +3175,13 @@ test_groups:
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
 
+- name: pull-k8s-cluster-bundle-bazel-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-k8s-cluster-bundle-bazel-test
+  num_columns_recent: 30
+- name: post-k8s-cluster-bundle-bazel-test
+  gcs_prefix: kubernetes-jenkins/logs/post-k8s-cluster-bundle-bazel-test
 # Add New Testgroups Here
+
 - name: ci-kubernetes-e2e-gce-coredns-performance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-coredns-performance
 - name: ci-kubernetes-e2e-gce-kubedns-performance
@@ -6952,6 +6958,10 @@ dashboards:
     test_group_name: pull-charts-e2e
   - name: cadvisor
     test_group_name: pull-cadvisor-e2e
+  - name: pull-k8s-cluster-bundle-bazel-test
+    test_group_name: pull-k8s-cluster-bundle-bazel-test
+  - name: post-k8s-cluster-bundle-bazel-test
+    test_group_name: post-k8s-cluster-bundle-bazel-test
 
 - name: presubmits-kops
   dashboard_tab:
