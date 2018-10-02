@@ -24,6 +24,42 @@
   version = "v0.23.0"
 
 [[projects]]
+  name = "github.com/Azure/azure-pipeline-go"
+  packages = ["pipeline"]
+  revision = "098e490af5dc2a905cdc5b64cafda6887b29164b"
+  version = "0.1.6"
+
+[[projects]]
+  name = "github.com/Azure/azure-sdk-for-go"
+  packages = [
+    "services/resources/mgmt/2018-05-01/resources",
+    "version",
+  ]
+  revision = "6d20bdbae88c06c36d72eb512295417693bfdf4e"
+  version = "v21.1.0"
+
+[[projects]]
+  name = "github.com/Azure/azure-storage-blob-go"
+  packages = ["2016-05-31/azblob"]
+  revision = "66ba96e49ebbdc3cd26970c6c675c906d304b5e2"
+  version = "0.1.4"
+
+[[projects]]
+  name = "github.com/Azure/go-autorest"
+  packages = [
+    "autorest",
+    "autorest/adal",
+    "autorest/azure",
+    "autorest/date",
+    "autorest/to",
+    "autorest/validation",
+    "logger",
+    "version",
+  ]
+  revision = "9bc4033dd347c7f416fca46b2f42a043dc1fbdf6"
+  version = "v10.15.5"
+
+[[projects]]
   branch = "parse-constraints-with-dash-in-pre"
   name = "github.com/Masterminds/semver"
   packages = ["."]
@@ -173,6 +209,12 @@
   packages = ["."]
   revision = "1d4478f51bed434f1dadf96dcd9b43aabac66795"
   version = "v1.7"
+
+[[projects]]
+  name = "github.com/dgrijalva/jwt-go"
+  packages = ["."]
+  revision = "06ea1031745cb8b3dab3f6a236daf2b0aa468b7e"
+  version = "v3.2.0"
 
 [[projects]]
   name = "github.com/djherbis/atime"
@@ -1205,6 +1247,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b4c254b53e869b40eba05d71a2fd1a9936c0180a834db7959c997770cce0a785"
+  inputs-digest = "3a2a86439d75d92b8a2e0c1ab33de0e527f5284e63b05ffeded8d209e8612473"
   solver-name = "gps-cdcl"
   solver-version = 1
