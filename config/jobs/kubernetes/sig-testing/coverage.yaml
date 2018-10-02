@@ -1,0 +1,33 @@
+periodics:
+- interval: 1h
+  name: ci-kubernetes-coverage-conformance
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181001-df2f5324a-master
+      command:
+      - bash
+      args:
+      - -e
+      - -c
+      - |
+        shopt -s globstar
+        ../test-infra/scenarios/kubernetes_e2e.py --build=quick --dump-before-and-after --extract=local \
+                                                  --gcp-zone=us-central1-f --provider=gce --timeout=120m \
+                                                  --test-args=--ginkgo.focus=\[Conformance\]
+        cd ../test-infra
+        bazel run //gopherage -- merge "${ARTIFACTS}"/before/**/*.cov > "${ARTIFACTS}/before/merged.cov"
+        bazel run //gopherage -- merge "${ARTIFACTS}"/after/**/*.cov > "${ARTIFACTS}/after/merged.cov"
+        bazel run //gopherage -- diff "${ARTIFACTS}/before/merged.cov" "${ARTIFACTS}/after/merged.cov" > "${ARTIFACTS}/conformance.cov"
+      env:
+      - name: KUBE_BUILD_WITH_COVERAGE
+        value: "true"

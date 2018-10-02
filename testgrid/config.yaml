@@ -271,6 +271,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-canary
 - name: ci-kubernetes-e2e-gce-podutil-canary
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-podutil-canary
+- name: ci-kubernetes-coverage-conformance
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-coverage-conformance
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-device-plugin-gpu
   alert_stale_results_hours: 24
@@ -6615,6 +6617,8 @@ dashboards:
     test_group_name: pull-kubernetes-verify-prow
   - name: pull-kubernetes-integration-prow
     test_group_name: pull-kubernetes-integration-prow
+  - name: ci-kubernetes-coverage-conformance
+    test_group_name: ci-kubernetes-coverage-conformance
 
 - name: sig-testing-org
   dashboard_tab:
