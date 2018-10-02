@@ -5,6 +5,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   extra_refs:
   - org: kubernetes
     repo: kubernetes
@@ -18,6 +19,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20181001-df2f5324a-master
       command:
+      - runner.sh
       - bash
       args:
       - -e
@@ -34,3 +36,5 @@ periodics:
       env:
       - name: KUBE_BUILD_WITH_COVERAGE
         value: "true"
+    securityContext:
+      privileged: true
