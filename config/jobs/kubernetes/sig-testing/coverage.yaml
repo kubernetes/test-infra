@@ -27,6 +27,7 @@ periodics:
       - |
         shopt -s globstar
         ../test-infra/scenarios/kubernetes_e2e.py --build=quick --dump-before-and-after --extract=local \
+                                                  --stage=gs://kubernetes-release-dev/ci/ci-kubernetes-conformance-coverage \
                                                   --gcp-zone=us-central1-f --provider=gce --timeout=120m \
                                                   --test_args=--ginkgo.focus=\[Conformance\]
         cd ../test-infra
