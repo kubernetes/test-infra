@@ -353,7 +353,7 @@ periodics:
       - --gcp-zone=us-east1-a
       - --ginkgo-parallel=30
       - --gke-command-group=beta
-      - --gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork name=ip-alias-subnet --cluster-ipv4-cidr=/11 --services-ipv4-cidr=/18
+      - --gke-create-command=container clusters create --quiet --enable-ip-alias --create-subnetwork name=ip-alias-subnet --cluster-ipv4-cidr=/11 --services-ipv4-cidr=/18 --timeout=2700
       - --gke-environment=test
       - '--gke-shape={"default":{"Nodes":4999,"MachineType":"g1-small"},"heapster-pool":{"Nodes":1,"MachineType":"n1-standard-16"}}'
       - --provider=gke
