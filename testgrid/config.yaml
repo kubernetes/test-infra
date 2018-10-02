@@ -351,6 +351,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-etcd3
 - name: ci-kubernetes-e2e-gci-gce-flaky
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-flaky
+- name: ci-kubernetes-e2e-gci-gce-single-flake-attempt
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-single-flake-attempt
 - name: ci-kubernetes-e2e-gci-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce
 - name: ci-kubernetes-e2e-gci-gce-scalability
@@ -4140,6 +4142,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-etcd3
   - name: gci-gce-flaky
     test_group_name: ci-kubernetes-e2e-gci-gce-flaky
+  - name: gci-gce-single-flake-attempt
+    test_group_name: ci-kubernetes-e2e-gci-gce-single-flake-attempt
   - name: gci-gce-ingress
     test_group_name: ci-kubernetes-e2e-gci-gce-ingress
   - name: gce-multizone
@@ -5374,6 +5378,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-flaky
     base_options: include-filter-by-regex=sig-api-machinery
     description: apimachinery gce flaky e2e tests for master branch
+  - name: gce-single-flake-attempt
+    test_group_name: ci-kubernetes-e2e-gci-gce-single-flake-attempt
+    base_options: include-filter-by-regex=sig-api-machinery
+    description: apimachinery gce e2e tests for master branch with reduced flake attempt
   - name: gke-flaky
     test_group_name: ci-kubernetes-e2e-gci-gke-flaky
     base_options: include-filter-by-regex=sig-api-machinery
@@ -6367,6 +6375,12 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-flaky
     base_options: include-filter-by-regex=Volume%7Cstorage
     description: storage gce flaky e2e tests for master branch
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
+  - name: gce-single-flake-attempt
+    test_group_name: ci-kubernetes-e2e-gci-gce-single-flake-attempt
+    base_options: include-filter-by-regex=Volume%7Cstorage
+    description: storage gce e2e tests for master branch with reduced flake attempt
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
   - name: gke-flaky
