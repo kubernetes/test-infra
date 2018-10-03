@@ -35,6 +35,7 @@ import (
 	"k8s.io/test-infra/prow/plugins/cherrypickunapproved"
 	"k8s.io/test-infra/prow/plugins/hold"
 	"k8s.io/test-infra/prow/plugins/releasenote"
+	"k8s.io/test-infra/prow/plugins/trigger"
 	"k8s.io/test-infra/prow/plugins/verify-owners"
 	"k8s.io/test-infra/prow/plugins/wip"
 
@@ -76,12 +77,14 @@ const (
 	mismatchedTideWarning   = "mismatched-tide"
 	nonDecoratedJobsWarning = "non-decorated-jobs"
 	jobNameLengthWarning    = "long-job-names"
+	needsOkToTestWarning    = "needs-ok-to-test"
 )
 
 var allWarnings = []string{
 	mismatchedTideWarning,
 	nonDecoratedJobsWarning,
 	jobNameLengthWarning,
+	needsOkToTestWarning,
 }
 
 func (o *options) Validate() error {
@@ -159,6 +162,11 @@ func main() {
 	}
 	if o.warningEnabled(jobNameLengthWarning) {
 		if err := validateJobRequirements(configAgent); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	if o.warningEnabled(needsOkToTestWarning) {
+		if err := validateNeedsOkToTestLabel(configAgent); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -376,4 +384,16 @@ func validateDecoratedJobs(configAgent config.Agent) error {
 		return fmt.Errorf("the following jobs use the kubernetes provider but do not use the pod utilities: %v", nonDecoratedJobs)
 	}
 	return nil
+}
+
+func validateNeedsOkToTestLabel(configAgent config.Agent) error {
+	var queryErrors []error
+	for i, query := range configAgent.Config().Tide.Queries {
+		for _, label := range query.MissingLabels {
+			if label == trigger.NeedsOkToTest {
+				queryErrors = append(queryErrors, fmt.Errorf("the tide query at position %d forbids the %q label, which is not recommended", i, trigger.NeedsOkToTest))
+			}
+		}
+	}
+	return errorutil.NewAggregate(queryErrors...)
 }
