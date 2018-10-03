@@ -2170,11 +2170,6 @@ test_groups:
 # packages tests
 - name: periodic-kubernetes-e2e-packages-pushed
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-packages-pushed
-# etcd tests
-- name: ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
-- name: ci-kubernetes-e2e-gce-gci-latest-rollback-etcd
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-latest-rollback-etcd
 
 # charts tests
 - name: ci-kubernetes-charts-gce
@@ -4541,13 +4536,6 @@ dashboards:
   - name: gke-gci-new-gci-master-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
     description: Upgrade master and node, in gke(gci), from 1.10 to master, and run skewed e2e tests
-
-- name: sig-release-etcd-upgrades
-  dashboard_tab:
-  - name: gce-latest
-    test_group_name: ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
-  - name: gce-rollback-latest
-    test_group_name: ci-kubernetes-e2e-gce-gci-latest-rollback-etcd
 
 # These are the master *blocking* tests.  These provide a valid binary signal
 # to gate releases (alpha, beta, official).
@@ -7375,7 +7363,6 @@ dashboard_groups:
   - sig-release-1.11-blocking
   - sig-release-1.10-all
   - sig-release-1.10-blocking
-  - sig-release-etcd-upgrades
   - sig-release-1.9-all
   - sig-release-1.9-blocking
   - sig-release-misc

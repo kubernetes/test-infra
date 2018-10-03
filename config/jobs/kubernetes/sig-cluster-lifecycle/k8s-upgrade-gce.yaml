@@ -204,34 +204,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181002-3e479534e-master
 
 - interval: 2h
-  name: ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=110
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-leaked-resources
-      - --check-version-skew=false
-      - --env=STORAGE_BACKEND=etcd2
-      - --env=ETCD_VERSION=2.2.1
-      - --env=ETCD_IMAGE=2.2.1
-      - --env=STORAGE_MEDIA_TYPE=application/json
-      - --extract=ci/latest
-      - --extract=ci/latest
-      - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
-      - --provider=gce
-      - --test=false
-      - --timeout=60m
-      - --upgrade_args=--ginkgo.focus=\[Feature:EtcdUpgrade\] --etcd-upgrade-storage=etcd3 --etcd-upgrade-version=3.0.17
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181002-3e479534e-master
-
-- interval: 2h
   name: ci-kubernetes-e2e-gce-master-new-downgrade-cluster
   labels:
     preset-service-account: "true"
