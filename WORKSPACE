@@ -6,7 +6,7 @@ git_repository(
 
 load("@bazel_skylib//:lib.bzl", "versions")
 
-versions.check(minimum_bazel_version = "0.10.0")
+versions.check(minimum_bazel_version = "0.16.0")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
@@ -17,7 +17,7 @@ http_archive(
     urls = ["https://github.com/bazelbuild/rules_go/releases/download/0.15.3/rules_go-0.15.3.tar.gz"],
 )
 
-load("@io_bazel_rules_go//go:def.bzl", "go_rules_dependencies", "go_register_toolchains")
+load("@io_bazel_rules_go//go:def.bzl", "go_register_toolchains", "go_rules_dependencies")
 
 go_rules_dependencies()
 
@@ -44,7 +44,7 @@ git_repository(
     remote = "https://github.com/kubernetes/repo-infra.git",
 )
 
-load("@io_bazel_rules_docker//docker:docker.bzl", "docker_repositories", "docker_pull")
+load("@io_bazel_rules_docker//docker:docker.bzl", "docker_pull", "docker_repositories")
 
 docker_repositories()
 
