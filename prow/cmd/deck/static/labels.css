@@ -193,11 +193,6 @@
     color: #ffffff;
 }
 
-.cherrypickx00002dcandidate {
-    background-color: #fef2c0;
-    color: #000000;
-}
-
 .cherryx00002dpickx00002dapproved {
     background-color: #fef2c0;
     color: #000000;
@@ -383,26 +378,6 @@
     color: #000000;
 }
 
-.queuex00002fblocksx00002dothers {
-    background-color: #ffaa00;
-    color: #000000;
-}
-
-.queuex00002fcriticalx00002dfix {
-    background-color: #ffaa00;
-    color: #000000;
-}
-
-.queuex00002ffix {
-    background-color: #ffaa00;
-    color: #000000;
-}
-
-.queuex00002fmultiplex00002drebases {
-    background-color: #ffaa00;
-    color: #000000;
-}
-
 .releasex00002dnote {
     background-color: #c2e0c6;
     color: #000000;
@@ -415,16 +390,6 @@
 
 .releasex00002dnotex00002dnone {
     background-color: #c2e0c6;
-    color: #000000;
-}
-
-.retestx00002dnotx00002drequired {
-    background-color: #eb6420;
-    color: #000000;
-}
-
-.retestx00002dnotx00002drequiredx00002ddocsx00002donly {
-    background-color: #fbca04;
     color: #000000;
 }
 
@@ -618,21 +583,6 @@
     color: #000000;
 }
 
-.statusx00002fapprovedx00002dforx00002dmilestone {
-    background-color: #fef2c0;
-    color: #000000;
-}
-
-.statusx00002finx00002dprogress {
-    background-color: #fef2c0;
-    color: #000000;
-}
-
-.statusx00002finx00002dreview {
-    background-color: #fef2c0;
-    color: #000000;
-}
-
 .tidex00002fsquash {
     background-color: #ffaa00;
     color: #000000;
@@ -663,12 +613,12 @@
     color: #000000;
 }
 
-.wgx00002fapply {
+.wgx00002fappx00002ddef {
     background-color: #d2b48c;
     color: #000000;
 }
 
-.wgx00002fappx00002ddef {
+.wgx00002fapply {
     background-color: #d2b48c;
     color: #000000;
 }
