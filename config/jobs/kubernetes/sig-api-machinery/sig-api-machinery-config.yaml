@@ -20,4 +20,4 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181003-4b588b1d1-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181002-3e479534e-master
