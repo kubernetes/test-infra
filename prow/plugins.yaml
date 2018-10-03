@@ -201,11 +201,10 @@ config_updater:
     config/jobs/**/*.yaml:
       name: job-config
 
-##  TODO(cblecker): revert once kubernetes/test-infra#9507 is merged *and* deployed
-# welcome:
-# - repos:
-#   - kubernetes/test-infra
-#   message_template: "Welcome @{{.AuthorLogin}}! It looks like this is your first PR to {{.Org}}/{{.Repo}} 🎉🎉"
+welcome:
+- repos:
+  - kubernetes/test-infra
+  message_template: "Welcome @{{.AuthorLogin}}! It looks like this is your first PR to {{.Org}}/{{.Repo}} 🎉🎉"
 
 require_matching_label:
 - missing_label: needs-kind
@@ -388,7 +387,7 @@ plugins:
   - owners-label
   - override
   - trigger
-  # - welcome // TODO(cblecker): revert once kubernetes/test-infra#9507 is merged *and* deployed
+  - welcome
 
   kubernetes-client:
   - approve
@@ -486,7 +485,7 @@ plugins:
 
   kubernetes-sigs/kind:
   - trigger
-  # - welcome // TODO(cblecker): revert once kubernetes/test-infra#9507 is merged *and* deployed
+  - welcome
 
   kubernetes-sigs/federation-v2:
   - trigger
@@ -514,7 +513,7 @@ plugins:
 
   kubernetes-sigs/contributor-playground:
   - require-sig
-  # - welcome // TODO(cblecker): revert once kubernetes/test-infra#9507 is merged *and* deployed
+  - welcome
 
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
   - trigger
