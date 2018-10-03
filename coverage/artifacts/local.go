@@ -24,7 +24,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/coverage/logUtil"
+	"k8s.io/test-infra/coverage/logutil"
 )
 
 //LocalArtifacts sub-type of Artifacts. Represent artifacts stored locally (
@@ -47,8 +47,7 @@ func NewLocalArtifacts(directory string, ProfileName string,
 func (arts *LocalArtifacts) ProfileReader() (io.ReadCloser, error) {
 	f, err := os.Open(arts.ProfilePath())
 	if err != nil {
-		wd, err := os.Getwd()
-		logrus.Debugf("LocalArtifacts.ProfileReader(): os.Open(profilePath) error: %v, cwd=%s", err, wd)
+		logrus.Debugf("LocalArtifacts.ProfileReader(): os.Open(profilePath) error: %v", err)
 	}
 	return f, err
 }
@@ -66,7 +65,7 @@ func (arts *LocalArtifacts) KeyProfileCreator() *os.File {
 	keyProfileFile, err := os.Create(keyProfilePath)
 	logrus.Infof("os.Create(keyProfilePath)=%s", keyProfilePath)
 	if err != nil {
-		logUtil.LogFatalf("file(%s) creation error: %v", keyProfilePath, err)
+		logutil.LogFatalf("file(%s) creation error: %v", keyProfilePath, err)
 	}
 
 	return keyProfileFile

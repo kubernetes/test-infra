@@ -11,7 +11,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//coverage/io:go_default_library",
-        "//coverage/logUtil:go_default_library",
+        "//coverage/logutil:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )

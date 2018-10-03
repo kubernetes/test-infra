@@ -23,7 +23,7 @@ import (
 	"fmt"
 	"github.com/sirupsen/logrus"
 	covIo "k8s.io/test-infra/coverage/io"
-	"k8s.io/test-infra/coverage/logUtil"
+	"k8s.io/test-infra/coverage/logutil"
 	"strings"
 )
 
@@ -45,7 +45,7 @@ func runProfiling(covTargets []string, localArts *LocalArtifacts) {
 	goTestCoverStdout, errCmdOutput := cmd.Output()
 
 	if errCmdOutput != nil {
-		logUtil.LogFatalf("Error running composed shell command: error='%v'; stdout='%s'",
+		logutil.LogFatalf("Error running composed shell command: error='%v'; stdout='%s'",
 			errCmdOutput, goTestCoverStdout)
 	} else {
 		logrus.Infof("Coverage profile created @ '%s'", localArts.ProfilePath())
