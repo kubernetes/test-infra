@@ -21,7 +21,7 @@ periodics:
     path_alias: k8s.io/release
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181001-df2f5324a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181002-3e479534e-master
       command:
       - runner.sh
       - bash
