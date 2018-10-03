@@ -241,7 +241,7 @@ func (c *Controller) ProcessChange(instance string, change gerrit.ChangeInfo) er
 			},
 		)
 
-		logger.WithFields(pjutil.ProwJobFields(&pj)).Infof("Creating a new prowjob for change %s.", change.Number)
+		logger.WithFields(pjutil.ProwJobFields(&pj)).Infof("Creating a new prowjob for change %d.", change.Number)
 
 		if _, err := c.kc.CreateProwJob(pj); err != nil {
 			logger.WithError(err).Errorf("fail to create prowjob %v", pj)

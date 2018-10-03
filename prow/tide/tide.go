@@ -604,7 +604,7 @@ func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []ku
 		for _, p := range requiredPresubmits.List() {
 			if s, ok := state.jobStates[p]; !ok || s != successState {
 				passesAll = false
-				log.WithField("batch", ref).Debug("batch invalid, required presubmit %s not passing", p)
+				log.WithField("batch", ref).Debugf("batch invalid, required presubmit %s not passing", p)
 				break
 			}
 		}
