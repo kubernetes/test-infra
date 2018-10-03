@@ -23,13 +23,13 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/boskos/common"
 	"k8s.io/test-infra/boskos/crds"
 	"k8s.io/test-infra/boskos/ranch"
-	"strings"
 )
 
 var (
@@ -160,7 +160,7 @@ func handleAcquire(r *ranch.Ranch) http.HandlerFunc {
 			// release the resource, though this is not expected to happen.
 			err = r.Release(resource.Name, state, owner)
 			if err != nil {
-				logrus.WithError(err).Warning("unable to release resource %s", resource.Name)
+				logrus.WithError(err).Warningf("unable to release resource %s", resource.Name)
 			}
 			return
 		}
@@ -220,7 +220,7 @@ func handleAcquireByState(r *ranch.Ranch) http.HandlerFunc {
 			for _, resource := range resources {
 				err := r.Release(resource.Name, state, owner)
 				if err != nil {
-					logrus.WithError(err).Warning("unable to release resource %s", resource.Name)
+					logrus.WithError(err).Warningf("unable to release resource %s", resource.Name)
 				}
 			}
 			return
@@ -383,7 +383,7 @@ func handleMetric(r *ranch.Ranch) http.HandlerFunc {
 		logrus.WithField("handler", "handleMetric").Infof("From %v", req.RemoteAddr)
 
 		if req.Method != http.MethodGet {
-			logrus.Warning("[BadRequest]method %v, expect GET", req.Method)
+			logrus.Warningf("[BadRequest]method %v, expect GET", req.Method)
 			http.Error(res, "/metric only accepts GET", http.StatusMethodNotAllowed)
 			return
 		}
