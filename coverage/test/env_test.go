@@ -17,13 +17,23 @@ limitations under the License.
 package test
 
 import (
-	"testing"
+	"os"
 	"path"
+	"testing"
 )
 
 func Test(t *testing.T) {
 	pathRelToProj := "middle/of/nowhere"
-	expected := path.Join(ProjDir(), pathRelToProj)
+	var projAbsolutePath string
+	testSrcDir := os.Getenv("TEST_SRCDIR")
+	if testSrcDir != "" {
+		projAbsolutePath = path.Join(testSrcDir, projectPathLessTestSrc)
+	}
+
+	gopath := os.Getenv("GOPATH")
+	projAbsolutePath = path.Join(gopath, projectPathLessGoPath)
+
+	expected := path.Join(projAbsolutePath, pathRelToProj)
 	actual := absPath(pathRelToProj)
 	AssertEqual(t, expected, actual)
 }
