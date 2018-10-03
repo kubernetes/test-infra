@@ -46,7 +46,7 @@ func runProfiling(covTargets []string, localArts *LocalArtifacts) {
 			errCmdOutput, goTestCoverStdout)
 	} else {
 		logrus.Infof("coverage profile created @ '%s'", localArts.ProfilePath())
-		covIo.CreateMarker(localArts.Directory(), CovProfileCompletionMarker)
+		covIo.CreateMarker(localArts.Directory, CovProfileCompletionMarker)
 	}
 
 	stdoutPath := localArts.CovStdoutPath()

@@ -29,7 +29,7 @@ const (
 
 //Artifacts stores information about artifacts directory and files in it
 type Artifacts struct {
-	directory      string
+	Directory      string
 	profileName    string
 	keyProfileName string
 	covStdoutName  string
@@ -44,27 +44,17 @@ func New(directory, profileName, keyProfileName, covStdoutName string) *Artifact
 		covStdoutName}
 }
 
-//SetDirectory sets directory to given string
-func (arts *Artifacts) SetDirectory(dir string) {
-	arts.directory = dir
-}
-
-//Directory gets directory string
-func (arts *Artifacts) Directory() string {
-	return arts.directory
-}
-
 //ProfilePath returns profile path
 func (arts *Artifacts) ProfilePath() string {
-	return path.Join(arts.directory, arts.profileName)
+	return path.Join(arts.Directory, arts.profileName)
 }
 
 //KeyProfilePath returns key profile path
 func (arts *Artifacts) KeyProfilePath() string {
-	return path.Join(arts.directory, arts.keyProfileName)
+	return path.Join(arts.Directory, arts.keyProfileName)
 }
 
 //CovStdoutPath returns stdout path
 func (arts *Artifacts) CovStdoutPath() string {
-	return path.Join(arts.directory, arts.covStdoutName)
+	return path.Join(arts.Directory, arts.covStdoutName)
 }

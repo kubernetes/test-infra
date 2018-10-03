@@ -44,7 +44,11 @@ func TestProfiling(t *testing.T) {
 		expectedFirstLine := "mode: count"
 		expectedLine := "k8s.io/test-infra/coverage/testTarget/subPkg1/common.go:20.19,22.2 0 2"
 
-		scanner := bufio.NewScanner(arts.ProfileReader())
+		profileReader, err := arts.ProfileReader()
+		if err != nil {
+			t.Fatalf("Error reading profile: %v", err)
+		}
+		scanner := bufio.NewScanner(profileReader)
 		scanner.Scan()
 		if scanner.Text() != expectedFirstLine {
 			t.Fatalf("File should start with the line '%s';\nit actually starts with '%s'", expectedFirstLine, scanner.Text())

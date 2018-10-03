@@ -26,33 +26,3 @@ func AssertEqual(t *testing.T, expected, actual interface{}) {
 		t.Fatalf("expected='%v'; actual='%v'\n", expected, actual)
 	}
 }
-
-type stringSet struct {
-	data map[string]bool
-}
-
-//Add adds a string to the string set
-func (set *stringSet) Add(s string) {
-	set.data[s] = true
-}
-
-//Has checks if the string is a member of the string set
-func (set *stringSet) Has(s string) bool {
-	return set.data[s]
-}
-
-func newStringSet() *stringSet {
-	return &stringSet{
-		data: make(map[string]bool),
-	}
-}
-
-//AllMembers returns all member of the set in a list
-func (set *stringSet) AllMembers() (res []string) {
-	for item, valid := range set.data {
-		if valid {
-			res = append(res, item)
-		}
-	}
-	return
-}

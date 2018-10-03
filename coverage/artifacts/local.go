@@ -24,7 +24,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	io2 "k8s.io/test-infra/coverage/io"
 	"k8s.io/test-infra/coverage/logUtil"
 )
 
@@ -45,13 +44,13 @@ func NewLocalArtifacts(directory string, ProfileName string,
 }
 
 // ProfileReader create and returns a ProfileReader by opening the file stored in profile path
-func (arts *LocalArtifacts) ProfileReader() io.ReadCloser {
+func (arts *LocalArtifacts) ProfileReader() (io.ReadCloser, error) {
 	f, err := os.Open(arts.ProfilePath())
 	if err != nil {
-		wd, _ := os.Getwd()
-		logUtil.LogFatalf("LocalArtifacts.ProfileReader(): os.Open(profilePath) error: %v, cwd=%s", err, wd)
+		wd, err := os.Getwd()
+		logrus.Debugf("LocalArtifacts.ProfileReader(): os.Open(profilePath) error: %v, cwd=%s", err, wd)
 	}
-	return f
+	return f, err
 }
 
 //ProfileName gets name of profile
@@ -77,7 +76,13 @@ func (arts *LocalArtifacts) KeyProfileCreator() *os.File {
 // for periodic job, produce junit xml for testgrid in addition
 func (arts *LocalArtifacts) ProduceProfileFile(covTargetsStr string) {
 	// creates artifacts directory
-	io2.MkdirAll(arts.directory)
+	artsDirPath := arts.Directory
+	logrus.Infof("Making directory (MkdirAll): path=%s", artsDirPath)
+	if err := os.MkdirAll(artsDirPath, 0755); err != nil {
+		logrus.Fatalf("Failed os.MkdirAll(path='%s', 0755); err='%v'", artsDirPath, err)
+	} else {
+		logrus.Infof("artifacts dir (path=%s) created successfully\n", artsDirPath)
+	}
 
 	// convert targets from a single string to a lists of strings
 	var covTargets []string

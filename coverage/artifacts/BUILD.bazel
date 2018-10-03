@@ -18,10 +18,7 @@ go_library(
 
 go_test(
     name = "go_default_test",
-    srcs = [
-        "artifacts_test.go",
-        "local_test.go",
-    ],
+    srcs = ["local_test.go"],
     embed = [":go_default_library"],
     deps = [
         "//coverage/logUtil:go_default_library",
@@ -38,10 +35,7 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [
-        ":package-srcs",
-        "//coverage/artifacts/artsTest:all-srcs",
-    ],
+    srcs = [":package-srcs"],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )
