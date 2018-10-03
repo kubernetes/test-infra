@@ -2574,6 +2574,8 @@ test_groups:
   num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
+- name: post-test-infra-push-prow
+  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-prow
 - name: pull-test-infra-bazel
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-bazel
   num_columns_recent: 20
@@ -6541,6 +6543,11 @@ dashboards:
   - name: issue-creator
     description: Creates github issues based on data from various 'IssueSource's.
     test_group_name: issue-creator
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: push-prow
+    description: builds and pushes all prow on each commit by running bump.sh
+    test_group_name: post-test-infra-push-prow
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
 
