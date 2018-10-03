@@ -433,6 +433,12 @@ plugins:
   - lifecycle
   - size
 
+  kubernetes-incubator/bootkube:
+  - approve
+  - blunderbuss
+  - hold
+  - wip
+
   kubernetes-incubator/kubespray:
   - approve
   - blunderbuss
