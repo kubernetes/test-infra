@@ -307,6 +307,7 @@ tide:
     - kubernetes-sigs
     repos:
     - client-go/unofficial-docs
+    - kubernetes-incubator/bootkube
     - kubernetes-incubator/ip-masq-agent
     - kubernetes-incubator/kubespray
     - kubernetes-incubator/service-catalog
