@@ -28,11 +28,12 @@ import (
 )
 
 const (
-	pluginName = "owners-label"
+	// PluginName is the name of this plugin
+	PluginName = "owners-label"
 )
 
 func init() {
-	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
+	plugins.RegisterPullRequestHandler(PluginName, handlePullRequest, helpProvider)
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {

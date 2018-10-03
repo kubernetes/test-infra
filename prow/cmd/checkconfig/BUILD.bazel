@@ -17,9 +17,11 @@ go_library(
         "//prow/plugins:go_default_library",
         "//prow/plugins/approve:go_default_library",
         "//prow/plugins/blockade:go_default_library",
+        "//prow/plugins/blunderbuss:go_default_library",
         "//prow/plugins/cherrypickunapproved:go_default_library",
         "//prow/plugins/hold:go_default_library",
         "//prow/plugins/lgtm:go_default_library",
+        "//prow/plugins/owners-label:go_default_library",
         "//prow/plugins/releasenote:go_default_library",
         "//prow/plugins/trigger:go_default_library",
         "//prow/plugins/verify-owners:go_default_library",
@@ -63,5 +65,8 @@ go_test(
     name = "go_default_test",
     srcs = ["main_test.go"],
     embed = [":go_default_library"],
-    deps = ["//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library"],
+    deps = [
+        "//vendor/k8s.io/apimachinery/pkg/util/diff:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+    ],
 )
