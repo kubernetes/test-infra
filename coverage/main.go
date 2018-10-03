@@ -18,7 +18,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/coverage/artifacts"
 	"os"
@@ -39,7 +38,7 @@ var (
 )
 
 func main() {
-	fmt.Println("entering code coverage main")
+	logrus.Infoln("Entering code coverage main")
 
 	gcsBucketName := flag.String("postsubmit-gcs-bucket", defaultGcsBucket, "gcs bucket name")
 	postSubmitJobName := flag.String("postsubmit-job-name", defaultPostSubmitJobName, "name of the prow job")
@@ -75,5 +74,5 @@ func main() {
 
 	localArtifacts.ProduceProfileFile(*coverageTargetDir)
 
-	fmt.Println("end of code coverage main")
+	logrus.Infoln("Finished running code coverage main")
 }
