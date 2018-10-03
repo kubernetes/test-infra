@@ -786,7 +786,7 @@ func prepareGcp(o *options) error {
 		go func(c *client.Client, proj string) {
 			for range time.Tick(time.Minute * 5) {
 				if err := c.UpdateOne(p.Name, "busy", nil); err != nil {
-					log.Printf("[Boskos] Update %s failed with %v", p, err)
+					log.Printf("[Boskos] Update of %s failed with %v", p.Name, err)
 				}
 			}
 		}(boskos, p.Name)
