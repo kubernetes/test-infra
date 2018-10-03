@@ -66,13 +66,32 @@ number.
 ## How to update the cluster
 
 Any modifications to Go code will require redeploying the affected binaries.
-Fortunately, this should result in no downtime for the system. Run `./bump.sh <program-name>`
-to bump the relevant version number in the makefile as well as in the `cluster` manifest,
-then run the image and deployment make targets on a branch which has the
-changes. For instance, if you bumped the hook version, run
-`make hook-image && make hook-deployment`.
+Assuming your prow components have multiple replicas, this will result in no downtime.
 
-**Please ensure that your git tree is up to date before updating anything.**
+Update your deployment (optionally build/pushing the image) to a new image with:
+```shell
+# export STABLE_PROW_REPO=gcr.io/k8s-prow  # optionally override project
+bump.sh --list  # Choose a recent published version
+bump.sh --push  # Build and push the current repo state (and use this version).
+bump.sh v20181002-deadbeef # Use a specific version
+```
+
+Once your deployment files are updated, please update these resources on your cluster:
+
+```shell
+# Set the kubectl context you want to use
+export STABLE_PROW_CLUSTER=gke_my-project_my-zone_my-cluster # or whatever the correct value is
+# Generally just do
+bazel run //prow/cluster:production.apply # deploy everything
+
+# In case of an emergency hook update
+bazel run //prow/cluster:hook.apply # just update hook
+
+# This is equivalent to doing the following with kubectl directly:
+kubectl use-context gke_my-project_my-zone_my-cluster
+kubectl apply -f prow/cluster/*.yaml
+kubectl apply -f prow/cluster/hook_deployment.yaml
+```
 
 ## How to add new plugins
 
