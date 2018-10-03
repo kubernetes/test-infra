@@ -17,7 +17,7 @@ TAG := $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
 # kubernetes master branch config
 K8S ?= master
-GO ?= 1.10.4
+GO ?= 1.11.1
 BAZEL ?= 0.16.1
 UPGRADE_DOCKER ?=false
 # TODO(bentheelder,cblecker): this is aging and bad
