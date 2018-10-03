@@ -55,7 +55,6 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-sig-cli.env
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
