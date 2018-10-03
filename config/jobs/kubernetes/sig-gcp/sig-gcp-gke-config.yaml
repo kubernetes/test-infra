@@ -42,7 +42,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181001-df2f5324a-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181002-3e479534e-master
         resources:
           requests:
             memory: "6Gi"
@@ -85,7 +85,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181001-df2f5324a-1.10
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181002-3e479534e-1.10
         resources:
           requests:
             memory: "6Gi"
@@ -128,7 +128,7 @@ presubmits:
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20181001-df2f5324a-1.9
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20181002-3e479534e-1.9
         resources:
           requests:
             memory: "6Gi"
@@ -159,7 +159,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181001-df2f5324a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181002-3e479534e-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-alpha-features
@@ -185,7 +185,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:(DynamicKubeletConfig|BlockVolume)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181001-df2f5324a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181002-3e479534e-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-alpha-enabled-default
@@ -212,7 +212,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181001-df2f5324a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181002-3e479534e-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-flaky
@@ -237,7 +237,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
       - --timeout=300m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181001-df2f5324a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181002-3e479534e-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-multizone
@@ -264,7 +264,7 @@ periodics:
       - --provider=gke
       - --test_args=--gce-multizone=true --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181001-df2f5324a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181002-3e479534e-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-reboot
@@ -289,7 +289,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181001-df2f5324a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181002-3e479534e-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-serial
@@ -314,7 +314,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=500m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181001-df2f5324a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181002-3e479534e-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-slow
@@ -340,7 +340,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181001-df2f5324a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181002-3e479534e-master
 
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gke-updown
@@ -365,7 +365,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\] --minStartupPods=8
       - --timeout=30m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181001-df2f5324a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181002-3e479534e-master
 
 - interval: 1h
   name: ci-kubernetes-e2e-gke-regional
@@ -391,7 +391,7 @@ periodics:
       - --provider=gke
       - --test_args=--gce-multizone=true --gce-multimaster=true --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181001-df2f5324a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181002-3e479534e-master
 
 - interval: 1h
   name: ci-kubernetes-e2e-gke-regional-serial
@@ -415,7 +415,7 @@ periodics:
       - --provider=gke
       - --test_args=--gce-multizone=true --gce-multimaster=true --ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=500m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181001-df2f5324a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181002-3e479534e-master
 
 - interval: 1h
   name: ci-kubernetes-e2e-gke-regional-slow
@@ -440,7 +440,7 @@ periodics:
       - --provider=gke
       - --test_args=--gce-multizone=true --gce-multimaster=true --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181001-df2f5324a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181002-3e479534e-master
 
 - interval: 1h
   name: ci-kubernetes-e2e-gke-gci-ci-master
@@ -465,7 +465,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181001-df2f5324a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181002-3e479534e-master
 
 - interval: 12h
   name: ci-kubernetes-soak-gke-gci
@@ -494,7 +494,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=800m
       - --up=false
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181001-df2f5324a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181002-3e479534e-master
 
 - interval: 2h
   name: istio-periodic-e2e-gke-addon
@@ -503,7 +503,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181001-df2f5324a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181002-3e479534e-master
       args:
       - --repo=github.com/ostromart/istio=k8s-prow-test
       - --timeout=90
