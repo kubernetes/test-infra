@@ -47,7 +47,6 @@ filegroup(
         ":package-srcs",
         "//coverage/artifacts:all-srcs",
         "//coverage/io:all-srcs",
-        "//coverage/logutil:all-srcs",
         "//coverage/test:all-srcs",
         "//coverage/testTarget/presubmit:all-srcs",
         "//coverage/testTarget/subPkg1:all-srcs",

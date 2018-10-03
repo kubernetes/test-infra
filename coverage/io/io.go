@@ -22,8 +22,6 @@ import (
 	"path"
 
 	"github.com/sirupsen/logrus"
-
-	"k8s.io/test-infra/coverage/logutil"
 )
 
 // CreateMarker produces empty file as marker
@@ -37,7 +35,7 @@ func Write(content *string, destinationDir, fileName string) {
 	filePath := path.Join(destinationDir, fileName)
 	file, err := os.Create(filePath)
 	if err != nil {
-		logutil.LogFatalf("Error writing file: %v", err)
+		logrus.Fatalf("Error writing file: %v", err)
 	} else {
 		logrus.Infof("Created file:%s", filePath)
 		if content == nil {

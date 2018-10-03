@@ -6,7 +6,6 @@ go_library(
     importpath = "k8s.io/test-infra/coverage/io",
     visibility = ["//visibility:public"],
     deps = [
-        "//coverage/logutil:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
