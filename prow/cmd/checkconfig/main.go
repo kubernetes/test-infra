@@ -192,7 +192,7 @@ func validatePresubmitJob(repo string, job config.Presubmit) error {
 	var validationErrs []error
 	// Prow labels k8s resources with job names. Labels are capped at 63 chars.
 	if job.Agent == string(v1.KubernetesAgent) && len(job.Name) > validation.LabelValueMaxLength {
-		validationErrs = append(validationErrs, fmt.Errorf("Name of Presubmit job '%s' (for repo '%s') too long (should be at most 63 characters)", job.Name, repo))
+		validationErrs = append(validationErrs, fmt.Errorf("name of Presubmit job %q (for repo %q) too long (should be at most 63 characters)", job.Name, repo))
 	}
 	return errorutil.NewAggregate(validationErrs...)
 }
@@ -201,7 +201,7 @@ func validatePostsubmitJob(repo string, job config.Postsubmit) error {
 	var validationErrs []error
 	// Prow labels k8s resources with job names. Labels are capped at 63 chars.
 	if job.Agent == string(v1.KubernetesAgent) && len(job.Name) > validation.LabelValueMaxLength {
-		validationErrs = append(validationErrs, fmt.Errorf("Name of Postsubmit job '%s' (for repo '%s') too long (should be at most 63 characters)", job.Name, repo))
+		validationErrs = append(validationErrs, fmt.Errorf("name of Postsubmit job %q (for repo %q) too long (should be at most 63 characters)", job.Name, repo))
 	}
 	return errorutil.NewAggregate(validationErrs...)
 }
@@ -210,7 +210,7 @@ func validatePeriodicJob(job config.Periodic) error {
 	var validationErrs []error
 	// Prow labels k8s resources with job names. Labels are capped at 63 chars.
 	if job.Agent == string(v1.KubernetesAgent) && len(job.Name) > validation.LabelValueMaxLength {
-		validationErrs = append(validationErrs, fmt.Errorf("Name of Periodic job '%s' too long (should be at most 63 characters)", job.Name))
+		validationErrs = append(validationErrs, fmt.Errorf("name of Periodic job %q too long (should be at most 63 characters)", job.Name))
 	}
 	return errorutil.NewAggregate(validationErrs...)
 }
