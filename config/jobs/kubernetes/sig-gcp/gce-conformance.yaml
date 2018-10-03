@@ -186,4 +186,4 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]
       - --timeout=200m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181001-df2f5324a-maste
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181001-df2f5324a-master
