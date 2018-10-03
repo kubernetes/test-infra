@@ -9,7 +9,7 @@ postsubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181002-3e479534e-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181003-4b588b1d1-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
@@ -64,7 +64,7 @@ postsubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181002-3e479534e-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181003-4b588b1d1-experimental
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
