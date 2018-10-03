@@ -18,8 +18,12 @@ package test
 
 import (
 	"testing"
+	"path"
 )
 
 func Test(t *testing.T) {
-	t.Logf(absPath("middle/of/nowhere"))
+	pathRelToProj := "middle/of/nowhere"
+	expected := path.Join(ProjDir(), pathRelToProj)
+	actual := absPath(pathRelToProj)
+	AssertEqual(t, expected, actual)
 }

@@ -23,6 +23,6 @@ import (
 //AssertEqual checks equality of expected and actual results, fail the test if not equal
 func AssertEqual(t *testing.T, expected, actual interface{}) {
 	if expected != actual {
-		t.Fatalf("expected='%v'; actual='%v'\n", expected, actual)
+		t.Fatalf("expected='%v'; actual='%v'", expected, actual)
 	}
 }

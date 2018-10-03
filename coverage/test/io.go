@@ -18,7 +18,6 @@ package test
 
 import (
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
 
@@ -29,7 +28,7 @@ import (
 func DeleteDir(dir string) {
 	err := os.RemoveAll(dir)
 	if err != nil {
-		log.Fatalf("fail to remove artifact '%s': %v", dir, err)
+		logrus.Fatalf("Fail to remove artifact '%s': %v", dir, err)
 	}
 }
 
@@ -38,7 +37,7 @@ func linkInputArt(artsDir, artName string) {
 		path.Join(artsDir, artName))
 
 	if err != nil {
-		log.Fatalf("error creating Symlink: %v", err)
+		logrus.Fatalf("Error creating Symlink: %v", err)
 	}
 }
 
@@ -46,11 +45,11 @@ func linkInputArt(artsDir, artName string) {
 func NewArtsDir(dirPrefix string) string {
 	os.MkdirAll(tmpArtsDir, 0755)
 	dir, err := ioutil.TempDir(tmpArtsDir, dirPrefix+"_")
-	logrus.Infof("artsDir='%s'", dir)
+	logrus.Infof("Artifacts directory ='%s'", dir)
 	if err != nil {
-		log.Fatalf("Error making TempDir for arts: %v\n", err)
+		logrus.Fatalf("Error making TempDir for arts: %v", err)
 	} else {
-		logrus.Infof("Temp arts dir created: %s\n", dir)
+		logrus.Infof("Temp arts dir created: %s", dir)
 	}
 	return dir
 }

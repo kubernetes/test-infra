@@ -17,10 +17,10 @@ limitations under the License.
 package artifacts
 
 import (
+	"io"
 	"os"
 	"path"
 	"strings"
-	"io"
 
 	"github.com/sirupsen/logrus"
 
@@ -81,7 +81,7 @@ func (arts *LocalArtifacts) ProduceProfileFile(covTargetsStr string) {
 	if err := os.MkdirAll(artsDirPath, 0755); err != nil {
 		logrus.Fatalf("Failed os.MkdirAll(path='%s', 0755); err='%v'", artsDirPath, err)
 	} else {
-		logrus.Infof("artifacts dir (path=%s) created successfully\n", artsDirPath)
+		logrus.Infof("artifacts dir (path=%s) created successfully", artsDirPath)
 	}
 
 	// convert targets from a single string to a lists of strings
@@ -89,7 +89,7 @@ func (arts *LocalArtifacts) ProduceProfileFile(covTargetsStr string) {
 	for _, target := range strings.Split(covTargetsStr, " ") {
 		covTargets = append(covTargets, "./"+path.Join(target, "..."))
 	}
-	logrus.Infof("covTargets = %v\n", covTargets)
+	logrus.Infof("list of coverage targets = %v", covTargets)
 
 	runProfiling(covTargets, arts)
 }

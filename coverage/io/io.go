@@ -29,7 +29,7 @@ import (
 // CreateMarker produces empty file as marker
 func CreateMarker(dir, fileName string) {
 	Write(nil, dir, fileName)
-	logrus.Infof("Created marker file '%s'\n", fileName)
+	logrus.Infof("Created marker file '%s'", fileName)
 }
 
 // Write writes the content of the string to a file in the directory

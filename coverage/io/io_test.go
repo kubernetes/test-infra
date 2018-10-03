@@ -18,9 +18,10 @@ package io
 
 import (
 	"io/ioutil"
-	"log"
 	"path"
 	"testing"
+
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/coverage/test"
 )
@@ -31,7 +32,7 @@ func TestWriteToArtifacts(t *testing.T) {
 	Write(&s, artsDir, "testWriteToArt.txt")
 	content, err := ioutil.ReadFile(path.Join(artsDir, "testWriteToArt.txt"))
 	if err != nil {
-		log.Fatalf("Cannot read file, err = %v", err)
+		logrus.Fatalf("Cannot read file, err = %v", err)
 	}
 
 	test.AssertEqual(t, s, string(content))

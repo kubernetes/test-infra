@@ -62,7 +62,7 @@ func main() {
 	pullSha := os.Getenv("PULL_PULL_SHA")
 	baseSha := os.Getenv("PULL_BASE_SHA")
 
-	fmt.Printf("Running coverage for PR %s with PR commit SHA %s and base SHA %s", pr, pullSha, baseSha)
+	logrus.Printf("Running coverage for PR %s with PR commit SHA %s and base SHA %s", pr, pullSha, baseSha)
 
 	artifactsDir = *artifactsDirFlag
 
