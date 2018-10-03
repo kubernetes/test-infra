@@ -2173,8 +2173,6 @@ test_groups:
 # etcd tests
 - name: ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
-- name: ci-kubernetes-e2e-gce-gci-latest-rollback-etcd
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-latest-rollback-etcd
 
 # charts tests
 - name: ci-kubernetes-charts-gce
@@ -4546,8 +4544,6 @@ dashboards:
   dashboard_tab:
   - name: gce-latest
     test_group_name: ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
-  - name: gce-rollback-latest
-    test_group_name: ci-kubernetes-e2e-gce-gci-latest-rollback-etcd
 
 # These are the master *blocking* tests.  These provide a valid binary signal
 # to gate releases (alpha, beta, official).
