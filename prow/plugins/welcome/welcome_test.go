@@ -18,13 +18,18 @@ package welcome
 
 import (
 	"fmt"
+	"io/ioutil"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/sirupsen/logrus"
 
+	"github.com/ghodss/yaml"
+
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/plugins"
 )
 
 // TODO(bentheelder): these tests are a bit lame.
@@ -218,6 +223,99 @@ func TestHandlePR(t *testing.T) {
 			t.Fatalf("expected a comment for case '%s' and got none", tc.name)
 		} else if numComments > 0 && !tc.expectComment {
 			t.Fatalf("did not expect comments for case '%s' and got %d comments", tc.name, numComments)
+		}
+	}
+}
+
+func TestWelcomeConfig(t *testing.T) {
+	var (
+		orgMessage  = "defined message for an org"
+		repoMessage = "defined message for a repo"
+	)
+
+	config := &plugins.Configuration{
+		Welcome: []plugins.Welcome{
+			{[]string{"kubernetes/test-infra"}, repoMessage},
+			{[]string{"kubernetes"}, orgMessage},
+			{[]string{"kubernetes/repo-infra"}, repoMessage},
+		},
+	}
+
+	testCases := []struct {
+		name            string
+		repo            string
+		org             string
+		expectedMessage string
+	}{
+		{
+			name:            "default message",
+			org:             "kubernetes-sigs",
+			repo:            "kind",
+			expectedMessage: defaultWelcomeMessage,
+		},
+		{
+			name:            "org defined message",
+			org:             "kubernetes",
+			repo:            "community",
+			expectedMessage: orgMessage,
+		},
+		{
+			name:            "repo defined message, before an org",
+			org:             "kubernetes",
+			repo:            "test-infra",
+			expectedMessage: repoMessage,
+		},
+		{
+			name:            "repo defined message, after an org",
+			org:             "kubernetes",
+			repo:            "repo-infra",
+			expectedMessage: repoMessage,
+		},
+	}
+
+	for _, tc := range testCases {
+		receivedMessage := welcomeMessageForRepo(config, tc.org, tc.repo)
+		if receivedMessage != tc.expectedMessage {
+			t.Fatalf("%s: expected to get '%s' and received '%s'", tc.name, tc.expectedMessage, receivedMessage)
+		}
+	}
+}
+
+// TestPluginConfig validates that there are no duplicate repos in the welcome plugin config.
+func TestPluginConfig(t *testing.T) {
+	pa := &plugins.PluginAgent{}
+
+	b, err := ioutil.ReadFile("../../plugins.yaml")
+	if err != nil {
+		t.Fatalf("Failed to read plugin config: %v.", err)
+	}
+	np := &plugins.Configuration{}
+	if err := yaml.Unmarshal(b, np); err != nil {
+		t.Fatalf("Failed to unmarshal plugin config: %v.", err)
+	}
+	pa.Set(np)
+
+	orgs := map[string]bool{}
+	repos := map[string]bool{}
+	for _, config := range pa.Config().Welcome {
+		for _, entry := range config.Repos {
+			if strings.Contains(entry, "/") {
+				if repos[entry] {
+					t.Errorf("The repo %q is duplicated in the 'welcome' plugin configuration.", entry)
+				}
+				repos[entry] = true
+			} else {
+				if orgs[entry] {
+					t.Errorf("The org %q is duplicated in the 'welcome' plugin configuration.", entry)
+				}
+				orgs[entry] = true
+			}
+		}
+	}
+	for repo := range repos {
+		org := strings.Split(repo, "/")[0]
+		if orgs[org] {
+			t.Errorf("The repo %q is duplicated with %q in the 'welcome' plugin configuration.", repo, org)
 		}
 	}
 }

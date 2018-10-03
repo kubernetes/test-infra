@@ -1,6 +1,9 @@
 # Announcements
 
 New features added to each component:
+ - *October 3, 2018* `welcome` now supports a configurable message on a per-org,
+   or per-repo basis. Please note that this includes a config schema change that
+   will break previous deployments of this plugin.
  - *August 22, 2018* `spyglass` is a pluggable viewing framework for artifacts
    produced by Prowjobs. See a demo [here](https://prow.k8s.io/view/gcs/kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-large-performance/121)!
  - *July 13, 2018* `blunderbluss` plugin will now support `required_reviewers` in
@@ -40,7 +43,7 @@ used when updating deployments.
       decoration_config:
         timeout: 1
     ```
- - *September 24, 2018* the `splice` component has been deleted following the 
+ - *September 24, 2018* the `splice` component has been deleted following the
    deletion of mungegithub.
  - *July 9, 2018* `milestone` format has changed from
     ```yaml
