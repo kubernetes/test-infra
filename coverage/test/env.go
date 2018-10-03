@@ -21,6 +21,7 @@ import (
 	"path"
 
 	"github.com/sirupsen/logrus"
+	"go/build"
 )
 
 const projectPathLessGoPath = "src/k8s.io/test-infra/coverage"
@@ -34,8 +35,8 @@ func ProjDir() string {
 		return path.Join(testSrcDir, projectPathLessTestSrc)
 	}
 
-	gopath := os.Getenv("GOPATH")
-	logrus.Infof("Env var GOPATH=%s", gopath)
+	gopath := build.Default.GOPATH
+	logrus.Infof("go env GOPATH: %s", gopath)
 	return path.Join(gopath, projectPathLessGoPath)
 }
 

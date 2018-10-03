@@ -20,6 +20,8 @@ import (
 	"os"
 	"path"
 	"testing"
+
+	"go/build"
 )
 
 func Test(t *testing.T) {
@@ -29,7 +31,7 @@ func Test(t *testing.T) {
 	if testSrcDir != "" {
 		projAbsolutePath = path.Join(testSrcDir, projectPathLessTestSrc)
 	} else {
-		projAbsolutePath = path.Join(os.Getenv("GOPATH"), projectPathLessGoPath)
+		projAbsolutePath = path.Join(build.Default.GOPATH, projectPathLessGoPath)
 	}
 
 	expected := path.Join(projAbsolutePath, pathRelToProj)
