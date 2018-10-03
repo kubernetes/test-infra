@@ -28,10 +28,9 @@ func Test(t *testing.T) {
 	testSrcDir := os.Getenv("TEST_SRCDIR")
 	if testSrcDir != "" {
 		projAbsolutePath = path.Join(testSrcDir, projectPathLessTestSrc)
+	} else {
+		projAbsolutePath = path.Join(os.Getenv("GOPATH"), projectPathLessGoPath)
 	}
-
-	gopath := os.Getenv("GOPATH")
-	projAbsolutePath = path.Join(gopath, projectPathLessGoPath)
 
 	expected := path.Join(projAbsolutePath, pathRelToProj)
 	actual := absPath(pathRelToProj)

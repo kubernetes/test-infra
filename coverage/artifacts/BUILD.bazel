@@ -20,10 +20,7 @@ go_test(
     name = "go_default_test",
     srcs = ["local_test.go"],
     embed = [":go_default_library"],
-    deps = [
-        "//coverage/logUtil:go_default_library",
-        "//coverage/test:go_default_library",
-    ],
+    deps = ["//coverage/test:go_default_library"],
 )
 
 filegroup(
