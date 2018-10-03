@@ -19,6 +19,8 @@ periodics:
     repo: release
     base_ref: master
     path_alias: k8s.io/release
+  decoration_config:
+    timeout: 10800000000000 # 3 hours
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20181002-3e479534e-master
