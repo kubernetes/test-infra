@@ -233,7 +233,7 @@ periodics:
       - --env=KUBE_SSH_USER=admin
       - --extract=ci/latest
       - --ginkgo-parallel
-      - --kops-etcd-version=3.1.10
+      - --kops-etcd-version=3.2.24
       - --kops-master-count=3
       - --kops-multiple-zones
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
