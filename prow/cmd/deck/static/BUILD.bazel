@@ -48,12 +48,20 @@ rollup_bundle(
     ],
 )
 
-rollup_bundle(
+ts_library(
     name = "tide",
-    srcs = [
-        "tidescript.js",
+    srcs = glob(["tide/*.ts"]),
+    deps = [
+        ":api",
     ],
-    entry_point = "prow/cmd/deck/static/tidescript.js",
+)
+
+rollup_bundle(
+    name = "tide_bundle",
+    entry_point = "prow/cmd/deck/static/tide/tide",
+    deps = [
+        ":tide",
+    ],
 )
 
 ts_library(
@@ -88,7 +96,7 @@ filegroup(
         ":index",
         ":plugin_help_bundle",
         ":pr",
-        ":tide",
+        ":tide_bundle",
     ],
 )
 

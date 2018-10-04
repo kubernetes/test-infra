@@ -1,30 +1,34 @@
-window.onload = function() {
-    var infoDiv = document.getElementById("info-div");
-    var infoH2 = infoDiv.getElementsByTagName("h4")[0];
-    infoH2.addEventListener("click", infoToggle(infoDiv.getElementsByTagName("span")[0]), true);
+import {PullRequest, TideData, TidePool} from '../api/tide';
+
+declare const tideData: TideData;
+
+window.onload = function(): void {
+    const infoDiv = document.getElementById("info-div")!;
+    const infoH4 = infoDiv.getElementsByTagName("h4")[0]!;
+    infoH4.addEventListener("click", infoToggle(infoDiv.getElementsByTagName("span")[0]), true);
 
     redraw();
 };
 
-function infoToggle(toToggle) {
-    return function(event) {
+function infoToggle(toToggle: HTMLElement): (event: Event) => void {
+    return function(event): void {
         if (toToggle.className == "hidden") {
             toToggle.className = "";
-            event.target.textContent = "Merge Requirements: (click to collapse)";
+            (event.target as HTMLElement).textContent = "Merge Requirements: (click to collapse)";
         } else {
             toToggle.className = "hidden";
-            event.target.textContent = "Merge Requirements: (click to expand)";
+            (event.target as HTMLElement).textContent = "Merge Requirements: (click to expand)";
         }
     }
 }
 
-function redraw() {
+function redraw(): void {
     redrawQueries();
     redrawPools();
 }
 
-function createLink(href, text) {
-    var a = document.createElement("a");
+function createLink(href: string, text: string): HTMLAnchorElement {
+    const a = document.createElement("a");
     a.href = href;
     a.appendChild(document.createTextNode(text));
     return a;
@@ -33,12 +37,10 @@ function createLink(href, text) {
 /**
  * escapeLabel escaped label name that returns a valid name used for css
  * selector.
- * @param {string} label
- * @returns {string}
  */
-function escapeLabel(label) {
+function escapeLabel(label: string): string {
   if (label === "") return "";
-  const toUnicode = function(index) {
+  const toUnicode = function(index: number): string {
     const h = label.charCodeAt(index).toString(16).split('');
     while (h.length < 6) h.splice(0, 0, '0');
 
@@ -61,11 +63,9 @@ function escapeLabel(label) {
 
 /**
  * Creates a HTML element for the label given its name
- * @param label
- * @returns {HTMLElement}
  */
-function createLabelEl(label) {
-  const el = document.createElement("SPAN");
+function createLabelEl(label: string): HTMLElement {
+  const el = document.createElement("span");
   const escapedName = escapeLabel(label);
   el.classList.add("mdl-shadow--2dp", "label", escapedName);
   el.textContent = label;
@@ -73,13 +73,13 @@ function createLabelEl(label) {
   return el;
 }
 
-function createStrong(text) {
-    const s = document.createElement("STRONG");
+function createStrong(text: string): HTMLElement {
+    const s = document.createElement("strong");
     s.appendChild(document.createTextNode(text));
     return s;
 }
 
-function fillDetail(data, type, connector, container, styleData) {
+function fillDetail(data: string | string[] | undefined, type: string, connector: string, container: HTMLElement, styleData: (content: string) => Node) {
     if (!data || (Array.isArray(data) && data.length === 0)) {
         return;
     }
@@ -105,23 +105,23 @@ function fillDetail(data, type, connector, container, styleData) {
     }
 }
 
-function redrawQueries() {
-    var queries = document.getElementById("queries");
+function redrawQueries(): void {
+    const queries = document.getElementById("queries")!;
     while (queries.firstChild)
         queries.removeChild(queries.firstChild);
 
     if (!tideData.Queries) {
         return;
     }
-    for (var i = 0; i < tideData.Queries.length; i++) {
-        var query = tideData.Queries[i];
-        var tideQuery = tideData.TideQueries[i];
+    for (let i = 0; i < tideData.Queries.length; i++) {
+        const query = tideData.Queries[i];
+        const tideQuery = tideData.TideQueries[i];
 
         // create list entry for the query, all details will be within this element
-        var li = document.createElement("li");
+        const li = document.createElement("li");
 
         // GitHub query search link
-        var a = createLink(
+        const a = createLink(
             "https://github.com/search?utf8=" + encodeURIComponent("\u2713") + "&q=" + encodeURIComponent(query),
             "GitHub Search Link"
         );
@@ -178,7 +178,7 @@ function redrawQueries() {
             return document.createTextNode(data);
         });
         // GitHub native review required
-        var reviewApprovedRequired = tideQuery.hasOwnProperty("reviewApprovedRequired") && tideQuery["reviewApprovedRequired"];
+        const reviewApprovedRequired = tideQuery.hasOwnProperty("reviewApprovedRequired") && tideQuery["reviewApprovedRequired"];
         if (reviewApprovedRequired) {
             li.appendChild(document.createTextNode("and must be "));
             li.appendChild(createLink(
@@ -192,22 +192,22 @@ function redrawQueries() {
     }
 }
 
-function redrawPools() {
-    var pools = document.getElementById("pools").getElementsByTagName("tbody")[0];
+function redrawPools(): void {
+    const pools = document.getElementById("pools")!.getElementsByTagName("tbody")[0];
     while (pools.firstChild)
         pools.removeChild(pools.firstChild);
 
     if (!tideData.Pools) {
         return;
     }
-    for (var i = 0; i < tideData.Pools.length; i++) {
-        var pool = tideData.Pools[i];
-        var r = document.createElement("tr");
+    for (let i = 0; i < tideData.Pools.length; i++) {
+        const pool = tideData.Pools[i];
+        const r = document.createElement("tr");
 
 
-        var deckLink = "/?repo="+pool.Org+"%2F"+pool.Repo;
-        var branchLink = "https://github.com/" + pool.Org + "/" + pool.Repo + "/tree/" + pool.Branch;
-        var linksTD = document.createElement("td");
+        const deckLink = "/?repo="+pool.Org+"%2F"+pool.Repo;
+        const branchLink = "https://github.com/" + pool.Org + "/" + pool.Repo + "/tree/" + pool.Branch;
+        const linksTD = document.createElement("td");
         linksTD.appendChild(createLink(deckLink, pool.Org + "/" + pool.Repo));
         linksTD.appendChild(document.createTextNode(" "));
         linksTD.appendChild(createLink(branchLink, pool.Branch));
@@ -222,14 +222,14 @@ function redrawPools() {
     }
 }
 
-function createActionCell(pool) {
-    var targeted = pool.Target && pool.Target.length;
-    var blocked = pool.Blockers && pool.Blockers.length;
-    var action = pool.Action.replace("_", " ");
+function createActionCell(pool: TidePool): HTMLTableDataCellElement {
+    const targeted = pool.Target && pool.Target.length;
+    const blocked = pool.Blockers && pool.Blockers.length;
+    let action = pool.Action.replace("_", " ");
     if (targeted || blocked) {
         action += ": "
     }
-    var c = document.createElement("td");
+    const c = document.createElement("td");
     c.appendChild(document.createTextNode(action));
 
     if (blocked) {
@@ -241,20 +241,20 @@ function createActionCell(pool) {
     return c;
 }
 
-function createPRCell(pool, prs) {
-    var c = document.createElement("td");
+function createPRCell(pool: TidePool, prs: PullRequest[]): HTMLTableDataCellElement {
+    const c = document.createElement("td");
     addPRsToElem(c, pool, prs);
     return c;
 }
 
-function createBatchCell(pool) {
-    var td = document.createElement('td');
+function createBatchCell(pool: TidePool): HTMLTableDataCellElement {
+    const td = document.createElement('td');
     if (pool.BatchPending) {
-        var numbers = pool.BatchPending.map(p => String(p.Number));
-        var batchRef = pool.Branch + ',' + numbers.join(',');
-        var href = '/?repo=' + encodeURIComponent(pool.Org + '/' + pool.Repo) +
+        const numbers = pool.BatchPending.map(p => String(p.Number));
+        const batchRef = pool.Branch + ',' + numbers.join(',');
+        const href = '/?repo=' + encodeURIComponent(pool.Org + '/' + pool.Repo) +
             '&type=batch&pull=' + encodeURIComponent(batchRef);
-        var link = document.createElement('a');
+        const link = document.createElement('a');
         link.href = href;
         link.appendChild(document.createTextNode(numbers.join(' ')));
         td.appendChild(link);
@@ -263,10 +263,10 @@ function createBatchCell(pool) {
 }
 
 // addPRsToElem adds a space separated list of PR numbers that link to the corresponding PR on github.
-function addPRsToElem(elem, pool, prs) {
+function addPRsToElem(elem: HTMLElement, pool: TidePool, prs?: PullRequest[]): void {
     if (prs) {
-        for (var i = 0; i < prs.length; i++) {
-            var a = document.createElement("a");
+        for (let i = 0; i < prs.length; i++) {
+            const a = document.createElement("a");
             a.href = "https://github.com/" + pool.Org + "/" + pool.Repo + "/pull/" + prs[i].Number;
             a.appendChild(document.createTextNode("#" + prs[i].Number));
             elem.appendChild(a);
@@ -280,14 +280,14 @@ function addPRsToElem(elem, pool, prs) {
 
 // addBlockersToElem adds a space separated list of Issue numbers that link to the
 // corresponding Issues on github that are blocking merge.
-function addBlockersToElem(elem, pool) {
+function addBlockersToElem(elem: HTMLElement, pool: TidePool): void {
     if (!pool.Blockers) {
         return;
     }
-    for (var i = 0; i < pool.Blockers.length; i++) {
-        var b = pool.Blockers[i];
-        var id = "blocker-" + pool.Org + "-" + pool.Repo + "-" + b.Number;
-        var a = document.createElement("a");
+    for (let i = 0; i < pool.Blockers.length; i++) {
+        const b = pool.Blockers[i];
+        const id = "blocker-" + pool.Org + "-" + pool.Repo + "-" + b.Number;
+        const a = document.createElement("a");
         a.href = b.URL;
         a.appendChild(document.createTextNode("#" + b.Number));
         a.id = id;
@@ -302,8 +302,8 @@ function addBlockersToElem(elem, pool) {
     }
 }
 
-function addToolTipToElem(elem, tipElem) {
-    var tooltip = document.createElement("div");
+function addToolTipToElem(elem: HTMLElement, tipElem: Node): void {
+    const tooltip = document.createElement("div");
     tooltip.appendChild(tipElem);
     tooltip.setAttribute("data-mdl-for", elem.id);
     tooltip.classList.add("mdl-tooltip", "mdl-tooltip--large");
