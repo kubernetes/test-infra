@@ -42,8 +42,6 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
     always_run: true
-    # TODO(bentheelder): optional until tested out a bit...
-    optional: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20181002-3e479534e-master
