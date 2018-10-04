@@ -75,7 +75,7 @@ Additional fields may be required for some use cases:
 	and specify the secret name in the `ssh_key_secrets` field of the job spec.
 	- Set the `clone_uri` field of the job spec to `git@github.com:{{.Org}}/{{.Repo}}.git`.
 - Repos requiring a non-standard clone path can use the `path_alias` field
-to clone the repo to a path different than the default of `/go/src/github.com/org/repo/` (e.g. `/go/src/k8s.io/kubernetes/kubernetes`).
+to clone the repo to different go import path than the default of `/home/prow/go/src/github.com/{{.Org}}/{{.Repo}}/` (e.g. `path_alias: k8s.io/test-infra` -> `/home/prow/go/src/k8s.io/test-infra`).
 - Jobs that require additional repos to be checked out can arrange for that with
 the `exta_refs` field.
 
