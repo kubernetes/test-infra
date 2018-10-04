@@ -28,9 +28,9 @@ go_library(
     ],
     importpath = "k8s.io/test-infra/prow/cmd/jenkins-operator",
     deps = [
+        "//flagutil:go_default_library",
         "//prow/config:go_default_library",
         "//prow/flagutil:go_default_library",
-        "//prow/github:go_default_library",
         "//prow/jenkins:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/logrusutil:go_default_library",
@@ -66,4 +66,5 @@ go_test(
     name = "go_default_test",
     srcs = ["main_test.go"],
     embed = [":go_default_library"],
+    deps = ["//prow/flagutil:go_default_library"],
 )

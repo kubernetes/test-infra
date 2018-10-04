@@ -18,10 +18,8 @@ package main
 
 import (
 	"context"
-	"errors"
 	"flag"
 	"net/http"
-	"net/url"
 	"os"
 	"os/signal"
 	"strconv"
@@ -31,12 +29,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/flagutil"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/git"
-	"k8s.io/test-infra/prow/github"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/hook"
-	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	pluginhelp "k8s.io/test-infra/prow/pluginhelp/hook"
@@ -50,48 +46,45 @@ type options struct {
 
 	configPath    string
 	jobConfigPath string
-	cluster       string
 	pluginConfig  string
 
 	dryRun      bool
 	gracePeriod time.Duration
-	deckURL     string
-
-	githubEndpoint  flagutil.Strings
-	githubTokenFile string
+	kubernetes  prowflagutil.KubernetesOptions
+	github      prowflagutil.GitHubOptions
 
 	webhookSecretFile string
 	slackTokenFile    string
 }
 
 func (o *options) Validate() error {
-	if o.dryRun && o.deckURL == "" {
-		return errors.New("a dry-run was requested but required flag --deck-url was unset")
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
+		if err := group.Validate(o.dryRun); err != nil {
+			return err
+		}
 	}
+
 	return nil
 }
 
 func gatherOptions() options {
-	o := options{
-		githubEndpoint: flagutil.NewStrings("https://api.github.com"),
+	o := options{}
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	fs.IntVar(&o.port, "port", 8888, "Port to listen on.")
+
+	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
+	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
+	fs.StringVar(&o.pluginConfig, "plugin-config", "/etc/plugins/plugins.yaml", "Path to plugin config file.")
+
+	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
+	fs.DurationVar(&o.gracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration. ")
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github} {
+		group.AddFlags(fs)
 	}
-	flag.IntVar(&o.port, "port", 8888, "Port to listen on.")
 
-	flag.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
-	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	flag.StringVar(&o.cluster, "cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
-	flag.StringVar(&o.pluginConfig, "plugin-config", "/etc/plugins/plugins.yaml", "Path to plugin config file.")
-
-	flag.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
-	flag.DurationVar(&o.gracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration. ")
-	flag.StringVar(&o.deckURL, "deck-url", "", "Deck URL for read-only access to the cluster.")
-
-	flag.Var(&o.githubEndpoint, "github-endpoint", "GitHub's API endpoint.")
-	flag.StringVar(&o.githubTokenFile, "github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
-
-	flag.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
-	flag.StringVar(&o.slackTokenFile, "slack-token-file", "", "Path to the file containing the Slack token to use.")
-	flag.Parse()
+	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
+	fs.StringVar(&o.slackTokenFile, "slack-token-file", "", "Path to the file containing the Slack token to use.")
+	fs.Parse(os.Args[1:])
 	return o
 }
 
@@ -107,18 +100,10 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
-	var err error
-	for _, ep := range o.githubEndpoint.Strings() {
-		_, err = url.ParseRequestURI(ep)
-		if err != nil {
-			logrus.WithError(err).Fatalf("Invalid --endpoint URL %q.", ep)
-		}
-	}
-
 	var tokens []string
 
 	// Append the path of hmac and github secrets.
-	tokens = append(tokens, o.githubTokenFile)
+	tokens = append(tokens, o.github.TokenPath)
 	tokens = append(tokens, o.webhookSecretFile)
 
 	// This is necessary since slack token is optional.
@@ -131,24 +116,19 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
-	var githubClient *github.Client
-	var kubeClient *kube.Client
-	if o.dryRun {
-		githubClient = github.NewDryRunClient(secretAgent.GetTokenGenerator(o.githubTokenFile), o.githubEndpoint.Strings()...)
-		kubeClient = kube.NewFakeClient(o.deckURL)
-	} else {
-		githubClient = github.NewClient(secretAgent.GetTokenGenerator(o.githubTokenFile), o.githubEndpoint.Strings()...)
-		if o.cluster == "" {
-			kubeClient, err = kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
-			if err != nil {
-				logrus.WithError(err).Fatal("Error getting kube client.")
-			}
-		} else {
-			kubeClient, err = kube.NewClientFromFile(o.cluster, configAgent.Config().ProwJobNamespace)
-			if err != nil {
-				logrus.WithError(err).Fatal("Error getting kube client.")
-			}
-		}
+	githubClient, err := o.github.GitHubClient(secretAgent, o.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting GitHub client.")
+	}
+	gitClient, err := o.github.GitClient(secretAgent, o.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting Git client.")
+	}
+	defer gitClient.Clean()
+
+	kubeClient, err := o.kubernetes.Client(configAgent.Config().ProwJobNamespace, o.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting Kubernetes client.")
 	}
 
 	var slackClient *slack.Client
@@ -160,18 +140,6 @@ func main() {
 		logrus.Info("Using fake slack client.")
 		slackClient = slack.NewFakeClient()
 	}
-
-	gitClient, err := git.NewClient()
-	if err != nil {
-		logrus.WithError(err).Fatal("Error getting git client.")
-	}
-	defer gitClient.Clean()
-	// Get the bot's name in order to set credentials for the git client.
-	botName, err := githubClient.BotName()
-	if err != nil {
-		logrus.WithError(err).Fatal("Error getting bot name.")
-	}
-	gitClient.SetCredentials(botName, secretAgent.GetTokenGenerator(o.githubTokenFile))
 
 	pluginAgent := &plugins.PluginAgent{}
 

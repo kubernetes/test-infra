@@ -35,6 +35,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/external-plugins/needs-rebase",
     visibility = ["//visibility:private"],
     deps = [
+        "//flagutil:go_default_library",
         "//prow/config:go_default_library",
         "//prow/external-plugins/needs-rebase/plugin:go_default_library",
         "//prow/flagutil:go_default_library",

@@ -18,51 +18,69 @@ limitations under the License.
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"os/signal"
 	"strconv"
 	"syscall"
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/flagutil"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/github"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/pluginhelp/externalplugins"
 )
 
-var (
-	configPath        = flag.String("config-path", "/etc/config/config.yaml", "Path to config.yaml.")
-	port              = flag.Int("port", 8888, "Port to listen on.")
-	dryRun            = flag.Bool("dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
-	webhookSecretFile = flag.String("hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
-	githubTokenFile   = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
-	githubEndpoint    = flagutil.NewStrings("https://api.github.com")
-	prowURL           = flag.String("prow-url", "", "Prow frontend URL.")
-)
+type options struct {
+	port int
 
-func init() {
-	flag.Var(&githubEndpoint, "github-endpoint", "GitHub's API endpoint.")
+	configPath string
+	dryRun     bool
+	github     prowflagutil.GitHubOptions
+	prowURL    string
+
+	webhookSecretFile string
 }
 
-func validateFlags() error {
-	if *prowURL == "" {
-		return errors.New("--prow-url needs to be specified")
-	}
-	for _, ep := range githubEndpoint.Strings() {
-		if _, err := url.Parse(ep); err != nil {
-			return fmt.Errorf("invalid --endpoint URL %q: %v", ep, err)
+func (o *options) Validate() error {
+	for _, group := range []flagutil.OptionGroup{&o.github} {
+		if err := group.Validate(o.dryRun); err != nil {
+			return err
 		}
 	}
+
+	if _, err := url.ParseRequestURI(o.prowURL); err != nil {
+		return fmt.Errorf("invalid -prow-url URI: %q", o.prowURL)
+	}
+
 	return nil
 }
 
+func gatherOptions() options {
+	o := options{}
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	fs.IntVar(&o.port, "port", 8888, "Port to listen on.")
+	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
+	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
+	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
+	fs.StringVar(&o.prowURL, "prow-url", "", "Prow frontend URL.")
+	for _, group := range []flagutil.OptionGroup{&o.github} {
+		group.AddFlags(fs)
+	}
+	fs.Parse(os.Args[1:])
+	return o
+}
+
 func main() {
-	flag.Parse()
+	o := gatherOptions()
+	if err := o.Validate(); err != nil {
+		logrus.Fatalf("Invalid options: %v", err)
+	}
+
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	// TODO: Use global option from the prow config.
 	logrus.SetLevel(logrus.DebugLevel)
@@ -73,34 +91,30 @@ func main() {
 	// deadline.
 	signal.Ignore(syscall.SIGTERM)
 
-	if err := validateFlags(); err != nil {
-		log.WithError(err).Fatal("Error validating flags.")
-	}
-
 	configAgent := &config.Agent{}
-	if err := configAgent.Start(*configPath, ""); err != nil {
+	if err := configAgent.Start(o.configPath, ""); err != nil {
 		log.WithError(err).Fatal("Error starting config agent.")
 	}
 
 	secretAgent := &config.SecretAgent{}
-	if err := secretAgent.Start([]string{*githubTokenFile, *webhookSecretFile}); err != nil {
+	if err := secretAgent.Start([]string{o.github.TokenPath, o.webhookSecretFile}); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
-	ghc := github.NewClient(secretAgent.GetTokenGenerator(*githubTokenFile), githubEndpoint.Strings()...)
-	if *dryRun {
-		ghc = github.NewDryRunClient(secretAgent.GetTokenGenerator(*githubTokenFile), githubEndpoint.Strings()...)
+	githubClient, err := o.github.GitHubClient(secretAgent, o.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
 
 	serv := &server{
-		tokenGenerator: secretAgent.GetTokenGenerator(*webhookSecretFile),
-		prowURL:        *prowURL,
+		tokenGenerator: secretAgent.GetTokenGenerator(o.webhookSecretFile),
+		prowURL:        o.prowURL,
 		configAgent:    configAgent,
-		ghc:            ghc,
+		ghc:            githubClient,
 		log:            log,
 	}
 
 	http.Handle("/", serv)
 	externalplugins.ServeExternalPluginHelp(http.DefaultServeMux, log, helpProvider)
-	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
+	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(o.port), nil))
 }

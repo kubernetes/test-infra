@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2018 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,18 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+// Package flagutil contains utilities and interfaces shared between
+// several test-infra commands.
+package flagutil
 
 import (
-	"testing"
-
-	"k8s.io/test-infra/prow/plugins"
+	"flag"
 )
 
-// Make sure that our plugins are valid.
-func TestPlugins(t *testing.T) {
-	pa := &plugins.PluginAgent{}
-	if err := pa.Load("../../plugins.yaml"); err != nil {
-		t.Fatalf("Could not load plugins: %v.", err)
-	}
+// OptionGroup provides an interface which can be implemented by an
+// option handler (e.g. for GitHub or Kubernetes) to support generic
+// option-group handling.
+type OptionGroup interface {
+	// AddFlags injects options into the given FlagSet.
+	AddFlags(fs *flag.FlagSet)
+
+	// Validate validates options.
+	Validate(dryRun bool) error
 }
