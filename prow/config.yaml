@@ -85,6 +85,11 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        cluster-bootstrap:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         code-generator:
           restrictions:
             users: []
