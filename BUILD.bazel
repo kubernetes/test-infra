@@ -68,3 +68,5 @@ filegroup(
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )
+
+exports_files(["tsconfig.json"])

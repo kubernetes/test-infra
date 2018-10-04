@@ -1,35 +1,42 @@
 import "dialog-polyfill";
+import {Command, Help, PluginHelp} from "../api/help";
 
-function getParameterByName(name) {  // http://stackoverflow.com/a/5158301/3694
+declare const allHelp: Help;
+
+declare const dialogPolyfill: {
+    registerDialog(element: HTMLDialogElement): void;
+};
+
+function getParameterByName(name: string): string | null {  // http://stackoverflow.com/a/5158301/3694
     const match = new RegExp('[?&]' + name + '=([^&/]*)').exec(window.location.search);
     return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
 }
 
-function redrawOptions() {
+function redrawOptions(): void {
     const rs = allHelp.AllRepos.sort();
-    const sel = document.getElementById("repo");
+    const sel = document.getElementById("repo") as HTMLSelectElement;
     while (sel.length > 1) {
-        sel.removeChild(sel.lastChild);
+        sel.removeChild(sel.lastChild!);
     }
     const param = getParameterByName("repo");
     rs.forEach((opt) => {
         const o = document.createElement("option");
         o.text = opt;
-        o.selected = (param && opt === param);
+        o.selected = !!(param && opt === param);
         sel.appendChild(o);
     });
 }
 
-window.onload = function () {
+window.onload = function (): void {
     // set dropdown based on options from query string
     const hash = window.location.hash;
     redrawOptions();
     redraw();
 
     // Register dialog
-    const dialog = document.querySelector('dialog');
+    const dialog = document.querySelector('dialog') as HTMLDialogElement;
     dialogPolyfill.registerDialog(dialog);
-    dialog.querySelector('.close').addEventListener('click', () => {
+    dialog.querySelector('.close')!.addEventListener('click', () => {
         dialog.close();
     });
 
@@ -41,45 +48,22 @@ window.onload = function () {
                 mainContainer.scrollTop = el.getBoundingClientRect().top;
                 window.location.hash = hash;
             }, 32);
-            el.querySelector(".mdl-button--primary").click();
+            (el.querySelector(".mdl-button--primary") as HTMLButtonElement).click();
         }
     }
 };
 
-document.addEventListener("DOMContentLoaded", () => {
-    configure();
-});
-
-function configure() {
-    if (!branding) {
-        return;
-    }
-    if (branding.logo) {
-        document.getElementById('img').src = branding.logo;
-    }
-    if (branding.favicon) {
-        document.getElementById('favicon').href = branding.favicon;
-    }
-    if (branding.background_color) {
-        document.body.style.background = branding.background_color;
-    }
-    if (branding.header_color) {
-        document.getElementsByTagName('header')[0].style.backgroundColor = branding.header_color;
-    }
-}
-
-function selectionText(sel) {
+function selectionText(sel: HTMLSelectElement): string {
     return sel.selectedIndex === 0 ? "" : sel.options[sel.selectedIndex].text;
 }
 
 /**
  * Takes an org/repo string and a repo to plugin map and returns the plugins
  * that apply to the repo.
- * @param {string} repoSel repo name
- * @param {Map<string, PluginHelp>} repoPlugins maps plugin name to plugin
- * @return {Array<string>}
+ * @param repoSel repo name
+ * @param repoPlugins maps plugin name to plugin
  */
-function applicablePlugins(repoSel, repoPlugins) {
+function applicablePlugins(repoSel: string, repoPlugins: {[key: string]: string[]}): string[] {
     if (repoSel === "") {
         const all = repoPlugins[""];
         if (all) {
@@ -89,7 +73,7 @@ function applicablePlugins(repoSel, repoPlugins) {
     }
     const parts = repoSel.split("/");
     const byOrg = repoPlugins[parts[0]];
-    let plugins = [];
+    let plugins: string[] = [];
     if (byOrg && byOrg !== []) {
         plugins = plugins.concat(byOrg);
     }
@@ -106,32 +90,31 @@ function applicablePlugins(repoSel, repoPlugins) {
 
 /**
  * Returns a normal cell for the command row.
- * @param {Array<string>|string} data content of the cell
- * @param {Array<string>} styles a list of styles applied to the cell.
- * @param {boolean} noWrap true if the content of the cell should be wrap.
- * @return {Element}
+ * @param data content of the cell
+ * @param styles a list of styles applied to the cell.
+ * @param noWrap true if the content of the cell should be wrap.
  */
-function createCommandCell(data, styles = [], noWrap = false) {
-    const cell = document.createElement("TD");
+function createCommandCell(data: string | string[], styles: string[] = [], noWrap = false): HTMLTableDataCellElement {
+    const cell = document.createElement("td");
     cell.classList.add("mdl-data-table__cell--non-numeric");
     if (!noWrap) {
         cell.classList.add("table-cell");
     }
-    let content;
-    if (Array.isArray((data))) {
-        content = document.createElement("UL");
-        content.classList = "command-example-list";
+    let content: HTMLElement;
+    if (Array.isArray(data)) {
+        content = document.createElement("ul");
+        content.classList.add("command-example-list");
 
         data.forEach((item) => {
-            const itemContainer = document.createElement("LI");
-            const span = document.createElement("SPAN");
+            const itemContainer = document.createElement("li");
+            const span = document.createElement("span");
             span.innerHTML = item;
             span.classList.add(...styles);
             itemContainer.appendChild(span);
             content.appendChild(itemContainer);
         });
     } else {
-        content = document.createElement("DIV");
+        content = document.createElement("div");
         content.classList.add(...styles);
         content.innerHTML = data;
     }
@@ -143,21 +126,22 @@ function createCommandCell(data, styles = [], noWrap = false) {
 
 /**
  * Returns an icon element.
- * @param {number} no no. command
- * @param {string} iconString icon name
- * @param {?Array<string>} styles list of styles of the icon
- * @param {string} tooltip tooltip string
- * @param {boolean} isButton true if icon is a button
- * @return {Element}
+ * @param no no. command
+ * @param iconString icon name
+ * @param styles list of styles of the icon
+ * @param tooltip tooltip string
+ * @param isButton true if icon is a button
  */
-function createIcon(no, iconString, styles = [], tooltip = "", isButton = false) {
-    const icon = document.createElement("I");
+function createIcon(no: number, iconString: string, styles: string[], tooltip: string, isButton?: false): HTMLDivElement
+function createIcon(no: number, iconString: string, styles: string[], tooltip: string, isButton?: true): HTMLButtonElement
+function createIcon(no: number, iconString: string, styles: string[] = [], tooltip: string = "", isButton = false) {
+    const icon = document.createElement("i");
     icon.id = "icon-" + iconString + "-" + no;
     icon.classList.add("material-icons");
     icon.classList.add(...styles);
     icon.innerHTML = iconString;
 
-    const container = isButton ? document.createElement("BUTTON") : document.createElement("DIV");
+    const container = isButton ? document.createElement("button") : document.createElement("div");
     container.appendChild(icon);
     if (isButton) {
         container.classList.add(...["mdl-button", "mdl-js-button", "mdl-button--icon"]);
@@ -167,7 +151,7 @@ function createIcon(no, iconString, styles = [], tooltip = "", isButton = false)
         return container;
     }
 
-    const tooltipEl = document.createElement("DIV");
+    const tooltipEl = document.createElement("div");
     tooltipEl.setAttribute("for", icon.id);
     tooltipEl.classList.add("mdl-tooltip");
     tooltipEl.innerHTML = tooltip;
@@ -178,13 +162,12 @@ function createIcon(no, iconString, styles = [], tooltip = "", isButton = false)
 
 /**
  * Returns the feature cell for the command row.
- * @param {boolean} isFeatured true if the command is featured.
- * @param {boolean} isExternal true if the command is external.
- * @param {number} no no. command.
- * @return {Element}
+ * @param isFeatured true if the command is featured.
+ * @param isExternal true if the command is external.
+ * @param no no. command.
  */
-function commandStatus(isFeatured, isExternal, no) {
-    const status = document.createElement("TD");
+function commandStatus(isFeatured: boolean, isExternal: boolean, no: number): HTMLTableDataCellElement {
+    const status = document.createElement("td");
     status.classList.add("mdl-data-table__cell--non-numeric");
     if (isFeatured) {
         status.appendChild(
@@ -201,10 +184,9 @@ function commandStatus(isFeatured, isExternal, no) {
  * Returns a section to the content of the dialog
  * @param title title of the section
  * @param body body of the section
- * @return {Element}
  */
-function addDialogSection(title, body) {
-    const container = document.createElement("DIV");
+function addDialogSection(title: string, body: string): HTMLElement {
+    const container = document.createElement("div");
     const sectionTitle = document.createElement("h5");
     const sectionBody = document.createElement("p");
 
@@ -223,23 +205,22 @@ function addDialogSection(title, body) {
 
 /**
  * Returns a cell for the Plugin column.
- * @param {string}repo repo name
- * @param {string} pluginName plugin name.
- * @param {PluginHelp} plugin the plugin to which the command belong to
- * @return {Element}
+ * @param repo repo name
+ * @param pluginName plugin name.
+ * @param plugin the plugin to which the command belong to
  */
-function createPluginCell(repo, pluginName, plugin) {
-    const pluginCell = document.createElement("TD");
+function createPluginCell(repo: string, pluginName: string, plugin: PluginHelp): HTMLTableDataCellElement {
+    const pluginCell = document.createElement("td");
     const button = document.createElement("button");
     pluginCell.classList.add("mdl-data-table__cell--non-numeric");
     button.classList.add("mdl-button", "mdl-button--js", "mdl-button--primary");
     button.innerHTML = pluginName;
 
     // Attach Event Handlers.
-    const dialog = document.querySelector('dialog');
-    button.addEventListener('click', (event) => {
-        const title = dialog.querySelector(".mdl-dialog__title");
-        const content = dialog.querySelector(".mdl-dialog__content");
+    const dialog = document.querySelector('dialog') as HTMLDialogElement;
+    button.addEventListener('click', () => {
+        const title = dialog.querySelector(".mdl-dialog__title")!;
+        const content = dialog.querySelector(".mdl-dialog__content")!;
 
         while (content.firstChild) {
             content.removeChild(content.firstChild);
@@ -270,16 +251,13 @@ function createPluginCell(repo, pluginName, plugin) {
 
 /**
  * Creates a link that links to the command.
- * @param name
- * @param no
- * @return {Element}
  */
-function createCommandLink(name, no) {
-    const link = document.createElement("TD");
+function createCommandLink(name: string, no: number): HTMLTableDataCellElement {
+    const link = document.createElement("td");
     const iconButton = createIcon(no, "link", ["link-icon"], "", true);
 
     iconButton.addEventListener("click", () => {
-        const tempInput = document.createElement("INPUT");
+        const tempInput = document.createElement("input");
         let url = window.location.href;
         const hashIndex = url.indexOf("#");
         if (hashIndex !== -1) {
@@ -296,7 +274,7 @@ function createCommandLink(name, no) {
         document.execCommand("copy");
         document.body.removeChild(tempInput);
 
-        const toast = document.body.querySelector("#toast");
+        const toast = document.body.querySelector("#toast")! as SnackbarElement;
         toast.MaterialSnackbar.showSnackbar({message: "Copied to clipboard"});
     });
 
@@ -309,16 +287,15 @@ function createCommandLink(name, no) {
 
 /**
  * Creates a row for the Command table.
- * @param {string} repo repo name.
- * @param {string} pluginName plugin name.
- * @param {PluginHelp} plugin the plugin to which the command belongs.
- * @param {Command} command the command.
- * @param {boolean} isExternal true if the command belongs to an external
- * @param {number} no no. command
- * @return {Element}
+ * @param repo repo name.
+ * @param pluginName plugin name.
+ * @param plugin the plugin to which the command belongs.
+ * @param command the command.
+ * @param isExternal true if the command belongs to an external
+ * @param no no. command
  */
-function createCommandRow(repo, pluginName, plugin, command, isExternal, no) {
-    const row = document.createElement("TR");
+function createCommandRow(repo: string, pluginName: string, plugin: PluginHelp, command: Command, isExternal: boolean, no: number): HTMLTableRowElement {
+    const row = document.createElement("tr");
     const name = extractCommandName(command.Examples[0]);
     row.id = name;
 
@@ -337,24 +314,24 @@ function createCommandRow(repo, pluginName, plugin, command, isExternal, no) {
 
 /**
  * Redraw a plugin table.
- * @param {string} repo repo name.
- * @param {Map<string, Object>} helpMap maps a plugin name to a plugin.
+ * @param repo repo name.
+ * @param helpMap maps a plugin name to a plugin.
  */
-function redrawHelpTable(repo, helpMap) {
-    const table = document.getElementById("command-table");
-    const tableBody = document.querySelector("TBODY");
+function redrawHelpTable(repo: string, helpMap: Map<string, {isExternal: boolean, plugin: PluginHelp}>): void {
+    const table = document.getElementById("command-table")!;
+    const tableBody = document.querySelector("tbody")!;
     if (helpMap.size === 0) {
         table.style.display = "none";
         return;
     }
     table.style.display = "table";
     while (tableBody.childElementCount !== 0) {
-        tableBody.removeChild(tableBody.firstChild);
+        tableBody.removeChild(tableBody.firstChild!);
     }
     const names = Array.from(helpMap.keys());
-    const commandsWithPluginName = [];
+    const commandsWithPluginName: {pluginName: string, command: Command}[] = [];
     for (let name of names) {
-        helpMap.get(name).plugin.Commands.forEach((command) => {
+        helpMap.get(name)!.plugin.Commands.forEach((command) => {
             commandsWithPluginName.push({
                 pluginName: name,
                 command: command
@@ -367,7 +344,7 @@ function redrawHelpTable(repo, helpMap) {
         })
         .forEach((command, index) => {
             const pluginName = command.pluginName;
-            const {isExternal, plugin} = helpMap.get(pluginName);
+            const {isExternal, plugin} = helpMap.get(pluginName)!;
             const commandRow = createCommandRow(
                 repo,
                 pluginName,
@@ -382,8 +359,8 @@ function redrawHelpTable(repo, helpMap) {
 /**
  * Redraws the content of the page.
  */
-function redraw() {
-    const repoSel = selectionText(document.getElementById("repo"));
+function redraw(): void {
+    const repoSel = selectionText(document.getElementById("repo") as HTMLSelectElement);
     if (window.history && window.history.replaceState !== undefined) {
         if (repoSel !== "") {
             history.replaceState(null, "", "/command-help?repo="
@@ -394,7 +371,7 @@ function redraw() {
     }
     redrawOptions();
 
-    const pluginsWithCommands = new Map();
+    const pluginsWithCommands: Map<string, {isExternal: boolean, plugin: PluginHelp}> = new Map();
     applicablePlugins(repoSel, allHelp.RepoPlugins)
         .forEach((name) => {
             if (allHelp.PluginHelp[name] && allHelp.PluginHelp[name].Commands) {
@@ -426,10 +403,8 @@ function redraw() {
  * Extracts a command name from a command example. It takes the first example,
  * with out the slash, as the name for the command. Also, any '-' character is
  * replaced by '_' to make the name valid in the address.
- * @param {string} commandExample
- * @return {string}
  */
-function extractCommandName(commandExample) {
+function extractCommandName(commandExample: string): string {
     const command = commandExample.split(" ");
     if (!command || command.length === 0) {
         throw new Error("Cannot extract command name.");
@@ -438,4 +413,4 @@ function extractCommandName(commandExample) {
 }
 
 // This is referenced by name in the HTML.
-window.redraw = redraw;
+(window as any)['redraw'] = redraw;

@@ -1,7 +1,9 @@
+workspace(name = "test_infra")
+
 git_repository(
     name = "bazel_skylib",
-    commit = "2169ae1c374aab4a09aa90e65efe1a3aad4e279b",
     remote = "https://github.com/bazelbuild/bazel-skylib.git",
+    tag = "0.5.0",
 )
 
 load("@bazel_skylib//:lib.bzl", "versions")
@@ -96,7 +98,7 @@ docker_pull(
 git_repository(
     name = "build_bazel_rules_nodejs",
     remote = "https://github.com/bazelbuild/rules_nodejs.git",
-    tag = "0.12.4",  # the last version that supports bazel < 0.17
+    tag = "0.14.0",
 )
 
 load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "yarn_install")
@@ -109,6 +111,19 @@ yarn_install(
     yarn_lock = "//:yarn.lock",
 )
 
+http_archive(
+    name = "build_bazel_rules_typescript",
+    strip_prefix = "rules_typescript-0.18.0",
+    url = "https://github.com/bazelbuild/rules_typescript/archive/0.18.0.zip",
+)
+
+# Fetch our Bazel dependencies that aren't distributed on npm
+load("@build_bazel_rules_typescript//:package.bzl", "rules_typescript_dependencies")
+
+rules_typescript_dependencies()
+
+# Setup TypeScript toolchain
+load("@build_bazel_rules_typescript//:defs.bzl", "ts_setup_workspace")
 load(":test_infra.bzl", "http_archive_with_pkg_path")
 
 http_archive_with_pkg_path(
