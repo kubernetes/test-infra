@@ -1,4 +1,5 @@
-"use strict";
+import "./fuzzy-search";
+import moment from "moment";
 
 function getParameterByName(name) {  // http://stackoverflow.com/a/5158301/3694
     var match = RegExp('[?&]' + name + '=([^&/]*)').exec(

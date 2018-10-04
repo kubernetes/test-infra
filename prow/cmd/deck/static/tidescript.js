@@ -1,5 +1,3 @@
-"use strict";
-
 window.onload = function() {
     var infoDiv = document.getElementById("info-div");
     var infoH2 = infoDiv.getElementsByTagName("h4")[0];

@@ -9,6 +9,11 @@ load(
     "go_test",
 )
 
+filegroup(
+    name = "templates",
+    srcs = glob(["template/**/*"]),
+)
+
 container_image(
     name = "asset-base",
     base = "@alpine-base//image",
@@ -16,13 +21,10 @@ container_image(
     data_path = ".",
     # Add files under into the root directory.
     directory = "/",
-    # Everything under static/ and template/
-    files = glob(
-        [
-            "static/**/*",
-            "template/**/*",
-        ],
-    ),
+    files = [
+        ":templates",
+        "//prow/cmd/deck/static",
+    ],
 )
 
 go_image(
@@ -37,6 +39,10 @@ go_image(
 
 go_binary(
     name = "deck",
+    data = [
+        ":templates",
+        "//prow/cmd/deck/static",
+    ],
     embed = [":go_default_library"],
     pure = "on",
 )
@@ -104,6 +110,9 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//prow/cmd/deck/static:all-srcs",
+    ],
     tags = ["automanaged"],
 )

@@ -1,0 +1,90 @@
+package(default_visibility = ["//visibility:public"])
+
+load("@build_bazel_rules_nodejs//:defs.bzl", "rollup_bundle")
+
+rollup_bundle(
+    name = "index",
+    srcs = [
+        "fuzzy-search.js",
+        "script.js",
+    ],
+    entry_point = "prow/cmd/deck/static/script.js",
+    node_modules = "@npm//:node_modules",
+)
+
+rollup_bundle(
+    name = "plugins",
+    srcs = [
+        "plugins-script.js",
+    ],
+    entry_point = "prow/cmd/deck/static/plugins-script.js",
+    node_modules = "@npm//:node_modules",
+)
+
+rollup_bundle(
+    name = "pr",
+    srcs = [
+        "pr-script.js",
+    ],
+    entry_point = "prow/cmd/deck/static/pr-script.js",
+    node_modules = "@npm//:node_modules",
+)
+
+rollup_bundle(
+    name = "tide",
+    srcs = [
+        "tidescript.js",
+    ],
+    entry_point = "prow/cmd/deck/static/tidescript.js",
+    node_modules = "@npm//:node_modules",
+)
+
+rollup_bundle(
+    name = "command_help",
+    srcs = [
+        "command-help-script.js",
+    ],
+    entry_point = "prow/cmd/deck/static/command-help-script.js",
+    node_modules = "@npm//:node_modules",
+)
+
+filegroup(
+    name = "resources",
+    srcs = glob(
+        ["**/*"],
+        exclude = ["**/*.js"],
+    ) + glob(["extensions/*.js"]),
+)
+
+filegroup(
+    name = "all-scripts",
+    srcs = [
+        ":command_help",
+        ":index",
+        ":plugins",
+        ":pr",
+        ":tide",
+    ],
+)
+
+filegroup(
+    name = "static",
+    srcs = [
+        ":all-scripts",
+        ":resources",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

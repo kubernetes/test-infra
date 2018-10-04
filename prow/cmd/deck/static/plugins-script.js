@@ -1,4 +1,5 @@
-"use strict";
+import "dialog-polyfill";
+
 
 function getParameterByName(name) {  // http://stackoverflow.com/a/5158301/3694
     const match = new RegExp('[?&]' + name + '=([^&/]*)').exec(window.location.search);

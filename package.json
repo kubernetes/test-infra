@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "dialog-polyfill": "^0.4.10",
+    "moment": "^2.22.2"
+  },
+  "devDependencies": {
+    "jasmine": "~2.8.0"
+  }
+}
