@@ -17,6 +17,7 @@ limitations under the License.
 package artifacts
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path"
@@ -71,22 +72,31 @@ func (arts *LocalArtifacts) KeyProfileCreator() *os.File {
 
 // ProduceProfileFile produce coverage profile (&its stdout) by running go test on target package
 // for periodic job, produce junit xml for testgrid in addition
-func (arts *LocalArtifacts) ProduceProfileFile(covTargetsStr string) {
+func (arts *LocalArtifacts) ProduceProfileFile(covTargetsStr string) error {
 	// creates artifacts directory
 	artsDirPath := arts.Directory
 	logrus.Infof("Making directory (MkdirAll): path=%s", artsDirPath)
 	if err := os.MkdirAll(artsDirPath, 0755); err != nil {
-		logrus.Fatalf("Failed os.MkdirAll(path='%s', 0755); err='%v'", artsDirPath, err)
+		return fmt.Errorf("failed os.MkdirAll(path='%s', 0755); err='%v'", artsDirPath, err)
 	} else {
 		logrus.Infof("artifacts dir (path=%s) created successfully", artsDirPath)
 	}
 
-	// convert targets from a single string to a lists of strings
+	covTargets := composeCmdArgs(covTargetsStr, arts.ProfilePath())
+
+	return runProfiling(covTargets, arts)
+}
+
+func composeCmdArgs(covTargetsStr, profileDestinationPath string) []string {
+	// generate the complete list of command line args for producing code coverage profile
 	var covTargets []string
 	for _, target := range strings.Split(covTargetsStr, " ") {
 		covTargets = append(covTargets, "./"+path.Join(target, "..."))
 	}
 	logrus.Infof("list of coverage targets = %v", covTargets)
-
-	runProfiling(covTargets, arts)
+	cmdArgs := []string{"test"}
+	cmdArgs = append(cmdArgs, covTargets...)
+	cmdArgs = append(cmdArgs, []string{"-covermode=count",
+		"-coverprofile", profileDestinationPath}...)
+	return cmdArgs
 }
