@@ -350,6 +350,8 @@ func initSpyglass(configAgent *config.Agent, o options, mux *http.ServeMux, ja *
 		mux.Handle("/view/prowjob/", gziphandler.GzipHandler(handleRequestProwJobViews(sg, configAgent, o.templateFilesLocation)))
 		mux.Handle("/view/", gziphandler.GzipHandler(handleRequestJobViews(sg, configAgent, o.templateFilesLocation)))
 	}
+
+	mux.Handle("/job-history/", gziphandler.GzipHandler(handleJobHistory(o.templateFilesLocation, configAgent, c)))
 }
 
 func loadToken(file string) ([]byte, error) {
@@ -459,6 +461,31 @@ func handleBadge(ja *jobs.JobAgent) http.HandlerFunc {
 		allJobs := ja.ProwJobs()
 		_, _, svg := renderBadge(pickLatestJobs(allJobs, wantJobs))
 		w.Write(svg)
+	}
+}
+
+func handleJobHistory(templateRoot string, ca *config.Agent, gcsClient *storage.Client) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		tmpl, err := getJobHistory(r.URL, ca.Config(), gcsClient)
+		if err != nil {
+			msg := fmt.Sprintf("Failed to get job history: %v", err)
+			logrus.Error(msg)
+			http.Error(w, msg, http.StatusInternalServerError)
+			return
+		}
+		t := template.New("job-history.html")
+		if _, err := prepareBaseTemplate(templateRoot, ca, t); err != nil {
+			fmt.Fprintf(w, "error preparing base template: %v", err)
+		}
+		t, err = t.ParseFiles(path.Join(templateRoot, "job-history.html"))
+		if err != nil {
+			fmt.Fprintf(w, "error parsing template: %v", err)
+		}
+		var buf bytes.Buffer
+		if err = t.Execute(&buf, tmpl); err != nil {
+			fmt.Fprintf(w, "error rendering template: %v", err)
+		}
+		fmt.Fprint(w, buf.String())
 	}
 }
 

@@ -1,0 +1,55 @@
+{{define "title"}}Job History: {{.Name}}{{end}}
+{{define "content"}}
+<style>
+  .run-success {
+    background-color: rgba(0, 255, 0, 0.3);
+  }
+  .run-failure {
+    background-color: rgba(255, 0, 0, 0.3);
+  }
+  .run-pending {
+    background-color: rgba(255, 255, 0, 0.3);
+  }
+</style>
+<div class="table-container">
+  <table id="history-table" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" style="max-width: 1000px">
+    <thead>
+    <tr>
+      <th class="mdl-data-table__cell--non-numeric">Build ID</th>
+      <th class="mdl-data-table__cell--non-numeric">Started</th>
+      <th class="mdl-data-table__cell--non-numeric">Duration</th>
+      <th class="mdl-data-table__cell--non-numeric">Result</th>
+    </tr>
+    </thead>
+    <tbody>
+      {{range .Builds}}
+      <tr class= {{if eq .Result "SUCCESS"}}"run-success"{{else if eq .Result "FAILURE"}}"run-failure"{{else}}"run-pending"{{end}}>
+        <td class="mdl-data-table__cell--non-numeric">
+          {{if ne .SpyglassLink ""}}<a href= {{.SpyglassLink}}>{{.ID}}</a>
+          {{else}}{{.ID}}{{end}}
+        </td>
+        <td class="mdl-data-table__cell--non-numeric">{{.Started}}</td>
+        <td class="mdl-data-table__cell--non-numeric">{{.Duration}}</td>
+        <td class="mdl-data-table__cell--non-numeric">{{.Result}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  <table style="max-width: 1000px">
+    <tr>
+      {{if ne .LatestLink ""}}
+      <td><a href= {{.LatestLink}}>Latest Runs</a></td>
+      {{end}}
+      {{if ne .NewerLink ""}}
+      <td><a href= {{.NewerLink}}>&lt;- Newer Runs</a></td>
+      {{end}}
+      {{if ne .OlderLink ""}}
+      <td><a href= {{.OlderLink}}>Older Runs -&gt;</a></td>
+      {{end}}
+      <td></td>
+    </tr>
+  </table>
+</div>
+{{end}}
+
+{{template "page" (settings mobileUnfriendly "job-history" .)}}

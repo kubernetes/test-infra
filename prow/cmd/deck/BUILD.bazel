@@ -70,6 +70,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "badge.go",
+        "job_history.go",
         "main.go",
         "pluginhelp.go",
         "templates.go",
