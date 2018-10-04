@@ -1,25 +1,67 @@
 import "dialog-polyfill";
 
+import {Context} from '../api/github';
+import {PullRequest, Label, UserData} from '../api/pr';
+import {Blocker, TideData, TidePool, TideQuery as ITideQuery} from '../api/tide';
+import {Job, JobState} from '../api/prow';
+
+declare const tideData: TideData;
+declare const allBuilds: Job[];
+declare const dialogPolyfill: {
+  registerDialog(element: HTMLDialogElement): void;
+};
+
+
+type UnifiedState = JobState | "expected" | "error" | "failure" | "pending" | "success";
+
+interface UnifiedContext {
+  context: string;
+  description: string;
+  state: UnifiedState;
+  discrepancy: string | null;
+  url?: string;
+}
+
+interface ProcessedLabel {
+  name: string;
+  own: boolean;
+}
+
+interface ProcessedQuery {
+  score: number;
+  labels: ProcessedLabel[];
+  missingLabels: ProcessedLabel[];
+  excludedBranches?: string[];
+  includedBranches?: string[];
+  milestone?: string;
+}
+
 /**
  * A Tide Query helper class that checks whether a pr is covered by the query.
  */
 class TideQuery {
-    constructor(query) {
+    repos?: string[];
+    orgs?: string[];
+    labels?: string[];
+    missingLabels?: string[];
+    excludedBranches?: string[];
+    includedBranches?: string[];
+    milestone?: string;
+
+    constructor(query: ITideQuery) {
         this.repos = query.repos;
         this.orgs = query.orgs;
         this.labels = query.labels;
         this.missingLabels = query.missingLabels;
         this.excludedBranches = query.excludedBranches;
         this.includedBranches = query.includedBranches;
-        this.milestone = query.milestone
+        this.milestone = query.milestone;
     }
 
     /**
      * Returns true if the pr is covered by the query.
-     * @param pr
-     * @returns {boolean}
      */
-    matchPr(pr) {
+    matchPr(pr: PullRequest): boolean {
         const isMatched =
             (this.repos && this.repos.indexOf(pr.Repository.NameWithOwner) !== -1) ||
             (this.orgs && this.orgs.indexOf(pr.Repository.Owner.Login) !== -1);
@@ -46,9 +88,9 @@ class TideQuery {
 /**
  * Submit the query by redirecting the page with the query and let window.onload
  * sends the request.
- * @param {Element} input query input element
+ * @param input query input element
  */
-function submitQuery(input) {
+function submitQuery(input: HTMLInputElement | HTMLTextAreaElement) {
     const query = getPRQuery(input.value);
     input.value = query;
     window.location.search = '?query=' + encodeURIComponent(query);
@@ -58,9 +100,8 @@ function submitQuery(input) {
  * Creates a XMLHTTP request to /pr-data.js.
  * @param {function} fulfillFn
  * @param {function} errorHandler
- * @return {XMLHttpRequest}
  */
-function createXMLHTTPRequest(fulfillFn, errorHandler) {
+function createXMLHTTPRequest(fulfillFn: (request: XMLHttpRequest) => any, errorHandler: () => any): XMLHttpRequest {
     const request = new XMLHttpRequest();
     const url = "/pr-data.js";
     request.onreadystatechange = () => {
@@ -81,10 +122,8 @@ function createXMLHTTPRequest(fulfillFn, errorHandler) {
 /**
  * Makes sure the search query is looking for pull requests by dropping all
  * is:issue and type:pr tokens and adds is:pr if does not exist.
- * @param {string} q
- * @return {string}
  */
-function getPRQuery(q) {
+function getPRQuery(q: string): string {
     const tokens = q.replace(/\+/g, " ").split(" ");
     // Firstly, drop all pr/issue search tokens
     let result = tokens.filter(tkn => {
@@ -99,12 +138,11 @@ function getPRQuery(q) {
 
 /**
  * Redraw the page
- * @param {Object} prData
  */
-function redraw(prData) {
-    const mainContainer = document.querySelector("#pr-container");
+function redraw(prData: UserData): void {
+    const mainContainer = document.querySelector("#pr-container")!;
     while (mainContainer.firstChild) {
-        mainContainer.removeChild(mainContainer.firstChild);
+        mainContainer.removeChild(mainContainer.firstChild!);
     }
     if (prData && prData.Login) {
         loadPrStatus(prData);
@@ -115,10 +153,9 @@ function redraw(prData) {
 
 /**
  * Enables/disables the progress bar.
- * @param {boolean} isStarted
  */
-function loadProgress(isStarted) {
-    const pg = document.querySelector("#loading-progress");
+function loadProgress(isStarted: boolean): void {
+    const pg = document.querySelector("#loading-progress")!;
     if (isStarted) {
         pg.classList.remove("hidden");
     } else {
@@ -129,7 +166,7 @@ function loadProgress(isStarted) {
 /**
  * Handles the URL query on load event.
  */
-function onLoadQuery() {
+function onLoadQuery(): string {
     const query = window.location.search.substring(1);
     const params = query.split("&");
     if (!params[0]) {
@@ -144,9 +181,8 @@ function onLoadQuery() {
 
 /**
  * Gets cookie by its name.
- * @param {string} name
  */
-function getCookieByName(name) {
+function getCookieByName(name: string): string {
     if (!document.cookie) {
         return "";
     }
@@ -163,17 +199,15 @@ function getCookieByName(name) {
 
 /**
  * Creates an alert for merge blocking issues on tide.
- * @param {Object} tidePool
- * @param {Object} blockers
  */
-function createMergeBlockingIssueAlert(tidePool, blockers) {
-    const alert = document.createElement("DIV");
+function createMergeBlockingIssueAlert(tidePool: TidePool, blockers: Blocker[]): HTMLElement {
+    const alert = document.createElement("div");
     alert.classList.add("alert");
     alert.textContent = `Currently Prow is not merging any PRs to ${tidePool.Org}/${tidePool.Repo} on branch ${tidePool.Branch}. Refer to `;
 
     for (let j = 0; j < blockers.length; j++) {
         const issue = blockers[j];
-        const link = document.createElement("A");
+        const link = document.createElement("a");
         link.href = issue.URL;
         link.innerText = "#" + issue.Number;
         if (j + 1 < blockers.length) {
@@ -181,7 +215,7 @@ function createMergeBlockingIssueAlert(tidePool, blockers) {
         }
         alert.appendChild(link);
     }
-    const closeButton = document.createElement("SPAN");
+    const closeButton = document.createElement("span");
     closeButton.textContent = "×";
     closeButton.classList.add("closebutton");
     closeButton.addEventListener("click", () => {
@@ -194,8 +228,8 @@ function createMergeBlockingIssueAlert(tidePool, blockers) {
 /**
  * Displays any status alerts, e.g: tide pool blocking issues.
  */
-function showAlerts() {
-    const alertContainer = document.querySelector("#alert-container");
+function showAlerts(): void {
+    const alertContainer = document.querySelector("#alert-container")!;
     const tidePools = tideData.Pools ? tideData.Pools : [];
     for (let pool of tidePools) {
         const blockers = pool.Blockers ? pool.Blockers : [];
@@ -206,9 +240,10 @@ function showAlerts() {
 }
 
 window.onload = () => {
-    document.querySelectorAll("dialog").forEach((dialog) => {
+    const dialogs = document.querySelectorAll("dialog") as NodeListOf<HTMLDialogElement>;
+    dialogs.forEach((dialog) => {
         dialogPolyfill.registerDialog(dialog);
-        dialog.querySelector('.close').addEventListener('click', () => {
+        dialog.querySelector('.close')!.addEventListener('click', () => {
             dialog.close();
         });
     });
@@ -225,7 +260,7 @@ window.onload = () => {
         loadProgress(false);
     }, () => {
         loadProgress(false);
-        const mainContainer = document.querySelector("#pr-container");
+        const mainContainer = document.querySelector("#pr-container")!;
         mainContainer.appendChild(createMessage("Something wrongs! We could not fulfill your request"));
     });
     showAlerts();
@@ -233,13 +268,13 @@ window.onload = () => {
     request.send("query=" + onLoadQuery());
 };
 
-function createSearchCard() {
-    const searchCard = document.createElement("DIV");
+function createSearchCard(): HTMLElement {
+    const searchCard = document.createElement("div");
     searchCard.id = "search-card";
     searchCard.classList.add("pr-card", "mdl-card");
 
     // Input box
-    const input = document.createElement("TEXTAREA");
+    const input = document.createElement("textarea");
     input.id = "search-input";
     input.value = decodeURIComponent(window.location.search.slice("query=".length + 1));
     input.rows = 1;
@@ -249,15 +284,15 @@ function createSearchCard() {
             event.preventDefault();
             submitQuery(input);
         } else {
-            const el = event.target;
+            const el = event.target as HTMLTextAreaElement;
             el.style.height = "auto";
-            el.style.height = event.target.scrollHeight + "px";
+            el.style.height = el.scrollHeight + "px";
         }
     });
     input.addEventListener("focus", (event) => {
-        const el = event.target;
+        const el = event.target as HTMLTextAreaElement;
         el.style.height = "auto";
-        el.style.height = event.target.scrollHeight + "px";
+        el.style.height = el.scrollHeight + "px";
     });
     // Refresh button
     const refBtn = createIcon("refresh", "Reload the query", ["search-button"], true);
@@ -271,25 +306,25 @@ function createSearchCard() {
         window.location.search = "?query=" + encodeURIComponent(searchQuery);
     });
 
-    const actionCtn = document.createElement("DIV");
+    const actionCtn = document.createElement("div");
     actionCtn.id = "search-action";
     actionCtn.appendChild(userBtn);
     actionCtn.appendChild(refBtn);
 
-    const inputContainer = document.createElement("DIV");
+    const inputContainer = document.createElement("div");
     inputContainer.id = "search-input-ctn";
     inputContainer.appendChild(input);
     inputContainer.appendChild(actionCtn);
 
-    const title = document.createElement("H6");
+    const title = document.createElement("h6");
     title.textContent = "Github search query";
     const infoBtn = createIcon("info", "More information about the search query", ["search-info"], true);
-    const titleCtn = document.createElement("DIV");
+    const titleCtn = document.createElement("div");
     titleCtn.appendChild(title);
     titleCtn.appendChild(infoBtn);
     titleCtn.classList.add("search-title");
 
-    const searchDialog = document.querySelector("#search-dialog");
+    const searchDialog = document.querySelector("#search-dialog") as HTMLDialogElement;
     infoBtn.addEventListener("click", () => {
         searchDialog.showModal();
     });
@@ -303,12 +338,9 @@ function createSearchCard() {
  * GetFullPRContexts gathers build jobs and pr contexts. It firstly takes
  * all pr contexts and only replaces contexts that have existing Prow Jobs. Tide
  * context will be omitted from the list.
- * @param builds
- * @param contexts
- * @returns {Array}
  */
-function getFullPRContext(builds, contexts) {
-    const contextMap = new Map();
+function getFullPRContext(builds: Job[], contexts: Context[]): UnifiedContext[] {
+    const contextMap: Map<string, UnifiedContext> = new Map();
     if (contexts) {
         for (let context of contexts) {
             if (context.Context === "tide") {
@@ -317,7 +349,7 @@ function getFullPRContext(builds, contexts) {
             contextMap.set(context.Context, {
                 context: context.Context,
                 description: context.Description,
-                state: context.State.toLowerCase(),
+                state: context.State.toLowerCase() as UnifiedState,
                 discrepancy: null,
             });
         }
@@ -327,7 +359,7 @@ function getFullPRContext(builds, contexts) {
             let discrepancy = null;
             // If Github context exits, check if mismatch or not.
             if (contextMap.has(build.context)) {
-                const githubContext = contextMap.get(build.context);
+                const githubContext = contextMap.get(build.context)!;
                 // TODO (qhuynh96): ProwJob's states and Github contexts states
                 // are not equivalent in some states.
                 if (githubContext.state !== build.state) {
@@ -349,13 +381,13 @@ function getFullPRContext(builds, contexts) {
 /**
  * Loads Pr Status
  */
-function loadPrStatus(prData) {
-    const tideQueries = [];
+function loadPrStatus(prData: UserData): void {
+    const tideQueries: TideQuery[] = [];
     for (let query of tideData.TideQueries) {
         tideQueries.push(new TideQuery(query));
     }
 
-    const container = document.querySelector("#pr-container");
+    const container = document.querySelector("#pr-container")!;
     container.appendChild(createSearchCard());
     if (!prData.PullRequestsWithContexts || prData.PullRequestsWithContexts.length === 0) {
         const msg = createMessage("No open PRs found", "");
@@ -367,8 +399,8 @@ function loadPrStatus(prData) {
         // allBuilds is sorted with the most recent builds first, so
         // we only need to keep the first build for each job name.
         let pr = prWithContext.PullRequest;
-        let seenJobs = {};
-        let builds = [];
+        let seenJobs: {[key: string]: boolean} = {};
+        let builds: Job[] = [];
         for (let build of allBuilds) {
             if (build.type === 'presubmit' &&
                 build.repo === pr.Repository.NameWithOwner &&
@@ -383,7 +415,7 @@ function loadPrStatus(prData) {
         }
         const githubContexts = prWithContext.Contexts;
         const contexts = getFullPRContext(builds, githubContexts);
-        const validQueries = [];
+        const validQueries: TideQuery[] = [];
         for (let query of tideQueries) {
             if (query.matchPr(pr)) {
                 validQueries.push(query);
@@ -395,15 +427,12 @@ function loadPrStatus(prData) {
 
 /**
  * Creates Pool labels.
- * @param pr
- * @param tidePool
- * @return {Element}
  */
-function createTidePoolLabel(pr, tidePool) {
-    if (!tidePool || tidePool.length === 0) {
+function createTidePoolLabel(pr: PullRequest, tidePool?: TidePool): HTMLElement | null {
+    if (!tidePool) {
         return null;
     }
-    const label = document.createElement("SPAN");
+    const label = document.createElement("span");
     const blockers = tidePool.Blockers ? tidePool.Blockers : [];
     if (blockers.length > 0) {
         label.textContent = "Pool is temporarily blocked";
@@ -438,17 +467,11 @@ function createTidePoolLabel(pr, tidePool) {
  * Creates a label for the title. It will prioritise the merge status over the
  * job status. Saying that, if the pr has jobs failed and does not meet merge
  * requirements, it will show that the PR needs to resolve labels.
- * @param isMerge {boolean}
- * @param jobStatus {string}
- * @param noQuery {boolean}
- * @param labelConflict {boolean}
- * @param mergeConflict {boolean}
- * @param branchConflict {boolean}
- * @param milestoneConflict {boolean}
- * @return {Element}
  */
-function createTitleLabel(isMerge, jobStatus, noQuery, labelConflict, mergeConflict, branchConflict, milestoneConflict) {
-    const label = document.createElement("SPAN");
+function createTitleLabel(isMerge: boolean, jobStatus: VagueState, noQuery: boolean,
+                          labelConflict: boolean, mergeConflict: boolean,
+                          branchConflict: boolean, milestoneConflict: boolean): HTMLElement {
+    const label = document.createElement("span");
     label.classList.add("title-label");
 
     if (noQuery) {
@@ -484,34 +507,28 @@ function createTitleLabel(isMerge, jobStatus, noQuery, labelConflict, mergeConfl
 
 /**
  * Creates PR Card title.
- * @param {Object} pr
- * @param {Array<Object>} tidePools
- * @param {string} jobStatus
- * @param {boolean} noQuery
- * @param {boolean} labelConflict
- * @param {boolean} mergeConflict
- * @param {boolean} branchConflict
- * @param {boolean} milestoneConflict
- * @return {Element}
  */
-function createPRCardTitle(pr, tidePools, jobStatus, noQuery, labelConflict, mergeConflict, branchConflict, milestoneConflict) {
-    const prTitle = document.createElement("DIV");
+function createPRCardTitle(pr: PullRequest, tidePools: TidePool[], jobStatus: VagueState,
+                           noQuery: boolean, labelConflict: boolean,
+                           mergeConflict: boolean, branchConflict: boolean,
+                           milestoneConflict: boolean): HTMLElement {
+    const prTitle = document.createElement("div");
     prTitle.classList.add("mdl-card__title");
 
-    const title = document.createElement("H4");
+    const title = document.createElement("h4");
     title.textContent = "#" + pr.Number;
     title.classList.add("mdl-card__title-text");
 
-    const subtitle = document.createElement("H5");
+    const subtitle = document.createElement("h5");
     subtitle.textContent = pr.Repository.NameWithOwner + ":" + pr.BaseRef.Name;
     subtitle.classList.add("mdl-card__subtitle-text");
 
-    const link = document.createElement("A");
+    const link = document.createElement("a");
     link.href = "https://github.com/" + pr.Repository.NameWithOwner + "/pull/"
         + pr.Number;
     link.appendChild(title);
 
-    const prTitleText = document.createElement("DIV");
+    const prTitleText = document.createElement("div");
     prTitleText.appendChild(link);
     prTitleText.appendChild(subtitle);
     prTitleText.classList.add("pr-title-text");
@@ -533,14 +550,11 @@ function createPRCardTitle(pr, tidePools, jobStatus, noQuery, labelConflict, mer
 
 /**
  * Creates a list of contexts.
- * @param contexts
- * @param itemStyle
- * @return {Element}
  */
-function createContextList(contexts, itemStyle = []) {
-    const container = document.createElement("UL");
+function createContextList(contexts: UnifiedContext[], itemStyle: string[] = []): HTMLElement {
+    const container = document.createElement("ul");
     container.classList.add("mdl-list", "job-list");
-    const getStateIcon = (state) => {
+    const getStateIcon = (state: string): string => {
         switch (state) {
             case "success":
                 return "check_circle";
@@ -558,17 +572,17 @@ function createContextList(contexts, itemStyle = []) {
                 return "";
         }
     };
-    const getItemContainer = (context) => {
+    const getItemContainer = (context: UnifiedContext): HTMLElement => {
         if (context.url) {
-            const item = document.createElement("A");
+            const item = document.createElement("a");
             item.href = context.url;
             return item;
         } else {
-            return document.createElement("DIV");
+            return document.createElement("div");
         }
     };
     contexts.forEach(context => {
-        const elCon = document.createElement("LI");
+        const elCon = document.createElement("li");
         elCon.classList.add("mdl-list__item", "job-list-item", ...itemStyle);
         const item = getItemContainer(context);
         item.classList.add("mdl-list__item-primary-content");
@@ -585,7 +599,7 @@ function createContextList(contexts, itemStyle = []) {
         }
         elCon.appendChild(item);
         if (context.description) {
-            const itemDesc = document.createElement("SPAN");
+            const itemDesc = document.createElement("span");
             itemDesc.textContent = context.description;
             itemDesc.style.color = "grey";
             itemDesc.style.fontSize = "14px";
@@ -598,13 +612,11 @@ function createContextList(contexts, itemStyle = []) {
 
 /**
  * Creates Job status.
- * @param builds
- * @return {Element}
  */
-function createJobStatus(builds) {
-    const statusContainer = document.createElement("DIV");
+function createJobStatus(builds: UnifiedContext[]): HTMLElement {
+    const statusContainer = document.createElement("div");
     statusContainer.classList.add("status-container");
-    const status = document.createElement("DIV");
+    const status = document.createElement("div");
     const failedJobs = builds.filter(build => {
         return build.state === "failure";
     });
@@ -645,7 +657,7 @@ function createJobStatus(builds) {
     status.classList.add("status", "expandable");
     statusContainer.appendChild(status);
     // Job list
-    let failedJobsList;
+    let failedJobsList: HTMLElement | undefined;
     if (failedJobs.length > 0) {
         failedJobsList = createContextList(failedJobs);
         statusContainer.appendChild(failedJobsList);
@@ -672,12 +684,10 @@ function createJobStatus(builds) {
 /**
  * escapeLabel escaped label name that returns a valid name used for css
  * selector.
- * @param {string} label
- * @returns {string}
  */
-function escapeLabel(label) {
+function escapeLabel(label: string): string {
     if (label === "") return "";
-    const toUnicode = function(index) {
+    const toUnicode = function(index: number): string {
       const h = label.charCodeAt(index).toString(16).split('');
       while (h.length < 6) h.splice(0, 0, '0');
 
@@ -700,11 +710,9 @@ function escapeLabel(label) {
 
 /**
  * Creates a HTML element for the label given its name
- * @param label
- * @returns {HTMLElement}
  */
-function createLabelEl(label) {
-    const el = document.createElement("SPAN");
+function createLabelEl(label: string): HTMLElement {
+    const el = document.createElement("span");
     const escapedName = escapeLabel(label);
     el.classList.add("merge-table-label", "mdl-shadow--2dp", "label", escapedName);
     el.textContent = label;
@@ -714,15 +722,12 @@ function createLabelEl(label) {
 
 /**
  * Creates a merge requirement cell.
- * @param labels
- * @param notMissingLabel
- * @return {Element}
  */
-function createMergeLabelCell(labels, notMissingLabel = false) {
-    const cell = document.createElement("TD");
+function createMergeLabelCell(labels: ProcessedLabel[], notMissingLabel = false): HTMLElement {
+    const cell = document.createElement("td");
     labels.forEach(label => {
         const labelEl = createLabelEl(label.name);
-        const toDisplay = label.own ^ notMissingLabel;
+        const toDisplay = label.own !== notMissingLabel;
         if (toDisplay) {
             cell.appendChild(labelEl);
         }
@@ -733,10 +738,8 @@ function createMergeLabelCell(labels, notMissingLabel = false) {
 
 /**
  * Appends labels to a container
- * @param {Element} container
- * @param {Array<string>} labels
  */
-function appendLabelsToContainer(container, labels) {
+function appendLabelsToContainer(container: HTMLElement, labels: string[]): void {
     while (container.firstChild) {
         container.removeChild(container.firstChild);
     }
@@ -752,15 +755,15 @@ function appendLabelsToContainer(container, labels) {
  * @param selector
  * @param data
  */
-function fillDetail(selector, data) {
-    const section = document.querySelector(selector);
+function fillDetail(selector: string, data?: string[] | string): void {
+    const section = document.querySelector(selector)!;
     if (!data || (Array.isArray(data) && data.length === 0)) {
         section.classList.add("hidden");
         return;
     }
 
     section.classList.remove("hidden");
-    const container = section.querySelector(".detail-data");
+    const container = section.querySelector(".detail-data")!;
     container.textContent = "";
     while (container.firstChild) {
         container.removeChild(container.firstChild);
@@ -783,16 +786,16 @@ function fillDetail(selector, data) {
  * @param query
  * @returns {HTMLElement}
  */
-function createQueryDetailsBtn(query) {
-    const mergeIcon = document.createElement("TD");
+function createQueryDetailsBtn(query: ProcessedQuery): HTMLTableDataCellElement {
+    const mergeIcon = document.createElement("td");
     mergeIcon.classList.add("merge-table-icon");
 
     const iconButton = createIcon("information", "Clicks to see query details", [], true);
-    const dialog = document.querySelector("#query-dialog");
+    const dialog = document.querySelector("#query-dialog")! as HTMLDialogElement;
 
     // Query labels
-    const allRequired = document.querySelector("#query-all-required");
-    const allForbidden = document.querySelector("#query-all-forbidden");
+    const allRequired = document.getElementById("query-all-required")!;
+    const allForbidden = document.getElementById("query-all-forbidden")!;
     iconButton.addEventListener("click", () => {
         fillDetail("#query-detail-milestone", query.milestone);
         fillDetail("#query-detail-exclude", query.excludedBranches);
@@ -812,24 +815,21 @@ function createQueryDetailsBtn(query) {
 
 /**
  * Creates merge requirement table for queries.
- * @param prLabels
- * @param queries
- * @return {Element}
  */
-function createQueriesTable(prLabels, queries) {
-    const table = document.createElement("TABLE");
+function createQueriesTable(prLabels: {Label: Label}[], queries: ProcessedQuery[]): HTMLTableElement {
+    const table = document.createElement("table");
     table.classList.add("merge-table");
-    const thead = document.createElement("THEAD");
-    const allLabelHeaderRow = document.createElement("TR");
-    const allLabelHeaderCell = document.createElement("TD");
+    const thead = document.createElement("thead");
+    const allLabelHeaderRow = document.createElement("tr");
+    const allLabelHeaderCell = document.createElement("td");
     // Creates all pr labels header.
     allLabelHeaderCell.textContent = "PR's Labels";
     allLabelHeaderCell.colSpan = 3;
     allLabelHeaderRow.appendChild(allLabelHeaderCell);
     thead.appendChild(allLabelHeaderRow);
 
-    const allLabelRow = document.createElement("TR");
-    const allLabelCell = document.createElement("TD");
+    const allLabelRow = document.createElement("tr");
+    const allLabelCell = document.createElement("td");
     allLabelCell.colSpan = 3;
     appendLabelsToContainer(allLabelCell, prLabels.map(label => {
         return label.Label.Name;
@@ -837,16 +837,16 @@ function createQueriesTable(prLabels, queries) {
     allLabelRow.appendChild(allLabelCell);
     thead.appendChild(allLabelRow);
 
-    const tableRow = document.createElement("TR");
-    const col1 = document.createElement("TD");
+    const tableRow = document.createElement("tr");
+    const col1 = document.createElement("td");
     col1.textContent = "Required Labels (Missing)";
-    const col2 = document.createElement("TD");
+    const col2 = document.createElement("td");
     col2.textContent = "Forbidden Labels (Shouldn't have)";
-    const col3 = document.createElement("TD");
+    const col3 = document.createElement("td");
 
-    const body = document.createElement("TBODY");
+    const body = document.createElement("tbody");
     queries.forEach(query => {
-        const row = document.createElement("TR");
+        const row = document.createElement("tr");
         row.appendChild(createMergeLabelCell(query.labels, true));
         row.appendChild(createMergeLabelCell(query.missingLabels));
         row.appendChild(createQueryDetailsBtn(query));
@@ -865,15 +865,11 @@ function createQueriesTable(prLabels, queries) {
 
 /**
  * Creates the merge label requirement status.
- * @param prLabels
- * @param queries
- * @return {Element}
  */
-function createMergeLabelStatus(prLabels, queries) {
-    prLabels = prLabels ? prLabels : [];
-    const statusContainer = document.createElement("DIV");
+function createMergeLabelStatus(prLabels: {Label: Label}[] = [], queries: ProcessedQuery[]): HTMLElement {
+    const statusContainer = document.createElement("div");
     statusContainer.classList.add("status-container");
-    const status = document.createElement("DIV");
+    const status = document.createElement("div");
     statusContainer.appendChild(status);
     if (queries.length > 0) {
         const labelConflict = !hasResolvedLabels(queries[0]);
@@ -884,7 +880,7 @@ function createMergeLabelStatus(prLabels, queries) {
             const iconButton = createIcon("help", "", ["help-icon-button"], true);
             status.appendChild(iconButton);
             // Shows dialog
-            const dialog = document.querySelector("#merge-help-dialog");
+            const dialog = document.querySelector("#merge-help-dialog") as HTMLDialogElement;
             iconButton.addEventListener("click", (event) => {
                 dialog.showModal();
                 event.stopPropagation();
@@ -930,13 +926,11 @@ function createMergeLabelStatus(prLabels, queries) {
 
 /**
  * Creates the merge conflict status.
- * @param mergeConflict
- * @return {Element}
  */
-function createMergeConflictStatus(mergeConflict) {
-    const statusContainer = document.createElement("DIV");
+function createMergeConflictStatus(mergeConflict: boolean): HTMLElement {
+    const statusContainer = document.createElement("div");
     statusContainer.classList.add("status-container");
-    const status = document.createElement("DIV");
+    const status = document.createElement("div");
     if (mergeConflict) {
         status.appendChild(createIcon("error", "", ["status-icon", "failed"]));
         status.appendChild(
@@ -954,14 +948,11 @@ function createMergeConflictStatus(mergeConflict) {
 
 /**
  * Creates a help button on the status.
- * @param {string} title
- * @param {Array<Element>} content
- * @return {Element}
  */
-function createStatusHelp(title, content) {
-    const dialog = document.querySelector("#status-help-dialog");
-    const dialogTitle = dialog.querySelector(".mdl-dialog__title");
-    const dialogContent = dialog.querySelector(".mdl-dialog__content");
+function createStatusHelp(title: string, content: HTMLElement[]): HTMLElement {
+    const dialog = document.querySelector("#status-help-dialog")! as HTMLDialogElement;
+    const dialogTitle = dialog.querySelector(".mdl-dialog__title")!;
+    const dialogContent = dialog.querySelector(".mdl-dialog__content")!;
     const helpIcon = createIcon("help", "", ["help-icon-button"], true);
     helpIcon.addEventListener("click", (event) => {
         dialogTitle.textContent = title;
@@ -980,14 +971,11 @@ function createStatusHelp(title, content) {
 
 /**
  * Creates the branch conflict status.
- * @param pr
- * @param branchConflict
- * @return {Element}
  */
-function createBranchConflictStatus(pr, branchConflict) {
-    const statusContainer = document.createElement("DIV");
+function createBranchConflictStatus(pr: PullRequest, branchConflict: boolean): HTMLElement {
+    const statusContainer = document.createElement("div");
     statusContainer.classList.add("status-container");
-    const status = document.createElement("DIV");
+    const status = document.createElement("div");
     if (branchConflict) {
         status.appendChild(createIcon("error", "", ["status-icon", "failed"]));
         status.appendChild(
@@ -1000,15 +988,12 @@ function createBranchConflictStatus(pr, branchConflict) {
 
 /**
  * Creates the milestone conflict status.
- * @param pr
- * @param queries
- * @param milestoneConflict
- * @return {Element}
  */
-function createMilestoneConflictStatus(pr, queries, milestoneConflict) {
-    const statusContainer = document.createElement("DIV");
+function createMilestoneConflictStatus(pr: PullRequest, queries: ProcessedQuery[],
+                                       milestoneConflict: boolean): HTMLElement {
+    const statusContainer = document.createElement("div");
     statusContainer.classList.add("status-container");
-    const status = document.createElement("DIV");
+    const status = document.createElement("div");
     if (milestoneConflict) {
         status.appendChild(createIcon("error", "", ["status-icon", "failed"]));
         status.appendChild(
@@ -1020,9 +1005,11 @@ function createMilestoneConflictStatus(pr, queries, milestoneConflict) {
 }
 
 
-function createPRCardBody(pr, builds, queries, mergeable, branchConflict, milestoneConflict) {
-    const cardBody = document.createElement("DIV");
-    const title = document.createElement("H3");
+function createPRCardBody(pr: PullRequest, builds: UnifiedContext[], queries: ProcessedQuery[],
+                          mergeable: boolean, branchConflict: boolean,
+                          milestoneConflict: boolean): HTMLElement {
+    const cardBody = document.createElement("div");
+    const title = document.createElement("h3");
     title.textContent = pr.Title;
 
     cardBody.classList.add("mdl-card__supporting-text");
@@ -1039,12 +1026,9 @@ function createPRCardBody(pr, builds, queries, mergeable, branchConflict, milest
 
 /**
  * Compare function that prioritizes jobs which are in failure state.
- * @param a
- * @param b
- * @return {number}
  */
-function compareJobFn(a, b) {
-    const stateToPrio = [];
+function compareJobFn(a: UnifiedContext, b: UnifiedContext): number {
+    const stateToPrio: {[key: string]: number} = {};
     stateToPrio["success"] = stateToPrio["expected"] = 3;
     stateToPrio["aborted"] = 2;
     stateToPrio["pending"] = stateToPrio["triggered"] = 1;
@@ -1056,39 +1040,36 @@ function compareJobFn(a, b) {
 
 /**
  * closestMatchingQueries returns a list of processed TideQueries that match the PR in descending order of likeliness.
- * @param pr
- * @param queries
- * @return {Array}
  */
-function closestMatchingQueries(pr, queries) {
+function closestMatchingQueries(pr: PullRequest, queries: TideQuery[]): ProcessedQuery[] {
     const prLabelsSet = new Set();
     if (pr.Labels && pr.Labels.Nodes) {
         pr.Labels.Nodes.forEach(label => {
             prLabelsSet.add(label.Label.Name);
         });
     }
-    const processedQueries = [];
+    const processedQueries: ProcessedQuery[] = [];
     queries.forEach(query => {
         let score = 0.0;
-        const labels = [];
-        const missingLabels = [];
-        query.labels.sort((a, b) => {
+        const labels: ProcessedLabel[] = [];
+        const missingLabels: ProcessedLabel[] = [];
+        (query.labels || []).sort((a, b) => {
             if (a.length === b.length) {
                 return 0;
             }
             return a.length < b.length ? -1 : 1;
         });
-        query.missingLabels.sort((a, b) => {
+        (query.missingLabels || []).sort((a, b) => {
             if (a.length === b.length) {
                 return 0;
             }
             return a.length < b.length ? -1 : 1;
         });
-        query.labels.forEach(label => {
+        (query.labels || []).forEach(label => {
             labels.push({name: label, own: prLabelsSet.has(label)});
             score += labels[labels.length - 1].own ? 1 : 0;
         });
-        query.missingLabels.forEach(label => {
+        (query.missingLabels || []).forEach(label => {
             missingLabels.push({name: label, own: prLabelsSet.has(label)});
             score += missingLabels[missingLabels.length - 1].own ? 0 : 1;
         });
@@ -1125,7 +1106,7 @@ function closestMatchingQueries(pr, queries) {
                 return q1Included + q2Included;
             }
         }
-        if (pr.Milestone && pr.Milestone.Title && q1.Milestone !== q2.Milestone) {
+        if (pr.Milestone && pr.Milestone.Title && q1.milestone !== q2.milestone) {
             if (q1.milestone && pr.Milestone.Title === q1.milestone) {
                 return -1;
             }
@@ -1143,17 +1124,9 @@ function closestMatchingQueries(pr, queries) {
 
 /**
  * Creates a PR card.
- * @param {Object} pr
- * @param {Array<Object>} builds
- * @param {Array<Object>} queries
- * @param {Array<Object>} tidePools
- * @return {Element}
  */
-function createPRCard(pr, builds = [], queries = [], tidePools = []) {
-    builds = builds ? builds : [];
-    queries = queries ? queries : [];
-    tidePools = tidePools ? tidePools : [];
-    const prCard = document.createElement("DIV");
+function createPRCard(pr: PullRequest, builds: UnifiedContext[] = [], queries: ProcessedQuery[] = [], tidePools: TidePool[] = []): HTMLElement {
+    const prCard = document.createElement("div");
     // jobs need to be sorted from high priority (failure, error) to low
     // priority (success)
     builds.sort(compareJobFn);
@@ -1161,8 +1134,8 @@ function createPRCard(pr, builds = [], queries = [], tidePools = []) {
     const hasMatchingQuery = queries.length > 0;
     const mergeConflict = pr.Mergeable ? pr.Mergeable === "CONFLICTING" : false;
     const branchConflict = !!((pr.BaseRef && pr.BaseRef.Name && hasMatchingQuery) &&
-        ((queries[0].excludedBranches && queries[0].excludedBranches.indexOf(pr.BaseRef.Name) !== -1) ||
-            (queries[0].includedBranches && queries[0].includedBranches.indexOf(pr.BaseRef.Name) === -1)));
+        ((queries[0].excludedBranches && queries[0].excludedBranches!.indexOf(pr.BaseRef.Name) !== -1) ||
+            (queries[0].includedBranches && queries[0].includedBranches!.indexOf(pr.BaseRef.Name) === -1)));
     const milestoneConflict = hasMatchingQuery && queries[0].milestone ? (!pr.Milestone || !pr.Milestone.Title || pr.Milestone.Title !== queries[0].milestone) : false;
     const labelConflict = hasMatchingQuery ? !hasResolvedLabels(queries[0]) : false;
     prCard.appendChild(createPRCardTitle(pr, tidePools, jobStatus(builds), !hasMatchingQuery, labelConflict, mergeConflict, branchConflict, milestoneConflict));
@@ -1173,16 +1146,16 @@ function createPRCard(pr, builds = [], queries = [], tidePools = []) {
 /**
  * Redirect to initiate github login flow.
  */
-function forceGithubLogin() {
+function forceGithubLogin(): void {
     window.location.href = window.location.origin + "/github-login";
 }
 
+type VagueState = "succeeded" | "failed" | "pending" | "unknown";
+
 /**
  * Returns the job status based on its state.
- * @param builds
- * @return {string}
  */
-function jobStatus(builds) {
+function jobStatus(builds: UnifiedContext[]): VagueState {
     if (builds.length === 0) {
         return "unknown";
     }
@@ -1205,20 +1178,16 @@ function jobStatus(builds) {
  * @param query
  * @return {boolean}
  */
-function hasResolvedLabels(query) {
+function hasResolvedLabels(query: ProcessedQuery): boolean {
     return Math.abs(query.score - 1.0) < Number.EPSILON;
 }
 
 /**
  * Returns an icon element.
- * @param {string} iconString icon name
- * @param {string} tooltip tooltip string
- * @param {Array<string>} styles
- * @param {boolean} isButton
- * @return {Element}
  */
-function createIcon(iconString, tooltip = "", styles = [], isButton = false) {
-    const icon = document.createElement("I");
+function createIcon(iconString: string, tooltip?: string, styles?: string[], isButton?: true): HTMLButtonElement;
+function createIcon(iconString: string, tooltip = "", styles: string[] = [], isButton = false): HTMLElement {
+    const icon = document.createElement("i");
     icon.classList.add("icon-button", "material-icons");
     icon.textContent = iconString;
     if (tooltip !== "") {
@@ -1228,7 +1197,7 @@ function createIcon(iconString, tooltip = "", styles = [], isButton = false) {
         icon.classList.add(...styles);
         return icon;
     }
-    const container = document.createElement("BUTTON");
+    const container = document.createElement("button");
     container.appendChild(icon);
     container.classList.add("mdl-button", "mdl-js-button", "mdl-button--icon",
         ...styles);
@@ -1238,18 +1207,15 @@ function createIcon(iconString, tooltip = "", styles = [], isButton = false) {
 
 /**
  * Create a simple message with an icon.
- * @param msg
- * @param icStr
- * @return {HTMLElement}
  */
-function createMessage(msg, icStr) {
-    const el = document.createElement("H3");
+function createMessage(msg: string, icStr?: string): HTMLElement {
+    const el = document.createElement("h3");
     el.textContent = msg;
-    if (icStr !== "") {
+    if (icStr) {
         const ic = createIcon(icStr, "", ["message-icon"]);
         el.appendChild((ic));
     }
-    const msgContainer = document.createElement("DIV");
+    const msgContainer = document.createElement("div");
     msgContainer.appendChild(el);
     msgContainer.classList.add("message");
 
