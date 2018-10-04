@@ -28,14 +28,8 @@ import (
 
 // runProfiling writes coverage profile (&its stdout) by running go test on
 // target package
-func runProfiling(covTargets []string, localArts *LocalArtifacts) {
+func runProfiling(cmdArgs []string, localArts *LocalArtifacts) error {
 	logrus.Info("Starts calc.runProfiling(...)")
-
-	cmdArgs := []string{"test"}
-
-	cmdArgs = append(cmdArgs, covTargets...)
-	cmdArgs = append(cmdArgs, []string{"-covermode=count",
-		"-coverprofile", localArts.ProfilePath()}...)
 
 	cmd := exec.Command("go", cmdArgs...)
 	cmdAsString := fmt.Sprintf("go %s", strings.Join(cmdArgs, " "))
@@ -44,7 +38,7 @@ func runProfiling(covTargets []string, localArts *LocalArtifacts) {
 	goTestCoverStdout, errCmdOutput := cmd.Output()
 
 	if errCmdOutput != nil {
-		logrus.Fatalf("Error running composed shell command: error='%v'; stdout='%s'",
+		return fmt.Errorf("error running composed shell command: error='%v'; stdout='%s'",
 			errCmdOutput, goTestCoverStdout)
 	} else {
 		logrus.Infof("Coverage profile created @ '%s'", localArts.ProfilePath())
@@ -56,10 +50,10 @@ func runProfiling(covTargets []string, localArts *LocalArtifacts) {
 	if err == nil {
 		stdoutFile.Write(goTestCoverStdout)
 	} else {
-		logrus.Infof("Error creating stdout file: %v", err)
+		return fmt.Errorf("error creating stdout file: %v", err)
 	}
 	defer stdoutFile.Close()
 	logrus.Infof("Stdout of test coverage stored in %s", stdoutPath)
 	logrus.Infof("Ends calc.runProfiling(...)")
-	return
+	return nil
 }

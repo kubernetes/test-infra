@@ -72,7 +72,10 @@ func main() {
 		defaultStdoutRedirect,
 	)
 
-	localArtifacts.ProduceProfileFile(*coverageTargetDir)
+	err := localArtifacts.ProduceProfileFile(*coverageTargetDir)
+	if err != nil {
+		logrus.Fatalf("Failed producing profile file: %v", err)
+	}
 
 	logrus.Infoln("Finished running code coverage main")
 }
