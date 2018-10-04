@@ -32,7 +32,10 @@ import (
 )
 
 const (
-	PluginName         = "needs-rebase"
+	// PluginName is the name of this plugin
+	PluginName = "needs-rebase"
+	// NeedsRebaseLabel is a label added to PRs that need to be rebased as
+	// they have merge conflicts with the HEAD of the branch they target
 	NeedsRebaseLabel   = "needs-rebase"
 	needsRebaseMessage = "PR needs rebase."
 )

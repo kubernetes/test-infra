@@ -28,7 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/errorutil"
-	"k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin"
+	needsrebase "k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/plugins/approve"
 	"k8s.io/test-infra/prow/plugins/blockade"
@@ -265,7 +265,7 @@ func validateTideRequirements(configAgent config.Agent, pluginAgent plugins.Plug
 		{plugin: releasenote.PluginName, label: releasenote.ReleaseNoteLabelNeeded, matcher: forbids},
 		{plugin: cherrypickunapproved.PluginName, label: cherrypickunapproved.CpUnapprovedLabel, matcher: forbids},
 		{plugin: blockade.PluginName, label: blockade.BlockedPathsLabel, matcher: forbids},
-		{plugin: plugin.PluginName, label: plugin.NeedsRebaseLabel, matcher: forbids},
+		{plugin: needsrebase.PluginName, label: needsrebase.NeedsRebaseLabel, matcher: forbids},
 	}
 
 	for i := range configs {
@@ -389,9 +389,13 @@ func validateDecoratedJobs(configAgent config.Agent) error {
 func validateNeedsOkToTestLabel(configAgent config.Agent) error {
 	var queryErrors []error
 	for i, query := range configAgent.Config().Tide.Queries {
-		for _, label := range query.MissingLabels {
-			if label == trigger.NeedsOkToTest {
-				queryErrors = append(queryErrors, fmt.Errorf("the tide query at position %d forbids the %q label, which is not recommended", i, trigger.NeedsOkToTest))
+		for _, label := range query.Labels {
+			if label == lgtm.LGTMLabel {
+				for _, label := range query.MissingLabels {
+					if label == trigger.NeedsOkToTest {
+						queryErrors = append(queryErrors, fmt.Errorf("the tide query at position %d forbids the %q label and requires the %q label, which is not recommended; see https://github.com/kubernetes/test-infra/blob/master/prow/cmd/tide/maintainers.md#best-practices for more information", i, trigger.NeedsOkToTest, lgtm.LGTMLabel))
+					}
+				}
 			}
 		}
 	}

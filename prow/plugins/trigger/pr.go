@@ -27,6 +27,8 @@ import (
 )
 
 const (
+	// NeedsOkToTest is a label added to PRs from authors we do not trust;
+	// tests will not run on these PRs until they are marked as trusted
 	NeedsOkToTest = "needs-ok-to-test"
 )
 
