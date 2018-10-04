@@ -2,5 +2,13 @@
   "compilerOptions": {
     "lib": ["dom", "es6", "ScriptHost", "es2015.core", "dom.iterable", "es2016.array.include"],
     "strict": true
-  }
+  },
+  // Bazel doesn't need these, but it prevents other tooling (e.g. VS Code)
+  // from being confused.
+  "exclude": [
+    "bazel-bin",
+    "bazel-out",
+    "bazel-test-infra",
+    "node_modules"
+  ]
 }
