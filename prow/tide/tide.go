@@ -551,45 +551,45 @@ func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []ku
 		if pj.Spec.Type != kube.BatchJob {
 			continue
 		}
-		// If any batch job is pending, return now.
-		if toSimpleState(pj.Status.State) == pendingState {
-			var pending []PullRequest
-			var pendingNums []int
-			for _, pull := range pj.Spec.Refs.Pulls {
-				pending = append(pending, prNums[pull.Number])
-				pendingNums = append(pendingNums, pull.Number)
-			}
-			log.Debugf("no new batch necessary, current batch pending: %v", pendingNums)
-			return nil, pending
-		}
-		// Otherwise, accumulate results.
+		// First validate the batch job's refs.
 		ref := pj.Spec.Refs.String()
 		if _, ok := states[ref]; !ok {
-			states[ref] = &accState{
+			state := &accState{
 				jobStates:  make(map[string]simpleState),
 				validPulls: true,
 			}
 			for _, pull := range pj.Spec.Refs.Pulls {
 				if pr, ok := prNums[pull.Number]; ok && string(pr.HeadRefOID) == pull.SHA {
-					states[ref].prs = append(states[ref].prs, pr)
+					state.prs = append(state.prs, pr)
 				} else if !ok {
-					states[ref].validPulls = false
-					log.WithField("batch", ref).WithFields(pr.logFields()).Debug("batch invalid, PR left pool")
+					state.validPulls = false
+					log.WithField("batch", ref).WithFields(pr.logFields()).Debug("batch job invalid, PR left pool")
 					break
 				} else {
-					states[ref].validPulls = false
-					log.WithField("batch", ref).WithFields(pr.logFields()).Debug("batch invalid, PR HEAD changed")
+					state.validPulls = false
+					log.WithField("batch", ref).WithFields(pr.logFields()).Debug("batch job invalid, PR HEAD changed")
 					break
 				}
 			}
+			states[ref] = state
 		}
 		if !states[ref].validPulls {
 			// The batch contains a PR ref that has changed. Skip it.
 			continue
 		}
+		// Batch job refs are valid. Now check the state...
+		jobState := toSimpleState(pj.Status.State)
+
+		// If a batch job for the pool is pending, return now.
+		if jobState == pendingState {
+			log.Debugf("no new batch necessary, current batch pending: %v", prNumbers(states[ref].prs))
+			return nil, states[ref].prs
+		}
+
+		// Accumulate job states by batch ref.
 		context := pj.Spec.Context
 		if s, ok := states[ref].jobStates[context]; !ok || s == noneState {
-			states[ref].jobStates[context] = toSimpleState(pj.Status.State)
+			states[ref].jobStates[context] = jobState
 		}
 	}
 	for ref, state := range states {

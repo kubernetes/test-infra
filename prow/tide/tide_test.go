@@ -171,6 +171,19 @@ func TestAccumulateBatch(t *testing.T) {
 			pulls:   []pull{{1, "a"}, {2, "b"}},
 			pending: false,
 		},
+		{
+			name:       "pending batch with PR that left pool, successful previous run",
+			presubmits: map[int]sets.String{2: jobSet},
+			pulls:      []pull{{2, "b"}},
+			prowJobs: []prowjob{
+				{job: "foo", state: kube.PendingState, prs: []pull{{1, "a"}}},
+				{job: "foo", state: kube.SuccessState, prs: []pull{{2, "b"}}},
+				{job: "bar", state: kube.SuccessState, prs: []pull{{2, "b"}}},
+				{job: "baz", state: kube.SuccessState, prs: []pull{{2, "b"}}},
+			},
+			pending: false,
+			merges:  []int{2},
+		},
 	}
 	for _, test := range tests {
 		var pulls []PullRequest
