@@ -2117,13 +2117,6 @@ test_groups:
   - configuration_value: Commit
   - configuration_value: infra-commit
 
-# kopeio (contact: @justinsb on github)
-- name: kopeio-kubernetes-e2e-aws
-  gcs_prefix: kopeio-kubernetes-e2e/logs/kubernetes-e2e-aws
-- name: kopeio-kubernetes-e2e-upup-aws-ha
-  gcs_prefix: kopeio-kubernetes-e2e/logs/kubernetes-e2e-upup-aws-ha
-- name: kopeio-kubernetes-e2e-upup-aws
-  gcs_prefix: kopeio-kubernetes-e2e/logs/kubernetes-e2e-upup-aws
 # @luxas' multiarch e2e results
 - name: periodic-multi-platform-kubeadm-gce-amd64
   gcs_prefix: kubernetes-multiarch-e2e-results/logs/kubeadm-luxas-gce-amd64
@@ -4084,15 +4077,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-cos2-k8sstable3-slow
   - name: gke-cos2-k8sstable3-updown
     test_group_name: ci-kubernetes-e2e-gke-cos2-k8sstable3-updown
-
-- name: kopeio
-  dashboard_tab:
-  - name: kopeio-aws
-    test_group_name: kopeio-kubernetes-e2e-aws
-  - name: kopeio-upup-aws-ha
-    test_group_name: kopeio-kubernetes-e2e-upup-aws-ha
-  - name: kopeio-upup-aws
-    test_group_name: kopeio-kubernetes-e2e-upup-aws
 
 - name: google-aws
   dashboard_tab:
