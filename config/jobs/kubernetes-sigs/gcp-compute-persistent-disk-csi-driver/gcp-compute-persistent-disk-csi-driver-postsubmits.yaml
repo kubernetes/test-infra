@@ -1,0 +1,22 @@
+periodics:
+- name: ci-gcp-compute-persistent-disk-csi-driver-kubernetes-integration
+  interval: 24h
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20181001-df2f5324a-master
+      args:
+      - "--repo=sigs.k8s.io/$(REPO_NAME)"
+      - "--root=/go/src"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--clean"
+      - "--timeout=60" # Minutes
+      - "--scenario=execute"
+      - "--" # end bootstrap args, scenario args below
+      - "test/run-k8s-integration.sh"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+    

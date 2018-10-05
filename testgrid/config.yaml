@@ -3226,6 +3226,10 @@ test_groups:
 - name: baiducloud-e2e-conformance-v1.11
   gcs_prefix: k8s-conformance-baiducloud/baiducloud-e2e-conformance-v1.11
 
+# GCP Compute Persistent Disk CSI Driver Test Groups
+- name: ci-gcp-compute-persistent-disk-csi-driver-kubernetes-integration
+  gcs_prefix: kubernetes-jenkins/logs/ci-gcp-compute-persistent-disk-csi-driver-kubernetes-integration
+
 #
 # Start dashboards
 #
@@ -5816,6 +5820,12 @@ dashboards:
   - name: pr-test
     test_group_name: pull-cluster-api-provider-gcp-test
 
+- name: sig-gcp-compute-persistent-disk-csi-driver
+  dashboard_tab:
+  - name: Kubernetes Master Driver Master
+    test_group_name: ci-gcp-compute-persistent-disk-csi-driver-kubernetes-integration
+    description: 'Kubernetes Integration tests for Kubernetes Master branch and Driver Master branch'
+
 - name: sig-cluster-lifecycle-cluster-api-provider-openstack
   dashboard_tab:
   - name: pr-make
@@ -7425,6 +7435,7 @@ dashboard_groups:
   - sig-gcp-master
   - sig-gcp-release-1.11
   - sig-gcp-release-1.10
+  - sig-gcp-compute-persistent-disk-csi-driver
 
 - name: sig-autoscaling
   dashboard_names:
