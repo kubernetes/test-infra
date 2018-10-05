@@ -5366,7 +5366,7 @@ dashboards:
     alert_options:
       alert_mail_to_addresses: balaji.warft@gmail.com, connor.p.d@gmail.com
 
-- name: sig-api-machinery
+- name: sig-api-machinery-gce-gke
   dashboard_tab:
   - name: gce
     test_group_name: ci-kubernetes-e2e-gci-gce
@@ -7254,12 +7254,10 @@ dashboards:
     alert_options:
       alert_mail_to_addresses: roland.wilfer@sap.com
 
-- name: sig-apimachinery-kube-storage-version-migrator
+- name: sig-api-machinery-kube-storage-version-migrator
   dashboard_tab:
   - name: pr-test
     test_group_name: pull-kube-storage-version-migrator-test
-
-
 
 
 #
@@ -7302,6 +7300,8 @@ dashboard_groups:
   - google-soak
   - google-unit
   - google-gke-stackdriver
+  - google-rules_k8s
+  - google-kops-gce
 
 - name: istio
   dashboard_names:
@@ -7322,6 +7322,11 @@ dashboard_groups:
   - presubmits-poseidon
   - presubmits-misc
 
+- name: sig-api-machinery
+  dashboard_names:
+  - sig-api-machinery-gce-gke
+  - sig-api-machinery-kube-storage-version-migrator
+
 - name: sig-cli
   dashboard_names:
   - sig-cli-master
@@ -7336,6 +7341,7 @@ dashboard_groups:
   - sig-cluster-lifecycle-cluster-api-provider-aws
   - sig-cluster-lifecycle-cluster-api-provider-gcp
   - sig-cluster-lifecycle-cluster-api-provider-openstack
+  - sig-cluster-lifecycle-kops
 
 - name: sig-multicluster
   dashboard_names:
@@ -7357,6 +7363,7 @@ dashboard_groups:
   - sig-node-cri-o
   - sig-node-cri
   - sig-node-cri-1.11
+  - sig-node-arm64
 
 - name: sig-release
   dashboard_names:
