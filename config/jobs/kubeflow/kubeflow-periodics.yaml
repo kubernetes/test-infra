@@ -14,7 +14,7 @@ periodics:
         value: kubeflow
       - name: BRANCH_NAME
         value: v0.3-branch
-- name: kubeflow-periodic-e2e
+- name: kubeflow-periodic-master
   interval: 4h
   labels:
     preset-service-account: "true"
