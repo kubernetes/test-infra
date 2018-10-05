@@ -2315,6 +2315,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-multicluster-ingress-test
 - name: kubeflow-periodic-release-branch
   gcs_prefix: kubernetes-jenkins/logs/kubeflow-periodic-release-branch
+- name: kubeflow-periodic-e2e
+  gcs_prefix: kubernetes-jenkins/logs/kubeflow-periodic-e2e
 - name: kubeflow-presubmit
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/kubeflow-presubmit
   num_columns_recent: 30
@@ -5491,6 +5493,9 @@ dashboards:
   - name: kubeflow-periodic-release-branch
     description: Periodic testing of Kubeflow on the latest release branch.
     test_group_name: kubeflow-periodic-release-branch
+  - name: kubeflow-periodic-e2e
+    description: Periodic testing of Kubeflow on the latest master branch.
+    test_group_name: kubeflow-periodic-e2e
   - name: kubeflow-postsubmit
     description: Postsubmit tests for Kubeflow.
     test_group_name: kubeflow-postsubmit
