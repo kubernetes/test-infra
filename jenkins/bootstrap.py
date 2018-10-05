@@ -807,6 +807,12 @@ def setup_logging(path):
     return build_log
 
 
+def get_artifacts_dir():
+    if JOB_ARTIFACTS_ENV in os.environ:
+        return JOB_ARTIFACTS_ENV
+    return os.path.join(os.getenv(WORKSPACE_ENV, os.getcwd()), '_artifacts')
+
+
 def setup_magic_environment(job, call):
     """Set magic environment variables scripts currently expect."""
     home = os.environ[HOME_ENV]
@@ -864,11 +870,12 @@ def setup_magic_environment(job, call):
         os.getenv(WORKSPACE_ENV, os.getcwd()), '_artifacts')
 
     # also make the artifacts dir if it doesn't exist yet
-    if not os.path.isdir(os.environ[JOB_ARTIFACTS_ENV]):
+    if not os.path.isdir(get_artifacts_dir()):
         try:
-            os.makedirs(os.environ[JOB_ARTIFACTS_ENV])
+            os.makedirs(get_artifacts_dir())
         except OSError as exc:
-            logging.info('cannot create $WORKSPACE/_artifacts, continue : %s', exc)
+            logging.info(
+                'cannot create %s, continue : %s', get_artifacts_dir(), exc)
 
     # Try to set SOURCE_DATE_EPOCH based on the commit date of the tip of the
     # tree.
@@ -1121,7 +1128,7 @@ def bootstrap(args):
         logging.info('Gubernator results at %s', gubernator_uri(paths))
         try:
             finish(
-                gsutil, paths, success, os.environ[JOB_ARTIFACTS_ENV],
+                gsutil, paths, success, get_artifacts_dir(),
                 build, version, repos, call
             )
         except subprocess.CalledProcessError:  # Still try to upload build log
