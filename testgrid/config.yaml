@@ -3210,6 +3210,13 @@ test_groups:
 - name: pull-kube-storage-version-migrator-test
   gcs_prefix: kubernetes-jenkins/pr-logs/pull-kube-storage-version-migrator-test
 
+# kubernetes-sigs/structured-merge-diff
+- name: pull-structured-merge-diff-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-structured-merge-diff-test
+  num_columns_recent: 30
+- name: ci-structured-merge-diff-test
+  gcs_prefix: kubernetes-jenkins/logs/ci-structured-merge-diff-test
+
 # DigitalOcean Test Groups
 - name: digitalocean-e2e-conformance
   gcs_prefix: k8s-conformance-digitalocean/e2e-conformance
@@ -7282,6 +7289,13 @@ dashboards:
   dashboard_tab:
   - name: pr-test
     test_group_name: pull-kube-storage-version-migrator-test
+
+- name: sig-apimachinery-structured-merge-diff
+  dashboard_tab:
+  - name: pr-test
+    test_group_name: pull-structured-merge-diff-test
+  - name: ci-test
+    test_group_name: ci-structured-merge-diff-test
 
 
 #
