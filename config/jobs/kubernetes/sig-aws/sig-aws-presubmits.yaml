@@ -14,7 +14,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181002-3e479534e-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -57,7 +57,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181002-3e479534e-1.10
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-1.10
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -99,7 +99,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181002-3e479534e-1.9
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-1.9
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"

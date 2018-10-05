@@ -30,8 +30,9 @@ VERSION_TAG = {
     '1.9': '1.9-v20171018-6ddbad97',
     '1.10': '1.10-v20180221-3655e24ae',
     '1.11': '1.11-v20180504-30872f7f6',
+    '1.12': '1.12-v20180918-e0a9aa399',
     # this is master, feature branches...
-    'default': '1.12-v20180918-e0a9aa399'
+    'default': '1.13-v20181003-42c05e7e9'
 }
 
 
@@ -67,6 +68,7 @@ def try_call(cmds):
     # pylint: disable=bare-except
     except:
         return False
+
 
 def get_git_cache(k8s):
     git = os.path.join(k8s, ".git")
@@ -145,7 +147,6 @@ def main(branch, script, force, on_prow):
             'gcr.io/k8s-testimages/kubekins-test:%s' % tag,
             'bash', '-c', 'cd kubernetes && %s' % script,
         )
-
 
 
 if __name__ == '__main__':
