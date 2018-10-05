@@ -808,9 +808,9 @@ def setup_logging(path):
 
 
 def get_artifacts_dir():
-    if JOB_ARTIFACTS_ENV in os.environ:
-        return JOB_ARTIFACTS_ENV
-    return os.path.join(os.getenv(WORKSPACE_ENV, os.getcwd()), '_artifacts')
+    return os.getenv(
+        JOB_ARTIFACTS_ENV,
+        os.path.join(os.getenv(WORKSPACE_ENV, os.getcwd()), '_artifacts'))
 
 
 def setup_magic_environment(job, call):
