@@ -43,7 +43,6 @@ var (
 		"istio",
 		"google",
 		"kopeio",
-		"tectonic",
 		"redhat",
 		"vmware",
 	}

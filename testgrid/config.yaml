@@ -795,15 +795,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test-1-12
 - name: ci-test-infra-bazel
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-bazel
-# Tectonic (contact: @ethernetdan on GitHub)
-- name: ci-tectonic-e2e-aws
-  gcs_prefix: upstream-jenkins-logs/logs/ci-tectonic-e2e-aws
-- name: ci-tectonic-e2e-etcd
-  gcs_prefix: upstream-jenkins-logs/logs/ci-tectonic-e2e-etcd
-- name: ci-tectonic-e2e-aws-serial
-  gcs_prefix: upstream-jenkins-logs/logs/ci-tectonic-e2e-aws-serial
-- name: ci-tectonic-e2e-etcd-serial
-  gcs_prefix: upstream-jenkins-logs/logs/ci-tectonic-e2e-etcd-serial
 # Ubuntu node e2e tests (contact: @kubernetes/ubuntu-image on github)
 - name: ci-kubernetes-e2enode-ubuntu1-k8sbeta-gkespec
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu1-k8sbeta-gkespec
@@ -4102,17 +4093,6 @@ dashboards:
     test_group_name: kopeio-kubernetes-e2e-upup-aws-ha
   - name: kopeio-upup-aws
     test_group_name: kopeio-kubernetes-e2e-upup-aws
-
-- name: tectonic
-  dashboard_tab:
-  - name: e2e
-    test_group_name: ci-tectonic-e2e-aws
-  - name: e2e-etcd
-    test_group_name: ci-tectonic-e2e-etcd
-  - name: e2e-serial
-    test_group_name: ci-tectonic-e2e-aws-serial
-  - name: e2e-etcd-serial
-    test_group_name: ci-tectonic-e2e-etcd-serial
 
 - name: google-aws
   dashboard_tab:
