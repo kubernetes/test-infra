@@ -6619,14 +6619,6 @@ dashboards:
     description: Runs conformance tests using kubetest against latest kubernetes relase-1.12 with a kubernetes-in-docker cluster
     test_group_name: ci-kubernetes-kind-conformance-latest-1-11
 
-- name: sig-ui
-  dashboard_tab:
-  - name: TODO
-    test_group_name: ci-kubernetes-e2e-gci-gce-slow  # TODO(fejta): fix
-  notifications:
-  - summary: Please configure this skeleton dashboard and remove this notification
-    context_link: https://github.com/kubernetes/test-infra/tree/master/testgrid/config
-
 - name: sig-gcp-master
   dashboard_tab:
   - name: gci-gke
