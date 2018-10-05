@@ -19,6 +19,7 @@ package lgtm
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -48,6 +49,19 @@ func (f *fakeOwnersClient) LoadRepoOwners(org, repo, base string) (repoowners.Re
 type fakeRepoOwners struct {
 	approvers map[string]sets.String
 	reviewers map[string]sets.String
+}
+
+type fakePruner struct {
+	GithubClient  *fakegithub.FakeClient
+	IssueComments []github.IssueComment
+}
+
+func (fp *fakePruner) PruneComments(shouldPrune func(github.IssueComment) bool) {
+	for _, comment := range fp.IssueComments {
+		if shouldPrune(comment) {
+			fp.GithubClient.IssueCommentsDeleted = append(fp.GithubClient.IssueCommentsDeleted, comment.Body)
+		}
+	}
 }
 
 var _ repoowners.RepoOwnerInterface = &fakeRepoOwners{}
@@ -88,8 +102,7 @@ func TestLGTMComment(t *testing.T) {
 		shouldComment bool
 		shouldAssign  bool
 		skipCollab    bool
-		prs           map[int]*github.PullRequest
-		changes       map[int][]github.PullRequestChange
+		storeTreeHash bool
 	}{
 		{
 			name:         "non-lgtm comment",
@@ -99,18 +112,20 @@ func TestLGTMComment(t *testing.T) {
 			shouldToggle: false,
 		},
 		{
-			name:         "lgtm comment by reviewer, no lgtm on pr",
-			body:         "/lgtm",
-			commenter:    "reviewer1",
-			hasLGTM:      false,
-			shouldToggle: true,
+			name:          "lgtm comment by reviewer, no lgtm on pr",
+			body:          "/lgtm",
+			commenter:     "reviewer1",
+			hasLGTM:       false,
+			shouldToggle:  true,
+			shouldComment: true,
 		},
 		{
-			name:         "LGTM comment by reviewer, no lgtm on pr",
-			body:         "/LGTM",
-			commenter:    "reviewer1",
-			hasLGTM:      false,
-			shouldToggle: true,
+			name:          "LGTM comment by reviewer, no lgtm on pr",
+			body:          "/LGTM",
+			commenter:     "reviewer1",
+			hasLGTM:       false,
+			shouldToggle:  true,
+			shouldComment: true,
 		},
 		{
 			name:         "lgtm comment by reviewer, lgtm on pr",
@@ -142,7 +157,7 @@ func TestLGTMComment(t *testing.T) {
 			commenter:     "o",
 			hasLGTM:       false,
 			shouldToggle:  true,
-			shouldComment: false,
+			shouldComment: true,
 			shouldAssign:  true,
 		},
 		{
@@ -151,7 +166,7 @@ func TestLGTMComment(t *testing.T) {
 			commenter:     "o",
 			hasLGTM:       false,
 			shouldToggle:  true,
-			shouldComment: false,
+			shouldComment: true,
 			shouldAssign:  true,
 		},
 		{
@@ -160,7 +175,7 @@ func TestLGTMComment(t *testing.T) {
 			commenter:     "o",
 			hasLGTM:       false,
 			shouldToggle:  true,
-			shouldComment: false,
+			shouldComment: true,
 			shouldAssign:  true,
 		},
 		{
@@ -169,7 +184,7 @@ func TestLGTMComment(t *testing.T) {
 			commenter:     "o",
 			hasLGTM:       false,
 			shouldToggle:  true,
-			shouldComment: false,
+			shouldComment: true,
 			shouldAssign:  true,
 		},
 		{
@@ -221,32 +236,33 @@ func TestLGTMComment(t *testing.T) {
 			shouldToggle: false,
 		},
 		{
-			name:         "lgtm comment, based off OWNERS only",
-			body:         "/lgtm",
-			commenter:    "sam",
-			hasLGTM:      false,
-			shouldToggle: true,
-			skipCollab:   true,
-			prs: map[int]*github.PullRequest{
+			name:          "lgtm comment, based off OWNERS only",
+			body:          "/lgtm",
+			commenter:     "sam",
+			hasLGTM:       false,
+			shouldToggle:  true,
+			shouldComment: true,
+			skipCollab:    true,
+		},
+	}
+	SHA := "0bd3ed50c88cd53a09316bf7a298f900e9371652"
+	for _, tc := range testcases {
+		t.Logf("Running scenario %q", tc.name)
+		fc := &fakegithub.FakeClient{
+			IssueComments: make(map[int][]github.IssueComment),
+			PullRequests: map[int]*github.PullRequest{
 				5: {
 					Base: github.PullRequestBranch{
 						Ref: "master",
 					},
+					MergeSHA: &SHA,
 				},
 			},
-			changes: map[int][]github.PullRequestChange{
+			PullRequestChanges: map[int][]github.PullRequestChange{
 				5: {
 					{Filename: "doc/README.md"},
 				},
 			},
-		},
-	}
-	for _, tc := range testcases {
-		t.Logf("Running scenario %q", tc.name)
-		fc := &fakegithub.FakeClient{
-			IssueComments:      make(map[int][]github.IssueComment),
-			PullRequests:       tc.prs,
-			PullRequestChanges: tc.changes,
 		}
 		e := &github.GenericCommentEvent{
 			Action:      github.GenericCommentActionCreated,
@@ -268,7 +284,15 @@ func TestLGTMComment(t *testing.T) {
 		if tc.skipCollab {
 			pc.Owners.SkipCollaborators = []string{"org/repo"}
 		}
-		if err := handleGenericComment(fc, pc, oc, logrus.WithField("plugin", PluginName), *e); err != nil {
+		pc.Lgtm = append(pc.Lgtm, plugins.Lgtm{
+			Repos:         []string{"org/repo"},
+			StoreTreeHash: true,
+		})
+		fp := &fakePruner{
+			GithubClient:  fc,
+			IssueComments: fc.IssueComments[5],
+		}
+		if err := handleGenericComment(fc, pc, oc, logrus.WithField("plugin", PluginName), fp, *e); err != nil {
 			t.Errorf("didn't expect error from lgtmComment: %v", err)
 			continue
 		}
@@ -381,9 +405,15 @@ func TestLGTMCommentWithLGTMNoti(t *testing.T) {
 			shouldDelete: false,
 		},
 	}
+	SHA := "0bd3ed50c88cd53a09316bf7a298f900e9371652"
 	for _, tc := range testcases {
 		fc := &fakegithub.FakeClient{
 			IssueComments: make(map[int][]github.IssueComment),
+			PullRequests: map[int]*github.PullRequest{
+				5: {
+					MergeSHA: &SHA,
+				},
+			},
 		}
 		e := &github.GenericCommentEvent{
 			Action:      github.GenericCommentActionCreated,
@@ -410,23 +440,27 @@ func TestLGTMCommentWithLGTMNoti(t *testing.T) {
 		fc.IssueComments[5] = append(fc.IssueComments[5], ic)
 		oc := &fakeOwnersClient{approvers: approvers, reviewers: reviewers}
 		pc := &plugins.Configuration{}
-		if err := handleGenericComment(fc, pc, oc, logrus.WithField("plugin", PluginName), *e); err != nil {
+		fp := &fakePruner{
+			GithubClient:  fc,
+			IssueComments: fc.IssueComments[5],
+		}
+		if err := handleGenericComment(fc, pc, oc, logrus.WithField("plugin", PluginName), fp, *e); err != nil {
 			t.Errorf("For case %s, didn't expect error from lgtmComment: %v", tc.name, err)
 			continue
 		}
-		found := false
-		for _, v := range fc.IssueComments[5] {
-			if v.User.Login == botName && v.Body == removeLGTMLabelNoti {
-				found = true
+		deleted := false
+		for _, body := range fc.IssueCommentsDeleted {
+			if body == removeLGTMLabelNoti {
+				deleted = true
 				break
 			}
 		}
 		if tc.shouldDelete {
-			if found {
+			if !deleted {
 				t.Errorf("For case %s, LGTM removed notification should have been deleted", tc.name)
 			}
 		} else {
-			if !found {
+			if deleted {
 				t.Errorf("For case %s, LGTM removed notification should not have been deleted", tc.name)
 			}
 		}
@@ -443,6 +477,7 @@ func TestLGTMFromApproveReview(t *testing.T) {
 		shouldToggle  bool
 		shouldComment bool
 		shouldAssign  bool
+		storeTreeHash bool
 	}{
 		{
 			name:          "Request changes review by reviewer, no lgtm on pr",
@@ -462,11 +497,21 @@ func TestLGTMFromApproveReview(t *testing.T) {
 			shouldAssign: false,
 		},
 		{
-			name:         "Approve review by reviewer, no lgtm on pr",
-			state:        github.ReviewStateApproved,
-			reviewer:     "reviewer1",
-			hasLGTM:      false,
-			shouldToggle: true,
+			name:          "Approve review by reviewer, no lgtm on pr",
+			state:         github.ReviewStateApproved,
+			reviewer:      "reviewer1",
+			hasLGTM:       false,
+			shouldToggle:  true,
+			shouldComment: true,
+			storeTreeHash: true,
+		},
+		{
+			name:          "Approve review by reviewer, no lgtm on pr, do not store tree_hash",
+			state:         github.ReviewStateApproved,
+			reviewer:      "reviewer1",
+			hasLGTM:       false,
+			shouldToggle:  true,
+			shouldComment: false,
 		},
 		{
 			name:         "Approve review by reviewer, lgtm on pr",
@@ -482,8 +527,9 @@ func TestLGTMFromApproveReview(t *testing.T) {
 			reviewer:      "o",
 			hasLGTM:       false,
 			shouldToggle:  true,
-			shouldComment: false,
+			shouldComment: true,
 			shouldAssign:  true,
+			storeTreeHash: true,
 		},
 		{
 			name:          "Request changes review by non-reviewer, no lgtm on pr",
@@ -533,9 +579,16 @@ func TestLGTMFromApproveReview(t *testing.T) {
 			shouldAssign:  false,
 		},
 	}
+	SHA := "0bd3ed50c88cd53a09316bf7a298f900e9371652"
 	for _, tc := range testcases {
 		fc := &fakegithub.FakeClient{
 			IssueComments: make(map[int][]github.IssueComment),
+			LabelsAdded:   []string{},
+			PullRequests: map[int]*github.PullRequest{
+				5: {
+					MergeSHA: &SHA,
+				},
+			},
 		}
 		e := &github.ReviewEvent{
 			Review:      github.Review{Body: tc.body, State: tc.state, HTMLURL: "<url>", User: github.User{Login: tc.reviewer}},
@@ -543,11 +596,19 @@ func TestLGTMFromApproveReview(t *testing.T) {
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 		}
 		if tc.hasLGTM {
-			fc.LabelsAdded = []string{"org/repo#5:" + LGTMLabel}
+			fc.LabelsAdded = append(fc.LabelsAdded, "org/repo#5:"+LGTMLabel)
 		}
 		oc := &fakeOwnersClient{approvers: approvers, reviewers: reviewers}
 		pc := &plugins.Configuration{}
-		if err := handlePullRequestReview(fc, pc, oc, logrus.WithField("plugin", PluginName), *e); err != nil {
+		pc.Lgtm = append(pc.Lgtm, plugins.Lgtm{
+			Repos:         []string{"org/repo"},
+			StoreTreeHash: tc.storeTreeHash,
+		})
+		fp := &fakePruner{
+			GithubClient:  fc,
+			IssueComments: fc.IssueComments[5],
+		}
+		if err := handlePullRequestReview(fc, pc, oc, logrus.WithField("plugin", PluginName), fp, *e); err != nil {
 			t.Errorf("For case %s, didn't expect error from pull request review: %v", tc.name, err)
 			continue
 		}
@@ -592,37 +653,9 @@ func TestLGTMFromApproveReview(t *testing.T) {
 	}
 }
 
-type fakeIssueComment struct {
-	Owner   string
-	Repo    string
-	Number  int
-	Comment string
-}
-
-type githubUnlabeler struct {
-	labelsRemoved    []string
-	issueComments    []fakeIssueComment
-	removeLabelErr   error
-	createCommentErr error
-}
-
-func (c *githubUnlabeler) RemoveLabel(owner, repo string, pr int, label string) error {
-	c.labelsRemoved = append(c.labelsRemoved, label)
-	return c.removeLabelErr
-}
-
-func (c *githubUnlabeler) CreateComment(owner, repo string, number int, comment string) error {
-	ic := fakeIssueComment{
-		Owner:   owner,
-		Repo:    repo,
-		Number:  number,
-		Comment: comment,
-	}
-	c.issueComments = append(c.issueComments, ic)
-	return c.createCommentErr
-}
-
 func TestHandlePullRequest(t *testing.T) {
+	SHA := "0bd3ed50c88cd53a09316bf7a298f900e9371652"
+	treeSHA := "6dcb09b5b57875f334f61aebed695e2e4193db5e"
 	cases := []struct {
 		name             string
 		event            github.PullRequestEvent
@@ -630,8 +663,9 @@ func TestHandlePullRequest(t *testing.T) {
 		createCommentErr error
 
 		err           error
+		labelsAdded   []string
 		labelsRemoved []string
-		issueComments []fakeIssueComment
+		issueComments map[int][]github.IssueComment
 
 		expectNoComments bool
 	}{
@@ -649,15 +683,16 @@ func TestHandlePullRequest(t *testing.T) {
 							Name: "kubernetes",
 						},
 					},
+					MergeSHA: &SHA,
 				},
 			},
 			labelsRemoved: []string{LGTMLabel},
-			issueComments: []fakeIssueComment{
-				{
-					Owner:   "kubernetes",
-					Repo:    "kubernetes",
-					Number:  101,
-					Comment: removeLGTMLabelNoti,
+			issueComments: map[int][]github.IssueComment{
+				101: {
+					{
+						Body: removeLGTMLabelNoti,
+						User: github.User{Login: fakegithub.Bot},
+					},
 				},
 			},
 			expectNoComments: false,
@@ -670,7 +705,7 @@ func TestHandlePullRequest(t *testing.T) {
 			expectNoComments: true,
 		},
 		{
-			name: "pr_synchronize, with RemoveLabel github.LabelNotFound error",
+			name: "pr_synchronize, same tree-hash, keep label",
 			event: github.PullRequestEvent{
 				Action: github.PullRequestActionSynchronize,
 				PullRequest: github.PullRequest{
@@ -683,26 +718,80 @@ func TestHandlePullRequest(t *testing.T) {
 							Name: "kubernetes",
 						},
 					},
+					MergeSHA: &SHA,
 				},
 			},
-			removeLabelErr: &github.LabelNotFound{
-				Owner:  "kubernetes",
-				Repo:   "kubernetes",
-				Number: 101,
-				Label:  LGTMLabel,
+			issueComments: map[int][]github.IssueComment{
+				101: {
+					{
+						Body: fmt.Sprintf(addLGTMLabelNotification, treeSHA),
+						User: github.User{Login: fakegithub.Bot},
+					},
+				},
 			},
-			labelsRemoved:    []string{LGTMLabel},
 			expectNoComments: true,
 		},
+		{
+			name: "pr_synchronize, same tree-hash, keep label, edited comment",
+			event: github.PullRequestEvent{
+				Action: github.PullRequestActionSynchronize,
+				PullRequest: github.PullRequest{
+					Number: 101,
+					Base: github.PullRequestBranch{
+						Repo: github.Repo{
+							Owner: github.User{
+								Login: "kubernetes",
+							},
+							Name: "kubernetes",
+						},
+					},
+					MergeSHA: &SHA,
+				},
+			},
+			labelsRemoved: []string{LGTMLabel},
+			issueComments: map[int][]github.IssueComment{
+				101: {
+					{
+						Body:      fmt.Sprintf(addLGTMLabelNotification, treeSHA),
+						User:      github.User{Login: fakegithub.Bot},
+						CreatedAt: time.Date(1981, 2, 21, 12, 30, 0, 0, time.UTC),
+						UpdatedAt: time.Date(1981, 2, 21, 12, 31, 0, 0, time.UTC),
+					},
+				},
+			},
+			expectNoComments: false,
+		},
 	}
-
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			fakeGitHub := &githubUnlabeler{
-				removeLabelErr:   c.removeLabelErr,
-				createCommentErr: c.createCommentErr,
+			fakeGitHub := &fakegithub.FakeClient{
+				IssueComments: c.issueComments,
+				PullRequests: map[int]*github.PullRequest{
+					101: {
+						Base: github.PullRequestBranch{
+							Ref: "master",
+						},
+						MergeSHA: &SHA,
+					},
+				},
+				Commits:     make(map[string]github.SingleCommit),
+				LabelsAdded: c.labelsAdded,
 			}
-			err := handlePullRequest(fakeGitHub, c.event, logrus.WithField("plugin", PluginName))
+			fakeGitHub.LabelsAdded = append(fakeGitHub.LabelsAdded, "kubernetes/kubernetes#101:lgtm")
+			commit := github.SingleCommit{}
+			commit.Commit.Tree.SHA = treeSHA
+			fakeGitHub.Commits[SHA] = commit
+			pc := &plugins.Configuration{}
+			pc.Lgtm = append(pc.Lgtm, plugins.Lgtm{
+				Repos:         []string{"kubernetes/kubernetes"},
+				StoreTreeHash: true,
+			})
+			err := handlePullRequest(
+				logrus.WithField("plugin", "approve"),
+				fakeGitHub,
+				pc,
+				&c.event,
+			)
 
 			if err != nil && c.err == nil {
 				t.Fatalf("handlePullRequest error: %v", err)
@@ -716,20 +805,116 @@ func TestHandlePullRequest(t *testing.T) {
 				t.Fatalf("handlePullRequest error mismatch: got %v, want %v", got, want)
 			}
 
-			if got, want := len(fakeGitHub.labelsRemoved), len(c.labelsRemoved); got != want {
-				t.Logf("labelsRemoved: got %v, want: %v", fakeGitHub.labelsRemoved, c.labelsRemoved)
+			if got, want := len(fakeGitHub.LabelsRemoved), len(c.labelsRemoved); got != want {
+				t.Logf("labelsRemoved: got %v, want: %v", fakeGitHub.LabelsRemoved, c.labelsRemoved)
 				t.Fatalf("labelsRemoved length mismatch: got %d, want %d", got, want)
 			}
 
-			if got, want := fakeGitHub.issueComments, c.issueComments; !equality.Semantic.DeepEqual(got, want) {
+			if got, want := fakeGitHub.IssueComments, c.issueComments; !equality.Semantic.DeepEqual(got, want) {
 				t.Fatalf("LGTM revmoved notifications mismatch: got %v, want %v", got, want)
 			}
-			if c.expectNoComments && len(fakeGitHub.issueComments) > 0 {
-				t.Fatalf("expected no comments but got %v", fakeGitHub.issueComments)
+			if c.expectNoComments && len(fakeGitHub.IssueCommentsAdded) > 0 {
+				t.Fatalf("expected no comments but got %v", fakeGitHub.IssueCommentsAdded)
 			}
-			if !c.expectNoComments && len(fakeGitHub.issueComments) == 0 {
+			if !c.expectNoComments && len(fakeGitHub.IssueCommentsAdded) == 0 {
 				t.Fatalf("expected comments but got none")
 			}
 		})
+	}
+}
+
+func TestAddTreeHashComment(t *testing.T) {
+	SHA := "0bd3ed50c88cd53a09316bf7a298f900e9371652"
+	treeSHA := "6dcb09b5b57875f334f61aebed695e2e4193db5e"
+	pc := &plugins.Configuration{}
+	pc.Lgtm = append(pc.Lgtm, plugins.Lgtm{
+		Repos:         []string{"kubernetes/kubernetes"},
+		StoreTreeHash: true,
+	})
+	rc := reviewCtx{
+		author:      "alice",
+		issueAuthor: "bob",
+		repo: github.Repo{
+			Owner: github.User{
+				Login: "kubernetes",
+			},
+			Name: "kubernetes",
+		},
+		number: 101,
+		body:   "/lgtm",
+	}
+	fc := &fakegithub.FakeClient{
+		Commits:       make(map[string]github.SingleCommit),
+		IssueComments: map[int][]github.IssueComment{},
+		PullRequests: map[int]*github.PullRequest{
+			101: {
+				Base: github.PullRequestBranch{
+					Ref: "master",
+				},
+				MergeSHA: &SHA,
+			},
+		},
+	}
+	commit := github.SingleCommit{}
+	commit.Commit.Tree.SHA = treeSHA
+	fc.Commits[SHA] = commit
+	handle(true, pc, &fakeOwnersClient{}, rc, fc, logrus.WithField("plugin", PluginName), &fakePruner{})
+	found := false
+	for _, body := range fc.IssueCommentsAdded {
+		if addLGTMLabelNotificationRe.MatchString(body) {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Fatalf("expected tree_hash comment but got none")
+	}
+}
+
+func TestRemoveTreeHashComment(t *testing.T) {
+	treeSHA := "6dcb09b5b57875f334f61aebed695e2e4193db5e"
+	pc := &plugins.Configuration{}
+	pc.Lgtm = append(pc.Lgtm, plugins.Lgtm{
+		Repos:         []string{"kubernetes/kubernetes"},
+		StoreTreeHash: true,
+	})
+	rc := reviewCtx{
+		author:      "alice",
+		issueAuthor: "bob",
+		repo: github.Repo{
+			Owner: github.User{
+				Login: "kubernetes",
+			},
+			Name: "kubernetes",
+		},
+		assignees: []github.User{{Login: "alice"}},
+		number:    101,
+		body:      "/lgtm cancel",
+	}
+	fc := &fakegithub.FakeClient{
+		IssueComments: map[int][]github.IssueComment{
+			101: {
+				{
+					Body: fmt.Sprintf(addLGTMLabelNotification, treeSHA),
+					User: github.User{Login: fakegithub.Bot},
+				},
+			},
+		},
+	}
+	fc.LabelsAdded = []string{"kubernetes/kubernetes#101:" + LGTMLabel}
+	fp := &fakePruner{
+		GithubClient:  fc,
+		IssueComments: fc.IssueComments[101],
+	}
+	handle(false, pc, &fakeOwnersClient{}, rc, fc, logrus.WithField("plugin", PluginName), fp)
+	found := false
+	for _, body := range fc.IssueCommentsDeleted {
+		if addLGTMLabelNotificationRe.MatchString(body) {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Fatalf("expected deleted tree_hash comment but got none")
 	}
 }
