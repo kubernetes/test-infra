@@ -7243,7 +7243,7 @@ dashboards:
   - name: pr-test
     test_group_name: pull-kube-storage-version-migrator-test
 
-- name: sig-apimachinery-structured-merge-diff
+- name: sig-api-machinery-structured-merge-diff
   dashboard_tab:
   - name: pr-test
     test_group_name: pull-structured-merge-diff-test
@@ -7317,6 +7317,7 @@ dashboard_groups:
   dashboard_names:
   - sig-api-machinery-gce-gke
   - sig-api-machinery-kube-storage-version-migrator
+  - sig-api-machinery-structured-merge-diff
 
 - name: sig-cli
   dashboard_names:
