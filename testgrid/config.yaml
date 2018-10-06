@@ -744,7 +744,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-debian-unstable
 - name: ci-kubernetes-e2e-gce-taint-evict
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-taint-evict
-# stable3 (1.8) e2e
 - name: ci-kubernetes-e2e-gce-cos-k8sstable3-alphafeatures
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable3-alphafeatures
 - name: ci-kubernetes-e2e-gce-cos-k8sstable3-ingress
@@ -2600,7 +2599,6 @@ test_groups:
 - name: pull-cloud-provider-vsphere-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-vsphere-test
   num_columns_recent: 20
-# release-1.8
 - name: ci-kubernetes-e2e-gce-cos-k8sstable1-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable1-default
 - name: ci-kubernetes-e2e-gke-cos-k8sstable1-default
@@ -2941,7 +2939,6 @@ test_groups:
   num_failures_to_alert: 1
 - name: istio-periodic-e2e-gke-addon
   gcs_prefix: kubernetes-jenkins/logs/istio-periodic-e2e-gke-addon
-# gke 1.8-1.9; 1.9-1.10; 1.10-1.11 staging upgrade
 # TODO(krzyzacy): don't pin version here, try let the version flow
 - name: ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-master
@@ -5807,19 +5804,19 @@ dashboards:
   - name: gce-cos-1.10-default
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-default
     base_options: include-filter-by-regex=sig-instrumentation
-    description: instrumentation gce e2e tests for 1.9 branch
+    description: instrumentation gce e2e tests for 1.10 branch
   - name: gke-cos-1.10-default
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-default
     base_options: include-filter-by-regex=sig-instrumentation
-    description: instrumentation gke e2e tests for 1.9 branch
+    description: instrumentation gke e2e tests for 1.10 branch
   - name: gce-cos-1.9-default
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-default
     base_options: include-filter-by-regex=sig-instrumentation
-    description: instrumentation gce e2e tests for 1.8 branch
+    description: instrumentation gce e2e tests for 1.9 branch
   - name: gke-cos-1.9-default
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-default
     base_options: include-filter-by-regex=sig-instrumentation
-    description: instrumentation gke e2e tests for 1.8 branch
+    description: instrumentation gke e2e tests for 1.9 branch
   - name: gci-gce-serial
     test_group_name: ci-kubernetes-e2e-gci-gce-serial
     base_options: include-filter-by-regex=sig-instrumentation
