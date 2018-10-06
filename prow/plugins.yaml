@@ -536,6 +536,9 @@ plugins:
   kubernetes-sigs/kube-storage-version-migrator:
   - trigger
 
+  kubernetes-sigs/structured-merge-diff:
+  - trigger
+
   containerd/cri:
   - assign
   - cla
