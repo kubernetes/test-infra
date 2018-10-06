@@ -41,15 +41,15 @@ MAP = {
 }
 
 DASHBOARD_PREFIX = [
+    "google-gce",
+    "google-gke",
     "sig-cluster-lifecycle-all",
     "sig-cluster-lifecycle-kops",
     "sig-cluster-lifecycle-upgrade-skew",
+    "sig-gcp-release-1.",
     "sig-release-1.",
     "sig-release-master-upgrade",
-    "google-gke",
-    "google-gce",
     "sig-scalability-gce",
-    "sig-gcp-release-1.",
 ]
 
 
