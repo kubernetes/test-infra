@@ -365,8 +365,8 @@ func (c *Controller) filterSubpools(raw map[string]*subpool) map[string]*subpool
 	filtered := make(map[string]*subpool)
 	for key, sp := range raw {
 		var err error
-		// TODO: move initialization of 'presubmitContexts' 'cc' and 'sha' to an 'initPool' func.
-		sp.presubmitContexts, err = c.presubmitsByPull(sp)
+		// TODO: move initialization of 'jobRequirements' 'cc' and 'sha' to an 'initPool' func.
+		sp.jobRequirements, err = c.requirementsByPull(sp)
 		if err != nil {
 			sp.log.WithError(err).Error("Determining required presubmit prowjobs.")
 			continue
@@ -422,13 +422,13 @@ func filterPR(ghc githubClient, sp *subpool, pr *PullRequest) bool {
 		return true
 	}
 	// Filter out PRs with unsuccessful contexts unless the only unsuccessful
-	// contexts are pending required prowjobs.
+	// contexts are pending required prowjobs (or their parent).
 	contexts, err := headContexts(log, ghc, pr)
 	if err != nil {
 		log.WithError(err).Error("Getting head contexts.")
 		return true
 	}
-	pjContexts := sp.presubmitContexts[int(pr.Number)]
+	pjContexts := sp.jobRequirements[int(pr.Number)].allowedPendingContexts
 	for _, ctx := range unsuccessfulContexts(contexts, sp.cc, log) {
 		if ctx.State != githubql.StatusStatePending || !pjContexts.Has(string(ctx.Context)) {
 			log.WithField("context", ctx.Context).Debug("filtering out PR as unsuccessful context is not a pending Prow-controlled context")
@@ -529,9 +529,9 @@ func pickSmallestPassingNumber(log *logrus.Entry, ghc githubClient, prs []PullRe
 // accumulateBatch returns a list of PRs that can be merged after passing batch
 // testing, if any exist. It also returns a list of PRs currently being batch
 // tested.
-func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []kube.ProwJob, log *logrus.Entry) ([]PullRequest, []PullRequest) {
+func accumulateBatch(jobRequirements map[int]prJobRequirements, prs []PullRequest, pjs []kube.ProwJob, log *logrus.Entry) ([]PullRequest, []PullRequest) {
 	log.Debug("accumulating PRs for batch testing")
-	if len(presubmits) == 0 {
+	if len(jobRequirements) == 0 {
 		log.Debug("no presubmits configured, no batch can be triggered")
 		return nil, nil
 	}
@@ -548,7 +548,7 @@ func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []ku
 	}
 	states := make(map[string]*accState)
 	for _, pj := range pjs {
-		if pj.Spec.Type != kube.BatchJob {
+		if pj.Spec.Type != kube.BatchJob || pj.Spec.Context == "" {
 			continue
 		}
 		// First validate the batch job's refs.
@@ -596,12 +596,12 @@ func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []ku
 		if !state.validPulls {
 			continue
 		}
-		requiredPresubmits := sets.NewString()
+		requiredContexts := sets.NewString()
 		for _, pr := range state.prs {
-			requiredPresubmits = requiredPresubmits.Union(presubmits[int(pr.Number)])
+			requiredContexts = requiredContexts.Union(jobRequirements[int(pr.Number)].requiredPJContexts)
 		}
 		passesAll := true
-		for _, p := range requiredPresubmits.List() {
+		for p := range requiredContexts {
 			if s, ok := state.jobStates[p]; !ok || s != successState {
 				passesAll = false
 				log.WithField("batch", ref).Debugf("batch invalid, required presubmit %s not passing", p)
@@ -618,7 +618,7 @@ func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []ku
 
 // accumulate returns the supplied PRs sorted into three buckets based on their
 // accumulated state across the presubmits.
-func accumulate(presubmits map[int]sets.String, prs []PullRequest, pjs []kube.ProwJob, log *logrus.Entry) (successes, pendings, nones []PullRequest) {
+func accumulate(jobRequirements map[int]prJobRequirements, prs []PullRequest, pjs []kube.ProwJob, log *logrus.Entry) (successes, pendings, nones []PullRequest) {
 	for _, pr := range prs {
 		// Accumulate the best result for each job.
 		psStates := make(map[string]simpleState)
@@ -642,9 +642,10 @@ func accumulate(presubmits map[int]sets.String, prs []PullRequest, pjs []kube.Pr
 				psStates[name] = successState
 			}
 		}
-		// The overall result is the worst of the best.
+
+		// The overall result is the worst of the best (only consider required jobs).
 		overallState := successState
-		for _, ps := range presubmits[int(pr.Number)].List() {
+		for ps := range jobRequirements[int(pr.Number)].requiredPJContexts {
 			if s, ok := psStates[ps]; !ok {
 				overallState = noneState
 				log.WithFields(pr.logFields()).Debugf("missing presubmit %s", ps)
@@ -806,34 +807,32 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 	return nil
 }
 
-func (c *Controller) trigger(sp subpool, presubmitContexts map[int]sets.String, prs []PullRequest) error {
-	requiredContexts := sets.NewString()
+func (c *Controller) trigger(sp subpool, prs []PullRequest) error {
+	toTrigger := make(map[string]config.Presubmit)
 	for _, pr := range prs {
-		requiredContexts = requiredContexts.Union(presubmitContexts[int(pr.Number)])
+		for jobname, spec := range sp.jobRequirements[int(pr.Number)].toTrigger {
+			toTrigger[jobname] = spec
+		}
 	}
 
-	// TODO(cjwagner): DRY this out when generalizing triggering code (and code to determine required and to-run jobs).
-	for _, ps := range c.ca.Config().Presubmits[sp.org+"/"+sp.repo] {
-		if ps.SkipReport || !ps.RunsAgainstBranch(sp.branch) || !requiredContexts.Has(ps.Context) {
-			continue
-		}
+	refs := kube.Refs{
+		Org:     sp.org,
+		Repo:    sp.repo,
+		BaseRef: sp.branch,
+		BaseSHA: sp.sha,
+	}
+	for _, pr := range prs {
+		refs.Pulls = append(
+			refs.Pulls,
+			kube.Pull{
+				Number: int(pr.Number),
+				Author: string(pr.Author.Login),
+				SHA:    string(pr.HeadRefOID),
+			},
+		)
+	}
 
-		refs := kube.Refs{
-			Org:     sp.org,
-			Repo:    sp.repo,
-			BaseRef: sp.branch,
-			BaseSHA: sp.sha,
-		}
-		for _, pr := range prs {
-			refs.Pulls = append(
-				refs.Pulls,
-				kube.Pull{
-					Number: int(pr.Number),
-					Author: string(pr.Author.Login),
-					SHA:    string(pr.HeadRefOID),
-				},
-			)
-		}
+	for _, ps := range toTrigger {
 		var spec kube.ProwJobSpec
 		if len(prs) == 1 {
 			spec = pjutil.PresubmitSpec(ps, refs)
@@ -861,13 +860,13 @@ func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, n
 		}
 	}
 	// If no presubmits are configured, just wait.
-	if len(sp.presubmitContexts) == 0 {
+	if len(sp.jobRequirements) == 0 {
 		return Wait, nil, nil
 	}
 	// If we have no serial jobs pending or successful, trigger one.
 	if len(nones) > 0 && len(pendings) == 0 && len(successes) == 0 {
 		if ok, pr := pickSmallestPassingNumber(sp.log, c.ghc, nones, sp.cc); ok {
-			return Trigger, []PullRequest{pr}, c.trigger(sp, sp.presubmitContexts, []PullRequest{pr})
+			return Trigger, []PullRequest{pr}, c.trigger(sp, []PullRequest{pr})
 		}
 	}
 	// If we have no batch, trigger one.
@@ -877,7 +876,7 @@ func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, n
 			return Wait, nil, err
 		}
 		if len(batch) > 1 {
-			return TriggerBatch, batch, c.trigger(sp, sp.presubmitContexts, batch)
+			return TriggerBatch, batch, c.trigger(sp, batch)
 		}
 	}
 	return Wait, nil, nil
@@ -953,46 +952,105 @@ func (c *changedFilesAgent) prune() {
 	c.nextChangeCache = make(map[changeCacheKey][]string)
 }
 
-func (c *Controller) presubmitsByPull(sp *subpool) (map[int]sets.String, error) {
-	presubmits := make(map[int]sets.String, len(sp.prs))
-	record := func(num int, context string) {
-		if jobs, ok := presubmits[num]; ok {
-			jobs.Insert(context)
-		} else {
-			presubmits[num] = sets.NewString(context)
+// prJobRequirements describes prowjob requirements for a PR.
+type prJobRequirements struct {
+	// requiredPJContexts are the prowjob associated status contexts that Tide
+	// expects to be green before merge.
+	requiredPJContexts sets.String
+	// allowedPendingContexts are the contexts that are allowed to be pending without
+	// removing the PR from the pool. The PR is not mergeable until these turn green,
+	// but we don't want to thrash the pool when retesting.
+	// This set is a superset of requirePJContexts that includes the contexts of
+	// any parent jobs.
+	allowedPendingContexts sets.String
+	// toTrigger is the set of presubmit jobs to trigger for this PR if we decide
+	// to retest it. This is keyed by job name instead of context since the context
+	// may be unspecified if we are triggering a parent job that doesn't report.
+	toTrigger map[string]config.Presubmit
+}
+
+func (c *Controller) requirementsByPull(sp *subpool) (map[int]prJobRequirements, error) {
+	reqs := make(map[int]prJobRequirements, len(sp.prs))
+	for _, ps := range c.ca.Config().Presubmits[sp.org+"/"+sp.repo] {
+		// Does this job require a context or have kids that might need one?
+		if !ps.AlwaysRun && ps.RunIfChanged == "" {
+			continue // No
+		}
+		err := c.buildPRRequirements(reqs, sp.branch, sp.prs, sets.NewString(), &ps, []config.Presubmit{ps})
+		if err != nil {
+			return nil, err
 		}
 	}
+	return reqs, nil
+}
 
-	for _, ps := range c.ca.Config().Presubmits[sp.org+"/"+sp.repo] {
-		if !ps.ContextRequired() || !ps.RunsAgainstBranch(sp.branch) {
+func (c *Controller) buildPRRequirements(m map[int]prJobRequirements, branch string, prs []PullRequest, contextStack sets.String, rootJob *config.Presubmit, jobs []config.Presubmit) error {
+	record := func(num int, reqJob config.Presubmit) {
+		// Allow this job context and all parent job contexts to be pending.
+		// Ensure that the root job is scheduled to trigger.
+
+		reqs, ok := m[num]
+		if !ok {
+			reqs = prJobRequirements{
+				requiredPJContexts:     sets.NewString(),
+				allowedPendingContexts: sets.NewString(),
+				toTrigger:              make(map[string]config.Presubmit),
+			}
+		}
+		reqs.requiredPJContexts.Insert(reqJob.Context)
+		reqs.allowedPendingContexts.Insert(reqJob.Context)
+		reqs.allowedPendingContexts.Insert(contextStack.List()...)
+		reqs.toTrigger[rootJob.Name] = *rootJob
+
+		m[num] = reqs
+	}
+
+	for _, ps := range jobs {
+		if !ps.RunsAgainstBranch(branch) {
 			continue
 		}
 
-		if ps.AlwaysRun {
-			// Every PR requires this job.
-			for _, pr := range sp.prs {
-				record(int(pr.Number), ps.Context)
-			}
-		} else if ps.RunIfChanged != "" {
-			// This is a run if changed job so we need to check if each PR requires it.
-			for _, pr := range sp.prs {
+		var matchingPRs []PullRequest
+		if ps.RunIfChanged != "" {
+			// This is a run if changed job so we need to check if each PR runs it.
+			for _, pr := range prs {
 				changedFiles, err := c.changedFiles.prChanges(&pr)
 				if err != nil {
-					return nil, err
+					return err
 				}
 				if ps.RunsAgainstChanges(changedFiles) {
-					record(int(pr.Number), ps.Context)
+					// This PR runs this job.
+					matchingPRs = append(matchingPRs, pr)
+
+					if ps.ContextRequired() {
+						record(int(pr.Number), ps)
+					}
+				}
+			}
+		} else {
+			// Every PR runs this job.
+			matchingPRs = prs
+			if ps.ContextRequired() {
+				for _, pr := range prs {
+					record(int(pr.Number), ps)
 				}
 			}
 		}
+
+		if len(matchingPRs) > 0 && len(ps.RunAfterSuccess) > 0 {
+			contexts := contextStack.Union(sets.NewString(ps.Context))
+			if err := c.buildPRRequirements(m, branch, matchingPRs, contexts, rootJob, ps.RunAfterSuccess); err != nil {
+				return err
+			}
+		}
 	}
-	return presubmits, nil
+	return nil
 }
 
 func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, error) {
 	sp.log.Infof("Syncing subpool: %d PRs, %d PJs.", len(sp.prs), len(sp.pjs))
-	successes, pendings, nones := accumulate(sp.presubmitContexts, sp.prs, sp.pjs, sp.log)
-	batchMerge, batchPending := accumulateBatch(sp.presubmitContexts, sp.prs, sp.pjs, sp.log)
+	successes, pendings, nones := accumulate(sp.jobRequirements, sp.prs, sp.pjs, sp.log)
+	batchMerge, batchPending := accumulateBatch(sp.jobRequirements, sp.prs, sp.pjs, sp.log)
 	sp.log.WithFields(logrus.Fields{
 		"prs-passing":   prNumbers(successes),
 		"prs-pending":   prNumbers(pendings),
@@ -1066,8 +1124,8 @@ type subpool struct {
 	pjs []kube.ProwJob
 	prs []PullRequest
 
-	cc                contextChecker
-	presubmitContexts map[int]sets.String
+	cc              contextChecker
+	jobRequirements map[int]prJobRequirements
 }
 
 // dividePool splits up the list of pull requests and prow jobs into a group
