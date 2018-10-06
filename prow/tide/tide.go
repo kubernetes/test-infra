@@ -577,21 +577,16 @@ func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []ku
 			// The batch contains a PR ref that has changed. Skip it.
 			continue
 		}
-		// Batch job refs are valid. Now check the state...
-		jobState := toSimpleState(pj.Status.State)
 
-		// If a batch job for the pool is pending, return now.
-		if jobState == pendingState {
-			log.Debugf("no new batch necessary, current batch pending: %v", prNumbers(states[ref].prs))
-			return nil, states[ref].prs
-		}
-
-		// Accumulate job states by batch ref.
+		// Batch job refs are valid. Now accumulate job states by batch ref.
 		context := pj.Spec.Context
-		if s, ok := states[ref].jobStates[context]; !ok || s == noneState {
+		jobState := toSimpleState(pj.Status.State)
+		// Store the best result for this ref+context.
+		if s, ok := states[ref].jobStates[context]; !ok || s == noneState || jobState == successState {
 			states[ref].jobStates[context] = jobState
 		}
 	}
+	var pendingBatch, successBatch []PullRequest
 	for ref, state := range states {
 		if !state.validPulls {
 			continue
@@ -600,20 +595,26 @@ func accumulateBatch(presubmits map[int]sets.String, prs []PullRequest, pjs []ku
 		for _, pr := range state.prs {
 			requiredPresubmits = requiredPresubmits.Union(presubmits[int(pr.Number)])
 		}
-		passesAll := true
+		overallState := successState
 		for _, p := range requiredPresubmits.List() {
-			if s, ok := state.jobStates[p]; !ok || s != successState {
-				passesAll = false
-				log.WithField("batch", ref).Debugf("batch invalid, required presubmit %s not passing", p)
+			if s, ok := state.jobStates[p]; !ok || s == noneState {
+				overallState = noneState
+				log.WithField("batch", ref).Debugf("batch invalid, required presubmit %s is not passing", p)
 				break
+			} else if s == pendingState && overallState == successState {
+				overallState = pendingState
 			}
 		}
-		if !passesAll {
-			continue
+		switch overallState {
+		// Currently we only consider 1 pending batch and 1 success batch at a time.
+		// If more are somehow present they will be ignored.
+		case pendingState:
+			pendingBatch = state.prs
+		case successState:
+			successBatch = state.prs
 		}
-		return state.prs, nil
 	}
-	return nil, nil
+	return successBatch, pendingBatch
 }
 
 // accumulate returns the supplied PRs sorted into three buckets based on their
