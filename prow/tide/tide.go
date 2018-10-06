@@ -292,7 +292,7 @@ func (c *Controller) Sync() error {
 	if err != nil {
 		return err
 	}
-	filteredPools := c.filterSubpools(rawPools)
+	filteredPools := c.filterSubpools(c.ca.Config().Tide.MaxGoroutines, rawPools)
 
 	// Notify statusController about the new pool.
 	c.sc.Lock()
@@ -303,38 +303,23 @@ func (c *Controller) Sync() error {
 	}
 	c.sc.Unlock()
 
-	// Load the subpools into a channel for use as a work queue.
-	sps := make(chan subpool, len(filteredPools))
-	for _, sp := range filteredPools {
-		sps <- *sp
-	}
-	close(sps)
-
-	goroutines := c.ca.Config().Tide.MaxGoroutines
-	if goroutines > len(sps) {
-		goroutines = len(sps)
-	}
-	wg := &sync.WaitGroup{}
-	wg.Add(goroutines)
-	c.logger.Debugf("Firing up %d goroutines", goroutines)
-	poolChan := make(chan Pool, len(sps))
-	for i := 0; i < goroutines; i++ {
-		go func() {
-			defer wg.Done()
-			for sp := range sps {
-				spBlocks := blocks.GetApplicable(sp.org, sp.repo, sp.branch)
-				if pool, err := c.syncSubpool(sp, spBlocks); err != nil {
-					sp.log.WithError(err).Errorf("Error syncing subpool.")
-				} else {
-					poolChan <- pool
-				}
+	// Sync subpools in parallel.
+	poolChan := make(chan Pool, len(filteredPools))
+	subpoolsInParallel(
+		c.ca.Config().Tide.MaxGoroutines,
+		filteredPools,
+		func(sp *subpool) {
+			spBlocks := blocks.GetApplicable(sp.org, sp.repo, sp.branch)
+			if pool, err := c.syncSubpool(*sp, spBlocks); err != nil {
+				sp.log.WithError(err).Errorf("Error syncing subpool.")
+			} else {
+				poolChan <- pool
 			}
-		}()
-	}
-	wg.Wait()
-	close(poolChan)
+		},
+	)
 
-	pools := make([]Pool, 0, len(sps))
+	close(poolChan)
+	pools := make([]Pool, 0, len(poolChan))
 	for pool := range poolChan {
 		pools = append(pools, pool)
 	}
@@ -358,33 +343,71 @@ func (c *Controller) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func subpoolsInParallel(goroutines int, sps map[string]*subpool, process func(*subpool)) {
+	// Load the subpools into a channel for use as a work queue.
+	queue := make(chan *subpool, len(sps))
+	for _, sp := range sps {
+		queue <- sp
+	}
+	close(queue)
+
+	if goroutines > len(queue) {
+		goroutines = len(queue)
+	}
+	wg := &sync.WaitGroup{}
+	wg.Add(goroutines)
+	for i := 0; i < goroutines; i++ {
+		go func() {
+			defer wg.Done()
+			for sp := range queue {
+				process(sp)
+			}
+		}()
+	}
+	wg.Wait()
+}
+
 // filterSubpools filters non-pool PRs out of the initially identified subpools,
 // deleting any pools that become empty.
 // See filterSubpool for filtering details.
-func (c *Controller) filterSubpools(raw map[string]*subpool) map[string]*subpool {
+func (c *Controller) filterSubpools(goroutines int, raw map[string]*subpool) map[string]*subpool {
 	filtered := make(map[string]*subpool)
-	for key, sp := range raw {
-		var err error
-		// TODO: move initialization of 'presubmitContexts' 'cc' and 'sha' to an 'initPool' func.
-		sp.presubmitContexts, err = c.presubmitsByPull(sp)
-		if err != nil {
-			sp.log.WithError(err).Error("Determining required presubmit prowjobs.")
-			continue
-		}
-		sp.cc, err = c.ca.Config().GetTideContextPolicy(sp.org, sp.repo, sp.branch)
-		if err != nil {
-			sp.log.WithError(err).Error("Setting up context checker.")
-			continue
-		}
+	var lock sync.Mutex
 
-		if spFiltered := filterSubpool(c.ghc, sp); spFiltered != nil {
-			sp.log.WithField("key", key).WithField("pool", spFiltered).Debug("filtered sub-pool")
-			filtered[key] = spFiltered
-		} else {
-			sp.log.WithField("key", key).WithField("pool", spFiltered).Debug("filtering sub-pool removed all PRs")
-		}
-	}
+	subpoolsInParallel(
+		goroutines,
+		raw,
+		func(sp *subpool) {
+			if err := c.initSubpoolData(sp); err != nil {
+				sp.log.WithError(err).Error("Error initializing subpool.")
+				return
+			}
+			key := fmt.Sprintf("%s/%s %s", sp.org, sp.repo, sp.branch)
+			if spFiltered := filterSubpool(c.ghc, sp); spFiltered != nil {
+				sp.log.WithField("key", key).WithField("pool", spFiltered).Debug("filtered sub-pool")
+
+				lock.Lock()
+				filtered[key] = spFiltered
+				lock.Unlock()
+			} else {
+				sp.log.WithField("key", key).WithField("pool", spFiltered).Debug("filtering sub-pool removed all PRs")
+			}
+		},
+	)
 	return filtered
+}
+
+func (c *Controller) initSubpoolData(sp *subpool) error {
+	var err error
+	sp.presubmitContexts, err = c.presubmitsByPull(sp)
+	if err != nil {
+		return fmt.Errorf("error determining required presubmit prowjobs: %v", err)
+	}
+	sp.cc, err = c.ca.Config().GetTideContextPolicy(sp.org, sp.repo, sp.branch)
+	if err != nil {
+		return fmt.Errorf("error setting up context checker: %v", err)
+	}
+	return nil
 }
 
 // filterSubpool filters PRs from an initially identified subpool, returning the
