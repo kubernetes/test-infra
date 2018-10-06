@@ -41,7 +41,7 @@ bq --headless --format=json query -n 1000000 \
   from
     [k8s-gubernator:build.all]
   where
-    timestamp_to_sec(started) > TIMESTAMP_TO_SEC(DATE_ADD(CURRENT_DATE(), -7, 'DAY'))" \
+    timestamp_to_sec(started) > TIMESTAMP_TO_SEC(DATE_ADD(CURRENT_DATE(), -14, 'DAY'))" \
   > triage_builds.json
 
 bq query --allow_large_results --headless -n0 --replace --destination_table k8s-gubernator:temp.triage \
@@ -54,7 +54,7 @@ bq query --allow_large_results --headless -n0 --replace --destination_table k8s-
     [k8s-gubernator:build.all]
   where
     test.failed
-    and timestamp_to_sec(started) > TIMESTAMP_TO_SEC(DATE_ADD(CURRENT_DATE(), -7, 'DAY'))"
+    and timestamp_to_sec(started) > TIMESTAMP_TO_SEC(DATE_ADD(CURRENT_DATE(), -14, 'DAY'))"
 bq extract --compression GZIP --destination_format NEWLINE_DELIMITED_JSON 'k8s-gubernator:temp.triage' gs://k8s-gubernator/triage_tests.json.gz
 gsutil cp gs://k8s-gubernator/triage_tests.json.gz triage_tests.json.gz
 gzip -df triage_tests.json.gz
@@ -75,9 +75,9 @@ gsutil_cp() {
   gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -Z -a public-read "$@"
 }
 
-# gsutil_cp failure_data.json gs://k8s-gubernator/triage/
-# gsutil_cp slices/*.json gs://k8s-gubernator/triage/slices/
-# gsutil_cp failure_data.json "gs://k8s-gubernator/triage/history/$(date -u +%Y%m%d).json"
+gsutil_cp failure_data.json gs://k8s-gubernator/triage/
+gsutil_cp slices/*.json gs://k8s-gubernator/triage/slices/
+gsutil_cp failure_data.json "gs://k8s-gubernator/triage/history/$(date -u +%Y%m%d).json"
 
 stop=$(date +%s)
 elapsed=$(( ${stop} - ${start} ))
