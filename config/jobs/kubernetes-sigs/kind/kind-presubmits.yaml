@@ -116,7 +116,7 @@ presubmits:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
         - "--repo=sigs.k8s.io/kind=$(PULL_REFS)"
-        - "--repo=k8s.io/kubernetes=master=release-1.11"
+        - "--repo=k8s.io/kubernetes=release-1.11"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--scenario=execute"
