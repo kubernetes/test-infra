@@ -14,3 +14,18 @@ periodics:
         value: kubeflow
       - name: BRANCH_NAME
         value: v0.3-branch
+- name: kubeflow-periodic-master
+  interval: 4h
+  labels:
+    preset-service-account: "true"
+  spec:
+    containers:
+    - image: gcr.io/kubeflow-ci/test-worker:latest
+      imagePullPolicy: Always
+      env:
+      - name: REPO_OWNER
+        value: kubeflow
+      - name: REPO_NAME
+        value: kubeflow
+      - name: BRANCH_NAME
+        value: master
