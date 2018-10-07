@@ -347,9 +347,6 @@ tide:
     - kubernetes/kubeadm
     - kubernetes/kubectl
     - kubernetes/kubernetes-anywhere
-    - kubernetes/kubernetes-docs-ja
-    - kubernetes/kubernetes-docs-ko
-    - kubernetes/kubernetes-docs-zh
     - kubernetes/kubernetes-template-project
     - kubernetes/minikube
     - kubernetes/node-problem-detector
@@ -408,8 +405,6 @@ tide:
     kubernetes-sigs/cluster-api: squash
     kubernetes/dashboard: squash
     kubernetes/kube-deploy: squash
-    kubernetes/kubernetes-docs-ja: squash
-    kubernetes/kubernetes-docs-ko: squash
     kubernetes/website: squash
   pr_status_base_url: https://prow.k8s.io/pr
   blocker_label: merge-blocker
