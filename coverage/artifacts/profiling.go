@@ -40,12 +40,11 @@ func runProfiling(cmdArgs []string, localArts *LocalArtifacts) error {
 	if err != nil {
 		return fmt.Errorf("error running composed shell command: error='%v'; stdout='%s'",
 			err, goTestCoverStdout)
-	} else {
-		logrus.Infof("Coverage profile created @ '%s'", localArts.ProfilePath())
-		err = covIo.CreateMarker(localArts.Directory, CovProfileCompletionMarker)
-		if err != nil {
-			return err
-		}
+	}
+	logrus.Infof("Coverage profile created @ '%s'", localArts.ProfilePath())
+	err = covIo.CreateMarker(localArts.Directory, CovProfileCompletionMarker)
+	if err != nil {
+		return err
 	}
 
 	stdoutPath := localArts.CovStdoutPath()

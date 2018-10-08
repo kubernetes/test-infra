@@ -78,12 +78,9 @@ func (arts *LocalArtifacts) ProduceProfileFile(covTargetsStr string) error {
 	logrus.Infof("Making directory (MkdirAll): path=%s", artsDirPath)
 	if err := os.MkdirAll(artsDirPath, 0755); err != nil {
 		return fmt.Errorf("failed os.MkdirAll(path='%s', 0755); err='%v'", artsDirPath, err)
-	} else {
-		logrus.Infof("artifacts dir (path=%s) created successfully", artsDirPath)
 	}
-
+	logrus.Infof("artifacts dir (path=%s) created successfully", artsDirPath)
 	covTargets := composeCmdArgs(covTargetsStr, arts.ProfilePath())
-
 	return runProfiling(covTargets, arts)
 }
 

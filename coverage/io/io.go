@@ -37,15 +37,15 @@ func Write(content *string, destinationDir, fileName string) error {
 	file, err := os.Create(filePath)
 	if err != nil {
 		return fmt.Errorf("error writing file: %v", err)
+	}
+
+	logrus.Infof("Created file:%s", filePath)
+	if content == nil {
+		logrus.Infof("No content to be written to file '%s'", fileName)
 	} else {
-		logrus.Infof("Created file:%s", filePath)
-		if content == nil {
-			logrus.Infof("No content to be written to file '%s'", fileName)
-		} else {
-			_, err = fmt.Fprint(file, *content)
-			if err != nil {
-				return fmt.Errorf("cannot print to file: %v", err)
-			}
+		_, err = fmt.Fprint(file, *content)
+		if err != nil {
+			return fmt.Errorf("cannot print to file: %v", err)
 		}
 	}
 	return file.Close()
