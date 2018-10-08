@@ -46,7 +46,10 @@ For running the conformance tests and obtaining the result files (`b)` and `c)`)
     export KUBERNETES_CONFORMANCE_TEST=y
     # NOTE: see https://github.com/kubernetes/test-infra/pull/9104 for why 
     # we have to supply `--ginkgo.skip`, in the longer term we should not do this.
+    # For < Kubernetes 1.12 use:
     export SKIP="Alpha|Kubectl|\[(Disruptive|Feature:[^\]]+|Flaky)\]"
+    # otherwise use:
+    export SKIP="Alpha|\[(Disruptive|Feature:[^\]]+|Flaky)\]"
     kubetest --provider=skeleton \
              --test \
              --test_args="--ginkgo.focus=\[Conformance\] --ginkgo.skip=${SKIP}" \ 
