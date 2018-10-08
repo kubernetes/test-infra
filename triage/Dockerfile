@@ -20,4 +20,4 @@ RUN curl -o installer https://sdk.cloud.google.com && bash installer --disable-p
 ADD *.py update_summaries.sh /
 
 # Point GOOGLE_APPLICATION_CREDENTIALS at a serviceaccount.json with the necessary permissions.
-CMD ["timeout", "-t", "10800", "/update_summaries.sh"]
+ENTRYPOINT ["timeout", "-t", "10800", "/update_summaries.sh"]

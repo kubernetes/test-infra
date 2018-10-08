@@ -71,6 +71,80 @@ Note that any fields missing from the config will not be managed by peribolos. S
 
 For more details please see GitHub documentation around [edit org], [update org membership], [edit team], [update team membership].
 
+### Initial seed
+
+Peribolos can dump the current configuration to an org. For example you could dump the kubernetes org do the following:
+
+```console
+$ bazel run //prow/cmd/peribolos -- --dump kubernetes-sigs --github-token-path ~/github-token | tee ~/current.yaml # --tokens=0 to disable throttling
+INFO: Analysed target //prow/cmd/peribolos:peribolos (0 packages loaded).
+INFO: Found 1 target...
+Target //prow/cmd/peribolos:peribolos up-to-date:
+  bazel-bin/prow/cmd/peribolos/darwin_amd64_pure_stripped/peribolos
+INFO: Elapsed time: 0.533s, Critical Path: 0.18s
+INFO: 0 processes.
+INFO: Build completed successfully, 1 total action
+INFO: Running command line: bazel-bin/prow/cmd/peribolos/darwin_amd64_pure_stripped/peribolos --dump kubernetes-sigs
+INFO: Build completed successfully, 1 total action
+{"client":"github","component":"peribolos","level":"info","msg":"Throttle(300, 100)","time":"2018-09-28T13:17:42-07:00"}
+{"client":"github","component":"peribolos","level":"info","msg":"GetOrg(kubernetes-sigs)","time":"2018-09-28T13:17:42-07:00"}
+{"client":"github","component":"peribolos","level":"info","msg":"ListOrgMembers(kubernetes-sigs, admin)","time":"2018-09-28T13:17:42-07:00"}
+{"client":"github","component":"peribolos","level":"info","msg":"ListOrgMembers(kubernetes-sigs, member)","time":"2018-09-28T13:17:43-07:00"}
+{"client":"github","component":"peribolos","level":"info","msg":"ListTeams(kubernetes-sigs)","time":"2018-09-28T13:17:45-07:00"}
+{"client":"github","component":"peribolos","level":"info","msg":"ListTeamMembers(2671356, maintainer)","time":"2018-09-28T13:17:46-07:00"}
+{"client":"github","component":"peribolos","level":"info","msg":"ListTeamMembers(2671356, member)","time":"2018-09-28T13:17:46-07:00"}
+...
+admins:
+- calebamiles
+- cblecker
+- etc
+billing_email: secret@example.com
+company: ""
+default_repository_permission: read
+description: Org for Kubernetes SIG-related work
+email: ""
+has_organization_projects: true
+has_repository_projects: true
+location: ""
+members:
+- ameukam
+- amwat
+- ant31
+- etc
+teams:
+  application-admins:
+    description: admin access to application
+    maintainers:
+    - kow3ns
+    members:
+    - mattfarina
+    - prydonius
+    privacy: closed
+  architecture-tracking-admins:
+    description: admin permission for architecture-tracking
+    maintainers:
+    - jdumars
+    - bgrant0607
+    privacy: closed
+  # etc
+```
+
+Open `~/current.yaml` and then delete any metadata you don't want peribolos to manage (such as billing_email, or all the teams, etc).
+
+Apply this config in dry-run mode to see what would happen (hopefully nothing since you just created it):
+
+```console
+$ bazel run //prow/cmd/peribolos -- --config-path ~/current.yaml --github-token-path ~/github-token # --confirm
+
+{"client":"github","component":"peribolos","level":"info","msg":"GetOrg(kubernetes-sigs)","time":"2018-09-27T23:07:13Z"}
+{"client":"github","component":"peribolos","level":"info","msg":"ListOrgInvitations(kubernetes-sigs)","time":"2018-09-27T23:07:13Z"}
+{"client":"github","component":"peribolos","level":"info","msg":"ListOrgMembers(kubernetes-sigs, admin)","time":"2018-09-27T23:07:13Z"}
+{"client":"github","component":"peribolos","level":"info","msg":"ListOrgMembers(kubernetes-sigs, member)","time":"2018-09-27T23:07:14Z"}
+...
+```
+
+
+
 ## Settings
 
 In order to mitigate the chance of applying erroneous configs, the peribolos binary includes a few safety checks:

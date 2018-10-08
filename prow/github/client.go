@@ -84,6 +84,10 @@ var (
 
 const (
 	acceptNone = ""
+	// Abort requests that don't return in 5 mins. Longest graphql calls can
+	// take up to 2 minutes. This limit should ensure all successful calls return
+	// but will prevent an indefinite stall if GitHub never responds.
+	maxRequestTime = 5 * time.Minute
 )
 
 // Force the compiler to check if the TokenSource is implementing correctly.
@@ -201,10 +205,13 @@ func (c *Client) Throttle(hourlyTokens, burst int) {
 //   this client to bypass the cache if it is temporarily unavailable.
 func NewClient(getToken func() []byte, bases ...string) *Client {
 	return &Client{
-		logger:   logrus.WithField("client", "github"),
-		time:     &standardTime{},
-		gqlc:     githubql.NewClient(&http.Client{Transport: &oauth2.Transport{Source: newReloadingTokenSource(getToken)}}),
-		client:   &http.Client{},
+		logger: logrus.WithField("client", "github"),
+		time:   &standardTime{},
+		gqlc: githubql.NewClient(&http.Client{
+			Timeout:   maxRequestTime,
+			Transport: &oauth2.Transport{Source: newReloadingTokenSource(getToken)},
+		}),
+		client:   &http.Client{Timeout: maxRequestTime},
 		bases:    bases,
 		getToken: getToken,
 		dry:      false,
@@ -221,10 +228,13 @@ func NewClient(getToken func() []byte, bases ...string) *Client {
 //   this client to bypass the cache if it is temporarily unavailable.
 func NewDryRunClient(getToken func() []byte, bases ...string) *Client {
 	return &Client{
-		logger:   logrus.WithField("client", "github"),
-		time:     &standardTime{},
-		gqlc:     githubql.NewClient(&http.Client{Transport: &oauth2.Transport{Source: newReloadingTokenSource(getToken)}}),
-		client:   &http.Client{},
+		logger: logrus.WithField("client", "github"),
+		time:   &standardTime{},
+		gqlc: githubql.NewClient(&http.Client{
+			Timeout:   maxRequestTime,
+			Transport: &oauth2.Transport{Source: newReloadingTokenSource(getToken)},
+		}),
+		client:   &http.Client{Timeout: maxRequestTime},
 		bases:    bases,
 		getToken: getToken,
 		dry:      true,
@@ -1004,11 +1014,11 @@ func (c *Client) ListReviews(org, repo string, number int) ([]Review, error) {
 // CreateStatus creates or updates the status of a commit.
 //
 // See https://developer.github.com/v3/repos/statuses/#create-a-status
-func (c *Client) CreateStatus(org, repo, sha string, s Status) error {
-	c.log("CreateStatus", org, repo, sha, s)
+func (c *Client) CreateStatus(org, repo, SHA string, s Status) error {
+	c.log("CreateStatus", org, repo, SHA, s)
 	_, err := c.request(&request{
 		method:      http.MethodPost,
-		path:        fmt.Sprintf("/repos/%s/%s/statuses/%s", org, repo, sha),
+		path:        fmt.Sprintf("/repos/%s/%s/statuses/%s", org, repo, SHA),
 		requestBody: &s,
 		exitCodes:   []int{201},
 	}, nil)
@@ -1077,6 +1087,20 @@ func (c *Client) GetRepos(org string, isUser bool) ([]Repo, error) {
 		return nil, err
 	}
 	return repos, nil
+}
+
+// GetSingleCommit returns a single commit.
+//
+// See https://developer.github.com/v3/repos/#get
+func (c *Client) GetSingleCommit(org, repo, SHA string) (SingleCommit, error) {
+	c.log("GetSingleCommit", org, repo, SHA)
+	var commit SingleCommit
+	_, err := c.request(&request{
+		method:    http.MethodGet,
+		path:      fmt.Sprintf("/repos/%s/%s/commits/%s", org, repo, SHA),
+		exitCodes: []int{200},
+	}, &commit)
+	return commit, err
 }
 
 // GetBranches returns all branches in the repo.
@@ -1671,7 +1695,7 @@ func (e *FileNotFound) Error() string {
 	return fmt.Sprintf("%s/%s/%s @ %s not found", e.org, e.repo, e.path, e.commit)
 }
 
-// GetFile uses GitHub repo contents API to retrieve the content of a file with commit sha.
+// GetFile uses GitHub repo contents API to retrieve the content of a file with commit SHA.
 // If commit is empty, it will grab content from repo's default branch, usually master.
 // TODO(krzyzacy): Support retrieve a directory
 //
@@ -2078,7 +2102,7 @@ func (c *Client) ListIssueEvents(org, repo string, num int) ([]ListedIssueEvent,
 // IsMergeable determines if a PR can be merged.
 // Mergeability is calculated by a background job on GitHub and is not immediately available when
 // new commits are added so the PR must be polled until the background job completes.
-func (c *Client) IsMergeable(org, repo string, number int, sha string) (bool, error) {
+func (c *Client) IsMergeable(org, repo string, number int, SHA string) (bool, error) {
 	backoff := time.Second * 3
 	maxTries := 3
 	for try := 0; try < maxTries; try++ {
@@ -2086,8 +2110,8 @@ func (c *Client) IsMergeable(org, repo string, number int, sha string) (bool, er
 		if err != nil {
 			return false, err
 		}
-		if pr.Head.SHA != sha {
-			return false, fmt.Errorf("pull request head changed while checking mergeability (%s -> %s)", sha, pr.Head.SHA)
+		if pr.Head.SHA != SHA {
+			return false, fmt.Errorf("pull request head changed while checking mergeability (%s -> %s)", SHA, pr.Head.SHA)
 		}
 		if pr.Merged {
 			return false, errors.New("pull request was merged while checking mergeability")

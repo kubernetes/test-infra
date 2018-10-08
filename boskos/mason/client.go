@@ -47,7 +47,7 @@ func (c *Client) Acquire(rtype, state, dest string) (*common.Resource, error) {
 	releaseOnFailure := func() {
 		for _, r := range resourcesToRelease {
 			if err := c.basic.ReleaseOne(r.Name, common.Dirty); err != nil {
-				logrus.WithError(err).Warning("failed to release resource %s", r.Name)
+				logrus.WithError(err).Warningf("failed to release resource %s", r.Name)
 			}
 		}
 	}
@@ -87,7 +87,7 @@ func (c *Client) ReleaseOne(name, dest string) (allErrors error) {
 			logrus.WithError(err).Errorf("cannot parse %s from User Data", LeasedResources)
 			allErrors = multierror.Append(allErrors, err)
 			if err := c.basic.ReleaseOne(name, dest); err != nil {
-				logrus.WithError(err).Warning("failed to release resource %s", name)
+				logrus.WithError(err).Warningf("failed to release resource %s", name)
 				allErrors = multierror.Append(allErrors, err)
 			}
 			return
@@ -96,7 +96,7 @@ func (c *Client) ReleaseOne(name, dest string) (allErrors error) {
 	resourceNames = append(resourceNames, leasedResources...)
 	for _, n := range resourceNames {
 		if err := c.basic.ReleaseOne(n, dest); err != nil {
-			logrus.WithError(err).Warning("failed to release resource %s", n)
+			logrus.WithError(err).Warningf("failed to release resource %s", n)
 			allErrors = multierror.Append(allErrors, err)
 		}
 	}

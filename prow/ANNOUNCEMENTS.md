@@ -1,6 +1,9 @@
 # Announcements
 
 New features added to each component:
+ - *October 3, 2018* `welcome` now supports a configurable message on a per-org,
+   or per-repo basis. Please note that this includes a config schema change that
+   will break previous deployments of this plugin.
  - *August 22, 2018* `spyglass` is a pluggable viewing framework for artifacts
    produced by Prowjobs. See a demo [here](https://prow.k8s.io/view/gcs/kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-large-performance/121)!
  - *July 13, 2018* `blunderbluss` plugin will now support `required_reviewers` in
@@ -25,9 +28,30 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
- - *September 24, 2018* the `splice` component has been deleted following the 
+ - *October 3, 2018* `-github-token-file` replaced with
+    `-github-token-path` for consistency with `branchprotector` and
+    `peribolos` which were already using `-github-token-path`.
+    `-github-token-file` will continue to work through the remainder
+    of 2018, but it will be removed in early 2019.  The following
+    commands are affected: `cherrypicker`, `hook`, `jenkins-operator`,
+    `needs-rebase`, `phony`, `plank`, `refresh`, and `tide`.
+ - *October 1, 2018* bazel is the one official way to build container images.
+    Please use prow/bump.sh and/or bazel run //prow:release-push
+ - *Sep 27, 2018* If you are setting explicit decorate configs, the format has changed from
+    ```yaml
+    - name: job-foo
+      decorate: true
+      timeout: 1
+    ```
+    to
+    ```yaml
+    - name: job-foo
+      decorate: true
+      decoration_config:
+        timeout: 1
+    ```
+ - *September 24, 2018* the `splice` component has been deleted following the
    deletion of mungegithub.
-
  - *July 9, 2018* `milestone` format has changed from
     ```yaml
     milestone:

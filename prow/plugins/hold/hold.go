@@ -98,10 +98,10 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, f
 
 	hasLabel := f(Label, labels)
 	if hasLabel && !needsLabel {
-		log.Info("Removing %q Label for %s/%s#%d", Label, org, repo, e.Number)
+		log.Infof("Removing %q Label for %s/%s#%d", Label, org, repo, e.Number)
 		return gc.RemoveLabel(org, repo, e.Number, Label)
 	} else if !hasLabel && needsLabel {
-		log.Info("Adding %q Label for %s/%s#%d", Label, org, repo, e.Number)
+		log.Infof("Adding %q Label for %s/%s#%d", Label, org, repo, e.Number)
 		return gc.AddLabel(org, repo, e.Number, Label)
 	}
 	return nil

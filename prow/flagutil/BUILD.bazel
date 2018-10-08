@@ -1,10 +1,22 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
-    srcs = ["flagutil.go"],
+    srcs = [
+        "doc.go",
+        "github.go",
+        "kubernetes.go",
+        "strings.go",
+    ],
     importpath = "k8s.io/test-infra/prow/flagutil",
     visibility = ["//visibility:public"],
+    deps = [
+        "//prow/config:go_default_library",
+        "//prow/git:go_default_library",
+        "//prow/github:go_default_library",
+        "//prow/kube:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+    ],
 )
 
 filegroup(
@@ -19,4 +31,11 @@ filegroup(
     srcs = [":package-srcs"],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["kubernetes_test.go"],
+    embed = [":go_default_library"],
+    deps = ["//flagutil:go_default_library"],
 )

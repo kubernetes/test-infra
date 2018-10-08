@@ -69,7 +69,7 @@ type options struct {
 	cookieSecretFile      string
 	redirectHTTPTo        string
 	hiddenOnly            bool
-	runLocal              bool
+	pregeneratedData      string
 	staticFilesLocation   string
 	templateFilesLocation string
 	spyglass              bool
@@ -104,7 +104,7 @@ func gatherOptions() options {
 	flag.StringVar(&o.redirectHTTPTo, "redirect-http-to", "", "Host to redirect http->https to based on x-forwarded-proto == http.")
 	// use when behind an oauth proxy
 	flag.BoolVar(&o.hiddenOnly, "hidden-only", false, "Show only hidden jobs. Useful for serving hidden jobs behind an oauth proxy.")
-	flag.BoolVar(&o.runLocal, "run-local", false, "Serve a local copy of the UI, used by the prow/cmd/deck/runlocal script")
+	flag.StringVar(&o.pregeneratedData, "pregenerated-data", "", "Use API output from another prow instance. Used by the prow/cmd/deck/runlocal script")
 	flag.BoolVar(&o.spyglass, "spyglass", false, "Use Prow built-in job viewing instead of Gubernator")
 	flag.StringVar(&o.staticFilesLocation, "static-files-location", "/static", "Path to the static files")
 	flag.StringVar(&o.templateFilesLocation, "template-files-location", "/template", "Path to the template files")
@@ -148,9 +148,11 @@ func main() {
 
 	indexHandler := handleSimpleTemplate(o.templateFilesLocation, configAgent, "index.html", struct{ SpyglassEnabled bool }{o.spyglass})
 
+	runLocal := o.pregeneratedData != ""
+
 	var fallbackHandler func(http.ResponseWriter, *http.Request)
-	if o.runLocal {
-		localDataHandler := staticHandlerFromDir("./localdata")
+	if runLocal {
+		localDataHandler := staticHandlerFromDir(o.pregeneratedData)
 		fallbackHandler = localDataHandler.ServeHTTP
 	} else {
 		fallbackHandler = http.NotFound
@@ -164,7 +166,7 @@ func main() {
 		indexHandler(w, r)
 	})
 
-	if o.runLocal {
+	if runLocal {
 		mux = localOnlyMain(configAgent, o, mux)
 	} else {
 		mux = prodOnlyMain(configAgent, o, mux)

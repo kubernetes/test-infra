@@ -41,7 +41,7 @@ const (
 )
 
 // errRE matches keywords and glog error messages
-var errRE = regexp.MustCompile(`(?i)timed out|error|fail|fatal|panic|^E\d{4} \d\d:\d\d:\d\d\.\d\d\d]`)
+var errRE = regexp.MustCompile(`(?i)(\s|^)timed out\b|(\s|^)error(s)?\b|(\s|^)fail(ure|ed)?\b|(\s|^)fatal\b|(\s|^)panic\b|^E\d{4} \d\d:\d\d:\d\d\.\d\d\d]`)
 
 func init() {
 	viewers.RegisterViewer(name, viewers.ViewMetadata{
@@ -67,12 +67,18 @@ type LogViewData struct {
 	Operation string `json:"operation,omitempty"`
 }
 
+// LogLines are broken up into SubLines so error terms can be highlighted.
+type SubLine struct {
+	Highlighted bool
+	Text        string
+}
+
 // LogLine represents a line displayed in the LogArtifactView.
 type LogLine struct {
 	Number      int
 	Highlighted bool
 	Skip        bool
-	Text        string
+	SubLines    []SubLine
 }
 
 // LineGroup holds multiple lines that can be collapsed/expanded as a block
@@ -262,10 +268,19 @@ func groupLines(lines []string, logIndex int) []LineGroup {
 	// mark highlighted lines
 	logLines := make([]LogLine, 0, len(lines))
 	for i, text := range lines {
+		subLines := []SubLine{}
+		loc := errRE.FindStringIndex(text)
+		for loc != nil {
+			subLines = append(subLines, SubLine{false, text[:loc[0]]})
+			subLines = append(subLines, SubLine{true, text[loc[0]:loc[1]]})
+			text = text[loc[1]:]
+			loc = errRE.FindStringIndex(text)
+		}
+		subLines = append(subLines, SubLine{false, text})
 		logLines = append(logLines, LogLine{
-			Text:        text,
+			SubLines:    subLines,
 			Number:      i + 1,
-			Highlighted: errRE.MatchString(text),
+			Highlighted: len(subLines) > 1,
 			Skip:        true,
 		})
 	}

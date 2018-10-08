@@ -36,17 +36,34 @@ MAP = {
     "-k8sstable2": "-1.10",
     "-k8sstable3": "-1.9",
 
+    "-1-12": "-1.12",
+    "-1-11": "-1.11",
+    "-1-10": "-1.10",
+    "-1-9": "-1.9",
+
+    "ci-cri-": "",
     "ci-kubernetes-": "",
     "e2e-": "",
+    "periodic-kubernetes-": "periodic-",
 }
 
 DASHBOARD_PREFIX = [
-    "sig-cluster-lifecycle-all"
+    "google-aws",
+    "google-gce",
+    "google-gke",
+    "google-unit",
+    "sig-cluster-lifecycle-all",
     "sig-cluster-lifecycle-kops",
     "sig-cluster-lifecycle-upgrade-skew",
+    "sig-gcp-release-1.",
+    "sig-instrumentation",
     "sig-release-1.",
+    "sig-network-gce",
+    "sig-network-gke",
+    "sig-node-cri-1.",
+    "sig-node-kubelet",
     "sig-release-master-upgrade",
-    "google-gke",
+    "sig-scalability-gce",
 ]
 
 

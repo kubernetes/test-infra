@@ -74,6 +74,16 @@ func InsertPath(path string) error {
 	return os.Setenv("PATH", fmt.Sprintf("%v:%v", path, os.Getenv("PATH")))
 }
 
+// OptionalAbsPath returns an absolute path if the provided path wasn't empty, and otherwise
+// returns an empty string.
+func OptionalAbsPath(path string) (string, error) {
+	if path == "" {
+		return "", nil
+	}
+
+	return filepath.Abs(path)
+}
+
 // JoinURL converts input (gs://foo, "bar") to gs://foo/bar
 func JoinURL(urlPath, path string) (string, error) {
 	u, err := url.Parse(urlPath)

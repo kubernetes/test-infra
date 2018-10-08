@@ -67,6 +67,7 @@ type options struct {
 	dindImage           string
 	down                bool
 	dump                string
+	dumpPreTestLogs     string
 	extract             extractStrategies
 	extractFederation   extractFederationStrategies
 	extractSource       bool
@@ -132,7 +133,8 @@ func defineFlags() *options {
 	flag.StringVar(&o.deployment, "deployment", "bash", "Choices: none/bash/conformance/dind/gke/kops/kubernetes-anywhere/node/local")
 	flag.StringVar(&o.dindImage, "dind-image", "", "The dind image to use to start a cluster. Defaults to the docker tag produced by bazel.")
 	flag.BoolVar(&o.down, "down", false, "If true, tear down the cluster before exiting.")
-	flag.StringVar(&o.dump, "dump", "", "If set, dump cluster logs to this location on test or cluster-up failure")
+	flag.StringVar(&o.dump, "dump", "", "If set, dump bring-up and cluster logs to this location on test or cluster-up failure")
+	flag.StringVar(&o.dumpPreTestLogs, "dump-pre-test-logs", "", "If set, dump cluster logs to this location before running tests")
 	flag.Var(&o.extract, "extract", "Extract k8s binaries from the specified release location")
 	flag.Var(&o.extractFederation, "extract-federation", "Extract federation binaries from the specified release location")
 	flag.BoolVar(&o.extractSource, "extract-source", false, "Extract k8s src together with other tarballs")
@@ -256,6 +258,8 @@ func getDeployer(o *options) (deployer, error) {
 		return noneDeploy{}, nil
 	case "local":
 		return newLocalCluster(), nil
+	case "acsengine":
+		return newAcsEngine()
 	default:
 		return nil, fmt.Errorf("unknown deployment strategy %q", o.deployment)
 	}
@@ -782,7 +786,7 @@ func prepareGcp(o *options) error {
 		go func(c *client.Client, proj string) {
 			for range time.Tick(time.Minute * 5) {
 				if err := c.UpdateOne(p.Name, "busy", nil); err != nil {
-					log.Printf("[Boskos] Update %s failed with %v", p, err)
+					log.Printf("[Boskos] Update of %s failed with %v", p.Name, err)
 				}
 			}
 		}(boskos, p.Name)

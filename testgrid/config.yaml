@@ -271,6 +271,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-canary
 - name: ci-kubernetes-e2e-gce-podutil-canary
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-podutil-canary
+- name: ci-kubernetes-coverage-conformance
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-coverage-conformance
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-device-plugin-gpu
   alert_stale_results_hours: 24
@@ -351,6 +353,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-etcd3
 - name: ci-kubernetes-e2e-gci-gce-flaky
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-flaky
+- name: ci-kubernetes-e2e-gci-gce-single-flake-attempt
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-single-flake-attempt
 - name: ci-kubernetes-e2e-gci-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce
 - name: ci-kubernetes-e2e-gci-gce-scalability
@@ -740,7 +744,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-debian-unstable
 - name: ci-kubernetes-e2e-gce-taint-evict
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-taint-evict
-# stable3 (1.8) e2e
 - name: ci-kubernetes-e2e-gce-cos-k8sstable3-alphafeatures
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable3-alphafeatures
 - name: ci-kubernetes-e2e-gce-cos-k8sstable3-ingress
@@ -791,15 +794,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-bazel-test-1-12
 - name: ci-test-infra-bazel
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-bazel
-# Tectonic (contact: @ethernetdan on GitHub)
-- name: ci-tectonic-e2e-aws
-  gcs_prefix: upstream-jenkins-logs/logs/ci-tectonic-e2e-aws
-- name: ci-tectonic-e2e-etcd
-  gcs_prefix: upstream-jenkins-logs/logs/ci-tectonic-e2e-etcd
-- name: ci-tectonic-e2e-aws-serial
-  gcs_prefix: upstream-jenkins-logs/logs/ci-tectonic-e2e-aws-serial
-- name: ci-tectonic-e2e-etcd-serial
-  gcs_prefix: upstream-jenkins-logs/logs/ci-tectonic-e2e-etcd-serial
 # Ubuntu node e2e tests (contact: @kubernetes/ubuntu-image on github)
 - name: ci-kubernetes-e2enode-ubuntu1-k8sbeta-gkespec
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntu1-k8sbeta-gkespec
@@ -2122,13 +2116,6 @@ test_groups:
   - configuration_value: Commit
   - configuration_value: infra-commit
 
-# kopeio (contact: @justinsb on github)
-- name: kopeio-kubernetes-e2e-aws
-  gcs_prefix: kopeio-kubernetes-e2e/logs/kubernetes-e2e-aws
-- name: kopeio-kubernetes-e2e-upup-aws-ha
-  gcs_prefix: kopeio-kubernetes-e2e/logs/kubernetes-e2e-upup-aws-ha
-- name: kopeio-kubernetes-e2e-upup-aws
-  gcs_prefix: kopeio-kubernetes-e2e/logs/kubernetes-e2e-upup-aws
 # @luxas' multiarch e2e results
 - name: periodic-multi-platform-kubeadm-gce-amd64
   gcs_prefix: kubernetes-multiarch-e2e-results/logs/kubeadm-luxas-gce-amd64
@@ -2148,8 +2135,6 @@ test_groups:
 - name: ci-kubernetes-e2e-kubeadm-gce-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-master
 # kubeadm x-on-y tests
-- name: ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
 - name: ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
 - name: ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
@@ -2165,21 +2150,9 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-upgrade-1-11-1-12
 - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-stable-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-upgrade-stable-master
-# kubeadm network tests
-- name: ci-kubernetes-e2e-kubeadm-gce-ipvs
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-ipvs
-- name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-cni-flannel
-- name: ci-kubernetes-e2e-kubeadm-gce-dns-coredns
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-dns-coredns
 # packages tests
 - name: periodic-kubernetes-e2e-packages-pushed
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-packages-pushed
-# etcd tests
-- name: ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
-- name: ci-kubernetes-e2e-gce-gci-latest-rollback-etcd
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-latest-rollback-etcd
 
 # charts tests
 - name: ci-kubernetes-charts-gce
@@ -2187,6 +2160,8 @@ test_groups:
 # prow jobs
 - name: ci-test-infra-triage
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-triage
+  alert_stale_results_hours: 12
+  num_failures_to_alert: 18 # Runs every 20m. Alert when it's been failing for 6 hours
 - name: ci-kubernetes-e2e-prow-canary
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-prow-canary
 - name: ci-kubernetes-e2e-node-canary
@@ -2197,6 +2172,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/metrics-bigquery
 - name: metrics-kettle
   gcs_prefix: kubernetes-jenkins/logs/metrics-kettle
+  alert_stale_results_hours: 12
+  num_failures_to_alert: 6 # Runs every 1h. Alert when it's been failing for 6 hours
 - name: periodic-features-unfreeze
   gcs_prefix: kubernetes-jenkins/logs/periodic-features-unfreeze
 - name: periodic-kubernetes-bazel-test-master
@@ -2319,8 +2296,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
 - name: ci-kubernetes-multicluster-ingress-test
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-multicluster-ingress-test
-- name: kubeflow-periodic
-  gcs_prefix: kubernetes-jenkins/logs/kubeflow-periodic
+- name: kubeflow-periodic-release-branch
+  gcs_prefix: kubernetes-jenkins/logs/kubeflow-periodic-release-branch
+- name: kubeflow-periodic-master
+  gcs_prefix: kubernetes-jenkins/logs/kubeflow-periodic-master
 - name: kubeflow-presubmit
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/kubeflow-presubmit
   num_columns_recent: 30
@@ -2580,6 +2559,8 @@ test_groups:
   num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
+- name: post-test-infra-push-prow
+  gcs_prefix: kubernetes-jenkins/logs/post-test-infra-push-prow
 - name: pull-test-infra-bazel
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-bazel
   num_columns_recent: 20
@@ -2620,7 +2601,6 @@ test_groups:
 - name: pull-cloud-provider-vsphere-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cloud-provider-vsphere-test
   num_columns_recent: 20
-# release-1.8
 - name: ci-kubernetes-e2e-gce-cos-k8sstable1-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable1-default
 - name: ci-kubernetes-e2e-gke-cos-k8sstable1-default
@@ -2822,18 +2802,22 @@ test_groups:
   gcs_prefix: origin-federated-results/pr-logs/directory/test_pull_request_crio_e2e_rhel
 # Istio Prow Presubmits
 - name: istio-unit-tests-presubmit
-  gcs_prefix: istio-prow/directory/istio-unit-tests
+  gcs_prefix: istio-prow/pr-logs/directory/istio-unit-tests
   days_of_results: 7
 - name: istio-pilot-e2e-envoyv2-v1alpha3-presubmit
-  gcs_prefix: istio-prow/directory/istio-pilot-e2e-envoyv2-v1alpha3
+  gcs_prefix: istio-prow/pr-logs/directory/istio-pilot-e2e-envoyv2-v1alpha3
 - name: istio-e2e-mixer-no_auth-presubmit
-  gcs_prefix: istio-prow/directory/e2e-mixer-no_auth
+  gcs_prefix: istio-prow/pr-logs/directory/e2e-mixer-no_auth
 - name: istio-e2e-dashboard-presubmit
-  gcs_prefix: istio-prow/directory/e2e-dashboard
+  gcs_prefix: istio-prow/pr-logs/directory/e2e-dashboard
 - name: istio-e2e-simpleTests-presubmit
-  gcs_prefix: istio-prow/directory/e2e-simpleTests
+  gcs_prefix: istio-prow/pr-logs/directory/e2e-simpleTests
 - name: istio-e2e-bookInfoTests-envoyv2-v1alpha3-presubmit
-  gcs_prefix: istio-prow/directory/e2e-bookInfoTests-envoyv2-v1alpha3
+  gcs_prefix: istio-prow/pr-logs/directory/e2e-bookInfoTests-envoyv2-v1alpha3
+- name: istio-pilot-e2e-envoyv2-v1alpha3-mcp-presubmit
+  gcs_prefix: istio-prow/pr-logs/directory/istio-pilot-e2e-envoyv2-v1alpha3-mcp
+- name: istio-e2e-mixer-no_auth-mcp-presubmit
+  gcs_prefix: istio-prow/pr-logs/directory/e2e-mixer-no_auth-mcp
 # Istio Prow Postsubmits
 - name: istio-istio-postsubmit
   gcs_prefix: istio-prow/istio-postsubmit
@@ -2856,6 +2840,9 @@ test_groups:
 - name: istio-e2e-dashboard
   gcs_prefix: istio-prow/e2e-dashboard
   num_failures_to_alert: 1
+- name: istio-e2e-simpleTests-mcp
+  gcs_prefix: istio-prow/e2e-simpleTests-mcp
+  num_failures_to_alert: 1
 # Istio CircleCI Presubmits
 - name: istio-circleci-e2e-simple-presubmit
   gcs_prefix: istio-circleci/presubmit/e2e-simple
@@ -2863,6 +2850,7 @@ test_groups:
   gcs_prefix: istio-circleci/presubmit/e2e-dashboard
 - name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2-presubmit
   gcs_prefix: istio-circleci/presubmit/e2e-mixer-noauth-v1alpha3-v2
+  days_of_results: 15
 - name: istio-circleci-e2e-galley-presubmit
   gcs_prefix: istio-circleci/presubmit/e2e-galley
 - name: istio-circleci-e2e-pilot-cloudfoundry-v1alpha3-v2-presubmit
@@ -2880,6 +2868,10 @@ test_groups:
   gcs_prefix: istio-circleci/presubmit/test-integration-local
 - name: istio-circleci-test-integration-kubernetes-presubmit
   gcs_prefix: istio-circleci/presubmit/test-integration-kubernetes
+- name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2-mcp-presubmit
+  gcs_prefix: istio-circleci/presubmit/e2e-mixer-noauth-v1alpha3-v2-mcp
+- name: istio-circleci-e2e-pilot-auth-v1alpha3-v2-mcp-presubmit
+  gcs_prefix: istio-circleci/presubmit/e2e-pilot-auth-v1alpha3-v2-mcp
 # Istio CircleCI Postsubmits
 - name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2
   gcs_prefix: istio-circleci/e2e-mixer-noauth-v1alpha3-v2
@@ -2910,6 +2902,21 @@ test_groups:
   days_of_results: 3
   gcs_prefix: istio-circleci/racetest
   num_failures_to_alert: 5
+- name: istio-circleci-e2e-simple-mcp
+  gcs_prefix: istio-circleci/e2e-simple-mcp
+  num_failures_to_alert: 5
+- name: istio-circleci-e2e-dashboard-mcp
+  gcs_prefix: istio-circleci/e2e-dashboard-mcp
+  num_failures_to_alert: 5
+- name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2-mcp
+  gcs_prefix: istio-circleci/e2e-mixer-noauth-v1alpha3-v2-mcp
+  num_failures_to_alert: 5
+- name: istio-circleci-e2e-pilot-auth-v1alpha3-v2-mcp
+  gcs_prefix: istio-circleci/e2e-pilot-auth-v1alpha3-v2-mcp
+  num_failures_to_alert: 5
+- name: istio-circleci-e2e-pilot-noauth-v1alpha3-v2-mcp
+  gcs_prefix: istio-circleci/e2e-pilot-noauth-v1alpha3-v2-mcp
+  num_failures_to_alert: 5
 # Istio daily releases
 - name: istio-daily-unit-tests
   gcs_prefix: istio-prow/directory/daily-unit-tests
@@ -2934,7 +2941,6 @@ test_groups:
   num_failures_to_alert: 1
 - name: istio-periodic-e2e-gke-addon
   gcs_prefix: kubernetes-jenkins/logs/istio-periodic-e2e-gke-addon
-# gke 1.8-1.9; 1.9-1.10; 1.10-1.11 staging upgrade
 # TODO(krzyzacy): don't pin version here, try let the version flow
 - name: ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-master
@@ -3005,6 +3011,11 @@ test_groups:
   num_columns_recent: 3
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
+- name: ci-kubernetes-gce-conformance-stable-1-12
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-stable-1-12
+  num_columns_recent: 3
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1
 - name: ci-kubernetes-gce-conformance-latest-1-12
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-gce-conformance-latest-1-12
   num_columns_recent: 3
@@ -3044,6 +3055,12 @@ test_groups:
 - name: ci-kubernetes-kind-conformance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kind-conformance
   num_columns_recent: 3
+- name: ci-kubernetes-kind-conformance-latest-1-11
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kind-conformance-latest-1-11
+  num_columns_recent: 3
+- name: ci-kubernetes-kind-conformance-latest-1-12
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kind-conformance-latest-1-12
+  num_columns_recent: 3
 - name: ci-kubernetes-kind-conformance-parallel
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kind-conformance-parallel
   num_columns_recent: 3
@@ -3078,6 +3095,48 @@ test_groups:
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
 
+# cloud-provider-vsphere e2e conformance tests
+- name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance
+  gcs_prefix: k8s-conformance-cloud-provider-vsphere/head/ci/latest
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1
+
+- name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.12
+  gcs_prefix: k8s-conformance-cloud-provider-vsphere/head/release/v1.12
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1
+
+- name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.11
+  gcs_prefix: k8s-conformance-cloud-provider-vsphere/head/release/v1.11
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1
+
+- name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.10
+  gcs_prefix: k8s-conformance-cloud-provider-vsphere/head/release/v1.10
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1
+
+# vsphere e2e conformance tests
+- name: ci-periodic-vsphere-test-e2e-conformance
+  gcs_prefix: k8s-conformance-vsphere/head/ci/latest
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1
+
+- name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.12
+  gcs_prefix: k8s-conformance-vsphere/head/release/v1.12
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1
+
+- name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.11
+  gcs_prefix: k8s-conformance-vsphere/head/release/v1.11
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1
+
+- name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.10
+  gcs_prefix: k8s-conformance-vsphere/head/release/v1.10
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1
+
 # Gardener Test Groups
 - name: ci-gardener-e2e-conformance-aws-v1.10
   gcs_prefix: k8s-conformance-gardener/ci-gardener-e2e-conformance-aws-v1.10
@@ -3104,7 +3163,13 @@ test_groups:
   alert_stale_results_hours: 168
   num_failures_to_alert: 1
 
+- name: pull-k8s-cluster-bundle-bazel-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-k8s-cluster-bundle-bazel-test
+  num_columns_recent: 30
+- name: post-k8s-cluster-bundle-bazel-test
+  gcs_prefix: kubernetes-jenkins/logs/post-k8s-cluster-bundle-bazel-test
 # Add New Testgroups Here
+
 - name: ci-kubernetes-e2e-gce-coredns-performance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-coredns-performance
 - name: ci-kubernetes-e2e-gce-kubedns-performance
@@ -3127,6 +3192,13 @@ test_groups:
 # kube-storage-version-migrator
 - name: pull-kube-storage-version-migrator-test
   gcs_prefix: kubernetes-jenkins/pr-logs/pull-kube-storage-version-migrator-test
+
+# kubernetes-sigs/structured-merge-diff
+- name: pull-structured-merge-diff-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-structured-merge-diff-test
+  num_columns_recent: 30
+- name: ci-structured-merge-diff-test
+  gcs_prefix: kubernetes-jenkins/logs/ci-structured-merge-diff-test
 
 # DigitalOcean Test Groups
 - name: digitalocean-e2e-conformance
@@ -3155,6 +3227,12 @@ dashboards:
   - name: GCE, master (dev)
     description: Runs conformance tests using kubetest against latest kubernetes master CI build on GCE
     test_group_name: ci-kubernetes-gce-conformance
+  - name: GCE, v1.12 (release)
+    description: Runs conformance tests using kubetest against kubernetes release 1.12 stable tag on GCE
+    test_group_name: ci-kubernetes-gce-conformance-stable-1-12
+    # TODO(bentheelder): there's probably a more appropriate alias to alert this to
+    alert_options:
+      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: GCE, v1.12 (dev)
     description: Runs conformance tests using kubetest against kubernetes release 1.12 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-12
@@ -3203,6 +3281,12 @@ dashboards:
   - name: kind, master (dev) [non-serial]
     description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster, skipping [Serial] tests
     test_group_name: ci-kubernetes-kind-conformance-parallel
+  - name: kind, v1.12 (dev)
+    description: Runs conformance tests using kubetest against latest kubernetes relase-1.12 with a kubernetes-in-docker cluster
+    test_group_name: ci-kubernetes-kind-conformance-latest-1-12
+  - name: kind, v1.11 (dev)
+    description: Runs conformance tests using kubetest against latest kubernetes relase-1.12 with a kubernetes-in-docker cluster
+    test_group_name: ci-kubernetes-kind-conformance-latest-1-11
   - name: local-up-cluster, master (dev)
     description: Runs conformance tests using kubetest with hack/local-up-cluster.sh
     test_group_name: ci-kubernetes-local-e2e
@@ -3218,6 +3302,49 @@ dashboards:
   - name: OpenStack, v1.11 (dev)
     description: Runs conformance tests using kubetest against kubernetes from the release-1.11 branch with cloud-provider-openstack
     test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.11
+
+  - name: vSphere-cloud-provider, master (dev)
+    description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-vsphere
+    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: vSphere-cloud-provider, v1.10 (dev)
+    description: Runs conformance tests using kubetest against kubernetes from the release-1.10 branch with cloud-provider-vsphere
+    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.10
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: vSphere-cloud-provider, v1.11 (dev)
+    description: Runs conformance tests using kubetest against kubernetes from the release-1.11 branch with cloud-provider-vsphere
+    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.11
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: vSphere-cloud-provider, v1.12 (dev)
+    description: Runs conformance tests using kubetest against kubernetes from the release-1.12 branch with cloud-provider-vsphere
+    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.12
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+
+  - name: vSphere, master (dev)
+    description: Runs conformance tests using kubetest against latest kubernetes master with the in-tree vSphere cloud provider
+    test_group_name: ci-periodic-vsphere-test-e2e-conformance
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: vSphere, v1.10 (dev)
+    description: Runs conformance tests using kubetest against kubernetes from the release-1.10 branch with the in-tree vSphere cloud provider
+    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.10
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: vSphere, v1.11 (dev)
+    description: Runs conformance tests using kubetest against kubernetes from the release-1.11 branch with the in-tree vSphere cloud provider
+    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.11
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: vSphere, v1.12 (dev)
+    description: Runs conformance tests using kubetest against kubernetes from the release-1.12 branch with the in-tree vSphere cloud provider
+    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.12
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+
   - name: DigitalOcean Master
     description: Runs conformance test using kubetest against latest kubernetes master on DigitalOcean
     test_group_name: digitalocean-e2e-conformance
@@ -3242,6 +3369,12 @@ dashboards:
   - name: GCE, master (dev)
     description: Runs conformance tests using kubetest against latest kubernetes master CI build on GCE
     test_group_name: ci-kubernetes-gce-conformance
+  - name: GCE, v1.12 (release)
+    description: Runs conformance tests using kubetest against kubernetes release 1.12 stable tag on GCE
+    test_group_name: ci-kubernetes-gce-conformance-stable-1-12
+    # TODO(bentheelder): there's probably a more appropriate alias to alert this to
+    alert_options:
+      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: GCE, v1.12 (dev)
     description: Runs conformance tests using kubetest against kubernetes release 1.12 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-12
@@ -3293,12 +3426,54 @@ dashboards:
   - name: kind, master (dev) [non-serial]
     description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster, skipping [Serial] tests
     test_group_name: ci-kubernetes-kind-conformance-parallel
+  - name: kind, v1.12 (dev)
+    description: Runs conformance tests using kubetest against latest kubernetes relase-1.12 with a kubernetes-in-docker cluster
+    test_group_name: ci-kubernetes-kind-conformance-latest-1-12
+  - name: kind, v1.11 (dev)
+    description: Runs conformance tests using kubetest against latest kubernetes relase-1.12 with a kubernetes-in-docker cluster
+    test_group_name: ci-kubernetes-kind-conformance-latest-1-11
   - name: local-up-cluster, master (dev)
     description: Runs conformance tests using kubetest with local-up-cluster
     test_group_name: ci-kubernetes-local-e2e
   - name: local-up-cluster-containerized, master (dev)
     description: Runs conformance tests using kubetest with local-up-cluster (containerized kubelet)
     test_group_name: ci-kubernetes-local-e2e-containerized
+
+- name: conformance-vsphere
+  dashboard_tab:
+  - name: periodic-v1.10
+    description: Runs conformance tests using kubetest against kubernetes v1.10 with in-tree vSphere components
+    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.10
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: periodic-v1.11
+    description: Runs conformance tests using kubetest against kubernetes v1.11 with in-tree vSphere components
+    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.11
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: periodic-v1.12
+    description: Runs conformance tests using kubetest against kubernetes v1.12 with in-tree vSphere components
+    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.12
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+
+- name: vmware-conformance
+  dashboard_tab:
+  - name: periodic-v1.10
+    description: Runs conformance tests using kubetest against kubernetes v1.10 with in-tree vSphere components
+    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.10
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: periodic-v1.11
+    description: Runs conformance tests using kubetest against kubernetes v1.11 with in-tree vSphere components
+    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.11
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: periodic-v1.12
+    description: Runs conformance tests using kubetest against kubernetes v1.12 with in-tree vSphere components
+    test_group_name: ci-periodic-vsphere-test-e2e-conformance-branch-v1.12
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
 
 - name: conformance-cloud-provider-openstack
   dashboard_tab:
@@ -3332,6 +3507,42 @@ dashboards:
     test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.11
     alert_options:
       alert_mail_to_addresses: davanum+testgrid@gmail.com
+
+- name: conformance-cloud-provider-vsphere
+  dashboard_tab:
+  - name: periodic-v1.10
+    description: Runs conformance tests using kubetest against kubernetes v1.10 with cloud-provider-vsphere
+    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.10
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: periodic-v1.11
+    description: Runs conformance tests using kubetest against kubernetes v1.11 with cloud-provider-vsphere
+    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.11
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: periodic-v1.12
+    description: Runs conformance tests using kubetest against kubernetes v1.12 with cloud-provider-vsphere
+    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.12
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+
+- name: vmware-conformance-cloud-provider
+  dashboard_tab:
+  - name: periodic-v1.10
+    description: Runs conformance tests using kubetest against kubernetes v1.10 with cloud-provider-vsphere
+    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.10
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: periodic-v1.11
+    description: Runs conformance tests using kubetest against kubernetes v1.11 with cloud-provider-vsphere
+    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.11
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
+  - name: periodic-v1.12
+    description: Runs conformance tests using kubetest against kubernetes v1.12 with cloud-provider-vsphere
+    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance-branch-v1.12
+    alert_options:
+      alert_mail_to_addresses: cnx+e2e@vmware.com
 
 # Alibaba Cloud Provider Dashboard
 - name: conformance-alibaba-cloud-provider
@@ -3873,39 +4084,19 @@ dashboards:
   - name: gke-cos2-k8sstable3-updown
     test_group_name: ci-kubernetes-e2e-gke-cos2-k8sstable3-updown
 
-- name: kopeio
-  dashboard_tab:
-  - name: kopeio-aws
-    test_group_name: kopeio-kubernetes-e2e-aws
-  - name: kopeio-upup-aws-ha
-    test_group_name: kopeio-kubernetes-e2e-upup-aws-ha
-  - name: kopeio-upup-aws
-    test_group_name: kopeio-kubernetes-e2e-upup-aws
-
-- name: tectonic
-  dashboard_tab:
-  - name: e2e
-    test_group_name: ci-tectonic-e2e-aws
-  - name: e2e-etcd
-    test_group_name: ci-tectonic-e2e-etcd
-  - name: e2e-serial
-    test_group_name: ci-tectonic-e2e-aws-serial
-  - name: e2e-etcd-serial
-    test_group_name: ci-tectonic-e2e-etcd-serial
-
 - name: google-aws
   dashboard_tab:
   - name: kops-aws
     test_group_name: ci-kubernetes-e2e-kops-aws
   - name: kops-aws-canary
     test_group_name: ci-kubernetes-e2e-kops-aws-canary
-  - name: kops-aws-1.8
-    test_group_name: ci-kubernetes-e2e-kops-aws-stable3
   - name: kops-aws-1.9
-    test_group_name: ci-kubernetes-e2e-kops-aws-stable2
+    test_group_name: ci-kubernetes-e2e-kops-aws-stable3
   - name: kops-aws-1.10
+    test_group_name: ci-kubernetes-e2e-kops-aws-stable2
+  - name: kops-aws-1.11
     test_group_name: ci-kubernetes-e2e-kops-aws-stable1
-  - name: kops-aws-beta
+  - name: kops-aws-1.12
     test_group_name: ci-kubernetes-e2e-kops-aws-beta
   - name: kops-aws-updown
     test_group_name: ci-kubernetes-e2e-kops-aws-updown
@@ -3948,6 +4139,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-etcd3
   - name: gci-gce-flaky
     test_group_name: ci-kubernetes-e2e-gci-gce-flaky
+  - name: gci-gce-single-flake-attempt
+    test_group_name: ci-kubernetes-e2e-gci-gce-single-flake-attempt
   - name: gci-gce-ingress
     test_group_name: ci-kubernetes-e2e-gci-gce-ingress
   - name: gce-multizone
@@ -3960,9 +4153,9 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-reboot
   - name: gci-gce-scalability
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability
-  - name: gci-gce-scalability-1.10
+  - name: gci-gce-scalability-1.11
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable1
-  - name: gci-gce-scalability-1.9
+  - name: gci-gce-scalability-1.10
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable2
   - name: gci-gce-ip-alias
     test_group_name: ci-kubernetes-e2e-gci-gce-ip-alias
@@ -4071,77 +4264,77 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100
   - name: gke-canary
     test_group_name: ci-kubernetes-e2e-gke-canary
-  - name: gke-cos-containerd-alpha-cluster
+  - name: cos-containerd-gke-alpha-cluster
     test_group_name: ci-kubernetes-e2e-cos-containerd-gke-alpha-cluster
   # K8S stable3 branch on GKE
-  - name: gci-gke-ingress-1.9
+  - name: gke-cos-1.9-ingress
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-ingress
-  - name: gci-gke-reboot-1.9
+  - name: gke-cos-1.9-reboot
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-reboot
-  - name: gci-gke-1.9
+  - name: gke-cos-1.9-default
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-default
-  - name: gci-gke-serial-1.9
+  - name: gke-cos-1.9-serial
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-serial
-  - name: gci-gke-slow-1.9
+  - name: gke-cos-1.9-slow
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-slow
   # K8S stable2 branch on GKE
-  - name: gci-gke-ingress-1.10
+  - name: gke-cos-1.10-ingress
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-ingress
-  - name: gci-gke-reboot-1.10
+  - name: gke-cos-1.10-reboot
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-reboot
-  - name: gci-gke-1.10
+  - name: gke-cos-1.10-default
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-default
-  - name: gci-gke-serial-1.10
+  - name: gke-cos-1.10-serial
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-serial
-  - name: gci-gke-slow-1.10
+  - name: gke-cos-1.10-slow
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-slow
   # K8S stable1 branch on GKE
-  - name: gci-gke-ingress-1.11
+  - name: gke-cos-1.11-ingress
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-ingress
-  - name: gci-gke-reboot-1.11
+  - name: gke-cos-1.11-reboot
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-reboot
-  - name: gci-gke-1.11
+  - name: gke-cos-1.11-default
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-default
-  - name: gci-gke-serial-1.11
+  - name: gke-cos-1.11-serial
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-serial
-  - name: gci-gke-slow-1.11
+  - name: gke-cos-1.11-slow
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-slow
-  - name: gke-cos-containerd-alpha-cluster-1.11
+  - name: cos-containerd-gke-1.11-alpha-cluster
     test_group_name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-cluster
-  - name: gke-cos-alpha-cluster-1.11
+  - name: cos-gke-1.11-alpha-cluster
     test_group_name: ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-cluster
-  - name: gke-cos-containerd-alpha-cluster-features-1.11
+  - name: cos-containerd-gke-1.11-alpha-cluster-features
     test_group_name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1-alpha-cluster-features
-  - name: gke-cos-alpha-cluster-features-1.11
+  - name: cos-gke-1.11-alpha-cluster-features
     test_group_name: ci-kubernetes-e2e-cos-gke-k8sstable1-alpha-cluster-features
-  - name: gke-cos-containerd-1.11
+  - name: cos-containerd-gke-1.11
     test_group_name: ci-kubernetes-e2e-cos-containerd-gke-k8sstable1
-  - name: gke-cos-containerd-1.12
+  - name: cos-containerd-gke-1.12
     test_group_name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta
-  - name: gke-cos-containerd-alpha-cluster-1.12
+  - name: cos-containerd-gke-1.12-alpha-cluster
     test_group_name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta-alpha-cluster
-  - name: gke-cos-alpha-cluster-1.12
+  - name: cos-gke-1.12-alpha-cluster
     test_group_name: ci-kubernetes-e2e-cos-gke-k8sbeta-alpha-cluster
-  - name: gke-cos-containerd-alpha-cluster-features-1.12
+  - name: cos-containerd-gke-1.12-alpha-cluster-features
     test_group_name: ci-kubernetes-e2e-cos-containerd-gke-k8sbeta-alpha-cluster-features
-  - name: gke-cos-alpha-cluster-features-1.12
+  - name: cos-gke-1.12-alpha-cluster-features
     test_group_name: ci-kubernetes-e2e-cos-gke-k8sbeta-alpha-cluster-features
 
 - name: google-gke-stackdriver
   dashboard_tab:
-  - name: sd-monitoring
+  - name: gke-stackdriver
     test_group_name: ci-kubernetes-e2e-gke-stackdriver
-  - name: sd-logging-gci-latest
+  - name: gke-sd-logging-gci-latest
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-gci-latest
-  - name: sd-logging-ubuntu-latest
+  - name: gke-sd-logging-ubuntu-latest
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-latest
-  - name: sd-logging-gci-beta
+  - name: gke-sd-logging-gci-1.12
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-gci-beta
-  - name: sd-logging-ubuntu-beta
+  - name: gke-sd-logging-ubuntu-1.12
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-beta
-  - name: sd-logging-gci-stable
+  - name: gke-sd-logging-gci-1.11
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-gci-stable1
-  - name: sd-logging-ubuntu-stable
+  - name: gke-sd-logging-ubuntu-1.11
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-stable1
 
 - name: google-gke-staging
@@ -4150,41 +4343,41 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-staging-default-parallel
   - name: gke-staging-default-serial
     test_group_name: ci-kubernetes-e2e-gke-staging-default-serial
-  - name: gke-staging-1.11-parallel
+  - name: gke-staging-1.12-parallel
     test_group_name: ci-kubernetes-e2e-gke-staging-beta-parallel
-  - name: gke-staging-1.11-serial
+  - name: gke-staging-1.12-serial
     test_group_name: ci-kubernetes-e2e-gke-staging-beta-serial
-  - name: gke-staging-1.11-cos-containerd-parallel
+  - name: gke-staging-1.12-cos-containerd-parallel
     test_group_name: ci-kubernetes-e2e-gke-staging-beta-cos-containerd-parallel
-  - name: gke-staging-1.11-cos-containerd-serial
+  - name: gke-staging-1.12-cos-containerd-serial
     test_group_name: ci-kubernetes-e2e-gke-staging-beta-cos-containerd-serial
-  - name: gke-staging-1.10-parallel
+  - name: gke-staging-1.11-parallel
     test_group_name: ci-kubernetes-e2e-gke-staging-stable1-parallel
-  - name: gke-staging-1.10-serial
+  - name: gke-staging-1.11-serial
     test_group_name: ci-kubernetes-e2e-gke-staging-stable1-serial
-  - name: gke-staging-1.9-parallel
+  - name: gke-staging-1.10-parallel
     test_group_name: ci-kubernetes-e2e-gke-staging-stable2-parallel
-  - name: gke-staging-1.9-serial
+  - name: gke-staging-1.10-serial
     test_group_name: ci-kubernetes-e2e-gke-staging-stable2-serial
   - name: gke-staging-latest-device-plugin-gpu
     test_group_name: ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu
   - name: gke-staging-latest-device-plugin-gpu-v100
     test_group_name: ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu-v100
-  - name: gke-staging-1-9-1-10-upgrade-master
+  - name: gke-staging-1.9-1.10-upgrade-master
     test_group_name: ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-master
-  - name: gke-staging-1-9-1-10-upgrade-cluster
+  - name: gke-staging-1.9-1.10-upgrade-cluster
     test_group_name: ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-cluster
-  - name: gke-staging-1-9-1-10-upgrade-cluster-new
+  - name: gke-staging-1.9-1.10-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-cluster-new
-  - name: gke-staging-1-9-1-10-upgrade-regional-cluster
+  - name: gke-staging-1.9-1.10-upgrade-regional-cluster
     test_group_name: ci-kubernetes-e2e-gke-staging-1-9-1-10-upgrade-regional-cluster
-  - name: gke-staging-1-10-1-11-upgrade-master
+  - name: gke-staging-1.10-1.11-upgrade-master
     test_group_name: ci-kubernetes-e2e-gke-staging-1-10-1-11-upgrade-master
-  - name: gke-staging-1-10-1-11-upgrade-cluster
+  - name: gke-staging-1.10-1.11-upgrade-cluster
     test_group_name: ci-kubernetes-e2e-gke-staging-1-10-1-11-upgrade-cluster
-  - name: gke-staging-1-10-1-11-upgrade-cluster-new
+  - name: gke-staging-1.10-1.11-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gke-staging-1-10-1-11-upgrade-cluster-new
-  - name: gke-staging-1-10-1-11-upgrade-regional-cluster
+  - name: gke-staging-1.10-1.11-upgrade-regional-cluster
     test_group_name: ci-kubernetes-e2e-gke-staging-1-10-1-11-upgrade-regional-cluster
 
 - name: google-gke-prod
@@ -4209,17 +4402,17 @@ dashboards:
   dashboard_tab:
   - name: build
     test_group_name: ci-kubernetes-build
-  - name: build-1.8
-    test_group_name: ci-kubernetes-build-stable3
   - name: build-1.9
-    test_group_name: ci-kubernetes-build-stable2
+    test_group_name: ci-kubernetes-build-stable3
   - name: build-1.10
-    test_group_name: ci-kubernetes-build-stable1
+    test_group_name: ci-kubernetes-build-stable2
   - name: build-1.11
+    test_group_name: ci-kubernetes-build-stable1
+  - name: build-1.12
     test_group_name: ci-kubernetes-build-beta
   - name: bazel-build
     test_group_name: ci-kubernetes-bazel-build
-  - name: bazel-build-periodic
+  - name: periodic-bazel-build-master
     test_group_name: periodic-kubernetes-bazel-build-master
   - name: bazel-build-1.9
     test_group_name: ci-kubernetes-bazel-build-1-9
@@ -4231,7 +4424,7 @@ dashboards:
     test_group_name: ci-kubernetes-bazel-build-1-12
   - name: bazel-test
     test_group_name: ci-kubernetes-bazel-test
-  - name: bazel-test-periodic
+  - name: periodic-bazel-test-master
     test_group_name: periodic-kubernetes-bazel-test-master
   - name: bazel-test-1.9
     test_group_name: ci-kubernetes-bazel-test-1-9
@@ -4243,23 +4436,23 @@ dashboards:
     test_group_name: ci-kubernetes-bazel-test-1-12
   - name: integration-master
     test_group_name: ci-kubernetes-integration-master
-  - name: integration-1.8
-    test_group_name: ci-kubernetes-integration-stable3
   - name: integration-1.9
-    test_group_name: ci-kubernetes-integration-stable2
+    test_group_name: ci-kubernetes-integration-stable3
   - name: integration-1.10
-    test_group_name: ci-kubernetes-integration-stable1
+    test_group_name: ci-kubernetes-integration-stable2
   - name: integration-1.11
+    test_group_name: ci-kubernetes-integration-stable1
+  - name: integration-1.12
     test_group_name: ci-kubernetes-integration-beta
   - name: verify-master
     test_group_name: ci-kubernetes-verify-master
-  - name: verify-1.8
-    test_group_name: ci-kubernetes-verify-stable3
   - name: verify-1.9
-    test_group_name: ci-kubernetes-verify-stable2
+    test_group_name: ci-kubernetes-verify-stable3
   - name: verify-1.10
-    test_group_name: ci-kubernetes-verify-stable1
+    test_group_name: ci-kubernetes-verify-stable2
   - name: verify-1.11
+    test_group_name: ci-kubernetes-verify-stable1
+  - name: verify-1.12
     test_group_name: ci-kubernetes-verify-beta
 
 - name: sig-release-master-kubectl-skew
@@ -4334,13 +4527,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
     description: Upgrade master and node, in gke(gci), from 1.10 to master, and run skewed e2e tests
 
-- name: sig-release-etcd-upgrades
-  dashboard_tab:
-  - name: gce-latest
-    test_group_name: ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
-  - name: gce-rollback-latest
-    test_group_name: ci-kubernetes-e2e-gce-gci-latest-rollback-etcd
-
 # These are the master *blocking* tests.  These provide a valid binary signal
 # to gate releases (alpha, beta, official).
 # This list is used by kubernetes/release/lib/releaselib.sh to provide go/nogo
@@ -4373,6 +4559,12 @@ dashboards:
   - name: Conformance - OpenStack
     description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack
     test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
+  - name: Conformance - vSphere-cloud-provider
+    description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-vsphere
+    test_group_name: ci-periodic-cloud-provider-vsphere-test-e2e-conformance
+  - name: Conformance - vSphere
+    description: Runs conformance tests using e2e.test against latest kubernetes master with in-tree vSphere
+    test_group_name: ci-periodic-vsphere-test-e2e-conformance
   - name: gce-device-plugin-gpu
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
   - name: gke-device-plugin-gpu
@@ -4416,7 +4608,7 @@ dashboards:
     test_group_name: ci-kubernetes-verify-beta
   - name: integration-1.12
     test_group_name: ci-kubernetes-integration-beta
-  - name: gce-conformance-latest-1-12
+  - name: gce-conformance-latest-1.12
     description: Runs conformance tests using kubetest against kubernetes release 1.12 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-12
   - name: gce-cos-1.12-default
@@ -4493,19 +4685,19 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet-beta-features
   - name: gci-gce-scalability-1.12
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-beta
-  - name: bazel-build-1-12
+  - name: bazel-build-1.12
     test_group_name: ci-kubernetes-bazel-build-1-12
-  - name: bazel-test-1-12
+  - name: bazel-test-1.12
     test_group_name: ci-kubernetes-bazel-test-1-12
-  - name: periodic-kubernetes-bazel-build-1-12
+  - name: periodic-bazel-build-1.12
     test_group_name: periodic-kubernetes-bazel-build-1-12
-  - name: periodic-kubernetes-bazel-test-1-12
+  - name: periodic-bazel-test-1.12
     test_group_name: periodic-kubernetes-bazel-test-1-12
-  - name: kubeadm-gce-1-11-on-1-12
+  - name: kubeadm-gce-1.11-on-1.12
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
-  - name: kubeadm-gce-1-12
+  - name: kubeadm-gce-1.12
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-12
-  - name: kubeadm-gce-upgrade-1-11-1-12
+  - name: kubeadm-gce-upgrade-1.11-1.12
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-11-1-12
 
 - name: sig-release-1.12-blocking
@@ -4516,7 +4708,7 @@ dashboards:
     test_group_name: ci-kubernetes-verify-beta
   - name: integration-1.12
     test_group_name: ci-kubernetes-integration-beta
-  - name: gce-conformance-latest-1-12
+  - name: gce-conformance-latest-1.12
     description: Runs conformance tests using kubetest against kubernetes release 1.12 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-12
   - name: gce-cos-1.12-default
@@ -4553,17 +4745,17 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet-beta
   - name: gci-gce-scalability-1.12
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-beta
-  - name: bazel-build-1-12
+  - name: bazel-build-1.12
     test_group_name: ci-kubernetes-bazel-build-1-12
-  - name: bazel-test-1-12
+  - name: bazel-test-1.12
     test_group_name: ci-kubernetes-bazel-test-1-12
-  - name: periodic-kubernetes-bazel-build-1-12
+  - name: periodic-bazel-build-1.12
     test_group_name: periodic-kubernetes-bazel-build-1-12
-  - name: periodic-kubernetes-bazel-test-1-12
+  - name: periodic-bazel-test-1.12
     test_group_name: periodic-kubernetes-bazel-test-1-12
-  - name: kubeadm-gce-1-11-on-1-12
+  - name: kubeadm-gce-1.11-on-1.12
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
-  - name: kubeadm-gce-1-12
+  - name: kubeadm-gce-1.12
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-12
 
 - name: sig-release-1.11-all
@@ -4574,27 +4766,27 @@ dashboards:
     test_group_name: ci-kubernetes-verify-stable1
   - name: integration-1.11
     test_group_name: ci-kubernetes-integration-stable1
-  - name: gce-conformance-latest-1-11
+  - name: gce-conformance-latest-1.11
     description: Runs conformance tests using kubetest against kubernetes release 1.11 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-11
   - name: ci-periodic-cloud-provider-openstack-acceptance-test-conformance-stable-branch-v1.11
     description: Runs conformance tests using kubetest against kubernetes v1.11 with cloud-provider-openstack
     test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.11
-  - name: bazel-build-1-11
+  - name: bazel-build-1.11
     test_group_name: ci-kubernetes-bazel-build-1-11
-  - name: bazel-test-1-11
+  - name: bazel-test-1.11
     test_group_name: ci-kubernetes-bazel-test-1-11
-  - name: periodic-kubernetes-bazel-build-1-11
+  - name: periodic-bazel-build-1.11
     test_group_name: periodic-kubernetes-bazel-build-1-11
-  - name: periodic-kubernetes-bazel-test-1-11
+  - name: periodic-bazel-test-1.11
     test_group_name: periodic-kubernetes-bazel-test-1-11
-  - name: kubeadm-gce-1-10-on-1-11
+  - name: kubeadm-gce-1.10-on-1.11
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
-  - name: kubeadm-gce-1-11
+  - name: kubeadm-gce-1.11
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-11
-  - name: kubeadm-gce-upgrade-1-10-1-11
+  - name: kubeadm-gce-upgrade-1.10-1.11
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11
-  - name: periodic-kubernetes-packages-pushed
+  - name: periodic-packages-pushed
     test_group_name: periodic-kubernetes-e2e-packages-pushed
   - name: gce-cos-1.11-default
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-default
@@ -4675,23 +4867,23 @@ dashboards:
     test_group_name: ci-kubernetes-verify-stable1
   - name: integration-1.11
     test_group_name: ci-kubernetes-integration-stable1
-  - name: gce-conformance-latest-1-11
+  - name: gce-conformance-latest-1.11
     description: Runs conformance tests using kubetest against kubernetes release 1.11 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-11
   - name: ci-periodic-cloud-provider-openstack-acceptance-test-conformance-stable-branch-v1.11
     description: Runs conformance tests using kubetest against kubernetes v1.11 with cloud-provider-openstack
     test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.11
-  - name: bazel-build-1-11
+  - name: bazel-build-1.11
     test_group_name: ci-kubernetes-bazel-build-1-11
-  - name: bazel-test-1-11
+  - name: bazel-test-1.11
     test_group_name: ci-kubernetes-bazel-test-1-11
-  - name: periodic-kubernetes-bazel-build-1-11
+  - name: periodic-bazel-build-1.11
     test_group_name: periodic-kubernetes-bazel-build-1-11
-  - name: periodic-kubernetes-bazel-test-1-11
+  - name: periodic-bazel-test-1.11
     test_group_name: periodic-kubernetes-bazel-test-1-11
-  - name: kubeadm-gce-1-10-on-1-11
+  - name: kubeadm-gce-1.10-on-1.11
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
-  - name: kubeadm-gce-1-11
+  - name: kubeadm-gce-1.11
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-11
   - name: gce-cos-1.11-default
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-default
@@ -4804,20 +4996,18 @@ dashboards:
     test_group_name: ci-kubernetes-verify-stable2
   - name: integration-1.10
     test_group_name: ci-kubernetes-integration-stable2
-  - name: gce-conformance-latest-1-10
+  - name: gce-conformance-latest-1.10
     description: Runs conformance tests using kubetest against kubernetes release 1.10 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-10
-  - name: periodic-kubernetes-bazel-build-1-10
+  - name: periodic-bazel-build-1.10
     test_group_name: periodic-kubernetes-bazel-build-1-10
-  - name: periodic-kubernetes-bazel-test-1-10
+  - name: periodic-bazel-test-1.10
     test_group_name: periodic-kubernetes-bazel-test-1-10
-  - name: kubeadm-gce-1-10
+  - name: kubeadm-gce-1.10
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-10
-  - name: kubeadm-gce-1-9-on-1-10
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
-  - name: kubeadm-gce-upgrade-1-9-1-10
+  - name: kubeadm-gce-upgrade-1.9-1.10
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
-  - name: periodic-kubernetes-packages-pushed
+  - name: periodic-packages-pushed
     test_group_name: periodic-kubernetes-e2e-packages-pushed
   - name: node-kubelet-1.10
     test_group_name: ci-kubernetes-node-kubelet-stable2
@@ -4869,10 +5059,10 @@ dashboards:
     test_group_name: ci-kubernetes-verify-stable2
   - name: integration-1.10
     test_group_name: ci-kubernetes-integration-stable2
-  - name: gce-conformance-latest-1-10
+  - name: gce-conformance-latest-1.10
     description: Runs conformance tests using kubetest against kubernetes release 1.10 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-10
-  - name: kubeadm-gce-1-10
+  - name: kubeadm-gce-1.10
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-10
   - name: node-kubelet-1.10
     test_group_name: ci-kubernetes-node-kubelet-stable2
@@ -4913,12 +5103,12 @@ dashboards:
     test_group_name: ci-kubernetes-verify-stable3
   - name: integration-1.9
     test_group_name: ci-kubernetes-integration-stable3
-  - name: gce-conformance-latest-1-9
+  - name: gce-conformance-latest-1.9
     description: Runs conformance tests using kubetest against kubernetes release 1.9 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-9
-  - name: periodic-kubernetes-bazel-build-1-9
+  - name: periodic-bazel-build-1.9
     test_group_name: periodic-kubernetes-bazel-build-1-9
-  - name: periodic-kubernetes-bazel-test-1-9
+  - name: periodic-bazel-test-1.9
     test_group_name: periodic-kubernetes-bazel-test-1-9
   - name: kops-aws-1.9
     test_group_name: ci-kubernetes-e2e-kops-aws-stable3
@@ -4969,7 +5159,7 @@ dashboards:
     test_group_name: ci-kubernetes-verify-stable3
   - name: integration-1.9
     test_group_name: ci-kubernetes-integration-stable3
-  - name: gce-conformance-latest-1-9
+  - name: gce-conformance-latest-1.9
     description: Runs conformance tests using kubetest against kubernetes release 1.9 branch on GCE
     test_group_name: ci-kubernetes-gce-conformance-latest-1-9
   - name: node-kubelet-1.9
@@ -5164,7 +5354,7 @@ dashboards:
     alert_options:
       alert_mail_to_addresses: balaji.warft@gmail.com, connor.p.d@gmail.com
 
-- name: sig-api-machinery
+- name: sig-api-machinery-gce-gke
   dashboard_tab:
   - name: gce
     test_group_name: ci-kubernetes-e2e-gci-gce
@@ -5178,6 +5368,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-flaky
     base_options: include-filter-by-regex=sig-api-machinery
     description: apimachinery gce flaky e2e tests for master branch
+  - name: gce-single-flake-attempt
+    test_group_name: ci-kubernetes-e2e-gci-gce-single-flake-attempt
+    base_options: include-filter-by-regex=sig-api-machinery
+    description: apimachinery gce e2e tests for master branch with reduced flake attempt
   - name: gke-flaky
     test_group_name: ci-kubernetes-e2e-gci-gke-flaky
     base_options: include-filter-by-regex=sig-api-machinery
@@ -5264,9 +5458,12 @@ dashboards:
 
 - name: sig-big-data
   dashboard_tab:
-  - name: kubeflow-periodic
-    description: Periodic testing of Kubeflow.
-    test_group_name: kubeflow-periodic
+  - name: kubeflow-periodic-release-branch
+    description: Periodic testing of Kubeflow on the latest release branch.
+    test_group_name: kubeflow-periodic-release-branch
+  - name: kubeflow-periodic-master
+    description: Periodic testing of Kubeflow on the latest master branch.
+    test_group_name: kubeflow-periodic-master
   - name: kubeflow-postsubmit
     description: Postsubmit tests for Kubeflow.
     test_group_name: kubeflow-postsubmit
@@ -5527,9 +5724,7 @@ dashboards:
   - name: kubeadm-gce-master
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-master
 # kubeadm x-on-y tests
-  - name: kubeadm-gce-1.9-on-1.10
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-9-on-1-10
-  - name: gce-kubeadm-1.10-on-1.11
+  - name: kubeadm-gce-1.10-on-1.11
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-10-on-1-11
   - name: kubeadm-gce-1.11-on-1.12
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-11-on-1-12
@@ -5538,14 +5733,14 @@ dashboards:
 # kubeadm upgrade tests
   - name: kubeadm-gce-upgrade-1.9-1.10
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-9-1-10
-  - name: gce-kubeadm-upgrade-1.10-1.11
+  - name: kubeadm-gce-upgrade-1.10-1.11
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-10-1-11
   - name: kubeadm-gce-upgrade-1.11-1.12
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-11-1-12
   - name: kubeadm-gce-upgrade-stable-master
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-stable-master
 # packages tests
-  - name: periodic-kubernetes-e2e-packages-pushed
+  - name: periodic-packages-pushed
     test_group_name: periodic-kubernetes-e2e-packages-pushed
 
 - name: sig-cluster-lifecycle-multi-platform
@@ -5610,51 +5805,51 @@ dashboards:
 
 - name: sig-instrumentation
   dashboard_tab:
-  - name: gce
+  - name: gci-gce
     test_group_name: ci-kubernetes-e2e-gci-gce
     base_options: include-filter-by-regex=sig-instrumentation
     description: instrumentation gce e2e tests for master branch
-  - name: gke
+  - name: gci-gke
     test_group_name: ci-kubernetes-e2e-gci-gke
     base_options: include-filter-by-regex=sig-instrumentation
     description: instrumentation gke e2e tests for master branch
-  - name: gce-1.9
+  - name: gce-cos-1.10-default
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-default
     base_options: include-filter-by-regex=sig-instrumentation
-    description: instrumentation gce e2e tests for 1.9 branch
-  - name: gke-1.9
+    description: instrumentation gce e2e tests for 1.10 branch
+  - name: gke-cos-1.10-default
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-default
     base_options: include-filter-by-regex=sig-instrumentation
-    description: instrumentation gke e2e tests for 1.9 branch
-  - name: gce-1.8
+    description: instrumentation gke e2e tests for 1.10 branch
+  - name: gce-cos-1.9-default
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-default
     base_options: include-filter-by-regex=sig-instrumentation
-    description: instrumentation gce e2e tests for 1.8 branch
-  - name: gke-1.8
+    description: instrumentation gce e2e tests for 1.9 branch
+  - name: gke-cos-1.9-default
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-default
     base_options: include-filter-by-regex=sig-instrumentation
-    description: instrumentation gke e2e tests for 1.8 branch
-  - name: gce-serial
+    description: instrumentation gke e2e tests for 1.9 branch
+  - name: gci-gce-serial
     test_group_name: ci-kubernetes-e2e-gci-gce-serial
     base_options: include-filter-by-regex=sig-instrumentation
     description: instrumentation gce serial e2e tests for master branch
-  - name: gke-serial
+  - name: gci-gke-serial
     test_group_name: ci-kubernetes-e2e-gci-gke-serial
     base_options: include-filter-by-regex=sig-instrumentation
     description: sig-instrumentation gke serial e2e tests for master branch
-  - name: gce-es-logging
+  - name: gci-gce-es-logging
     test_group_name: ci-kubernetes-e2e-gci-gce-es-logging
     base_options: include-filter-by-regex=sig-instrumentation
     description: sig-instrumentation gce elasticsearch logging e2e tests for master branch
-  - name: gce-sd-logging
+  - name: gci-gce-sd-logging
     test_group_name: ci-kubernetes-e2e-gci-gce-sd-logging
     base_options: include-filter-by-regex=sig-instrumentation
     description: sig-instrumentation gce stackdriver logging e2e tests for master branch
-  - name: gce-sd-monitoring
+  - name: gce-stackdriver
     test_group_name: ci-kubernetes-e2e-gce-stackdriver
     base_options: include-filter-by-regex=sig-instrumentation
     description: sig-instrumentation gce stackdriver monitoring e2e tests for master branch
-  - name: gke-sd-monitoring
+  - name: gke-stackdriver
     test_group_name: ci-kubernetes-e2e-gke-stackdriver
     base_options: include-filter-by-regex=sig-instrumentation
     description: sig-instrumentation gke stackdriver monitoring e2e tests for master branch
@@ -5666,19 +5861,19 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-latest
     base_options: include-filter-by-regex=sig-instrumentation
     description: sig-instrumentation gke stackdriver logging e2e tests for master branch with Ubuntu
-  - name: gke-sd-logging-gci-1.10
+  - name: gke-sd-logging-gci-1.12
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-gci-beta
     base_options: include-filter-by-regex=sig-instrumentation
     description: sig-instrumentation gke stackdriver logging e2e tests for 1.10 branch with COS
-  - name: gke-sd-logging-ubuntu-1.10
+  - name: gke-sd-logging-ubuntu-1.12
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-beta
     base_options: include-filter-by-regex=sig-instrumentation
     description: sig-instrumentation gke stackdriver logging e2e tests for 1.10 branch with Ubuntu
-  - name: gke-sd-logging-gci-1.9
+  - name: gke-sd-logging-gci-1.11
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-gci-stable1
     base_options: include-filter-by-regex=sig-instrumentation
     description: sig-instrumentation gke stackdriver logging e2e tests for 1.9 branch with COS
-  - name: gke-sd-logging-ubuntu-1.9
+  - name: gke-sd-logging-ubuntu-1.11
     test_group_name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-stable1
     base_options: include-filter-by-regex=sig-instrumentation
     description: sig-instrumentation gke stackdriver logging e2e tests for 1.9 branch with Ubuntu
@@ -5697,23 +5892,23 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-ingress
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-  - name: gce-ingress-manual-network
+  - name: gci-gce-ingress-manual-network
     test_group_name: ci-kubernetes-e2e-gci-gce-ingress-manual-network
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-  - name: gci-gce-ingress-release-1.8
+  - name: gce-cos-1.9-ingress
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-ingress
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-  - name: gci-gce-ingress-release-1.9
+  - name: gce-cos-1.10-ingress
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-ingress
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-  - name: gci-gce-ingress-release-1.10
+  - name: gce-cos-1.11-ingress
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-ingress
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-  - name: gci-gce-ingress-release-1.11
+  - name: gce-cos-1.12-ingress
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-ingress
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
@@ -5762,19 +5957,7 @@ dashboards:
     description: network gci-gce alpha features e2e tests for master branch
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-  - name: kubeadm-gce-ipvs
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-ipvs
-    alert_options:
-      alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-  - name: kubeadm-gce-cni-flannel
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
-    alert_options:
-      alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-  - name: kubeadm-gce-dns-coredns
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-dns-coredns
-    alert_options:
-      alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-  - name: containerd-e2e-gci-gce-ingress
+  - name: containerd-gci-gce-ingress
     test_group_name: ci-cri-containerd-e2e-gci-gce-ingress
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
@@ -5813,19 +5996,19 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gke-ingress
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-  - name: gci-gke-ingress-release-1.8
+  - name: gke-cos-1.9-ingress
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable3-ingress
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-  - name: gci-gke-ingress-release-1.9
+  - name: gke-cos-1.10-ingress
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-ingress
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-  - name: gci-gke-ingress-release-1.10
+  - name: gke-cos-1.11-ingress
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-ingress
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-  - name: gci-gke-ingress-release-1.11
+  - name: gke-cos-1.12-ingress
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
@@ -6009,9 +6192,9 @@ dashboards:
   - name: containerd-node-features
     test_group_name: ci-containerd-node-e2e-features
 
-- name: sig-node-cri-1.11
+- name: sig-node-cri-1.12
   dashboard_tab:
-  - name: docker-node-conformance-1.11
+  - name: node-kubelet-1.12
     test_group_name: ci-kubernetes-node-kubelet-beta
 
 - name: sig-node-cadvisor
@@ -6023,31 +6206,31 @@ dashboards:
 
 - name: sig-node-kubelet
   dashboard_tab:
-  - name: kubelet-benchmark-gce-e2e
+  - name: node-kubelet-benchmark
     test_group_name: ci-kubernetes-node-kubelet-benchmark
-  - name: kubelet
+  - name: node-kubelet
     test_group_name: ci-kubernetes-node-kubelet
-  - name: kubelet-features
+  - name: node-kubelet-features
     test_group_name: ci-kubernetes-node-kubelet-features
-  - name: kubelet-orphans
+  - name: node-kubelet-orphans
     test_group_name: ci-kubernetes-node-kubelet-orphans
-  - name: kubelet-serial-gce-e2e
+  - name: node-kubelet-serial
     test_group_name: ci-kubernetes-node-kubelet-serial
-  - name: kubelet-flaky-gce-e2e
+  - name: node-kubelet-flaky
     test_group_name: ci-kubernetes-node-kubelet-flaky
-  - name: kubelet-alpha
+  - name: node-kubelet-alpha
     test_group_name: ci-kubernetes-node-kubelet-alpha
-  - name: kubelet-conformance-gce-e2e
+  - name: node-kubelet-conformance
     test_group_name: ci-kubernetes-node-kubelet-conformance
-  - name: kubelet-1.9
+  - name: node-kubelet-1.11
     test_group_name: ci-kubernetes-node-kubelet-stable1
-  - name: kubelet-1.8
+  - name: node-kubelet-1.10
     test_group_name: ci-kubernetes-node-kubelet-stable2
-  - name: kubelet-1.7
+  - name: node-kubelet-1.9
     test_group_name: ci-kubernetes-node-kubelet-stable3
-  - name: kubelet-conformance-aws-e2e-rhel
+  - name: conformance-node-rhel
     test_group_name: ci-kubernetes-conformance-node-e2e-rhel
-  - name: kubelet-containerized-conformance-aws-e2e-rhel
+  - name: conformance-node-containerized-rhel
     test_group_name: ci-kubernetes-conformance-node-e2e-containerized-rhel
 
 - name: sig-node-ppc64le
@@ -6069,13 +6252,13 @@ dashboards:
 
 - name: sig-scalability-gce
   dashboard_tab:
-  - name: gce
+  - name: gci-gce-scalability
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability
-  - name: gce-1.9
+  - name: gci-gce-scalability-1.10
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable2
-  - name: gce-1.10
+  - name: gci-gce-scalability-1.11
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable1
-  - name: gce-1.11
+  - name: gci-gce-scalability-1.12
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-beta
   - name: gce-large-correctness
     test_group_name: ci-kubernetes-e2e-gce-large-correctness
@@ -6175,6 +6358,12 @@ dashboards:
     description: storage gce flaky e2e tests for master branch
     alert_options:
       alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
+  - name: gce-single-flake-attempt
+    test_group_name: ci-kubernetes-e2e-gci-gce-single-flake-attempt
+    base_options: include-filter-by-regex=Volume%7Cstorage
+    description: storage gce e2e tests for master branch with reduced flake attempt
+    alert_options:
+      alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
   - name: gke-flaky
     test_group_name: ci-kubernetes-e2e-gci-gke-flaky
     base_options: include-filter-by-regex=Volume%7Cstorage
@@ -6262,10 +6451,13 @@ dashboards:
     alert_options:
       alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: triage
-    description: College results for triage page
+    description: Runs BigQuery queries, summarizes results into clusters, and uploads to GCS for go.k8s.io/triage
     test_group_name: ci-test-infra-triage
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    # TODO(spiffxp): there's probably a more appropriate alias to alert this to
+    alert_options:
+      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: metrics-bigquery
     description: Runs BigQuery queries to generate data for metrics.
     test_group_name: metrics-bigquery
@@ -6276,6 +6468,9 @@ dashboards:
     test_group_name: metrics-kettle
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    # TODO(spiffxp): there's probably a more appropriate alias to alert this to
+    alert_options:
+      alert_mail_to_addresses: gke-kubernetes-engprod+alerts@google.com
   - name: maintenance-aws-janitor
     description: Deletes old resources from AWS projects
     test_group_name: maintenance-ci-aws-janitor
@@ -6341,6 +6536,11 @@ dashboards:
     test_group_name: issue-creator
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: push-prow
+    description: builds and pushes all prow on each commit by running bump.sh
+    test_group_name: post-test-infra-push-prow
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
 
 - name: sig-testing-canaries
   dashboard_tab:
@@ -6390,6 +6590,8 @@ dashboards:
     test_group_name: pull-kubernetes-verify-prow
   - name: pull-kubernetes-integration-prow
     test_group_name: pull-kubernetes-integration-prow
+  - name: ci-kubernetes-coverage-conformance
+    test_group_name: ci-kubernetes-coverage-conformance
 
 - name: sig-testing-org
   dashboard_tab:
@@ -6419,14 +6621,12 @@ dashboards:
   - name: conformance, master (dev) [non-serial]
     description: Runs conformance tests using kubetest against latest kubernetes master with a kubernetes-in-docker cluster, skipping [Serial] tests
     test_group_name: ci-kubernetes-kind-conformance-parallel
-
-- name: sig-ui
-  dashboard_tab:
-  - name: TODO
-    test_group_name: ci-kubernetes-e2e-gci-gce-slow  # TODO(fejta): fix
-  notifications:
-  - summary: Please configure this skeleton dashboard and remove this notification
-    context_link: https://github.com/kubernetes/test-infra/tree/master/testgrid/config
+  - name: kind, v1.12 (dev)
+    description: Runs conformance tests using kubetest against latest kubernetes relase-1.12 with a kubernetes-in-docker cluster
+    test_group_name: ci-kubernetes-kind-conformance-latest-1-12
+  - name: kind, v1.11 (dev)
+    description: Runs conformance tests using kubetest against latest kubernetes relase-1.12 with a kubernetes-in-docker cluster
+    test_group_name: ci-kubernetes-kind-conformance-latest-1-11
 
 - name: sig-gcp-master
   dashboard_tab:
@@ -6509,88 +6709,88 @@ dashboards:
     - configuration_value: Commit
     - configuration_value: infra-commit
 
-- name: sig-gcp-release-1.10
+- name: sig-gcp-release-1.11
   dashboard_tab:
-  - name: gci-gke-1.10
+  - name: gke-cos-1.11-default
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-default
     column_header:
     - configuration_value: node_os_image
     - configuration_value: Commit
     - configuration_value: infra-commit
-  - name: gci-gke-slow-1.10
+  - name: gke-cos-1.11-slow
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-slow
     column_header:
     - configuration_value: node_os_image
     - configuration_value: Commit
     - configuration_value: infra-commit
-  - name: gci-gke-serial-1.10
+  - name: gke-cos-1.11-serial
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-serial
     column_header:
     - configuration_value: node_os_image
     - configuration_value: Commit
     - configuration_value: infra-commit
-  - name: gci-gke-ingress-1.10
+  - name: gke-cos-1.11-ingress
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-ingress
     column_header:
     - configuration_value: node_os_image
     - configuration_value: Commit
     - configuration_value: infra-commit
-  - name: gci-gke-reboot-1.10
+  - name: gke-cos-1.11-reboot
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-reboot
     column_header:
     - configuration_value: node_os_image
     - configuration_value: Commit
     - configuration_value: infra-commit
-  - name: gke-gci-1.8-gci-1.10-upgrade-master
+  - name: gke-gci-1.9-gci-1.11-upgrade-master
     test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-master
-  - name: gke-gci-1.8-gci-1.10-upgrade-cluster
+  - name: gke-gci-1.9-gci-1.11-upgrade-cluster
     test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster
-  - name: gke-gci-1.8-gci-1.10-upgrade-cluster-new
+  - name: gke-gci-1.9-gci-1.11-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster-new
-  - name: gke-gci-1.9-gci-1.10-upgrade-master
+  - name: gke-gci-1.10-gci-1.11-upgrade-master
     test_group_name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-master
-  - name: gke-gci-1.9-gci-1.10-upgrade-cluster
+  - name: gke-gci-1.10-gci-1.11-upgrade-cluster
     test_group_name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster
-  - name: gke-gci-1.9-gci-1.10-upgrade-cluster-new
+  - name: gke-gci-1.10-gci-1.11-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster-new
-  - name: gke-1.10-1.9-gci-kubectl-skew
+  - name: gke-1.11-1.10-gci-kubectl-skew
     test_group_name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew
-  - name: gke-1.9-1.10-gci-kubectl-skew
+  - name: gke-1.10-1.11-gci-kubectl-skew
     test_group_name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew
-  - name: gke-1.10-1.9-gci-kubectl-skew-serial
+  - name: gke-1.11-1.10-gci-kubectl-skew-serial
     test_group_name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew-serial
-  - name: gke-1.9-1.10-gci-kubectl-skew-serial
+  - name: gke-1.10-1.11-gci-kubectl-skew-serial
     test_group_name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew-serial
-  - name: gke-device-plugin-gpu-1.10
+  - name: gke-device-plugin-gpu-1.11
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
 
-- name: sig-gcp-release-1.9
+- name: sig-gcp-release-1.10
   dashboard_tab:
-  - name: gci-gke-release-1.9
+  - name: gke-cos-1.10-default
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-default
     column_header:
     - configuration_value: node_os_image
     - configuration_value: Commit
     - configuration_value: infra-commit
-  - name: gci-gke-slow-release-1.9
+  - name: gke-cos-1.10-slow
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-slow
     column_header:
     - configuration_value: node_os_image
     - configuration_value: Commit
     - configuration_value: infra-commit
-  - name: gci-gke-serial-release-1.9
+  - name: gke-cos-1.10-serial
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-serial
     column_header:
     - configuration_value: node_os_image
     - configuration_value: Commit
     - configuration_value: infra-commit
-  - name: gci-gke-ingress-release-1.9
+  - name: gke-cos-1.10-ingress
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-ingress
     column_header:
     - configuration_value: node_os_image
     - configuration_value: Commit
     - configuration_value: infra-commit
-  - name: gci-gke-reboot-release-1.9
+  - name: gke-cos-1.10-reboot
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-reboot
     column_header:
     - configuration_value: node_os_image
@@ -6758,6 +6958,10 @@ dashboards:
     test_group_name: pull-charts-e2e
   - name: cadvisor
     test_group_name: pull-cadvisor-e2e
+  - name: pull-k8s-cluster-bundle-bazel-test
+    test_group_name: pull-k8s-cluster-bundle-bazel-test
+  - name: post-k8s-cluster-bundle-bazel-test
+    test_group_name: post-k8s-cluster-bundle-bazel-test
 
 - name: presubmits-kops
   dashboard_tab:
@@ -6828,6 +7032,14 @@ dashboards:
     test_group_name: istio-circleci-test-integration-local-presubmit
   - name: circleci-integration-kubernetes
     test_group_name: istio-circleci-test-integration-kubernetes-presubmit
+  - name: pilot-e2e-envoyv2-v1alpha3-mcp
+    test_group_name: istio-pilot-e2e-envoyv2-v1alpha3-mcp-presubmit
+  - name: e2e-mixer-no_auth-mcp
+    test_group_name: istio-e2e-mixer-no_auth-mcp-presubmit
+  - name: circleci-e2e-mixer-noauth-v1alpha3-v2-mcp
+    test_group_name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2-mcp-presubmit
+  - name: circleci-e2e-pilot-auth-v1alpha3-v2-mcp
+    test_group_name: istio-circleci-e2e-pilot-auth-v1alpha3-v2-mcp-presubmit
 
 - name: istio-postsubmits
   dashboard_tab:
@@ -6895,6 +7107,30 @@ dashboards:
     test_group_name: istio-circleci-racetest
     alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: e2e-simpleTests-mcp
+    test_group_name: istio-e2e-simpleTests-mcp
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: circleci-e2e-mixer-noauth-v1alpha3-v2-mcp
+    test_group_name: istio-circleci-e2e-mixer-noauth-v1alpha3-v2-mcp
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: circleci-e2e-simple-mcp
+    test_group_name: istio-circleci-e2e-simple-mcp
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: circleci-e2e-dashboard-mcp
+    test_group_name: istio-circleci-e2e-dashboard-mcp
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: circleci-e2e-pilot-auth-v1alpha3-v2-mcp
+    test_group_name: istio-circleci-e2e-pilot-auth-v1alpha3-v2-mcp
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+  - name: circleci-e2e-pilot-noauth-v1alpha3-v2-mcp
+    test_group_name: istio-circleci-e2e-pilot-noauth-v1alpha3-v2-mcp
+    alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
 
 - name: istio-daily
   dashboard_tab:
@@ -6938,13 +7174,13 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-aws
   - name: kops-aws-canary
     test_group_name: ci-kubernetes-e2e-kops-aws-canary
-  - name: kops-aws-1.8
-    test_group_name: ci-kubernetes-e2e-kops-aws-stable3
   - name: kops-aws-1.9
-    test_group_name: ci-kubernetes-e2e-kops-aws-stable2
+    test_group_name: ci-kubernetes-e2e-kops-aws-stable3
   - name: kops-aws-1.10
+    test_group_name: ci-kubernetes-e2e-kops-aws-stable2
+  - name: kops-aws-1.11
     test_group_name: ci-kubernetes-e2e-kops-aws-stable1
-  - name: kops-aws-beta
+  - name: kops-aws-1.12
     test_group_name: ci-kubernetes-e2e-kops-aws-beta
   - name: kops-aws-updown
     test_group_name: ci-kubernetes-e2e-kops-aws-updown
@@ -7007,12 +7243,17 @@ dashboards:
     alert_options:
       alert_mail_to_addresses: roland.wilfer@sap.com
 
-- name: sig-apimachinery-kube-storage-version-migrator
+- name: sig-api-machinery-kube-storage-version-migrator
   dashboard_tab:
   - name: pr-test
     test_group_name: pull-kube-storage-version-migrator-test
 
-
+- name: sig-api-machinery-structured-merge-diff
+  dashboard_tab:
+  - name: pr-test
+    test_group_name: pull-structured-merge-diff-test
+  - name: ci-test
+    test_group_name: ci-structured-merge-diff-test
 
 
 #
@@ -7055,6 +7296,8 @@ dashboard_groups:
   - google-soak
   - google-unit
   - google-gke-stackdriver
+  - google-rules_k8s
+  - google-kops-gce
 
 - name: istio
   dashboard_names:
@@ -7075,6 +7318,12 @@ dashboard_groups:
   - presubmits-poseidon
   - presubmits-misc
 
+- name: sig-api-machinery
+  dashboard_names:
+  - sig-api-machinery-gce-gke
+  - sig-api-machinery-kube-storage-version-migrator
+  - sig-api-machinery-structured-merge-diff
+
 - name: sig-cli
   dashboard_names:
   - sig-cli-master
@@ -7089,6 +7338,7 @@ dashboard_groups:
   - sig-cluster-lifecycle-cluster-api-provider-aws
   - sig-cluster-lifecycle-cluster-api-provider-gcp
   - sig-cluster-lifecycle-cluster-api-provider-openstack
+  - sig-cluster-lifecycle-kops
 
 - name: sig-multicluster
   dashboard_names:
@@ -7109,7 +7359,8 @@ dashboard_groups:
   - sig-node-ppc64le
   - sig-node-cri-o
   - sig-node-cri
-  - sig-node-cri-1.11
+  - sig-node-cri-1.12
+  - sig-node-arm64
 
 - name: sig-release
   dashboard_names:
@@ -7123,7 +7374,6 @@ dashboard_groups:
   - sig-release-1.11-blocking
   - sig-release-1.10-all
   - sig-release-1.10-blocking
-  - sig-release-etcd-upgrades
   - sig-release-1.9-all
   - sig-release-1.9-blocking
   - sig-release-misc
@@ -7146,8 +7396,8 @@ dashboard_groups:
 - name: sig-gcp
   dashboard_names:
   - sig-gcp-master
+  - sig-gcp-release-1.11
   - sig-gcp-release-1.10
-  - sig-gcp-release-1.9
 
 - name: sig-autoscaling
   dashboard_names:
@@ -7161,6 +7411,8 @@ dashboard_groups:
   - conformance-gce
   - conformance-providerless
   - conformance-cloud-provider-openstack
+  - conformance-cloud-provider-vsphere
+  - conformance-vsphere
   - conformance-alibaba-cloud-provider
   - conformance-cloud-provider-digitalocean
   - conformance-cloud-provider-baiducloud
@@ -7169,4 +7421,5 @@ dashboard_groups:
 - name: vmware
   dashboard_names:
   - vmware-presubmits-cloud-provider-vsphere
-
+  - vmware-conformance
+  - vmware-conformance-cloud-provider

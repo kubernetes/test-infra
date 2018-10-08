@@ -167,13 +167,13 @@ const (
 	PullRequestActionReviewRequested = "review_requested"
 	// PullRequestActionReviewRequestRemoved means review requests were removed.
 	PullRequestActionReviewRequestRemoved = "review_request_removed"
-	// PullRequestActionLabeled means means labels were added.
+	// PullRequestActionLabeled means labels were added.
 	PullRequestActionLabeled = "labeled"
 	// PullRequestActionUnlabeled means labels were removed
 	PullRequestActionUnlabeled = "unlabeled"
 	// PullRequestActionOpened means the PR was created
 	PullRequestActionOpened = "opened"
-	// PullRequestActionEdited means means the PR body changed.
+	// PullRequestActionEdited means the PR body changed.
 	PullRequestActionEdited = "edited"
 	// PullRequestActionClosed means the PR was closed (or was merged).
 	PullRequestActionClosed = "closed"
@@ -508,6 +508,16 @@ type Commit struct {
 	Added    []string `json:"added"`
 	Removed  []string `json:"removed"`
 	Modified []string `json:"modified"`
+}
+
+// SingleCommit is the commit part received when requesting a single commit
+// https://developer.github.com/v3/repos/commits/#get-a-single-commit
+type SingleCommit struct {
+	Commit struct {
+		Tree struct {
+			SHA string `json:"sha"`
+		} `json:"tree"`
+	} `json:"commit"`
 }
 
 // ReviewEventAction enumerates the triggers for this

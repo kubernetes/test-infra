@@ -25,6 +25,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/errorutil"
 	"k8s.io/test-infra/prow/flagutil"
@@ -52,11 +53,13 @@ type options struct {
 	strict   bool
 }
 
-func (o *options) reportWarning(err error, msg string) {
-	if o.strict {
-		logrus.WithError(err).Fatal(msg)
+func reportWarning(strict bool, errs errorutil.Aggregate) {
+	for _, item := range errs.Strings() {
+		logrus.Warn(item)
 	}
-	logrus.WithError(err).Warn(msg)
+	if strict {
+		logrus.Fatal("Strict is set and there were warnings")
+	}
 }
 
 func (o *options) warningEnabled(warning string) bool {
@@ -71,11 +74,13 @@ func (o *options) warningEnabled(warning string) bool {
 const (
 	mismatchedTideWarning   = "mismatched-tide"
 	nonDecoratedJobsWarning = "non-decorated-jobs"
+	jobNameLengthWarning    = "long-job-names"
 )
 
 var allWarnings = []string{
 	mismatchedTideWarning,
 	nonDecoratedJobsWarning,
+	jobNameLengthWarning,
 }
 
 func (o *options) Validate() error {
@@ -123,7 +128,7 @@ func main() {
 	}
 
 	logrus.SetFormatter(
-		logrusutil.NewDefaultFieldsFormatter(nil, logrus.Fields{"component": "checkconfig"}),
+		logrusutil.NewDefaultFieldsFormatter(&logrus.TextFormatter{}, logrus.Fields{"component": "checkconfig"}),
 	)
 
 	configAgent := config.Agent{}
@@ -140,16 +145,73 @@ func main() {
 	// presence won't lead to strictly incorrect behavior, so we can
 	// detect them here but don't necessarily want to stop config re-load
 	// in all components on their failure.
+	var errs []error
 	if o.warningEnabled(mismatchedTideWarning) {
 		if err := validateTideRequirements(configAgent, pluginAgent); err != nil {
-			o.reportWarning(err, "Invalid tide merge configuration.")
+			errs = append(errs, err)
 		}
 	}
 	if o.warningEnabled(nonDecoratedJobsWarning) {
 		if err := validateDecoratedJobs(configAgent); err != nil {
-			o.reportWarning(err, "Invalid tide merge configuration.")
+			errs = append(errs, err)
 		}
 	}
+	if o.warningEnabled(jobNameLengthWarning) {
+		if err := validateJobRequirements(configAgent); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	if len(errs) > 0 {
+		reportWarning(o.strict, errorutil.NewAggregate(errs...))
+	}
+}
+
+func validateJobRequirements(configAgent config.Agent) error {
+	c := configAgent.Config().JobConfig
+
+	var validationErrs []error
+	for repo, jobs := range c.Presubmits {
+		for _, job := range jobs {
+			validationErrs = append(validationErrs, validatePresubmitJob(repo, job))
+		}
+	}
+	for repo, jobs := range c.Postsubmits {
+		for _, job := range jobs {
+			validationErrs = append(validationErrs, validatePostsubmitJob(repo, job))
+		}
+	}
+	for _, job := range c.Periodics {
+		validationErrs = append(validationErrs, validatePeriodicJob(job))
+	}
+
+	return errorutil.NewAggregate(validationErrs...)
+}
+
+func validatePresubmitJob(repo string, job config.Presubmit) error {
+	var validationErrs []error
+	// Prow labels k8s resources with job names. Labels are capped at 63 chars.
+	if job.Agent == string(v1.KubernetesAgent) && len(job.Name) > validation.LabelValueMaxLength {
+		validationErrs = append(validationErrs, fmt.Errorf("Name of Presubmit job '%s' (for repo '%s') too long (should be at most 63 characters)", job.Name, repo))
+	}
+	return errorutil.NewAggregate(validationErrs...)
+}
+
+func validatePostsubmitJob(repo string, job config.Postsubmit) error {
+	var validationErrs []error
+	// Prow labels k8s resources with job names. Labels are capped at 63 chars.
+	if job.Agent == string(v1.KubernetesAgent) && len(job.Name) > validation.LabelValueMaxLength {
+		validationErrs = append(validationErrs, fmt.Errorf("Name of Postsubmit job '%s' (for repo '%s') too long (should be at most 63 characters)", job.Name, repo))
+	}
+	return errorutil.NewAggregate(validationErrs...)
+}
+
+func validatePeriodicJob(job config.Periodic) error {
+	var validationErrs []error
+	// Prow labels k8s resources with job names. Labels are capped at 63 chars.
+	if job.Agent == string(v1.KubernetesAgent) && len(job.Name) > validation.LabelValueMaxLength {
+		validationErrs = append(validationErrs, fmt.Errorf("Name of Periodic job '%s' too long (should be at most 63 characters)", job.Name))
+	}
+	return errorutil.NewAggregate(validationErrs...)
 }
 
 func validateTideRequirements(configAgent config.Agent, pluginAgent plugins.PluginAgent) error {
@@ -309,7 +371,7 @@ func validateDecoratedJobs(configAgent config.Agent) error {
 	}
 
 	if len(nonDecoratedJobs) > 0 {
-		return fmt.Errorf("the following jobs use the kubernetes provider but do not use the pod utilites: %v", nonDecoratedJobs)
+		return fmt.Errorf("the following jobs use the kubernetes provider but do not use the pod utilities: %v", nonDecoratedJobs)
 	}
 	return nil
 }

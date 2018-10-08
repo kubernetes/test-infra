@@ -43,7 +43,6 @@ var (
 		"istio",
 		"google",
 		"kopeio",
-		"tectonic",
 		"redhat",
 		"vmware",
 	}
@@ -318,6 +317,7 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 		"bazelbuild/rules_k8s",
 		"google/cadvisor",
 		"helm/charts",
+		"GoogleCloudPlatform/k8s-cluster-bundle",
 		"kubeflow/arena",
 		"kubeflow/caffe2-operator",
 		"kubeflow/chainer-operator",
@@ -348,6 +348,7 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 		"kubernetes-sigs/cluster-api-provider-gcp",
 		"kubernetes-sigs/cluster-api-provider-openstack",
 		"kubernetes-sigs/poseidon",
+		"kubernetes-sigs/structured-merge-diff",
 		"tensorflow/minigo",
 	}) {
 		jobs[job.Name] = false

@@ -143,6 +143,8 @@ periodics:
   - org: kubernetes
     repo: test-infra
     base_ref: master
+  decoration_config:
+    timeout: 18500000000000 # 5h + 5m
   spec:
     containers:
     - command:
@@ -154,9 +156,10 @@ periodics:
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
       - --gcp-nodes=2
       - --gcp-zone=us-central1-f
+      - --ginkgo-parallel
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --timeout=120m
+      - --timeout=300m
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
 
@@ -230,7 +233,7 @@ periodics:
       - --env=KUBE_SSH_USER=admin
       - --extract=ci/latest
       - --ginkgo-parallel
-      - --kops-etcd-version=3.1.10
+      - --kops-etcd-version=3.2.24
       - --kops-master-count=3
       - --kops-multiple-zones
       - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt

@@ -37,12 +37,10 @@ go_library(
     srcs = ["main.go"],
     importpath = "k8s.io/test-infra/prow/cmd/hook",
     deps = [
+        "//flagutil:go_default_library",
         "//prow/config:go_default_library",
         "//prow/flagutil:go_default_library",
-        "//prow/git:go_default_library",
-        "//prow/github:go_default_library",
         "//prow/hook:go_default_library",
-        "//prow/kube:go_default_library",
         "//prow/logrusutil:go_default_library",
         "//prow/metrics:go_default_library",
         "//prow/pluginhelp/hook:go_default_library",

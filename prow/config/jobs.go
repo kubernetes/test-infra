@@ -329,7 +329,7 @@ type UtilityConfig struct {
 
 	// DecorationConfig holds configuration options for
 	// decorating PodSpecs that users provide
-	*kube.DecorationConfig
+	DecorationConfig *kube.DecorationConfig `json:"decoration_config,omitempty"`
 }
 
 // RetestPresubmits returns all presubmits that should be run given a /retest command.

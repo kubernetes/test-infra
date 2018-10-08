@@ -320,9 +320,9 @@ func retryCmd(l *logrus.Entry, dir, cmd string, arg ...string) ([]byte, error) {
 	var err error
 	sleepyTime := time.Second
 	for i := 0; i < 3; i++ {
-		cmd := exec.Command(cmd, arg...)
-		cmd.Dir = dir
-		b, err = cmd.CombinedOutput()
+		c := exec.Command(cmd, arg...)
+		c.Dir = dir
+		b, err = c.CombinedOutput()
 		if err != nil {
 			l.Warningf("Running %s %v returned error %v with output %s.", cmd, arg, err, string(b))
 			time.Sleep(sleepyTime)

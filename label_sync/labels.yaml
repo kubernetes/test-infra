@@ -21,12 +21,6 @@ default:
       addedBy: humans
       previously:
         - name: cherrypick-approved
-    - color: fef2c0
-      description: Denotes a PR to master as a candidate for cherry picking into a release branch.
-      name: cherrypick-candidate # TODO: rename as cherry-pick-candidate
-      target: prs
-      addedBy: humans
-      deleteAfter: 2018-09-19T00:00:00Z
     - color: d455d0
       description: Indicates an issue is a duplicate of other open issue.
       name: triage/duplicate
@@ -304,30 +298,6 @@ default:
       target: both
       prowPlugin: label
       addedBy: anyone
-    - color: ffaa00
-      description: DEPRECATED. # Bumps a PR up in priority in the submit-queue for kubernetes/kubernetes because that PR blocks others by being a dependency for other pending changes. This will stop having any effect once kubernetes/kubernetes migrates away from the submit queue.
-      name: queue/blocks-others
-      target: prs
-      addedBy: humans
-      deleteAfter: 2018-09-19T00:00:00Z
-    - color: ffaa00
-      description: DEPRECATED. # Bumps a PR up in priority in the submit-queue for kubernetes/kubernetes because that PR that contains a critical fix, and will merge even if e2e tests are failing. This will stop having any effect once kubernetes/kubernetes migrates away from the submit queue.
-      name: queue/critical-fix
-      target: prs
-      addedBy: humans
-      deleteAfter: 2018-09-19T00:00:00Z
-    - color: ffaa00
-      description: DEPRECATED. # Bumps a PR up in priority in the submit-queue for kubernetes/kubernetes because that PR that will fix or unblock the submit queue. This will stop having any effect once kubernetes/kubernetes migrates away from the submit queue.
-      name: queue/fix
-      target: prs
-      addedBy: humans
-      deleteAfter: 2018-09-19T00:00:00Z
-    - color: ffaa00
-      description: DEPRECATED. # Bumps a PR up in priority in the submit-queue for kubernetes/kubernetes because that PR that has had difficulty getting merged because merges ahead of it have forced it to be rebased multiple times. This will stop having any effect once kubernetes/kubernetes migrates away from the submit queue.
-      name: queue/multiple-rebases
-      target: prs
-      addedBy: humans
-      deleteAfter: 2018-09-19T00:00:00Z
     - color: c2e0c6
       description: Denotes a PR that will be considered when it comes time to generate release notes.
       name: release-note
@@ -346,19 +316,6 @@ default:
       target: prs
       prowPlugin: releasenote
       addedBy: prow or member or author
-    - color: eb6420
-      description: Indicates that a PR doesn't need to be retested prior to merge. # At present only submit-queue consumes this label. Unclear whether we're going to modify tide to respect this or not ([kubernetes/test-infra#5334](https://github.com/kubernetes/test-infra/issues/5334))
-      name: retest-not-required
-      target: prs
-      addedBy: humans
-      deleteAfter: 2018-09-19T00:00:00Z      
-    - color: fbca04
-      description: Indicates that a PR doesn't need to be retested prior to merge because it only changes docs. # At present only submit-queue consumes this label. Unclear whether we're going to modify tide to respect this or not ([kubernetes/test-infra#7195](https://github.com/kubernetes/test-infra/issues/7195))
-      name: retest-not-required-docs-only
-      target: prs
-      prowPlugin: docs-no-retest
-      addedBy: prow
-      deleteAfter: 2018-09-19T00:00:00Z      
     - color: d2b48c
       description: Categorizes an issue or PR as relevant to sig-api-machinery.
       name: sig/api-machinery
@@ -650,29 +607,6 @@ default:
       target: prs
       prowPlugin: size
       addedBy: prow
-    - color: fef2c0
-      description: Used during release burndown. Denotes an issue or PR is approved to be part of the release # A bot will warn then kick issues out of the milestone that lack this label.
-      name: status/approved-for-milestone
-      previously:
-        - name: approved-for-milestone
-      target: both
-      prowPlugin: milestonestatus
-      addedBy: "members of a configurable github team. default: [@kubernetes/kubernetes-milestone-maintainers](https://github.com/orgs/kubernetes/teams/kubernetes-milestone-maintainers/members)"
-      deleteAfter: 2018-09-19T00:00:00Z
-    - color: fef2c0
-      description: Used during release burndown. Denotes that an issue is actively being worked.
-      name: status/in-progress
-      target: both
-      prowPlugin: milestonestatus
-      addedBy: "members of a configurable github team. default: [@kubernetes/kubernetes-milestone-maintainers](https://github.com/orgs/kubernetes/teams/kubernetes-milestone-maintainers/members)"
-      deleteAfter: 2018-09-19T00:00:00Z
-    - color: fef2c0
-      description: Used during release burndown. Denotes that a fix for an issue is actively being reviewed.
-      name: status/in-review
-      target: both
-      prowPlugin: milestonestatus
-      addedBy: "members of a configurable github team. default: [@kubernetes/kubernetes-milestone-maintainers](https://github.com/orgs/kubernetes/teams/kubernetes-milestone-maintainers/members)"
-      deleteAfter: 2018-09-19T00:00:00Z
     - color: ffaa00
       description: Denotes a PR that should be squashed by tide when it merges.
       name: tide/squash
@@ -692,6 +626,20 @@ repos:
         name: area/conformance
         target: both
         addedBy: label
+      - color: cc99ff
+        description: Categorizes issues related to KEPs and PRs modifying the KEP directory
+        name: kind/kep
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+  kubernetes/features:
+    labels:
+      - color: cc99ff
+        description: Categorizes KEP tracking issues and PRs modifying the KEP directory
+        name: kind/kep
+        target: both
+        prowPlugin: label
+        addedBy: anyone
   kubernetes/kubernetes:
     labels:
       - color: 0052cc

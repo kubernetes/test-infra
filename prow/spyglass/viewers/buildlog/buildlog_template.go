@@ -28,8 +28,11 @@ var buildLogTemplateText = `<style>
 	line-height:1.2;
 	color:black;
 }
-.highlighted {
-  background-color: rgba(255, 224, 0, .5);
+.line-highlighted {
+  background-color: rgba(255, 224, 0, .4);
+}
+.match-highlighted {
+  font-weight: bold;
 }
 .skipped {
   display: none;
@@ -68,7 +71,9 @@ tr {
         {{range $line := $g.LogLines}}
         <tr>
           <td class="linenum">{{$line.Number}}</td>
-          <td><span {{if $line.Highlighted}}class="highlighted"{{end}}>{{$line.Text}}</span></td>
+          <td>
+            <span {{if $line.Highlighted}}class="line-highlighted"{{end}}>{{range $s := $line.SubLines}}<span {{if $s.Highlighted}}class="match-highlighted"{{end}}>{{$s.Text}}</span>{{end}}</span>
+          </td>
         </tr>
         {{end}}
       </tbody>

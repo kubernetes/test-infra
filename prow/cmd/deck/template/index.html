@@ -1,9 +1,7 @@
 {{define "title"}}Prow Status{{end}}
 
 {{define "scripts"}}
-<script type="text/javascript" src="/static/fuzzy-search.js"></script>
-<script type="text/javascript" src="/static/moment.min.js"></script>
-<script type="text/javascript" src="/static/script.js"></script>
+<script type="text/javascript" src="/static/prow_bundle.min.js"></script>
 <script type="text/javascript" src="data.js?var=allBuilds"></script>
 <script type="text/javascript">
   var spyglass = {{.SpyglassEnabled}};

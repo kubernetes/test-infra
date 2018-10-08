@@ -178,7 +178,7 @@ type Configuration struct {
 	SigMention           SigMention             `json:"sigmention,omitempty"`
 	Size                 *Size                  `json:"size,omitempty"`
 	Triggers             []Trigger              `json:"triggers,omitempty"`
-	Welcome              Welcome                `json:"welcome,omitempty"`
+	Welcome              []Welcome              `json:"welcome,omitempty"`
 }
 
 // Golint holds configuration for the golint plugin
@@ -366,6 +366,9 @@ type Lgtm struct {
 	// ReviewActsAsLgtm indicates that a Github review of "approve" or "request changes"
 	// acts as adding or removing the lgtm label
 	ReviewActsAsLgtm bool `json:"review_acts_as_lgtm,omitempty"`
+	// StoreTreeHash indicates if tree_hash should be stored inside a comment to detect
+	// squashed commits before removing lgtm labels
+	StoreTreeHash bool `json:"store_tree_hash,omitempty"`
 }
 
 type Cat struct {
@@ -464,9 +467,10 @@ type MergeWarning struct {
 
 // Welcome is config for the welcome plugin
 type Welcome struct {
+	// Repos is either of the form org/repos or just org.
+	Repos []string `json:"repos,omitempty"`
 	// MessageTemplate is the welcome message template to post on new-contributor PRs
 	// For the info struct see prow/plugins/welcome/welcome.go's PRInfo
-	// TODO(bentheelder): make this be configurable per-repo?
 	MessageTemplate string `json:"message_template,omitempty"`
 }
 

@@ -1,29 +1,4 @@
 periodics:
-- interval: 2h
-  name: ci-kubernetes-e2e-gce-gci-latest-rollback-etcd
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=110
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-leaked-resources
-      - --check-version-skew=false
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-gci-latest-rollback-etcd.env
-      - --extract=ci/latest
-      - --extract=ci/latest
-      - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
-      - --provider=gce
-      - --test=false
-      - --timeout=60m
-      - --upgrade_args=--ginkgo.focus=\[Feature:EtcdUpgrade\] --etcd-upgrade-storage=etcd2 --etcd-upgrade-version=2.2.1
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180924-8e8468033-master
-
 - interval: 30m
   name: ci-kubernetes-e2e-gce-ha-master
   labels:
@@ -44,7 +19,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:HAMaster\] --minStartupPods=8
       - --timeout=220m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180924-8e8468033-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
 - interval: 24h
   name: ci-kubernetes-e2e-gce-min-node-permissions
@@ -67,4 +42,4 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=500m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180924-8e8468033-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master

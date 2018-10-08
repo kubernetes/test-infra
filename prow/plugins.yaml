@@ -97,6 +97,9 @@ lgtm:
 - repos:
   - bazelbuild
   review_acts_as_lgtm: true
+- repos:
+  - kubernetes/test-infra
+  store_tree_hash: true
 
 blockades:
 - repos:
@@ -201,8 +204,11 @@ config_updater:
     config/jobs/**/*.yaml:
       name: job-config
 
-welcome:
-  message_template: "Welcome @{{.AuthorLogin}}! It looks like this is your first PR to {{.Org}}/{{.Repo}} 🎉"
+##  TODO(cblecker): revert once kubernetes/test-infra#9507 is merged *and* deployed
+# welcome:
+# - repos:
+#   - kubernetes/test-infra
+#   message_template: "Welcome @{{.AuthorLogin}}! It looks like this is your first PR to {{.Org}}/{{.Repo}} 🎉🎉"
 
 require_matching_label:
 - missing_label: needs-kind
@@ -248,6 +254,7 @@ plugins:
   - override
   - size  # Auto-label size of PR
   - trigger  # Allow people to configure CI jobs to /test
+  - verify-owners # Validates OWNERS file changes in PRs.
   - wip  # Auto-hold PRs with WIP in title
   - yuks # Let prow tell a /joke
 
@@ -255,22 +262,19 @@ plugins:
   - trigger
 
   kubeflow:
-    # Enable /approve and /assign commands.
-    - approve
-    - assign
-    - blunderbuss
-    - help
-    - hold
-    - label
-    - lgtm
-    # Lets PRs & issues be flagged as stale
-    - lifecycle
-    - size
-    # Allows cleaning up stale commit statuses
-    - skip
-    # Applies a label to PRs with wip in the title to block merge
-    - wip
-    - trigger
+  - approve   # Enable /approve and /assign commands.
+  - assign
+  - blunderbuss
+  - help
+  - hold
+  - label
+  - lgtm
+  - lifecycle   # Lets PRs & issues be flagged as stale
+  - size
+  - skip  # Allows cleaning up stale commit statuses
+  - verify-owners   # Validates OWNERS file changes in PRs.
+  - wip   # Applies a label to PRs with wip in the title to block merge
+  - trigger
 
   helm/charts:
   - approve
@@ -280,6 +284,7 @@ plugins:
   - hold
   - lgtm
   - trigger
+  - verify-owners
 
   kubernetes:
   - approve
@@ -300,6 +305,7 @@ plugins:
   - size
   - skip
   - slackevents
+  - verify-owners
   - wip
   - yuks
 
@@ -384,8 +390,7 @@ plugins:
   - owners-label
   - override
   - trigger
-  - verify-owners
-  - welcome
+  # - welcome // TODO(cblecker): revert once kubernetes/test-infra#9507 is merged *and* deployed
 
   kubernetes-client:
   - approve
@@ -403,6 +408,7 @@ plugins:
   - shrug
   - size
   - skip
+  - verify-owners
   - wip
   - yuks
 
@@ -422,6 +428,7 @@ plugins:
   - shrug
   - size
   - skip
+  - verify-owners
   - wip
   - yuks
 
@@ -433,9 +440,17 @@ plugins:
   - lifecycle
   - size
 
+  kubernetes-incubator/bootkube:
+  - approve
+  - blunderbuss
+  - hold
+  - verify-owners
+  - wip
+
   kubernetes-incubator/kubespray:
   - approve
   - blunderbuss
+  - verify-owners
 
   kubernetes-incubator/service-catalog:
   - approve
@@ -452,6 +467,7 @@ plugins:
   - approve
   - hold
   - trigger
+  - verify-owners
 
   kubernetes-security/kubernetes:
   - trigger
@@ -472,12 +488,13 @@ plugins:
   - shrug
   - size
   - skip
+  - verify-owners
   - wip
   - yuks
 
   kubernetes-sigs/kind:
   - trigger
-  - welcome
+  # - welcome // TODO(cblecker): revert once kubernetes/test-infra#9507 is merged *and* deployed
 
   kubernetes-sigs/federation-v2:
   - trigger
@@ -505,7 +522,7 @@ plugins:
 
   kubernetes-sigs/contributor-playground:
   - require-sig
-  - welcome
+  # - welcome // TODO(cblecker): revert once kubernetes/test-infra#9507 is merged *and* deployed
 
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
   - trigger
@@ -517,6 +534,9 @@ plugins:
   - trigger
 
   kubernetes-sigs/kube-storage-version-migrator:
+  - trigger
+
+  kubernetes-sigs/structured-merge-diff:
   - trigger
 
   containerd/cri:
@@ -546,18 +566,18 @@ plugins:
   - trigger
 
   client-go/unofficial-docs:
+  - approve
   - assign
-  - approve
-  - lgtm
-  - approve
-  - label
-  - cla
+  - blunderbuss
   - cat
+  - cla
   - dog
   - help
-  - blunderbuss
-  - wip
   - hold
+  - label
+  - lgtm
+  - verify-owners
+  - wip
 
   cncf/apisnoop:
   - cat # /meow replies with cat pictures

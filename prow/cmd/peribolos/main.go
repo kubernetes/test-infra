@@ -20,7 +20,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"net/url"
 	"os"
 	"strings"
 
@@ -36,7 +35,6 @@ import (
 )
 
 const (
-	defaultEndpoint  = "https://api.github.com"
 	defaultMinAdmins = 5
 	defaultDelta     = 0.25
 	defaultTokens    = 300
@@ -47,7 +45,6 @@ type options struct {
 	config         string
 	confirm        bool
 	dump           string
-	endpoint       flagutil.Strings
 	jobConfig      string
 	maximumDelta   float64
 	minAdmins      int
@@ -57,7 +54,7 @@ type options struct {
 	fixOrgMembers  bool
 	fixTeamMembers bool
 	fixTeams       bool
-	token          string
+	github         flagutil.GitHubOptions
 	tokenBurst     int
 	tokensPerHour  int
 }
@@ -71,8 +68,6 @@ func parseOptions() options {
 }
 
 func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
-	o.endpoint = flagutil.NewStrings(defaultEndpoint)
-	flags.Var(&o.endpoint, "github-endpoint", "Github api endpoint, may differ for enterprise")
 	o.requiredAdmins = flagutil.NewStrings()
 	flags.Var(&o.requiredAdmins, "required-admins", "Ensure config specifies these users as admins")
 	flags.IntVar(&o.minAdmins, "min-admins", defaultMinAdmins, "Ensure config specifies at least this many admins")
@@ -81,7 +76,6 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 	flags.StringVar(&o.config, "config-path", "", "Path to prow config.yaml")
 	flags.StringVar(&o.jobConfig, "job-config-path", "", "Path to prow job configs.")
 	flags.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
-	flags.StringVar(&o.token, "github-token-path", "", "Path to github token")
 	flags.IntVar(&o.tokensPerHour, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
 	flags.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst")
 	flags.StringVar(&o.dump, "dump", "", "Output current config of this org if set")
@@ -89,23 +83,17 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 	flags.BoolVar(&o.fixOrgMembers, "fix-org-members", false, "Add/remove org members if set")
 	flags.BoolVar(&o.fixTeams, "fix-teams", false, "Create/delete/update teams if set")
 	flags.BoolVar(&o.fixTeamMembers, "fix-team-members", false, "Add/remove team members if set")
-
+	o.github.AddFlags(flags)
 	if err := flags.Parse(args); err != nil {
 		return err
 	}
-	if o.token == "" {
-		return errors.New("empty --github-token-path")
+	if err := o.github.Validate(!o.confirm); err != nil {
+		return err
 	}
 	if o.tokensPerHour > 0 && o.tokenBurst >= o.tokensPerHour {
 		return fmt.Errorf("--tokens=%d must exceed --token-burst=%d", o.tokensPerHour, o.tokenBurst)
 	}
 
-	for _, ep := range o.endpoint.Strings() {
-		_, err := url.Parse(ep)
-		if err != nil {
-			return fmt.Errorf("invalid --endpoint URL %q: %v", ep, err)
-		}
-	}
 	if o.minAdmins < 2 {
 		return fmt.Errorf("--min-admins=%d must be at least 2", o.minAdmins)
 	}
@@ -139,21 +127,20 @@ func main() {
 	var c *github.Client
 
 	secretAgent := &config.SecretAgent{}
-	if err := secretAgent.Start([]string{o.token}); err != nil {
+	if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
-	if o.confirm {
-		c = github.NewClient(secretAgent.GetTokenGenerator(o.token), o.endpoint.Strings()...)
-	} else {
-		c = github.NewDryRunClient(secretAgent.GetTokenGenerator(o.token), o.endpoint.Strings()...)
+	githubClient, err := o.github.GitHubClient(secretAgent, !o.confirm)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
 	if o.tokensPerHour > 0 {
-		c.Throttle(o.tokensPerHour, o.tokenBurst) // 300 hourly tokens, bursts of 100 (default)
+		githubClient.Throttle(o.tokensPerHour, o.tokenBurst) // 300 hourly tokens, bursts of 100 (default)
 	}
 
 	if o.dump != "" {
-		ret, err := dumpOrgConfig(c, o.dump)
+		ret, err := dumpOrgConfig(githubClient, o.dump)
 		if err != nil {
 			logrus.WithError(err).Fatalf("Dump %s failed to collect current data.", o.dump)
 		}
@@ -314,7 +301,7 @@ func configureOrgMembers(opt options, client orgClient, orgName string, orgConfi
 	}
 	if opt.requireSelf {
 		if me, err := client.BotName(); err != nil {
-			return fmt.Errorf("cannot determine user making requests for %s: %v", opt.token, err)
+			return fmt.Errorf("cannot determine user making requests for %s: %v", opt.github.TokenPath, err)
 		} else if !wantAdmins.Has(me) {
 			return fmt.Errorf("authenticated user %s is not an admin of %s", me, orgName)
 		}
@@ -403,7 +390,7 @@ func configureOrgMembers(opt options, client orgClient, orgName string, orgConfi
 		return err
 	}
 
-	return configureMembers(have, want, adder, remover)
+	return configureMembers(have, want, invitees, adder, remover)
 }
 
 type memberships struct {
@@ -428,13 +415,14 @@ func (m *memberships) normalize() {
 	m.super = normalize(m.super)
 }
 
-func configureMembers(have, want memberships, adder func(user string, super bool) error, remover func(user string) error) error {
+func configureMembers(have, want memberships, invitees sets.String, adder func(user string, super bool) error, remover func(user string) error) error {
 	have.normalize()
 	want.normalize()
 	if both := want.super.Intersection(want.members); len(both) > 0 {
 		return fmt.Errorf("users in both roles: %s", strings.Join(both.List(), ", "))
 	}
-	remove := have.all().Difference(want.all())
+	havePlusInvites := have.all().Union(invitees)
+	remove := havePlusInvites.Difference(want.all())
 	members := want.members.Difference(have.members)
 	supers := want.super.Difference(have.super)
 
@@ -883,5 +871,5 @@ func configureTeamMembers(client teamMembersClient, id int, team org.Team, invit
 
 	want := memberships{members: wantMembers, super: wantMaintainers}
 	have := memberships{members: haveMembers, super: haveMaintainers}
-	return configureMembers(have, want, adder, remover)
+	return configureMembers(have, want, invitees, adder, remover)
 }

@@ -85,6 +85,11 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        cluster-bootstrap:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         code-generator:
           restrictions:
             users: []
@@ -256,10 +261,6 @@ branch-protection:
           required_status_checks:
             contexts:
             - continuous-integration/travis-ci
-        kube-arbitrator:
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci
         node-feature-discovery:
           required_status_checks:
             contexts:
@@ -269,6 +270,11 @@ branch-protection:
       required_status_checks:
         contexts:
         - cla/linuxfoundation
+      repos:
+        kube-batch:
+          required_status_checks:
+            contexts:
+            - continuous-integration/travis-ci
 
 tide:
   queries:
@@ -306,6 +312,7 @@ tide:
     - kubernetes-sigs
     repos:
     - client-go/unofficial-docs
+    - kubernetes-incubator/bootkube
     - kubernetes-incubator/ip-masq-agent
     - kubernetes-incubator/kubespray
     - kubernetes-incubator/service-catalog

@@ -88,7 +88,7 @@ func main() {
 	for fullRepoName, ps := range conf.Presubmits {
 		org, repo, err := splitRepoName(fullRepoName)
 		if err != nil {
-			logrus.WithError(err).Warn("Invalid repo name %s.", fullRepoName)
+			logrus.WithError(err).Warnf("Invalid repo name %s.", fullRepoName)
 			continue
 		}
 		for _, p := range ps {
@@ -114,7 +114,7 @@ func main() {
 	for fullRepoName, ps := range conf.Postsubmits {
 		org, repo, err := splitRepoName(fullRepoName)
 		if err != nil {
-			logrus.WithError(err).Warn("Invalid repo name %s.", fullRepoName)
+			logrus.WithError(err).Warnf("Invalid repo name %s.", fullRepoName)
 			continue
 		}
 		for _, p := range ps {

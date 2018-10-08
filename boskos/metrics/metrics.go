@@ -146,7 +146,7 @@ func handleMetric(boskos *client.Client) http.HandlerFunc {
 		log.Infof("From %v", req.RemoteAddr)
 
 		if req.Method != "GET" {
-			log.Warning("[BadRequest]method %v, expect GET", req.Method)
+			log.Warningf("[BadRequest]method %v, expect GET", req.Method)
 			http.Error(res, "only accepts GET request", http.StatusMethodNotAllowed)
 			return
 		}
