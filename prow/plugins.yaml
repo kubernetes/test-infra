@@ -433,41 +433,30 @@ plugins:
   - yuks
 
   kubernetes-incubator:
+  - approve
   - assign
+  - blunderbuss
+  - cat
   - cla
+  - dog
+  - heart
+  - help
+  - hold
   - label
   - lgtm
   - lifecycle
+  - shrug
   - size
-
-  kubernetes-incubator/bootkube:
-  - approve
-  - blunderbuss
-  - hold
+  - skip
   - verify-owners
   - wip
-
-  kubernetes-incubator/kubespray:
-  - approve
-  - blunderbuss
-  - verify-owners
+  - yuks
 
   kubernetes-incubator/service-catalog:
-  - approve
-  - blunderbuss
-  - cat
-  - dog
-  - help
-  - hold
   - trigger
-  - verify-owners
-  - wip
 
   kubernetes-incubator/ip-masq-agent:
-  - approve
-  - hold
   - trigger
-  - verify-owners
 
   kubernetes-security/kubernetes:
   - trigger
