@@ -89,7 +89,9 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      # TODO(random-liu): Update to gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
+      # after containerd is updated to go 1.11.
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-1.12
         args:
         - "--repo=github.com/containerd/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
