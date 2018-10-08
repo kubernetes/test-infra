@@ -148,6 +148,7 @@ periodics:
   spec:
     containers:
     - command:
+      - runner.sh
       - ./scenarios/kubernetes_e2e.py
       args:
       - --check-leaked-resources
