@@ -25,24 +25,28 @@ import (
 )
 
 // CreateMarker produces empty file as marker
-func CreateMarker(dir, fileName string) {
-	Write(nil, dir, fileName)
+func CreateMarker(dir, fileName string) error {
+	err := Write(nil, dir, fileName)
 	logrus.Infof("Created marker file '%s'", fileName)
+	return err
 }
 
 // Write writes the content of the string to a file in the directory
-func Write(content *string, destinationDir, fileName string) {
+func Write(content *string, destinationDir, fileName string) error {
 	filePath := path.Join(destinationDir, fileName)
 	file, err := os.Create(filePath)
 	if err != nil {
-		logrus.Fatalf("Error writing file: %v", err)
+		return fmt.Errorf("error writing file: %v", err)
 	} else {
 		logrus.Infof("Created file:%s", filePath)
 		if content == nil {
 			logrus.Infof("No content to be written to file '%s'", fileName)
 		} else {
-			fmt.Fprint(file, *content)
+			_, err = fmt.Fprint(file, *content)
+			if err != nil {
+				return fmt.Errorf("cannot print to file: %v", err)
+			}
 		}
 	}
-	defer file.Close()
+	return file.Close()
 }

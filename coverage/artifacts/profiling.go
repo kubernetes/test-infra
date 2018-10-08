@@ -35,14 +35,17 @@ func runProfiling(cmdArgs []string, localArts *LocalArtifacts) error {
 	cmdAsString := fmt.Sprintf("go %s", strings.Join(cmdArgs, " "))
 	logrus.Infof("Composed shell command: %s", cmdAsString)
 
-	goTestCoverStdout, errCmdOutput := cmd.Output()
+	goTestCoverStdout, err := cmd.Output()
 
-	if errCmdOutput != nil {
+	if err != nil {
 		return fmt.Errorf("error running composed shell command: error='%v'; stdout='%s'",
-			errCmdOutput, goTestCoverStdout)
+			err, goTestCoverStdout)
 	} else {
 		logrus.Infof("Coverage profile created @ '%s'", localArts.ProfilePath())
-		covIo.CreateMarker(localArts.Directory, CovProfileCompletionMarker)
+		err = covIo.CreateMarker(localArts.Directory, CovProfileCompletionMarker)
+		if err != nil {
+			return err
+		}
 	}
 
 	stdoutPath := localArts.CovStdoutPath()
@@ -52,8 +55,7 @@ func runProfiling(cmdArgs []string, localArts *LocalArtifacts) error {
 	} else {
 		return fmt.Errorf("error creating stdout file: %v", err)
 	}
-	defer stdoutFile.Close()
 	logrus.Infof("Stdout of test coverage stored in %s", stdoutPath)
 	logrus.Infof("Ends calc.runProfiling(...)")
-	return nil
+	return stdoutFile.Close()
 }
