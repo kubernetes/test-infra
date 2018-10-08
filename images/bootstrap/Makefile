@@ -20,8 +20,10 @@ all: build
 build:
 	bazel build //images/bootstrap/barnacle:barnacle --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
 	cp ./../../bazel-bin/images/bootstrap/barnacle/linux_amd64_pure_stripped/barnacle ./barnacle/barnacle
+	cp -r ../../scenarios ./scenarios
 	docker build --pull --build-arg IMAGE_ARG=$(IMG):$(TAG) -t $(IMG):$(TAG) .
 	rm -f ./barnacle/barnacle
+	rm -r ./scenarios
 	docker tag $(IMG):$(TAG) $(IMG):latest
 	@echo Built $(IMG):$(TAG) and tagged with latest
 
