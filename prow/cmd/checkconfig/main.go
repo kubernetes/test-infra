@@ -151,22 +151,22 @@ func main() {
 	// in all components on their failure.
 	var errs []error
 	if o.warningEnabled(mismatchedTideWarning) {
-		if err := validateTideRequirements(configAgent, pluginAgent); err != nil {
+		if err := validateTideRequirements(&configAgent, &pluginAgent); err != nil {
 			errs = append(errs, err)
 		}
 	}
 	if o.warningEnabled(nonDecoratedJobsWarning) {
-		if err := validateDecoratedJobs(configAgent); err != nil {
+		if err := validateDecoratedJobs(&configAgent); err != nil {
 			errs = append(errs, err)
 		}
 	}
 	if o.warningEnabled(jobNameLengthWarning) {
-		if err := validateJobRequirements(configAgent); err != nil {
+		if err := validateJobRequirements(&configAgent); err != nil {
 			errs = append(errs, err)
 		}
 	}
 	if o.warningEnabled(needsOkToTestWarning) {
-		if err := validateNeedsOkToTestLabel(configAgent); err != nil {
+		if err := validateNeedsOkToTestLabel(&configAgent); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -175,7 +175,7 @@ func main() {
 	}
 }
 
-func validateJobRequirements(configAgent config.Agent) error {
+func validateJobRequirements(configAgent *config.Agent) error {
 	c := configAgent.Config().JobConfig
 
 	var validationErrs []error
@@ -223,7 +223,7 @@ func validatePeriodicJob(job config.Periodic) error {
 	return errorutil.NewAggregate(validationErrs...)
 }
 
-func validateTideRequirements(configAgent config.Agent, pluginAgent plugins.PluginAgent) error {
+func validateTideRequirements(configAgent *config.Agent, pluginAgent *plugins.PluginAgent) error {
 	type matcher struct {
 		// matches determines if the tide query appropriately honors the
 		// label in question -- whether by requiring it or forbidding it
@@ -360,7 +360,7 @@ func ensureValidConfiguration(plugin, label, verb string, tideSubSet, tideSuperS
 	return errorutil.NewAggregate(configErrors...)
 }
 
-func validateDecoratedJobs(configAgent config.Agent) error {
+func validateDecoratedJobs(configAgent *config.Agent) error {
 	var nonDecoratedJobs []string
 	for _, presubmit := range configAgent.Config().AllPresubmits([]string{}) {
 		if presubmit.Agent == string(v1.KubernetesAgent) && !presubmit.Decorate {
@@ -386,7 +386,7 @@ func validateDecoratedJobs(configAgent config.Agent) error {
 	return nil
 }
 
-func validateNeedsOkToTestLabel(configAgent config.Agent) error {
+func validateNeedsOkToTestLabel(configAgent *config.Agent) error {
 	var queryErrors []error
 	for i, query := range configAgent.Config().Tide.Queries {
 		for _, label := range query.Labels {

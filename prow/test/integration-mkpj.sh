@@ -44,6 +44,7 @@ function validate() {
     local actual=$2
     if ! difference="$( diff --ignore-matching-lines="name:" --ignore-matching-lines="startTime:" "${expected}" "${actual}" )"; then
         echo "[ERROR] Generated incorrect ProwJob YAML for config:"
+        echo "${expected} vs ${actual}"
         echo "${difference}"
         exit 1
     fi

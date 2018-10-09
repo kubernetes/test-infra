@@ -17,53 +17,138 @@ limitations under the License.
 package cov
 
 import (
-	"golang.org/x/tools/cover"
 	"testing"
+
+	"golang.org/x/tools/cover"
 )
 
 func TestBlocksEqualValid(t *testing.T) {
-	a := cover.ProfileBlock{1, 2, 3, 4, 5, 6}
-	b := cover.ProfileBlock{1, 2, 3, 4, 5, 7}
+	a := cover.ProfileBlock{
+		StartLine: 1,
+		StartCol:  2,
+		EndLine:   3,
+		EndCol:    4,
+		NumStmt:   5,
+		Count:     6,
+	}
+	b := cover.ProfileBlock{
+		StartLine: 1,
+		StartCol:  2,
+		EndLine:   3,
+		EndCol:    4,
+		NumStmt:   5,
+		Count:     7,
+	}
 	if !blocksEqual(a, b) {
 		t.Error("equivalent blocks treated as mismatching")
 	}
 }
 
 func TestBlocksEqualBadStartLine(t *testing.T) {
-	a := cover.ProfileBlock{1, 2, 3, 4, 5, 6}
-	b := cover.ProfileBlock{8, 2, 3, 4, 5, 7}
+	a := cover.ProfileBlock{
+		StartLine: 1,
+		StartCol:  2,
+		EndLine:   3,
+		EndCol:    4,
+		NumStmt:   5,
+		Count:     6,
+	}
+	b := cover.ProfileBlock{
+		StartLine: 8,
+		StartCol:  2,
+		EndLine:   3,
+		EndCol:    4,
+		NumStmt:   5,
+		Count:     7,
+	}
 	if blocksEqual(a, b) {
 		t.Error("mismatching StartLine considered equivalent")
 	}
 }
 
 func TestBlocksEqualBadStartCol(t *testing.T) {
-	a := cover.ProfileBlock{1, 2, 3, 4, 5, 6}
-	b := cover.ProfileBlock{1, 8, 3, 4, 5, 7}
+	a := cover.ProfileBlock{
+		StartLine: 1,
+		StartCol:  2,
+		EndLine:   3,
+		EndCol:    4,
+		NumStmt:   5,
+		Count:     6,
+	}
+	b := cover.ProfileBlock{
+		StartLine: 1,
+		StartCol:  8,
+		EndLine:   3,
+		EndCol:    4,
+		NumStmt:   5,
+		Count:     7,
+	}
 	if blocksEqual(a, b) {
 		t.Error("mismatching StartCol considered equivalent")
 	}
 }
 
 func TestBlocksEqualBadEndLine(t *testing.T) {
-	a := cover.ProfileBlock{1, 2, 3, 4, 5, 6}
-	b := cover.ProfileBlock{1, 2, 8, 4, 5, 7}
+	a := cover.ProfileBlock{
+		StartLine: 1,
+		StartCol:  2,
+		EndLine:   3,
+		EndCol:    4,
+		NumStmt:   5,
+		Count:     6,
+	}
+	b := cover.ProfileBlock{
+		StartLine: 1,
+		StartCol:  2,
+		EndLine:   8,
+		EndCol:    4,
+		NumStmt:   5,
+		Count:     7,
+	}
 	if blocksEqual(a, b) {
 		t.Error("mismatching EndLine considered equivalent")
 	}
 }
 
 func TestBlocksEqualBadEndCol(t *testing.T) {
-	a := cover.ProfileBlock{1, 2, 3, 4, 5, 6}
-	b := cover.ProfileBlock{1, 2, 3, 8, 5, 7}
+	a := cover.ProfileBlock{
+		StartLine: 1,
+		StartCol:  2,
+		EndLine:   3,
+		EndCol:    4,
+		NumStmt:   5,
+		Count:     6,
+	}
+	b := cover.ProfileBlock{
+		StartLine: 1,
+		StartCol:  2,
+		EndLine:   3,
+		EndCol:    8,
+		NumStmt:   5,
+		Count:     7,
+	}
 	if blocksEqual(a, b) {
 		t.Error("mismatching EndCol considered equivalent")
 	}
 }
 
 func TestBlocksEqualBadNumStmt(t *testing.T) {
-	a := cover.ProfileBlock{1, 2, 3, 4, 5, 6}
-	b := cover.ProfileBlock{1, 2, 3, 4, 8, 7}
+	a := cover.ProfileBlock{
+		StartLine: 1,
+		StartCol:  2,
+		EndLine:   3,
+		EndCol:    4,
+		NumStmt:   5,
+		Count:     6,
+	}
+	b := cover.ProfileBlock{
+		StartLine: 1,
+		StartCol:  2,
+		EndLine:   3,
+		EndCol:    4,
+		NumStmt:   8,
+		Count:     7,
+	}
 	if blocksEqual(a, b) {
 		t.Error("mismatching NumStmt considered equivalent")
 	}

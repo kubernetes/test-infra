@@ -42,26 +42,26 @@ required = [
   name = "github.com/prometheus/client_golang"
   version = "0.8.0"
 
-# Need override because release-1.10 and kubernetes-1.10.0 are not semver compliant
+# Need override because release-1.11 and kubernetes-1.11.0 are not semver compliant
 [[override]]
   name = "k8s.io/api"
-  branch = "release-1.10"
+  branch = "release-1.11"
 
 [[override]]
   name = "k8s.io/apiserver"
-  branch = "release-1.10"
+  branch = "release-1.11"
 
 [[override]]
   name = "k8s.io/apimachinery"
-  branch = "release-1.10"
+  branch = "release-1.11"
 
 [[override]]
   name = "k8s.io/code-generator"
-  branch = "release-1.10"
+  branch = "release-1.11"
 
 [[override]]
   name = "k8s.io/client-go"
-  version = "v7.0.0"
+  version = "v8.0.0"
 
 [[constraint]]
   name = "github.com/docker/docker"
