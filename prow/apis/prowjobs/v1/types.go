@@ -193,7 +193,7 @@ type UtilityImages struct {
 	Sidecar string `json:"sidecar,omitempty"`
 }
 
-// PathStrategy specifies minutia about how to contruct the url.
+// PathStrategy specifies minutia about how to construct the url.
 // Usually consumed by gubernator/testgrid.
 const (
 	PathStrategyLegacy   = "legacy"

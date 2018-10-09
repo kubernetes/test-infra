@@ -136,7 +136,7 @@ func (h *gcsArtifactHandle) NewRangeReader(ctx context.Context, offset, length i
 	return h.ObjectHandle.NewRangeReader(ctx, offset, length)
 }
 
-// Artifact contructs a GCS artifact from the given GCS bucket and key. Uses the golang GCS library
+// Artifact constructs a GCS artifact from the given GCS bucket and key. Uses the golang GCS library
 // to get read handles. If the artifactName is not a valid key in the bucket a handle will still be
 // constructed and returned, but all read operations will fail (dictated by behavior of golang GCS lib).
 func (af *GCSArtifactFetcher) artifact(src jobSource, artifactName string, sizeLimit int64) viewers.Artifact {
