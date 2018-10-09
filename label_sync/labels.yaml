@@ -663,6 +663,23 @@ repos:
         name: area/conformance
         target: both
         addedBy: label
+  kubernetes/org:
+    labels:
+      - color: 0052cc
+        description: Third-party integrations, webhooks, or GitHub Apps
+        name: area/github-integration
+        target: issues
+        addedBy: label
+      - color: 0052cc
+        description: Requesting membership in a Kubernetes GitHub Organization or Team
+        name: area/github-membership
+        target: issues
+        addedBy: label
+      - color: 0052cc
+        description: Creating, migrating or deleting a Kubernetes GitHub Repository
+        name: area/github-repo
+        target: issues
+        addedBy: label
   kubernetes/test-infra:
     labels:
       - color: 0052cc
