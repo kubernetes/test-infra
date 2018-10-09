@@ -28,14 +28,14 @@ import (
 
 func TestWriteToArtifacts(t *testing.T) {
 	s := "content to be written on disk"
-	artsDir := test.NewArtsDir("TestWriteToArtifacts")
-	Write(&s, artsDir, "testWriteToArt.txt")
-	content, err := ioutil.ReadFile(path.Join(artsDir, "testWriteToArt.txt"))
+	artifactsDir := test.NewArtsDir("TestWriteToArtifacts")
+	Write(&s, artifactsDir, "testWriteToArt.txt")
+	content, err := ioutil.ReadFile(path.Join(artifactsDir, "testWriteToArt.txt"))
 	if err != nil {
 		logrus.Fatalf("Cannot read file, err = %v", err)
 	}
 
 	test.AssertEqual(t, s, string(content))
 
-	test.DeleteDir(artsDir)
+	test.DeleteDir(artifactsDir)
 }

@@ -38,23 +38,23 @@ type Artifacts struct {
 //New Artifact object
 func New(directory, profileName, keyProfileName, covStdoutName string) *Artifacts {
 	return &Artifacts{
-		directory,
-		profileName,
-		keyProfileName,
-		covStdoutName}
+		Directory:directory,
+		profileName:profileName,
+		keyProfileName:keyProfileName,
+		covStdoutName:covStdoutName}
 }
 
-//ProfilePath returns profile path
-func (arts *Artifacts) ProfilePath() string {
-	return path.Join(arts.Directory, arts.profileName)
+//ProfilePath returns profile path on disk, accessible by file io functions
+func (artifacts *Artifacts) ProfilePath() string {
+	return path.Join(artifacts.Directory, artifacts.profileName)
 }
 
-//KeyProfilePath returns key profile path
-func (arts *Artifacts) KeyProfilePath() string {
-	return path.Join(arts.Directory, arts.keyProfileName)
+//KeyProfilePath returns key profile path on disk, accessible by file io functions
+func (artifacts *Artifacts) KeyProfilePath() string {
+	return path.Join(artifacts.Directory, artifacts.keyProfileName)
 }
 
 //CovStdoutPath returns stdout path
-func (arts *Artifacts) CovStdoutPath() string {
-	return path.Join(arts.Directory, arts.covStdoutName)
+func (artifacts *Artifacts) CovStdoutPath() string {
+	return path.Join(artifacts.Directory, artifacts.covStdoutName)
 }

@@ -43,8 +43,8 @@ func NewLocalArtifacts(directory string, ProfileName string,
 }
 
 // ProfileReader create and returns a ProfileReader by opening the file stored in profile path
-func (arts *LocalArtifacts) ProfileReader() (io.ReadCloser, error) {
-	f, err := os.Open(arts.ProfilePath())
+func (artifacts *LocalArtifacts) ProfileReader() (io.ReadCloser, error) {
+	f, err := os.Open(artifacts.ProfilePath())
 	if err != nil {
 		logrus.Debugf("LocalArtifacts.ProfileReader(): os.Open(profilePath) error: %v", err)
 	}
@@ -52,15 +52,15 @@ func (arts *LocalArtifacts) ProfileReader() (io.ReadCloser, error) {
 }
 
 //ProfileName gets name of profile
-func (arts *LocalArtifacts) ProfileName() string {
-	return arts.profileName
+func (artifacts *LocalArtifacts) ProfileName() string {
+	return artifacts.profileName
 }
 
 // KeyProfileCreator creates a key profile file that will be used to hold a
 // filtered version of coverage profile that only stores the entries that
 // will be displayed by line coverage tool
-func (arts *LocalArtifacts) KeyProfileCreator() *os.File {
-	keyProfilePath := arts.KeyProfilePath()
+func (artifacts *LocalArtifacts) KeyProfileCreator() *os.File {
+	keyProfilePath := artifacts.KeyProfilePath()
 	keyProfileFile, err := os.Create(keyProfilePath)
 	logrus.Infof("os.Create(keyProfilePath)=%s", keyProfilePath)
 	if err != nil {
@@ -72,16 +72,16 @@ func (arts *LocalArtifacts) KeyProfileCreator() *os.File {
 
 // ProduceProfileFile produce coverage profile (&its stdout) by running go test on target package
 // for periodic job, produce junit xml for testgrid in addition
-func (arts *LocalArtifacts) ProduceProfileFile(covTargetsStr string) error {
+func (artifacts *LocalArtifacts) ProduceProfileFile(covTargetsStr string) error {
 	// creates artifacts directory
-	artsDirPath := arts.Directory
-	logrus.Infof("Making directory (MkdirAll): path=%s", artsDirPath)
-	if err := os.MkdirAll(artsDirPath, 0755); err != nil {
-		return fmt.Errorf("failed os.MkdirAll(path='%s', 0755); err='%v'", artsDirPath, err)
+	artifactsDirPath := artifacts.Directory
+	logrus.Infof("Making directory (MkdirAll): path=%s", artifactsDirPath)
+	if err := os.MkdirAll(artifactsDirPath, 0755); err != nil {
+		return fmt.Errorf("failed os.MkdirAll(path='%s', 0755); err='%v'", artifactsDirPath, err)
 	}
-	logrus.Infof("artifacts dir (path=%s) created successfully", artsDirPath)
-	covTargets := composeCmdArgs(covTargetsStr, arts.ProfilePath())
-	return runProfiling(covTargets, arts)
+	logrus.Infof("artifacts dir (path=%s) created successfully", artifactsDirPath)
+	covTargets := composeCmdArgs(covTargetsStr, artifacts.ProfilePath())
+	return runProfiling(covTargets, artifacts)
 }
 
 func composeCmdArgs(covTargetsStr, profileDestinationPath string) []string {

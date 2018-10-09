@@ -32,9 +32,9 @@ func DeleteDir(dir string) {
 	}
 }
 
-func linkInputArt(artsDir, artName string) {
+func linkInputArt(artifactsDir, artName string) {
 	err := os.Symlink(path.Join(InputArtifactsDir, artName),
-		path.Join(artsDir, artName))
+		path.Join(artifactsDir, artName))
 
 	if err != nil {
 		logrus.Fatalf("Error creating Symlink: %v", err)
@@ -47,9 +47,9 @@ func NewArtsDir(dirPrefix string) string {
 	dir, err := ioutil.TempDir(tmpArtsDir, dirPrefix+"_")
 	logrus.Infof("Artifacts directory ='%s'", dir)
 	if err != nil {
-		logrus.Fatalf("Error making TempDir for arts: %v", err)
+		logrus.Fatalf("Error making TempDir for artifacts: %v", err)
 	} else {
-		logrus.Infof("Temp arts dir created: %s", dir)
+		logrus.Infof("Temp artifacts dir created: %s", dir)
 	}
 	return dir
 }
