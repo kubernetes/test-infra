@@ -71,8 +71,11 @@ print-cookie() {
 while true; do
   token=$(print-token)
   expire=$(expr 60 \* 60 + $(date +%s))
+  echo "token expires at"
+  date -d "@$expire"
   print-cookie .googlesource.com TRUE "$expire" "$token" > cookies
   print-cookie source.developers.google.com FALSE "$expire" "$token" >> cookies
+  md5sum cookies
 
   kubectl create secret generic "$name" --from-file=cookies --dry-run -o yaml > secret.yaml
   if ! kubectl get -f secret.yaml; then
@@ -81,6 +84,6 @@ while true; do
     verb=replace
   fi
   kubectl "$verb" -f secret.yaml
-  echo "successfully updated token, sleeping for 30m..."
-  sleep 30m
+  echo "successfully updated token, sleeping for 20m..."
+  sleep 20m
 done
