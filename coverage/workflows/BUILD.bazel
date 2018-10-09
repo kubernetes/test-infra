@@ -1,0 +1,47 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
+
+go_library(
+    name = "go_default_library",
+    srcs = ["presubmit.go"],
+    importpath = "k8s.io/test-infra/coverage/workflows",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//coverage/artifacts:go_default_library",
+        "//coverage/calc:go_default_library",
+        "//coverage/gcs:go_default_library",
+        "//coverage/githubUtil:go_default_library",
+        "//coverage/io:go_default_library",
+        "//coverage/line:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["presubmit_test.go"],
+    embed = [":go_default_library"],
+    deps = [
+        "//coverage/artifacts/artsTest:go_default_library",
+        "//coverage/gcs:go_default_library",
+        "//coverage/gcs/gcsFakes:go_default_library",
+        "//coverage/githubUtil/githubFakes:go_default_library",
+        "//coverage/githubUtil/githubPR:go_default_library",
+        "//coverage/io:go_default_library",
+        "//coverage/test:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+    ],
+)

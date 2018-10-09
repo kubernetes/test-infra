@@ -1,0 +1,1 @@
+/usr/local/google/home/syzf/Apps/golang/gopath/src/github.com/kubernetes/test-infra/coverage/testdata/artifacts/stdout.txt

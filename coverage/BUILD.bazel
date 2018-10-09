@@ -1,0 +1,72 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["main.go"],
+    importpath = "k8s.io/test-infra/coverage",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//coverage/artifacts:go_default_library",
+        "//coverage/gcs:go_default_library",
+        "//coverage/githubUtil/githubPR:go_default_library",
+        "//coverage/logUtil:go_default_library",
+        "//coverage/testgrid:go_default_library",
+        "//coverage/workflows:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+    ],
+)
+
+go_binary(
+    name = "coverage",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "test-input",
+    srcs = glob([
+        "testdata/artifacts/**",
+        "testdata/**",
+    ]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "test-target",
+    srcs = glob([
+        "testTarget/presubmit/**",
+    ]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//coverage/artifacts:all-srcs",
+        "//coverage/calc:all-srcs",
+        "//coverage/gcs:all-srcs",
+        "//coverage/git:all-srcs",
+        "//coverage/githubUtil:all-srcs",
+        "//coverage/io:all-srcs",
+        "//coverage/line:all-srcs",
+        "//coverage/logUtil:all-srcs",
+        "//coverage/str:all-srcs",
+        "//coverage/test:all-srcs",
+        "//coverage/testTarget/presubmit:all-srcs",
+        "//coverage/testTarget/subPkg1:all-srcs",
+        "//coverage/testTarget/subPkg2:all-srcs",
+        "//coverage/testTarget/targetPkgs_postsubmit:all-srcs",
+        "//coverage/testgrid:all-srcs",
+        "//coverage/workflows:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
