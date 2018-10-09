@@ -28,12 +28,14 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/errorutil"
+	needsrebase "k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/plugins/approve"
 	"k8s.io/test-infra/prow/plugins/blockade"
 	"k8s.io/test-infra/prow/plugins/cherrypickunapproved"
 	"k8s.io/test-infra/prow/plugins/hold"
 	"k8s.io/test-infra/prow/plugins/releasenote"
+	"k8s.io/test-infra/prow/plugins/trigger"
 	"k8s.io/test-infra/prow/plugins/verify-owners"
 	"k8s.io/test-infra/prow/plugins/wip"
 
@@ -75,12 +77,14 @@ const (
 	mismatchedTideWarning   = "mismatched-tide"
 	nonDecoratedJobsWarning = "non-decorated-jobs"
 	jobNameLengthWarning    = "long-job-names"
+	needsOkToTestWarning    = "needs-ok-to-test"
 )
 
 var allWarnings = []string{
 	mismatchedTideWarning,
 	nonDecoratedJobsWarning,
 	jobNameLengthWarning,
+	needsOkToTestWarning,
 }
 
 func (o *options) Validate() error {
@@ -161,6 +165,11 @@ func main() {
 			errs = append(errs, err)
 		}
 	}
+	if o.warningEnabled(needsOkToTestWarning) {
+		if err := validateNeedsOkToTestLabel(configAgent); err != nil {
+			errs = append(errs, err)
+		}
+	}
 	if len(errs) > 0 {
 		reportWarning(o.strict, errorutil.NewAggregate(errs...))
 	}
@@ -191,7 +200,7 @@ func validatePresubmitJob(repo string, job config.Presubmit) error {
 	var validationErrs []error
 	// Prow labels k8s resources with job names. Labels are capped at 63 chars.
 	if job.Agent == string(v1.KubernetesAgent) && len(job.Name) > validation.LabelValueMaxLength {
-		validationErrs = append(validationErrs, fmt.Errorf("Name of Presubmit job '%s' (for repo '%s') too long (should be at most 63 characters)", job.Name, repo))
+		validationErrs = append(validationErrs, fmt.Errorf("name of Presubmit job %q (for repo %q) too long (should be at most 63 characters)", job.Name, repo))
 	}
 	return errorutil.NewAggregate(validationErrs...)
 }
@@ -200,7 +209,7 @@ func validatePostsubmitJob(repo string, job config.Postsubmit) error {
 	var validationErrs []error
 	// Prow labels k8s resources with job names. Labels are capped at 63 chars.
 	if job.Agent == string(v1.KubernetesAgent) && len(job.Name) > validation.LabelValueMaxLength {
-		validationErrs = append(validationErrs, fmt.Errorf("Name of Postsubmit job '%s' (for repo '%s') too long (should be at most 63 characters)", job.Name, repo))
+		validationErrs = append(validationErrs, fmt.Errorf("name of Postsubmit job %q (for repo %q) too long (should be at most 63 characters)", job.Name, repo))
 	}
 	return errorutil.NewAggregate(validationErrs...)
 }
@@ -209,7 +218,7 @@ func validatePeriodicJob(job config.Periodic) error {
 	var validationErrs []error
 	// Prow labels k8s resources with job names. Labels are capped at 63 chars.
 	if job.Agent == string(v1.KubernetesAgent) && len(job.Name) > validation.LabelValueMaxLength {
-		validationErrs = append(validationErrs, fmt.Errorf("Name of Periodic job '%s' too long (should be at most 63 characters)", job.Name))
+		validationErrs = append(validationErrs, fmt.Errorf("name of Periodic job %q too long (should be at most 63 characters)", job.Name))
 	}
 	return errorutil.NewAggregate(validationErrs...)
 }
@@ -256,6 +265,7 @@ func validateTideRequirements(configAgent config.Agent, pluginAgent plugins.Plug
 		{plugin: releasenote.PluginName, label: releasenote.ReleaseNoteLabelNeeded, matcher: forbids},
 		{plugin: cherrypickunapproved.PluginName, label: cherrypickunapproved.CpUnapprovedLabel, matcher: forbids},
 		{plugin: blockade.PluginName, label: blockade.BlockedPathsLabel, matcher: forbids},
+		{plugin: needsrebase.PluginName, label: needsrebase.NeedsRebaseLabel, matcher: forbids},
 	}
 
 	for i := range configs {
@@ -374,4 +384,20 @@ func validateDecoratedJobs(configAgent config.Agent) error {
 		return fmt.Errorf("the following jobs use the kubernetes provider but do not use the pod utilities: %v", nonDecoratedJobs)
 	}
 	return nil
+}
+
+func validateNeedsOkToTestLabel(configAgent config.Agent) error {
+	var queryErrors []error
+	for i, query := range configAgent.Config().Tide.Queries {
+		for _, label := range query.Labels {
+			if label == lgtm.LGTMLabel {
+				for _, label := range query.MissingLabels {
+					if label == trigger.NeedsOkToTest {
+						queryErrors = append(queryErrors, fmt.Errorf("the tide query at position %d forbids the %q label and requires the %q label, which is not recommended; see https://github.com/kubernetes/test-infra/blob/master/prow/cmd/tide/maintainers.md#best-practices for more information", i, trigger.NeedsOkToTest, lgtm.LGTMLabel))
+					}
+				}
+			}
+		}
+	}
+	return errorutil.NewAggregate(queryErrors...)
 }

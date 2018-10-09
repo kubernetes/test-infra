@@ -27,7 +27,9 @@ import (
 )
 
 const (
-	needsOkToTest = "needs-ok-to-test"
+	// NeedsOkToTest is a label added to PRs from authors we do not trust;
+	// tests will not run on these PRs until they are marked as trusted
+	NeedsOkToTest = "needs-ok-to-test"
 )
 
 func handlePR(c client, trigger *plugins.Trigger, pr github.PullRequestEvent) error {
@@ -67,7 +69,7 @@ func handlePR(c client, trigger *plugins.Trigger, pr github.PullRequestEvent) er
 				c.Logger.Warnf("Failed to clear stale comments: %v.", err)
 			}
 			// Just try to remove "needs-ok-to-test" label if existing, we don't care about the result.
-			c.GitHubClient.RemoveLabel(org, repo, num, needsOkToTest)
+			c.GitHubClient.RemoveLabel(org, repo, num, NeedsOkToTest)
 			c.Logger.Info("Starting all jobs for updated PR.")
 			return buildAll(c, &pr.PullRequest, pr.GUID)
 		}
@@ -174,7 +176,7 @@ I understand the commands that are listed [here](https://go.k8s.io/bot-commands)
 	}
 	comment := fmt.Sprintf(commentTemplate, author, org, org, more, joinOrgURL, plugins.AboutThisBotWithoutCommands)
 
-	err1 := ghc.AddLabel(org, repo, pr.Number, needsOkToTest)
+	err1 := ghc.AddLabel(org, repo, pr.Number, NeedsOkToTest)
 	err2 := ghc.CreateComment(org, repo, pr.Number, comment)
 	if err1 != nil || err2 != nil {
 		return fmt.Errorf("welcomeMsg: error adding label: %v, error creating comment: %v", err1, err2)
