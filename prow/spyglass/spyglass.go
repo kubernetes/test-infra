@@ -29,6 +29,12 @@ import (
 	"k8s.io/test-infra/prow/spyglass/viewers"
 )
 
+// Key types specify the way Spyglass will fetch artifact handles
+const (
+	gcsKeyType  = "gcs"
+	prowKeyType = "prowjob"
+)
+
 // Spyglass records which sets of artifacts need views for a Prow job. The metaphor
 // can be understood as follows: A spyglass receives light from a source through
 // an eyepiece, which has a lens that ultimately presents a view of the light source
@@ -135,15 +141,19 @@ func (s *Spyglass) Refresh(src string, podName string, sizeLimit int64, viewReq 
 	return lens, nil
 }
 
+func splitSrc(src string) (keyType, key string) {
+	split := strings.SplitN(src, "/", 2)
+	keyType = split[0]
+	key = split[1]
+	return
+}
+
 // ListArtifacts gets the names of all artifacts available from the given source
 func (s *Spyglass) ListArtifacts(src string) ([]string, error) {
-	split := strings.SplitN(src, "/", 2)
-	keyType := split[0]
-	key := split[1]
-	switch keyType {
-	case "gcs":
+	switch keyType, key := splitSrc(src); keyType {
+	case gcsKeyType:
 		return s.GCSArtifactFetcher.artifacts(key)
-	case "prowjob":
+	case prowKeyType:
 		gcsKey, err := s.prowToGCS(key)
 		if err != nil {
 			logrus.Warningf("Failed to get gcs source for prow job: %v", err)
@@ -193,11 +203,8 @@ func (s *Spyglass) prowToGCS(prowKey string) (string, error) {
 func (s *Spyglass) FetchArtifacts(src string, podName string, sizeLimit int64, artifactNames []string) ([]viewers.Artifact, error) {
 	artStart := time.Now()
 	arts := []viewers.Artifact{}
-	split := strings.SplitN(src, "/", 2)
-	keyType := split[0]
-	key := split[1]
-	switch keyType {
-	case "gcs":
+	switch keyType, key := splitSrc(src); keyType {
+	case gcsKeyType:
 		for _, name := range artifactNames {
 			art, err := s.GCSArtifactFetcher.artifact(key, name, sizeLimit)
 			if err != nil {
@@ -206,7 +213,7 @@ func (s *Spyglass) FetchArtifacts(src string, podName string, sizeLimit int64, a
 			}
 			arts = append(arts, art)
 		}
-	case "prowjob":
+	case prowKeyType:
 		logFound := false
 		if gcsKey, err := s.prowToGCS(key); err == nil {
 			for _, name := range artifactNames {

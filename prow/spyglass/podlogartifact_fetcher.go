@@ -23,7 +23,7 @@ import (
 	"k8s.io/test-infra/prow/spyglass/viewers"
 )
 
-// PodLogArtifactFetcher is used to fetch artifacts from prow storage
+// PodLogArtifactFetcher is used to fetch artifacts from k8s apiserver
 type PodLogArtifactFetcher struct {
 	jobAgent podLogJobAgent
 }
@@ -42,7 +42,7 @@ func (af *PodLogArtifactFetcher) artifact(key string, sizeLimit int64) (viewers.
 	jobName := parsed[0]
 	buildID := parsed[1]
 
-	podLog, err := NewPodLogArtifact(jobName, buildID, "", sizeLimit, af.jobAgent)
+	podLog, err := NewPodLogArtifact(jobName, buildID, sizeLimit, af.jobAgent)
 	if err != nil {
 		return nil, fmt.Errorf("Error accessing pod log from given source: %v", err)
 	}

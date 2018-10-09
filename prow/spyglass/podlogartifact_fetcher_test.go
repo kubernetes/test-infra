@@ -48,7 +48,7 @@ func TestFetchArtifacts_Prow(t *testing.T) {
 	for _, tc := range testCases {
 		artifact, err := goodFetcher.artifact(tc.src, maxSize)
 		if err != nil && !tc.expectErr {
-			t.Fatalf("%s: failed unexpectedly for artifact %s, err: %v", tc.name, artifact.JobPath(), err)
+			t.Errorf("%s: failed unexpectedly for artifact %s, err: %v", tc.name, artifact.JobPath(), err)
 		}
 		if err == nil && tc.expectErr {
 			t.Errorf("%s: expected error, got no error", tc.name)

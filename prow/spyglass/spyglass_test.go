@@ -254,3 +254,29 @@ func TestViews(t *testing.T) {
 		})
 	}
 }
+
+func TestSplitSrc(t *testing.T) {
+	testCases := []struct {
+		src        string
+		expKeyType string
+		expKey     string
+	}{
+		{
+			src:        "prowjob/example-job-name/123456",
+			expKeyType: "prowjob",
+			expKey:     "example-job-name/123456",
+		},
+		{
+			src:        "gcs/kubernetes-jenkins/pr-logs/pull/test-infra/0000/example-job-name/314159/",
+			expKeyType: "gcs",
+			expKey:     "kubernetes-jenkins/pr-logs/pull/test-infra/0000/example-job-name/314159/",
+		},
+	}
+	for _, tc := range testCases {
+		keyType, key := splitSrc(tc.src)
+		if keyType != tc.expKeyType || key != tc.expKey {
+			t.Errorf("Splitting src %q: Expected <%q, %q>, got <%q, %q>",
+				tc.src, tc.expKeyType, tc.expKey, keyType, key)
+		}
+	}
+}

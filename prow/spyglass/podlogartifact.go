@@ -38,7 +38,6 @@ type podLogJobAgent interface {
 type PodLogArtifact struct {
 	name      string
 	buildID   string
-	podName   string
 	sizeLimit int64
 	ja        podLogJobAgent
 }
@@ -49,7 +48,7 @@ var (
 )
 
 // NewPodLogArtifact creates a new PodLogArtifact
-func NewPodLogArtifact(jobName string, buildID string, podName string, sizeLimit int64, ja podLogJobAgent) (*PodLogArtifact, error) {
+func NewPodLogArtifact(jobName string, buildID string, sizeLimit int64, ja podLogJobAgent) (*PodLogArtifact, error) {
 	if jobName == "" {
 		return nil, errInsufficientJobInfo
 	}
@@ -62,7 +61,6 @@ func NewPodLogArtifact(jobName string, buildID string, podName string, sizeLimit
 	return &PodLogArtifact{
 		name:      jobName,
 		buildID:   buildID,
-		podName:   podName,
 		sizeLimit: sizeLimit,
 		ja:        ja,
 	}, nil

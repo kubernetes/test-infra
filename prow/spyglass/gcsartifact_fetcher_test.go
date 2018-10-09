@@ -61,14 +61,8 @@ func TestNewGCSJobSource(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			jobSource, err := newGCSJobSource(tc.src)
-			if tc.expectedErr != nil {
-				if err == tc.expectedErr {
-					return
-				}
-				t.Fatalf("Expected err: %v, got err: %v", tc.expectedErr, err)
-			}
-			if err != nil {
-				t.Fatalf("Expected err: %v, got err: %v", tc.expectedErr, err)
+			if err != tc.expectedErr {
+				t.Errorf("Expected err: %v, got err: %v", tc.expectedErr, err)
 			}
 			if tc.exBucket != jobSource.bucket {
 				t.Errorf("Expected bucket %s, got %s", tc.exBucket, jobSource.bucket)

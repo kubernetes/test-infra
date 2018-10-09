@@ -61,7 +61,6 @@ func TestNewPodLogArtifact(t *testing.T) {
 		name         string
 		jobName      string
 		buildID      string
-		podName      string
 		sizeLimit    int64
 		expectedErr  error
 		expectedLink string
@@ -70,7 +69,6 @@ func TestNewPodLogArtifact(t *testing.T) {
 			name:         "Create pod log with valid fields",
 			jobName:      "job",
 			buildID:      "123",
-			podName:      "",
 			sizeLimit:    500e6,
 			expectedErr:  nil,
 			expectedLink: "/log?id=123&job=job",
@@ -79,7 +77,6 @@ func TestNewPodLogArtifact(t *testing.T) {
 			name:         "Create pod log with no jobName",
 			jobName:      "",
 			buildID:      "123",
-			podName:      "",
 			sizeLimit:    500e6,
 			expectedErr:  errInsufficientJobInfo,
 			expectedLink: "",
@@ -88,7 +85,6 @@ func TestNewPodLogArtifact(t *testing.T) {
 			name:         "Create pod log with no buildID",
 			jobName:      "job",
 			buildID:      "",
-			podName:      "",
 			sizeLimit:    500e6,
 			expectedErr:  errInsufficientJobInfo,
 			expectedLink: "",
@@ -97,7 +93,6 @@ func TestNewPodLogArtifact(t *testing.T) {
 			name:         "Create pod log with negative sizeLimit",
 			jobName:      "job",
 			buildID:      "123",
-			podName:      "",
 			sizeLimit:    -4,
 			expectedErr:  errInvalidSizeLimit,
 			expectedLink: "",
@@ -105,7 +100,7 @@ func TestNewPodLogArtifact(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			artifact, err := NewPodLogArtifact(tc.jobName, tc.buildID, tc.podName, tc.sizeLimit, &fakePodLogJAgent{})
+			artifact, err := NewPodLogArtifact(tc.jobName, tc.buildID, tc.sizeLimit, &fakePodLogJAgent{})
 			if err != nil {
 				if err != tc.expectedErr {
 					t.Fatalf("failed creating artifact. err: %v", err)
@@ -154,7 +149,7 @@ func TestReadTail_PodLog(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			artifact, err := NewPodLogArtifact(tc.jobName, tc.buildID, "", 500e6, &fakePodLogJAgent{})
+			artifact, err := NewPodLogArtifact(tc.jobName, tc.buildID, 500e6, &fakePodLogJAgent{})
 			if err != nil {
 				t.Fatalf("Pod Log Tests failed to create pod log artifact, err %v", err)
 			}
@@ -203,7 +198,7 @@ func TestReadAt_PodLog(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			artifact, err := NewPodLogArtifact(tc.jobName, tc.buildID, "", 500e6, &fakePodLogJAgent{})
+			artifact, err := NewPodLogArtifact(tc.jobName, tc.buildID, 500e6, &fakePodLogJAgent{})
 			if err != nil {
 				t.Fatalf("Pod Log Tests failed to create pod log artifact, err %v", err)
 			}
@@ -247,7 +242,7 @@ func TestReadAtMost_PodLog(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			artifact, err := NewPodLogArtifact(tc.jobName, tc.buildID, "", 500e6, &fakePodLogJAgent{})
+			artifact, err := NewPodLogArtifact(tc.jobName, tc.buildID, 500e6, &fakePodLogJAgent{})
 			if err != nil {
 				t.Fatalf("Pod Log Tests failed to create pod log artifact, err %v", err)
 			}
@@ -307,7 +302,7 @@ func TestReadAll_PodLog(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		artifact, err := NewPodLogArtifact(tc.jobName, tc.buildID, "", tc.sizeLimit, fakePodLogAgent)
+		artifact, err := NewPodLogArtifact(tc.jobName, tc.buildID, tc.sizeLimit, fakePodLogAgent)
 		if err != nil {
 			t.Fatalf("Pod Log Tests failed to create pod log artifact, err %v", err)
 		}
