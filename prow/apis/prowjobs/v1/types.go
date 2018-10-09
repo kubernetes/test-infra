@@ -249,7 +249,7 @@ type ProwJobStatus struct {
 
 	// PrevReportStates stores the previous reported prowjob state per reporter
 	// So crier won't make duplicated report attempt
-	PrevReportStates map[string]ProwJobState `json:"prev_report_states, omitempty"`
+	PrevReportStates map[string]ProwJobState `json:"prev_report_states,omitempty"`
 }
 
 // Complete returns true if the prow job has finished
