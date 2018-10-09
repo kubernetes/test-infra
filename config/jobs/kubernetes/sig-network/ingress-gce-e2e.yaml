@@ -86,7 +86,8 @@ periodics:
       - --check-leaked-resources
       - --cluster=
       - --env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:master
-      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-ingress.env
+      - --env=GCE_ALPHA_FEATURES=NetworkEndpointGroup
+      - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
       - --extract=ci/latest
       - --gcp-project-type=ingress-project
       - --gcp-zone=asia-southeast1-a

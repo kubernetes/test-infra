@@ -122,7 +122,7 @@ presubmits:
 
 periodics:
 - interval: 30m
-  name: ci-kubernetes-e2e-gci-gce
+  name: ci-kubernetes-e2e-gce-cos-k8smaster-default
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -134,7 +134,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce.env
+      - --env=ENABLE_POD_SECURITY_POLICY=true
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -148,7 +148,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
 - interval: 30m
-  name: ci-kubernetes-e2e-gci-gce-alpha-enabled-default
+  name: ci-kubernetes-e2e-gce-cos-k8smaster-alpha-enabled-default
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -160,7 +160,9 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-alpha-features.env
+      - --env=KUBE_FEATURE_GATES=AllAlpha=true
+      - --env=KUBE_PROXY_DAEMONSET=true
+      - --env=ENABLE_POD_PRIORITY=true
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f
@@ -172,7 +174,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
 - interval: 30m
-  name: ci-kubernetes-e2e-gci-gce-alpha-features
+  name: ci-kubernetes-e2e-gce-cos-k8smaster-alpha-features
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -184,7 +186,9 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-alpha-features.env
+      - --env=KUBE_FEATURE_GATES=AllAlpha=true
+      - --env=KUBE_PROXY_DAEMONSET=true
+      - --env=ENABLE_POD_PRIORITY=true
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-zone=us-central1-f
@@ -195,29 +199,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
 - interval: 30m
-  name: ci-kubernetes-e2e-gci-gce-etcd3
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=70
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-leaked-resources
-      - --extract=ci/latest
-      - --gcp-node-image=gci
-      - --gcp-zone=us-central1-f
-      - --ginkgo-parallel=25
-      - --provider=gce
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
-
-- interval: 30m
-  name: ci-kubernetes-e2e-gci-gce-flaky
+  name: ci-kubernetes-e2e-gce-cos-k8smaster-flaky
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -238,7 +220,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
 - interval: 30m
-  name: ci-kubernetes-e2e-gci-gce-single-flake-attempt
+  name: ci-kubernetes-e2e-gce-cos-k8smaster-single-flake-attempt
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -259,7 +241,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
 - interval: 30m
-  name: ci-kubernetes-e2e-gci-gce-reboot
+  name: ci-kubernetes-e2e-gce-cos-k8smaster-reboot
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -281,7 +263,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
 - interval: 30m
-  name: ci-kubernetes-e2e-gci-gce-serial
+  name: ci-kubernetes-e2e-gce-cos-k8smaster-serial
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -304,7 +286,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
 - interval: 30m
-  name: ci-kubernetes-e2e-gci-gce-slow
+  name: ci-kubernetes-e2e-gce-cos-k8smaster-slow
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -327,7 +309,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
 - interval: 30m
-  name: ci-kubernetes-e2e-gce-multizone
+  name: ci-kubernetes-e2e-gce-cos-k8smaster-multizone
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -340,7 +322,9 @@ periodics:
       - --
       - --check-leaked-resources
       - --cluster=bootstrap-e2e-gce-mz
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-multizone.env
+      - --env=MULTIZONE=true
+      # Where the nodes reside.  Master is in the first one.
+      - --env=E2E_ZONES=us-central1-a us-central1-b us-central1-f
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-project=k8s-jkns-e2e-gce-ubelite
@@ -352,7 +336,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
 - interval: 12h
-  name: ci-kubernetes-soak-gce-gci
+  name: ci-kubernetes-e2e-gce-cos-k8smaster-soak
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -371,7 +355,7 @@ periodics:
       - --gcp-project=k8s-jkns-gce-gci-soak
       - --gcp-zone=us-central1-f
       - --provider=gce
-      - --save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gce-gci
+      - --save=gs://kubernetes-jenkins/soak/ci-kubernetes-e2e-gce-cos-k8smaster-soak
       - --soak
       - --test_args=--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=1200m
@@ -379,7 +363,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
 - interval: 12h
-  name: ci-kubernetes-soak-gci-gce-beta
+  name: ci-kubernetes-e2e-gce-cos-k8sbeta-soak
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -398,7 +382,7 @@ periodics:
       - --gcp-project=k8s-jkns-gce-soak-1-6
       - --gcp-zone=us-central1-f
       - --provider=gce
-      - --save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gci-gce-beta
+      - --save=gs://kubernetes-jenkins/soak/ci-kubernetes-e2e-gce-cos-k8sbeta-soak
       - --soak
       - --test_args=--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=1200m
@@ -406,7 +390,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
 - interval: 12h
-  name: ci-kubernetes-soak-gci-gce-stable1
+  name: ci-kubernetes-e2e-gce-cos-k8sstable1-soak
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -425,7 +409,7 @@ periodics:
       - --gcp-project=k8s-jkns-gci-gce-soak-1-4
       - --gcp-zone=us-central1-f
       - --provider=gce
-      - --save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gci-gce-stable1
+      - --save=gs://kubernetes-jenkins/soak/ci-kubernetes-e2e-gce-cos-k8sstable1-soak
       - --soak
       - --test_args=--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=1200m
@@ -433,7 +417,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
 - interval: 12h
-  name: ci-kubernetes-soak-gci-gce-stable2
+  name: ci-kubernetes-e2e-gce-cos-k8sstable2-soak
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -451,7 +435,7 @@ periodics:
       - --gcp-project=k8s-jkns-gci-gce-soak-1-7
       - --gcp-zone=us-central1-f
       - --provider=gce
-      - --save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gci-gce-stable2
+      - --save=gs://kubernetes-jenkins/soak/ci-kubernetes-e2e-gce-cos-k8sstable2-soak
       - --soak
       - --test_args=--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=800m
@@ -459,7 +443,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20181005-fd9cfb8b0-master
 
 - interval: 12h
-  name: ci-kubernetes-soak-gci-gce-stable3
+  name: ci-kubernetes-e2e-gce-cos-k8sstable3-soak
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -477,7 +461,7 @@ periodics:
       - --gcp-project=k8s-jkns-gci-gce-soak-1-6
       - --gcp-zone=us-central1-f
       - --provider=gce
-      - --save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gci-gce-stable3
+      - --save=gs://kubernetes-jenkins/soak/ci-kubernetes-e2e-gce-cos-k8sstable3-soak
       - --soak
       - --test_args=--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=800m

@@ -94,7 +94,7 @@ periodics:
       - --check-leaked-resources
       - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
       - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
-      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce.env
+      - --env=ENABLE_POD_SECURITY_POLICY=true
       - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
       - --extract=ci/latest
       - --gcp-node-image=gci
@@ -122,7 +122,7 @@ periodics:
       - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.1/env
       - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/cri/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/cri/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-release-1.1/env
       - --env=PREPULL_E2E_IMAGES=false
-      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce.env
+      - --env=ENABLE_POD_SECURITY_POLICY=true
       - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
       - --extract=ci/latest-1.10
       - --gcp-node-image=gci
@@ -327,7 +327,9 @@ periodics:
       - --
       - --check-leaked-resources
       - --cluster=
-      - --env-file=jobs/env/ci-kubernetes-e2e-gce-multizone.env
+      - --env=MULTIZONE=true
+      # Where the nodes reside.  Master is in the first one.
+      - --env=E2E_ZONES=us-central1-a us-central1-b us-central1-f
       - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
       - --extract=ci/latest
       - --gcp-node-image=gci
@@ -375,7 +377,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce.env
+      - --env=ENABLE_POD_SECURITY_POLICY=true
       - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
       - --extract=ci/latest
       - --gcp-node-image=gci
@@ -400,7 +402,9 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-alpha-features.env
+      - --env=KUBE_FEATURE_GATES=AllAlpha=true
+      - --env=KUBE_PROXY_DAEMONSET=true
+      - --env=ENABLE_POD_PRIORITY=true
       - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
       - --extract=ci/latest
       - --gcp-node-image=gci
@@ -492,7 +496,8 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env-file=jobs/env/ci-kubernetes-e2e-gci-gce-ingress.env
+      - --env=GCE_ALPHA_FEATURES=NetworkEndpointGroup
+      - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
       - --env-file=jobs/env/ci-cri-containerd-e2e-gce.env
       - --extract=ci/latest
       - --gcp-node-image=gci
