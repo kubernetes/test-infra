@@ -1449,7 +1449,7 @@ presubmits:
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-big-performance
         - --tear-down-previous
-        - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8 --gather-resource-usage=master
+        - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8 --gather-resource-usage=masteranddns
           --gather-metrics-at-teardown=master
         - --timeout=240m
         - --use-logexporter
@@ -1505,7 +1505,7 @@ presubmits:
         - --gcp-zone=us-east1-a
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-large-performance
-        - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8 --gather-resource-usage=master
+        - --test_args=--ginkgo.focus=\[Feature:Performance\] --minStartupPods=8 --gather-resource-usage=masteranddns
           --gather-metrics-at-teardown=master
         - --timeout=540m
         - --use-logexporter
