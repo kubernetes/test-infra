@@ -229,6 +229,12 @@ func (n *logDumperNode) dump(ctx context.Context) []error {
 		errors = append(errors, err)
 	}
 
+	// Capture full journal - needed so we can see e.g. disk mounts
+	// This does duplicate the other files, but ensures we have all output
+	if err := n.shellToFile(ctx, "sudo journalctl --output=short-precise", filepath.Join(n.dir, "journal.log")); err != nil {
+		errors = append(errors, err)
+	}
+
 	// Capture logs from any systemd services in our list, that are registered
 	services, err := n.listSystemdUnits(ctx)
 	if err != nil {
